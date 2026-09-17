@@ -43,6 +43,24 @@ dsh-mobile 是 DSH（DeepSeek Harness）生态的**移动宿主**。依据 Fabri
 - **垫层面**（对 285 包实测）：内置模块 import 面 = path 67 / crypto 46 / fs 35 / os 20 / url 23 / util 11 / stream 7 / net 5 / http 4 包；crypto 实际 API 仅 6 个（randomUUID/createHash/randomBytes/timingSafeEqual/pbkdf2/createHmac）→ Swift CommonCrypto 单文件覆盖；child_process 12 包全部位于平台实现包，QuickJS 宿主不装载；worker_threads 4 包单点改造。
 - **生命周期**：checkpoint/resume 应对后台冻结——事件循环静默点 + 审批挂起点落盘；回前台 UI 重连（官方 `client-connection` 自带重连语义），runtime 从断点恢复。
 
+### 事件驱动执行
+
+**所有模块间通信一律事件驱动；任何模块不得阻塞其他模块。** 流式输出是旗舰场景——LLM token 增量是事件序列而非阻塞调用——但规则是普适的：
+
+- **Harness 核心**：上游 Cordis 本就是事件系统（service + 事件）；工具调用、审批请求、token 增量全部以类型化事件流动（`dsh-typert-protocol` / `dsh-sdk-protocol`）。
+- **流式输出**：`agent-loop → session 投影 → carrier WS 推送 → Presentation 渲染` 是一条事件管线。UI 永不轮询、永不直接调用 agent。
+- **能力网关**：Swift↔JS 桥是异步事件边界——请求以事件发出，完成以事件回到 runtime 队列（线程规则就是事件投递规则）。
+- **插件**：生命周期 hook 与 `messages.observe`（Fabric RFC 0001）都是事件。
+- **Checkpoint**：定义为"事件队列排空"——自然的静默点，不是特例。
+
+规则（对现有与未来所有模块强制）：
+
+1. 跨模块通信只经事件（发布/订阅）或显式异步接口。
+2. 禁止轮询：组件不得以定时器观察另一组件的状态（定时器只服务于自身职责，如心跳）。
+3. 禁止共享可变状态：跨越模块边界的状态变更必须以事件宣布。
+4. 长任务必须流式：任何长时运行（LLM 流、工具执行、子代理）以事件序列报告进度，不提供阻塞式整体返回 API。
+5. 背压必须显式：慢消费者不得无声阻塞生产者——缓冲/溢出策略在边界处声明。
+
 ## 4. 能力三层
 
 | 层 | 形态 | 内容 |
@@ -140,6 +158,7 @@ dsh-mobile/
 | D5 | 契约先行 | 四端公共地基；AI 辅助开发时代价结构决定 | 首周不见 UI |
 | D6 | pinned 上游 + 外挂实现包 | 上游 0.1.x 高速迭代，防断代 | 需持续跟踪纪律 |
 | D7 | checkpoint 即漫游 | 后台限制转化为跨设备接力能力 | checkpoint 格式需三端一致 |
+| D8 | 全模块事件驱动（含流式输出） | Fabric RFC 0002 的 Runtime/Presentation/Transport 分离本就要求；token 流就是事件序列；checkpoint = 队列排空；WS/IPC/进程内全是事件 transport | 需维护类型化事件契约；调试需事件日志/回放 |
 
 ## 12. 已知边界（诚实声明）
 

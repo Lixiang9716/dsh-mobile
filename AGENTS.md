@@ -24,7 +24,12 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
    `log.debug(...)` at entry of every non-trivial function; bare `console.*` fails the
    `logging` gate. Release builds compile logs away (`__DSH_RELEASE__`) — keep that
    branch wired (rule L4). Exemption marker: `// dsh:logging-exempt`.
-6. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
+6. **Event-driven only (D8)**: modules communicate via events or explicit async interfaces —
+   no polling another component's state, no shared mutable state across module boundaries, and
+   any long-running work (LLM streaming, tool runs, subagents) reports progress as an event
+   sequence. Blocking whole-result APIs are rejected in review (ARCHITECTURE.md,
+   "Event-driven execution").
+7. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
    follow the govrail pairing convention — `<stem>.md` (English source) with a `<stem>.zh.md`
    counterpart and a `<stem>.i18n.yaml` pairing record. When you edit one side of a pair, run
    `gov verify-pairing --write <stem>` to re-confirm (never hand-edit the record).

@@ -48,6 +48,34 @@ dsh-mobile is a **mobile host** for the DSH (DeepSeek Harness) ecosystem. Under 
 - **Shim surface** (measured across all 285 upstream packages): builtin-module import surface = path 67 / crypto 46 / fs 35 / os 20 / url 23 / util 11 / stream 7 / net 5 / http 4 packages; the crypto surface is only 6 APIs (randomUUID / createHash / randomBytes / timingSafeEqual / pbkdf2 / createHmac) → one Swift CommonCrypto file covers it; the 12 `child_process` packages all live in platform implementation packages and are simply not loaded in the QuickJS host; 4 `worker_threads` packages are single-point refactors.
 - **Lifecycle**: checkpoint/resume against background suspension — persist at event-loop quiescence points and approval-pending points; on foreground the UI reconnects (upstream `client-connection` already has reconnect semantics) and the runtime resumes from the checkpoint.
 
+### Event-driven execution
+
+**All inter-module communication is event-driven; no module may block another.** Streaming is
+the flagship case — LLM token deltas are an event sequence, not a blocking call — but the rule
+is universal:
+
+- **Harness core**: upstream Cordis is already an event system (services + events); tool calls,
+  approval requests, and token deltas flow as typed events (`dsh-typert-protocol` /
+  `dsh-sdk-protocol`).
+- **Streaming**: `agent-loop → session projection → carrier WS push → Presentation rendering`
+  is one event pipeline. UIs never poll and never call the agent directly.
+- **Capability gateway**: the Swift↔JS bridge is an async event boundary — requests go out as
+  events, completions come back as events dispatched onto the runtime queue (the thread rules
+  are event-delivery rules).
+- **Plugins**: lifecycle hooks and `messages.observe` (Fabric RFC 0001) are events.
+- **Checkpoint**: defined as "event queue drained" — a natural quiet point, not a special case.
+
+Rules (binding for all modules, present and future):
+
+1. Cross-module communication only via events (publish/subscribe) or explicit async interfaces.
+2. No polling: a component must not watch another component's state on a timer (timers serve
+   their own duty only, e.g. heartbeat).
+3. No shared mutable state: state changes that cross a module boundary must be announced as events.
+4. Long work streams: anything long-running (LLM stream, tool run, subagent) reports progress as
+   an event sequence; no blocking whole-result APIs.
+5. Backpressure is explicit: a slow consumer never silently blocks a producer — buffer/overflow
+   policy is declared at the boundary.
+
 ## 4. Capability Layers
 
 | Layer | Form | Content |
@@ -145,6 +173,7 @@ dsh-mobile/
 | D5 | contract first | shared foundation of four platforms; determines the cost structure of AI-assisted development | no visible UI in week one |
 | D6 | pinned upstream + outboard implementation packages | upstream iterates fast at 0.1.x; prevents lineage breakage | ongoing tracking discipline |
 | D7 | checkpoint as roaming | turns the background restriction into cross-device handoff | checkpoint format must match on all hosts |
+| D8 | all modules event-driven, incl. streaming | Fabric RFC 0002's Runtime/Presentation/Transport separation demands it; a token stream *is* an event sequence; checkpoint = drained queue; WS/IPC/in-process are all event transports | typed event contracts to maintain; debugging needs an event log/replay |
 
 ## 12. Known Boundaries (honest statement)
 
