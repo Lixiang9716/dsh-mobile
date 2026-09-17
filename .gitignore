@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+package-lock.json
+
+# 构建产物
+dist/
+build/
+out/
+
+# iOS / Xcode
+hosts/ios/**/*.xcuserstate
+hosts/ios/**/xcuserdata/
+hosts/ios/Pods/
+hosts/ios/DerivedData/
+
+# Android / 鸿蒙（预留）
+hosts/android/.gradle/
+hosts/android/app/build/
+hosts/harmony/.preview/
+hosts/harmony/build/
+
+# 环境 / 密钥 —— 任何 token、密钥不入库
+.env
+.env.*
+*.local
+*.pem
+*.mobileprovision
+
+# 日志 / 临时
+*.log
+tmp/
+.cache/
