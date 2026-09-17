@@ -6,6 +6,7 @@
    "pairing",
    "note-presence",
    "conflict-markers",
+   "code-size",
    "archive",
    "task"
   ],
@@ -67,6 +68,14 @@
    "command": [
     "gov",
     "verify-conflict-markers"
+   ]
+  },
+  {
+   "id": "code-size",
+   "label": "source files <=500 lines, functions <=50 lines, indent <=5 levels",
+   "command": [
+    "python3",
+    "tools/check-size.py"
    ]
   },
   {
