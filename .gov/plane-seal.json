@@ -1,0 +1,18 @@
+{
+  "files": {
+    ".gov/rejections/README.md": {
+      "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
+    },
+    ".gov/rules.md": {
+      "sha256": "77bbd51bdd524d674d5d6ac77a07c1211457883f851c97349ef64a8f7cc0ca61"
+    },
+    "gates.json": {
+      "sha256": "6234dd4200dd0138a18b3b29111bb1aa60257080cd2969a72b794cf17eee7277"
+    }
+  },
+  "last_rebaseline": {
+    "ts": "2026-09-17T18:50:07+00:00",
+    "caller": "lx@DESKTOP-AOFQD6F",
+    "unattended": true
+  }
+}

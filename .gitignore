@@ -33,3 +33,9 @@ hosts/harmony/build/
 *.log
 tmp/
 .cache/
+
+# govrail 运行账本（本地趋势数据，不入库）
+.gov/history/
+
+# Python
+__pycache__/

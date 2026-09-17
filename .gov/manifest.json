@@ -1,5 +1,5 @@
 {
-  "version": "0.29.4",
+  "version": "0.34.12",
   "created": [
     "gates.json",
     ".agents/notes/README.md",
@@ -8,14 +8,16 @@
     ".agents/skills/code-review/SKILL.md",
     ".agents/skills/archive-agent-notes/SKILL.md",
     ".gov/rejections/README.md",
-    ".github/workflows/gov.yml"
+    ".github/workflows/gov.yml",
+    "docs/decisions.md",
+    "docs/postmortem/README.md"
   ],
   "gitHooks": [
     "pre-push",
     "pre-commit"
   ],
   "templates": {
-    ".gov/rules.md": "8b544404b58cab5fe0b26c2d59037a35a7ad1ff777be8c6a30d914b7fcdbbf03",
+    ".gov/rules.md": "77bbd51bdd524d674d5d6ac77a07c1211457883f851c97349ef64a8f7cc0ca61",
     "gates.json": "bbd3517b6d95e5fd7857ffe88c62902114e6c79525d0c263944b41c557cb8989",
     ".agents/notes/README.md": "da3f05daa27a37595719eb88502aedf199fb38c1c8cb0a9a5699b9e770010bdb",
     ".agents/skills/recall-first/SKILL.md": "fda01d1f51ccccc8fa71d4e67f214e83a7d72d9a7f42fd3b95d4ea334c82cdd4",
@@ -23,9 +25,8 @@
     ".agents/skills/code-review/SKILL.md": "3b4e5845a24da5b671d466aed891aff7dcfc6370eae2848d54fc4fddc57419d4",
     ".agents/skills/archive-agent-notes/SKILL.md": "18f8d28707eed7417faa1181af435e013c023f203af619027a5de541b2879de2",
     ".gov/rejections/README.md": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419",
-    ".github/workflows/gov.yml": "da44ec3f7781aef2b3302377e78620fc9d242586ebb994160850d00b44277265"
-  },
-  "note_presence_exempt": [
-    ".gov/tasks/**"
-  ]
+    ".github/workflows/gov.yml": "da44ec3f7781aef2b3302377e78620fc9d242586ebb994160850d00b44277265",
+    "docs/decisions.md": "c08d7632d432a65122241f21eea599036ee26e2e6b365efa37da65872b758d3e",
+    "docs/postmortem/README.md": "490bfb1c2e431c8564392d84d862766d7c3fb5fcfe0be4c4835f83fae6454bd3"
+  }
 }
