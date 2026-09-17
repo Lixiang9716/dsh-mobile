@@ -1,5 +1,7 @@
 # dsh-mobile Architecture
 
+English | [简体中文](ARCHITECTURE.zh.md)
+
 > Version: v0.1 (foundation) · Status: reviewed, entering M0
 > Based on static analysis of the upstream [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) vendored runtime (285 packages) and the DSH Community Fabric draft RFCs 0001–0004.
 

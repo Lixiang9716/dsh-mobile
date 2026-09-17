@@ -1,5 +1,7 @@
 # dsh-mobile 整体架构方案
 
+[English](ARCHITECTURE.md) | 简体中文
+
 > 版本：v0.1（奠基版） · 状态：已评审，进入 M0
 > 基于对上游 [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) vendored 运行时（285 包）的静态分析，以及 DSH Community Fabric RFC 0001–0004 草案。
 
