@@ -1,8 +1,8 @@
 # contract/
 
-**M0 交付物，全项目第一优先级。**
+**M0 deliverable — the first priority of the entire project.**
 
-- 原语契约 v0：能力网关的窄原语表（≤10 个，带版本、类型签名、权限标记）——四端公共地基
-- 数据协议三件套：bundle 目录布局 / 插件 manifest schema / 安装 receipt 格式
+- Primitive contract v0: the narrow primitive table of the capability gateway (≤10, versioned, typed, permission-flagged) — the shared foundation of all four platforms
+- Data protocols: bundle directory layout / plugin manifest schema / install receipt format
 
-此目录冻结前，不写任何实现代码（D5 契约先行）。
+No implementation code is written before this directory is frozen (D5: contract first).

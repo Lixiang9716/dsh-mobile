@@ -1,0 +1,37 @@
+<!-- gov:rules --> Read .gov/rules.md and follow it before starting work.
+
+# Agent Working Agreement — dsh-mobile
+
+## Project in one line
+
+A mobile host for the DSH (DeepSeek Harness) ecosystem: QuickJS single-threaded coroutine runtime
+carrying the Harness core, iOS capabilities wrapped as privileged layer / capability gateway /
+system implementation plugins, and the UI as a pluggable Web Client. Full design in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Non-negotiable constraints
+
+1. **Contract first (D5)**: `contract/` is frozen before any implementation code lands. If your
+   change needs a new gateway primitive, propose it in `contract/` first — never reach around the
+   gateway.
+2. **No subprocesses, no threads touching the JS runtime**: JS executes on one serial thread only;
+   all host callbacks dispatch onto the runtime queue (see ARCHITECTURE.md §6 thread rules).
+3. **Upstream discipline (D6)**: upstream DSH packages are pinned; never vendor modified copies —
+   adaptations live in `system-plugins/` as outboard implementation packages.
+4. **No `hostType` branching (RFC 0002 anti-pattern)**: platform differences are expressed only via
+   capability negotiation.
+5. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
+   follow the govrail pairing convention — `<stem>.md` (English source) with a `<stem>.zh.md`
+   counterpart and a `<stem>.i18n.yaml` pairing record. When you edit one side of a pair, run
+   `gov verify-pairing --write <stem>` to re-confirm (never hand-edit the record).
+
+## Quality gates
+
+This repo is gated by govrail: `gov run` executes the gate DAG (wired into pre-push and CI via
+`.github/workflows/gov.yml`); pre-commit runs cheap content gates on staged files. If `gov` is not
+on PATH, it lives at `~/Library/Python/3.9/bin/gov` (installed via `pip install govrail`).
+
+## Where things live
+
+See the repository layout in [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-repository-layout)
+and the milestone table in [README.md](README.md). M0 scope lives in `contract/`.

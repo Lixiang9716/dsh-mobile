@@ -1,23 +1,27 @@
 # dsh-mobile
 
-DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 Fabric 互操作模型，将移动端实现为 Harness 运行时之上的一个对等宿主：QuickJS 单线程协程运行时承载 Harness 核心，iOS 系统能力以"特权层 / 能力网关 / 系统实现插件"三层封装，UI 以 Web Client 插件形态可插拔。
+A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the community Fabric interoperability model, dsh-mobile makes mobile a first-class peer host of the Harness runtime: a QuickJS single-threaded coroutine runtime carries the Harness core, iOS system capabilities are wrapped as a three-layer stack (privileged layer / capability gateway / system implementation plugins), and the UI itself is a pluggable Web Client plugin.
 
-> 社区独立项目，非 DeepSeek 官方产品。上游生态参考 [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) 与 DSH Community Fabric 草案。
+> Community project, not an official DeepSeek product. Upstream ecosystem: [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) and the DSH Community Fabric draft RFCs.
 
-## 文档
+## Documentation
 
-- [整体架构方案](docs/ARCHITECTURE.md) —— 分层设计、关键技术决策、里程碑
+- [Architecture](docs/ARCHITECTURE.md) — layered design, key technical decisions, milestones
 
-## 里程碑
+## Milestones
 
-| 阶段 | 内容 | 状态 |
+| Phase | Scope | Status |
 | --- | --- | --- |
-| M0 | 原语契约 v0 + 数据协议三件套（bundle 布局 / manifest / receipt） | 进行中 |
-| M1 | Spike：quickjs-ng 垫层跑通纯逻辑包 + iOS 宿主骨架 + 本机 carrier | 计划 |
-| M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 真机首次会话 | 计划 |
-| M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 计划 |
-| M4 | Android 宿主（QuickJS 同构） | 计划 |
-| M5 | 鸿蒙宿主（ArkTS + NAPI） | 计划 |
+| M0 | Primitive contract v0 + data protocols (bundle layout / manifest / receipt) | In progress |
+| M1 | Spikes: quickjs-ng shim over upstream pure-logic packages + iOS host skeleton + local carrier | Planned |
+| M2 | System implementation plugins (fs/subprocess/ui) + Web Client mount + first on-device session | Planned |
+| M3 | Plugin install pipeline + UI pluggability (slot / Web Client swap) | Planned |
+| M4 | Android host (QuickJS-isomorphic) | Planned |
+| M5 | HarmonyOS host (ArkTS + NAPI) | Planned |
+
+## Governance
+
+This repository is gated by [govrail](https://github.com/Lixiang9716/govrail): pre-commit content gates, a `gov run` gate DAG before push, CI enforcement (`.github/workflows/gov.yml`), and the `agent-heavy` preset for multi-agent development. Run `gov --help` (installed via `pip install govrail`; entry point is `gov`).
 
 ## License
 

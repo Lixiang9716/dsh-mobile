@@ -1,9 +1,9 @@
 # system-plugins/
 
-系统实现插件·契约适配层（JS，三端共用）：
+System implementation plugins · contract adaptation (JS, shared across platforms):
 
-- `dsh-fs-ios` → 实现 `ctx.fs`（security-scoped 语义 + workspace 边界）
-- `dsh-subprocess-quickjs` → 实现 `ctx.subprocess`（协程化执行器）
+- `dsh-fs-ios` → implements `ctx.fs` (security-scoped semantics + workspace boundaries)
+- `dsh-subprocess-quickjs` → implements `ctx.subprocess` (the coroutine executor)
 - `dsh-notify-ios` / `dsh-credentials-ios` / `dsh-ui-ios` …
 
-只消费 `contract/` 原语，实现上游 DSH 服务契约；上层 Harness 核心零改动。
+They consume only `contract/` primitives and implement upstream DSH service contracts; the Harness core above runs unmodified.
