@@ -144,15 +144,24 @@ def _indent_level(raw, unit, is_python):
 
 
 def indent_violations(lines, is_python):
-    leadings = [len(_leading(l)) for l in lines if l.strip()]
-    unit = 4 if is_python else _indent_unit(leadings)
-    bad = []
-    for idx, raw in enumerate(lines, 1):
+    """Check indent depth on code lines only — pure comment/string lines are
+    skipped, so JSDoc continuation lines (` * text`, 1 leading space) cannot
+    poison the per-file indent-unit detection."""
+    state = {"bc": False, "bt": False, "q": None}
+    code_lines = []
+    for orig_idx, raw in enumerate(lines, 1):
         if not raw.strip():
             continue
-        level = _indent_level(raw, unit, is_python)
+        stripped = strip_code(raw, state)
+        if stripped.strip():
+            code_lines.append((orig_idx, stripped))
+    leadings = [len(_leading(stripped)) for _, stripped in code_lines]
+    unit = 4 if is_python else _indent_unit(leadings)
+    bad = []
+    for orig_idx, stripped in code_lines:
+        level = _indent_level(stripped, unit, is_python)
         if level > MAX_INDENT_LEVEL:
-            bad.append((idx, level))
+            bad.append((orig_idx, level))
     return bad
 
 

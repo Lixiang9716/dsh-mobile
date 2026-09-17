@@ -20,7 +20,11 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
    adaptations live in `system-plugins/` as outboard implementation packages.
 4. **No `hostType` branching (RFC 0002 anti-pattern)**: platform differences are expressed only via
    capability negotiation.
-5. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
+5. **Logging through the unified logger only**: `createLogger` from `runtime/logger`,
+   `log.debug(...)` at entry of every non-trivial function; bare `console.*` fails the
+   `logging` gate. Release builds compile logs away (`__DSH_RELEASE__`) — keep that
+   branch wired (rule L4). Exemption marker: `// dsh:logging-exempt`.
+6. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
    follow the govrail pairing convention — `<stem>.md` (English source) with a `<stem>.zh.md`
    counterpart and a `<stem>.i18n.yaml` pairing record. When you edit one side of a pair, run
    `gov verify-pairing --write <stem>` to re-confirm (never hand-edit the record).
