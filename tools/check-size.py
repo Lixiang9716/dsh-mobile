@@ -49,103 +49,108 @@ def tracked_sources():
     return [n for n in names if Path(n).suffix in SOURCE_EXTS and Path(n).exists()]
 
 
+def _consume_open(line, i, state):
+    """Consume while inside a block comment / template / quote; return next index."""
+    if state["bc"]:
+        if i + 1 < len(line) and line[i] == "*" and line[i + 1] == "/":
+            state["bc"] = False
+            return i + 2
+        return len(line)
+    closer = "`" if state["bt"] else state["q"]
+    while i < len(line):
+        if line[i] == "\\":
+            i += 2
+            continue
+        if line[i] == closer:
+            state["bt" if state["bt"] else "q"] = False
+            return i + 1
+        i += 1
+    return i
+
+
 def strip_code(line, state):
     """Blank out string/comment contents of one line, carrying multi-line state.
 
-    state: dict with keys bc (in block comment), bt (in backtick template), q (open quote char).
-    Returns the line with only structural characters (braces, keywords) preserved.
+    state keys: bc (block comment), bt (backtick template), q (open quote char).
+    Only structural characters (braces, keywords) survive.
     """
-    out = []
-    i, n = 0, len(line)
-    while i < n:
-        c = line[i]
-        nxt = line[i + 1] if i + 1 < n else ""
-        if state["bc"]:
-            if c == "*" and nxt == "/":
-                state["bc"] = False
-                i += 2
-            else:
-                i += 1
+    out, i = [], 0
+    while i < len(line):
+        if state["bc"] or state["bt"] or state["q"]:
+            i = _consume_open(line, i, state)
             continue
-        if state["bt"]:
-            if c == "\\":
-                i += 2
-                continue
-            if c == "`":
-                state["bt"] = False
-            i += 1
-            continue
-        if state["q"]:
-            if c == "\\":
-                i += 2
-                continue
-            if c == state["q"]:
-                state["q"] = None
-            i += 1
-            continue
-        if c == "/" and nxt == "/":
+        nxt = line[i + 1] if i + 1 < len(line) else ""
+        if line[i] == "/" and nxt == "/":
             break
-        if c == "/" and nxt == "*":
+        if line[i] == "/" and nxt == "*":
             state["bc"] = True
             i += 2
             continue
-        if c == "`":
+        if line[i] == "`":
             state["bt"] = True
             i += 1
             continue
-        if c in "'\"":
-            state["q"] = c
+        if line[i] in "'\"":
+            state["q"] = line[i]
             i += 1
             continue
-        out.append(c)
+        out.append(line[i])
         i += 1
     return "".join(out)
 
 
-def brace_functions(path, lines):
+def brace_functions(lines):
     """Yield (start_line, end_line) for heuristic brace-language functions."""
     state = {"bc": False, "bt": False, "q": None}
-    stack = []  # [start_line, depth] entries
-    results = []
+    stack, results = [], []
     for idx, raw in enumerate(lines, 1):
         code = strip_code(raw, state)
+        if not stack and "{" in code and any(p.search(code) for p in SIG_PATTERNS):
+            stack.append([idx, 0])
         if not stack:
-            if any(p.search(code) for p in SIG_PATTERNS) and "{" in code:
-                stack.append([idx, 0])
-        if stack:
-            for ch in code:
-                if ch == "{":
-                    stack[-1][1] += 1
-                elif ch == "}":
-                    stack[-1][1] -= 1
-                    if stack[-1][1] <= 0:
-                        results.append((stack.pop()[0], idx))
-                        if not stack:
-                            break
+            continue
+        for ch in code:
+            if ch == "{":
+                stack[-1][1] += 1
+            elif ch == "}":
+                stack[-1][1] -= 1
+                if stack[-1][1] <= 0:
+                    results.append((stack.pop()[0], idx))
+                    break
     return results
 
 
-def indent_violations(path, lines, is_python):
-    bad = []
-    unit = None
-    leadings = []
-    for raw in lines:
-        if raw.strip():
-            leadings.append(len(raw) - len(raw.lstrip(" ")))
+def _leading(raw):
+    return raw[: len(raw) - len(raw.lstrip())]
+
+
+def _indent_unit(leadings):
     positive = [n for n in leadings if n > 0]
-    if positive and not is_python:
-        unit = min(positive)
-        if unit not in (1, 2, 4):
-            unit = 2 if leadings.count(2) >= leadings.count(4) else 4
+    if not positive:
+        return 4
+    unit = min(positive)
+    if unit in (1, 2, 4):
+        return unit
+    return 2 if leadings.count(2) >= leadings.count(4) else 4
+
+
+def _indent_level(raw, unit, is_python):
+    ws = _leading(raw)
+    if is_python:
+        return ws.count("\t") + len(ws) // 4
+    if ws.startswith("\t"):
+        return ws.count("\t")
+    return len(ws) // unit
+
+
+def indent_violations(lines, is_python):
+    leadings = [len(_leading(l)) for l in lines if l.strip()]
+    unit = 4 if is_python else _indent_unit(leadings)
+    bad = []
     for idx, raw in enumerate(lines, 1):
         if not raw.strip():
             continue
-        if is_python:
-            level = (len(raw) - len(raw.lstrip(" "))) // 4 + raw[: len(raw) - len(raw.lstrip(" "))].count("\t")
-        elif "\t" in raw[: len(raw) - len(raw.lstrip())] and not raw.lstrip().startswith(" "):
-            level = len(raw) - len(raw.lstrip("\t"))
-        else:
-            level = (len(raw) - len(raw.lstrip(" "))) // (unit or 4)
+        level = _indent_level(raw, unit, is_python)
         if level > MAX_INDENT_LEVEL:
             bad.append((idx, level))
     return bad
@@ -158,21 +163,27 @@ def check(path):
     if len(lines) > MAX_FILE_LINES:
         violations.append((1, "FILE", f"{len(lines)} lines > {MAX_FILE_LINES}"))
     if path.endswith(".py"):
-        try:
-            tree = ast.parse(text)
-            for node in ast.walk(tree):
-                if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    span = node.end_lineno - node.lineno + 1
-                    if span > MAX_FUNC_LINES:
-                        violations.append((node.lineno, "FUNC", f"{span} lines > {MAX_FUNC_LINES}"))
-        except SyntaxError as e:
-            violations.append((e.lineno or 1, "PARSE", f"python syntax error: {e.msg}"))
+        violations.extend(check_python(text))
     else:
-        for start, end in brace_functions(path, lines):
+        for start, end in brace_functions(lines):
             if end - start + 1 > MAX_FUNC_LINES:
                 violations.append((start, "FUNC", f"{end - start + 1} lines > {MAX_FUNC_LINES}"))
-    for line_no, level in indent_violations(path, lines, path.endswith(".py")):
+    for line_no, level in indent_violations(lines, path.endswith(".py")):
         violations.append((line_no, "INDENT", f"indent level {level} > {MAX_INDENT_LEVEL}"))
+    return violations
+
+
+def check_python(text):
+    violations = []
+    try:
+        tree = ast.parse(text)
+    except SyntaxError as e:
+        return [(e.lineno or 1, "PARSE", f"python syntax error: {e.msg}")]
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            span = node.end_lineno - node.lineno + 1
+            if span > MAX_FUNC_LINES:
+                violations.append((node.lineno, "FUNC", f"{span} lines > {MAX_FUNC_LINES}"))
     return violations
 
 
