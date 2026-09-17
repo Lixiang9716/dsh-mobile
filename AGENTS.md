@@ -35,3 +35,11 @@ on PATH, it lives at `~/Library/Python/3.9/bin/gov` (installed via `pip install 
 
 See the repository layout in [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-repository-layout)
 and the milestone table in [README.md](README.md). M0 scope lives in `contract/`.
+
+## govrail field feedback (standing duty)
+
+govrail is early-stage and this repository is one of its practice grounds. **After every completed
+task, assess how govrail behaved during that task** and report it to the user alongside the task
+summary: what worked, what was friction (install/PATH/hooks/gate behavior), what was missing, what
+you wanted but didn't exist, and any false positives/negatives the gates produced. Be specific and
+concrete — repro steps over opinions. These observations feed govrail's iteration.
