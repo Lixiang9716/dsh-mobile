@@ -43,3 +43,4 @@ task, assess how govrail behaved during that task** and report it to the user al
 summary: what worked, what was friction (install/PATH/hooks/gate behavior), what was missing, what
 you wanted but didn't exist, and any false positives/negatives the gates produced. Be specific and
 concrete — repro steps over opinions. These observations feed govrail's iteration.
+(Agent skill: `govrail-field-feedback` — follow its full procedure when available.)
