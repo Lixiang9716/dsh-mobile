@@ -16,6 +16,10 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install govrail
-        run: pip install govrail
+        # Pinned to the version the governance plane was initialized with
+        # (see .gov/manifest.json). An unpinned install breaks historical repos
+        # when new govrail releases add mandatory mechanisms — 0.34.x's plane
+        # seal refused this repo's seal-less checkout (fixed 2026-09-18).
+        run: pip install govrail==0.29.4
       - name: Run the gate DAG
         run: gov run
