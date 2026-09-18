@@ -1,0 +1,45 @@
+name: dev/ios
+# End-to-end iOS pipeline. Scaffolded at M0; the real E2E suite (simulator
+# boot + XCUITest against the QuickJS host) lands with the M1 Xcode project
+# in hosts/ios (docs/ARCHITECTURE.md §10).
+#
+# Manual trigger plus path-filtered pushes/PRs: macOS runner minutes bill at
+# 10x, so docs-only changes never reach this pipeline.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "hosts/ios/**"
+      - ".github/workflows/dev-ios.yml"
+  pull_request:
+    paths:
+      - "hosts/ios/**"
+      - ".github/workflows/dev-ios.yml"
+
+jobs:
+  ios-e2e:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain sanity
+        run: |
+          xcodebuild -version
+          swift --version
+          xcrun simctl list runtimes | head -5
+
+      - name: Locate the Xcode project (lands at M1)
+        run: |
+          if compgen -G "hosts/ios/*.xcodeproj" > /dev/null; then
+            cd hosts/ios
+            xcodebuild -list
+          else
+            echo "::warning::No Xcode project in hosts/ios yet — the E2E suite lands at M1"
+          fi
+
+      # M1/M2 will add:
+      #   xcodebuild build-for-testing -destination 'platform=iOS Simulator,name=iPhone 16'
+      #   xcodebuild test — XCUITest E2E flow: session start, tool approval UI,
+      #   streaming output visibility, checkpoint/resume across backgrounding.
