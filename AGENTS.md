@@ -50,7 +50,9 @@ and the milestone table in [README.md](README.md). M0 scope lives in `contract/`
 `main` requires a pull request with a passing `gates` check; force pushes and deletion are
 refused. The owner retains an admin bypass — reserved for deliberate direct landings, not a
 default. Default flow for every change: branch → commit → push → `gh pr create` → wait for the
-`gates` check → merge (squash). Do not push straight to main.
+`gates` check → merge (squash). Do not push straight to main. Commits and squash-merge PR
+titles follow Angular Conventional Commits (`type(scope): subject` — feat/fix/docs/style/
+refactor/perf/test/build/ci/chore/revert; enforced by the `commit-format` gate).
 
 ## File issues proactively (standing duty)
 
