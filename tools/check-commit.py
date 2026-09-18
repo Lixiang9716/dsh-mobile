@@ -42,8 +42,8 @@ def commit_range(args):
 
 def commits(rev):
     out = git("log", "--format=%h%x00%s", rev)
-    return [(sha, subject) for sha, subject in
-            (line.split("\x00", 1) for line in out.splitlines() if line)]
+    pairs = (line.split("\x00", 1) for line in out.splitlines() if line)
+    return [(sha, subject) for sha, subject in pairs]
 
 
 def check_subject(sha, subject):
@@ -51,8 +51,9 @@ def check_subject(sha, subject):
     if len(subject) > MAX_HEADER:
         problems.append(f"header longer than {MAX_HEADER} chars")
     if not HEADER.match(subject):
-        problems.append("header must be 'type(scope)?: subject' with a known type, "
-                        "a non-uppercase subject start, and no trailing period")
+        problems.append(
+            "header must be 'type(scope)?: subject' with a known type, "
+            "a non-uppercase subject start, and no trailing period")
     for problem in problems:
         print(f"{sha}: {problem} — {subject!r}")
     return len(problems)
