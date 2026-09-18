@@ -13,10 +13,18 @@ on:
     branches: [main]
     paths:
       - "hosts/android/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-android.yml"
   pull_request:
     paths:
       - "hosts/android/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-android.yml"
 
 jobs:

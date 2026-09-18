@@ -11,10 +11,18 @@ on:
     branches: [main]
     paths:
       - "hosts/ios/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-ios.yml"
   pull_request:
     paths:
       - "hosts/ios/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-ios.yml"
 
 jobs:

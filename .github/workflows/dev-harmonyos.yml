@@ -17,10 +17,18 @@ on:
     branches: [main]
     paths:
       - "hosts/harmonyos/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-harmonyos.yml"
   pull_request:
     paths:
       - "hosts/harmonyos/**"
+      - "contract/**"
+      - "runtime/**"
+      - "system-plugins/**"
+      - "presentation/**"
       - ".github/workflows/dev-harmonyos.yml"
 
 jobs:
