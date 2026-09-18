@@ -162,18 +162,13 @@ dsh-mobile/
 - **M3 pluginization**: install pipeline (receipt transactions) + the three UI-plugin levels + capability negotiation.
 - **M4/M5**: Android and HarmonyOS hosts.
 
-## 11. Key Technical Decisions (ADR summary)
+## 11. Key Technical Decisions
 
-| # | Decision | Rationale | Cost |
-| --- | --- | --- | --- |
-| D1 | quickjs-ng over nodejs-mobile | an order of magnitude less memory; zero gray zone without JIT; multi-runtime isolation | hand-built Node shim |
-| D2 | single-threaded coroutines over subprocesses | upstream `ctx.subprocess` is already a replaceable seam | tool semantics redefined |
-| D3 | UI = Web Client plugin + WKWebView | first-class upstream mechanism; dynamic loading in a browser is legal and privileged | native polish via slots, gradual |
-| D4 | out-of-App-Store distribution | 2.5.2 bans downloaded code; a plugin ecosystem conflicts with it | higher user install friction |
-| D5 | contract first | shared foundation of four platforms; determines the cost structure of AI-assisted development | no visible UI in week one |
-| D6 | pinned upstream + outboard implementation packages | upstream iterates fast at 0.1.x; prevents lineage breakage | ongoing tracking discipline |
-| D7 | checkpoint as roaming | turns the background restriction into cross-device handoff | checkpoint format must match on all hosts |
-| D8 | all modules event-driven, incl. streaming | Fabric RFC 0002's Runtime/Presentation/Transport separation demands it; a token stream *is* an event sequence; checkpoint = drained queue; WS/IPC/in-process are all event transports | typed event contracts to maintain; debugging needs an event log/replay |
+The authoritative decision log lives in [docs/decisions.md](decisions.md) (D0–D8), gated by
+`gov verify-decisions`: quickjs-ng over nodejs-mobile (D1), coroutines over subprocesses (D2),
+UI as Web Client plugin (D3), out-of-App-Store distribution (D4), contract first (D5), pinned
+upstream (D6), checkpoint as roaming (D7), all modules event-driven (D8). Each entry there
+records the alternative it beat — read it before proposing a change to any of these.
 
 ## 12. Known Boundaries (honest statement)
 

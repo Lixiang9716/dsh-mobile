@@ -147,18 +147,12 @@ dsh-mobile/
 - **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
 - **M4/M5**：Android、鸿蒙宿主。
 
-## 11. 关键技术决策记录（ADR 摘要）
+## 11. 关键技术决策
 
-| # | 决策 | 理由 | 代价 |
-| --- | --- | --- | --- |
-| D1 | quickjs-ng 而非 nodejs-mobile | 内存小一个量级、无 JIT 合规零灰区、多 runtime 隔离 | 自建 Node 垫层 |
-| D2 | 单线程协程替代子进程 | 上游 `ctx.subprocess` 本就是可替换抽象接缝 | 工具语义重定义 |
-| D3 | UI = Web Client 插件 + WKWebView | 上游一等机制；浏览器侧动态加载合法且在特权进程 | 原生体验靠 slot 渐进 |
-| D4 | 站外分发 | 2.5.2 禁动态代码；插件生态与之冲突 | 用户安装门槛高 |
-| D5 | 契约先行 | 四端公共地基；AI 辅助开发时代价结构决定 | 首周不见 UI |
-| D6 | pinned 上游 + 外挂实现包 | 上游 0.1.x 高速迭代，防断代 | 需持续跟踪纪律 |
-| D7 | checkpoint 即漫游 | 后台限制转化为跨设备接力能力 | checkpoint 格式需三端一致 |
-| D8 | 全模块事件驱动（含流式输出） | Fabric RFC 0002 的 Runtime/Presentation/Transport 分离本就要求；token 流就是事件序列；checkpoint = 队列排空；WS/IPC/进程内全是事件 transport | 需维护类型化事件契约；调试需事件日志/回放 |
+权威决策记录在 [docs/decisions.md](decisions.md)（D0–D8），由 `gov verify-decisions` 门禁：
+quickjs-ng 而非 nodejs-mobile（D1）、单线程协程替代子进程（D2）、UI 即 Web Client 插件（D3）、
+站外分发（D4）、契约先行（D5）、pinned 上游（D6）、checkpoint 即漫游（D7）、全模块事件驱动（D8）。
+每条都记录了它击败的替代方案——修改这些决策前先读它。
 
 ## 12. 已知边界（诚实声明）
 

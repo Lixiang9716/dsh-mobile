@@ -1,5 +1,5 @@
 {
-  "version": "0.34.12",
+  "version": "0.35.0",
   "created": [
     "gates.json",
     ".agents/notes/README.md",
@@ -9,8 +9,7 @@
     ".agents/skills/archive-agent-notes/SKILL.md",
     ".gov/rejections/README.md",
     ".github/workflows/gov.yml",
-    "docs/decisions.md",
-    "docs/postmortem/README.md"
+    ".agents/skills/govrail/SKILL.md"
   ],
   "gitHooks": [
     "pre-push",
@@ -26,7 +25,6 @@
     ".agents/skills/archive-agent-notes/SKILL.md": "18f8d28707eed7417faa1181af435e013c023f203af619027a5de541b2879de2",
     ".gov/rejections/README.md": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419",
     ".github/workflows/gov.yml": "da44ec3f7781aef2b3302377e78620fc9d242586ebb994160850d00b44277265",
-    "docs/decisions.md": "c08d7632d432a65122241f21eea599036ee26e2e6b365efa37da65872b758d3e",
-    "docs/postmortem/README.md": "490bfb1c2e431c8564392d84d862766d7c3fb5fcfe0be4c4835f83fae6454bd3"
+    ".agents/skills/govrail/SKILL.md": "5cc4757d2b1472098b8178e7f2bbb6d009deb0dd9a4d355fe7a961159e0e44b6"
   }
 }

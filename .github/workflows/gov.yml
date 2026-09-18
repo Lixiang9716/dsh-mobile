@@ -16,10 +16,13 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install govrail
-        # Pinned to the version the governance plane was initialized with
-        # (see .gov/manifest.json). An unpinned install breaks historical repos
-        # when new govrail releases add mandatory mechanisms — 0.34.x's plane
-        # seal refused this repo's seal-less checkout (fixed 2026-09-18).
-        run: pip install govrail==0.34.12
+        # Pinned to the plane version (see .gov/manifest.json) — migrated
+        # 0.29.4 → 0.35.0 deliberately: plane re-sealed, new templates adopted.
+        run: pip install govrail==0.35.0
+      - name: Install tree-sitter grammars
+        # Same tree-sitter stack govrail 0.35 ships; gives the code-size gate
+        # exact TS/JS function spans (without it the gate falls back to
+        # heuristics and says so in its output).
+        run: pip install "tree-sitter==0.23.*" "tree-sitter-typescript==0.23.2"
       - name: Run the gate DAG
         run: gov run
