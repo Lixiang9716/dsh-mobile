@@ -44,6 +44,14 @@ jobs:
         with:
           node-version: '18'
 
+      - name: Cache HarmonyOS CLT zip
+        # The Huawei CDN link is signed and occasionally throttles/flakes;
+        # a cached, integrity-checked copy avoids re-downloading 2GB per run.
+        uses: actions/cache@v4
+        with:
+          path: /tmp/clt.zip
+          key: hos-clt-linux-26.0.0.821
+
       - name: Install HarmonyOS CLT (Linux)
         run: |
           URL="${{ vars.HOS_CLT_LINUX_URL }}"
@@ -51,7 +59,15 @@ jobs:
             echo "::warning::Repository variable HOS_CLT_LINUX_URL is not set — skipping CLT install; build steps will be skipped (set it to the signed Linux CLT zip link from the Huawei download page)"
             exit 0
           fi
-          curl -sS -L -o /tmp/clt.zip "$URL"
+          if ! unzip -tq /tmp/clt.zip > /dev/null 2>&1; then
+            for attempt in 1 2 3; do
+              echo "download attempt $attempt..."
+              curl -sS -L --retry 3 --retry-delay 5 -o /tmp/clt.zip "$URL" || true
+              unzip -tq /tmp/clt.zip > /dev/null 2>&1 && break
+              sleep 5
+            done
+          fi
+          unzip -tq /tmp/clt.zip > /dev/null || { echo "::error::CLT zip corrupt/missing after retries"; exit 1; }
           unzip -q /tmp/clt.zip -d "$GITHUB_WORKSPACE/clt"
           chmod -R u+w "$GITHUB_WORKSPACE/clt"
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" --version
