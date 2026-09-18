@@ -45,6 +45,13 @@ on PATH, it lives at `~/Library/Python/3.9/bin/gov` (installed via `pip install 
 See the repository layout in [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-repository-layout)
 and the milestone table in [README.md](README.md). M0 scope lives in `contract/`.
 
+## Landing changes (main is protected)
+
+`main` requires a pull request with a passing `gates` check; force pushes and deletion are
+refused. The owner retains an admin bypass — reserved for deliberate direct landings, not a
+default. Default flow for every change: branch → commit → push → `gh pr create` → wait for the
+`gates` check → merge (squash). Do not push straight to main.
+
 ## File issues proactively (standing duty)
 
 If a tool, dependency, or upstream project misbehaves or lacks something you need, **open an issue
