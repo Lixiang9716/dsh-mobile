@@ -18,7 +18,7 @@ jobs:
       - name: Install govrail
         # Pinned to the plane version (see .gov/manifest.json) — migrated
         # 0.29.4 → 0.35.0 deliberately: plane re-sealed, new templates adopted.
-        run: pip install govrail==0.35.0
+        run: pip install govrail==0.37.0
       # tree-sitter grammars need no separate install: govrail 0.35 already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an

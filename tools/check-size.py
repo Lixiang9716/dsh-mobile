@@ -4,21 +4,21 @@
 Scope: git-tracked source files (extensions below). Checked from the repository
 root, so it works identically under `gov run`, pre-push hooks, and CI.
 
-Function-boundary precision, per language:
-- Python: exact spans via the `ast` module.
-- TS/TSX/JS/JSX/MJS/CJS: exact spans via tree-sitter (0.23 stack, same grammar
-  version govrail ships); falls back to the signature heuristic when the
-  optional dependency is missing.
-- Swift/Kotlin: signature heuristic + brace-depth tracking (known
-  approximation; a precise grammar can be adopted per-host later).
+Parsing backend, in order:
+1. `gov parse --json` — govrail's declared parse primitive (tree-sitter facts:
+   function spans, line counts). Primary for every language govrail ships.
+2. Python `ast` — exact spans, used if gov parse is unavailable.
+3. Signature heuristic + brace-depth — last resort for brace languages
+   (documented approximation; Swift/Kotlin live here until grammars ship).
 
 Indent depth is checked on code lines only — pure comment/string lines are
 skipped so JSDoc continuation lines cannot poison the indent-unit detection.
 
-Output: one `path:line kind detail` line per violation, then a summary.
-Exit 0 when clean (or no tracked source files), 1 on any violation.
+Output: one `path:line kind detail` line per violation, then a summary line
+reporting which backend each file used. Exit 0 clean, 1 on any violation.
 """
 import ast
+import json
 import re
 import subprocess
 import sys
@@ -29,8 +29,6 @@ MAX_FUNC_LINES = 50
 MAX_INDENT_LEVEL = 5
 
 SOURCE_EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".swift", ".kt", ".kts", ".py"}
-PYTHON_EXTS = {".py"}
-TS_EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
 
 # Bare-method signature: `name(args) {` — exclude control-flow keywords so
 # `if (...) {` is not counted as a function start.
@@ -42,23 +40,6 @@ SIG_PATTERNS = [
     re.compile(r"^\s*(async\s+)?" + CTRL + r"[A-Za-z_$][\w$]*\s*(<[^>()]*>)?\s*\([^;{}]*\)\s*\{\s*$"),
 ]
 
-try:
-    from tree_sitter import Language, Parser
-    import tree_sitter_typescript as tsts
-    _HAS_TREE_SITTER = True
-except Exception:
-    _HAS_TREE_SITTER = False
-
-_TS_LANG_BY_EXT = {
-    ".ts": "typescript", ".tsx": "tsx",
-    ".js": "javascript", ".jsx": "javascript", ".mjs": "javascript", ".cjs": "javascript",
-}
-_FUNC_NODE_TYPES = {
-    "function_declaration", "generator_function_declaration",
-    "method_definition", "arrow_function", "function",
-}
-_ts_parsers = {}
-
 
 def tracked_sources():
     try:
@@ -69,38 +50,23 @@ def tracked_sources():
     return [n for n in names if Path(n).suffix in SOURCE_EXTS and Path(n).exists()]
 
 
-def ts_parser(ext):
-    """Lazily build a tree-sitter Parser for a TS/JS extension; None on failure."""
-    if ext not in _TS_LANG_BY_EXT:
+def gov_facts(files):
+    """Batch parse via govrail's parse primitive; {path: facts} or None."""
+    if not files:
         return None
-    if ext not in _ts_parsers:
-        try:
-            getter = getattr(tsts, "language_" + _TS_LANG_BY_EXT[ext])
-            lang = Language(getter())
-            try:
-                _ts_parsers[ext] = Parser(lang)
-            except TypeError:
-                parser = Parser()
-                parser.set_language(lang)
-                _ts_parsers[ext] = parser
-        except Exception:
-            _ts_parsers[ext] = None
-    return _ts_parsers[ext]
-
-
-def ts_function_spans(path, text):
-    """Exact (start_line, end_line) spans for TS/JS functions; None without tree-sitter."""
-    parser = ts_parser(Path(path).suffix)
-    if parser is None:
+    try:
+        out = subprocess.run(
+            ["gov", "parse", *files, "--json"],
+            capture_output=True, text=True, check=True, timeout=120,
+        ).stdout
+        facts = json.loads(out)
+    except Exception:
         return None
-    root = parser.parse(text.encode("utf-8")).root_node
-    spans, stack = [], [root]
-    while stack:
-        node = stack.pop()
-        if node.type in _FUNC_NODE_TYPES:
-            spans.append((node.start_point[0] + 1, node.end_point[0] + 1))
-        stack.extend(node.children)
-    return spans
+    result = {}
+    for entry in facts if isinstance(facts, list) else []:
+        functions = [(f["start"], f["end"]) for f in entry.get("functions", [])]
+        result[entry["path"]] = {"total": entry["lines"]["total"], "functions": functions}
+    return result or None
 
 
 def _consume_open(line, i, state):
@@ -214,43 +180,36 @@ def indent_violations(lines, is_python):
     return bad
 
 
-def check_python(text):
-    violations = []
-    try:
-        tree = ast.parse(text)
-    except SyntaxError as e:
-        return [(e.lineno or 1, "PARSE", f"python syntax error: {e.msg}")]
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            span = node.end_lineno - node.lineno + 1
-            if span > MAX_FUNC_LINES:
-                violations.append((node.lineno, "FUNC", f"{span} lines > {MAX_FUNC_LINES}"))
-    return violations
+def fallback_functions(path, lines):
+    """ast (Python) or brace heuristic — used when gov parse is unavailable."""
+    if path.endswith(".py"):
+        try:
+            tree = ast.parse("\n".join(lines))
+        except SyntaxError:
+            return []
+        return [(n.lineno, n.end_lineno) for n in ast.walk(tree)
+                if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
+    return brace_functions(lines)
 
 
-def check(path):
-    """Return (violations, precise) — precise=True when spans came from a real parser."""
+def check(path, facts):
+    """Return (violations, backend) where backend is 'gov-parse' or 'fallback'."""
     violations = []
     text = Path(path).read_text(encoding="utf-8", errors="replace")
     lines = text.splitlines()
-    if len(lines) > MAX_FILE_LINES:
-        violations.append((1, "FILE", f"{len(lines)} lines > {MAX_FILE_LINES}"))
-    precise = False
-    if path.endswith(".py"):
-        violations.extend(check_python(text))
-        precise = True
+    is_python = path.endswith(".py")
+    if facts is not None:
+        backend, total, spans = "gov-parse", facts["total"], facts["functions"]
     else:
-        spans = ts_function_spans(path, text) if path.endswith(tuple(TS_EXTS)) else None
-        if spans is not None:
-            precise = True
-        else:
-            spans = brace_functions(lines)
-        for start, end in spans:
-            if end - start + 1 > MAX_FUNC_LINES:
-                violations.append((start, "FUNC", f"{end - start + 1} lines > {MAX_FUNC_LINES}"))
-    for line_no, level in indent_violations(lines, path.endswith(".py")):
+        backend, total, spans = "fallback", len(lines), fallback_functions(path, lines)
+    if total > MAX_FILE_LINES:
+        violations.append((1, "FILE", f"{total} lines > {MAX_FILE_LINES}"))
+    for start, end in spans:
+        if end - start + 1 > MAX_FUNC_LINES:
+            violations.append((start, "FUNC", f"{end - start + 1} lines > {MAX_FUNC_LINES}"))
+    for line_no, level in indent_violations(lines, is_python):
         violations.append((line_no, "INDENT", f"indent level {level} > {MAX_INDENT_LEVEL}"))
-    return violations, precise
+    return violations, backend
 
 
 def main():
@@ -258,19 +217,21 @@ def main():
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0
-    if not _HAS_TREE_SITTER:
-        print("code-size: note — tree-sitter unavailable, TS/JS fall back to heuristics")
-    all_violations, precise_count = [], 0
+    facts = gov_facts(files)
+    if facts is None:
+        print("code-size: note — gov parse unavailable, ast/heuristic fallback in effect")
+    all_violations, backends = [], {}
     for f in files:
-        violations, precise = check(f)
-        precise_count += precise
+        violations, backend = check(f, facts.get(f) if facts else None)
+        backends[f] = backend
         for line_no, kind, detail in violations:
             all_violations.append(f"{f}:{line_no}: {kind} {detail}")
     for v in all_violations:
         print(v)
-    mode = f"{precise_count}/{len(files)} parsed precisely"
+    gov_count = sum(1 for b in backends.values() if b == "gov-parse")
     print(
-        f"code-size: {len(files)} source file(s) checked ({mode}; "
+        f"code-size: {len(files)} source file(s) checked "
+        f"({gov_count} via gov parse, {len(files) - gov_count} fallback; "
         f"file<={MAX_FILE_LINES}, func<={MAX_FUNC_LINES}, indent<={MAX_INDENT_LEVEL}); "
         f"{len(all_violations)} violation(s)"
     )

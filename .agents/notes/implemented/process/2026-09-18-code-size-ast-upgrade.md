@@ -39,3 +39,8 @@ Swift/Kotlin files still use the heuristic until a host needs them gated precise
 `tree-sitter-swift`/`-kotlin` grammars is now a known, small extension. The CI workflow
 installs the grammars explicitly; a fresh clone without them degrades loudly (the summary
 line shows the precise/heuristic split), never silently.
+
+Update (govrail 0.37.0): the tree-sitter imports are gone again — the gate now
+delegates parsing to govrail's declared `gov parse --json` primitive (#265 shipped),
+keeping `ast`/heuristic only as a fallback when the command is unavailable. The
+project gate is back to pure rule declaration.
