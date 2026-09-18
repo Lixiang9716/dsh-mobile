@@ -51,9 +51,14 @@ def tracked_sources():
 
 
 def gov_facts(files):
-    """Batch parse via govrail's parse primitive; {path: facts} or None."""
+    """Batch parse via govrail's parse primitive.
+
+    Returns ({path: facts}, notes). facts is None when the command itself is
+    unavailable. Notes carry skipped files (no shipped grammar) and entries
+    with parse errors — both fall back, loudly.
+    """
     if not files:
-        return None
+        return {}, []
     try:
         out = subprocess.run(
             ["gov", "parse", *files, "--json"],
@@ -61,12 +66,18 @@ def gov_facts(files):
         ).stdout
         facts = json.loads(out)
     except Exception:
-        return None
+        return None, []
+    entries = facts.get("files", []) if isinstance(facts, dict) else facts
+    skipped = facts.get("skipped", []) if isinstance(facts, dict) else []
+    notes = [f"{s.get('path')}: {s.get('reason', 'no shipped grammar')}" for s in skipped]
     result = {}
-    for entry in facts if isinstance(facts, list) else []:
+    for entry in entries:
+        if entry.get("parse_errors"):
+            notes.append(f"{entry['path']}: parse errors — falling back")
+            continue
         functions = [(f["start"], f["end"]) for f in entry.get("functions", [])]
         result[entry["path"]] = {"total": entry["lines"]["total"], "functions": functions}
-    return result or None
+    return result, notes
 
 
 def _consume_open(line, i, state):
@@ -217,12 +228,14 @@ def main():
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0
-    facts = gov_facts(files)
+    facts, parse_notes = gov_facts(files)
     if facts is None:
         print("code-size: note — gov parse unavailable, ast/heuristic fallback in effect")
+    for note in parse_notes:
+        print("code-size: note — skipped", note)
     all_violations, backends = [], {}
     for f in files:
-        violations, backend = check(f, facts.get(f) if facts else None)
+        violations, backend = check(f, facts.get(f) if facts is not None else None)
         backends[f] = backend
         for line_no, kind, detail in violations:
             all_violations.append(f"{f}:{line_no}: {kind} {detail}")
