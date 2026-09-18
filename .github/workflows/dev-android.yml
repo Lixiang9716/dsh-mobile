@@ -34,6 +34,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Same unpacked-cache pattern as dev/harmonyos: tool + dependency state
+      # survives between runs. Gradle caches activate when the M4 project
+      # exists (hashFiles guards the key); the emulator system image + AVD
+      # cache spares the ~1.5GB image download per run from M4 on.
+      - uses: actions/setup-java@v4
+        if: env.PROJECT_PRESENT == 'true'
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Cache the emulator system image and AVD
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/system-images/android-35/default/x86_64*
+            ~/.android/avd/*
+          key: dev-android-emulator-api35-x86_64-v1
+
       - name: Locate the Gradle project (lands at M4)
         run: |
           if [ -f "hosts/android/settings.gradle" ] || [ -f "hosts/android/settings.gradle.kts" ]; then

@@ -32,6 +32,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Same unpacked-cache pattern as dev/harmonyos: once M1 lands the
+      # Xcode project, xcodebuild must use -derivedDataPath hosts/ios/DerivedData
+      # so incremental builds restore from this cache (SwiftPM + module cache).
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: hosts/ios/DerivedData
+          key: dev-ios-deriveddata-ios265-v1
+
       - name: Toolchain sanity
         run: |
           xcodebuild -version
