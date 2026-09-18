@@ -76,6 +76,23 @@ Rules (binding for all modules, present and future):
 5. Backpressure is explicit: a slow consumer never silently blocks a producer — buffer/overflow
    policy is declared at the boundary.
 
+### E2E verification: log-based assertions, no screenshots
+
+CI end-to-end tests assert on **structured logs, never screenshots** (screenshots are a local
+interactive-debugging aid only). The contract, per scenario:
+
+- every E2E scenario carries a unique `scenario-id`;
+- the runtime emits one structured log entry per expected event —
+  `scenario=<id> event=<name> …` — through the unified logger (which the
+  `logging` gate already enforces);
+- the assertion is a **one-to-one expected ↔ logged match**: nothing missing,
+  nothing extra, order as declared by the scenario;
+- a failure report lists exactly the unmatched entries — that list *is* the
+  diagnosis.
+
+This keeps CI headless by construction and makes the verification surface the
+same one the `logging` gate governs: the log stream.
+
 ## 4. Capability Layers
 
 | Layer | Form | Content |
