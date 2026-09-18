@@ -1,0 +1,76 @@
+name: dev/harmonyos
+# End-to-end HarmonyOS pipeline. Scaffolded at M0; the HAP build lands with
+# the M5 hvigor project in hosts/harmonyos (docs/ARCHITECTURE.md §10).
+#
+# Follows the official command-line build flow
+# (developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-command-line-building-app):
+#   DEVECO_SDK_HOME=<clt>/sdk; ohpm install --all; hvigorw assembleHap
+#
+# Runs on ubuntu (HarmonyOS CLT 26.0.0+ ships a Linux build — 10x cheaper
+# than macOS runners). The CLT download URL is a signed Huawei CDN link:
+# set it as the repository variable HOS_CLT_LINUX_URL
+# (Settings → Secrets and variables → Actions → Variables).
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "hosts/harmonyos/**"
+      - ".github/workflows/dev-harmonyos.yml"
+  pull_request:
+    paths:
+      - "hosts/harmonyos/**"
+      - ".github/workflows/dev-harmonyos.yml"
+
+jobs:
+  harmonyos-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install HarmonyOS CLT (Linux)
+        run: |
+          URL="${{ vars.HOS_CLT_LINUX_URL }}"
+          if [ -z "$URL" ]; then
+            echo "::warning::Repository variable HOS_CLT_LINUX_URL is not set — skipping CLT install; build steps will be skipped (set it to the signed Linux CLT zip link from the Huawei download page)"
+            exit 0
+          fi
+          curl -sS -L -o /tmp/clt.zip "$URL"
+          unzip -q /tmp/clt.zip -d "$GITHUB_WORKSPACE/clt"
+          chmod -R u+w "$GITHUB_WORKSPACE/clt"
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" --version
+
+      - name: Detect the hvigor project (lands at M5)
+        run: |
+          if [ -f "hosts/harmonyos/build-profile.json5" ]; then
+            echo "PROJECT_PRESENT=true" >> "$GITHUB_ENV"
+          else
+            echo "::warning::No HarmonyOS project in hosts/harmonyos yet — the HAP build lands at M5"
+          fi
+
+      - name: Install dependencies (ohpm)
+        if: env.PROJECT_PRESENT == 'true'
+        working-directory: hosts/harmonyos
+        run: |
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/ohpm" install --all
+
+      - name: Build HAP (debug)
+        if: env.PROJECT_PRESENT == 'true'
+        working-directory: hosts/harmonyos
+        run: |
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
+            --mode module -p product=default -p buildMode=debug --no-daemon
+
+      # M5 will add:
+      #   signing (build-profile.json5 signingConfigs; release needs Huawei-
+      #   issued certs — debug-only HAPs are enough for the E2E emulator flow)
+      #   Emulator boot via the CLT Emulator tool (Linux, 26.0.0+) and
+      #   hdc-driven E2E: install hap, aa start, uitest flows, hilog asserts.
