@@ -44,32 +44,38 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Cache HarmonyOS CLT zip
-        # The Huawei CDN link is signed and occasionally throttles/flakes;
-        # a cached, integrity-checked copy avoids re-downloading 2GB per run.
+      - name: Cache the unpacked HarmonyOS CLT
+        # Cache hit: the unpacked tree is restored and every install step is
+        # skipped. Cache miss: download (with retries + integrity check) once;
+        # actions/cache saves the unpacked tree when the job succeeds.
+        # Bump the version suffix in the key when the CLT link changes.
+        id: clt-cache
         uses: actions/cache@v4
         with:
-          path: /tmp/clt.zip
-          key: hos-clt-linux-26.0.0.821
+          path: clt
+          key: hos-clt-linux-unpacked-26.0.0.821
 
-      - name: Install HarmonyOS CLT (Linux)
+      - name: Install HarmonyOS CLT (Linux, cache miss only)
+        if: steps.clt-cache.outputs.cache-hit != 'true'
         run: |
           URL="${{ vars.HOS_CLT_LINUX_URL }}"
           if [ -z "$URL" ]; then
             echo "::warning::Repository variable HOS_CLT_LINUX_URL is not set — skipping CLT install; build steps will be skipped (set it to the signed Linux CLT zip link from the Huawei download page)"
             exit 0
           fi
-          if ! unzip -tq /tmp/clt.zip > /dev/null 2>&1; then
-            for attempt in 1 2 3; do
-              echo "download attempt $attempt..."
-              curl -sS -L --retry 3 --retry-delay 5 -o /tmp/clt.zip "$URL" || true
-              unzip -tq /tmp/clt.zip > /dev/null 2>&1 && break
-              sleep 5
-            done
-          fi
+          for attempt in 1 2 3; do
+            echo "download attempt $attempt..."
+            curl -sS -L --retry 3 --retry-delay 5 -o /tmp/clt.zip "$URL" || true
+            unzip -tq /tmp/clt.zip > /dev/null 2>&1 && break
+            sleep 5
+          done
           unzip -tq /tmp/clt.zip > /dev/null || { echo "::error::CLT zip corrupt/missing after retries"; exit 1; }
           unzip -q /tmp/clt.zip -d "$GITHUB_WORKSPACE/clt"
           chmod -R u+w "$GITHUB_WORKSPACE/clt"
+
+      - name: Verify the CLT toolchain
+        run: |
+          test -x "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" || { echo "::error::hvigorw missing from restored/installed CLT"; exit 1; }
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" --version
 
       - name: Detect the hvigor project (lands at M5)
