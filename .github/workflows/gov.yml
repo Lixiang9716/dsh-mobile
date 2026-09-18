@@ -19,10 +19,10 @@ jobs:
         # Pinned to the plane version (see .gov/manifest.json) — migrated
         # 0.29.4 → 0.35.0 deliberately: plane re-sealed, new templates adopted.
         run: pip install govrail==0.35.0
-      - name: Install tree-sitter grammars
-        # Same tree-sitter stack govrail 0.35 ships; gives the code-size gate
-        # exact TS/JS function spans (without it the gate falls back to
-        # heuristics and says so in its output).
-        run: pip install "tree-sitter==0.23.*" "tree-sitter-typescript==0.23.2"
+      # tree-sitter grammars need no separate install: govrail 0.35 already
+      # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
+      # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an
+      # older tree-sitter core here — downgrading the core breaks govrail's
+      # own parsers (ABI mismatch, seen in CI run 35297964574).
       - name: Run the gate DAG
         run: gov run
