@@ -29,7 +29,11 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
    any long-running work (LLM streaming, tool runs, subagents) reports progress as an event
    sequence. Blocking whole-result APIs are rejected in review (ARCHITECTURE.md,
    "Event-driven execution").
-7. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
+7. **E2E by logs, not screenshots**: CI end-to-end tests assert on structured
+   logs — each scenario has a unique `scenario-id` and a one-to-one
+   expected ↔ logged match (ARCHITECTURE.md, "E2E verification"). Screenshots
+   are for local interactive debugging only, never CI assertions.
+8. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
    follow the govrail pairing convention — `<stem>.md` (English source) with a `<stem>.zh.md`
    counterpart and a `<stem>.i18n.yaml` pairing record. When you edit one side of a pair, run
    `gov verify-pairing --write <stem>` to re-confirm (never hand-edit the record).

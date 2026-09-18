@@ -41,5 +41,9 @@ jobs:
 
       # M1/M2 will add:
       #   xcodebuild build-for-testing -destination 'platform=iOS Simulator,name=iPhone 16'
-      #   xcodebuild test — XCUITest E2E flow: session start, tool approval UI,
-      #   streaming output visibility, checkpoint/resume across backgrounding.
+      #   xcodebuild test — XCUITest E2E drives the flows (session start, tool
+      #   approval, streaming, checkpoint/resume) but NEVER asserts on
+      #   screenshots: every scenario has a unique scenario-id, the runtime
+      #   emits one structured log entry per expected event, and the
+      #   assertion is a one-to-one expected<->logged match. CI captures no
+      #   screenshots; logs are the verdict.

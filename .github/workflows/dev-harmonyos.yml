@@ -73,4 +73,7 @@ jobs:
       #   signing (build-profile.json5 signingConfigs; release needs Huawei-
       #   issued certs — debug-only HAPs are enough for the E2E emulator flow)
       #   Emulator boot via the CLT Emulator tool (Linux, 26.0.0+) and
-      #   hdc-driven E2E: install hap, aa start, uitest flows, hilog asserts.
+      #   hdc-driven E2E: install hap, aa start, uitest drives the flows.
+      #   Assertions are log-based: unique scenario-id per scenario, one
+      #   structured hilog entry per expected event, one-to-one
+      #   expected<->logged matching. CI captures no screenshots.
