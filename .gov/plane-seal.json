@@ -4,15 +4,16 @@
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rules.md": {
-      "sha256": "e6c4833f3dbb1cdd7cd0a324d67e663eb191d7a7fe39834c3b4f1380906a4131"
+      "sha256": "96fd0e5ea27ee87bf1cb3faed88a46d5286edf2f6f911104e4be233b82996976"
     },
     "gates.json": {
       "sha256": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-19T08:45:58+00:00",
+    "ts": "2026-09-19T11:38:10+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
-    "unattended": true
+    "unattended": true,
+    "reason": "gov update --apply migration (0.45.0 -> 0.47.1)"
   }
 }

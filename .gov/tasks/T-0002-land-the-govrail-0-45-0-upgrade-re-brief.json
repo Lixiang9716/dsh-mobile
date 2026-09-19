@@ -13,7 +13,12 @@
     "PR opened, gates check green, squash-merged to main",
     "Upstream issues filed: gates-merge repo-relative template path; failed-update orphan state; stale-card no-exit; pre-commit deprecation false positive"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0002"
+  "id": "T-0002",
+  "void": {
+    "ts": "2026-09-19T11:35:36+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "The 0.45.0 upgrade it tracks landed via dsh-mobile PRs #15/#16. Under 0.45.0 close was structurally impossible (#323); under 0.47.1 close now runs but its receipt is rejected by _check_receipt (NON_RUN disagreement, same upstream issue as T-0001's void). Retired as void with the work verifiably on main."
+  }
 }
