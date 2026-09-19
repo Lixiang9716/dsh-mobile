@@ -177,6 +177,21 @@ static char *smoke_path(smoke_backend *b, const char *rel) {
     return out;
 }
 
+/* mkdir -p for the file's parent — the platform fs primitives create
+ * intermediate directories on write; the smoke backend keeps parity. */
+static void smoke_mkdirs(const char *path) {
+    char *copy = strdup(path);
+    if (!copy) return;
+    char *slash = strrchr(copy, '/');
+    if (!slash) { free(copy); return; }
+    *slash = 0;
+    for (char *at = copy + 1; *at; at++) {
+        if (*at == '/') { *at = 0; mkdir(copy, 0755); *at = '/'; }
+    }
+    mkdir(copy, 0755);
+    free(copy);
+}
+
 /* ISO-8601 UTC mtime for the fsRead payload. */
 static void smoke_mtime(const char *path, char *out, size_t outsz) {
     struct stat st;
@@ -220,6 +235,7 @@ static void smoke_fs_write(smoke_backend *b, int call_id, const char *args) {
         size_t n = 0;
         unsigned char *bytes = b64_decode(a.b64, &n);
         char *full = bytes ? smoke_path(b, a.path) : NULL;
+        if (full) smoke_mkdirs(full);
         const char *mode = a.append ? "ab" : (a.create ? "wb" : "r+b");
         FILE *f = full ? fopen(full, mode) : NULL;
         size_t written = f ? fwrite(bytes, 1, n, f) : 0;
@@ -392,6 +408,16 @@ int dsh_smoke_run(const char *bundle_root, const char *entry_name,
     dsh_spike_set_descriptor(b.spike, SMOKE_DESCRIPTOR);
 
     int rc = dsh_spike_eval(b.spike, entry_name, source);
+    /* source stays caller-owned (freed in dsh_run_scenario) — do NOT free here. */
+
+    /* Host readiness signal through the same gateway-event channel the
+     * platform embedders use: {"event":"host.info","port":0} — the spike
+     * backend has no carrier, so port 0. Scenarios waiting on it start
+     * here; runtimes without a subscriber drop it (shim contract). */
+    if (rc == 0 && !b.failed
+        && dsh_spike_gateway_event(b.spike, "{\"event\":\"host.info\",\"port\":0}") != 0) {
+        rc = -1;
+    }
     if (rc == 0) rc = smoke_drive(&b);
 
     int passed = (rc == 0 && !b.failed && dsh_spike_complete(b.spike) &&
