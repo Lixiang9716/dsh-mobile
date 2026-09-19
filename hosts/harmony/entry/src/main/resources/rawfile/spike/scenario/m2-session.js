@@ -25,11 +25,13 @@ const SCENARIO = 'm2.session';
 const log = createLogger('m2.spike');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
+  log.debug('scenario failed', { reason });
   emit('scenario.failed', { reason });
   globalThis.__dshComplete(false, reason);
 };
 const demand = (cond, reason) => {
   if (cond) return;
+  log.debug('demand failed', { reason });
   fail(reason);
   throw new Error(reason);
 };
@@ -44,6 +46,7 @@ onEvent((ev) => {
   else buffered.push(ev);
 });
 const nextEvent = async (name) => {
+  log.debug('wait for event', { name });
   for (;;) {
     const at = buffered.findIndex((ev) => ev.event === name);
     if (at >= 0) return buffered.splice(at, 1)[0];
@@ -84,6 +87,7 @@ const persistStep = async (ctx) => {
 /** Streams one mock-LLM turn: token deltas as an event sequence. Returns
  * the full text so the transcript assembles from what actually streamed. */
 const streamTurn = async (turn, tokens, startIndex) => {
+  log.debug('stream turn', { turn, tokens: tokens.length });
   emit('llm.stream.started', { turn });
   let text = '';
   for (let i = 0; i < tokens.length; i++) {
