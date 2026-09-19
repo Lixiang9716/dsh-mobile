@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "Gradle project in hosts/android builds the spike APK (quickjs-ng + dsh_spike_host.c via CMake/NDK, scenario assets bundled)",
-    "Scenario runs on a dedicated serial thread; canonical dsh.spike.log lines captured from logcat",
-    "tools/e2e/check.mjs PASS 9/9 in order on the captured log",
-    "Artifacts committed under hosts/android/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
+    "[x] Gradle project in hosts/android builds the spike APK (quickjs-ng + dsh_spike_host.c via CMake/NDK, scenario assets bundled)",
+    "[x] Scenario runs on a dedicated serial thread; canonical dsh.spike.log lines captured from logcat",
+    "[x] tools/e2e/check.mjs PASS 9/9 in order on the captured log",
+    "[x] Artifacts committed under hosts/android/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
     "dev-android.yml builds the spike; agent note written; PR open with gates green"
   ],
   "status": "open",
