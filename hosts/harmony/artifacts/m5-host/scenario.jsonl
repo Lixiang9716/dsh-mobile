@@ -1,0 +1,20 @@
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"ba2e3621-1c3f-4f24-b5d2-26b1b069b2b2","v4":true}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.write.ok","written":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"scenario.complete","status":"pass"}]}

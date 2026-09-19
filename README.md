@@ -19,7 +19,7 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 | M2 | System implementation plugins (fs/subprocess/ui) + Web Client mount + first on-device session | In progress (real gateway binding done: 9-primitive privileged layer on iOS, `m2.gateway.binding` 19/19 + audit 16/16 — evidence `hosts/ios/artifacts/m2-gateway/`) |
 | M3 | Plugin install pipeline + UI pluggability (slot / Web Client swap) | Planned |
 | M4 | Android host (QuickJS-isomorphic) | Planned |
-| M5 | HarmonyOS host (ArkTS + NAPI) | Planned |
+| M5 | HarmonyOS host (ArkTS + NAPI) | In progress (isomorphic host verified: m2.bridge.smoke green on emulator — evidence `hosts/harmony/artifacts/m5-host/`) |
 
 ## Governance
 

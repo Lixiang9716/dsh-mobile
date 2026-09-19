@@ -19,7 +19,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 首个设备端会话 | 进行中（真实 gateway 绑定完成：iOS 九原语特权层，`m2.gateway.binding` 19/19 + 审计 16/16 —— 证据见 `hosts/ios/artifacts/m2-gateway/`） |
 | M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 计划 |
 | M4 | Android 宿主（QuickJS 同构） | 计划 |
-| M5 | 鸿蒙宿主（ArkTS + NAPI） | 计划 |
+| M5 | 鸿蒙宿主（ArkTS + NAPI） | 进行中（同构宿主已验证：m2.bridge.smoke 在模拟器通过——证据见 `hosts/harmony/artifacts/m5-host/`） |
 
 ## 治理
 
