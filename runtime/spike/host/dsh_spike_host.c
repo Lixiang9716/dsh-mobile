@@ -1,15 +1,17 @@
 /*
- * dsh_spike_host.c — the M1 spike host shim, shared by every platform.
+ * dsh_spike_host.c — the M2 spike host shim, shared by every platform.
  *
  * Responsibilities (all in ONE thread, driven by the embedder):
  *   - unified-log sink: JS calls globalThis.__DSH_LOG_SINK__(jsonLine) and
  *     the host emits the canonical "dsh.spike.log: {...}" E2E line;
  *   - Web-API seams the vendored upstream package needs: crypto (getRandom-
  *     Values via the platform RNG) and btoa;
- *   - the gateway bridge per contract/ v1.0.0: negotiate "gateway@1",
- *     async primitive calls returned as promises the host settles on a
- *     LATER pump tick (proving the dispatch-onto-runtime-queue pattern),
- *     and the declared-unavailable conformance path (keychainGet);
+ *   - the REAL gateway bridge per contract/ v1.0.0: __dshGatewayCall hands
+ *     each call a monotonic call_id and dispatches it to the embedder
+ *     (multiple calls may be in flight); the embedder settles through
+ *     dsh_spike_gateway_settle and streams events through
+ *     dsh_spike_gateway_event — both RUNTIME-THREAD-ONLY (M1's canned
+ *     responses are gone: the host no longer invents gateway results);
  *   - an ESM loader over the spike bundle: "dsh:util-crypto" maps to the
  *     vendored package; everything else resolves bundle-root-relative.
  */
@@ -30,21 +32,31 @@ static const char *DSH_GATEWAY_VERSION = "gateway@1";
 static const char *DSH_PKG_CRYPTO = "dsh:util-crypto";
 static const char *DSH_PKG_CRYPTO_PATH = "vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js";
 
+/* One in-flight gateway call: the promise capability JS owns a reference to
+ * until the embedder settles it (or the runtime is torn down). */
+typedef struct dsh_pending_call {
+    int call_id;
+    JSValue resolve;
+    JSValue reject;
+} dsh_pending_call;
+
 typedef struct dsh_spike {
     JSRuntime *rt;
     JSContext *ctx;
     dsh_spike_sink sink;
     void (*bus)(void *ud, const char *line);
     void *bus_ud;
+    dsh_spike_gateway_fn gateway;
+    void *gateway_ud;
+    char *descriptor;
+    int next_call_id;
+    dsh_pending_call *pending;
+    int pending_count;
+    int pending_cap;
     char base[512];
     char err[DSH_ERR_MAX];
     int completed;
     int passed;
-    /* one in-flight gateway call at a time is all the spike scenario needs */
-    int has_pending;
-    char pending_name[64];
-    JSValue pending_resolve;
-    JSValue pending_reject;
 } dsh_spike_t;
 
 static void dsh_seterr(dsh_spike_t *s, const char *fmt, const char *arg) {
@@ -145,29 +157,104 @@ static JSValue js_gateway_negotiate(JSContext *ctx, JSValueConst this_val,
     return JS_NewBool(ctx, ok);
 }
 
+/* ---- gateway bridge ----------------------------------------------------- */
+
+static int dsh_pending_add(dsh_spike_t *s, int call_id, JSValue resolve,
+                           JSValue reject) {
+    if (s->pending_count == s->pending_cap) {
+        int cap = s->pending_cap > 0 ? s->pending_cap * 2 : 8;
+        dsh_pending_call *grown =
+            realloc(s->pending, (size_t)cap * sizeof(dsh_pending_call));
+        if (!grown) return -1;
+        s->pending = grown;
+        s->pending_cap = cap;
+    }
+    s->pending[s->pending_count++] =
+        (dsh_pending_call){ call_id, resolve, reject };
+    return 0;
+}
+
+/* Remove + return the entry for call_id, or 0 when absent (unknown or
+ * already-settled ids fail loud at the settle call site). */
+static int dsh_pending_take(dsh_spike_t *s, int call_id,
+                            dsh_pending_call *out) {
+    for (int i = 0; i < s->pending_count; i++) {
+        if (s->pending[i].call_id == call_id) {
+            *out = s->pending[i];
+            s->pending[i] = s->pending[s->pending_count - 1];
+            s->pending_count--;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* JS → host dispatch: assign a call_id, park the promise capability, and
+ * hand (call_id, name, args_json) to the embedder synchronously — it hops
+ * the work off the runtime thread from there. */
 static JSValue js_gateway_call(JSContext *ctx, JSValueConst this_val,
                                int argc, JSValueConst *argv) {
     (void)this_val;
     dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
-    if (argc < 1) return JS_ThrowTypeError(ctx, "gateway call needs a name");
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "gateway call needs (name, argsJson)");
+    }
+    if (!s->gateway) {
+        return JS_ThrowInternalError(ctx, "no gateway dispatch registered");
+    }
     const char *name = JS_ToCString(ctx, argv[0]);
-    if (!name) return JS_EXCEPTION;
-    if (s->has_pending) {
+    const char *args = JS_ToCString(ctx, argv[1]);
+    if (!name || !args) {
         JS_FreeCString(ctx, name);
-        return JS_ThrowInternalError(ctx, "gateway bridge is single-call in the spike");
+        JS_FreeCString(ctx, args);
+        return JS_EXCEPTION;
     }
     JSValue funcs[2];
     JSValue promise = JS_NewPromiseCapability(ctx, funcs);
     if (JS_IsException(promise)) {
         JS_FreeCString(ctx, name);
+        JS_FreeCString(ctx, args);
         return JS_EXCEPTION;
     }
-    snprintf(s->pending_name, sizeof(s->pending_name), "%s", name);
-    s->pending_resolve = funcs[0];
-    s->pending_reject = funcs[1];
-    s->has_pending = 1;
+    int call_id = ++s->next_call_id;
+    if (dsh_pending_add(s, call_id, funcs[0], funcs[1]) != 0) {
+        JS_FreeValue(ctx, funcs[0]);
+        JS_FreeValue(ctx, funcs[1]);
+        JS_FreeCString(ctx, name);
+        JS_FreeCString(ctx, args);
+        return JS_ThrowOutOfMemory(ctx);
+    }
+    s->gateway(s->gateway_ud, call_id, name, args);
     JS_FreeCString(ctx, name);
+    JS_FreeCString(ctx, args);
     return promise;
+}
+
+/* JS → host abort: no promise of its own — the embedder matches the
+ * in-flight call (by the callId inside args_json) and cancels it. */
+static JSValue js_gateway_abort(JSContext *ctx, JSValueConst this_val,
+                                int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    if (!s->gateway) {
+        return JS_ThrowInternalError(ctx, "no gateway dispatch registered");
+    }
+    int32_t target = 0;
+    if (argc < 1 || JS_ToInt32(ctx, &target, argv[0]) != 0) {
+        return JS_ThrowTypeError(ctx, "gateway abort needs a call id");
+    }
+    char args[32];
+    snprintf(args, sizeof(args), "{\"callId\":%d}", (int)target);
+    s->gateway(s->gateway_ud, 0, "httpFetch.abort", args);
+    return JS_UNDEFINED;
+}
+
+/* Descriptor accessor: the stored JSON verbatim, or "null" when never set. */
+static JSValue js_gateway_descriptor(JSContext *ctx, JSValueConst this_val,
+                                     int argc, JSValueConst *argv) {
+    (void)this_val; (void)argc; (void)argv;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    return JS_NewString(ctx, s->descriptor ? s->descriptor : "null");
 }
 
 static JSValue js_complete(JSContext *ctx, JSValueConst this_val,
@@ -201,58 +288,52 @@ static JSValue js_btoa(JSContext *ctx, JSValueConst this_val,
     size_t len = 0;
     const char *in = JS_ToCStringLen(ctx, &len, argv[0]);
     if (!in) return JS_EXCEPTION;
-    /* The spike only feeds btoa ASCII byte strings; UTF-8 re-encoding of
-     * code points >127 is out of scope until a real Web-API shim lands. */
-    size_t out_len = ((len + 2) / 3) * 4;
+    /* JS_ToCStringLen hands back UTF-8, but btoa's contract is latin-1:
+     * upstream bytesToBase64 feeds char codes 0..255 (String.fromCharCode of
+     * raw bytes), so decode the UTF-8 back to those codes — 1-byte sequences
+     * cover 0x00..0x7F, 2-byte sequences 0x80..0xFF; anything wider is a
+     * caller contract violation and fails loud. */
+    unsigned char *bin = js_malloc(ctx, len + 1);
+    if (!bin) { JS_FreeCString(ctx, in); return JS_EXCEPTION; }
+    size_t n = 0;
+    for (size_t i = 0; i < len;) {
+        unsigned char c = (unsigned char)in[i];
+        if (c < 0x80) {
+            bin[n++] = c;
+            i += 1;
+        } else if ((c & 0xE0) == 0xC0 && i + 1 < len &&
+                   ((unsigned char)in[i + 1] & 0xC0) == 0x80) {
+            bin[n++] = (unsigned char)(((c & 0x1F) << 6) | (in[i + 1] & 0x3F));
+            i += 2;
+        } else {
+            js_free(ctx, bin);
+            JS_FreeCString(ctx, in);
+            return JS_ThrowTypeError(ctx, "btoa input must be latin-1 (bytes 0..255)");
+        }
+    }
+    JS_FreeCString(ctx, in);
+    size_t out_len = ((n + 2) / 3) * 4;
     char *out = js_malloc(ctx, out_len + 1);
-    if (!out) { JS_FreeCString(ctx, in); return JS_EXCEPTION; }
+    if (!out) { js_free(ctx, bin); return JS_EXCEPTION; }
     size_t o = 0;
-    for (size_t i = 0; i < len; i += 3) {
-        unsigned b0 = (unsigned char)in[i];
-        unsigned b1 = i + 1 < len ? (unsigned char)in[i + 1] : 0;
-        unsigned b2 = i + 2 < len ? (unsigned char)in[i + 2] : 0;
+    for (size_t i = 0; i < n; i += 3) {
+        unsigned rem = (unsigned)(n - i);
+        unsigned b0 = bin[i];
+        unsigned b1 = i + 1 < n ? bin[i + 1] : 0;
+        unsigned b2 = i + 2 < n ? bin[i + 2] : 0;
         out[o++] = B64_TABLE[b0 >> 2];
         out[o++] = B64_TABLE[((b0 & 3) << 4) | (b1 >> 4)];
-        out[o++] = i + 1 < len ? B64_TABLE[((b1 & 15) << 2) | (b2 >> 6)] : '=';
-        out[o++] = i + 2 < len ? B64_TABLE[b2 & 63] : '=';
+        out[o++] = rem > 1 ? B64_TABLE[((b1 & 15) << 2) | (b2 >> 6)] : '=';
+        out[o++] = rem > 2 ? B64_TABLE[b2 & 63] : '=';
     }
     out[o] = 0;
-    JS_FreeCString(ctx, in);
+    js_free(ctx, bin);
     JSValue res = JS_NewString(ctx, out);
     js_free(ctx, out);
     return res;
 }
 
-/* ---- gateway canned responses (settled on a LATER pump tick) ------------ */
-
-static void dsh_settle_pending(dsh_spike_t *s) {
-    JSValue payload = JS_NewObject(s->ctx);
-    int reject = 0;
-    if (strcmp(s->pending_name, "fsRead") == 0) {
-        JS_SetPropertyStr(s->ctx, payload, "bytes", JS_NewInt32(s->ctx, 17));
-        JS_SetPropertyStr(s->ctx, payload, "text",
-                          JS_NewString(s->ctx, "hello from host"));
-    } else if (strcmp(s->pending_name, "keychainGet") == 0) {
-        reject = 1;
-        JS_SetPropertyStr(s->ctx, payload, "code",
-                          JS_NewString(s->ctx, "unavailable"));
-        JS_SetPropertyStr(s->ctx, payload, "message",
-                          JS_NewString(s->ctx, "keychain is not available on this platform"));
-    } else {
-        reject = 1;
-        JS_SetPropertyStr(s->ctx, payload, "code", JS_NewString(s->ctx, "unknown"));
-        JS_SetPropertyStr(s->ctx, payload, "message",
-                          JS_NewString(s->ctx, "no canned response for this primitive"));
-    }
-    JSValue fn = reject ? s->pending_reject : s->pending_resolve;
-    JS_Call(s->ctx, fn, JS_UNDEFINED, 1, &payload);
-    JS_FreeValue(s->ctx, payload);
-    JS_FreeValue(s->ctx, s->pending_resolve);
-    JS_FreeValue(s->ctx, s->pending_reject);
-    s->pending_resolve = JS_UNDEFINED;
-    s->pending_reject = JS_UNDEFINED;
-    s->has_pending = 0;
-}
+/* ---- exception bookkeeping ---------------------------------------------- */
 
 static void dsh_record_exception(dsh_spike_t *s) {
     JSValue exc = JS_GetException(s->ctx);
@@ -272,6 +353,25 @@ static void dsh_record_exception(dsh_spike_t *s) {
         JS_FreeValue(s->ctx, stacked);
     }
     JS_FreeValue(s->ctx, exc);
+}
+
+/* Drain the microtasks a delivery spun up (shared by bus_deliver, gateway
+ * settle and gateway event). 0 quiescent, -1 exception. */
+static int dsh_drain_jobs(dsh_spike_t *s) {
+    int guard = 0;
+    for (;;) {
+        JSContext *jctx = NULL;
+        int r = JS_ExecutePendingJob(s->rt, &jctx);
+        if (r < 0 || JS_HasException(s->ctx)) {
+            dsh_record_exception(s);
+            return -1;
+        }
+        if (r == 0) return 0;
+        if (++guard > DSH_PUMP_GUARD) {
+            dsh_seterr(s, "%s", "drain guard exceeded — runaway microtask loop");
+            return -1;
+        }
+    }
 }
 
 /* ---- ESM loader --------------------------------------------------------- */
@@ -373,6 +473,10 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_gateway_negotiate, "__dshGatewayNegotiate", 1));
     JS_SetPropertyStr(ctx, global, "__dshGatewayCall",
                       JS_NewCFunction(ctx, js_gateway_call, "__dshGatewayCall", 2));
+    JS_SetPropertyStr(ctx, global, "__dshGatewayAbort",
+                      JS_NewCFunction(ctx, js_gateway_abort, "__dshGatewayAbort", 1));
+    JS_SetPropertyStr(ctx, global, "__dshGatewayDescriptor",
+                      JS_NewCFunction(ctx, js_gateway_descriptor, "__dshGatewayDescriptor", 0));
     JS_SetPropertyStr(ctx, global, "__dshComplete",
                       JS_NewCFunction(ctx, js_complete, "__dshComplete", 2));
     JSValue btoa_fn = JS_NewCFunction(ctx, js_btoa, "btoa", 1);
@@ -390,8 +494,6 @@ dsh_spike_t *dsh_spike_new(const char *bundle_root, const dsh_spike_sink *sink) 
     if (!s) return NULL;
     s->sink = *sink;
     snprintf(s->base, sizeof(s->base), "%s", bundle_root);
-    s->pending_resolve = JS_UNDEFINED;
-    s->pending_reject = JS_UNDEFINED;
     s->rt = JS_NewRuntime();
     if (!s->rt) { free(s); return NULL; }
     JS_SetRuntimeOpaque(s->rt, s);
@@ -426,17 +528,7 @@ int dsh_spike_pump(dsh_spike_t *s) {
             dsh_record_exception(s);
             return -1;
         }
-        if (r == 0) {
-            if (s->has_pending) {
-                dsh_settle_pending(s);
-                if (JS_HasException(s->ctx)) {
-                    dsh_record_exception(s);
-                    return -1;
-                }
-                continue; /* settling queued new microtasks */
-            }
-            return 0; /* quiescent */
-        }
+        if (r == 0) return 0; /* quiescent — settle/event resume the runtime */
         if (++guard > DSH_PUMP_GUARD) {
             dsh_seterr(s, "%s", "pump guard exceeded — runaway microtask loop");
             return -1;
@@ -445,6 +537,75 @@ int dsh_spike_pump(dsh_spike_t *s) {
 }
 
 int dsh_spike_complete(const dsh_spike_t *s) { return s ? s->completed : 0; }
+
+void dsh_spike_set_gateway_dispatch(dsh_spike_t *s, dsh_spike_gateway_fn on_call,
+                                    void *ud) {
+    if (!s) return;
+    s->gateway = on_call;
+    s->gateway_ud = ud;
+}
+
+void dsh_spike_set_descriptor(dsh_spike_t *s, const char *descriptor_json) {
+    if (!s) return;
+    free(s->descriptor);
+    s->descriptor = descriptor_json ? strdup(descriptor_json) : NULL;
+}
+
+int dsh_spike_gateway_settle(dsh_spike_t *s, int call_id, int ok,
+                             const char *payload_json) {
+    if (!s || !payload_json) return -1;
+    dsh_pending_call pc;
+    if (!dsh_pending_take(s, call_id, &pc)) {
+        snprintf(s->err, sizeof(s->err), "gateway settle: no in-flight call %d",
+                 call_id);
+        return -1; /* unknown or already-settled id — fail loud */
+    }
+    size_t len = strlen(payload_json);
+    JSValue payload = JS_ParseJSON(s->ctx, payload_json, len, "<gateway>");
+    if (JS_IsException(payload)) {
+        dsh_record_exception(s);
+        return -1;
+    }
+    JSValue fn = ok ? pc.resolve : pc.reject;
+    JSValue res = JS_Call(s->ctx, fn, JS_UNDEFINED, 1, &payload);
+    JS_FreeValue(s->ctx, payload);
+    JS_FreeValue(s->ctx, pc.resolve);
+    JS_FreeValue(s->ctx, pc.reject);
+    if (JS_IsException(res)) {
+        JS_FreeValue(s->ctx, res);
+        dsh_record_exception(s);
+        return -1;
+    }
+    JS_FreeValue(s->ctx, res);
+    return dsh_drain_jobs(s);
+}
+
+int dsh_spike_gateway_event(dsh_spike_t *s, const char *event_json) {
+    if (!s || !event_json) return -1;
+    JSValue global = JS_GetGlobalObject(s->ctx);
+    JSValue handler = JS_GetPropertyStr(s->ctx, global, "__dshGatewayOnEvent");
+    JS_FreeValue(s->ctx, global);
+    if (JS_IsUndefined(handler)) {
+        JS_FreeValue(s->ctx, handler);
+        return 0; /* scenario not subscribed yet: drop, mirroring bus_deliver */
+    }
+    JSValue arg = JS_NewString(s->ctx, event_json);
+    if (JS_IsException(arg)) {
+        JS_FreeValue(s->ctx, handler);
+        dsh_record_exception(s);
+        return -1;
+    }
+    JSValue res = JS_Call(s->ctx, handler, JS_UNDEFINED, 1, &arg);
+    JS_FreeValue(s->ctx, arg);
+    JS_FreeValue(s->ctx, handler);
+    if (JS_IsException(res)) {
+        JS_FreeValue(s->ctx, res);
+        dsh_record_exception(s);
+        return -1;
+    }
+    JS_FreeValue(s->ctx, res);
+    return dsh_drain_jobs(s);
+}
 
 void dsh_spike_set_bus_sink(dsh_spike_t *s,
                             void (*on_bus)(void *ud, const char *line),
@@ -478,20 +639,7 @@ int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line) {
         return -1;
     }
     JS_FreeValue(s->ctx, res);
-    int guard = 0;
-    for (;;) { /* drain the microtasks the handler spun up */
-        JSContext *jctx = NULL;
-        int r = JS_ExecutePendingJob(s->rt, &jctx);
-        if (r < 0 || JS_HasException(s->ctx)) {
-            dsh_record_exception(s);
-            return -1;
-        }
-        if (r == 0) return 0;
-        if (++guard > DSH_PUMP_GUARD) {
-            dsh_seterr(s, "%s", "bus deliver drain guard exceeded");
-            return -1;
-        }
-    }
+    return dsh_drain_jobs(s);
 }
 
 int dsh_spike_pass(const dsh_spike_t *s) { return s ? s->passed : 0; }
@@ -501,10 +649,14 @@ const char *dsh_spike_error(const dsh_spike_t *s) { return s ? s->err : ""; }
 void dsh_spike_free(dsh_spike_t *s) {
     if (!s) return;
     if (s->ctx) {
-        JS_FreeValue(s->ctx, s->pending_resolve);
-        JS_FreeValue(s->ctx, s->pending_reject);
+        for (int i = 0; i < s->pending_count; i++) {
+            JS_FreeValue(s->ctx, s->pending[i].resolve);
+            JS_FreeValue(s->ctx, s->pending[i].reject);
+        }
         JS_FreeContext(s->ctx);
     }
     if (s->rt) JS_FreeRuntime(s->rt);
+    free(s->pending);
+    free(s->descriptor);
     free(s);
 }
