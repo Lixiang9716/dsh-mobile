@@ -32,6 +32,7 @@ message(STATUS "dsh spike: ${DSH_ENSURE_OUT}${DSH_ENSURE_ERR}")
 
 add_library(spike SHARED
   napi_init.cpp
+  gateway_smoke.cpp
   ${SPIKE_ROOT}/host/dsh_spike_host.c
   ${QJS_DIR}/dtoa.c
   ${QJS_DIR}/libregexp.c
