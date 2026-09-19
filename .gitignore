@@ -39,3 +39,4 @@ tmp/
 
 # Python
 __pycache__/
+.gov/tasks/.new.lock
