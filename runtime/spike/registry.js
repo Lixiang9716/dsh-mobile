@@ -39,9 +39,19 @@ export function createRegistry() {
     services.set(name, impl);
   };
 
+  /** Resolved service reference — unknown names abort (fail loud). */
+  const service = (name) => {
+    log.debug('service lookup', { name });
+    const impl = services.get(name);
+    if (!impl) throw new Error(`service not installed: ${name}`);
+    return impl;
+  };
+
   return {
     register,
-    /** Install one plugin {manifest, module}; activate hook may register. */
+    /** Install one plugin {manifest, module}; activate hook may register.
+     * The context carries `service` so an activating plugin can resolve
+     * already-installed services (fail loud on unknown names). */
     install({ manifest, module }) {
       log.debug('install', { id: manifest?.id });
       const problem = manifestProblem(manifest);
@@ -49,16 +59,10 @@ export function createRegistry() {
       const hook = manifest.hooks?.activate ?? 'activate';
       const fn = module[hook];
       if (typeof fn !== 'function') throw new Error(`activate hook missing: ${manifest.id}`);
-      fn({ register, manifest });
+      fn({ register, manifest, service });
       ids.push(manifest.id);
     },
-    /** Resolved service reference — unknown names abort (fail loud). */
-    service(name) {
-      log.debug('service lookup', { name });
-      const impl = services.get(name);
-      if (!impl) throw new Error(`service not installed: ${name}`);
-      return impl;
-    },
+    service,
     /** Installed plugin ids, in install order. */
     pluginIds: () => ids.slice(),
   };

@@ -1,0 +1,23 @@
+{
+  "title": "M3: plugin install pipeline (PR-A) + UI pluggability (PR-B)",
+  "created": "2026-09-19T22:59:23+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "PR-A: sha256 + ustar + install-pipeline over gateway fs",
+    "PR-A: m3.install scenario green on macOS CLI + checker manifest",
+    "PR-A: evidence artifacts + README sections + agent note + green gov run + PR open",
+    "PR-B: web-client-mini variant + config-selected mount flip (client.selected)",
+    "PR-B: toolbar slot registration via bus with page ack (slot.registered)",
+    "PR-B: m3.ui-swap on-device green + regression run-ios.sh 4/4 + run-ios-session.sh green",
+    "PR-B: status docs (README/zh/ARCHITECTURE) + agent note + green gov run + PR open"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0009"
+}
