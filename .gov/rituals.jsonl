@@ -4,3 +4,4 @@
 {"caller": "lixiang@lixiangdeMacBook-Air.local", "files": [".gov/rejections/README.md", ".gov/rules.md", "gates.json"], "ritual": "seal-rebaseline", "ts": "2026-09-18T05:10:56+00:00", "unattended": true}
 {"caller": "lixiang@lixiangdeMacBook-Air.local", "files": [".gov/rejections/README.md", ".gov/rules.md", "gates.json"], "ritual": "seal-rebaseline", "ts": "2026-09-18T05:12:21+00:00", "unattended": true}
 {"caller": "lixiang@lixiangdeMacBook-Air.local", "files": [".gov/rejections/README.md", ".gov/rules.md", "gates.json"], "ritual": "seal-rebaseline", "ts": "2026-09-19T08:45:58+00:00", "unattended": true}
+{"caller": "lixiang@lixiangdeMacBook-Air.local", "files": [".gov/rejections/README.md", ".gov/rules.md", "gates.json"], "reason": "gov update --apply migration (0.45.0 -> 0.47.1)", "ritual": "seal-rebaseline", "ts": "2026-09-19T11:38:10+00:00", "unattended": true}

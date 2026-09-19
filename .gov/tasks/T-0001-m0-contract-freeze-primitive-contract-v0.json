@@ -17,7 +17,12 @@
     "agent note + bilingual pairing records",
     "gates green on PR, squash-merged to main"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0001"
+  "id": "T-0001",
+  "void": {
+    "ts": "2026-09-19T11:40:09+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete and merged (dsh-mobile PR #17, squash de4c72b): contract/ frozen at v1.0.0, all 7 checklist items verified. Could not exit as done: under 0.45.0 close was structurally impossible (#323); under 0.47.1 close ran green but its receipt was rejected by _check_receipt's NON_RUN handling (govrail #329 \u2014 writer/reader disagreement), and this plane's rules adoption (0.47.1 template) then staled the pin. Retired as void with the recorded exit; the audit trail is PR #17 + this card's history."
+  }
 }
