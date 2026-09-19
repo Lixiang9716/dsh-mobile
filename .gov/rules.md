@@ -110,3 +110,17 @@ the process, not the person, needs to change. (Escalating that
 threshold into a blocking gate is the adopting project's wiring
 choice; govrail's own plane runs one.) Recording never blocks on the
 threshold — data first, verdict wherever the project enforces it.
+
+## 12. Completing a phase of work updates every status document
+
+A phase of work is complete only when every document that records its
+state agrees. The PR that completes a phase — a milestone delivered, a
+contract frozen, a work stream closed — carries, in the same change,
+the updates to every status surface it touches: the README milestone
+table, architecture milestones, roadmap or plan files, and the task
+cards that tracked the work. A reader opening any status document after
+the merge must see the new state, not the previous one; a status flip
+that trails the work is a second change someone has to remember, and
+remembered changes rot — this rule exists because one did. Drift found
+later is still fixed, but as its own immediate corrective change, not
+deferred to whatever PR next touches the file.
