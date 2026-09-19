@@ -97,3 +97,8 @@ node tools/e2e/check.mjs \
     --log /tmp/dsh-spike-logs.txt \
     --out /tmp/dsh-spike-verdict-m2.json
 cat /tmp/dsh-spike-verdict-m2.json
+node tools/e2e/check.mjs \
+    --manifest tools/e2e/scenarios/m2-session.json \
+    --log /tmp/dsh-spike-logs.txt \
+    --out /tmp/dsh-spike-verdict-session.json
+cat /tmp/dsh-spike-verdict-session.json

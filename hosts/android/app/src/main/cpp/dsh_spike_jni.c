@@ -40,6 +40,8 @@ static const dsh_scenario DSH_SCENARIOS[] = {
          "spike-capture-m1-spike-boot.log"},
         {"m2.bridge.smoke", "scenario/m2-bridge-smoke.js",
          "spike-capture-m2-bridge-smoke.log"},
+        {"m2.session", "scenario/m2-session.js",
+         "spike-capture-m2-session.log"},
 };
 
 static void dsh_sink_log(void *ud, const char *line) {

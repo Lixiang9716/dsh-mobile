@@ -5,17 +5,20 @@
   "quickjsTag": "v0.17.0",
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
   "package": "com.dshmobile.spike",
-  "scenarios": ["m1.spike.boot", "m2.bridge.smoke"],
+  "scenarios": [
+    "m1.spike.boot",
+    "m2.bridge.smoke"
+  ],
   "exitStatus": 0,
-  "exitStatusNote": "Per-scenario JNI verdict PASS (dsh_spike_complete && dsh_spike_pass, one fresh runtime per scenario in one launch); the app process stays resident. Both checker exits 0: m1.spike.boot 7/7, m2.bridge.smoke 6/6.",
+  "exitStatusNote": "Per-scenario JNI verdict PASS (dsh_spike_complete && dsh_spike_pass, one fresh runtime per scenario in one launch); the app process stays resident. All three checker exits 0: m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22. Asset copies byte-identical to the post-#32 canonicals (cmp-verified).",
   "verdictLines": [
     "m1.spike.boot PASS | quickjs-ng 0.17.0",
     "m2.bridge.smoke PASS | quickjs-ng 0.17.0",
     "ALL PASS"
   ],
-  "runtimeThread": "HandlerThread 'dsh-spike-js' (logcat pid 2085 tid 2107 — not the UI thread)",
+  "runtimeThread": "HandlerThread 'dsh-spike-js' (logcat pid 2656 tid 2677 \u2014 not the UI thread)",
   "logSource": "adb logcat -d -s dsh.spike; second capture: per-scenario filesDir/spike-capture-<scenario>.log pulled via run-as (byte-identical modulo the logcat prefix); checkers ran on the concatenated pulled captures",
   "gatewayBridge": "dsh_spike_smoke.c mirrors main_cli.c's smoke backend: fsRead/fsWrite on filesDir/smoke-fs as scope 'app' (deferred post-pump settlement), fsScope canned, the six descriptor-unavailable primitives rejected code 'unavailable', unknown primitives 'invalid'; descriptor identical to the CLI's",
-  "assetsProvenance": "app/src/main/assets/spike/{gateway.js,scenario/m2-bridge-smoke.js,scenario/m1-spike-boot.js,logger.js,vendor/dsh/util-crypto@0.1.6-alpha.1} are byte-identical (cmp-verified at authoring time) copies of runtime/spike/ — no drift-check tool exists in-repo yet (gap noted in the M4 agent note)",
-  "timestamp": "2026-09-20T05:49:29+08:00"
+  "assetsProvenance": "app/src/main/assets/spike/{gateway.js,scenario/m2-bridge-smoke.js,scenario/m1-spike-boot.js,logger.js,vendor/dsh/util-crypto@0.1.6-alpha.1} are byte-identical (cmp-verified at authoring time) copies of runtime/spike/ \u2014 no drift-check tool exists in-repo yet (gap noted in the M4 agent note)",
+  "timestamp": "2026-09-20T07:25:25+08:00"
 }
