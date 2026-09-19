@@ -41,6 +41,9 @@ targets:
           - Tools/gen_bundle_header.py
           - ../../runtime/spike/logger.js
           - ../../runtime/spike/scenario/m1-spike-boot.js
+          - ../../runtime/spike/scenario/m1-carrier-loopback.js
+          - ../../runtime/spike/web/index.html
+          - ../../runtime/spike/web/carrier-page.js
           - ../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js
         outputFiles:
           - App/Generated/SpikeBundle.h
@@ -52,6 +55,8 @@ targets:
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike

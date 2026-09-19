@@ -1,0 +1,26 @@
+{
+  "title": "M1 local carrier spike: loopback static+WS carrier pumping WS<->QuickJS, verified on the iOS simulator",
+  "created": "2026-09-19T15:18:35+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "runtime/spike: C host bus seam (__dshBusPost / dsh_spike_bus_deliver), m1.carrier.loopback scenario, spike web page (index.html + carrier-page.js)",
+    "hosts/ios: NWListener static+WS carrier server, bus pump runtime, app wiring, embedded bundle, project regen",
+    "simulator E2E on dsh-iphone: build + run + capture; checker PASS for m1.spike.boot AND m1.carrier.loopback",
+    "evidence under hosts/ios/artifacts/m1-carrier; dev-ios.yml runs the carrier checker",
+    "README/README.zh M1 -> Done + verify-pairing; agent note; task card exit"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0004",
+  "void": {
+    "ts": "2026-09-19T15:58:42+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "The M1 local-carrier spike this card tracks landed via dsh-mobile PR (loopback static+WS carrier, m1.carrier.loopback PASS 7/7 + m1.spike.boot PASS 9/9 on the dsh-iphone simulator, evidence in hosts/ios/artifacts/m1-carrier/). Receipt-closure remains unexitable upstream (#329: _check_receipt demands all-PASS while close excludes NON_RUN), so the card exits as voided with the work verifiably on the branch \u2014 same resolution as T-0001/T-0002."
+  }
+}

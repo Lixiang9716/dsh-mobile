@@ -7,85 +7,83 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0616B51B9FF02B77E9C3FB0C /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 720EAC5E7CB3B915D44BA559 /* libunicode.c */; };
+		0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */; };
 		13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */ = {isa = PBXBuildFile; fileRef = 09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */; };
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
-		33A51A43A6A62C388B17A186 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = DC3569AF41FEB55EFE62C411 /* quickjs.c */; };
-		45E4B5FC6F22DD5EC0A47074 /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */; };
-		70393F00D526CAF3671D86A5 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = E567ADECE3014374A7FA3B0D /* libregexp.c */; };
+		573579F6F12471E4424B727A /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 40F1780B39D9032EE9BB32BC /* libunicode.c */; };
+		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
+		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
 		A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DD761A8299F885CFFFBF71 /* AppDelegate.swift */; };
-		B0CB5152F0B11C21A8CA1B3F /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6FE73A102ECF285B86929E6F /* dsh_spike_host.c */; };
+		AD11658A84414177D0FCCB8D /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EC9F5F6929C9D36E65D032D /* dtoa.c */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
+		E42F06323D11206F2C413149 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C1AD386700DAC0A6BB463CE /* libregexp.c */; };
+		EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpikeBundle.c; sourceTree = "<group>"; };
 		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
+		1C1AD386700DAC0A6BB463CE /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
+		40F1780B39D9032EE9BB32BC /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
-		6FE73A102ECF285B86929E6F /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
-		720EAC5E7CB3B915D44BA559 /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
+		6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
 		74DD761A8299F885CFFFBF71 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRuntime.swift; sourceTree = "<group>"; };
+		7EC9F5F6929C9D36E65D032D /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
-		DC3569AF41FEB55EFE62C411 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
-		E567ADECE3014374A7FA3B0D /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
-		F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
+		E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierServer.swift; sourceTree = "<group>"; };
+		FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		18BCF6D2637A0604C13D003A /* runtime */ = {
+			isa = PBXGroup;
+			children = (
+				A5B60BF5C6260FCBD4137563 /* spike */,
+			);
+			path = runtime;
+			sourceTree = "<group>";
+		};
+		246E2CA954878CE8897E2C83 /* dsh-mobile */ = {
+			isa = PBXGroup;
+			children = (
+				18BCF6D2637A0604C13D003A /* runtime */,
+			);
+			name = "dsh-mobile";
+			path = ../..;
+			sourceTree = "<group>";
+		};
 		261210B6C944DA738F7FBC65 /* Source */ = {
 			isa = PBXGroup;
 			children = (
 				74DD761A8299F885CFFFBF71 /* AppDelegate.swift */,
 				6A1382ABE6EDFB24119B9EEE /* Bridge.h */,
+				79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */,
+				E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
 				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
 			);
 			path = Source;
 			sourceTree = "<group>";
 		};
-		2C20714AAAD4C0DFFEFE2EFD /* host */ = {
-			isa = PBXGroup;
-			children = (
-				6FE73A102ECF285B86929E6F /* dsh_spike_host.c */,
-			);
-			path = host;
-			sourceTree = "<group>";
-		};
-		37198F0409A2A46638EFE82B /* vendor */ = {
-			isa = PBXGroup;
-			children = (
-				5AA455F0EAB7376AB3045ADF /* quickjs-ng */,
-			);
-			path = vendor;
-			sourceTree = "<group>";
-		};
-		5AA455F0EAB7376AB3045ADF /* quickjs-ng */ = {
-			isa = PBXGroup;
-			children = (
-				D6F018828089482961E3D35A /* 0.17.0 */,
-			);
-			path = "quickjs-ng";
-			sourceTree = "<group>";
-		};
-		63720D2B18C6F84F55630336 /* spike */ = {
-			isa = PBXGroup;
-			children = (
-				2C20714AAAD4C0DFFEFE2EFD /* host */,
-				37198F0409A2A46638EFE82B /* vendor */,
-			);
-			path = spike;
-			sourceTree = "<group>";
-		};
 		84F95FD6AADCA843676C4DF9 = {
 			isa = PBXGroup;
 			children = (
 				EAA4B75B2F1CFEF88CAB445B /* App */,
-				E95FED3BFBC71913067D2839 /* dsh-mobile-ios */,
+				246E2CA954878CE8897E2C83 /* dsh-mobile */,
 				AF09F1B8671210489366EA0F /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		978D35D8850CE0F9B67467A7 /* quickjs-ng */ = {
+			isa = PBXGroup;
+			children = (
+				D5E827790BA094B86B9650BE /* 0.17.0 */,
+			);
+			path = "quickjs-ng";
 			sourceTree = "<group>";
 		};
 		A551A48B835E92B60D8D2724 /* Generated */ = {
@@ -97,6 +95,15 @@
 			path = Generated;
 			sourceTree = "<group>";
 		};
+		A5B60BF5C6260FCBD4137563 /* spike */ = {
+			isa = PBXGroup;
+			children = (
+				B38A1FC5129B317D9437AF5C /* host */,
+				C479559F39BBD427C25F13B6 /* vendor */,
+			);
+			path = spike;
+			sourceTree = "<group>";
+		};
 		AF09F1B8671210489366EA0F /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -105,32 +112,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		D6F018828089482961E3D35A /* 0.17.0 */ = {
+		B38A1FC5129B317D9437AF5C /* host */ = {
 			isa = PBXGroup;
 			children = (
-				F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */,
-				E567ADECE3014374A7FA3B0D /* libregexp.c */,
-				720EAC5E7CB3B915D44BA559 /* libunicode.c */,
-				DC3569AF41FEB55EFE62C411 /* quickjs.c */,
+				6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */,
+			);
+			path = host;
+			sourceTree = "<group>";
+		};
+		C479559F39BBD427C25F13B6 /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				978D35D8850CE0F9B67467A7 /* quickjs-ng */,
+			);
+			path = vendor;
+			sourceTree = "<group>";
+		};
+		D5E827790BA094B86B9650BE /* 0.17.0 */ = {
+			isa = PBXGroup;
+			children = (
+				7EC9F5F6929C9D36E65D032D /* dtoa.c */,
+				1C1AD386700DAC0A6BB463CE /* libregexp.c */,
+				40F1780B39D9032EE9BB32BC /* libunicode.c */,
+				FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */,
 			);
 			path = 0.17.0;
-			sourceTree = "<group>";
-		};
-		E3532607880AC8B5CAD8C5C9 /* runtime */ = {
-			isa = PBXGroup;
-			children = (
-				63720D2B18C6F84F55630336 /* spike */,
-			);
-			path = runtime;
-			sourceTree = "<group>";
-		};
-		E95FED3BFBC71913067D2839 /* dsh-mobile-ios */ = {
-			isa = PBXGroup;
-			children = (
-				E3532607880AC8B5CAD8C5C9 /* runtime */,
-			);
-			name = "dsh-mobile-ios";
-			path = ../..;
 			sourceTree = "<group>";
 		};
 		EAA4B75B2F1CFEF88CAB445B /* App */ = {
@@ -206,6 +212,9 @@
 				Tools/gen_bundle_header.py,
 				../../runtime/spike/logger.js,
 				"../../runtime/spike/scenario/m1-spike-boot.js",
+				"../../runtime/spike/scenario/m1-carrier-loopback.js",
+				../../runtime/spike/web/index.html,
+				"../../runtime/spike/web/carrier-page.js",
 				"../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
 			);
 			name = GenerateSpikeBundle;
@@ -227,14 +236,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */,
+				8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */,
+				0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
 				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
 				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
-				B0CB5152F0B11C21A8CA1B3F /* dsh_spike_host.c in Sources */,
-				45E4B5FC6F22DD5EC0A47074 /* dtoa.c in Sources */,
-				70393F00D526CAF3671D86A5 /* libregexp.c in Sources */,
-				0616B51B9FF02B77E9C3FB0C /* libunicode.c in Sources */,
-				33A51A43A6A62C388B17A186 /* quickjs.c in Sources */,
+				7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */,
+				AD11658A84414177D0FCCB8D /* dtoa.c in Sources */,
+				E42F06323D11206F2C413149 /* libregexp.c in Sources */,
+				573579F6F12471E4424B727A /* libunicode.c in Sources */,
+				EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
