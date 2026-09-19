@@ -21,6 +21,7 @@ const log = createLogger('m1.carrier');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const post = (obj) => globalThis.__dshBusPost(JSON.stringify(obj));
 const fail = (reason) => {
+  log.debug('scenario failed', { reason });
   emit('scenario.failed', { reason });
   globalThis.__dshComplete(false, reason);
 };
