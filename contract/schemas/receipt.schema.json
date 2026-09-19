@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsh-mobile.dev/contract/schemas/receipt.schema.json",
+  "title": "DSH plugin install/remove receipt (receiptVersion 1)",
+  "description": "Append-only transaction journal record; the receipt write is the commit point. Spec: contract/data-protocols.md §4.",
+  "type": "object",
+  "required": ["receiptVersion", "action", "id", "version", "blobSha256", "treeSha256", "status", "previousVersion", "startedAt", "committedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "receiptVersion": { "const": 1 },
+    "action": { "enum": ["install", "remove"] },
+    "id": { "type": "string", "description": "Package id the transaction targets." },
+    "version": {
+      "type": ["string", "null"],
+      "description": "Package version installed (install) or removed (remove)."
+    },
+    "previousVersion": {
+      "type": ["string", "null"],
+      "description": "Version replaced by this transaction; null on fresh install."
+    },
+    "blobSha256": { "$ref": "#/$defs/sha256" },
+    "treeSha256": {
+      "type": ["string", "null"],
+      "description": "Digest of the installed integrity.json; null for remove and rolled-back installs."
+    },
+    "status": { "enum": ["pending", "committed", "rolled-back"] },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "committedAt": {
+      "type": ["string", "null"],
+      "description": "Commit instant; null while pending."
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}

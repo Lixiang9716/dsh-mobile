@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dsh-mobile.dev/contract/schemas/integrity.schema.json",
+  "title": "DSH plugin integrity ledger (ledgerVersion 1)",
+  "description": "Per-file digest ledger of an installed tree. Spec: contract/data-protocols.md §3.",
+  "type": "object",
+  "required": ["ledgerVersion", "algorithm", "manifestSha256", "files"],
+  "additionalProperties": false,
+  "properties": {
+    "ledgerVersion": { "const": 1 },
+    "algorithm": { "const": "sha256" },
+    "manifestSha256": { "$ref": "#/$defs/sha256" },
+    "files": {
+      "type": "object",
+      "description": "Package-root-relative path → lowercase hex digest. manifest.json must be present.",
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^(?!/)(?!.*(^|/)\\.\\.?(/|$)).+"
+      },
+      "additionalProperties": { "$ref": "#/$defs/sha256" },
+      "minProperties": 1
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    }
+  }
+}
