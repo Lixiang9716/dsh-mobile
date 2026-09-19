@@ -1,0 +1,16 @@
+dsh.gateway.audit: {"outcome":"ok","primitive":"fsWrite","caller":"dsh.spike.scenario","ts":"2026-09-19T21:02:01Z","verdict":"granted"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsRead"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"denied","verdict":"granted","primitive":"fsRead"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch.abort"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"presentPicker"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsScope.persist"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsScope.resolve"}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsRead"}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"presentApproval","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainSet"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainGet"}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"keychainSet","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainGet"}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"notify","caller":"dsh.spike.scenario"}

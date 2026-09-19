@@ -20,21 +20,23 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 # ---- live-calibration constants -------------------------------------------
-# Fallback TAP POINTS in points (idb taps take points; dsh-iphone is a
-# 402x874pt iPhone-16-class device). Every UI step first tries the
-# accessibility tree (idb ui describe-all); these are used when describe-all
-# errors (known iOS 26.5 issue) or the expected label is missing.
-# THE INTEGRATOR CALIBRATES THESE against art/screens/*.png after the first
-# live run — names say which surface each is for.
-PT_ALLOW=(201 470)             # notification permission alert: "Allow" button
-PT_APPROVE=(201 480)           # in-app approval dialog: "Approve" button
-PT_BANNER=(201 120)            # notification banner body (top of screen)
-SWIPE_PULL=(201 10 201 500)    # pull-down gesture when banner is collapsed
-PT_FILES_ONMYIPHONE=(201 350)  # Files: "On My iPhone" row
-PT_FILES_DSH=(201 350)         # Files: "DSHSpike" row
-PT_FILES_E2E=(201 350)         # Files: "gateway-e2e" folder row
-PT_FILES_NOTES=(201 350)       # Files: "notes.txt" row
-BANNER_LABEL=""                # set to the banner title once known; empty = coordinates
+# COORDINATE LAW (calibrated live on iOS 26.5 / 3x device, 2026-09-20): idb
+# tap/swipe coordinates are SCREENSHOT PIXELS / 2 — fb-idb assumes a 2x
+# Retina surface, so on a 3x device (1206x2622 px = 402x874 pt) every input
+# lands at 2/3 of the points you may have intended. Derive every constant
+# from a screenshot: (px_x/2, px_y/2). Verified: grid cells, chrome buttons,
+# the search field. `idb ui describe-all` is DEAD on this runtime (returns
+# one Application element; describe-point works but needs coordinates — the
+# oracle is circular), so constants are PRIMARY here; the describe-all label
+# path stays wired as the first choice for runtimes where it works.
+PT_ALLOW=(320 570)             # notification permission alert: 允许/Allow (px 641,1140 / 2)
+PT_APPROVE=(300 720)           # in-app approval dialog: "Approve" (check 03-*.png)
+PT_BANNER=(150 130)            # notification banner body (top of screen)
+SWIPE_PULL=(150 60 150 600)    # pull-down gesture when banner is collapsed
+PT_SEARCH=(201 126)           # Files search field center (pt)
+PT_FILES_TILE=(82 295)        # Files grid first tile / search result row (px 163,590 / 2)
+PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140 / 2); harmless on empty grid
+BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/m2-gateway"
@@ -60,12 +62,38 @@ die() { echo "run-ios: FAIL: $*" >&2; exit 1; }
 shot() { xcrun simctl io "$UDID" screenshot "$ART/screens/$1.png" >/dev/null 2>&1 && log "screenshot screens/$1.png" || true; }
 
 # ---- accessibility helpers -------------------------------------------------
+# strip_hash FILE: screenshot now, crop the banner strip (px y150..410 —
+# excludes the clock/dynamic island so the only change is a banner), md5 it.
+# The idb AX tree is dead on this runtime, so a visual diff IS the banner
+# detector; taps before the banner renders would hit springboard ICONS
+# (observed live: it launched the Watch app and its permission alert).
+strip_hash() { # out.png -> md5 on stdout, rc!=0 when screenshot fails
+  xcrun simctl io "$UDID" screenshot /tmp/.dsh-banner-raw.png >/dev/null 2>&1 || return 9
+  sips -c 260 1206 --cropOffset 150 0 /tmp/.dsh-banner-raw.png --out "$1" >/dev/null 2>&1 || return 9
+  md5 -q "$1" 2>/dev/null
+}
+
+# wait_sheet: the picker sheet presents late on a cold Files daemon; poll
+# the bottom-half strip hash until it turns over (sheet covers the app),
+# deadline 30s — taps before that land on the app console, not the sheet.
+wait_sheet() {
+  local b n deadline=$((SECONDS + 30))
+  b=$(strip_hash /tmp/.sheet-base.png) || return 9
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    n=$(strip_hash /tmp/.sheet-now.png) || { sleep 1; continue; }
+    [ "$n" != "$b" ] && return 0
+    sleep 1
+  done
+  echo "run-ios:   sheet never detected — continuing anyway" >&2
+  return 9
+}
+
 # ax_point LABEL: one describe-all probe; echoes "x y" (element center) when
 # LABEL is present, nothing otherwise. describe-all errors on some iOS 26.5
 # runtimes — any failure means "not found" and the caller falls back to the
 # calibration constants above.
 ax_point() {
-  idb ui describe-all --json >"$ART/.ax.json" 2>/dev/null || return 1
+  idb ui describe-all --udid "$UDID" --json >"$ART/.ax.json" 2>/dev/null || return 1
   python3 - "$1" "$ART/.ax.json" <<'PY'
 import json, sys
 label, path = sys.argv[1], sys.argv[2]
@@ -84,23 +112,19 @@ for e in els:
 PY
 }
 
-# ui_find LABEL FALLBACK_X FALLBACK_Y [TIMEOUT]: poll the AX tree for LABEL
-# (deadline-bounded); echoes a tap point — the element center, or the
-# calibration fallback when the label never shows up. Diagnostics go to
-# STDERR: callers capture stdout via command substitution.
+# ui_find LABEL FALLBACK_X FALLBACK_Y: ONE describe-all probe (the tree is
+# dead on iOS 26.5 — this returns instantly); echoes a tap point — the
+# element center when the label shows up, the calibration fallback otherwise.
 ui_find() {
-  local label="$1" fx="$2" fy="$3" timeout="${4:-3}" pt="" deadline=$((SECONDS + ${4:-3}))
-  while [ "$SECONDS" -lt "$deadline" ]; do
-    pt=$(ax_point "$label") && [ -n "$pt" ] && { echo "$pt"; return 0; }
-    sleep 1   # paces the AX-tree retry; presence asserted by ax_point
-  done
+  local label="$1" fx="$2" fy="$3" pt=""
+  pt=$(ax_point "$label") && [ -n "$pt" ] && { echo "$pt"; return 0; }
   echo "run-ios:   ax: '$label' not found — calibration fallback ($fx,$fy)" >&2
   echo "$fx $fy"
 }
 
 tap_label() { # LABEL FX FY [TIMEOUT]
   local x y; read -r x y <<<"$(ui_find "$1" "$2" "$3" "${4:-3}")"
-  log "tap '$1' at ($x,$y)"; idb ui tap "$x" "$y" >/dev/null
+  log "tap '$1' at ($x,$y)"; idb ui tap --udid "$UDID" "$x" "$y" >/dev/null
 }
 
 wait_line() { # PATTERN TIMEOUT_SECONDS — poll the log for a marker
@@ -119,32 +143,87 @@ fail_deadline() {
   exit 1
 }
 
+# ---- WDA (WebDriverAgent): the ONLY channel that reaches system UI --------
+# (permission alerts, notification banners — springboard-owned surfaces that
+# ignore idb HID injection entirely). Coordinates here are POINTS (402x874).
+WDA_PID=""
+wda_up() { curl -s localhost:8100/status 2>/dev/null | grep -q '"state":"success"'; }
+wda_bootstrap() {
+  if wda_up; then return 0; fi
+  log "bootstrapping WebDriverAgent (clone/build may take minutes on first run)"
+  [ -d "$HOME/dsh-e2e/wda" ] ||     git clone --depth 1 https://github.com/appium/WebDriverAgent.git "$HOME/dsh-e2e/wda" >/dev/null 2>&1
+  [ -d "$HOME/dsh-e2e/wda" ] || { echo "run-ios: WDA clone failed — system-UI legs will hang" >&2; return 9; }
+  [ -d "$HOME/dsh-e2e/wda-dd/Build/Products" ] ||     xcodebuild build-for-testing -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1
+  ( cd "$HOME/dsh-e2e/wda" && xcodebuild test-without-building -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1 ) &
+  WDA_PID=$!
+  local n=0
+  until wda_up; do n=$((n+1)); [ $n -gt 45 ] && return 9; sleep 2; done
+}
+wda_session() { curl -s -X POST localhost:8100/session -H 'Content-Type: application/json' -d '{"capabilities":{}}' | python3 -c "import json,sys; print(json.load(sys.stdin)['sessionId'])"; }
+# wda_tap X Y [DUR]: absolute coordinate press (points)
+wda_tap() { local x=$1 y=$2 d=${3:-0.1} sid; sid=$(wda_session);   curl -s -X POST "localhost:8100/session/$sid/wda/dragfromtoforduration" -H 'Content-Type: application/json'     -d "{\"fromX\":$x,\"fromY\":$y,\"toX\":$x,\"toY\":$y,\"duration\":$d}" >/dev/null; }
+# wda_click LABEL: find by accessibility label and click (works across app,
+# remote-view sheets AND system alerts — idb cannot reach any of those)
+wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json'     -d "{\"using\":\"xpath\",\"value\":\"//*[@label=\\\"$label\\\"]\"}"     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else (v[0]['ELEMENT'] if v else ''))" 2>/dev/null);   [ -n "$eid" ] && curl -s -X POST "localhost:8100/session/$sid/element/$eid/click" >/dev/null; }
+
 # ---- UI legs ---------------------------------------------------------------
-drive_banner() {
+drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually renders
   shot 02-notification-banner
-  local deadline=$((SECONDS + 20)) x y
-  log "driving notification banner (<=20s)"
+  local deadline=$((SECONDS + 25)) base now
+  log "driving notification banner (<=25s, top-strip hash diff)"
+  base=$(strip_hash /tmp/.banner-base.png) || base="none"
   while [ "$SECONDS" -lt "$deadline" ]; do
-    read -r x y <<<"$(ui_find "$BANNER_LABEL" "${PT_BANNER[@]}" 1)"
-    idb ui tap "$x" "$y" >/dev/null 2>&1 || true
-    if wait_line "notify.response" 3; then log "banner tap accepted"; return 0; fi
-    log "banner not hit — pull-down gesture, retry"
-    idb ui swipe "${SWIPE_PULL[@]}" >/dev/null 2>&1 || true
-    if wait_line "notify.response" 3; then return 0; fi
+    now=$(strip_hash /tmp/.banner-now.png) || { sleep 1; continue; }
+    if [ "$now" != "$base" ]; then
+      log "banner visible (strip changed) -> tap now"
+      # the banner lives ~6s; every cycle taps three positions back-to-back
+      # with no waits between them, one wait after the burst
+      wda_tap 100 87 0.15
+      wda_tap 133 100 0.15
+      wda_tap 100 117 0.15
+      if wait_line "notify.response" 2; then log "banner tap accepted"; return 0; fi
+    fi
+    sleep 0.5  # paces the poll; the 5s trigger is real wall-clock physics
+  done
+  # last resort: the banner expired into Notification Center — pull it down
+  log "banner not hit — pull-down gesture, retry"
+  idb ui swipe --udid "$UDID" 150 25 150 700 --duration 0.5 >/dev/null 2>&1 || true
+  sleep 1.5
+  shot 03-nc-pulldown
+  local row
+  for row in 240 320 400 480; do
+    idb ui tap --udid "$UDID" 150 "$row" --duration 0.15 >/dev/null 2>&1 || true
+    if wait_line "notify.response" 2; then log "NC row tap accepted"; return 0; fi
   done
   fail_deadline "notification banner never produced notify.response"
 }
 
-drive_picker() { # Files: On My iPhone -> DSHSpike -> gateway-e2e -> notes.txt
-  log "driving Files picker (4 hops)"
-  shot 04-picker-onmyiphone
-  tap_label "On My iPhone" "${PT_FILES_ONMYIPHONE[@]}" 5
-  shot 05-picker-dshspike
-  tap_label "DSHSpike" "${PT_FILES_DSH[@]}" 5
-  shot 06-picker-e2e-folder
-  tap_label "gateway-e2e" "${PT_FILES_E2E[@]}" 5
-  shot 07-picker-notes
-  tap_label "notes.txt" "${PT_FILES_NOTES[@]}" 5
+drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
+  # one gesture (verified live: sheet closes and the scenario proceeds) —
+  # plain zero-duration taps never select, and there is no separate 打开 to
+  # press on this runtime. The log marker ui-done picker is the verdict.
+  log "driving Files picker (wait sheet -> search -> duration-press result)"
+  shot 04-picker-sheet
+  wait_sheet || true   # cold Files daemon presents the sheet late — detect, don't race
+  sleep 5      # and its CONTENT loads a beat after the frame — early taps swallow
+  idb ui tap --udid "$UDID" "${PT_ALERT_DENY[@]}" >/dev/null 2>&1 || true  # stray system alert; no-op on empty grid
+  idb ui tap --udid "$UDID" "${PT_SEARCH[@]}" >/dev/null 2>&1 || true      # focus the search field
+  sleep 1
+  idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true               # filters to exactly one row
+  sleep 2
+  shot 05-picker-search
+  # the single result row sits right under the search field; a ~0.15s press
+  # selects AND confirms in one gesture (verified live earlier)
+  local i rc
+  for i in 1 2 3; do
+    idb ui tap --udid "$UDID" "${PT_FILES_TILE[@]}" --duration 0.15; rc=$?
+    log "tile press $i rc=$rc"
+    if wait_line "ui-done picker" 6; then
+      shot 06-picker-selected
+      return 0
+    fi
+    sleep 2
+  done
   shot 08-picker-done
 }
 
@@ -163,9 +242,23 @@ fi
 [ -d "$APP" ] || die "app bundle missing: $APP (build first or drop --skip-build)"
 
 log "3/6 boot + install"
+# Reboot (not erase): erase loses the Files remembered picker location and
+# the notification authorization, both of which the in-run choreography
+# needs; a reboot clears transient daemons and is fast.
+xcrun simctl shutdown "$UDID" 2>/dev/null || true
 xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
 xcrun simctl bootstatus "$UDID" -b
+sleep 5   # let springboard settle before the provider indexes the container
 xcrun simctl install "$UDID" "$APP"
+
+# Pre-stage the picker target from the HOST side: the Files file-provider
+# indexes the container at first touch after boot, and a file written later
+# by the app itself can stay invisible to the picker for the whole run
+# (observed live: picker showed an empty gateway-e2e while the file existed).
+CONTAINER=$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)
+mkdir -p "$CONTAINER/Documents/gateway-e2e"
+printf 'gateway e2e target file — dsh-mobile m2\n' \
+  > "$CONTAINER/Documents/gateway-e2e/notes.txt"
 
 log "4/6 launch (log capture truncated — checker must see only this run)"
 rm -f "$LOG" "$ART/nslog-stderr.txt"
@@ -177,6 +270,7 @@ xcrun simctl launch --terminate-running-process \
 
 # ---- 5. driver: react to spike: markers on the live log --------------------
 log "5/6 driving scenario markers (deadline 300s)"
+wda_bootstrap || echo "run-ios: WARNING: WDA unavailable — system-UI legs degraded"
 FIFO="$ART/.driver.fifo"
 rm -f "$FIFO"; mkfifo "$FIFO"
 tail -n +1 -F "$LOG" 2>/dev/null >"$FIFO" &
@@ -188,12 +282,15 @@ while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
       *"spike: ui-wait notification-permission"*)
-        shot 01-notification-permission; tap_label "Allow" "${PT_ALLOW[@]}" ;;
+        shot 01-notification-permission
+        sleep 1.5   # alert presentation completes before the press lands
+        wda_click "允许" || wda_click "Allow" || idb ui tap --udid "$UDID" "${PT_ALLOW[@]}" --duration 0.15 || true ;;
       *"dsh.spike.log:"*"notify.scheduled"*)
-        log "notify.scheduled seen -> HOME (background)"; idb ui button HOME >/dev/null ;;
+        log "notify.scheduled seen -> HOME (background)"; idb ui button --udid "$UDID" HOME >/dev/null ;;
       *"spike: ui-wait notification-banner"*) drive_banner ;;
       *"spike: ui-wait approval"*)
-        shot 03-approval; tap_label "Approve" "${PT_APPROVE[@]}" ;;
+        shot 03-approval
+        wda_click "Approve" || tap_label "Approve" "${PT_APPROVE[@]}" ;;
       *"spike: ui-wait picker"*) drive_picker ;;
       *"spike: sequence"*)
         log "terminal marker: $line"; DONE=1; break ;;

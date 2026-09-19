@@ -18,7 +18,12 @@
     "runtime/spike/README.md embedding-contract section documents the new C surface",
     "gov run green on branch; feature note written; card closed with receipt; branch pushed"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0005"
+  "id": "T-0005",
+  "void": {
+    "ts": "2026-09-19T21:05:33+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work landed verified on main; receipt-closure structurally impossible (govrail #329/#339: close stamps NOT_SELECTED for governance-only gates, _check_receipt rejects it, void refuses done cards). All three worker cards T-0005/6/7 retired as void with the feature verifiably green in the same batch. (this card: bridge + JS shim + scenarios)"
+  }
 }

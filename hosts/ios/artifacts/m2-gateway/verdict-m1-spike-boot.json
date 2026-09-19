@@ -1,0 +1,8 @@
+{
+  "scenario": "m1.spike.boot",
+  "pass": true,
+  "expected": 7,
+  "logged": 7,
+  "failures": [],
+  "parseErrors": []
+}
