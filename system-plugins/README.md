@@ -21,3 +21,19 @@ that registers the service; logging through the unified logger only.
 
 They consume only `contract/` primitives and implement upstream DSH service
 contracts; the Harness core above runs unmodified.
+
+## Install pipeline (M3)
+
+Plugins reach users through the install transaction of
+contract/data-protocols.md §4, implemented platform-neutrally in
+`runtime/spike/install-pipeline.js`: tgz bytes → sha256 → content-addressed
+blob (`cache/blobs/<sha256>`) → verify against the caller's trust record →
+unpack → strict manifest validation (the manifest rules of this section,
+enforced in JS with unknown fields failing loud) → integrity ledger →
+`plugins/<pkg>@<semver>/` → receipt (the commit point). A package whose
+bytes drift from the trust record is rejected before anything is unpacked;
+the installed tree stays untouched and no receipt is journaled.
+`dsh-notes` (the `runtime/spike/fixtures/` package) is the reference plugin
+that rides this pipeline in the `m3.install` scenario; the system plugins
+above ship inside the bundle and mount through the same registry either
+way — activation semantics do not depend on how the bytes arrived.

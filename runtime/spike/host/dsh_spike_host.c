@@ -40,6 +40,18 @@ typedef struct dsh_pending_call {
     JSValue reject;
 } dsh_pending_call;
 
+/* A runtime-defined module: source registered under a specifier so
+ * `import(specifier)` resolves to it (the M3 install pipeline — the gateway
+ * fs scopes are NOT the ESM loader's filesystem, so an installed plugin's
+ * bytes reach the loader through this seam instead of a bundle-root path;
+ * real hosts will load installed modules from their storage directly). */
+typedef struct dsh_def_module {
+    char *name;
+    char *source;
+    size_t source_len;
+    struct dsh_def_module *next;
+} dsh_def_module;
+
 typedef struct dsh_spike {
     JSRuntime *rt;
     JSContext *ctx;
@@ -49,6 +61,7 @@ typedef struct dsh_spike {
     dsh_spike_gateway_fn gateway;
     void *gateway_ud;
     char *descriptor;
+    dsh_def_module *defined;
     int next_call_id;
     dsh_pending_call *pending;
     int pending_count;
@@ -399,16 +412,11 @@ static char *dsh_read_file(const char *path, size_t *out_len) {
     return buf;
 }
 
-static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path, const char *name) {
-    size_t len = 0;
-    char *buf = dsh_read_file(abs_path, &len);
-    if (!buf) {
-        JS_ThrowReferenceError(ctx, "cannot load module '%s'", name);
-        return NULL;
-    }
+/* Compile module source under a name (the loader's one compile site). */
+static JSModuleDef *dsh_compile_module(JSContext *ctx, const char *name,
+                                       const char *buf, size_t len) {
     JSValue res = JS_Eval(ctx, buf, len, name,
                           JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
-    free(buf);
     if (JS_IsException(res)) return NULL;
     /* quickjs-ng loader contract: the compiled module value's pointer IS the
      * JSModuleDef*; the importer already holds a reference, so free the value. */
@@ -417,8 +425,74 @@ static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path, const 
     return m;
 }
 
+static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path, const char *name) {
+    size_t len = 0;
+    char *buf = dsh_read_file(abs_path, &len);
+    if (!buf) {
+        JS_ThrowReferenceError(ctx, "cannot load module '%s'", name);
+        return NULL;
+    }
+    JSModuleDef *m = dsh_compile_module(ctx, name, buf, len);
+    free(buf);
+    return m;
+}
+
+/* js global __dshModuleDefine(name, source): register a module SOURCE under
+ * a specifier (M3 install pipeline — see the dsh_def_module note). A second
+ * define for the same name replaces the source (install transactions may
+ * replay); already-instantiated modules stay cached per QuickJS semantics. */
+static JSValue js_module_define(JSContext *ctx, JSValueConst this_val,
+                                int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__dshModuleDefine needs (name, source)");
+    }
+    size_t source_len = 0;
+    const char *name = JS_ToCString(ctx, argv[0]);
+    const char *source = JS_ToCStringLen(ctx, &source_len, argv[1]);
+    if (!name || !source) {
+        JS_FreeCString(ctx, name);
+        JS_FreeCString(ctx, source);
+        return JS_EXCEPTION;
+    }
+    dsh_def_module *m = s->defined;
+    while (m && strcmp(m->name, name) != 0) m = m->next;
+    if (m) {
+        free(m->source);
+        m->source = strdup(source);
+        m->source_len = source_len;
+    } else {
+        m = malloc(sizeof(*m));
+        if (!m) goto oom;
+        m->name = strdup(name);
+        m->source = strdup(source);
+        m->source_len = source_len;
+        if (!m->name || !m->source) {
+            free(m->name); free(m->source); free(m);
+            goto oom;
+        }
+        m->next = s->defined;
+        s->defined = m;
+    }
+    JS_FreeCString(ctx, name);
+    JS_FreeCString(ctx, source);
+    return JS_NewBool(ctx, 1);
+oom:
+    JS_FreeCString(ctx, name);
+    JS_FreeCString(ctx, source);
+    return JS_ThrowOutOfMemory(ctx);
+}
+
 static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *opaque) {
     dsh_spike_t *s = (dsh_spike_t *)opaque;
+    /* Runtime-defined modules first (M3 install pipeline), then the bundle
+     * root on disk. */
+    for (dsh_def_module *m = s->defined; m; m = m->next) {
+        if (strcmp(m->name, name) == 0) {
+            return dsh_compile_module(ctx, name, m->source, m->source_len);
+        }
+    }
     const char *rel = NULL;
     if (strncmp(name, DSH_PKG_CRYPTO, strlen(DSH_PKG_CRYPTO)) == 0) {
         rel = DSH_PKG_CRYPTO_PATH;
@@ -477,6 +551,8 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_gateway_abort, "__dshGatewayAbort", 1));
     JS_SetPropertyStr(ctx, global, "__dshGatewayDescriptor",
                       JS_NewCFunction(ctx, js_gateway_descriptor, "__dshGatewayDescriptor", 0));
+    JS_SetPropertyStr(ctx, global, "__dshModuleDefine",
+                      JS_NewCFunction(ctx, js_module_define, "__dshModuleDefine", 2));
     JS_SetPropertyStr(ctx, global, "__dshComplete",
                       JS_NewCFunction(ctx, js_complete, "__dshComplete", 2));
     JSValue btoa_fn = JS_NewCFunction(ctx, js_btoa, "btoa", 1);
@@ -656,6 +732,13 @@ void dsh_spike_free(dsh_spike_t *s) {
         JS_FreeContext(s->ctx);
     }
     if (s->rt) JS_FreeRuntime(s->rt);
+    while (s->defined) {
+        dsh_def_module *m = s->defined;
+        s->defined = m->next;
+        free(m->name);
+        free(m->source);
+        free(m);
+    }
     free(s->pending);
     free(s->descriptor);
     free(s);

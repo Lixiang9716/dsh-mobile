@@ -22,6 +22,39 @@ embedder plus a typed JS shim (`gateway.js`).
   contract/primitives.d.ts primitive with its frozen shape, base64 bytes
   both directions, `GatewayError` rejections, `httpFetch` body as an
   AsyncIterable fed by host events, abortable via `__dshGatewayAbort`.
+- `sha256.js` — a ~100-line pure-JS SHA-256 for content addressing. The
+  spike host exposes only `crypto.getRandomValues` + `btoa` and the frozen
+  gateway has no digest primitive, so install ships its own (cross-checked
+  against `node:crypto` over NIST-style vectors incl. block boundaries).
+- `tar-mini.js` — a minimal POSIX ustar writer + reader. The spike package
+  format is UNCOMPRESSED tar on purpose: a real tgz is gzip+tar and the
+  gateway has no inflate primitive; the digest/verify/unpack semantics under
+  test live in the tar layer, and the gzip transport coding lands with the
+  fetch-based installer. Archives are deterministic (mtime 0) so digests
+  reproduce; system `tar` reads what the writer produces.
+- `install-pipeline.js` — the M3 install transaction
+  (data-protocols.md §4): sha256 → store at `cache/blobs/<sha256>` → verify
+  against the caller's trust record → untar → STRICT manifest validation
+  (unknown fields fail loud per manifest.schema.json) → integrity ledger →
+  stage under `plugins/.staging-<txId>/` → read-back re-verify → promote to
+  `plugins/<pkg>@<semver>/` → append the receipt (the commit point). All I/O
+  rides the fs primitives under the granted scope — install is a data
+  operation. A digest/manifest mismatch rejects BEFORE promotion and writes
+  NO receipt. The gateway fs v1 has no rename primitive, so "atomic" is
+  approximated by stage → verify → promote; the committed receipt is what
+  makes a tree authoritative (pending-receipt replay is M4 work).
+- `fixtures/` — the `dsh-notes` fixture plugin: its ESM source (as data) and
+  a builder that packages it into a deterministic ustar archive at scenario
+  time (the spike JS cannot shell out to tar/npm). The `tampered` variant
+  appends attacker bytes so the integrity-rejection case exercises a real
+  drifting package.
+- `__dshModuleDefine` — a spike-host seam (host/dsh_spike_host.c): registers
+  a module SOURCE under a specifier so `import(specifier)` resolves to it.
+  Needed because the gateway fs scopes are NOT the ESM loader's filesystem
+  (the loader reads the bundle root from disk; installed plugins land in the
+  host's storage scope) — real hosts will load installed modules from their
+  storage directly; the spike proves the registry chain with the smallest
+  possible seam. Not a gateway primitive.
 - `registry.js` — the spike service registry: installs plugins as
   `{manifest, module}`, validates the manifest statically, calls the
   declared activate hook; capability negotiation stays the gateway's job.
@@ -63,6 +96,15 @@ embedder plus a typed JS shim (`gateway.js`).
   deltas stream live into the rendered transcript (carrier-side evidence
   logged as scenario `m2.webclient.mount`; runner
   `tools/e2e/run-ios-session.sh`).
+- `scenario/m3-install.js` — the `m3.install` E2E scenario: builds the
+  dsh-notes package in JS, installs it through `install-pipeline.js`,
+  asserts the committed receipt field-by-field + the content-addressed blob
+  + the unpacked layout through fsRead, loads the INSTALLED entry through
+  `__dshModuleDefine` + `registry.js`, exercises the notes service
+  (write + read via dsh-fs), then runs the tamper case: a second package
+  with drifting bytes is rejected by the trust record before unpack
+  (`install.integrity-rejected`), the installed tree stays byte-identical,
+  and no receipt is written for the rejected transaction.
 - `system-plugins/` — system implementation plugins (JS, shared across
   platforms; see the repo-root tree): `dsh-fs` (the `fs` service over
   fsRead/fsWrite/fsScope, scope-relative POSIX with escape rejection),
@@ -160,4 +202,12 @@ pattern. The `m2.session` scenario runs on the same driver:
 ./build/dsh-spike-cli . scenario/m2-session.js > logs-m2-session.txt
 node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-session.json \
   --log logs-m2-session.txt
+```
+
+So does the M3 install pipeline (`m3.install`):
+
+```sh
+./build/dsh-spike-cli . scenario/m3-install.js > logs-m3-install.txt
+node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-install.json \
+  --log logs-m3-install.txt
 ```

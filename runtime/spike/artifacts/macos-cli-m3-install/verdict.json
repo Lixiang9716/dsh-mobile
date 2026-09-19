@@ -1,0 +1,8 @@
+{
+  "scenario": "m3.install",
+  "pass": true,
+  "expected": 21,
+  "logged": 21,
+  "failures": [],
+  "parseErrors": []
+}

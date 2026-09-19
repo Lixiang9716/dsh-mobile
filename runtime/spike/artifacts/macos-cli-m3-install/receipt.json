@@ -1,0 +1,18 @@
+{
+  "host": "macos-cli (darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m3.install",
+  "installPipeline": "runtime/spike/install-pipeline.js (digest → cache/blobs/<sha256> → verify → untar → manifest validate → integrity ledger → stage → read-back verify → promote → receipt)",
+  "sha256": "pure-JS (runtime/spike/sha256.js), cross-checked against node:crypto over 10 vectors incl. block boundaries; the spike host exposes no digest primitive",
+  "packageFormat": "uncompressed POSIX ustar (runtime/spike/tar-mini.js), read back by system tar — gzip transport coding deferred to the fetch-based installer",
+  "fixture": "dsh-notes 0.1.0 (runtime/spike/fixtures/), deterministic ustar, 2 members",
+  "tamperCase": "second package with drifting entry bytes rejected by the trust record before unpack; installed tree byte-identical; no receipt written for the rejected transaction",
+  "manifestSchemaValidation": "strict minimal validator in install-pipeline.js (unknown fields fail loud per contract manifest.schema.json additionalProperties:false)",
+  "checker": "tools/e2e/scenarios/m3-install.json",
+  "events": 21,
+  "exitCode": 0
+}
