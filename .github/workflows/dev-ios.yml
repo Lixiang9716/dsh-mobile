@@ -82,7 +82,12 @@ jobs:
           set -euo pipefail
           ART=hosts/ios/artifacts/m1-spike
           mkdir -p "$ART"
-          UDID=$(xcrun simctl list devices available | grep -m1 'iPhone (' | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          # Match any iPhone device line regardless of name suffix ("iPhone 16",
+          # "dsh-iphone", …) — the literal 'iPhone (' never occurs in stock
+          # runner device names, which silently disabled this stage.
+          UDID=$(xcrun simctl list devices available \
+            | grep -iE 'iphone' \
+            | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
           [ -n "$UDID" ] || { echo "::warning::no available iPhone simulator on this runner"; exit 1; }
           echo "using simulator $UDID"
           xcrun simctl boot "$UDID" || true
