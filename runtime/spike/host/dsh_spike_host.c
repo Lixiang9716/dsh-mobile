@@ -34,6 +34,8 @@ typedef struct dsh_spike {
     JSRuntime *rt;
     JSContext *ctx;
     dsh_spike_sink sink;
+    void (*bus)(void *ud, const char *line);
+    void *bus_ud;
     char base[512];
     char err[DSH_ERR_MAX];
     int completed;
@@ -104,6 +106,19 @@ static JSValue js_log_sink(JSContext *ctx, JSValueConst this_val,
         s->sink.on_log(s->sink.ud, line);
         free(line);
     }
+    JS_FreeCString(ctx, json);
+    return JS_UNDEFINED;
+}
+
+/* JS → host bus post: one JSON line, handed to the embedder's bus sink. */
+static JSValue js_bus_post(JSContext *ctx, JSValueConst this_val,
+                           int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    if (argc < 1 || !s->bus) return JS_UNDEFINED;
+    const char *json = JS_ToCString(ctx, argv[0]);
+    if (!json) return JS_EXCEPTION;
+    s->bus(s->bus_ud, json);
     JS_FreeCString(ctx, json);
     return JS_UNDEFINED;
 }
@@ -350,6 +365,8 @@ static void dsh_bind_globals(dsh_spike_t *s) {
     JSValue global = JS_GetGlobalObject(ctx);
     JS_SetPropertyStr(ctx, global, "__DSH_LOG_SINK__",
                       JS_NewCFunction(ctx, js_log_sink, "__DSH_LOG_SINK__", 1));
+    JS_SetPropertyStr(ctx, global, "__dshBusPost",
+                      JS_NewCFunction(ctx, js_bus_post, "__dshBusPost", 1));
     JS_SetPropertyStr(ctx, global, "__dshEngineInfo",
                       JS_NewCFunction(ctx, js_engine_info, "__dshEngineInfo", 0));
     JS_SetPropertyStr(ctx, global, "__dshGatewayNegotiate",
@@ -428,6 +445,54 @@ int dsh_spike_pump(dsh_spike_t *s) {
 }
 
 int dsh_spike_complete(const dsh_spike_t *s) { return s ? s->completed : 0; }
+
+void dsh_spike_set_bus_sink(dsh_spike_t *s,
+                            void (*on_bus)(void *ud, const char *line),
+                            void *ud) {
+    if (!s) return;
+    s->bus = on_bus;
+    s->bus_ud = ud;
+}
+
+int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line) {
+    if (!s || !line) return -1;
+    JSValue global = JS_GetGlobalObject(s->ctx);
+    JSValue handler = JS_GetPropertyStr(s->ctx, global, "__dshBusOnMessage");
+    JS_FreeValue(s->ctx, global);
+    if (JS_IsUndefined(handler)) {
+        JS_FreeValue(s->ctx, handler);
+        return 0; /* scenario not subscribed yet: nothing to deliver into */
+    }
+    JSValue arg = JS_NewString(s->ctx, line);
+    if (JS_IsException(arg)) {
+        JS_FreeValue(s->ctx, handler);
+        dsh_record_exception(s);
+        return -1;
+    }
+    JSValue res = JS_Call(s->ctx, handler, JS_UNDEFINED, 1, &arg);
+    JS_FreeValue(s->ctx, arg);
+    JS_FreeValue(s->ctx, handler);
+    if (JS_IsException(res)) {
+        JS_FreeValue(s->ctx, res);
+        dsh_record_exception(s);
+        return -1;
+    }
+    JS_FreeValue(s->ctx, res);
+    int guard = 0;
+    for (;;) { /* drain the microtasks the handler spun up */
+        JSContext *jctx = NULL;
+        int r = JS_ExecutePendingJob(s->rt, &jctx);
+        if (r < 0 || JS_HasException(s->ctx)) {
+            dsh_record_exception(s);
+            return -1;
+        }
+        if (r == 0) return 0;
+        if (++guard > DSH_PUMP_GUARD) {
+            dsh_seterr(s, "%s", "bus deliver drain guard exceeded");
+            return -1;
+        }
+    }
+}
 
 int dsh_spike_pass(const dsh_spike_t *s) { return s ? s->passed : 0; }
 

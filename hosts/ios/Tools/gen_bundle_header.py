@@ -22,6 +22,9 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
     ("scenario_js", SPIKE / "scenario" / "m1-spike-boot.js"),
+    ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
+    ("web_index_html", SPIKE / "web" / "index.html"),
+    ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
      SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.1" / "lib" / "index.js"),
 ]
@@ -77,8 +80,8 @@ def emit() -> None:
         *parts,
         *funcs,
     ])
-    (OUT / "SpikeBundle.h").write_text(header)
-    (OUT / "SpikeBundle.c").write_text(source)
+    (OUT / "SpikeBundle.h").write_text(header, encoding="utf-8")
+    (OUT / "SpikeBundle.c").write_text(source, encoding="utf-8")
     print(f"gen_bundle_header: wrote {OUT / 'SpikeBundle.c'} + .h")
 
 

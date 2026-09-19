@@ -19,6 +19,11 @@ package, with the E2E verdict emitted as structured logs.
 - `scenario/m1-spike-boot.js` — the `m1.spike.boot` E2E scenario: ESM
   package load, host Web-API shims, async gateway call resolved from the
   host side on a later pump tick, declared-unavailable conformance path.
+- `scenario/m1-carrier-loopback.js` — the `m1.carrier.loopback` E2E
+  scenario: the local-carrier topology (static files + WS pump) asserted
+  through the bus seam, for hosts that implement it (see below).
+- `web/` — the spike Presentation page (`index.html` + `carrier-page.js`),
+  served as static files by a host carrier; it knows only the WS protocol.
 - `host/` — the platform-neutral C shim every platform host links
   (`dsh_spike_host.c` + `main_cli.c` desktop driver + `build.sh`).
 - `artifacts/` — committed evidence per environment (logs, verdict,
@@ -37,6 +42,22 @@ libunicode,quickjs}.c`, then from a SINGLE thread:
    calls; returns when quiescent.
 4. verdict = `dsh_spike_complete(s) && dsh_spike_pass(s)` (plus the
    `tools/e2e/check.mjs` one-to-one match over the captured lines).
+
+### Carrier bus seam (m1.carrier.loopback only)
+
+Hosts proving the local-carrier topology additionally register
+`dsh_spike_set_bus_sink(s, on_bus, ud)` BEFORE eval, then keep the runtime
+alive and shuttle one-JSON-line messages:
+
+- JS → host: the scenario calls `__dshBusPost(line)`; `on_bus` fires on the
+  runtime thread (hop to your transport queue there, never block).
+- host → JS: from the runtime thread only, `dsh_spike_bus_deliver(s, line)`
+  invokes the scenario's `__dshBusOnMessage` handler and drains microtasks;
+  check `dsh_spike_complete`/`dsh_spike_pass` after each deliver.
+
+The message vocabulary (`bus.ready`, `host.hello`, `ws.hello`, `ws.send`,
+`ws.message`) is spike-local; M2 replaces it with the real session
+projection protocol — do not build on it.
 
 ## Desktop proof run
 

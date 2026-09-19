@@ -1,0 +1,8 @@
+{
+  "scenario": "m1.carrier.loopback",
+  "pass": true,
+  "expected": 7,
+  "logged": 7,
+  "failures": [],
+  "parseErrors": []
+}

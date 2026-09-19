@@ -1,0 +1,24 @@
+{
+  "host": "ios simulator dsh-iphone (iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m1.carrier.loopback",
+  "alsoRan": "m1.spike.boot (PASS 9/9 in the same launch, same checker)",
+  "bundleId": "org.dsh.DSHSpike",
+  "exitStatus": 0,
+  "exitStatusNote": "simulator GUI app stays resident; 0 = scenario run completed without crash or abort (host flags completed=true passed=true; checker verdict PASS 7/7)",
+  "carrier": {
+    "server": "CarrierServer.swift — NWListener bound to 127.0.0.1 (ephemeral port), minimal HTTP/1.1 static file serving + RFC6455 text-frame WS (Sec-WebSocket-Accept via CryptoKit Insecure.SHA1)",
+    "static": "GET / -> staged web/index.html, GET /carrier-page.js -> staged web/carrier-page.js; page loaded in WKWebView over http://127.0.0.1:<port>",
+    "pump": "WS page->JS and JS->page both proven: ping/pong nonce echo + unsolicited 64B push acked by the page; every crossing marshaled onto a dedicated 4MB-stack runtime thread (RuntimeThread) — quickjs stack limits are per-thread, so pooled dispatch queues are unusable for event-driven delivers"
+  },
+  "channels": {
+    "stdout": "logs.txt (canonical capture, checker input for BOTH scenarios)",
+    "nslogStderr": "nslog-stderr.txt (NSLog copies)",
+    "screenshot": "screenshot.png (local-debugging aid only, never asserted on)"
+  },
+  "timestamp": "2026-09-19T15:58:35Z"
+}

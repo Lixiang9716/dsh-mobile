@@ -17,6 +17,12 @@ enum SpikeBundleStager {
                   under: root)
         try write("scenario/m1-spike-boot.js", data: resData(dsh_spike_res_scenario_js),
                   under: root)
+        try write("scenario/m1-carrier-loopback.js",
+                  data: resData(dsh_spike_res_scenario_carrier_js), under: root)
+        try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
+                  under: root)
+        try write("web/carrier-page.js", data: resData(dsh_spike_res_web_page_js),
+                  under: root)
         try write("vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
                   data: resData(dsh_spike_res_pkg_crypto_js), under: root)
         return root

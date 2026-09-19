@@ -48,6 +48,21 @@ int dsh_spike_pass(const dsh_spike_t *s);     /* its pass flag */
 /* Last C-side failure description (eval/pump/new), or "" — valid until free. */
 const char *dsh_spike_error(const dsh_spike_t *s);
 
+/* ---- carrier message-bus seam (M1 local-carrier spike) ------------------
+ * One JSON text line per crossing, both directions. JS posts to the host
+ * via globalThis.__dshBusPost(line); the embedder receives it through the
+ * callback registered here (on the thread that drives the runtime). The
+ * embedder delivers into JS via dsh_spike_bus_deliver — the scenario's
+ * globalThis.__dshBusOnMessage(line) handler runs, then microtasks drain —
+ * and MUST only call it from that same single thread (ARCHITECTURE.md §6). */
+
+void dsh_spike_set_bus_sink(dsh_spike_t *s,
+                            void (*on_bus)(void *ud, const char *line),
+                            void *ud);
+
+/* 0 ok (delivered, or no handler subscribed yet), -1 JS exception. */
+int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line);
+
 void dsh_spike_free(dsh_spike_t *s);
 
 #endif /* DSH_SPIKE_HOST_H */

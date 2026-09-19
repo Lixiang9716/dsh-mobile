@@ -1,9 +1,11 @@
 name: dev/ios
 # End-to-end iOS pipeline. Since M1 this builds the spike app in hosts/ios
 # (quickjs-ng + dsh_spike_host.c) and, when the runner has a usable iOS
-# simulator, runs scenario m1.spike.boot on it and verifies the canonical
-# log lines with the shared checker (tools/e2e/check.mjs) — logs are the
-# verdict, screenshots are never asserted on (docs/ARCHITECTURE.md).
+# simulator, runs BOTH spike scenarios — m1.spike.boot (runtime shim) and
+# m1.carrier.loopback (loopback static+WS carrier) — in one launch and
+# verifies the canonical log lines with the shared checker
+# (tools/e2e/check.mjs) — logs are the verdict, screenshots are never
+# asserted on (docs/ARCHITECTURE.md).
 #
 # Manual trigger plus path-filtered pushes/PRs: macOS runner minutes bill at
 # 10x, so docs-only changes never reach this pipeline.
@@ -75,13 +77,14 @@ jobs:
       # is available this step must be green too; a red here with green
       # build is reported, not hidden (the verdict file + logs are uploaded
       # either way for diagnosis).
-      - name: Run m1.spike.boot on simulator and verify
+      - name: Run m1.spike.boot + m1.carrier.loopback on simulator and verify
         id: spike-run
         continue-on-error: true
         run: |
           set -euo pipefail
           ART=hosts/ios/artifacts/m1-spike
-          mkdir -p "$ART"
+          ART2=hosts/ios/artifacts/m1-carrier
+          mkdir -p "$ART" "$ART2"
           # Match any iPhone device line regardless of name suffix ("iPhone 16",
           # "dsh-iphone", …) — the literal 'iPhone (' never occurs in stock
           # runner device names, which silently disabled this stage.
@@ -100,32 +103,43 @@ jobs:
             --stdout="$PWD/$ART/logs.txt" \
             --stderr="$PWD/$ART/nslog-stderr.txt" \
             "$UDID" org.dsh.DSHSpike
-          # poll for the verdict marker with a deadline — never a blind sleep
-          for i in $(seq 1 60); do
-            grep -q "spike: verdict" "$ART/logs.txt" 2>/dev/null && break
+          # One launch drives BOTH scenarios back to back; wait for the final
+          # sequence marker with a deadline — never a blind sleep.
+          for i in $(seq 1 90); do
+            grep -q "spike: sequence" "$ART/logs.txt" 2>/dev/null && break
             sleep 2
           done
-          grep -q "spike: verdict" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
-          xcrun simctl io "$UDID" screenshot "$ART/screenshot.png" || true
+          grep -q "spike: sequence" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
+          xcrun simctl io "$UDID" screenshot "$ART2/screenshot.png" || true
           grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
+          cp "$ART/scenario.jsonl" "$ART2/scenario.jsonl"
           node tools/e2e/check.mjs \
             --manifest tools/e2e/scenarios/m1-spike-boot.json \
             --log "$ART/logs.txt" \
             --out "$ART/verdict.json"
+          node tools/e2e/check.mjs \
+            --manifest tools/e2e/scenarios/m1-carrier-loopback.json \
+            --log "$ART/logs.txt" \
+            --out "$ART2/verdict.json"
 
       - name: Report verdict
         if: always()
         run: |
-          if [ -f hosts/ios/artifacts/m1-spike/verdict.json ]; then
-            cat hosts/ios/artifacts/m1-spike/verdict.json | tee -a "$GITHUB_STEP_SUMMARY"
-          else
-            echo "m1.spike.boot: no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
-          fi
+          for s in m1-spike m1-carrier; do
+            f="hosts/ios/artifacts/$s/verdict.json"
+            if [ -f "$f" ]; then
+              cat "$f" | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              echo "$s: no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          done
 
       - name: Upload artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: m1-spike-ios
-          path: hosts/ios/artifacts/m1-spike/
+          path: |
+            hosts/ios/artifacts/m1-spike/
+            hosts/ios/artifacts/m1-carrier/
           if-no-files-found: warn
