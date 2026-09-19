@@ -13,7 +13,7 @@
     "[x] Scenario runs synchronously on the NAPI caller thread; canonical dsh.spike.log lines captured from hilog",
     "[x] tools/e2e/check.mjs PASS 9/9 in order on the captured log",
     "[x] Artifacts committed under hosts/harmony/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
-    "dev-harmonyos.yml builds the spike; agent note written; PR open with gates green"
+    "[x] dev-harmonyos.yml builds the spike; agent note written; PR open with gates green"
   ],
   "status": "open",
   "receipt": null,
