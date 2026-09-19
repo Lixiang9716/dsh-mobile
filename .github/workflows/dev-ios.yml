@@ -7,6 +7,14 @@ name: dev/ios
 # (tools/e2e/check.mjs) — logs are the verdict, screenshots are never
 # asserted on (docs/ARCHITECTURE.md).
 #
+# Since M2 it also checks m2.gateway.binding + the gateway audit stream
+# (tools/e2e/scenarios/m2-gateway-*.json). HONEST LIMITATION: that scenario
+# is UI-driven (permission alert, Files picker, approval dialog, notification
+# banner) and hosted CI runners have no idb/UI driver, so the m2 leg cannot
+# complete here — its step is continue-on-error and expected to skip/warn.
+# The build is the hard gate; the FULL m2 E2E runs locally via
+# tools/e2e/run-ios.sh (see tools/e2e/README.md).
+#
 # Manual trigger plus path-filtered pushes/PRs: macOS runner minutes bill at
 # 10x, so docs-only changes never reach this pipeline.
 on:
@@ -19,6 +27,7 @@ on:
       - "runtime/**"
       - "system-plugins/**"
       - "presentation/**"
+      - "tools/e2e/**"
       - ".github/workflows/dev-ios.yml"
   pull_request:
     paths:
@@ -27,6 +36,7 @@ on:
       - "runtime/**"
       - "system-plugins/**"
       - "presentation/**"
+      - "tools/e2e/**"
       - ".github/workflows/dev-ios.yml"
 
 jobs:
@@ -103,13 +113,22 @@ jobs:
             --stdout="$PWD/$ART/logs.txt" \
             --stderr="$PWD/$ART/nslog-stderr.txt" \
             "$UDID" org.dsh.DSHSpike
-          # One launch drives BOTH scenarios back to back; wait for the final
-          # sequence marker with a deadline — never a blind sleep.
+          # One launch drives the two m1 scenarios and then the UI-driven m2
+          # leg; wait with a deadline — never a blind sleep. On CI nobody can
+          # tap the m2 prompts, so the run stalls at the first `spike:
+          # ui-wait` marker; accepting that marker as the stop condition lets
+          # the m1 checks still run on the captured m1 lines (all m1 events
+          # are complete before the UI-driven leg starts). Locally, via
+          # tools/e2e/run-ios.sh, the terminal `spike: sequence` marker
+          # appears as before.
           for i in $(seq 1 90); do
-            grep -q "spike: sequence" "$ART/logs.txt" 2>/dev/null && break
+            grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" 2>/dev/null && break
             sleep 2
           done
-          grep -q "spike: sequence" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
+          grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
+          if grep -q "spike: ui-wait" "$ART/logs.txt" && ! grep -q "spike: sequence" "$ART/logs.txt"; then
+            echo "::warning::run stalled at a UI-driven m2 prompt (no UI driver on CI) — verifying the completed m1 scenarios only"
+          fi
           xcrun simctl io "$UDID" screenshot "$ART2/screenshot.png" || true
           grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
           cp "$ART/scenario.jsonl" "$ART2/scenario.jsonl"
@@ -122,15 +141,53 @@ jobs:
             --log "$ART/logs.txt" \
             --out "$ART2/verdict.json"
 
+      # M2 gateway-binding E2E + audit-stream check. HONEST: this scenario is
+      # UI-driven (permission alert, Files picker, approval dialog,
+      # notification banner — see tools/e2e/run-ios.sh) and hosted CI runners
+      # have no idb/UI driver, so the terminal `spike: sequence
+      # gateway=<verdict>` marker never appears here: this step warns and
+      # exits 1, absorbed by continue-on-error. The build above is the hard
+      # gate; the full m2 E2E runs locally via tools/e2e/run-ios.sh.
+      - name: Check m2.gateway.binding + audit stream (needs UI driver; watchdogs on CI)
+        id: m2-run
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          ART=hosts/ios/artifacts/m2-gateway
+          mkdir -p "$ART"
+          LOG=hosts/ios/artifacts/m1-spike/logs.txt   # one launch drives m1+m1+m2
+          for i in $(seq 1 30); do
+            grep -q "spike: sequence gateway=" "$LOG" 2>/dev/null && break
+            sleep 2
+          done
+          if ! grep -q "spike: sequence gateway=" "$LOG"; then
+            echo "::warning::m2 terminal marker never appeared — expected on CI (no UI driver). Full E2E: tools/e2e/run-ios.sh"
+            exit 1
+          fi
+          grep '^dsh.gateway.audit:' "$LOG" > "$ART/gateway-audit.jsonl"
+          node tools/e2e/check.mjs \
+            --manifest tools/e2e/scenarios/m2-gateway-binding.json \
+            --log "$LOG" \
+            --out "$ART/verdict.json"
+          node tools/e2e/check.mjs \
+            --manifest tools/e2e/scenarios/m2-gateway-audit.json \
+            --log "$LOG" \
+            --out "$ART/verdict-audit.json"
+
       - name: Report verdict
         if: always()
         run: |
-          for s in m1-spike m1-carrier; do
-            f="hosts/ios/artifacts/$s/verdict.json"
+          for f in \
+            hosts/ios/artifacts/m1-spike/verdict.json \
+            hosts/ios/artifacts/m1-carrier/verdict.json \
+            hosts/ios/artifacts/m2-gateway/verdict.json \
+            hosts/ios/artifacts/m2-gateway/verdict-audit.json; do
             if [ -f "$f" ]; then
               cat "$f" | tee -a "$GITHUB_STEP_SUMMARY"
+            elif [ "$(dirname "$f")" = "hosts/ios/artifacts/m2-gateway" ]; then
+              echo "m2-gateway: no verdict for $(basename "$f") (UI-driven leg cannot complete on CI; run tools/e2e/run-ios.sh locally)" | tee -a "$GITHUB_STEP_SUMMARY"
             else
-              echo "$s: no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "$(dirname "$f" | xargs basename): no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
             fi
           done
 
@@ -142,4 +199,5 @@ jobs:
           path: |
             hosts/ios/artifacts/m1-spike/
             hosts/ios/artifacts/m1-carrier/
+            hosts/ios/artifacts/m2-gateway/
           if-no-files-found: warn
