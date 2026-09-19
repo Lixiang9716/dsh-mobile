@@ -34,9 +34,33 @@ push (the pre-push hook re-runs the scoped DAG automatically).
   MISSING templates (never overwrites); `--upgrade` reports drift and
   changes nothing. Use `--adopt` when a report says UPSTREAM MOVED and
   you want the new template; do NOT use it to paper over a real
-  customization.
+  customization. `--platforms <list>` adds agent platforms (claude,
+  codex, copilot, gemini; `all`) — fresh or retrofitted, each config
+  create-if-missing; a platform you never named gets no files.
+- `gov update --apply` — one deliberate migration step (adopt missing/
+  moved templates + merge newly shipped gates + refresh the CI pin +
+  re-seal). Dry run by default; use it when `gov init --upgrade`
+  reports MISSING/UPSTREAM MOVED files or the workflow pin is stale.
+  Not on a dirty worktree, and the seal step needs consent (TTY or
+  `--confirm-unattended`).
 - `gov init --preset <name>` — typed starters. Only when the project
   matches the preset's type; presets never load themselves.
+- `gov preset list/show/apply` — the bundles behind `--preset`, inspected
+  and applied directly. `list` is the discovery surface; `apply` is
+  additive and never overwrites. First adoption goes through
+  `init --preset`; `preset apply` is for re-typing an
+  already-initialized plane.
+- `gov agent-hooks <event> [--dialect <platform>]` — the plane's
+  presence at the agent's lifecycle events across platforms: claude
+  (default), codex, copilot, gemini — same five events, each platform's
+  own deny/context contract. Framework-invoked, not a human verb; the
+  `--dialect` in a hook command must match the config file it is wired
+  from (`gov init --platforms` writes the matching spelling). If init
+  reports a platform's config already exists, merge the five events in
+  by hand — and on codex, trust the project hooks via `/hooks`
+  (untrusted hooks are silently skipped). The pre-tool-use deny is a
+  presence, not a fence — `gov run` and the pre-push gate remain the
+  enforcement.
 - `gov uninstall --force` — reverse init. `--force` is for customized
   trees AFTER copying out what you keep; without it, uninstall refuses
   to delete anything customized.
@@ -54,6 +78,17 @@ push (the pre-push hook re-runs the scoped DAG automatically).
   gate AFTER reading its failure output (the summary inlines it).
 - `gov run --receipt` — evidence run: records a tamper-evident receipt
   bound to the tree. Use when a claim needs to be verifiable later.
+- `gov change-scope --base <ref>` — the surfaces the outgoing diff
+  touches, i.e. which gates the scoped DAG will trip. Run it when unsure
+  what a change will cost; rule 1's smallest-sufficient-set starts here.
+- `gov check` — the syntax-class static checkers, by hand. The `check`
+  gate runs them scoped; invoke directly to re-judge one tree on demand
+  (`--strict` makes warnings block).
+- `gov self-test` — every governance gate proves it can reject (rule
+  6). Run it whenever touching gates.json, a checker, or a rejection
+  case; a gate whose rejection proof is red is vacuous, not green.
+- `gov receipt verify/show` — cited receipts: verify one against its
+  commit before trusting a claim that cites it; show renders one.
 - NEVER `git push --no-verify` to skip a red gate, and NEVER park a
   gate (`enabled: false`) to get green once. Fix the code, fix the
   gate, or take the explicit ritual (below).
@@ -88,6 +123,20 @@ push (the pre-push hook re-runs the scoped DAG automatically).
 
 **Memory and history**
 - `gov recall` — before proposing anything (see the recall-first skill).
+- `gov surprise record "<expectation>" --reality "<what happened>"` —
+  rule 11's teeth: record expectation-vs-reality the session you notice
+  it; the ledger counts recurrences per signature and the `surprises`
+  gate escalates the third into a process note. Not for ordinary bugs —
+  for the moment reality disagrees with your model of it.
+- `gov surprise list` — counts per signature; the "have I seen this
+  before?" lookup before recording.
+- `gov decision next/add/verify` — the D-number registry behind
+  docs/decisions.md: `next` finds the free number, `add` lands a row
+  atomically and validated, `verify` guards the table structure. A
+  decision row lands through `add`, never hand-edited into the table.
+- `gov parse` — per-file structure facts (function spans, line counts,
+  nesting depth); the primitive `stats` reports and a size gate reads.
+  Facts, not verdicts.
 - `gov trend` / `gov stats` — facts, not verdicts; never gate on them.
 - `gov whatsnew --since <manifest version>` — what arrived since this
   checkout's init.

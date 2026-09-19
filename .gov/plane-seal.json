@@ -4,14 +4,14 @@
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rules.md": {
-      "sha256": "77bbd51bdd524d674d5d6ac77a07c1211457883f851c97349ef64a8f7cc0ca61"
+      "sha256": "e6c4833f3dbb1cdd7cd0a324d67e663eb191d7a7fe39834c3b4f1380906a4131"
     },
     "gates.json": {
-      "sha256": "acea2ed4b9ed7235ce18713db7c281c77b57a6e62e8341fd42e4264b304d8c33"
+      "sha256": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-18T05:12:21+00:00",
+    "ts": "2026-09-19T08:45:58+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true
   }
