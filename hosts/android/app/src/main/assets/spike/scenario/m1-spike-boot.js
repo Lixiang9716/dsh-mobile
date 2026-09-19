@@ -20,6 +20,7 @@ const SCENARIO = 'm1.spike.boot';
 const log = createLogger('m1.spike');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
+  log.debug('scenario failed', { reason });
   emit('scenario.failed', { reason });
   globalThis.__dshComplete(false, reason);
 };

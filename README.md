@@ -20,6 +20,8 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 | M3 | Plugin install pipeline + UI pluggability (slot / Web Client swap) | Planned |
 | M4 | Android host (QuickJS-isomorphic) | In progress (isomorphic host verified: gateway-bridge scenario `m2.bridge.smoke` green on the emulator alongside the `m1.spike.boot` regression — evidence `hosts/android/artifacts/m4-host/`) |
 | M5 | HarmonyOS host (ArkTS + NAPI) | Planned |
+| M4 | Android host (QuickJS-isomorphic) | Planned |
+| M5 | HarmonyOS host (ArkTS + NAPI) | In progress (isomorphic host verified: m2.session green on emulator alongside m1.spike.boot + m2.bridge.smoke in one launch — evidence `hosts/harmony/artifacts/m5-host/`) |
 
 ## Governance
 

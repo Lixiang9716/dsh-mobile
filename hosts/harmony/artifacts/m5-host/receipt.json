@@ -1,0 +1,57 @@
+{
+  "host": "harmonyos emulator dsh_phone (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "bundleName": "com.dshmobile.spike",
+  "scenarios": [
+    "m1.spike.boot",
+    "m2.bridge.smoke",
+    "m2.session"
+  ],
+  "exitStatus": 0,
+  "exitStatusDetail": "native verdicts in ONE launch on the NAPI caller thread: 'm1.spike.boot PASS ... logLines=7', 'm2.bridge.smoke PASS ... logLines=13' and 'm2.session PASS ... logLines=72' (dsh_spike_complete && dsh_spike_pass, rc==0 per scenario)",
+  "gatewayBridge": "real dsh_spike dispatch bridge served by gateway_smoke.cpp (the platform twin of main_cli.c's smoke backend): fsRead/fsWrite/fsScope on the app files dir exposed as scope 'app' (filesDir/spike-fs, mkdir -p parity on write), keychain honestly 'unavailable' per the RuntimeDescriptor, unknown primitives 'invalid'; calls queue in the dispatch callback and settle on the post-pump drain pass (later-tick settlement, same pattern as the desktop CLI). The host.info readiness event ({\"event\":\"host.info\",\"port\":0}) is delivered once after eval, before the first pump pass \u2014 the same channel the desktop twin signals on.",
+  "checker": [
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m1-spike-boot.json",
+      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "pass": true,
+      "expected": 7,
+      "logged": 7
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-bridge-smoke.json",
+      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "pass": true,
+      "expected": 6,
+      "logged": 6
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-session.json",
+      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "pass": true,
+      "expected": 22,
+      "logged": 22
+    }
+  ],
+  "captures": {
+    "primary": "logs.txt (hilog -x dump, filtered to dsh.spike lines; canonical lines byte-identical to the sink capture after stripping the hilog prefix \u2014 verified by diff)",
+    "second": "sink-capture.txt (app-side capture file pulled via hdc file recv from haps/entry/cache/dsh-spike-capture.log; named .txt because the repo ignores *.log; scenario.jsonl = grep '^dsh.spike.log:')",
+    "screenshot": "screenshot.png (snapshot_display, human evidence only, never the assertion)"
+  },
+  "note": "Session run (PR-B): the merged M2 foundation's m2.session scenario (registry + the three system plugins) runs on the same launch; the smoke backend gained the desktop twin's mkdir -p write parity, and the embedder delivers the host.info readiness event after eval. First run with the merged M2 host had exposed a stale rawfile copy of scenario/m1-spike-boot.js (fixed in PR #28); all embedded spike/plugin files are verified byte-identical to runtime/spike/ and system-plugins/.",
+  "toolchain": {
+    "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
+    "hvigor": "6.26.4",
+    "ohpm": "26.0.0.630",
+    "sdk": "HarmonyOS 26.0.0 Release (Ohos_sdk_public 26.0.0.105, API Version 26)",
+    "signing": "none \u2014 the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
+  },
+  "timestamp": "2026-09-20T06:56:07+08:00"
+}

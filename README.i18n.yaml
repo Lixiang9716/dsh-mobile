@@ -7,9 +7,9 @@
 # compares only the en/zh hashes. last_confirmed is the UTC ISO-8601
 # instant of the confirmation (datetime.isoformat(), +00:00).
 pair:
-  en: c2f0fa179ea25a369f3aa4171b1bbcdabdeeba14
-  zh: 168b2d94d92f812d0e7fb523434f3d6bf0cb3a29
+  en: 16930b1d42a6561fe8b7697af3e99c42f7580d21
+  zh: dc6b9f95f1fc609fd189d5013d50a9a52f2e2e93
 counterpart: README.zh.md
-last_confirmed: 2026-09-19T22:56:58+00:00
+last_confirmed: 2026-09-19T23:18:28+00:00
 en_commit: a42c805
 zh_commit: a42c805

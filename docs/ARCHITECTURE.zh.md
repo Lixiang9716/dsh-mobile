@@ -158,6 +158,7 @@ dsh-mobile/
 - **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
 - **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
 - **M4/M5**：Android、鸿蒙宿主。M4 进行中：同构宿主已验证 —— 网关桥接场景（`m2.bridge.smoke`）与 `m1.spike.boot` 回归在模拟器上通过（证据 `hosts/android/artifacts/m4-host/`）。
+- **M4/M5**：Android、鸿蒙宿主。M5 已启动：同构鸿蒙宿主一次启动跑通全部三个 spike 场景——m2.session（经 registry + 三个系统插件）随 m1.spike.boot + m2.bridge.smoke 在模拟器通过（证据见 `hosts/harmony/artifacts/m5-host/`）。
 
 ## 11. 关键技术决策
 

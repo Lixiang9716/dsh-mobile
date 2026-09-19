@@ -1,0 +1,25 @@
+{
+  "title": "M5-B HarmonyOS: m2.session green on the emulator (stacked on PR #28)",
+  "created": "2026-09-19T22:58:04+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Embed session bundle byte-identical (registry.js + scenario/m2-session.js + three system plugins)",
+    "NAPI: smoke backend mkdir -p write parity + host.info readiness event + third scenario in one launch",
+    "Device run captured; check.mjs green for all three scenarios; artifacts refreshed under artifacts/m5-host/",
+    "Status docs flipped; note; gov run green; push; PR-B stacked"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0009",
+  "void": {
+    "ts": "2026-09-19T22:59:00+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete and device-verified (all three scenario verdicts PASS on the emulator; evidence hosts/harmony/artifacts/m5-host/, checklist items all done). Receipt-closure skipped as structurally impossible in govrail 0.47.1: task close stamps verify-decisions NOT_SELECTED (paths-scoped, not in the all mode) and task check's _check_receipt rejects that same receipt as 'not all-green' (#329/#339 writer/reader disagreement) \u2014 demonstrated live on T-0008 in the immediately preceding commit of this stack, where close succeeded and the very next task gate run rejected its receipt; T-0001..T-0007 carry the same recorded exit."
+  }
+}
