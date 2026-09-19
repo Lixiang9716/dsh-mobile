@@ -8,10 +8,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var webView: WKWebView?
     private var bootVerdict = "PENDING"
     private var carrierVerdict = "PENDING"
+    private var gatewayVerdict = "PENDING"
     /// Strong ref for the session: CarrierRuntime's internal closures are all
     /// weak, so without this the runtime deallocates the moment the queue
     /// drains its first block and the session dies silently.
     private var carrier: CarrierRuntime?
+    /// Same for the m2 gateway phase (boot → carrier → gateway, order frozen).
+    private var gateway: GatewaySession?
 
     func application(
         _ application: UIApplication,
@@ -28,7 +31,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         console.isEditable = false
         console.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
         console.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
-        console.text = "DSH M1 spikes — driving m1.spike.boot then m1.carrier.loopback …"
+        console.text = "DSH spikes — m1.spike.boot, m1.carrier.loopback, then the m2 gateway binding …"
         let webView = WKWebView(
             frame: CGRect(
                 x: 0, y: window.bounds.height * 0.55,
@@ -63,8 +66,22 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let self else { return }
             self.show(outcome, phase: "m1.carrier.loopback") { self.carrierVerdict = $0 }
             self.carrier = nil
+            self.runGateway()
+        }
+    }
+
+    /// The m2 phase: the real nine-primitive gateway binding. Its outcome
+    /// completes the launch sequence — this is where the final marker prints.
+    private func runGateway() {
+        let gateway = GatewaySession()
+        self.gateway = gateway
+        gateway.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "m2.gateway.binding") { self.gatewayVerdict = $0 }
+            self.gateway = nil
             // The CI poll waits for this final marker before running the checkers.
-            print("spike: sequence boot=\(self.bootVerdict) carrier=\(self.carrierVerdict)")
+            print("spike: sequence boot=\(self.bootVerdict) carrier=\(self.carrierVerdict)"
+                + " gateway=\(self.gatewayVerdict)")
             fflush(stdout)
         }
     }
@@ -74,7 +91,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) {
         setVerdict(outcome.verdict)
         var text = [
-            "DSH M1 spike — \(phase)",
+            "DSH spike — \(phase)",
             "engine: \(outcome.engineName) \(outcome.engineVersion)",
             "events logged: \(outcome.canonicalLines.count)",
             "verdict: \(outcome.verdict)",
