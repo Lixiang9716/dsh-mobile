@@ -51,7 +51,12 @@ final class NotifyPrimitive: NSObject, UNUserNotificationCenterDelegate {
         if let threadId = payload["threadId"] as? String { content.threadIdentifier = threadId }
         if let data = payload["data"] as? [String: Any] { content.userInfo = data }
         let id = "n:\(UUID().uuidString)"
-        let request = UNNotificationRequest(identifier: id, content: content, trigger: nil)
+        // 5s trigger, not nil: an immediate delivery while the app is
+        // foreground is consumed by willPresent and never reaches
+        // Notification Center, so a caller that backgrounds right after
+        // scheduling (the E2E banner-tap leg) would have nothing to tap.
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 5, repeats: false)
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
         center.add(request) { error in
             if let error {
                 done(.failure(GatewayError(
