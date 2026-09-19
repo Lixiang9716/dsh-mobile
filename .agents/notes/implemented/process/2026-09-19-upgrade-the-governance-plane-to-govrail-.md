@@ -30,12 +30,14 @@ pristine 0.29-era templates first, no local customization to lose).
 `.gov/rules.md` and the five agent skills re-adopt the 0.45 templates
 via `gov update --apply`'s adoption step; the CI workflow takes the
 template's hardening (concurrency cancel, `timeout-minutes: 15`, push
-filtered to main). `gov update` itself could not finish its own
-choreography — its gates-merge step resolves the shipped template
-repo-relatively (`<repo>/gov/templates/gates.json`, `[Errno 2]` in any
-adopter repo) and a mid-flight abort leaves a state its launder guard
-refuses to re-enter — so adoptions, merge, pin, and re-seal were
-completed deliberately by hand and the defects filed upstream.
+filtered to main). `gov update --apply` then completed the choreography
+end to end — adoptions, manifest bump, re-seal — because the hand-merge
+in the parent commit steered its gates-merge step into the "nothing to
+add" short-circuit; on an unmerged repo that step dies resolving the
+shipped template repo-relatively (`<repo>/gov/templates/gates.json`,
+`[Errno 2]`), and the mid-flight abort leaves a state the launder guard
+refuses to re-enter. The CI pin was also pre-set by hand. Defects filed
+upstream.
 
 ## Alternatives considered
 
