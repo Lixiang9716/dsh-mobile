@@ -12,11 +12,27 @@ set -eu
 
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 
-adb wait-for-device
+# KVM is a hard precondition on Linux runners: without it the emulator
+# process dies at once and every adb wait below would hang. Fail in
+# seconds, not at the job timeout.
+if [ "$(uname)" = "Linux" ] && [ ! -w /dev/kvm ]; then
+    echo "::error::/dev/kvm missing or not writable — KVM acceleration unavailable"
+    ls -la /dev/kvm 2>&1 || true
+    exit 1
+fi
 
-# Boot completion; CI boots measured ~7.5 min, so the deadline is generous.
+# Device presence AND boot completion, one bounded poll (rule 8). The bare
+# `adb wait-for-device` this replaces has NO deadline: when the emulator
+# process dies at spawn (the observed 30+ min CI hang), it would block
+# forever. So liveness is polled alongside the boot property.
 deadline=$(( $(date +%s) + 600 ))
-until [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
+until adb get-state >/dev/null 2>&1 &&
+      [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do
+    if ! pgrep -f "emulator" >/dev/null 2>&1; then
+        echo "::error::emulator process is gone — boot never started or died"
+        tail -100 /tmp/emulator.log || true
+        exit 1
+    fi
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::emulator did not finish booting within 600s"
         tail -100 /tmp/emulator.log || true
