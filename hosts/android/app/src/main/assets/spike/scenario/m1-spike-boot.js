@@ -7,10 +7,11 @@
  *
  * Proves, on any platform that embeds runtime/spike/host: the ESM loader
  * resolving a vendored upstream pure-logic package (D6: pinned, unmodified),
- * the host-provided Web-API seams (crypto.getRandomValues, btoa), async
- * gateway calls resolved from the host side on a later pump tick (D2: no
- * threads, no subprocesses — the host drives the runtime queue), and the
- * frozen gateway v1.0.0 conformance path for an unavailable primitive (D5).
+ * the host-provided Web-API seams (crypto.getRandomValues, btoa), and
+ * gateway negotiation (gateway@1). The M1 canned gateway-call blocks are
+ * GONE — real primitive dispatch now lives in the m2 scenarios over the
+ * dsh_spike_set_gateway_dispatch bridge (m2.bridge.smoke on the desktop
+ * CLI, m2.gateway.binding on the full embedder).
  */
 import { createLogger } from '../logger.js';
 import { randomUUID, bytesToBase64 } from 'dsh:util-crypto';
@@ -39,16 +40,6 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
 
   const bytes = Uint8Array.from([104, 101, 108, 108, 111]); // "hello"
   emit('base64.shim.ok', { input: 'hello', b64: bytesToBase64(bytes) });
-
-  const read = await globalThis.__dshGatewayCall('fsRead', JSON.stringify({ path: 'bundle://probe.txt' }));
-  emit('gateway.call.ok', { name: 'fsRead', bytes: read.bytes });
-
-  try {
-    await globalThis.__dshGatewayCall('keychainGet', JSON.stringify({ key: 'spike' }));
-    fail('keychainGet should be declared unavailable by the host');
-  } catch (err) {
-    emit('gateway.call.unavailable', { name: 'keychainGet', code: err.code });
-  }
 
   emit('scenario.complete', { status: 'pass' });
   globalThis.__dshComplete(true, 'ok');
