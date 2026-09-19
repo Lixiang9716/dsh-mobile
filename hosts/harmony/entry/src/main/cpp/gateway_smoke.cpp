@@ -15,8 +15,8 @@
 
 extern "C" {
 #include "dsh_spike_host.h"
-}
 #include "gateway_smoke.h"
+}
 
 #include <cerrno>
 #include <cstdio>

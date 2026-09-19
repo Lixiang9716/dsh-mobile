@@ -14,12 +14,11 @@
 #ifndef DSH_GATEWAY_SMOKE_H
 #define DSH_GATEWAY_SMOKE_H
 
-/* The includer must include dsh_spike_host.h FIRST — inside extern "C"
- * from C++ (that header carries no __cplusplus guard on purpose; see its
- * header comment). This header only reuses its types. */
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* Plain C interface only. The includer must include dsh_spike_host.h FIRST
+ * (this header only reuses its types) and, from C++, wrap BOTH includes in
+ * one extern "C" block — like dsh_spike_host.h, there is no #ifdef
+ * __cplusplus guard on purpose: the syntax-class checker's tree-sitter C
+ * grammar misparses the preprocessor/brace interleave. */
 
 typedef struct dsh_smoke_backend dsh_smoke_backend_t;
 
@@ -44,9 +43,5 @@ int dsh_smoke_drain(dsh_smoke_backend_t *b);
 int dsh_smoke_failed(const dsh_smoke_backend_t *b);
 
 void dsh_smoke_free(dsh_smoke_backend_t *b);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* DSH_GATEWAY_SMOKE_H */
