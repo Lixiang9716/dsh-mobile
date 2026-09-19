@@ -100,23 +100,30 @@ final class CarrierServer {
         route(head, conn: conn)
     }
 
+    /// Plain-text non-200 response (the static path's only error shape).
+    private func respondError(_ status: Int, _ message: String, conn: NWConnection) {
+        respond(
+            status: status,
+            body: Data(message.utf8),
+            contentType: "text/plain",
+            conn: conn
+        )
+    }
+
     private func route(_ head: String, conn: NWConnection) {
         guard let requestLine = head.split(separator: "\r\n").first else {
-            return respond(status: 400, body: Data("bad request".utf8),
-                           contentType: "text/plain", conn: conn)
+            return respondError(400, "bad request", conn: conn)
         }
         let parts = requestLine.split(separator: " ")
         guard parts.count >= 2, parts[0] == "GET" else {
-            return respond(status: 405, body: Data("GET only".utf8),
-                           contentType: "text/plain", conn: conn)
+            return respondError(405, "GET only", conn: conn)
         }
         let path = String(parts[1]).split(separator: "?").first.map(String.init) ?? ""
         if path == Self.wsPath {
             if let key = Self.headerValue(head, "Sec-WebSocket-Key") {
                 upgrade(key: key, conn: conn)
             } else {
-                respond(status: 400, body: Data("missing WS key".utf8),
-                        contentType: "text/plain", conn: conn)
+                respondError(400, "missing WS key", conn: conn)
             }
             return
         }
@@ -127,19 +134,16 @@ final class CarrierServer {
 
     private func serveStatic(path: String, conn: NWConnection) {
         guard !path.contains(".."), var rel = URLComponents(string: path)?.path else {
-            return respond(status: 404, body: Data("not found".utf8),
-                           contentType: "text/plain", conn: conn)
+            return respondError(404, "not found", conn: conn)
         }
         if rel == "/" { rel = "/index.html" }
         let file = webRoot.appendingPathComponent(String(rel.dropFirst()))
         guard let data = try? Data(contentsOf: file) else {
-            return respond(status: 404, body: Data("not found".utf8),
-                           contentType: "text/plain", conn: conn)
+            return respondError(404, "not found", conn: conn)
         }
         let isHTML = rel.hasSuffix(".html")
         guard isHTML || rel.hasSuffix(".js") else {
-            return respond(status: 404, body: Data("not found".utf8),
-                           contentType: "text/plain", conn: conn)
+            return respondError(404, "not found", conn: conn)
         }
         // record the REQUEST path ("/" for the document), which is what the
         // scenario's static-serving evidence asserts on
