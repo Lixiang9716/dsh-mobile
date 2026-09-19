@@ -1,10 +1,11 @@
 name: dev/android
-# End-to-end Android pipeline. Scaffolded at M0; the Gradle build and
-# emulator E2E land with the M4 Android project in hosts/android
-# (docs/ARCHITECTURE.md §10).
+# End-to-end Android pipeline: builds the M1 spike APK (hosts/android) and
+# verifies scenario `m1.spike.boot` on a real emulator, judged by logs only
+# (tools/e2e/check.mjs one-to-one match; screenshots are never the assertion
+# — docs/ARCHITECTURE.md, "E2E verification").
 #
 # ubuntu-latest ships the Android SDK (ANDROID_HOME, sdkmanager, emulator)
-# with KVM hardware acceleration, so emulator E2E runs natively in CI —
+# with KVM hardware acceleration, so the emulator runs natively in CI —
 # no macOS-priced runners needed.
 
 on:
@@ -30,46 +31,76 @@ on:
 jobs:
   android-e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 
       # Same unpacked-cache pattern as dev/harmonyos: tool + dependency state
-      # survives between runs. Gradle caches activate when the M4 project
-      # exists (hashFiles guards the key); the emulator system image + AVD
-      # cache spares the ~1.5GB image download per run from M4 on.
+      # survives between runs (Gradle caches include the wrapper distribution).
       - uses: actions/setup-java@v4
-        if: env.PROJECT_PRESENT == 'true'
         with:
           distribution: temurin
           java-version: '17'
           cache: gradle
 
-      - name: Cache the emulator system image and AVD
-        uses: actions/cache@v4
-        with:
-          path: |
-            /usr/local/lib/android/sdk/system-images/android-35/default/x86_64*
-            ~/.android/avd/*
-          key: dev-android-emulator-api35-x86_64-v1
-
-      - name: Locate the Gradle project (lands at M4)
-        run: |
-          if [ -f "hosts/android/settings.gradle" ] || [ -f "hosts/android/settings.gradle.kts" ]; then
-            echo "PROJECT_PRESENT=true" >> "$GITHUB_ENV"
-          else
-            echo "::warning::No Gradle project in hosts/android yet — build and E2E land at M4"
-          fi
+      # The spike pins NDK 27.0.12077973 + CMake 3.22.1 (hosts/android/app/
+      # build.gradle.kts); ubuntu-latest images ship other NDK versions. The
+      # system image is idempotent: present on runner images, downloaded here
+      # when a future image drops it.
+      - name: Install the pinned NDK, CMake, and the API 35 system image
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" "system-images;android-35;default;x86_64" > /dev/null
 
       - name: Build APK (debug)
-        if: env.PROJECT_PRESENT == 'true'
         working-directory: hosts/android
-        run: |
-          ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon
 
-      # M4 will add (E2E by logs, never screenshots — ARCHITECTURE.md §3):
-      #   Emulator boot (ubuntu KVM: system-images;android-35;default/arm64-v8a)
-      #   install assembleDebug APK, adb launch, drive the flows (session
-      #   start, tool approval, streaming, checkpoint/resume)
-      #   Assertions: unique scenario-id per scenario, one structured logcat
-      #   entry per expected event, one-to-one expected<->logged matching.
+      # The emulator is driven directly: android-emulator-runner executes its
+      # script one `sh -c` per line and its post-boot animation pass failed
+      # broken-pipe right after boot (two red runs). Backgrounded here, it
+      # survives into the next step; run-spike-e2e.sh owns the whole E2E.
+      - name: Boot the emulator (background, KVM)
+        run: |
+          # /dev/kvm on hosted runners is root:kvm 0660 — the runner user
+          # cannot write it, the emulator dies at spawn, and every later adb
+          # wait would hang. Passwordless sudo is available; make it usable.
+          sudo chmod 666 /dev/kvm
+          # adb/emulator are not on PATH outside the (dropped) runner action;
+          # GITHUB_PATH persists into the verify step.
+          echo "$ANDROID_HOME/emulator" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          # Pin the AVD home explicitly for BOTH avdmanager and the emulator:
+          # on the current runner image the default location is not
+          # $HOME/.android/avd (create "succeeded" there while the emulator
+          # searched $HOME and died on Unknown AVD name). One variable,
+          # one location, checked before boot.
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
+          # `-d pixel_7` makes avdmanager fully non-interactive — without a
+          # --device it prompts for a custom hardware profile, and with
+          # piped stdin a newer avdmanager answers EOF as a SILENT CANCEL
+          # (exit 0, no AVD created). The ini check keeps any such failure
+          # loud here instead of cascading into the boot stage.
+          "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n dsh-spike -k "system-images;android-35;default;x86_64" -d pixel_7 --force < /dev/null
+          test -f "$ANDROID_AVD_HOME/dsh-spike.ini" || {
+            echo "::error::AVD create did not produce dsh-spike.ini in $ANDROID_AVD_HOME"
+            ls -la "$ANDROID_AVD_HOME" 2>&1 || true
+            exit 1
+          }
+          nohup "$ANDROID_HOME/emulator/emulator" -avd dsh-spike -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -port 5554 > /tmp/emulator.log 2>&1 < /dev/null &
+
+      # E2E by logs (AGENTS.md rule 7): capture the canonical dsh.spike lines
+      # from logcat and let tools/e2e/check.mjs deliver the verdict. One
+      # invocation; every wait inside is a polled condition with a deadline.
+      - name: Run m1.spike.boot on the emulator and verify (logs only)
+        run: bash hosts/android/ci/run-spike-e2e.sh
+
+      - name: Upload E2E evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1-spike-e2e-logs
+          path: |
+            /tmp/dsh-spike-logs.txt
+            /tmp/dsh-spike-verdict.json
+            /tmp/emulator.log
+          if-no-files-found: ignore

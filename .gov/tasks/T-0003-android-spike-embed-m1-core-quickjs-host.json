@@ -1,0 +1,21 @@
+{
+  "title": "Android spike: embed M1 core (quickjs host via NDK) and verify scenario m1.spike.boot on emulator-5554",
+  "created": "2026-09-19T12:55:48+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "[x] Gradle project in hosts/android builds the spike APK (quickjs-ng + dsh_spike_host.c via CMake/NDK, scenario assets bundled)",
+    "[x] Scenario runs on a dedicated serial thread; canonical dsh.spike.log lines captured from logcat",
+    "[x] tools/e2e/check.mjs PASS 9/9 in order on the captured log",
+    "[x] Artifacts committed under hosts/android/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
+    "dev-android.yml builds the spike; agent note written; PR open with gates green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0003"
+}
