@@ -1,0 +1,19 @@
+{
+  "title": "Land the govrail 0.45.0 upgrade (re-brief of T-0001)",
+  "created": "2026-09-19T08:50:30+00:00",
+  "rules": {
+    "hash": "8b7dca2d569a3c92cf78928da3bccc6108972a0cbbd111c27d5c37956150a415",
+    "files": {
+      ".gov/rules.md": "e6c4833f3dbb1cdd7cd0a324d67e663eb191d7a7fe39834c3b4f1380906a4131",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Full gov run green on the branch; card closed with an all-green receipt",
+    "PR opened, gates check green, squash-merged to main",
+    "Upstream issues filed: gates-merge repo-relative template path; failed-update orphan state; stale-card no-exit; pre-commit deprecation false positive"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0002"
+}

@@ -1,139 +1,184 @@
 {
- "modes": {
-  "all": [
-   "self-test",
-   "notes",
-   "pairing",
-   "note-presence",
-   "conflict-markers",
-   "code-size",
-   "logging",
-   "doc-crosslinks",
-   "archive",
-   "task"
-  ],
-  "quick": [
-   "notes"
-  ],
-  "governance": [
-   "self-test",
-   "verify-decisions"
+  "modes": {
+    "all": [
+      "self-test",
+      "notes",
+      "pairing",
+      "note-presence",
+      "conflict-markers",
+      "check",
+      "code-size",
+      "logging",
+      "doc-crosslinks",
+      "archive",
+      "task",
+      "plane"
+    ],
+    "quick": [
+      "notes"
+    ],
+    "governance": [
+      "self-test",
+      "verify-decisions",
+      "plane"
+    ]
+  },
+  "defaultMode": "all",
+  "concurrency": 4,
+  "gates": [
+    {
+      "id": "self-test",
+      "label": "governance rejection cases (the govrail tools' own regression)",
+      "command": [
+        "gov",
+        "self-test"
+      ],
+      "timeoutMs": 300000
+    },
+    {
+      "id": "notes",
+      "label": "note format",
+      "command": [
+        "gov",
+        "note",
+        "verify"
+      ],
+      "paths": [
+        ".agents/notes/**"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "pairing",
+      "label": "bilingual pairing (advisory until baselined)",
+      "command": [
+        "gov",
+        "verify",
+        "pairing"
+      ],
+      "allowFailure": true,
+      "stages": [
+        "pre-commit"
+      ],
+      "paths": [
+        "docs/**",
+        "README*",
+        ".gov/pairing.json"
+      ],
+      "timeoutMs": 180000
+    },
+    {
+      "id": "note-presence",
+      "label": "non-trivial changes carry an Agent Note (advisory)",
+      "command": [
+        "gov",
+        "note",
+        "presence"
+      ],
+      "timeoutMs": 60000
+    },
+    {
+      "id": "conflict-markers",
+      "label": "no unresolved conflict markers in changed files (issue #104)",
+      "command": [
+        "gov",
+        "verify",
+        "conflict-markers"
+      ],
+      "stages": [
+        "pre-commit"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "check",
+      "label": "syntax-class static checks over product code (shipped + .gov/checks/ rules)",
+      "command": [
+        "gov",
+        "check"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "code-size",
+      "label": "source files <=500 lines, functions <=50 lines, indent <=5 levels",
+      "command": [
+        "python3",
+        "tools/check-size.py"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "logging",
+      "label": "unified logger only; per-module logger; per-function logs; release silence wired",
+      "command": [
+        "python3",
+        "tools/check-logging.py"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "doc-crosslinks",
+      "label": "bilingual doc pairs must link to each other (language navigation)",
+      "command": [
+        "python3",
+        "tools/check-crosslinks.py"
+      ],
+      "timeoutMs": 60000
+    },
+    {
+      "id": "archive",
+      "label": "archived-notes seal",
+      "command": [
+        "gov",
+        "note",
+        "archive-verify"
+      ],
+      "paths": [
+        ".agents/notes/archived/**"
+      ],
+      "timeoutMs": 60000
+    },
+    {
+      "id": "task",
+      "label": "task cards",
+      "command": [
+        "gov",
+        "task",
+        "check"
+      ],
+      "paths": [
+        ".gov/tasks/**"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "verify-decisions",
+      "label": "decisions table guard (numbering, alternatives)",
+      "command": [
+        "gov",
+        "decision",
+        "verify"
+      ],
+      "paths": [
+        "docs/decisions.md"
+      ],
+      "timeoutMs": 60000
+    },
+    {
+      "id": "plane",
+      "label": "governance-plane seal (rules + gate set tamper-evidence)",
+      "command": [
+        "gov",
+        "verify-plane"
+      ],
+      "paths": [
+        ".gov/rules.md",
+        "gates.json",
+        ".gov/pairing.json",
+        ".gov/plane-seal.json"
+      ],
+      "timeoutMs": 60000
+    }
   ]
- },
- "defaultMode": "all",
- "concurrency": 4,
- "gates": [
-  {
-   "id": "self-test",
-   "label": "governance rejection cases (the govrail tools' own regression)",
-   "command": [
-    "gov",
-    "self-test"
-   ]
-  },
-  {
-   "id": "notes",
-   "label": "note format",
-   "command": [
-    "gov",
-    "note",
-    "verify"
-   ],
-   "paths": [
-    ".agents/notes/**"
-   ]
-  },
-  {
-   "id": "pairing",
-   "label": "bilingual pairing (advisory until baselined)",
-   "command": [
-    "gov",
-    "verify",
-    "pairing"
-   ],
-   "allowFailure": true,
-   "paths": [
-    "docs/**",
-    "README*",
-    ".gov/pairing.json"
-   ]
-  },
-  {
-   "id": "note-presence",
-   "label": "non-trivial changes carry an Agent Note (advisory)",
-   "command": [
-    "gov",
-    "note",
-    "presence"
-   ]
-  },
-  {
-   "id": "conflict-markers",
-   "label": "no unresolved conflict markers in changed files (issue #104)",
-   "command": [
-    "gov",
-    "verify",
-    "conflict-markers"
-   ]
-  },
-  {
-   "id": "code-size",
-   "label": "source files <=500 lines, functions <=50 lines, indent <=5 levels",
-   "command": [
-    "python3",
-    "tools/check-size.py"
-   ]
-  },
-  {
-   "id": "logging",
-   "label": "unified logger only; per-module logger; per-function logs; release silence wired",
-   "command": [
-    "python3",
-    "tools/check-logging.py"
-   ]
-  },
-  {
-   "id": "doc-crosslinks",
-   "label": "bilingual doc pairs must link to each other (language navigation)",
-   "command": [
-    "python3",
-    "tools/check-crosslinks.py"
-   ]
-  },
-  {
-   "id": "archive",
-   "label": "archived-notes seal",
-   "command": [
-    "gov",
-    "note",
-    "archive-verify"
-   ],
-   "paths": [
-    ".agents/notes/archived/**"
-   ]
-  },
-  {
-   "id": "task",
-   "label": "task cards",
-   "command": [
-    "gov",
-    "task",
-    "check"
-   ],
-   "paths": [
-    ".gov/tasks/**"
-   ]
-  },
-  {
-   "id": "verify-decisions",
-   "label": "decisions table guard (numbering, alternatives)",
-   "command": [
-    "gov",
-    "verify-decisions"
-   ],
-   "paths": [
-    "docs/decisions.md"
-   ]
-  }
- ]
 }

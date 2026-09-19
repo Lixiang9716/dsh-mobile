@@ -1,5 +1,5 @@
 {
-  "version": "0.37.1",
+  "version": "0.45.0",
   "created": [
     "gates.json",
     ".agents/notes/README.md",
@@ -16,15 +16,15 @@
     "pre-commit"
   ],
   "templates": {
-    ".gov/rules.md": "77bbd51bdd524d674d5d6ac77a07c1211457883f851c97349ef64a8f7cc0ca61",
+    ".gov/rules.md": "e6c4833f3dbb1cdd7cd0a324d67e663eb191d7a7fe39834c3b4f1380906a4131",
     "gates.json": "bbd3517b6d95e5fd7857ffe88c62902114e6c79525d0c263944b41c557cb8989",
     ".agents/notes/README.md": "5a0651b310cd1729b9d9082a659b4580dc8b8a2fede4fb7501212c2d4b038ca8",
-    ".agents/skills/recall-first/SKILL.md": "fda01d1f51ccccc8fa71d4e67f214e83a7d72d9a7f42fd3b95d4ea334c82cdd4",
-    ".agents/skills/pre-push-checks/SKILL.md": "3bfb1896e111ed70fbf023259004c36a2b64c799e7279110481dda0b35016d65",
-    ".agents/skills/code-review/SKILL.md": "3b4e5845a24da5b671d466aed891aff7dcfc6370eae2848d54fc4fddc57419d4",
-    ".agents/skills/archive-agent-notes/SKILL.md": "18f8d28707eed7417faa1181af435e013c023f203af619027a5de541b2879de2",
+    ".agents/skills/recall-first/SKILL.md": "0f6db72eefb7c22e01fa9789a8b8b1069ee1b78883960bb9b4fdf72503931ade",
+    ".agents/skills/pre-push-checks/SKILL.md": "a9f9d615b1551fcc3e8b7fe513dfd049ad57bc0e70deb5e5736e3ca898af2ffb",
+    ".agents/skills/code-review/SKILL.md": "5d875393d0ce4365d6da803219099dfe110e767afa9b345181548dafcd1e54e1",
+    ".agents/skills/archive-agent-notes/SKILL.md": "4f1d650ca566adaec1dbfc401badd4b1b5c7515a97a00b6f12e946fb50f1dda1",
     ".gov/rejections/README.md": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419",
     ".github/workflows/gov.yml": "da44ec3f7781aef2b3302377e78620fc9d242586ebb994160850d00b44277265",
-    ".agents/skills/govrail/SKILL.md": "06fbbba3dd38fd01dfa5b155607ff6b3db981f21fba5e7343afaeb5240372851"
+    ".agents/skills/govrail/SKILL.md": "7fc456c0d0fdb6139831810229d98d37fcd1cfa165e33d1cf3731a541c249bf5"
   }
 }
