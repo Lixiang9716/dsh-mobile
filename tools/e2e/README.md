@@ -32,6 +32,8 @@ everywhere, so one checker serves all hosts.
 | `m2-bridge-smoke.json` | `m2.bridge.smoke` | macOS CLI | 6 events — C bridge dispatch: fs read/write/invalid, keychain unavailable |
 | `m2-gateway-binding.json` | `m2.gateway.binding` | iOS, UI-driven | 19 events — the frozen real-gateway-binding sequence (fs, http, picker, scope, approval, keychain, notify, app state) |
 | `m2-gateway-audit.json` | `m2.gateway.audit` | iOS, UI-driven | 15 flat audit records mirroring the binding call sequence, incl. the denied fsRead |
+| `m2-session.json` | `m2.session` | macOS CLI + iOS (auto-run) | 22 events — mini agent session over the system plugins: registry install, host readiness, mock-LLM token deltas, subprocess tool persisting via fs under scope `app`, session complete |
+| `m2-webclient-mount.json` | `m2.webclient.mount` | iOS, carrier-side | 5 events — Web Client mount, WS connect, first/last streamed token delta, session complete |
 
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
@@ -76,6 +78,24 @@ every UI step first tries the accessibility tree (`idb ui describe-all`,
 known to error on some iOS 26.5 runtimes) and only falls back to the
 constants. Recalibrate them against the saved screenshots for your
 simulator after the first live run.
+
+### Session runner (local M2 on-device session E2E)
+
+`run-ios-session.sh` is the auto-run session driver — NO UI interaction:
+the scenario starts once the mounted Web Client connects (host.info
+readiness signal) and uses only scope `app` fs (no alerts, pickers, or
+banners), so no idb/WDA driving is needed:
+
+```sh
+tools/e2e/run-ios-session.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It builds DSHSpike, launches it in session mode (`-dsh-mode session`),
+waits for the `webclient.mounted` / `ws.token-delta` / terminal
+`spike: sequence session=` markers (screenshots at page-loaded,
+mid-stream, final transcript), then verifies the captured log against
+BOTH `m2-session.json` and `m2-webclient-mount.json`. Same rule-8
+polling discipline and 300s overall deadline as `run-ios.sh`.
 
 The m2-bridge-smoke scenario runs on the macOS CLI (not iOS) and is checked
 directly:

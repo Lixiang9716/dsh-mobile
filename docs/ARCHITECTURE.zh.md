@@ -155,7 +155,7 @@ dsh-mobile/
 
 - **M0 契约冻结**：原语契约 v0（≤10 原语）+ bundle 布局 + manifest schema + receipt 格式。
 - **M1 双 Spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
-- **M2 真机会话**：dsh-fs-ios + 假 LLM 会话端到端；随后接真实 LLM API。
+- **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
 - **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
 - **M4/M5**：Android、鸿蒙宿主。
 

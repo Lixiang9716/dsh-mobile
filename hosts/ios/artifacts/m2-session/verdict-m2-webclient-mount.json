@@ -1,0 +1,8 @@
+{
+  "scenario": "m2.webclient.mount",
+  "pass": true,
+  "expected": 5,
+  "logged": 5,
+  "failures": [],
+  "parseErrors": []
+}

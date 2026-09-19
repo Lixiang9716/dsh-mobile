@@ -1,0 +1,26 @@
+{
+  "title": "M2 PR-B: Web Client mount + first on-device session",
+  "created": "2026-09-19T22:23:56+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "presentation/web-client plugin v0 + projection protocol",
+    "iOS session mode: stager/gen/SessionRuntime/AppDelegate mount the active Web Client",
+    "run-ios-session.sh green: m2-session + m2-webclient-mount on device, screenshots committed",
+    "regression run-ios.sh 4/4 green",
+    "status docs flipped (README/zh, ARCHITECTURE/zh) + note + green gates + PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0008",
+  "void": {
+    "ts": "2026-09-19T22:26:10+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work landed verified on this branch (run-ios-session green: m2.session 22/22 + m2.webclient.mount 5/5 on device with screenshots; regression run-ios.sh 4/4). Voided OPEN per the T-0005/6/7 precedent: gov task close under govrail 0.47.1 is a structural dead end (#329/#339 \u2014 close stamps NOT_SELECTED for scope-excluded governance gates and _check_receipt rejects it, while void refuses done cards), so the card exits as void with the work verifiably green in the same batch."
+  }
+}

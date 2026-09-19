@@ -22,15 +22,31 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
     ("gateway_js", SPIKE / "gateway.js"),
+    ("registry_js", SPIKE / "registry.js"),
     ("manifest_json", SPIKE / "manifest.json"),
     ("scenario_js", SPIKE / "scenario" / "m1-spike-boot.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "m2-gateway-binding.js"),
     ("scenario_m2_smoke_js", SPIKE / "scenario" / "m2-bridge-smoke.js"),
+    ("scenario_m2_session_js", SPIKE / "scenario" / "m2-session.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
      SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.1" / "lib" / "index.js"),
+    # system implementation plugins (repo-root tree, staged bundle-relative
+    # under system-plugins/ — the scenario's canonical import specifier)
+    ("plugin_fs_manifest", REPO / "system-plugins" / "dsh-fs" / "manifest.json"),
+    ("plugin_fs_js", REPO / "system-plugins" / "dsh-fs" / "index.js"),
+    ("plugin_subprocess_manifest",
+     REPO / "system-plugins" / "dsh-subprocess-quickjs" / "manifest.json"),
+    ("plugin_subprocess_js",
+     REPO / "system-plugins" / "dsh-subprocess-quickjs" / "index.js"),
+    ("plugin_ui_manifest", REPO / "system-plugins" / "dsh-ui" / "manifest.json"),
+    ("plugin_ui_js", REPO / "system-plugins" / "dsh-ui" / "index.js"),
+    # the active Web Client plugin (presentation/, type=web-client, web/ dir)
+    ("webclient_manifest", REPO / "presentation" / "web-client" / "manifest.json"),
+    ("webclient_index_html", REPO / "presentation" / "web-client" / "web" / "index.html"),
+    ("webclient_main_js", REPO / "presentation" / "web-client" / "web" / "main.js"),
 ]
 
 

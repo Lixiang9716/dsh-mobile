@@ -29,6 +29,27 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_scenario_m2_smoke_js), under: root)
         try write("scenario/m1-carrier-loopback.js",
                   data: resData(dsh_spike_res_scenario_carrier_js), under: root)
+        try write("registry.js", data: resData(dsh_spike_res_registry_js), under: root)
+        try write("scenario/m2-session.js",
+                  data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
+        try write("system-plugins/dsh-fs/manifest.json",
+                  data: resData(dsh_spike_res_plugin_fs_manifest), under: root)
+        try write("system-plugins/dsh-fs/index.js",
+                  data: resData(dsh_spike_res_plugin_fs_js), under: root)
+        try write("system-plugins/dsh-subprocess-quickjs/manifest.json",
+                  data: resData(dsh_spike_res_plugin_subprocess_manifest), under: root)
+        try write("system-plugins/dsh-subprocess-quickjs/index.js",
+                  data: resData(dsh_spike_res_plugin_subprocess_js), under: root)
+        try write("system-plugins/dsh-ui/manifest.json",
+                  data: resData(dsh_spike_res_plugin_ui_manifest), under: root)
+        try write("system-plugins/dsh-ui/index.js",
+                  data: resData(dsh_spike_res_plugin_ui_js), under: root)
+        try write("webclient/manifest.json",
+                  data: resData(dsh_spike_res_webclient_manifest), under: root)
+        try write("webclient/web/index.html",
+                  data: resData(dsh_spike_res_webclient_index_html), under: root)
+        try write("webclient/web/main.js",
+                  data: resData(dsh_spike_res_webclient_main_js), under: root)
         try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
                   under: root)
         try write("web/carrier-page.js", data: resData(dsh_spike_res_web_page_js),

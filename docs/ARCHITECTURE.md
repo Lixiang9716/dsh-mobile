@@ -175,7 +175,7 @@ dsh-mobile/
 
 - **M0 contract freeze**: primitive contract v0 (≤10 primitives) + bundle layout + manifest schema + receipt format.
 - **M1 dual spikes**: A) quickjs-ng shim running upstream pure-logic packages (util-crypto / session-persistence); B) iOS host skeleton (QuickJS thread + carrier + WKWebView official UI lit up).
-- **M2 on-device session**: dsh-fs-ios + mock-LLM session end-to-end; then the real LLM API.
+- **M2 on-device session**: DONE — system implementation plugins (`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`), the `m2.session` mock-LLM session end-to-end (CLI + on-device), and the first Web Client mount rendering the live session; the real LLM API is still open.
 - **M3 pluginization**: install pipeline (receipt transactions) + the three UI-plugin levels + capability negotiation.
 - **M4/M5**: Android and HarmonyOS hosts.
 

@@ -11,6 +11,10 @@ import Network
 final class CarrierServer {
     static let wsPath = "/ws"
     var onWSMessage: ((String) -> Void)?
+    /// Fired on the server queue whenever a static file is served with 200 —
+    /// the carrier-side "the Web Client mounted" signal (optional: sessions
+    /// that don't care leave it nil; the m1 drive is unaffected).
+    var onStaticServed: ((String) -> Void)?
     private(set) var port: UInt16 = 0
 
     private let queue = DispatchQueue(label: "org.dsh.carrier.server")
@@ -199,6 +203,7 @@ final class CarrierServer {
         // record the REQUEST path ("/" for the document), which is what the
         // scenario's static-serving evidence asserts on
         servedPaths.append(path)
+        onStaticServed?(path)
         respond(status: 200, body: data,
                 contentType: isHTML ? "text/html" : "text/javascript", conn: conn)
     }
