@@ -1,0 +1,431 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0616B51B9FF02B77E9C3FB0C /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 720EAC5E7CB3B915D44BA559 /* libunicode.c */; };
+		13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */ = {isa = PBXBuildFile; fileRef = 09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */; };
+		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
+		33A51A43A6A62C388B17A186 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = DC3569AF41FEB55EFE62C411 /* quickjs.c */; };
+		45E4B5FC6F22DD5EC0A47074 /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */; };
+		70393F00D526CAF3671D86A5 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = E567ADECE3014374A7FA3B0D /* libregexp.c */; };
+		A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DD761A8299F885CFFFBF71 /* AppDelegate.swift */; };
+		B0CB5152F0B11C21A8CA1B3F /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6FE73A102ECF285B86929E6F /* dsh_spike_host.c */; };
+		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpikeBundle.c; sourceTree = "<group>"; };
+		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
+		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
+		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
+		6FE73A102ECF285B86929E6F /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
+		720EAC5E7CB3B915D44BA559 /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
+		74DD761A8299F885CFFFBF71 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
+		DC3569AF41FEB55EFE62C411 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
+		E567ADECE3014374A7FA3B0D /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
+		F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		261210B6C944DA738F7FBC65 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				74DD761A8299F885CFFFBF71 /* AppDelegate.swift */,
+				6A1382ABE6EDFB24119B9EEE /* Bridge.h */,
+				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
+				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
+			);
+			path = Source;
+			sourceTree = "<group>";
+		};
+		2C20714AAAD4C0DFFEFE2EFD /* host */ = {
+			isa = PBXGroup;
+			children = (
+				6FE73A102ECF285B86929E6F /* dsh_spike_host.c */,
+			);
+			path = host;
+			sourceTree = "<group>";
+		};
+		37198F0409A2A46638EFE82B /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				5AA455F0EAB7376AB3045ADF /* quickjs-ng */,
+			);
+			path = vendor;
+			sourceTree = "<group>";
+		};
+		5AA455F0EAB7376AB3045ADF /* quickjs-ng */ = {
+			isa = PBXGroup;
+			children = (
+				D6F018828089482961E3D35A /* 0.17.0 */,
+			);
+			path = "quickjs-ng";
+			sourceTree = "<group>";
+		};
+		63720D2B18C6F84F55630336 /* spike */ = {
+			isa = PBXGroup;
+			children = (
+				2C20714AAAD4C0DFFEFE2EFD /* host */,
+				37198F0409A2A46638EFE82B /* vendor */,
+			);
+			path = spike;
+			sourceTree = "<group>";
+		};
+		84F95FD6AADCA843676C4DF9 = {
+			isa = PBXGroup;
+			children = (
+				EAA4B75B2F1CFEF88CAB445B /* App */,
+				E95FED3BFBC71913067D2839 /* dsh-mobile-ios */,
+				AF09F1B8671210489366EA0F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A551A48B835E92B60D8D2724 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */,
+				24888637EE42A0E9E40132A8 /* SpikeBundle.h */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
+		AF09F1B8671210489366EA0F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D6F018828089482961E3D35A /* 0.17.0 */ = {
+			isa = PBXGroup;
+			children = (
+				F55DDF9E0A14FE1F56F1FD2A /* dtoa.c */,
+				E567ADECE3014374A7FA3B0D /* libregexp.c */,
+				720EAC5E7CB3B915D44BA559 /* libunicode.c */,
+				DC3569AF41FEB55EFE62C411 /* quickjs.c */,
+			);
+			path = 0.17.0;
+			sourceTree = "<group>";
+		};
+		E3532607880AC8B5CAD8C5C9 /* runtime */ = {
+			isa = PBXGroup;
+			children = (
+				63720D2B18C6F84F55630336 /* spike */,
+			);
+			path = runtime;
+			sourceTree = "<group>";
+		};
+		E95FED3BFBC71913067D2839 /* dsh-mobile-ios */ = {
+			isa = PBXGroup;
+			children = (
+				E3532607880AC8B5CAD8C5C9 /* runtime */,
+			);
+			name = "dsh-mobile-ios";
+			path = ../..;
+			sourceTree = "<group>";
+		};
+		EAA4B75B2F1CFEF88CAB445B /* App */ = {
+			isa = PBXGroup;
+			children = (
+				9AAA0B16F1D064F20E961EAF /* Info.plist */,
+				A551A48B835E92B60D8D2724 /* Generated */,
+				261210B6C944DA738F7FBC65 /* Source */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C815DDD6C564AE4290EC2C08 /* DSHSpike */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 76CE008D03C6EE3793B0F2BC /* Build configuration list for PBXNativeTarget "DSHSpike" */;
+			buildPhases = (
+				405A338A89E2FBE347355326 /* GenerateSpikeBundle */,
+				EB4572C5EB0CCEA1304E8FD7 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DSHSpike;
+			packageProductDependencies = (
+			);
+			productName = DSHSpike;
+			productReference = 8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3CCC20395AC8ADDAA4AB79D6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 4F8D8F19B455255473978E4B /* Build configuration list for PBXProject "DSHSpike" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 84F95FD6AADCA843676C4DF9;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AF09F1B8671210489366EA0F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C815DDD6C564AE4290EC2C08 /* DSHSpike */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		405A338A89E2FBE347355326 /* GenerateSpikeBundle */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				Tools/gen_bundle_header.py,
+				../../runtime/spike/logger.js,
+				"../../runtime/spike/scenario/m1-spike-boot.js",
+				"../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
+			);
+			name = GenerateSpikeBundle;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				App/Generated/SpikeBundle.h,
+				App/Generated/SpikeBundle.c,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "python3 \"$SRCROOT/Tools/gen_bundle_header.py\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EB4572C5EB0CCEA1304E8FD7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */,
+				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
+				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
+				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
+				B0CB5152F0B11C21A8CA1B3F /* dsh_spike_host.c in Sources */,
+				45E4B5FC6F22DD5EC0A47074 /* dtoa.c in Sources */,
+				70393F00D526CAF3671D86A5 /* libregexp.c in Sources */,
+				0616B51B9FF02B77E9C3FB0C /* libunicode.c in Sources */,
+				33A51A43A6A62C388B17A186 /* quickjs.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		59226CA0FA70B68745B404A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../runtime/spike/host",
+					"$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0",
+					"$(SRCROOT)/App/Generated",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		9549F871B62E97A010E24D31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.dsh.DSHSpike;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = App/Source/Bridge.h;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C8ED6FB500C18E7E783BD3D7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.dsh.DSHSpike;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = App/Source/Bridge.h;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		F2B98E611E6539F6054BAEC8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../../runtime/spike/host",
+					"$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0",
+					"$(SRCROOT)/App/Generated",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4F8D8F19B455255473978E4B /* Build configuration list for PBXProject "DSHSpike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2B98E611E6539F6054BAEC8 /* Debug */,
+				59226CA0FA70B68745B404A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		76CE008D03C6EE3793B0F2BC /* Build configuration list for PBXNativeTarget "DSHSpike" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9549F871B62E97A010E24D31 /* Debug */,
+				C8ED6FB500C18E7E783BD3D7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3CCC20395AC8ADDAA4AB79D6 /* Project object */;
+}
