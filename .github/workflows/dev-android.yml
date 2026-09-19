@@ -68,16 +68,22 @@ jobs:
           # GITHUB_PATH persists into the verify step.
           echo "$ANDROID_HOME/emulator" >> "$GITHUB_PATH"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
+          # Pin the AVD home explicitly for BOTH avdmanager and the emulator:
+          # on the current runner image the default location is not
+          # $HOME/.android/avd (create "succeeded" there while the emulator
+          # searched $HOME and died on Unknown AVD name). One variable,
+          # one location, checked before boot.
+          export ANDROID_AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           # `-d pixel_7` makes avdmanager fully non-interactive — without a
           # --device it prompts for a custom hardware profile, and with
           # piped stdin a newer avdmanager answers EOF as a SILENT CANCEL
-          # (exit 0, no AVD created — the emulator then dies "Unknown AVD
-          # name"). The ini check below keeps any such failure loud here
-          # instead of cascading into the boot stage.
+          # (exit 0, no AVD created). The ini check keeps any such failure
+          # loud here instead of cascading into the boot stage.
           "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n dsh-spike -k "system-images;android-35;default;x86_64" -d pixel_7 --force < /dev/null
-          test -f "$HOME/.android/avd/dsh-spike.ini" || {
-            echo "::error::AVD create did not produce dsh-spike.ini"
-            ls -la "$HOME/.android/avd" 2>&1 || true
+          test -f "$ANDROID_AVD_HOME/dsh-spike.ini" || {
+            echo "::error::AVD create did not produce dsh-spike.ini in $ANDROID_AVD_HOME"
+            ls -la "$ANDROID_AVD_HOME" 2>&1 || true
             exit 1
           }
           nohup "$ANDROID_HOME/emulator/emulator" -avd dsh-spike -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -port 5554 > /tmp/emulator.log 2>&1 < /dev/null &
