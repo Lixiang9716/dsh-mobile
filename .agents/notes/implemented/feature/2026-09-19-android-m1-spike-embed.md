@@ -48,11 +48,12 @@ while the spike's minSdk is 26.
   (checker PASS 9/9), screenshot.png (human evidence only), receipt.json.
 - CI: `.github/workflows/dev-android.yml` builds the APK, boots the API 35
   x86_64 emulator (KVM), captures `logcat -d -s dsh.spike`, and lets
-  `tools/e2e/check.mjs` deliver the verdict; completion is polled with a
-  120s deadline, never a blind wait. The poll loop lives in
-  `hosts/android/ci/await-spike-result.sh` because the emulator-runner
-  executes its `script:` one `sh -c` per line — a multi-line `until` loop
-  in the workflow split mid-syntax and failed the first CI run.
+  `tools/e2e/check.mjs` deliver the verdict; every wait is a polled
+  condition with a deadline, never a blind wait. The emulator is driven
+  directly (`avdmanager` + background `emulator` +
+  `hosts/android/ci/run-spike-e2e.sh` owning boot-wait, install, launch,
+  poll, capture, verdict in one invocation) — android-emulator-runner was
+  dropped after two red runs (below).
 
 ## Alternatives considered
 
@@ -71,6 +72,14 @@ while the spike's minSdk is 26.
   of the activity — rejected for M1: the activity proves a real user-facing
   host process boots the engine; the CI harness can adopt instrumentation
   later without touching the scenario or checker.
+- `reactivecircus/android-emulator-runner@v2` for the CI emulator —
+  rejected after two failed runs: it executes its `script:` one `sh -c`
+  per line (the multi-line `until` deadline poll split mid-syntax and
+  aborted with a shell error), and on the retry its built-in
+  disable-animations pass failed broken-pipe seconds after
+  `sys.boot_completed`, before any script line ran. Driving `emulator`
+  directly keeps boot, install, launch, and poll visible, retry-capable,
+  and deadline-bounded in one place (`hosts/android/ci/run-spike-e2e.sh`).
 
 ## Consequences
 

@@ -44,39 +44,30 @@ jobs:
           cache: gradle
 
       # The spike pins NDK 27.0.12077973 + CMake 3.22.1 (hosts/android/app/
-      # build.gradle.kts); ubuntu-latest images ship other NDK versions.
-      - name: Install the pinned NDK and CMake
-        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" > /dev/null
-
-      - name: Cache the emulator system image and AVD
-        uses: actions/cache@v4
-        with:
-          path: |
-            /usr/local/lib/android/sdk/system-images/android-35/default/x86_64*
-            ~/.android/avd/*
-          key: dev-android-emulator-api35-x86_64-v1
+      # build.gradle.kts); ubuntu-latest images ship other NDK versions. The
+      # system image is idempotent: present on runner images, downloaded here
+      # when a future image drops it.
+      - name: Install the pinned NDK, CMake, and the API 35 system image
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" "system-images;android-35;default;x86_64" > /dev/null
 
       - name: Build APK (debug)
         working-directory: hosts/android
         run: ./gradlew assembleDebug --no-daemon
 
+      # The emulator is driven directly: android-emulator-runner executes its
+      # script one `sh -c` per line and its post-boot animation pass failed
+      # broken-pipe right after boot (two red runs). Backgrounded here, it
+      # survives into the next step; run-spike-e2e.sh owns the whole E2E.
+      - name: Boot the emulator (background, KVM)
+        run: |
+          echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n dsh-spike -k "system-images;android-35;default;x86_64" --force
+          nohup "$ANDROID_HOME/emulator/emulator" -avd dsh-spike -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -port 5554 > /tmp/emulator.log 2>&1 < /dev/null &
+
       # E2E by logs (AGENTS.md rule 7): capture the canonical dsh.spike lines
-      # from logcat and let tools/e2e/check.mjs deliver the verdict.
-      - uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 35
-          target: default
-          arch: x86_64
-          # NOTE: the runner executes this script one `sh -c` PER LINE — every
-          # line must be a complete command (no multi-line constructs). The
-          # deadline poll therefore lives in hosts/android/ci/.
-          script: |
-            adb install -r hosts/android/app/build/outputs/apk/debug/app-debug.apk
-            adb logcat -c
-            adb shell am start -n com.dshmobile.spike/.MainActivity
-            bash hosts/android/ci/await-spike-result.sh
-            adb logcat -d -s dsh.spike > /tmp/dsh-spike-logs.txt
-            node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m1-spike-boot.json --log /tmp/dsh-spike-logs.txt --out /tmp/dsh-spike-verdict.json
+      # from logcat and let tools/e2e/check.mjs deliver the verdict. One
+      # invocation; every wait inside is a polled condition with a deadline.
+      - name: Run m1.spike.boot on the emulator and verify (logs only)
+        run: bash hosts/android/ci/run-spike-e2e.sh
 
       - name: Upload E2E evidence
         if: always()
@@ -86,4 +77,5 @@ jobs:
           path: |
             /tmp/dsh-spike-logs.txt
             /tmp/dsh-spike-verdict.json
+            /tmp/emulator.log
           if-no-files-found: ignore
