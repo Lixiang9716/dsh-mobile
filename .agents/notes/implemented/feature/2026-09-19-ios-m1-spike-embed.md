@@ -1,5 +1,7 @@
 # iOS M1 spike embed: quickjs host in a minimal simulator app
 
+Status: implemented
+
 Date: 2026-09-19
 Class: feature
 Task: T-0003
