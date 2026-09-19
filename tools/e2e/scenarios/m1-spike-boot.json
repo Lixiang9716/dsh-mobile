@@ -1,0 +1,15 @@
+{
+  "scenario": "m1.spike.boot",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "runtime.created", "match": { "engine": "quickjs-ng", "engineVersion": "0.17.0" } },
+    { "event": "sink.bound", "match": {} },
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "package.loaded", "match": { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.1.6-alpha.1" } },
+    { "event": "crypto.shim.ok", "match": { "v4": true } },
+    { "event": "base64.shim.ok", "match": { "input": "hello", "b64": "aGVsbG8=" } },
+    { "event": "gateway.call.ok", "match": { "name": "fsRead", "bytes": 17 } },
+    { "event": "gateway.call.unavailable", "match": { "name": "keychainGet", "code": "unavailable" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

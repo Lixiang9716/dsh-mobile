@@ -37,6 +37,11 @@ tmp/
 # govrail 运行账本（本地趋势数据，不入库）
 .gov/history/
 
+# vendored engine sources — pinned + sha256-verified by
+# runtime/spike/vendor/ensure.sh; untracked so the syntax-class checker
+# never judges upstream C (compile truth belongs to the compilers)
+runtime/spike/vendor/quickjs-ng/
+
 # Python
 __pycache__/
 .gov/tasks/.new.lock

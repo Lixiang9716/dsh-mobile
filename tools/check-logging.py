@@ -30,6 +30,10 @@ EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
 LOGGER_DIR = "runtime/logger"
 EXEMPT_MARKER = "// dsh:logging-exempt"
 EXEMPT_SCAN_LINES = 12
+# Vendored upstream packages live under a vendor/ dir and are kept verbatim
+# (upstream discipline): they cannot declare our logger, so the unified-
+# logging contract applies only to code this repo authors.
+VENDOR_SEGMENT = "/vendor/"
 
 LOGGER_FACTORY = re.compile(r"\bcreateLogger\s*\(")
 BARE_CONSOLE = re.compile(r"\bconsole\.(log|debug|info|warn|error|trace)\s*\(")
@@ -48,10 +52,14 @@ cs = _load_sibling()
 
 
 def tracked_files():
-    out = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True).stdout
+    out = subprocess.run(
+        ["git", "ls-files"], capture_output=True, text=True, check=True,
+        encoding="utf-8", errors="replace",
+    ).stdout
     return [
         n for n in out.splitlines()
-        if n.startswith(SCOPE_DIRS) and Path(n).suffix in EXTS and Path(n).exists()
+        if n.startswith(SCOPE_DIRS) and VENDOR_SEGMENT not in n
+        and Path(n).suffix in EXTS and Path(n).exists()
     ]
 
 
