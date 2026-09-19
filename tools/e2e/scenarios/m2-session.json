@@ -1,0 +1,28 @@
+{
+  "scenario": "m2.session",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "plugins.installed", "match": { "count": 3, "services": "fs,subprocess,ui" } },
+    { "event": "host.ready", "match": { "signalled": true } },
+    { "event": "session.created", "match": { "sessionId": "s-m2-0001", "scope": "app" } },
+    { "event": "agent.started", "match": { "model": "mock-mini", "tools": 1 } },
+    { "event": "llm.stream.started", "match": { "turn": 1 } },
+    { "event": "llm.delta", "match": { "index": 0, "text": "Hello" } },
+    { "event": "llm.delta", "match": { "index": 1, "text": " from" } },
+    { "event": "llm.delta", "match": { "index": 2, "text": " DSH" } },
+    { "event": "llm.stream.completed", "match": { "turn": 1, "deltas": 3, "toolCalls": 1 } },
+    { "event": "tool.invoked", "match": { "name": "notes.persist", "call": "t-1" } },
+    { "event": "subprocess.spawned", "match": { "taskId": "task-1", "steps": 2 } },
+    { "event": "subprocess.progress", "match": { "taskId": "task-1", "step": 1 } },
+    { "event": "subprocess.progress", "match": { "taskId": "task-1", "step": 2 } },
+    { "event": "fs.write.ok", "match": { "written": 27, "path": "m2-session/result.txt" } },
+    { "event": "subprocess.completed", "match": { "taskId": "task-1", "ok": true } },
+    { "event": "tool.result", "match": { "name": "notes.persist", "call": "t-1", "ok": true } },
+    { "event": "llm.stream.started", "match": { "turn": 2 } },
+    { "event": "llm.delta", "match": { "index": 3, "text": " Saved" } },
+    { "event": "llm.delta", "match": { "index": 4, "text": " ok" } },
+    { "event": "llm.stream.completed", "match": { "turn": 2, "deltas": 2, "toolCalls": 0 } },
+    { "event": "session.completed", "match": { "sessionId": "s-m2-0001", "status": "pass", "deltas": 5, "toolCalls": 1, "persisted": true } }
+  ]
+}

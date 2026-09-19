@@ -1,0 +1,14 @@
+{
+  "host": "macos-cli (darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m2.session",
+  "systemPlugins": ["dsh-fs", "dsh-subprocess-quickjs", "dsh-ui"],
+  "manifestSchemaValidation": "all three plugin manifests validate against contract/schemas/manifest.schema.json (jsonschema Draft2020-12)",
+  "checker": "tools/e2e/scenarios/m2-session.json",
+  "events": 22,
+  "exitCode": 0
+}
