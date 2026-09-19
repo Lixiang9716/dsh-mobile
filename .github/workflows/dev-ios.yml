@@ -93,6 +93,9 @@ jobs:
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
           xcrun simctl install "$UDID" hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+          # simctl launch APPENDS to the capture files; the committed evidence
+          # from the local run must go so the checker sees only this run.
+          rm -f "$ART/logs.txt" "$ART/nslog-stderr.txt"
           xcrun simctl launch --terminate-running-process \
             --stdout="$PWD/$ART/logs.txt" \
             --stderr="$PWD/$ART/nslog-stderr.txt" \
