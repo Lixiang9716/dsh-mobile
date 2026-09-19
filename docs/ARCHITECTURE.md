@@ -177,7 +177,7 @@ dsh-mobile/
 - **M1 dual spikes**: A) quickjs-ng shim running upstream pure-logic packages (util-crypto / session-persistence); B) iOS host skeleton (QuickJS thread + carrier + WKWebView official UI lit up).
 - **M2 on-device session**: DONE — system implementation plugins (`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`), the `m2.session` mock-LLM session end-to-end (CLI + on-device), and the first Web Client mount rendering the live session; the real LLM API is still open.
 - **M3 pluginization**: install pipeline (receipt transactions) + the three UI-plugin levels + capability negotiation.
-- **M4/M5**: Android and HarmonyOS hosts.
+- **M4/M5**: Android and HarmonyOS hosts. M5 started: the isomorphic HarmonyOS host runs all three spike scenarios in one launch — m2.session (over the registry + the three system plugins) is green on the emulator alongside m1.spike.boot + m2.bridge.smoke (evidence `hosts/harmony/artifacts/m5-host/`).
 
 ## 11. Key Technical Decisions
 
