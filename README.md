@@ -15,7 +15,7 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 | Phase | Scope | Status |
 | --- | --- | --- |
 | M0 | Primitive contract v0 + data protocols (bundle layout / manifest / receipt) | Done (frozen v1.0.0) |
-| M1 | Spikes: quickjs-ng shim over upstream pure-logic packages + iOS host skeleton + local carrier | Planned |
+| M1 | Spikes: quickjs-ng shim over upstream pure-logic packages + iOS host skeleton + local carrier | In progress (runtime spike verified on iOS/Android/HarmonyOS + macOS) |
 | M2 | System implementation plugins (fs/subprocess/ui) + Web Client mount + first on-device session | Planned |
 | M3 | Plugin install pipeline + UI pluggability (slot / Web Client swap) | Planned |
 | M4 | Android host (QuickJS-isomorphic) | Planned |
