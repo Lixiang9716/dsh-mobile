@@ -1,0 +1,18 @@
+{
+  "host": "ios simulator dsh-iphone (iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m1.spike.boot",
+  "bundleId": "org.dsh.DSHSpike",
+  "exitStatus": 0,
+  "exitStatusNote": "simulator GUI app stays resident; 0 = scenario run completed without crash or abort (host flags completed=true passed=true; checker verdict PASS 9/9)",
+  "channels": {
+    "stdout": "logs.txt (canonical capture, checker input)",
+    "nslogStderr": "nslog-stderr.txt (NSLog copies; also PASS 9/9 via the same checker)",
+    "osLog": "oslog.txt (unified log, secondary)"
+  },
+  "timestamp": "2026-09-19T13:29:43Z"
+}

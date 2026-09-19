@@ -1,0 +1,9 @@
+2026-09-19 21:29:02.721 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+2026-09-19 21:29:02.722 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
+2026-09-19 21:29:02.722 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-19 21:29:02.722 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
+2026-09-19 21:29:02.722 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"a3b92c84-51c7-4ce5-b961-737ca3279119","v4":true}]}
+2026-09-19 21:29:02.723 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+2026-09-19 21:29:02.723 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.call.ok","name":"fsRead","bytes":17}]}
+2026-09-19 21:29:02.723 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.call.unavailable","name":"keychainGet","code":"unavailable"}]}
+2026-09-19 21:29:02.723 DSHSpike[71318:4495896] dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
