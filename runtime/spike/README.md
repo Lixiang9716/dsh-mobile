@@ -22,6 +22,15 @@ embedder plus a typed JS shim (`gateway.js`).
   contract/primitives.d.ts primitive with its frozen shape, base64 bytes
   both directions, `GatewayError` rejections, `httpFetch` body as an
   AsyncIterable fed by host events, abortable via `__dshGatewayAbort`.
+- `registry.js` — the spike service registry: installs plugins as
+  `{manifest, module}`, validates the manifest statically, calls the
+  declared activate hook; capability negotiation stays the gateway's job.
+- `system-plugins` — symlink to the repo-root `system-plugins/` tree, so
+  bundle-root-relative imports (`system-plugins/<pkg>/index.js`,
+  `logger.js`, `gateway.js`) resolve identically on every host. Note the
+  loader contract that falls out: modules with state (the gateway event
+  hub) must be imported under ONE canonical specifier, or the two
+  specifiers yield two module instances with two listener sets.
 - `manifest.json` — the scenario bundle's plugin manifest
   (`dsh.spike.scenario`); the embedder reads it from
   `bundle_root/manifest.json` and enforces the declared capabilities.
@@ -37,6 +46,23 @@ embedder plus a typed JS shim (`gateway.js`).
   for the full embedder (iOS): all nine primitives, streaming httpFetch
   body + abort, picker → fsScope roundtrip, keychain roundtrip, and the
   notification/app-state lifecycle, driven by host events.
+- `scenario/m2-session.js` — the `m2.session` E2E scenario: the first MINI
+  agent session over the system implementation plugins. Platform-neutral
+  (CLI + carrier hosts alike): registry installs dsh-fs /
+  dsh-subprocess-quickjs / dsh-ui, the host readiness signal (`host.info`
+  gateway event — port 0 on the CLI backend, the carrier port when the
+  presentation surface is attached) starts the session, the mock LLM
+  streams token deltas as an event sequence, one tool call runs through
+  the subprocess plugin and persists its result via dsh-fs under scope
+  "app", and the session completes with the transcript.
+- `system-plugins/` — system implementation plugins (JS, shared across
+  platforms; see the repo-root tree): `dsh-fs` (the `fs` service over
+  fsRead/fsWrite/fsScope, scope-relative POSIX with escape rejection),
+  `dsh-subprocess-quickjs` (the `subprocess` service as the in-process
+  coroutine executor — event-driven progress/completion, no OS
+  processes), `dsh-ui` (approval / picker / notify + notify.response
+  round trip). Each ships a manifest.json that validates against
+  contract/schemas/manifest.schema.json.
 - `scenario/m1-carrier-loopback.js` — the `m1.carrier.loopback` E2E
   scenario: the local-carrier topology (static files + WS pump) asserted
   through the bus seam, for hosts that implement it (see below).
@@ -116,5 +142,14 @@ node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-bridge-smoke.json --l
 
 The CLI driver doubles as the gateway bridge SMOKE BACKEND: it declares
 fsRead/fsWrite/fsScope available (everything else unavailable), answers fs
-calls from a fresh temp dir exposed as scope "app", and defers every
-settlement to the post-pump drain pass — proving the later-tick pattern.
+calls from a fresh temp dir exposed as scope "app" (creating intermediate
+directories on write, like the platform fs primitives), delivers the
+host-readiness signal (`host.info`, port 0) right after eval, and defers
+every settlement to the post-pump drain pass — proving the later-tick
+pattern. The `m2.session` scenario runs on the same driver:
+
+```sh
+./build/dsh-spike-cli . scenario/m2-session.js > logs-m2-session.txt
+node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-session.json \
+  --log logs-m2-session.txt
+```
