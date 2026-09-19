@@ -1,0 +1,37 @@
+/*
+ * Project-level build profile for the dsh-mobile M1 spike HAP.
+ * Built with the HarmonyOS CLT 26.0.0 flow (see README.md):
+ *   DEVECO_SDK_HOME=<clt>/sdk; ohpm install --all; hvigorw assembleHap
+ */
+{
+  "app": {
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        "compatibleSdkVersion": "26.0.0",
+        "targetSdkVersion": "26.0.0",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "debuggable": true
+        }
+      }
+    ],
+    "buildModeSet": [
+      { "name": "debug" },
+      { "name": "release" }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [ "default" ]
+        }
+      ]
+    }
+  ]
+}

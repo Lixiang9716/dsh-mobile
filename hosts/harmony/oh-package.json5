@@ -1,0 +1,13 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "dshmobile-spike",
+  "version": "1.0.0",
+  "description": "dsh-mobile M1 spike: quickjs host verified on the HarmonyOS emulator",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.21"
+  }
+}

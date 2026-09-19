@@ -1,6 +1,7 @@
 name: dev/harmonyos
-# End-to-end HarmonyOS pipeline. Scaffolded at M0; the HAP build lands with
-# the M5 hvigor project in hosts/harmonyos (docs/ARCHITECTURE.md §10).
+# End-to-end HarmonyOS pipeline: builds the M1 spike HAP in hosts/harmony
+# (quickjs-ng + dsh_spike_host.c via NAPI/CMake). The emulator E2E lands with
+# the M5 host (docs/ARCHITECTURE.md §10); assertions stay log-based.
 #
 # Follows the official command-line build flow
 # (developer.huawei.com/consumer/cn/doc/harmonyos-guides/ide-command-line-building-app):
@@ -16,7 +17,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "hosts/harmonyos/**"
+      - "hosts/harmony/**"
       - "contract/**"
       - "runtime/**"
       - "system-plugins/**"
@@ -24,7 +25,7 @@ on:
       - ".github/workflows/dev-harmonyos.yml"
   pull_request:
     paths:
-      - "hosts/harmonyos/**"
+      - "hosts/harmony/**"
       - "contract/**"
       - "runtime/**"
       - "system-plugins/**"
@@ -42,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
 
       - name: Cache the unpacked HarmonyOS CLT
         # Cache hit: the unpacked tree is restored and every install step is
@@ -78,26 +79,44 @@ jobs:
           test -x "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" || { echo "::error::hvigorw missing from restored/installed CLT"; exit 1; }
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" --version
 
-      - name: Detect the hvigor project (lands at M5)
+      - name: Detect the hvigor project
         run: |
-          if [ -f "hosts/harmonyos/build-profile.json5" ]; then
+          if [ -f "hosts/harmony/build-profile.json5" ]; then
             echo "PROJECT_PRESENT=true" >> "$GITHUB_ENV"
           else
-            echo "::warning::No HarmonyOS project in hosts/harmonyos yet — the HAP build lands at M5"
+            echo "::error::No HarmonyOS project in hosts/harmony — expected the M1 spike HAP"
+            exit 1
           fi
+
+      - name: Materialize the pinned quickjs-ng vendor tree
+        # Untracked by design (upstream discipline D6); ensure.sh fetches and
+        # sha256-verifies it. The project's CMake also runs it before
+        # compiling — this step makes a network failure fail loud and early.
+        if: env.PROJECT_PRESENT == 'true'
+        run: sh runtime/spike/vendor/ensure.sh
 
       - name: Install dependencies (ohpm)
         if: env.PROJECT_PRESENT == 'true'
-        working-directory: hosts/harmonyos
+        working-directory: hosts/harmony
         run: |
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/ohpm" install --all
 
-      - name: Build HAP (debug)
+      - name: Build HAP (debug, unsigned)
         if: env.PROJECT_PRESENT == 'true'
-        working-directory: hosts/harmonyos
+        working-directory: hosts/harmony
         run: |
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
             --mode module -p product=default -p buildMode=debug --no-daemon
+          test -f entry/build/default/outputs/default/entry-default-unsigned.hap \
+            || { echo "::error::HAP not produced"; exit 1; }
+          echo "HAP=$(pwd)/entry/build/default/outputs/default/entry-default-unsigned.hap" >> "$GITHUB_ENV"
+
+      - name: Upload the HAP artifact
+        if: env.PROJECT_PRESENT == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-spike-hap
+          path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 
       # M5 will add:
       #   signing (build-profile.json5 signingConfigs; release needs Huawei-
