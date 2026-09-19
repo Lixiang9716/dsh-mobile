@@ -99,9 +99,11 @@ final class CarrierRuntime {
                 self?.runtimeThread.async { self?.deliverHostHello() }
             }
         } catch {
-            finish(SpikeOutcome(completed: false, passed: false,
-                                error: "carrier bootstrap: \(error)",
-                                canonicalLines: sink.lines))
+            finish(SpikeOutcome(
+                completed: false, passed: false,
+                error: "carrier bootstrap: \(error)",
+                canonicalLines: sink.lines
+            ))
             return
         }
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
@@ -174,9 +176,11 @@ final class CarrierRuntime {
         runtimeThread.async { [weak self] in
             guard let self, !self.finished else { return }
             if payload["type"] as? String == "hello" {
-                self.deliver(["type": "ws.hello",
-                              "href": payload["href"] ?? "",
-                              "served": self.server.servedList()])
+                self.deliver([
+                    "type": "ws.hello",
+                    "href": payload["href"] ?? "",
+                    "served": self.server.servedList(),
+                ])
             } else {
                 self.deliver(["type": "ws.message", "payload": payload])
             }
@@ -220,8 +224,11 @@ final class CarrierRuntime {
 
     private func failOutcome(_ message: String) -> SpikeOutcome {
         reportFailure(message)
-        return SpikeOutcome(completed: false, passed: false, error: message,
-                            canonicalLines: sink.lines)
+        return SpikeOutcome(
+            completed: false, passed: false,
+            error: message,
+            canonicalLines: sink.lines
+        )
     }
 
     private func finish(_ outcome: SpikeOutcome) {
