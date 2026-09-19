@@ -40,7 +40,11 @@ targets:
         inputFiles:
           - Tools/gen_bundle_header.py
           - ../../runtime/spike/logger.js
+          - ../../runtime/spike/gateway.js
+          - ../../runtime/spike/manifest.json
           - ../../runtime/spike/scenario/m1-spike-boot.js
+          - ../../runtime/spike/scenario/m2-gateway-binding.js
+          - ../../runtime/spike/scenario/m2-bridge-smoke.js
           - ../../runtime/spike/scenario/m1-carrier-loopback.js
           - ../../runtime/spike/web/index.html
           - ../../runtime/spike/web/carrier-page.js
@@ -57,6 +61,11 @@ targets:
         UILaunchScreen: {}
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        # The picker E2E grants a scope into the app's Documents directory;
+        # both flags keep that directory visible/browsable in Files.app so
+        # the granted files can be inspected from the simulator UI.
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike

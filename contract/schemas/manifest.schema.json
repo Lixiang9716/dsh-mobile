@@ -4,10 +4,18 @@
   "title": "DSH plugin manifest (schemaVersion 1)",
   "description": "Static plugin manifest. Reading it must never execute code. Spec: contract/data-protocols.md §2.",
   "type": "object",
-  "required": ["schemaVersion", "id", "version", "type", "capabilities"],
+  "required": [
+    "schemaVersion",
+    "id",
+    "version",
+    "type",
+    "capabilities"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": {
+      "const": 1
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z0-9][a-z0-9.-]*$",
@@ -19,7 +27,12 @@
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$",
       "description": "semver 2.0.0."
     },
-    "type": { "enum": ["service", "web-client"] },
+    "type": {
+      "enum": [
+        "service",
+        "web-client"
+      ]
+    },
     "entry": {
       "type": "string",
       "pattern": "^((?!\\.\\.).)+$",
@@ -33,36 +46,75 @@
     "capabilities": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["required", "optional"],
+      "required": [
+        "required",
+        "optional"
+      ],
       "properties": {
-        "required": { "type": "array", "items": { "$ref": "#/$defs/capability" } },
-        "optional": { "type": "array", "items": { "$ref": "#/$defs/capability" } }
+        "required": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/capability"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/capability"
+          }
+        }
       }
     },
     "hooks": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "activate": { "type": "string", "description": "Named export of the entry module." },
-        "deactivate": { "type": "string", "description": "Named export of the entry module." }
+        "activate": {
+          "type": "string",
+          "description": "Named export of the entry module."
+        },
+        "deactivate": {
+          "type": "string",
+          "description": "Named export of the entry module."
+        }
       }
     }
   },
   "$defs": {
     "capability": {
       "type": "string",
-      "pattern": "^[a-z][a-z0-9.-]*(@[0-9]+)?$",
-      "description": "<name> or <name>@<major>; see contract/data-protocols.md §5."
+      "pattern": "^[a-zA-Z][a-zA-Z0-9.-]*(@[0-9]+)?$",
+      "description": "<name> or <name>@<major>; see contract/data-protocols.md §5. camelCase matches the frozen primitive flags (fsRead, httpFetch, ... primitives.md section 2)."
     }
   },
   "allOf": [
     {
-      "if": { "properties": { "type": { "const": "service" } } },
-      "then": { "required": ["entry"] }
+      "if": {
+        "properties": {
+          "type": {
+            "const": "service"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "entry"
+        ]
+      }
     },
     {
-      "if": { "properties": { "type": { "const": "web-client" } } },
-      "then": { "required": ["web"] }
+      "if": {
+        "properties": {
+          "type": {
+            "const": "web-client"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "web"
+        ]
+      }
     }
   ]
 }

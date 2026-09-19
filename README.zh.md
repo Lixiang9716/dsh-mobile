@@ -16,7 +16,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | --- | --- | --- |
 | M0 | 原语契约 v0 + 数据协议三件套（bundle 布局 / manifest / receipt） | 已完成（冻结于 v1.0.0） |
 | M1 | Spike：quickjs-ng 垫层跑通纯逻辑包 + iOS 宿主骨架 + 本机 carrier | 已完成（运行时 spike 已在 iOS/Android/鸿蒙 + macOS 验证；本机 carrier——回环静态文件 + WS↔QuickJS 泵——已在 iOS 模拟器验证） |
-| M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 真机首次会话 | 计划 |
+| M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 首个设备端会话 | 进行中（真实 gateway 绑定完成：iOS 九原语特权层，`m2.gateway.binding` 19/19 + 审计 16/16 —— 证据见 `hosts/ios/artifacts/m2-gateway/`） |
 | M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 计划 |
 | M4 | Android 宿主（QuickJS 同构） | 计划 |
 | M5 | 鸿蒙宿主（ArkTS + NAPI） | 计划 |

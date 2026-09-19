@@ -21,7 +21,11 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 # (accessor suffix, source file) -> dsh_spike_res_<suffix>()
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
+    ("gateway_js", SPIKE / "gateway.js"),
+    ("manifest_json", SPIKE / "manifest.json"),
     ("scenario_js", SPIKE / "scenario" / "m1-spike-boot.js"),
+    ("scenario_m2_js", SPIKE / "scenario" / "m2-gateway-binding.js"),
+    ("scenario_m2_smoke_js", SPIKE / "scenario" / "m2-bridge-smoke.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),

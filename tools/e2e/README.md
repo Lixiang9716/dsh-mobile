@@ -22,3 +22,77 @@ node tools/e2e/check.mjs \
 Platforms capture their native log stream (stdout / os_log / logcat /
 hilog); the canonical `dsh.spike.log: {...}` lines are byte-identical
 everywhere, so one checker serves all hosts.
+
+## Scenario manifests (M2)
+
+| Manifest | Scenario | Runs on | Contract |
+| --- | --- | --- | --- |
+| `m1-spike-boot.json` | `m1.spike.boot` | iOS (and any spike host) | 7 events — runtime boot, gateway negotiation, crypto/base64 shims |
+| `m1-carrier-loopback.json` | `m1.carrier.loopback` | iOS | 7 events — loopback HTTP+WS carrier |
+| `m2-bridge-smoke.json` | `m2.bridge.smoke` | macOS CLI | 6 events — C bridge dispatch: fs read/write/invalid, keychain unavailable |
+| `m2-gateway-binding.json` | `m2.gateway.binding` | iOS, UI-driven | 19 events — the frozen real-gateway-binding sequence (fs, http, picker, scope, approval, keychain, notify, app state) |
+| `m2-gateway-audit.json` | `m2.gateway.audit` | iOS, UI-driven | 15 flat audit records mirroring the binding call sequence, incl. the denied fsRead |
+
+Field matchers are SUBSET matchers: a record may carry extra
+non-deterministic fields (uuid, paths); only the manifest's fields must
+match, exactly and in declaration order.
+
+## The audit stream (flat envelope)
+
+The gateway audit log is NOT the unified logger: each record is flat JSON
+on a `dsh.gateway.audit: ` line — `{"ts":…,"primitive":…,"caller":…,
+"verdict":…,"outcome":…}` — with no scenario field to filter on. Manifests
+opt in with `"extract": { "prefix": "dsh.gateway.audit:", "envelope":
+"flat" }`; expect entries then name `primitive` (instead of `event`) with
+`match` fields applied at the top level. Behavior for existing (logger
+envelope) manifests is unchanged.
+
+## Simulator runner (local M2 E2E)
+
+`run-ios.sh` is the full local driver for `m2.gateway.binding` — CI cannot
+run it (hosted runners have no idb/UI driver), so the real M2 E2E happens
+here:
+
+```sh
+tools/e2e/run-ios.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It vendors the engine, builds DSHSpike, installs and launches it with
+stdout/stderr capture (log truncated first — the checker must see only this
+run), then follows the live log and drives every `spike: ui-wait` marker
+via idb: notification-permission alert ("Allow"), HOME press on
+`notify.scheduled`, notification banner (retry loop ≤20s, pull-down
+fallback), approval dialog ("Approve"), and the Files picker navigation
+(On My iPhone → DSHSpike → gateway-e2e → notes.txt). On the terminal
+`spike: sequence` marker it runs all four scenario checkers, prints a
+summary table, and exits non-zero if any fails. Screenshots land in
+`<art-dir>/screens/` as debugging artifacts — never checker inputs. Every
+wait polls a condition with a deadline; overall deadline 300s fails loud
+with the last 50 log lines.
+
+Tap points are screenshot-derived CALIBRATION CONSTANTS at the top of the
+script (`PT_ALLOW`, `PT_APPROVE`, `PT_BANNER`, `PT_FILES_*`, `SWIPE_PULL`):
+every UI step first tries the accessibility tree (`idb ui describe-all`,
+known to error on some iOS 26.5 runtimes) and only falls back to the
+constants. Recalibrate them against the saved screenshots for your
+simulator after the first live run.
+
+The m2-bridge-smoke scenario runs on the macOS CLI (not iOS) and is checked
+directly:
+
+```sh
+node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-bridge-smoke.json \
+  --log <cli-run-log> --out <verdict.json>
+```
+
+## Selftest
+
+`selftest.sh` proves the checker logic against hand-written fixtures in
+`testdata/`: the positive fixture must pass BOTH m2 checkers (and the slim
+m1 fixture its manifest), and each negative fixture must fail at a named
+index — proving one-to-one matching, order, prefix isolation, and the flat
+envelope.
+
+```sh
+tools/e2e/selftest.sh   # exit 0 = all checker assertions hold
+```

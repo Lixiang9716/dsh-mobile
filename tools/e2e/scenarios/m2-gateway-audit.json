@@ -1,0 +1,121 @@
+{
+  "scenario": "m2.gateway.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "fsWrite",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "fsRead",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "fsRead",
+      "match": {
+        "verdict": "granted",
+        "outcome": "denied"
+      }
+    },
+    {
+      "primitive": "httpFetch",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "httpFetch",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "httpFetch.abort",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "presentPicker",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "fsScope.persist",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "fsScope.resolve",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "fsRead",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "presentApproval",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "keychainSet",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "keychainGet",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "keychainSet",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "keychainGet",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    },
+    {
+      "primitive": "notify",
+      "match": {
+        "verdict": "granted",
+        "outcome": "ok"
+      }
+    }
+  ]
+}

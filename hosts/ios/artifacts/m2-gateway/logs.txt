@@ -1,0 +1,124 @@
+spike: app launched, driving m1.spike.boot then m1.carrier.loopback
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"a2cb9b06-c051-4331-bdfb-752b42f7ad89","v4":true}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
+spike: host drive finished completed=true passed=true
+spike: verdict PASS (m1.spike.boot, events logged: 7)
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"carrier.listening","transport":"tcp","loopback":true}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"carrier.http.served","paths":["/","/carrier-page.js"],"count":2}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"carrier.ws.connected","state":"open"}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"carrier.ws.echo","matched":true,"transport":"ws"}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"carrier.push.delivered","transport":"ws"}]}
+dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"scenario":"m1.carrier.loopback","event":"scenario.complete","status":"pass"}]}
+spike: carrier drive finished verdict=PASS
+spike: verdict PASS (m1.carrier.loopback, events logged: 7)
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"descriptor.declared","available":9,"unavailable":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.gateway.audit: {"outcome":"ok","primitive":"fsWrite","caller":"dsh.spike.scenario","ts":"2026-09-19T21:02:01Z","verdict":"granted"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.write.ok","written":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsRead"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"denied","verdict":"granted","primitive":"fsRead"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"fsRead"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.denied","code":"denied"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58942/gateway-e2e/bytes","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.status","status":200,"loopback":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.body","chunks":2,"totalBytes":64}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58942/gateway-e2e/slow","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:5","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":"body:5"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:02:01Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"httpFetch.abort"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:5","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.aborted","code":"cancelled"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+spike: ui-wait picker
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
+spike: ui-done picker
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"presentPicker"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"picker.granted","mode":"file","path":"notes.txt","scopeOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsScope.persist"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.scope.persist","refOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsScope.resolve"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.gateway.audit: {"ts":"2026-09-19T21:04:06Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"fsRead"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":56}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
+spike: ui-wait approval
+spike: ui-done approval
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"presentApproval","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"approval.approved","approved":true,"remember":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainSet"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainGet"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"keychain.roundtrip","set":true,"match":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"keychainSet","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-19T21:04:09Z","primitive":"keychainGet"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"keychain.deleted","gone":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
+spike: ui-wait notification-permission
+spike: ui-done notification-permission
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-19T21:04:09Z","primitive":"notify","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"notify.scheduled","idOpaque":true}]}
+spike: ui-wait notification-banner
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"app.state","state":"background"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":73}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"notify.response","idMatches":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"app.state","state":"foreground"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"scenario.complete","status":"pass"}]}
+spike: gateway drive finished verdict=PASS
+spike: verdict PASS (m2.gateway.binding, events logged: 79)
+spike: sequence boot=PASS carrier=PASS gateway=PASS

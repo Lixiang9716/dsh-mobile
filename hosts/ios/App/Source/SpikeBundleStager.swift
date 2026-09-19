@@ -1,11 +1,13 @@
 import Foundation
 
 /// Stages the embedded JS bundle into a fresh writable sandbox directory,
-/// preserving the runtime/spike layout the C loader expects: logger.js at
-/// the root, the entry under scenario/, and the vendored upstream package
-/// under vendor/ (the "dsh:util-crypto" import maps there). The bytes come
-/// from the embedded arrays (gen_bundle_header.py), so what the simulator
-/// runs is byte-identical to the checkout.
+/// preserving the runtime/spike layout the C loader expects: logger.js and
+/// gateway.js at the root, manifest.json beside them (the M2 embedder reads
+/// the scenario's declared capabilities from it), the entries under
+/// scenario/, and the vendored upstream package under vendor/ (the
+/// "dsh:util-crypto" import maps there). The bytes come from the embedded
+/// arrays (gen_bundle_header.py), so what the simulator runs is
+/// byte-identical to the checkout.
 enum SpikeBundleStager {
     static func stage() throws -> URL {
         let root = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -15,8 +17,16 @@ enum SpikeBundleStager {
         }
         try write("logger.js", data: resData(dsh_spike_res_logger_js),
                   under: root)
+        try write("gateway.js", data: resData(dsh_spike_res_gateway_js),
+                  under: root)
+        try write("manifest.json", data: resData(dsh_spike_res_manifest_json),
+                  under: root)
         try write("scenario/m1-spike-boot.js", data: resData(dsh_spike_res_scenario_js),
                   under: root)
+        try write("scenario/m2-gateway-binding.js",
+                  data: resData(dsh_spike_res_scenario_m2_js), under: root)
+        try write("scenario/m2-bridge-smoke.js",
+                  data: resData(dsh_spike_res_scenario_m2_smoke_js), under: root)
         try write("scenario/m1-carrier-loopback.js",
                   data: resData(dsh_spike_res_scenario_carrier_js), under: root)
         try write("web/index.html", data: resData(dsh_spike_res_web_index_html),

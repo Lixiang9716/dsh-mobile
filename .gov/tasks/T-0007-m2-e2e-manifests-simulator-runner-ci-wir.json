@@ -1,0 +1,27 @@
+{
+  "title": "M2 E2E: manifests, simulator runner, CI wiring",
+  "created": "2026-09-19T16:39:12+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "scenarios: m2-gateway-binding.json (frozen 19-event one-to-one ordered contract) + m2-bridge-smoke.json + updated m1-spike-boot.json (7 events)",
+    "audit assertion: m2-gateway-audit.json over dsh.gateway.audit: prefix mirroring the frozen call sequence incl. the denied fsRead",
+    "tools/e2e/run-ios.sh: vendor\u2192build\u2192install\u2192launch\u2192poll logs for spike: ui-wait markers (idb describe-all + tap)\u2192sequence marker\u2192capture logs+screenshots\u2192run all checkers\u2192verdict JSON; condition polls with deadlines, no blind sleeps",
+    "dev-ios.yml: m2 checker passes + audit pass + m2-gateway artifacts uploaded; simulator stage stays continue-on-error with honest comment (runners cannot tap)",
+    "tools/e2e/README.md updated; checker logic proven against a synthetic log fixture",
+    "gov run green; testing note written; card closed with receipt; branch pushed"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0007",
+  "void": {
+    "ts": "2026-09-19T21:05:33+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work landed verified on main; receipt-closure structurally impossible (govrail #329/#339: close stamps NOT_SELECTED for governance-only gates, _check_receipt rejects it, void refuses done cards). All three worker cards T-0005/6/7 retired as void with the feature verifiably green in the same batch. (this card: E2E manifests + runner + CI)"
+  }
+}

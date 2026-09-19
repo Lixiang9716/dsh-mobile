@@ -1,0 +1,25 @@
+{
+  "scenario": "m2.gateway.binding",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "descriptor.declared", "match": { "available": 9, "unavailable": 0 } },
+    { "event": "fs.write.ok", "match": { "written": 17 } },
+    { "event": "fs.read.ok", "match": { "bytes": 17, "matches": true } },
+    { "event": "fs.denied", "match": { "code": "denied" } },
+    { "event": "http.status", "match": { "status": 200, "loopback": true } },
+    { "event": "http.body", "match": { "chunks": 2, "totalBytes": 64 } },
+    { "event": "http.aborted", "match": { "code": "cancelled" } },
+    { "event": "picker.granted", "match": { "mode": "file", "path": "notes.txt", "scopeOpaque": true } },
+    { "event": "fs.scope.persist", "match": { "refOpaque": true } },
+    { "event": "fs.scope.resolve", "match": { "scopeOpaque": true, "reads": true } },
+    { "event": "approval.approved", "match": { "approved": true, "remember": false } },
+    { "event": "keychain.roundtrip", "match": { "set": true, "match": true } },
+    { "event": "keychain.deleted", "match": { "gone": true } },
+    { "event": "notify.scheduled", "match": { "idOpaque": true } },
+    { "event": "app.state", "match": { "state": "background" } },
+    { "event": "notify.response", "match": { "idMatches": true } },
+    { "event": "app.state", "match": { "state": "foreground" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

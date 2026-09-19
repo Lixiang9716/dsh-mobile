@@ -6,7 +6,11 @@
 #include <stddef.h>
 
 const char *dsh_spike_res_logger_js(size_t *len);
+const char *dsh_spike_res_gateway_js(size_t *len);
+const char *dsh_spike_res_manifest_json(size_t *len);
 const char *dsh_spike_res_scenario_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_smoke_js(size_t *len);
 const char *dsh_spike_res_scenario_carrier_js(size_t *len);
 const char *dsh_spike_res_web_index_html(size_t *len);
 const char *dsh_spike_res_web_page_js(size_t *len);

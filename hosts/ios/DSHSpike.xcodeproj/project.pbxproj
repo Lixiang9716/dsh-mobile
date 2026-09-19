@@ -10,22 +10,35 @@
 		0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */; };
 		13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */ = {isa = PBXBuildFile; fileRef = 09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */; };
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
+		534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */; };
+		54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */; };
 		573579F6F12471E4424B727A /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 40F1780B39D9032EE9BB32BC /* libunicode.c */; };
+		5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */; };
+		61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */; };
 		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
+		9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */; };
 		A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DD761A8299F885CFFFBF71 /* AppDelegate.swift */; };
 		AD11658A84414177D0FCCB8D /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EC9F5F6929C9D36E65D032D /* dtoa.c */; };
+		B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */; };
+		C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D699FF5BB908578B359B9B14 /* RuntimeThread.swift */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
 		E42F06323D11206F2C413149 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C1AD386700DAC0A6BB463CE /* libregexp.c */; };
 		EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */; };
+		F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewayCore.swift; sourceTree = "<group>"; };
 		09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpikeBundle.c; sourceTree = "<group>"; };
+		0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewaySession.swift; sourceTree = "<group>"; };
+		183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPPrimitive.swift; sourceTree = "<group>"; };
 		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
 		1C1AD386700DAC0A6BB463CE /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
+		2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSPrimitives.swift; sourceTree = "<group>"; };
 		40F1780B39D9032EE9BB32BC /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
+		4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPrimitive.swift; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
 		6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
 		74DD761A8299F885CFFFBF71 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -33,8 +46,11 @@
 		7EC9F5F6929C9D36E65D032D /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIPrimitives.swift; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
+		D699FF5BB908578B359B9B14 /* RuntimeThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeThread.swift; sourceTree = "<group>"; };
 		E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierServer.swift; sourceTree = "<group>"; };
+		F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainPrimitives.swift; sourceTree = "<group>"; };
 		FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,8 +79,10 @@
 				6A1382ABE6EDFB24119B9EEE /* Bridge.h */,
 				79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */,
 				E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */,
+				D699FF5BB908578B359B9B14 /* RuntimeThread.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
 				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
+				AEA110DACF229E48D1B6EFFC /* Gateway */,
 			);
 			path = Source;
 			sourceTree = "<group>";
@@ -102,6 +120,20 @@
 				C479559F39BBD427C25F13B6 /* vendor */,
 			);
 			path = spike;
+			sourceTree = "<group>";
+		};
+		AEA110DACF229E48D1B6EFFC /* Gateway */ = {
+			isa = PBXGroup;
+			children = (
+				2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */,
+				05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */,
+				0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */,
+				183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */,
+				F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */,
+				4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */,
+				C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */,
+			);
+			path = Gateway;
 			sourceTree = "<group>";
 		};
 		AF09F1B8671210489366EA0F /* Products */ = {
@@ -211,7 +243,11 @@
 			inputPaths = (
 				Tools/gen_bundle_header.py,
 				../../runtime/spike/logger.js,
+				../../runtime/spike/gateway.js,
+				../../runtime/spike/manifest.json,
 				"../../runtime/spike/scenario/m1-spike-boot.js",
+				"../../runtime/spike/scenario/m2-gateway-binding.js",
+				"../../runtime/spike/scenario/m2-bridge-smoke.js",
 				"../../runtime/spike/scenario/m1-carrier-loopback.js",
 				../../runtime/spike/web/index.html,
 				"../../runtime/spike/web/carrier-page.js",
@@ -238,9 +274,17 @@
 				A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */,
 				8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */,
 				0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */,
+				5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */,
+				54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */,
+				B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */,
+				534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */,
+				F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */,
+				61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */,
+				C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
 				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
 				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
+				9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */,
 				7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */,
 				AD11658A84414177D0FCCB8D /* dtoa.c in Sources */,
 				E42F06323D11206F2C413149 /* libregexp.c in Sources */,

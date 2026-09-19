@@ -127,7 +127,58 @@ final class CarrierServer {
             }
             return
         }
+        if serveGatewayE2E(path: path, conn: conn) { return }
         serveStatic(path: path, conn: conn)
+    }
+
+    // ---- m2 gateway-e2e endpoints (chunked streams) -------------------------
+
+    /// GET /gateway-e2e/bytes → 64 bytes as exactly 2 chunks of 32 (small
+    /// delay between writes so the JS side sees 2 body events).
+    /// GET /gateway-e2e/slow → 6 chunks × 16 bytes, ~300ms apart (abort test).
+    /// Added after the m1 carrier phase completes — m1 manifests are frozen
+    /// and their assertions never see these paths.
+    private func serveGatewayE2E(path: String, conn: NWConnection) -> Bool {
+        switch path {
+        case "/gateway-e2e/bytes":
+            streamChunks(chunkBytes: 32, chunkCount: 2, intervalMs: 40, conn: conn)
+        case "/gateway-e2e/slow":
+            streamChunks(chunkBytes: 16, chunkCount: 6, intervalMs: 300, conn: conn)
+        default:
+            return false
+        }
+        servedPaths.append(path)
+        return true
+    }
+
+    /// HTTP/1.1 chunked stream of deterministic ASCII ("0123456789abcdef"
+    /// repeated); the terminal zero chunk closes the connection.
+    private func streamChunks(
+        chunkBytes: Int, chunkCount: Int, intervalMs: Int, conn: NWConnection
+    ) {
+        let head = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n"
+            + "Transfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
+        conn.send(content: Data(head.utf8), completion: .contentProcessed { _ in })
+        let unit = Data("0123456789abcdef".utf8)
+        var chunk = Data()
+        while chunk.count < chunkBytes { chunk.append(unit) }
+        chunk = chunk.prefix(chunkBytes)
+        for index in 0..<chunkCount {
+            queue.asyncAfter(deadline: .now() + .milliseconds(intervalMs * (index + 1))) {
+                [weak self] in
+                self?.sendChunk(chunk, final: index == chunkCount - 1, conn: conn)
+            }
+        }
+    }
+
+    private func sendChunk(_ chunk: Data, final: Bool, conn: NWConnection) {
+        var frame = Data(String(format: "%zx\r\n", chunk.count).utf8)
+        frame.append(chunk)
+        frame.append(Data("\r\n".utf8))
+        if final { frame.append(Data("0\r\n\r\n".utf8)) }
+        conn.send(content: frame, completion: .contentProcessed { _ in
+            if final { conn.cancel() }
+        })
     }
 
     // ---- static files -----------------------------------------------------
