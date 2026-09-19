@@ -14,7 +14,12 @@
     "Device run captured; check.mjs green for all three scenarios; artifacts refreshed under artifacts/m5-host/",
     "Status docs flipped; note; gov run green; push; PR-B stacked"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0009"
+  "id": "T-0009",
+  "void": {
+    "ts": "2026-09-19T22:59:00+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete and device-verified (all three scenario verdicts PASS on the emulator; evidence hosts/harmony/artifacts/m5-host/, checklist items all done). Receipt-closure skipped as structurally impossible in govrail 0.47.1: task close stamps verify-decisions NOT_SELECTED (paths-scoped, not in the all mode) and task check's _check_receipt rejects that same receipt as 'not all-green' (#329/#339 writer/reader disagreement) \u2014 demonstrated live on T-0008 in the immediately preceding commit of this stack, where close succeeded and the very next task gate run rejected its receipt; T-0001..T-0007 carry the same recorded exit."
+  }
 }
