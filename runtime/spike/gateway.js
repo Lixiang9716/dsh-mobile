@@ -92,7 +92,8 @@ const wake = (st) => {
 
 /** Consume one bridge event for a known body stream; false = not ours. */
 const streamEvent = (ev) => {
-  const st = streams.get(ev.callId);
+  // the bridge emits the numeric call id; streams are keyed by bodyId "body:N"
+  const st = streams.get(ev.callId) ?? streams.get(`body:${ev.callId}`);
   if (!st) return false;
   log.debug('body stream event', { event: ev.event, bodyId: ev.callId });
   if (ev.event === 'http.body') st.chunks.push(base64ToBytes(ev.chunkB64));
