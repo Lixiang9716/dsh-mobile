@@ -59,11 +59,13 @@ const call = async (name, args) => {
 // ---- filesystem ----------------------------------------------------------
 
 export const fsRead = async (scope, path) => {
+  log.debug('fsRead', { scope, path });
   const res = await call('fsRead', { scope, path });
   return { bytes: base64ToBytes(res.bytesB64), mtime: res.mtime };
 };
 
 export const fsWrite = async (scope, path, bytes, opts = {}) => {
+  log.debug('fsWrite', { scope, path });
   const res = await call('fsWrite', {
     scope,
     path,
@@ -85,6 +87,7 @@ export const fsScope = {
 const streams = new Map();
 
 const wake = (st) => {
+  log.debug('stream wake');
   const pending = st.wake;
   st.wake = null;
   pending?.();
@@ -153,6 +156,7 @@ export const presentApproval = async (req) => await call('presentApproval', req)
 export const presentPicker = async (req) => await call('presentPicker', req);
 
 export const keychainGet = async (ref) => {
+  log.debug('keychainGet', { ref });
   const res = await call('keychainGet', { ref });
   return res ? { secret: base64ToBytes(res.secretB64) } : null;
 };
