@@ -15,6 +15,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var carrier: CarrierRuntime?
     /// Same for the m2 gateway phase (boot → carrier → gateway, order frozen).
     private var gateway: GatewaySession?
+    /// The m2 on-device session phase (session launch mode only).
+    private var session: SessionRuntime?
+    private var sessionVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -47,6 +50,15 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.mainWindow = window
         self.console = console
         self.webView = webView
+        if launchMode == "session" {
+            console.text = "DSH session — m2.session over the system plugins, "
+                + "Web Client \(SessionRuntime.activeWebClient) mounted …"
+            print("spike: app launched in session mode (web client "
+                + "\(SessionRuntime.activeWebClient))")
+            fflush(stdout)
+            runSession()
+            return true
+        }
         print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
         fflush(stdout)
         SpikeRuntime().run { [weak self] boot in
@@ -54,6 +66,35 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self?.runCarrier()
         }
         return true
+    }
+
+    /// Launch mode from the launch arguments ("-dsh-mode session"): the
+    /// default keeps the historical boot → carrier → gateway sequence.
+    private var launchMode: String {
+        let args = ProcessInfo.processInfo.arguments
+        guard let at = args.firstIndex(of: "-dsh-mode"), at + 1 < args.count else {
+            return "spikes"
+        }
+        return args[at + 1]
+    }
+
+    /// The on-device session: the scenario runs behind the mounted Web
+    /// Client and starts only once the page is connected (host.info), so
+    /// the token deltas stream live into the rendered transcript.
+    private func runSession() {
+        let session = SessionRuntime()
+        self.session = session
+        session.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        session.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "m2.session") { self.sessionVerdict = $0 }
+            self.session = nil
+            // The session runner polls for this terminal marker.
+            print("spike: sequence session=\(self.sessionVerdict)")
+            fflush(stdout)
+        }
     }
 
     private func runCarrier() {

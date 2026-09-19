@@ -1,0 +1,17 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073), iOS 26.5",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "scenario": "m2.session",
+  "carrierScenario": "m2.webclient.mount",
+  "systemPlugins": ["dsh-fs", "dsh-subprocess-quickjs", "dsh-ui"],
+  "webClient": "dsh-web-client (presentation/web-client, mounted by SessionRuntime, session-projection@0)",
+  "runner": "tools/e2e/run-ios-session.sh",
+  "checkers": {
+    "m2-session": "22/22 events in order",
+    "m2-webclient-mount": "5/5 events in order"
+  },
+  "screens": ["screens/01-webclient-loaded.png", "screens/02-mid-stream.png", "screens/03-final-transcript.png"],
+  "exitCode": 0
+}

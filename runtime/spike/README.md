@@ -54,7 +54,15 @@ embedder plus a typed JS shim (`gateway.js`).
   presentation surface is attached) starts the session, the mock LLM
   streams token deltas as an event sequence, one tool call runs through
   the subprocess plugin and persists its result via dsh-fs under scope
-  "app", and the session completes with the transcript.
+  "app", and the session completes with the transcript. On carrier
+  hosts the scenario additionally pushes a `session-projection@0` event
+  per step over the bus seam (session/agent/token-delta/tool/complete);
+  hosts without a bus sink drop those silently, keeping the E2E log
+  stream identical everywhere. On iOS the session phase mounts the active
+  Web Client and starts the scenario only when the page connects, so the
+  deltas stream live into the rendered transcript (carrier-side evidence
+  logged as scenario `m2.webclient.mount`; runner
+  `tools/e2e/run-ios-session.sh`).
 - `system-plugins/` — system implementation plugins (JS, shared across
   platforms; see the repo-root tree): `dsh-fs` (the `fs` service over
   fsRead/fsWrite/fsScope, scope-relative POSIX with escape rejection),

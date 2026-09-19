@@ -7,13 +7,24 @@
 
 const char *dsh_spike_res_logger_js(size_t *len);
 const char *dsh_spike_res_gateway_js(size_t *len);
+const char *dsh_spike_res_registry_js(size_t *len);
 const char *dsh_spike_res_manifest_json(size_t *len);
 const char *dsh_spike_res_scenario_js(size_t *len);
 const char *dsh_spike_res_scenario_m2_js(size_t *len);
 const char *dsh_spike_res_scenario_m2_smoke_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_session_js(size_t *len);
 const char *dsh_spike_res_scenario_carrier_js(size_t *len);
 const char *dsh_spike_res_web_index_html(size_t *len);
 const char *dsh_spike_res_web_page_js(size_t *len);
 const char *dsh_spike_res_pkg_crypto_js(size_t *len);
+const char *dsh_spike_res_plugin_fs_manifest(size_t *len);
+const char *dsh_spike_res_plugin_fs_js(size_t *len);
+const char *dsh_spike_res_plugin_subprocess_manifest(size_t *len);
+const char *dsh_spike_res_plugin_subprocess_js(size_t *len);
+const char *dsh_spike_res_plugin_ui_manifest(size_t *len);
+const char *dsh_spike_res_plugin_ui_js(size_t *len);
+const char *dsh_spike_res_webclient_manifest(size_t *len);
+const char *dsh_spike_res_webclient_index_html(size_t *len);
+const char *dsh_spike_res_webclient_main_js(size_t *len);
 
 #endif /* DSH_IOS_SPIKE_BUNDLE_H */

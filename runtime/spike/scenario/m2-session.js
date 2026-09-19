@@ -52,6 +52,15 @@ const nextEvent = async (name) => {
   }
 };
 
+/** Session projection push (session-projection@0): one JSON line over the
+ * bus seam, shuttled host-side to the carrier WS and rendered by the active
+ * Web Client. Hosts without a bus sink drop it silently (the CLI backend),
+ * so the E2E log stream is identical everywhere. */
+const project = (event) => {
+  log.debug('projection push', { kind: event.kind });
+  globalThis.__dshBusPost?.(JSON.stringify({ type: 'ws.send', payload: event }));
+};
+
 const SESSION_ID = 's-m2-0001';
 const RESULT_PATH = 'm2-session/result.txt';
 const RESULT_TEXT = 'm2-session result: 5 deltas'; // 27 ASCII bytes
@@ -81,6 +90,7 @@ const streamTurn = async (turn, tokens, startIndex) => {
     await null; // each delta settles on its own runtime-queue tick
     text += tokens[i];
     emit('llm.delta', { index: startIndex + i, text: tokens[i] });
+    project({ kind: 'token-delta', index: startIndex + i, text: tokens[i] });
   }
   return text;
 };
@@ -105,7 +115,9 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   const subprocess = registry.service('subprocess');
   const session = { id: SESSION_ID, transcript: [], deltas: 0, toolCalls: 0 };
   emit('session.created', { sessionId: session.id, scope: 'app' });
+  project({ kind: 'session', id: session.id, scope: 'app' });
   emit('agent.started', { model: 'mock-mini', tools: 1 });
+  project({ kind: 'agent', model: 'mock-mini', tools: 1 });
 
   const turn1 = await streamTurn(1, TURN_ONE, 0);
   session.transcript.push(turn1);
@@ -114,6 +126,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   emit('llm.stream.completed', { turn: 1, deltas: TURN_ONE.length, toolCalls: 1 });
 
   emit('tool.invoked', { name: 'notes.persist', call: 't-1' });
+  project({ kind: 'tool', name: 'notes.persist', phase: 'invoke' });
   let stepNo = 0;
   const handle = subprocess.spawn({
     id: 'task-1',
@@ -133,6 +146,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   demand(outcome.result.written === RESULT_TEXT.length, 'persisted byte count drifted');
   emit('subprocess.completed', { taskId: handle.id, ok: outcome.ok });
   emit('tool.result', { name: 'notes.persist', call: 't-1', ok: outcome.ok });
+  project({ kind: 'tool', name: 'notes.persist', phase: 'result', ok: outcome.ok });
 
   const turn2 = await streamTurn(2, TURN_TWO, TURN_ONE.length);
   session.transcript.push(turn2);
@@ -147,6 +161,12 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
     deltas: session.deltas,
     toolCalls: session.toolCalls,
     persisted: true,
+  });
+  project({
+    kind: 'complete',
+    status: 'pass',
+    deltas: session.deltas,
+    toolCalls: session.toolCalls,
   });
   globalThis.__dshComplete(true, 'ok');
 }
