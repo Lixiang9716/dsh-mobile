@@ -60,6 +60,10 @@ jobs:
       # survives into the next step; run-spike-e2e.sh owns the whole E2E.
       - name: Boot the emulator (background, KVM)
         run: |
+          # adb/emulator are not on PATH outside the (dropped) runner action;
+          # GITHUB_PATH persists into the verify step.
+          echo "$ANDROID_HOME/emulator" >> "$GITHUB_PATH"
+          echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           echo no | "$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager" create avd -n dsh-spike -k "system-images;android-35;default;x86_64" --force
           nohup "$ANDROID_HOME/emulator/emulator" -avd dsh-spike -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -port 5554 > /tmp/emulator.log 2>&1 < /dev/null &
 
