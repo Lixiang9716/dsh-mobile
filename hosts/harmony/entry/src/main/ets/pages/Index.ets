@@ -23,8 +23,13 @@ const TAG: string = 'dsh.app';
 const BUNDLE_FILES: string[] = [
   'logger.js',
   'gateway.js',
+  'registry.js',
   'scenario/m1-spike-boot.js',
   'scenario/m2-bridge-smoke.js',
+  'scenario/m2-session.js',
+  'system-plugins/dsh-fs/index.js',
+  'system-plugins/dsh-subprocess-quickjs/index.js',
+  'system-plugins/dsh-ui/index.js',
   'vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js'
 ];
 
@@ -81,7 +86,7 @@ struct Index {
       Text('DSH M5 host — HarmonyOS')
         .fontSize(22)
         .fontWeight(FontWeight.Bold)
-      Text('scenarios m1.spike.boot + m2.bridge.smoke · quickjs-ng 0.17.0 via NAPI')
+      Text('scenarios m1.spike.boot + m2.bridge.smoke + m2.session · quickjs-ng 0.17.0 via NAPI')
         .fontSize(14)
         .fontColor('#666666')
       Text(this.verdict)

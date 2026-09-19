@@ -169,6 +169,22 @@ static char *smoke_path(dsh_smoke_backend *b, const char *rel) {
     return out;
 }
 
+/* mkdir -p for the file's parent — the platform fs primitives create
+ * intermediate directories on write; the smoke backend keeps parity
+ * (same as the desktop CLI twin). */
+static void smoke_mkdirs(const char *path) {
+    char *copy = strdup(path);
+    if (!copy) return;
+    char *slash = strrchr(copy, '/');
+    if (!slash) { free(copy); return; }
+    *slash = 0;
+    for (char *at = copy + 1; *at; at++) {
+        if (*at == '/') { *at = 0; mkdir(copy, 0755); *at = '/'; }
+    }
+    mkdir(copy, 0755);
+    free(copy);
+}
+
 /* ISO-8601 UTC mtime for the fsRead payload. */
 static void smoke_mtime(const char *path, char *out, size_t outsz) {
     struct stat st;
@@ -209,6 +225,7 @@ static void smoke_fs_write(dsh_smoke_backend *b, int call_id, const char *args) 
         size_t n = 0;
         unsigned char *bytes = b64_decode(a.b64, &n);
         char *full = bytes ? smoke_path(b, a.path) : nullptr;
+        if (full) smoke_mkdirs(full);
         const char *mode = a.append ? "ab" : (a.create ? "wb" : "r+b");
         FILE *f = full ? fopen(full, mode) : nullptr;
         size_t written = f ? fwrite(bytes, 1, n, f) : 0;

@@ -3,26 +3,32 @@
 The HarmonyOS NEXT host (M5): ArkTS shell + NAPI bridge to quickjs-ng + ArkWeb.
 Subprocesses are designed as unavailable; store-review posture to be verified in practice.
 
-## M5 host (in progress — isomorphic host verified)
+## M5 host (in progress — isomorphic host + first session verified)
 
 The M1 spike HAP grew into the isomorphic M5 host: ONE launch on the emulator drives
-BOTH spike scenarios synchronously on the NAPI caller thread and both verdicts are
-green — `m1.spike.boot` (regression, 7/7) and `m2.bridge.smoke` (6/6) over the REAL
-gateway dispatch bridge. Evidence: [artifacts/m5-host/](artifacts/m5-host/) (logs,
-sink capture, scenario.jsonl, per-scenario verdicts, screenshot, receipt).
+ALL THREE spike scenarios synchronously on the NAPI caller thread and all verdicts
+are green — `m1.spike.boot` (regression, 7/7), `m2.bridge.smoke` (6/6) over the REAL
+gateway dispatch bridge, and `m2.session` (22/22), the mini agent session over the
+registry + the three system plugins. Evidence:
+[artifacts/m5-host/](artifacts/m5-host/) (logs, sink capture, scenario.jsonl,
+per-scenario verdicts, screenshot, receipt).
 
 - `entry/src/main/cpp/gateway_smoke.cpp|h` — the platform twin of the desktop CLI
   smoke backend (`runtime/spike/host/main_cli.c`): it answers the dispatched calls of
-  `m2.bridge.smoke` — fsRead/fsWrite/fsScope over the app files dir exposed as scope
-  `"app"` (`filesDir/spike-fs`, passed by ArkTS as the `fsRoot` argument), keychain
-  honestly `unavailable` (declared so in the RuntimeDescriptor served to
-  `__dshGatewayDescriptor()`), unknown primitives `invalid`. Calls are only QUEUED
-  in the dispatch callback; settlement is deferred to the post-pump drain pass (the
-  later-tick pattern the scenario exists to prove), inside a 10 s condition-driven
-  backstop loop.
+  the gateway scenarios — fsRead/fsWrite/fsScope over the app files dir exposed as
+  scope `"app"` (`filesDir/spike-fs`, passed by ArkTS as the `fsRoot` argument,
+  mkdir -p parity on write), keychain honestly `unavailable` (declared so in the
+  RuntimeDescriptor served to `__dshGatewayDescriptor()`), unknown primitives
+  `invalid`. Calls are only QUEUED in the dispatch callback; settlement is deferred
+  to the post-pump drain pass (the later-tick pattern the scenario exists to prove),
+  inside a 10 s condition-driven backstop loop.
 - `entry/src/main/cpp/napi_init.cpp` — `startSpike(bundleRoot, capturePath, fsRoot)`
-  runs `scenario/m1-spike-boot.js`, then `scenario/m2-bridge-smoke.js`, each on its
-  own `dsh_spike_t` instance, and emits one `dsh.spike.verdict:` line per scenario.
+  runs `scenario/m1-spike-boot.js`, `scenario/m2-bridge-smoke.js`, then
+  `scenario/m2-session.js`, each on its own `dsh_spike_t`, emitting one
+  `dsh.spike.verdict:` line per scenario. The session is started by the host.info
+  readiness event (`{"event":"host.info","port":0}` — no carrier on this host)
+  delivered through `dsh_spike_gateway_event` after eval, the same channel the
+  desktop twin signals on.
 
 Threading (ARCHITECTURE.md §6): the whole new+eval+pump+settle loop runs
 synchronously inside the NAPI call on the caller thread — one serial JS thread, no
@@ -48,13 +54,13 @@ Layout:
   hvigor's externalNativeOptions. CMake runs `runtime/spike/vendor/ensure.sh`
   first, so the vendor tree is always materialized before compiling.
 - `entry/src/main/ets/pages/Index.ets` — materializes the bundled spike (byte-identical
-  rawfile copies of `logger.js`, `gateway.js`, both scenarios, the vendored util-crypto
-  package) into the app cache dir preserving layout, then calls `startSpike` ONCE and
-  shows the returned verdict.
+  rawfile copies of `logger.js`, `gateway.js`, `registry.js`, the three scenarios, the
+  three system plugins, and the vendored util-crypto package) into the app cache dir
+  preserving layout, then calls `startSpike` ONCE and shows the returned verdict.
 - `entry/src/main/resources/rawfile/spike/` — the bundled spike JS (kept byte-identical
-  to the `runtime/spike/` originals; the m1-spike-boot.js copy was found stale after the
-  M2 slimming landed upstream and is refreshed here — drift in these copies is silent
-  otherwise, see the surprise ledger).
+  to the `runtime/spike/` and `system-plugins/` originals; the m1-spike-boot.js copy
+  was found stale after the M2 slimming landed upstream and is refreshed here — drift
+  in these copies is silent otherwise, see the surprise ledger).
 
 Log capture: the C sink forwards each canonical `dsh.spike.log:` line unmodified to
 hilog (domain `0xD5E0`, tag `dsh.spike`, `%{public}s`) AND appends it to a capture file

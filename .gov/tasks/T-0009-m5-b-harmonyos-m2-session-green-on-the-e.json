@@ -1,0 +1,20 @@
+{
+  "title": "M5-B HarmonyOS: m2.session green on the emulator (stacked on PR #28)",
+  "created": "2026-09-19T22:58:04+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Embed session bundle byte-identical (registry.js + scenario/m2-session.js + three system plugins)",
+    "NAPI: smoke backend mkdir -p write parity + host.info readiness event + third scenario in one launch",
+    "Device run captured; check.mjs green for all three scenarios; artifacts refreshed under artifacts/m5-host/",
+    "Status docs flipped; note; gov run green; push; PR-B stacked"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0009"
+}
