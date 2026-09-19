@@ -67,25 +67,16 @@ jobs:
           api-level: 35
           target: default
           arch: x86_64
+          # NOTE: the runner executes this script one `sh -c` PER LINE — every
+          # line must be a complete command (no multi-line constructs). The
+          # deadline poll therefore lives in hosts/android/ci/.
           script: |
             adb install -r hosts/android/app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
             adb shell am start -n com.dshmobile.spike/.MainActivity
-            # Poll the completion tag with a deadline — never a blind wait.
-            deadline=$((SECONDS+120))
-            until adb logcat -d -s dsh.spike.result | grep -q dsh.spike.result; do
-              if [ "$SECONDS" -ge "$deadline" ]; then
-                echo "::error::scenario m1.spike.boot did not complete within 120s"
-                adb logcat -d | tail -200
-                exit 1
-              fi
-              sleep 2
-            done
+            bash hosts/android/ci/await-spike-result.sh
             adb logcat -d -s dsh.spike > /tmp/dsh-spike-logs.txt
-            node tools/e2e/check.mjs \
-              --manifest tools/e2e/scenarios/m1-spike-boot.json \
-              --log /tmp/dsh-spike-logs.txt \
-              --out /tmp/dsh-spike-verdict.json
+            node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m1-spike-boot.json --log /tmp/dsh-spike-logs.txt --out /tmp/dsh-spike-verdict.json
 
       - name: Upload E2E evidence
         if: always()

@@ -49,7 +49,10 @@ while the spike's minSdk is 26.
 - CI: `.github/workflows/dev-android.yml` builds the APK, boots the API 35
   x86_64 emulator (KVM), captures `logcat -d -s dsh.spike`, and lets
   `tools/e2e/check.mjs` deliver the verdict; completion is polled with a
-  120s deadline, never a blind wait.
+  120s deadline, never a blind wait. The poll loop lives in
+  `hosts/android/ci/await-spike-result.sh` because the emulator-runner
+  executes its `script:` one `sh -c` per line — a multi-line `until` loop
+  in the workflow split mid-syntax and failed the first CI run.
 
 ## Alternatives considered
 
