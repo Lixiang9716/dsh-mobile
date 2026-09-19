@@ -1,0 +1,54 @@
+# Synthetic E2E log fixtures (tools/e2e/selftest.sh) — hand-written, deterministic.
+# Positive fixture: BOTH m2 checkers pass on this one file. It carries the full
+# frozen m2.gateway.binding event sequence (19 canonical dsh.spike.log lines)
+# plus the 15-record dsh.gateway.audit stream, interleaved the way a real run
+# emits them (each gateway call audits before its event resolves), with NSLog
+# noise, ui-wait driver markers, and two m1.spike.boot lines that the m2
+# binding checker must skip via the scenario filter (and vice versa). Extra
+# non-contract fields (e.g. path on fs.write.ok) prove field matchers are
+# subset matchers, not whole-payload equality.
+DSH Spike launching — m1.spike.boot, m1.carrier.loopback, m2.gateway.binding
+2026-09-20 10:00:00.001 DSHSpike[81547:1234567] vendor: quickjs-ng sources present
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
+spike: driving m2.gateway.binding
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"descriptor.declared","available":9,"unavailable":0}]}
+dsh.gateway.audit: {"ts":1758381600.100,"primitive":"fsWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.write.ok","written":17,"path":"sandbox://notes.txt"}]}
+dsh.gateway.audit: {"ts":1758381600.200,"primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+dsh.gateway.audit: {"ts":1758381600.300,"primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"denied","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.denied","code":"denied","path":"sandbox://../private/etc"}]}
+dsh.gateway.audit: {"ts":1758381600.400,"primitive":"httpFetch","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.status","status":200,"loopback":true}]}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.body","chunks":2,"totalBytes":64}]}
+dsh.gateway.audit: {"ts":1758381600.500,"primitive":"httpFetch","caller":"dsh.spike.scenario","verdict":"granted","outcome":"cancelled"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"http.aborted","code":"cancelled"}]}
+spike: ui-wait picker
+dsh.gateway.audit: {"ts":1758381601.000,"primitive":"presentPicker","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"picker.granted","mode":"file","path":"notes.txt","scopeOpaque":true}]}
+dsh.gateway.audit: {"ts":1758381601.100,"primitive":"fsScope","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.scope.persist","refOpaque":true}]}
+dsh.gateway.audit: {"ts":1758381601.200,"primitive":"fsScope","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+dsh.gateway.audit: {"ts":1758381601.300,"primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+spike: ui-wait approval
+dsh.gateway.audit: {"ts":1758381602.000,"primitive":"presentApproval","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"approval.approved","approved":true,"remember":false}]}
+dsh.gateway.audit: {"ts":1758381602.100,"primitive":"keychainSet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.200,"primitive":"keychainGet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"keychain.roundtrip","set":true,"match":true}]}
+dsh.gateway.audit: {"ts":1758381602.300,"primitive":"keychainSet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.400,"primitive":"keychainGet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"keychain.deleted","gone":true}]}
+dsh.gateway.audit: {"ts":1758381603.000,"primitive":"notify","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"notify.scheduled","idOpaque":true}]}
+spike: ui-wait notification-permission
+spike: ui-wait notification-banner
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"app.state","state":"background"}]}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"notify.response","idMatches":true}]}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"app.state","state":"foreground"}]}
+dsh.spike.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"m2.gateway.binding","event":"scenario.complete","status":"pass"}]}
+spike: sequence gateway=pass
+2026-09-20 10:00:10.000 DSHSpike[81547:1234567] spike: complete

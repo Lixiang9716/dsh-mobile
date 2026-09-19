@@ -1,0 +1,21 @@
+{
+  "scenario": "m2.gateway.audit",
+  "extract": { "prefix": "dsh.gateway.audit:", "envelope": "flat" },
+  "expect": [
+    { "primitive": "fsWrite", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "fsRead", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "fsRead", "match": { "verdict": "denied", "outcome": "denied" } },
+    { "primitive": "httpFetch", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "httpFetch", "match": { "verdict": "granted", "outcome": "cancelled" } },
+    { "primitive": "presentPicker", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "fsScope", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "fsScope", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "fsRead", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "presentApproval", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "keychainSet", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "keychainGet", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "keychainSet", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "keychainGet", "match": { "verdict": "granted", "outcome": "ok" } },
+    { "primitive": "notify", "match": { "verdict": "granted", "outcome": "ok" } }
+  ]
+}

@@ -11,6 +11,10 @@
  *
  * usage: check.mjs --manifest <scenarios/foo.json> --log <captured-log>
  *                  [--out <verdict.json>]   exit 0 = pass, 1 = fail.
+ *
+ * Manifests default to the unified-logger envelope; "extract.envelope":
+ * "flat" switches to a plain-JSON stream (gateway audit: one flat record per
+ * line, matched on its top-level primitive/verdict/outcome fields).
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -31,9 +35,16 @@ const parseArgs = (argv) => {
 
 const deepEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
-/** Extract this scenario's structured records, in log order. */
+/**
+ * Extract this scenario's structured records, in log order. Two envelopes:
+ * the default unified-logger envelope ({"level",…,"data":[{scenario,…}]},
+ * filtered on data[0].scenario) and "flat" (extract.envelope === "flat") for
+ * out-of-band streams like the gateway audit log — records are plain JSON on
+ * the line, matched at top level, no scenario field to filter on.
+ */
 const extract = (logText, manifest) => {
   const prefix = manifest.extract.prefix;
+  const flat = manifest.extract.envelope === 'flat';
   const records = [];
   const parseErrors = [];
   logText.split('\n').forEach((line, i) => {
@@ -41,8 +52,9 @@ const extract = (logText, manifest) => {
     if (at < 0) return;
     try {
       const rec = JSON.parse(line.slice(at + prefix.length).trim());
-      const payload = Array.isArray(rec.data) ? rec.data[0] : undefined;
-      if (payload && payload.scenario === manifest.scenario) {
+      const payload = flat ? rec : (Array.isArray(rec.data) ? rec.data[0] : undefined);
+      if (payload && typeof payload === 'object' &&
+          (flat || payload.scenario === manifest.scenario)) {
         records.push({ line: i + 1, payload });
       }
     } catch {
@@ -54,15 +66,19 @@ const extract = (logText, manifest) => {
 
 const mismatch = (expect, rec) => ({
   index: expect.index,
-  expected: { event: expect.event, match: expect.match },
+  expected: { event: expect.event, primitive: expect.primitive, match: expect.match },
   logged: rec ? { line: rec.line, payload: rec.payload } : null,
 });
 
+/** Name key of the record: "primitive" on flat streams, "event" otherwise. */
+const nameKey = (expect) => (expect.primitive !== undefined ? 'primitive' : 'event');
+
 const matchOne = (expect, rec) => {
   if (!rec) return mismatch(expect, null);
-  if (rec.payload.event !== expect.event) return mismatch(expect, rec);
-  for (const [key, want] of Object.entries(expect.match ?? {})) {
-    if (!deepEq(rec.payload[key], want)) return mismatch(expect, rec);
+  const key = nameKey(expect);
+  if (rec.payload[key] !== expect[key]) return mismatch(expect, rec);
+  for (const [k, want] of Object.entries(expect.match ?? {})) {
+    if (!deepEq(rec.payload[k], want)) return mismatch(expect, rec);
   }
   return null;
 };
