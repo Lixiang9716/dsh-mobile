@@ -3,6 +3,12 @@
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
+    ".gov/rejections/case-code-size.sh": {
+      "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
+    },
+    ".gov/rejections/case-logging.sh": {
+      "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
+    },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
@@ -11,9 +17,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-19T12:04:09+00:00",
+    "ts": "2026-09-19T23:06:03+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "Owner-directed rule 12 (milestone doc-sync) added to .gov/rules.md; authority: agent note .agents/notes/implemented/process/2026-09-19-milestone-completion-updates-every-statu.md (process, ref D0)"
+    "reason": "Rule 6: add project rejection cases .gov/rejections/case-code-size.sh + case-logging.sh proving code-size and logging L3 go red on the exact span shapes that made them vacuous (indented ' */' closers, destructured signatures); authority: agent note .agents/notes/implemented/bug-fix/2026-09-20-checker-function-spans-were-vacuous-or-w.md"
   }
 }

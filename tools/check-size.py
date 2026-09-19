@@ -43,7 +43,10 @@ SIG_PATTERNS = [
 
 def tracked_sources():
     try:
-        out = subprocess.run(["git", "ls-files"], capture_output=True, text=True, check=True).stdout
+        out = subprocess.run(
+            ["git", "ls-files"], capture_output=True, text=True, check=True,
+            encoding="utf-8", errors="replace",
+        ).stdout
         names = out.splitlines()
     except Exception:
         names = [str(p) for p in Path(".").rglob("*") if p.is_file()]
@@ -63,6 +66,7 @@ def gov_facts(files):
         out = subprocess.run(
             ["gov", "parse", *files, "--json"],
             capture_output=True, text=True, check=True, timeout=120,
+            encoding="utf-8", errors="replace",
         ).stdout
         facts = json.loads(out)
     except Exception:
@@ -83,10 +87,14 @@ def gov_facts(files):
 def _consume_open(line, i, state):
     """Consume while inside a block comment / template / quote; return next index."""
     if state["bc"]:
-        if i + 1 < len(line) and line[i] == "*" and line[i + 1] == "/":
-            state["bc"] = False
-            return i + 2
-        return len(line)
+        # First `*/` at or after i closes a block comment (they do not nest);
+        # scanning forward is required — a closer like " */" (indented, the
+        # common formatter style) never sits at the resume index itself.
+        end = line.find("*/", i)
+        if end == -1:
+            return len(line)
+        state["bc"] = False
+        return end + 2
     closer = "`" if state["bt"] else state["q"]
     while i < len(line):
         if line[i] == "\\":
@@ -126,6 +134,14 @@ def strip_code(line, state):
     return "".join(out)
 
 
+def _closes_function(stack, raw, tail):
+    """True when a depth-0 `}` is the function's own closer: at the signature's
+    indentation with no further `}` on the line. A balanced pair inside the
+    body (e.g. `const { a, b } = ...` on the first line) also drives the raw
+    count to 0 — that is not a close."""
+    return len(_leading(raw)) <= stack[-1][2] + 1 and "}" not in tail[1:]
+
+
 def brace_functions(lines):
     """Heuristic (start_line, end_line) spans for brace-language functions."""
     state = {"bc": False, "bt": False, "q": None}
@@ -133,17 +149,24 @@ def brace_functions(lines):
     for idx, raw in enumerate(lines, 1):
         code = strip_code(raw, state)
         if not stack and "{" in code and any(p.search(code) for p in SIG_PATTERNS):
-            stack.append([idx, 0])
+            stack.append([idx, 0, len(_leading(raw))])
+            # Anchor depth at the body opener — the LAST `{` of the signature
+            # line. Counting the whole line lets a destructured parameter's
+            # `}` (`function f({ a }) {`) bring depth to 0 before the body
+            # opens, closing the span on its own signature line.
+            code = code[code.rfind("{") + 1:]
         if not stack:
             continue
-        for ch in code:
+        for pos, ch in enumerate(code):
             if ch == "{":
                 stack[-1][1] += 1
             elif ch == "}":
                 stack[-1][1] -= 1
                 if stack[-1][1] <= 0:
-                    results.append((stack.pop()[0], idx))
-                    break
+                    if _closes_function(stack, raw, code[pos:]):
+                        results.append((stack.pop()[0], idx))
+                        break
+                    stack[-1][1] = 1
     return results
 
 
