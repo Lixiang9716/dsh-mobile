@@ -18,7 +18,131 @@
     "code-size gate green (Swift \u2264500 lines/file, \u226450/function); xcodebuild green; m1 scenarios still pass",
     "gov run green; feature note written; card closed with receipt; branch pushed"
   ],
-  "status": "open",
-  "receipt": null,
+  "status": "done",
+  "receipt": {
+    "ts": "2026-09-19T18:15:48+00:00",
+    "mode": "all",
+    "rules": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "green": true,
+    "gates": [
+      {
+        "gate": "self-test",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 3509,
+        "detail": "PASS test_verify_notes_rejects_unknown_argument\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_verify_notes_rejects_status_lying\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_gates_rejects_duplicate_id\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_cycle\nPASS test_gates_rejects_unknown_needs\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_passing_gate_output_stays_visible\nPASS test_run_base_scopes_gates_by_paths\nPASS test_run_failure_summary_and_gate_flag\nPASS test_gates_rejects_unknown_keys\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_custom_counterpart_convention\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_pairing_explicit_registration_sticks\nPASS test_change_scope_suggests_from_paths\nPASS test_run_merge_rejects_text_conflict\nPASS test_rubric_rejects_broken_structure\nPASS test_rubric_rejects_zero_items\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_verify_decisions_rejects_broken_table\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_conflict_markers_rejects_marked_file\nPASS test_verify_decisions_rejects_base_collision\nPASS test_cli_init_help_no_side_effect\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_init_hooks_ci_roundtrip\nPASS test_d57_hubs_and_aliases\nPASS test_registry_real_flags_are_not_drift\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_preset_rejects_unknown_name\nPASS test_check_engine_mechanisms_are_real\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_tampered_receipt\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_forged_record\nPASS test_receipt_rejects_partial_run_as_full_evidence\nPASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_unknown_argument\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_verify_notes_rejects_status_lying\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_duplicate_id\nPASS test_gates_rejects_cycle\nPASS test_gates_rejects_unknown_needs\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_run_base_scopes_gates_by_paths\nPASS test_run_failure_summary_and_gate_flag\nPASS test_passing_gate_output_stays_visible\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_gates_rejects_unknown_keys\nPASS test_run_merge_rejects_text_conflict\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_pairing_custom_counterpart_convention\nPASS test_pairing_explicit_registration_sticks\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_change_scope_suggests_from_paths\nPASS test_rubric_rejects_broken_structure\nPASS test_rubric_rejects_zero_items\nPASS test_verify_decisions_rejects_broken_table\nPASS test_verify_decisions_rejects_base_collision\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_rejects_marked_file\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_d57_hubs_and_aliases\nPASS test_cli_init_help_no_side_effect\nPASS test_init_hooks_ci_roundtrip\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_registry_real_flags_are_not_drift\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_check_engine_mechanisms_are_real\nPASS test_preset_rejects_unknown_name\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_check_rejects_tampered_receipt\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_forged_record\nPASS test_receipt_rejects_partial_run_as_full_evidence\ncoverage (gate x project rejection cases): self-test(NONE \u2014 rule 6) notes(NONE \u2014 rule 6) pairing(NONE \u2014 rule 6) note-presence(NONE \u2014 rule 6) conflict-markers(NONE \u2014 rule 6) check(NONE \u2014 rule 6) code-size(NONE \u2014 rule 6) logging(NONE \u2014 rule 6) doc-crosslinks(NONE \u2014 rule 6) archive(NONE \u2014 rule 6) task(NONE \u2014 rule 6) verify-decisions(NONE \u2014 rule 6) plane(NONE \u2014 rule 6)\n  write one: .gov/rejections/case-<gate-id>.sh, shebang on line 1, '# gate: <id>' within the first five lines\nself-test: tools 56 \u2014 all pass",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "notes",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 124,
+        "detail": "verify_notes: 22 note(s) ok",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "pairing",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 167,
+        "detail": "verify_translation_pairing: 2 pair(s) ok",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "note-presence",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 184,
+        "detail": "verify_note_presence: base=HEAD (dirty worktree \u2014 reviewing the working tree)\nverify_note_presence: 1 non-trivial file(s) (.gov/surprises.jsonl) changed with no note under .agents/notes/implemented/\n  no note file appears anywhere in this diff (not merely 'none for these paths' \u2014 any note file in the diff passes this gate)\n  if the change is non-trivial, add or update a note (see .gov/rules.md rule 2 (every non-trivial change carries an Agent Note))\n  if it is truly trivial (typo, format, local rename), ignore this warning\nverify_note_presence: warning (advisory; --strict to enforce)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "conflict-markers",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 167,
+        "detail": "verify_conflict_markers: base=HEAD (dirty worktree \u2014 reviewing the working tree)\nverify_conflict_markers: 1 changed file(s) scanned, no conflict markers",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "check",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 1075,
+        "detail": "gov check: clean\ngov check: base=HEAD (dirty worktree \u2014 reviewing the working tree) \u2014 1 changed file(s) in scope",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "code-size",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 399,
+        "detail": "code-size: note \u2014 skipped hosts/android/app/build.gradle.kts: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/android/app/src/main/java/com/dshmobile/spike/MainActivity.kt: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/android/app/src/main/java/com/dshmobile/spike/SpikeRuntime.kt: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/android/build.gradle.kts: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/android/settings.gradle.kts: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/AppDelegate.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/CarrierRuntime.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/CarrierServer.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/FSPrimitives.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/GatewayCore.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/GatewaySession.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/HTTPPrimitive.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/KeychainPrimitives.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/NotifyPrimitive.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/UIPrimitives.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/RuntimeThread.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/SpikeBundleStager.swift: no shipped grammar matches\ncode-size: note \u2014 skipped hosts/ios/App/Source/SpikeRuntime.swift: no shipped grammar matches\ncode-size: 42 source file(s) checked (24 via gov parse, 18 fallback; file<=500, func<=50, indent<=5); 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "logging",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 77,
+        "detail": "logging: 12 file(s) checked (L1 console / L2 module logger / L3 function logs / L4 release silence); 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "doc-crosslinks",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 78,
+        "detail": "doc-crosslinks: each bilingual pair must link both ways; 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "archive",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 182,
+        "detail": "verify_archive: nothing archived \u2014 nothing to seal",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "task",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 119,
+        "detail": "voided T-0001 M0 contract freeze: primitive contract v0 + data protocols \u2014 Work complete and merged (dsh-mobile PR #17, squash de4c72b): contract/ frozen at v1.0.0, all 7 checklist items verified. Could not exit as done: under 0.45.0 close was structurally impossible (#323); under 0.47.1 close ran green but its receipt was rejected by _check_receipt's NON_RUN handling (govrail #329 \u2014 writer/reader disagreement), and this plane's rules adoption (0.47.1 template) then staled the pin. Retired as void with the recorded exit; the audit trail is PR #17 + this card's history.\nvoided T-0002 Land the govrail 0.45.0 upgrade (re-brief of T-0001) \u2014 The 0.45.0 upgrade it tracks landed via dsh-mobile PRs #15/#16. Under 0.45.0 close was structurally impossible (#323); under 0.47.1 close now runs but its receipt is rejected by _check_receipt (NON_RUN disagreement, same upstream issue as T-0001's void). Retired as void with the work verifiably on main.\nvoided T-0003 Android spike: embed M1 core (quickjs host via NDK) and verify scenario m1.spike.boot on emulator-5554 \u2014 The M1 spike batch is complete and merged (PRs #20 core, #22 ios, #23 harmony, #21 android): scenario m1.spike.boot PASS 9/9 verified per platform with committed evidence; this card's checklist all [x]. This card absorbed its two id-twin siblings (ios/harmony files) which were git-removed to restore id uniqueness: all three platform worktrees allocated T-0003 independently (per-worktree high-water, govrail #332), making the id ambiguous and the cards unaddressable by the tool on main. Receipt-closure remains structurally blocked by govrail #329 \u2014 retired as void with the recorded exit, same as T-0001/T-0002; audit trail = the four PRs + git history of the removed files.\nvoided T-0004 M1 local carrier spike: loopback static+WS carrier pumping WS<->QuickJS, verified on the iOS simulator \u2014 The M1 local-carrier spike this card tracks landed via dsh-mobile PR (loopback static+WS carrier, m1.carrier.loopback PASS 7/7 + m1.spike.boot PASS 9/9 on the dsh-iphone simulator, evidence in hosts/ios/artifacts/m1-carrier/). Receipt-closure remains unexitable upstream (#329: _check_receipt demands all-PASS while close excludes NON_RUN), so the card exits as voided with the work verifiably on the branch \u2014 same resolution as T-0001/T-0002.\nopen  T-0005 M2 gateway bridge: C dispatch/settle/event + JS shim + scenarios (obey rules@cd0ebdaa68ca)\nopen  T-0006 M2 iOS privileged layer: real 9-primitive gateway binding (obey rules@cd0ebdaa68ca)\nopen  T-0007 M2 E2E: manifests, simulator runner, CI wiring (obey rules@cd0ebdaa68ca)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "verify-decisions",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "plane",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 107,
+        "detail": "verify_plane: 3 plane file(s) sealed and intact",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      }
+    ]
+  },
   "id": "T-0006"
 }
