@@ -13,7 +13,7 @@
     "[x] Scenario runs on a dedicated serial thread; canonical dsh.spike.log lines captured from the simulator",
     "[x] tools/e2e/check.mjs PASS 9/9 in order on the captured log",
     "[x] Artifacts committed under hosts/ios/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
-    "dev-ios.yml builds the spike; agent note written; PR open with gates green"
+    "[x] dev-ios.yml builds the spike; agent note written; PR open with gates green"
   ],
   "status": "open",
   "receipt": null,
