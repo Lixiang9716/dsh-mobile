@@ -1,0 +1,33 @@
+{
+  "host": "harmonyos emulator dsh_phone (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "bundleName": "com.dshmobile.spike",
+  "scenario": "m1.spike.boot",
+  "exitStatus": 0,
+  "exitStatusDetail": "native verdict PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=9 (dsh_spike_complete && dsh_spike_pass, rc==0)",
+  "checker": {
+    "tool": "tools/e2e/check.mjs",
+    "manifest": "tools/e2e/scenarios/m1-spike-boot.json",
+    "log": "hosts/harmony/artifacts/m1-spike/logs.txt",
+    "pass": true,
+    "expected": 9,
+    "logged": 9
+  },
+  "captures": {
+    "primary": "logs.txt (hilog -x dump, filtered to dsh.spike lines; canonical lines byte-identical to the sink capture after stripping the hilog prefix)",
+    "second": "sink-capture.txt (app-side capture file pulled via hdc file recv; named .txt because the repo ignores *.log; scenario.jsonl = grep '^dsh.spike.log:')",
+    "screenshot": "screenshot.png (human evidence only, never the assertion)"
+  },
+  "toolchain": {
+    "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
+    "hvigor": "6.26.4",
+    "ohpm": "26.0.0.630",
+    "sdk": "HarmonyOS 26.0.0 Release (Ohos_sdk_public 26.0.0.105, API Version 26)",
+    "signing": "none — the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
+  },
+  "timestamp": "2026-09-19T13:29:17Z"
+}

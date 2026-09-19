@@ -1,0 +1,7 @@
+# Build outputs of the hvigor CLT flow (kept out of git; the committed
+# evidence lives in artifacts/, not build trees)
+oh_modules/
+.cxx/
+.hvigor/
+build/
+_preview/

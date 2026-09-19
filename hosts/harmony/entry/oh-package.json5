@@ -1,0 +1,12 @@
+{
+  "modelVersion": "5.0.0",
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "M1 spike entry module (quickjs-ng host via NAPI)",
+  "main": "",
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "libspike.so": "file:./src/main/cpp/types/libspike"
+  }
+}

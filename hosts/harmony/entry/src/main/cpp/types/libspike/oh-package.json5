@@ -1,0 +1,6 @@
+{
+  "name": "libspike.so",
+  "types": "./index.d.ts",
+  "version": "1.0.0",
+  "description": "NAPI binding for the dsh-mobile M1 spike host (quickjs-ng)"
+}

@@ -9,9 +9,9 @@
     }
   },
   "checklist": [
-    "hvigor project in hosts/harmony builds the spike HAP (quickjs-ng + dsh_spike_host.c via NAPI/CMake, scenario bundled)",
-    "Scenario runs synchronously on the NAPI caller thread; canonical dsh.spike.log lines captured from hilog",
-    "tools/e2e/check.mjs PASS 9/9 in order on the captured log",
+    "[x] hvigor project in hosts/harmony builds the spike HAP (quickjs-ng + dsh_spike_host.c via NAPI/CMake, scenario bundled)",
+    "[x] Scenario runs synchronously on the NAPI caller thread; canonical dsh.spike.log lines captured from hilog",
+    "[x] tools/e2e/check.mjs PASS 9/9 in order on the captured log",
     "Artifacts committed under hosts/harmony/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
     "dev-harmonyos.yml builds the spike; agent note written; PR open with gates green"
   ],
