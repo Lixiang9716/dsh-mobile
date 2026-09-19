@@ -1,0 +1,24 @@
+{
+  "title": "M2 iOS privileged layer: real 9-primitive gateway binding",
+  "created": "2026-09-19T16:39:12+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Gateway/ dir: GatewayCore dispatch + manifest.json caller identity + permission check + structured audit (dsh.gateway.audit: prefix, never payloads)",
+    "9 primitives real: fs (app scope + security-scoped user grants, escape=invalid, 8MiB cap), httpFetch (URLSession streaming + abort=cancelled), notify (UNUserNotificationCenter), presentApproval (UIAlertController), presentPicker (UIDocumentPickerViewController, dismissal resolves null, file pick maps scope=parent dir), keychain (SecItem)",
+    "descriptor: dsh_spike_set_descriptor called before eval; 9 available / 0 unavailable",
+    "event channels: app.state + notify.response via gateway_event; notify.response emitted BEFORE app.state foreground on tap-resume",
+    "AppDelegate sequences boot\u2192carrier\u2192m2 (m1 phases untouched, order frozen); GatewaySession watchdog \u2265120s; ui-wait/ui-done stdout markers before each automatable UI surface",
+    "CarrierServer adds /gateway-e2e/bytes + /gateway-e2e/slow (m1 manifests unaffected)",
+    "code-size gate green (Swift \u2264500 lines/file, \u226450/function); xcodebuild green; m1 scenarios still pass",
+    "gov run green; feature note written; card closed with receipt; branch pushed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0006"
+}
