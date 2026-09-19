@@ -18,7 +18,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | M1 | Spike：quickjs-ng 垫层跑通纯逻辑包 + iOS 宿主骨架 + 本机 carrier | 已完成（运行时 spike 已在 iOS/Android/鸿蒙 + macOS 验证；本机 carrier——回环静态文件 + WS↔QuickJS 泵——已在 iOS 模拟器验证） |
 | M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 首个设备端会话 | 完成（系统插件 + Web Client 挂载 + 首个设备端会话：`dsh-fs`/`dsh-subprocess-quickjs`/`dsh-ui` 插件，`m2.session` 在 CLI 与设备端均 22/22 通过，Web Client `dsh-web-client` 经 carrier WS 挂载并实时渲染 —— 证据见 `runtime/spike/artifacts/macos-cli-m2-session/` 与 `hosts/ios/artifacts/m2-session/`；仍开放：真实 LLM API） |
 | M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 计划 |
-| M4 | Android 宿主（QuickJS 同构） | 计划 |
+| M4 | Android 宿主（QuickJS 同构） | 进行中（同构宿主已验证：网关桥接场景 `m2.bridge.smoke` 与 `m1.spike.boot` 回归在模拟器上通过 — 证据 `hosts/android/artifacts/m4-host/`） |
 | M5 | 鸿蒙宿主（ArkTS + NAPI） | 计划 |
 
 ## 治理

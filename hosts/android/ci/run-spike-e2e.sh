@@ -55,15 +55,16 @@ done
 
 adb logcat -c
 
-# Launch and wait for the completion tag. am start itself can transiently
-# fail while services settle, so the whole condition is retried — once the
-# activity exists, a relaunch only brings it to front (onCreate, and thus
-# the scenario, runs once).
+# Launch and wait for the completion tag ("ALL PASS"/"ALL FAIL" — emitted
+# after BOTH scenarios ran; per-scenario verdict lines land earlier). am
+# start itself can transiently fail while services settle, so the whole
+# condition is retried — once the activity exists, a relaunch only brings it
+# to front (onCreate, and thus the scenarios, run once).
 deadline=$(( $(date +%s) + 120 ))
 until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1 &&
-      adb logcat -d -s dsh.spike.result 2>/dev/null | grep -q dsh.spike.result; do
+      adb logcat -d -s dsh.spike.result 2>/dev/null | grep -q "ALL "; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
-        echo "::error::scenario m1.spike.boot did not complete within 120s"
+        echo "::error::spike scenarios did not complete within 120s"
         adb logcat -d | tail -200
         exit 1
     fi
@@ -71,8 +72,18 @@ until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1 &&
 done
 
 adb logcat -d -s dsh.spike > /tmp/dsh-spike-logs.txt
+adb logcat -d -s dsh.spike.result > /tmp/dsh-spike-results.txt
+cat /tmp/dsh-spike-results.txt
+
+# E2E by logs: one checker verdict per scenario manifest against the shared
+# canonical stream (checkers filter on the records' scenario field).
 node tools/e2e/check.mjs \
     --manifest tools/e2e/scenarios/m1-spike-boot.json \
     --log /tmp/dsh-spike-logs.txt \
-    --out /tmp/dsh-spike-verdict.json
-cat /tmp/dsh-spike-verdict.json
+    --out /tmp/dsh-spike-verdict-m1.json
+cat /tmp/dsh-spike-verdict-m1.json
+node tools/e2e/check.mjs \
+    --manifest tools/e2e/scenarios/m2-bridge-smoke.json \
+    --log /tmp/dsh-spike-logs.txt \
+    --out /tmp/dsh-spike-verdict-m2.json
+cat /tmp/dsh-spike-verdict-m2.json

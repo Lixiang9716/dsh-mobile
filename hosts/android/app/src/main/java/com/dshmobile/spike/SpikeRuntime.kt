@@ -25,8 +25,9 @@ object SpikeRuntime {
 
     /**
      * Runs the full spike lifecycle on the CALLING thread (the runtime
-     * thread): dsh_spike_new/eval/pump/complete inside nativeRunSpike.
-     * Returns the verdict line, e.g. "PASS | quickjs-ng 0.17.0".
+     * thread): one dsh_spike runtime per scenario inside nativeRunSpike —
+     * m1.spike.boot (regression) then m2.bridge.smoke (gateway bridge).
+     * Returns the combined multi-line verdict.
      */
     fun runOnce(contextDir: String): String = nativeRunSpike(contextDir)
 

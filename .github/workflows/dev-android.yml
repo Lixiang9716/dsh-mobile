@@ -91,7 +91,7 @@ jobs:
       # E2E by logs (AGENTS.md rule 7): capture the canonical dsh.spike lines
       # from logcat and let tools/e2e/check.mjs deliver the verdict. One
       # invocation; every wait inside is a polled condition with a deadline.
-      - name: Run m1.spike.boot on the emulator and verify (logs only)
+      - name: Run m1.spike.boot + m2.bridge.smoke on the emulator and verify (logs only)
         run: bash hosts/android/ci/run-spike-e2e.sh
 
       - name: Upload E2E evidence
@@ -101,6 +101,8 @@ jobs:
           name: m1-spike-e2e-logs
           path: |
             /tmp/dsh-spike-logs.txt
-            /tmp/dsh-spike-verdict.json
+            /tmp/dsh-spike-results.txt
+            /tmp/dsh-spike-verdict-m1.json
+            /tmp/dsh-spike-verdict-m2.json
             /tmp/emulator.log
           if-no-files-found: ignore
