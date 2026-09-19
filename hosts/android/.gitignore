@@ -1,0 +1,6 @@
+# Local Android build state (repo root .gitignore is owned by the integrator).
+.gradle/
+build/
+app/build/
+app/.cxx/
+local.properties
