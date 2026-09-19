@@ -18,6 +18,8 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 | M1 | Spikes: quickjs-ng shim over upstream pure-logic packages + iOS host skeleton + local carrier | Done (runtime spike verified on iOS/Android/HarmonyOS + macOS; local carrier — loopback static files + WS↔QuickJS pump — verified on the iOS simulator) |
 | M2 | System implementation plugins (fs/subprocess/ui) + Web Client mount + first on-device session | Done (system plugins + Web Client mount + first on-device session: `dsh-fs`/`dsh-subprocess-quickjs`/`dsh-ui` plugins, `m2.session` 22/22 on the CLI and on-device, Web Client `dsh-web-client` mounted and rendered live over the carrier WS — evidence `runtime/spike/artifacts/macos-cli-m2-session/` and `hosts/ios/artifacts/m2-session/`; still open: real LLM API) |
 | M3 | Plugin install pipeline + UI pluggability (slot / Web Client swap) | Planned |
+| M4 | Android host (QuickJS-isomorphic) | In progress (isomorphic host verified: gateway-bridge scenario `m2.bridge.smoke` green on the emulator alongside the `m1.spike.boot` regression — evidence `hosts/android/artifacts/m4-host/`) |
+| M5 | HarmonyOS host (ArkTS + NAPI) | Planned |
 | M4 | Android host (QuickJS-isomorphic) | Planned |
 | M5 | HarmonyOS host (ArkTS + NAPI) | In progress (isomorphic host verified: m2.session green on emulator alongside m1.spike.boot + m2.bridge.smoke in one launch — evidence `hosts/harmony/artifacts/m5-host/`) |
 

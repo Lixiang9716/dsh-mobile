@@ -8,11 +8,12 @@ import android.widget.TextView
 import java.io.File
 
 /**
- * M1 spike boot activity: copies the spike bundle from assets into
- * filesDir/spike (the C host fopen()s real paths), runs scenario
- * m1.spike.boot on the serial runtime thread, then shows the verdict
- * (PASS/FAIL + engine version). The E2E assertion is the captured log, never
- * this screen — the TextView is human evidence only.
+ * M4 spike host activity: copies the spike bundle from assets into
+ * filesDir/spike (the C host fopen()s real paths), then drives BOTH
+ * scenarios (m1.spike.boot regression + m2.bridge.smoke gateway bridge) on
+ * the serial runtime thread and shows the combined verdict. The E2E
+ * assertion is the captured log, never this screen — the TextView is human
+ * evidence only.
  */
 class MainActivity : Activity() {
 
@@ -26,7 +27,7 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             setPadding(64, 64, 64, 64)
             textSize = 16f
-            text = "dsh M1 spike: booting quickjs-ng..."
+            text = "dsh spike host: booting quickjs-ng..."
         }
         setContentView(verdictView)
         SpikeRuntime.post {
