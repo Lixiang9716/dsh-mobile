@@ -1,0 +1,108 @@
+/**
+ * dsh-mobile capability gateway — primitive contract v1.0.0 (FROZEN at M0, D5).
+ *
+ * Spec of record: contract/primitives.md. Shapes here are immutable for the
+ * life of major version 1; additions require a minor bump of the contract.
+ * Negotiation string: `gateway@1`.
+ */
+
+// ---- shared conventions -------------------------------------------------
+
+/** Structured rejection of any primitive call. Unknown codes are fatal. */
+export type GatewayErrorCode =
+  | "denied"
+  | "unavailable"
+  | "invalid"
+  | "io"
+  | "network"
+  | "timeout"
+  | "cancelled";
+
+export type GatewayError = {
+  code: GatewayErrorCode;
+  /** Primitive the error came from, e.g. "fsRead". */
+  primitive: string;
+  message?: string;
+  detail?: unknown;
+};
+
+/** Opaque token for a user-granted or reserved filesystem scope. */
+export type ScopeHandle = string;
+/** Opaque, persistable token restoring a scope across launches. */
+export type ScopeRef = string;
+/** Opaque credential reference (persisted under profile state/). */
+export type KeyRef = string;
+
+// ---- 1-3 · filesystem ---------------------------------------------------
+
+export declare function fsRead(
+  scope: ScopeHandle,
+  path: string,
+): Promise<{ bytes: Uint8Array; mtime: string }>;
+
+export declare function fsWrite(
+  scope: ScopeHandle,
+  path: string,
+  bytes: Uint8Array,
+  opts?: { append?: boolean; create?: boolean },
+): Promise<{ written: number }>;
+
+export declare namespace fsScope {
+  export declare function persist(scope: ScopeHandle): Promise<{ ref: ScopeRef }>;
+  export declare function resolve(ref: ScopeRef): Promise<{ scope: ScopeHandle }>;
+}
+
+// ---- 4 · network --------------------------------------------------------
+
+export type HttpFetchInit = {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: Uint8Array | AsyncIterable<Uint8Array>;
+};
+
+export type HttpFetchResponse = {
+  status: number;
+  headers: Record<string, string>;
+  /** Event sequence of byte chunks — never a blocking whole-result (D8). */
+  body: AsyncIterable<Uint8Array>;
+  abort(): void;
+};
+
+export declare function httpFetch(url: string, init?: HttpFetchInit): Promise<HttpFetchResponse>;
+
+// ---- 5 · notifications --------------------------------------------------
+
+export type NotifyPayload = {
+  title: string;
+  body?: string;
+  threadId?: string;
+  data?: Record<string, unknown>;
+};
+
+export declare function notify(payload: NotifyPayload): Promise<{ id: string }>;
+
+// ---- 6-7 · native UI ----------------------------------------------------
+
+export declare function presentApproval(req: {
+  title: string;
+  detail?: string;
+  allowRemember?: boolean;
+}): Promise<{ approved: boolean; remember?: boolean }>;
+
+export type PickerRequest = { mode: "file" | "directory"; suggestedName?: string };
+export type PickerResult = { scope: ScopeHandle; path: string | null };
+
+/** Resolves null on user dismissal — a value, not an error. */
+export declare function presentPicker(req: PickerRequest): Promise<PickerResult | null>;
+
+// ---- 8-9 · credentials --------------------------------------------------
+
+export declare function keychainGet(ref: KeyRef): Promise<{ secret: Uint8Array } | null>;
+
+/** secret = null deletes the credential. */
+export declare function keychainSet(ref: KeyRef, secret: Uint8Array | null): Promise<void>;
+
+// ---- event channels (bridge-delivered, not calls) ------------------------
+
+export type AppStateChanged = { state: "foreground" | "background" };
+export type NotifyResponse = { id: string; action?: string };
