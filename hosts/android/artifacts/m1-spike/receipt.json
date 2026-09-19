@@ -1,0 +1,15 @@
+{
+  "host": "android emulator-5554 (API 35 AVD pixel)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "com.dshmobile.spike",
+  "scenario": "m1.spike.boot",
+  "exitStatus": 0,
+  "exitStatusNote": "JNI lifecycle verdict PASS (dsh_spike_complete && dsh_spike_pass); the app process stays resident — the spike activity does not exit. Checker exit 0.",
+  "verdictLine": "PASS | quickjs-ng 0.17.0",
+  "runtimeThread": "HandlerThread 'dsh-spike-js' (logcat pid 2446 tid 2465 — not the UI thread)",
+  "logSource": "adb logcat -d -s dsh.spike; second capture: filesDir/spike-capture.log pulled via run-as (byte-identical)",
+  "timestamp": "2026-09-19T13:25:32Z"
+}
