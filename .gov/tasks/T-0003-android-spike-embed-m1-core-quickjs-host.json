@@ -15,7 +15,12 @@
     "[x] Artifacts committed under hosts/android/artifacts/m1-spike/ (logs/scenario/verdict/screenshot/receipt)",
     "dev-android.yml builds the spike; agent note written; PR open with gates green"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0003"
+  "id": "T-0003",
+  "void": {
+    "ts": "2026-09-19T14:59:55+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "The M1 spike batch is complete and merged (PRs #20 core, #22 ios, #23 harmony, #21 android): scenario m1.spike.boot PASS 9/9 verified per platform with committed evidence; this card's checklist all [x]. This card absorbed its two id-twin siblings (ios/harmony files) which were git-removed to restore id uniqueness: all three platform worktrees allocated T-0003 independently (per-worktree high-water, govrail #332), making the id ambiguous and the cards unaddressable by the tool on main. Receipt-closure remains structurally blocked by govrail #329 \u2014 retired as void with the recorded exit, same as T-0001/T-0002; audit trail = the four PRs + git history of the removed files."
+  }
 }
