@@ -60,6 +60,10 @@ jobs:
       # survives into the next step; run-spike-e2e.sh owns the whole E2E.
       - name: Boot the emulator (background, KVM)
         run: |
+          # /dev/kvm on hosted runners is root:kvm 0660 — the runner user
+          # cannot write it, the emulator dies at spawn, and every later adb
+          # wait would hang. Passwordless sudo is available; make it usable.
+          sudo chmod 666 /dev/kvm
           # adb/emulator are not on PATH outside the (dropped) runner action;
           # GITHUB_PATH persists into the verify step.
           echo "$ANDROID_HOME/emulator" >> "$GITHUB_PATH"
