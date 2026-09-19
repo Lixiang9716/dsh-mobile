@@ -1,7 +1,9 @@
 name: dev/ios
-# End-to-end iOS pipeline. Scaffolded at M0; the real E2E suite (simulator
-# boot + XCUITest against the QuickJS host) lands with the M1 Xcode project
-# in hosts/ios (docs/ARCHITECTURE.md §10).
+# End-to-end iOS pipeline. Since M1 this builds the spike app in hosts/ios
+# (quickjs-ng + dsh_spike_host.c) and, when the runner has a usable iOS
+# simulator, runs scenario m1.spike.boot on it and verifies the canonical
+# log lines with the shared checker (tools/e2e/check.mjs) — logs are the
+# verdict, screenshots are never asserted on (docs/ARCHITECTURE.md).
 #
 # Manual trigger plus path-filtered pushes/PRs: macOS runner minutes bill at
 # 10x, so docs-only changes never reach this pipeline.
@@ -32,14 +34,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Same unpacked-cache pattern as dev/harmonyos: once M1 lands the
-      # Xcode project, xcodebuild must use -derivedDataPath hosts/ios/DerivedData
-      # so incremental builds restore from this cache (SwiftPM + module cache).
+      # Same unpacked-cache pattern as dev/harmonyos: xcodebuild uses
+      # -derivedDataPath hosts/ios/DerivedData so incremental builds restore
+      # from this cache (SwiftPM + module cache).
       - name: Cache DerivedData
         uses: actions/cache@v4
         with:
           path: hosts/ios/DerivedData
-          key: dev-ios-deriveddata-ios265-v1
+          key: dev-ios-deriveddata-v2
 
       - name: Toolchain sanity
         run: |
@@ -47,20 +49,75 @@ jobs:
           swift --version
           xcrun simctl list runtimes | head -5
 
-      - name: Locate the Xcode project (lands at M1)
+      # Materialize the pinned quickjs-ng engine sources (sha256-verified;
+      # network only needed on first fetch). Must precede any build that
+      # embeds the engine (runtime/spike/README.md embedding contract).
+      - name: Vendor quickjs-ng sources
+        run: runtime/spike/vendor/ensure.sh
+
+      # Real, unconditional build: compiles + links the app for the iOS
+      # simulator. Generic destination so it does not depend on which
+      # simulator devices the runner image ships.
+      - name: Build spike app
         run: |
-          if compgen -G "hosts/ios/*.xcodeproj" > /dev/null; then
-            cd hosts/ios
-            xcodebuild -list
+          cd hosts/ios
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath DerivedData \
+            | tail -30
+
+      # Boot + install + launch + verify. Best-effort on CI: hosted runner
+      # images are not guaranteed to ship a simulator runtime this Xcode can
+      # boot, so ONLY this emulator-stage step is continue-on-error — the
+      # build above is real and always gates the pipeline. When a simulator
+      # is available this step must be green too; a red here with green
+      # build is reported, not hidden (the verdict file + logs are uploaded
+      # either way for diagnosis).
+      - name: Run m1.spike.boot on simulator and verify
+        id: spike-run
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          ART=hosts/ios/artifacts/m1-spike
+          mkdir -p "$ART"
+          UDID=$(xcrun simctl list devices available | grep -m1 'iPhone (' | grep -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          [ -n "$UDID" ] || { echo "::warning::no available iPhone simulator on this runner"; exit 1; }
+          echo "using simulator $UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+          xcrun simctl launch --terminate-running-process \
+            --stdout="$PWD/$ART/logs.txt" \
+            --stderr="$PWD/$ART/nslog-stderr.txt" \
+            "$UDID" org.dsh.DSHSpike
+          # poll for the verdict marker with a deadline — never a blind sleep
+          for i in $(seq 1 60); do
+            grep -q "spike: verdict" "$ART/logs.txt" 2>/dev/null && break
+            sleep 2
+          done
+          grep -q "spike: verdict" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
+          xcrun simctl io "$UDID" screenshot "$ART/screenshot.png" || true
+          grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
+          node tools/e2e/check.mjs \
+            --manifest tools/e2e/scenarios/m1-spike-boot.json \
+            --log "$ART/logs.txt" \
+            --out "$ART/verdict.json"
+
+      - name: Report verdict
+        if: always()
+        run: |
+          if [ -f hosts/ios/artifacts/m1-spike/verdict.json ]; then
+            cat hosts/ios/artifacts/m1-spike/verdict.json | tee -a "$GITHUB_STEP_SUMMARY"
           else
-            echo "::warning::No Xcode project in hosts/ios yet — the E2E suite lands at M1"
+            echo "m1.spike.boot: no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
           fi
 
-      # M1/M2 will add:
-      #   xcodebuild build-for-testing -destination 'platform=iOS Simulator,name=iPhone 16'
-      #   xcodebuild test — XCUITest E2E drives the flows (session start, tool
-      #   approval, streaming, checkpoint/resume) but NEVER asserts on
-      #   screenshots: every scenario has a unique scenario-id, the runtime
-      #   emits one structured log entry per expected event, and the
-      #   assertion is a one-to-one expected<->logged match. CI captures no
-      #   screenshots; logs are the verdict.
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m1-spike-ios
+          path: hosts/ios/artifacts/m1-spike/
+          if-no-files-found: warn
