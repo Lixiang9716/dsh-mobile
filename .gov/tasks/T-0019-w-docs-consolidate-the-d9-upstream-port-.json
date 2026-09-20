@@ -1,0 +1,25 @@
+{
+  "title": "W-DOCS: consolidate the D9 upstream-port status across the bilingual status docs",
+  "created": "2026-09-20T22:27:19+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "README.md + README.zh.md: Upstream port (D9) subsection under Milestones with evidence links",
+    "docs/ARCHITECTURE.md + .zh.md: D9 port line in \u00a710 after M5; \u00a73 measured-shim cross-reference; \u00a711 D0-D9; dedupe the duplicated M3 bullet",
+    "docs/e2e-matrix.md + .zh.md: as-of sha + totals refreshed to match matrix.mjs on this tree (26 dirs / 59 verdicts / 6 findings)",
+    "pairing re-stamped for all three pairs; process note (ref D9) landed; card voided; gov run green; PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0019",
+  "void": {
+    "ts": "2026-09-20T22:32:26+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work completes in the opened docs PR (audit trail = the PR, #329/#339 precedent): README \u00b1zh 'Upstream port (D9)' subsection landed (26 pinned packages verified from ensure-dsh.sh, 58-package app shell from #61's commit, evidence linked to the matrix); ARCHITECTURE \u00b1zh \u00a710 D9 bullet after M5 + \u00a73 measured-vs-static cross-reference + \u00a711 D0\u2013D9 + duplicated-M3 dedupe; docs/e2e-matrix \u00b1zh regenerated against the a536277 tree via node tools/e2e/matrix.mjs (26 dirs / 59 green verdicts / 25-of-25 manifests / 64 PNGs / 6 findings, new sixth finding = the d9-write-live receipt owned by #70's stream, b-harmony.write.live 33/33 added); three pairs re-stamped with gov verify pairing --write; process note (ref D9) landed; card checklist items 1\u20133 verifiably done in the working tree, item 4 (PR open) lands with the PR itself. Receipt-closure remains structurally blocked upstream (#329/#339) \u2014 retired as void per precedent."
+  }
+}
