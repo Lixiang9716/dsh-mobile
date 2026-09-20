@@ -11,10 +11,21 @@ embedder plus a typed JS shim (`gateway.js`).
 - `vendor/quickjs-ng/0.17.0/` — verbatim quickjs-ng library sources
   (untracked; materialized by `ensure.sh`). `quickjs-libc` is deliberately
   excluded: the spike host provides its own minimal glue.
-- `vendor/dsh/util-crypto@0.1.6-alpha.1/` — verbatim upstream
-  `@deepseek-ai/dsh-util-crypto` (zero-dependency, pure logic). The shim
-  provides the Web-API seams it needs (`crypto.getRandomValues`, `btoa`)
-  instead of editing upstream.
+- `vendor/ensure-dsh.sh` + `vendor/dsh/*@0.1.6-alpha.2/` + `vendor/npm/` —
+  the VENDORED UPSTREAM DSH RUNTIME closure (D9): each package is
+  the verbatim upstream tarball, pinned by tgz sha256 in the ensure script
+  (the tracked provenance record). Like `vendor/quickjs-ng/`, the vendored
+  trees are untracked by design and materialized by `ensure-dsh.sh`, so the
+  syntax-class checker never judges upstream code. The upstream E2E
+  (`scenario/m2-upstream-session.js`) runs the vendored agent spine
+  verbatim inside quickjs-ng over these files; adaptation lives in the shim
+  layer (`upstream/`), never in the vendored copies.
+- `upstream/` — the SYSTEM LAYER for the upstream port: web-API + `node:`
+  shims (`web-shims.js`, `shims/`), the mobile profile boot (`boot.js`,
+  the dsh-base-equivalent spine over the vendor closure), the scripted
+  model service (`model-scripted.js`, the `model.scripted` boundary), the
+  in-memory settings backend, and the shim-coverage + capability-mapping
+  tables (`upstream/README.md`).
 - `logger.js` — plain-ESM port of `runtime/logger/index.ts` (same
   `createLogger` contract; emits one JSON line per entry through the
   host-bound sink).
@@ -185,6 +196,22 @@ embedder plus a typed JS shim (`gateway.js`).
 - `scenario/m1-carrier-loopback.js` — the `m1.carrier.loopback` E2E
   scenario: the local-carrier topology (static files + WS pump) asserted
   through the bus seam, for hosts that implement it (see below).
+- `scenario/m2-upstream-session.js` — the `m2.upstream-session` E2E
+  scenario, the D9 proof: ONE REAL upstream agent-loop turn over the
+  vendored runtime inside quickjs-ng. `upstream/boot.js` composes the mobile
+  profile (the dsh-base bundle's spine rows: sessions → agents →
+  system-prompt → tools → session-projection → settings → agent-loop, with
+  `llm` mounted scripted), the AgentLoop configured-agent path creates agent
+  "main" on session "s-m2-upstream-0001", the scenario sends one user
+  message through the upstream handle, and the loop assembles the prompt,
+  streams the scripted turn, appends the assistant message through the
+  upstream BlockAssembler path, and closes the turn. The scenario then walks
+  ctx.sessions' log (the upstream event vocabulary, one structured line per
+  record) and asserts the turn-boundary projection. The scripted model
+  service is the only non-upstream runtime component (logged
+  `model.scripted`); the dsh-llm transport lands separately. Evidence:
+  `runtime/spike/artifacts/macos-cli-upstream-session/`, runner
+  `runtime/spike/ci/run-upstream-e2e.sh`.
 - `web/` — the spike Presentation page (`index.html` + `carrier-page.js`),
   served as static files by a host carrier; it knows only the WS protocol.
 - `host/` — the platform-neutral C shim every platform host links
@@ -266,7 +293,6 @@ directories on write, like the platform fs primitives), delivers the
 host-readiness signal (`host.info`, port 0) right after eval, and defers
 every settlement to the post-pump drain pass — proving the later-tick
 pattern. The `m2.session` scenario runs on the same driver:
-
 ```sh
 ./build/dsh-spike-cli . scenario/m2-session.js > logs-m2-session.txt
 node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-session.json \
@@ -288,4 +314,14 @@ receipt startup replay + install-time capability negotiation):
 ./build/dsh-spike-cli . scenario/m3-complete.js > logs-m3-complete.txt
 node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-complete.json \
   --log logs-m3-complete.txt
+```
+
+The D9 upstream-port scenario (`m2.upstream-session` — the vendored runtime
+inside quickjs-ng, one real upstream agent-loop turn) has its own runner,
+which materializes the vendored closure, runs the scenario, verifies
+one-to-one, and writes the committed evidence:
+
+```sh
+runtime/spike/ci/run-upstream-e2e.sh
+# artifacts: runtime/spike/artifacts/macos-cli-upstream-session/
 ```

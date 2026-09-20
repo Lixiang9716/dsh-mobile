@@ -33,7 +33,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   fail('gateway negotiation failed');
 } else {
   emit('gateway.negotiated', { version: 'gateway@1' });
-  emit('package.loaded', { name: '@deepseek-ai/dsh-util-crypto', version: '0.1.6-alpha.1' });
+  emit('package.loaded', { name: '@deepseek-ai/dsh-util-crypto', version: '0.1.6-alpha.2' });
 
   const uuid = randomUUID();
   const v4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(uuid);

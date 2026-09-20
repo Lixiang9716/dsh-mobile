@@ -309,7 +309,12 @@ static void smoke_serve(smoke_backend *b, int call_id, const char *name,
         return smoke_settle(b, call_id, 1, "{\"ref\":\"bkm:tmp\"}");
     }
     if (strcmp(name, "fsScope.resolve") == 0) {
-        return smoke_settle(b, call_id, 1, "{\"scope\":\"app\"}");
+        /* The profile container IS the scope root: return its absolute POSIX
+         * path so session cwd pinning is honest (the gateway fs scope and the
+         * filesystem view stay the same directory). */
+        char payload[640];
+        snprintf(payload, sizeof(payload), "{\"scope\":\"app\",\"path\":\"%s\"}", b->tmpdir);
+        return smoke_settle(b, call_id, 1, payload);
     }
     smoke_reject(b, call_id, name, "unavailable",
                  "declared unavailable by the smoke backend");

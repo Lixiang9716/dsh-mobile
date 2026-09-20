@@ -12,8 +12,11 @@
  *     dsh_spike_gateway_settle and streams events through
  *     dsh_spike_gateway_event — both RUNTIME-THREAD-ONLY (M1's canned
  *     responses are gone: the host no longer invents gateway results);
- *   - an ESM loader over the spike bundle: "dsh:util-crypto" maps to the
- *     vendored package; everything else resolves bundle-root-relative.
+ *   - an ESM loader over the spike bundle: "dsh:util-crypto" (legacy spike
+ *     specifier), bare npm specifiers (@deepseek-ai/*, zod) map into the
+ *     vendored upstream closure, node: builtins map to the spike shims
+ *     (runtime/spike/upstream/shims/), everything else resolves
+ *     bundle-root-relative; unmapped bare specifiers fail loud.
  */
 #include "dsh_spike_host.h"
 
@@ -29,8 +32,32 @@
 #define DSH_PUMP_GUARD 100000
 
 static const char *DSH_GATEWAY_VERSION = "gateway@1";
+/* The pinned upstream runtime version this build maps bare specifiers to
+ * (runtime/spike/vendor/ensure-dsh.sh is the single source of the pin). */
+static const char *DSH_UPSTREAM_VERSION = "0.1.6-alpha.2";
+/* Legacy spike specifier (m1 spike boot): kept working on the alpha.2 pin. */
 static const char *DSH_PKG_CRYPTO = "dsh:util-crypto";
-static const char *DSH_PKG_CRYPTO_PATH = "vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js";
+static const char *DSH_PKG_CRYPTO_PATH = "vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js";
+
+/* node: builtin → spike shim under upstream/shims/. Only builtins the vendored
+ * closure actually imports are mapped; anything else fails loud at import time
+ * naming the specifier (rule 5) so a missing seam is never silently wrong. */
+static const char *dsh_node_shim(const char *name) {
+    static const struct { const char *spec; const char *path; } SHIMS[] = {
+        { "node:path", "upstream/shims/path.js" },
+        { "node:crypto", "upstream/shims/crypto.js" },
+        { "node:async_hooks", "upstream/shims/async-hooks.js" },
+        { "node:util", "upstream/shims/util.js" },
+        { "node:util/types", "upstream/shims/util-types.js" },
+        { "node:fs", "upstream/shims/fs.js" },
+        { "node:os", "upstream/shims/os.js" },
+        { "node:process", "upstream/shims/process.js" },
+    };
+    for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
+        if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;
+    }
+    return NULL;
+}
 
 /* One in-flight gateway call: the promise capability JS owns a reference to
  * until the embedder settles it (or the runtime is torn down). */
@@ -346,6 +373,58 @@ static JSValue js_btoa(JSContext *ctx, JSValueConst this_val,
     return res;
 }
 
+/* atob: base64 → latin-1 string (the btoa inverse; used by vendored zod
+ * base64-format validation and cosmokit helpers). */
+static int dsh_b64_val(unsigned char c) {
+    if (c >= 'A' && c <= 'Z') return c - 'A';
+    if (c >= 'a' && c <= 'z') return c - 'a' + 26;
+    if (c >= '0' && c <= '9') return c - '0' + 52;
+    if (c == '+') return 62;
+    if (c == '/') return 63;
+    return -1;
+}
+
+static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
+                       int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1) return JS_ThrowTypeError(ctx, "atob needs a string");
+    size_t len = 0;
+    const char *in = JS_ToCStringLen(ctx, &len, argv[0]);
+    if (!in) return JS_EXCEPTION;
+    char *out = js_malloc(ctx, len + 1);
+    if (!out) { JS_FreeCString(ctx, in); return JS_EXCEPTION; }
+    size_t o = 0;
+    unsigned acc = 0;
+    unsigned bits = 0;
+    int pad = 0;
+    for (size_t i = 0; i < len; i++) {
+        unsigned char c = (unsigned char)in[i];
+        if (c == '=') { pad++; continue; }
+        int v = dsh_b64_val(c);
+        if (v < 0 || pad > 0) {
+            js_free(ctx, out);
+            JS_FreeCString(ctx, in);
+            return JS_ThrowTypeError(ctx, "atob input is not valid base64");
+        }
+        acc = (acc << 6) | (unsigned)v;
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            out[o++] = (char)((acc >> bits) & 0xFF);
+        }
+    }
+    JS_FreeCString(ctx, in);
+    /* every trailing '=' group must land on a byte boundary */
+    if (bits >= 6 && o > 0) { /* leftover bits that cannot form a byte */
+        js_free(ctx, out);
+        return JS_ThrowTypeError(ctx, "atob input is not valid base64");
+    }
+    out[o] = 0;
+    JSValue res = JS_NewStringLen(ctx, out, o);
+    js_free(ctx, out);
+    return res;
+}
+
 /* ---- exception bookkeeping ---------------------------------------------- */
 
 static void dsh_record_exception(dsh_spike_t *s) {
@@ -484,22 +563,132 @@ oom:
     return JS_ThrowOutOfMemory(ctx);
 }
 
+/* Map one bare module specifier to a bundle-root-relative file path.
+ * Returns NULL when the specifier is not bare (caller falls back to path
+ * resolution) and fills `err` when it is bare but unmapped (fail loud).
+ *
+ * Layers, in the system's dependency direction (D6/D9: upstream packages run
+ * verbatim; platform differences live in the shim layer, never in vendored
+ * copies):
+ *   - "@deepseek-ai/dsh-llm" — the staged upstream-SHAPE value-helper shim
+ *     (message factories / error classes the spine imports at module load).
+ *     Replaced by the real vendored dsh-llm the moment W-LLM's vendor lands:
+ *     delete this row, add the package to ensure-dsh.sh.
+ *   - "@deepseek-ai/dsh-session-persistence" — errors-only shim (agent-loop
+ *     imports SessionPersistenceNotFoundError at module load).
+ *   - node:<builtin> — the node shims (table above).
+ *   - "@deepseek-ai/dsh-<pkg>[/sub]" — vendored upstream runtime packages
+ *     (VERBATIM tarballs; sub "invariant" → lib/invariant.js, other lib-level
+ *     subpaths resolve under lib/; the /types subpaths are type-only upstream
+ *     and fail loud with a dedicated message).
+ *   - "@deepseek-ai/{cordis,cosmokit,schemastery}", "zod" — pinned npm deps
+ *     of the closure.
+ */
+static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, size_t err_len) {
+    if (strncmp(name, "node:", 5) == 0) {
+        const char *path = dsh_node_shim(name);
+        if (!path) {
+            snprintf(err, err_len, "no spike shim for node builtin '%s' (see runtime/spike/upstream/README.md)", name);
+            return -1;
+        }
+        snprintf(out, out_len, "%s", path);
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/dsh-llm") == 0) {
+        snprintf(out, out_len, "upstream/shims/dsh-llm.js");
+        return 1;
+    }
+    if (strncmp(name, "@deepseek-ai/dsh-llm/", 21) == 0) {
+        snprintf(err, err_len,
+                 "'%s' is a type-only subpath upstream; not mapped at runtime", name);
+        return -1;
+    }
+    if (strcmp(name, "@deepseek-ai/dsh-session-persistence") == 0) {
+        snprintf(out, out_len, "upstream/shims/dsh-session-persistence.js");
+        return 1;
+    }
+    if (strncmp(name, "@deepseek-ai/dsh-", 17) == 0) {
+        const char *rest = name + 17;
+        const char *slash = strchr(rest, '/');
+        size_t pkg_len = slash ? (size_t)(slash - rest) : strlen(rest);
+        if (slash == NULL) {
+            snprintf(out, out_len, "vendor/dsh/%.*s@%s/lib/index.js",
+                     (int)pkg_len, rest, DSH_UPSTREAM_VERSION);
+            return 1;
+        }
+        const char *sub = slash + 1;
+        if (strncmp(sub, "types", 5) == 0 && (sub[5] == 0 || sub[5] == '/')) {
+            snprintf(err, err_len,
+                     "'%s' is a type-only subpath upstream; not mapped at runtime", name);
+            return -1;
+        }
+        snprintf(out, out_len, "vendor/dsh/%.*s@%s/lib/%s", (int)pkg_len, rest,
+                 DSH_UPSTREAM_VERSION, sub);
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/cordis") == 0) {
+        snprintf(out, out_len, "vendor/npm/cordis@4.0.2/lib/index.js");
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/cosmokit") == 0) {
+        snprintf(out, out_len, "vendor/npm/cosmokit@1.8.3/lib/index.js");
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/schemastery") == 0) {
+        snprintf(out, out_len, "vendor/npm/schemastery@3.18.2/lib/index.mjs");
+        return 1;
+    }
+    if (strcmp(name, "zod") == 0) {
+        snprintf(out, out_len, "vendor/npm/zod@4.4.3/index.js");
+        return 1;
+    }
+    if (strncmp(name, "zod/", 4) == 0) {
+        snprintf(out, out_len, "vendor/npm/zod@4.4.3/%s", name + 4);
+        return 1;
+    }
+    return 0; /* not a bare specifier the loader owns */
+}
+
 static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *opaque) {
     dsh_spike_t *s = (dsh_spike_t *)opaque;
-    /* Runtime-defined modules first (M3 install pipeline), then the bundle
-     * root on disk. */
+    /* Runtime-defined modules first (install pipeline + shim overrides), then
+     * the bare-specifier map, then the bundle root on disk. */
     for (dsh_def_module *m = s->defined; m; m = m->next) {
         if (strcmp(m->name, name) == 0) {
             return dsh_compile_module(ctx, name, m->source, m->source_len);
         }
     }
     const char *rel = NULL;
+    char mapped[512];
+    char maperr[256];
     if (strncmp(name, DSH_PKG_CRYPTO, strlen(DSH_PKG_CRYPTO)) == 0) {
         rel = DSH_PKG_CRYPTO_PATH;
-    } else if (name[0] == '/') {
-        rel = name + 1;
+    } else if (strncmp(name, "dsh:", 4) == 0) {
+        JS_ThrowReferenceError(ctx, "unknown dsh: specifier '%s'", name);
+        return NULL;
     } else {
-        rel = name;
+        int kind = dsh_map_bare(name, mapped, sizeof(mapped), maperr, sizeof(maperr));
+        if (kind < 0) {
+            JS_ThrowReferenceError(ctx, "%s", maperr);
+            return NULL;
+        }
+        if (kind == 1) {
+            rel = mapped;
+        } else if (name[0] == '/') {
+            rel = name + 1;
+        } else if (name[0] == '.') {
+            JS_ThrowReferenceError(ctx, "relative import '%s' escaped its module root", name);
+            return NULL;
+        } else if (strchr(name, '.') != NULL || strchr(name, '/') != NULL) {
+            /* Legacy spike behavior: bundle-root-relative module paths
+             * ('logger.js', 'gateway.js', 'upstream/boot.js', scenarios). */
+            rel = name;
+        } else {
+            JS_ThrowReferenceError(ctx,
+                "unmapped module specifier '%s': not vendored and not shimmed (see runtime/spike/upstream/README.md)",
+                name);
+            return NULL;
+        }
     }
     char *abs = dsh_join(s->base, rel);
     if (!abs) {
@@ -511,25 +700,85 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
     return m;
 }
 
+/* Lexically resolve "." / ".." segments of `name` against importer directory
+ * `dir` (both in SPECIFIER space, no trailing slash). Returns a js_strdup'ed
+ * canonical specifier, or NULL when the path escapes the root. */
+static char *dsh_resolve_relative(JSContext *ctx, const char *dir, const char *name) {
+    const char *segs[64];
+    size_t lens[64];
+    size_t depth = 0;
+    /* seed with the importer dir's segments (immutably measured) */
+    const char *p = dir;
+    while (*p) {
+        const char *slash = strchr(p, '/');
+        size_t len = slash ? (size_t)(slash - p) : strlen(p);
+        if (depth >= 64) return NULL;
+        segs[depth] = p; lens[depth] = len; depth++;
+        if (!slash) break;
+        p = slash + 1;
+    }
+    /* resolve the relative segments of `name` */
+    char *tok = (char *)name;
+    for (;;) {
+        char *slash = strchr(tok, '/');
+        size_t len = slash ? (size_t)(slash - tok) : strlen(tok);
+        if (len == 1 && tok[0] == '.') {
+            /* skip */
+        } else if (len == 2 && tok[0] == '.' && tok[1] == '.') {
+            if (depth == 0) return NULL;
+            depth--;
+        } else {
+            if (depth >= 64) return NULL;
+            segs[depth] = tok; lens[depth] = len; depth++;
+        }
+        if (!slash) break;
+        tok = slash + 1;
+    }
+    size_t n = 1;
+    for (size_t i = 0; i < depth; i++) n += lens[i] + 1;
+    char *out = js_malloc(ctx, n);
+    if (!out) return NULL;
+    size_t o = 0;
+    for (size_t i = 0; i < depth; i++) {
+        if (o) out[o++] = '/';
+        memcpy(out + o, segs[i], lens[i]); o += lens[i];
+    }
+    out[o] = 0;
+    return out;
+}
+
 static char *dsh_normalize(JSContext *ctx, const char *base_name, const char *name,
                            void *opaque) {
     (void)opaque;
-    /* "dsh:*" passes through; relative names resolve against the importer's
-     * directory; everything else is bundle-root-relative. */
-    if (strncmp(name, "dsh:", 4) == 0 || name[0] == '/') {
+    /* Bare specifiers and bundle-absolute names pass through; relative names
+     * resolve against the importer's directory IN SPECIFIER SPACE (the loader
+     * maps canonical specifiers to vendored files, so "@deepseek-ai/dsh-x/"
+     * relative imports re-enter the bare map instead of hitting the disk). */
+    if (name[0] == '.' && base_name) {
+        /* A base without '/' is either a bundle-root FILE (directory = the
+         * bundle root, empty prefix) or a MAPPED BARE SPECIFIER (directory =
+         * the specifier itself, so 'zod' + './v4/x.js' re-enters the bare
+         * map as 'zod/v4/x.js'). */
+        const char *dir_end = strrchr(base_name, '/');
+        size_t dir_len;
+        char dir[512];
+        if (dir_end != NULL) {
+            dir_len = (size_t)(dir_end - base_name);
+        } else {
+            char mapped[512];
+            char maperr[256];
+            int kind = dsh_map_bare(base_name, mapped, sizeof(mapped), maperr, sizeof(maperr));
+            dir_len = kind == 1 ? strlen(base_name) : 0;
+        }
+        if (dir_len >= sizeof(dir)) return NULL;
+        if (dir_len > 0) memcpy(dir, base_name, dir_len);
+        dir[dir_len] = 0;
+        char *resolved = dsh_resolve_relative(ctx, dir, name);
+        if (resolved) return resolved;
+        /* fall through: unresolvable names fail loudly in the loader */
         return js_strdup(ctx, name);
     }
-    char merged[768];
-    if (name[0] == '.' && base_name && strchr(base_name, '/')) {
-        char dir[512];
-        snprintf(dir, sizeof(dir), "%s", base_name);
-        char *slash = strrchr(dir, '/');
-        if (slash) *slash = 0;
-        snprintf(merged, sizeof(merged), "%s/%s", dir, name);
-    } else {
-        snprintf(merged, sizeof(merged), "%s", name);
-    }
-    return js_strdup(ctx, merged);
+    return js_strdup(ctx, name);
 }
 
 /* ---- lifecycle ---------------------------------------------------------- */
@@ -557,6 +806,8 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_complete, "__dshComplete", 2));
     JSValue btoa_fn = JS_NewCFunction(ctx, js_btoa, "btoa", 1);
     JS_SetPropertyStr(ctx, global, "btoa", btoa_fn);
+    JSValue atob_fn = JS_NewCFunction(ctx, js_atob, "atob", 1);
+    JS_SetPropertyStr(ctx, global, "atob", atob_fn);
     JSValue crypto = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, crypto, "getRandomValues",
                       JS_NewCFunction(ctx, js_get_random_values, "getRandomValues", 1));
