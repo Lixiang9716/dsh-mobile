@@ -45,7 +45,16 @@ mkdir -p "$ART" "$ART/screens"
 log() { echo "run-ios-m3: $*"; }
 die() { echo "run-ios-m3: FAIL: $*" >&2; exit 1; }
 
-shot() { xcrun simctl io "$UDID" screenshot "$ART/screens/$1.png" >/dev/null 2>&1 && log "screenshot screens/$1.png" || true; }
+shot() { # capture a stage screenshot, FAIL LOUD on any capture problem —
+    # a silent failure leaves the previous run's file in place and three
+    # identical "stage" screenshots get committed (observed live)
+    local out="$ART/screens/$1.png"
+    rm -f "$out"
+    xcrun simctl io "$UDID" screenshot "$out" >/dev/null 2>&1 || die "screenshot $1: capture failed"
+    [ -s "$out" ] || die "screenshot $1: empty file"
+    [ "$(head -c 3 "$out" | xxd -p)" = "89504e" ] || die "screenshot $1: not a PNG"
+    log "screenshot screens/$1.png"
+}
 
 wait_line() { # PATTERN TIMEOUT_SECONDS — poll the log for a marker
   local deadline=$((SECONDS + $2))
