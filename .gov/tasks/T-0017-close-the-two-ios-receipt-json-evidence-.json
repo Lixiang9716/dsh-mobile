@@ -1,0 +1,27 @@
+{
+  "title": "Close the two iOS receipt.json evidence-matrix findings (b3-session-live, m2-gateway)",
+  "created": "2026-09-20T20:19:08+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "b3-session-live: re-run tools/e2e/run-ios-b3.sh on final main, verdict b3.session.live 46/46 green",
+    "b3-session-live: receipt.json authored from the real run in the established format, committed with refreshed evidence",
+    "m2-gateway: bounded tools/e2e/run-ios.sh attempt per the degraded-WDA protocol (fresh boot, one attempt, no forcing)",
+    "m2-gateway: receipt.json from a real green run, or the gap documented precisely in docs/e2e-matrix.md + zh",
+    "matrix.mjs re-run; docs/e2e-matrix.md + zh updated to final truth; pairing re-stamped",
+    "governance: agent note (testing) if non-trivial, gov run green, task card exited, rebase, push, PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0017",
+  "void": {
+    "ts": "2026-09-20T21:06:22+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Mission complete; voided before push per the #329/#339 precedent (task close stamps a receipt the task gate structurally rejects). Outcome: b3-session-live receipt CLOSED from a real 46/46 re-run on final main (commit a38f4fe); m2-gateway receipt remains open by protocol \u2014 four bounded run-ios.sh attempts diagnosed the real blockers (wda_up payload-format mismatch + picker field focus, both fixed in run-ios.sh; Files-provider search-index non-determinism remains), evidence restored to committed base, findings documented in docs/e2e-matrix.md +zh."
+  }
+}
