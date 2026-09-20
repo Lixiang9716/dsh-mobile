@@ -91,3 +91,14 @@ __pycache__/
 .gov/tasks/.new.lock
 runtime/spike/logs-upstream.txt
 runtime/spike/logs-upstream-boot.txt
+
+# D9 W-HARMONY3: the pinned zod classic closure inside the harmony rawfile
+# spine closure. VERBATIM upstream bytes (sha256-pinned by
+# runtime/spike/vendor/ensure-dsh.sh, copied + cmp-verified by
+# hosts/harmony/ci/vendor-official.sh) that the syntax-class checker cannot
+# parse (`export { _instanceof as instanceof }` — a tree-sitter-javascript
+# false positive on valid ES module syntax), and upstream discipline (D6)
+# forbids editing the bytes to satisfy a checker. Untracked for the same
+# reason as officialweb/ above: the content gates never judge vendored
+# upstream JS; the vendor script is the materialize + verify step.
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/

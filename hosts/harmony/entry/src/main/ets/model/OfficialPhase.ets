@@ -18,6 +18,16 @@
  * honest firsts in manifest order) plus the same-origin probe through the
  * WebView (module.system.live / app.shell.rendered / page.rendered).
  *
+ * THREE legs chain on ONE carrier (each on a FRESH runtime; per-leg
+ * evidence state keeps every capture file holding exactly its own
+ * manifest's records): the official mount (b1), the httpFetch v2 proof,
+ * and the session-live leg (W-HARMONY3): the FULL spine boots in the
+ * session-live runtime, `session.list` + the mux `session/journal` streams
+ * are CLAIMED and answered from ctx.sessions (the scripted
+ * /mock-llm/chat/completions endpoint is the model boundary — real
+ * transport, scripted output), and the b3 probe drives the read path
+ * through the official envelope (SessionLiveProbe.ets).
+ *
  * Threading: every NAPI call runs on the ArkTS main thread — the ONE serial
  * JS runtime thread (ARCHITECTURE.md §6). Bus callbacks from C re-enter
  * ArkTS synchronously and only send (never re-enter the runtime).
@@ -30,6 +40,7 @@ import {
   hostFree,
   hostSettle,
   hostStart,
+  hostStatus,
 } from 'libspike.so';
 import { common } from '@kit.AbilityKit';
 import { resourceManager } from '@kit.LocalizationKit';
@@ -41,13 +52,25 @@ import { WebDist, BootRow } from './WebDist';
 import { WebPlugins } from './WebPlugins';
 import { ApiBridge } from './ApiBridge';
 import { HttpFetch } from './HttpFetch';
+import { SessionLiveProbe, LegEvent } from './SessionLiveProbe';
 
 const TAG: string = 'dsh.app';
 const OFFICIAL_BASE_PORT: number = 17890;
 const SCENARIO_OFFICIAL = 'b-harmony.official-web-mount';
 const SCENARIO_HTTPFETCH = 'b-harmony.httpfetch-v2';
+/** The session-live leg (W-HARMONY3): the FULL spine boots in a fresh
+ * runtime, session.list + the mux journal are CLAIMED and answered from
+ * ctx.sessions. */
+const SCENARIO_SESSION = 'b-harmony.session.live';
 const ENTRY_B1 = 'scenario/b1-web-live.js';
 const ENTRY_HTTPFETCH = 'scenario/harmony-httpfetch-v2.js';
+const ENTRY_SESSION = 'scenario/harmony-session-live.js';
+/** The SCRIPTED model boundary of the session-live leg (the platform twin
+ * of iOS CarrierRoutes.registerScriptedLlm): a real loopback HTTP + SSE
+ * endpoint mirroring the vendored dsh-llm-mock-server's success stream
+ * byte-for-byte. Real transport, scripted model — logged as such. */
+const MOCK_LLM_PATH = '/mock-llm/chat/completions';
+const MOCK_LLM_KEY = 'mock-key-0001';
 /** The vendored dist's entry chunk (pinned by the dist MANIFEST.sha256 —
  * the deterministic asset evidence both b1 manifests pin). */
 const ENTRY_CHUNK = '/assets/index-8VXBH-f-.js';
@@ -116,6 +139,16 @@ export class OfficialPhase {
   private assetLogged = false;
   private comboLogged = false;
   private emittedEvents: Set<string> = new Set();
+  /** The session-live leg state: `legScenario` labels every canonical line
+   * (each leg's capture file holds exactly its own manifest's records);
+   * `spineLeg` switches the per-endpoint rpc.observed guards and the
+   * boot-wire source labels on. */
+  private legScenario: string = SCENARIO_OFFICIAL;
+  private spineLeg = false;
+  private rpcLogged: Set<string> = new Set();
+  private journalAttachLogged = false;
+  private respondLogged = false;
+  private frameLogged = false;
   private webRoot: string = '';
   private fsRoot: string = '';
   private ctx: common.UIAbilityContext | null = null;
@@ -158,6 +191,7 @@ export class OfficialPhase {
     this.server.registerFallback(this.dist.handler);
     this.server.register('prefix', '/plugins', this.plugins.handler);
     this.bridge.install();
+    this.registerScriptedLlm();
     this.server.onWsFrame = (text: string, path: string): void => {
       if (this.bridge !== null) {
         this.bridge.ingestFrame(text, path);
@@ -231,7 +265,12 @@ export class OfficialPhase {
   /** The staged web-plugins delivery: every package under
    * officialweb/plugins/npm/@deepseek-ai (sorted), files base64 — the same
    * delivery contract WebBootRuntimeDrive.webPluginsDelivery() pins on iOS
-   * (mtimeMs: 0, sorted directory order = the graph scan-order tie-break). */
+   * (mtimeMs: 0, sorted directory order = the graph scan-order tie-break).
+   * DELIVERED IN CHUNKS of 4 packages with event-loop yields between them:
+   * the single-shot 6.9 MB delivery blocked the ArkTS main thread past the
+   * 6s watchdog (THREAD_BLOCK_6S appfreeze under load). The runtime stages
+   * each chunk (web-boot.js `chunked`/`final` flags) and composes on the
+   * last; the iOS drive's single-delivery shape is unchanged. */
   private deliverWebPlugins(ctx: common.UIAbilityContext): void {
     const raw = (rel: string): Uint8Array | null => {
       try {
@@ -243,7 +282,7 @@ export class OfficialPhase {
     const base64 = new util.Base64Helper();
     const dirs = ctx.resourceManager.getRawFileListSync(
       'spike/officialweb/plugins/npm/@deepseek-ai/').slice().sort();
-    const plugins: string[] = [];
+    const packages: string[] = [];
     for (let i = 0; i < dirs.length; i++) {
       const dirName = dirs[i];
       const at = dirName.lastIndexOf('@');
@@ -270,18 +309,49 @@ export class OfficialPhase {
         'entryPath': vfsRoot + '/lib/client.js',
         'files': files,
       };
-      plugins.push(JSON.stringify(plugin));
+      packages.push(JSON.stringify(plugin));
     }
-    // Assemble the (multi-megabyte) bus line without quadratic concatenation.
-    const line = '{"type":"web.plugins","plugins":[' + plugins.join(',') + ']}';
-    hilog.info(0x0000, TAG, 'official: delivering web.plugins (%{public}d packages, %{public}d bytes)',
-      plugins.length, line.length);
+    this.deliverPluginChunks(packages, 0, Date.now() + 60000);
+  }
+
+  /** Delivers one 4-package chunk per event-loop turn (the yield keeps the
+   * main thread under the watchdog); the last chunk carries `final: true`
+   * and composes the boot wire in the runtime. */
+  private deliverPluginChunks(packages: string[], at: number,
+    deadline: number): void {
+    if (!this.started) {
+      return;
+    }
+    if (at >= packages.length) {
+      return;
+    }
+    if (Date.now() > deadline) {
+      hilog.error(0x0000, TAG, 'official: web.plugins chunk delivery deadline elapsed');
+      return;
+    }
+    const end = Math.min(at + 4, packages.length);
+    const final = end >= packages.length;
+    let line = '{"type":"web.plugins","chunked":true,"final":' +
+      (final ? 'true' : 'false') + ',"plugins":[';
+    const slice = packages.slice(at, end);
+    line += slice.join(',') + ']}';
+    if (at === 0) {
+      hilog.info(0x0000, TAG,
+        'official: delivering web.plugins (%{public}d packages in %{public}d chunks)',
+        packages.length, Math.ceil(packages.length / 4));
+    }
     const status = hostBusDeliver(2, line);
-    hilog.info(0x0000, TAG, 'official: web.plugins delivered, drive status %{public}d',
-      status);
     if (status < 0) {
-      hilog.error(0x0000, TAG, 'official: compose failed');
+      hilog.error(0x0000, TAG, 'official: compose failed at chunk %{public}d', at);
+      return;
     }
+    if (final) {
+      hilog.info(0x0000, TAG, 'official: web.plugins delivered (final chunk)');
+      return;
+    }
+    setTimeout((): void => {
+      this.deliverPluginChunks(packages, end, deadline);
+    }, 1);
   }
 
   private fileEntry(raw: (rel: string) => Uint8Array | null,
@@ -320,19 +390,20 @@ export class OfficialPhase {
     } else if (msg.type === 'mux.claim') {
       this.bridge.claimMux();
     } else if (msg.type === 'api.respond') {
-      this.bridge.respondAPI(msg.rpcId ?? '', JSON.stringify(msg.result ?? {}));
+      const result = msg.result ?? {};
+      this.bridge.respondAPI(msg.rpcId ?? '', JSON.stringify(result));
+      this.observeRespond(result);
     } else if (msg.type === 'mux.item') {
       this.bridge.muxItem(msg.streamId ?? '', JSON.stringify(msg.value ?? {}));
     } else if (msg.type === 'mux.error') {
-      // The compose-only runtime CLAIMS the mux (web-boot.js posts
-      // mux.claim) and answers non-journal streams itself, so the first
-      // open's gateway/unimplemented error RELAYS through this seam —
-      // pin the services gap before the frame reaches the page.
+      // The runtime answers non-journal streams itself (web-boot.js), so a
+      // relayed gateway/unimplemented error crosses this seam — pin the
+      // honest surface boundary before the frame reaches the page.
       const details = msg.details;
       const endpoint = details !== undefined && details['endpoint'] !== undefined ?
         String(details['endpoint']) : '';
       if (endpoint.length > 0) {
-        this.emitOnce(SCENARIO_OFFICIAL, 'session.services.pending', {
+        this.emitOnce(this.legScenario, 'session.services.pending', {
           'leg': endpoint,
           'reason': 'the first mux stream open was answered gateway/unimplemented; ' +
             'the web-boot closure embeds no agent spine — the session API is ' +
@@ -344,6 +415,25 @@ export class OfficialPhase {
     } else if (msg.type === 'mux.end') {
       this.bridge.muxEnd(msg.streamId ?? '');
     }
+  }
+
+  /** The first REAL session.list answer through the seam (from the
+   * already-shaped ok envelope the runtime posted) — session-live leg. */
+  private observeRespond(result: Record<string, Object>): void {
+    if (this.respondLogged || result['ok'] !== true) {
+      return;
+    }
+    const value = result['value'] as Record<string, Object> | undefined;
+    const items = value !== undefined && value['items'] !== undefined ?
+      value['items'] as Array<Record<string, Object>> : undefined;
+    if (items === undefined) {
+      return;
+    }
+    this.respondLogged = true;
+    this.emit(this.legScenario, 'session.list.responded', {
+      'ok': true, 'sessions': items.length,
+      'source': 'the on-device spine (ctx.sessions)',
+    });
   }
 
   /** Swaps the runtime's rows into the render pipeline, overrides the
@@ -379,18 +469,21 @@ export class OfficialPhase {
       this.comboURL = batches[0]['url'] ?? '';
     }
     this.bootApplied = true;
-    this.emitOnce(SCENARIO_OFFICIAL, 'web.boot.applied', {
+    this.emitOnce(this.legScenario, 'web.boot.applied', {
       'rows': rows.length,
-      'source': 'runtime (vendored @deepseek-ai/dsh-client-modules)',
+      'source': this.spineLeg ?
+        'runtime (spine + vendored @deepseek-ai/dsh-client-modules)' :
+        'runtime (vendored @deepseek-ai/dsh-client-modules)',
     });
     // The composed module graph, observed carrier-side (the canonical
     // scenario logs the same fact as runtime.booted under the b1 id; the
     // harmony manifest pins the harmony scenario id, so the entry list is
-    // mirrored here).
+    // mirrored here — the session-live leg's runtime logs under the right
+    // id, so this mirror stays mount-leg only).
     const entries = (boot.graph ?? {})['entries'] as
       Array<Record<string, string>> | undefined;
-    if (entries !== undefined) {
-      this.emitOnce(SCENARIO_OFFICIAL, 'runtime.composed', {
+    if (entries !== undefined && !this.spineLeg) {
+      this.emitOnce(this.legScenario, 'runtime.composed', {
         'entries': entries.map((entry: Record<string, string>): string =>
           entry['id'] ?? ''),
         'source': 'vendored @deepseek-ai/dsh-client-modules composed in-runtime',
@@ -419,10 +512,10 @@ export class OfficialPhase {
       return;
     }
     dist.onIndexRendered = (rows: number, bytes: number): void => {
-      this.emit(SCENARIO_OFFICIAL, 'index.injected', { 'rows': rows, 'bytes': bytes });
+      this.emitOnce(this.legScenario, 'index.injected', { 'rows': rows, 'bytes': bytes });
     };
     dist.onIndexServed = (): void => {
-      this.emit(SCENARIO_OFFICIAL, 'index.served', { 'path': '/', 'status': 200 });
+      this.emit(this.legScenario, 'index.served', { 'path': '/', 'status': 200 });
     };
     dist.onAssetServed = (path: string): void => {
       this.observeAsset(path);
@@ -431,31 +524,78 @@ export class OfficialPhase {
       this.observeCombo(url, bytes);
     };
     bridge.onUpgradeAccepted = (path: string): void => {
-      this.emitOnce(SCENARIO_OFFICIAL, 'upgrade.accepted', { 'path': path });
+      this.emitOnce(this.legScenario, 'upgrade.accepted', { 'path': path });
     };
     this.server.onSeatOpen = (path: string): void => {
-      this.emitOnce(SCENARIO_OFFICIAL, 'mux.upgraded', { 'path': path });
+      this.emitOnce(this.legScenario, 'mux.upgraded', { 'path': path });
     };
     bridge.onAPICall = (endpoint: string, answered: string): void => {
-      this.emitOnce(SCENARIO_OFFICIAL, 'rpc.observed', {
-        'endpoint': endpoint, 'answered': answered,
-      });
+      this.observeRPC(endpoint, answered);
     };
     bridge.onMuxOpen = (streamId: string, endpoint: string): void => {
-      this.emitOnce(SCENARIO_OFFICIAL, 'session.attached', {
-        'streamId': streamId, 'stream': endpoint,
+      this.observeMuxOpen(streamId, endpoint);
+    };
+    bridge.onMuxFrame = (direction: string, kind: string): void => {
+      // One tx item frame line for the journal leg (once; the probe reports
+      // the full frame facts).
+      if (direction !== 'tx' || kind !== 'item' || this.frameLogged) {
+        return;
+      }
+      this.frameLogged = true;
+      this.emit(this.legScenario, 'journal.frame.forwarded', {
+        'direction': 'tx', 'first': true,
+        'source': 'REAL session log records (baseline + live turn)',
       });
     };
     bridge.onMuxErrorFrame = (endpoint: string): void => {
-      // Record the leg BEFORE the error frame hook fires (the observer reads
-      // it synchronously inside the frame callback).
-      this.emitOnce(SCENARIO_OFFICIAL, 'session.services.pending', {
+      // The carrier-v0 answer path (unclaimed mux): record the leg BEFORE
+      // the error frame hook fires. On the session-live leg a relayed
+      // runtime error arrives through onBusLine instead (same event, the
+      // honest services boundary — only the claimed surface changed).
+      this.emitOnce(this.legScenario, 'session.services.pending', {
         'leg': endpoint,
         'reason': 'the first mux stream open was answered gateway/unimplemented; ' +
           'the web-boot closure embeds no agent spine — the session API is ' +
           'the next named gap',
       });
     };
+  }
+
+  /** rpc.observed: the CLAIMED surface logs the first call of each distinct
+   * endpoint (session.list forwarded — the probe and the UI both cross it);
+   * the unavailable boot burst logs its honest FIRST only — the burst's
+   * internal order is ArkWeb fetch scheduling and raced between two runs
+   * (dynamicCordisRunner inventory/syncInspectManifest swapped), so only
+   * the stable first is a pin. */
+  private observeRPC(endpoint: string, answered: string): void {
+    if (answered === 'forwarded') {
+      if (this.rpcLogged.has(endpoint)) {
+        return;
+      }
+      this.rpcLogged.add(endpoint);
+    } else {
+      if (this.emittedEvents.has('rpc.observed')) {
+        return;
+      }
+      this.emittedEvents.add('rpc.observed');
+    }
+    this.emit(this.legScenario, 'rpc.observed', {
+      'endpoint': endpoint, 'answered': answered,
+    });
+  }
+
+  /** The first mux seat open (whoever opens it — the UI's own stream or the
+   * probe's), plus the journal-specific attach pin on the session-live leg. */
+  private observeMuxOpen(streamId: string, endpoint: string): void {
+    this.emitOnce(this.legScenario, 'session.attached', {
+      'streamId': streamId, 'stream': endpoint,
+    });
+    if (endpoint === 'session/journal' && !this.journalAttachLogged) {
+      this.journalAttachLogged = true;
+      this.emit(this.legScenario, 'journal.attached', {
+        'streamId': streamId, 'stream': endpoint,
+      });
+    }
   }
 
   /** The entry chunk is the deterministic first-fetch evidence; a combo that
@@ -559,6 +699,10 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (!url.startsWith(clean) || url.includes('token=')) {
       return;
     }
+    if (this.spineLeg) {
+      this.runSessionProbe(runJs);
+      return;
+    }
     runJs(OfficialPhase.probeScript).then((): Promise<string> => {
       return this.pollProbe(runJs, Date.now() + 90000);
     }).then((json: string): void => {
@@ -567,6 +711,110 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
       hilog.error(0x0000, TAG, 'official: probe failed: %{public}s',
         err.message ?? 'unknown');
     });
+  }
+
+  /** The b3 probe flow (session-live leg): define `__b3Run`, then poll its
+   * parked result (the probe paces the UI burst, posts the REAL RPC,
+   * attaches the journal, and collects frames — tens of seconds, so the
+   * poll deadline is generous; rule 8). */
+  private runSessionProbe(runJs: (script: string) => Promise<string>): void {
+    runJs(SessionLiveProbe.probeScript()).then((): Promise<string> => {
+      return this.pollSessionProbe(runJs, Date.now() + 150000, '');
+    }).then((json: string): void => {
+      this.consumeProbeLive(json);
+    }).catch((err: Error): void => {
+      this.finishSessionLeg(false,
+        'session-live probe failed: ' + (err.message ?? 'unknown'));
+    });
+  }
+
+  /** The b3 poll loop: reads the parked result AND the stage heartbeat (a
+   * hung leg names its stage, never a silent starve). The rejection
+   * PROPAGATES — the deadline always reaches the caller (the b1 poll once
+   * swallowed it at the recursion level and hung; that shape is gone). */
+  private pollSessionProbe(runJs: (script: string) => Promise<string>,
+    deadline: number, lastStage: string): Promise<string> {
+    return runJs('JSON.stringify({out: window.__b3Out ?? null,' +
+      ' stage: window.__b3Stage ?? null})').then((json: string):
+      Promise<string> => {
+      let out: string | null = null;
+      let stage = lastStage;
+      try {
+        const decoded: Object = JSON.parse(json) as Object;
+        const wrapper = (typeof decoded === 'string' ?
+          JSON.parse(decoded as string) : decoded) as Record<string, Object>;
+        out = wrapper['out'] === null || wrapper['out'] === undefined ?
+          null : String(wrapper['out']);
+        stage = wrapper['stage'] === undefined ? lastStage : String(wrapper['stage']);
+      } catch (e) {
+        out = null;
+      }
+      if (stage !== lastStage) {
+        hilog.info(0x0000, TAG, 'session-live: probe stage %{public}s', stage);
+      }
+      if (out !== null && out.length > 0) {
+        return Promise.resolve(out);
+      }
+      if (Date.now() > deadline) {
+        return Promise.reject(new Error('probe deadline elapsed (stage: ' +
+          stage + ')'));
+      }
+      return new Promise<string>((resolve: (v: string) => void,
+        reject: (e: Error) => void): void => {
+        setTimeout((): void => {
+          this.pollSessionProbe(runJs, deadline, stage).then(resolve, reject);
+        }, 300);
+      });
+    });
+  }
+
+  /** The b3 probe verdict: unfold the passing probe's events into canonical
+   * lines and finish the leg; a failed leg finishes loud with the first
+   * failed leg's diagnosis. */
+  private consumeProbeLive(json: string): void {
+    if (this.finished) {
+      return;
+    }
+    hilog.info(0x0000, TAG, 'session-live: probe raw %{public}s', json.substring(0, 120));
+    let value = json;
+    try {
+      const decoded: Object = JSON.parse(json) as Object;
+      if (typeof decoded === 'string') {
+        value = decoded as string;
+      }
+    } catch (e) {
+      // keep the raw text: parseVerdict names it unparsable
+    }
+    const verdict = SessionLiveProbe.parseVerdict(value);
+    if (verdict.failed) {
+      this.finishSessionLeg(false, verdict.reason);
+      return;
+    }
+    verdict.events.forEach((item: LegEvent): void => {
+      this.emit(this.legScenario, item.event, item.fields);
+    });
+    this.finishSessionLeg(true, '');
+  }
+
+  /** Terminal marker of the session-live leg: the completion evidence line
+   * plus the verdict line the E2E drive waits for (the scenario stays
+   * resident, so the C phase verdict never fires — the drive owns the
+   * verdict, the platform twin of iOS's session-live finish). */
+  private finishSessionLeg(passed: boolean, reason: string): void {
+    if (this.finished) {
+      return;
+    }
+    this.finished = true;
+    const fields: Record<string, Object> = passed ?
+      { 'status': 'pass' } : { 'status': 'fail', 'reason': reason };
+    this.emit(this.legScenario, 'session.live.complete', fields);
+    let line = 'dsh.spike.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
+    line += ' probe=' + (passed ? 'pass' : 'fail');
+    if (!passed) {
+      line += ' error="' + reason + '"';
+    }
+    hostCarrierLine(2, line);
+    hilog.info(0x0000, TAG, 'session-live: %{public}s', passed ? 'PASS' : 'FAIL ' + reason);
   }
 
   private pollProbe(runJs: (script: string) => Promise<string>,
@@ -591,15 +839,14 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
         return Promise.resolve(value);
       }
       if (Date.now() > deadline) {
+        // The rejection PROPAGATES through the chain — the caller's catch
+        // fails loud (a swallowed rejection here once hung the leg silently).
         return Promise.reject(new Error('probe deadline elapsed'));
       }
-      return new Promise<string>((resolve: (v: string) => void): void => {
+      return new Promise<string>((resolve: (v: string) => void,
+        reject: (e: Error) => void): void => {
         setTimeout((): void => {
-          this.pollProbe(runJs, deadline).then((v: string): void => {
-            resolve(v);
-          }).catch((err: Error): void => {
-            hilog.error(0x0000, TAG, 'official: poll failed: %{public}s', err.message ?? '');
-          });
+          this.pollProbe(runJs, deadline).then(resolve, reject);
         }, 300);
       });
     });
@@ -684,7 +931,9 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
 
   /** After the mount completes: a fresh runtime runs the harmony httpFetch
    * v2 scenario against the LIVE carrier (the platform gap flip, proven
-   * on-device). Its scenario id keeps the capture filterable. */
+   * on-device). Its scenario id keeps the capture filterable. On completion
+   * (polled off hostStatus — the C verdict line is the logged evidence) the
+   * chain continues into the session-live leg. */
   runHttpFetchLeg(ctx: common.UIAbilityContext): void {
     if (!this.started) {
       return;
@@ -703,6 +952,154 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     const status = hostEval(2, ENTRY_HTTPFETCH);
     hilog.info(0x0000, TAG, 'httpfetch leg: eval status %{public}d', status);
     this.deliverEvent('{"event":"host.info","port":' + this.port + '}');
+    this.awaitHttpFetchThenChain(ctx, Date.now() + 180000);
+  }
+
+  /** Bounded condition poll for the httpfetch leg's completion (rule 8) —
+   * the scenario completes itself, so the next leg never races it. A red
+   * verdict still fails loud through a FAIL verdict line (the drive's wait
+   * must never starve). */
+  private awaitHttpFetchThenChain(ctx: common.UIAbilityContext,
+    deadline: number): void {
+    const tick = (): void => {
+      if (!this.started) {
+        return;
+      }
+      let complete = false;
+      let pass = false;
+      try {
+        const status = JSON.parse(hostStatus(2)) as Record<string, Object>;
+        complete = status['complete'] === 1;
+        pass = status['pass'] === 1;
+      } catch (e) {
+        hilog.error(0x0000, TAG, 'httpfetch: status unparsable');
+      }
+      if (complete) {
+        if (pass) {
+          setTimeout((): void => {
+            this.runSessionLiveLeg(ctx);
+          }, 200);
+        } else {
+          hostCarrierLine(2, 'dsh.spike.verdict: ' + SCENARIO_SESSION +
+            ' FAIL probe=not-run error="the httpfetch leg failed; session-live leg not started"');
+        }
+        return;
+      }
+      if (Date.now() > deadline) {
+        hostCarrierLine(2, 'dsh.spike.verdict: ' + SCENARIO_SESSION +
+          ' FAIL probe=not-run error="the httpfetch leg never completed"');
+        return;
+      }
+      setTimeout(tick, 500);
+    };
+    setTimeout(tick, 1000);
+  }
+
+  // ---- the session-live leg (W-HARMONY3) -----------------------------------------
+
+  /** After the httpFetch leg: a fresh runtime runs the harmony session-live
+   * scenario — the FULL spine boots (ctx.sessions / agents / agentLoop /
+   * tools / systemPrompt + the vendored dsh-llm over the REAL httpFetch
+   * against the carrier's scripted /mock-llm endpoint), one scripted-llm
+   * turn becomes the journal baseline, then the official boot wire mounts
+   * on the SAME ctx and the claims go live (session.list + session/journal
+   * from ctx.sessions). The origin opens only after web.boot; the b3 probe
+   * drives the read path through the official envelope. */
+  runSessionLiveLeg(ctx: common.UIAbilityContext): void {
+    if (!this.started) {
+      return;
+    }
+    hostFree(2);
+    this.started = false;
+    // Per-leg evidence state: this leg's capture file holds exactly this
+    // leg's manifest records.
+    this.emittedEvents = new Set<string>();
+    this.rpcLogged = new Set<string>();
+    this.legScenario = SCENARIO_SESSION;
+    this.spineLeg = true;
+    this.journalAttachLogged = false;
+    this.respondLogged = false;
+    this.frameLogged = false;
+    this.bootApplied = false;
+    this.originOpened = false;
+    this.finished = false;
+    this.assetLogged = false;
+    this.comboLogged = false;
+    this.comboPending = null;
+    const capturePath = this.capturePath.replace('official', 'session');
+    hostStart(this.webRoot, capturePath, this.fsRoot, OFFICIAL_DESCRIPTOR,
+      (line: string): void => {
+        this.onBusLine(line);
+      },
+      (callId: number, name: string, args: string): void => {
+        this.onDispatch(ctx, callId, name, args);
+      }, SCENARIO_SESSION);
+    this.started = true;
+    this.emit(this.legScenario, 'client.selected', {
+      'client': 'dsh-web-official', 'source': 'launch',
+    });
+    const status = hostEval(2, ENTRY_SESSION);
+    hilog.info(0x0000, TAG, 'session-live leg: eval status %{public}d', status);
+    // runtime.config rides the BUS seam (__dshBusOnMessage — the scenario's
+    // take('runtime.config')), never the gateway event seam.
+    this.deliverBus('{"type":"runtime.config","mockLlmUrl":"http://127.0.0.1:' +
+      this.port + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
+      '","containerRoot":' + JSON.stringify(this.webRoot) + '}');
+    this.deliverWebPlugins(ctx);
+  }
+
+  /** One host → runtime bus delivery (the b3 protocol's runtime.config and
+   * the staged web.plugins both arrive this way). */
+  private deliverBus(jsonText: string): void {
+    if (!this.started) {
+      return;
+    }
+    const status = hostBusDeliver(2, jsonText);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'session-live: bus deliver failed');
+    }
+  }
+
+  /** The SCRIPTED model boundary: POST /mock-llm/chat/completions — real
+   * loopback HTTP + SSE whose script mirrors the vendored dsh-llm-mock-
+   * server's success stream byte-for-byte (successText 'Hello from
+   * upstream', 5-char deltas, terminal chunk with finish_reason + usage,
+   * [DONE]) and its fixed bearer check (401 JSON on a bad key). The drive
+   * chooses the success script unconditionally. */
+  private registerScriptedLlm(): void {
+    this.server.register('exact', MOCK_LLM_PATH,
+      (req: CarrierRequest, conn: socket.TCPSocketConnection): void => {
+        this.serveScriptedLlm(req, conn);
+      });
+  }
+
+  private serveScriptedLlm(req: CarrierRequest,
+    conn: socket.TCPSocketConnection): void {
+    if (req.method !== 'POST') {
+      this.server.respondText(conn, 405, 'text/plain', 'method not allowed');
+      return;
+    }
+    if (req.headers['authorization'] !== 'Bearer ' + MOCK_LLM_KEY) {
+      // The vendored mock's fixed 401 leg: JSON error body, provider shape.
+      const body = '{"error":{"message":"mock authentication failed",' +
+        '"type":"mock_error","code":"invalid_api_key"}}';
+      this.server.respondText(conn, 401, 'application/json', body);
+      return;
+    }
+    const successText = 'Hello from upstream';
+    let sse = '';
+    for (let at = 0; at < successText.length; at += 5) {
+      const chunk = successText.substring(at, Math.min(at + 5, successText.length));
+      sse += 'data: {"choices":[{"index":0,"delta":{"content":"' + chunk +
+        '"},"finish_reason":null}]}\n\n';
+    }
+    sse += 'data: {"choices":[{"index":0,"delta":{"content":""},' +
+      '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
+      '"completion_tokens":' + successText.length + '}}\n\n';
+    sse += 'data: [DONE]\n\n';
+    // One Content-Length response: the transport consumes the SSE bytes
+    // from the plain body (no chunked framing needed on loopback).
+    this.server.respondText(conn, 200, 'text/event-stream; charset=utf-8', sse);
   }
 
   // ---- plumbing ------------------------------------------------------------------

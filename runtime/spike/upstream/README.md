@@ -12,6 +12,15 @@ the spike runtime + this layer.
   (`structuredClone`, `AbortController`/`AbortSignal`, `console` backstop,
   `queueMicrotask` context wrapper, native `Function.prototype.toString`
   formatting). MUST stay the first import of `boot.js`.
+- `web-boot.js` — the WEB BOOT PRODUCER: mounts the vendored
+  `ClientModuleRegistry` on a ctx over the staged web-plugin VFS and hands
+  the composed wire plus the claimed `/api` + mux journal surface to the
+  carrier over the bus seam. `web.plugins` deliveries come in TWO shapes:
+  the iOS drive's single-shot message (stage + compose in one step) and
+  the harmony drive's CHUNKED delivery (`chunked: true`, `final: true` on
+  the last chunk — each chunk merges into the VFS and only the final one
+  composes, so the carrier's main thread yields between packages and
+  stays under the platform watchdog).
 - `shims/*.js` — the `node:` builtin modules the closure imports, mapped by
   the host loader (`dsh_spike_host.c`, `dsh_map_bare`).
 - `boot.js` — the mobile profile boot: the same entry shape as desktop's
@@ -49,7 +58,7 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `node:async_hooks` (`AsyncLocalStorage`) | `shims/async-hooks.js` — frame stack + `Promise.prototype.then/catch/finally` capture (single-threaded serial runtime; context = what was current when the continuation attached) | supported (no timer contexts — timers unsupported) |
 | `node:util/types` (`isPromise`) | `shims/util-types.js` | supported |
 | `node:util` (`format`/`inspect`/`promisify`) | `shims/util.js` — JSON-form rendering, not node's depth/color machinery | partial |
-| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (PR-B wiring) | unsupported by design (fails loud on call) |
+| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (PR-B wiring). W-INTEG exception: the STAGED WEB-PLUGIN VFS (`seedWebPlugins` replace / `mergeWebPlugins` chunked-add) | supported for the staged view only (else loud) |
 | `node:os` (`tmpdir`) | `shims/os.js` — profile container pinned by `boot.js` | supported (after container pin) |
 | `node:process` (global `process`) | `shims/process.js` — env = launch snapshot, cwd = container, `nextTick` = microtask | supported (subset) |
 | `node:module` (`createRequire`) | `shims/node-module.js` over the host `__dshBundleRequire` seam — resolves `base` through the loader's own bare map, serves relative `.json` reads under the bundle root only | supported (subset) |
