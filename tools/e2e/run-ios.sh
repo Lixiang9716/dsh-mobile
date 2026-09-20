@@ -306,8 +306,19 @@ xcrun simctl install "$UDID" "$APP"
 # (observed live: picker showed an empty gateway-e2e while the file existed).
 CONTAINER=$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)
 mkdir -p "$CONTAINER/Documents/gateway-e2e"
-printf 'gateway e2e target file — dsh-mobile m2\n' \
-  > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+# STAGE ONCE: rewriting the staged target immediately before the drive knocks
+# it out of the file-provider search index until re-index completes (observed
+# live 2026-09-21: the same setup surfaced the tile at 04:55 with the 04:52
+# staging, then returned 未找到相关结果 at 04:58 right after a rewrite —
+# surprise run-iossh-attempt-with-correct). A settled copy must survive the
+# pre-stage untouched; only a MISSING target is created here.
+if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
+  printf 'gateway e2e target file — dsh-mobile m2\n' \
+    > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+  log "pre-staged notes.txt (was missing — fresh copy)"
+else
+  log "notes.txt already staged — untouched (index-settle recipe)"
+fi
 
 # 3.5 WDA warm-up BEFORE the launch: the binding scenario's 180s watchdog
 # starts at eval (step 4), so a slow post-reboot WDA must not eat it.
@@ -395,3 +406,67 @@ if [ "$FAIL" -gt 0 ]; then
   die "failing checker(s):$FAILED — see verdict JSONs under $ART"
 fi
 log "ALL CHECKERS PASS"
+
+# ---- 7. receipt (reachable ONLY on a real green run) -----------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md): every evidence dir carries
+# receipt.json. Machine-authored HERE, after the summary loop above died on
+# any failing checker, so a receipt can never exist without this real green
+# run (never synthesized). Format mirrors the established evidence receipts
+# (hosts/ios/artifacts/b3-session-live/receipt.json).
+RECEIPT="$ART/receipt.json"
+TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
+ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
+python3 - "$ART" "$UDID" "$TREE_LINE" "$ENGINE_PIN" <<'PY'
+import json, os, subprocess, sys
+from datetime import datetime
+art, udid, tree, engine_pin = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
+                     capture_output=True, text=True, check=True).stdout
+devs = json.loads(out)["devices"]
+def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
+    parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
+    return parts[0] + " " + ".".join(parts[1:])
+host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
+            for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
+scenarios = []
+for sid in ["m1-spike-boot", "m1-carrier-loopback", "m2-gateway-binding",
+            "m2-gateway-audit"]:
+    v = json.load(open(os.path.join(art, f"verdict-{sid}.json")))
+    scenarios.append({
+        "id": v["scenario"],
+        "checker": f"tools/e2e/scenarios/{sid}.json",
+        "events": v["logged"],
+        "result": "pass" if v["pass"] else "fail",
+    })
+screens = sorted("screens/" + f
+                 for f in os.listdir(os.path.join(art, "screens"))
+                 if f.endswith(".png"))
+receipt = {
+    "host": "iOS " + host,
+    "engine": "quickjs-ng",
+    "engineVersion": engine_pin,
+    "phase": ("M2 gateway binding — the native UI legs the gateway scenario "
+              "blocks on (notification permission alert, banner tap, approval "
+              "dialog, Files-document picker search) are driven LIVE on the "
+              "simulator while the gateway/fs/http primitives answer over the "
+              "real JS bridge, one-to-one against all four scenario manifests"),
+    "launchConfiguration": ("default DSHSpike scenario drive (boot -> carrier "
+                            "-> gateway binding -> audit); picker target "
+                            "pre-staged at Documents/gateway-e2e/notes.txt, "
+                            "stage-once per the provider index-settle recipe"),
+    "tree": tree,
+    "scenarios": scenarios,
+    "runner": "tools/e2e/run-ios.sh",
+    "screens": screens,
+    "regressions": ("this run refreshed ONLY hosts/ios/artifacts/m2-gateway "
+                    "(its four verdicts re-matched the committed manifests on "
+                    "this tree); every other evidence dir carries its own "
+                    "committed verdicts — see docs/e2e-matrix.md"),
+    "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+    "exitCode": 0,
+}
+with open(os.path.join(art, "receipt.json"), "w") as f:
+    json.dump(receipt, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+print(f"run-ios: receipt written: {os.path.join(art, 'receipt.json')}")
+PY
