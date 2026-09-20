@@ -28,6 +28,7 @@ const BUNDLE_FILES: string[] = [
   'sha256.js',
   'tar-mini.js',
   'fixtures/dsh-notes.js',
+  'fixtures/dsh-notes-source.js',
   'scenario/m1-spike-boot.js',
   'scenario/m2-bridge-smoke.js',
   'scenario/m2-session.js',
