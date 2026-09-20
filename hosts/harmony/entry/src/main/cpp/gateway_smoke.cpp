@@ -315,15 +315,18 @@ static void smoke_fs_read(dsh_smoke_backend *b, int call_id, const char *args) {
 static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
                         const char *args) {
     if (b->forward_fn != nullptr) {
-        /* binding mode: the two platform primitives the ArkTS capability
-         * layer serves for real ride the forward hook (settled later from
-         * its UI callbacks — never from inside this callback); everything
-         * else the binding descriptor declares unavailable rejects here. */
-        if (strcmp(name, "notify") == 0 || strcmp(name, "presentApproval") == 0) {
+        /* binding mode: the platform primitives the ArkTS capability layer
+         * serves for real ride the forward hook (settled later from its UI
+         * callbacks — never from inside this callback); everything else the
+         * binding descriptor declares unavailable rejects here. httpFetch
+         * v2 (D9 W-HARMONY): the streaming body bridge lives ArkTS-side, so
+         * the call and its control-plane abort both forward. */
+        if (strcmp(name, "notify") == 0 || strcmp(name, "presentApproval") == 0 ||
+            strcmp(name, "httpFetch") == 0 || strcmp(name, "httpFetch.abort") == 0) {
             b->forward_fn(b->forward_ud, call_id, name, args);
             return;
         }
-        if (strcmp(name, "httpFetch") == 0 || strcmp(name, "presentPicker") == 0) {
+        if (strcmp(name, "presentPicker") == 0) {
             return smoke_reject(b, call_id, name, "unavailable",
                                 "declared unavailable by the host descriptor");
         }

@@ -1,0 +1,8 @@
+{
+  "scenario": "m5.host-binding",
+  "pass": true,
+  "expected": 20,
+  "logged": 20,
+  "failures": [],
+  "parseErrors": []
+}
