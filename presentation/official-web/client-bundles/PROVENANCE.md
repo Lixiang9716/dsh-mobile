@@ -69,7 +69,7 @@ the generated record (names, versions, declarations, file lists).
   `../PROVENANCE.md` for the pin-authority records)
 - **Version**: 0.1.6-alpha.2
 
-## Build (reproduced 2026-09-20)
+## Build (reproduced 2026-09-20, re-verified 2026-09-21)
 
 - Toolchain: Node v24.14.0, pnpm 11.7.0 (the repo's `packageManager`
   field, via corepack), macOS arm64 (darwin 25.5.0).
@@ -78,6 +78,13 @@ the generated record (names, versions, declarations, file lists).
   face type-checks against the host face's typert augmentations) →
   `pnpm run build:lib:client` (`tsdown --env.DSH_BUILD_FACE client`) →
   `roster.mjs` closure → staged allowlist copy → `MANIFEST.sha256`.
+- **The work dir is part of the bytes**: the upstream build embeds the
+  absolute source path in its outputs (`//#region dsh-css:<abs-path>`
+  comments; the css-module class-name hashes derive from it), so the build
+  clones into the FIXED path `/tmp/dsh-harness-src` — never a random temp
+  dir. Rebuilding anywhere else produces different (still verbatim-upstream)
+  bytes that cannot verify this manifest. The 2026-09-21 re-run at the fixed
+  path reproduced all 116 staged files byte-identically.
 - Bootstrap bundle equivalence check: the workspace-built
   `dsh-client-modules/lib/client.js` is byte-identical (sha256
   `3f7769d5f860961d412810d6a88a359ba05fe19b77624bf6a31207dae6c22760`) to the

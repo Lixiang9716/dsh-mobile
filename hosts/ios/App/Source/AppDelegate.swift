@@ -24,6 +24,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The W-SESS session-live drive (`-dsh-mode session-live`).
     private var sessionLive: SessionLiveRuntime?
     private var sessionLiveVerdict = "PENDING"
+    /// The W-RPC session-write drive (`-dsh-mode session-write`).
+    private var sessionWrite: SessionWriteRuntime?
+    private var sessionWriteVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -80,6 +83,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             fflush(stdout)
             webView.navigationDelegate = self
             runSessionLive()
+            return true
+        }
+        if launchMode == "session-write" {
+            console.text = "DSH session write — b4.write.live, the official composer driving the upstream spine…"
+            print("spike: app launched in session-write mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runSessionWrite()
             return true
         }
         print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
@@ -157,6 +168,25 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
+    /// The W-RPC session-write mount: the spine answers the official app's
+    /// write surface; the probe types into the real composer and the reply
+    /// renders in the official UI.
+    private func runSessionWrite() {
+        let write = SessionWriteRuntime()
+        self.sessionWrite = write
+        write.attach(webView: webView!)
+        write.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        write.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b4.write.live") { self.sessionWriteVerdict = $0 }
+            self.sessionWrite = nil
+            print("spike: sequence session-write=\(self.sessionWriteVerdict)")
+            fflush(stdout)
+        }
+    }
+
     private func runCarrier() {
         let carrier = CarrierRuntime()
         self.carrier = carrier
@@ -214,5 +244,6 @@ extension AppDelegate: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         official?.pageDidFinish()
         sessionLive?.pageDidFinish()
+        sessionWrite?.pageDidFinish()
     }
 }

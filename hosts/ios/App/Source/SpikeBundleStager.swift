@@ -145,6 +145,15 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_settings_memory_js), under: root)
         try write("upstream/llm-transport.js",
                   data: resData(dsh_spike_res_upstream_llm_transport_js), under: root)
+        // The W-RPC write surface (b4): the composer-send adapter + scenario.
+        try write("upstream/web-write.js",
+                  data: resData(dsh_spike_res_upstream_web_write_js), under: root)
+        try write("upstream/web-write-streams.js",
+                  data: resData(dsh_spike_res_upstream_web_write_streams_js), under: root)
+        try write("upstream/web-write-settings.js",
+                  data: resData(dsh_spike_res_upstream_web_write_settings_js), under: root)
+        try write("scenario/b4-web-live.js",
+                  data: resData(dsh_spike_res_scenario_b4_web_live_js), under: root)
         try write("upstream/shims/async-hooks.js",
                   data: resData(dsh_spike_res_shims_async_hooks_js), under: root)
         try write("upstream/shims/util.js",
