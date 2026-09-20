@@ -55,7 +55,7 @@
 | `m3.complete` | — | — | —（进行中） | 41/41 |
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
-| `m2.upstream-session` | — | — | — | 23/23 |
+| `m2.upstream-session` | — | — | — | 31/31 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
@@ -84,7 +84,7 @@
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 
 CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是可选的调试辅助，
 既非交付物也非输入）。

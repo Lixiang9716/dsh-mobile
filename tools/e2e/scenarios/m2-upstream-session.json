@@ -5,11 +5,13 @@
   },
   "expect": [
     {
-      "event": "model/scripted",
+      "event": "llm/runtime",
       "match": {
-        "provider": "scripted",
-        "model": "scripted-1",
-        "note": "upstream-shape driver; real dsh-llm transport lands with W-LLM vendor"
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → loopback chat-completions mock server",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
       }
     },
     {
@@ -43,9 +45,7 @@
           "agentLoop",
           "llm"
         ],
-        "scripted": [
-          "llm"
-        ]
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
       }
     },
     {
@@ -60,6 +60,60 @@
       "match": {
         "id": "main",
         "sessionId": "s-m2-upstream-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 2,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
       }
     },
     {
@@ -120,8 +174,8 @@
           "text"
         ],
         "text": "Hello from upstream",
-        "provider": "scripted",
-        "model": "scripted-1"
+        "provider": "mock",
+        "model": "mock-1"
       }
     },
     {
@@ -164,15 +218,6 @@
       }
     },
     {
-      "event": "model/request",
-      "match": {
-        "provider": "scripted",
-        "model": "scripted-1",
-        "tools": 0,
-        "messages": 2
-      }
-    },
-    {
       "event": "agent/status",
       "match": {
         "status": "running"
@@ -191,11 +236,32 @@
       }
     },
     {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 1,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": false,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/transport/error",
+      "match": {
+        "kind": "error",
+        "code": "AUTH",
+        "status": 401
+      }
+    },
+    {
       "event": "upstream/completed",
       "match": {
         "status": "pass",
         "upstream": "0.1.6-alpha.2",
-        "scripted": "model.scripted (dsh-llm transport lands with W-LLM)"
+        "llm": "vendored dsh-llm over gateway httpFetch (dsh-llm-mock-server)"
       }
     }
   ]

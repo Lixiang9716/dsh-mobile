@@ -52,6 +52,7 @@ static const char *dsh_node_shim(const char *name) {
         { "node:fs", "upstream/shims/fs.js" },
         { "node:os", "upstream/shims/os.js" },
         { "node:process", "upstream/shims/process.js" },
+        { "node:module", "upstream/shims/node-module.js" },
     };
     for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
         if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;
@@ -88,6 +89,7 @@ typedef struct dsh_spike {
     dsh_spike_gateway_fn gateway;
     void *gateway_ud;
     char *descriptor;
+    char *launch_env;
     dsh_def_module *defined;
     int next_call_id;
     dsh_pending_call *pending;
@@ -297,6 +299,14 @@ static JSValue js_gateway_descriptor(JSContext *ctx, JSValueConst this_val,
     return JS_NewString(ctx, s->descriptor ? s->descriptor : "null");
 }
 
+/* Launch-env accessor: the stored JSON object verbatim, or "{}". */
+static JSValue js_launch_env(JSContext *ctx, JSValueConst this_val,
+                             int argc, JSValueConst *argv) {
+    (void)this_val; (void)argc; (void)argv;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    return JS_NewString(ctx, s->launch_env ? s->launch_env : "{}");
+}
+
 static JSValue js_complete(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
@@ -425,6 +435,125 @@ static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
     return res;
 }
 
+/* ---- node:module require seam ------------------------------------------- */
+
+/* ESM-loader helpers live below; forward-declared here. */
+static char *dsh_join(const char *a, const char *b);
+static char *dsh_read_file(const char *path, size_t *out_len);
+static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, size_t err_len);
+
+/* Lexically resolve "." / ".." segments of a relative request against the
+ * directory of `rel` (both bundle-root-relative, no trailing slash). Fills
+ * `out` and returns 1, or returns 0 when the request escapes the bundle root
+ * (caller fails loud). */
+static int dsh_require_resolve(const char *rel, const char *request, char *out, size_t out_len) {
+    char dir[512];
+    char joined[768];
+    snprintf(dir, sizeof(dir), "%s", rel);
+    char *slash = strrchr(dir, '/');
+    if (slash) *slash = 0; else dir[0] = 0;
+    if (dir[0] == 0) snprintf(joined, sizeof(joined), "%s", request);
+    else snprintf(joined, sizeof(joined), "%s/%s", dir, request);
+    /* split on '/', collapsing "." and popping ".." */
+    char *segs[64];
+    size_t lens[64];
+    size_t depth = 0;
+    char *tok = joined;
+    int escape = 0;
+    while (*tok) {
+        char *next = strchr(tok, '/');
+        size_t len = next ? (size_t)(next - tok) : strlen(tok);
+        if (len == 2 && tok[0] == '.' && tok[1] == '.') {
+            if (depth == 0) { escape = 1; break; }
+            depth--;
+        } else if (!(len == 1 && tok[0] == '.')) {
+            if (depth >= 64) { escape = 1; break; }
+            segs[depth] = tok; lens[depth] = len; depth++;
+        }
+        if (!next) break;
+        tok = next + 1;
+    }
+    if (escape) return 0;
+    size_t o = 0;
+    for (size_t i = 0; i < depth; i++) {
+        if (o) out[o++] = '/';
+        memcpy(out + o, segs[i], lens[i]); o += lens[i];
+    }
+    out[o] = 0;
+    return 1;
+}
+
+/* JS global __dshBundleRequire(base, request): the node:module seam's file
+ * read. `base` is the importing module's name (a bare specifier — resolved
+ * through the same bare map the loader owns, so the specifier→vendor mapping
+ * lives in exactly one place — or a bundle-root-relative path); `request` a
+ * relative path from its directory. ONLY package-style JSON reads are served
+ * (upstream reads ../package.json through createRequire for attribution
+ * headers); everything else fails loud. Returns the raw file text. */
+static JSValue js_bundle_require(JSContext *ctx, JSValueConst this_val,
+                                 int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    if (argc < 2) {
+        return JS_ThrowTypeError(ctx, "__dshBundleRequire needs (base, request)");
+    }
+    const char *base = JS_ToCString(ctx, argv[0]);
+    const char *request = JS_ToCString(ctx, argv[1]);
+    if (!base || !request) {
+        JS_FreeCString(ctx, base);
+        JS_FreeCString(ctx, request);
+        return JS_EXCEPTION;
+    }
+    char rel[512];
+    char maperr[256];
+    int kind = dsh_map_bare(base, rel, sizeof(rel), maperr, sizeof(maperr));
+    if (kind < 0) {
+        JS_ThrowReferenceError(ctx, "%s", maperr);
+        goto fail;
+    }
+    if (kind == 0) {
+        if (base[0] == '/') snprintf(rel, sizeof(rel), "%s", base + 1);
+        else snprintf(rel, sizeof(rel), "%s", base);
+    }
+    if (strncmp(request, "./", 2) != 0 && strncmp(request, "../", 3) != 0) {
+        JS_ThrowTypeError(ctx,
+            "require('%s'): only relative package-style reads are served (node:fs is not mounted)", request);
+        goto fail;
+    }
+    char resolved[600];
+    if (!dsh_require_resolve(rel, request, resolved, sizeof(resolved))
+        || resolved[0] == 0 || strstr(resolved, "..") != NULL) {
+        JS_ThrowReferenceError(ctx, "require('%s' from %s) escapes the bundle root", request, base);
+        goto fail;
+    }
+    size_t rlen = strlen(resolved);
+    if (rlen < 6 || strcmp(resolved + rlen - 5, ".json") != 0) {
+        JS_ThrowTypeError(ctx, "require('%s'): only .json reads are served by the spike host", request);
+        goto fail;
+    }
+    char *abs = dsh_join(s->base, resolved);
+    if (!abs) {
+        JS_ThrowOutOfMemory(ctx);
+        goto fail;
+    }
+    size_t len = 0;
+    char *text = dsh_read_file(abs, &len);
+    free(abs);
+    if (!text) {
+        JS_ThrowReferenceError(ctx, "require('%s') from %s: cannot read '%s'", request, base, resolved);
+        goto fail;
+    }
+    JSValue result = JS_NewStringLen(ctx, text, len);
+    free(text);
+    JS_FreeCString(ctx, base);
+    JS_FreeCString(ctx, request);
+    return result;
+fail:
+    JS_FreeCString(ctx, base);
+    JS_FreeCString(ctx, request);
+    return JS_EXCEPTION;
+}
+
 /* ---- exception bookkeeping ---------------------------------------------- */
 
 static void dsh_record_exception(dsh_spike_t *s) {
@@ -500,6 +629,14 @@ static JSModuleDef *dsh_compile_module(JSContext *ctx, const char *name,
     /* quickjs-ng loader contract: the compiled module value's pointer IS the
      * JSModuleDef*; the importer already holds a reference, so free the value. */
     JSModuleDef *m = (JSModuleDef *)JS_VALUE_GET_PTR(res);
+    /* Pin import.meta.url to the module NAME — what quickjs's own module
+     * loader does; the vendored closure reads it through the node:module
+     * createRequire seam (dsh-llm attribution headers). */
+    JSValue meta = JS_GetImportMeta(ctx, m);
+    if (!JS_IsException(meta)) {
+        JS_SetPropertyStr(ctx, meta, "url", JS_NewString(ctx, name));
+        JS_FreeValue(ctx, meta);
+    }
     JS_FreeValue(ctx, res);
     return m;
 }
@@ -570,10 +707,10 @@ oom:
  * Layers, in the system's dependency direction (D6/D9: upstream packages run
  * verbatim; platform differences live in the shim layer, never in vendored
  * copies):
- *   - "@deepseek-ai/dsh-llm" — the staged upstream-SHAPE value-helper shim
- *     (message factories / error classes the spine imports at module load).
- *     Replaced by the real vendored dsh-llm the moment W-LLM's vendor lands:
- *     delete this row, add the package to ensure-dsh.sh.
+ *   - "@deepseek-ai/dsh-llm[/sub]" — the VENDORED dsh-llm package (the W-LLM
+ *     leg): bare falls through the generic dsh- map; subpaths follow the
+ *     package's real exports map (lib/types JS re-exports), anything else
+ *     fails loud naming the specifier.
  *   - "@deepseek-ai/dsh-session-persistence" — errors-only shim (agent-loop
  *     imports SessionPersistenceNotFoundError at module load).
  *   - node:<builtin> — the node shims (table above).
@@ -595,12 +732,31 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
         return 1;
     }
     if (strcmp(name, "@deepseek-ai/dsh-llm") == 0) {
-        snprintf(out, out_len, "upstream/shims/dsh-llm.js");
+        snprintf(out, out_len, "vendor/dsh/llm@%s/lib/index.js", DSH_UPSTREAM_VERSION);
         return 1;
     }
     if (strncmp(name, "@deepseek-ai/dsh-llm/", 21) == 0) {
+        /* The vendored package's runtime exports map (package.json "exports"):
+         * subpath → path under lib/. The /types subpath is a RUNTIME module
+         * here (unlike the other dsh-* packages where it is type-only). */
+        static const struct { const char *sub; const char *lib; } LLM_SUBS[] = {
+            { "invariant", "invariant.js" },
+            { "message", "types/message.js" },
+            { "assistant-stream", "types/assistant-stream.js" },
+            { "types", "types/types.js" },
+            { "typert", "typert.host.js" },
+            { "remote", "typert.remote-client.js" },
+        };
+        const char *sub = name + 21;
+        for (size_t i = 0; i < sizeof(LLM_SUBS) / sizeof(LLM_SUBS[0]); i++) {
+            if (strcmp(sub, LLM_SUBS[i].sub) == 0) {
+                snprintf(out, out_len, "vendor/dsh/llm@%s/lib/%s",
+                         DSH_UPSTREAM_VERSION, LLM_SUBS[i].lib);
+                return 1;
+            }
+        }
         snprintf(err, err_len,
-                 "'%s' is a type-only subpath upstream; not mapped at runtime", name);
+                 "'%s' is not a runtime subpath of the vendored dsh-llm exports map", name);
         return -1;
     }
     if (strcmp(name, "@deepseek-ai/dsh-session-persistence") == 0) {
@@ -800,6 +956,10 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_gateway_abort, "__dshGatewayAbort", 1));
     JS_SetPropertyStr(ctx, global, "__dshGatewayDescriptor",
                       JS_NewCFunction(ctx, js_gateway_descriptor, "__dshGatewayDescriptor", 0));
+    JS_SetPropertyStr(ctx, global, "__dshBundleRequire",
+                      JS_NewCFunction(ctx, js_bundle_require, "__dshBundleRequire", 2));
+    JS_SetPropertyStr(ctx, global, "__dshLaunchEnv",
+                      JS_NewCFunction(ctx, js_launch_env, "__dshLaunchEnv", 0));
     JS_SetPropertyStr(ctx, global, "__dshModuleDefine",
                       JS_NewCFunction(ctx, js_module_define, "__dshModuleDefine", 2));
     JS_SetPropertyStr(ctx, global, "__dshComplete",
@@ -876,6 +1036,12 @@ void dsh_spike_set_descriptor(dsh_spike_t *s, const char *descriptor_json) {
     if (!s) return;
     free(s->descriptor);
     s->descriptor = descriptor_json ? strdup(descriptor_json) : NULL;
+}
+
+void dsh_spike_set_launch_env(dsh_spike_t *s, const char *env_json) {
+    if (!s) return;
+    free(s->launch_env);
+    s->launch_env = env_json ? strdup(env_json) : NULL;
 }
 
 int dsh_spike_gateway_settle(dsh_spike_t *s, int call_id, int ok,
@@ -992,5 +1158,6 @@ void dsh_spike_free(dsh_spike_t *s) {
     }
     free(s->pending);
     free(s->descriptor);
+    free(s->launch_env);
     free(s);
 }

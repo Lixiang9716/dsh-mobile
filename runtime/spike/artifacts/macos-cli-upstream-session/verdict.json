@@ -1,8 +1,8 @@
 {
   "scenario": "m2.upstream-session",
   "pass": true,
-  "expected": 23,
-  "logged": 23,
+  "expected": 31,
+  "logged": 31,
   "failures": [],
   "parseErrors": []
 }

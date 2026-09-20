@@ -22,10 +22,11 @@ embedder plus a typed JS shim (`gateway.js`).
   layer (`upstream/`), never in the vendored copies.
 - `upstream/` — the SYSTEM LAYER for the upstream port: web-API + `node:`
   shims (`web-shims.js`, `shims/`), the mobile profile boot (`boot.js`,
-  the dsh-base-equivalent spine over the vendor closure), the scripted
-  model service (`model-scripted.js`, the `model.scripted` boundary), the
-  in-memory settings backend, and the shim-coverage + capability-mapping
-  tables (`upstream/README.md`).
+  the dsh-base-equivalent spine over the vendor closure, mounting the
+  VENDORED dsh-llm `LlmRuntime`), the gateway transport adapter
+  (`llm-transport.js` — the chat-completions adapter whose HTTP/SSE
+  transport is gateway `httpFetch`), the in-memory settings backend, and
+  the shim-coverage + capability-mapping tables (`upstream/README.md`).
 - `logger.js` — plain-ESM port of `runtime/logger/index.ts` (same
   `createLogger` contract; emits one JSON line per entry through the
   host-bound sink).
@@ -198,18 +199,21 @@ embedder plus a typed JS shim (`gateway.js`).
   through the bus seam, for hosts that implement it (see below).
 - `scenario/m2-upstream-session.js` — the `m2.upstream-session` E2E
   scenario, the D9 proof: ONE REAL upstream agent-loop turn over the
-  vendored runtime inside quickjs-ng. `upstream/boot.js` composes the mobile
-  profile (the dsh-base bundle's spine rows: sessions → agents →
-  system-prompt → tools → session-projection → settings → agent-loop, with
-  `llm` mounted scripted), the AgentLoop configured-agent path creates agent
-  "main" on session "s-m2-upstream-0001", the scenario sends one user
-  message through the upstream handle, and the loop assembles the prompt,
-  streams the scripted turn, appends the assistant message through the
-  upstream BlockAssembler path, and closes the turn. The scenario then walks
-  ctx.sessions' log (the upstream event vocabulary, one structured line per
-  record) and asserts the turn-boundary projection. The scripted model
-  service is the only non-upstream runtime component (logged
-  `model.scripted`); the dsh-llm transport lands separately. Evidence:
+  vendored runtime inside quickjs-ng, driven by the REAL vendored dsh-llm
+  service. `upstream/boot.js` composes the mobile profile (the dsh-base
+  bundle's spine rows: sessions → agents → system-prompt → tools →
+  session-projection → settings → agent-loop, with `llm` = the vendored
+  `LlmRuntime` + the gateway transport adapter), the AgentLoop
+  configured-agent path creates agent "main" on session
+  "s-m2-upstream-0001", the scenario sends one user message through the
+  upstream handle, and the loop assembles the prompt, prepareCall resolves
+  through the adapter registry, the adapter streams the VENDORED
+  dsh-llm-mock-server (node-side, real loopback HTTP/SSE) through gateway
+  `httpFetch`, the parsed deltas assemble into the assistant message through
+  the upstream BlockAssembler path, and the turn closes. Explicit llm-path
+  evidence rides the adapter hooks (`llm.request.built`,
+  `llm.sse.*`); a second leg proves structured transport errors surface as
+  the upstream error-finish protocol (`llm.transport.error`). Evidence:
   `runtime/spike/artifacts/macos-cli-upstream-session/`, runner
   `runtime/spike/ci/run-upstream-e2e.sh`.
 - `web/` — the spike Presentation page (`index.html` + `carrier-page.js`),

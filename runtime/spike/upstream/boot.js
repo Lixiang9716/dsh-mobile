@@ -16,9 +16,10 @@
  *     session-projection → settings → agent-loop), in activation order.
  *   - $DSH_HOME / process.cwd() collapse into the host-granted PROFILE
  *     CONTAINER (caller-provided paths, pinned for the shims).
- *   - `llm` is mounted late and scripted (model.scripted): the agent spine
- *     stays upstream, the driver stays swappable; the real dsh-llm transport
- *     lands with W-LLM's vendor and replaces it at the same key.
+ *   - `llm` is the VENDORED dsh-llm LlmRuntime (adapter registry), with the
+ *     gateway transport adapter (upstream/llm-transport.js) registered for
+ *     the caller's provider route — the same service the desktop boots, over
+ *     the mobile transport seam (gateway httpFetch).
  *
  * Exports bootUpstream(options) → { ctx, services, sessionId, agentId }.
  */
@@ -31,7 +32,8 @@ import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
 import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
-import { createScriptedModelService } from 'upstream/model-scripted.js';
+import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
+import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 
 /** cordis logger records ride the unified sink as diagnostics (module prefix
@@ -104,8 +106,8 @@ const mountSpine = async (ctx, identity) => {
     agents: [{
       id: identity.agentId,
       sessionId: identity.sessionId,
-      provider: 'scripted',
-      model: 'scripted-1',
+      provider: identity.provider,
+      model: identity.model,
       reasoningEffort: 'off',
       cwd: identity.cwd,
     }],
@@ -113,20 +115,50 @@ const mountSpine = async (ctx, identity) => {
 };
 
 /**
- * Boot the mobile profile: empty root, the dsh-base-equivalent spine mounted
- * over the pinned vendored packages, the scripted model under `llm`.
- *
  * @param options.scenario - E2E scenario id the caller logs under (used for
  *   the boot evidence events the caller emits).
  * @param options.container - profile container {cwd, tmpdir, home, env?, argv?}.
  * @param options.agentId - configured agent id (created by AgentLoop at mount).
  * @param options.sessionId - exact session identity for the configured agent.
  * @param options.cwd - session cwd (mobile-honest: a gateway fs scope label).
+ * @param options.llm - the llm route: {baseURL, apiKey, provider, model,
+ *   onWire?, onSse?} — required; the profile has no transport-free fallback.
  * @param options.onEvent - observability hook: (event, fields) => void; boot
- *   emits `upstream.profile`, `model.scripted`, `upstream.services`.
+ *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
+ */
+/** Mount the dsh-base row `llm`: the VENDORED LlmRuntime with the gateway
+ * transport adapter registered for the caller's provider route. */
+const mountLlm = async (ctx, llm, onEvent) => {
+  await ctx.plugin(LlmRuntime);
+  const runtime = ctx.get('llm');
+  if (runtime === undefined) throw new Error('boot: the LlmRuntime failed to mount under "llm"');
+  runtime.registerAdapter([llm.provider], createGatewayLlmAdapter({
+    baseURL: llm.baseURL,
+    apiKey: llm.apiKey,
+    provider: llm.provider,
+    name: 'mock loopback chat-completions (dsh-llm-mock-server)',
+    onWire: llm.onWire,
+    onSse: llm.onSse,
+  }));
+  onEvent('llm/runtime', {
+    provider: llm.provider,
+    model: llm.model,
+    service: 'vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)',
+    transport: 'gateway httpFetch → loopback chat-completions mock server',
+    userAgent: attributionHeaders()['user-agent'],
+  });
+};
+
+/**
+ * Boot the mobile profile: empty root, the dsh-base-equivalent spine mounted
+ * over the pinned vendored packages, the vendored LlmRuntime under `llm`.
  */
 export async function bootUpstream(options) {
   const { scenario, container, agentId, sessionId, cwd, onEvent } = options;
+  const llm = options.llm ?? {};
+  if (!llm.baseURL || !llm.apiKey || !llm.provider || !llm.model) {
+    throw new Error('boot: options.llm {baseURL, apiKey, provider, model} is required — the profile boots the vendored LlmRuntime over the gateway transport');
+  }
   pinProfileContainer(container);
 
   const ctx = new Context();
@@ -137,19 +169,7 @@ export async function bootUpstream(options) {
     ctx.on(type, fn);
   }
 
-  // dsh-base row `llm` — mounted SCRIPTED on mobile (model.scripted boundary).
-  const llm = createScriptedModelService({
-    provider: 'scripted',
-    model: 'scripted-1',
-    deltas: ['Hello', ' from', ' upstream'],
-    onStream: options.onModelStream,
-  });
-  ctx.provide('llm', llm);
-  onEvent('model/scripted', {
-    provider: 'scripted',
-    model: 'scripted-1',
-    note: 'upstream-shape driver; real dsh-llm transport lands with W-LLM vendor',
-  });
+  await mountLlm(ctx, llm, onEvent);
 
   onEvent('upstream/profile', {
     profile: 'mobile',
@@ -158,13 +178,13 @@ export async function bootUpstream(options) {
     layers: MOBILE_LAYERS.map(([id]) => id),
   });
 
-  await mountSpine(ctx, { agentId, sessionId, cwd });
+  await mountSpine(ctx, { agentId, sessionId, cwd, provider: llm.provider, model: llm.model });
   await demandServices(ctx);
 
   onEvent('upstream/services', {
     kernel: '@deepseek-ai/cordis@4.0.2',
     services: MOUNTED_SERVICES,
-    scripted: ['llm'],
+    llm: `vendored LlmRuntime + gateway adapter (provider "${llm.provider}")`,
   });
 
   return { ctx, sessionId, agentId };
