@@ -1,0 +1,649 @@
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.2"}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"1b69932b-40ee-4c7d-9e29-7b49b1285d54","v4":true}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+09-21 03:25:07.483  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe.txt"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.write.ok","written":17}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe.txt"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"../escape"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.invalid","code":"invalid"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
+09-21 03:25:07.484  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"scenario.complete","status":"pass"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs","data":[]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"activating dsh-subprocess-quickjs","data":[]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"subprocess"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-ui"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-ui"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.ui","message":"activating dsh-ui","data":[]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"ui"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"plugins.installed","count":3,"services":"fs,subprocess,ui"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"notes install begin","data":[]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar write","data":[{"members":2}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":13}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-21 03:25:07.487  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":258}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":15}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":908}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
+09-21 03:25:07.490  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
+09-21 03:25:07.498  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584,"journal":false}]}
+09-21 03:25:07.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
+09-21 03:25:07.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 03:25:07.501  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.502  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+09-21 03:25:07.502  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 03:25:07.502  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 03:25:07.502  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.502  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4780}]}
+09-21 03:25:07.506  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":3584}]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":3584}]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-21 03:25:07.510  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
+09-21 03:25:07.511  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
+09-21 03:25:07.511  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-notes"}]}
+09-21 03:25:07.511  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":2}]}
+09-21 03:25:07.511  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
+09-21 03:25:07.511  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
+09-21 03:25:07.512  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-m2-session-0001","files":2}]}
+09-21 03:25:07.512  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 03:25:07.512  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 03:25:07.513  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.514  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
+09-21 03:25:07.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 03:25:07.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 03:25:07.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","files":3}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/manifest.json"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 03:25:07.516  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/integrity.json"}]}
+09-21 03:25:07.517  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/m2-session-0001.json"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/m2-session-0001.json"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","receiptPath":"receipts/m2-session-0001.json"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-notes"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-notes"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes","message":"activating dsh-notes","data":[]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"notes"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"notes"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"host.ready","signalled":true}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-21 03:25:07.518  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"subprocess"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.created","sessionId":"s-m2-0001","scope":"app"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"session"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"agent.started","model":"mock-mini","tools":1}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"agent"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":1,"tokens":3}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":1}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":0,"text":"Hello"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":1,"text":" from"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":2,"text":" DSH"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":1,"deltas":3,"toolCalls":1}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.invoked","name":"notes.persist","call":"t-1"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"spawn","data":[{"id":"task-1","steps":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle created","data":[{"id":"task-1"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"complete"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.spawned","taskId":"task-1","steps":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"progress"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"task started","data":[{"id":"task-1","steps":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"started","steps":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":1}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","label":"computed"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task compute step done","data":[]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":1,"of":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":1}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task persist step begin","data":[{"path":"m2-session/result.txt"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.writeText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.write","data":[{"scope":"app","path":"m2-session/result.txt","bytes":27,"append":false}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":2,"of":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":2}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"complete","ok":true,"result":{"written":27}}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"complete observed","data":[{"id":"task-1","ok":true}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"fs.write.ok","written":27,"path":"m2-session/result.txt"}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.completed","taskId":"task-1","ok":true}]}
+09-21 03:25:07.519  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.result","name":"notes.persist","call":"t-1","ok":true}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":2,"tokens":2}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":2}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":3,"text":" Saved"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":4,"text":" ok"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":2,"deltas":2,"toolCalls":0}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.read","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":36}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m1.spike.boot PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=7
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.bridge.smoke PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=17
+09-21 03:25:07.520  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.session PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=179
+09-21 03:25:07.550  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
+09-21 03:25:08.258  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+09-21 03:25:08.818  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.connected","protocol":"session-projection@0"}]}
+09-21 03:25:08.820  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 03:25:08.821  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"descriptor.declared","available":5,"unavailable":4}]}
+09-21 03:25:08.821  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.info"}]}
+09-21 03:25:08.821  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.write.ok","written":17}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+09-21 03:25:08.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
+09-21 03:25:11.767  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"approval.approved","approved":true}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"presentPicker"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.unavailable","code":"unavailable"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.unavailable","code":"unavailable"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.persist","refOpaque":true}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+09-21 03:25:11.768  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
+09-21 03:25:11.808  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab13317c06a7 0 0]dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.scheduled","idOpaque":true}]}
+09-21 03:25:11.808  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab13317c06a7 0 0]dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+09-21 03:25:13.257  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-21 03:25:13.257  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"background"}]}
+09-21 03:25:13.258  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"notify.response"}]}
+09-21 03:25:20.766  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
+09-21 03:25:20.767  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.response","idMatches":true}]}
+09-21 03:25:20.767  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+09-21 03:25:20.790  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-21 03:25:20.809  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"foreground"}]}
+09-21 03:25:20.810  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
+09-21 03:25:20.810  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
+09-21 03:25:20.816  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
+09-21 03:25:20.817  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:20.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","first":true,"index":0}]}
+09-21 03:25:20.822  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:20.823  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:20.823  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:20.823  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 03:25:20.823  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"complete"}]}
+09-21 03:25:20.824  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","last":true,"index":4}]}
+09-21 03:25:20.824  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.session-complete","status":"pass"}]}
+09-21 03:25:20.824  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"scenario.complete","status":"pass"}]}
+09-21 03:25:20.824  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m5.host-binding PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=54
+09-21 03:25:23.913  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"carrier.listening","transport":"tcp","loopback":true,"port":17890}]}
+09-21 03:25:23.914  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"client.selected","client":"dsh-web-official","source":"launch"}]}
+09-21 03:25:23.925  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"b1.web","message":"main begin","data":[{}]}
+09-21 03:25:25.182  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"web.boot.applied","rows":5,"source":"runtime (vendored @deepseek-ai/dsh-client-modules)"}]}
+09-21 03:25:25.182  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"runtime.composed","entries":["@deepseek-ai/dsh-api-gateway","@deepseek-ai/dsh-api-remotes","@deepseek-ai/dsh-api-session-controller","@deepseek-ai/dsh-api-terminal-controller","@deepseek-ai/dsh-api-workspace-controller","@deepseek-ai/dsh-api-workspace-files","@deepseek-ai/dsh-client-connection","@deepseek-ai/dsh-client-file-upload","@deepseek-ai/dsh-client-hmr","@deepseek-ai/dsh-client-locale","@deepseek-ai/dsh-client-modules","@deepseek-ai/dsh-client-resources","@deepseek-ai/dsh-client-ui-agent-preset","@deepseek-ai/dsh-client-ui-approval","@deepseek-ai/dsh-client-ui-attachment","@deepseek-ai/dsh-client-ui-brand-official","@deepseek-ai/dsh-client-ui-chat","@deepseek-ai/dsh-client-ui-commands","@deepseek-ai/dsh-client-ui-conversation","@deepseek-ai/dsh-client-ui-cordis","@deepseek-ai/dsh-client-ui-deliverables","@deepseek-ai/dsh-client-ui-goal","@deepseek-ai/dsh-client-ui-input-trigger","@deepseek-ai/dsh-client-ui-jobs","@deepseek-ai/dsh-client-ui-layout","@deepseek-ai/dsh-client-ui-message-feedback","@deepseek-ai/dsh-client-ui-model-selection","@deepseek-ai/dsh-client-ui-open-in-app","@deepseek-ai/dsh-client-ui-permission-presets","@deepseek-ai/dsh-client-ui-plan","@deepseek-ai/dsh-client-ui-plugin-manager","@deepseek-ai/dsh-client-ui-reference","@deepseek-ai/dsh-client-ui-renderer","@deepseek-ai/dsh-client-ui-schedule","@deepseek-ai/dsh-client-ui-session","@deepseek-ai/dsh-client-ui-settings-general","@deepseek-ai/dsh-client-ui-settings-models","@deepseek-ai/dsh-client-ui-settings-plugin-inventory","@deepseek-ai/dsh-client-ui-settings-plugins","@deepseek-ai/dsh-client-ui-settings-unarchive-sessions","@deepseek-ai/dsh-client-ui-settings","@deepseek-ai/dsh-client-ui-sidebar-browser","@deepseek-ai/dsh-client-ui-sidebar-documentpreview","@deepseek-ai/dsh-client-ui-sidebar-files","@deepseek-ai/dsh-client-ui-sidebar-right","@deepseek-ai/dsh-client-ui-sidebar-terminal","@deepseek-ai/dsh-client-ui-sidebar","@deepseek-ai/dsh-client-ui-skill","@deepseek-ai/dsh-client-ui-subagent","@deepseek-ai/dsh-client-ui-theme","@deepseek-ai/dsh-client-ui-tool","@deepseek-ai/dsh-client-ui-trajectory","@deepseek-ai/dsh-client-ui-user-questions","@deepseek-ai/dsh-client-ui-workflow-run","@deepseek-ai/dsh-client-ui-workspace","@deepseek-ai/dsh-cordis-client-runner","@deepseek-ai/dsh-session-log-export","@deepseek-ai/dsh-typert-registry"],"source":"vendored @deepseek-ai/dsh-client-modules composed in-runtime"}]}
+09-21 03:25:25.183  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.web","message":"e2e","data":[{"scenario":"b1.official-web.mount","event":"runtime.booted","entries":["@deepseek-ai/dsh-api-gateway","@deepseek-ai/dsh-api-remotes","@deepseek-ai/dsh-api-session-controller","@deepseek-ai/dsh-api-terminal-controller","@deepseek-ai/dsh-api-workspace-controller","@deepseek-ai/dsh-api-workspace-files","@deepseek-ai/dsh-client-connection","@deepseek-ai/dsh-client-file-upload","@deepseek-ai/dsh-client-hmr","@deepseek-ai/dsh-client-locale","@deepseek-ai/dsh-client-modules","@deepseek-ai/dsh-client-resources","@deepseek-ai/dsh-client-ui-agent-preset","@deepseek-ai/dsh-client-ui-approval","@deepseek-ai/dsh-client-ui-attachment","@deepseek-ai/dsh-client-ui-brand-official","@deepseek-ai/dsh-client-ui-chat","@deepseek-ai/dsh-client-ui-commands","@deepseek-ai/dsh-client-ui-conversation","@deepseek-ai/dsh-client-ui-cordis","@deepseek-ai/dsh-client-ui-deliverables","@deepseek-ai/dsh-client-ui-goal","@deepseek-ai/dsh-client-ui-input-trigger","@deepseek-ai/dsh-client-ui-jobs","@deepseek-ai/dsh-client-ui-layout","@deepseek-ai/dsh-client-ui-message-feedback","@deepseek-ai/dsh-client-ui-model-selection","@deepseek-ai/dsh-client-ui-open-in-app","@deepseek-ai/dsh-client-ui-permission-presets","@deepseek-ai/dsh-client-ui-plan","@deepseek-ai/dsh-client-ui-plugin-manager","@deepseek-ai/dsh-client-ui-reference","@deepseek-ai/dsh-client-ui-renderer","@deepseek-ai/dsh-client-ui-schedule","@deepseek-ai/dsh-client-ui-session","@deepseek-ai/dsh-client-ui-settings-general","@deepseek-ai/dsh-client-ui-settings-models","@deepseek-ai/dsh-client-ui-settings-plugin-inventory","@deepseek-ai/dsh-client-ui-settings-plugins","@deepseek-ai/dsh-client-ui-settings-unarchive-sessions","@deepseek-ai/dsh-client-ui-settings","@deepseek-ai/dsh-client-ui-sidebar-browser","@deepseek-ai/dsh-client-ui-sidebar-documentpreview","@deepseek-ai/dsh-client-ui-sidebar-files","@deepseek-ai/dsh-client-ui-sidebar-right","@deepseek-ai/dsh-client-ui-sidebar-terminal","@deepseek-ai/dsh-client-ui-sidebar","@deepseek-ai/dsh-client-ui-skill","@deepseek-ai/dsh-client-ui-subagent","@deepseek-ai/dsh-client-ui-theme","@deepseek-ai/dsh-client-ui-tool","@deepseek-ai/dsh-client-ui-trajectory","@deepseek-ai/dsh-client-ui-user-questions","@deepseek-ai/dsh-client-ui-workflow-run","@deepseek-ai/dsh-client-ui-workspace","@deepseek-ai/dsh-cordis-client-runner","@deepseek-ai/dsh-session-log-export","@deepseek-ai/dsh-typert-registry"],"source":"vendored @deepseek-ai/dsh-client-modules composed in-runtime"}]}
+09-21 03:25:25.348  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"index.injected","rows":5,"bytes":30352}]}
+09-21 03:25:25.348  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"index.served","path":"/","status":200}]}
+09-21 03:25:25.457  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"asset.served","path":"/assets/index-8VXBH-f-.js"}]}
+09-21 03:25:25.457  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"plugins.served","path":"/plugins/??@deepseek-ai/dsh-client-modules/client.js&rev=d00469f6eab0","bytes":36040}]}
+09-21 03:25:26.032  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"upgrade.accepted","path":"/api/remote.mux"}]}
+09-21 03:25:26.034  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"mux.upgraded","path":"/api/remote.mux"}]}
+09-21 03:25:26.073  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"rpc.observed","endpoint":"settings/describe","answered":"unavailable"}]}
+09-21 03:25:26.660  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"session.attached","streamId":"5648a7dd-d6fc-4d15-b2cc-3ac881a91082","stream":"workspace/follow"}]}
+09-21 03:25:26.661  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"session.services.pending","leg":"workspace/follow","reason":"the first mux stream open was answered gateway/unimplemented; the web-boot closure embeds no agent spine — the session API is the next named gap"}]}
+09-21 03:25:26.873  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"module.system.live","mode":"live","bootstrap":"@deepseek-ai/dsh-client-modules (vendored)"}]}
+09-21 03:25:26.873  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"app.shell.rendered","mounted":true,"rootHasChild":true,"bootPageDisposed":true}]}
+09-21 03:25:26.873  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"page.rendered","boot":false,"rootHasChild":true,"moduleMode":"live"}]}
+09-21 03:25:26.873  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"b-harmony.official-web-mount","event":"mount.complete","status":"pass"}]}
+09-21 03:25:27.088  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+09-21 03:25:27.088  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"b1.http","message":"main begin","data":[{"port":17890}]}
+09-21 03:25:27.088  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"descriptor.declared","available":6,"unavailable":3}]}
+09-21 03:25:27.088  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17890/assets/index-8VXBH-f-.js","method":"GET"}]}
+09-21 03:25:27.088  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+09-21 03:25:27.134  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"http.headers","status":200,"bodyStream":true}]}
+09-21 03:25:27.134  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.134  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21750}]}
+09-21 03:25:27.134  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.134  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21704}]}
+09-21 03:25:27.142  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.142  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.142  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.142  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.142  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.150  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.150  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.150  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.150  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.150  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.156  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.157  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.157  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.157  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.157  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.164  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.164  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.164  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.164  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.164  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.170  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.170  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.170  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.170  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.170  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.177  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.177  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.177  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.177  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.177  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.184  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.184  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.184  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.184  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.184  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.191  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.191  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.191  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.191  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.191  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.198  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.198  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.198  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.198  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.198  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.205  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.205  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.205  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.205  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.205  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.212  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.212  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.212  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.212  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.212  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.219  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.219  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.219  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.219  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.219  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.227  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.227  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.227  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.227  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.227  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.234  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.234  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.235  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.235  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.235  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.243  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.244  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.244  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.244  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.244  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.251  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.251  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.251  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.252  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.252  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.259  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.259  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.259  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.259  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.259  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.267  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.267  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.267  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.267  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.267  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.275  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.275  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.275  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.275  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.275  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.282  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.282  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.282  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.282  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.282  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.289  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.289  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.289  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.289  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.289  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.297  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.298  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.298  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.298  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.298  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.305  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.305  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.305  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.305  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.305  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.314  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.314  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.315  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.315  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.315  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.322  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.322  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.322  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.323  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.323  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.329  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.329  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.329  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.329  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.329  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.337  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.337  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.337  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.337  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.337  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.344  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.344  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.344  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.344  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.344  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.350  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.351  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.351  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.351  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.351  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.357  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.357  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.357  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.357  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.357  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.364  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.364  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.364  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.364  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.364  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.371  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.372  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.372  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.372  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.372  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.379  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.379  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.379  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.379  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.379  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.385  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.386  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.386  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.386  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.386  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.392  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.392  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.392  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.392  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.392  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.399  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.399  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.399  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.399  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.399  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.408  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.408  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.409  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":13366}]}
+09-21 03:25:27.409  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
+09-21 03:25:27.409  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":13320}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":1}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"http.body.streamed","chunks":38,"bytes":616090,"streaming":true}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17890/assets/index-8VXBH-f-.js","method":"GET"}]}
+09-21 03:25:27.413  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":"body:2"}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"http.aborted","code":"cancelled","cancelled":true}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:1/nope","method":"GET"}]}
+09-21 03:25:27.429  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+09-21 03:25:27.431  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21750}]}
+09-21 03:25:27.431  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.431  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21704}]}
+09-21 03:25:27.445  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.445  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.445  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.445  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.458  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.458  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.459  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.459  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.470  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.470  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.470  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.470  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.482  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.482  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.482  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.482  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.492  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.492  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.492  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.492  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.500  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.508  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.508  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.508  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.508  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.515  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.522  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.522  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.522  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.522  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.529  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.529  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.529  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.529  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.536  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.537  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.537  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.537  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.544  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.544  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.544  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.544  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.551  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.551  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.551  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.551  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.557  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.558  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.558  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.558  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.564  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.565  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.565  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.565  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.575  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.575  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.575  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.575  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.583  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.584  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.584  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.584  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.591  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.591  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.591  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.591  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.598  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.598  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.598  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.598  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.605  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.605  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.605  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.605  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.612  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.612  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.612  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.612  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.622  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.622  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.622  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.623  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.630  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.630  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.630  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.630  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.639  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.639  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.639  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.639  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.646  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.646  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.646  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.646  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.654  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.654  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.655  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.655  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.662  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.662  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.663  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.663  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.672  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.672  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.672  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.672  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.680  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.680  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.681  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.681  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.690  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.690  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.690  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.690  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.697  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.697  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.697  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.697  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.704  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.705  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.705  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.705  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.711  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.711  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.711  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.711  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.721  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.721  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.721  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.721  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.730  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.730  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.730  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.730  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.740  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.740  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":21894}]}
+09-21 03:25:27.740  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.740  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":21848}]}
+09-21 03:25:27.748  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.748  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":13366}]}
+09-21 03:25:27.748  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+09-21 03:25:27.748  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":13320}]}
+09-21 03:25:27.756  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.756  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+09-21 03:25:27.756  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":2}]}
+09-21 03:25:27.756  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 03:25:27.758  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"network","primitive":"httpFetch"}]}
+09-21 03:25:27.759  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"http.refused","code":"network"}]}
+09-21 03:25:27.759  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"b1.http","message":"e2e","data":[{"scenario":"b-harmony.httpfetch-v2","event":"scenario.complete","status":"pass"}]}
+09-21 03:25:27.759  2610  2610 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: b-harmony.httpfetch-v2 PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=368

@@ -19,15 +19,18 @@ export const startSpike: (bundleRoot: string, capturePath: string, fsRoot: strin
  * 1 complete+pass, 2 complete+fail.
  *
  * hostStart creates the phase runtime: the binding smoke backend (descriptor
- * served verbatim; notify/presentApproval forwarded to onDispatch), the
+ * served verbatim; the platform primitives forwarded to onDispatch), the
  * canonical-line sink (hilog + capture file at capturePath), and the bus
  * seam. The two callbacks are `(line: string) => void` (JS bus post) and
  * `(callId: number, name: string, args: string) => void` (platform
- * primitive dispatch — queue it, never settle from inside).
+ * primitive dispatch — queue it, never settle from inside). The optional
+ * scenario label names the `dsh.spike.verdict:` line (default
+ * m5.host-binding).
  */
 export const hostStart: (bundleRoot: string, capturePath: string, fsRoot: string,
   descriptor: string, onBus: (line: string) => void,
-  onDispatch: (callId: number, name: string, args: string) => void) => number;
+  onDispatch: (callId: number, name: string, args: string) => void,
+  scenario?: string) => number;
 export const hostEval: (phaseId: number, entry: string) => number;
 export const hostEvent: (phaseId: number, eventJson: string) => number;
 export const hostBusDeliver: (phaseId: number, line: string) => number;

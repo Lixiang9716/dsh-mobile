@@ -43,14 +43,17 @@ object SpikeRuntime {
     }
 
     /** Creates the m4 runtime: descriptor + dispatch + bus sink + eval +
-     * first pump. Returns 0 on failure (details via m4LastError()). */
+     * first pump. [captureLabel] names the capture file
+     * (spike-capture-<label>.log). Returns 0 on failure (details via
+     * m4LastError()). */
     fun m4Begin(
         contextDir: String,
         entryName: String,
         source: String,
         descriptor: String,
+        captureLabel: String,
         bridge: M4Bridge,
-    ): Long = nativeM4Begin(contextDir, entryName, source, descriptor, bridge)
+    ): Long = nativeM4Begin(contextDir, entryName, source, descriptor, captureLabel, bridge)
 
     fun m4Settle(handle: Long, callId: Int, ok: Boolean, payload: String): Int =
         nativeM4Settle(handle, callId, ok, payload)
@@ -71,6 +74,7 @@ object SpikeRuntime {
         entryName: String,
         source: String,
         descriptor: String,
+        captureLabel: String,
         bridge: M4Bridge,
     ): Long
 

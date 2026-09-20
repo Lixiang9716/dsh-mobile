@@ -1,6 +1,7 @@
 package com.dshmobile.spike
 
 import android.util.Log
+import java.io.BufferedOutputStream
 import java.io.File
 import java.io.InputStream
 import java.io.OutputStream
@@ -13,23 +14,30 @@ import java.util.concurrent.atomic.AtomicBoolean
 /**
  * One loopback HTTP + WebSocket endpoint (RFC6455, text frames only) — the
  * Kotlin sibling of hosts/ios CarrierServer.swift (raw ServerSocket instead
- * of NWListener; SHA-1 accept via MessageDigest instead of CryptoKit). Serves
- * a static web root and upgrades GET /ws to a raw WS connection; transport
- * only, never touches JS — crossings hop through the callbacks. All state is
- * guarded by [lock]; `send` is safe from any thread. Accept + per-connection
- * threads never touch the JS runtime (AGENTS.md rule 2: only SpikeRuntime's
- * HandlerThread does).
+ * of NWListener; SHA-1 accept via MessageDigest instead of CryptoKit).
+ * Transport + route dispatch only, never JS — crossings hop through the
+ * callbacks. Routes: registered exact/prefix handlers, one fallback seat
+ * (official dist when the web session registers it, the legacy static root
+ * otherwise), and per-path WS upgrades (`/ws` legacy, `/api/remote.mux`).
+ * All state is guarded by [lock]; `send` is safe from any thread. Accept +
+ * per-connection threads never touch the JS runtime (AGENTS.md rule 2: only
+ * SpikeRuntime's HandlerThread does).
  */
 class CarrierServer {
     companion object {
         const val WS_PATH = "/ws"
+        const val COOKIE_NAME = "dsh.session"
         private const val WS_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         private const val TAG = "dsh.spike"
+        private const val MAX_BODY = 2 * 1024 * 1024
     }
 
+    /** Legacy single-seat hooks (the m2/m4 wiring; `/ws` seats only). */
     var onWSMessage: ((String) -> Unit)? = null
     var onStaticServed: ((String) -> Unit)? = null
     var onWSClosed: (() -> Unit)? = null
+    /** Per-seat frame hook (the API bridge filters to its own mux path). */
+    var onWSFrame: ((String, String) -> Unit)? = null
 
     @Volatile var port: Int = 0
         private set
@@ -37,13 +45,20 @@ class CarrierServer {
     private val lock = Object()
     private var webRoot: File = File("/nonexistent")
     private val servedPaths = ArrayList<String>()
-    private var wsOut: OutputStream? = null
+    private val seats = HashMap<String, OutputStream>()
+    private val exactRoutes = HashMap<String, (CarrierRequest, OutputStream) -> Unit>()
+    private val prefixRoutes = HashMap<String, (CarrierRequest, OutputStream) -> Unit>()
+    private var fallback: ((CarrierRequest, OutputStream) -> Unit)? = null
+    private val upgrades = HashMap<String, (CarrierRequest) -> CarrierUpgradePlan>()
     private val running = AtomicBoolean(false)
     private val acceptThread = Thread({ acceptLoop() }, "dsh-carrier-accept")
 
     /** Binds 127.0.0.1 on an ephemeral port; [onReady] fires once it is known. */
     fun start(webRoot: File, onReady: () -> Unit) {
         this.webRoot = webRoot
+        // The legacy `/ws` page seat is always available (the m2/m4 wiring);
+        // a session may override it with its own handler before start.
+        synchronized(lock) { upgrades.putIfAbsent(WS_PATH) { CarrierUpgradePlan.Accept } }
         running.set(true)
         acceptThread.isDaemon = true
         acceptThread.start()
@@ -59,22 +74,39 @@ class CarrierServer {
         onReady()
     }
 
+    /** Registers an HTTP handler before [start]; duplicates fail loud. */
+    fun register(kind: CarrierRouteKind, path: String, handler: (CarrierRequest, OutputStream) -> Unit) {
+        synchronized(lock) {
+            val table = if (kind == CarrierRouteKind.EXACT) exactRoutes else prefixRoutes
+            check(table.put(path, handler) == null) { "route already registered: $path" }
+        }
+    }
+
+    /** Registers the fallback seat (must be set before [start]). */
+    fun registerFallback(handler: (CarrierRequest, OutputStream) -> Unit) {
+        synchronized(lock) { check(fallback == null) { "fallback already registered" } }
+        fallback = handler
+    }
+
+    /** Registers a WebSocket upgrade handler for one exact path. */
+    fun registerUpgrade(path: String, handler: (CarrierRequest) -> CarrierUpgradePlan) {
+        synchronized(lock) { check(upgrades.put(path, handler) == null) { "upgrade registered twice: $path" } }
+    }
+
     fun stop() {
         running.set(false)
         try {
             acceptThread.interrupt()
         } catch (_: Exception) {}
         synchronized(lock) {
-            try {
-                wsOut?.close()
-            } catch (_: Exception) {}
-            wsOut = null
+            for (seat in seats.values) try { seat.close() } catch (_: Exception) {}
+            seats.clear()
         }
     }
 
-    /** Sends one WS text frame to the connected page (no-op while closed). */
-    fun send(text: String) {
-        val out = synchronized(lock) { wsOut } ?: return
+    /** Sends one WS text frame to the seat opened on [path] (no-op when closed). */
+    fun send(text: String, path: String) {
+        val out = synchronized(lock) { seats[path] } ?: return
         synchronized(out) {
             try {
                 out.write(frame(0x1, text.toByteArray(Charsets.UTF_8)))
@@ -85,7 +117,10 @@ class CarrierServer {
         }
     }
 
-    /** Paths served with 200 so far, in serving order. */
+    /** Legacy single-seat send (the m2/m4 `/ws` page). */
+    fun send(text: String) = send(text, WS_PATH)
+
+    /** Paths served with 200 so far, in serving order (legacy evidence). */
     fun servedList(): List<String> = synchronized(lock) { servedPaths.toList() }
 
     // ---- accept / connection plumbing --------------------------------------
@@ -119,19 +154,110 @@ class CarrierServer {
         try {
             conn.getInputStream().use { input ->
                 val head = readHead(input)
-                val parts = head.split("\r\n").first().split(" ")
-                if (parts.size < 2 || parts[0] != "GET") error("GET only")
-                val path = parts[1].substringBefore('?')
-                if (path == WS_PATH) {
-                    upgrade(headerValue(head, "Sec-WebSocket-Key"), input, conn.getOutputStream())
-                } else {
-                    serveGet(path, input, conn.getOutputStream())
-                }
+                val lines = head.split("\r\n")
+                val parts = lines.first().split(" ")
+                if (parts.size < 2) error("malformed request line")
+                val target = parts[1]
+                val rawPath = target.substringBefore('?')
+                val query = if (target.contains('?')) target.substringAfter('?') else null
+                val request = buildRequest(parts[0], rawPath, query, lines.drop(1), input)
+                dispatch(request, input, conn.getOutputStream())
             }
         } catch (_: Exception) {}
         try {
             conn.close()
         } catch (_: Exception) {}
+    }
+
+    /** Parses headers + a Content-Length body into the request facts. */
+    private fun buildRequest(
+        method: String,
+        rawPath: String,
+        query: String?,
+        headerLines: List<String>,
+        input: InputStream,
+    ): CarrierRequest {
+        val headers = HashMap<String, String>()
+        for (line in headerLines) {
+            val at = line.indexOf(':')
+            if (at <= 0) continue
+            headers.putIfAbsent(line.substring(0, at).trim().lowercase(), line.substring(at + 1).trim())
+        }
+        val length = headers["content-length"]?.toIntOrNull() ?: 0
+        var body = ByteArray(0)
+        if (length > 0) {
+            check(length <= MAX_BODY) { "request body exceeds carrier cap" }
+            body = ByteArray(length)
+            var read = 0
+            while (read < length) {
+                val n = input.read(body, read, length - read)
+                if (n < 0) error("peer closed during request body")
+                read += n
+            }
+        }
+        return CarrierRequest(
+            method = method,
+            path = CarrierRequest.percentDecode(rawPath),
+            rawPath = rawPath,
+            query = query,
+            headers = headers,
+            body = body,
+        )
+    }
+
+    /** Upgrades first (exact path), then exact → prefix (longest first) →
+     * fallback (registered seat, else the legacy static root). */
+    private fun dispatch(request: CarrierRequest, input: InputStream, out: OutputStream) {
+        val upgrade = synchronized(lock) { upgrades[request.rawPath] }
+        if (upgrade != null && request.header("upgrade")?.lowercase() == "websocket") {
+            when (val plan = upgrade(request)) {
+                is CarrierUpgradePlan.Accept -> upgradeSeat(request.rawPath, request, input, out)
+                is CarrierUpgradePlan.Reject -> respond(out, plan.status, "text/plain", ByteArray(0))
+                CarrierUpgradePlan.Destroy -> {}
+            }
+            return
+        }
+        val handler = synchronized(lock) {
+            exactRoutes[request.rawPath] ?: longestPrefix(request.rawPath)
+        }
+        if (handler != null) return handler(request, out)
+        val seat = synchronized(lock) { fallback }
+        if (seat != null) return seat(request, out)
+        serveLegacy(request, out)
+    }
+
+    /** The longest registered prefix route covering [path] (§1.2: `p` and
+     * `p/<anything>`); callers hold [lock] (it reads the route table). */
+    private fun longestPrefix(path: String): ((CarrierRequest, OutputStream) -> Unit)? {
+        val key = prefixRoutes.keys
+            .filter { path == it || path.startsWith("$it/") }
+            .maxByOrNull { it.length } ?: return null
+        return prefixRoutes[key]
+    }
+
+    /** The pre-official static behavior, byte-compatible with the m2/m3
+     * manifests: `..`-checked root-relative `.html`/`.js` files, `/` →
+     * `/index.html`, the /gateway-e2e chunked streams, 404 otherwise. */
+    private fun serveLegacy(request: CarrierRequest, out: OutputStream) {
+        val path = request.rawPath
+        if (path == "/gateway-e2e/bytes") {
+            recordServed(path)
+            return chunked(out, 32, 2, 40)
+        }
+        if (path == "/gateway-e2e/slow") {
+            recordServed(path)
+            return chunked(out, 16, 6, 300)
+        }
+        val rel = if (path == "/") "/index.html" else path
+        if (rel.contains("..") || !(rel.endsWith(".html") || rel.endsWith(".js"))) {
+            return respond(out, 404, "text/plain", "not found".toByteArray())
+        }
+        val file = File(webRoot, rel.removePrefix("/"))
+        if (!file.isFile) return respond(out, 404, "text/plain", "not found".toByteArray())
+        recordServed(path)
+        onStaticServed?.invoke(path)
+        val type = if (rel.endsWith(".html")) "text/html" else "text/javascript"
+        respond(out, 200, type, file.readBytes())
     }
 
     /** Reads one request head (through the blank line). */
@@ -146,29 +272,19 @@ class CarrierServer {
         return head.toString()
     }
 
-    private fun headerValue(head: String, name: String): String? =
-        head.split("\r\n")
-            .filter { it.contains(':') }
-            .filter { it.split(":", limit = 2)[0].trim().equals(name, true) }
-            .map { it.split(":", limit = 2)[1].trim() }
-            .firstOrNull()
+    // ---- responses ------------------------------------------------------------
 
-    // ---- static files + gateway-e2e chunked streams -------------------------
+    /** One Content-Length response with optional extra headers, then close. */
+    fun respond(
+        out: OutputStream,
+        status: Int,
+        type: String,
+        body: ByteArray,
+        headers: Map<String, String> = emptyMap(),
+        bodyless: Boolean = false,
+    ) = CarrierHTTP.respond(out, status, type, body, headers, bodyless)
 
-    private fun serveGet(path: String, input: InputStream, out: OutputStream) {
-        if (path == "/gateway-e2e/bytes") return chunked(out, 32, 2, 40)
-        if (path == "/gateway-e2e/slow") return chunked(out, 16, 6, 300)
-        val rel = if (path == "/") "/index.html" else path
-        if (rel.contains("..") || !(rel.endsWith(".html") || rel.endsWith(".js"))) {
-            return respond(out, 404, "text/plain", "not found".toByteArray())
-        }
-        val file = File(webRoot, rel.removePrefix("/"))
-        if (!file.isFile) return respond(out, 404, "text/plain", "not found".toByteArray())
-        recordServed(path)
-        onStaticServed?.invoke(path)
-        val type = if (rel.endsWith(".html")) "text/html" else "text/javascript"
-        respond(out, 200, type, file.readBytes())
-    }
+    private fun recordServed(path: String) = synchronized(lock) { servedPaths.add(path) }
 
     /** HTTP/1.1 chunked stream of deterministic ASCII, Connection: close. */
     private fun chunked(out: OutputStream, chunkBytes: Int, count: Int, intervalMs: Long) {
@@ -189,33 +305,28 @@ class CarrierServer {
         out.flush()
     }
 
-    private fun respond(out: OutputStream, status: Int, type: String, body: ByteArray) {
-        val reason = if (status == 200) "OK" else "Error"
-        val head = "HTTP/1.1 $status $reason\r\nContent-Type: $type\r\n" +
-            "Content-Length: ${body.size}\r\nConnection: close\r\n\r\n"
-        out.write(head.toByteArray(Charsets.UTF_8))
-        out.write(body)
-        out.flush()
-    }
-
-    private fun recordServed(path: String) = synchronized(lock) { servedPaths.add(path) }
-
     // ---- websocket (RFC6455, text frames, masked client side) ---------------
 
-    private fun upgrade(key: String?, input: InputStream, out: OutputStream) {
-        val accept = wsAccept(key ?: error("missing Sec-WebSocket-Key"))
+    /** Completes the handshake and opens a named seat for [path]. */
+    private fun upgradeSeat(
+        path: String,
+        request: CarrierRequest,
+        input: InputStream,
+        rawOut: OutputStream,
+    ) {
+        val accept = wsAccept(request.header("sec-websocket-key") ?: error("missing Sec-WebSocket-Key"))
         val head = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n" +
             "Connection: Upgrade\r\nSec-WebSocket-Accept: $accept\r\n\r\n"
-        val buffered = java.io.BufferedOutputStream(out)
+        val buffered = BufferedOutputStream(rawOut)
         synchronized(lock) {
-            wsOut?.let { try { it.close() } catch (_: Exception) {} } // one page at a time
-            wsOut = buffered
+            seats[path]?.let { try { it.close() } catch (_: Exception) {} } // one seat per path
+            seats[path] = buffered
         }
         buffered.write(head.toByteArray(Charsets.UTF_8))
         buffered.flush()
-        drainWsFrames(input, buffered)
+        drainWsFrames(path, input, buffered)
         synchronized(lock) {
-            if (wsOut === buffered) wsOut = null
+            if (seats[path] === buffered) seats.remove(path)
         }
         onWSClosed?.invoke()
     }
@@ -226,7 +337,7 @@ class CarrierServer {
         return Base64.getEncoder().encodeToString(digest)
     }
 
-    private fun drainWsFrames(input: InputStream, out: OutputStream) {
+    private fun drainWsFrames(path: String, input: InputStream, out: OutputStream) {
         val rx = ArrayList<Byte>()
         val buf = ByteArray(4096)
         while (running.get()) {
@@ -240,15 +351,19 @@ class CarrierServer {
             while (true) {
                 val next = parseFrame(rx) ?: break
                 repeat(next.consumed) { rx.removeAt(0) }
-                if (handleFrame(next, out)) return
+                if (handleFrame(path, next, out)) return
             }
         }
     }
 
     /** Handles one parsed frame; returns true when the connection ends. */
-    private fun handleFrame(frame: WsFrame, out: OutputStream): Boolean {
+    private fun handleFrame(path: String, frame: WsFrame, out: OutputStream): Boolean {
         when (frame.opcode) {
-            1 -> onWSMessage?.invoke(String(frame.payload, Charsets.UTF_8))
+            1 -> {
+                val text = String(frame.payload, Charsets.UTF_8)
+                onWSFrame?.invoke(text, path)
+                if (path == WS_PATH) onWSMessage?.invoke(text)
+            }
             8 -> { // close → echo close, then end this connection
                 sendAll(out, frame(0x8, ByteArray(0)))
                 return true

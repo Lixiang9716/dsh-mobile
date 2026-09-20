@@ -1,0 +1,25 @@
+{
+  "title": "W-HARMONY2: ArkTS carrier ctx.webServer subset + httpFetch v2 + official web boot on-device",
+  "created": "2026-09-20T19:22:50+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Route table + official dist fallback seat + /plugins + /api + mux on the ArkTS carrier",
+    "b-harmony.official-web-mount green one-to-one with real PNG evidence",
+    "httpFetch v2 streaming bridge flips the honest-unavailable; b-harmony.httpfetch-v2 green",
+    "Regressions m1+m2+m5 green; gov run green"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0016",
+  "void": {
+    "ts": "2026-09-20T19:23:09+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "W-HARMONY2 completed in the opened PR (audit trail = the PR, #329/#339 precedent): CarrierServer.ets rebuilt on the ctx.webServer route table (exact/prefix/upgrade/fallback, docs/webserver-contract.md \u00a71) with legacy m5 wiring byte-compatible on CarrierRoutes.ets; WebDist (auth-lite + \u00a71.5 index render pipeline + base href), WebPlugins (upstream combo byte semantics, framedHash revs), ApiBridge (/api envelope bridge + /api/remote.mux mux seat) served from rawfile officialweb (vendor-official.sh cmp-verified, bytes untracked per the content-gates precedent); OfficialPhase drives the canonical b1-web-live runtime (58-package roster) and the same-origin ArkWeb probe; httpFetch v2 over requestInStream (headers settle, body streams as http.body/end, abort cancelled) flips the honest-unavailable \u2014 descriptor 6/3 for the official phase; run-host-e2e 6-verdict green TWICE consecutively (m1 7/7, m2.bridge 6/6, m2.session 23/23, m5 20/20, b-harmony.official-web-mount 17/17, b-harmony.httpfetch-v2 6/6) with real-PNG screenshots (official app shell rendered: \u63a2\u7d22\u672a\u81f3\u4e4b\u5883 workspace picker); PID-verified launch loop; force-stop verification kept"
+  }
+}
