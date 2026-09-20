@@ -39,6 +39,7 @@ everywhere, so one checker serves all hosts.
 | `m3-complete.json` | `m3.complete` | macOS CLI (and any spike host) | 41 events — the four M3 scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
 | `m3-fetch-install.json` | `m3.fetch-install` | iOS, profile mode (`run-ios-m3.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the m2.session-shaped agent session |
 | `m3-fetch-carrier.json` | `m3.fetch-carrier` | iOS, carrier-side (`run-ios-m3.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
+| `b1-official-web-mount.json` | `b1.official-web.mount` | iOS, carrier-side (`run-ios-b1.sh`) | 10 events — the Phase-B contract carrier mounting the OFFICIAL upstream web app (`docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `index.rendered` (4 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the aggregate `/plugins/??…` combine form), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (POST envelope answered structured `gateway/unimplemented`), `session.attached` (mux journal open), `runtime.pending` (the `token.delta.forwarded` leg awaits the sibling runtime PR — honestly marked), `page.rendered` (probe: the upstream boot screen really rendered; no upstream code edited) |
 
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
@@ -130,6 +131,26 @@ waits for the `webclient.mounted` / `ws.token-delta` / terminal
 mid-stream, final transcript), then verifies the captured log against
 BOTH `m2-session.json` and the active client's carrier manifest. Same
 rule-8 polling discipline and 300s overall deadline as `run-ios.sh`.
+
+### Phase-B official-web mount runner (on-device, contract carrier)
+
+`run-ios-b1.sh` drives the Phase-B mount E2E — NO UI interaction:
+
+```sh
+tools/e2e/run-ios-b1.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It first materializes the vendored official dist (`ensure-official-dist.sh`:
+verify against the committed sha256 MANIFEST, rebuild reproducibly from the
+pinned upstream if absent), builds DSHSpike, stages the dist into the app
+container (`Documents/official-web/dist`), and launches
+`-dsh-mode official-web`. The carrier serves the dist through the
+`ctx.webServer` contract surface (route table, fallback seat, `/plugins`
+combos, `/api` envelope, `/api/remote.mux` mux, injected index); the
+platform-side probe runs inside the page (same-origin fetch + WebSocket),
+and the rendered state is read from the REAL DOM. Verdict per the
+one-to-one manifest `b1-official-web-mount.json`. Screenshots are debugging
+artifacts only.
 
 The m2-bridge-smoke scenario runs on the macOS CLI (not iOS) and is checked
 directly:

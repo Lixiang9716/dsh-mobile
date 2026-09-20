@@ -1,0 +1,25 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "none (carrier-only drive: no JS runtime is embedded; the page under test is the vendored OFFICIAL upstream app)",
+  "engineVersion": "-",
+  "phase": "Phase B PR-A — the loopback carrier becomes a REAL implementation of the upstream ctx.webServer contract (docs/webserver-contract.md): route table + fallback seat, /plugins combo serving, POST /api envelope, WS /api/remote.mux, index injection; the official web app MOUNTS in the WebView",
+  "launchConfiguration": "-dsh-mode official-web (the vendored dist staged into the app container at Documents/official-web/dist by tools/e2e/ensure-official-dist.sh; auth-lite token handed via ?token= and exchanged for a session cookie)",
+  "scenarios": [
+    {
+      "id": "b1.official-web.mount",
+      "checker": "tools/e2e/scenarios/b1-official-web-mount.json",
+      "events": 10,
+      "result": "pass",
+      "proves": "the CONTRACT CARRIER surface, observed on the wire: client.selected (dsh-web-official) -> index.rendered (4 injection rows, 2787 bytes: upstream __ModuleLoader__ facade script, application combo preload, __DSH_BOOT__ graph, __DSH_CONNECTION_RECOVERY__) -> index.served (GET / 200 through the auth-lite token->cookie->303 exchange) -> asset.served (the dist entry chunk /assets/index-8VXBH-f-.js) -> plugins.served (the aggregate /plugins/??dsh-web-client/client.js,dsh-web-client-mini/client.js&rev=f3412f49f2c5 COMBINE form, 6990 bytes, upstream byte semantics: trailer strip + ;\\n per source + combo sourceMappingURL) -> upgrade.accepted (/api/remote.mux, cookie-gated) -> rpc.observed (POST /api/session.list answered the frozen client-request envelope with structured gateway/unimplemented — fail loud, enumerated) -> session.attached (mux open frame stream=session/journal) -> runtime.pending (leg token.delta.forwarded: the v0 mux answers the structured unavailable ERROR frame; real journal deltas await the sibling runtime PR — honestly marked, NOT faked) -> page.rendered (probe: the upstream boot screen [data-dsh-boot] with wordmark HARNESS really rendered in the WebView; bootText records the by-design boot-failure message naming the missing @deepseek-ai/dsh-client-modules bundle)"
+    }
+  ],
+  "probe": "the same-origin probe runs IN the page via WKWebView callAsyncJavaScript (evaluateJavaScript cannot await the promise — WKError 5): fetch of the graph's combo URL, a real WebSocket upgrade, the POST, a mux journal open, then the rendered-state read. The page itself is untouched upstream code; the probe is platform-side per the M3 rendered-state precedent",
+  "runtimeLeg": "PENDING the sibling runtime PR (vendor + shims + boot.js): once the runtime supplies the boot graph and claims the bus seam (api.claim/api.respond, mux.claim/mux.item|mux.error|mux.end — the bridge side is already wired), the SAME manifest rows carry real journal deltas and the rendered probe reports the mounted app instead of the boot screen",
+  "runner": "tools/e2e/run-ios-b1.sh",
+  "screens": [
+    "screens/01-official-boot-screen.png (the official upstream boot screen — HARNESS wordmark + boot card — rendered by the mounted page on the contract carrier)",
+    "screens/02-final-state.png (drive verdict PASS, 10 canonical events)"
+  ],
+  "regressions": "run-ios-session.sh default (m2.session 23/23 + m2.webclient.mount 7/7) and --client mini (m2.session 23/23 + m3.ui-swap 7/7), run-ios-m3.sh (m3.fetch-install 46/46 + m3.fetch-carrier 11/11) — all green on the final refactored carrier; run-ios.sh 4/4 stands on the committed base evidence (hosts/ios/artifacts/m2-gateway/) per the recorded WebDriverAgent stall (gov surprises: run-iossh-regression-rerun-green) — the legs it UI-drives are exercised carrier-side by m1.carrier.loopback 7/7 PASS inside the same run",
+  "exitCode": 0
+}

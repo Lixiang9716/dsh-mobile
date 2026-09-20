@@ -1,0 +1,16 @@
+{
+  "scenario": "b1.official-web.mount",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "client.selected", "match": { "client": "dsh-web-official", "source": "launch" } },
+    { "event": "index.rendered", "match": { "rows": 4, "bytes": 2787 } },
+    { "event": "index.served", "match": { "path": "/", "status": 200 } },
+    { "event": "asset.served", "match": { "path": "/assets/index-8VXBH-f-.js" } },
+    { "event": "plugins.served", "match": { "path": "/plugins/??dsh-web-client/client.js,dsh-web-client-mini/client.js&rev=f3412f49f2c5" } },
+    { "event": "upgrade.accepted", "match": { "path": "/api/remote.mux" } },
+    { "event": "rpc.observed", "match": { "endpoint": "session.list", "answered": "unavailable" } },
+    { "event": "session.attached", "match": { "stream": "session/journal" } },
+    { "event": "runtime.pending", "match": { "leg": "token.delta.forwarded" } },
+    { "event": "page.rendered", "match": { "boot": true, "rootHasChild": true } }
+  ]
+}
