@@ -74,18 +74,21 @@ for f in async-hooks.js util.js util-types.js os.js process.js \
     cp "$SPIKE/upstream/shims/$f" "$ASSETS/upstream/shims/$f"
 done
 
-# The scenario rides the same copy (assets stay byte-identical to the
+# The scenarios ride the same copy (assets stay byte-identical to the
 # runtime bundle, like every other staged scenario).
-if [ -f "$SPIKE/scenario/b-android-session-live.js" ]; then
-    cp "$SPIKE/scenario/b-android-session-live.js" "$ASSETS/scenario/b-android-session-live.js"
-fi
+for s in b-android-session-live.js b-android-write-live.js; do
+    if [ -f "$SPIKE/scenario/$s" ]; then
+        cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
+    fi
+done
 
 # Byte-identity proof over everything this script stages (rule 6: the
-# copy is evidence only when a check can fail).
-fail=0
-verify() {
-    cmp -s "$1" "$2" || { echo "::error::stage drift: $2"; fail=1; }
-}
+# copy is evidence only when a check can fail). Drift markers collect in a
+# temp file because the pipeline `while` loops run in subshells — a `fail=1`
+# there never reaches this shell (the vacuous verify this replaces).
+DRIFT=$(mktemp)
+trap 'rm -f "$DRIFT"' EXIT
+note_drift() { echo "$1" >> "$DRIFT"; }
 for pkg in agent agent-loop brand llm sandbox scope session \
            session-projection settings system-prompt timeout tools \
            typert-protocol util-values; do
@@ -93,20 +96,21 @@ for pkg in agent agent-loop brand llm sandbox scope session \
     while IFS= read -r rel; do
         [ -f "$SPIKE/vendor/dsh/$pkg@$VER/$rel" ] || continue
         cmp -s "$SPIKE/vendor/dsh/$pkg@$VER/$rel" "$ASSETS/vendor/dsh/$pkg@$VER/$rel" ||
-            echo "::error::stage drift: vendor/dsh/$pkg@$VER/$rel"
+            note_drift "vendor/dsh/$pkg@$VER/$rel"
     done
 done
 (cd "$ZOD_SRC" && find v4/classic v4/core v4/locales -name '*.js'; echo index.js) |
     while IFS= read -r rel; do
-        cmp -s "$ZOD_SRC/$rel" "$ZOD_DST/$rel" ||
-            echo "::error::stage drift: zod/$rel"
+        cmp -s "$ZOD_SRC/$rel" "$ZOD_DST/$rel" || note_drift "zod/$rel"
     done
 for f in boot.js llm-transport.js settings-memory.js; do
-    cmp -s "$SPIKE/upstream/$f" "$ASSETS/upstream/$f" || echo "::error::stage drift: upstream/$f"
+    cmp -s "$SPIKE/upstream/$f" "$ASSETS/upstream/$f" || note_drift "upstream/$f"
 done
 for f in async-hooks.js util.js util-types.js os.js process.js dsh-session-persistence.js; do
-    cmp -s "$SPIKE/upstream/shims/$f" "$ASSETS/upstream/shims/$f" ||
-        echo "::error::stage drift: shims/$f"
+    cmp -s "$SPIKE/upstream/shims/$f" "$ASSETS/upstream/shims/$f" || note_drift "shims/$f"
 done
-[ "$fail" -eq 0 ] || die "staged trees drifted from the runtime pins"
+if [ -s "$DRIFT" ]; then
+    while IFS= read -r rel; do echo "::error::stage drift: $rel"; done < "$DRIFT"
+    die "staged trees drifted from the runtime pins"
+fi
 say "staged + verified byte-identical to the runtime pins"

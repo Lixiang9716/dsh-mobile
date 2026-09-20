@@ -1,0 +1,21 @@
+{
+  "title": "Android session write path: the official composer writes through the on-device spine (D9 W-DROID5)",
+  "created": "2026-09-20T20:51:30+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "scenario b-android-write-live.js composes the write surface over the spine; web-write layer staged into tracked assets byte-identical",
+    "Kotlin write drive: SessionWriteSession + page probe (pick workspace, type into the real composer, send) + MainActivity dsh.write mode + runner phase",
+    "E2E manifest b-android.write.live.json frozen from observation and one-to-one green with REAL screenshots committed",
+    "regressions: b-android.session.live 46/46 + official-web.mount 14/14 + m4.host-binding 35/35 + audit 16/16 + m2.session 23/23 + m1 + bridge-smoke",
+    "agent note (architecture, ref D9) + gov run green + task card exited + PR open"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0018"
+}
