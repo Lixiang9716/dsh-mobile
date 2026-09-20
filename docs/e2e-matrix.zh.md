@@ -6,8 +6,10 @@
 数据来自已提交的 artifacts 目录。由
 [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映提交 `e80f65d`（2026-09-20 再生成，证据缺口收口）
-> 时的 `origin/main`。它是**再生成**的，不是手工维护的：
+> **时效性**：本矩阵反映提交 `0e9e10f`
+> （`b1.official-web.mount` 与 `m2.upstream-boot` 两行由 2026-09-20 的
+> W-SHELL 应用层 bundle 变更刷新；总量按本树重算）时的 `origin/main`。
+> 它是**再生成**的，不是手工维护的：
 >
 > ```sh
 > node tools/e2e/matrix.mjs              # 退出码 0 = 清单干净
@@ -30,9 +32,9 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 18 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 33 |
-| 至少有一份已提交证据的 scenario | 16 / 16 个 manifest |
+| 证据目录 | 19 |
+| Verdict（全部 `pass: true`、`expected == logged`） | 34 |
+| 至少有一份已提交证据的 scenario | 17 / 17 个 manifest |
 | 已验证 PNG 的截图 | 30 |
 | 验收标准缺口 | 1（见下） |
 
@@ -56,11 +58,12 @@
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m2.upstream-session` | — | — | — | 31/31 |
+| `m2.upstream-boot` | — | — | — | 12/12 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
-| `b1.official-web.mount` | 10/10 | — | — | — |
+| `b1.official-web.mount` | 14/14 | — | — | — |
 
-16 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
+17 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
 
 ## 证据目录清单
@@ -76,7 +79,7 @@
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
-| `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 10/10 | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -88,6 +91,7 @@
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
 CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是可选的调试辅助，
 既非交付物也非输入）。

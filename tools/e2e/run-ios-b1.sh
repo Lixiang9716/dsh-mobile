@@ -85,11 +85,18 @@ mkdir -p "$APP_DATA/Documents/official-web"
 cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
 
 # ---- launch + watch the log markers ------------------------------------------
-log "4b/5 stage the web-boot plugin files (vendored client-modules; fixed stamp)"
+log "4b/5 stage the web-plugins tree (W-SHELL application tier + vendored bootstrap; fixed stamp)"
 runtime/spike/vendor/ensure-dsh.sh > /dev/null
+tools/e2e/ensure-client-bundles.sh
 PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+[ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
 rm -rf "$APP_DATA/Documents/web-plugins"
 mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"
+cp -R presentation/official-web/client-bundles/npm/@deepseek-ai/. \
+    "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/"
+# The pinned vendored tarball wins for the bootstrap package (D6 pin record;
+# its lib/client.js is byte-identical to the workspace build — PROVENANCE).
+rm -rf "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 cp -R "$PKG_SRC" "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/"
 
 log "5/5 launch (official-web mode; log capture truncated — checker sees only this run)"
@@ -100,11 +107,11 @@ xcrun simctl launch --terminate-running-process \
   --stdout="$LOG_ABS" --stderr="$NSLOG_ABS" \
   "$UDID" "$APP_BUNDLE_ID" -dsh-mode official-web >/dev/null
 
-# Markers: index.served → boot-screen shot; terminal sequence marker →
-# final shot, then the checker.
+# Markers: index.served → boot-screen shot (immediately — the application
+# tier activates in seconds on the simulator, and the shot races the shell);
+# terminal sequence marker → final shot, then the checker.
 log "waiting for the official page mount (index.served, deadline 300s)"
 wait_line "index.served" 300 || fail_deadline "index.served never appeared"
-sleep 2   # let the boot screen settle before the shot
 shot 01-official-boot-screen
 
 log "waiting for the carrier drive to complete (terminal marker)"

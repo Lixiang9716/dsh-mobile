@@ -92,27 +92,50 @@ private static func stagedFileB64(_ url: URL) -> String? {
     return data.base64EncodedString()
 }
 
-/// The staged web-plugin delivery from Documents/web-plugins: the pinned
-/// vendored package files, base64, with the fixed generation stamp
-/// (`mtimeMs: 0` — the same stamp the CLI runner pins).
+/// The staged web-plugin delivery from Documents/web-plugins: every package
+/// directory under `npm/@deepseek-ai/` (the W-SHELL application-tier staging
+/// plus the pinned vendored bootstrap package), base64, with the fixed
+/// generation stamp (`mtimeMs: 0` — the same stamp the CLI runner pins).
+/// Packages are listed in SORTED name order: the registry's scan order (= the
+/// loader entry order) is the module-graph tie-break, so the composed
+/// `__DSH_BOOT__` entry order is deterministic across runs and devices.
+/// Staged files per package: the manifest + the `./client` bundle (+ any
+/// staged package-local chunks); the graph's revs come from the runtime.
 static func webPluginsDelivery() -> [[String: Any]]? {
     let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-    let pkg = docs.appendingPathComponent(
-        "web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
-        isDirectory: true)
-    let vfsRoot = "/web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
-    var files: [String: Any] = [:]
-    let staged = [("package.json", "\(vfsRoot)/package.json"),
-        ("lib/client.js", "\(vfsRoot)/lib/client.js")]
-    for (rel, vfsPath) in staged {
-        guard let b64 = stagedFileB64(pkg.appendingPathComponent(rel)) else { return nil }
-        files[vfsPath] = ["b64": b64, "mtimeMs": 0]
+    let scope = docs.appendingPathComponent("web-plugins/npm/@deepseek-ai", isDirectory: true)
+    guard let packageDirs = try? FileManager.default.contentsOfDirectory(
+        at: scope, includingPropertiesForKeys: nil, options: []) else { return nil }
+    var plugins: [[String: Any]] = []
+    for pkg in packageDirs.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+        guard pkg.hasDirectoryPath else { continue }
+        let dirName = pkg.lastPathComponent
+        guard let at = dirName.lastIndex(of: "@") else { continue }
+        let name = "@deepseek-ai/" + dirName[dirName.startIndex..<at]
+        let lib = pkg.appendingPathComponent("lib", isDirectory: true)
+        var files: [String: Any] = [:]
+        let vfsRoot = "/web-plugins/npm/@deepseek-ai/\(pkg.lastPathComponent)"
+        guard let b64 = stagedFileB64(pkg.appendingPathComponent("package.json")) else { return nil }
+        files["\(vfsRoot)/package.json"] = ["b64": b64, "mtimeMs": 0]
+        guard let bundleB64 = stagedFileB64(lib.appendingPathComponent("client.js")) else { return nil }
+        files["\(vfsRoot)/lib/client.js"] = ["b64": bundleB64, "mtimeMs": 0]
+        if let staged = try? FileManager.default.contentsOfDirectory(
+            at: lib, includingPropertiesForKeys: nil, options: []) {
+            for chunk in staged.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+                let fileName = chunk.lastPathComponent
+                guard fileName != "client.js", fileName.hasPrefix("client."),
+                      fileName.hasSuffix(".js"), !fileName.hasSuffix(".map"),
+                      let chunkB64 = stagedFileB64(chunk) else { continue }
+                files["\(vfsRoot)/lib/\(fileName)"] = ["b64": chunkB64, "mtimeMs": 0]
+            }
+        }
+        plugins.append([
+            "loaderName": String(name),
+            "pkgJsonPath": "\(vfsRoot)/package.json",
+            "entryPath": "\(vfsRoot)/lib/client.js",
+            "files": files,
+        ])
     }
-    return [[
-        "loaderName": "@deepseek-ai/dsh-client-modules",
-        "pkgJsonPath": "\(vfsRoot)/package.json",
-        "entryPath": "\(vfsRoot)/lib/index.js",
-        "files": files,
-    ]]
+    return plugins.isEmpty ? nil : plugins
 }
 }

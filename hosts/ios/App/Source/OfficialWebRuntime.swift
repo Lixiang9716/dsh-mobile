@@ -25,6 +25,23 @@ final class CarrierEventLog {
         }
     }
 
+    /// Single-emission variant: the FIRST occurrence wins (serial queue makes
+    /// the check-then-append atomic across caller queues) — the page's live
+    /// traffic fires the wire hooks repeatedly; the manifest pins firsts.
+    func emitOnce(_ event: String, _ fields: [String: Any]) {
+        queue.sync { [self] in
+            guard !emittedEvents.contains(event) else { return }
+            emittedEvents.insert(event)
+            guard let line = Self.envelope(scenario: scenario, event: event, fields: fields)
+            else { return }
+            lines.append(line)
+            print(CarrierEventLog.prefix + line)
+            fflush(stdout)
+        }
+    }
+
+    private var emittedEvents: Set<String> = []
+
     /// The unified-logger envelope for one E2E record.
     private static func envelope(
         scenario: String, event: String, fields: [String: Any]
@@ -59,7 +76,9 @@ final class CarrierEventLog {
 final class OfficialWebRuntime {
     static let scenario = "b1.official-web.mount"
     static let clientID = "dsh-web-official"
-    static let watchdogSeconds = 90
+    /// Generous: the drive now waits for the full application tier (58
+    /// bundles fetched + activated + the shell mounted) inside the probe.
+    static let watchdogSeconds = 150
 
     private let server = CarrierServer()
     private let eventLog = CarrierEventLog(scenario: OfficialWebRuntime.scenario)
@@ -98,8 +117,11 @@ final class OfficialWebRuntime {
         }
     }
 
-    /// Wires the drive's evidence hooks (all server-queue callbacks; the
-    /// once-guards make each wire event single-emission in manifest order).
+    /// Wires the drive's evidence hooks (all server-queue callbacks). Each
+    /// wire event is SINGLE-EMISSION (first occurrence wins): with the
+    /// application tier live the page generates its own traffic (RPCs, mux
+    /// opens) before the probe's, so the once-guards pin the honest first
+    /// observations in manifest order.
     private func wireEvidence(
         dist: CarrierWebDist, plugins: CarrierPlugins, bridge: CarrierAPIBridge
     ) {
@@ -116,16 +138,26 @@ final class OfficialWebRuntime {
             self?.observeCombo(url, bytes: bytes)
         }
         bridge.onUpgradeAccepted = { [weak self] path in
-            self?.eventLog.emit("upgrade.accepted", ["path": path])
+            self?.eventLog.emitOnce("upgrade.accepted", ["path": path])
         }
         bridge.onAPICall = { [weak self] endpoint, answered in
-            self?.eventLog.emit("rpc.observed", ["endpoint": endpoint, "answered": answered])
+            self?.eventLog.emitOnce("rpc.observed", ["endpoint": endpoint, "answered": answered])
         }
         bridge.onMuxOpen = { [weak self] streamId, endpoint in
-            self?.eventLog.emit("session.attached", ["streamId": streamId, "stream": endpoint])
+            self?.eventLog.emitOnce("session.attached", ["streamId": streamId, "stream": endpoint])
         }
         bridge.onMuxFrame = { [weak self] direction, kind in
-            self?.observeMuxFrame(direction, kind)
+            guard let self, direction == "tx", kind == "error" else { return }
+            self.eventLog.emitOnce("session.services.pending", [
+                "leg": self.firstMuxErrorLeg ?? "unknown",
+                "reason": "the first mux stream open was answered gateway/unimplemented; "
+                    + "the web-boot closure embeds no agent spine — the session API is "
+                    + "the next named gap",
+            ])
+        }
+        bridge.onMuxErrorFrame = { [weak self] endpoint in
+            guard let self else { return }
+            if self.firstMuxErrorLeg == nil { self.firstMuxErrorLeg = endpoint }
         }
     }
 
@@ -153,21 +185,6 @@ final class OfficialWebRuntime {
         eventLog.emit("plugins.served", ["path": url, "bytes": bytes])
     }
 
-    /// The v0 drive claims no /api namespaces or mux streams (the embedded
-    /// web-boot closure carries no agent spine), so a journal open still
-    /// answers the structured unavailable error — real frames, real
-    /// envelope, honestly named gap. The runtime itself is LIVE (web.boot
-    /// applied); only the session services are pending.
-    private func observeMuxFrame(_ direction: String, _ kind: String) {
-        guard direction == "tx", kind == "error" else { return }
-        eventLog.emit("session.services.pending", [
-            "leg": "session.journal",
-            "reason": "mux journal stream answered gateway/unimplemented; "
-                + "the web-boot closure embeds no agent spine — session services "
-                + "are the next named gap",
-        ])
-    }
-
     /// Builds the route table per the contract, starts listening, and boots
     /// the web-boot runtime half. The origin opens ONLY after the runtime
     /// posted `web.boot` (its rows replace the carrier defaults and its
@@ -177,24 +194,7 @@ final class OfficialWebRuntime {
         let root = try SpikeBundleStager.stage()
         let distRoot = try Self.locateDist()
         token = Self.randomToken()
-        // Fallback rows/entries while the runtime boots: the staged M2
-        // plugin bundles through the upstream /plugins combo shapes (§3.4).
-        // The runtime's `web.boot` replaces both (rows + revs) before the
-        // origin opens. The staged vendored client-modules browser bundle
-        // (Documents/web-plugins, staged by run-ios-b1.sh) is served here
-        // too — its rev comes from the runtime graph (placeholder nonce),
-        // applied by applyRuntimeRevs.
-        var bundleFiles: [(String, URL)] = [
-            ("dsh-web-client", root.appendingPathComponent("webclient/web/main.js")),
-            ("dsh-web-client-mini", root.appendingPathComponent("webclient-mini/web/main.js")),
-        ]
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let stagedClientBundle = docs.appendingPathComponent(
-            "web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/client.js")
-        if FileManager.default.fileExists(atPath: stagedClientBundle.path) {
-            bundleFiles.append(("@deepseek-ai/dsh-client-modules", stagedClientBundle))
-        }
-        let plugins = CarrierPlugins(bundles: bundleFiles)
+        let plugins = CarrierPlugins.staged(spikeRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         defaultComboURL = Self.batchURL(graphJSON: config.bootGraphJSON)
         comboURL = defaultComboURL
@@ -319,12 +319,14 @@ final class OfficialWebRuntime {
         }
     }
 
-    /// once-guards for the single-emission hooks (server-queue-confined);
-    /// `comboPending` holds an early combo arrival until the asset event
-    /// fixed the report order.
+    /// once-guard state for the single-emission hooks; `comboPending` holds
+    /// an early combo arrival until the asset event fixed the report order.
+    /// `firstMuxErrorLeg` records the stream endpoint behind the first tx
+    /// error frame (the honest services-gap leg).
     private var assetLogged = false
     private var comboLogged = false
     private var comboPending: (String, Int)?
+    private var firstMuxErrorLeg: String?
     /// The batch combo URL from the injected graph, fetched by the probe.
     private var comboURL = ""
 

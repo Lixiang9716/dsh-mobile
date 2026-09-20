@@ -131,45 +131,84 @@ const turnPhase = async (ctx, text) => {
   return ctx.sessions.get(SESSION_ID);
 };
 
-/** The graph facts the manifest pins — all deterministic booleans/shapes. */
-const assertGraphPhase = (frames) => {
+/** The graph facts the manifest pins — all deterministic booleans/shapes.
+ * With the FULL application-tier staging (W-SHELL) the graph carries the
+ * whole `dsh.client` roster: the bootstrap batch is exactly the vendored
+ * client-modules id, the application batches cover every other staged
+ * package, and the composed order puts a row's `external` dependency rows
+ * before their consumers (upstream `orderByModuleGraph`; `inject` lists are
+ * DI waits, not bundle-order edges). */
+const assertGraphPhase = (frames, deliveredCount) => {
   log.debug('assert graph phase begin', {});
   const boot = frames.find((f) => f.type === 'web.boot');
   demand(boot !== undefined, 'no web.boot frame was posted over the bus seam');
-  const graph = boot.graph;
+  assertGraphShape(boot.graph, deliveredCount);
+  assertRowShapes(boot);
+};
+
+/** The composed-graph facts (entries, batches, ordering, wire parse). */
+const assertGraphShape = (graph, deliveredCount) => {
+  log.debug('assert graph shape begin', { deliveredCount });
   const revShape = typeof graph.rev === 'string' && /^[0-9a-f]{12}$/.test(graph.rev);
+  const BOOTSTRAP_ID = '@deepseek-ai/dsh-client-modules';
   const bootstrap = graph.batches.filter((b) => b.phase === 'bootstrap');
   const application = graph.batches.filter((b) => b.phase === 'application');
   const batched = graph.batches.flatMap((b) => b.entries);
+  const position = new Map(graph.entries.map((e, at) => [e.id, at]));
+  const externals = new Map(deliveredExternals);
+  const stripClient = (spec) => (spec.endsWith('/client') ? spec.slice(0, -7) : spec);
+  const externalsOrdered = [...externals].every(([id, deps]) => deps.every((dep) => {
+    const owner = position.get(stripClient(dep));
+    return owner === undefined || (owner < position.get(id) && owner !== position.get(id));
+  }));
   emit('web/boot/composed', {
     upstream: '0.1.6-alpha.2 (vendored @deepseek-ai/dsh-client-modules)',
-    entries: graph.entries.map((e) => e.id),
+    entryCount: graph.entries.length,
+    deliveredCount,
     batchCount: graph.batches.length,
     bootstrapOnly: application.length === 0 && bootstrap.length === 1
-      && JSON.stringify(bootstrap[0].entries) === JSON.stringify(['@deepseek-ai/dsh-client-modules']),
+      && JSON.stringify(bootstrap[0].entries) === JSON.stringify([BOOTSTRAP_ID]),
+    bootstrapBatchExact: bootstrap.length === 1
+      && JSON.stringify(bootstrap[0].entries) === JSON.stringify([BOOTSTRAP_ID]),
+    externalsOrdered,
     everyEntryBatchedOnce: JSON.stringify(batched.slice().sort()) === JSON.stringify([...batched].sort())
       && batched.length === graph.entries.length,
     revIs12Hex: revShape,
     parseOk: true, // mountClientModules ran the vendored parseBootManifest; reaching here proves it
   });
-  const kinds = boot.rows.map((r) => r.kind);
+};
+
+/** The injected-row facts (facade queue, preloads, bootstrap script, graph
+ * global) plus the per-plugin single-combo URL sample. */
+const assertRowShapes = (boot) => {
+  log.debug('assert row shapes begin', {});
+  const BOOTSTRAP_ID = '@deepseek-ai/dsh-client-modules';
+  const RENDERER_ID = '@deepseek-ai/dsh-client-ui-renderer';
+  const bootstrap = boot.graph.batches.filter((b) => b.phase === 'bootstrap');
+  const kinds = [...new Set(boot.rows.map((r) => r.kind))].sort();
   const facade = boot.rows.find((r) => r.kind === 'script');
+  const preloadCount = boot.rows.filter((r) => r.kind === 'script-preload').length;
   emit('web/boot/rows', {
     kinds,
+    preloadCount,
     facadeIsQueueScript: facade !== undefined
       && facade.text.startsWith('(()=>{')
       && facade.text.includes('pendingQueue')
-      && facade.text.includes('@deepseek-ai/dsh-client-modules'),
+      && facade.text.includes(BOOTSTRAP_ID),
     bootstrapScriptPreloaded: boot.rows.some((r) => r.kind === 'script-src'
       && r.src === bootstrap[0]?.url),
+    graphGlobalLastRow: boot.rows[boot.rows.length - 1]?.kind === 'global',
     recoveryDefaults: JSON.stringify(boot.recovery) === JSON.stringify({
       backoffBaseMs: 500, backoffFactor: 2, backoffMaxMs: 10000,
       generationReadyWarnMs: 3000, generationReadyTimeoutMs: 15000,
     }),
-    pluginRows: boot.plugins.map((p) => ({
-      id: p.id,
-      urlIsSingleCombo: p.url === `/plugins/??${p.id}/client.js&rev=${p.rev}`,
-    })),
+    pluginRowsSample: boot.plugins
+      .filter((p) => p.id === BOOTSTRAP_ID || p.id === RENDERER_ID)
+      .sort((a, b) => (a.id < b.id ? -1 : 1))
+      .map((p) => ({
+        id: p.id,
+        urlIsSingleCombo: p.url === `/plugins/??${p.id}/client.js&rev=${p.rev}`,
+      })),
   });
 };
 
@@ -228,6 +267,7 @@ const assertJournalPhase = (frames, baselineEnd, liveExpectation) => {
 
 /** Mount the web-boot runtime half and install the bus dispatcher that
  * drains deliveries and settles claimed handlers (the carrier's half). */
+let deliveredExternals = [];
 const mountBusPhase = (ctx) => {
   const runtime = createWebBootRuntime({ ctx, post: postRecording });
   busHandler = (msg) => {
@@ -244,8 +284,17 @@ const mountBusPhase = (ctx) => {
       });
     }
   };
-  demand(busDeliveries.some((m) => m.type === 'web.plugins'),
+  const delivery = busDeliveries.find((m) => m.type === 'web.plugins');
+  demand(delivery !== undefined,
     'no web.plugins delivery was injected by the host');
+  // The staged declarations the ordering assertion reads (`dsh.client`
+  // external lists from the delivery's package manifests).
+  deliveredExternals = delivery.plugins.map((p) => {
+    const pkgJson = p.files[p.pkgJsonPath];
+    if (pkgJson === undefined) return [p.loaderName, []];
+    const manifest = JSON.parse(globalThis.Buffer.from(pkgJson.b64, 'base64').toString('utf8'));
+    return [p.loaderName, manifest.dsh?.client?.external ?? []];
+  });
   for (const msg of busDeliveries.splice(0)) busHandler(msg);
   log.debug('bus phase mounted', {});
 };
@@ -280,7 +329,7 @@ const main = async () => {
   emit('web/turn/done', { text, events: events.length });
 
   mountBusPhase(ctx);
-  assertGraphPhase(posted);
+  assertGraphPhase(posted, deliveredExternals.length);
 
   // Self-probe the claimed /api surface exactly as the carrier would.
   busHandler({ type: 'api.request', rpcId: RPC_ID, endpoint: 'session.list', payload: { args: {} } });

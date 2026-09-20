@@ -10,6 +10,14 @@ dist/
 build/
 out/
 
+# W-SHELL application-tier client bundles — built output of the pinned
+# upstream client face (presentation/official-web/client-bundles/
+# build-client-bundles.sh), untracked like the official dist so the content
+# gates never judge verbatim upstream JS; the tracked provenance record is
+# the directory's MANIFEST.sha256 + ROSTER.json + PROVENANCE.md, and
+# tools/e2e/ensure-client-bundles.sh materializes + verifies the tree.
+presentation/official-web/client-bundles/npm/
+
 # iOS / Xcode
 hosts/ios/**/*.xcuserstate
 hosts/ios/**/xcuserdata/

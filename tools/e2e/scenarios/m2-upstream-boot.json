@@ -65,9 +65,12 @@
       "event": "web/boot/composed",
       "match": {
         "upstream": "0.1.6-alpha.2 (vendored @deepseek-ai/dsh-client-modules)",
-        "entries": ["@deepseek-ai/dsh-client-modules"],
-        "batchCount": 1,
-        "bootstrapOnly": true,
+        "entryCount": 58,
+        "deliveredCount": 58,
+        "batchCount": 2,
+        "bootstrapOnly": false,
+        "bootstrapBatchExact": true,
+        "externalsOrdered": true,
         "everyEntryBatchedOnce": true,
         "revIs12Hex": true,
         "parseOk": true
@@ -76,12 +79,15 @@
     {
       "event": "web/boot/rows",
       "match": {
-        "kinds": ["script", "script-src", "global"],
+        "kinds": ["global", "script", "script-preload", "script-src"],
+        "preloadCount": 1,
         "facadeIsQueueScript": true,
         "bootstrapScriptPreloaded": true,
+        "graphGlobalLastRow": true,
         "recoveryDefaults": true,
-        "pluginRows": [
-          { "id": "@deepseek-ai/dsh-client-modules", "urlIsSingleCombo": true }
+        "pluginRowsSample": [
+          { "id": "@deepseek-ai/dsh-client-modules", "urlIsSingleCombo": true },
+          { "id": "@deepseek-ai/dsh-client-ui-renderer", "urlIsSingleCombo": true }
         ]
       }
     },
