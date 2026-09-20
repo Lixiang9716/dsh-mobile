@@ -2,7 +2,7 @@ dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
-dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"a45c62ae-0b2e-4e7c-9fe5-68aa6ff17cca","v4":true}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"5b84b23a-d578-4e01-a947-b88db1366420","v4":true}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}
@@ -72,7 +72,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii fie
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
 dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584,"journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
