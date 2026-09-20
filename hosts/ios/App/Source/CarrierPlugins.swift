@@ -7,20 +7,37 @@ import Network
 /// plugin set (§3.4: same JSON/URL shapes upstream emits, no upstream code).
 /// Serves the revisioned single-resource combo `/plugins/??<id>/client.js
 /// &rev=<rev>`, the aggregate `/plugins/??<a>/client.js,<b>/client.js&rev=…`
-/// combine form, and the `.map` identity maps; anything else under /plugins
-/// is an unknown resource → 404; non-GET/HEAD → 405.
+/// combine form, the package-local chunks `/plugins/<id>/client.<n>.js
+/// ?rev=<entryRev>` (upstream CLIENT_CHUNK shape), and the `.map` identity
+/// maps; anything else under /plugins is an unknown resource → 404;
+/// non-GET/HEAD → 405.
 final class CarrierPlugins {
     /// Evidence hook: (resource URL, byte count) per served bundle.
     var onComboServed: ((String, Int) -> Void)?
     static let cacheControl = "public, max-age=31536000, immutable"
     static let scriptMIME = "text/javascript; charset=utf-8"
     static let mapMIME = "application/json; charset=utf-8"
+    /// Published package-local chunk names accepted by the on-demand route
+    /// (upstream `CLIENT_CHUNK`: `/^client\.[A-Za-z0-9][A-Za-z0-9._-]*\.js$/`).
+    static func isChunkName(_ name: String) -> Bool {
+        guard name.hasPrefix("client."), name.hasSuffix(".js"),
+              name.count > "client..js".count else { return false }
+        let stem = name.dropFirst("client.".count).dropLast(".js".count)
+        guard let first = stem.first, first.isASCII, first.isLetter || first.isNumber else { return false }
+        return stem.allSatisfy { ch in
+            ch.isASCII && (ch.isLetter || ch.isNumber || ch == "." || ch == "_" || ch == "-")
+        }
+    }
 
     /// One staged bundle, prepared once at init (upstream `prepareSource`).
     struct Prepared {
         let id: String
         let source: String
         var rev: String
+        /// Staged package-local chunks: file name → raw source (empty unless
+        /// the staging ships chunks; they are off the boot path — lazy
+        /// `require.async` inside the owner bundle).
+        var chunks: [String: String] = [:]
     }
 
     /// Staged entries in boot-graph order (deterministic; not a dictionary).
@@ -29,13 +46,23 @@ final class CarrierPlugins {
 
     /// - Parameter bundles: plugin id → its `client.js` file on disk, in the
     ///   order the boot graph should list them.
-    init(bundles: [(String, URL)]) {
+    /// - Parameter chunks: staged package-local chunks (id, file name, file
+    ///   URL). Unstaged chunk fetches 404 — the named staging gap, upstream's
+    ///   own stale-rev behavior.
+    init(bundles: [(String, URL)], chunks: [(String, String, URL)] = []) {
         for (id, url) in bundles {
             guard let raw = try? String(contentsOf: url, encoding: .utf8) else { continue }
             let source = Self.prepareSource(raw)
             let entry = Prepared(id: id, source: source, rev: Self.shortHash(source))
             entries.append(entry)
             byId[id] = entry
+        }
+        for (id, fileName, url) in chunks {
+            guard Self.isChunkName(fileName),
+                  let raw = try? String(contentsOf: url, encoding: .utf8),
+                  let at = entries.firstIndex(where: { $0.id == id }) else { continue }
+            entries[at].chunks[fileName] = raw
+            byId[id] = entries[at]
         }
     }
 
@@ -119,11 +146,37 @@ final class CarrierPlugins {
         case "client.js":
             serveEntryScript(entry, request: request, conn: conn)
         case "client.js.map":
-            let map = Self.identityMap(source: entry.source, sourceURL: "/plugins/\(entry.id)/client.js")
+            let map = Self.identityMap(
+                source: entry.source, sourceURL: "/plugins/\(entry.id)/client.js", file: "client.js")
             respond(200, body: Data(map.utf8), mime: Self.mapMIME, request: request, conn: conn)
         default:
+            if let raw = entry.chunks[fileName] {
+                return serveChunkScript(entry, fileName: fileName, raw: raw,
+                    request: request, conn: conn)
+            }
+            if fileName.hasSuffix(".js.map"),
+               let stem = Optional(fileName.dropLast(".map".count)),
+               let raw = entry.chunks[String(stem)] {
+                let map = Self.identityMap(
+                    source: Self.prepareSource(raw),
+                    sourceURL: "/plugins/\(entry.id)/\(stem)", file: String(stem))
+                return respond(200, body: Data(map.utf8), mime: Self.mapMIME,
+                    request: request, conn: conn)
+            }
             respond(404, body: Data(), mime: "text/plain", request: request, conn: conn)
         }
+    }
+
+    /// One package-local chunk: prepared source, the `;\n` terminator, and
+    /// the chunk's own sourceMappingURL trailer (upstream `chunkResponse` →
+    /// `buildComboScript([resource], chunkMapUrl)`).
+    private func serveChunkScript(
+        _ entry: Prepared, fileName: String, raw: String,
+        request: CarrierRequest, conn: NWConnection
+    ) {
+        let mapURL = "/plugins/\(entry.id)/\(fileName).map?rev=\(entry.rev)"
+        let body = Self.prepareSource(raw) + ";\n//# sourceMappingURL=\(mapURL)\n"
+        respond(200, body: Data(body.utf8), mime: Self.scriptMIME, request: request, conn: conn)
     }
 
     /// The one-entry combo body for a staged bundle: prepared source, the
@@ -235,7 +288,7 @@ final class CarrierPlugins {
 
     /// Identity per-line map for one generated source (upstream
     /// `identitySectionMap`), wrapped in the combo indexed-map form.
-    static func identityMap(source: String, sourceURL: String) -> String {
+    static func identityMap(source: String, sourceURL: String, file: String = "client.js") -> String {
         let lines = source.split(separator: "\n", omittingEmptySubsequences: false).count
         let mappings = (0..<max(lines, 1)).map { $0 == 0 ? "AAAA" : "AACA" }
             .joined(separator: ";")
@@ -244,7 +297,7 @@ final class CarrierPlugins {
             "sourcesContent": [source], "mappings": mappings,
         ]
         let wrapped: [String: Any] = [
-            "version": 3, "file": "client.js",
+            "version": 3, "file": file,
             "sections": [["offset": ["line": 0, "column": 0], "map": section]],
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: wrapped),
@@ -256,5 +309,56 @@ final class CarrierPlugins {
     static func sha1_12(_ data: Data) -> String {
         let digest = Insecure.SHA1.hash(data: data)
         return digest.map { String(format: "%02x", $0) }.joined().prefix(12).lowercased()
+    }
+
+    // ---- the staged plugin set ------------------------------------------------------
+
+    /// The /plugins route over the STAGED plugin set (the route's fallback
+    /// rows while the runtime boots): the staged M2 client bundles plus the
+    /// full staged web-plugin tree (Documents/web-plugins — the W-SHELL
+    /// application tier, 58 `dsh.client` packages). The runtime's `web.boot`
+    /// replaces the rows + revs before the origin opens; the route must
+    /// serve every staged package the composed graph lists (sorted directory
+    /// order = the delivery order = the graph's scan-order tie-break).
+    static func staged(spikeRoot: URL) -> CarrierPlugins {
+        var bundles: [(String, URL)] = [
+            ("dsh-web-client", spikeRoot.appendingPathComponent("webclient/web/main.js")),
+            ("dsh-web-client-mini", spikeRoot.appendingPathComponent("webclient-mini/web/main.js")),
+        ]
+        var chunks: [(String, String, URL)] = []
+        for pkg in stagedPackageDirs() {
+            let dirName = pkg.lastPathComponent
+            guard let at = dirName.lastIndex(of: "@") else { continue }
+            let id = "@deepseek-ai/" + dirName[dirName.startIndex..<at]
+            bundles.append((id, pkg.appendingPathComponent("lib/client.js")))
+            chunks.append(contentsOf: stagedChunks(id: id, pkg: pkg))
+        }
+        return CarrierPlugins(bundles: bundles, chunks: chunks)
+    }
+
+    /// The staged package directories under Documents/web-plugins/npm/@deepseek-ai,
+    /// in sorted (= delivery = graph scan-order) sequence.
+    private static func stagedPackageDirs() -> [URL] {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let scope = docs.appendingPathComponent("web-plugins/npm/@deepseek-ai", isDirectory: true)
+        return ((try? FileManager.default.contentsOfDirectory(
+            at: scope, includingPropertiesForKeys: nil, options: []))?
+            .filter(\.hasDirectoryPath)
+            .sorted(by: { $0.lastPathComponent < $1.lastPathComponent })) ?? []
+    }
+
+    /// One staged package's `lib/` chunk files (upstream CLIENT_CHUNK shape;
+    /// empty unless the staging ships them — they are off the boot path).
+    private static func stagedChunks(id: String, pkg: URL) -> [(String, String, URL)] {
+        let lib = pkg.appendingPathComponent("lib", isDirectory: true)
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: lib, includingPropertiesForKeys: nil, options: []) else { return [] }
+        var chunks: [(String, String, URL)] = []
+        for file in files {
+            let name = file.lastPathComponent
+            guard isChunkName(name), name != "client.js" else { continue }
+            chunks.append((id, name, file))
+        }
+        return chunks
     }
 }

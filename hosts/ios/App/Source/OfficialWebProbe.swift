@@ -5,15 +5,57 @@ import WebKit
 /// precedent): the page is untouched upstream code — the probe defines
 /// `__b1Run`, which fetches the runtime graph's combo URL, opens the mux
 /// journal, posts one unary RPC, waits for the official facade to go live,
-/// and reads the TRUE rendered state. Split from OfficialWebRuntime to keep
-/// the drive under the file-size gate.
+/// then waits (bounded) for the APPLICATION MOUNT — the boot page disposing
+/// means the UI renderer service mounted the real shell. The TRUE rendered
+/// state (boot page text incl. any failure report, root structure, a text
+/// sample) is reported as-is. Split from OfficialWebRuntime to keep the
+/// drive under the file-size gate.
 enum OfficialWebProbe {
+    /// Bounds for the two-phase wait: facade live (bootstrap bundle
+    /// materialized), then the application mount (all entries activated).
+    static let liveWaitMs = 5000
+    static let mountWaitMs = 45000
+    static let textSampleLimit = 200
+
+    /// The rendered-state half of the probe (appended into `__b1Run`): wait
+    /// for the official facade to go live, then wait for the APPLICATION
+    /// MOUNT — the boot page (`[data-dsh-boot]`) disposing with a populated
+    /// root is exactly the UI renderer mounting the real shell. The TRUE
+    /// rendered state (boot text incl. any failure report, root structure,
+    /// a text sample) is reported as-is.
+    private static let renderedStateScript: String = """
+        const waitFor = async (condition, deadlineMs) => {
+          const deadline = Date.now() + deadlineMs;
+          while (Date.now() < deadline && !condition()) {
+            await new Promise((r) => setTimeout(r, 50));
+          }
+          return condition();
+        };
+        out.moduleMode = window.__ModuleLoader__ ? String(window.__ModuleLoader__.mode) : 'none';
+        out.live = await waitFor(
+          () => window.__ModuleLoader__ && window.__ModuleLoader__.mode === 'live', \(liveWaitMs));
+        const readBoot = () => {
+          const boot = document.querySelector('[data-dsh-boot]');
+          return {boot: boot !== null,
+            bootText: boot ? boot.textContent.slice(0, \(textSampleLimit)) : '',
+            rootHasChild: ((document.getElementById('root') || {}).childElementCount || 0) > 0};
+        };
+        out.page = readBoot();
+        out.appMounted = await waitFor(() => {
+          const state = readBoot();
+          return !state.boot && state.rootHasChild;
+        }, \(mountWaitMs));
+        out.page = readBoot();
+        const root = document.getElementById('root') || {};
+        out.rootChildCount = root.childElementCount || 0;
+        out.rootTextSample = String(root.innerText || '').slice(0, \(textSampleLimit));
+        """
+
     /// Defines `__b1Run` on the page. Step order = manifest order: combo
     /// fetch (plugins.served), WS upgrade (upgrade.accepted), unary RPC
     /// (rpc.observed), mux journal open (session.attached + the unavailable
-    /// frame), then the rendered read — which waits (bounded) for the
-    /// official facade to switch from the injected queue to the live module
-    /// system, the REAL boot-progression fact beyond the failure screen.
+    /// frame), then the rendered reads — facade live first, then the app
+    /// mount, the REAL boot-progression facts beyond "Loading plugins…".
     static func probeScript(comboURL: String) -> String {
         """
         window.__b1Run = async () => {
@@ -42,16 +84,7 @@ enum OfficialWebProbe {
               endpoint:'session/journal', payload:{args:{}}}));
           });
           try { ws.close(); } catch (e) {}
-          const deadline = Date.now() + 5000;
-          while (Date.now() < deadline
-              && (!window.__ModuleLoader__ || window.__ModuleLoader__.mode !== 'live')) {
-            await new Promise((r) => setTimeout(r, 50));
-          }
-          out.moduleMode = window.__ModuleLoader__ ? String(window.__ModuleLoader__.mode) : 'none';
-          const boot = document.querySelector('[data-dsh-boot]');
-          out.page = {boot: boot !== null,
-            bootText: boot ? boot.textContent.slice(0, 160) : '',
-            rootHasChild: ((document.getElementById('root') || {}).childElementCount || 0) > 0};
+          \(renderedStateScript)
           return JSON.stringify(out);
         };
         'defined';
@@ -113,16 +146,29 @@ enum OfficialWebProbe {
             // structured unavailable answer means the wire shape regressed
             return .failure("probe rpc outcome: \(rpc)")
         }
-        // The REAL boot-progression fact: the upstream facade materialized
-        // the vendored client-modules bundle and switched to live mode (the
-        // client module system is up; the app shell state is reported as-is).
+        // Phase 1: the upstream facade materialized the vendored
+        // client-modules bundle and switched to live mode.
         let moduleMode = probe["moduleMode"] as? String ?? "none"
         guard moduleMode == "live" else {
             return .failure("the official module system never went live (mode: \(moduleMode))")
         }
+        // Phase 2 (the W-SHELL milestone): the application tier — the boot
+        // page disposes exactly when the UI renderer mounts the real shell.
+        // A failed activation would keep the boot page visible with the
+        // failure report in bootText (surfaced honestly below).
+        let appMounted = (probe["appMounted"] as? Bool) ?? false
+        guard appMounted else {
+            return .failure("the application tier never mounted — boot page still visible, "
+                + "bootText: \(page["bootText"] as? String ?? "")")
+        }
         return .pass(events: [
             ("module.system.live", ["mode": moduleMode,
                 "bootstrap": "@deepseek-ai/dsh-client-modules (vendored)"]),
+            ("app.shell.rendered", [
+                "mounted": appMounted,
+                "rootHasChild": (page["rootHasChild"] as? Bool) ?? false,
+                "bootPageDisposed": (page["boot"] as? Bool) == false,
+            ]),
             ("page.rendered", [
                 "boot": (page["boot"] as? Bool) ?? false,
                 "rootHasChild": (page["rootHasChild"] as? Bool) ?? false,

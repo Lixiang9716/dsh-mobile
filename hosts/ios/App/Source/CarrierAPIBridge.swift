@@ -28,6 +28,9 @@ final class CarrierAPIBridge {
     var onUpgradeAccepted: ((String) -> Void)?
     var onMuxOpen: ((String, String) -> Void)?
     var onMuxFrame: ((String, String) -> Void)?
+    /// One tx ERROR frame with the stream endpoint that produced it (the
+    /// honest services-gap leg for the official-app evidence).
+    var onMuxErrorFrame: ((String) -> Void)?
 
     /// Seam out: carrier → runtime deliveries (the runtime hops queues).
     var deliverToRuntime: (([String: Any]) -> Void)?
@@ -174,6 +177,9 @@ final class CarrierAPIBridge {
     private func answerUnimplementedStream(_ streamId: String, _ endpoint: String) {
         let message = "stream endpoint \(endpoint) is not implemented "
             + "by the Phase-B carrier"
+        // Record the leg BEFORE the frame hook fires (the evidence observer
+        // reads it synchronously inside the frame callback).
+        onMuxErrorFrame?(endpoint)
         muxError(streamId: streamId, code: Self.unavailableCode,
                  message: message, details: ["endpoint": endpoint])
     }
@@ -245,9 +251,18 @@ final class CarrierAPIBridge {
         return text
     }
 
-    /// Endpoint segment pattern (upstream `ENDPOINT_SEGMENT_PATTERN`).
+    /// Endpoint segment pattern (upstream `ENDPOINT_SEGMENT_PATTERN`, applied
+    /// per '/' segment: the official client calls namespaced endpoints like
+    /// `settings/describe`; empty, ".", and ".." segments are invalid).
     static func validEndpoint(_ endpoint: String) -> Bool {
-        !endpoint.isEmpty && endpoint.range(of: "^[A-Za-z0-9_$.\\-]+$", options: .regularExpression) != nil
+        for segment in endpoint.split(separator: "/", omittingEmptySubsequences: false) {
+            let piece = String(segment)
+            if piece.isEmpty || piece == "." || piece == ".." { return false }
+            if piece.range(of: "^[A-Za-z0-9_.$-]+$", options: .regularExpression) == nil {
+                return false
+            }
+        }
+        return !endpoint.isEmpty
     }
 
     /// Validates the frozen client-request envelope (§2.3): type, non-empty

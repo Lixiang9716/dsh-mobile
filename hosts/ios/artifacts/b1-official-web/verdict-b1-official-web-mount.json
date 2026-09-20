@@ -1,8 +1,8 @@
 {
   "scenario": "b1.official-web.mount",
   "pass": true,
-  "expected": 13,
-  "logged": 13,
+  "expected": 14,
+  "logged": 14,
   "failures": [],
   "parseErrors": []
 }
