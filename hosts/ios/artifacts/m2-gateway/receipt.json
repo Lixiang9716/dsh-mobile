@@ -1,0 +1,49 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "phase": "M2 gateway binding — the native UI legs the gateway scenario blocks on (notification permission alert, banner tap, approval dialog, Files-document picker search) are driven LIVE on the simulator while the gateway/fs/http primitives answer over the real JS bridge, one-to-one against all four scenario manifests",
+  "launchConfiguration": "default DSHSpike scenario drive (boot -> carrier -> gateway binding -> audit); picker target pre-staged at Documents/gateway-e2e/notes.txt, stage-once per the provider index-settle recipe",
+  "tree": "origin/main e3bd3339216d (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "m1.spike.boot",
+      "checker": "tools/e2e/scenarios/m1-spike-boot.json",
+      "events": 7,
+      "result": "pass"
+    },
+    {
+      "id": "m1.carrier.loopback",
+      "checker": "tools/e2e/scenarios/m1-carrier-loopback.json",
+      "events": 7,
+      "result": "pass"
+    },
+    {
+      "id": "m2.gateway.binding",
+      "checker": "tools/e2e/scenarios/m2-gateway-binding.json",
+      "events": 19,
+      "result": "pass"
+    },
+    {
+      "id": "m2.gateway.audit",
+      "checker": "tools/e2e/scenarios/m2-gateway-audit.json",
+      "events": 16,
+      "result": "pass"
+    }
+  ],
+  "runner": "tools/e2e/run-ios.sh",
+  "screens": [
+    "screens/00-final-verdict.png",
+    "screens/01-notification-permission.png",
+    "screens/02-notification-banner.png",
+    "screens/03-approval.png",
+    "screens/04-picker-sheet.png",
+    "screens/05-picker-search.png",
+    "screens/05b-picker-results.png",
+    "screens/06-picker-selected.png",
+    "screens/08-picker-done.png"
+  ],
+  "regressions": "this run refreshed ONLY hosts/ios/artifacts/m2-gateway (its four verdicts re-matched the committed manifests on this tree); every other evidence dir carries its own committed verdicts — see docs/e2e-matrix.md",
+  "timestamp": "2026-09-21T06:01:47+08:00",
+  "exitCode": 0
+}

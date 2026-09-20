@@ -28,6 +28,12 @@ real run. Two runner defects kept blocking that run:
    only after the keyboard return (observed live: caret up, field
    filled, suggestion row only, and the blind tile press hit blank
    space until the scenario watchdog expired).
+4. The summary could PASS on STALE verdicts: `run_check ... || true`
+   masked a checker failure, and the summary greps whatever verdict
+   file is on disk — in a non-interactive shell (nvm-managed node off
+   PATH) every checker no-op'd with "node: command not found" while the
+   summary PASSed all four scenarios on the PREVIOUS run's verdict
+   files.
 
 ## Decision
 
@@ -39,6 +45,9 @@ real run. Two runner defects kept blocking that run:
   element /value endpoint (keyboard return = submit; the results view
   rendered immediately when verified live), with a
   `05b-picker-results.png` screenshot marking the submitted state.
+- The checker path FAILS LOUD: the runner aborts before the drive when
+  node is not on PATH, and `run_check` removes its target verdict first
+  so a failed checker can never leave the previous run's verdict behind.
 - After the summary loop (which already `die`s on any failing checker),
   the runner machine-authors `receipt.json` into the artifacts dir in
   the established evidence format (host/engine/phase/launch
