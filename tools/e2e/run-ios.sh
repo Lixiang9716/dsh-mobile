@@ -44,6 +44,7 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/m2-gateway"
 SKIP_BUILD=0
 NO_REBOOT=0
+SKIP_INSTALL=0
 APP_BUNDLE_ID=org.dsh.DSHSpike
 APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
 # The step-3 REBOOT kills any running WDA, so step 5 re-bootstraps it on the
@@ -58,7 +59,8 @@ while [ $# -gt 0 ]; do
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
     --no-reboot) NO_REBOOT=1; shift ;;
-    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build] [--no-reboot]" >&2; exit 2 ;;
+    --skip-install) SKIP_INSTALL=1; shift ;;
+    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build] [--no-reboot] [--skip-install]" >&2; exit 2 ;;
   esac
 done
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
@@ -329,7 +331,16 @@ if [ "$NO_REBOOT" -eq 0 ]; then
 fi
 xcrun simctl bootstatus "$UDID" -b
 sleep 5   # let springboard settle before the provider indexes the container
-xcrun simctl install "$UDID" "$APP"
+if [ "$SKIP_INSTALL" -eq 0 ]; then
+  xcrun simctl install "$UDID" "$APP"
+else
+  # Reinstalling can migrate/re-touch the app's data container (observed live
+  # 2026-09-21: the container UUID changed across a same-version reinstall),
+  # which knocks the staged picker target out of the file-provider search
+  # index. --skip-install reuses the already-installed app when the build is
+  # unchanged and the pre-stage must stay undisturbed.
+  log "install skipped (--skip-install) — reusing the installed app"
+fi
 
 # Pre-stage the picker target from the HOST side: the Files file-provider
 # indexes the container at first touch after boot, and a file written later
