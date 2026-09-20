@@ -6,7 +6,7 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `f68056a`
+> **Currency**: this matrix reflects `origin/main` as of commit `1914412`
 > (audited 2026-09-20). It is REGENERATED, not maintained by hand:
 >
 > ```sh
