@@ -854,14 +854,27 @@ int main(int argc, char **argv) {
 
     /* Flags: --http enables the loopback httpFetch backend (descriptor gains
      * the primitive); --env KEY=VALUE (repeatable) feeds the launch-env
-     * snapshot the scenario merges into its profile container. Values pass
+     * snapshot the scenario merges into its profile container; --bus-inject
+     * FILE delivers the file's content as ONE bus line right after the entry
+     * eval — the host→runtime staged-data seam the platform embedders drive
+     * through dsh_spike_bus_deliver (the W-INTEG web-boot drive feeds the
+     * staged web-plugin table through it). Values pass
      * through unescaped — reject quotes/backslashes instead of escaping. */
     int http = 0;
+    const char *bus_inject_path = NULL;
     char env_json[2048] = "{";
     size_t env_len = 1;
     for (int i = 3; i < argc; i++) {
         if (strcmp(argv[i], "--http") == 0) {
             http = 1;
+            continue;
+        }
+        if (strcmp(argv[i], "--bus-inject") == 0) {
+            if (i + 1 >= argc) {
+                fprintf(stderr, "spike: --bus-inject needs FILE\n");
+                return 2;
+            }
+            bus_inject_path = argv[++i];
             continue;
         }
         if (strncmp(argv[i], "--env ", 6) == 0 || strcmp(argv[i], "--env") == 0) {
@@ -921,6 +934,24 @@ int main(int argc, char **argv) {
 
     int rc = dsh_spike_eval(b.spike, entry, source);
     free(source);
+
+    /* --bus-inject: the staged-data bus delivery, BEFORE the readiness
+     * signal — the scenario subscribes during eval, so the drop-guard in
+     * dsh_spike_bus_deliver cannot swallow it. */
+    if (rc == 0 && bus_inject_path) {
+        char *line = slurp(bus_inject_path, NULL);
+        if (!line) {
+            fprintf(stderr, "spike: cannot read --bus-inject file %s\n", bus_inject_path);
+            dsh_spike_free(b.spike);
+            free(b.tmpdir);
+            return 2;
+        }
+        rc = dsh_spike_bus_deliver(b.spike, line);
+        if (rc != 0) {
+            fprintf(stderr, "spike: bus inject failed: %s\n", dsh_spike_error(b.spike));
+        }
+        free(line);
+    }
 
     /* Host readiness signal through the same gateway-event channel the
      * platform embedders use: {"event":"host.info","port":0} — the desktop

@@ -51,3 +51,4 @@ runtime/spike/vendor/npm/
 __pycache__/
 .gov/tasks/.new.lock
 runtime/spike/logs-upstream.txt
+runtime/spike/logs-upstream-boot.txt

@@ -23,14 +23,25 @@
  *                                 __DSH_LOG_SINK__ (rule 5: no bare console output).
  *   - queueMicrotask            — re-wrapped so async-hooks-shim context
  *                                 propagation applies to raw microtask callbacks.
+ *   - Buffer                    — the web-boot closure (@deepseek-ai/dsh-
+ *                                 client-modules) hashes staged bundle bytes
+ *                                 and assembles combo bodies (W-INTEG leg);
+ *                                 Uint8Array-backed subset over
+ *                                 shims/buffer.js (from/concat/byteLength/
+ *                                 isBuffer; utf8/hex/base64 toString).
+ *   - URL                       — combo request routing in client-modules'
+ *                                 compose loop (pathname/search resolution);
+ *                                 special-schemes subset over shims/url.js.
  *
  * Intentionally NOT supported (absent on purpose — an accidental call is a
  * loud ReferenceError, never a silent no-op):
  *   - setTimeout/clearTimeout/setInterval — wall-clock timers; the spike
  *     runtime has no timer seam (a turn-based scenario never needs one).
- *   - fetch/TextEncoder/TextDecoder/Buffer — only cordis-host-runner (the Node
+ *   - fetch/TextEncoder/TextDecoder — only cordis-host-runner (the Node
  *     host's runner, replaced here by boot.js) and unreached zod paths use them.
  */
+import { DshBuffer } from 'upstream/shims/buffer.js';
+import { DshURL } from 'upstream/shims/url.js';
 const sink = (level, args) => {
   globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
     level,
@@ -204,6 +215,41 @@ if (typeof globalThis.AbortController !== 'function') {
 
   globalThis.AbortController = DshAbortController;
   globalThis.AbortSignal = DshAbortSignal;
+}
+
+/* ---- Buffer (byte bridge for the web-boot closure) ----------------------- */
+if (typeof globalThis.Buffer === 'undefined') {
+  globalThis.Buffer = DshBuffer;
+}
+
+/* ---- URL (combo route resolution for client-modules) --------------------- */
+if (typeof globalThis.URL === 'undefined') {
+  globalThis.URL = DshURL;
+}
+
+/* ---- window + the registration queue facade ------------------------------
+ * The web-boot leg materializes the VENDORED client-modules BROWSER bundle
+ * (`lib/client.js`) on the runtime side to validate the composed boot wire
+ * with its own `parseBootManifest`. That bundle is a closure factory
+ * registering through `window.__ModuleLoader__.load`, so the runtime provides
+ * the same queue-mode facade the carrier injects into the page (upstream
+ * bootInjections row 1): `load` queues registrations, `create` is the browser
+ * bootstrap and stays loud — the spike runtime never boots the module system,
+ * it composes the wire that boots it. */
+if (typeof globalThis.window === 'undefined') {
+  globalThis.window = globalThis;
+}
+if (typeof globalThis.window.__ModuleLoader__ === 'undefined') {
+  const pendingQueue = [];
+  globalThis.window.__ModuleLoader__ = {
+    mode: 'queue',
+    pendingQueue,
+    load(registration) { pendingQueue.push(registration); },
+    create() {
+      throw new Error('web-shims: __ModuleLoader__.create is the browser bootstrap; '
+        + 'the spike runtime composes the boot wire but never boots the client module system');
+    },
+  };
 }
 
 /* ---- queueMicrotask with context capture (pairs with async-hooks shim) ---

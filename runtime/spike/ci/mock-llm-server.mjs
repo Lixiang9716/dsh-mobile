@@ -24,11 +24,17 @@
  */
 import { startMockLlmServer } from '../vendor/dsh/llm-mock-server@0.1.6-alpha.2/lib/index.js';
 
+// DSH_MOCK_SEQUENCE (space-separated) and DSH_MOCK_REPEAT_LAST=1 override the
+// script for drivers that need more successes (the W-INTEG web-boot drive
+// streams two turns through the journal): defaults keep the m2 script intact.
+const sequence = (process.env.DSH_MOCK_SEQUENCE ?? 'success auth_error').split(/\s+/);
+const repeatLast = process.env.DSH_MOCK_REPEAT_LAST === '1';
+
 const handle = await startMockLlmServer({
   host: '127.0.0.1',
   port: 0, // OS-assigned; announced below (no fixed port races)
-  sequence: ['success', 'auth_error'],
-  repeatLast: false,
+  sequence,
+  repeatLast,
   successText: 'Hello from upstream',
   chunkSize: 5,
   chunkDelayMs: 0,

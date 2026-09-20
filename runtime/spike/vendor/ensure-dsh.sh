@@ -14,7 +14,10 @@
 #   - npm packages: registry.npmjs.org, exact pinned versions
 #
 # Run before the upstream E2E (runtime/spike/ci/run-upstream-e2e.sh). Network
-# is only needed for packages missing on disk. Still staged OUT of the
+# is only needed for packages missing on disk. @deepseek-ai/dsh-client-modules
+# is vendored since the W-INTEG web-boot leg: the OFFICIAL web boot composer
+# (its node half) plus the browser bootstrap bundle the injected facade queue
+# expects (lib/client.js). Still staged OUT of the
 # closure: session-persistence-jsonl (native koffi dep), subagent, base, and
 # the transport adapters (llm-deepseek / llm-pi-ai — their direct-fetch
 # transport is the desktop's; the mobile seam is the gateway adapter in
@@ -61,6 +64,7 @@ cordis@4.0.2|@deepseek-ai/cordis/-/cordis-4.0.2.tgz|686ca44fc6e8d217804de9062b71
 cosmokit@1.8.3|@deepseek-ai/cosmokit/-/cosmokit-1.8.3.tgz|552f10313ddfdc2b92cce1867b9bf30b2a4c9de55543ad222fe67c22015e4400
 schemastery@3.18.2|@deepseek-ai/schemastery/-/schemastery-3.18.2.tgz|a0fe700b9c055f04dfec87cb46ae4a1106c6fac6c271f8a1df00e10038f0aac1
 zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a51684314563c8d60f279c
+@deepseek-ai/dsh-client-modules@0.1.6-alpha.2|@deepseek-ai/dsh-client-modules/-/dsh-client-modules-0.1.6-alpha.2.tgz|ebeccd78185289d1ca14f48e921c2dd8d96c6d455a76debf2fd2601bbd27d512
 "
 
 have_pkg() { [ -f "$1/package.json" ]; }
