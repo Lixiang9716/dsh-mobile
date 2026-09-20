@@ -52,5 +52,19 @@ const char *dsh_spike_res_npm_cosmokit_js(size_t *len);
 const char *dsh_spike_res_npm_schemastery_mjs(size_t *len);
 const char *dsh_spike_res_npm_client_modules_index_js(size_t *len);
 const char *dsh_spike_res_npm_client_modules_client_js(size_t *len);
+const char *dsh_spike_res_upstream_boot_js(size_t *len);
+const char *dsh_spike_res_upstream_settings_memory_js(size_t *len);
+const char *dsh_spike_res_upstream_llm_transport_js(size_t *len);
+const char *dsh_spike_res_scenario_b3_web_live_js(size_t *len);
+const char *dsh_spike_res_shims_async_hooks_js(size_t *len);
+const char *dsh_spike_res_shims_util_js(size_t *len);
+const char *dsh_spike_res_shims_util_types_js(size_t *len);
+const char *dsh_spike_res_shims_os_js(size_t *len);
+const char *dsh_spike_res_shims_process_js(size_t *len);
+const char *dsh_spike_res_shims_dsh_session_persistence_js(size_t *len);
+/* The staged tree walker (vendored spine packages + zod closure):
+ * fills path/data/len for `index`, returns 0 past the end. */
+int dsh_spike_bundle_tree_file(size_t index, const char **path,
+                               const char **data, size_t *len);
 
 #endif /* DSH_IOS_SPIKE_BUNDLE_H */

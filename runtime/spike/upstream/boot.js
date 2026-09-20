@@ -136,7 +136,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     baseURL: llm.baseURL,
     apiKey: llm.apiKey,
     provider: llm.provider,
-    name: 'mock loopback chat-completions (dsh-llm-mock-server)',
+    name: llm.adapterName ?? 'mock loopback chat-completions (dsh-llm-mock-server)',
     onWire: llm.onWire,
     onSse: llm.onSse,
   }));
@@ -144,7 +144,8 @@ const mountLlm = async (ctx, llm, onEvent) => {
     provider: llm.provider,
     model: llm.model,
     service: 'vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)',
-    transport: 'gateway httpFetch → loopback chat-completions mock server',
+    transport: llm.transportLabel
+      ?? 'gateway httpFetch → loopback chat-completions mock server',
     userAgent: attributionHeaders()['user-agent'],
   });
 };

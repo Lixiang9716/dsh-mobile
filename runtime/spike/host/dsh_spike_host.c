@@ -1025,6 +1025,22 @@ int dsh_spike_eval(dsh_spike_t *s, const char *module_name, const char *source) 
         dsh_record_exception(s);
         return -1;
     }
+    /* Module evaluation returns the module's evaluation PROMISE: an exception
+     * inside the module graph is captured as that promise's REJECTION, not as
+     * a thrown exception. Swallowing it leaves the scenario body unevaluated
+     * while eval reports success (rule 5: fail loud). Settle the synchronous
+     * evaluation, then surface a rejection naming its reason. */
+    int drained = dsh_drain_jobs(s);
+    JSPromiseStateEnum state = JS_PromiseState(s->ctx, res);
+    if (drained != 0 || state == JS_PROMISE_REJECTED) {
+        if (state == JS_PROMISE_REJECTED) {
+            JSValue reason = JS_PromiseResult(s->ctx, res);
+            JS_Throw(s->ctx, reason);
+            dsh_record_exception(s);
+        }
+        JS_FreeValue(s->ctx, res);
+        return -1;
+    }
     JS_FreeValue(s->ctx, res);
     return 0;
 }
