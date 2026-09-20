@@ -1,0 +1,18 @@
+{
+  "host": "macos-cli (darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.2",
+  "scenario": "m2.bridge.smoke",
+  "checker": "tools/e2e/scenarios/m2-bridge-smoke.json",
+  "events": 6,
+  "exitCode": 0,
+  "m2Notes": "the scenario's CANONICAL host (tools/e2e/README.md): main_cli.c's smoke backend answers the real dispatch bridge — deferred settlement (calls queue in on_call, settle on a later tick after the pump pass), tmpdir-backed fs primitives with base64 byte payloads, the scope-escape 'invalid' path, and the declared-unavailable keychainGet conformance path per the backend's RuntimeDescriptor; closes the audit's gap 4 (no committed CLI evidence for m2.bridge.smoke)",
+  "captures": {
+    "primary": "logs.txt (CLI stdout of this run; scenario.jsonl = grep 'dsh.spike.log:' logs.txt)"
+  },
+  "invocation": "cd runtime/spike && ./vendor/ensure.sh && ./vendor/ensure-dsh.sh && ./host/build.sh && ./build/dsh-spike-cli . scenario/m2-bridge-smoke.js > artifacts/macos-cli-bridge-smoke/logs.txt; then tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-bridge-smoke.json --log <logs.txt> --out verdict.json",
+  "timestamp": "2026-09-20T18:10:00+08:00"
+}

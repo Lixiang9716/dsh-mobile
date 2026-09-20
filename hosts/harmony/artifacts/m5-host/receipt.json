@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0",
   "quickjsTag": "v0.17.0",
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
-  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.2",
   "bundleName": "com.dshmobile.spike",
   "scenarios": [
     "m1.spike.boot",
@@ -53,10 +53,12 @@
   "captures": {
     "primary": "sink-capture.txt + binding-capture.txt (app-side capture files pulled via hdc file recv from haps/entry/cache/dsh-{spike,host}-capture.log; named .txt because the repo ignores *.log; the binding capture carries the carrier's own canonical lines — module dsh.carrier — alongside the scenario's)",
     "second": "logs.txt (continuous `hdc shell hilog` stream filtered to dsh.spike lines; the union of the two capture files is byte-identical to it after stripping the hilog prefix — verified by sorted diff during the evidence run)",
-    "screenshots": "m5-live-deltas.png (first token delta streaming through the WS into the mounted page) and m5-binding-complete.png (session complete rendered in ArkWeb) — human evidence only, never the assertion"
+    "scenarioJsonl": "scenario.jsonl = grep -h '^dsh.spike.log:' sink-capture.txt binding-capture.txt — the canonical lines of THIS run, extracted by ci/run-host-e2e.sh from the run's own capture files (never synthesized)",
+    "screenshots": "m5-live-deltas.png (first token delta streaming through the WS into the mounted page) and m5-binding-complete.png (session complete rendered in ArkWeb) — captured via snapshot_display (JPEG), converted in place to real PNG by the runner's documented sips step; human evidence only, never the assertion"
   },
   "uiAutomation": "hosts/harmony/ci/run-host-e2e.sh (build -> install -> launch -> drive -> capture -> 4 checkers) with hosts/harmony/ci/drive-binding.mjs tailing the hilog stream and driving the native surfaces over uitest with polled deadlines: the approval dialog's Approve button, the notification-consent dialog's Allow (exact-text match; soft-skip when already granted), Home for the background edge, the notification shade + DSH notification tap for notify.response + foreground",
   "note": "Binding run (PR-A): the M5 host is now ISOMORPHIC — one launch proves the regression trio (including the 23-event m2.session with notes.installed) headlessly AND the live carrier topology (listening/mounted/connected/token-deltas/session-complete) plus the real binding primitives on-device. All embedded spike/plugin/web-client files are byte-identical to runtime/spike/, system-plugins/, and presentation/web-client canonicals.",
+  "evidenceGapClosure": "Full re-run on post-#53 main (fix/evidence-gaps): closes the audit's gaps 2 and 3 — ci/run-host-e2e.sh now extracts scenario.jsonl from the run's own capture files and converts snapshot_display's JPEG to real PNG via a documented sips step (both screenshots re-verified by magic bytes); requires the one-line Index.ets BUNDLE_FILES fix (util-crypto@0.1.6-alpha.1 -> 0.1.6-alpha.2, the rawfile copy #53 shipped), without which the fresh launch died at GetRawfileContent. Verdicts re-matched the committed manifests exactly (7/7, 6/6, 23/23, 20/20).",
   "toolchain": {
     "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
     "hvigor": "6.26.4",
@@ -64,5 +66,5 @@
     "sdk": "HarmonyOS 26.0.0 Release (Ohos_sdk_public 26.0.0.105, API Version 26)",
     "signing": "none — the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
   },
-  "timestamp": "2026-09-20T11:52:00+08:00"
+  "timestamp": "2026-09-20T17:58:00+08:00"
 }
