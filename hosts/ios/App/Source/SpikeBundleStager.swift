@@ -35,6 +35,7 @@ enum SpikeBundleStager {
         try write("sha256.js", data: resData(dsh_spike_res_sha256_js), under: root)
         try write("tar-mini.js", data: resData(dsh_spike_res_tar_mini_js), under: root)
         try writeScenarioEntries(root)
+        try writeWebBootClosure(root)
         try writePluginsAndClients(root)
         try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
                   under: root)
@@ -58,6 +59,41 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_receipt_journal_js), under: root)
         try write("profiles/m3-complete/cordis.patch.json",
                   data: resData(dsh_spike_res_profile_m3_patch_json), under: root)
+    }
+
+    /// The W-INTEG web-boot closure (b1-web-live drive): the upstream
+    /// web-boot adapter, its shims, and the vendored npm libs the official
+    /// client-modules composition imports — staged at the exact bundle-root
+    /// relative paths the C loader's bare map resolves.
+    private static func writeWebBootClosure(_ root: URL) throws {
+        try write("scenario/b1-web-live.js",
+                  data: resData(dsh_spike_res_scenario_b1_web_live_js), under: root)
+        try write("upstream/web-boot.js",
+                  data: resData(dsh_spike_res_upstream_web_boot_js), under: root)
+        try write("upstream/web-shims.js",
+                  data: resData(dsh_spike_res_upstream_web_shims_js), under: root)
+        try write("upstream/shims/buffer.js",
+                  data: resData(dsh_spike_res_shims_buffer_js), under: root)
+        try write("upstream/shims/url.js",
+                  data: resData(dsh_spike_res_shims_url_js), under: root)
+        try write("upstream/shims/fs.js",
+                  data: resData(dsh_spike_res_shims_fs_js), under: root)
+        try write("upstream/shims/crypto.js",
+                  data: resData(dsh_spike_res_shims_crypto_js), under: root)
+        try write("upstream/shims/node-module.js",
+                  data: resData(dsh_spike_res_shims_node_module_js), under: root)
+        try write("upstream/shims/path.js",
+                  data: resData(dsh_spike_res_shims_path_js), under: root)
+        try write("vendor/npm/cordis@4.0.2/lib/index.js",
+                  data: resData(dsh_spike_res_npm_cordis_js), under: root)
+        try write("vendor/npm/cosmokit@1.8.3/lib/index.js",
+                  data: resData(dsh_spike_res_npm_cosmokit_js), under: root)
+        try write("vendor/npm/schemastery@3.18.2/lib/index.mjs",
+                  data: resData(dsh_spike_res_npm_schemastery_mjs), under: root)
+        try write("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/index.js",
+                  data: resData(dsh_spike_res_npm_client_modules_index_js), under: root)
+        try write("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/client.js",
+                  data: resData(dsh_spike_res_npm_client_modules_client_js), under: root)
     }
 
     /// System implementation plugins + the install-pipeline fixture + both

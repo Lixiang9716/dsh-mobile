@@ -20,7 +20,7 @@ final class CarrierPlugins {
     struct Prepared {
         let id: String
         let source: String
-        let rev: String
+        var rev: String
     }
 
     /// Staged entries in boot-graph order (deterministic; not a dictionary).
@@ -49,6 +49,21 @@ final class CarrierPlugins {
     /// registration order of `bundles`.
     func bootEntries() -> [[String: String]] {
         entries.map { ["id": $0.id, "url": Self.entryURL(id: $0.id, rev: $0.rev), "rev": $0.rev] }
+    }
+
+    /// Adopts the RUNTIME's graph rows (`web.boot`): the upstream composer's
+    /// initial revisions are per-boot placeholders (nonce-counter), so the
+    /// /plugins route must serve and validate against the runtime's revs,
+    /// not the carrier's content hashes. Rows whose id matches a staged
+    /// entry override its rev; unknown ids are ignored (the carrier serves
+    /// only what it stages — fail loud upstream if the graph disagrees).
+    func applyRuntimeRevs(_ rows: [[String: Any]]) {
+        for row in rows {
+            guard let id = row["id"] as? String, let rev = row["rev"] as? String else { continue }
+            guard let at = entries.firstIndex(where: { $0.id == id }) else { continue }
+            entries[at].rev = rev
+            byId[id] = entries[at]
+        }
     }
 
     // ---- request handling -------------------------------------------------------
