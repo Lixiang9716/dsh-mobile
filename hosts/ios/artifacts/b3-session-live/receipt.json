@@ -1,0 +1,25 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "phase": "D9 W-SESS — the FULL upstream agent spine boots on-device (vendored @deepseek-ai upstream 0.1.6-alpha.2, sha256-pinned): it claims /api/session.list and the mux session/journal streams and answers the official web app with REAL data — one scripted-llm turn before the page loads (journal baseline) and one streamed LIVE into the attached page",
+  "launchConfiguration": "-dsh-mode session-live (official dist staged at Documents/official-web/dist by ensure-official-dist.sh; web-plugins tree staged from client-bundles with the pinned vendored dsh-client-modules@0.1.6-alpha.2 bootstrap)",
+  "tree": "origin/main 618f2f8 (fresh worktree; this receipt closes the evidence-matrix receipt.json finding for this dir)",
+  "scenarios": [
+    {
+      "id": "b3.session.live",
+      "checker": "tools/e2e/scenarios/b3-session-live.json",
+      "events": 46,
+      "result": "pass",
+      "proves": "the upstream spine LIVE on-device: config client.selected (dsh-web-official, source=launch) -> web.boot.applied -> runtime.booted (58 composed entries) -> llm/runtime (vendored @deepseek-ai/dsh-llm LlmRuntime, adapter registry; transport = gateway httpFetch -> the carrier's scripted /mock-llm/chat/completions, the E2E determinism boundary) -> session/created s-b3-ondevice-0001 + agent/created main -> first turn BEFORE the page loads: llm/request/built (2 messages), SSE deltas 'Hello from upstream' (llm/sse x12, finish=stop, usage 22 tokens), session.log baseline 11 journal entries -> the official page mounts on the carrier: index.served (GET / 200), plugins.served, upgrade.accepted (/api/remote.mux), session.attached (mux open frames stream=session/journal) -> 7 rpc.observed answered structured unavailable (settings/describe, dynamicCordisRunner/*, credentials/describe, session/modelCatalog, agentPresets/list — fail loud, enumerated, NOT faked) while session.list is FORWARDED to the on-device spine -> session.list.real (1 session, s-b3-ondevice-0001, running=false) -> second turn STREAMED LIVE into the attached page: journal/live + journal.frame.forwarded, session.journal.real (baseline 11, live 8, 19 frames, lastType turn/end) -> module.system.live (mode=live, bootstrap @deepseek-ai/dsh-client-modules vendored) -> page.rendered (boot=false, rootHasChild=true, real UI text 探索未至之境/预览版/选择工作区 rendered by the WebView — the mounted app, not the boot screen)"
+    }
+  ],
+  "runner": "tools/e2e/run-ios-b3.sh",
+  "screens": [
+    "screens/01-session-live-boot-screen.png (the official app mounted after index.served)",
+    "screens/02-final-state.png (drive verdict PASS; the checker is logs-only — screens are debugging artifacts)"
+  ],
+  "regressions": "this closure re-ran ONLY the b3 runner on origin/main 618f2f8 (verdict 46/46, expected==logged, exit 0); every other iOS evidence dir on this commit carries its own committed green verdicts — see docs/e2e-matrix.md for the consolidated matrix",
+  "timestamp": "2026-09-21T04:31:00+08:00",
+  "exitCode": 0
+}
