@@ -10,12 +10,17 @@
  *   → {"type":"hello","href":…,"protocol":"session-projection@0"}
  *   ← {"type":"ws.hello",…} | {"type":"replay","events":[…]}
  *   ← {"kind":"session"|"agent"|"token-delta"|"tool"|"complete", …}
+ * Plus one tiny typed extension point (M3): the toolbar slot — a plugin
+ * projects {"kind":"slot.register","id":…,"label":…}; the page renders a
+ * toolbar button and ACKS it ({"type":"slot.ack","id":…,"label":…}) so the
+ * carrier can evidence the rendered state.
  * Token deltas append into the live transcript; tool and system events
  * render as their own lines; "complete" closes the message.
  */
 const streamEl = document.getElementById('stream');
 const statusEl = document.getElementById('status');
 const dotEl = document.getElementById('dot');
+const toolbarEl = document.getElementById('toolbar');
 
 const scrollDown = () => { streamEl.scrollTop = streamEl.scrollHeight; };
 const line = (cls, text) => {
@@ -60,6 +65,12 @@ const apply = (ev) => {
   } else if (ev.kind === 'complete') {
     line('sys', `session complete — status ${ev.status} · ${ev.deltas} deltas · `
       + `${ev.toolCalls} tool call(s)`);
+  } else if (ev.kind === 'slot.register') {
+    const btn = document.createElement('button');
+    btn.id = `slot-${ev.id}`;
+    btn.textContent = ev.label;
+    toolbarEl.appendChild(btn);
+    ws.send(JSON.stringify({ type: 'slot.ack', id: ev.id, label: ev.label, by: ev.by }));
   }
 };
 

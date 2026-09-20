@@ -17,6 +17,9 @@
 import { createLogger } from 'logger.js';
 import { onEvent } from 'gateway.js';
 import { createRegistry } from 'registry.js';
+import { installPackage } from 'install-pipeline.js';
+import { sha256Hex } from 'sha256.js';
+import { buildNotesTgz, NOTES_MANIFEST_BYTES } from 'fixtures/dsh-notes.js';
 import * as fsPlugin from 'system-plugins/dsh-fs/index.js';
 import * as subprocessPlugin from 'system-plugins/dsh-subprocess-quickjs/index.js';
 import * as uiPlugin from 'system-plugins/dsh-ui/index.js';
@@ -69,6 +72,36 @@ const RESULT_PATH = 'm2-session/result.txt';
 const RESULT_TEXT = 'm2-session result: 5 deltas'; // 27 ASCII bytes
 const TURN_ONE = ['Hello', ' from', ' DSH'];
 const TURN_TWO = [' Saved', ' ok'];
+const toText = (bytes) => [...bytes].map((c) => String.fromCharCode(c)).join('');
+
+/** M3: the dsh-notes plugin ARRIVES through the install pipeline (a full
+ * receipt transaction over the fs primitives — install-pipeline.js), is
+ * loaded from its installed entry, activated via the registry, and projects
+ * its toolbar slot into the active Web Client BEFORE the session starts —
+ * the projection is buffered host-side and replayed to the page on connect,
+ * so the slot is rendered (and acked) ahead of the first token delta. */
+const installNotes = async (registry) => {
+  log.debug('notes install begin');
+  const packageBytes = buildNotesTgz();
+  const result = await installPackage({
+    id: 'dsh-notes',
+    bytes: packageBytes,
+    trust: {
+      blobSha256: sha256Hex(packageBytes),
+      manifestSha256: sha256Hex(NOTES_MANIFEST_BYTES),
+    },
+    txId: 'm2-session-0001',
+    on: () => {},
+  });
+  globalThis.__dshModuleDefine(result.moduleId, toText(result.entrySource));
+  registry.install({ manifest: result.manifest, module: await import(result.moduleId) });
+  registry.service('notes'); // fail loud unless activation registered it
+  emit('notes.installed', {
+    pkg: result.manifest.id, version: result.manifest.version,
+    status: result.receipt.status,
+  });
+  project({ kind: 'slot.register', id: 'notes.toolbar', label: 'notes', by: 'dsh-notes' });
+};
 
 /** Task step 1 (pure compute): a tiny work unit on the runtime queue. */
 const computeStep = async (ctx) => {
@@ -111,7 +144,10 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   emit('plugins.installed', { count: registry.pluginIds().length, services: 'fs,subprocess,ui' });
 
   // Host readiness: the CLI backend signals before the pump loop; carrier
-  // hosts signal when the presentation surface is attached (same contract).
+  // hosts signal once the mounted page connected AND acked the slot (so the
+  // deltas always stream into a fully rendered client). Projections pushed
+  // before the page connects (slot.register) replay to it on connect.
+  await installNotes(registry);
   await nextEvent('host.info');
   emit('host.ready', { signalled: true });
 

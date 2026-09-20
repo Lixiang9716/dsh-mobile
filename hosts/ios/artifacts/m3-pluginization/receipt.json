@@ -1,0 +1,29 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "phase": "M3 PR-B — UI pluggability: Web Client swap + toolbar slot registration",
+  "scenarios": [
+    {
+      "id": "m3.ui-swap",
+      "checker": "tools/e2e/scenarios/m3-ui-swap.json",
+      "events": 7,
+      "result": "pass",
+      "proves": "config-selected client flip: launch arg -dsh-web-client dsh-web-client-mini -> client.selected -> the carrier serves webclient-mini/web (visually distinct 'DSH mini client') -> page connects -> dsh-notes (installed via the M3 pipeline inside m2.session) registers the toolbar slot -> page renders + acks (slot.registered) -> deltas stream into the mini transcript -> session complete"
+    },
+    {
+      "id": "m2.session (on-device, JS stream)",
+      "checker": "tools/e2e/scenarios/m2-session.json",
+      "events": 23,
+      "result": "pass",
+      "proves": "same scenario under the swapped client; notes.installed rides the install pipeline receipt transaction (notes.installed status=committed)"
+    }
+  ],
+  "runner": "tools/e2e/run-ios-session.sh --client mini",
+  "screens": [
+    "screens/01-webclient-loaded.png (mini client mounted, slot acked)",
+    "screens/02-mid-stream.png (deltas streaming into the mini transcript)",
+    "screens/03-final-transcript.png (final transcript + rendered 'notes' toolbar slot button)"
+  ],
+  "exitCode": 0
+}

@@ -12,7 +12,14 @@
 # Screenshots are saved artifacts (screens/) — the verdict is logs only
 # (docs/ARCHITECTURE.md, "E2E verification").
 #
-# usage: run-ios-session.sh [--udid U] [--art-dir D] [--skip-build]
+# usage: run-ios-session.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]
+#
+# --client mini selects the SECOND Web Client variant (dsh-web-client-mini)
+# via the app's launch configuration (-dsh-web-client): the carrier mounts
+# and serves it and the carrier-side evidence flips to scenario m3.ui-swap
+# (manifest m3-ui-swap.json) — the M3 UI-pluggability proof. The default
+# client keeps asserting m2-webclient-mount.json. The JS session stream
+# (m2-session.json) is client-independent and always checked.
 #
 # Rule 8 discipline: every wait polls a condition with a deadline (log
 # markers); sleeps only pace the polls. Overall deadline 300s — on expiry
@@ -22,8 +29,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
-ART="hosts/ios/artifacts/m2-session"
+ART=""
 SKIP_BUILD=0
+CLIENT=default
 APP_BUNDLE_ID=org.dsh.DSHSpike
 APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
 DEADLINE=$((SECONDS + 300))
@@ -32,9 +40,22 @@ while [ $# -gt 0 ]; do
     --udid) UDID="$2"; shift 2 ;;
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
-    *) echo "usage: run-ios-session.sh [--udid U] [--art-dir D] [--skip-build]" >&2; exit 2 ;;
+    --client) CLIENT="$2"; shift 2 ;;
+    *) echo "usage: run-ios-session.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]" >&2; exit 2 ;;
   esac
 done
+[ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] \
+  || { echo "run-ios-session: unknown --client '$CLIENT' (mini|default)" >&2; exit 2; }
+CARRIER_MANIFEST=tools/e2e/scenarios/m2-webclient-mount.json
+CARRIER_STEM=m2-webclient-mount
+LAUNCH_ARGS=()
+if [ "$CLIENT" = "mini" ]; then
+  CARRIER_MANIFEST=tools/e2e/scenarios/m3-ui-swap.json
+  CARRIER_STEM=m3-ui-swap
+  LAUNCH_ARGS=(-dsh-web-client dsh-web-client-mini)
+  [ -n "$ART" ] || ART="hosts/ios/artifacts/m3-pluginization"
+fi
+[ -n "$ART" ] || ART="hosts/ios/artifacts/m2-session"
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
 mkdir -p "$ART" "$ART/screens"
 
@@ -84,7 +105,7 @@ case "$LOG" in /*) LOG_ABS="$LOG" ;; *) LOG_ABS="$PWD/$LOG" ;; esac
 case "$ART" in /*) NSLOG_ABS="$ART/nslog-stderr.txt" ;; *) NSLOG_ABS="$PWD/$ART/nslog-stderr.txt" ;; esac
 xcrun simctl launch --terminate-running-process \
   --stdout="$LOG_ABS" --stderr="$NSLOG_ABS" \
-  "$UDID" "$APP_BUNDLE_ID" -dsh-mode session >/dev/null
+  "$UDID" "$APP_BUNDLE_ID" -dsh-mode session ${LAUNCH_ARGS[@]+"${LAUNCH_ARGS[@]}"} >/dev/null
 
 # Markers: webclient.mounted → page-loaded shot; first ws.token-delta →
 # mid-stream shot; "spike: sequence session=" → final shot, then checkers.
@@ -114,11 +135,11 @@ run_check() { # MANIFEST STEM
     FAILED="$FAILED $2"
   fi
 }
-run_check tools/e2e/scenarios/m2-session.json         m2-session
-run_check tools/e2e/scenarios/m2-webclient-mount.json m2-webclient-mount
+run_check tools/e2e/scenarios/m2-session.json m2-session
+run_check "$CARRIER_MANIFEST" "$CARRIER_STEM"
 
 echo "==================== E2E summary ($ART) ===================="
-for s in m2-session m2-webclient-mount; do
+for s in m2-session "$CARRIER_STEM"; do
   v="$ART/verdict-$s.json"
   if [ ! -f "$v" ]; then
     st="FAIL (no verdict file)"; FAILED="$FAILED $s"

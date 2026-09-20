@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-ui",
+  "version": "0.1.0",
+  "type": "service",
+  "entry": "index.js",
+  "capabilities": {
+    "required": ["notify", "presentApproval", "presentPicker"],
+    "optional": []
+  },
+  "hooks": {
+    "activate": "activate"
+  }
+}

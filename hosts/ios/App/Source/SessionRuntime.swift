@@ -10,13 +10,11 @@ import UIKit
 /// page. Carrier-side evidence is logged through the canonical
 /// `dsh.spike.log:` envelope as scenario `m2.webclient.mount`.
 final class SessionRuntime {
-    static let entryModule = "scenario/m2-session.js"
-    static let scenario = "m2.webclient.mount"
-    static let watchdogSeconds = 120
     /// Host configuration: which Web Client plugin is ACTIVE (presentation/
     /// is pluggable; the host mounts exactly one). Overridable for E2E via
     /// launch argument `-dsh-web-client <id>`; the staged bundle carries the
-    /// plugin under webclient/.
+    /// plugin under its own directory. Selecting the mini client also flips
+    /// the carrier-side evidence to scenario `m3.ui-swap` (M3 UI-swap E2E).
     static var activeWebClient: String = {
         let args = ProcessInfo.processInfo.arguments
         if let at = args.firstIndex(of: "-dsh-web-client"), at + 1 < args.count {
@@ -24,6 +22,26 @@ final class SessionRuntime {
         }
         return "dsh-web-client"
     }()
+
+    /// Staged directory of the ACTIVE Web Client plugin (fail loud on an
+    /// unknown id — the config, not a default, decides).
+    static var activeWebClientDir: String {
+        switch activeWebClient {
+        case "dsh-web-client": return "webclient"
+        case "dsh-web-client-mini": return "webclient-mini"
+        default: fatalError("unknown Web Client plugin id: \(activeWebClient)")
+        }
+    }
+
+    /// Carrier-side evidence rides the scenario manifest that matches the
+    /// active client: the M3 swap run asserts `m3.ui-swap`, the default
+    /// client keeps asserting `m2.webclient.mount`.
+    static var scenario: String {
+        activeWebClient == "dsh-web-client-mini" ? "m3.ui-swap" : "m2.webclient.mount"
+    }
+
+    static let entryModule = "scenario/m2-session.js"
+    static let watchdogSeconds = 120
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.session")
     private let server = CarrierServer()
@@ -36,6 +54,10 @@ final class SessionRuntime {
     private var mountedLogged = false
     private var connectedLogged = false
     private var hostInfoDelivered = false
+    /// The active page acked the plugin's toolbar-slot registration — the
+    /// host.info readiness signal waits for it, so the deltas always stream
+    /// into a fully rendered client (deterministic carrier event order).
+    private var slotAcked = false
     /// Projection lines pushed so far (replay for late-connecting pages).
     private var projection: [String] = []
     private var firstDelta: Int?
@@ -56,6 +78,7 @@ final class SessionRuntime {
     // ---- session setup (runtime thread) ------------------------------------
 
     private func startSession() {
+        carrierEvent("client.selected", ["client": Self.activeWebClient])
         let root: URL
         do {
             root = try SpikeBundleStager.stage()
@@ -67,7 +90,8 @@ final class SessionRuntime {
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
         server.onStaticServed = { [weak self] path in self?.webClientServed(path) }
         do {
-            try server.start(webRoot: root.appendingPathComponent("webclient/web")) {
+            try server.start(webRoot: root.appendingPathComponent(
+                Self.activeWebClientDir + "/web")) {
                 [weak self] in
                 self?.openOrigin()
             }
@@ -148,8 +172,24 @@ final class SessionRuntime {
             guard let self, !self.finished else { return }
             if payload["type"] as? String == "hello" {
                 self.pageHello(protocol: payload["protocol"] as? String)
+            } else if payload["type"] as? String == "slot.ack" {
+                self.slotAcked(payload)
             }
         }
+    }
+
+    /// Runtime queue only: the page rendered the plugin's toolbar slot and
+    /// acked it — canonical rendered-state evidence, and the second half of
+    /// the host.info readiness gate.
+    private func slotAcked(_ payload: [String: Any]) {
+        guard !slotAcked else { return }
+        slotAcked = true
+        carrierEvent("slot.registered", [
+            "id": payload["id"] as? String ?? "",
+            "label": payload["label"] as? String ?? "",
+            "by": payload["by"] as? String ?? "",
+        ])
+        deliverHostInfo()
     }
 
     /// Runtime queue only.
@@ -176,8 +216,11 @@ final class SessionRuntime {
     }
 
     /// Runtime queue only (frozen bridge: gateway_event is RUNTIME THREAD ONLY).
+    /// Fires when the mounted page is connected AND has acked the plugin's
+    /// toolbar slot — the scenario's host.info arrives only then.
     private func deliverHostInfo() {
-        guard !hostInfoDelivered, host != nil, server.port != 0 else { return }
+        guard !hostInfoDelivered, host != nil, server.port != 0,
+              connectedLogged, slotAcked else { return }
         hostInfoDelivered = true
         emitJSON(GatewayCore.jsonLine(
             ["event": "host.info", "port": Int(server.port)]) ?? "{}")
