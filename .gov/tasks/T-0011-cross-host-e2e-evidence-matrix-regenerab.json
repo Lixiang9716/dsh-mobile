@@ -17,7 +17,12 @@
     "gov run green; commit; rebase on origin/main; re-run audit after rebase",
     "gov task void --reason BEFORE push (precedent #329/#339); push; gh pr create 'docs(e2e): cross-host evidence matrix + regenerable inventory checker'; checks green; do NOT merge"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0011"
+  "id": "T-0011",
+  "void": {
+    "ts": "2026-09-20T05:54:53+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete on this branch, verifiable in commits 1226a20/cac8508/29a9373: audit of all 14 committed evidence dirs + 28 verdicts (all pass=true) encoded into tools/e2e/matrix.mjs (8/8 self-test rejection assertions) and docs/e2e-matrix.md + .zh.md bilingual pair (pairing confirmed); four real acceptance-bar findings listed honestly, not fixed (owned/in-flight areas); checker deliberately not gated (plane seal). Receipt-closure structurally impossible per the #329/#339 precedent \u2014 the audit trail is the PR itself."
+  }
 }
