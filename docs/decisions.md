@@ -55,3 +55,13 @@ orphaned references; `gov recall` searches these entries.
 
 - **Decision**: inter-module communication is events or explicit async interfaces; LLM token streams are event pipelines; checkpoint = event queue drained
 - **Alternatives**: direct module calls + blocking whole-result APIs (couples components, kills substitutability); polling (wasted battery, races)
+
+## D9 — Port upstream DSH packages as verbatim plugins; never reimplement Harness behavior in-house
+
+- **Decision**: product-carrying upstream packages (agent-loop, session, session-projection, llm, settings, cordis runners) are vendored VERBATIM (pinned tarball + sha256 + PROVENANCE, the ensure.sh pattern) and driven through adapter plugins: system plugins implement the upstream service contracts (fs / subprocess Service / ui) over the 9 gateway primitives, a transport seam maps upstream fetch onto httpFetch, and the runtime boot constructs the upstream runner with those services. In-house code is glue only (shims, adapters, scenarios) — never product behavior.
+
+## Alternatives
+
+- In-house reimplementation of the Harness flow on QuickJS (what the first overnight iteration drifted into: a self-authored mini agent-loop + mock LLM + in-house session flow): rejected — forks product behavior from upstream, guarantees divergence at 0.1.x velocity, and contributes none of the mobile constraints back to the ecosystem; the host would own a second Brain.
+- Full nodejs-mobile to run upstream unshimmed: rejected — D1 already beat it (memory footprint an order of magnitude higher, JIT gray zones, no multi-runtime isolation); the shim surface is small and measured (ARCHITECTURE.md §3).
+- Pin-and-fork upstream (vendor once, edit locally): rejected — D6's lineage discipline; verbatim + shims keeps re-pins cheap and upstream improvements flowing.
