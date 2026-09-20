@@ -1,0 +1,22 @@
+{
+  "title": "D9 W-DROID4: the Android session /api claims go live (spine on-device, session.list + mux journal real)",
+  "created": "2026-09-20T19:26:29+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "spine closure staged into Android assets (14 vendored dsh packages + zod closure + boot/llm-transport/settings-memory/shims), byte-identical to the runtime pins",
+    "b-android-session-live scenario composes the spine + official boot wire on-device (platform-neutral boot.js, entryCount logcat cap)",
+    "Kotlin drive claims session.list + session/journal over the bus seam (api.claim/respond, mux.claim/item/error/end) with the scripted /mock-llm/chat/completions boundary",
+    "b-android.session.live green one-to-one (node tools/e2e/check.mjs) + regressions green (m1, bridge-smoke, m2.session, m4.host-binding, audit, b-android.official-web.mount)",
+    "REAL screenshots + committed evidence under hosts/android/artifacts/android-session-live/",
+    "agent note (D9) + task card exited + gov run green + PR open"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0017"
+}
