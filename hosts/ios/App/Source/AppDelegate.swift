@@ -21,6 +21,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The Phase-B official-web mount drive (`-dsh-mode official-web`).
     private var official: OfficialWebRuntime?
     private var officialVerdict = "PENDING"
+    /// The W-SESS session-live drive (`-dsh-mode session-live`).
+    private var sessionLive: SessionLiveRuntime?
+    private var sessionLiveVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -69,6 +72,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             fflush(stdout)
             webView.navigationDelegate = self
             runOfficialWeb()
+            return true
+        }
+        if launchMode == "session-live" {
+            console.text = "DSH session live — b3.session.live, the upstream spine on-device answering the official app…"
+            print("spike: app launched in session-live mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runSessionLive()
             return true
         }
         print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
@@ -123,6 +134,25 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.show(outcome, phase: "b1.official-web.mount") { self.officialVerdict = $0 }
             self.official = nil
             print("spike: sequence official-web=\(self.officialVerdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The W-SESS session-live mount: the spine runs on-device, the claimed
+    /// session surface answers the official app, the journal streams real
+    /// records.
+    private func runSessionLive() {
+        let live = SessionLiveRuntime()
+        self.sessionLive = live
+        live.attach(webView: webView!)
+        live.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        live.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b3.session.live") { self.sessionLiveVerdict = $0 }
+            self.sessionLive = nil
+            print("spike: sequence session-live=\(self.sessionLiveVerdict)")
             fflush(stdout)
         }
     }
@@ -183,5 +213,6 @@ extension AppDelegate: WKNavigationDelegate {
     /// reads the rendered state.
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         official?.pageDidFinish()
+        sessionLive?.pageDidFinish()
     }
 }

@@ -101,4 +101,62 @@ extension CarrierServer {
             if final { conn.cancel() }
         })
     }
+
+    // ---- scripted llm endpoint (b3.session.live; W-SESS) ---------------------
+
+    /// POST /mock-llm/chat/completions — the SCRIPTED model boundary of the
+    /// on-device session-live drive: a real loopback HTTP + SSE endpoint on
+    /// the carrier whose script mirrors the vendored dsh-llm-mock-server's
+    /// success stream byte-for-byte (successText 'Hello from upstream',
+    /// chunkSize 5, terminal chunk with finish_reason + usage, [DONE]) and
+    /// its fixed bearer check (401 JSON on a bad key). Real transport,
+    /// scripted model — logged as such by the scenario's llm/runtime record.
+    /// The drive chooses the success script unconditionally; script
+    /// sequences (auth_error et al.) stay the CLI mock's territory.
+    static let mockLlmPath = "/mock-llm/chat/completions"
+    static let mockLlmKey = "mock-key-0001"
+
+    func registerScriptedLlm() throws {
+        try register(kind: .exact, path: Self.mockLlmPath) { [weak self] request, conn in
+            self?.serveScriptedLlm(request, conn: conn)
+        }
+    }
+
+    private func serveScriptedLlm(_ request: CarrierRequest, conn: NWConnection) {
+        guard request.method == "POST" else {
+            return respondError(405, "method not allowed", conn: conn)
+        }
+        guard request.header("authorization") == "Bearer \(Self.mockLlmKey)" else {
+            // The vendored mock's fixed 401 leg: JSON error body, provider shape.
+            let body: [String: Any] = ["error": [
+                "message": "mock authentication failed",
+                "type": "mock_error",
+                "code": "invalid_api_key",
+            ]]
+            let data = (try? JSONSerialization.data(withJSONObject: body)) ?? Data()
+            respond(status: 401, body: data, contentType: "application/json", conn: conn)
+            return
+        }
+        let successText = "Hello from upstream"
+        var body = Data()
+        func sse(_ payload: @autoclosure () -> Any) {
+            guard let data = try? JSONSerialization.data(withJSONObject: payload()),
+                  let text = String(data: data, encoding: .utf8) else { return }
+            body.append(Data("data: \(text)\n\n".utf8))
+        }
+        for chunk in stride(from: 0, to: successText.count, by: 5).map({
+            String(Array(successText)[$0..<min($0 + 5, successText.count)])
+        }) {
+            sse(["choices": [["index": 0, "delta": ["content": chunk],
+                "finish_reason": NSNull()]]])
+        }
+        sse(["choices": [["index": 0, "delta": ["content": ""],
+            "finish_reason": "stop"]],
+            "usage": ["prompt_tokens": 3, "completion_tokens": successText.count]])
+        body.append(Data("data: [DONE]\n\n".utf8))
+        // One Content-Length response: the transport consumes the SSE bytes
+        // from the plain body (no chunked framing needed on loopback).
+        respond(status: 200, body: body,
+                contentType: "text/event-stream; charset=utf-8", conn: conn)
+    }
 }
