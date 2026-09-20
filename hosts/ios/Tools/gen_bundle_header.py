@@ -41,7 +41,7 @@ RESOURCES = [
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
-     SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.1" / "lib" / "index.js"),
+     SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.2" / "lib" / "index.js"),
     # system implementation plugins (repo-root tree, staged bundle-relative
     # under system-plugins/ — the scenario's canonical import specifier)
     ("plugin_fs_manifest", REPO / "system-plugins" / "dsh-fs" / "manifest.json"),

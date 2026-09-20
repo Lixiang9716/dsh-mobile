@@ -2,50 +2,120 @@ import CryptoKit
 import Foundation
 import Network
 
-/// One loopback HTTP + WebSocket endpoint (RFC6455, text frames only).
-/// Serves the staged `web/` directory as static files and upgrades
-/// `GET /ws` to a raw WS connection. Transport only: the wire is reduced
-/// to `onWSMessage(String)` outbound via `send(_:)` — this class never
-/// touches JS or the runtime. All state is owned by its internal serial
-/// queue; `send` is safe from any queue.
+/// One loopback HTTP + WebSocket endpoint implementing the `ctx.webServer`
+/// contract subset (docs/webserver-contract.md §1, §3): a route table with
+/// exact + prefix named routes, one fallback seat, exact-path-only upgrade
+/// dispatch with multiple concurrent WS seats, request-body reading, and the
+/// legacy M1–M3 static/`/ws` wiring preserved on top. Transport only: the
+/// wire is reduced to callbacks and `send`; this class never touches JS or
+/// the runtime. All state is owned by its internal serial queue; `send` and
+/// the registration APIs are safe from any queue (spec §1.6: a malformed
+/// request can never kill the process).
 final class CarrierServer {
     static let wsPath = "/ws"
+    static let cookieName = "dsh.session"
+    /// Body cap for page RPC (§3.5); upstream allows 300 MiB for uploads,
+    /// which Phase B does not serve.
+    static let maxBodyBytes = 256 * 1024
+
+    /// Legacy M1/M2 seam: text frames from the `/ws` page, in arrival order.
     var onWSMessage: ((String) -> Void)?
+    /// Path-aware seam: (text, seat path) for every WS text frame.
+    var onWSFrame: ((String, String) -> Void)?
     /// Fired on the server queue whenever a static file is served with 200 —
-    /// the carrier-side "the Web Client mounted" signal (optional: sessions
-    /// that don't care leave it nil; the m1 drive is unaffected).
+    /// the carrier-side "the Web Client mounted" signal (legacy drives only).
     var onStaticServed: ((String) -> Void)?
-    /// Fired on the server queue when a DYNAMIC route (registered at runtime
-    /// by the session, e.g. the self-hosted plugin package) is served — the
-    /// carrier-side evidence that the bytes actually left over TCP.
+    /// Fired on the server queue when a runtime-registered route is served —
+    /// the carrier-side evidence that the bytes actually left over TCP.
     var onRouteServed: ((String, Int) -> Void)?
     private(set) var port: UInt16 = 0
 
     private let queue = DispatchQueue(label: "org.dsh.carrier.server")
     private var listener: NWListener?
-    private var webRoot = URL(fileURLWithPath: "/nonexistent")
-    private var servedPaths: [String] = []
-    /// Runtime-registered routes: path → (bytes, content type). The M3
-    /// fetch-install scenario self-hosts the plugin package here — the
-    /// carrier serves whatever the session hands it, transport only.
-    private var routes: [String: (data: Data, contentType: String)] = [:]
+    /// Named routes: exact table, prefix table, upgrade table, fallback slot
+    /// (§1.2–§1.4). Duplicate `(kind, path)` / upgrade path is a fatal config
+    /// error — registration throws, the drive fails loud (§3.2).
+    private var exactRoutes: [String: CarrierHTTPHandler] = [:]
+    private var prefixRoutes: [String: CarrierHTTPHandler] = [:]
+    private var upgradeRoutes: [String: CarrierUpgradeHandler] = [:]
+    private var fallbackHandler: CarrierHTTPHandler?
+    /// Per-connection reassembly buffers for HTTP requests (heads + bodies).
     private var httpRx: [ObjectIdentifier: Data] = [:]
-    private var wsConnection: NWConnection?
-    private var wsRx = Data()
-    private var wsOpen = false
+    /// Open WebSocket seats keyed by connection; multiple seats compose (§3.3).
+    private var wsSeats: [ObjectIdentifier: WSSeat] = [:]
+    private var servedPaths: [String] = []
 
-    /// Registers (or replaces) one dynamic route. Safe from any queue —
-    /// the write hops to the internal serial queue.
-    func registerRoute(_ path: String, data: Data, contentType: String) {
-        queue.async { [weak self] in
-            self?.routes[path] = (data, contentType)
+    private struct WSSeat {
+        let conn: NWConnection
+        let path: String
+        var rx: Data
+        var open: Bool
+    }
+
+    // ---- registration ------------------------------------------------------
+
+    /// Registers one named HTTP route (§1.2). Throws on a duplicate
+    /// `(kind, path)` — route patterns are a composition-level contract.
+    func register(kind: CarrierRouteKind, path: String, handler: @escaping CarrierHTTPHandler) throws {
+        try queue.sync {
+            switch kind {
+            case .exact:
+                guard exactRoutes[path] == nil else { throw CarrierServerError.duplicateRoute(kind, path) }
+                exactRoutes[path] = handler
+            case .prefix:
+                guard prefixRoutes[path] == nil else { throw CarrierServerError.duplicateRoute(kind, path) }
+                prefixRoutes[path] = handler
+            }
         }
     }
 
+    /// Registers the fallback seat (§1.4). One owner only: a second
+    /// registration throws — two fallbacks cannot compose.
+    func registerFallback(handler: @escaping CarrierHTTPHandler) throws {
+        try queue.sync {
+            guard fallbackHandler == nil else { throw CarrierServerError.duplicateFallback }
+            fallbackHandler = handler
+        }
+    }
+
+    /// Registers one exact-path upgrade route (§1.3). Duplicate paths throw:
+    /// one socket has one protocol owner.
+    func registerUpgrade(path: String, handler: @escaping CarrierUpgradeHandler) throws {
+        try queue.sync {
+            guard upgradeRoutes[path] == nil else { throw CarrierServerError.duplicateRoute(.exact, path) }
+            upgradeRoutes[path] = handler
+        }
+    }
+
+    /// Legacy M1/M3 seam: registers (or replaces) one in-memory exact route.
+    /// Safe from any queue — the write hops to the internal serial queue.
+    func registerRoute(_ path: String, data: Data, contentType: String) {
+        queue.async { [weak self] in
+            guard let self else { return }
+            self.exactRoutes[path] = { [weak self] request, conn in
+                self?.serveRegisteredRoute(path, request: request, conn: conn)
+            }
+            self.routesContent[path] = (data, contentType)
+        }
+    }
+
+    /// Content backing the legacy in-memory routes (queue-confined; the
+    /// request always follows the registration on this serial queue).
+    private var routesContent: [String: (data: Data, contentType: String)] = [:]
+
+    private func serveRegisteredRoute(_ path: String, request: CarrierRequest, conn: NWConnection) {
+        guard let route = routesContent[path] else { return }
+        servedPaths.append(path)
+        onRouteServed?(path, route.data.count)
+        respond(status: 200, body: route.data, contentType: route.contentType, conn: conn)
+    }
+
+    // ---- lifecycle ---------------------------------------------------------
+
     /// Starts listening on 127.0.0.1 with an ephemeral port. `onReady` fires
-    /// on the internal queue once the port is known.
-    func start(webRoot: URL, onReady: @escaping () -> Void) throws {
-        self.webRoot = webRoot
+    /// on the internal queue once the port is known. `installLegacyRoutes()`
+    /// (CarrierRoutes.swift) is what wires the M1–M3 behavior on top.
+    func start(onReady: @escaping () -> Void) throws {
         let params = NWParameters.tcp
         params.requiredLocalEndpoint = NWEndpoint.hostPort(
             host: NWEndpoint.Host("127.0.0.1"), port: NWEndpoint.Port.any)
@@ -65,26 +135,46 @@ final class CarrierServer {
         listener.start(queue: queue)
     }
 
+    /// Stops the listener and destroys every upgraded socket explicitly —
+    /// upgraded seats are not covered by closing the listener (§3.3).
     func stop() {
         queue.async { [weak self] in
-            self?.listener?.cancel()
-            self?.wsConnection?.cancel()
-            self?.wsOpen = false
+            guard let self else { return }
+            self.listener?.cancel()
+            for seat in self.wsSeats.values { seat.conn.cancel() }
+            self.wsSeats.removeAll()
         }
     }
 
-    /// Sends one WS text frame to the connected page (no-op while closed).
-    func send(_ text: String) {
+    /// Sends one WS text frame to every seat on `path` (no-op while closed).
+    func send(_ text: String, to path: String) {
         queue.async { [weak self] in
-            guard let self, self.wsOpen else { return }
-            self.sendFrame(opcode: 1, payload: Data(text.utf8))
+            guard let self else { return }
+            for seat in self.wsSeats.values where seat.path == path && seat.open {
+                self.sendFrame(seat.conn, opcode: 1, payload: Data(text.utf8))
+            }
         }
+    }
+
+    /// Legacy M1/M2 seam: send to the `/ws` page.
+    func send(_ text: String) {
+        send(text, to: Self.wsPath)
     }
 
     /// Paths served with 200 so far, in serving order (guard: queue).
     func servedList() -> [String] { queue.sync { servedPaths } }
 
-    // ---- connection plumbing --------------------------------------------
+    /// Records one served path in serving order (route and fallback handlers
+    /// run on the server queue).
+    func recordServed(_ path: String) { servedPaths.append(path) }
+
+    /// Schedules a block on the internal serial queue after `milliseconds`
+    /// (the chunked-stream pacing leg).
+    func schedule(afterMilliseconds ms: Int, _ block: @escaping () -> Void) {
+        queue.asyncAfter(deadline: .now() + .milliseconds(ms), execute: block)
+    }
+
+    // ---- connection plumbing ----------------------------------------------
 
     private func accept(_ conn: NWConnection) {
         conn.stateUpdateHandler = { state in
@@ -99,9 +189,8 @@ final class CarrierServer {
             [weak self] data, _, isComplete, error in
             guard let self else { return }
             if let data, !data.isEmpty {
-                if conn === self.wsConnection {
-                    self.wsRx.append(data)
-                    self.drainWSFrames()
+                if self.wsSeats[ObjectIdentifier(conn)] != nil {
+                    self.drainWSFrames(conn, data)
                 } else {
                     self.consumeHTTP(data, conn: conn)
                 }
@@ -110,175 +199,149 @@ final class CarrierServer {
         }
     }
 
+    /// Reassembles one HTTP request: head first, then a Content-Length body
+    /// up to `maxBodyBytes` (§3.5). Dispatches exactly once per request.
     private func consumeHTTP(_ data: Data, conn: NWConnection) {
         let id = ObjectIdentifier(conn)
         httpRx[id, default: Data()].append(data)
-        let text = httpRx[id].flatMap { String(data: $0, encoding: .utf8) } ?? ""
+        let text = String(data: httpRx[id] ?? Data(), encoding: .utf8) ?? ""
         guard let headerEnd = text.range(of: "\r\n\r\n") else { return }
         let head = String(text[..<headerEnd.lowerBound])
+        let bodyText = String(text[headerEnd.upperBound...])
+        guard let request = Self.parseRequest(head, buffered: text, from: headerEnd.upperBound)
+        else {
+            httpRx[id] = nil
+            return respondError(400, "bad request", conn: conn)
+        }
+        if bodyText.utf8.count < request.declaredLength {
+            return // body still arriving; keep buffering
+        }
         httpRx[id] = nil
-        route(head, conn: conn)
+        if request.header("Sec-WebSocket-Key") != nil {
+            return runUpgrade(request, conn: conn)
+        }
+        if request.declaredLength > Self.maxBodyBytes {
+            return respondError(413, "body too large", conn: conn)
+        }
+        dispatch(request, conn: conn)
     }
 
-    /// Plain-text non-200 response (the static path's only error shape).
-    private func respondError(_ status: Int, _ message: String, conn: NWConnection) {
-        respond(
-            status: status,
-            body: Data(message.utf8),
-            contentType: "text/plain",
-            conn: conn
+    // ---- dispatch (§3.2: exact → longest prefix → fallback) -----------------
+
+    private func dispatch(_ request: CarrierRequest, conn: NWConnection) {
+        guard let path = request.path else {
+            return respondError(400, "bad request path", conn: conn)
+        }
+        if let handler = exactRoutes[path] ?? longestPrefix(path) {
+            return handler(request, conn)
+        }
+        guard let fallback = fallbackHandler else {
+            return respondError(404, "not found", conn: conn)
+        }
+        fallback(request, conn)
+    }
+
+    /// Longest-prefix match: a prefix `p` matches `p` and `p/<anything>`.
+    private func longestPrefix(_ path: String) -> CarrierHTTPHandler? {
+        let matches = prefixRoutes.keys.filter { key in
+            path == key || path.hasPrefix(key + "/")
+        }
+        guard let best = matches.max(by: { $0.count < $1.count }) else { return nil }
+        return prefixRoutes[best]
+    }
+
+    // ---- responses -----------------------------------------------------------
+
+    /// Sends one complete response and closes the connection (handlers own
+    /// the lifecycle; `Connection: close` stays the carrier posture). With
+    /// `bodyless` (HEAD) the headers keep the real length but no body follows.
+    func respond(
+        status: Int, body: Data, contentType: String, conn: NWConnection,
+        headers: [String: String] = [:], bodyless: Bool = false
+    ) {
+        Self.respond(
+            status: status, body: body, contentType: contentType, conn: conn,
+            headers: headers, bodyless: bodyless
         )
     }
 
-    private func route(_ head: String, conn: NWConnection) {
-        guard let requestLine = head.split(separator: "\r\n").first else {
-            return respondError(400, "bad request", conn: conn)
-        }
-        let parts = requestLine.split(separator: " ")
-        guard parts.count >= 2, parts[0] == "GET" else {
-            return respondError(405, "GET only", conn: conn)
-        }
-        let path = String(parts[1]).split(separator: "?").first.map(String.init) ?? ""
-        if path == Self.wsPath {
-            if let key = Self.headerValue(head, "Sec-WebSocket-Key") {
-                upgrade(key: key, conn: conn)
-            } else {
-                respondError(400, "missing WS key", conn: conn)
-            }
-            return
-        }
-        if serveGatewayE2E(path: path, conn: conn) { return }
-        if serveRoute(path: path, conn: conn) { return }
-        serveStatic(path: path, conn: conn)
-    }
-
-    /// Serves a runtime-registered route with 200 + its recorded byte count.
-    /// Runs on the internal queue (routes are queue-confined). The request
-    /// ALWAYS follows the registration on this serial queue, so a fetch can
-    /// never outrun the scenario's http.serve.
-    private func serveRoute(path: String, conn: NWConnection) -> Bool {
-        guard let route = routes[path] else { return false }
-        servedPaths.append(path)
-        onRouteServed?(path, route.data.count)
-        respond(status: 200, body: route.data, contentType: route.contentType, conn: conn)
-        return true
-    }
-
-    // ---- m2 gateway-e2e endpoints (chunked streams) -------------------------
-
-    /// GET /gateway-e2e/bytes → 64 bytes as exactly 2 chunks of 32 (small
-    /// delay between writes so the JS side sees 2 body events).
-    /// GET /gateway-e2e/slow → 6 chunks × 16 bytes, ~300ms apart (abort test).
-    /// Added after the m1 carrier phase completes — m1 manifests are frozen
-    /// and their assertions never see these paths.
-    private func serveGatewayE2E(path: String, conn: NWConnection) -> Bool {
-        switch path {
-        case "/gateway-e2e/bytes":
-            streamChunks(chunkBytes: 32, chunkCount: 2, intervalMs: 40, conn: conn)
-        case "/gateway-e2e/slow":
-            streamChunks(chunkBytes: 16, chunkCount: 6, intervalMs: 300, conn: conn)
-        default:
-            return false
-        }
-        servedPaths.append(path)
-        return true
-    }
-
-    /// HTTP/1.1 chunked stream of deterministic ASCII ("0123456789abcdef"
-    /// repeated); the terminal zero chunk closes the connection.
-    private func streamChunks(
-        chunkBytes: Int, chunkCount: Int, intervalMs: Int, conn: NWConnection
+    /// The response writer, shared by the route seats (static: it touches
+    /// only the connection).
+    static func respond(
+        status: Int, body: Data, contentType: String, conn: NWConnection,
+        headers: [String: String] = [:], bodyless: Bool = false
     ) {
-        let head = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n"
-            + "Transfer-Encoding: chunked\r\nConnection: close\r\n\r\n"
-        conn.send(content: Data(head.utf8), completion: .contentProcessed { _ in })
-        let unit = Data("0123456789abcdef".utf8)
-        var chunk = Data()
-        while chunk.count < chunkBytes { chunk.append(unit) }
-        chunk = chunk.prefix(chunkBytes)
-        for index in 0..<chunkCount {
-            queue.asyncAfter(deadline: .now() + .milliseconds(intervalMs * (index + 1))) {
-                [weak self] in
-                self?.sendChunk(chunk, final: index == chunkCount - 1, conn: conn)
-            }
-        }
-    }
-
-    private func sendChunk(_ chunk: Data, final: Bool, conn: NWConnection) {
-        var frame = Data(String(format: "%zx\r\n", chunk.count).utf8)
-        frame.append(chunk)
-        frame.append(Data("\r\n".utf8))
-        if final { frame.append(Data("0\r\n\r\n".utf8)) }
-        conn.send(content: frame, completion: .contentProcessed { _ in
-            if final { conn.cancel() }
-        })
-    }
-
-    // ---- static files -----------------------------------------------------
-
-    private func serveStatic(path: String, conn: NWConnection) {
-        guard !path.contains(".."), var rel = URLComponents(string: path)?.path else {
-            return respondError(404, "not found", conn: conn)
-        }
-        if rel == "/" { rel = "/index.html" }
-        let file = webRoot.appendingPathComponent(String(rel.dropFirst()))
-        guard let data = try? Data(contentsOf: file) else {
-            return respondError(404, "not found", conn: conn)
-        }
-        let isHTML = rel.hasSuffix(".html")
-        guard isHTML || rel.hasSuffix(".js") else {
-            return respondError(404, "not found", conn: conn)
-        }
-        // record the REQUEST path ("/" for the document), which is what the
-        // scenario's static-serving evidence asserts on
-        servedPaths.append(path)
-        onStaticServed?(path)
-        respond(status: 200, body: data,
-                contentType: isHTML ? "text/html" : "text/javascript", conn: conn)
-    }
-
-    private func respond(status: Int, body: Data, contentType: String, conn: NWConnection) {
-        let head = "HTTP/1.1 \(status) \(Self.reason(status))\r\n"
-            + "Content-Type: \(contentType)\r\nContent-Length: \(body.count)\r\n"
-            + "Connection: close\r\n\r\n"
+        var head = "HTTP/1.1 \(status) \(Self.reason(status))\r\n"
+        head += "Content-Type: \(contentType)\r\nContent-Length: \(body.count)\r\n"
+        for (name, value) in headers { head += "\(name): \(value)\r\n" }
+        head += "Connection: close\r\n\r\n"
         var out = Data(head.utf8)
-        out.append(body)
+        if !bodyless { out.append(body) }
         conn.send(content: out, completion: .contentProcessed { _ in conn.cancel() })
     }
 
-    // ---- websocket --------------------------------------------------------
+    /// Plain-text non-200 response (the carrier's only error shape).
+    func respondError(_ status: Int, _ message: String, conn: NWConnection) {
+        respond(status: status, body: Data(message.utf8), contentType: "text/plain", conn: conn)
+    }
 
-    private func upgrade(key: String, conn: NWConnection) {
+    // ---- websocket upgrades (§1.3, §3.3) --------------------------------------
+
+    /// Executes an upgrade handler's plan for one incoming upgrade request.
+    /// Upgrades match by exact pathname only; an unmatched target destroys
+    /// the socket — never a fall-through to static (§1.3, §3.3).
+    private func runUpgrade(_ request: CarrierRequest, conn: NWConnection) {
+        guard let path = request.path, let handler = upgradeRoutes[path] else {
+            return conn.cancel()
+        }
+        guard let key = request.header("Sec-WebSocket-Key") else {
+            return respondError(400, "missing WS key", conn: conn)
+        }
+        switch handler(request, key) {
+        case .accept:
+            acceptUpgrade(key: key, path: path, conn: conn)
+        case let .reject(status, message):
+            respondError(status, message, conn: conn)
+        case .destroy:
+            conn.cancel()
+        }
+    }
+
+    private func acceptUpgrade(key: String, path: String, conn: NWConnection) {
         let head = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n"
             + "Connection: Upgrade\r\n"
             + "Sec-WebSocket-Accept: \(Self.wsAccept(key: key))\r\n\r\n"
-        wsConnection?.cancel()
-        wsConnection = conn
-        wsRx = Data()
-        wsOpen = true
+        wsSeats[ObjectIdentifier(conn)] = WSSeat(conn: conn, path: path, rx: Data(), open: true)
         conn.send(content: Data(head.utf8), completion: .contentProcessed { _ in })
     }
 
-    private func drainWSFrames() {
-        while let (opcode, payload, consumed) = Self.parseFrame(wsRx) {
-            wsRx.removeFirst(consumed)
+    /// RFC6455 frames for one seat: text → callbacks (path-aware, plus the
+    /// legacy `/ws` seam), ping → pong, close → echo + seat teardown.
+    private func drainWSFrames(_ conn: NWConnection, _ data: Data) {
+        let id = ObjectIdentifier(conn)
+        wsSeats[id]?.rx.append(data)
+        while let seat = wsSeats[id],
+              let (opcode, payload, consumed) = Self.parseFrame(seat.rx) {
+            wsSeats[id]?.rx.removeFirst(consumed)
             switch opcode {
             case 1:
-                if let text = String(data: payload, encoding: .utf8) { onWSMessage?(text) }
+                if let text = String(data: payload, encoding: .utf8) {
+                    onWSFrame?(text, seat.path)
+                    if seat.path == Self.wsPath { onWSMessage?(text) }
+                }
             case 8:
-                wsOpen = false
-                sendFrame(opcode: 8, payload: Data())
-                wsConnection?.cancel()
+                sendFrame(conn, opcode: 8, payload: Data())
+                wsSeats[id] = nil
+                conn.cancel()
             case 9:
-                sendFrame(opcode: 10, payload: payload) // ping → pong
+                sendFrame(conn, opcode: 10, payload: payload) // ping → pong
             default:
                 break
             }
         }
     }
 
-    private func sendFrame(opcode: Int, payload: Data) {
-        guard let conn = wsConnection else { return }
+    private func sendFrame(_ conn: NWConnection, opcode: Int, payload: Data) {
         var out = Data([UInt8(0x80 | opcode)])
         let n = payload.count
         if n < 126 {
@@ -295,7 +358,7 @@ final class CarrierServer {
         conn.send(content: out, completion: .contentProcessed { _ in })
     }
 
-    // ---- wire helpers -----------------------------------------------------
+    // ---- wire helpers ---------------------------------------------------------
 
     /// RFC6455 server-side frame parse. Returns (opcode, payload, bytes
     /// consumed) or nil when the buffer holds an incomplete frame.
@@ -334,7 +397,44 @@ final class CarrierServer {
         return Data(Insecure.SHA1.hash(data: Data(magic.utf8))).base64EncodedString()
     }
 
-    private static func headerValue(_ head: String, _ name: String) -> String? {
+    /// Parses the request head + any already-buffered body prefix into a
+    /// `CarrierRequest`. Returns nil on a malformed request line.
+    static func parseRequest(
+        _ head: String, buffered: String, from bodyStart: String.Index
+    ) -> CarrierRequest? {
+        guard let requestLine = head.split(separator: "\r\n").first else { return nil }
+        let parts = requestLine.split(separator: " ")
+        guard parts.count >= 2 else { return nil }
+        let target = String(parts[1])
+        let split = target.split(separator: "?", maxSplits: 1).map(String.init)
+        var headers: [String: String] = [:]
+        for line in head.split(separator: "\r\n").dropFirst() {
+            let pair = line.split(separator: ":", maxSplits: 1)
+            if pair.count == 2 {
+                headers[pair[0].trimmingCharacters(in: .whitespaces).lowercased()] =
+                    pair[1].trimmingCharacters(in: .whitespaces)
+            }
+        }
+        let declared = Int(headers["content-length"] ?? "0") ?? 0
+        let bufferedBody = String(buffered[bodyStart...])
+        return CarrierRequest(
+            method: String(parts[0]),
+            path: decodedPath(split[0]),
+            rawPath: split[0],
+            query: split.count > 1 ? split[1] : nil,
+            headers: headers,
+            body: Data(bufferedBody.prefix(declared).utf8),
+            declaredLength: declared
+        )
+    }
+
+    /// One percent-decode of the pathname; nil on bad escapes (§3.2: 400, not
+    /// a crash). Query handling stays with the raw target pieces.
+    static func decodedPath(_ raw: String) -> String? {
+        raw.removingPercentEncoding
+    }
+
+    static func headerValue(_ head: String, _ name: String) -> String? {
         for line in head.split(separator: "\r\n").dropFirst() {
             let pair = line.split(separator: ":", maxSplits: 1)
             if pair.count == 2, pair[0].trimmingCharacters(in: .whitespaces)
@@ -348,10 +448,27 @@ final class CarrierServer {
     private static func reason(_ status: Int) -> String {
         switch status {
         case 200: return "OK"
+        case 204: return "No Content"
+        case 303: return "See Other"
         case 400: return "Bad Request"
+        case 401: return "Unauthorized"
+        case 403: return "Forbidden"
         case 404: return "Not Found"
         case 405: return "Method Not Allowed"
+        case 413: return "Payload Too Large"
         default: return "Error"
         }
     }
 }
+
+/// Registration-time config failures (§1.2–§1.4: duplicates are fatal config
+/// errors — the drive surfaces them as loud outcomes, not precedence races).
+enum CarrierServerError: Error {
+    case duplicateRoute(CarrierRouteKind, String)
+    case duplicateFallback
+}
+
+/// Handler typealiases: a handler owns the FULL response lifecycle.
+typealias CarrierHTTPHandler = (CarrierRequest, NWConnection) -> Void
+/// Upgrade handlers decide per §1.3; the server executes the plan.
+typealias CarrierUpgradeHandler = (CarrierRequest, String) -> CarrierUpgradePlan

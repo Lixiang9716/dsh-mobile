@@ -42,7 +42,8 @@ final class CarrierRuntime {
         let root: URL
         do {
             root = try SpikeBundleStager.stage()
-            try server.start(webRoot: root.appendingPathComponent("web")) { [weak self] in
+            try server.installLegacyRoutes(webRoot: root.appendingPathComponent("web"))
+            try server.start { [weak self] in
                 // fires on the server queue; JS only ever runs on our thread
                 self?.runtimeThread.async { self?.deliverHostHello() }
             }

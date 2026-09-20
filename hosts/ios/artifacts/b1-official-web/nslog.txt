@@ -1,0 +1,16 @@
+2026-09-20 15:53:54.395 DSHSpike[36704:7357336] spike: official FAIL official-web: entry chunk / combo preload never arrived
+2026-09-20 15:56:02.555 DSHSpike[39525:7366281] spike: official FAIL official-web: entry chunk / combo preload never arrived
+2026-09-20 15:59:33.497 DSHSpike[41961:7376103] spike: official FAIL probe setup: Error Domain=WKErrorDomain Code=5 "JavaScript execution returned a result of an unsupported type" UserInfo={NSLocalizedDescription=JavaScript execution returned a result of an unsupported type}
+2026-09-20 16:00:22.867 DSHSpike[42471:7378278] spike: official FAIL probe run: Error Domain=WKErrorDomain Code=5 "JavaScript execution returned a result of an unsupported type" UserInfo={NSLocalizedDescription=JavaScript execution returned a result of an unsupported type}
+2026-09-20 16:01:52.284 DSHSpike[43344:7382431] spike: official FAIL probe run: Error Domain=WKErrorDomain Code=5 "JavaScript execution returned a result of an unsupported type" UserInfo={NSLocalizedDescription=JavaScript execution returned a result of an unsupported type}
+2026-09-20 16:03:09.101 DSHSpike[44116:7385664] spike: official FAIL probe run: Error Domain=WKErrorDomain Code=5 "JavaScript execution returned a result of an unsupported type" UserInfo={NSLocalizedDescription=JavaScript execution returned a result of an unsupported type}
+2026-09-20 16:04:05.921 DSHSpike[44701:7388206] spike: official FAIL probe run: Error Domain=WKErrorDomain Code=5 "JavaScript execution returned a result of an unsupported type" UserInfo={NSLocalizedDescription=JavaScript execution returned a result of an unsupported type}
+2026-09-20 16:05:05.664 DSHSpike[45259:7390450] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:07:14.238 DSHSpike[46655:7396153] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:07:49.848 DSHSpike[47068:7397687] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:09:06.807 DSHSpike[47900:7401005] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:10:28.589 DSHSpike[50201:7408725] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:11:20.096 DSHSpike[50740:7410950] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:12:37.557 DSHSpike[51548:7414251] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:14:09.723 DSHSpike[52520:7418491] spike: official FAIL probe combo outcome: http-404
+2026-09-20 16:16:41.426 DSHSpike[53124:7424532] spike: official FAIL official-web watchdog: drive did not complete in 90s
