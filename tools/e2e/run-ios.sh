@@ -62,6 +62,12 @@ while [ $# -gt 0 ]; do
   esac
 done
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
+# Rule 5 (fail loud): the checkers ARE the verdict. nvm-managed node is
+# absent in non-interactive shells — observed live 2026-09-21: `run_check
+# ... || true` masked "node: command not found" and the summary PASSed by
+# grepping the PREVIOUS run's still-on-disk verdict files. Abort BEFORE the
+# drive, and run_check removes its target so no stale verdict survives.
+command -v node >/dev/null 2>&1 || die "node not on PATH — checkers cannot run (rule 5)"
 export IDB_UDID="$UDID"
 mkdir -p "$ART" "$ART/screens"
 
@@ -407,6 +413,7 @@ grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0; FAILED=""
 run_check() { # MANIFEST OUT
+  rm -f "$2"   # a failed/absent checker must never leave a stale verdict (rule 5)
   node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$2" || true
 }
 run_check tools/e2e/scenarios/m1-spike-boot.json       "$ART/verdict-m1-spike-boot.json"
