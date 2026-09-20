@@ -76,6 +76,7 @@ const project = (event) => {
 };
 
 const streamDeltas = async (tokens) => {
+  log.debug('stream deltas', { count: tokens.length });
   project({ kind: 'session', id: 's-m5-0001', scope: 'app' });
   project({ kind: 'agent', model: 'mock-mini', tools: 1 });
   let text = '';

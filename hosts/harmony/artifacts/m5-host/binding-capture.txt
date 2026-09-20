@@ -39,6 +39,7 @@ dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
 dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"foreground"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
 dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
 dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
 dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
