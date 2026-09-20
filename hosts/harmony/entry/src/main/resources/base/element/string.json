@@ -1,7 +1,20 @@
 {
   "string": [
-    { "name": "module_desc", "value": "M1 spike: quickjs-ng host via NAPI" },
-    { "name": "EntryAbility_desc", "value": "DSH M1 spike entry ability" },
-    { "name": "EntryAbility_label", "value": "DSH M1 Spike" }
+    {
+      "name": "module_desc",
+      "value": "M1 spike: quickjs-ng host via NAPI"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "DSH M1 spike entry ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "DSH M1 Spike"
+    },
+    {
+      "name": "internet_reason",
+      "value": "Loopback carrier serves the Web Client and pumps the session channel."
+    }
   ]
 }

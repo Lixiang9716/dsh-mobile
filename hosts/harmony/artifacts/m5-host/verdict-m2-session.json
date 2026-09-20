@@ -1,8 +1,8 @@
 {
   "scenario": "m2.session",
   "pass": true,
-  "expected": 22,
-  "logged": 22,
+  "expected": 23,
+  "logged": 23,
   "failures": [],
   "parseErrors": []
 }

@@ -1,0 +1,26 @@
+{
+  "scenario": "m5.host-binding",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "carrier.listening", "match": { "transport": "tcp", "loopback": true } },
+    { "event": "webclient.mounted", "match": { "client": "dsh-web-client", "path": "/index.html" } },
+    { "event": "ws.connected", "match": { "protocol": "session-projection@0" } },
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "descriptor.declared", "match": { "available": 5, "unavailable": 4 } },
+    { "event": "fs.write.ok", "match": { "written": 17 } },
+    { "event": "fs.read.ok", "match": { "bytes": 17, "matches": true } },
+    { "event": "approval.approved", "match": { "approved": true } },
+    { "event": "picker.unavailable", "match": { "code": "unavailable" } },
+    { "event": "keychain.unavailable", "match": { "code": "unavailable" } },
+    { "event": "fs.scope.persist", "match": { "refOpaque": true } },
+    { "event": "fs.scope.resolve", "match": { "scopeOpaque": true, "reads": true } },
+    { "event": "notify.scheduled", "match": { "idOpaque": true } },
+    { "event": "app.state", "match": { "state": "background" } },
+    { "event": "notify.response", "match": { "idMatches": true } },
+    { "event": "app.state", "match": { "state": "foreground" } },
+    { "event": "ws.token-delta", "match": { "first": true, "index": 0 } },
+    { "event": "ws.token-delta", "match": { "last": true, "index": 4 } },
+    { "event": "ws.session-complete", "match": { "status": "pass" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

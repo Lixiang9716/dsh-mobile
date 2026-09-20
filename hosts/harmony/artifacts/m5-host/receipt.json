@@ -9,16 +9,18 @@
   "scenarios": [
     "m1.spike.boot",
     "m2.bridge.smoke",
-    "m2.session"
+    "m2.session",
+    "m5.host-binding"
   ],
   "exitStatus": 0,
-  "exitStatusDetail": "native verdicts in ONE launch on the NAPI caller thread: 'm1.spike.boot PASS ... logLines=7', 'm2.bridge.smoke PASS ... logLines=13' and 'm2.session PASS ... logLines=72' (dsh_spike_complete && dsh_spike_pass, rc==0 per scenario)",
-  "gatewayBridge": "real dsh_spike dispatch bridge served by gateway_smoke.cpp (the platform twin of main_cli.c's smoke backend): fsRead/fsWrite/fsScope on the app files dir exposed as scope 'app' (filesDir/spike-fs, mkdir -p parity on write), keychain honestly 'unavailable' per the RuntimeDescriptor, unknown primitives 'invalid'; calls queue in the dispatch callback and settle on the post-pump drain pass (later-tick settlement, same pattern as the desktop CLI). The host.info readiness event ({\"event\":\"host.info\",\"port\":0}) is delivered once after eval, before the first pump pass \u2014 the same channel the desktop twin signals on.",
+  "exitStatusDetail": "ONE launch drives the regression trio synchronously on the NAPI caller thread ('m1.spike.boot PASS ... logLines=7', 'm2.bridge.smoke PASS ... logLines=17', 'm2.session PASS ... logLines=179' — the 23-event manifest), then the EVENT-DRIVEN binding phase runs scenario m5.host-binding (20/20) over the loopback carrier with ArkWeb mounting the Web Client",
+  "carrier": "hosts/harmony CarrierServer.ets: loopback HTTP/1.1 static serving of the materialized presentation/web-client files plus a minimal RFC 6455 WS text-frame endpoint at /ws on ONE 127.0.0.1 port (first free from 17877, fail loud after ten); Sec-WebSocket-Accept = base64(sha1(key+GUID)) via the hand-rolled SHA-1 in model/Sha1.ets (documented there; the on-device handshake itself is the proof). HostPhase.ets shuttles session-projection@0 JSON lines between the page and the runtime through the shared bus seam (dsh_spike_set_bus_sink / dsh_spike_bus_deliver); every NAPI call runs on the ArkTS main thread — the ONE serial JS runtime thread (ARCHITECTURE.md §6)",
+  "gatewayBinding": "binding smoke backend (gateway_smoke.cpp binding mode + forward hook): fsRead/fsWrite/fsScope REAL over the app files scope (fsScope v1: persist = resolve to the app files scope, ref bkm:app), notify REAL (@ohos.notification publish with a wantAgent; the notification tap routes onNewWant -> notify.response), presentApproval REAL (custom ArkUI dialog, driver taps Approve); presentPicker/keychainGet/keychainSet/httpFetch honestly 'unavailable' per the RuntimeDescriptor (5 available / 4 unavailable) — the v2 paths (user-scope fs + persist, HUKS keychain, streaming body bridge) are documented in the agent note; app.state edges ride the UIAbility lifecycle",
   "checker": [
     {
       "tool": "tools/e2e/check.mjs",
       "manifest": "tools/e2e/scenarios/m1-spike-boot.json",
-      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
       "pass": true,
       "expected": 7,
       "logged": 7
@@ -26,7 +28,7 @@
     {
       "tool": "tools/e2e/check.mjs",
       "manifest": "tools/e2e/scenarios/m2-bridge-smoke.json",
-      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
       "pass": true,
       "expected": 6,
       "logged": 6
@@ -34,24 +36,33 @@
     {
       "tool": "tools/e2e/check.mjs",
       "manifest": "tools/e2e/scenarios/m2-session.json",
-      "log": "hosts/harmony/artifacts/m5-host/logs.txt",
+      "log": "hosts/harmony/artifacts/m5-host/sink-capture.txt",
       "pass": true,
-      "expected": 22,
-      "logged": 22
+      "expected": 23,
+      "logged": 23
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m5-host-binding.json",
+      "log": "hosts/harmony/artifacts/m5-host/binding-capture.txt",
+      "pass": true,
+      "expected": 20,
+      "logged": 20
     }
   ],
   "captures": {
-    "primary": "logs.txt (hilog -x dump, filtered to dsh.spike lines; canonical lines byte-identical to the sink capture after stripping the hilog prefix \u2014 verified by diff)",
-    "second": "sink-capture.txt (app-side capture file pulled via hdc file recv from haps/entry/cache/dsh-spike-capture.log; named .txt because the repo ignores *.log; scenario.jsonl = grep '^dsh.spike.log:')",
-    "screenshot": "screenshot.png (snapshot_display, human evidence only, never the assertion)"
+    "primary": "sink-capture.txt + binding-capture.txt (app-side capture files pulled via hdc file recv from haps/entry/cache/dsh-{spike,host}-capture.log; named .txt because the repo ignores *.log; the binding capture carries the carrier's own canonical lines — module dsh.carrier — alongside the scenario's)",
+    "second": "logs.txt (continuous `hdc shell hilog` stream filtered to dsh.spike lines; the union of the two capture files is byte-identical to it after stripping the hilog prefix — verified by sorted diff during the evidence run)",
+    "screenshots": "m5-live-deltas.png (first token delta streaming through the WS into the mounted page) and m5-binding-complete.png (session complete rendered in ArkWeb) — human evidence only, never the assertion"
   },
-  "note": "Session run (PR-B): the merged M2 foundation's m2.session scenario (registry + the three system plugins) runs on the same launch; the smoke backend gained the desktop twin's mkdir -p write parity, and the embedder delivers the host.info readiness event after eval. First run with the merged M2 host had exposed a stale rawfile copy of scenario/m1-spike-boot.js (fixed in PR #28); all embedded spike/plugin files are verified byte-identical to runtime/spike/ and system-plugins/.",
+  "uiAutomation": "hosts/harmony/ci/run-host-e2e.sh (build -> install -> launch -> drive -> capture -> 4 checkers) with hosts/harmony/ci/drive-binding.mjs tailing the hilog stream and driving the native surfaces over uitest with polled deadlines: the approval dialog's Approve button, the notification-consent dialog's Allow (exact-text match; soft-skip when already granted), Home for the background edge, the notification shade + DSH notification tap for notify.response + foreground",
+  "note": "Binding run (PR-A): the M5 host is now ISOMORPHIC — one launch proves the regression trio (including the 23-event m2.session with notes.installed) headlessly AND the live carrier topology (listening/mounted/connected/token-deltas/session-complete) plus the real binding primitives on-device. All embedded spike/plugin/web-client files are byte-identical to runtime/spike/, system-plugins/, and presentation/web-client canonicals.",
   "toolchain": {
     "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
     "hvigor": "6.26.4",
     "ohpm": "26.0.0.630",
     "sdk": "HarmonyOS 26.0.0 Release (Ohos_sdk_public 26.0.0.105, API Version 26)",
-    "signing": "none \u2014 the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
+    "signing": "none — the emulator accepts the unsigned debug HAP via hdc install (entry-default-unsigned.hap)"
   },
-  "timestamp": "2026-09-20T06:56:07+08:00"
+  "timestamp": "2026-09-20T11:52:00+08:00"
 }
