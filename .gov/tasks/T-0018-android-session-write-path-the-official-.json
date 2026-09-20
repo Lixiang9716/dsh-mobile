@@ -15,7 +15,12 @@
     "regressions: b-android.session.live 46/46 + official-web.mount 14/14 + m4.host-binding 35/35 + audit 16/16 + m2.session 23/23 + m1 + bridge-smoke",
     "agent note (architecture, ref D9) + gov run green + task card exited + PR open"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0018"
+  "id": "T-0018",
+  "void": {
+    "ts": "2026-09-20T22:16:32+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "delivered: the Android session write surface (b-android.write.live 45/45 + full regression green, one invocation); the card's checks are all satisfied by commit dabe291 \u2014 exited per the #329/#339 precedent before push"
+  }
 }
