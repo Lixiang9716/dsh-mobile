@@ -1,0 +1,23 @@
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"model/scripted","provider":"scripted","model":"scripted-1","note":"upstream-shape driver; real dsh-llm transport lands with W-LLM vendor"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"scripted":["llm"]}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"session/created","sessionId":"s-m2-upstream-0001","observed":true}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/created","id":"main","sessionId":"s-m2-upstream-0001"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/inbox/spliced","seq":0}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"turn/start","turn":1}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/inbox/spliced","seq":2}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"step/start","turn":1,"step":1}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"system/message","seq":4,"plugin":"@deepseek-ai/dsh-system-prompt"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"user/message","seq":5}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"request/header","seq":6}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"request/context","seq":7}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"assistant/message","seq":8,"blocks":["text"],"text":"Hello from upstream","provider":"scripted","model":"scripted-1"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"step/end","turn":1,"step":1}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"turn/end","turn":1,"reason":"completed"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"session/log/asserted","count":11,"types":["agent/inbox/spliced","turn/start","agent/inbox/spliced","step/start","system/message","user/message","request/header","request/context","assistant/message","step/end","turn/end"]}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"assistant/text/asserted","text":"Hello from upstream"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"model/request","provider":"scripted","model":"scripted-1","tools":0,"messages":2}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/status","status":"running"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/status","status":"idle"}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"projection/turn-boundary","lastTurn":1}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"upstream/completed","status":"pass","upstream":"0.1.6-alpha.2","scripted":"model.scripted (dsh-llm transport lands with W-LLM)"}]}

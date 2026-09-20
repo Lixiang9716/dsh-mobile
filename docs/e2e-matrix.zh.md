@@ -30,9 +30,9 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 14 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 28 |
-| 至少有一份已提交证据的 scenario | 12 / 12 个 manifest |
+| 证据目录 | 15 |
+| Verdict（全部 `pass: true`、`expected == logged`） | 29 |
+| 至少有一份已提交证据的 scenario | 13 / 13 个 manifest |
 | 已验证 PNG 的截图 | 25 |
 | 验收标准缺口 | 4（见下） |
 
@@ -53,10 +53,11 @@
 | `m3.ui-swap` | 7/7 | — | — | — |
 | `m3.install` | — | —（进行中） | — | 22/22 |
 | `m3.complete` | — | — | —（进行中） | 41/41 |
+| `m2.upstream-session` | — | — | — | 23/23 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
-12 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
+13 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
 
 ## 证据目录清单
@@ -80,6 +81,7 @@
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 23/23 | ✓ | ✓ | ✓ | 0 |
 
 CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是可选的调试辅助，
 既非交付物也非输入）。

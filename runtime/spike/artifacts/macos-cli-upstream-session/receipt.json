@@ -1,0 +1,20 @@
+{
+  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "m2.upstream-session",
+  "proves": [
+    "the vendored upstream agent spine runs VERBATIM inside quickjs-ng: @deepseek-ai/dsh-session/agent/tools/system-prompt/agent-loop/session-projection/settings mount as cordis services over the pinned vendor closure — no upstream file is edited (D6/D9)",
+    "ONE REAL upstream agent-loop turn: AgentLoop's configured-agent create path assembles the system prompt (dsh-system-prompt), streams the model turn, assembles the assistant message through the upstream BlockAssembler path, appends it to the ctx.sessions event log, and closes the turn (turn/end reason completed)",
+    "the session log is the upstream vocabulary (agent/inbox/spliced, turn/start, step/start, system/message, user/message, request/header, request/context, assistant/message, step/end, turn/end), asserted one-to-one (session.log.asserted) plus the turn-boundary projection (projection.lastTurn = 1)",
+    "the scripted model service (model.scripted) is the ONLY non-upstream runtime component: agent-loop stays upstream, the driver stays swappable; the dsh-llm transport lands separately (W-LLM) — this run documents the staged upstream-SHAPE value-helper shim it links against (upstream/shims/dsh-llm.js)"
+  ],
+  "checker": "tools/e2e/scenarios/m2-upstream-session.json",
+  "events": 23,
+  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 e0e441e219d43f83adfff15780de9c2d)",
+  "exitCode": 0
+}

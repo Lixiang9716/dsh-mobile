@@ -32,9 +32,9 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 14 |
-| Verdicts (all `pass: true`, `expected == logged`) | 28 |
-| Scenarios with at least one committed evidence dir | 12 of 12 manifests |
+| Evidence dirs | 15 |
+| Verdicts (all `pass: true`, `expected == logged`) | 29 |
+| Scenarios with at least one committed evidence dir | 13 of 13 manifests |
 | Screenshots verified PNG | 25 |
 | Acceptance-bar findings | 4 (below) |
 
@@ -56,10 +56,11 @@ evidence on that platform.
 | `m3.ui-swap` | 7/7 | — | — | — |
 | `m3.install` | — | — (in flight) | — | 22/22 |
 | `m3.complete` | — | — | — (in flight) | 41/41 |
+| `m2.upstream-session` | — | — | — | 23/23 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
-All 12 scenario manifests have at least one green committed evidence dir;
+All 13 scenario manifests have at least one green committed evidence dir;
 `m2.session` runs green on all four hosts. Every verdict on main is green.
 
 ## Evidence-dir inventory
@@ -83,6 +84,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 23/23 | ✓ | ✓ | ✓ | 0 |
 
 CLI hosts are headless: zero screenshots is compliant (bar clause 2 makes
 screenshots optional debugging aids, never deliverables or inputs).

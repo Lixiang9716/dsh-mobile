@@ -37,11 +37,17 @@ tmp/
 # govrail 运行账本（本地趋势数据，不入库）
 .gov/history/
 
-# vendored engine sources — pinned + sha256-verified by
-# runtime/spike/vendor/ensure.sh; untracked so the syntax-class checker
-# never judges upstream C (compile truth belongs to the compilers)
+# vendored engine sources + vendored upstream DSH runtime packages — pinned
+# + sha256-verified by runtime/spike/vendor/ensure.sh and ensure-dsh.sh;
+# untracked so the syntax-class checker never judges upstream C or the
+# verbatim upstream JS bundles (adaptation lives in our shims, never in the
+# vendored copies — D6/D9; the pin tables in the ensure scripts are the
+# tracked provenance record)
 runtime/spike/vendor/quickjs-ng/
+runtime/spike/vendor/dsh/
+runtime/spike/vendor/npm/
 
 # Python
 __pycache__/
 .gov/tasks/.new.lock
+runtime/spike/logs-upstream.txt

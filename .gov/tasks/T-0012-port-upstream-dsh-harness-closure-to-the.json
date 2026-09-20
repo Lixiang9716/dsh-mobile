@@ -1,0 +1,26 @@
+{
+  "title": "Port upstream DSH harness closure to the spike runtime (PR-A)",
+  "created": "2026-09-20T07:37:48+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Vendor the agent-loop dependency closure at 0.1.6-alpha.2 with sha256 pins + PROVENANCE",
+    "Shim layer + host loader seams for node:/bare specifiers",
+    "boot.js runtime plugin: cordis services + scripted llm adapter (model.scripted)",
+    "m2.upstream-session scenario + CLI proof (one-to-one log compare)",
+    "gov run green + agent note + PR-A opened"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0012",
+  "void": {
+    "ts": "2026-09-20T07:38:00+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "PR-A completes in the opened PR (audit trail = the PR, #329/#339 precedent): vendor closure audited (19 dsh + 4 npm, sha256 + byte-diff), shims + loader seams + mobile profile boot landed, m2.upstream-session green 23/23 one-to-one (3x deterministic), llm* seam re-owned by W-LLM (scripted model.scripted boundary). Original T-0011 card collided with main's T-0011 and was re-issued."
+  }
+}
