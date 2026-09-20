@@ -1,0 +1,27 @@
+{
+  "title": "M5 HarmonyOS host to Done: carrier + binding + status flip",
+  "created": "2026-09-20T02:39:02+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "PR-A: ArkTS carrier (loopback HTTP+WS) + ArkWeb mount + event-driven NAPI host phase",
+    "PR-A: binding primitives notify/approval real; picker/keychain/httpFetch honest unavailable; fsScope app v1",
+    "PR-A: scenario m5.host-binding + manifest + run-host-e2e.sh runner",
+    "PR-A: emulator run green (4 checkers) + artifacts + screenshots + PR open by 17:00",
+    "PR-B: 23-event m2.session regression + status flip README/ARCH (+zh) + notes",
+    "PR-B: task void receipt, gov run green, push by 20:00"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0010",
+  "void": {
+    "ts": "2026-09-20T03:58:50+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Mission completed across the two planned PRs: PR #40 (feat: loopback carrier + ArkWeb mount + binding primitives + runner + evidence, all four CI checks green) and the follow-up status-flip PR (README/ARCHITECTURE M5 -> Done, rule 12) landing this receipt-closure; the card's items are verifiably done in those PRs rather than by a card-closure receipt"
+  }
+}

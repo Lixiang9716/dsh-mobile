@@ -19,7 +19,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | M2 | 系统实现插件（fs/subprocess/ui）+ Web Client 挂载 + 首个设备端会话 | 完成（系统插件 + Web Client 挂载 + 首个设备端会话：`dsh-fs`/`dsh-subprocess-quickjs`/`dsh-ui` 插件，`m2.session` 在 CLI 与设备端均 22/22 通过，Web Client `dsh-web-client` 经 carrier WS 挂载并实时渲染 —— 证据见 `runtime/spike/artifacts/macos-cli-m2-session/` 与 `hosts/ios/artifacts/m2-session/`；仍开放：真实 LLM API） |
 | M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 进行中（安装链路已在 macOS CLI 以 receipt 事务验证 —— `m3.install` 21/21：内容寻址 blob、信任记录校验、严格 manifest 校验、暂存树读回校验、receipt 提交、被篡改的包在解包前被拒绝且已安装树保持不变 —— 证据见 `runtime/spike/artifacts/macos-cli-m3-install/`；UI 插件化已在设备端验证 —— 按配置切换到 `dsh-web-client-mini` 变体（`m3.ui-swap` 7/7），dsh-notes 的工具栏 slot 实时渲染并回执 —— 证据见 `hosts/ios/artifacts/m3-pluginization/`；仍开放：基于 fetch 的安装器 + pending-receipt 重放、其余 UI 插件层级、真实 LLM API） |
 | M4 | Android 宿主（QuickJS 同构） | 进行中（同构宿主已验证：`m2.session`（三个系统插件上的首个 MINI 智能体会话）、网关桥接场景 `m2.bridge.smoke` 与 `m1.spike.boot` 回归一次启动全部在模拟器通过——证据 `hosts/android/artifacts/m4-host/`） |
-| M5 | 鸿蒙宿主（ArkTS + NAPI） | 进行中（同构宿主已验证：`m2.session`（经 registry + 三个系统插件）随 `m1.spike.boot` + `m2.bridge.smoke` 一次启动在模拟器通过——证据见 `hosts/harmony/artifacts/m5-host/`） |
+| M5 | 鸿蒙宿主（ArkTS + NAPI） | 完成（同构宿主已验证：回环载体——向 Web Client 提供静态文件服务 + RFC 6455 WS 泵——ArkWeb 挂载实时会话，真实绑定原语（notify、presentApproval、fsScope app 作用域、`app.state`/`notify.response` 通道），picker/keychain/httpFetch 诚实 `unavailable`，`m5.host-binding` 20/20 加上 `m1.spike.boot`/`m2.bridge.smoke`/`m2.session`（23/23）回归一次启动在模拟器全绿——证据见 `hosts/harmony/artifacts/m5-host/`；仍未完成：HUKS keychain、用户作用域 picker 文件系统、httpFetch 流式传输） |
 
 ## 治理
 
