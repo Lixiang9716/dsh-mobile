@@ -6,7 +6,9 @@
 #   build (unless DSH_SKIP_BUILD=1) -> install -> launch ->
 #   UI-automation drive (ci/drive-binding.mjs) -> capture -> 4 checker
 #   verdicts (m1.spike.boot, m2.bridge.smoke, m2.session — the 23-event
-#   regression — and m5.host-binding) + screenshots into the artifacts dir.
+#   regression — and m5.host-binding) + the full deliverable set
+#   (logs.txt + scenario.jsonl + receipt-fodder verdicts + real-PNG
+#   screenshots) into the artifacts dir.
 #
 # Every wait is a polled condition with a deadline (rules.md rule 8); every
 # exhaustion is loud (rule 5). E2E by logs: the checkers run against the
@@ -65,6 +67,13 @@ done
 "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
 "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
 "$HDC" shell aa force-stop $BUNDLE >/dev/null 2>&1 || true
+# A silently-failed force-stop leaves the app resident: the streamed launch
+# below only foregrounds the old scene (no onCreate, no scenario) and the
+# drive starves its whole deadline. Verify the kill landed (rule 5).
+if [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; then
+    echo "::error::aa force-stop left $BUNDLE resident (pidof non-empty)" >&2
+    exit 1
+fi
 "$HDC" shell hilog -r >/dev/null
 
 deadline=$(( $(date +%s) + 120 ))
@@ -92,6 +101,13 @@ node hosts/harmony/ci/drive-binding.mjs --hdc "$HDC" \
     --shot-live "$OUT/m5-live-deltas.png" \
     --shot-final "$OUT/m5-binding-complete.png"
 
+# snapshot_display emits JPEG; evidence screenshots must be real PNGs for
+# their .png names — documented one-line conversion (macOS sips), applied
+# in place right after the capture (audit gap: JPEG bytes under .png).
+for shot in "$OUT/m5-live-deltas.png" "$OUT/m5-binding-complete.png"; do
+    sips -s format png "$shot" --out "$shot" >/dev/null
+done
+
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
@@ -99,6 +115,13 @@ grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
 
 "$HDC" file recv "$BASE/dsh-spike-capture.log" "$OUT/sink-capture.txt" >/dev/null
 "$HDC" file recv "$BASE/dsh-host-capture.log" "$OUT/binding-capture.txt" >/dev/null
+
+# scenario.jsonl: the canonical dsh.spike.log lines of THIS run, extracted
+# from the run's own capture files (trio + binding phase, in run order) —
+# same extraction convention as hosts/android/ci/run-android-full.sh and
+# hosts/harmony/artifacts/m1-spike (grep of a real capture, never synthesized).
+grep -h '^dsh.spike.log:' "$OUT/sink-capture.txt" "$OUT/binding-capture.txt" \
+    > "$OUT/scenario.jsonl"
 
 # E2E by logs: one checker verdict per scenario manifest against its capture
 # file (regression trio vs the sync-run capture; the binding phase vs its own).
