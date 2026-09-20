@@ -30,9 +30,9 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 15 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 29 |
-| 至少有一份已提交证据的 scenario | 13 / 13 个 manifest |
+| 证据目录 | 16 |
+| Verdict（全部 `pass: true`、`expected == logged`） | 31 |
+| 至少有一份已提交证据的 scenario | 15 / 15 个 manifest |
 | 已验证 PNG 的截图 | 25 |
 | 验收标准缺口 | 4（见下） |
 
@@ -53,11 +53,13 @@
 | `m3.ui-swap` | 7/7 | — | — | — |
 | `m3.install` | — | —（进行中） | — | 22/22 |
 | `m3.complete` | — | — | —（进行中） | 41/41 |
+| `m3.fetch-install` | 46/46 | — | — | — |
+| `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m2.upstream-session` | — | — | — | 23/23 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
-13 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
+15 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
 
 ## 证据目录清单
@@ -72,6 +74,7 @@
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✗（缺口 1） | 7 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |

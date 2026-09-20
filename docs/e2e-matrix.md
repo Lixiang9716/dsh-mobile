@@ -32,9 +32,9 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 15 |
-| Verdicts (all `pass: true`, `expected == logged`) | 29 |
-| Scenarios with at least one committed evidence dir | 13 of 13 manifests |
+| Evidence dirs | 16 |
+| Verdicts (all `pass: true`, `expected == logged`) | 31 |
+| Scenarios with at least one committed evidence dir | 15 of 15 manifests |
 | Screenshots verified PNG | 25 |
 | Acceptance-bar findings | 4 (below) |
 
@@ -56,11 +56,13 @@ evidence on that platform.
 | `m3.ui-swap` | 7/7 | — | — | — |
 | `m3.install` | — | — (in flight) | — | 22/22 |
 | `m3.complete` | — | — | — (in flight) | 41/41 |
+| `m3.fetch-install` | 46/46 | — | — | — |
+| `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m2.upstream-session` | — | — | — | 23/23 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
-All 13 scenario manifests have at least one green committed evidence dir;
+All 15 scenario manifests have at least one green committed evidence dir;
 `m2.session` runs green on all four hosts. Every verdict on main is green.
 
 ## Evidence-dir inventory
@@ -75,6 +77,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✗ (gap 1) | 7 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
