@@ -30,6 +30,26 @@ extern const char *DSH_SMOKE_DESCRIPTOR;
  * when the directory cannot be created (fail loud — embedder bug). */
 dsh_smoke_backend_t *dsh_smoke_new(const char *fs_root);
 
+/* Binding-mode extension (M5 host-binding phase). The forward hook receives
+ * the platform primitives the ArkTS capability layer serves for real
+ * (notify / presentApproval) and is consulted BEFORE the local table; with
+ * an override descriptor the host also declares presentPicker +
+ * keychainGet/Set + httpFetch honestly unavailable and serves fsScope
+ * persist/resolve strictly on the app scope (the documented v1: persist =
+ * resolve to the app files scope). Both setters must be called BEFORE
+ * dsh_smoke_attach. The hook fires on the runtime thread inside the JS
+ * call — hop to your capability queue there, never re-enter the runtime. */
+typedef void (*dsh_smoke_forward_fn)(void *ud, int call_id, const char *name,
+                                     const char *args_json);
+
+void dsh_smoke_set_forward(dsh_smoke_backend_t *b, dsh_smoke_forward_fn fn,
+                           void *ud);
+
+/* Override the descriptor attach serves (binding mode: 5 available /
+ * 4 unavailable). Copies the string. */
+void dsh_smoke_set_descriptor_json(dsh_smoke_backend_t *b,
+                                   const char *descriptor_json);
+
 /* Register the dispatch callback + descriptor on the spike. Call BEFORE
  * dsh_spike_eval. */
 void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_spike_t *spike);

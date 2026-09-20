@@ -39,12 +39,27 @@ struct dsh_smoke_backend {
     dsh_smoke_req *head;
     dsh_smoke_req *tail;
     int failed;
+    /* binding mode (M5 host-binding phase): platform primitives forward to
+     * the embedder's capability layer; the descriptor is the binding one. */
+    dsh_smoke_forward_fn forward_fn;
+    void *forward_ud;
+    char *descriptor_json;
 };
 
 const char *DSH_SMOKE_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\"],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
     "\"presentPicker\",\"keychainGet\",\"keychainSet\"]}";
+
+/* Binding descriptor: the primitives the ArkTS capability layer serves for
+ * real, and the honest v1 unavailable set (picker needs the user-scope fs
+ * surface, keychain the HUKS bridge, httpFetch the streaming body bridge —
+ * all documented v2 paths in the agent note). */
+const char *DSH_BINDING_DESCRIPTOR =
+    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"notify\","
+    "\"presentApproval\"],"
+    "\"unavailable\":[\"presentPicker\",\"keychainGet\",\"keychainSet\","
+    "\"httpFetch\"]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
 
@@ -299,12 +314,46 @@ static void smoke_fs_read(dsh_smoke_backend *b, int call_id, const char *args) {
 
 static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
                         const char *args) {
+    if (b->forward_fn != nullptr) {
+        /* binding mode: the two platform primitives the ArkTS capability
+         * layer serves for real ride the forward hook (settled later from
+         * its UI callbacks — never from inside this callback); everything
+         * else the binding descriptor declares unavailable rejects here. */
+        if (strcmp(name, "notify") == 0 || strcmp(name, "presentApproval") == 0) {
+            b->forward_fn(b->forward_ud, call_id, name, args);
+            return;
+        }
+        if (strcmp(name, "httpFetch") == 0 || strcmp(name, "presentPicker") == 0) {
+            return smoke_reject(b, call_id, name, "unavailable",
+                                "declared unavailable by the host descriptor");
+        }
+    }
     if (strcmp(name, "fsWrite") == 0) return smoke_fs_write(b, call_id, args);
     if (strcmp(name, "fsRead") == 0) return smoke_fs_read(b, call_id, args);
     if (strcmp(name, "fsScope.persist") == 0) {
+        if (b->forward_fn != nullptr) {
+            /* app-scope v1: only the app scope persists (contract §4 —
+             * user-scope persistence is the documented v2 path). */
+            char *scope = json_str_dup(args, "scope");
+            int ok = scope != nullptr && strcmp(scope, "app") == 0;
+            free(scope);
+            if (!ok) {
+                return smoke_reject(b, call_id, "fsScope.persist", "denied",
+                                    "only the app scope persists on this host");
+            }
+        }
         return smoke_settle(b, call_id, 1, "{\"ref\":\"bkm:app\"}");
     }
     if (strcmp(name, "fsScope.resolve") == 0) {
+        if (b->forward_fn != nullptr) {
+            char *ref = json_str_dup(args, "ref");
+            int ok = ref != nullptr && strcmp(ref, "bkm:app") == 0;
+            free(ref);
+            if (!ok) {
+                return smoke_reject(b, call_id, "fsScope.resolve", "io",
+                                    "no scope resolves under this ref");
+            }
+        }
         return smoke_settle(b, call_id, 1, "{\"scope\":\"app\"}");
     }
     if (strncmp(name, "keychain", 8) == 0) {
@@ -353,11 +402,27 @@ dsh_smoke_backend_t *dsh_smoke_new(const char *fs_root) {
     return b;
 }
 
+void dsh_smoke_set_forward(dsh_smoke_backend_t *b, dsh_smoke_forward_fn fn,
+                           void *ud) {
+    if (!b) return;
+    b->forward_fn = fn;
+    b->forward_ud = ud;
+}
+
+void dsh_smoke_set_descriptor_json(dsh_smoke_backend_t *b,
+                                   const char *descriptor_json) {
+    if (!b) return;
+    free(b->descriptor_json);
+    b->descriptor_json = strdup(descriptor_json);
+}
+
 void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_spike_t *spike) {
     if (!b) return;
     b->spike = spike;
     dsh_spike_set_gateway_dispatch(spike, smoke_on_call, b);
-    dsh_spike_set_descriptor(spike, DSH_SMOKE_DESCRIPTOR);
+    dsh_spike_set_descriptor(spike, b->descriptor_json != nullptr
+                                        ? b->descriptor_json
+                                        : DSH_SMOKE_DESCRIPTOR);
 }
 
 int dsh_smoke_drain(dsh_smoke_backend_t *b) {
@@ -387,5 +452,6 @@ void dsh_smoke_free(dsh_smoke_backend_t *b) {
         free(req);
     }
     free(b->fs_root);
+    free(b->descriptor_json);
     free(b);
 }
