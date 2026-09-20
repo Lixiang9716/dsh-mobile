@@ -14,13 +14,15 @@
 #   - npm packages: registry.npmjs.org, exact pinned versions
 #
 # Run before the upstream E2E (runtime/spike/ci/run-upstream-e2e.sh). Network
-# is only needed for packages missing on disk. Staged OUT of the PR-A closure:
-# session-persistence-jsonl (native koffi dep), subagent, base, the transport
-# adapters (llm-deepseek / llm-pi-ai), and dsh-llm* — the llm packages belong
-# to the W-LLM vendor seam; until they land, agent-loop links against the
-# staged upstream-SHAPE value-helper shim upstream/shims/dsh-llm.js (loader
-# map row in runtime/spike/host/dsh_spike_host.c). See
-# runtime/spike/upstream/README.md for the full staged table.
+# is only needed for packages missing on disk. Still staged OUT of the
+# closure: session-persistence-jsonl (native koffi dep), subagent, base, and
+# the transport adapters (llm-deepseek / llm-pi-ai — their direct-fetch
+# transport is the desktop's; the mobile seam is the gateway adapter in
+# runtime/spike/upstream/llm-transport.js). dsh-llm is vendored since the
+# W-LLM leg; llm-mock-server is vendored as the E2E test vehicle (its
+# node-side driver is runtime/spike/ci/mock-llm-server.mjs); llm-replay stays
+# out (peer deps on compaction + api-extensions, none of it needed). See
+# runtime/spike/upstream/README.md for the shim coverage table.
 set -e
 cd "$(dirname "$0")"
 
@@ -36,6 +38,8 @@ cordis-host-runner|0.1.6-alpha.2|b95b934a24a9cae50712ef7c907551b294b3883eed8b788
 fs|0.1.6-alpha.2|dc9a540f4c6d870d5654f313c1fbb9f5d5d4798365f836e1cd29caa72995f23a
 hook-protocol|0.1.6-alpha.2|f884c7b4e421844dc94889d394fbc1346b24b38ad5cc09e1a9cb2a2eb0efc04a
 invariants|0.1.6-alpha.2|7d9c6f674454d497fb9664b44a214982d9fee6af2883b301a667b1ab9bc92804
+llm|0.1.6-alpha.2|2220720d9ed9ec912f94b6e10588a1e7d891436b83c1ec192cc00ee61a132d84
+llm-mock-server|0.1.6-alpha.2|9b1f40a8711955c804afa3136460b33abea98898a7b73989a0b234deb38c75e1
 sandbox|0.1.6-alpha.2|70bb044347254721533f7cc752cf6192666c87cd47620628edd52fc128386886
 scope|0.1.6-alpha.2|1874e45d916d08fa402858ebdeb0de8be7ce3bee1b661a2015d7e243fe2605e0
 sdk-protocol|0.1.6-alpha.2|accc5edff215d44a5ca39236ef1872a2d503db4ee2b282278ac9620cc8f8651e

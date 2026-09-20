@@ -1,22 +1,27 @@
 /**
  * M2 upstream session scenario `m2.upstream-session` — ONE REAL upstream
- * agent-loop turn over the vendored DSH runtime (decision D9).
+ * agent-loop turn over the vendored DSH runtime (decision D9), driven by the
+ * REAL vendored dsh-llm service over the gateway transport (the W-LLM leg).
  *
  * Flow: upstream/boot.js composes the mobile profile (the dsh-base bundle
  * equivalent over the pinned vendor closure: sessions → agents → system-prompt
- * → tools → session-projection → settings → agent-loop, with `llm` mounted
- * scripted) → the AgentLoop config creates agent "main" on session
- * "s-m2-upstream-0001" → the scenario sends ONE user message through
- * ctx.agents' upstream handle → the loop assembles the system prompt, streams
- * the scripted model turn, appends the assistant message, and closes the turn
- * → the scenario walks ctx.sessions' session log (the upstream event
- * vocabulary, one structured log line per record) and asserts the turn
- * boundary projection. Every expected event is declared one-to-one in
+ * → tools → session-projection → settings → agent-loop, with `llm` = the
+ * vendored LlmRuntime + the gateway-transport adapter) → the AgentLoop config
+ * creates agent "main" on session "s-m2-upstream-0001" → the scenario sends
+ * ONE user message through ctx.agents' upstream handle → the loop assembles
+ * the system prompt, prepareCall resolves through the adapter registry, the
+ * adapter POSTs the wire request through gateway httpFetch to the node-side
+ * dsh-llm-mock-server (real loopback HTTP/SSE), the SSE bytes parse into
+ * harness StreamChunks, agent-loop's BlockAssembler appends the assistant
+ * message, and the turn closes → the scenario walks ctx.sessions' session
+ * log (the upstream event vocabulary) and asserts the turn boundary.
+ * Explicit llm-path evidence rides the adapter hooks: the wire request built
+ * against the harness request (llm.request.built) and each SSE payload as
+ * decoded (llm.sse.*). A second leg re-streams the route through the REAL
+ * LlmRuntime against the mock's scripted 401 behavior to prove structured
+ * transport errors surface as the upstream error-finish protocol. Every
+ * expected event is declared one-to-one in
  * tools/e2e/scenarios/m2-upstream-session.json.
- *
- * The scripted model service (`model.scripted`) is the only non-upstream
- * runtime component: the agent spine stays upstream, the driver stays
- * swappable; the real dsh-llm transport lands with W-LLM's vendor.
  */
 import { createLogger } from 'logger.js';
 import { fsScope } from 'gateway.js';
@@ -27,6 +32,7 @@ const SCENARIO = 'm2.upstream-session';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-m2-upstream-0001';
 const INPUT_TEXT = 'Say hello';
+const EXPECTED_TEXT = 'Hello from upstream'; // the mock server's successText (ci/mock-llm-server.mjs)
 
 const log = createLogger('m2.spike');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
@@ -45,6 +51,16 @@ const demand = (cond, reason) => {
   log.debug('demand failed', { reason });
   fail(reason);
   throw new Error(reason);
+};
+
+/** The launch env snapshot (--env KEY=VALUE on the CLI) — the mock endpoint
+ * facts ride the same channel upstream process.env would. */
+const launchEnv = () => {
+  const raw = globalThis.__dshLaunchEnv?.();
+  demand(typeof raw === 'string', 'launch env snapshot missing (CLI must pass --env)');
+  const env = JSON.parse(raw);
+  log.debug('launch env', { keys: Object.keys(env) });
+  return env;
 };
 
 /** Minimal deterministic fields per upstream session-log record type
@@ -71,7 +87,7 @@ const sessionEventFields = (record) =>
 
 /** Boot + capture boot-time lifecycle flags (the log lines themselves are
  * emitted post-turn in a fixed order so the expected log is stable). */
-const bootPhase = async (captures) => {
+const bootPhase = async (captures, env) => {
   log.debug('boot phase begin', {});
   const resolved = await fsScope.resolve('scope://app/');
   const root = resolved?.path;
@@ -86,8 +102,16 @@ const bootPhase = async (captures) => {
       cwd: root,
       tmpdir: `${root}/tmp`,
       home: `${root}/home`,
-      env: {},
+      env,
       argv: ['dsh', '--profile', 'mobile'],
+    },
+    llm: {
+      baseURL: env.DSH_MOCK_LLM_URL,
+      apiKey: env.DSH_MOCK_LLM_KEY,
+      provider: 'mock',
+      model: 'mock-1',
+      onWire: (info) => { captures.wire = info; emit('llm/request/built', info); },
+      onSse: (info) => { captures.sse.push(info); emit('llm/sse', info); },
     },
     listeners: {
       'session/created': () => { captures.sessionCreated = true; },
@@ -97,7 +121,6 @@ const bootPhase = async (captures) => {
       'agent/disposed': () => { captures.agentStatuses.push('disposed'); },
       'session/disposed': () => { captures.agentStatuses.push('session-disposed'); },
     },
-    onModelStream: (info) => { captures.requestHeader = info; },
   });
   log.debug('boot phase done', {});
   return ctx;
@@ -141,16 +164,12 @@ const assertPhase = (ctx, session, captures) => {
   demand(assistant !== undefined, 'no assistant/message in the session log');
   const text = assistant.data?.message?.content
     ?.filter((block) => block.type === 'text').map((block) => block.text).join('') ?? '';
-  demand(text === 'Hello from upstream', `assistant text is "${text}"`);
+  demand(text === EXPECTED_TEXT, `assistant text is "${text}"`);
   emit('assistant/text/asserted', { text });
 
-  demand(captures.requestHeader !== null, 'scripted model saw no request');
-  emit('model/request', {
-    provider: captures.requestHeader.provider,
-    model: captures.requestHeader.model,
-    tools: captures.requestHeader.tools,
-    messages: captures.requestHeader.messages,
-  });
+  demand(captures.wire !== null, 'the adapter saw no wire request');
+  demand(captures.wire.agentLoopMarked === true, 'the streamed request was not assembled by the upstream agent loop');
+
   for (const status of captures.agentStatuses) {
     emit('agent/status', { status: typeof status === 'string' ? status : String(status) });
   }
@@ -161,10 +180,38 @@ const assertPhase = (ctx, session, captures) => {
   emit('projection/turn-boundary', { lastTurn: turnBoundary.lastTurn });
 };
 
+/** Transport-error leg: the mock's second scripted behavior is a 401 JSON
+ * error body — streamed through the REAL LlmRuntime's public stream API, so
+ * the adapter's non-2xx diagnosis surfaces as the upstream error-finish
+ * protocol (terminal finish chunk carrying the provider-neutral failure). */
+const errorPhase = async (ctx) => {
+  log.debug('error phase begin', {});
+  const stream = ctx.llm.stream({
+    provider: 'mock',
+    model: 'mock-1',
+    messages: [createUserMessage({ content: [{ type: 'text', text: INPUT_TEXT }], source: { kind: 'user' } })],
+  });
+  const chunks = [];
+  for await (const chunk of stream) chunks.push(chunk);
+  demand(chunks.length === 1, `error leg yielded ${chunks.length} chunks`);
+  const [finish] = chunks;
+  demand(finish.type === 'finish', `error leg chunk type is ${finish.type}`);
+  demand(finish.reason.kind === 'error', `error finish kind is ${finish.reason.kind}`);
+  emit('llm/transport/error', {
+    kind: finish.reason.kind,
+    code: finish.reason.failure?.code,
+    status: finish.reason.failure?.status,
+  });
+  log.debug('error phase done', {});
+};
+
 const main = async () => {
   log.debug('main begin', {});
-  const captures = { sessionCreated: false, agentCreated: null, agentStatuses: [], requestHeader: null };
-  const ctx = await bootPhase(captures);
+  const env = launchEnv();
+  demand(typeof env.DSH_MOCK_LLM_URL === 'string' && env.DSH_MOCK_LLM_URL.startsWith('http://127.0.0.1:'),
+    `mock LLM endpoint missing from the launch env: ${JSON.stringify(env.DSH_MOCK_LLM_URL)}`);
+  const captures = { sessionCreated: false, agentCreated: null, agentStatuses: [], wire: null, sse: [] };
+  const ctx = await bootPhase(captures, env);
 
   // The scoped session/created emission may not reach a root-context listener
   // (cordis scope filtering); the store is the truth, the flag is evidence.
@@ -173,11 +220,12 @@ const main = async () => {
 
   const session = await turnPhase(ctx);
   assertPhase(ctx, session, captures);
+  await errorPhase(ctx);
 
   emit('upstream/completed', {
     status: 'pass',
     upstream: '0.1.6-alpha.2',
-    scripted: 'model.scripted (dsh-llm transport lands with W-LLM)',
+    llm: 'vendored dsh-llm over gateway httpFetch (dsh-llm-mock-server)',
   });
   globalThis.__dshComplete(true, 'pass');
 };

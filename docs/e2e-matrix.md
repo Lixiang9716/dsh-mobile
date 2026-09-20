@@ -58,7 +58,7 @@ evidence on that platform.
 | `m3.complete` | — | — | — (in flight) | 41/41 |
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
-| `m2.upstream-session` | — | — | — | 23/23 |
+| `m2.upstream-session` | — | — | — | 31/31 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
 
@@ -87,7 +87,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 
 CLI hosts are headless: zero screenshots is compliant (bar clause 2 makes
 screenshots optional debugging aids, never deliverables or inputs).

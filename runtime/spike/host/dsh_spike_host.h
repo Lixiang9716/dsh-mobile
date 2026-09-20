@@ -72,6 +72,13 @@ void dsh_spike_set_gateway_dispatch(dsh_spike_t *s, dsh_spike_gateway_fn on_call
  * (which yields "null" when never set). Copies the string. */
 void dsh_spike_set_descriptor(dsh_spike_t *s, const char *descriptor_json);
 
+/* Store the launch environment snapshot (a JSON object of string KV pairs)
+ * BEFORE eval; JS reads it verbatim via globalThis.__dshLaunchEnv() (yields
+ * "{}" when never set). The CLI driver fills it from --env KEY=VALUE args;
+ * scenarios merge it into their profile container so upstream-style
+ * process.env sees the launch facts (e.g. the mock LLM endpoint). Copies. */
+void dsh_spike_set_launch_env(dsh_spike_t *s, const char *env_json);
+
 /* Settle one in-flight call: resolves (ok=1) / rejects (ok=0) the promise
  * stored for call_id with payload_json parsed as a JSON value ("null"
  * resolves null). Unknown or already-settled id → -1 (fail loud).
