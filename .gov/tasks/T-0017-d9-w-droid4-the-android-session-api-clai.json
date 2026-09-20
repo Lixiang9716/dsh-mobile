@@ -16,7 +16,12 @@
     "REAL screenshots + committed evidence under hosts/android/artifacts/android-session-live/",
     "agent note (D9) + task card exited + gov run green + PR open"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0017"
+  "id": "T-0017",
+  "void": {
+    "ts": "2026-09-20T20:27:31+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "delivered: the Android session /api claims went live (b-android.session.live 46/46 + full regression green in one invocation, evidence committed under hosts/android/artifacts/android-session-live/); the card's checklist is satisfied by the landed commit \u2014 voided per the #329/#339 precedent because the brief outlived the worker session and the receipt ritual runs at PR time"
+  }
 }
