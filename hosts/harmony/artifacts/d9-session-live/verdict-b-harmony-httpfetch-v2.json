@@ -1,0 +1,8 @@
+{
+  "scenario": "b-harmony.httpfetch-v2",
+  "pass": true,
+  "expected": 6,
+  "logged": 6,
+  "failures": [],
+  "parseErrors": []
+}

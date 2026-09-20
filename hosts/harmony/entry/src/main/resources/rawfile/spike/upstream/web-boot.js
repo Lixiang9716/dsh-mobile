@@ -33,11 +33,16 @@ import './web-shims.js';
 // The VENDORED browser bootstrap bundle: registers its closure factory on
 // the queue facade (same file the page's blocking bootstrap batch loads).
 import '@deepseek-ai/dsh-client-modules/client';
-import { seedWebPlugins, WEB_PLUGINS_ROOT } from 'upstream/shims/fs.js';
+import {
+  mergeWebPlugins,
+  seedWebPlugins,
+  WEB_PLUGINS_ROOT,
+} from 'upstream/shims/fs.js';
 import {
   ClientModuleRegistry,
   bootInjections,
 } from '@deepseek-ai/dsh-client-modules';
+import { createWriteSurface, WRITE_ENDPOINTS } from 'upstream/web-write.js';
 
 /** Materialize the VENDORED browser bootstrap bundle the same way the page's
  * facade does (queue registration → factory) to get its wire validator: the
@@ -61,10 +66,27 @@ const parseBootManifest = bootstrapExports.parseBootManifest;
 /** Decode a bus delivery's base64 file payload (the Buffer shim accepts base64). */
 const decodeB64 = (text) => globalThis.Buffer.from(text, 'base64');
 
+/** The staged plugin DESCRIPTORS of a chunked delivery accumulate on the
+ * global (the VFS pattern: quickjs may compile two module instances of this
+ * adapter, so module state would fork — the global is the single store). */
+const stagedDescriptorStore = () => {
+  if (typeof globalThis.__DSH_WEB_PLUGIN_STAGED__ === 'undefined') {
+    globalThis.__DSH_WEB_PLUGIN_STAGED__ = [];
+  }
+  return globalThis.__DSH_WEB_PLUGIN_STAGED__;
+};
+
 /**
  * Mount one `web.plugins` bus delivery into the fs VFS.
  * Delivery: { type: 'web.plugins', plugins: [{ loaderName, pkgJsonPath,
  * entryPath, files: { [absPath]: { b64, mtimeMs } } }] }.
+ *
+ * CHUNKED delivery (the harmony drive splits the multi-megabyte staging so
+ * the carrier's main thread yields between packages — the 6s watchdog
+ * appfreezed on the single-shot compose): `chunked: true` MERGES each
+ * chunk's files into the VFS and accumulates the descriptors; only the
+ * `final: true` chunk composes. Legacy single deliveries (the iOS drive's
+ * shape) stage-and-compose in one step exactly as before.
  * Returns the plugin descriptors the Loader face resolves through.
  */
 export const stageWebPlugins = (delivery) => {
@@ -77,13 +99,25 @@ export const stageWebPlugins = (delivery) => {
       files[path] = { bytes: decodeB64(file.b64), mtimeMs: file.mtimeMs };
     }
   }
-  seedWebPlugins(files);
-  return delivery.plugins.map((plugin) => ({
+  const descriptors = delivery.plugins.map((plugin) => ({
     loaderName: plugin.loaderName,
     baseUrl: `${WEB_PLUGINS_ROOT}/`,
     pkgJsonPath: plugin.pkgJsonPath,
     entryFileURL: `file://${plugin.entryPath}`,
   }));
+  if (delivery.chunked === true) {
+    mergeWebPlugins(files);
+    const accumulated = stagedDescriptorStore();
+    accumulated.push(...descriptors);
+    if (delivery.final !== true) {
+      return { staged: false, plugins: descriptors };
+    }
+    return stagedDescriptorStore().slice();
+  }
+  seedWebPlugins(files);
+  stagedDescriptorStore().splice(0);
+  stagedDescriptorStore().push(...descriptors);
+  return descriptors;
 };
 
 /**
@@ -181,7 +215,9 @@ export const createApiHandlers = (ctx) => ({
   },
 });
 
-/** One journal wire frame per upstream session-log record. */
+/** One journal wire frame per upstream session-log record. The envelope
+ * passes through the event-local metadata the official client validates
+ * (`ignorable` / `sourceEventSeqs` / the surface events' `surfaceOp`). */
 const wireEvent = (record) => ({
   type: 'event',
   event: {
@@ -189,6 +225,10 @@ const wireEvent = (record) => ({
     seq: record.seq,
     time: record.time ?? 0,
     data: record.data ?? {},
+    ...(record.ignorable === true ? { ignorable: true } : {}),
+    ...(record.sourceEventSeqs === undefined ? {} :
+      { sourceEventSeqs: record.sourceEventSeqs }),
+    ...(record.surfaceOp === undefined ? {} : { surfaceOp: record.surfaceOp }),
   },
 });
 
@@ -257,26 +297,36 @@ export const createMuxHandlers = (ctx, post) => {
 };
 
 /** The `web.plugins` delivery leg: seed the VFS, mount the vendored
- * composer, and post the boot wire + claims. */
-const deliverWebPlugins = (ctx, post, msg) => {
+ * composer, and post the boot wire + claims (the base set plus the write
+ * surface's endpoints when composed with one). A non-final chunk of a
+ * CHUNKED delivery only stages (the drive keeps delivering); the final
+ * chunk — or a legacy single delivery — composes. */
+const deliverWebPlugins = (ctx, post, msg, write) => {
   const plugins = stageWebPlugins(msg);
+  if (plugins.staged === false) {
+    return { kind: 'staged', packages: plugins.plugins.length };
+  }
   const { graph, rows } = mountClientModules(ctx, plugins);
   post(webBootMessage(rows, graph));
-  post({ type: 'api.claim', endpoints: CLAIMED_ENDPOINTS });
+  const endpoints = write === null
+    ? CLAIMED_ENDPOINTS : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS];
+  post({ type: 'api.claim', endpoints });
   post({ type: 'mux.claim' });
   return { kind: 'booted', entries: graph.entries.map((e) => e.id) };
 };
 
-/** The `api.request` leg: a claimed handler to run, or a structured
- * already-posted failure (not composed / unimplemented endpoint). */
-const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
+/** The `api.request` leg: a claimed handler to run (the write surface's
+ * first, then the base set), or a structured already-posted failure (not
+ * composed / unimplemented endpoint). The handler runs with the request's
+ * `args` (the frozen client-request payload's args object). */
+const deliverApiRequest = (post, apiHandlers, write, mounted, msg) => {
   if (!mounted) {
     post({ type: 'api.respond', rpcId: msg.rpcId, result: {
       ok: false, error: { code: 'gateway/unavailable',
         message: 'the web boot is not composed yet', details: {} } } });
     return { kind: 'not-mounted' };
   }
-  const handler = apiHandlers[msg.endpoint];
+  const handler = write?.api[msg.endpoint] ?? apiHandlers[msg.endpoint];
   if (handler === undefined) {
     post({ type: 'api.respond', rpcId: msg.rpcId, result: {
       ok: false, error: { code: 'gateway/unimplemented',
@@ -284,7 +334,8 @@ const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
         details: { endpoint: msg.endpoint } } } });
     return { kind: 'unimplemented' };
   }
-  return { kind: 'handler', run: handler };
+  const args = msg.payload?.args;
+  return { kind: 'handler', run: () => handler(args) };
 };
 
 /**
@@ -293,27 +344,37 @@ const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
  * call it with every parsed bus delivery (web.plugins / api.request /
  * mux.open / mux.cancel). Unknown types answer loudly in the return value so
  * the caller can fail its drive.
+ *
+ * `options.write` (optional) composes the WRITE SURFACE (upstream/web-write.js):
+ * `{root, provider, model}` — the profile container root for the seeded
+ * workspace and the llm route new sessions select. Without it the runtime
+ * claims exactly the b3 read surface (session.list + session/journal).
  */
-export const createWebBootRuntime = ({ ctx, post }) => {
+export const createWebBootRuntime = ({ ctx, post, write }) => {
   const apiHandlers = createApiHandlers(ctx);
   const mux = createMuxHandlers(ctx, post);
+  const writeSurface = write === undefined
+    ? null : createWriteSurface(ctx, post, write);
   let mounted = false;
   const deliver = (msg) => {
     switch (msg.type) {
       case 'web.plugins': {
-        const outcome = deliverWebPlugins(ctx, post, msg);
+        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface);
         mounted = true;
         return outcome;
       }
       case 'api.request':
-        return deliverApiRequest(post, apiHandlers, mounted, msg);
-      case 'mux.open':
-        return mounted ? mux.open(msg) : { kind: 'not-mounted' };
+        return deliverApiRequest(post, apiHandlers, writeSurface, mounted, msg);
+      case 'mux.open': {
+        if (!mounted) return { kind: 'not-mounted' };
+        const claimed = writeSurface?.openStream(msg);
+        return claimed ?? mux.open(msg);
+      }
       case 'mux.cancel':
         return mounted ? mux.cancel(msg) : { kind: 'not-mounted' };
       default:
         return { kind: 'unknown', type: msg.type };
     }
   };
-  return { deliver, dispose: () => mux.dispose() };
+  return { deliver, dispose: () => { mux.dispose(); writeSurface?.dispose(); } };
 };

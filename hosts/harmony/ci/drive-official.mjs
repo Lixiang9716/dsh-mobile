@@ -2,20 +2,23 @@
 // dsh:logging-exempt (E2E UI-automation driver: a dev script whose console
 // output IS the drive evidence — same standing as tools/e2e/check.mjs)
 /**
- * drive-official.mjs — driver for the D9 official-web-mount phases on the
- * local HarmonyOS emulator (the harmony twin of tools/e2e/run-ios-b1.sh's
- * wait loop). It tails the hilog stream and, event by event, takes the
- * evidence screenshots and waits for the terminal markers (rules.md rule 8:
- * every wait is a polled condition with a deadline; every exhaustion fails
- * loud). No taps: the official-web phase is driverless — the page boots
- * itself.
+ * drive-official.mjs — driver for the D9 official phases on the local
+ * HarmonyOS emulator (the harmony twin of tools/e2e/run-ios-b1.sh's wait
+ * loop). It tails the hilog stream and, event by event, takes the evidence
+ * screenshots and waits for the terminal markers (rules.md rule 8: every
+ * wait is a polled condition with a deadline; every exhaustion fails loud).
+ * No taps: the official-web phases are driverless — the page boots itself.
  *
  *   b-harmony.official-web-mount index.served → boot-screen screenshot
  *   b-harmony.official-web-mount mount.complete → final screenshot
- *   dsh.spike.verdict: b-harmony.httpfetch-v2 → done (exit 0 on PASS)
+ *   b-harmony.session.live      index.served → session boot screenshot
+ *   b-harmony.session.live      session.live.complete → session screenshot
+ *   dsh.spike.verdict: b-harmony.httpfetch-v2     → leg done
+ *   dsh.spike.verdict: b-harmony.session.live     → done (exit 0 on PASS)
  *
  * usage: drive-official.mjs --hdc <path> [--overall-deadline S]
  *                            [--shot-boot PNG] [--shot-final PNG]
+ *                            [--shot-session-boot PNG] [--shot-session PNG]
  */
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
@@ -24,7 +27,8 @@ import { join } from 'node:path';
 
 const usage = () => {
   console.error('usage: drive-official.mjs --hdc <path> [--overall-deadline S]' +
-    ' [--shot-boot PNG] [--shot-final PNG]');
+    ' [--shot-boot PNG] [--shot-final PNG]' +
+    ' [--shot-session-boot PNG] [--shot-session PNG]');
   process.exit(2);
 };
 
@@ -82,7 +86,11 @@ const state = {
   bootShot: false,
   mountDone: false,
   finalShot: false,
+  sessionBootShot: false,
+  sessionDone: false,
+  sessionShot: false,
   verdict: null,
+  sessionVerdict: null,
 };
 
 const onLine = (line) => {
@@ -97,8 +105,20 @@ const onLine = (line) => {
     state.mountDone = true;
     snapshot(args['shot-final']);
   }
+  if (line.includes('"event":"index.served"') &&
+      line.includes('b-harmony.session.live') && !state.sessionBootShot) {
+    state.sessionBootShot = true;
+    snapshot(args['shot-session-boot']);
+  }
+  if (line.includes('"event":"session.live.complete"') && !state.sessionDone) {
+    state.sessionDone = true;
+    snapshot(args['shot-session']);
+  }
   if (line.includes('dsh.spike.verdict: b-harmony.httpfetch-v2')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
+  }
+  if (line.includes('dsh.spike.verdict: b-harmony.session.live')) {
+    state.sessionVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
 };
 
@@ -116,12 +136,18 @@ stream.stdout.on('data', (chunk) => {
 stream.on('exit', () => die('hilog stream ended early'));
 
 pollUntil('b-harmony verdicts', async () => {
-  return state.mountDone && state.verdict !== null ? state.verdict : null;
-}, OVERALL).then((verdict) => {
+  return state.mountDone && state.verdict !== null && state.sessionVerdict !== null
+    ? [state.verdict, state.sessionVerdict]
+    : null;
+}, OVERALL).then((verdicts) => {
   stream.kill();
-  if (verdict !== 'pass') {
-    die(`httpfetch-v2 verdict ${verdict}`);
+  if (verdicts[0] !== 'pass') {
+    die(`httpfetch-v2 verdict ${verdicts[0]}`);
   }
-  console.log('drive-official: PASS (mount.complete + b-harmony.httpfetch-v2 verdict)');
+  if (verdicts[1] !== 'pass') {
+    die(`session.live verdict ${verdicts[1]}`);
+  }
+  console.log('drive-official: PASS (mount.complete + b-harmony.httpfetch-v2 ' +
+    '+ b-harmony.session.live verdicts)');
   process.exit(0);
 }).catch((e) => die(e.message));

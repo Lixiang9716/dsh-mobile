@@ -79,6 +79,27 @@ export const seedWebPlugins = (files) => {
   globalThis.__DSH_WEB_PLUGINS_VFS__ = mounted;
 };
 
+/**
+ * MERGE one staged chunk into the seeded view (bus seam `web.plugins`
+ * chunked delivery — the harmony drive splits the multi-megabyte delivery so
+ * the carrier's main thread yields between packages; the same validation as
+ * `seedWebPlugins`, additive semantics).
+ * @param files - absolute POSIX path → { bytes: Uint8Array, mtimeMs: number }.
+ */
+export const mergeWebPlugins = (files) => {
+  const mounted = vfs() ?? new Map();
+  for (const [path, file] of Object.entries(files)) {
+    if (typeof path !== 'string' || !path.startsWith(`${WEB_PLUGINS_ROOT}/`)) {
+      throw new Error(`node:fs: staged web-plugin path escapes ${WEB_PLUGINS_ROOT}: ${path}`);
+    }
+    if (!(file.bytes instanceof Uint8Array) || typeof file.mtimeMs !== 'number') {
+      throw new Error(`node:fs: staged web-plugin file ${path} needs {bytes, mtimeMs}`);
+    }
+    mounted.set(path, file);
+  }
+  globalThis.__DSH_WEB_PLUGINS_VFS__ = mounted;
+};
+
 const underVFS = (path) => typeof path === 'string' && path.startsWith(`${WEB_PLUGINS_ROOT}/`);
 
 const refuse = (name) => () => {
@@ -148,6 +169,7 @@ export default {
   constants,
   WEB_PLUGINS_ROOT,
   seedWebPlugins,
+  mergeWebPlugins,
   existsSync,
   readFileSync,
   statSync,

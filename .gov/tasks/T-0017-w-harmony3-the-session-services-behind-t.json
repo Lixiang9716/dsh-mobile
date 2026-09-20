@@ -1,0 +1,21 @@
+{
+  "title": "W-HARMONY3: the session services behind the mux \u2014 real session.list + the real journal stream from the embedded spine (b-harmony.session.live)",
+  "created": "2026-09-20T19:46:04+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "spine closure staged into rawfile/spike byte-identical to the runtime/spike pins + BUNDLE_FILES extended + drift cross-check",
+    "harmony-session-live.js boots the full spine on-device and claims session.list + the mux journal with REAL ctx.sessions data; everything else stays structured-unavailable",
+    "carrier: scripted /mock-llm/chat/completions SSE endpoint + api.respond/mux journal bridging",
+    "E2E b-harmony.session.live one-to-one green with REAL PNG screenshots; full regression green (m1 7/7 + bridge-smoke 6/6 + m2.session 23/23 + m5 20/20 + official-web-mount 17/17 + httpfetch-v2 6/6)",
+    "agent note (architecture, ref D9), gov run green, rebase, push, PR open"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0017"
+}

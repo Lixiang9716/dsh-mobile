@@ -33,7 +33,11 @@ import './web-shims.js';
 // The VENDORED browser bootstrap bundle: registers its closure factory on
 // the queue facade (same file the page's blocking bootstrap batch loads).
 import '@deepseek-ai/dsh-client-modules/client';
-import { seedWebPlugins, WEB_PLUGINS_ROOT } from 'upstream/shims/fs.js';
+import {
+  mergeWebPlugins,
+  seedWebPlugins,
+  WEB_PLUGINS_ROOT,
+} from 'upstream/shims/fs.js';
 import {
   ClientModuleRegistry,
   bootInjections,
@@ -62,10 +66,27 @@ const parseBootManifest = bootstrapExports.parseBootManifest;
 /** Decode a bus delivery's base64 file payload (the Buffer shim accepts base64). */
 const decodeB64 = (text) => globalThis.Buffer.from(text, 'base64');
 
+/** The staged plugin DESCRIPTORS of a chunked delivery accumulate on the
+ * global (the VFS pattern: quickjs may compile two module instances of this
+ * adapter, so module state would fork — the global is the single store). */
+const stagedDescriptorStore = () => {
+  if (typeof globalThis.__DSH_WEB_PLUGIN_STAGED__ === 'undefined') {
+    globalThis.__DSH_WEB_PLUGIN_STAGED__ = [];
+  }
+  return globalThis.__DSH_WEB_PLUGIN_STAGED__;
+};
+
 /**
  * Mount one `web.plugins` bus delivery into the fs VFS.
  * Delivery: { type: 'web.plugins', plugins: [{ loaderName, pkgJsonPath,
  * entryPath, files: { [absPath]: { b64, mtimeMs } } }] }.
+ *
+ * CHUNKED delivery (the harmony drive splits the multi-megabyte staging so
+ * the carrier's main thread yields between packages — the 6s watchdog
+ * appfreezed on the single-shot compose): `chunked: true` MERGES each
+ * chunk's files into the VFS and accumulates the descriptors; only the
+ * `final: true` chunk composes. Legacy single deliveries (the iOS drive's
+ * shape) stage-and-compose in one step exactly as before.
  * Returns the plugin descriptors the Loader face resolves through.
  */
 export const stageWebPlugins = (delivery) => {
@@ -78,13 +99,25 @@ export const stageWebPlugins = (delivery) => {
       files[path] = { bytes: decodeB64(file.b64), mtimeMs: file.mtimeMs };
     }
   }
-  seedWebPlugins(files);
-  return delivery.plugins.map((plugin) => ({
+  const descriptors = delivery.plugins.map((plugin) => ({
     loaderName: plugin.loaderName,
     baseUrl: `${WEB_PLUGINS_ROOT}/`,
     pkgJsonPath: plugin.pkgJsonPath,
     entryFileURL: `file://${plugin.entryPath}`,
   }));
+  if (delivery.chunked === true) {
+    mergeWebPlugins(files);
+    const accumulated = stagedDescriptorStore();
+    accumulated.push(...descriptors);
+    if (delivery.final !== true) {
+      return { staged: false, plugins: descriptors };
+    }
+    return stagedDescriptorStore().slice();
+  }
+  seedWebPlugins(files);
+  stagedDescriptorStore().splice(0);
+  stagedDescriptorStore().push(...descriptors);
+  return descriptors;
 };
 
 /**
@@ -265,9 +298,14 @@ export const createMuxHandlers = (ctx, post) => {
 
 /** The `web.plugins` delivery leg: seed the VFS, mount the vendored
  * composer, and post the boot wire + claims (the base set plus the write
- * surface's endpoints when composed with one). */
+ * surface's endpoints when composed with one). A non-final chunk of a
+ * CHUNKED delivery only stages (the drive keeps delivering); the final
+ * chunk — or a legacy single delivery — composes. */
 const deliverWebPlugins = (ctx, post, msg, write) => {
   const plugins = stageWebPlugins(msg);
+  if (plugins.staged === false) {
+    return { kind: 'staged', packages: plugins.plugins.length };
+  }
   const { graph, rows } = mountClientModules(ctx, plugins);
   post(webBootMessage(rows, graph));
   const endpoints = write === null
