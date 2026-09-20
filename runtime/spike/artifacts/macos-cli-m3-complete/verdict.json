@@ -1,0 +1,8 @@
+{
+  "scenario": "m3.complete",
+  "pass": true,
+  "expected": 41,
+  "logged": 41,
+  "failures": [],
+  "parseErrors": []
+}

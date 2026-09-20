@@ -1,0 +1,8 @@
+{
+  "scenario": "m4.host-binding",
+  "pass": true,
+  "expected": 35,
+  "logged": 35,
+  "failures": [],
+  "parseErrors": []
+}

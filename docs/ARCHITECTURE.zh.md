@@ -157,10 +157,10 @@ dsh-mobile/
 - **M1 双 Spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
 - **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
 - **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`m3.install` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `m3.ui-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
-- **M4/M5**：Android、鸿蒙宿主。M4 进行中：同构宿主已验证 —— 网关桥接场景（`m2.bridge.smoke`）与 `m1.spike.boot` 回归在模拟器上通过（证据 `hosts/android/artifacts/m4-host/`）。
+- **M4/M5**：Android、鸿蒙宿主。M4 完成：完成会话 `m4.host-binding`（35/35）在模拟器全绿——回环 carrier 将内嵌的 Web Client 装载进真实 WebView 并实时渲染会话（slot 回执、token 增量、会话完成），九原语网关真实绑定（描述符 9 可用 / 0 不可用；强制审计经 `m2.gateway.audit` 16/16 复核），三场景回归同跑全绿（证据 `hosts/android/artifacts/m4-complete/`）。
 - **M4/M5**：Android、鸿蒙宿主。M5 已启动：同构鸿蒙宿主一次启动跑通全部三个 spike 场景——m2.session（经 registry + 三个系统插件）随 m1.spike.boot + m2.bridge.smoke 在模拟器通过（证据见 `hosts/harmony/artifacts/m5-host/`）。
 - **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
-- **M4/M5**：Android、鸿蒙宿主，均进行中。同构宿主一次启动在各自模拟器上跑通全部三个 spike 场景——`m2.session`（三个系统插件上的首个 MINI 智能体会话）、`m2.bridge.smoke` 与 `m1.spike.boot` 回归（证据 `hosts/android/artifacts/m4-host/`、`hosts/harmony/artifacts/m5-host/`）。
+- **M4/M5**：Android、鸿蒙宿主——M4 已完成，M5 进行中。同构宿主一次启动在各自模拟器上跑通全部三个 spike 场景（证据 `hosts/android/artifacts/m4-host/`、`hosts/harmony/artifacts/m5-host/`）；Android 另跑完成会话 `m4.host-binding` 35/35——carrier + WebView 挂载 + 九原语真实绑定（证据 `hosts/android/artifacts/m4-complete/`）。
 
 ## 11. 关键技术决策
 
