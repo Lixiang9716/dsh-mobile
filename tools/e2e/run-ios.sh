@@ -35,8 +35,8 @@ PT_ALLOW=(320 570)             # notification permission alert: 允许/Allow (px
 PT_APPROVE=(300 720)           # in-app approval dialog: "Approve" (check 03-*.png)
 PT_BANNER=(150 130)            # notification banner body (top of screen)
 SWIPE_PULL=(150 60 150 600)    # pull-down gesture when banner is collapsed
-PT_SEARCH=(201 126)           # Files search field center (pt)
-PT_FILES_TILE=(82 295)        # Files grid first tile / search result row (px 163,590 / 2)
+PT_SEARCH=(298 248)           # Files sheet search field (re-derived 2026-09-21 from screens/05-picker-search.png per the coordinate law: field at px ~(596,496) / 2; the old (201,126) mapped to the sheet TITLE row — tap missed, typing never landed, empty Recents left zero rows for the tile press — surprise drivepickers-ptsearch-calibration-201126)
+PT_FILES_TILE=(102 447)       # search-result grid cell (re-derived 2026-09-21 from 05-picker-search.png: single "notes" tile at px ~(212,894) / 2 — the search UI gained a suggestions row that pushes results lower than the 2026-09-20 calibration; wda_session element probe confirmed WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
 PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140 / 2); harmless on empty grid
 BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
@@ -158,7 +158,12 @@ fail_deadline() {
 WDA_PID=""
 # --max-time 3: during init WDA accepts TCP but stalls the response — an
 # unbounded curl would hang the poll loop itself (observed live 2026-09-20).
-wda_up() { curl -s --max-time 3 localhost:8100/status 2>/dev/null | grep -q '"state":"success"'; }
+# The status match accepts BOTH JSON spacings: WDA builds up to Sep 20 2026
+# returned compact `"state":"success"`, the 16.12.9 rebuild pretty-prints
+# `"state" : "success"` — matching only one spacing burns the 600s bootstrap
+# window against a healthy server, then step 5 pkills it mid-run (surprise
+# run-iosshs-wdaup-probe-matches, 2026-09-21).
+wda_up() { curl -s --max-time 3 localhost:8100/status 2>/dev/null | grep -Eq '"state"[[:space:]]*:[[:space:]]*"success"'; }
 wda_bootstrap() {
   if wda_up; then return 0; fi
   log "bootstrapping WebDriverAgent (clone/build may take minutes on first run)"
@@ -181,6 +186,27 @@ wda_tap() { local x=$1 y=$2 d=${3:-0.1} sid; sid=$(wda_session);   curl -s -X PO
 # wda_click LABEL: find by accessibility label and click (works across app,
 # remote-view sheets AND system alerts — idb cannot reach any of those)
 wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json'     -d "{\"using\":\"xpath\",\"value\":\"//*[@label=\\\"$label\\\"]\"}"     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else (v[0]['ELEMENT'] if v else ''))" 2>/dev/null);   [ -n "$eid" ] && curl -s -X POST "localhost:8100/session/$sid/element/$eid/click" >/dev/null; }
+
+# wda_field_type TEXT: focus the Files sheet search field through WDA and type
+# into it. Verified live 2026-09-21 on the iOS 26.5 picker sheet: idb
+# coordinate taps NEVER focus this field (no keyboard, placeholder intact —
+# even at the exactly-derived px), while a WDA element click does (caret +
+# keyboard up); wda/keys returns success but types nothing into the sheet
+# field, the element /value endpoint delivers (surprise
+# drivepicker-can-focus-the). The field is looked up by TYPE
+# (XCUIElementTypeSearchField), not label, so the drive is locale-independent.
+wda_field_type() { # TEXT
+  local sid eid text=$1
+  sid=$(wda_session)
+  eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json' \
+    -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
+    | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
+  [ -n "$eid" ] || return 1
+  curl -s -X POST "localhost:8100/session/$sid/element/$eid/click" >/dev/null
+  sleep 1    # focus animation before keys
+  curl -s -X POST "localhost:8100/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
+    -d "{\"text\":\"$text\"}" >/dev/null
+}
 
 # ---- UI legs ---------------------------------------------------------------
 drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually renders
@@ -218,14 +244,17 @@ drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
   # one gesture (verified live: sheet closes and the scenario proceeds) —
   # plain zero-duration taps never select, and there is no separate 打开 to
   # press on this runtime. The log marker ui-done picker is the verdict.
-  log "driving Files picker (wait sheet -> search -> duration-press result)"
+  log "driving Files picker (wait sheet -> focus field via WDA -> search -> duration-press result)"
   shot 04-picker-sheet
   wait_sheet || true   # cold Files daemon presents the sheet late — detect, don't race
   sleep 5      # and its CONTENT loads a beat after the frame — early taps swallow
   idb ui tap --udid "$UDID" "${PT_ALERT_DENY[@]}" >/dev/null 2>&1 || true  # stray system alert; no-op on empty grid
-  idb ui tap --udid "$UDID" "${PT_SEARCH[@]}" >/dev/null 2>&1 || true      # focus the search field
-  sleep 1
-  idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true               # filters to exactly one row
+  if ! wda_field_type "notes"; then   # WDA focus+type; idb fallback (works only if focus landed)
+    log "wda_field_type unavailable — idb tap+text fallback"
+    idb ui tap --udid "$UDID" "${PT_SEARCH[@]}" >/dev/null 2>&1 || true
+    sleep 1
+    idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true
+  fi
   sleep 2
   shot 05-picker-search
   # the single result row sits right under the search field; a ~0.15s press
