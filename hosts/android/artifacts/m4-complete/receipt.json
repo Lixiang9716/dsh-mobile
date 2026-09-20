@@ -1,0 +1,34 @@
+{
+  "host": "android emulator-5554 (API 35 AVD pixel, Android 15 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "com.dshmobile.spike",
+  "launchMode": "--ez dsh.m4 true (SpikeHostM4: carrier + WebView + real nine-primitive gateway); default launch = the untouched three-scenario regression",
+  "scenarios": [
+    "m1.spike.boot",
+    "m2.bridge.smoke",
+    "m2.session",
+    "m4.host-binding",
+    "m2.gateway.audit"
+  ],
+  "exitStatus": 0,
+  "exitStatusNote": "run-android-full.sh exit 0 in ONE invocation: phase 1 (regression, run-spike-e2e.sh untouched) + phase 2 (m4.host-binding, UI-driven). Checker exits: m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m4.host-binding 35/35, m2.gateway.audit 16/16 (frozen manifest reused — the m4 scenario keeps the m2-gateway-binding call order). The device itself reported 'm4.host-binding PASS' + 'ALL PASS' on dsh.spike.result; the stream was bounded at the first ALL line by construction.",
+  "verdictLines": [
+    "m1.spike.boot PASS | quickjs-ng 0.17.0",
+    "m2.bridge.smoke PASS | quickjs-ng 0.17.0",
+    "m2.session PASS | quickjs-ng 0.17.0",
+    "ALL PASS",
+    "m4.host-binding PASS | quickjs-ng 0.17.0",
+    "ALL PASS"
+  ],
+  "descriptor": "nine available, zero unavailable (conformance §7): fsRead/fsWrite/fsScope (scope 'app' = filesDir/profiles/default; user scopes = SAF tree URIs via ACTION_OPEN_DOCUMENT_TREE with persistable permission, DocumentsContract child resolution, 8 MiB read cap; fsScope persist/resolve = file-backed scope registry, refs 'bkm:<uuid>'), httpFetch (HttpURLConnection; settle at headers; <=16KB http.body events; abort -> cancelled), notify (NotificationManager channel 'dsh'; POST_NOTIFICATIONS pre-granted via adb; contentIntent -> notify.response THEN app.state foreground, frozen order), presentApproval (AlertDialog), presentPicker (SAF tree), keychainGet/keychainSet (AndroidKeyStore AES-256-GCM sealing key, non-extractable; ciphertext app-private under files/keychain), app.state (lifecycle edges, deduped)",
+  "gatewayBridge": "dsh_spike_m4.c (JNI, sibling of dsh_spike_jni.c): descriptor before eval, gateway dispatch + bus sink before eval, eval + first pump on the calling thread; settle/event/bus-deliver re-entry hopped by Kotlin onto the single HandlerThread('dsh-spike-js'); primitive handlers run on the UI thread (dialogs/picker), fetch worker threads, and the notification manager — never on the runtime thread",
+  "carrier": "CarrierServer.kt: raw ServerSocket on 127.0.0.1, ephemeral port; static serving of the embedded Web Client (assets/spike/webclient, cmp-identical to presentation/web-client); RFC6455 text-frame pump (SHA-1 accept via MessageDigest, masked client frames unmasked, ping->pong, close->echo); /gateway-e2e/bytes (2x32B, 40ms) + /gateway-e2e/slow (6x16B, 300ms); WebView mounts http://127.0.0.1:<port>/ and renders the session live (slot button, 'Host binding' transcript, session-complete line — screens/01-mount.png)",
+  "uiDriving": "uiautomator dump + input tap under polled deadlines: SAF tree picker (dsh-e2e -> USE THIS FOLDER -> ALLOW confirmation), approval dialog (Material textAllCaps 'APPROVE'), notification banner (HOME -> cmd statusbar expand-notifications -> tap 'DSH E2E'). Screenshots: screens/01-mount (session rendered in the WebView), 02-picker, 03-approval, 04-notification (shade), 05-final — human evidence only, never checker inputs",
+  "runtimeThread": "HandlerThread 'dsh-spike-js' (logcat pid 5931 tid 5986 — not the UI thread); carrier/accept threads, fetch threads, UI thread never touch the runtime",
+  "logSource": "adb logcat -s dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit streamed LINE-BUFFERED (while-read append; stdio block buffering starves marker greps — surprise backgrounded-adb-logcat-file) and truncated at the first 'dsh.spike.result: ALL'; second capture: filesDir/spike-capture-m4-host-binding.log pulled via run-as (capture-m4-host-binding.log)",
+  "assetsProvenance": "assets/spike/* byte-identical (cmp-verified post-run) to runtime/spike/ canonicals incl. the new scenario/m4-host-binding.js and manifest.json (newly added — the C smoke backend never read it, the Kotlin GatewayCore permission check does); assets/spike/webclient/* identical to presentation/web-client/*; system-plugins identical to system-plugins/*",
+  "timestamp": "2026-09-20T11:36:00+08:00"
+}

@@ -57,26 +57,11 @@ until "$HDC" install -r "$HAP" >/dev/null 2>&1; do
     sleep 2
 done
 
-# Wake + unlock, then a clean relaunch. The launch itself is retried with a
-# wake+unlock before each attempt: a cold-booted emulator can still be on the
-# lock screen when aa start runs, and the failure ("device screen is locked")
-# is only visible in aa start's output — never treat the launch as fired
-# until it reports success (rule 5).
+# Wake + unlock, then a clean relaunch.
 "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
 "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
 "$HDC" shell aa force-stop $BUNDLE >/dev/null 2>&1 || true
 "$HDC" shell hilog -r >/dev/null
-
-deadline=$(( $(date +%s) + 120 ))
-until "$HDC" shell aa start -b $BUNDLE -a EntryAbility >/dev/null 2>&1; do
-    if [ "$(date +%s)" -ge "$deadline" ]; then
-        echo "::error::aa start kept failing within 120s (screen lock or worse)"
-        exit 1
-    fi
-    "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
-    "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
-    sleep 2
-done
 
 mkdir -p "$OUT"
 STREAM=/tmp/dsh-harmony-hilog.txt

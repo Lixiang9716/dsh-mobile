@@ -10,6 +10,7 @@
     { "event": "install.digest.verified", "match": { "sha256": "eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56" } },
     { "event": "install.manifest.validated", "match": { "id": "dsh-notes", "version": "0.1.0" } },
     { "event": "install.integrity.computed", "match": { "files": 2, "manifestSha256": "26d16425d35d55800325345d53375ace7a9f8f1d3f794fb5b71ae62d6ae99358" } },
+    { "event": "install.negotiated", "match": { "required": 2, "skipped": false } },
     { "event": "install.staged.verified", "match": { "files": 3 } },
     { "event": "install.promoted", "match": { "dir": "plugins/dsh-notes@0.1.0", "files": 3 } },
     { "event": "install.committed", "match": { "status": "committed", "previousVersion": null, "treeSha256": "a7c1a54bab6caa41055a0d7b4086d6e41ecf7cb74c846490304d87ddeda51a4d" } },

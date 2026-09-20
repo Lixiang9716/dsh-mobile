@@ -1,0 +1,29 @@
+{
+  "title": "M3 complete: fetch-based installer + pending-receipt replay + install-time negotiation + config layer (W-M3B)",
+  "created": "2026-09-20T02:41:57+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "PR-A: install-fetch.js + receipt-journal.js + config-layer.js + dsh-badge fixture + negotiation/pending-journal in install-pipeline.js",
+    "PR-A: scenario/m3-complete.js + manifest m3-complete.json one-to-one",
+    "PR-A: CLI evidence under runtime/spike/artifacts/macos-cli-m3-complete/ (logs, scenario.jsonl, verdict, receipt)",
+    "PR-A: agent note + gov run green + push + gh pr create (do not merge)",
+    "PR-B: carrier serves fixture tgz (loopback), m3-fetch-install.js scenario over real httpFetch, config-selected client",
+    "PR-B: runner run-ios-m3.sh + artifacts hosts/ios/artifacts/m3-complete/ + screenshots",
+    "PR-B: regression run-ios.sh 4/4 + run-ios-session.sh green",
+    "PR-B: status docs M3 -> Done (README en/zh, ARCHITECTURE en/zh) + pairing + push + PR"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0010",
+  "void": {
+    "ts": "2026-09-20T02:55:20+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Receipt-closure is structurally impossible for this card: the PR-A half (shared JS + CLI evidence) lands first and the PR-B half (iOS on-device fetch-install E2E + status flip) lands as a second stacked PR from the same brief; the integrator merges both. The card's items are tracked one-to-one by the two PR descriptions and the committed evidence (m3.complete 41/41 CLI artifacts; m3.fetch-install artifacts under hosts/ios/artifacts/m3-complete/). Void-while-open is the sanctioned exit per govrail #329/#339."
+  }
+}

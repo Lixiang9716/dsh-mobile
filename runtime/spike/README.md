@@ -35,14 +35,44 @@ embedder plus a typed JS shim (`gateway.js`).
 - `install-pipeline.js` — the M3 install transaction
   (data-protocols.md §4): sha256 → store at `cache/blobs/<sha256>` → verify
   against the caller's trust record → untar → STRICT manifest validation
-  (unknown fields fail loud per manifest.schema.json) → integrity ledger →
+  (unknown fields fail loud per manifest.schema.json) → INSTALL-TIME
+  CAPABILITY NEGOTIATION (every `capabilities.required` checked against the
+  host RuntimeDescriptor; a requirement the host declares `unavailable` —
+  or simply does not offer — rejects the install BEFORE unpack; no
+  descriptor set → nothing was declared → skipped) → integrity ledger →
   stage under `plugins/.staging-<txId>/` → read-back re-verify → promote to
   `plugins/<pkg>@<semver>/` → append the receipt (the commit point). All I/O
   rides the fs primitives under the granted scope — install is a data
-  operation. A digest/manifest mismatch rejects BEFORE promotion and writes
-  NO receipt. The gateway fs v1 has no rename primitive, so "atomic" is
-  approximated by stage → verify → promote; the committed receipt is what
-  makes a tree authoritative (pending-receipt replay is M4 work).
+  operation. A digest/manifest/capability mismatch rejects BEFORE promotion
+  and writes NO receipt. With `journal: true` the pipeline ALSO appends each
+  receipt to the append-only `receipts/journal.jsonl` — pending BEFORE the
+  unpack, committed at the commit point, rolled-back on a failure after the
+  pending receipt — giving the startup replay its enumeration (the gateway
+  fs v1 has no rename OR readdir primitive; "atomic" is approximated by
+  stage → verify → promote; the committed receipt is what makes a tree
+  authoritative).
+- `receipt-journal.js` — the PENDING-RECEIPT STARTUP REPLAY (§4): reads the
+  journal, examines every transaction whose latest entry is still pending,
+  and resolves it — a staged tree that verifies (anchored by the pending
+  receipt's treeSha256) is promoted and the receipt completes to committed;
+  anything else rolls back with the installed tree untouched. Journal lines
+  wrap one schema-valid receipt in `{txId, receipt}` (the schema is
+  additionalProperties:false, so the transaction id rides the envelope).
+  `simulateCrash` reproduces §4's interrupted state for the E2E: stage a
+  (possibly incomplete) tree + append the pending receipt, promote nothing.
+- `install-fetch.js` — the FETCH-BASED installer: `installFromFetch` drains
+  a streaming fetch body (AsyncIterable, gateway httpFetch response shape)
+  into bytes and runs the pipeline. The fetch impl is a PARAMETER — hosts
+  with the network primitive pass the REAL `httpFetch`; hosts that honestly
+  declare it unavailable (the CLI smoke backend) pass a logged scope-read
+  stub with the same shape, keeping the streaming path under test
+  everywhere.
+- `config-layer.js` — the FIRST of the three UI-plugin levels
+  (ARCHITECTURE.md §6): `cordis.patch`-style LAYERED OVERRIDES (base →
+  hostFace → profile → overlay; JSON in the spike, documented in the module
+  — the frozen gateway has no YAML parser). Objects merge recursively,
+  arrays (the slot allow-set) replace; the session stack consumes the
+  resolved config to select the active Web Client and gate toolbar slots.
 - `fixtures/` — the `dsh-notes` fixture plugin: its ESM source (as data) and
   a builder that packages it into a deterministic ustar archive at scenario
   time (the spike JS cannot shell out to tar/npm). The `tampered` variant
@@ -111,6 +141,22 @@ embedder plus a typed JS shim (`gateway.js`).
   with drifting bytes is rejected by the trust record before unpack
   (`install.integrity-rejected`), the installed tree stays byte-identical,
   and no receipt is written for the rejected transaction.
+- `scenario/m3-complete.js` — the `m3.complete` E2E scenario, the four M3
+  scope items in one platform-neutral stream: the CONFIG LAYER resolves the
+  session stack's Web Client + toolbar slot set and the slot gate refuses a
+  slot the profile override trimmed; the FETCH-BASED installer runs the
+  package through `installFromFetch` (CLI: the logged scope-read stub —
+  `install.fetch.stub`; carrier hosts: the real gateway `httpFetch`,
+  scenario `m3.fetch-install`); two CRASH-SIMULATED pending receipts are
+  STARTUP-REPLAYED (staged-verifies → committed, staging-incomplete →
+  rolled-back with the tree untouched); and a package requiring `notify`
+  (declared unavailable by this host's descriptor) is rejected by
+  INSTALL-TIME NEGOTIATION before unpack. Evidence:
+  `runtime/spike/artifacts/macos-cli-m3-complete/`.
+- `fixtures/dsh-badge{,-source}.js` — the negotiation test package: a real
+  plugin-shaped fixture whose manifest REQUIRES `fsRead`+`fsWrite`+`notify`;
+  hosts whose descriptor honestly declares `notify` unavailable reject it
+  before unpack.
 - `system-plugins/` — system implementation plugins (JS, shared across
   platforms; see the repo-root tree): `dsh-fs` (the `fs` service over
   fsRead/fsWrite/fsScope, scope-relative POSIX with escape rejection),
@@ -216,4 +262,13 @@ So does the M3 install pipeline (`m3.install`):
 ./build/dsh-spike-cli . scenario/m3-install.js > logs-m3-install.txt
 node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-install.json \
   --log logs-m3-install.txt
+```
+
+And the M3 completion scenario (config layer + fetch-based install + pending-
+receipt startup replay + install-time capability negotiation):
+
+```sh
+./build/dsh-spike-cli . scenario/m3-complete.js > logs-m3-complete.txt
+node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-complete.json \
+  --log logs-m3-complete.txt
 ```

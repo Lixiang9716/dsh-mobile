@@ -10,6 +10,7 @@ set(DSH_ENGINE_DIR ${DSH_SPIKE_DIR}/vendor/quickjs-ng/0.17.0)
 
 add_library(dsh_spike SHARED
         dsh_spike_jni.c
+        dsh_spike_m4.c
         dsh_spike_smoke.c
         android_compat.c
         ${DSH_SPIKE_DIR}/host/dsh_spike_host.c

@@ -4,7 +4,45 @@ The Android host (M4). v1 is isomorphic with iOS (quickjs-ng + Kotlin gateway); 
 nodejs-mobile high-fidelity mode (V8 JIT + Termux-pattern subprocesses), with the difference
 expressed via RuntimeDescriptor capabilities.
 
-## M4 status: isomorphic host verified — gateway bridge + first session green on emulator
+## M4 status: completion — carrier + WebView mount + the real nine-primitive binding
+
+On top of the three-scenario regression (below), the M4 completion session
+(`m4.host-binding`, launch with `--ez dsh.m4 true`) proves the host behaves like the iOS host:
+
+- **Local carrier** (`CarrierServer.kt`) — a raw `ServerSocket` on 127.0.0.1 (the Kotlin sibling
+  of hosts/ios `CarrierServer.swift`): loopback HTTP static serving of the embedded Web Client
+  and a minimal RFC6455 WS text-frame pump (SHA-1 accept via `MessageDigest`), shuttling JSON
+  lines between the WebView and the runtime thread over the platform-neutral bus seam
+  (`dsh_spike_set_bus_sink` / `dsh_spike_bus_deliver`).
+- **Web Client mount** — a real `WebView` loads `http://127.0.0.1:<port>/` and renders the
+  session live (slot button, token deltas, session-complete line); the presentation/web-client
+  files ride in assets byte-identical to the canonicals.
+- **The nine gateway primitives are real** (`GatewayCore.kt` + one file per surface, ports of
+  hosts/ios `Gateway/`): fsRead/fsWrite over a scope registry (reserved `app` scope =
+  `filesDir/profiles/default`, user scopes = SAF tree URIs); fsScope persist/resolve over a
+  file-backed scope registry (`bkm:` refs — the SAF analogue of iOS security-scoped bookmarks);
+  httpFetch over `HttpURLConnection` with the body streamed as ≤16 KB `http.body` events +
+  abort → `cancelled`; notify via NotificationManager (tap → `notify.response`, frozen order
+  before `app.state foreground`); presentApproval (AlertDialog) and presentPicker (SAF
+  ACTION_OPEN_DOCUMENT_TREE) on the UI thread with results settled onto the runtime queue;
+  keychainGet/keychainSet sealed with a hardware-backed AndroidKeyStore AES-256-GCM key
+  (AndroidKeyStore stores keys, not blobs — the ciphertext persists app-privately). Event
+  channels: `app.state` from activity lifecycle edges (deduped), `notify.response` from the
+  notification's PendingIntent. Descriptor: nine available, zero unavailable (conformance §7).
+- **Audit**: one structured record per call on the `dsh.spike.audit` tag
+  (`dsh.gateway.audit: ` prefix, never payload contents) — the frozen `m2.gateway.audit`
+  manifest re-verified against the m4 session's call sequence.
+
+Threading law unchanged: JS executes only on `HandlerThread("dsh-spike-js")`; the carrier
+threads, fetch threads, and the UI thread never touch the runtime — every settle/event/bus
+delivery hops through `SpikeRuntime.post`.
+
+Evidence (one run, final code state): `artifacts/m4-complete/` — `logs.txt` + `scenario.jsonl`
++ `audit.jsonl`, `verdict-m4-host-binding.json` + `verdict-m2-gateway-audit.json` (checker
+PASS), the regression verdicts, `screens/` (mount, picker, approval, notification shade,
+final — human evidence only), `receipt.json`.
+
+## M3-M4 regression status: gateway bridge + first session green on emulator
 
 The app embeds the shared M2 spike host (`runtime/spike/host/dsh_spike_host.c`) with its REAL
 gateway dispatch bridge (no canned responses — the M1 single-call slot is gone) and runs ALL
@@ -14,7 +52,7 @@ THREE scenarios in one launch, judged by the shared checker:
 - `m2.bridge.smoke` — the gateway bridge end to end, 6/6 canonical events: fsWrite/fsRead of 17
   base64-carried bytes, the scope-escape `invalid` rejection, and `keychainGet` rejected with the
   honest `unavailable` code.
-- `m2.session` — the first MINI agent session on Android, 22/22 canonical events: the three
+- `m2.session` — the first MINI agent session on Android, 23/23 canonical events: the three
   system plugins (dsh-fs / dsh-subprocess-quickjs / dsh-ui) install through `registry.js`, the
   `host.info` readiness event starts the session, the mock LLM streams token deltas, one tool
   call runs through the subprocess plugin and persists via dsh-fs under scope `app`
@@ -61,7 +99,14 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 echo "sdk.dir=$ANDROID_HOME" > hosts/android/local.properties
 $ANDROID_HOME/emulator/emulator -avd pixel -no-window -no-audio -no-boot-anim -no-snapshot -port 5554 &
 (cd hosts/android && ./gradlew assembleDebug --no-daemon)
-bash hosts/android/ci/run-spike-e2e.sh   # boot-wait -> install -> launch -> poll -> both checker verdicts
+bash hosts/android/ci/run-spike-e2e.sh      # the three-scenario regression (what CI runs)
+bash hosts/android/ci/run-android-full.sh   # regression + the m4.host-binding completion session
 ```
 
-CI (`.github/workflows/dev-android.yml`) runs the same script against an API 35 x86_64 emulator.
+`run-android-full.sh` stages the SAF picker target (`/sdcard/dsh-e2e/notes.txt`), pre-grants
+POST_NOTIFICATIONS, drives the UI-driven primitives (SAF picker, approval dialog, notification
+banner) via `uiautomator dump` + `input tap` under polled deadlines, and captures screenshots
+at each stage.
+
+CI (`.github/workflows/dev-android.yml`) runs the three-scenario regression script against an
+API 35 x86_64 emulator.
