@@ -35,10 +35,40 @@ class CarrierAPIBridge(private val sessionToken: String) {
     private val claimedEndpoints = HashSet<String>()
     /** Whether the runtime claimed the mux streams (v0: false). */
     private var muxClaimed = false
-    /** Responses awaiting the runtime, by rpcId. */
-    private val pendingRPC = HashMap<String, OutputStream>()
+    /** Forwarded RPCs awaiting the runtime's answer, by rpcId. */
+    private val pendingRPC = HashMap<String, RpcWaiter>()
     /** The stream endpoint behind the first tx error frame (once-only). */
     private var firstMuxErrorLeg: String? = null
+
+    /** One parked api.request: the connection thread awaits the runtime's
+     * answer with a deadline; the runtime thread supplies it (never blocks,
+     * never touches sockets). Wait/notify over a single result slot. */
+    private class RpcWaiter {
+        private var result: JSONObject? = null
+
+        /** The runtime's answer, or null when [timeoutMs] passed (rule 8:
+         * poll the arrival condition with a deadline — never a blind wait). */
+        fun await(timeoutMs: Long): JSONObject? {
+            val deadline = System.currentTimeMillis() + timeoutMs
+            synchronized(this) {
+                while (result == null) {
+                    val remaining = deadline - System.currentTimeMillis()
+                    if (remaining <= 0) return null
+                    @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+                    (this as Object).wait(remaining)
+                }
+                return result
+            }
+        }
+
+        /** Runtime thread: hand the answer to the parked connection. */
+        fun supply(value: JSONObject) {
+            synchronized(this) {
+                result = value
+                (this as Object).notifyAll()
+            }
+        }
+    }
 
     /** Binds to the server: registers the `/api` prefix route and the
      * `/api/remote.mux` exact upgrade (§2.3, §2.4). */
@@ -77,7 +107,13 @@ class CarrierAPIBridge(private val sessionToken: String) {
 
     /** Registers one claimed RPC for the runtime and delivers it over the
      * seam; false when the endpoint is unclaimed — the structured
-     * unavailable answer is sent here, atomically with the claim check. */
+     * unavailable answer is sent here, atomically with the claim check.
+     * The claim answer is ASYNCHRONOUS (the runtime hops queues), so the
+     * connection thread parks here until the runtime's response arrives
+     * (bounded — rule 8): the carrier's connection-per-request lifecycle
+     * would otherwise close the socket before the response exists. On
+     * deadline exhaustion the structured unavailable envelope answers
+     * instead — loud, never a hang. */
     private fun tryForward(
         rpcId: String,
         endpoint: String,
@@ -89,34 +125,50 @@ class CarrierAPIBridge(private val sessionToken: String) {
             .put("rpcId", rpcId)
             .put("endpoint", endpoint)
             .put("payload", payload)
+        val waiter = RpcWaiter()
         synchronized(lock) {
             if (!claimedEndpoints.contains(endpoint)) {
                 answerUnavailable(rpcId, endpoint, out)
                 return false
             }
-            pendingRPC[rpcId] = out
+            pendingRPC[rpcId] = waiter
         }
         deliverToRuntime?.invoke(request)
+        val result = waiter.await(RESPOND_TIMEOUT_MS)
+        if (result != null) {
+            answerEnvelope(rpcId, result, out)
+        } else {
+            synchronized(lock) { pendingRPC.remove(rpcId) }
+            answerUnavailable(rpcId, endpoint, out)
+        }
         return true
     }
 
-    /** Answers one unclaimed endpoint with the structured unavailable
-     * envelope (200: the envelope is the response, the error rides inside). */
+    /** Answers one unclaimed (or unanswered) endpoint with the structured
+     * unavailable envelope (200: the envelope is the response, the error
+     * rides inside). */
     private fun answerUnavailable(rpcId: String, endpoint: String, out: OutputStream) {
         val body = envelope(rpcId, endpoint)
         answer(out, 200, body.toByteArray(Charsets.UTF_8), "application/json")
     }
 
-    /** Runtime → carrier: settle one claimed RPC with the frozen result
-     * envelope (`result` = the already-shaped ok/error JSON object). */
+    /** The frozen result envelope for one runtime answer (conn thread). */
+    private fun answerEnvelope(rpcId: String, result: JSONObject, out: OutputStream) {
+        val data = JSONObject()
+            .put("type", "server-response")
+            .put("rpcId", rpcId)
+            .put("result", result)
+        answer(out, 200, data.toString().toByteArray(Charsets.UTF_8), "application/json")
+    }
+
+    /** Runtime → carrier: settle one claimed RPC. HANDOFF ONLY — the socket
+     * write belongs to the parked connection thread (this runs on the
+     * runtime thread; a write here would race the connection lifecycle and
+     * could never throw into it). Unknown rpcIds (abandoned waiters) drop. */
     fun respondAPI(rpcId: String, result: JSONObject) {
         synchronized(lock) {
-            val out = pendingRPC.remove(rpcId) ?: return
-            val data = JSONObject()
-                .put("type", "server-response")
-                .put("rpcId", rpcId)
-                .put("result", result)
-            answer(out, 200, data.toString().toByteArray(Charsets.UTF_8), "application/json")
+            val waiter = pendingRPC.remove(rpcId) ?: return
+            waiter.supply(result)
         }
     }
 
@@ -239,6 +291,12 @@ class CarrierAPIBridge(private val sessionToken: String) {
 
     companion object {
         const val MUX_PATH = "/api/remote.mux"
+
+        /** How long a forwarded RPC's connection may wait for the runtime's
+         * answer. The runtime answers claimed endpoints in milliseconds; the
+         * bound only bites when the runtime half is gone — the structured
+         * unavailable envelope answers then (fail loud, never a hang). */
+        const val RESPOND_TIMEOUT_MS = 30_000L
 
         /** Code answered for endpoints no runtime has claimed (Phase-B v0: all). */
         const val UNAVAILABLE_CODE = "gateway/unimplemented"

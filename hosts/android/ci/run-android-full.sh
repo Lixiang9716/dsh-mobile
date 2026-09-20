@@ -269,3 +269,83 @@ node tools/e2e/check.mjs --manifest $SCEN/b-android-official-web-mount.json \
     --log "$ART/logs.txt" --out "$ART/verdict-b-android-official-web-mount.json"
 cat "$ART/verdict-b-android-official-web-mount.json"
 say "phase 3 complete — evidence under $ART"
+
+# ---- phase 4: the session-live mount (b-android.session.live) -------------
+# The FULL upstream agent spine boots on-device and claims /api/session.list
+# + the mux session/journal streams over the bus seam; the official page
+# boots with REAL session data: one scripted-llm turn before the page loads
+# (the journal baseline) and one streamed LIVE into the attached page. The
+# scripted /mock-llm/chat/completions carrier endpoint is the model boundary
+# (E2E determinism, logged as such by the scenario's llm/runtime record).
+# Same capture discipline as phase 3; screenshots are human evidence.
+say "phase 4: b-android.session.live (spine boot + claims + journal probe)"
+
+SART=${DSH_SESSION_ART:-hosts/android/artifacts/android-session-live}
+SESSION_STREAM=$OUT/dsh-session-stream.txt
+mkdir -p "$SART/screens"
+
+sshots() { adb exec-out screencap -p > "$SART/screens/$1.png" 2>/dev/null || true; }
+
+adb shell am force-stop $PKG >/dev/null 2>&1 || true
+adb logcat -c
+: > "$SESSION_STREAM"
+adb logcat -s dsh.spike dsh.spike.result 2>/dev/null \
+    | while IFS= read -r line; do printf '%s\n' "$line" >> "$SESSION_STREAM"; done &
+sstreamer=$!
+cleanup_session() {
+    kill "$sstreamer" 2>/dev/null || true
+    pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+}
+trap cleanup_session EXIT INT TERM
+
+deadline=$(( $(date +%s) + 60 ))
+until adb shell am start -n $PKG/.MainActivity --ez dsh.session true >/dev/null 2>&1; do
+    [ "$(date +%s)" -ge "$deadline" ] && die "am start kept failing within 60s"
+    sleep 2
+done
+
+saw_index=0; saw_list=0; saw_journal=0
+deadline=$(( $(date +%s) + 300 ))
+until grep -q "dsh.spike.result: ALL" "$SESSION_STREAM"; do
+    if [ "$(date +%s)" -ge "$deadline" ]; then
+        tail -80 "$SESSION_STREAM"
+        die "session-live drive did not complete within 300s"
+    fi
+    if [ "$saw_index" -eq 0 ] && grep -q '"event":"index.served"' "$SESSION_STREAM"; then
+        saw_index=1
+        # index.served precedes first paint; give the boot page its ~1s.
+        sleep 1.2
+        sshots 01-session-live-boot
+    fi
+    if [ "$saw_list" -eq 0 ] && grep -q '"event":"session.list.responded"' "$SESSION_STREAM"; then
+        saw_list=1
+        sleep 0.5
+        sshots 02-session-list-real
+    fi
+    if [ "$saw_journal" -eq 0 ] && grep -q '"event":"journal/live"' "$SESSION_STREAM"; then
+        saw_journal=1
+        sleep 0.5
+        sshots 03-journal-live
+    fi
+    sleep 0.3
+done
+# The shell shot lives AFTER the loop on purpose: the probe's verdict and
+# the ALL marker flush in the same logcat burst. The shell stays mounted
+# after the verdict, so the post-loop screen IS the mounted-shell evidence.
+sleep 0.5
+sshots 03-journal-live
+sshots 04-final-state
+trap - EXIT
+cleanup_session
+
+sed '/dsh.spike.result: ALL/q' "$SESSION_STREAM" > "$SART/logs.txt"
+grep 'dsh.spike.result' "$SART/logs.txt" > "$SART/results.txt"
+cat "$SART/results.txt"
+grep 'dsh.spike.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
+adb exec-out run-as $PKG cat files/spike-capture-b-android-session-live.log \
+    > "$SART/capture-b-android-session-live.log" 2>/dev/null || true
+
+node tools/e2e/check.mjs --manifest $SCEN/b-android-session-live.json \
+    --log "$SART/logs.txt" --out "$SART/verdict-b-android-session-live.json"
+cat "$SART/verdict-b-android-session-live.json"
+say "phase 4 complete — evidence under $SART"

@@ -30,6 +30,16 @@ val vendoredBootstrap = rootProject.file(
 )
 val dshAssets = layout.buildDirectory.dir("generated/dsh-assets")
 
+// The D9 spine closure (W-SESS vendored trees: 14 spine packages + the zod
+// classic runtime closure) is UNTRACKED by the same discipline as the engine
+// sources: hosts/android/ci/stage-spine-closure.sh materializes it from the
+// ensure-dsh.sh pin (byte-identity-verified) into assets before packaging.
+// The script fails loud when the runtime pin checkout is missing.
+val stageSpineScript = rootProject.file("../../hosts/android/ci/stage-spine-closure.sh")
+val stageSpineClosure = tasks.register<Exec>("stageSpineClosure") {
+    commandLine("bash", stageSpineScript.absolutePath)
+}
+
 val verifyOfficialTrees = tasks.register("verifyOfficialTrees") {
     group = "dsh"
     doLast {
@@ -132,6 +142,6 @@ tasks.configureEach {
         name.startsWith("package") && name.endsWith("Assets") ||
         name.startsWith("bundleDebug") || name.startsWith("assemble")
     ) {
-        dependsOn(ensureSpikeVendor, stageWebPlugins)
+        dependsOn(ensureSpikeVendor, stageSpineClosure, stageWebPlugins)
     }
 }

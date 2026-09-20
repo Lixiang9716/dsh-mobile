@@ -45,6 +45,8 @@ class MainActivity : Activity() {
             startM4(savedInstanceState)
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
             startOfficialWeb()
+        } else if (intent.getBooleanExtra(EXTRA_SESSION, false)) {
+            startSessionLive()
         } else {
             setContentView(verdictView)
             SpikeRuntime.post {
@@ -117,6 +119,7 @@ class MainActivity : Activity() {
     companion object {
         const val EXTRA_M4 = "dsh.m4"
         const val EXTRA_WEB = "dsh.web"
+        const val EXTRA_SESSION = "dsh.session"
     }
 
     /**
@@ -171,18 +174,75 @@ class MainActivity : Activity() {
     }
 
     private var session: OfficialWebSession? = null
+    private var sessionLive: SessionLiveSession? = null
 
-    /** The probe's page-side result sink (JavaBridge thread → session). */
+    /** The probe's page-side result sink (JavaBridge thread → session). Both
+     * drives are addressed; each dispatcher no-ops when its session is not
+     * the live one (the two modes never run concurrently). */
     private val PROBE_BRIDGE = object : Any() {
         @JavascriptInterface
         fun post(json: String) {
             OfficialWebSession.dispatchProbeResult(json)
+            SessionLiveSession.dispatchProbeResult(json)
         }
     }
 
     /** Copies the asset spike bundle to filesDir/spike preserving the layout. */
     private fun materializeBundle() {
         copyAssetDir("spike", File(filesDir, "spike"))
+    }
+
+    /**
+     * The session-live session (`b-android.session.live`): the FULL upstream
+     * agent spine boots on-device and claims `/api/session.list` + the mux
+     * `session/journal` streams over the bus seam, so the official page gets
+     * REAL session data (SessionLiveSession). Same WebView + carrier shape
+     * as the official-web mode; the scripted mock-llm route is the model
+     * boundary (E2E determinism, logged as such).
+     */
+    private fun startSessionLive() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(
+            verdictView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    SessionLiveSession.dispatchPageFinished()
+                }
+            }
+        }
+        layout.addView(
+            view,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        setContentView(layout)
+        webView = view
+        // The carrier + drive read filesDir trees: materialize FIRST (runtime
+        // thread: spike bundle + official dist + web-plugins), then start.
+        SpikeRuntime.post {
+            materializeBundle()
+            copyAssetDir("official-web", File(filesDir, "official-web"))
+            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                sessionLive = SessionLiveSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
     }
 
     private fun copyAssetDir(assetPath: String, target: File) {
