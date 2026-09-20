@@ -85,6 +85,7 @@ vendor/npm/@deepseek-ai/$PIN/lib/client.js"
 # materialized vendor checkout (suffix filter .js/.mjs/.json, sorted, the
 # same rule as hosts/ios/Tools/gen_bundle_header.py collect_tree_files).
 SPINE_OURS="scenario/harmony-session-live.js
+scenario/harmony-write-live.js
 upstream/boot.js
 upstream/settings-memory.js
 upstream/llm-transport.js

@@ -26,7 +26,13 @@
  * are CLAIMED and answered from ctx.sessions (the scripted
  * /mock-llm/chat/completions endpoint is the model boundary — real
  * transport, scripted output), and the b3 probe drives the read path
- * through the official envelope (SessionLiveProbe.ets).
+ * through the official envelope (SessionLiveProbe.ets). A passing
+ * session-live leg chains into the FOURTH leg, the session WRITE surface
+ * (W-HARMONY4, b-harmony.write.live): the web-boot runtime composes WITH
+ * upstream/web-write.js, and the write probe drives the OFFICIAL composer
+ * like a user — the page's own message admits a REAL upstream agent-loop
+ * turn, streamed live over the mux session/follow and rendered in the
+ * official UI (SessionWriteProbe.ets).
  *
  * Threading: every NAPI call runs on the ArkTS main thread — the ONE serial
  * JS runtime thread (ARCHITECTURE.md §6). Bus callbacks from C re-enter
@@ -53,6 +59,7 @@ import { WebPlugins } from './WebPlugins';
 import { ApiBridge } from './ApiBridge';
 import { HttpFetch } from './HttpFetch';
 import { SessionLiveProbe, LegEvent } from './SessionLiveProbe';
+import { SessionWriteProbe, WriteVerdict, WriteLegEvent, WRITE_MESSAGE } from './SessionWriteProbe';
 
 const TAG: string = 'dsh.app';
 const OFFICIAL_BASE_PORT: number = 17890;
@@ -62,9 +69,15 @@ const SCENARIO_HTTPFETCH = 'b-harmony.httpfetch-v2';
  * runtime, session.list + the mux journal are CLAIMED and answered from
  * ctx.sessions. */
 const SCENARIO_SESSION = 'b-harmony.session.live';
+/** The write leg (W-HARMONY4): the web-boot runtime composes WITH the write
+ * surface (upstream/web-write.js) — the official composer send
+ * (`POST /api/session/prompt`) admits a REAL upstream agent-loop turn and the
+ * reply streams live over the mux session/follow into the official UI. */
+const SCENARIO_WRITE = 'b-harmony.write.live';
 const ENTRY_B1 = 'scenario/b1-web-live.js';
 const ENTRY_HTTPFETCH = 'scenario/harmony-httpfetch-v2.js';
 const ENTRY_SESSION = 'scenario/harmony-session-live.js';
+const ENTRY_WRITE = 'scenario/harmony-write-live.js';
 /** The SCRIPTED model boundary of the session-live leg (the platform twin
  * of iOS CarrierRoutes.registerScriptedLlm): a real loopback HTTP + SSE
  * endpoint mirroring the vendored dsh-llm-mock-server's success stream
@@ -145,6 +158,7 @@ export class OfficialPhase {
    * boot-wire source labels on. */
   private legScenario: string = SCENARIO_OFFICIAL;
   private spineLeg = false;
+  private writeLeg = false;
   private rpcLogged: Set<string> = new Set();
   private journalAttachLogged = false;
   private respondLogged = false;
@@ -536,15 +550,18 @@ export class OfficialPhase {
       this.observeMuxOpen(streamId, endpoint);
     };
     bridge.onMuxFrame = (direction: string, kind: string): void => {
-      // One tx item frame line for the journal leg (once; the probe reports
-      // the full frame facts).
+      // One tx item frame line per leg (once; the probe reports the full
+      // frame facts). The write leg's first tx item is the page's follow
+      // feeds, not the journal — the source label names the honest shape.
       if (direction !== 'tx' || kind !== 'item' || this.frameLogged) {
         return;
       }
       this.frameLogged = true;
       this.emit(this.legScenario, 'journal.frame.forwarded', {
         'direction': 'tx', 'first': true,
-        'source': 'REAL session log records (baseline + live turn)',
+        'source': this.writeLeg ?
+          'REAL follow feeds (snapshot/baseline + live turn frames)' :
+          'REAL session log records (baseline + live turn)',
       });
     };
     bridge.onMuxErrorFrame = (endpoint: string): void => {
@@ -699,6 +716,10 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (!url.startsWith(clean) || url.includes('token=')) {
       return;
     }
+    if (this.writeLeg) {
+      this.runWriteProbe(runJs);
+      return;
+    }
     if (this.spineLeg) {
       this.runSessionProbe(runJs);
       return;
@@ -796,25 +817,38 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     this.finishSessionLeg(true, '');
   }
 
-  /** Terminal marker of the session-live leg: the completion evidence line
-   * plus the verdict line the E2E drive waits for (the scenario stays
-   * resident, so the C phase verdict never fires — the drive owns the
-   * verdict, the platform twin of iOS's session-live finish). */
+  /** Terminal marker of a probe-driven leg (session-live / write): the
+   * completion evidence line plus the verdict line the E2E drive waits for
+   * (the scenario stays resident, so the C phase verdict never fires — the
+   * drive owns the verdict, the platform twin of iOS's session-live
+   * finish). A passing session-live leg chains into the write leg. */
   private finishSessionLeg(passed: boolean, reason: string): void {
     if (this.finished) {
       return;
     }
     this.finished = true;
+    const complete = this.writeLeg ? 'write.live.complete' : 'session.live.complete';
     const fields: Record<string, Object> = passed ?
       { 'status': 'pass' } : { 'status': 'fail', 'reason': reason };
-    this.emit(this.legScenario, 'session.live.complete', fields);
+    this.emit(this.legScenario, complete, fields);
     let line = 'dsh.spike.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
     line += ' probe=' + (passed ? 'pass' : 'fail');
     if (!passed) {
       line += ' error="' + reason + '"';
     }
     hostCarrierLine(2, line);
-    hilog.info(0x0000, TAG, 'session-live: %{public}s', passed ? 'PASS' : 'FAIL ' + reason);
+    hilog.info(0x0000, TAG, 'probe leg %{public}s: %{public}s', this.legScenario,
+      passed ? 'PASS' : 'FAIL ' + reason);
+    if (passed && !this.writeLeg) {
+      // The write leg rides a FRESH runtime after the session-live leg
+      // (deferred off any NAPI call stack, the b1→httpfetch precedent).
+      const phase = this;
+      setTimeout((): void => {
+        if (phase.ctx !== null) {
+          phase.runWriteLeg(phase.ctx);
+        }
+      }, 200);
+    }
   }
 
   private pollProbe(runJs: (script: string) => Promise<string>,
@@ -1058,6 +1092,179 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (status < 0) {
       hilog.error(0x0000, TAG, 'session-live: bus deliver failed');
     }
+  }
+
+  // ---- the write leg (W-HARMONY4) --------------------------------------------------
+
+  /** After the session-live leg: a fresh runtime runs the harmony write-live
+   * scenario — the spine boots and the web-boot producer composes WITH the
+   * write surface (upstream/web-write.js): session/create + session/prompt
+   * (upstream commands.prompt admission) + the session/follow,
+   * workspace/follow, session/control and $events streams + the settings
+   * describe/update/mutate provider, all answered from ctx. The origin opens
+   * only after web.boot; the write probe drives the OFFICIAL composer like a
+   * user and the page's own message admits a REAL agent-loop turn. */
+  runWriteLeg(ctx: common.UIAbilityContext): void {
+    if (!this.started) {
+      return;
+    }
+    hostFree(2);
+    this.started = false;
+    // Per-leg evidence state: this leg's capture file holds exactly this
+    // leg's manifest records.
+    this.emittedEvents = new Set<string>();
+    this.rpcLogged = new Set<string>();
+    this.legScenario = SCENARIO_WRITE;
+    this.spineLeg = true;
+    this.writeLeg = true;
+    this.journalAttachLogged = false;
+    this.respondLogged = false;
+    this.frameLogged = false;
+    this.bootApplied = false;
+    this.originOpened = false;
+    this.finished = false;
+    this.assetLogged = false;
+    this.comboLogged = false;
+    this.comboPending = null;
+    const capturePath = this.capturePath.replace('official', 'write');
+    hostStart(this.webRoot, capturePath, this.fsRoot, OFFICIAL_DESCRIPTOR,
+      (line: string): void => {
+        this.onBusLine(line);
+      },
+      (callId: number, name: string, args: string): void => {
+        this.onDispatch(ctx, callId, name, args);
+      }, SCENARIO_WRITE);
+    this.started = true;
+    this.emit(this.legScenario, 'client.selected', {
+      'client': 'dsh-web-official', 'source': 'launch',
+    });
+    const status = hostEval(2, ENTRY_WRITE);
+    hilog.info(0x0000, TAG, 'write leg: eval status %{public}d', status);
+    // runtime.config rides the BUS seam (__dshBusOnMessage — the scenario's
+    // take('runtime.config')), never the gateway event seam.
+    this.deliverBus('{"type":"runtime.config","mockLlmUrl":"http://127.0.0.1:' +
+      this.port + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
+      '","containerRoot":' + JSON.stringify(this.webRoot) + '}');
+    this.deliverWebPlugins(ctx);
+  }
+
+  /** The write probe flow: define the `__b4w` legs, then drive them in
+   * order — pick the seeded workspace, type into the composer, send. Each
+   * leg's verdict unfolds into canonical lines; a failing leg finishes the
+   * leg loud (rule 5). */
+  private runWriteProbe(runJs: (script: string) => Promise<string>): void {
+    runJs(SessionWriteProbe.probeScript()).then((): void => {
+      this.runWriteStep(runJs, 0);
+    }).catch((err: Error): void => {
+      this.finishSessionLeg(false,
+        'write probe setup failed: ' + (err.message ?? 'unknown'));
+    });
+  }
+
+  /** One write step: launch the leg, poll its parked output, unfold its
+   * verdict, advance. The last step's verdict completes the leg. Step 1
+   * paces ~2.5s before send so the drive's composer-typed screenshot lands
+   * first (real wall-clock pacing for real capture physics, rule 8). */
+  private runWriteStep(runJs: (script: string) => Promise<string>, step: number): void {
+    const legs: string[] = ['pick', 'type', 'send'];
+    if (step >= legs.length) {
+      return;
+    }
+    const advance = (): void => {
+      if (step + 1 < legs.length) {
+        this.runWriteStep(runJs, step + 1);
+      } else {
+        this.finishSessionLeg(true, '');
+      }
+    };
+    const launcher = SessionWriteProbe.legLauncher(legs[step], WRITE_MESSAGE);
+    runJs(launcher).then((): Promise<string> => {
+      return this.pollWriteStep(runJs, legs[step], step,
+        Date.now() + (step === 2 ? 90000 : 60000), '');
+    }).then((json: string): void => {
+      this.consumeWriteStep(legs[step], json);
+      if (this.finished) {
+        return; // the step's verdict failed the leg
+      }
+      if (step === 1) {
+        // The composer-typed screenshot window (the drive snapshots on the
+        // composer.typed line) — pace, then send.
+        setTimeout((): void => advance(), 4000);
+        return;
+      }
+      advance();
+    }).catch((err: Error): void => {
+      this.finishSessionLeg(false,
+        `write probe ${legs[step]}: ` + (err.message ?? 'unknown'));
+    });
+  }
+
+  /** The write-step poll loop: reads the parked result AND the stage
+   * heartbeat (a hung leg names its stage). The rejection PROPAGATES — the
+   * deadline always reaches the caller (the b3 poll shape). */
+  private pollWriteStep(runJs: (script: string) => Promise<string>, leg: string,
+    step: number, deadline: number, lastStage: string): Promise<string> {
+    return runJs(SessionWriteProbe.readExpr(leg)).then((json: string):
+      Promise<string> => {
+      let out: string | null = null;
+      let stage = lastStage;
+      try {
+        const decoded: Object = JSON.parse(json) as Object;
+        const wrapper = (typeof decoded === 'string' ?
+          JSON.parse(decoded as string) : decoded) as Record<string, Object>;
+        out = wrapper['out'] === null || wrapper['out'] === undefined ?
+          null : String(wrapper['out']);
+        stage = wrapper['stage'] === undefined ? lastStage : String(wrapper['stage']);
+      } catch (e) {
+        out = null;
+      }
+      if (stage !== lastStage) {
+        hilog.info(0x0000, TAG, 'write: probe stage %{public}s', stage);
+      }
+      if (out !== null && out.length > 0) {
+        return Promise.resolve(out);
+      }
+      if (Date.now() > deadline) {
+        return Promise.reject(new Error(`deadline elapsed (stage: ${stage})`));
+      }
+      return new Promise<string>((resolve: (v: string) => void,
+        reject: (e: Error) => void): void => {
+        setTimeout((): void => {
+          this.pollWriteStep(runJs, leg, step, deadline, stage).then(resolve, reject);
+        }, 300);
+      });
+    });
+  }
+
+  /** One write step's verdict: unfold the passing leg's events into
+   * canonical lines; a failing leg finishes loud with its diagnosis. */
+  private consumeWriteStep(leg: string, json: string): void {
+    hilog.info(0x0000, TAG, 'write: %{public}s raw %{public}s', leg,
+      json.substring(0, 120));
+    let value = json;
+    try {
+      const decoded: Object = JSON.parse(json) as Object;
+      if (typeof decoded === 'string') {
+        value = decoded as string;
+      }
+    } catch (e) {
+      // keep the raw text: the unfold names it unparsable
+    }
+    let verdict: WriteVerdict;
+    if (leg === 'pick') {
+      verdict = SessionWriteProbe.pickEvents(value);
+    } else if (leg === 'type') {
+      verdict = SessionWriteProbe.typeEvents(value);
+    } else {
+      verdict = SessionWriteProbe.sendEvents(value);
+    }
+    if (verdict.failed) {
+      this.finishSessionLeg(false, verdict.reason);
+      return;
+    }
+    verdict.events.forEach((item: WriteLegEvent): void => {
+      this.emit(this.legScenario, item.event, item.fields);
+    });
   }
 
   /** The SCRIPTED model boundary: POST /mock-llm/chat/completions — real

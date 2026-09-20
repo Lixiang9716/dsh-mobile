@@ -1,0 +1,25 @@
+{
+  "title": "W-HARMONY4: the harmony session write surface (b-harmony.write.live)",
+  "created": "2026-09-20T21:14:13+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "claim session/prompt + session/follow (+ create, settings) from the embedded spine behind the official composer",
+    "E2E b-harmony.write.live one-to-one: composer write -> user/message -> agent-loop -> deltas -> turn/end -> reply rendered + real PNGs",
+    "regressions green: session.live 43/43 + official-web-mount 17/17 + httpfetch-v2 6/6 + m1 7/7 + bridge-smoke 6/6 + m2.session 23/23 + m5 20/20",
+    "governance: agent note (D9), task card void, gov run green, push, gh pr create"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0018",
+  "void": {
+    "ts": "2026-09-20T22:03:42+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "the card tracked W-HARMONY4's implementation; the mission exits via void-before-push per the #329/#339 precedent (the work itself is verified by the E2E checkers + agent note, and the card's checklist is complete: write surface claimed, E2E 33/33 x3 + 7 regressions green, governance in this push)"
+  }
+}
