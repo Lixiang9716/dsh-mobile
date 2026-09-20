@@ -43,7 +43,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block
 dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"fixture.built","members":2,"bytes":3584}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"install.started","pkg":"dsh-notes","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m3-0001","bytes":3584}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m3-0001","bytes":3584,"journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -68,6 +68,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capab
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"install.manifest.validated","id":"dsh-notes","version":"0.1.0"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"install.integrity.computed","files":2,"manifestSha256":"26d16425d35d55800325345d53375ace7a9f8f1d3f794fb5b71ae62d6ae99358"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"install.negotiated","required":2,"skipped":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-m3-0001","files":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m3-0001/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -185,7 +186,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii fie
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":953}]}
 dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":true,"bytes":3584}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.install","event":"install.tampered.built","bytes":3584}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m3-0002","bytes":3584}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m3-0002","bytes":3584,"journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/996203cefae6310f978382f7cac5d0fb3769f7b31e536fc101a005dcc0da0764","bytes":3584}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/996203cefae6310f978382f7cac5d0fb3769f7b31e536fc101a005dcc0da0764"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}

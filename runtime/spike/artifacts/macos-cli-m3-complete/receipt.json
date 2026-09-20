@@ -1,0 +1,21 @@
+{
+  "host": "macos-cli (darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m3.complete",
+  "proves": [
+    "config layer (UI-plugin level 1): cordis.patch-style layered overrides (base -> hostFace -> profile -> overlay; JSON in the spike, documented in config-layer.js) resolve the active Web Client (profile selects dsh-web-client-mini) and the toolbar slot allow-set (profile trims debug.console); the session stack's slot gate admits notes.toolbar and refuses debug.console (config.resolved / config.slot.allowed / config.slot.denied)",
+    "fetch-based installer: installFromFetch(fetchImpl, url) drains a STREAMING body (7 chunks, later-tick) into bytes and runs the full install-pipeline transaction; the CLI declares httpFetch unavailable (honest descriptor) so the fetch impl is the logged scope-read stub (install.fetch.stub) with the exact gateway httpFetch response shape — the iOS carrier host runs the same code with the REAL httpFetch (scenario m3.fetch-install)",
+    "pending-receipt startup replay (data-protocols.md §4): two crash-simulated transactions (simulateCrash: staged tree + PENDING receipt in receipts/journal.jsonl, nothing promoted) are replayed — m3-c004's staged tree verifies and completes to committed (promoted + committed receipt), m3-c005's interrupted unpack rolls back with the installed tree byte-identical (replay.begin/committed/rolled-back/done)",
+    "install-time capability negotiation: dsh-badge requires fsRead+fsWrite+notify; the CLI descriptor declares notify unavailable, so the package is rejected BEFORE unpack (install.capability-rejected) — no staging tree, no journal growth, installed tree intact"
+  ],
+  "receiptJournal": "receipts/journal.jsonl is append-only; each line wraps one schema-valid receipt ({txId, receipt} envelope — receipt.schema.json is additionalProperties:false); journal is opt-in (installPackage journal:true) so platforms that have not adopted it keep byte-identical behavior",
+  "fixture": "dsh-notes 0.1.0 (fetch-install + replay legs) and dsh-badge 0.1.0 (negotiation leg), deterministic ustar, 2 members each",
+  "checker": "tools/e2e/scenarios/m3-complete.json",
+  "events": 41,
+  "determinism": "digests pinned: notes blob eb478c29…, badge blob 1e91e91f…; 3 consecutive runs green",
+  "exitCode": 0
+}
