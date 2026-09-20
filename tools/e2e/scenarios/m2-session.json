@@ -4,6 +4,7 @@
   "expect": [
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
     { "event": "plugins.installed", "match": { "count": 3, "services": "fs,subprocess,ui" } },
+    { "event": "notes.installed", "match": { "pkg": "dsh-notes", "version": "0.1.0", "status": "committed" } },
     { "event": "host.ready", "match": { "signalled": true } },
     { "event": "session.created", "match": { "sessionId": "s-m2-0001", "scope": "app" } },
     { "event": "agent.started", "match": { "model": "mock-mini", "tools": 1 } },

@@ -23,6 +23,9 @@ RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
     ("gateway_js", SPIKE / "gateway.js"),
     ("registry_js", SPIKE / "registry.js"),
+    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
+    ("sha256_js", SPIKE / "sha256.js"),
+    ("tar_mini_js", SPIKE / "tar-mini.js"),
     ("manifest_json", SPIKE / "manifest.json"),
     ("scenario_js", SPIKE / "scenario" / "m1-spike-boot.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "m2-gateway-binding.js"),
@@ -43,10 +46,20 @@ RESOURCES = [
      REPO / "system-plugins" / "dsh-subprocess-quickjs" / "index.js"),
     ("plugin_ui_manifest", REPO / "system-plugins" / "dsh-ui" / "manifest.json"),
     ("plugin_ui_js", REPO / "system-plugins" / "dsh-ui" / "index.js"),
-    # the active Web Client plugin (presentation/, type=web-client, web/ dir)
+    # the dsh-notes fixture (M3 install pipeline: builder + plugin source data)
+    ("fixture_notes_js", SPIKE / "fixtures" / "dsh-notes.js"),
+    ("fixture_notes_source_js", SPIKE / "fixtures" / "dsh-notes-source.js"),
+    # the ACTIVE Web Client plugin (presentation/, type=web-client, web/ dir)
     ("webclient_manifest", REPO / "presentation" / "web-client" / "manifest.json"),
     ("webclient_index_html", REPO / "presentation" / "web-client" / "web" / "index.html"),
     ("webclient_main_js", REPO / "presentation" / "web-client" / "web" / "main.js"),
+    # the SECOND Web Client variant (M3 UI pluggability: config-selected swap)
+    ("webclient_mini_manifest",
+     REPO / "presentation" / "web-client-mini" / "manifest.json"),
+    ("webclient_mini_index_html",
+     REPO / "presentation" / "web-client-mini" / "web" / "index.html"),
+    ("webclient_mini_main_js",
+     REPO / "presentation" / "web-client-mini" / "web" / "main.js"),
 ]
 
 

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH mini client</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: #17130a; color: #f2e4c8; display: flex; flex-direction: column;
+    height: 100dvh;
+  }
+  header {
+    padding: 10px 14px; font-size: 12px; color: #c9a24a; letter-spacing: .12em;
+    text-transform: uppercase; border-bottom: 2px solid #4d3d1a;
+    display: flex; gap: 8px; align-items: center;
+  }
+  #dot { width: 9px; height: 9px; border-radius: 50%; background: #b3413c; }
+  #dot.on { background: #3f9d63; }
+  #toolbar { display: flex; gap: 6px; margin-left: auto; }
+  #toolbar button {
+    font: inherit; font-size: 11px; text-transform: none; letter-spacing: 0;
+    background: #4d3d1a; color: #f2e4c8; border: 1px solid #c9a24a;
+    border-radius: 4px; padding: 2px 8px;
+  }
+  #stream { flex: 1; overflow-y: auto; padding: 14px; white-space: pre-wrap;
+            word-break: break-word; }
+  .sys { color: #93805a; font-size: 12px; margin: 2px 0; }
+</style>
+</head>
+<body>
+<header><span id="dot"></span><span id="status">connecting…</span><span id="toolbar"></span></header>
+<main id="stream"></main>
+<script src="./main.js"></script>
+</body>
+</html>

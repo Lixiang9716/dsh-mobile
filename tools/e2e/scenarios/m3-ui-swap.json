@@ -1,9 +1,9 @@
 {
-  "scenario": "m2.webclient.mount",
+  "scenario": "m3.ui-swap",
   "extract": { "prefix": "dsh.spike.log:" },
   "expect": [
-    { "event": "client.selected", "match": { "client": "dsh-web-client" } },
-    { "event": "webclient.mounted", "match": { "client": "dsh-web-client", "path": "/index.html" } },
+    { "event": "client.selected", "match": { "client": "dsh-web-client-mini" } },
+    { "event": "webclient.mounted", "match": { "client": "dsh-web-client-mini", "path": "/index.html" } },
     { "event": "ws.connected", "match": { "protocol": "session-projection@0" } },
     { "event": "slot.registered", "match": { "id": "notes.toolbar", "label": "notes", "by": "dsh-notes" } },
     { "event": "ws.token-delta", "match": { "first": true, "index": 0 } },

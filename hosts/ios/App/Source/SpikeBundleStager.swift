@@ -30,8 +30,30 @@ enum SpikeBundleStager {
         try write("scenario/m1-carrier-loopback.js",
                   data: resData(dsh_spike_res_scenario_carrier_js), under: root)
         try write("registry.js", data: resData(dsh_spike_res_registry_js), under: root)
+        try write("install-pipeline.js",
+                  data: resData(dsh_spike_res_install_pipeline_js), under: root)
+        try write("sha256.js", data: resData(dsh_spike_res_sha256_js), under: root)
+        try write("tar-mini.js", data: resData(dsh_spike_res_tar_mini_js), under: root)
+        try writeScenarioEntries(root)
+        try writePluginsAndClients(root)
+        try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
+                  under: root)
+        try write("web/carrier-page.js", data: resData(dsh_spike_res_web_page_js),
+                  under: root)
+        try write("vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
+                  data: resData(dsh_spike_res_pkg_crypto_js), under: root)
+        return root
+    }
+
+    /// Scenario entries (the m1/m2 E2E scenarios).
+    private static func writeScenarioEntries(_ root: URL) throws {
         try write("scenario/m2-session.js",
                   data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
+    }
+
+    /// System implementation plugins + the install-pipeline fixture + both
+    /// Web Client variants (the ACTIVE one is selected by configuration).
+    private static func writePluginsAndClients(_ root: URL) throws {
         try write("system-plugins/dsh-fs/manifest.json",
                   data: resData(dsh_spike_res_plugin_fs_manifest), under: root)
         try write("system-plugins/dsh-fs/index.js",
@@ -44,19 +66,22 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_plugin_ui_manifest), under: root)
         try write("system-plugins/dsh-ui/index.js",
                   data: resData(dsh_spike_res_plugin_ui_js), under: root)
+        try write("fixtures/dsh-notes.js",
+                  data: resData(dsh_spike_res_fixture_notes_js), under: root)
+        try write("fixtures/dsh-notes-source.js",
+                  data: resData(dsh_spike_res_fixture_notes_source_js), under: root)
         try write("webclient/manifest.json",
                   data: resData(dsh_spike_res_webclient_manifest), under: root)
         try write("webclient/web/index.html",
                   data: resData(dsh_spike_res_webclient_index_html), under: root)
         try write("webclient/web/main.js",
                   data: resData(dsh_spike_res_webclient_main_js), under: root)
-        try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
-                  under: root)
-        try write("web/carrier-page.js", data: resData(dsh_spike_res_web_page_js),
-                  under: root)
-        try write("vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
-                  data: resData(dsh_spike_res_pkg_crypto_js), under: root)
-        return root
+        try write("webclient-mini/manifest.json",
+                  data: resData(dsh_spike_res_webclient_mini_manifest), under: root)
+        try write("webclient-mini/web/index.html",
+                  data: resData(dsh_spike_res_webclient_mini_index_html), under: root)
+        try write("webclient-mini/web/main.js",
+                  data: resData(dsh_spike_res_webclient_mini_main_js), under: root)
     }
 
     private static func resData(

@@ -95,7 +95,13 @@ embedder plus a typed JS shim (`gateway.js`).
   Web Client and starts the scenario only when the page connects, so the
   deltas stream live into the rendered transcript (carrier-side evidence
   logged as scenario `m2.webclient.mount`; runner
-  `tools/e2e/run-ios-session.sh`).
+  `tools/e2e/run-ios-session.sh`). M3 extends the session: `dsh-notes`
+  arrives through the install pipeline BEFORE the host readiness signal and
+  projects its toolbar slot into the active Web Client — carrier hosts gate
+  host.info on the page's slot ack, so the deltas always stream into a fully
+  rendered client (the slot renders via replay even for a late-connecting
+  page), and the installed plugin is loaded through `__dshModuleDefine`
+  exactly as in `m3.install`.
 - `scenario/m3-install.js` — the `m3.install` E2E scenario: builds the
   dsh-notes package in JS, installs it through `install-pipeline.js`,
   asserts the committed receipt field-by-field + the content-addressed blob

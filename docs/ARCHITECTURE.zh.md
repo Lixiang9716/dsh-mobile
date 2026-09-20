@@ -156,7 +156,7 @@ dsh-mobile/
 - **M0 契约冻结**：原语契约 v0（≤10 原语）+ bundle 布局 + manifest schema + receipt 格式。
 - **M1 双 Spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
 - **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
-- **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
+- **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`m3.install` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `m3.ui-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
 - **M4/M5**：Android、鸿蒙宿主。M4 进行中：同构宿主已验证 —— 网关桥接场景（`m2.bridge.smoke`）与 `m1.spike.boot` 回归在模拟器上通过（证据 `hosts/android/artifacts/m4-host/`）。
 - **M4/M5**：Android、鸿蒙宿主。M5 已启动：同构鸿蒙宿主一次启动跑通全部三个 spike 场景——m2.session（经 registry + 三个系统插件）随 m1.spike.boot + m2.bridge.smoke 在模拟器通过（证据见 `hosts/harmony/artifacts/m5-host/`）。
 

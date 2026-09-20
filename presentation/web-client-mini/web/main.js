@@ -2,25 +2,24 @@
 // all E2E evidence flows through the runtime/carrier loggers; there is no
 // logger here)
 /**
- * DSH Web Client v0 — the "UI is a plugin" acceptance criterion.
- *
- * Knows ONLY the loopback HTTP + WS protocol (zero host awareness): it
- * derives the WS URL from its own location, says hello, and renders the
- * session projection events it receives. Protocol session-projection@0:
+ * DSH mini client v0 — the SECOND Web Client variant (UI pluggability, M3):
+ * a transcript-only, monospaced amber page proving the host mounts exactly
+ * the config-SELECTED client. Knows ONLY the loopback HTTP + WS protocol —
+ * the same session-projection@0 vocabulary as dsh-web-client, plus one tiny
+ * typed extension point: the toolbar slot. A plugin projects
+ * {"kind":"slot.register","id":…,"label":…}; the page renders a toolbar
+ * button and ACKS it ({"type":"slot.ack","id":…,"label":…}) so the carrier
+ * can evidence the rendered state.
  *   → {"type":"hello","href":…,"protocol":"session-projection@0"}
  *   ← {"type":"ws.hello",…} | {"type":"replay","events":[…]}
- *   ← {"kind":"session"|"agent"|"token-delta"|"tool"|"complete", …}
- * Plus one tiny typed extension point (M3): the toolbar slot — a plugin
- * projects {"kind":"slot.register","id":…,"label":…}; the page renders a
- * toolbar button and ACKS it ({"type":"slot.ack","id":…,"label":…}) so the
- * carrier can evidence the rendered state.
- * Token deltas append into the live transcript; tool and system events
- * render as their own lines; "complete" closes the message.
+ *   ← {"kind":"session"|"agent"|"token-delta"|"tool"|"complete"
+ *      |"slot.register", …}
  */
 const streamEl = document.getElementById('stream');
 const statusEl = document.getElementById('status');
 const dotEl = document.getElementById('dot');
 const toolbarEl = document.getElementById('toolbar');
+const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 
 const scrollDown = () => { streamEl.scrollTop = streamEl.scrollHeight; };
 const line = (cls, text) => {
@@ -29,31 +28,21 @@ const line = (cls, text) => {
   div.textContent = text;
   streamEl.appendChild(div);
   scrollDown();
-  return div;
 };
 
 const session = { el: null, text: '' };
 
 const beginAssistant = () => {
   if (session.el) return;
-  const wrap = document.createElement('div');
-  wrap.className = 'msg';
-  const role = document.createElement('div');
-  role.className = 'role';
-  role.textContent = 'assistant';
-  const body = document.createElement('div');
-  wrap.appendChild(role);
-  wrap.appendChild(body);
-  streamEl.appendChild(wrap);
-  session.el = body;
+  session.el = line('sys', '');
   session.text = '';
 };
 
 const apply = (ev) => {
   if (ev.kind === 'session') {
-    line('sys', `session ${ev.id} · scope ${ev.scope}`);
+    line('sys', `session ${ev.id}`);
   } else if (ev.kind === 'agent') {
-    line('sys', `agent · model ${ev.model} · tools ${ev.tools}`);
+    line('sys', `agent ${ev.model}`);
     beginAssistant();
   } else if (ev.kind === 'token-delta') {
     beginAssistant();
@@ -61,10 +50,9 @@ const apply = (ev) => {
     session.el.textContent = session.text;
     scrollDown();
   } else if (ev.kind === 'tool') {
-    line('tool', `tool ${ev.name} — ${ev.phase}${ev.ok === false ? ' FAILED' : ''}`);
+    line('sys', `tool ${ev.name} ${ev.phase}`);
   } else if (ev.kind === 'complete') {
-    line('sys', `session complete — status ${ev.status} · ${ev.deltas} deltas · `
-      + `${ev.toolCalls} tool call(s)`);
+    line('sys', `complete ${ev.status} · ${ev.deltas} deltas`);
   } else if (ev.kind === 'slot.register') {
     const btn = document.createElement('button');
     btn.id = `slot-${ev.id}`;
@@ -74,12 +62,10 @@ const apply = (ev) => {
   }
 };
 
-const ws = new WebSocket(
-  (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
-
+const ws = new WebSocket(wsUrl);
 ws.onopen = () => {
   dotEl.classList.add('on');
-  statusEl.textContent = 'connected';
+  statusEl.textContent = 'live';
   ws.send(JSON.stringify(
     { type: 'hello', href: location.href, protocol: 'session-projection@0' }));
 };
