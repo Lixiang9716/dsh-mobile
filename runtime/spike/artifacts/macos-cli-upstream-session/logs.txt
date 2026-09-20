@@ -11,7 +11,7 @@ dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"agent/created","id":"main","sessionId":"s-m2-upstream-0001"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"turn phase begin","data":[{}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"llm/request/built","provider":"mock","model":"mock-1","messages":2,"tools":0,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64792/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50999/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":730}]}
@@ -44,7 +44,7 @@ dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"projection/turn-boundary","lastTurn":1}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"error phase begin","data":[{}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.upstream-session","event":"llm/request/built","provider":"mock","model":"mock-1","messages":1,"tools":0,"path":"/chat/completions","method":"POST","agentLoopMarked":false,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64792/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50999/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":2}]}

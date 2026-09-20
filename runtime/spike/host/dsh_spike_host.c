@@ -53,6 +53,7 @@ static const char *dsh_node_shim(const char *name) {
         { "node:os", "upstream/shims/os.js" },
         { "node:process", "upstream/shims/process.js" },
         { "node:module", "upstream/shims/node-module.js" },
+        { "node:url", "upstream/shims/url.js" },
     };
     for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
         if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;
@@ -761,6 +762,29 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     }
     if (strcmp(name, "@deepseek-ai/dsh-session-persistence") == 0) {
         snprintf(out, out_len, "upstream/shims/dsh-session-persistence.js");
+        return 1;
+    }
+    /* @deepseek-ai/dsh-client-modules is an NPM-published package (the web
+     * boot composer), not a dsh-desktop runtime tarball — mapped to the
+     * vendor/npm tree (W-INTEG web-boot leg). The runtime exports map follows
+     * the package's own "exports" face: bare, ./client, ./invariant. */
+    if (strncmp(name, "@deepseek-ai/dsh-client-modules", 31) == 0) {
+        const char *sub = name + 31;
+        const char *lib = "index.js"; /* bare specifier */
+        if (sub[0] == 0) {
+            lib = "index.js";
+        } else if (strcmp(sub, "/client") == 0) {
+            lib = "client.js";
+        } else if (strcmp(sub, "/invariant") == 0) {
+            lib = "invariant.js";
+        } else {
+            snprintf(err, err_len,
+                     "'%s' is not a runtime subpath of the vendored dsh-client-modules exports map", name);
+            return -1;
+        }
+        snprintf(out, out_len,
+                 "vendor/npm/@deepseek-ai/dsh-client-modules@%s/lib/%s",
+                 DSH_UPSTREAM_VERSION, lib);
         return 1;
     }
     if (strncmp(name, "@deepseek-ai/dsh-", 17) == 0) {

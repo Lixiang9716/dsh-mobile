@@ -1,0 +1,28 @@
+{
+  "title": "W-INTEG: official upstream web boot \u2014 runtime graph + claims + iOS mount",
+  "created": "2026-09-20T10:33:22+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "vendor @deepseek-ai/dsh-client-modules (ensure-dsh.sh pin)",
+    "shims: sha1/url/fs-VFS/Buffer + host bare-map + --bus-inject",
+    "upstream/web-boot.js adapter composes vendored registry over bus seam",
+    "m2.upstream-boot CLI scenario green one-to-one + artifacts",
+    "regressions: m2.upstream-session + legacy scenarios green",
+    "PR-A open + gates green",
+    "PR-B: b1 live on iOS sim \u2014 boot progression + screenshots"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0013",
+  "void": {
+    "ts": "2026-09-20T10:52:11+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work completes in the opened PR (audit trail = the PR, #329/#339 precedent): @deepseek-ai/dsh-client-modules vendored (ensure-dsh.sh pin), shims (sha1 createHash/randomBytes, node:url + URL, Buffer subset, node:fs staged web-plugin VFS on a global store), host bare-map + node:url mapping + CLI --bus-inject, upstream/web-boot.js adapter (vendored ClientModuleRegistry composes the boot wire; browser-bundle parseBootManifest cross-parse), bus-seam frames web.boot/api.claim/mux.claim + api.request/mux handlers with REAL session store answers and journal streams; m2.upstream-boot green 12/12 one-to-one (2x deterministic), m2.upstream-session 31/31 + bridge-smoke regressions green, gov run 12/12."
+  }
+}
