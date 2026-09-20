@@ -1,0 +1,26 @@
+{
+  "title": "W-GR: close the m2-gateway receipt finding (bounded attempt)",
+  "created": "2026-09-20T21:34:19+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "run-ios.sh: stage-once pre-stage + auto receipt step after the 4 checkers pass",
+    "index-settle recipe applied: staged notes.txt untouched, settled >=30 min",
+    "tools/e2e/run-ios.sh full 4-checker UI drive executed on this branch",
+    "green: artifacts refreshed + receipt.json (run-derived) + matrix doc/zh updated; fail: honest diagnostics + matrix note",
+    "gov run green, card exited before push, PR opened (no merge)"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0018",
+  "void": {
+    "ts": "2026-09-20T22:06:22+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "bounded attempt complete: the finding is CLOSED by a real green run (attempt 5, 06:01 +08:00 \u2014 4/4 checkers 7/7 7/7 19/19 16/16 expected==logged, receipt.json machine-authored in-run); card items all satisfied; per the #329/#339 precedent the card is voided rather than receipt-closed before push"
+  }
+}

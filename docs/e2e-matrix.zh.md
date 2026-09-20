@@ -6,11 +6,11 @@
 数据来自已提交的 artifacts 目录。由
 [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映提交 `ca644a0`
-> （`b3.session.live` 行由 2026-09-21 的 W-RECEIPT 证据收口刷新并闭合其
-> receipt 缺口；五个 D9 目录 `android-upstream` / `d9-official-web` /
-> `b4-write-live` / `android-session-live` / `d9-session-live` 随
-> #63/#64/#65/#66/#67 进入清单；
+> **时效性**：本矩阵反映提交 `052587e`
+> （`m2-gateway` 行由 2026-09-21 的 W-GR 有界尝试刷新并闭合其 receipt 缺口，
+> 叠加在 W-RECEIPT 的 b3 收口之上；五个 D9 目录 `android-upstream` /
+> `d9-official-web` / `b4-write-live` / `android-session-live` /
+> `d9-session-live` 随 #63/#64/#65/#66/#67 进入清单；
 > 总量按本树重算）
 > 时的 `origin/main`。它是**再生成**的，不是手工维护的：
 >
@@ -38,8 +38,8 @@
 | 证据目录 | 25 |
 | Verdict（全部 `pass: true`、`expected == logged`） | 51 |
 | 至少有一份已提交证据的 scenario | 24 / 24 个 manifest |
-| 已验证 PNG 的截图 | 53 |
-| 验收标准缺口 | 6（见下） |
+| 已验证 PNG 的截图 | 55 |
+| 验收标准缺口 | 5（见下） |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -97,7 +97,7 @@
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗（缺口 2） | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✗（缺口 1） | 7 |
+| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
@@ -114,41 +114,23 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 
 ## 已知缺口（如实列出）
 
-检查器（`tools/e2e/matrix.mjs`）当前恰好因六项以非零码退出：一项是
-re-run 受阻的既有 receipt（缺口 1），五项是其目录随 #63/#64/#65/#66/#67
-落地后尚待各自主机首次 re-run 的 receipt（缺口 2–6，归各自的落地主机工作流
-所有）。
+检查器（`tools/e2e/matrix.mjs`）当前恰好因五项以非零码退出：均为其目录
+随 #63/#64/#65/#66/#67 落地后尚待各自主机首次 re-run 的 receipt（归各自
+的落地主机工作流所有）。
 
-1. **`hosts/ios/artifacts/m2-gateway/` 缺 `receipt.json`** —— 该目录早于
-   #26 的 receipt 约定。其四条已提交 verdict 均为绿色、其余证据齐全，
-   出自一次完全绿色的 WDA 运行；缺的只是 receipt，而 receipt 必须来自
-   真实运行（绝不合成）。2026-09-21 的收口尝试把诊断做精确了，并排除了
-   一半阻塞：WebDriverAgent 运行时已恢复健康（runner 的 `wda_up` 探测
-   被 WDA 重建后改为 pretty-print 的 `/status` JSON 静默破坏——已在
-   run-ios.sh 中连同 picker 搜索框标定一并修复，均有 surprise 记录），
-   且 WDA 在位时运行把每条应用内 leg 都复现为绿（boot、carrier、全部
-   gateway/fs/http 原语——事件 0–7 一对一），直到 `presentPicker`。
-   剩余阻塞是 Files 提供器的搜索索引：预置的 `notes.txt` 在一次预置后
-   数秒内能作为搜索结果出现（04:55 探测），但当文件在驱动前一刻被重写时
-   返回「未找到相关结果」（04:58 运行）——在预置步骤里重写目标文件会把
-   它从索引中挤出，直到重索引完成。receipt 属于下一次让索引得以沉淀的
-   预置（只预置一次不重写，或留出沉淀时间）；按 rerun 协议，卡点已记录、
-   未硬闯（surprise 签名 `drivepickers-ptsearch-calibration-201126`、
-   `drivepicker-can-focus-the` 及 04:58 记录；过程注记
-   `2026-09-20-run-ios-sh-rerun-protocol-under-a-degrad`）。
-2. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
+1. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
    #65（session 写表面）落地；receipt 归 b4 工作流下一次在携带 #65 的树
    上运行 `run-ios-b4.sh` 所有。
-3. **`hosts/harmony/artifacts/d9-official-web/` 缺 `receipt.json`** ——
+2. **`hosts/harmony/artifacts/d9-official-web/` 缺 `receipt.json`** ——
    目录随 #64（harmony webServer carrier）落地；receipt 归 harmony 工作
    流的下一次主机 re-run 所有。
-4. **`hosts/android/artifacts/android-upstream/` 缺 `receipt.json`** ——
+3. **`hosts/android/artifacts/android-upstream/` 缺 `receipt.json`** ——
    目录随 #63（android official-web boot）落地；receipt 归 android 工作
    流的下一次主机 re-run 所有。
-5. **`hosts/android/artifacts/android-session-live/` 缺 `receipt.json`**
+4. **`hosts/android/artifacts/android-session-live/` 缺 `receipt.json`**
    —— 目录随 #66（android session.live 主线脊柱，b-android.session.live
    46/46 绿色）落地；receipt 归 android 工作流的下一次主机 re-run 所有。
-6. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
+5. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
    目录随 #67（harmony session.live 主线脊柱，b-harmony.session.live
    43/43 绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
 
@@ -181,6 +163,28 @@ re-run 受阻的既有 receipt（缺口 1），五项是其目录随 #63/#64/#65
   要到构建之后的 4b 步才暂存它；在运行 runner 前先执行
   `runtime/spike/vendor/ensure-dsh.sh` 即可绕过，已记 surprise。）
 
+### 由 2026-09-21 m2-gateway receipt 收口闭合（fix/m2-gateway-receipt）
+
+- **m2-gateway 的 receipt** —— 通过本分支上一次真实的 `run-ios.sh`
+  重跑闭合（`e3bd333` 的全新 worktree）：四条 checker 与 manifest 一对一
+  复现（m1.spike.boot 7/7、m1.carrier.loopback 7/7、m2.gateway.binding
+  19/19、m2.gateway.audit 16/16，expected == logged，退出码 0），证据从
+  本次运行刷新，`receipt.json` 由 runner 新增的绿色路径步骤在运行内
+  机器撰写（该步骤仅在四条 checker 全部通过后可达——receipt 永远不可能
+  脱离一次真实绿色运行而存在）。此次尝试也把上一条目描述的 picker 阻塞
+  彻底排除，其「索引时序」只说对了一半：驱动从未**提交**搜索——在
+  iOS 26.5 的选择面板上，通过 WDA 输入 "notes" 只会渲染 名称包含 的
+  建议行，结果列表只有按下键盘回车后才出现；现已通过同一个与区域设置
+  无关的元素 `/value` 端点发送回车（`wda_submit_search`）。结果磁贴的
+  标定随之更新（px (204,894) → (163,712) / 2）。围绕它，runner 现在：
+  (a) 只预置一次 picker 目标——重写它、甚至重装应用（同版本重装也会使
+  数据容器迁移 UUID），都会把该文档从易变的提供器搜索索引中挤出，索引
+  在数分钟沉淀后自行恢复；(b) 在 node 缺失时大声失败，并在检查前清除
+  陈旧 verdict 文件——此前一次运行曾因 `|| true` 掩盖 "command not
+  found" 而按上一次运行的 verdict 判绿；(c) 一切均记录在 surprises
+  台账（超越重写的索引易变性、绿色目录先归档再重跑、驱动截止看门狗
+  失灵）。
+
 ### 信息性说明，不算失败
 
 - **Manifest 版本漂移**（5 条 verdict）：`m1.spike.boot` 在
@@ -202,7 +206,6 @@ scenario id 在 `tools/e2e/scenarios/` 无 manifest。其 `--self-test` 模式
 证明每个拒绝类别都真的会拒绝（8 条断言，规则 6）——断言集记录在
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
 
-检查器**有意不接入 `gates.json`**：上方尚余六项有主缺口（m2-gateway 的
-receipt，按 rerun 协议等待文件提供器搜索索引健康的 picker leg；以及五个
-D9 时代的 receipt，等待各自主机的下一次 re-run）；是否以该矩阵设卡，属于
-plane seal 的决定。
+检查器**有意不接入 `gates.json`**：上方尚余五项有主缺口（五个 D9 时代的
+receipt，等待各自主机的下一次 re-run）；是否以该矩阵设卡，属于 plane
+seal 的决定。

@@ -36,7 +36,7 @@ PT_APPROVE=(300 720)           # in-app approval dialog: "Approve" (check 03-*.p
 PT_BANNER=(150 130)            # notification banner body (top of screen)
 SWIPE_PULL=(150 60 150 600)    # pull-down gesture when banner is collapsed
 PT_SEARCH=(298 248)           # Files sheet search field (re-derived 2026-09-21 from screens/05-picker-search.png per the coordinate law: field at px ~(596,496) / 2; the old (201,126) mapped to the sheet TITLE row — tap missed, typing never landed, empty Recents left zero rows for the tile press — surprise drivepickers-ptsearch-calibration-201126)
-PT_FILES_TILE=(102 447)       # search-result grid cell (re-derived 2026-09-21 from 05-picker-search.png: single "notes" tile at px ~(212,894) / 2 — the search UI gained a suggestions row that pushes results lower than the 2026-09-20 calibration; wda_session element probe confirmed WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
+PT_FILES_TILE=(81 356)        # search-result grid cell (re-derived 2026-09-21 from 05b-picker-results.png after the search-submission fix: single "notes" tile thumbnail spans px (92..233, 617..807), center ~(163,712) / 2 per the coordinate law — the old (102,447) mapped to px (204,894), the label row BELOW the thumbnail, and the press never selected; wda_session element probes confirm WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
 PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140 / 2); harmless on empty grid
 BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
@@ -44,6 +44,7 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/m2-gateway"
 SKIP_BUILD=0
 NO_REBOOT=0
+SKIP_INSTALL=0
 APP_BUNDLE_ID=org.dsh.DSHSpike
 APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
 # The step-3 REBOOT kills any running WDA, so step 5 re-bootstraps it on the
@@ -58,10 +59,17 @@ while [ $# -gt 0 ]; do
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
     --no-reboot) NO_REBOOT=1; shift ;;
-    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build] [--no-reboot]" >&2; exit 2 ;;
+    --skip-install) SKIP_INSTALL=1; shift ;;
+    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build] [--no-reboot] [--skip-install]" >&2; exit 2 ;;
   esac
 done
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
+# Rule 5 (fail loud): the checkers ARE the verdict. nvm-managed node is
+# absent in non-interactive shells — observed live 2026-09-21: `run_check
+# ... || true` masked "node: command not found" and the summary PASSed by
+# grepping the PREVIOUS run's still-on-disk verdict files. Abort BEFORE the
+# drive, and run_check removes its target so no stale verdict survives.
+command -v node >/dev/null 2>&1 || die "node not on PATH — checkers cannot run (rule 5)"
 export IDB_UDID="$UDID"
 mkdir -p "$ART" "$ART/screens"
 
@@ -208,6 +216,24 @@ wda_field_type() { # TEXT
     -d "{\"text\":\"$text\"}" >/dev/null
 }
 
+# wda_submit_search: the typed query alone NEVER executes the search on the
+# iOS 26.5 sheet — typing renders only the 名称包含 suggestion row (observed
+# live 2026-09-21: field focused, 'notes' delivered, caret + keyboard up, yet
+# no result tile; the blind tile press then hit blank space and the watchdog
+# expired). Appending "\n" through the SAME element /value endpoint delivers
+# the keyboard return = submit — verified live: the results view rendered
+# immediately. Lookup stays by TYPE, so the drive remains locale-independent.
+wda_submit_search() {
+  local sid eid
+  sid=$(wda_session)
+  eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json' \
+    -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
+    | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
+  [ -n "$eid" ] || return 1
+  curl -s -X POST "localhost:8100/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
+    -d '{"text":"\n"}' >/dev/null
+}
+
 # ---- UI legs ---------------------------------------------------------------
 drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually renders
   shot 02-notification-banner
@@ -256,7 +282,14 @@ drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
     idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true
   fi
   sleep 2
-  shot 05-picker-search
+  shot 05-picker-search   # typed state — suggestion row only, search not executed
+  if wda_submit_search; then
+    log "search submitted (keyboard return via /value)"
+  else
+    log "search submit unavailable — tile press will race the suggestion state"
+  fi
+  sleep 2
+  shot 05b-picker-results   # submitted state — the result row must render here
   # the single result row sits right under the search field; a ~0.15s press
   # selects AND confirms in one gesture (verified live earlier)
   local i rc
@@ -298,7 +331,16 @@ if [ "$NO_REBOOT" -eq 0 ]; then
 fi
 xcrun simctl bootstatus "$UDID" -b
 sleep 5   # let springboard settle before the provider indexes the container
-xcrun simctl install "$UDID" "$APP"
+if [ "$SKIP_INSTALL" -eq 0 ]; then
+  xcrun simctl install "$UDID" "$APP"
+else
+  # Reinstalling can migrate/re-touch the app's data container (observed live
+  # 2026-09-21: the container UUID changed across a same-version reinstall),
+  # which knocks the staged picker target out of the file-provider search
+  # index. --skip-install reuses the already-installed app when the build is
+  # unchanged and the pre-stage must stay undisturbed.
+  log "install skipped (--skip-install) — reusing the installed app"
+fi
 
 # Pre-stage the picker target from the HOST side: the Files file-provider
 # indexes the container at first touch after boot, and a file written later
@@ -306,8 +348,19 @@ xcrun simctl install "$UDID" "$APP"
 # (observed live: picker showed an empty gateway-e2e while the file existed).
 CONTAINER=$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)
 mkdir -p "$CONTAINER/Documents/gateway-e2e"
-printf 'gateway e2e target file — dsh-mobile m2\n' \
-  > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+# STAGE ONCE: rewriting the staged target immediately before the drive knocks
+# it out of the file-provider search index until re-index completes (observed
+# live 2026-09-21: the same setup surfaced the tile at 04:55 with the 04:52
+# staging, then returned 未找到相关结果 at 04:58 right after a rewrite —
+# surprise run-iossh-attempt-with-correct). A settled copy must survive the
+# pre-stage untouched; only a MISSING target is created here.
+if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
+  printf 'gateway e2e target file — dsh-mobile m2\n' \
+    > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+  log "pre-staged notes.txt (was missing — fresh copy)"
+else
+  log "notes.txt already staged — untouched (index-settle recipe)"
+fi
 
 # 3.5 WDA warm-up BEFORE the launch: the binding scenario's 180s watchdog
 # starts at eval (step 4), so a slow post-reboot WDA must not eat it.
@@ -371,6 +424,7 @@ grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0; FAILED=""
 run_check() { # MANIFEST OUT
+  rm -f "$2"   # a failed/absent checker must never leave a stale verdict (rule 5)
   node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$2" || true
 }
 run_check tools/e2e/scenarios/m1-spike-boot.json       "$ART/verdict-m1-spike-boot.json"
@@ -395,3 +449,67 @@ if [ "$FAIL" -gt 0 ]; then
   die "failing checker(s):$FAILED — see verdict JSONs under $ART"
 fi
 log "ALL CHECKERS PASS"
+
+# ---- 7. receipt (reachable ONLY on a real green run) -----------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md): every evidence dir carries
+# receipt.json. Machine-authored HERE, after the summary loop above died on
+# any failing checker, so a receipt can never exist without this real green
+# run (never synthesized). Format mirrors the established evidence receipts
+# (hosts/ios/artifacts/b3-session-live/receipt.json).
+RECEIPT="$ART/receipt.json"
+TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
+ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
+python3 - "$ART" "$UDID" "$TREE_LINE" "$ENGINE_PIN" <<'PY'
+import json, os, subprocess, sys
+from datetime import datetime
+art, udid, tree, engine_pin = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
+                     capture_output=True, text=True, check=True).stdout
+devs = json.loads(out)["devices"]
+def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
+    parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
+    return parts[0] + " " + ".".join(parts[1:])
+host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
+            for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
+scenarios = []
+for sid in ["m1-spike-boot", "m1-carrier-loopback", "m2-gateway-binding",
+            "m2-gateway-audit"]:
+    v = json.load(open(os.path.join(art, f"verdict-{sid}.json")))
+    scenarios.append({
+        "id": v["scenario"],
+        "checker": f"tools/e2e/scenarios/{sid}.json",
+        "events": v["logged"],
+        "result": "pass" if v["pass"] else "fail",
+    })
+screens = sorted("screens/" + f
+                 for f in os.listdir(os.path.join(art, "screens"))
+                 if f.endswith(".png"))
+receipt = {
+    "host": "iOS " + host,
+    "engine": "quickjs-ng",
+    "engineVersion": engine_pin,
+    "phase": ("M2 gateway binding — the native UI legs the gateway scenario "
+              "blocks on (notification permission alert, banner tap, approval "
+              "dialog, Files-document picker search) are driven LIVE on the "
+              "simulator while the gateway/fs/http primitives answer over the "
+              "real JS bridge, one-to-one against all four scenario manifests"),
+    "launchConfiguration": ("default DSHSpike scenario drive (boot -> carrier "
+                            "-> gateway binding -> audit); picker target "
+                            "pre-staged at Documents/gateway-e2e/notes.txt, "
+                            "stage-once per the provider index-settle recipe"),
+    "tree": tree,
+    "scenarios": scenarios,
+    "runner": "tools/e2e/run-ios.sh",
+    "screens": screens,
+    "regressions": ("this run refreshed ONLY hosts/ios/artifacts/m2-gateway "
+                    "(its four verdicts re-matched the committed manifests on "
+                    "this tree); every other evidence dir carries its own "
+                    "committed verdicts — see docs/e2e-matrix.md"),
+    "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+    "exitCode": 0,
+}
+with open(os.path.join(art, "receipt.json"), "w") as f:
+    json.dump(receipt, f, indent=2, ensure_ascii=False)
+    f.write("\n")
+print(f"run-ios: receipt written: {os.path.join(art, 'receipt.json')}")
+PY

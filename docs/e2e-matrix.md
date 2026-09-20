@@ -6,10 +6,10 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `ca644a0`
-> (rows for `b3.session.live` refreshed and its receipt gap closed
-> 2026-09-21 by the W-RECEIPT evidence closure; the five D9 dirs
-> `android-upstream` / `d9-official-web` / `b4-write-live` /
+> **Currency**: this matrix reflects `origin/main` as of commit `052587e`
+> (the `m2-gateway` row refreshed and its receipt gap closed 2026-09-21 by
+> the W-GR bounded attempt, on top of the W-RECEIPT b3 closure; the five D9
+> dirs `android-upstream` / `d9-official-web` / `b4-write-live` /
 > `android-session-live` / `d9-session-live` entered the inventory with
 > #63/#64/#65/#66/#67;
 > totals re-run against this tree). It is
@@ -41,8 +41,8 @@ following hold:
 | Evidence dirs | 25 |
 | Verdicts (all `pass: true`, `expected == logged`) | 51 |
 | Scenarios with at least one committed evidence dir | 24 of 24 manifests |
-| Screenshots verified PNG | 53 |
-| Acceptance-bar findings | 6 (below) |
+| Screenshots verified PNG | 55 |
+| Acceptance-bar findings | 5 (below) |
 
 ## Coverage matrix — scenario × platform
 
@@ -101,7 +101,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗ (gap 2) | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✗ (gap 1) | 7 |
+| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
@@ -119,49 +119,25 @@ screenshots optional debugging aids, never deliverables or inputs).
 ## Known gaps (honest list)
 
 The checker (`tools/e2e/matrix.mjs`) currently exits non-zero on exactly
-six findings: one carried re-run-blocked receipt (gap 1) and five
-receipts pending their dirs' first post-landing host re-run (gaps 2–6,
-each owned by the host work stream that landed the dir with
-#63/#64/#65/#66/#67).
+five findings: receipts pending their dirs' first post-landing host
+re-run, each owned by the host work stream that landed the dir with
+#63/#64/#65/#66/#67.
 
-1. **`hosts/ios/artifacts/m2-gateway/` has no `receipt.json`** — the dir
-   predates the #26 receipt convention. Its four committed verdicts are
-   green and its evidence is otherwise complete, produced by a fully
-   green WDA run; only the receipt is missing, and the receipt must come
-   from a real run (never synthesized). The 2026-09-21 closure attempt
-   made the diagnosis precise and retired half the blocker: the
-   WebDriverAgent runtime is HEALTHY again (the runner's `wda_up` probe
-   was silently broken by the WDA rebuild's pretty-printed `/status`
-   JSON — fixed in run-ios.sh along with the picker search-field
-   calibration, both surprise-recorded), and with WDA up the run
-   reproduces every in-app leg green (boot, carrier, all gateway/fs/http
-   primitives — events 0–7 one-to-one) up to `presentPicker`. The
-   remaining blocker is the Files-provider search index: the pre-staged
-   `notes.txt` surfaces as a search result seconds after one staging
-   (04:55 probe) but returns 未找到相关结果 when the file is rewritten
-   immediately before the drive (04:58 run) — rewriting the pre-stage
-   target knocks it out of the index until re-index completes. The
-   receipt belongs to the next run whose pre-stage lets the index settle
-   (stage once, don't rewrite, or allow settling time); per the rerun
-   protocol the stall was recorded, not retried
-   (surprise signatures `drivepickers-ptsearch-calibration-201126`,
-   `drivepicker-can-focus-the`, and the 04:58 record; process note
-   `2026-09-20-run-ios-sh-rerun-protocol-under-a-degrad`).
-2. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
+1. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
    dir landed with #65 (the session-write surface); the receipt is
    owned by the b4 work stream's next `run-ios-b4.sh` run on a tree
    carrying #65.
-3. **`hosts/harmony/artifacts/d9-official-web/` has no `receipt.json`**
+2. **`hosts/harmony/artifacts/d9-official-web/` has no `receipt.json`**
    — the dir landed with #64 (the harmony webServer carrier); the
    receipt is owned by the harmony work stream's next host re-run.
-4. **`hosts/android/artifacts/android-upstream/` has no `receipt.json`**
+3. **`hosts/android/artifacts/android-upstream/` has no `receipt.json`**
    — the dir landed with #63 (the android official-web boot); the
    receipt is owned by the android work stream's next host re-run.
-5. **`hosts/android/artifacts/android-session-live/` has no
+4. **`hosts/android/artifacts/android-session-live/` has no
    `receipt.json`** — the dir landed with #66 (the android session.live
    spine, b-android.session.live 46/46 green); the receipt is owned by
    the android work stream's next host re-run.
-6. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
+5. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
    — the dir landed with #67 (the harmony session.live spine,
    b-harmony.session.live 43/43 green); the receipt is owned by the
    harmony work stream's next host re-run.
@@ -201,6 +177,33 @@ each owned by the host work stream that landed the dir with
   `runtime/spike/vendor/ensure-dsh.sh` before the runner is the
   workaround, surprise-recorded.)
 
+### Closed by the 2026-09-21 m2-gateway receipt closure (fix/m2-gateway-receipt)
+
+- **m2-gateway receipt** — closed by a real `run-ios.sh` re-run on this
+  branch (fresh worktree at `e3bd333`): the four checkers re-matched the
+  manifests one-to-one (m1.spike.boot 7/7, m1.carrier.loopback 7/7,
+  m2.gateway.binding 19/19, m2.gateway.audit 16/16, expected == logged,
+  exit 0), the evidence was refreshed from the run, and `receipt.json`
+  is machine-authored IN-RUN by the runner's new green-path step
+  (reachable only after all four checkers pass — a receipt can never
+  exist without a real green run). The attempt also retired the picker
+  blocker the previous entry described, whose "index timing" was only
+  half the story: the drive never SUBMITTED its search — on the iOS 26.5
+  sheet, typing "notes" through WDA renders only the 名称包含 suggestion
+  row, and the results appear only after the keyboard return, now sent
+  through the same locale-independent element `/value` endpoint
+  (`wda_submit_search`). The result-tile calibration moved accordingly
+  (px (204,894) → (163,712) / 2). Around it the runner now (a) stages
+  the picker target ONCE — rewriting it, and even re-installing the app
+  (the data container migrated UUID across a same-version reinstall),
+  knocks the doc out of the volatile provider search index, which
+  repopulates after a few minutes of settle; (b) fails loud when node is
+  missing and removes stale verdict files before checking, after a run
+  PASSed by grepping the previous run's verdicts (`|| true` had masked
+  "command not found"); (c) records everything on the surprises ledger
+  (index volatility beyond rewrites, archive-a-green-dir-before-rerun,
+  driver deadline wedge).
+
 ## Informational, not failures
 
 - **Manifest-revision drift** (5 verdicts): `m1.spike.boot` was captured
@@ -226,8 +229,7 @@ scenario id without a manifest in `tools/e2e/scenarios/`. Its
 (8 assertions, rule 6) — the assertion set is documented in the
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs).
 
-The checker is deliberately **not wired into `gates.json`**: six owned
-findings above remain open (the m2-gateway receipt, blocked on a
-file-provider-index-healthy picker leg per the rerun protocol, and the
-five D9-era receipts blocked on their hosts' next re-runs), and the
-decision to gate on the matrix belongs to the plane seal.
+The checker is deliberately **not wired into `gates.json`**: five owned
+findings above remain open (the five D9-era receipts blocked on their
+hosts' next re-runs), and the decision to gate on the matrix belongs to
+the plane seal.
