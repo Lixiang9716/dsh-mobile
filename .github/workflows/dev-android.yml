@@ -63,13 +63,33 @@ jobs:
       # client bundles — untracked, manifest-verified, reproducible); the
       # Gradle build fails loud without them. ensure-dsh pins the bootstrap
       # package the web-plugins staging overlay prefers.
+      # The upstream monorepo builds (tsdown/vite over 58 packages) die
+      # SIGKILLed mid-build on the hosted runner — no error, the log just
+      # stops: RAM/disk pressure. /mnt is the large ephemeral disk; swap
+      # there absorbs the spikes, and free/df at failure time diagnose any
+      # repeat.
+      - name: Add swap for the upstream builds
+        run: |
+          sudo fallocate -l 6G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          free -h
+
       - name: Materialize the vendored official web app
         env:
           COREPACK_INTEGRITY_KEYS: '0'
+          NODE_OPTIONS: '--max-old-space-size=3072'
         run: |
           runtime/spike/vendor/ensure-dsh.sh > /dev/null
-          tools/e2e/ensure-official-dist.sh
-          tools/e2e/ensure-client-bundles.sh
+          tools/e2e/ensure-official-dist.sh || {
+            free -h; df -h / /tmp /mnt
+            exit 1
+          }
+          tools/e2e/ensure-client-bundles.sh || {
+            free -h; df -h / /tmp /mnt
+            exit 1
+          }
 
       - name: Build APK (debug)
         working-directory: hosts/android
