@@ -6,8 +6,8 @@
 数据来自已提交的 artifacts 目录。由
 [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映提交 `1914412`（2026-09-20 审计）时的 `origin/main`。
-> 它是**再生成**的，不是手工维护的：
+> **时效性**：本矩阵反映提交 `e80f65d`（2026-09-20 再生成，证据缺口收口）
+> 时的 `origin/main`。它是**再生成**的，不是手工维护的：
 >
 > ```sh
 > node tools/e2e/matrix.mjs              # 退出码 0 = 清单干净
@@ -30,11 +30,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 16 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 31 |
-| 至少有一份已提交证据的 scenario | 15 / 15 个 manifest |
-| 已验证 PNG 的截图 | 25 |
-| 验收标准缺口 | 4（见下） |
+| 证据目录 | 18 |
+| Verdict（全部 `pass: true`、`expected == logged`） | 33 |
+| 至少有一份已提交证据的 scenario | 16 / 16 个 manifest |
+| 已验证 PNG 的截图 | 30 |
+| 验收标准缺口 | 1（见下） |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -45,7 +45,7 @@
 | --- | --- | --- | --- | --- |
 | `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7 | 9/9 |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
-| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6 | —（缺口 4） |
+| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6 | 6/6 |
 | `m2.gateway.audit` | 16/16 | 16/16 | — | — |
 | `m2.gateway.binding` | 19/19 | — | — | — |
 | `m2.session` | 23/23, 23/23 | 22/22（漂移）, 23/23 | 23/23 | 23/23 |
@@ -58,8 +58,9 @@
 | `m2.upstream-session` | — | — | — | 31/31 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 | — |
+| `b1.official-web.mount` | 10/10 | — | — | — |
 
-15 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
+16 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
 
 ## 证据目录清单
@@ -75,12 +76,14 @@
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 10/10 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✗（缺口 2） | ✓ | 2（缺口 3） |
+| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
@@ -91,23 +94,37 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 
 ## 已知缺口（如实列出）
 
-检查器（`tools/e2e/matrix.mjs`）当前恰好因以下各项以非零码退出；此处只
-列出、不代为修复，因为每一项都位于有主/进行中的区域，或无法平凡修复：
+检查器（`tools/e2e/matrix.mjs`）当前恰好因一项以非零码退出；2026-09-20
+审计记录的四个缺口其余全部闭合。
 
 1. **`hosts/ios/artifacts/m2-gateway/` 缺 `receipt.json`** —— 该目录早于
-   #26 的 receipt 约定。iOS 区域有主（审计时有 worker 进行中）；此处不修。
-2. **`hosts/harmony/artifacts/m5-host/` 缺 `scenario.jsonl`** —— 该次运行
-   的抽取步骤未提交。重新生成需要 Harmony runner 在真机上执行（从
-   `logs.txt` 反向拼装等于伪造证据）；留给 Harmony 的 owner。
-3. **两张 Harmony 截图是挂在 `.png` 名下的 JPEG 数据** ——
-   `hosts/harmony/artifacts/m5-host/m5-binding-complete.png` 与
-   `m5-live-deltas.png` 以 `ffd8ffe0` 开头，不是 PNG magic。图片本身可正常
-   查看；改名会破坏文档链接，应由 Harmony owner 在其工作流中重新产出
-   （或改名并修正引用）。
-4. **`m2.bridge.smoke` 没有已提交的 macOS CLI 证据**，而按 e2e README 该
-   CLI 正是该 scenario 的规范主机；当前已提交的 verdict 来自 Android
-   （`m4-host`、`m4-complete`）与 Harmony（`m5-host`）。留给下一次运行
-   CLI spike 的人。
+   #26 的 receipt 约定。重新生成需要一次干净的 re-run，但当前被 WDA 阻塞：
+   dsh-iphone iOS 26.5 模拟器上的 WebDriverAgent 运行时已进入第三次记录在案
+   的退化（surprise 签名 `run-iossh-regression-rerun-green` /
+   `run-iossh-ui-drive-rerun-green`，过程注记
+   `2026-09-20-run-ios-sh-rerun-protocol-under-a-degrad` —— 2026-09-20 收口
+   尝试时 WDA 的 HTTP 桥再次拒绝连接）。按该协议跳过 re-run、不硬闯：
+   receipt 留给下一次 WDA 健康的 `tools/e2e/run-ios.sh` 运行。该目录的四条
+   已提交 verdict 均为绿色，其余证据齐全。
+
+### 由 2026-09-20 证据缺口收口闭合（fix/evidence-gaps）
+
+- **缺口 2（Harmony `scenario.jsonl`）** —— 通过在本树上完整重跑
+  `hosts/harmony/ci/run-host-e2e.sh` 闭合：四条 verdict 全部与已提交
+  manifest 一致（m1.spike.boot 7/7、m2.bridge.smoke 6/6、m2.session 23/23、
+  m5.host-binding 20/20），且 runner 现在从本次运行自己的 capture 文件抽取
+  `scenario.jsonl`（对 sink + binding capture 执行
+  `grep -h '^dsh.spike.log:'`——与 Android runner 相同的抽取约定）。重跑
+  依赖一处一行主机修复：#53 把 `dsh:util-crypto` 升到 0.1.6-alpha.2 时更新了
+  加载路径、manifest 与 rawfile 副本，却漏了 `Index.ets` 的 `BUNDLE_FILES`，
+  导致全新启动在记录任何 scenario 行之前就死于 `GetRawfileContent`。
+- **缺口 3（`.png` 名下的 JPEG 数据）** —— 模拟器 `snapshot_display` 输出
+  JPEG；runner 现在用一行有记录的 `sips -s format png` 步骤对两张截图就地
+  转换，重拍的两个文件均带真实 PNG magic。
+- **缺口 4（`m2.bridge.smoke` 无 macOS CLI 证据）** —— 通过在该 scenario
+  的规范主机上真实无头运行闭合：`runtime/spike/artifacts/macos-cli-bridge-smoke/`
+  提交了 logs.txt + scenario.jsonl + `verdict.json`（6/6，一对一）+
+  receipt.json，来自 `./build/dsh-spike-cli . scenario/m2-bridge-smoke.js`。
 
 ### 信息性说明，不算失败
 
@@ -130,5 +147,6 @@ scenario id 在 `tools/e2e/scenarios/` 无 manifest。其 `--self-test` 模式
 证明每个拒绝类别都真的会拒绝（8 条断言，规则 6）——断言集记录在
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
 
-检查器**有意不接入 `gates.json`**：上述缺口是针对验收标准的真实回归；
-是否以该矩阵设卡，属于 plane seal 在有主缺口闭合之后的决定。
+检查器**有意不接入 `gates.json`**：上方尚余一项有主缺口（m2-gateway 的
+receipt，等待 WDA 运行时恢复健康）；是否以该矩阵设卡，属于 plane seal
+的决定。
