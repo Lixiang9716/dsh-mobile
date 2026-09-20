@@ -50,6 +50,16 @@ jobs:
       - name: Install the pinned NDK, CMake, and the API 35 system image
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" "system-images;android-35;default;x86_64" > /dev/null
 
+      # The APK packs the vendored official web app (dist + application-tier
+      # client bundles — untracked, manifest-verified, reproducible); the
+      # Gradle build fails loud without them. ensure-dsh pins the bootstrap
+      # package the web-plugins staging overlay prefers.
+      - name: Materialize the vendored official web app
+        run: |
+          runtime/spike/vendor/ensure-dsh.sh > /dev/null
+          tools/e2e/ensure-official-dist.sh
+          tools/e2e/ensure-client-bundles.sh
+
       - name: Build APK (debug)
         working-directory: hosts/android
         run: ./gradlew assembleDebug --no-daemon

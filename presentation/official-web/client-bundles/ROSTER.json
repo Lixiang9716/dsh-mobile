@@ -16,7 +16,7 @@
     {
       "name": "@deepseek-ai/dsh-api-gateway",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/gateway",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/gateway",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-typert-registry",
@@ -28,13 +28,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/gateway/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/gateway/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-api-remotes",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/remotes",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/remotes",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-api-gateway"
@@ -45,13 +45,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/remotes/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/remotes/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-api-session-controller",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/session-controller",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/session-controller",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-gateway",
@@ -65,13 +65,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/session-controller/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/session-controller/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-api-terminal-controller",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/terminal-controller",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/terminal-controller",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-gateway"
@@ -84,13 +84,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/terminal-controller/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/terminal-controller/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-api-workspace-controller",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/workspace-controller",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/workspace-controller",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-gateway",
@@ -104,13 +104,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/workspace-controller/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/workspace-controller/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-api-workspace-files",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/workspace-files",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/workspace-files",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-gateway",
@@ -122,13 +122,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/api/workspace-files/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/api/workspace-files/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-connection",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/connection",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/connection",
       "immediately": true,
       "inject": [],
       "external": [],
@@ -137,13 +137,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/connection/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/connection/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-file-upload",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/file-upload",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/file-upload",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-api-remotes"
@@ -154,13 +154,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/file-upload/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/file-upload/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-hmr",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/hmr",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/hmr",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-modules"
@@ -171,13 +171,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/hmr/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/hmr/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-locale",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/locale",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/locale",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-connection",
@@ -191,13 +191,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/locale/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/locale/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-modules",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/modules",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/modules",
       "immediately": true,
       "inject": [],
       "external": [],
@@ -206,13 +206,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/modules/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/modules/lib/client.js",
       "bootstrap": true
     },
     {
       "name": "@deepseek-ai/dsh-client-resources",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/resources",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/resources",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-renderer"
@@ -223,13 +223,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/resources/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/resources/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-agent-preset",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-agent-preset",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-agent-preset",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -247,13 +247,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-agent-preset/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-agent-preset/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-approval",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-approval",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-approval",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -269,13 +269,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-approval/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-approval/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-attachment",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-attachment",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-attachment",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-chat",
@@ -290,13 +290,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-attachment/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-attachment/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-brand-official",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-brand-official",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-brand-official",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-renderer",
@@ -308,13 +308,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-brand-official/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-brand-official/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-chat",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-chat",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-chat",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -335,13 +335,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-chat/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-chat/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-commands",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-commands",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-commands",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -355,13 +355,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-commands/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-commands/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-conversation",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-conversation",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-conversation",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -379,13 +379,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-conversation/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-conversation/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-cordis",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/extensions/ui-cordis",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/extensions/ui-cordis",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-connection",
@@ -403,13 +403,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/extensions/ui-cordis/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/extensions/ui-cordis/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-deliverables",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-deliverables",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-deliverables",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -427,13 +427,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-deliverables/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-deliverables/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-goal",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-goal",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-goal",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -450,13 +450,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-goal/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-goal/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-input-trigger",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-input-trigger",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-input-trigger",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -470,13 +470,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-input-trigger/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-input-trigger/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-jobs",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-jobs",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-jobs",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -489,13 +489,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-jobs/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-jobs/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-layout",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-layout",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-layout",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -509,13 +509,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-layout/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-layout/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-message-feedback",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-message-feedback",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-message-feedback",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -530,13 +530,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-message-feedback/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-message-feedback/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-model-selection",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-model-selection",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-model-selection",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -550,13 +550,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-model-selection/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-model-selection/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-open-in-app",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-open-in-app",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-open-in-app",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -570,13 +570,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-open-in-app/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-open-in-app/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-permission-presets",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-permission-presets",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-permission-presets",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -593,13 +593,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-permission-presets/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-permission-presets/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-plan",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-plan",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-plan",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -617,13 +617,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-plan/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-plan/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-plugin-manager",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-plugin-manager",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-plugin-manager",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -637,13 +637,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-plugin-manager/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-plugin-manager/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-reference",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-reference",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-reference",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -659,13 +659,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-reference/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-reference/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-renderer",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-renderer",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-renderer",
       "immediately": true,
       "inject": [],
       "external": [],
@@ -674,13 +674,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-renderer/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-renderer/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-schedule",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-schedule",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-schedule",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -693,13 +693,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-schedule/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-schedule/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-session",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-session",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-session",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -712,13 +712,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-session/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-session/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes"
@@ -729,13 +729,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings-general",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-general",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-general",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-settings",
@@ -750,13 +750,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-general/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-general/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings-models",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-models",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-models",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-settings",
@@ -769,13 +769,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-models/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-models/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-plugin-inventory",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-plugin-inventory",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -790,13 +790,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-plugin-inventory/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-plugin-inventory/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings-plugins",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-plugins",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-plugins",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -809,13 +809,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-plugins/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-plugins/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-settings-unarchive-sessions",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-unarchive-sessions",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-unarchive-sessions",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -830,13 +830,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-settings-unarchive-sessions/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-settings-unarchive-sessions/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-workspace-controller",
@@ -853,13 +853,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar-browser",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-browser",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-browser",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-sidebar-right",
@@ -871,13 +871,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-browser/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-browser/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-documentpreview",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-documentpreview",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-gateway",
@@ -895,13 +895,13 @@
       "chunks": [
         "lib/client.pdf.js"
       ],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-documentpreview/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-documentpreview/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar-files",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-files",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-files",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-workspace-files",
@@ -915,13 +915,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-files/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-files/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar-right",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-right",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-right",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -936,13 +936,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-right/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-right/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-sidebar-terminal",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-terminal",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-terminal",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-terminal-controller",
@@ -958,13 +958,13 @@
       "chunks": [
         "lib/client.terminal.js"
       ],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-sidebar-terminal/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-sidebar-terminal/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-skill",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-skill",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-skill",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -981,13 +981,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-skill/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-skill/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-subagent",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-subagent",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-subagent",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -1006,13 +1006,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-subagent/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-subagent/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-theme",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-theme",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-theme",
       "immediately": true,
       "inject": [
         "@deepseek-ai/dsh-client-connection",
@@ -1027,13 +1027,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-theme/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-theme/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-tool",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-tool",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-tool",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-workspace-controller",
@@ -1047,13 +1047,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-tool/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-tool/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-trajectory",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-trajectory",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-trajectory",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -1068,13 +1068,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-trajectory/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-trajectory/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-user-questions",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-user-questions",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-user-questions",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -1090,13 +1090,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-user-questions/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-user-questions/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-workflow-run",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-workflow-run",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-workflow-run",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-session-controller",
@@ -1113,13 +1113,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-workflow-run/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-workflow-run/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-client-ui-workspace",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-workspace",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-workspace",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-api-remotes",
@@ -1139,13 +1139,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/client/ui-workspace/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/client/ui-workspace/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-cordis-client-runner",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/extensions/cordis-client-runner",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/extensions/cordis-client-runner",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-ui-renderer",
@@ -1159,13 +1159,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/extensions/cordis-client-runner/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/extensions/cordis-client-runner/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-session-log-export",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/session-query/session-log-export",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/session-query/session-log-export",
       "immediately": false,
       "inject": [
         "@deepseek-ai/dsh-client-locale",
@@ -1180,13 +1180,13 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/session-query/session-log-export/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/session-query/session-log-export/lib/client.js",
       "bootstrap": false
     },
     {
       "name": "@deepseek-ai/dsh-typert-registry",
       "version": "0.1.6-alpha.2",
-      "dir": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/typert/registry",
+      "dir": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/typert/registry",
       "immediately": true,
       "inject": [],
       "external": [],
@@ -1195,7 +1195,7 @@
         "lib/client.js"
       ],
       "chunks": [],
-      "bundle": "/tmp/dsh-client-bundles-build.cEk3Ou/deepseek-harness/packages/typert/registry/lib/client.js",
+      "bundle": "/tmp/dsh-client-bundles-build.vPkHvN/deepseek-harness/packages/typert/registry/lib/client.js",
       "bootstrap": false
     }
   ]
