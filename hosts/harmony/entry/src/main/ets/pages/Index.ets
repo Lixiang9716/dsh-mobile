@@ -62,6 +62,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/b1-web-live.js',
   'scenario/harmony-httpfetch-v2.js',
   'scenario/harmony-session-live.js',
+  'scenario/harmony-write-live.js',
   'scenario/m1-spike-boot.js',
   'scenario/m2-bridge-smoke.js',
   'scenario/m2-session.js',

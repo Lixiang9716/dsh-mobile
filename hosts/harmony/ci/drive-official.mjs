@@ -13,12 +13,18 @@
  *   b-harmony.official-web-mount mount.complete → final screenshot
  *   b-harmony.session.live      index.served → session boot screenshot
  *   b-harmony.session.live      session.live.complete → session screenshot
+ *   b-harmony.write.live        index.served → write boot screenshot
+ *   b-harmony.write.live        composer.typed → composer-typed screenshot
+ *   b-harmony.write.live        write.reply.rendered → reply-rendered screenshot
  *   dsh.spike.verdict: b-harmony.httpfetch-v2     → leg done
- *   dsh.spike.verdict: b-harmony.session.live     → done (exit 0 on PASS)
+ *   dsh.spike.verdict: b-harmony.session.live     → leg done
+ *   dsh.spike.verdict: b-harmony.write.live       → done (exit 0 on PASS)
  *
  * usage: drive-official.mjs --hdc <path> [--overall-deadline S]
  *                            [--shot-boot PNG] [--shot-final PNG]
  *                            [--shot-session-boot PNG] [--shot-session PNG]
+ *                            [--shot-write-boot PNG] [--shot-write-composer PNG]
+ *                            [--shot-write-reply PNG]
  */
 import { spawn, execFileSync } from 'node:child_process';
 import { mkdtempSync } from 'node:fs';
@@ -28,7 +34,8 @@ import { join } from 'node:path';
 const usage = () => {
   console.error('usage: drive-official.mjs --hdc <path> [--overall-deadline S]' +
     ' [--shot-boot PNG] [--shot-final PNG]' +
-    ' [--shot-session-boot PNG] [--shot-session PNG]');
+    ' [--shot-session-boot PNG] [--shot-session PNG]' +
+    ' [--shot-write-boot PNG] [--shot-write-composer PNG] [--shot-write-reply PNG]');
   process.exit(2);
 };
 
@@ -89,8 +96,14 @@ const state = {
   sessionBootShot: false,
   sessionDone: false,
   sessionShot: false,
+  writeBootShot: false,
+  writeComposerShot: false,
+  writeDone: false,
+  writeComposerWaited: false,
+  writeReplyShot: false,
   verdict: null,
   sessionVerdict: null,
+  writeVerdict: null,
 };
 
 const onLine = (line) => {
@@ -114,11 +127,33 @@ const onLine = (line) => {
     state.sessionDone = true;
     snapshot(args['shot-session']);
   }
+  if (line.includes('"event":"index.served"') &&
+      line.includes('b-harmony.write.live') && !state.writeBootShot) {
+    state.writeBootShot = true;
+    snapshot(args['shot-write-boot']);
+  }
+  if (line.includes('"event":"composer.typed"') &&
+      line.includes('b-harmony.write.live') && !state.writeComposerShot) {
+    state.writeComposerShot = true;
+    // The carrier paces ~2.5s between this line and the send; a short
+    // settle lets the composer render the IME state before the capture.
+    setTimeout(() => {
+      snapshot(args['shot-write-composer']);
+      state.writeComposerWaited = true;
+    }, 1200);
+  }
+  if (line.includes('"event":"write.reply.rendered"') && !state.writeReplyShot) {
+    state.writeReplyShot = true;
+    snapshot(args['shot-write-reply']);
+  }
   if (line.includes('dsh.spike.verdict: b-harmony.httpfetch-v2')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
   if (line.includes('dsh.spike.verdict: b-harmony.session.live')) {
     state.sessionVerdict = line.includes(' PASS') ? 'pass' : 'fail';
+  }
+  if (line.includes('dsh.spike.verdict: b-harmony.write.live')) {
+    state.writeVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
 };
 
@@ -136,8 +171,9 @@ stream.stdout.on('data', (chunk) => {
 stream.on('exit', () => die('hilog stream ended early'));
 
 pollUntil('b-harmony verdicts', async () => {
-  return state.mountDone && state.verdict !== null && state.sessionVerdict !== null
-    ? [state.verdict, state.sessionVerdict]
+  return state.mountDone && state.verdict !== null && state.sessionVerdict !== null &&
+      state.writeVerdict !== null
+    ? [state.verdict, state.sessionVerdict, state.writeVerdict]
     : null;
 }, OVERALL).then((verdicts) => {
   stream.kill();
@@ -147,7 +183,10 @@ pollUntil('b-harmony verdicts', async () => {
   if (verdicts[1] !== 'pass') {
     die(`session.live verdict ${verdicts[1]}`);
   }
+  if (verdicts[2] !== 'pass') {
+    die(`write.live verdict ${verdicts[2]}`);
+  }
   console.log('drive-official: PASS (mount.complete + b-harmony.httpfetch-v2 ' +
-    '+ b-harmony.session.live verdicts)');
+    '+ b-harmony.session.live + b-harmony.write.live verdicts)');
   process.exit(0);
 }).catch((e) => die(e.message));
