@@ -36,7 +36,11 @@ fi
 
 echo "ensure-client-bundles: building client bundles from the pinned upstream (reproducible; several minutes)"
 "$DIR/build-client-bundles.sh" >/tmp/dsh-client-bundles-build.log 2>&1 \
-  || { echo "ensure-client-bundles: build failed — see /tmp/dsh-client-bundles-build.log" >&2; exit 1; }
+  || {
+    echo "ensure-client-bundles: build failed — build log follows:" >&2
+    tail -40 /tmp/dsh-client-bundles-build.log >&2 || true
+    exit 1
+  }
 
 ok || { echo "ensure-client-bundles: rebuilt tree still fails MANIFEST verification" >&2; exit 1; }
 echo "ensure-client-bundles: bundles built and verified"

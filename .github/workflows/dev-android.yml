@@ -50,11 +50,22 @@ jobs:
       - name: Install the pinned NDK, CMake, and the API 35 system image
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" "system-images;android-35;default;x86_64" > /dev/null
 
+      # The reproducible builds (ensure-official-dist / ensure-client-bundles)
+      # need node + corepack; the runner's default node carries an older
+      # corepack whose pnpm signature verification fails on the rotated
+      # registry keys. Pin a modern node and drop the signature check — the
+      # built bytes are verified against the committed MANIFEST.sha256 anyway.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       # The APK packs the vendored official web app (dist + application-tier
       # client bundles — untracked, manifest-verified, reproducible); the
       # Gradle build fails loud without them. ensure-dsh pins the bootstrap
       # package the web-plugins staging overlay prefers.
       - name: Materialize the vendored official web app
+        env:
+          COREPACK_INTEGRITY_KEYS: '0'
         run: |
           runtime/spike/vendor/ensure-dsh.sh > /dev/null
           tools/e2e/ensure-official-dist.sh
