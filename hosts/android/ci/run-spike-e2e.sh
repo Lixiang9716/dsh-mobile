@@ -55,34 +55,47 @@ done
 
 adb logcat -c
 
-# Launch exactly ONCE, then poll for the completion tag ("ALL PASS"/"ALL
-# FAIL" — emitted after ALL scenarios ran). Re-launching inside the poll
-# proved racy on API 35: a second `am start` while the package post-install
-# cleanup was still settling ran onCreate twice in one process, and the
-# one-to-one checker correctly rejected the doubled log. am start itself can
-# transiently fail while services settle, so the LAUNCH is retried on its
-# own (until it succeeds), never bundled with the completion condition.
+# Launch exactly ONCE and STREAM the log to a file, then bound the capture
+# at the FIRST completion tag ("ALL PASS"/"ALL FAIL" — emitted after ALL
+# scenarios ran). Two capture disciplines already burned here: (1) a second
+# `am start` inside the poll ran onCreate twice (fixed: launch is retried on
+# its own, never bundled with the completion condition); (2) even with one
+# launch, the API-35 emulator intermittently delivers the activity twice
+# ~80ms after the first suite completes — `logcat -d` AFTER the fact then
+# returns TWO interleaved runs and the one-to-one checker rightly rejects
+# the doubled log while the device itself reports ALL PASS twice. So: the
+# checker input is the stream TRUNCATED at the first completion tag —
+# exactly one run's stream, by construction.
 adb shell am force-stop com.dshmobile.spike >/dev/null 2>&1 || true
+STREAM=/tmp/dsh-spike-stream.txt
+: > "$STREAM"
+adb logcat -s dsh.spike > "$STREAM" 2>/dev/null &
+streamer=$!
 deadline=$(( $(date +%s) + 120 ))
 until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::am start kept failing within 120s"
+        kill "$streamer" 2>/dev/null || true
         exit 1
     fi
     sleep 2
 done
 deadline=$(( $(date +%s) + 120 ))
-until adb logcat -d -s dsh.spike.result 2>/dev/null | grep -q "ALL "; do
+until grep -q "dsh.spike.result: ALL" "$STREAM"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::spike scenarios did not complete within 120s"
-        adb logcat -d | tail -200
+        kill "$streamer" 2>/dev/null || true
+        tail -200 "$STREAM"
         exit 1
     fi
-    sleep 2
+    sleep 0.2
 done
+sleep 0.3          # let the completion-tag line itself flush
+kill "$streamer" 2>/dev/null || true
+wait "$streamer" 2>/dev/null || true
 
-adb logcat -d -s dsh.spike > /tmp/dsh-spike-logs.txt
-adb logcat -d -s dsh.spike.result > /tmp/dsh-spike-results.txt
+sed '/dsh.spike.result: ALL/q' "$STREAM" > /tmp/dsh-spike-logs.txt
+grep 'dsh.spike.result' /tmp/dsh-spike-logs.txt > /tmp/dsh-spike-results.txt
 cat /tmp/dsh-spike-results.txt
 
 # E2E by logs: one checker verdict per scenario manifest against the shared
