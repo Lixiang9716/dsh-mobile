@@ -69,7 +69,9 @@ adb logcat -c
 adb shell am force-stop com.dshmobile.spike >/dev/null 2>&1 || true
 STREAM=/tmp/dsh-spike-stream.txt
 : > "$STREAM"
-adb logcat -s dsh.spike > "$STREAM" 2>/dev/null &
+# the completion tag rides its own tag (dsh.spike.result) — stream both
+# (logcat tag specs are EXACT, -s dsh.spike alone never sees it)
+adb logcat -s dsh.spike dsh.spike.result > "$STREAM" 2>/dev/null &
 streamer=$!
 deadline=$(( $(date +%s) + 120 ))
 until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1; do
