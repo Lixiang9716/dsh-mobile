@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.LinearLayout
@@ -42,6 +43,8 @@ class MainActivity : Activity() {
         }
         if (intent.getBooleanExtra(EXTRA_M4, false)) {
             startM4(savedInstanceState)
+        } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
+            startOfficialWeb()
         } else {
             setContentView(verdictView)
             SpikeRuntime.post {
@@ -113,6 +116,68 @@ class MainActivity : Activity() {
 
     companion object {
         const val EXTRA_M4 = "dsh.m4"
+        const val EXTRA_WEB = "dsh.web"
+    }
+
+    /**
+     * The official-web session (`b-android.official-web.mount`): the loopback
+     * carrier serves the vendored official dist with the runtime-composed
+     * boot wire into a real WebView; the web-boot runtime composes the
+     * official boot graph over the bus seam (OfficialWebSession).
+     */
+    private fun startOfficialWeb() {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(
+            verdictView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    OfficialWebSession.dispatchPageFinished()
+                }
+            }
+        }
+        layout.addView(
+            view,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        setContentView(layout)
+        webView = view
+        // The carrier + drive read filesDir trees: materialize FIRST (runtime
+        // thread: spike bundle + official dist + web-plugins), then start.
+        SpikeRuntime.post {
+            materializeBundle()
+            copyAssetDir("official-web", File(filesDir, "official-web"))
+            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                session = OfficialWebSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
+    }
+
+    private var session: OfficialWebSession? = null
+
+    /** The probe's page-side result sink (JavaBridge thread → session). */
+    private val PROBE_BRIDGE = object : Any() {
+        @JavascriptInterface
+        fun post(json: String) {
+            OfficialWebSession.dispatchProbeResult(json)
+        }
     }
 
     /** Copies the asset spike bundle to filesDir/spike preserving the layout. */

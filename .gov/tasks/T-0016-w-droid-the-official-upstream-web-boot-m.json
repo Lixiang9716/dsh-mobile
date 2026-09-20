@@ -1,0 +1,28 @@
+{
+  "title": "W-DROID: the official upstream web boot mounts in the Android carrier's WebView (D9)",
+  "created": "2026-09-20T16:06:33+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Serve the official dist from the Android carrier (fallback seat, index injection, MIME)",
+    "/plugins single + aggregate route with runtime rev adoption",
+    "/api envelope + remote.mux upgrade + structured-unavailable frames",
+    "web.boot drive over the bus seam (b-android scenario, staged closure)",
+    "b-android.official-web-mount E2E manifest + runner extension + screenshots",
+    "regressions green (m1, bridge-smoke, m2.session, m4.host-binding)",
+    "agent note + governance + PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0016",
+  "void": {
+    "ts": "2026-09-20T18:18:30+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "W-DROID completes in the opened PR (audit trail = the PR, #329/#339 precedent): the Android carrier is a real ctx.webServer implementation \u2014 fallback seat serving the vendored official dist with the runtime-composed boot wire (index render pipeline: __ModuleLoader__/__DSH_BOOT__/__DSH_CONNECTION_RECOVERY__/__DSH_BOOT_READY__ rows + base href), /plugins single + ??-aggregate routes with runtime rev adoption, /api envelope + remote.mux upgrade bridged over the bus seam with structured-unavailable answers, web.boot drive ported (b-android-web-live scenario). b-android.official-web.mount PASS 14/14 in the canonical full-suite run with the official HARNESS boot screen and the mounted app shell screenshotted (hosts/android/artifacts/android-upstream/); regressions green in the same run: m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m4.host-binding 35/35, m2.gateway.audit 16/16; gov run 12/12. Checklist items 1-6 verifiably done; item 7 (PR open) lands with this PR. Receipt-closure remains structurally blocked upstream (#329/#339) \u2014 retired as void per precedent."
+  }
+}

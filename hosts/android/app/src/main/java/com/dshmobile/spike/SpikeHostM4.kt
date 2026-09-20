@@ -125,7 +125,8 @@ class SpikeHostM4 private constructor(private val activity: Activity) {
         carrier.start(webRoot) { /* readiness consumed below */ }
         val entry = File(bundle, ENTRY)
         handle = SpikeRuntime.m4Begin(
-            activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR, bridge,
+            activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
+            "m4-host-binding", bridge,
         )
         if (handle == 0L) fail("m4 begin: ${SpikeRuntime.m4LastError()}")
         deliverHostHello() // in case bus.ready arrived during eval

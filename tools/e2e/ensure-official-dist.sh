@@ -32,7 +32,11 @@ fi
 
 echo "ensure-official-dist: building official dist from the pinned upstream (reproducible; several minutes)"
 "$HERE/presentation/official-web/build-upstream.sh" >/tmp/dsh-official-dist-build.log 2>&1 \
-  || { echo "ensure-official-dist: build failed — see /tmp/dsh-official-dist-build.log" >&2; exit 1; }
+  || {
+    echo "ensure-official-dist: build failed — build log follows:" >&2
+    tail -40 /tmp/dsh-official-dist-build.log >&2 || true
+    exit 1
+  }
 
 ok || { echo "ensure-official-dist: rebuilt dist still fails MANIFEST verification" >&2; exit 1; }
 echo "ensure-official-dist: dist built and verified"

@@ -76,7 +76,10 @@ echo "==> copy the roster record (reproducibility evidence)"
 cp "$WORK/roster.json" "$HERE/ROSTER.json"
 
 echo "==> regenerate MANIFEST.sha256"
-( cd "$HERE/npm" && find . -type f | sort | xargs shasum -a 256 ) > "$HERE/MANIFEST.sha256"
+# LC_ALL=C pins the sort collation: a manifest generated under another
+# locale lists the same digests in a different order and shasum -c
+# (order-sensitive) then fails on the other platform.
+( cd "$HERE/npm" && find . -type f | LC_ALL=C sort | xargs shasum -a 256 ) > "$HERE/MANIFEST.sha256"
 
 echo "==> done"
 ( cd "$HERE/npm" && shasum -a 256 -c "$HERE/MANIFEST.sha256" ) >/dev/null && echo "manifest verifies clean"
