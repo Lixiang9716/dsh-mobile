@@ -357,6 +357,9 @@ struct HostPhase {
     napi_env env = nullptr;
     PhaseHandlers handlers;
     char bundle_root[1024] = {0};
+    /* The phase's scenario label — the verdict line names it (drive-binding
+     * watches for `dsh.spike.verdict: <scenario>`). */
+    char scenario[64] = {0};
 };
 
 HostPhase g_phase;
@@ -440,7 +443,8 @@ int phase_drive(HostPhase *p) {
     if (!dsh_spike_complete(p->spike)) return 0;
     if (!p->verdict_logged) {
         p->verdict_logged = 1;
-        std::string v = std::string(DSH_SCENARIO_BINDING) +
+        const char *scenario = p->scenario[0] != 0 ? p->scenario : DSH_SCENARIO_BINDING;
+        std::string v = std::string(scenario) +
                         (dsh_spike_pass(p->spike) ? " PASS" : " FAIL");
         v += " engine=" + std::string(DSH_ENGINE_NAME);
         v += " version=" + std::string(DSH_ENGINE_VERSION);
@@ -476,13 +480,13 @@ int phase_str_arg(napi_env env, napi_value val, char *out, size_t outsz,
 }
 
 napi_value host_start(napi_env env, napi_callback_info info) {
-    size_t argc = 6;
-    napi_value argv[6] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
+    size_t argc = 7;
+    napi_value argv[7] = {nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr};
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc < 6) {
         napi_throw_error(env, "EINVAL",
                          "hostStart(bundleRoot, capturePath, fsRoot, descriptor,"
-                         " onBus, onDispatch) needs 6 arguments");
+                         " onBus, onDispatch, [scenario]) needs 6 arguments");
         return nullptr;
     }
     if (g_phase_active) {
@@ -522,6 +526,10 @@ napi_value host_start(napi_env env, napi_callback_info info) {
     dsh_smoke_attach(g_phase.smoke, g_phase.spike);
     dsh_spike_set_bus_sink(g_phase.spike, phase_on_bus, &g_phase);
     snprintf(g_phase.bundle_root, sizeof(g_phase.bundle_root), "%s", bundle_root);
+    if (argc >= 7) {
+        phase_str_arg(env, argv[6], g_phase.scenario, sizeof(g_phase.scenario),
+                      "scenario label too long");
+    }
     g_phase_active = 1;
 
     napi_value out;
@@ -557,9 +565,27 @@ napi_value host_event(napi_env env, napi_callback_info info) {
     napi_value argv[2] = {nullptr, nullptr};
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc < 2 || !phase_expect_active(env)) return nullptr;
-    char json[2048] = {0};
-    if (!phase_str_arg(env, argv[1], json, sizeof(json), "event too long")) return nullptr;
+    /* httpFetch v2 body chunks ride gateway events as base64 (a 16 KB chunk
+     * is a ~22 KB line), so — like host_bus_deliver — this one is read
+     * through a dynamically sized buffer. Freed before return on every
+     * path; an oversized event must throw, never truncate (rule 5). */
+    size_t len = 0;
+    if (napi_get_value_string_utf8(env, argv[1], nullptr, 0, &len) != napi_ok) {
+        napi_throw_error(env, "EINVAL", "event must be a string");
+        return nullptr;
+    }
+    char *json = static_cast<char *>(malloc(len + 1));
+    if (json == nullptr) {
+        napi_throw_error(env, "ENOMEM", "event too large");
+        return nullptr;
+    }
+    if (napi_get_value_string_utf8(env, argv[1], json, len + 1, &len) != napi_ok) {
+        free(json);
+        napi_throw_error(env, "EINVAL", "event read failed");
+        return nullptr;
+    }
     int rc = dsh_spike_gateway_event(g_phase.spike, json);
+    free(json);
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     if (status < 0) {
         OH_LOG_ERROR(LOG_APP, "phase: gateway event failed: %{public}s",
@@ -570,14 +596,32 @@ napi_value host_event(napi_env env, napi_callback_info info) {
     return out;
 }
 
+/* The web.plugins bus delivery (D9 W-HARMONY) is a multi-megabyte JSON line
+ * (the staged web-plugin file set, base64), so — unlike the other mutator
+ * string args — this one is read through a dynamically sized buffer: one
+ * length query, one malloc, one copy. Freed before return on every path. */
 napi_value host_bus_deliver(napi_env env, napi_callback_info info) {
     size_t argc = 2;
     napi_value argv[2] = {nullptr, nullptr};
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc < 2 || !phase_expect_active(env)) return nullptr;
-    char line[4096] = {0};
-    if (!phase_str_arg(env, argv[1], line, sizeof(line), "bus line too long")) return nullptr;
+    size_t len = 0;
+    if (napi_get_value_string_utf8(env, argv[1], nullptr, 0, &len) != napi_ok) {
+        napi_throw_error(env, "EINVAL", "bus line must be a string");
+        return nullptr;
+    }
+    char *line = static_cast<char *>(malloc(len + 1));
+    if (line == nullptr) {
+        napi_throw_error(env, "ENOMEM", "bus line too large");
+        return nullptr;
+    }
+    if (napi_get_value_string_utf8(env, argv[1], line, len + 1, &len) != napi_ok) {
+        free(line);
+        napi_throw_error(env, "EINVAL", "bus line read failed");
+        return nullptr;
+    }
     int rc = dsh_spike_bus_deliver(g_phase.spike, line);
+    free(line);
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     if (status < 0) {
         OH_LOG_ERROR(LOG_APP, "phase: bus deliver failed: %{public}s",
@@ -619,9 +663,27 @@ napi_value host_carrier_line(napi_env env, napi_callback_info info) {
     napi_value argv[2] = {nullptr, nullptr};
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc < 2 || !phase_expect_active(env)) return nullptr;
-    char line[2048] = {0};
-    if (!phase_str_arg(env, argv[1], line, sizeof(line), "carrier line too long")) return nullptr;
+    /* The carrier's evidence lines include the composed graph's full entry
+     * list (58 ids for the official boot), so — like host_bus_deliver —
+     * this one is read through a dynamically sized buffer. Freed before
+     * return on every path. */
+    size_t len = 0;
+    if (napi_get_value_string_utf8(env, argv[1], nullptr, 0, &len) != napi_ok) {
+        napi_throw_error(env, "EINVAL", "carrier line must be a string");
+        return nullptr;
+    }
+    char *line = static_cast<char *>(malloc(len + 1));
+    if (line == nullptr) {
+        napi_throw_error(env, "ENOMEM", "carrier line too large");
+        return nullptr;
+    }
+    if (napi_get_value_string_utf8(env, argv[1], line, len + 1, &len) != napi_ok) {
+        free(line);
+        napi_throw_error(env, "EINVAL", "carrier line read failed");
+        return nullptr;
+    }
     phase_sink_on_log(&g_phase, line);
+    free(line);
     napi_value out;
     napi_create_int32(env, 0, &out);
     return out;
