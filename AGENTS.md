@@ -36,7 +36,7 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
 8. **Bilingual docs, English-first**: code, commits, and reviews are English. Human-facing docs
    follow the govrail pairing convention — `<stem>.md` (English source) with a `<stem>.zh.md`
    counterpart and a `<stem>.i18n.yaml` pairing record. When you edit one side of a pair, run
-   `gov verify-pairing --write <stem>` to re-confirm (never hand-edit the record).
+   `gov verify pairing --write <stem>` to re-confirm (never hand-edit the record).
 
 ## Quality gates
 
