@@ -41,14 +41,21 @@ final class CarrierEventLog {
 
 /// Drives `b1.official-web.mount`: the carrier as a REAL implementation of
 /// the upstream `ctx.webServer` contract, mounting the OFFICIAL web app
-/// (vendored dist, zero upstream edits) in the WebView. Wire evidence is
-/// carrier-side observation only (the page cannot emit our log envelope);
-/// the same-origin probe runs through the WebView's own fetch/WebSocket so
-/// cookies and the upgrade path are the page's real stack. The rendered
-/// state is reported HONESTLY: the upstream boot screen renders before any
-/// runtime bundle is needed, so `page.rendered` proves the mount, while the
-/// `token.delta.forwarded` leg awaits the upstream runtime (W-PORT2) and is
-/// marked `runtime.pending` — never faked.
+/// (vendored dist, zero upstream edits) in the WebView — now with the
+/// runtime live (W-INTEG): a spike session running the b1-web-live scenario
+/// composes the OFFICIAL boot wire with the vendored client-modules node
+/// half and posts `web.boot` over the bus seam; the carrier swaps the
+/// delivered rows into the index render pipeline, overrides the /plugins
+/// revs, and only then opens the origin, so the page's facade `create()`
+/// materializes the REAL upstream browser bundle and boots the real client
+/// module system. Wire evidence is carrier-side observation plus the
+/// scenario's own structured records; the same-origin probe runs through
+/// the WebView's own fetch/WebSocket. The rendered state is reported
+/// HONESTLY: with the boot wire live the page passes the boot-failure
+/// screen into the loader progress state; the /api namespaces and mux
+/// streams stay UNCLAIMED (the embedded closure carries no agent spine, so
+/// there are no session services) and the carrier answers them structured-
+/// unavailable — the next named gap, never faked.
 final class OfficialWebRuntime {
     static let scenario = "b1.official-web.mount"
     static let clientID = "dsh-web-official"
@@ -67,6 +74,11 @@ final class OfficialWebRuntime {
     private var finished = false
     private var token = ""
     private var origin: URL?
+
+    // ---- the web-boot runtime half (W-INTEG) --------------------------------
+
+    private var webBoot: WebBootRuntimeDrive?
+    private var runtimeBootApplied = false
 
     /// Main-thread callback carrying the loopback origin (token included).
     var onOpenOrigin: ((URL) -> Void)?
@@ -141,35 +153,54 @@ final class OfficialWebRuntime {
         eventLog.emit("plugins.served", ["path": url, "bytes": bytes])
     }
 
-    /// The v0 mux answers the probe's journal open with the structured
-    /// unavailable error — real frames, real envelope, runtime leg open.
+    /// The v0 drive claims no /api namespaces or mux streams (the embedded
+    /// web-boot closure carries no agent spine), so a journal open still
+    /// answers the structured unavailable error — real frames, real
+    /// envelope, honestly named gap. The runtime itself is LIVE (web.boot
+    /// applied); only the session services are pending.
     private func observeMuxFrame(_ direction: String, _ kind: String) {
         guard direction == "tx", kind == "error" else { return }
-        eventLog.emit("runtime.pending", [
-            "leg": "token.delta.forwarded",
+        eventLog.emit("session.services.pending", [
+            "leg": "session.journal",
             "reason": "mux journal stream answered gateway/unimplemented; "
-                + "the upstream runtime (vendor + boot graph) is a sibling PR",
+                + "the web-boot closure embeds no agent spine — session services "
+                + "are the next named gap",
         ])
     }
 
-    /// Builds the route table per the contract and starts listening.
+    /// Builds the route table per the contract, starts listening, and boots
+    /// the web-boot runtime half. The origin opens ONLY after the runtime
+    /// posted `web.boot` (its rows replace the carrier defaults and its
+    /// plugin revs override the /plugins route), so the page always loads
+    /// the runtime-composed boot wire.
     private func startCarrier() throws {
         let root = try SpikeBundleStager.stage()
         let distRoot = try Self.locateDist()
         token = Self.randomToken()
-        // The staged scenario assets double as the staged client-module
-        // bundles: the default boot graph references the EXISTING M2 plugin
-        // bundles through the upstream /plugins combo shapes (§3.4) — two
-        // entries, so the served combo proves the aggregate combine form.
-        let plugins = CarrierPlugins(bundles: [
+        // Fallback rows/entries while the runtime boots: the staged M2
+        // plugin bundles through the upstream /plugins combo shapes (§3.4).
+        // The runtime's `web.boot` replaces both (rows + revs) before the
+        // origin opens. The staged vendored client-modules browser bundle
+        // (Documents/web-plugins, staged by run-ios-b1.sh) is served here
+        // too — its rev comes from the runtime graph (placeholder nonce),
+        // applied by applyRuntimeRevs.
+        var bundleFiles: [(String, URL)] = [
             ("dsh-web-client", root.appendingPathComponent("webclient/web/main.js")),
             ("dsh-web-client-mini", root.appendingPathComponent("webclient-mini/web/main.js")),
-        ])
+        ]
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        let stagedClientBundle = docs.appendingPathComponent(
+            "web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/client.js")
+        if FileManager.default.fileExists(atPath: stagedClientBundle.path) {
+            bundleFiles.append(("@deepseek-ai/dsh-client-modules", stagedClientBundle))
+        }
+        let plugins = CarrierPlugins(bundles: bundleFiles)
         let config = CarrierBootConfig.default(plugins: plugins)
-        comboURL = Self.batchURL(graphJSON: config.bootGraphJSON)
+        defaultComboURL = Self.batchURL(graphJSON: config.bootGraphJSON)
+        comboURL = defaultComboURL
         let dist = CarrierWebDist(
             distRoot: distRoot, sessionToken: token,
-            indexRows: { config.rows() }
+            indexRows: { [weak self] in self?.runtimeRows() ?? config.rows() }
         )
         let bridge = CarrierAPIBridge(sessionToken: token)
         eventLog.emit("client.selected", ["client": Self.clientID, "source": "launch"])
@@ -186,12 +217,105 @@ final class OfficialWebRuntime {
         self.plugins = plugins
         try server.start { [weak self] in
             guard let self, self.server.port != 0 else { return }
-            let origin = URL(string: "http://127.0.0.1:\(self.server.port)/?token=\(self.token)")
-            self.origin = origin
-            DispatchQueue.main.async { [weak self] in
-                guard let self, let origin = self.origin else { return }
-                self.onOpenOrigin?(origin)
+            // Origin open is gated on the runtime's web.boot (the page load
+            // must never race the boot-wire composition).
+            self.maybeOpenOrigin()
+        }
+        startWebBootRuntime(bundleRoot: root)
+    }
+
+    // ---- the web-boot runtime half ------------------------------------------
+
+    /// Boot rows received from the runtime (`web.boot`), nil until then.
+    private var webBootRows: [[String: Any]]?
+    /// The runtime graph's application batch URL (the probe fetches it).
+    private var defaultComboURL = ""
+
+    /// The injection rows the index renders: the runtime's `web.boot` rows
+    /// once received (plus the recovery global), else the carrier defaults.
+    private func runtimeRows() -> [CarrierIndexInjection] {
+        guard let rows = webBootRows else { return [] }
+        var out = rows.compactMap { Self.injectionRow($0) }
+        out.append(CarrierIndexInjection(kind: .global(
+            name: "__DSH_CONNECTION_RECOVERY__",
+            value: CarrierIndexInjection.jsonGlobalValue(
+                "{\"backoffBaseMs\":500,\"backoffFactor\":2,\"backoffMaxMs\":10000,"
+                    + "\"generationReadyWarnMs\":3000,\"generationReadyTimeoutMs\":15000}"))))
+        return out
+    }
+
+    /// One upstream row shape → the carrier's typed injection row.
+    static func injectionRow(_ row: [String: Any]) -> CarrierIndexInjection? {
+        switch row["kind"] as? String {
+        case "script":
+            guard let text = row["text"] as? String else { return nil }
+            return CarrierIndexInjection(kind: .script(placement: .head, text: text))
+        case "script-src":
+            guard let src = row["src"] as? String else { return nil }
+            return CarrierIndexInjection(kind: .scriptSrc(placement: .head, src: src))
+        case "script-preload":
+            guard let src = row["src"] as? String else { return nil }
+            return CarrierIndexInjection(kind: .scriptPreload(src: src))
+        case "global":
+            guard let name = row["name"] as? String, let value = row["value"] as? String
+            else { return nil }
+            return CarrierIndexInjection(kind: .global(name: name, value: value))
+        default:
+            return nil
+        }
+    }
+
+    /// Starts the b1-web-live scenario through the drive and delivers the
+    /// staged `web.plugins` files (Documents/web-plugins, put there by
+    /// tools/e2e/run-ios-b1.sh from the pinned vendor tree).
+    private func startWebBootRuntime(bundleRoot: URL) {
+        let drive = WebBootRuntimeDrive()
+        drive.onBusPost = { [weak self] msg in
+            self?.runtimeBusPosted(msg)
+        }
+        drive.onFailure = { [weak self] message in
+            self?.finish(self?.failOutcome(message) ?? SpikeOutcome(
+                completed: false, passed: false, error: message, canonicalLines: []))
+        }
+        webBoot = drive
+        drive.start(bundleRoot: bundleRoot, plugins: WebBootRuntimeDrive.webPluginsDelivery())
+    }
+
+    /// Called from the drive (runtime thread) per JS → host bus message.
+    private func runtimeBusPosted(_ msg: [String: Any]) {
+        guard !finished else { return }
+        switch msg["type"] as? String {
+        case "web.boot":
+            guard let rows = msg["rows"] as? [[String: Any]] else { return }
+            webBootRows = rows
+            if let graph = msg["graph"] as? [String: Any] {
+                comboURL = Self.batchURL(graph: graph) ?? defaultComboURL
             }
+            if let pluginRows = msg["plugins"] as? [[String: Any]] {
+                plugins?.applyRuntimeRevs(pluginRows)
+            }
+            runtimeBootApplied = true
+            eventLog.emit("web.boot.applied", [
+                "rows": runtimeRows().count,
+                "source": "runtime (vendored @deepseek-ai/dsh-client-modules)",
+            ])
+            maybeOpenOrigin()
+        default:
+            break // the compose-only scenario posts nothing else (no claims)
+        }
+    }
+
+    /// Opens the origin once BOTH the port is bound and the runtime's
+    /// `web.boot` has been applied (main thread, once).
+    private func maybeOpenOrigin() {
+        guard runtimeBootApplied, server.port != 0 else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !self.finished, self.origin == nil,
+                  self.runtimeBootApplied, self.server.port != 0,
+                  let origin = URL(string: "http://127.0.0.1:\(self.server.port)/?token=\(self.token)")
+            else { return }
+            self.origin = origin
+            self.onOpenOrigin?(origin)
         }
     }
 
@@ -226,20 +350,22 @@ final class OfficialWebRuntime {
 
     // ---- same-origin probe (WebView fetch + WebSocket) ------------------------
 
-    /// Runs the probe script in the page: WS upgrade (upgrade.accepted),
-    /// POST /api/session.list (rpc.observed), mux journal open
-    /// (session.attached + the unavailable frame), then the rendered-state
-    /// read. Verdicts come back as one JSON string.
+    /// Runs the probe script in the page: combo fetch (plugins.served), WS
+    /// upgrade (upgrade.accepted), POST /api/session.list (rpc.observed),
+    /// mux journal open (session.attached + the unavailable frame), then the
+    /// rendered-state read with the live-module verdict.
     private func runProbe() {
         guard let webView else {
             return finish(failOutcome("official-web: no WebView attached"))
         }
-        Self.evaluate(webView, Self.probeSetup(comboURL: comboURL)) { [weak self] _, error in
+        OfficialWebProbe.evaluate(
+            webView, OfficialWebProbe.probeScript(comboURL: comboURL)
+        ) { [weak self] _, error in
             guard let self else { return }
             if let error {
                 return self.finish(self.failOutcome("probe setup: \(error)"))
             }
-            Self.awaitPromise(webView, "window.__b1Run()") { [weak self] result, error in
+            OfficialWebProbe.awaitPromise(webView, "window.__b1Run()") { [weak self] result, error in
                 guard let self else { return }
                 if let error {
                     return self.finish(self.failOutcome("probe run: \(error)"))
@@ -250,102 +376,16 @@ final class OfficialWebRuntime {
     }
 
     private func consumeProbe(_ json: String) {
-        guard let data = json.data(using: .utf8),
-              let probe = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-              let page = probe["page"] as? [String: Any] else {
-            return finish(failOutcome("probe returned no parseable result: \(json.prefix(200))"))
+        switch OfficialWebProbe.verdict(json) {
+        case .failure(let message):
+            finish(failOutcome(message))
+        case .pass(let events):
+            for (event, fields) in events { eventLog.emit(event, fields) }
+            finish(SpikeOutcome(
+                completed: true, passed: true, error: "",
+                canonicalLines: eventLog.lines
+            ))
         }
-        if let combo = probe["combo"] as? String, !combo.hasPrefix("text/javascript") {
-            return finish(failOutcome("probe combo outcome: \(combo)"))
-        }
-        if let rpc = probe["rpc"] as? String, rpc != "error:gateway/unimplemented" {
-            // the probe observes the envelope outcome; anything but the
-            // structured unavailable answer means the wire shape regressed
-            return finish(failOutcome("probe rpc outcome: \(rpc)"))
-        }
-        eventLog.emit("page.rendered", [
-            "boot": (page["boot"] as? Bool) ?? false,
-            "rootHasChild": (page["rootHasChild"] as? Bool) ?? false,
-            "bootText": (page["bootText"] as? String) ?? "",
-        ])
-        finish(SpikeOutcome(
-            completed: true, passed: true, error: "",
-            canonicalLines: eventLog.lines
-        ))
-    }
-
-    private static func evaluate(
-        _ webView: WKWebView, _ script: String,
-        completion: @escaping (Any?, Error?) -> Void
-    ) {
-        DispatchQueue.main.async {
-            webView.evaluateJavaScript(script) { result, error in
-                completion(result, error)
-            }
-        }
-    }
-
-    /// Runs one async page expression and AWAITS its promise (plain
-    /// evaluateJavaScript would return the Promise object itself, which the
-    /// bridge refuses — WKError 5 "unsupported type").
-    private static func awaitPromise(
-        _ webView: WKWebView, _ expression: String,
-        completion: @escaping (Any?, Error?) -> Void
-    ) {
-        DispatchQueue.main.async {
-            webView.callAsyncJavaScript(
-                "return await (\(expression));",
-                arguments: [:], in: nil, in: .page
-            ) { result in
-                switch result {
-                case .success(let value): completion(value, nil)
-                case .failure(let error): completion(nil, error)
-                }
-            }
-        }
-    }
-
-    /// Defines `__b1Run` on the page (the page itself is untouched upstream
-    /// code; the probe is platform-side, per the M3 rendered-state precedent).
-    /// Step order = manifest order: combo fetch (plugins.served), WS upgrade
-    /// (upgrade.accepted), unary RPC (rpc.observed), mux journal open
-    /// (session.attached + the unavailable frame), then the rendered read.
-    static func probeSetup(comboURL: String) -> String {
-        """
-        window.__b1Run = async () => {
-          const out = {};
-          const combo = await fetch('\(comboURL)', {credentials: 'same-origin'});
-          out.combo = combo.ok ? (combo.headers.get('content-type') || 'no-type') : 'http-' + combo.status;
-          const ws = await new Promise((resolve, reject) => {
-            const ws = new WebSocket('ws://' + location.host + '/api/remote.mux');
-            const t = setTimeout(() => reject(new Error('ws-timeout')), 8000);
-            ws.onopen = () => { clearTimeout(t); resolve(ws); };
-            ws.onerror = () => { clearTimeout(t); reject(new Error('ws-error')); };
-          });
-          const rpc = await fetch('/api/session.list', {
-            method: 'POST', credentials: 'same-origin',
-            headers: {'content-type': 'application/json'},
-            body: JSON.stringify({type:'client-request', rpcId:'b1-probe-rpc-1',
-              method:'session.list', payload:{args:{}}}),
-          }).then((r) => r.json());
-          out.rpc = rpc && rpc.type === 'server-response'
-            ? (rpc.result.ok === true ? 'ok' : 'error:' + (rpc.result.error || {}).code)
-            : 'malformed';
-          out.mux = await new Promise((resolve) => {
-            const t = setTimeout(() => resolve('timeout'), 8000);
-            ws.onmessage = (ev) => { clearTimeout(t); out.muxFrame = String(ev.data); resolve('frame'); };
-            ws.send(JSON.stringify({type:'open', streamId:'b1-probe-journal',
-              endpoint:'session/journal', payload:{args:{}}}));
-          });
-          try { ws.close(); } catch (e) {}
-          const boot = document.querySelector('[data-dsh-boot]');
-          out.page = {boot: boot !== null,
-            bootText: boot ? boot.textContent.slice(0, 160) : '',
-            rootHasChild: ((document.getElementById('root') || {}).childElementCount || 0) > 0};
-          return JSON.stringify(out);
-        };
-        'defined';
-        """
     }
 
     // ---- settling ---------------------------------------------------------------
@@ -378,6 +418,7 @@ final class OfficialWebRuntime {
         server.stop()
         print("spike: official drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
+        webBoot?.stop()
         DispatchQueue.main.async { [weak self] in
             self?.completion?(outcome)
             self?.completion = nil
@@ -402,9 +443,14 @@ final class OfficialWebRuntime {
     static func batchURL(graphJSON: String) -> String {
         guard let data = graphJSON.data(using: .utf8),
               let graph = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
-              let batches = graph["batches"] as? [[String: Any]],
-              let url = batches.first?["url"] as? String else { return "" }
+              let url = batchURL(graph: graph) else { return "" }
         return url
+    }
+
+    /// The application batch's combo URL from a decoded graph object.
+    static func batchURL(graph: [String: Any]) -> String? {
+        guard let batches = graph["batches"] as? [[String: Any]] else { return nil }
+        return batches.first?["url"] as? String
     }
 
     static func randomToken() -> String {

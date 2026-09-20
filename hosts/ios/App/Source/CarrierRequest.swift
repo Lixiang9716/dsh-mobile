@@ -91,7 +91,11 @@ struct CarrierIndexInjection {
     var rendered: (placement: Placement, markup: String) {
         switch kind {
         case let .global(name, value):
-            let quoted = Self.htmlAttribute(name)
+            // The name rides a JS member expression: it must be a QUOTED
+            // string (globalThis["__DSH_BOOT__"]) — an HTML-escaped bare
+            // identifier reads as a variable reference and throws before the
+            // assignment (latent until a row actually executed in-page).
+            let quoted = Self.jsonString(name)
             return (.head, "<script>globalThis[\(quoted)] = \(value)</script>")
         case let .script(placement, text):
             return (placement, "<script>\(text)</script>")
@@ -104,6 +108,15 @@ struct CarrierIndexInjection {
         case let .html(placement, html):
             return (placement, html)
         }
+    }
+
+    /// JSON-encode one string (the member-expression face of a `global`
+    /// row's name).
+    static func jsonString(_ value: String) -> String {
+        let escaped = value
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+        return "\"\(escaped)\"";
     }
 
     /// Escape one value before placing it in a quoted HTML attribute
