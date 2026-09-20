@@ -34,8 +34,11 @@ everywhere, so one checker serves all hosts.
 | `m2-gateway-audit.json` | `m2.gateway.audit` | iOS, UI-driven | 15 flat audit records mirroring the binding call sequence, incl. the denied fsRead |
 | `m2-session.json` | `m2.session` | macOS CLI + iOS (auto-run) | 23 events — mini agent session over the system plugins: registry install, `dsh-notes` arriving through the install pipeline (`notes.installed`, receipt committed), host readiness, mock-LLM token deltas, subprocess tool persisting via fs under scope `app`, session complete |
 | `m2-webclient-mount.json` | `m2.webclient.mount` | iOS, carrier-side | 7 events — client.selected, Web Client mount, WS connect, the plugin toolbar slot rendered + acked (`slot.registered`), first/last streamed token delta, session complete |
-| `m3-install.json` | `m3.install` | macOS CLI (and any spike host) | 21 events — the install transaction end to end: deterministic fixture package, sha256 blob store, trust-record verify, strict manifest validation, staged integrity read-back, promote, receipt commit, installed-plugin load + notes service roundtrip, and the tamper case (`install.integrity-rejected` before unpack, tree intact, no receipt) |
+| `m3-install.json` | `m3.install` | macOS CLI (and any spike host) | 22 events — the install transaction end to end: deterministic fixture package, sha256 blob store, trust-record verify, strict manifest validation, install-time capability negotiation (`install.negotiated`), staged integrity read-back, promote, receipt commit, installed-plugin load + notes service roundtrip, and the tamper case (`install.integrity-rejected` before unpack, tree intact, no receipt) |
 | `m3-ui-swap.json` | `m3.ui-swap` | iOS, carrier-side (`run-ios-session.sh --client mini`) | 7 events — the config-selected client flip: `client.selected` = `dsh-web-client-mini`, mini-client mount, WS connect, `slot.registered`, first/last streamed delta, session complete |
+| `m3-complete.json` | `m3.complete` | macOS CLI (and any spike host) | 41 events — the four M3 scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
+| `m3-fetch-install.json` | `m3.fetch-install` | iOS, profile mode (`run-ios-m3.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the m2.session-shaped agent session |
+| `m3-fetch-carrier.json` | `m3.fetch-carrier` | iOS, carrier-side (`run-ios-m3.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
 
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
@@ -99,6 +102,27 @@ carrier-side checker becomes `m3-ui-swap.json` with evidence under
 `hosts/ios/artifacts/m3-pluginization/`. The default client keeps the
 `m2-webclient-mount.json` contract. The JS session stream
 (`m2-session.json`) is client-independent and always verified.
+
+### M3 fetch-install runner (on-device, loopback-carrier self-hosted)
+
+`run-ios-m3.sh` drives the on-device M3 completion E2E — NO UI interaction:
+
+```sh
+tools/e2e/run-ios-m3.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It launches the app in session mode with the m3-complete PROFILE
+(`-dsh-profile m3-complete`): the staged `cordis.patch.json` (the M3 config
+layer) selects the ACTIVE Web Client and the toolbar slot allow-set; the
+scenario hands the deterministic dsh-notes package to the carrier over the
+bus seam, and the carrier serves it over real loopback TCP — the install
+runs through the REAL gateway `httpFetch`. Two crash-simulated pending
+receipts are startup-replayed before the session phase. The runner
+uninstalls the app first (the app scope persists across launches and the
+receipt journal is append-only — the replay assertions need an empty
+container), then verifies BOTH `m3-fetch-install.json` and
+`m3-fetch-carrier.json`; evidence lands under
+`hosts/ios/artifacts/m3-complete/`.
 
 It builds DSHSpike, launches it in session mode (`-dsh-mode session`),
 waits for the `webclient.mounted` / `ws.token-delta` / terminal

@@ -66,9 +66,14 @@ final class FSPrimitives {
 
     private func write(_ call: GatewayCall, _ done: @escaping GatewayDone) {
         guard let (scope, rel) = target(call, primitive: "fsWrite", done) else { return }
+        // opts ride flattened at the top level of the args JSON (the gateway
+        // shim's encoding of the contract's fsWrite(scope, path, bytes, opts));
+        // the nested form is accepted tolerantly. Reading ONLY a nested opts
+        // object silently dropped append/create — caught by the M3 receipt
+        // journal, the first append caller (see .gov/surprises.jsonl).
         let opts = call.dict("opts")
-        let append = opts["append"] as? Bool ?? false
-        let create = opts["create"] as? Bool ?? true
+        let append = (call.args["append"] as? Bool) ?? (opts["append"] as? Bool) ?? false
+        let create = (call.args["create"] as? Bool) ?? (opts["create"] as? Bool) ?? true
         guard let bytes = call.b64("bytesB64") else {
             return done(.failure(Self.invalid("fsWrite", "missing bytesB64")))
         }

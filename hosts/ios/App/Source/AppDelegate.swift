@@ -51,10 +51,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.console = console
         self.webView = webView
         if launchMode == "session" {
-            console.text = "DSH session — m2.session over the system plugins, "
-                + "Web Client \(SessionRuntime.activeWebClient) mounted …"
-            print("spike: app launched in session mode (web client "
-                + "\(SessionRuntime.activeWebClient))")
+            let surface = SessionRuntime.profileName
+                .map { "profile \($0) (config-selected client)" }
+                ?? "Web Client \(SessionRuntime.activeWebClient)"
+            console.text = "DSH session — m2.session over the system plugins, \(surface)…"
+            print("spike: app launched in session mode (\(surface))")
             fflush(stdout)
             runSession()
             return true

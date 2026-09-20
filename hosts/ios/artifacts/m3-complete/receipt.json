@@ -1,0 +1,34 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "phase": "M3 PR-B — on-device fetch-install E2E: the loopback carrier self-hosts the plugin package; the real gateway httpFetch installs it; pending receipts are startup-replayed; the config layer selects the client and the toolbar slot set",
+  "launchConfiguration": "-dsh-mode session -dsh-profile m3-complete (profiles/m3-complete/cordis.patch.json: webClient=dsh-web-client-mini, slots.allow=[notes.toolbar])",
+  "scenarios": [
+    {
+      "id": "m3.fetch-install",
+      "checker": "tools/e2e/scenarios/m3-fetch-install.json",
+      "events": 46,
+      "result": "pass",
+      "proves": "on-device FETCH-BASED INSTALL: dsh-notes bytes handed to the carrier over the bus seam (http.serve), served by the loopback carrier over real TCP (http.route-registered + http.served, 3584 bytes), installed through installFromFetch with the REAL gateway httpFetch (install.fetch.start url http://127.0.0.1:<port>/packages/dsh-notes-0.1.0.tar -> streaming body 3584 bytes -> blob digest eb478c29… matching the pinned fixture digest) — full receipt transaction with the append-only journal (receipt.pending -> install.committed); two crash-simulated pending receipts STARTUP-REPLAYED (m3-f002 staged-verifies -> replay.committed; m3-f003 staging-incomplete -> replay.rolled-back, installed tree verified untouched); then the m2.session-shaped agent session (host.info gated on the admitted slot's ack, 5 streamed deltas, one subprocess tool call persisted via dsh-fs)"
+    },
+    {
+      "id": "m3.fetch-carrier",
+      "checker": "tools/e2e/scenarios/m3-fetch-carrier.json",
+      "events": 11,
+      "result": "pass",
+      "proves": "carrier-side evidence in causal order: config.resolved (the M3 CONFIG LAYER patch, profile m3-complete) -> client.selected source=config (the ACTIVE Web Client chosen by the layered override, not a launch argument) -> webclient.mounted (the config-selected mini client served) -> ws.connected -> http.route-registered -> http.served (the package bytes actually left over TCP) -> slot.denied (debug.console refused by the configured allow-set — the override is ENFORCED, the button never renders) -> slot.registered (notes.toolbar acked by the page) -> deltas -> complete"
+    }
+  ],
+  "installTimeNegotiation": "the pass leg runs inside m3.fetch-install (descriptor offers all nine primitives, install.negotiated required:2); the rejection leg (a package requiring an unavailable capability is rejected BEFORE unpack) is proven on the CLI in m3.complete — same pipeline code"
+  ,
+  "hostBugFixed": "FSPrimitives.write read append/create from a nested opts object while the gateway shim flattens them at the top level of the args JSON — append was silently ignored on device (the receipt journal is the first append caller); fixed and recorded in .gov/surprises.jsonl",
+  "runner": "tools/e2e/run-ios-m3.sh",
+  "screens": [
+    "screens/01-config-selected-client.png (the mini client mounted under the config patch)",
+    "screens/02-fetch-install.png (after the carrier served the package)",
+    "screens/03-final-transcript.png (amber mini transcript, the rendered 'notes' toolbar button, NO debug button — the denied slot, complete pass · 5 deltas)"
+  ],
+  "regressions": "run-ios-session.sh default (m2.session 23/23 + m2.webclient.mount 7/7) and --client mini (m2.session 23/23 + m3.ui-swap 7/7), both green on the final code; run-ios.sh 4/4 green at the base commit (committed evidence hosts/ios/artifacts/m2-gateway/) — today's UI-drive rerun is blocked by a WebDriverAgent runner crash on the simulator runtime (recorded in .gov/surprises.jsonl; the legs it drives touch none of this PR's app-code paths, and the affected fs-primitive path is covered by the m2.session/m3 runs above)",
+  "exitCode": 0
+}

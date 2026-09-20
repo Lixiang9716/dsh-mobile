@@ -8,7 +8,11 @@ import UIKit
 /// starts only when the Web Client is mounted AND connected (the host.info
 /// readiness signal), so the token deltas stream live into the rendered
 /// page. Carrier-side evidence is logged through the canonical
-/// `dsh.spike.log:` envelope as scenario `m2.webclient.mount`.
+/// `dsh.spike.log:` envelope. M3: `-dsh-profile m3-complete` runs the
+/// on-device fetch-install drive (`m3.fetch-install` + carrier evidence
+/// `m3.fetch-carrier`) — the config patch selects the ACTIVE Web Client and
+/// the toolbar slot allow-set, the carrier self-hosts the plugin package,
+/// and the scenario installs it through the REAL gateway httpFetch.
 final class SessionRuntime {
     /// Host configuration: which Web Client plugin is ACTIVE (presentation/
     /// is pluggable; the host mounts exactly one). Overridable for E2E via
@@ -23,24 +27,89 @@ final class SessionRuntime {
         return "dsh-web-client"
     }()
 
-    /// Staged directory of the ACTIVE Web Client plugin (fail loud on an
-    /// unknown id — the config, not a default, decides).
-    static var activeWebClientDir: String {
-        switch activeWebClient {
+    /// M3 config layer (ARCHITECTURE.md §6 UI-plugin level 1): `-dsh-profile
+    /// <name>` selects the staged `profiles/<name>/cordis.patch.json` whose
+    /// layered override (base → hostFace → profile) decides the ACTIVE Web
+    /// Client and the toolbar slot allow-set. The carrier-side evidence
+    /// flips to scenario `m3.fetch-carrier` and the drive runs the
+    /// `m3.fetch-install` JS scenario (real on-device httpFetch install).
+    static var profileName: String? = {
+        let args = ProcessInfo.processInfo.arguments
+        guard let at = args.firstIndex(of: "-dsh-profile"), at + 1 < args.count else {
+            return nil
+        }
+        return args[at + 1]
+    }()
+
+    /// Staged directory of a Web Client plugin id (fail loud on an unknown
+    /// id — the config, not a default, decides).
+    static func webClientDir(_ id: String) -> String {
+        switch id {
         case "dsh-web-client": return "webclient"
         case "dsh-web-client-mini": return "webclient-mini"
-        default: fatalError("unknown Web Client plugin id: \(activeWebClient)")
+        default: fatalError("unknown Web Client plugin id: \(id)")
         }
     }
 
+    private let profileMode: Bool
+    /// Config-layer resolution: the ACTIVE client id, its staged directory,
+    /// and the toolbar slot allow-set the carrier enforces on projections.
+    private var resolvedClient: String
+    private var resolvedDir: String
+    private var resolvedSlotSet: [String]
+
     /// Carrier-side evidence rides the scenario manifest that matches the
-    /// active client: the M3 swap run asserts `m3.ui-swap`, the default
-    /// client keeps asserting `m2.webclient.mount`.
-    static var scenario: String {
-        activeWebClient == "dsh-web-client-mini" ? "m3.ui-swap" : "m2.webclient.mount"
+    /// drive: profile mode asserts `m3.fetch-carrier`; the launch-selected
+    /// mini client keeps asserting `m3.ui-swap`; the default `m2.webclient.mount`.
+    private var scenario: String {
+        if profileMode { return "m3.fetch-carrier" }
+        return resolvedClient == "dsh-web-client-mini" ? "m3.ui-swap" : "m2.webclient.mount"
     }
 
-    static let entryModule = "scenario/m2-session.js"
+    /// The JS entry: the profile-mode drive runs the on-device fetch-install
+    /// scenario; every other drive keeps the m2 session.
+    private var entryModule: String {
+        profileMode ? "scenario/m3-fetch-install.js" : "scenario/m2-session.js"
+    }
+
+    init() {
+        profileMode = Self.profileName != nil
+        resolvedClient = Self.activeWebClient
+        resolvedDir = Self.webClientDir(resolvedClient)
+        // Base slot defaults; a profile patch's slots.allow REPLACES them.
+        resolvedSlotSet = ["notes.toolbar", "debug.console"]
+    }
+
+    /// Layered config resolution (base → hostFace → profile): reads the
+    /// staged cordis.patch.json (JSON in the spike — no YAML parser on the
+    /// frozen gateway; documented in runtime/spike/config-layer.js) and
+    /// applies its webClient + slots.allow over the launch configuration.
+    private func resolveProfileConfig(root: URL) throws {
+        guard let profile = Self.profileName else { return }
+        let patchURL = root.appendingPathComponent(
+            "profiles/\(profile)/cordis.patch.json")
+        guard let data = try? Data(contentsOf: patchURL),
+              let patch = (try? JSONSerialization.jsonObject(with: data))
+              as? [String: Any] else {
+            throw SpikeBundleError.emptyResource(
+                "profiles/\(profile)/cordis.patch.json")
+        }
+        if let webClient = patch["webClient"] as? String {
+            resolvedClient = webClient
+            resolvedDir = Self.webClientDir(webClient)
+        }
+        if let slots = patch["slots"] as? [String: Any],
+           let allow = slots["allow"] as? [String] {
+            resolvedSlotSet = allow
+        }
+        carrierEvent("config.resolved", [
+            "webClient": resolvedClient,
+            "slotSet": resolvedSlotSet,
+            "profile": profile,
+            "format": "cordis.patch.json",
+        ])
+    }
+
     static let watchdogSeconds = 120
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.session")
@@ -78,7 +147,6 @@ final class SessionRuntime {
     // ---- session setup (runtime thread) ------------------------------------
 
     private func startSession() {
-        carrierEvent("client.selected", ["client": Self.activeWebClient])
         let root: URL
         do {
             root = try SpikeBundleStager.stage()
@@ -86,12 +154,22 @@ final class SessionRuntime {
         } catch {
             return finish(failOutcome("session bootstrap: \(error)"))
         }
+        do { try resolveProfileConfig(root: root) } catch {
+            return finish(failOutcome("profile config: \(error)"))
+        }
+        carrierEvent("client.selected", [
+            "client": resolvedClient,
+            "source": profileMode ? "config" : "launch",
+        ])
         wireCore()
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
         server.onStaticServed = { [weak self] path in self?.webClientServed(path) }
+        server.onRouteServed = { [weak self] path, bytes in
+            self?.carrierEvent("http.served", ["path": path, "bytes": bytes])
+        }
         do {
             try server.start(webRoot: root.appendingPathComponent(
-                Self.activeWebClientDir + "/web")) {
+                resolvedDir + "/web")) {
                 [weak self] in
                 self?.openOrigin()
             }
@@ -143,8 +221,10 @@ final class SessionRuntime {
                 callId: Int(callId), name: String(cString: name),
                 argsJSON: String(cString: argsJSON))
         }, Unmanaged.passUnretained(self).toOpaque())
-        let source = String(cString: dsh_spike_res_scenario_m2_session_js(nil))
-        if dsh_spike_eval(host, Self.entryModule, source) != 0 {
+        let source = String(cString: profileMode
+            ? dsh_spike_res_scenario_m3_fetch_install_js(nil)
+            : dsh_spike_res_scenario_m2_session_js(nil))
+        if dsh_spike_eval(host, entryModule, source) != 0 {
             return finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
         }
         if dsh_spike_pump(host) != 0 {
@@ -160,12 +240,14 @@ final class SessionRuntime {
     private func webClientServed(_ path: String) {
         guard !mountedLogged, path == "/" || path.hasSuffix("index.html") else { return }
         mountedLogged = true
-        carrierEvent("webclient.mounted", ["client": Self.activeWebClient, "path": "/index.html"])
+        carrierEvent("webclient.mounted", ["client": resolvedClient, "path": "/index.html"])
     }
 
-    /// Server queue: the page's WS hello. Marks the connection live, greets,
-    /// replays any projection buffered pre-connect, and starts the session —
-    /// the scenario's host.info arrives only now, so deltas stream live.
+    /// Runtime queue only: the page's WS hello. Marks the connection live,
+    /// greets, replays any projection buffered pre-connect, and — profile
+    /// mode — hands the scenario the carrier port (carrier.info), which is
+    /// the trigger for the self-hosted fetch-install. host.info itself
+    /// still waits for the configured slot's ack.
     private func ingest(_ text: String) {
         guard let payload = Self.parse(text) else { return }
         runtimeThread.async { [weak self] in
@@ -206,6 +288,13 @@ final class SessionRuntime {
         connectedLogged = true
         carrierEvent("ws.connected", ["protocol": wsProtocol ?? "none"])
         deliverHostInfo()
+        if profileMode {
+            // The fetch-install scenario needs the loopback port to build
+            // its self-hosted package URL; fired AFTER ws.connected so the
+            // carrier evidence order stays causal (never raced by the page).
+            emitJSON(GatewayCore.jsonLine(
+                ["event": "carrier.info", "port": Int(server.port)]) ?? "{}")
+        }
     }
 
     private func openOrigin() {
@@ -228,18 +317,47 @@ final class SessionRuntime {
 
     // ---- session projection (JS → bus → WS) ----------------------------------
 
-    /// Runtime queue, called from C: shuttle projection lines to the page and
-    /// keep the carrier-side token-delta evidence current.
+    /// Runtime queue, called from C: dispatch one bus line — either an
+    /// http.serve registration (the M3 self-hosted package route) or a
+    /// session projection to the page.
     private func busPosted(_ line: String) {
-        guard !finished, host != nil, let msg = Self.parse(line),
-              msg["type"] as? String == "ws.send", let payload = msg["payload"]
-        else { return }
+        guard !finished, host != nil, let msg = Self.parse(line) else { return }
+        switch msg["type"] as? String {
+        case "http.serve": registerCarrierRoute(msg)
+        case "ws.send": projectLine(msg)
+        default: break
+        }
+    }
+
+    /// Runtime queue: register the self-hosted package route on the carrier.
+    /// The route evidence is logged HERE (causally after carrier.info); the
+    /// serve evidence fires from the server queue when the fetch arrives.
+    private func registerCarrierRoute(_ msg: [String: Any]) {
+        guard let path = msg["path"] as? String,
+              let b64 = msg["bodyB64"] as? String,
+              let data = Data(base64Encoded: b64) else {
+            return finish(failOutcome("malformed http.serve projection"))
+        }
+        carrierEvent("http.route-registered", ["path": path, "bytes": data.count])
+        server.registerRoute(path, data: data, contentType: "application/octet-stream")
+    }
+
+    /// Runtime queue: one session projection to the page. Slot registrations
+    /// pass the CONFIGURED allow-set first — a denied slot is carrier-side
+    /// evidence only and never reaches the page or the replay buffer.
+    private func projectLine(_ msg: [String: Any]) {
+        guard let payload = msg["payload"] as? [String: Any] else { return }
+        if payload["kind"] as? String == "slot.register" {
+            let id = payload["id"] as? String ?? ""
+            guard resolvedSlotSet.contains(id) else {
+                return carrierEvent("slot.denied", ["id": id, "set": resolvedSlotSet])
+            }
+        }
         guard let text = GatewayCore.jsonLine(payload) else { return }
         projection.append(text)
         server.send(text) // CarrierServer.send hops to its own queue
-        if let kind = (payload as? [String: Any])?["kind"] as? String,
-           kind == "token-delta",
-           let index = (payload as? [String: Any])?["index"] as? Int {
+        if payload["kind"] as? String == "token-delta",
+           let index = payload["index"] as? Int {
             observeDelta(index)
         }
     }
@@ -348,7 +466,7 @@ final class SessionRuntime {
     /// unified-logger shape) so the carrier's own mount/connection events
     /// ride the same checker stream as the JS scenario's.
     private func carrierEvent(_ event: String, _ fields: [String: Any]) {
-        var payload: [String: Any] = ["scenario": Self.scenario, "event": event]
+        var payload: [String: Any] = ["scenario": scenario, "event": event]
         fields.forEach { payload[$0.key] = $0.value }
         guard let data = GatewayCore.jsonLine([
             "level": "info", "module": "dsh.carrier", "message": "e2e",
