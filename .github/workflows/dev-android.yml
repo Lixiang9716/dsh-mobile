@@ -81,6 +81,10 @@ jobs:
           COREPACK_INTEGRITY_KEYS: '0'
           NODE_OPTIONS: '--max-old-space-size=3072'
         run: |
+          # Upstream's own build scripts spawn BARE `pnpm` (build:web does
+          # `pnpm --filter ...`), so the pinned shim must be on PATH — a
+          # `corepack pnpm` entry point alone dies there ("pnpm: not found").
+          corepack enable
           runtime/spike/vendor/ensure-dsh.sh > /dev/null
           tools/e2e/ensure-official-dist.sh || {
             free -h; df -h / /tmp /mnt
