@@ -66,6 +66,32 @@ RESOURCES = [
      REPO / "presentation" / "web-client-mini" / "web" / "index.html"),
     ("webclient_mini_main_js",
      REPO / "presentation" / "web-client-mini" / "web" / "main.js"),
+    # W-INTEG web-boot closure: the OFFICIAL web boot producer scenario plus
+    # the upstream web-boot adapter, its shims, and the vendored npm libs the
+    # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
+    # client-modules node + browser faces). NOT the full agent spine — the
+    # b1-web-live drive composes the boot wire without runtime services.
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "b1-web-live.js"),
+    ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
+    ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
+    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
+    ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
+    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"),
+    ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
+    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
+    ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
+    ("npm_cordis_js",
+     SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
+    ("npm_cosmokit_js",
+     SPIKE / "vendor" / "npm" / "cosmokit@1.8.3" / "lib" / "index.js"),
+    ("npm_schemastery_mjs",
+     SPIKE / "vendor" / "npm" / "schemastery@3.18.2" / "lib" / "index.mjs"),
+    ("npm_client_modules_index_js",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "index.js"),
+    ("npm_client_modules_client_js",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "client.js"),
 ]
 
 

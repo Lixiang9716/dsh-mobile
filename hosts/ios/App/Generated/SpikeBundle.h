@@ -38,5 +38,19 @@ const char *dsh_spike_res_webclient_main_js(size_t *len);
 const char *dsh_spike_res_webclient_mini_manifest(size_t *len);
 const char *dsh_spike_res_webclient_mini_index_html(size_t *len);
 const char *dsh_spike_res_webclient_mini_main_js(size_t *len);
+const char *dsh_spike_res_scenario_b1_web_live_js(size_t *len);
+const char *dsh_spike_res_upstream_web_boot_js(size_t *len);
+const char *dsh_spike_res_upstream_web_shims_js(size_t *len);
+const char *dsh_spike_res_shims_buffer_js(size_t *len);
+const char *dsh_spike_res_shims_url_js(size_t *len);
+const char *dsh_spike_res_shims_fs_js(size_t *len);
+const char *dsh_spike_res_shims_crypto_js(size_t *len);
+const char *dsh_spike_res_shims_node_module_js(size_t *len);
+const char *dsh_spike_res_shims_path_js(size_t *len);
+const char *dsh_spike_res_npm_cordis_js(size_t *len);
+const char *dsh_spike_res_npm_cosmokit_js(size_t *len);
+const char *dsh_spike_res_npm_schemastery_mjs(size_t *len);
+const char *dsh_spike_res_npm_client_modules_index_js(size_t *len);
+const char *dsh_spike_res_npm_client_modules_client_js(size_t *len);
 
 #endif /* DSH_IOS_SPIKE_BUNDLE_H */

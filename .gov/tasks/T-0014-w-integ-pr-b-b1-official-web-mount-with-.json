@@ -1,0 +1,26 @@
+{
+  "title": "W-INTEG PR-B: b1 official-web mount with the runtime live",
+  "created": "2026-09-20T11:25:42+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "embed web-boot closure + b1-web-live scenario (gen_bundle + stager)",
+    "Swift drive: web.plugins delivery, web.boot rows/revs applied, origin gated",
+    "b1 manifest 13 events live + screenshots (boot -> live loader)",
+    "regressions: m2.session + m2.webclient.mount green on the modified app",
+    "PR-B open + gates green"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0014",
+  "void": {
+    "ts": "2026-09-20T11:25:42+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work completes in the opened PR (audit trail = the PR, #329/#339 precedent): embedded web-boot closure (gen_bundle_header + SpikeBundleStager + b1-web-live scenario), Swift OfficialWebRuntime drive (web.plugins delivery from staged Documents/web-plugins, web.boot rows + runtime rev overrides applied, origin gated on composition), CarrierPlugins.applyRuntimeRevs + CarrierIndexInjection global-row quoting fix (latent bare-identifier ReferenceError), b1.official-web.mount green 13/13 one-to-one TWICE on dsh-iphone with committed screenshots (official HARNESS loader live, no failure text), regressions m2.session + m2.webclient.mount green on the modified app, gov run 12/12."
+  }
+}

@@ -1,15 +1,18 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios-b1.sh — Phase-B "official web mounts" E2E driver
-# (b1.official-web.mount, docs/webserver-contract.md §4).
+# tools/e2e/run-ios-b1.sh — Phase-B "official web mounts" E2E driver, now
+# with the runtime LIVE (W-INTEG leg; b1.official-web.mount,
+# docs/webserver-contract.md §4).
 #
 # Builds DSHSpike, stages the vendored official upstream dist into the app
-# container (Documents/official-web/dist), launches in OFFICIAL-WEB mode
-# (-dsh-mode official-web), and waits for the carrier drive to complete: the
-# contract carrier serves the dist with injected boot rows, the page mounts,
-# and the same-origin probe exercises POST /api + the /api/remote.mux
-# multiplexed socket. The captured log is verified against the one-to-one
-# manifest b1-official-web-mount.json (10 carrier-side wire events, including
-# the honest `runtime.pending` leg marker for the sibling runtime PR).
+# container (Documents/official-web/dist) plus the web-boot plugin files
+# (Documents/web-plugins — the pinned vendored client-modules package),
+# launches in OFFICIAL-WEB mode (-dsh-mode official-web), and waits for the
+# carrier drive to complete: the embedded web-boot runtime composes the
+# OFFICIAL boot wire and posts web.boot over the bus seam, the carrier
+# serves the dist with those rows, the page's facade materializes the REAL
+# upstream browser bundle (module system live), and the same-origin probe
+# exercises POST /api + the /api/remote.mux multiplexed socket. The captured
+# log is verified against the one-to-one manifest b1-official-web-mount.json.
 # Screenshots are saved artifacts (screens/) — the verdict is logs only.
 #
 # usage: run-ios-b1.sh [--udid U] [--art-dir D] [--skip-build]
@@ -82,6 +85,13 @@ mkdir -p "$APP_DATA/Documents/official-web"
 cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
 
 # ---- launch + watch the log markers ------------------------------------------
+log "4b/5 stage the web-boot plugin files (vendored client-modules; fixed stamp)"
+runtime/spike/vendor/ensure-dsh.sh > /dev/null
+PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+rm -rf "$APP_DATA/Documents/web-plugins"
+mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"
+cp -R "$PKG_SRC" "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/"
+
 log "5/5 launch (official-web mode; log capture truncated — checker sees only this run)"
 rm -f "$LOG" "$ART/nslog-stderr.txt"
 case "$LOG" in /*) LOG_ABS="$LOG" ;; *) LOG_ABS="$PWD/$LOG" ;; esac
