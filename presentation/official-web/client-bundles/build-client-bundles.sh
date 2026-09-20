@@ -23,19 +23,25 @@
 # is committed back. Pins and digests are recorded in PROVENANCE.md.
 #
 # usage: ./build-client-bundles.sh [<upstream-commit>]   (default: the pin)
+#
+# The work dir is a FIXED path (not mktemp): the upstream build embeds the
+# absolute source path in its outputs (`//#region dsh-css:<abs-path>` comments
+# and the css-module class-name hashes derive from it), so a random temp dir
+# would change the bundle bytes on every run and MANIFEST.sha256 could never
+# verify a rebuild. The committed bytes were produced at this exact path.
 set -euo pipefail
 
 PIN="${1:-ddefc45fbc7f8e46dd73185e68295696d1297887}"  # dsh-v0.1.6-alpha.2
 UPSTREAM_URL="https://github.com/deepseek-ai/deepseek-harness"
 HERE="$(cd "$(dirname "$0")" && pwd)"
-WORK="$(mktemp -d /tmp/dsh-client-bundles-build.XXXXXX)"
+WORK="/tmp/dsh-harness-src"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> clone $UPSTREAM_URL @ $PIN into $WORK"
-git clone "$UPSTREAM_URL" "$WORK/deepseek-harness"
-git -C "$WORK/deepseek-harness" checkout --quiet "$PIN"
+git clone "$UPSTREAM_URL" "$WORK"
+git -C "$WORK" checkout --quiet "$PIN"
 
-cd "$WORK/deepseek-harness"
+cd "$WORK"
 
 echo "==> pin sanity: package.json version must be 0.1.6-alpha.2"
 version="$(node -p "require('./package.json').version")"
@@ -52,11 +58,11 @@ echo "==> upstream build:lib:client (tsdown --env.DSH_BUILD_FACE client: emits e
 corepack pnpm run build:lib:client
 
 echo "==> derive the browser roster from the web-app patch layer (dsh.client closure)"
-node "$HERE/roster.mjs" "$WORK/deepseek-harness" "$WORK/roster.json"
+node "$HERE/roster.mjs" "$WORK" "$HERE/ROSTER.json.tmp"
 
 echo "==> copy the staged allowlist into $HERE/npm"
 rm -rf "$HERE/npm" && mkdir -p "$HERE/npm"
-node - "$WORK/roster.json" "$HERE/npm" <<'COPY'
+node - "$HERE/ROSTER.json.tmp" "$HERE/npm" <<'COPY'
 const { readFileSync, mkdirSync, copyFileSync } = require('node:fs');
 const { join, dirname } = require('node:path');
 const roster = JSON.parse(readFileSync(process.argv[2], 'utf8'));
@@ -73,7 +79,7 @@ for (const entry of roster.entries) {
 COPY
 
 echo "==> copy the roster record (reproducibility evidence)"
-cp "$WORK/roster.json" "$HERE/ROSTER.json"
+mv "$HERE/ROSTER.json.tmp" "$HERE/ROSTER.json"
 
 echo "==> regenerate MANIFEST.sha256"
 ( cd "$HERE/npm" && find . -type f | sort | xargs shasum -a 256 ) > "$HERE/MANIFEST.sha256"

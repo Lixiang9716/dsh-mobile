@@ -49,6 +49,10 @@ targets:
           - ../../runtime/spike/scenario/m2-session.js
           - ../../runtime/spike/scenario/m1-carrier-loopback.js
           - ../../runtime/spike/scenario/b3-web-live.js
+          - ../../runtime/spike/upstream/web-write.js
+          - ../../runtime/spike/upstream/web-write-streams.js
+          - ../../runtime/spike/upstream/web-write-settings.js
+          - ../../runtime/spike/scenario/b4-web-live.js
           - ../../runtime/spike/web/index.html
           - ../../runtime/spike/web/carrier-page.js
           - ../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js

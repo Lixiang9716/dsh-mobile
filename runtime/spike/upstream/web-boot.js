@@ -38,6 +38,7 @@ import {
   ClientModuleRegistry,
   bootInjections,
 } from '@deepseek-ai/dsh-client-modules';
+import { createWriteSurface, WRITE_ENDPOINTS } from 'upstream/web-write.js';
 
 /** Materialize the VENDORED browser bootstrap bundle the same way the page's
  * facade does (queue registration → factory) to get its wire validator: the
@@ -181,7 +182,9 @@ export const createApiHandlers = (ctx) => ({
   },
 });
 
-/** One journal wire frame per upstream session-log record. */
+/** One journal wire frame per upstream session-log record. The envelope
+ * passes through the event-local metadata the official client validates
+ * (`ignorable` / `sourceEventSeqs` / the surface events' `surfaceOp`). */
 const wireEvent = (record) => ({
   type: 'event',
   event: {
@@ -189,6 +192,10 @@ const wireEvent = (record) => ({
     seq: record.seq,
     time: record.time ?? 0,
     data: record.data ?? {},
+    ...(record.ignorable === true ? { ignorable: true } : {}),
+    ...(record.sourceEventSeqs === undefined ? {} :
+      { sourceEventSeqs: record.sourceEventSeqs }),
+    ...(record.surfaceOp === undefined ? {} : { surfaceOp: record.surfaceOp }),
   },
 });
 
@@ -257,26 +264,31 @@ export const createMuxHandlers = (ctx, post) => {
 };
 
 /** The `web.plugins` delivery leg: seed the VFS, mount the vendored
- * composer, and post the boot wire + claims. */
-const deliverWebPlugins = (ctx, post, msg) => {
+ * composer, and post the boot wire + claims (the base set plus the write
+ * surface's endpoints when composed with one). */
+const deliverWebPlugins = (ctx, post, msg, write) => {
   const plugins = stageWebPlugins(msg);
   const { graph, rows } = mountClientModules(ctx, plugins);
   post(webBootMessage(rows, graph));
-  post({ type: 'api.claim', endpoints: CLAIMED_ENDPOINTS });
+  const endpoints = write === null
+    ? CLAIMED_ENDPOINTS : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS];
+  post({ type: 'api.claim', endpoints });
   post({ type: 'mux.claim' });
   return { kind: 'booted', entries: graph.entries.map((e) => e.id) };
 };
 
-/** The `api.request` leg: a claimed handler to run, or a structured
- * already-posted failure (not composed / unimplemented endpoint). */
-const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
+/** The `api.request` leg: a claimed handler to run (the write surface's
+ * first, then the base set), or a structured already-posted failure (not
+ * composed / unimplemented endpoint). The handler runs with the request's
+ * `args` (the frozen client-request payload's args object). */
+const deliverApiRequest = (post, apiHandlers, write, mounted, msg) => {
   if (!mounted) {
     post({ type: 'api.respond', rpcId: msg.rpcId, result: {
       ok: false, error: { code: 'gateway/unavailable',
         message: 'the web boot is not composed yet', details: {} } } });
     return { kind: 'not-mounted' };
   }
-  const handler = apiHandlers[msg.endpoint];
+  const handler = write?.api[msg.endpoint] ?? apiHandlers[msg.endpoint];
   if (handler === undefined) {
     post({ type: 'api.respond', rpcId: msg.rpcId, result: {
       ok: false, error: { code: 'gateway/unimplemented',
@@ -284,7 +296,8 @@ const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
         details: { endpoint: msg.endpoint } } } });
     return { kind: 'unimplemented' };
   }
-  return { kind: 'handler', run: handler };
+  const args = msg.payload?.args;
+  return { kind: 'handler', run: () => handler(args) };
 };
 
 /**
@@ -293,27 +306,37 @@ const deliverApiRequest = (post, apiHandlers, mounted, msg) => {
  * call it with every parsed bus delivery (web.plugins / api.request /
  * mux.open / mux.cancel). Unknown types answer loudly in the return value so
  * the caller can fail its drive.
+ *
+ * `options.write` (optional) composes the WRITE SURFACE (upstream/web-write.js):
+ * `{root, provider, model}` — the profile container root for the seeded
+ * workspace and the llm route new sessions select. Without it the runtime
+ * claims exactly the b3 read surface (session.list + session/journal).
  */
-export const createWebBootRuntime = ({ ctx, post }) => {
+export const createWebBootRuntime = ({ ctx, post, write }) => {
   const apiHandlers = createApiHandlers(ctx);
   const mux = createMuxHandlers(ctx, post);
+  const writeSurface = write === undefined
+    ? null : createWriteSurface(ctx, post, write);
   let mounted = false;
   const deliver = (msg) => {
     switch (msg.type) {
       case 'web.plugins': {
-        const outcome = deliverWebPlugins(ctx, post, msg);
+        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface);
         mounted = true;
         return outcome;
       }
       case 'api.request':
-        return deliverApiRequest(post, apiHandlers, mounted, msg);
-      case 'mux.open':
-        return mounted ? mux.open(msg) : { kind: 'not-mounted' };
+        return deliverApiRequest(post, apiHandlers, writeSurface, mounted, msg);
+      case 'mux.open': {
+        if (!mounted) return { kind: 'not-mounted' };
+        const claimed = writeSurface?.openStream(msg);
+        return claimed ?? mux.open(msg);
+      }
       case 'mux.cancel':
         return mounted ? mux.cancel(msg) : { kind: 'not-mounted' };
       default:
         return { kind: 'unknown', type: msg.type };
     }
   };
-  return { deliver, dispose: () => mux.dispose() };
+  return { deliver, dispose: () => { mux.dispose(); writeSurface?.dispose(); } };
 };

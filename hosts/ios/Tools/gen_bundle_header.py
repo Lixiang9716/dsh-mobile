@@ -101,6 +101,13 @@ RESOURCES = [
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("scenario_b3_web_live_js", SPIKE / "scenario" / "b3-web-live.js"),
+    # W-RPC write surface (D9): the official app's composer send
+    # (`POST /api/session/prompt`) answered from the REAL spine — the write
+    # adapter plus the scenario that boots the runtime composed with it.
+    ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
+    ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
+    ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
+    ("scenario_b4_web_live_js", SPIKE / "scenario" / "b4-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
     ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),

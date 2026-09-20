@@ -18,8 +18,18 @@ import { SettingsProvider } from '@deepseek-ai/dsh-settings';
 
 /** SettingsProvider over an empty in-memory document. */
 export class SettingsMemory extends SettingsProvider {
+  /** The provider accepts in-process writes; they live in this volatile
+   * document only (the mobile profile has no durable settings file yet —
+   * read-back works for the session, persistence is the staged gap). */
+  writable = true;
+
   /** The provider document source: empty for the mobile profile. */
   async load() {
     return {};
   }
+
+  /** Volatile storage: a write commits to the in-memory document only —
+   * nothing to persist beyond the process (the durable backend is the
+   * staged gap). */
+  async persist() {}
 }
