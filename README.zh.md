@@ -22,6 +22,9 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | M5 | 鸿蒙宿主（ArkTS + NAPI） | 计划 |
 | M4 | Android 宿主（QuickJS 同构） | 计划 |
 | M5 | 鸿蒙宿主（ArkTS + NAPI） | 进行中（同构宿主已验证：m2.session 随 m1.spike.boot + m2.bridge.smoke 一次启动在模拟器通过——证据见 `hosts/harmony/artifacts/m5-host/`） |
+| M3 | 插件安装链路 + UI 插件化（slot / Web Client 替换） | 计划 |
+| M4 | Android 宿主（QuickJS 同构） | 进行中（同构宿主已验证：`m2.session`（三个系统插件上的首个 MINI 智能体会话）、网关桥接场景 `m2.bridge.smoke` 与 `m1.spike.boot` 回归全部在模拟器上通过 — 证据 `hosts/android/artifacts/m4-host/`） |
+| M5 | 鸿蒙宿主（ArkTS + NAPI） | 进行中（同构宿主已验证：m2.session（经 registry + 三个系统插件）随 m1.spike.boot + m2.bridge.smoke 一次启动在模拟器通过——证据见 `hosts/harmony/artifacts/m5-host/`） |
 
 ## 治理
 

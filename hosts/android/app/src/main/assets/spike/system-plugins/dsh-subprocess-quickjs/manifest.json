@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-subprocess-quickjs",
+  "version": "0.1.0",
+  "type": "service",
+  "entry": "index.js",
+  "capabilities": {
+    "required": [],
+    "optional": []
+  },
+  "hooks": {
+    "activate": "activate"
+  }
+}
