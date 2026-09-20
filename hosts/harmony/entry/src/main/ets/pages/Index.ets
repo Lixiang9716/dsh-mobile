@@ -48,7 +48,7 @@ const BUNDLE_FILES: string[] = [
   'system-plugins/dsh-fs/index.js',
   'system-plugins/dsh-subprocess-quickjs/index.js',
   'system-plugins/dsh-ui/index.js',
-  'vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js',
   'webclient/dsh-web-client/manifest.json',
   'webclient/dsh-web-client/web/index.html',
   'webclient/dsh-web-client/web/main.js'

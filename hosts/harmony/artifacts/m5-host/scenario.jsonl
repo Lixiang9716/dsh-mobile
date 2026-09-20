@@ -201,3 +201,57 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.connected","protocol":"session-projection@0"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"descriptor.declared","available":5,"unavailable":4}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.write.ok","written":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"approval.approved","approved":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"presentPicker"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.persist","refOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.scheduled","idOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"background"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"notify.response"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.response","idMatches":true}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"foreground"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","first":true,"index":0}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"complete"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","last":true,"index":4}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.session-complete","status":"pass"}]}
+dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"scenario.complete","status":"pass"}]}
