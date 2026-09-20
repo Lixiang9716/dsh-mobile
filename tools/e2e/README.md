@@ -126,3 +126,30 @@ envelope.
 ```sh
 tools/e2e/selftest.sh   # exit 0 = all checker assertions hold
 ```
+
+## Inventory matrix (`matrix.mjs`)
+
+`matrix.mjs` regenerates the cross-host evidence inventory
+([docs/e2e-matrix.md](../../docs/e2e-matrix.md)) from the working tree:
+every directory carrying `verdict*.json` is an evidence unit, checked for
+the deliverables (`logs.txt` + `scenario.jsonl` + `receipt.json`), PNG
+magic-byte integrity of its screenshots, and a manifest in `scenarios/`
+for every verdict scenario id. A failed or internally inconsistent
+verdict, a missing/empty deliverable, a broken PNG, or a scenario without
+a manifest exits non-zero. Manifest-revision drift (an older dir checked
+against a since-grown manifest) is reported (`drift`), not failed — the
+verdict is the record of what ran. PNGs outside evidence dirs (app icons)
+are not evidence and are not checked. Not wired into `gates.json` — the
+plane seal owns that decision.
+
+```sh
+node tools/e2e/matrix.mjs [--out inventory.json]   # exit 0 = clean, 1 = findings
+node tools/e2e/matrix.mjs --self-test              # 8 rejection assertions
+```
+
+Rejection assertions, each proved by `--self-test` (rule 6): positive
+control (a well-formed tree rejects nothing), `VERDICT_FAIL`
+(`pass: false`), `MISSING_DELIVERABLE` (receipt removed),
+`EMPTY_DELIVERABLE` (zero-byte scenario.jsonl), `PNG_BROKEN` (JPEG bytes
+under a `.png` name), `SCENARIO_WITHOUT_MANIFEST`, `VERDICT_MALFORMED`
+(unparsable verdict), `RECEIPT_MALFORMED` (unparsable receipt).
