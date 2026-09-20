@@ -21,6 +21,21 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 | M4 | Android host (QuickJS-isomorphic) | Done (completion session `m4.host-binding` 35/35 green on the emulator: the loopback carrier serves the embedded Web Client into a real WebView with the session rendered live, and the nine-primitive gateway binding is real — descriptor 9 available / 0 unavailable, mandatory audit re-verified via `m2.gateway.audit` 16/16; the three-scenario regression stays green in the same run — evidence `hosts/android/artifacts/m4-complete/`; still open: real LLM API) |
 | M5 | HarmonyOS host (ArkTS + NAPI) | Done (isomorphic host verified: loopback carrier — HTTP static serving of the Web Client + RFC 6455 WS pump — with ArkWeb mounting the live session, real binding primitives (notify, presentApproval, fsScope app scope, `app.state`/`notify.response` channels) and honest `unavailable` for picker/keychain/httpFetch, `m5.host-binding` 20/20 plus the `m1.spike.boot`/`m2.bridge.smoke`/`m2.session` (23/23) regression in one launch on the emulator — evidence `hosts/harmony/artifacts/m5-host/`; still open: HUKS keychain, user-scope picker fs, httpFetch streaming) |
 
+### Upstream port (D9)
+
+The table above records what each milestone proved on its own evidence. Since decision
+[D9](docs/decisions.md), the Harness layer itself is no longer an in-house reimplementation:
+the upstream DSH runtime runs **verbatim** on quickjs — 26 packages pinned and sha256-verified
+by `runtime/spike/vendor/ensure-dsh.sh` (21 upstream DSH packages at 0.1.6-alpha.2 + 5 pinned
+npm deps), with in-house code reduced to glue (shims, adapters, the contract carrier). Live
+through the carrier on iOS / Android / HarmonyOS: the official client-modules web boot, the
+official app shell (the 58-package application tier, #61), real `session.list`/journal, and
+the composer write path. The consolidated numbers and per-dir inventory:
+[docs/e2e-matrix.md](docs/e2e-matrix.md) — 26 evidence dirs, 59 green verdicts — under
+`hosts/{ios,android,harmony}/artifacts/` (`b1-official-web`, `b3-session-live`,
+`b4-write-live`, `android-upstream`, `android-session-live`, `d9-official-web`,
+`d9-session-live`, `d9-write-live`).
+
 ## Governance
 
 This repository is gated by [govrail](https://github.com/Lixiang9716/govrail): pre-commit content gates, a `gov run` gate DAG before push, CI enforcement (`.github/workflows/gov.yml`), and the `agent-heavy` preset for multi-agent development. Run `gov --help` (installed via `pip install govrail`; entry point is `gov`).

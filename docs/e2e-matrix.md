@@ -6,10 +6,12 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `052587e`
-> (the `m2-gateway` row refreshed and its receipt gap closed 2026-09-21 by
-> the W-GR bounded attempt, on top of the W-RECEIPT b3 closure; the five D9
-> dirs `android-upstream` / `d9-official-web` / `b4-write-live` /
+> **Currency**: this matrix reflects `origin/main` as of commit `a536277`
+> (the harmony composer write path #70 landed the sixth D9 dir
+> `d9-write-live`, adding the `b-harmony.write.live` scenario; on top of
+> the `m2-gateway` row refreshed and its receipt gap closed 2026-09-21 by
+> the W-GR bounded attempt, on top of the W-RECEIPT b3 closure; the five
+> earlier D9 dirs `android-upstream` / `d9-official-web` / `b4-write-live` /
 > `android-session-live` / `d9-session-live` entered the inventory with
 > #63/#64/#65/#66/#67;
 > totals re-run against this tree). It is
@@ -38,11 +40,11 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 25 |
-| Verdicts (all `pass: true`, `expected == logged`) | 51 |
-| Scenarios with at least one committed evidence dir | 24 of 24 manifests |
-| Screenshots verified PNG | 55 |
-| Acceptance-bar findings | 5 (below) |
+| Evidence dirs | 26 |
+| Verdicts (all `pass: true`, `expected == logged`) | 59 |
+| Scenarios with at least one committed evidence dir | 25 of 25 manifests |
+| Screenshots verified PNG | 64 |
+| Acceptance-bar findings | 6 (below) |
 
 ## Coverage matrix — scenario × platform
 
@@ -54,18 +56,19 @@ evidence on that platform.
 | --- | --- | --- | --- | --- |
 | `b-android.official-web.mount` | — | 14/14 | — | — |
 | `b-android.session.live` | — | 46/46 | — | — |
-| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6 | — |
-| `b-harmony.official-web-mount` | — | — | 17/17, 17/17 | — |
-| `b-harmony.session.live` | — | — | 43/43 | — |
+| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6 | — |
+| `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17 | — |
+| `b-harmony.session.live` | — | — | 43/43, 43/43 | — |
+| `b-harmony.write.live` | — | — | 33/33 | — |
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
-| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7 | 9/9 |
+| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7, 7/7 | 9/9 |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
-| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6 | 6/6 |
+| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6 | 6/6 |
 | `m2.gateway.audit` | 16/16 | 16/16 | — | — |
 | `m2.gateway.binding` | 19/19 | — | — | — |
-| `m2.session` | 23/23, 23/23 | 22/22 (drift), 23/23 | 23/23, 23/23 | 23/23 |
+| `m2.session` | 23/23, 23/23 | 22/22 (drift), 23/23 | 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
 | `m2.upstream-session` | — | — | — | 31/31 |
 | `m2.upstream-boot` | — | — | — | 12/12 |
@@ -75,9 +78,9 @@ evidence on that platform.
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
-| `m5.host-binding` | — | — | 20/20, 20/20 | — |
+| `m5.host-binding` | — | — | 20/20, 20/20, 20/20 | — |
 
-All 24 scenario manifests have at least one green committed evidence dir;
+All 25 scenario manifests have at least one green committed evidence dir;
 `m2.session` runs green on all four hosts. Every verdict on main is green.
 
 ## Evidence-dir inventory
@@ -87,18 +90,19 @@ present. `shots` = PNG count (all magic-verified except where noted).
 
 | Dir | Platform | Verdicts (`expected/logged`) | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 4) | 4 |
-| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 5) | 4 |
+| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
+| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗ (gap 3) | 4 |
-| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗ (gap 6) | 6 |
+| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗ (gap 2) | 4 |
+| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗ (gap 5) | 6 |
+| `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗ (gap 6) | 9 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
-| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗ (gap 2) | 3 |
+| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗ (gap 1) | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
@@ -119,9 +123,9 @@ screenshots optional debugging aids, never deliverables or inputs).
 ## Known gaps (honest list)
 
 The checker (`tools/e2e/matrix.mjs`) currently exits non-zero on exactly
-five findings: receipts pending their dirs' first post-landing host
+six findings: receipts pending their dirs' first post-landing host
 re-run, each owned by the host work stream that landed the dir with
-#63/#64/#65/#66/#67.
+#63/#64/#65/#66/#67/#70. (The rcpt column above cites these list numbers.)
 
 1. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
    dir landed with #65 (the session-write surface); the receipt is
@@ -140,6 +144,10 @@ re-run, each owned by the host work stream that landed the dir with
 5. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
    — the dir landed with #67 (the harmony session.live spine,
    b-harmony.session.live 43/43 green); the receipt is owned by the
+   harmony work stream's next host re-run.
+6. **`hosts/harmony/artifacts/d9-write-live/` has no `receipt.json`** —
+   the dir landed with #70 (the harmony composer write path,
+   b-harmony.write.live 33/33 green); the receipt is owned by the
    harmony work stream's next host re-run.
 
 ### Closed by the 2026-09-20 evidence-gap closure (fix/evidence-gaps)
@@ -229,7 +237,7 @@ scenario id without a manifest in `tools/e2e/scenarios/`. Its
 (8 assertions, rule 6) — the assertion set is documented in the
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs).
 
-The checker is deliberately **not wired into `gates.json`**: five owned
-findings above remain open (the five D9-era receipts blocked on their
+The checker is deliberately **not wired into `gates.json`**: six owned
+findings above remain open (the six D9-era receipts blocked on their
 hosts' next re-runs), and the decision to gate on the matrix belongs to
 the plane seal.

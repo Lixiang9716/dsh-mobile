@@ -6,9 +6,11 @@
 数据来自已提交的 artifacts 目录。由
 [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映提交 `052587e`
-> （`m2-gateway` 行由 2026-09-21 的 W-GR 有界尝试刷新并闭合其 receipt 缺口，
-> 叠加在 W-RECEIPT 的 b3 收口之上；五个 D9 目录 `android-upstream` /
+> **时效性**：本矩阵反映提交 `a536277`
+> （鸿蒙 composer 写入路径 #70 落地了第六个 D9 目录
+> `d9-write-live`，并新增 `b-harmony.write.live` scenario；叠加以往
+> `m2-gateway` 行由 2026-09-21 的 W-GR 有界尝试刷新并闭合其 receipt 缺口，
+> 再叠加 W-RECEIPT 的 b3 收口；更早的五个 D9 目录 `android-upstream` /
 > `d9-official-web` / `b4-write-live` / `android-session-live` /
 > `d9-session-live` 随 #63/#64/#65/#66/#67 进入清单；
 > 总量按本树重算）
@@ -35,11 +37,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 25 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 51 |
-| 至少有一份已提交证据的 scenario | 24 / 24 个 manifest |
-| 已验证 PNG 的截图 | 55 |
-| 验收标准缺口 | 5（见下） |
+| 证据目录 | 26 |
+| Verdict（全部 `pass: true`、`expected == logged`） | 59 |
+| 至少有一份已提交证据的 scenario | 25 / 25 个 manifest |
+| 已验证 PNG 的截图 | 64 |
+| 验收标准缺口 | 6（见下） |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -50,18 +52,19 @@
 | --- | --- | --- | --- | --- |
 | `b-android.official-web.mount` | — | 14/14 | — | — |
 | `b-android.session.live` | — | 46/46 | — | — |
-| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6 | — |
-| `b-harmony.official-web-mount` | — | — | 17/17, 17/17 | — |
-| `b-harmony.session.live` | — | — | 43/43 | — |
+| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6 | — |
+| `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17 | — |
+| `b-harmony.session.live` | — | — | 43/43, 43/43 | — |
+| `b-harmony.write.live` | — | — | 33/33 | — |
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
-| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7 | 9/9 |
+| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7, 7/7 | 9/9 |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
-| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6 | 6/6 |
+| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6 | 6/6 |
 | `m2.gateway.audit` | 16/16 | 16/16 | — | — |
 | `m2.gateway.binding` | 19/19 | — | — | — |
-| `m2.session` | 23/23, 23/23 | 22/22（漂移）, 23/23 | 23/23, 23/23 | 23/23 |
+| `m2.session` | 23/23, 23/23 | 22/22（漂移）, 23/23 | 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
 | `m2.upstream-session` | — | — | — | 31/31 |
 | `m2.upstream-boot` | — | — | — | 12/12 |
@@ -71,9 +74,9 @@
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
-| `m5.host-binding` | — | — | 20/20, 20/20 | — |
+| `m5.host-binding` | — | — | 20/20, 20/20, 20/20 | — |
 
-24 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
+25 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
 
 ## 证据目录清单
@@ -83,18 +86,19 @@
 
 | 目录 | 平台 | Verdict（`expected/logged`） | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 4） | 4 |
-| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 5） | 4 |
+| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 3） | 4 |
+| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗（缺口 3） | 4 |
-| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗（缺口 6） | 6 |
+| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗（缺口 2） | 4 |
+| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗（缺口 5） | 6 |
+| `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗（缺口 6） | 9 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
-| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗（缺口 2） | 3 |
+| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗（缺口 1） | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
@@ -114,9 +118,9 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 
 ## 已知缺口（如实列出）
 
-检查器（`tools/e2e/matrix.mjs`）当前恰好因五项以非零码退出：均为其目录
-随 #63/#64/#65/#66/#67 落地后尚待各自主机首次 re-run 的 receipt（归各自
-的落地主机工作流所有）。
+检查器（`tools/e2e/matrix.mjs`）当前恰好因六项以非零码退出：均为其目录
+随 #63/#64/#65/#66/#67/#70 落地后尚待各自主机首次 re-run 的 receipt（归各自
+的落地主机工作流所有）。（上方 rcpt 列引用的即本清单编号。）
 
 1. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
    #65（session 写表面）落地；receipt 归 b4 工作流下一次在携带 #65 的树
@@ -133,6 +137,9 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 5. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
    目录随 #67（harmony session.live 主线脊柱，b-harmony.session.live
    43/43 绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
+6. **`hosts/harmony/artifacts/d9-write-live/` 缺 `receipt.json`** ——
+   目录随 #70（harmony composer 写入路径，b-harmony.write.live 33/33
+   绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
 
 ### 由 2026-09-20 证据缺口收口闭合（fix/evidence-gaps）
 
@@ -206,6 +213,6 @@ scenario id 在 `tools/e2e/scenarios/` 无 manifest。其 `--self-test` 模式
 证明每个拒绝类别都真的会拒绝（8 条断言，规则 6）——断言集记录在
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
 
-检查器**有意不接入 `gates.json`**：上方尚余五项有主缺口（五个 D9 时代的
+检查器**有意不接入 `gates.json`**：上方尚余六项有主缺口（六个 D9 时代的
 receipt，等待各自主机的下一次 re-run）；是否以该矩阵设卡，属于 plane
 seal 的决定。

@@ -40,7 +40,7 @@ dsh-mobile 是 DSH（DeepSeek Harness）生态的**移动宿主**。依据 Fabri
 - **引擎**：quickjs-ng（纯 C 解释器，无 JIT，App Store 合规无关——我们站外分发，但它同时解决内存与多 runtime 隔离）。理由见 ADR-1。
 - **执行模型**：单线程事件循环 + async/await 协程。子进程语义由 `dsh-subprocess-quickjs` 在进程内以协程实现（上游 `ctx.subprocess` 本就是抽象 Service 基类，文档明言"Subclass, implement spawn, load as plugin"）。
 - **模块加载**：宿主实现 `JS_SetModuleLoaderFunc`，从 bundle 目录（代码即数据）读取 ESM 源码；编译后字节码缓存于 `cache/blobs/`（`JS_WriteObject`）加速启动。
-- **垫层面**（对 285 包实测）：内置模块 import 面 = path 67 / crypto 46 / fs 35 / os 20 / url 23 / util 11 / stream 7 / net 5 / http 4 包；crypto 实际 API 仅 6 个（randomUUID/createHash/randomBytes/timingSafeEqual/pbkdf2/createHmac）→ Swift CommonCrypto 单文件覆盖；child_process 12 包全部位于平台实现包，QuickJS 宿主不装载；worker_threads 4 包单点改造。
+- **垫层面**（对 285 包实测）：内置模块 import 面 = path 67 / crypto 46 / fs 35 / os 20 / url 23 / util 11 / stream 7 / net 5 / http 4 包；crypto 实际 API 仅 6 个（randomUUID/createHash/randomBytes/timingSafeEqual/pbkdf2/createHmac）→ Swift CommonCrypto 单文件覆盖；child_process 12 包全部位于平台实现包，QuickJS 宿主不装载；worker_threads 4 包单点改造。（D9 更新：以上仍是 285 包的**静态最坏情况**；原样移植实测产品闭包的真实 import 面远小于此——实际交付的垫层表见 [runtime/spike/upstream/README.md](../runtime/spike/upstream/README.md)，由 §10 交叉引用。）
 - **生命周期**：checkpoint/resume 应对后台冻结——事件循环静默点 + 审批挂起点落盘；回前台 UI 重连（官方 `client-connection` 自带重连语义），runtime 从断点恢复。
 
 ### 事件驱动执行
@@ -158,13 +158,14 @@ dsh-mobile/
 - **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
 - **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`m3.install` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `m3.ui-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
 - **M4/M5**：Android、鸿蒙宿主，均完成——各自同构宿主一次启动跑通无头回归三连（`m1.spike.boot` 7/7、`m2.bridge.smoke` 6/6、`m2.session` 23/23）与事件驱动的绑定阶段。M4：回环载体 + WebView 挂载 + 真实九原语绑定（Keystore 封装的 keychain、SAF 目录选择器 + fsScope persist/resolve、通知 + `notify.response`、`app.state` 边沿）——`m4.host-binding` 35/35（证据 `hosts/android/artifacts/m4-complete/`）。M5 **完成**：同构鸿蒙宿主一次启动跑通无头回归三连（`m1.spike.boot` 7/7、`m2.bridge.smoke` 6/6、`m2.session` 23/23）与事件驱动的绑定阶段——回环载体（向 Web Client 提供静态文件服务 + 经共享总线接缝的 RFC 6455 WS 泵）将 Web Client 挂载进 ArkWeb 并实时流出 token 增量，真实绑定原语在设备端得到证明（notify + 通知点击 `notify.response`、presentApproval 对话框、fsScope app 作用域 persist/resolve、`app.state` 生命周期边沿），诚实 `unavailable` 集合（presentPicker/keychainGet/keychainSet/httpFetch）由描述符声明——`m5.host-binding` 20/20 逐条日志比对（证据 `hosts/harmony/artifacts/m5-host/`）。
-- **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`m3.install` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `m3.ui-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
+- **D9 上游移植**：作为一次修正完成（[D9](decisions.md)）——最初的 Harness 自研重实现被替换为上游 DSH 运行时在 quickjs 上的**原样**运行：26 个包由 `runtime/spike/vendor/ensure-dsh.sh` pin 并做 sha256 校验（21 个上游 DSH 包 @ 0.1.6-alpha.2 + 5 个 pinned npm 依赖），零 vendored 改动，自研代码只留胶水。原样运行的内容：移动 profile boot 中的 cordis host 组合（`runtime/spike/upstream/boot.js`，与桌面 profile boot 同一层次顺序）、经网关 `httpFetch` 传输接缝驱动的 vendored dsh-llm `LlmRuntime`（CLI 上 `m2.upstream-session` 31/31）、经 carrier 的 `ctx.webServer` 契约跑通的官方 client-modules web 启动（官方 dist 已 vendored）、由真实上游 UI renderer 挂载的官方 App 壳——58 包 application 层、真实 `session.list`/日志，以及 composer 写入路径。实测垫层面远小于 §3 的 285 包静态预测：产品闭包只 import [runtime/spike/upstream/README.md](../runtime/spike/upstream/README.md) 表中所列的垫层（9 个 `node:` 内建 + web-shims；timers/Buffer/fetch 刻意缺席且大声失败）。设备端证据（逐条日志比对，汇总见 [docs/e2e-matrix.md](e2e-matrix.md)）：iOS 的官方启动 + 会话 + 写入（`b1.official-web.mount` 14/14、`b3.session.live` 46/46、`b4.write.live` 43/43）、Android（`b-android.official-web.mount` 14/14、`b-android.session.live` 46/46）、鸿蒙（`b-harmony.official-web-mount` 17/17、`b-harmony.session.live` 43/43、`b-harmony.write.live` 33/33）。
 
 ## 11. 关键技术决策
 
-权威决策记录在 [docs/decisions.md](decisions.md)（D0–D8），由 `gov verify-decisions` 门禁：
+权威决策记录在 [docs/decisions.md](decisions.md)（D0–D9），由 `gov verify-decisions` 门禁：
 quickjs-ng 而非 nodejs-mobile（D1）、单线程协程替代子进程（D2）、UI 即 Web Client 插件（D3）、
-站外分发（D4）、契约先行（D5）、pinned 上游（D6）、checkpoint 即漫游（D7）、全模块事件驱动（D8）。
+站外分发（D4）、契约先行（D5）、pinned 上游（D6）、checkpoint 即漫游（D7）、全模块事件驱动（D8）、
+上游包原样移植——永不自研重实现（D9）。
 每条都记录了它击败的替代方案——修改这些决策前先读它。
 
 ## 12. 已知边界（诚实声明）
