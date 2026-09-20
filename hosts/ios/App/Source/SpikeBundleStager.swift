@@ -45,10 +45,19 @@ enum SpikeBundleStager {
         return root
     }
 
-    /// Scenario entries (the m1/m2 E2E scenarios).
+    /// Scenario entries (the m1/m2 E2E scenarios, plus the M3 on-device
+    /// fetch-install scenario and its modules + the profile config patch).
     private static func writeScenarioEntries(_ root: URL) throws {
         try write("scenario/m2-session.js",
                   data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
+        try write("scenario/m3-fetch-install.js",
+                  data: resData(dsh_spike_res_scenario_m3_fetch_install_js), under: root)
+        try write("install-fetch.js",
+                  data: resData(dsh_spike_res_install_fetch_js), under: root)
+        try write("receipt-journal.js",
+                  data: resData(dsh_spike_res_receipt_journal_js), under: root)
+        try write("profiles/m3-complete/cordis.patch.json",
+                  data: resData(dsh_spike_res_profile_m3_patch_json), under: root)
     }
 
     /// System implementation plugins + the install-pipeline fixture + both

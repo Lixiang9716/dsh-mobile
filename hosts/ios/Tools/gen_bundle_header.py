@@ -32,6 +32,12 @@ RESOURCES = [
     ("scenario_m2_smoke_js", SPIKE / "scenario" / "m2-bridge-smoke.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "m2-session.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
+    # M3 completion: on-device fetch-install scenario + its new modules
+    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "m3-fetch-install.js"),
+    ("install_fetch_js", SPIKE / "install-fetch.js"),
+    ("receipt_journal_js", SPIKE / "receipt-journal.js"),
+    # M3 config layer: the m3-complete profile patch (cordis.patch, JSON)
+    ("profile_m3_patch_json", SPIKE / "profiles" / "m3-complete" / "cordis.patch.json"),
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",

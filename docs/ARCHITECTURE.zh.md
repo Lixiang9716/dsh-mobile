@@ -156,10 +156,9 @@ dsh-mobile/
 - **M0 契约冻结**：原语契约 v0（≤10 原语）+ bundle 布局 + manifest schema + receipt 格式。
 - **M1 双 Spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
 - **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`m2.session` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
-- **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`m3.install` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `m3.ui-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
+- **M3 插件化**：完成 —— 安装 = 冻结 fs 原语上的 receipt 事务（`m3.install` 在 macOS CLI 22/22：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 对照 RuntimeDescriptor 的安装期 capability 协商 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`）。基于 fetch 的安装器把 httpFetch 流式 body 送入同一条流水线：CLI 用带日志的读文件桩（`m3.complete` 41/41，`runtime/spike/artifacts/macos-cli-m3-complete/`），设备端直接对回环 carrier 本身用真实 `httpFetch`（`m3.fetch-install` 46/46 + carrier 证据 `m3.fetch-carrier` 11/11，`hosts/ios/artifacts/m3-complete/`），并包含 append-only receipt 日志上的 pending-receipt 启动重放（可验证的暂存树补完为 committed；被打断的解包回滚且已安装树不动）。UI 插件三层机制均在设备端验证：配置层（`cordis.patch` 分层覆盖，spike 内为 JSON）选择活动 Web Client 并覆盖工具栏 slot 允许集（被拒 slot 永不渲染），整客户端替换 + 组件 slot 全绿（`m3.ui-swap` 7/7，`hosts/ios/artifacts/m3-pluginization/`）。spike 局部边界（§12）：包为未压缩 ustar（冻结网关无 inflate 原语）、解包原子性以暂存 → 校验 → 提升近似并由 receipt 日志锚定（无 rename 原语）、配置补丁为 JSON 而非 YAML。真实 LLM API 仍开放（M2）。
 - **M4/M5**：Android、鸿蒙宿主。M4 进行中：同构宿主已验证 —— 网关桥接场景（`m2.bridge.smoke`）与 `m1.spike.boot` 回归在模拟器上通过（证据 `hosts/android/artifacts/m4-host/`）。
 - **M4/M5**：Android、鸿蒙宿主。M5 已启动：同构鸿蒙宿主一次启动跑通全部三个 spike 场景——m2.session（经 registry + 三个系统插件）随 m1.spike.boot + m2.bridge.smoke 在模拟器通过（证据见 `hosts/harmony/artifacts/m5-host/`）。
-- **M3 插件化**：安装链路（receipt 事务）+ UI 插件三层机制 + capability 协商。
 - **M4/M5**：Android、鸿蒙宿主，均进行中。同构宿主一次启动在各自模拟器上跑通全部三个 spike 场景——`m2.session`（三个系统插件上的首个 MINI 智能体会话）、`m2.bridge.smoke` 与 `m1.spike.boot` 回归（证据 `hosts/android/artifacts/m4-host/`、`hosts/harmony/artifacts/m5-host/`）。
 
 ## 11. 关键技术决策
@@ -171,7 +170,7 @@ quickjs-ng 而非 nodejs-mobile（D1）、单线程协程替代子进程（D2）
 
 ## 12. 已知边界（诚实声明）
 
-以下能力在本宿主上**声明不支持**（capability 协商标记，不假装支持）：真实子进程生态（bash/git hook/playwright/python PTC/SSH/Windows ACL）、桌面级后台常驻（上限为 checkpoint/resume + 通知唤醒）、整盘文件访问（上限为用户授权的 security-scoped 目录）。
+以下能力在本宿主上**声明不支持**（capability 协商标记，不假装支持）：真实子进程生态（bash/git hook/playwright/python PTC/SSH/Windows ACL）、桌面级后台常驻（上限为 checkpoint/resume + 通知唤醒）、整盘文件访问（上限为用户授权的 security-scoped 目录）。spike 安装链路的局部边界（有意为之，待真实 profile 宿主落地时重审）：包为未压缩 ustar——冻结网关无 inflate 原语，gzip 传输编码是候选的 minor 增补；解包"原子性"以暂存 → 校验 → 提升近似，由 append-only receipt 日志锚定（无 rename 原语）；`cordis.patch` 配置层为 JSON 而非 YAML（无解析原语；语义与格式无关）。
 
 ## 13. 上游依据（关键证据索引）
 

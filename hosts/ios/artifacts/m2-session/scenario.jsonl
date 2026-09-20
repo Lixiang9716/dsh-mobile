@@ -1,4 +1,4 @@
-dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"scenario":"m2.webclient.mount","event":"client.selected","client":"dsh-web-client"}]}
+dsh.spike.log: {"message":"e2e","level":"info","data":[{"event":"client.selected","client":"dsh-web-client","scenario":"m2.webclient.mount","source":"launch"}],"module":"dsh.carrier"}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
@@ -49,7 +49,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii fie
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
 dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584,"journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -117,9 +117,9 @@ dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service looku
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"client":"dsh-web-client","path":"\/index.html","event":"webclient.mounted","scenario":"m2.webclient.mount"}],"level":"info","message":"e2e"}
-dsh.spike.log: {"data":[{"protocol":"session-projection@0","scenario":"m2.webclient.mount","event":"ws.connected"}],"module":"dsh.carrier","level":"info","message":"e2e"}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"id":"notes.toolbar","event":"slot.registered","by":"dsh-notes","scenario":"m2.webclient.mount","label":"notes"}],"level":"info","message":"e2e"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"m2.webclient.mount","path":"\/index.html","client":"dsh-web-client","event":"webclient.mounted"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","level":"info","data":[{"scenario":"m2.webclient.mount","protocol":"session-projection@0","event":"ws.connected"}]}
+dsh.spike.log: {"data":[{"scenario":"m2.webclient.mount","by":"dsh-notes","id":"notes.toolbar","event":"slot.registered","label":"notes"}],"message":"e2e","module":"dsh.carrier","level":"info"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"host.ready","signalled":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
@@ -132,7 +132,7 @@ dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","dat
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":1}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":0,"text":"Hello"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"first":true,"event":"ws.token-delta","scenario":"m2.webclient.mount","index":0}],"level":"info","message":"e2e"}
+dsh.spike.log: {"data":[{"scenario":"m2.webclient.mount","first":true,"event":"ws.token-delta","index":0}],"message":"e2e","module":"dsh.carrier","level":"info"}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":1,"text":" from"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":2,"text":" DSH"}]}
@@ -182,5 +182,5 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"first":false,"event":"ws.token-delta","scenario":"m2.webclient.mount","last":true,"index":4}],"level":"info","message":"e2e"}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"status":"pass","scenario":"m2.webclient.mount","event":"ws.session-complete"}]}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","level":"info","data":[{"scenario":"m2.webclient.mount","first":false,"last":true,"event":"ws.token-delta","index":4}]}
+dsh.spike.log: {"message":"e2e","module":"dsh.carrier","data":[{"event":"ws.session-complete","scenario":"m2.webclient.mount","status":"pass"}],"level":"info"}

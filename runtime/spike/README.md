@@ -153,6 +153,23 @@ embedder plus a typed JS shim (`gateway.js`).
   (declared unavailable by this host's descriptor) is rejected by
   INSTALL-TIME NEGOTIATION before unpack. Evidence:
   `runtime/spike/artifacts/macos-cli-m3-complete/`.
+- `scenario/m3-fetch-install.js` — the `m3.fetch-install` E2E scenario for
+  carrier hosts: the dsh-notes package is SELF-HOSTED by the loopback
+  carrier itself (the scenario hands the bytes to the host over the bus
+  seam, `{type:"http.serve", path, bodyB64}`; the carrier registers an
+  in-memory route and serves it over real TCP) and installed through
+  `installFromFetch` with the REAL gateway `httpFetch` — the fetch stub's
+  production twin. Then two crash-simulated pending receipts are
+  startup-replayed and the m2-session-shaped agent session runs. Carrier
+  evidence (config resolution, route registration/serve, slot
+  allow-set enforcement) rides scenario `m3.fetch-carrier`; runner
+  `tools/e2e/run-ios-m3.sh` (launch configuration
+  `-dsh-profile m3-complete`).
+- `profiles/m3-complete/cordis.patch.json` — the m3-complete PROFILE patch
+  for the config layer: selects `dsh-web-client-mini` as the ACTIVE Web
+  Client and trims the toolbar slot allow-set to `notes.toolbar`. JSON
+  (documented in config-layer.js); the iOS carrier merges it
+  base → hostFace (launch args) → profile BEFORE eval.
 - `fixtures/dsh-badge{,-source}.js` — the negotiation test package: a real
   plugin-shaped fixture whose manifest REQUIRES `fsRead`+`fsWrite`+`notify`;
   hosts whose descriptor honestly declares `notify` unavailable reject it
