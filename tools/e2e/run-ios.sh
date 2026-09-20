@@ -36,7 +36,7 @@ PT_APPROVE=(300 720)           # in-app approval dialog: "Approve" (check 03-*.p
 PT_BANNER=(150 130)            # notification banner body (top of screen)
 SWIPE_PULL=(150 60 150 600)    # pull-down gesture when banner is collapsed
 PT_SEARCH=(298 248)           # Files sheet search field (re-derived 2026-09-21 from screens/05-picker-search.png per the coordinate law: field at px ~(596,496) / 2; the old (201,126) mapped to the sheet TITLE row — tap missed, typing never landed, empty Recents left zero rows for the tile press — surprise drivepickers-ptsearch-calibration-201126)
-PT_FILES_TILE=(102 447)       # search-result grid cell (re-derived 2026-09-21 from 05-picker-search.png: single "notes" tile at px ~(212,894) / 2 — the search UI gained a suggestions row that pushes results lower than the 2026-09-20 calibration; wda_session element probe confirmed WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
+PT_FILES_TILE=(81 356)        # search-result grid cell (re-derived 2026-09-21 from 05b-picker-results.png after the search-submission fix: single "notes" tile thumbnail spans px (92..233, 617..807), center ~(163,712) / 2 per the coordinate law — the old (102,447) mapped to px (204,894), the label row BELOW the thumbnail, and the press never selected; wda_session element probes confirm WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
 PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140 / 2); harmless on empty grid
 BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
