@@ -22,12 +22,23 @@ real run. Two runner defects kept blocking that run:
 2. Nothing in `run-ios.sh` produced a receipt even on a green run, so
    every future green run would still close the finding only by hand,
    inviting the synthesis the acceptance bar forbids.
+3. The picker drive never EXECUTED the search it typed: on the iOS 26.5
+   sheet, delivering "notes" through the proven WDA focus+/value path
+   renders only the 名称包含 suggestion row — the results view appears
+   only after the keyboard return (observed live: caret up, field
+   filled, suggestion row only, and the blind tile press hit blank
+   space until the scenario watchdog expired).
 
 ## Decision
 
 - `run-ios.sh` now STAGES ONCE: it creates `notes.txt` only when the
   file is missing and logs "already staged — untouched" otherwise, so a
   pre-settled, provider-indexed copy survives the pre-stage.
+- `drive_picker` SUBMITS the search between typing and the tile press:
+  a new `wda_submit_search` appends "\n" through the same locale-independent
+  element /value endpoint (keyboard return = submit; the results view
+  rendered immediately when verified live), with a
+  `05b-picker-results.png` screenshot marking the submitted state.
 - After the summary loop (which already `die`s on any failing checker),
   the runner machine-authors `receipt.json` into the artifacts dir in
   the established evidence format (host/engine/phase/launch

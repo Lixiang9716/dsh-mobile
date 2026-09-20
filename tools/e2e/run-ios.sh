@@ -208,6 +208,24 @@ wda_field_type() { # TEXT
     -d "{\"text\":\"$text\"}" >/dev/null
 }
 
+# wda_submit_search: the typed query alone NEVER executes the search on the
+# iOS 26.5 sheet — typing renders only the 名称包含 suggestion row (observed
+# live 2026-09-21: field focused, 'notes' delivered, caret + keyboard up, yet
+# no result tile; the blind tile press then hit blank space and the watchdog
+# expired). Appending "\n" through the SAME element /value endpoint delivers
+# the keyboard return = submit — verified live: the results view rendered
+# immediately. Lookup stays by TYPE, so the drive remains locale-independent.
+wda_submit_search() {
+  local sid eid
+  sid=$(wda_session)
+  eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json' \
+    -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
+    | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
+  [ -n "$eid" ] || return 1
+  curl -s -X POST "localhost:8100/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
+    -d '{"text":"\n"}' >/dev/null
+}
+
 # ---- UI legs ---------------------------------------------------------------
 drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually renders
   shot 02-notification-banner
@@ -256,7 +274,14 @@ drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
     idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true
   fi
   sleep 2
-  shot 05-picker-search
+  shot 05-picker-search   # typed state — suggestion row only, search not executed
+  if wda_submit_search; then
+    log "search submitted (keyboard return via /value)"
+  else
+    log "search submit unavailable — tile press will race the suggestion state"
+  fi
+  sleep 2
+  shot 05b-picker-results   # submitted state — the result row must render here
   # the single result row sits right under the search field; a ~0.15s press
   # selects AND confirms in one gesture (verified live earlier)
   local i rc
