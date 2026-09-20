@@ -15,16 +15,32 @@ final class CarrierServer {
     /// the carrier-side "the Web Client mounted" signal (optional: sessions
     /// that don't care leave it nil; the m1 drive is unaffected).
     var onStaticServed: ((String) -> Void)?
+    /// Fired on the server queue when a DYNAMIC route (registered at runtime
+    /// by the session, e.g. the self-hosted plugin package) is served — the
+    /// carrier-side evidence that the bytes actually left over TCP.
+    var onRouteServed: ((String, Int) -> Void)?
     private(set) var port: UInt16 = 0
 
     private let queue = DispatchQueue(label: "org.dsh.carrier.server")
     private var listener: NWListener?
     private var webRoot = URL(fileURLWithPath: "/nonexistent")
     private var servedPaths: [String] = []
+    /// Runtime-registered routes: path → (bytes, content type). The M3
+    /// fetch-install scenario self-hosts the plugin package here — the
+    /// carrier serves whatever the session hands it, transport only.
+    private var routes: [String: (data: Data, contentType: String)] = [:]
     private var httpRx: [ObjectIdentifier: Data] = [:]
     private var wsConnection: NWConnection?
     private var wsRx = Data()
     private var wsOpen = false
+
+    /// Registers (or replaces) one dynamic route. Safe from any queue —
+    /// the write hops to the internal serial queue.
+    func registerRoute(_ path: String, data: Data, contentType: String) {
+        queue.async { [weak self] in
+            self?.routes[path] = (data, contentType)
+        }
+    }
 
     /// Starts listening on 127.0.0.1 with an ephemeral port. `onReady` fires
     /// on the internal queue once the port is known.
@@ -132,7 +148,20 @@ final class CarrierServer {
             return
         }
         if serveGatewayE2E(path: path, conn: conn) { return }
+        if serveRoute(path: path, conn: conn) { return }
         serveStatic(path: path, conn: conn)
+    }
+
+    /// Serves a runtime-registered route with 200 + its recorded byte count.
+    /// Runs on the internal queue (routes are queue-confined). The request
+    /// ALWAYS follows the registration on this serial queue, so a fetch can
+    /// never outrun the scenario's http.serve.
+    private func serveRoute(path: String, conn: NWConnection) -> Bool {
+        guard let route = routes[path] else { return false }
+        servedPaths.append(path)
+        onRouteServed?(path, route.data.count)
+        respond(status: 200, body: route.data, contentType: route.contentType, conn: conn)
+        return true
     }
 
     // ---- m2 gateway-e2e endpoints (chunked streams) -------------------------

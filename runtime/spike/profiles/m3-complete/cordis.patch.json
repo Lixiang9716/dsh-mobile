@@ -1,0 +1,6 @@
+{
+  "webClient": "dsh-web-client-mini",
+  "slots": {
+    "allow": ["notes.toolbar"]
+  }
+}

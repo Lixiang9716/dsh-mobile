@@ -13,7 +13,9 @@
 #
 # Rule 8 discipline: every wait polls a condition with a deadline (log
 # markers, accessibility tree, notify.response progress); sleeps only pace
-# retry loops. Overall deadline 300s — on expiry it fails loud with the last
+# retry loops. Overall deadline 600s (the step-3 reboot kills WDA; its
+# re-bootstrap can take MINUTES on a cold sim: the runner binds its server
+# long after the process is alive) — on expiry it fails loud with the last
 # 50 log lines.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -41,15 +43,22 @@ BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner c
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/m2-gateway"
 SKIP_BUILD=0
+NO_REBOOT=0
 APP_BUNDLE_ID=org.dsh.DSHSpike
 APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
-DEADLINE=$((SECONDS + 300))
+# The step-3 REBOOT kills any running WDA, so step 5 re-bootstraps it on the
+# freshly booted sim — test-manager daemons can take minutes there, and the
+# system-UI legs (banner/picker) hang without it. Budget accordingly:
+# overall 900s, WDA bootstrap up to 600s (the binding scenario's own 180s
+# watchdog only starts AFTER the launch in step 4).
+DEADLINE=$((SECONDS + 900))
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
-    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build]" >&2; exit 2 ;;
+    --no-reboot) NO_REBOOT=1; shift ;;
+    *) echo "usage: run-ios.sh [--udid U] [--art-dir D] [--skip-build] [--no-reboot]" >&2; exit 2 ;;
   esac
 done
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
@@ -147,7 +156,9 @@ fail_deadline() {
 # (permission alerts, notification banners — springboard-owned surfaces that
 # ignore idb HID injection entirely). Coordinates here are POINTS (402x874).
 WDA_PID=""
-wda_up() { curl -s localhost:8100/status 2>/dev/null | grep -q '"state":"success"'; }
+# --max-time 3: during init WDA accepts TCP but stalls the response — an
+# unbounded curl would hang the poll loop itself (observed live 2026-09-20).
+wda_up() { curl -s --max-time 3 localhost:8100/status 2>/dev/null | grep -q '"state":"success"'; }
 wda_bootstrap() {
   if wda_up; then return 0; fi
   log "bootstrapping WebDriverAgent (clone/build may take minutes on first run)"
@@ -156,8 +167,13 @@ wda_bootstrap() {
   [ -d "$HOME/dsh-e2e/wda-dd/Build/Products" ] ||     xcodebuild build-for-testing -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1
   ( cd "$HOME/dsh-e2e/wda" && xcodebuild test-without-building -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1 ) &
   WDA_PID=$!
-  local n=0
-  until wda_up; do n=$((n+1)); [ $n -gt 45 ] && return 9; sleep 2; done
+  # True wall-clock window (SECONDS-based): a stalled probe must not eat the
+  # budget, and the loop must end when the window closes, not after N hangs.
+  local wda_deadline=$((SECONDS + 600))
+  until wda_up; do
+    [ "$SECONDS" -ge "$wda_deadline" ] && return 9
+    sleep 2
+  done
 }
 wda_session() { curl -s -X POST localhost:8100/session -H 'Content-Type: application/json' -d '{"capabilities":{}}' | python3 -c "import json,sys; print(json.load(sys.stdin)['sessionId'])"; }
 # wda_tap X Y [DUR]: absolute coordinate press (points)
@@ -244,9 +260,13 @@ fi
 log "3/6 boot + install"
 # Reboot (not erase): erase loses the Files remembered picker location and
 # the notification authorization, both of which the in-run choreography
-# needs; a reboot clears transient daemons and is fast.
-xcrun simctl shutdown "$UDID" 2>/dev/null || true
-xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
+# needs; a reboot clears transient daemons and is fast. --no-reboot keeps
+# the current boot AND any warm WebDriverAgent (use right after a manual
+# fresh boot, when WDA is already serving and a reboot would just re-slow it).
+if [ "$NO_REBOOT" -eq 0 ]; then
+  xcrun simctl shutdown "$UDID" 2>/dev/null || true
+  xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
+fi
 xcrun simctl bootstatus "$UDID" -b
 sleep 5   # let springboard settle before the provider indexes the container
 xcrun simctl install "$UDID" "$APP"
@@ -260,6 +280,20 @@ mkdir -p "$CONTAINER/Documents/gateway-e2e"
 printf 'gateway e2e target file — dsh-mobile m2\n' \
   > "$CONTAINER/Documents/gateway-e2e/notes.txt"
 
+# 3.5 WDA warm-up BEFORE the launch: the binding scenario's 180s watchdog
+# starts at eval (step 4), so a slow post-reboot WDA must not eat it.
+# Stale bootstrap instances from earlier runs are reaped first — two
+# test-without-building instances contend on the same simulator.
+log "3.5/6 WDA warm-up (pre-launch)"
+if wda_up; then
+  log "WDA already up — keeping it"
+else
+  pkill -f "xcodebuild test-without-building" 2>/dev/null || true
+  pkill -f WebDriverAgentRunner-Runner 2>/dev/null || true
+  sleep 2
+  wda_bootstrap || echo "run-ios: WARNING: WDA unavailable — system-UI legs degraded"
+fi
+
 log "4/6 launch (log capture truncated — checker must see only this run)"
 rm -f "$LOG" "$ART/nslog-stderr.txt"
 case "$LOG" in /*) LOG_ABS="$LOG" ;; *) LOG_ABS="$PWD/$LOG" ;; esac
@@ -269,7 +303,7 @@ xcrun simctl launch --terminate-running-process \
   "$UDID" "$APP_BUNDLE_ID" >/dev/null
 
 # ---- 5. driver: react to spike: markers on the live log --------------------
-log "5/6 driving scenario markers (deadline 300s)"
+log "5/6 driving scenario markers (deadline 900s)"
 wda_bootstrap || echo "run-ios: WARNING: WDA unavailable — system-UI legs degraded"
 FIFO="$ART/.driver.fifo"
 rm -f "$FIFO"; mkfifo "$FIFO"
@@ -297,7 +331,7 @@ while true; do
     esac
   fi
   if [ "$SECONDS" -ge "$DEADLINE" ]; then
-    fail_deadline "300s deadline — 'spike: sequence' never appeared"
+    fail_deadline "900s deadline — 'spike: sequence' never appeared"
   fi
 done
 exec 3<&-; { kill "$TAIL_PID" && wait "$TAIL_PID"; } 2>/dev/null || true
