@@ -18,6 +18,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The m2 on-device session phase (session launch mode only).
     private var session: SessionRuntime?
     private var sessionVerdict = "PENDING"
+    /// The Phase-B official-web mount drive (`-dsh-mode official-web`).
+    private var official: OfficialWebRuntime?
+    private var officialVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -60,6 +63,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             runSession()
             return true
         }
+        if launchMode == "official-web" {
+            console.text = "DSH official web — b1.official-web.mount, the upstream app on the contract carrier…"
+            print("spike: app launched in official-web mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runOfficialWeb()
+            return true
+        }
         print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
         fflush(stdout)
         SpikeRuntime().run { [weak self] boot in
@@ -94,6 +105,24 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.session = nil
             // The session runner polls for this terminal marker.
             print("spike: sequence session=\(self.sessionVerdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The Phase-B official-web mount: the contract carrier serves the
+    /// vendored upstream dist; the drive probes the wire + rendered state.
+    private func runOfficialWeb() {
+        let official = OfficialWebRuntime()
+        self.official = official
+        official.attach(webView: webView!)
+        official.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        official.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b1.official-web.mount") { self.officialVerdict = $0 }
+            self.official = nil
+            print("spike: sequence official-web=\(self.officialVerdict)")
             fflush(stdout)
         }
     }
@@ -145,5 +174,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         console?.text = (console?.text ?? "") + "\n\n" + text
         print("spike: verdict \(outcome.verdict) (\(phase), events logged: \(outcome.canonicalLines.count))")
         fflush(stdout)
+    }
+}
+
+extension AppDelegate: WKNavigationDelegate {
+    /// The official page finished loading: all head subresources have
+    /// arrived — the drive emits its mount evidence, probes the wire, and
+    /// reads the rendered state.
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        official?.pageDidFinish()
     }
 }

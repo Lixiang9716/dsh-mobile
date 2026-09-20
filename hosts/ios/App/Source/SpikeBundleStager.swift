@@ -40,7 +40,7 @@ enum SpikeBundleStager {
                   under: root)
         try write("web/carrier-page.js", data: resData(dsh_spike_res_web_page_js),
                   under: root)
-        try write("vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js",
+        try write("vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js",
                   data: resData(dsh_spike_res_pkg_crypto_js), under: root)
         return root
     }

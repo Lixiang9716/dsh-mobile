@@ -1,0 +1,27 @@
+{
+  "title": "Phase B carrier: implement the ctx.webServer contract subset so the official web app mounts",
+  "created": "2026-09-20T08:35:30+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Route table (exact/prefix/upgrade/fallback) replaces hard-coded dispatch; legacy M1-M3 wiring byte-compatible",
+    "Fallback seat serves the vendored official dist: MIME table, traversal rejection, auth-lite, index render with injection rows + boot-ready tail + base href",
+    "/plugins/** serving with the upstream combo (aggregate) semantics; /api POST envelope bridge; WS /api/remote.mux multiplexed seat with structured unavailable answers",
+    "E2E b1.official-web.mount: manifest + run-ios-b1.sh runner + evidence green (10/10)",
+    "Regressions green: run-ios-session.sh (default + mini), run-ios-m3.sh, run-ios.sh",
+    "Governance: agent note, receipt.json deliverables, gov run green"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0013",
+  "void": {
+    "ts": "2026-09-20T08:51:25+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete and verifiable in the branch's committed deliverables rather than by a card-closure receipt (#329/#339 precedent): the ctx.webServer contract subset implemented in hosts/ios/App/Source (route table + multi-seat upgrades + fallback seat, official-dist index injection, /plugins combo serving, POST /api envelope bridge with structured unavailable answers, WS /api/remote.mux mux bridging over the bus seam); E2E b1.official-web.mount green 10/10 twice via tools/e2e/run-ios-b1.sh with committed evidence (hosts/ios/artifacts/b1-official-web/); regressions re-run green on the refactored carrier (run-ios-session.sh default + --client mini, run-ios-m3.sh 46/46 + 11/11, run-ios.sh). Receipt-closure structurally impossible per govrail #329/#339 \u2014 the PR is the audit trail."
+  }
+}

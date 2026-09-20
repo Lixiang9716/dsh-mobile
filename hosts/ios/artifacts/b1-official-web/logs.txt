@@ -1,0 +1,14 @@
+spike: app launched in official-web mode
+dsh.spike.log: {"level":"info","data":[{"event":"client.selected","client":"dsh-web-official","source":"launch","scenario":"b1.official-web.mount"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"message":"e2e","data":[{"event":"index.rendered","bytes":2787,"rows":4,"scenario":"b1.official-web.mount"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"message":"e2e","data":[{"event":"index.served","path":"\/","status":200,"scenario":"b1.official-web.mount"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"level":"info","data":[{"path":"\/assets\/index-8VXBH-f-.js","event":"asset.served","scenario":"b1.official-web.mount"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"message":"e2e","data":[{"scenario":"b1.official-web.mount","bytes":6990,"event":"plugins.served","path":"\/plugins\/??dsh-web-client\/client.js,dsh-web-client-mini\/client.js&rev=f3412f49f2c5"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"level":"info","data":[{"event":"upgrade.accepted","scenario":"b1.official-web.mount","path":"\/api\/remote.mux"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"message":"e2e","module":"dsh.carrier","data":[{"event":"rpc.observed","scenario":"b1.official-web.mount","answered":"unavailable","endpoint":"session.list"}],"level":"info"}
+dsh.spike.log: {"message":"e2e","module":"dsh.carrier","data":[{"event":"session.attached","streamId":"b1-probe-journal","scenario":"b1.official-web.mount","stream":"session\/journal"}],"level":"info"}
+dsh.spike.log: {"message":"e2e","data":[{"scenario":"b1.official-web.mount","event":"runtime.pending","reason":"mux journal stream answered gateway\/unimplemented; the upstream runtime (vendor + boot graph) is a sibling PR","leg":"token.delta.forwarded"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"message":"e2e","data":[{"boot":true,"rootHasChild":true,"event":"page.rendered","scenario":"b1.official-web.mount","bootText":"HARNESSFailed to load pluginsclient-modules: HTML did not preload @deepseek-ai\/dsh-client-modules\/client.js"}],"module":"dsh.carrier","level":"info"}
+spike: official drive finished verdict=PASS
+spike: verdict PASS (b1.official-web.mount, events logged: 10)
+spike: sequence official-web=PASS
