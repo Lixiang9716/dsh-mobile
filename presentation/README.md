@@ -10,9 +10,16 @@ Web Client from plugin configuration and hardcodes no UI:
   session/agent/token-delta/tool/complete events appending into a live
   transcript). Zero host awareness. Mounted by the iOS carrier in session
   mode; the scenario replay keeps late-connecting pages consistent.
-- v1 (future): the official `dsh-web-frontend` React UI as the default Web
-  Client, then the mobile-ui plugin (slot-registered mobile surfaces:
-  approval cards / bottom toolbar / session list)
+- `web-client-mini/` — v0 config-selected variant (`dsh-web-client-mini`),
+  the M3 pluggability proof (same vocabulary, amber monospace transcript).
+- `official-web/` — v1 (D9): the OFFICIAL upstream web UI dist
+  (`@deepseek-ai/dsh-web-frontend`), vendored verbatim from
+  deepseek-ai/deepseek-harness at the dsh-desktop-recorded pin, with
+  PROVENANCE + sha256 manifest + a reproducible build script. NOT yet
+  mounted: the carrier-side `ctx.webServer` implementation it requires is
+  specified in `docs/webserver-contract.md` and lands in the Phase-B
+  carrier PR. After that, the mobile-ui plugin (slot-registered mobile
+  surfaces) follows.
 
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
 launch argument on the iOS spike; default `dsh-web-client`).
