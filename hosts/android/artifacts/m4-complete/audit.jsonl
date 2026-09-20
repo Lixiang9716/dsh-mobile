@@ -1,0 +1,16 @@
+09-20 11:44:48.979  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:48.978434Z","primitive":"fsWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:48.985  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:48.985551Z","primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:48.986  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:48.986274Z","primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"denied"}
+09-20 11:44:49.010  7441  7524 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:49.010830Z","primitive":"httpFetch","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:49.086  7441  7528 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:49.086595Z","primitive":"httpFetch","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:49.089  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:49.089277Z","primitive":"httpFetch.abort","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:58.488  7441  7441 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:58.487534Z","primitive":"presentPicker","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:58.512  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:58.511631Z","primitive":"fsScope.persist","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:58.517  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:58.517566Z","primitive":"fsScope.resolve","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:44:58.750  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:44:58.749872Z","primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.467  7441  7441 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.467171Z","primitive":"presentApproval","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.598  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.597493Z","primitive":"keychainSet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.604  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.604367Z","primitive":"keychainGet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.608  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.608074Z","primitive":"keychainSet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.636  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.636475Z","primitive":"keychainGet","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-20 11:45:02.651  7441  7497 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-20T03:45:02.650819Z","primitive":"notify","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}

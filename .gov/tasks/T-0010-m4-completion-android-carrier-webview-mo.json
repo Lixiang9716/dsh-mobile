@@ -1,0 +1,27 @@
+{
+  "title": "M4 completion: Android carrier + WebView mount + 9-primitive gateway binding (W-M4B)",
+  "created": "2026-09-20T02:40:55+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Kotlin carrier: loopback HTTP static + RFC6455 WS pump over the bus seam",
+    "WebView mount of the embedded Web Client (presentation/web-client bytes)",
+    "Gateway primitives real: notify, presentApproval, presentPicker, fsScope, keychain, app.state, httpFetch",
+    "m4.host-binding scenario JS + e2e manifest; audit manifest reused",
+    "run-android-full.sh: regression + m4 phase, UI driving, screenshots",
+    "Evidence under hosts/android/artifacts/m4-complete/ + notes; PR-A"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0010",
+  "void": {
+    "ts": "2026-09-20T03:36:14+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work landed verified on this branch (one run-android-full.sh invocation, exit 0: m1.spike.boot 7/7 + m2.bridge.smoke 6/6 + m2.session 23/23 regression UNCHANGED, plus m4.host-binding 35/35 + m2.gateway.audit 16/16 on the API 35 pixel emulator \u2014 carrier + WebView mount + real nine-primitive binding, evidence hosts/android/artifacts/m4-complete/, every checklist item done). Receipt-closure structurally impossible (govrail #329/#339, issue #339 comment 5745618675) \u2014 the same exit recorded on T-0001..T-0009. Audit trail: the M4 completion PR + committed evidence."
+  }
+}
