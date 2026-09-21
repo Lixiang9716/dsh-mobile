@@ -18,7 +18,12 @@
     "docs/release.md + zh state which artifact is the harness and which is the distribution build; pairing record re-confirmed; ARCHITECTURE.md logging/E2E wording made true",
     "Agent Note (class feature) cites the constraint + rule L4 with all three sections; gov run green; PR to gh pr checks --watch; squash merged"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0023"
+  "id": "T-0023",
+  "void": {
+    "ts": "2026-09-21T06:36:50+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE and merged (PR #83, squash 0087654) \u2014 but closed with the documented exit rather than a done card. gov task close T-0023 ran green (13 gates) and then the task gate rejected the very receipt it stamped: 'T-0023: receipt run is not all-green (verify-decisions)' \u2014 the recorded #329/#339 writer-reader disagreement. Escaped per the repo precedent (T-0021, T-0022): restored the close's card mutation and voided with this reason. Deliverables, all in the merged PR: DSH_RELEASE defined by each host's Release configuration (iOS pbxproj SWIFT_ACTIVE_COMPILATION_CONDITIONS + GCC_PREPROCESSOR_DEFINITIONS; Android buildTypes.release BuildConfig + cFlags -DDSH_RELEASE; HarmonyOS release buildOptionSet arguments + buildProfileFields, both modes verified on the CLT; CLI build.sh --release); the flag reaches JS as a host-injected global in dsh_bind_globals() so every embedded logger.js stays byte-identical to the canonical checkout; debug/info stripped, warn/error retained; native E2E emitters gated on all three hosts and a release launch refuses an E2E drive loud; logging L4 extended to L4a/L4b/L4c with .gov/rejections/case-logging-l4.sh (rejection + positive control); evidence committed under runtime/spike/artifacts/release-logging/ (18 -> 0 records; warn/error survive) and hosts/ios/artifacts/release-logging/ (plain launch reaches the official UI with 0 dsh.spike.log / 0 verdict / 0 debug+info vs the harness's 83 records); release.yml ships dsh-<host> as the user-facing release builds with the harness behind include_harness; docs/release.md + zh updated and pairing confirmed. Honest gaps recorded, not faked: HarmonyOS release refuses because its serving stack still lives in the E2E drives (follow-up), and the Android release serving path is statically verified only (no emulator available this session). CI: gates + ios-e2e + android-e2e + harmonyos-build all green. The PR is the audit trail."
+  }
 }
