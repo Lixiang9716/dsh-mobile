@@ -1,9 +1,15 @@
-# Capability Gateway — Primitive Contract v1.0.0
+# Capability Gateway — Primitive Contract v1.1.0
 
 > **Status: FROZEN at M0** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
 > Machine-readable surface: [primitives.d.ts](primitives.d.ts).
 > English | [简体中文](primitives.zh.md)
+>
+> **v1.1.0 (additive, 2026-09-22)**: five filesystem operations the upstream file tools
+> require — `fsStat`, `fsList`, `fsMkdir`, `fsRemove`, `fsRename` (table below, and §4
+> "filesystem additions"). v1.0.0's nine primitives are untouched, so a `gateway@1` host
+> that does not implement the additions keeps negotiating exactly as before and reports
+> them `unavailable` — this is a minor bump in the sense §8 defines, not a new major.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -40,6 +46,19 @@ RFC 0002 anti-pattern) is banned by construction: there is nothing to branch on.
 | 7 | `presentPicker` | native file / directory picker; grants a scope on success | `presentPicker` | no |
 | 8 | `keychainGet` | read a credential by opaque reference | `keychainGet` | no |
 | 9 | `keychainSet` | write or delete a credential by opaque reference | `keychainSet` | no |
+
+**v1.1.0 additions (5)** — the filesystem operations the upstream file tools
+(`@deepseek-ai/dsh-tool-fs` over `@deepseek-ai/dsh-fs-local`) perform on every resolve,
+stat, listing, edit and atomic write. They reuse the existing `fsRead` / `fsWrite`
+permission flags, so no new capability has to be negotiated:
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 10 | `fsStat` | stat a path inside an authorized scope | `fsRead` | no |
+| 11 | `fsList` | list a directory inside an authorized scope | `fsRead` | no |
+| 12 | `fsMkdir` | create a directory (recursively) inside an authorized scope | `fsWrite` | no |
+| 13 | `fsRemove` | remove a file or directory inside an authorized scope | `fsWrite` | no |
+| 14 | `fsRename` | rename or move inside an authorized scope | `fsWrite` | no |
 
 Reserved identifiers: the scope handle `"app"` denotes the host's own profile container
 (the storage layout of [data-protocols.md](data-protocols.md)); the capability name
@@ -87,8 +106,35 @@ Applies to every primitive; full types in [primitives.d.ts](primitives.d.ts).
   HarmonyOS equivalent). Hosts may garbage-collect refs that no longer resolve; resolution
   failure rejects with `io`.
 
-### httpFetch
+### filesystem additions (v1.1.0)
 
+The five operations below exist because the upstream file tools cannot work without them:
+`@deepseek-ai/dsh-fs-local` resolves, stats and lists before it reads or writes, and its
+atomic-write path creates a temporary sibling and renames it. Paths follow the same
+scope-relative POSIX rule as `fsRead`/`fsWrite`, and a path that escapes its scope root is
+rejected as `invalid` **before** any host call, exactly as those two do.
+
+- `fsStat(scope, path) → { kind, size, mtime }` — `kind` is `"file"` | `"dir"` | `"other"`;
+  `size` is bytes (0 for directories); `mtime` is ISO-8601 UTC. A missing path rejects with
+  `io` and a message naming the path — the tools distinguish "absent" from "unreadable" by
+  the message, not by a second code, because `io` already covers both on every host.
+- `fsList(scope, path) → { entries: [{ name, kind }] }` — one directory level, **not**
+  recursive; `entries` is sorted by `name` (byte order) so a listing is deterministic
+  across hosts. `name` is the last path component; `kind` uses the `fsStat` vocabulary.
+- `fsMkdir(scope, path, opts?) → {}` — creates the directory and any missing parents;
+  succeeds when the directory already exists (`opts.existing: "ok" | "error"`, default
+  `"ok"`, which is the `mkdir -p` behaviour the tools rely on).
+- `fsRemove(scope, path, opts?) → {}` — removes a file or, with `opts.recursive: true`, a
+  directory tree. A missing path is `opts.missing: "ok" | "error"` (default `"ok"`).
+- `fsRename(scope, from, to) → {}` — moves within the scope; `from` missing rejects with
+  `io`, and a `to` that already exists is replaced (POSIX rename semantics), because
+  atomic-write depends on it.
+
+Hosts that do not implement a listing may serve `fsList` as `unavailable` and everything
+else as usual; a caller that needs listings must treat that as a capability gap, not an
+error to retry.
+
+### httpFetch
 - `httpFetch(url, init?) → { status, headers, body, abort() }` — the response **body is an
   async iterable** of byte chunks: one event sequence, never a blocking whole-result (D8).
   Request `body` may likewise be a byte array or async iterable (upload streaming).

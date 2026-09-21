@@ -50,6 +50,10 @@ static const char *dsh_node_shim(const char *name) {
         { "node:util", "upstream/shims/util.js" },
         { "node:util/types", "upstream/shims/util-types.js" },
         { "node:fs", "upstream/shims/fs.js" },
+        /* node:buffer: imported by @deepseek-ai/dsh-attachment (and by the
+         * fs-promises shim the file tools need) — Buffer.from / concat /
+         * byteLength / isBuffer over the Uint8Array-backed DshBuffer. */
+        { "node:buffer", "upstream/shims/buffer.js" },
         { "node:os", "upstream/shims/os.js" },
         { "node:process", "upstream/shims/process.js" },
         { "node:module", "upstream/shims/node-module.js" },

@@ -1,0 +1,758 @@
+[
+ {
+  "label": "session-1eaac435-977e-4115-9e46-61be632fc841",
+  "type": "Button",
+  "center": [
+   82,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "会话层级, 导览",
+  "type": "Other",
+  "center": [
+   104,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "0 个子代理",
+  "type": "Other",
+  "center": [
+   201,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "重试恢复终端",
+  "type": "Button",
+  "center": [
+   242,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "更多操作",
+  "type": "Other",
+  "center": [
+   332,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "打开右侧边栏",
+  "type": "Button",
+  "center": [
+   378,
+   -106
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "打开侧边栏",
+  "type": "Button",
+  "center": [
+   21,
+   -93
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "横幅",
+  "type": "Other",
+  "center": [
+   204,
+   -91
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "对话",
+  "type": "Button",
+  "center": [
+   54,
+   -64
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "轨迹",
+  "type": "Button",
+  "center": [
+   124,
+   -64
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   21,
+   -38
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "系统提示词",
+  "type": "Button",
+  "center": [
+   204,
+   -16
+  ],
+  "changed": false,
+  "skipped": "off-screen (needs scrolling)",
+  "evidence": []
+ },
+ {
+  "label": "全局面板, 导览",
+  "type": "Other",
+  "center": [
+   21,
+   16
+  ],
+  "changed": true,
+  "evidence": [
+   "12-全局面板__导览-before.png",
+   "12-全局面板__导览-after.png"
+  ]
+ },
+ {
+  "label": "session-1eaac435-977e-4115-9e46-61be632fc841",
+  "type": "Button",
+  "center": [
+   82,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "13-session_1eaac435_977e_41-before.png",
+   "13-session_1eaac435_977e_41-after.png"
+  ]
+ },
+ {
+  "label": "会话层级, 导览",
+  "type": "Other",
+  "center": [
+   104,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "14-会话层级__导览-before.png",
+   "14-会话层级__导览-after.png"
+  ]
+ },
+ {
+  "label": "0 个子代理",
+  "type": "Other",
+  "center": [
+   201,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "15-0_个子代理-before.png",
+   "15-0_个子代理-after.png"
+  ]
+ },
+ {
+  "label": "重试恢复终端",
+  "type": "Button",
+  "center": [
+   242,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "16-重试恢复终端-before.png",
+   "16-重试恢复终端-after.png"
+  ]
+ },
+ {
+  "label": "更多操作",
+  "type": "Other",
+  "center": [
+   332,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "17-更多操作-before.png",
+   "17-更多操作-after.png"
+  ]
+ },
+ {
+  "label": "打开右侧边栏",
+  "type": "Button",
+  "center": [
+   378,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "18-打开右侧边栏-before.png",
+   "18-打开右侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "开始",
+  "type": "Button",
+  "center": [
+   58,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "19-开始-before.png",
+   "19-开始-after.png"
+  ]
+ },
+ {
+  "label": "session-1eaac435-977e-4115-9e46-61be632fc841",
+  "type": "Button",
+  "center": [
+   93,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "20-session_1eaac435_977e_41-before.png",
+   "20-session_1eaac435_977e_41-after.png"
+  ]
+ },
+ {
+  "label": "会话层级, 导览",
+  "type": "Other",
+  "center": [
+   120,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "21-会话层级__导览-before.png",
+   "21-会话层级__导览-after.png"
+  ]
+ },
+ {
+  "label": "0 个子代理",
+  "type": "Other",
+  "center": [
+   222,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "22-0_个子代理-before.png",
+   "22-0_个子代理-after.png"
+  ]
+ },
+ {
+  "label": "重试恢复终端",
+  "type": "Button",
+  "center": [
+   274,
+   90
+  ],
+  "changed": false,
+  "evidence": [
+   "23-重试恢复终端-before.png",
+   "23-重试恢复终端-after.png"
+  ]
+ },
+ {
+  "label": "分栏",
+  "type": "Button",
+  "center": [
+   296,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "24-分栏-before.png",
+   "24-分栏-after.png"
+  ]
+ },
+ {
+  "label": "开始 关闭",
+  "type": "Button",
+  "center": [
+   58,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "25-开始_关闭-before.png",
+   "25-开始_关闭-after.png"
+  ]
+ },
+ {
+  "label": "退出全屏",
+  "type": "Button",
+  "center": [
+   338,
+   90
+  ],
+  "changed": true,
+  "evidence": [
+   "26-退出全屏-before.png",
+   "26-退出全屏-after.png"
+  ]
+ },
+ {
+  "label": "打开侧边栏",
+  "type": "Button",
+  "center": [
+   21,
+   103
+  ],
+  "changed": false,
+  "evidence": [
+   "27-打开侧边栏-before.png",
+   "27-打开侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "横幅",
+  "type": "Other",
+  "center": [
+   204,
+   106
+  ],
+  "changed": false,
+  "evidence": [
+   "28-横幅-before.png",
+   "28-横幅-after.png"
+  ]
+ },
+ {
+  "label": "对话",
+  "type": "Button",
+  "center": [
+   54,
+   132
+  ],
+  "changed": false,
+  "evidence": [
+   "29-对话-before.png",
+   "29-对话-after.png"
+  ]
+ },
+ {
+  "label": "轨迹",
+  "type": "Button",
+  "center": [
+   124,
+   132
+  ],
+  "changed": true,
+  "evidence": [
+   "30-轨迹-before.png",
+   "30-轨迹-after.png"
+  ]
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   21,
+   158
+  ],
+  "changed": true,
+  "evidence": [
+   "31-新建会话-before.png",
+   "31-新建会话-after.png"
+  ]
+ },
+ {
+  "label": "使用实际时长",
+  "type": "Switch",
+  "center": [
+   44,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "32-使用实际时长-before.png",
+   "32-使用实际时长-after.png"
+  ]
+ },
+ {
+  "label": "收起所有轮次",
+  "type": "Switch",
+  "center": [
+   104,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "33-收起所有轮次-before.png",
+   "33-收起所有轮次-after.png"
+  ]
+ },
+ {
+  "label": "展开所有轮次",
+  "type": "Switch",
+  "center": [
+   104,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "34-展开所有轮次-before.png",
+   "34-展开所有轮次-after.png"
+  ]
+ },
+ {
+  "label": "收起所有调用",
+  "type": "Switch",
+  "center": [
+   160,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "35-收起所有调用-before.png",
+   "35-收起所有调用-after.png"
+  ]
+ },
+ {
+  "label": "展开所有调用",
+  "type": "Switch",
+  "center": [
+   160,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "36-展开所有调用-before.png",
+   "36-展开所有调用-after.png"
+  ]
+ },
+ {
+  "label": "搜索轨迹",
+  "type": "SearchField",
+  "center": [
+   302,
+   166
+  ],
+  "changed": true,
+  "evidence": [
+   "37-搜索轨迹-before.png",
+   "37-搜索轨迹-after.png"
+  ]
+ },
+ {
+  "label": "session-1eaac435-977e-4115-9e46-61be632fc841",
+  "type": "Button",
+  "center": [
+   62,
+   95
+  ],
+  "changed": true,
+  "evidence": [
+   "38-session_1eaac435_977e_41-before.png",
+   "38-session_1eaac435_977e_41-after.png"
+  ]
+ },
+ {
+  "label": "会话层级, 导览",
+  "type": "Other",
+  "center": [
+   88,
+   95
+  ],
+  "changed": false,
+  "evidence": [
+   "39-会话层级__导览-before.png",
+   "39-会话层级__导览-after.png"
+  ]
+ },
+ {
+  "label": "0 个子代理",
+  "type": "Other",
+  "center": [
+   167,
+   95
+  ],
+  "changed": false,
+  "evidence": [
+   "40-0_个子代理-before.png",
+   "40-0_个子代理-after.png"
+  ]
+ },
+ {
+  "label": "更多操作",
+  "type": "Other",
+  "center": [
+   319,
+   95
+  ],
+  "changed": true,
+  "evidence": [
+   "41-更多操作-before.png",
+   "41-更多操作-after.png"
+  ]
+ },
+ {
+  "label": "打开右侧边栏",
+  "type": "Button",
+  "center": [
+   373,
+   95
+  ],
+  "changed": true,
+  "evidence": [
+   "42-打开右侧边栏-before.png",
+   "42-打开右侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "开始",
+  "type": "Button",
+  "center": [
+   67,
+   94
+  ],
+  "changed": false,
+  "evidence": [
+   "43-开始-before.png",
+   "43-开始-after.png"
+  ]
+ },
+ {
+  "label": "分栏",
+  "type": "Button",
+  "center": [
+   281,
+   94
+  ],
+  "changed": true,
+  "evidence": [
+   "44-分栏-before.png",
+   "44-分栏-after.png"
+  ]
+ },
+ {
+  "label": "开始 关闭",
+  "type": "Button",
+  "center": [
+   67,
+   94
+  ],
+  "changed": true,
+  "evidence": [
+   "45-开始_关闭-before.png",
+   "45-开始_关闭-after.png"
+  ]
+ },
+ {
+  "label": "开始 关闭",
+  "type": "Button",
+  "center": [
+   215,
+   94
+  ],
+  "changed": true,
+  "evidence": [
+   "46-开始_关闭-before.png",
+   "46-开始_关闭-after.png"
+  ]
+ },
+ {
+  "label": "退出全屏",
+  "type": "Button",
+  "center": [
+   329,
+   94
+  ],
+  "changed": true,
+  "evidence": [
+   "47-退出全屏-before.png",
+   "47-退出全屏-after.png"
+  ]
+ },
+ {
+  "label": "重试恢复终端",
+  "type": "Button",
+  "center": [
+   215,
+   96
+  ],
+  "changed": true,
+  "evidence": [
+   "48-重试恢复终端-before.png",
+   "48-重试恢复终端-after.png"
+  ]
+ },
+ {
+  "label": "打开侧边栏",
+  "type": "Button",
+  "center": [
+   24,
+   110
+  ],
+  "changed": true,
+  "evidence": [
+   "49-打开侧边栏-before.png",
+   "49-打开侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "横幅",
+  "type": "Other",
+  "center": [
+   231,
+   113
+  ],
+  "changed": true,
+  "evidence": [
+   "50-横幅-before.png",
+   "50-横幅-after.png"
+  ]
+ },
+ {
+  "label": "对话",
+  "type": "Button",
+  "center": [
+   18,
+   144
+  ],
+  "changed": true,
+  "evidence": [
+   "51-对话-before.png",
+   "51-对话-after.png"
+  ]
+ },
+ {
+  "label": "轨迹",
+  "type": "Button",
+  "center": [
+   78,
+   144
+  ],
+  "changed": true,
+  "evidence": [
+   "52-轨迹-before.png",
+   "52-轨迹-after.png"
+  ]
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   24,
+   174
+  ],
+  "changed": true,
+  "evidence": [
+   "53-新建会话-before.png",
+   "53-新建会话-after.png"
+  ]
+ },
+ {
+  "label": "使用实际时长",
+  "type": "Switch",
+  "center": [
+   36,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "54-使用实际时长-before.png",
+   "54-使用实际时长-after.png"
+  ]
+ },
+ {
+  "label": "收起所有轮次",
+  "type": "Switch",
+  "center": [
+   54,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "55-收起所有轮次-before.png",
+   "55-收起所有轮次-after.png"
+  ]
+ },
+ {
+  "label": "展开所有轮次",
+  "type": "Switch",
+  "center": [
+   54,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "56-展开所有轮次-before.png",
+   "56-展开所有轮次-after.png"
+  ]
+ },
+ {
+  "label": "收起所有调用",
+  "type": "Switch",
+  "center": [
+   118,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "57-收起所有调用-before.png",
+   "57-收起所有调用-after.png"
+  ]
+ },
+ {
+  "label": "展开所有调用",
+  "type": "Switch",
+  "center": [
+   118,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "58-展开所有调用-before.png",
+   "58-展开所有调用-after.png"
+  ]
+ },
+ {
+  "label": "轨迹工具栏",
+  "type": "Other",
+  "center": [
+   230,
+   184
+  ],
+  "changed": true,
+  "evidence": [
+   "59-轨迹工具栏-before.png",
+   "59-轨迹工具栏-after.png"
+  ]
+ }
+]

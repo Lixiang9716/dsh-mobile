@@ -132,7 +132,7 @@ TREES = [
     for pkg in [
         "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
         "session", "session-projection", "settings", "system-prompt",
-        "timeout", "tools", "typert-protocol", "util-values",
+        "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
     ]
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the

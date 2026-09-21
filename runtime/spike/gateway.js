@@ -81,6 +81,32 @@ export const fsScope = {
   resolve: async (ref) => await call('fsScope.resolve', { ref }),
 };
 
+// ---- filesystem additions (contract v1.1.0) -----------------------------
+// What the upstream file service (@deepseek-ai/dsh-fs-local) needs on top of
+// read/write: stat and list to resolve a target, mkdir + rename for its
+// atomic-write path, remove for cleanup. A host that does not implement one
+// of these answers `unavailable`, and the caller must treat that as a
+// capability gap rather than an error to retry (contract/primitives.md §4).
+
+/** `{ kind: "file" | "dir" | "other", size, mtime }`; a missing path is `io`. */
+export const fsStat = async (scope, path) => await call('fsStat', { scope, path });
+
+/** One directory level, sorted by name: `{ entries: [{ name, kind }] }`. */
+export const fsList = async (scope, path) => await call('fsList', { scope, path });
+
+/** Create a directory and any missing parents (`mkdir -p` by default). */
+export const fsMkdir = async (scope, path, opts = {}) =>
+  await call('fsMkdir', { scope, path, existing: opts.existing ?? 'ok' });
+
+/** Remove a file, or a tree with `{ recursive: true }`. */
+export const fsRemove = async (scope, path, opts = {}) => await call('fsRemove', {
+  scope, path, recursive: opts.recursive ?? false, missing: opts.missing ?? 'ok',
+});
+
+/** Move within the scope; an existing destination is replaced (POSIX rename). */
+export const fsRename = async (scope, from, to) =>
+  await call('fsRename', { scope, from, to });
+
 // ---- httpFetch (streaming response body) ---------------------------------
 
 /** In-flight response-body streams keyed by bodyId. */

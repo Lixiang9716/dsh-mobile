@@ -30,6 +30,21 @@ while [ $# -gt 0 ]; do
   esac
 done
 [ -n "$ART" ] || ART="hosts/ios/artifacts/b4-write-live"
+
+# `simctl launch --stdout/--stderr` resolves a path under /tmp INSIDE the
+# simulator's own filesystem (the device's data/tmp), so an art dir there
+# silently captures the log where this script cannot read it: the drive runs,
+# every marker is written, and the runner waits out its 300s deadline for a
+# file that will never appear on the host. Measured 2026-09-22. Refuse it at
+# the argument boundary — a wrong art dir is an operator error, not a state to
+# debug through (rule 5).
+case "$ART" in
+  /tmp/*|/private/tmp/*)
+    echo "run-ios-b4: FAIL: --art-dir under /tmp writes into the SIMULATOR's" >&2
+    echo "  filesystem, not the host's — use a path outside /tmp (e.g. a repo" >&2
+    echo "  path or \$HOME). Got: $ART" >&2
+    exit 2 ;;
+esac
 LOG="$ART/logs.txt"
 mkdir -p "$ART" "$ART/screens"
 

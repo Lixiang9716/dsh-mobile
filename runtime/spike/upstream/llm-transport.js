@@ -218,15 +218,30 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
   }
 };
 
-/** Build one adapter bound to one loopback route. Observability rides hooks:
+/** Build one adapter bound to one route. Observability rides hooks:
  * onWire(info) fires once per wire request (the scenario logs the request
  * evidence); onSse(info) once per decoded SSE data payload (the parse
  * evidence). Hooks receive plain deterministic fields only (no port, no
- * key material). */
+ * key material).
+ *
+ * The LOOPBACK demand is the determinism boundary: an E2E drive may only
+ * ever talk to the carrier's scripted endpoint, so a non-loopback baseURL
+ * there is a defect, not a configuration. A USER-SUPPLIED endpoint is the
+ * one legitimate exception — the user-facing serving boot reads it from the
+ * app's own credential file — and it must SAY SO with `userEndpoint: true`,
+ * so the exception is a named decision at the call site instead of a guard
+ * quietly weakened for every caller. */
 export function createGatewayLlmAdapter(options) {
-  const { baseURL, apiKey, provider, name, onWire, onSse } = options;
-  if (typeof baseURL !== 'string' || !baseURL.startsWith('http://127.0.0.1:')) {
-    throw new TypeError(`llm-transport: baseURL must be a loopback http://127.0.0.1:PORT URL, got ${String(baseURL)}`);
+  const { baseURL, apiKey, provider, name, onWire, onSse, userEndpoint = false } = options;
+  if (userEndpoint === true) {
+    if (typeof baseURL !== 'string' || !/^https?:\/\/[^\s]+$/.test(baseURL)) {
+      throw new TypeError(`llm-transport: user endpoint baseURL is not an http(s) URL, got ${String(baseURL)}`);
+    }
+  } else if (typeof baseURL !== 'string' || !baseURL.startsWith('http://127.0.0.1:')) {
+    throw new TypeError(
+      'llm-transport: baseURL must be a loopback http://127.0.0.1:PORT URL, got '
+      + `${String(baseURL)} — an E2E drive only talks to the carrier's scripted endpoint; `
+      + 'a user-supplied endpoint must declare itself with userEndpoint: true');
   }
   if (typeof apiKey !== 'string' || apiKey.length === 0) throw new TypeError('llm-transport: apiKey is required');
   if (typeof provider !== 'string' || provider.length === 0) throw new TypeError('llm-transport: provider is required');

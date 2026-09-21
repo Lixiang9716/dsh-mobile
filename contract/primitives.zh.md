@@ -1,8 +1,13 @@
-# 能力网关 — 原语契约 v1.0.0
+# 能力网关 — 原语契约 v1.1.0
 
 > **状态:M0 冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
 > [English](primitives.md) | 简体中文
+>
+> **v1.1.0(增量,2026-09-22)**:五个文件系统操作,上游文件工具需要它们——
+> `fsStat`、`fsList`、`fsMkdir`、`fsRemove`、`fsRename`(见下表与 §4「文件系统新增」)。
+> v1.0.0 的九个原语未被改动,因此未实现这些新增的 `gateway@1` 宿主仍按原样协商,
+> 并把它们报为 `unavailable`——按 §8 的定义,这是一次次要版本提升,而非新主版本。
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -33,6 +38,18 @@
 | 7 | `presentPicker` | 原生文件 / 目录选择器;成功即授予一个范围 | `presentPicker` | 否 |
 | 8 | `keychainGet` | 按不透明引用读取凭据 | `keychainGet` | 否 |
 | 9 | `keychainSet` | 按不透明引用写入或删除凭据 | `keychainSet` | 否 |
+
+**v1.1.0 新增(5 个)**——上游文件工具(`@deepseek-ai/dsh-tool-fs` 经由
+`@deepseek-ai/dsh-fs-local`)在每次解析、stat、列目录、编辑与原子写入时执行的操作。
+它们复用既有的 `fsRead` / `fsWrite` 权限旗标,因此无需协商新的能力:
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 10 | `fsStat` | 对授权范围内的路径做 stat | `fsRead` | 否 |
+| 11 | `fsList` | 列出授权范围内的一个目录 | `fsRead` | 否 |
+| 12 | `fsMkdir` | 在授权范围内递归创建目录 | `fsWrite` | 否 |
+| 13 | `fsRemove` | 删除授权范围内的文件或目录 | `fsWrite` | 否 |
+| 14 | `fsRename` | 在授权范围内重命名或移动 | `fsWrite` | 否 |
 
 保留标识符:范围句柄 `"app"` 表示宿主自己的 profile 容器(存储布局见
 [data-protocols.md](data-protocols.md));能力名 `gateway` 指本契约自身。
@@ -74,6 +91,30 @@
   范围(来自 `presentPicker`)在重启后仍然可用。各平台映射到各自的原生机制(iOS
   security-scoped bookmark,Android SAF 持久化授权,HarmonyOS 等价物)。宿主可以回收不再
   能解析的引用;解析失败以 `io` 拒绝。
+
+### 文件系统新增(v1.1.0)
+
+以下五个操作存在的原因很直接:上游文件工具离开它们无法工作——
+`@deepseek-ai/dsh-fs-local` 在读写之前先解析、stat 与列目录,它的原子写入路径会创建
+一个同目录临时文件再 rename。路径沿用 `fsRead`/`fsWrite` 的 scope 相对 POSIX 规则,
+逃出 scope 根的路径在任何宿主调用**之前**即被拒绝为 `invalid`。
+
+- `fsStat(scope, path) → { kind, size, mtime }`——`kind` 为 `"file"` | `"dir"` | `"other"`;
+  `size` 为字节数(目录为 0);`mtime` 为 ISO-8601 UTC。路径不存在时以 `io` 拒绝,
+  消息中给出该路径——调用方靠消息而非第二个错误码区分「不存在」与「读不到」,
+  因为在每个宿主上 `io` 本就覆盖两者。
+- `fsList(scope, path) → { entries: [{ name, kind }] }`——只列一层,**不**递归;
+  `entries` 按 `name`(字节序)排序,使同一目录在各宿主上得到确定的顺序。
+  `name` 是路径最后一段;`kind` 使用 `fsStat` 的词表。
+- `fsMkdir(scope, path, opts?) → {}`——创建目录及缺失的父级;目录已存在时成功
+  (`opts.existing: "ok" | "error"`,默认 `"ok"`,即工具依赖的 `mkdir -p` 行为)。
+- `fsRemove(scope, path, opts?) → {}`——删除文件,或带 `opts.recursive: true` 删除目录树。
+  路径不存在时由 `opts.missing: "ok" | "error"` 决定(默认 `"ok"`)。
+- `fsRename(scope, from, to) → {}`——在 scope 内移动;`from` 不存在以 `io` 拒绝,
+  已存在的 `to` 会被替换(POSIX rename 语义),原子写入依赖这一点。
+
+不实现列目录的宿主可以把 `fsList` 报为 `unavailable`,其余照常服务;
+需要列目录的调用方必须把它当作能力缺口,而不是可重试的错误。
 
 ### httpFetch
 
