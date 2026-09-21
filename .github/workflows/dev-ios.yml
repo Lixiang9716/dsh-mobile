@@ -63,6 +63,12 @@ jobs:
         with:
           path: hosts/ios/DerivedData
           key: dev-ios-deriveddata-v2
+          # A static key with no fallback is written once and then never
+          # refreshed — every later run restores the same frozen tree. The
+          # prefix fallback lets a newer save land and be picked up, while the
+          # primary key still pins the fast path.
+          restore-keys: |
+            dev-ios-deriveddata-
 
       - name: Toolchain sanity
         run: |
@@ -79,6 +85,27 @@ jobs:
       # INVISIBLE here until the build step got `set -o pipefail` (the
       # `| tail -30` swallowed xcodebuild's exit status); this step is the
       # fix for the breakage that had been landing green since the D9 bump.
+      - name: Prewarm the simulator (background)
+        # The simulator's first boot does one-time runtime work (the dyld shared
+        # cache among it) and on a hosted runner that can take minutes. Booting
+        # it here, without waiting, lets that happen while the rest of the job
+        # runs, instead of landing inside the E2E step where it is measured and
+        # mistaken for a hang. Idempotent: the E2E step boots again and tolerates
+        # "already booted".
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          UDID=$(xcrun simctl list devices available | grep -iE 'iphone' \
+            | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          if [ -z "$UDID" ]; then
+            echo "::warning::no available iPhone simulator to prewarm"
+            exit 0
+          fi
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          echo "prewarming $UDID (background — not waited on)"
+          ( xcrun simctl boot "$UDID" >/dev/null 2>&1 || true ) &
+          echo "prewarm dispatched"
+
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         run: |
           set -euo pipefail
