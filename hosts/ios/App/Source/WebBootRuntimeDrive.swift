@@ -45,65 +45,106 @@ final class WebBootRuntimeDrive {
     ) {
         thread.start()
         thread.async { [self] in
-            var cSink = sink.cSink
-            guard let host = dsh_spike_new(bundleRoot.path, &cSink) else {
-                onFailure?("web-boot runtime: dsh_spike_new returned NULL")
-                return
-            }
-            self.host = host
-            if gateway {
-                core = try? GatewayCore(bundleRoot: bundleRoot)
-                guard core != nil else {
-                    onFailure?("web-boot gateway: manifest.json missing or unparseable")
-                    return
-                }
-                let fs = FSPrimitives()
-                fs.register(on: core!)
-                _ = HTTPPrimitive(core: core!)
-                core!.settle = { [weak self] callId, ok, json in
-                    self?.thread.async { self?.settle(callId: Int(callId), ok: ok, json: json) }
-                }
-                core!.emit = { [weak self] json in
-                    self?.thread.async { self?.emitEvent(json) }
-                }
-                dsh_spike_set_descriptor(host, GatewayCore.jsonLine([
-                    "available": GatewayCore.primitives, "unavailable": [],
-                ]) ?? "{}")
-            }
-            dsh_spike_set_bus_sink(host, { ud, line in
-                guard let ud, let line else { return }
-                let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
-                drive.handleBusLine(String(cString: line))
-            }, Unmanaged.passUnretained(self).toOpaque())
-            dsh_spike_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
-                guard let ud, let name, let argsJSON else { return }
-                let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
-                drive.core?.dispatch(
-                    callId: Int(callId), name: String(cString: name),
-                    argsJSON: String(cString: argsJSON))
-            }, Unmanaged.passUnretained(self).toOpaque())
-            guard let src = scenario(nil) else {
-                onFailure?("web-boot scenario resource missing: \(scenarioPath)")
-                return
-            }
-            let source = String(cString: src)
-            if dsh_spike_eval(host, scenarioPath, source) != 0 {
-                onFailure?("web-boot eval: \(String(cString: dsh_spike_error(host)))")
-                return
-            }
-            guard let plugins else {
-                onFailure?("web-boot: no client bundles staged — neither the "
-                    + "embedded official-web/plugins resource nor "
-                    + "Documents/web-plugins (harness: run tools/e2e/run-ios-b1.sh; "
-                    + "release: tools/e2e/ensure-client-bundles.sh before the build)")
-                return
-            }
-            if let config { deliver(config) }
-            deliver(["type": "web.plugins", "plugins": plugins])
+            guard let host = bootHost(bundleRoot: bundleRoot) else { return }
+            if gateway && !wireGateway(bundleRoot: bundleRoot, host: host) { return }
+            wireSinks(host: host)
+            guard evalScenario(host: host, scenario: scenario, path: scenarioPath) else { return }
+            guard deliverStaging(plugins: plugins, config: config) else { return }
             if dsh_spike_pump(host) != 0 {
                 onFailure?("web-boot pump: \(String(cString: dsh_spike_error(host)))")
             }
         }
+    }
+
+    /// Creates the runtime for this drive and keeps its handle; nil means the
+    /// failure has already been reported through `onFailure`.
+    private func bootHost(bundleRoot: URL) -> OpaquePointer? {
+        var cSink = sink.cSink
+        guard let host = dsh_spike_new(bundleRoot.path, &cSink) else {
+            onFailure?("web-boot runtime: dsh_spike_new returned NULL")
+            return nil
+        }
+        self.host = host
+        return host
+    }
+
+    /// The capability gateway half (b3/b4): open the core over the staged
+    /// manifest, register the primitives the spine exercises, and hand C the
+    /// descriptor. The settle/emit closures hop BACK onto this runtime thread
+    /// before re-entering C (ARCHITECTURE.md §6).
+    private func wireGateway(bundleRoot: URL, host: OpaquePointer) -> Bool {
+        core = try? GatewayCore(bundleRoot: bundleRoot)
+        guard let core else {
+            onFailure?("web-boot gateway: manifest.json missing or unparseable")
+            return false
+        }
+        let fs = FSPrimitives()
+        fs.register(on: core)
+        _ = HTTPPrimitive(core: core)
+        core.settle = { [weak self] callId, ok, json in
+            self?.thread.async { self?.settle(callId: Int(callId), ok: ok, json: json) }
+        }
+        core.emit = { [weak self] json in
+            self?.thread.async { self?.emitEvent(json) }
+        }
+        dsh_spike_set_descriptor(host, GatewayCore.jsonLine([
+            "available": GatewayCore.primitives, "unavailable": [],
+        ]) ?? "{}")
+        return true
+    }
+
+    /// The two C → drive seams: bus lines (every JS → host post) and gateway
+    /// dispatch (a claimed primitive call).
+    private func wireSinks(host: OpaquePointer) {
+        dsh_spike_set_bus_sink(host, { ud, line in
+            guard let ud, let line else { return }
+            let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
+            drive.handleBusLine(String(cString: line))
+        }, Unmanaged.passUnretained(self).toOpaque())
+        dsh_spike_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
+            guard let ud, let name, let argsJSON else { return }
+            let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
+            drive.core?.dispatch(
+                callId: Int(callId), name: String(cString: name),
+                argsJSON: String(cString: argsJSON))
+        }, Unmanaged.passUnretained(self).toOpaque())
+    }
+
+    /// Resolves and evaluates the scenario resource. The entry point is a
+    /// parameter (b1/b3 select different ones), so a missing resource is a
+    /// drive failure naming the path, not a crash.
+    private func evalScenario(
+        host: OpaquePointer,
+        scenario: (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>?,
+        path: String
+    ) -> Bool {
+        guard let src = scenario(nil) else {
+            onFailure?("web-boot scenario resource missing: \(path)")
+            return false
+        }
+        let source = String(cString: src)
+        if dsh_spike_eval(host, path, source) != 0 {
+            onFailure?("web-boot eval: \(String(cString: dsh_spike_error(host)))")
+            return false
+        }
+        return true
+    }
+
+    /// Delivers the staged plugin files (and the b3 config first — the
+    /// runtime.config facts the spine boot needs). `plugins` nil means the
+    /// staging is missing: a loud drive failure, because the runner stages it
+    /// and a fresh install without run-ios-b1.sh cannot boot.
+    private func deliverStaging(plugins: [[String: Any]]?, config: [String: Any]?) -> Bool {
+        guard let plugins else {
+            onFailure?("web-boot: no client bundles staged — neither the "
+                + "embedded official-web/plugins resource nor "
+                + "Documents/web-plugins (harness: run tools/e2e/run-ios-b1.sh; "
+                + "release: tools/e2e/ensure-client-bundles.sh before the build)")
+            return false
+        }
+        if let config { deliver(config) }
+        deliver(["type": "web.plugins", "plugins": plugins])
+        return true
     }
 
     /// Carrier → runtime: one bus delivery (any queue; hops onto the

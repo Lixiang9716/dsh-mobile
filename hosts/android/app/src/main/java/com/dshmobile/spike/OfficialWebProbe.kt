@@ -23,13 +23,16 @@ object OfficialWebProbe {
     const val mountWaitMs = 45000
     const val textSampleLimit = 200
 
-    /** Defines `__b1Run` on the page. Step order = manifest order: combo
-     * fetch (plugins.served), WS upgrade (upgrade.accepted), unary RPC
-     * (rpc.observed), mux journal open (session.attached + the unavailable
-     * frame), then the rendered reads — facade live first, then the app
+    /** The b1 probe payload: DATA, declared apart from the one-line builder below so the
+     * read unit and the data unit are separate — the size gate counts a 54-line function
+     * body as one unit, and this body is a JavaScript program. The object's own wait
+     * bounds interpolate here once; `__COMBO_URL__` is the runtime argument.
+     * Step order = manifest order: combo fetch (plugins.served), WS upgrade
+     * (upgrade.accepted), unary RPC (rpc.observed), mux journal open (session.attached
+     * + the unavailable frame), then the rendered reads — facade live first, then the app
      * mount, the REAL boot-progression facts beyond "Loading plugins…". The
      * result JSON lands via dshProbe.post (the JS interface below). */
-    fun probeScript(comboURL: String): String = """
+    private val PROBE_TEMPLATE = """
         window.__b1Run = async () => {
           const out = {};
           const waitFor = async (condition, deadlineMs) => {
@@ -39,7 +42,7 @@ object OfficialWebProbe {
             }
             return condition();
           };
-          const combo = await fetch('$comboURL', {credentials: 'same-origin'});
+          const combo = await fetch('__COMBO_URL__', {credentials: 'same-origin'});
           out.combo = combo.ok ? (combo.headers.get('content-type') || 'no-type') : 'http-' + combo.status;
           const ws = await new Promise((resolve, reject) => {
             const ws = new WebSocket('ws://' + location.host + '/api/remote.mux');
@@ -85,6 +88,11 @@ object OfficialWebProbe {
         };
         'defined';
     """.trimIndent()
+
+    /** Defines `__b1Run` on the page. */
+    fun probeScript(comboURL: String): String =
+        PROBE_TEMPLATE.replace("__COMBO_URL__", comboURL)
+
 
     /** Evaluates one script on the page (UI thread required by the WebView). */
     fun evaluate(webView: WebView, script: String) {
