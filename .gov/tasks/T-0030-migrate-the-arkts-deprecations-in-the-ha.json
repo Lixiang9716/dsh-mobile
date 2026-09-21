@@ -9,11 +9,11 @@
     }
   },
   "checklist": [
-    "Inventory every ArkTS WARN site in hosts/harmony entry src main ets: notification, NOTIFICATION_CONTENT_BASIC_TEXT, ContentType, Function may throw exceptions, and the three system capacity warnings for createMd createRandom generateRandomSync",
-    "Migrate the notification path to the non-deprecated API; add explicit handling where the checker demands it",
-    "dev/harmonyos compiles clean of ArkTS warnings (the CI build compiles every .ets)",
-    "Battery: m5.host-binding 27/27 on a real emulator, because the migrated paths are exercised end to end only there",
-    "Re-run dev/ios and dev/android so the shared C host change is covered"
+    "[x] Inventory every ArkTS WARN site in hosts/harmony entry src main ets: notification, NOTIFICATION_CONTENT_BASIC_TEXT, ContentType, Function may throw exceptions, and the three system capacity warnings for createMd createRandom generateRandomSync",
+    "[x] Migrate the notification path to the non-deprecated API; add explicit handling where the checker demands it",
+    "[x] dev/harmonyos compiles clean of ArkTS warnings (the CI build compiles every .ets)",
+    "[x] Battery: m5.host-binding 27/27 on a real emulator, because the migrated paths are exercised end to end only there",
+    "[x] Re-run dev/ios and dev/android so the shared C host change is covered"
   ],
   "status": "open",
   "receipt": null,
