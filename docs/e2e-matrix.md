@@ -450,6 +450,9 @@ a fixture tree with a violation, assert the run goes red, list the gap in a
 register, assert the same run goes green.
 
 (The command resolves `node` through the PATH of whoever runs the gates: the
-CI runner's default node is on it — `.github/workflows/dev-ios.yml` already
-runs the checkers with a bare `node` and no setup step — and the host
-runners fail loud when it is not, per rule 5.)
+macOS runner (`dev-ios.yml`) runs the checkers with a bare `node` and no
+setup step, and on the ubuntu runner `gov.yml` uses, the ambient node is the
+one `dev-android.yml` records — "the runner's default node carries an older
+corepack", present but old enough that the platform builds pin their own.
+A gate whose command cannot be resolved fails loud as `MISSING` rather than
+passing silently, so the wiring is safe either way per rule 5.)

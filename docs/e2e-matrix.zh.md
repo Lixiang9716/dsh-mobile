@@ -407,6 +407,9 @@ gov verify-plane --write     # 接受 gates.json 差异的那次仪式
 检查器的 `--self-test`（18 条断言）就是这样一个用例可以包裹的断言集：构造一棵
 含违规的 fixture 树，断言运行变红；把该缺口列入登记表，断言同一次运行转绿。
 
-（该命令按运行者的 PATH 解析 `node`：CI runner 的默认 node 就在 PATH 上——
-`.github/workflows/dev-ios.yml` 早已用裸 `node` 运行这些 checker 且无 setup
-步骤——而各主机 runner 在 node 缺失时会大声失败，符合规则 5。）
+（该命令按运行者的 PATH 解析 `node`：macOS runner（`dev-ios.yml`）早已用裸
+`node` 运行这些 checker 且无 setup 步骤；而在 `gov.yml` 使用的 ubuntu runner
+上，环境里的 node 即 `dev-android.yml` 记录的那个——"the runner's default node
+carries an older corepack"，存在但旧到值得平台构建各自 pin 一个。命令无法解析
+时门禁会以 `MISSING` 大声失败、而非静默通过，因此在两种情况下接线都安全，
+符合规则 5。）
