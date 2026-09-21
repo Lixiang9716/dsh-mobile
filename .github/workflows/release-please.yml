@@ -6,18 +6,36 @@ name: release/please
 # what cuts a release: a `vX.Y.Z` tag plus a GitHub Release, which is the
 # event `release.yml` then builds the three host packages for and attaches.
 #
-# WHY A PAT AND NOT secrets.GITHUB_TOKEN
-# Events created by GITHUB_TOKEN do not trigger workflows. `main` requires the
-# `gates` check, so a release PR opened with GITHUB_TOKEN would never receive
-# that check and could never be merged through normal review — the pipeline
-# would be dead on arrival. The workflow therefore requires a token that does
-# trigger events (a fine-grained PAT, or a GitHub App installation token) and
-# FAILS LOUD when it is absent rather than degrading to the broken path
-# (rules.md rule 5). Setup is documented in docs/release.md.
+# WHY secrets.GITHUB_TOKEN, AND NO PAT
+# Events created by GITHUB_TOKEN do not trigger workflows, and `main` requires
+# the `gates` check — so a release PR opened with GITHUB_TOKEN receives no
+# check and could never be merged through normal review. That is why this
+# workflow used to demand a fine-grained PAT.
+#
+# But `workflow_dispatch` is a documented EXCEPTION to the suppression rule, so
+# the check can be produced without any long-lived credential: the last step
+# runs the `gov` workflow on the release branch explicitly, and its `gates`
+# check lands on the same commit `main` protection asks about. That is a real
+# gate run on the real commit — nothing is bypassed, and nothing is fabricated
+# through the Checks API.
+#
+# The PAT it replaces had become the pipeline's single point of failure: a
+# fine-grained PAT that authenticates and carries `contents: write` but not
+# `pull requests: write` gets release-please all the way to its final API call
+# and then dies there, leaving the version stream dead for days (live case:
+# runs 35589125560 / 35597056914). A credential this workflow no longer needs
+# cannot be misconfigured.
+#
+# WHAT IS GIVEN UP: the three platform pipelines (`dev/ios`, `dev/android`,
+# `dev/harmonyos`) also do not run on the release PR, since a PAT's events
+# were the only thing that would have started them. A release PR changes only
+# version numbers in those hosts, and `release/packages` builds and verifies
+# all three on the `release: published` event regardless — so the loss is a
+# preview, not a verification.
 #
 # The trigger is `push: main` only: release-please derives every state
 # transition from what already landed. `workflow_dispatch` exists for recovery
-# — re-running after the secret is first configured, or after a failure.
+# — re-running after a failure, or after the first release PR is opened.
 
 on:
   push:
@@ -35,78 +53,42 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  # Only used by the last step, to dispatch the `gov` workflow at the release
+  # branch. Without it the dispatch is refused and the release PR would sit
+  # with an unproduced required check.
+  actions: write
 
 jobs:
   release-please:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Require the release token
-        env:
-          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-        run: |
-          if [ -z "$TOKEN" ]; then
-            echo "::error::RELEASE_PLEASE_TOKEN is not set — the release PR cannot be opened with the token that would make it mergeable. Add a fine-grained PAT (contents: write + pull requests: write on this repository, plus issues: write for the autorelease label — or set skip-labeling: true) as the RELEASE_PLEASE_TOKEN secret. secrets.GITHUB_TOKEN is NOT a substitute: its events do not trigger workflows, so the release PR would never get the required 'gates' check."
-            exit 1
-          fi
-
-      - name: Verify the release token authenticates
-        # `-z` above catches an EMPTY secret, not a useless one, and the action
-        # only says "Bad credentials" from deep inside its own run. A token
-        # pasted into the secret field with a trailing newline, an expired or
-        # revoked PAT, and a truncated paste are indistinguishable from there.
-        # Probe the credential here, where the message can name the real cause.
-        env:
-          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-        run: |
-          set -euo pipefail
-          code=$(curl -sS -o /dev/null -w '%{http_code}' \
-            -H "Authorization: Bearer $TOKEN" https://api.github.com/user) || code=000
-          if [ "$code" != "200" ]; then
-            echo "::error::RELEASE_PLEASE_TOKEN does not authenticate (HTTP $code from GET /user). A trailing newline or space pasted with the value, an expired/revoked PAT, and a truncated paste all look exactly like this. Re-set it without trailing whitespace: gh secret set RELEASE_PLEASE_TOKEN --body \"\$TOKEN\""
-            exit 1
-          fi
-          echo "release token authenticates (HTTP 200)"
-
-      - name: Verify the release token can open a pull request
-        # Authenticating is not the same as being ALLOWED to open a PR. A PAT
-        # carrying contents: write but not pull requests: write passes the
-        # probe above, lets the action create its branch and commit, and then
-        # dies at POST /pulls with "Resource not accessible by personal access
-        # token" — which names neither the missing permission nor the fix
-        # (live case: run 35589125560 on main). So probe the write itself.
-        #
-        # POST /pulls with an EMPTY body is a validation error (422) for a
-        # token that may open PRs, and it creates nothing — 422 is the pass
-        # condition. A token that may not gets 403/404. Verified against a
-        # real token before wiring: HTTP 422, no PR created.
-        env:
-          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-        run: |
-          set -euo pipefail
-          hdr=$(mktemp)
-          code=$(curl -sS -o /dev/null -D "$hdr" -w '%{http_code}' -X POST \
-            -H "Authorization: Bearer $TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls" \
-            -d '{}') || code=000
-          if [ "$code" = "422" ]; then
-            echo "release token may open pull requests (HTTP 422 = validation error, nothing created)"
-            exit 0
-          fi
-          accepted=$(grep -i '^x-accepted-github-permissions:' "$hdr" | tr -d '\r' || true)
-          case "$code" in
-            401|000)
-              echo "::error::RELEASE_PLEASE_TOKEN could not be used at all (HTTP $code from POST /pulls). That is a credential problem, not a permission one — see the authentication probe above (re-set the secret without trailing whitespace: gh secret set RELEASE_PLEASE_TOKEN --body \"\$TOKEN\")."
-              ;;
-            *)
-              echo "::error::RELEASE_PLEASE_TOKEN cannot open a pull request (HTTP $code from POST /pulls)${accepted:+ — api says: $accepted}. The token AUTHENTICATES, so contents: write is probably already granted; the release PR needs pull requests: write as well (and issues: write for the autorelease label, or set skip-labeling: true on the action). Edit the fine-grained PAT's repository permissions at https://github.com/settings/personal-access-tokens — adding a permission does not change the token's value, so the secret needs no re-set."
-              ;;
-          esac
-          exit 1
-
       - uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      - name: Give the release PR its required gates check
+        # See "WHY secrets.GITHUB_TOKEN" above: the PR this run just opened or
+        # updated will never receive a `pull_request` event, so the required
+        # `gates` check has to be produced by an explicit dispatch. A failed
+        # dispatch fails this job — a release PR that cannot be merged is a
+        # breakage to announce, not to leave sitting (rules.md rule 5).
+        #
+        # No wait on the dispatched run: the check on the PR IS the
+        # enforcement, and waiting here would only duplicate it.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          branch=$(gh pr list --state open --limit 100 --json headRefName \
+            --jq '.[] | select(.headRefName | startswith("release-please--")) | .headRefName' \
+            | head -1)
+          if [ -z "$branch" ]; then
+            echo "no open release PR — nothing to check"
+            exit 0
+          fi
+          echo "release PR branch: $branch"
+          gh workflow run gov.yml --ref "$branch"
+          echo "dispatched the gov workflow on $branch"

@@ -1,6 +1,7 @@
 # Agent Note: the release token probe tests the write, and the status docs are reconciled to the tree
 
 Status: implemented
+Superseded by: 2026-09-21-the-release-pr-gets-its-required-check-b.md — the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.
 Related: D10
 
 ## Problem
