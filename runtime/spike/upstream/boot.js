@@ -25,6 +25,7 @@
  */
 import './web-shims.js';
 import process from 'node:process';
+import { releaseKeeps } from 'logger.js';
 import { Context } from '@deepseek-ai/cordis';
 import { SessionStore } from '@deepseek-ai/dsh-session';
 import { AgentRegistry } from '@deepseek-ai/dsh-agent';
@@ -38,13 +39,21 @@ import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 
 /** cordis logger records ride the unified sink as diagnostics (module prefix
  * distinguishes them from scenario events; they carry no scenario tag, so the
- * E2E checker's one-to-one match ignores them). */
-const wireLogger = (ctx) => {
+ * E2E checker's one-to-one match ignores them).
+ *
+ * These records are stripped under the logger's release policy, through the
+ * SAME releaseKeeps() the forwarding console uses: a release build keeps the
+ * critical set (mapped type → warn/error) and drops the debug/info stream.
+ * Exported so the release-logging evidence can drive this route (the sink
+ * probe wires it to a real cordis Context) without booting the whole spine. */
+export const wireLogger = (ctx) => {
   ctx.logger.exporter({
     levels: { default: 4 },
     export: ({ name, type, args }) => {
+      const level = type === 'success' || type === 'info' ? 'info' : type;
+      if (!releaseKeeps(level)) return;
       globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
-        level: type === 'success' || type === 'info' ? 'info' : type,
+        level,
         module: `cordis:${name ?? 'root'}`,
         message: args.map((a) => {
           if (typeof a === 'string') return a;

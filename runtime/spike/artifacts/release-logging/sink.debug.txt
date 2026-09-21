@@ -1,0 +1,15 @@
+dsh.spike.log: {"level":"debug","module":"probe.sink","message":"logger-debug","data":[]}
+dsh.spike.log: {"level":"info","module":"probe.sink","message":"logger-info","data":[]}
+dsh.spike.log: {"level":"warn","module":"probe.sink","message":"logger-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"probe.sink","message":"logger-error","data":[]}
+dsh.spike.log: {"level":"info","module":"upstream.console","message":"console-log","data":[]}
+dsh.spike.log: {"level":"info","module":"upstream.console","message":"console-info","data":[]}
+dsh.spike.log: {"level":"debug","module":"upstream.console","message":"console-debug","data":[]}
+dsh.spike.log: {"level":"warn","module":"upstream.console","message":"console-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"upstream.console","message":"console-error","data":[]}
+dsh.spike.log: {"level":"debug","module":"cordis:probe.boot","message":"cordis-debug","data":[]}
+dsh.spike.log: {"level":"info","module":"cordis:probe.boot","message":"cordis-info","data":[]}
+dsh.spike.log: {"level":"warn","module":"cordis:probe.boot","message":"cordis-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"cordis:probe.boot","message":"cordis-error","data":[]}
+dsh.spike.log: {"level":"warn","module":"probe.sink.verdict","message":"every sink route agrees with the release policy (debug build)","data":[{"release":false,"perRoute":"logger=4 console=5 cordis=4","total":13}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}

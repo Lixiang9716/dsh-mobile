@@ -20,7 +20,15 @@
  *                                 NOT supported by the spike runtime, fails loud).
  *   - console                   — backstop only; boot.js routes cordis logger
  *                                 output into the unified sink. Forwards into
- *                                 __DSH_LOG_SINK__ (rule 5: no bare console output).
+ *                                 __DSH_LOG_SINK__ (rule 5: no bare console
+ *                                 output) under the SAME release policy as the
+ *                                 logger: runtime/spike/logger.js owns which
+ *                                 levels a release build keeps, and this route
+ *                                 honors it instead of writing unconditionally.
+ *                                 The level mapping is unchanged (log/info →
+ *                                 info, debug/trace → debug, warn → warn,
+ *                                 error → error): a release build drops the
+ *                                 stripped levels, never warn/error.
  *   - queueMicrotask            — re-wrapped so async-hooks-shim context
  *                                 propagation applies to raw microtask callbacks.
  *   - Buffer                    — the web-boot closure (@deepseek-ai/dsh-
@@ -42,7 +50,15 @@
  */
 import { DshBuffer } from 'upstream/shims/buffer.js';
 import { DshURL } from 'upstream/shims/url.js';
+import { releaseKeeps } from 'logger.js';
+
+/** The forwarder every console method rides. The release strip is applied
+ * HERE, through the logger's shared policy — not by a copy of the flag — so a
+ * release build cannot keep this route live while createLogger folds away.
+ * The gate is on the level, not on the method: warn/error always reach the
+ * sink (a distribution build keeps the critical set), debug/info are dropped. */
 const sink = (level, args) => {
+  if (!releaseKeeps(level)) return;
   globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
     level,
     module: 'upstream.console',

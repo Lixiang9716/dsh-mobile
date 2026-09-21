@@ -1,0 +1,42 @@
+# Rule-6 rejection proof: the sink assertions CAN fail. Two independent
+# captures, both on the RELEASE build.
+#
+# (a) the PRE-FIX emitters (revision d8fc7d4) — the hole this change
+#     closes. The console route alone leaks 2x "info" + 1x "debug"
+#     (console.log and console.info both map to level info), and the
+#     cordis exporter route leaks all four: the strip held only while
+#     upstream stayed quiet, never because the flag said so.
+#     Reproduce (scratch root = this tree with the three emitters reverted):
+#       rm -rf /tmp/prefix-spike && cp -R runtime/spike /tmp/prefix-spike
+#       git show d8fc7d4:runtime/spike/logger.js > /tmp/prefix-spike/logger.js
+#       git show d8fc7d4:runtime/spike/upstream/web-shims.js > /tmp/prefix-spike/upstream/web-shims.js
+#       git show d8fc7d4:runtime/spike/upstream/boot.js > /tmp/prefix-spike/upstream/boot.js
+#       sed 's/^const wireLogger/export const wireLogger/' \
+#         /tmp/prefix-spike/upstream/boot.js > /tmp/prefix-spike/upstream/boot-probe.js
+#       # + the two sink-route-repro*.js entries under that root's probe/ dir
+#       ./build/dsh-spike-cli-release /tmp/prefix-spike artifacts/release-logging/probe/sink-route-repro.js
+#       ./build/dsh-spike-cli-release /tmp/prefix-spike artifacts/release-logging/probe/sink-route-repro-boot.js
+#
+# (b) the CURRENT tree with ONE gate deleted (boot.js's releaseKeeps call),
+#     run through run.sh: exit 1, and the probe's own verdict record names
+#     the offending route and level. Reproduce: delete that line, run
+#     runtime/spike/artifacts/release-logging/run.sh, read the FAIL line.
+
+===== (a) pre-fix forwarding console, RELEASE =====
+dsh.spike.log: {"level":"info","module":"upstream.console","message":"console-log","data":[]}
+dsh.spike.log: {"level":"info","module":"upstream.console","message":"console-info","data":[]}
+dsh.spike.log: {"level":"debug","module":"upstream.console","message":"console-debug","data":[]}
+dsh.spike.log: {"level":"warn","module":"upstream.console","message":"console-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"upstream.console","message":"console-error","data":[]}
+spike: PASS (complete=1 pass=1)
+
+===== (a) pre-fix cordis logger exporter, RELEASE =====
+dsh.spike.log: {"level":"debug","module":"cordis:probe.boot","message":"cordis-debug","data":[]}
+dsh.spike.log: {"level":"info","module":"cordis:probe.boot","message":"cordis-info","data":[]}
+dsh.spike.log: {"level":"warn","module":"cordis:probe.boot","message":"cordis-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"cordis:probe.boot","message":"cordis-error","data":[]}
+spike: PASS (complete=1 pass=1)
+
+===== (b) boot.js gate deleted, run.sh (stderr, build noise stripped) =====
+FAIL: the sink probe failed in sink.release.txt — the routes are not all stripped:
+dsh.spike.log: {"level":"error","module":"probe.sink.verdict","message":"sink probe FAILED: cordis: \"debug\" expected 0, saw 1 | cordis: \"info\" expected 0, saw 1","data":[{"release":true}]}

@@ -1,0 +1,9 @@
+dsh.spike.log: {"level":"warn","module":"probe.sink","message":"logger-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"probe.sink","message":"logger-error","data":[]}
+dsh.spike.log: {"level":"warn","module":"upstream.console","message":"console-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"upstream.console","message":"console-error","data":[]}
+dsh.spike.log: {"level":"debug","module":"cordis:probe.boot","message":"cordis-debug","data":[]}
+dsh.spike.log: {"level":"info","module":"cordis:probe.boot","message":"cordis-info","data":[]}
+dsh.spike.log: {"level":"warn","module":"cordis:probe.boot","message":"cordis-warn","data":[]}
+dsh.spike.log: {"level":"error","module":"cordis:probe.boot","message":"cordis-error","data":[]}
+dsh.spike.log: {"level":"error","module":"probe.sink.verdict","message":"sink probe FAILED: cordis: \"debug\" expected 0, saw 1 | cordis: \"info\" expected 0, saw 1","data":[{"release":true}]}

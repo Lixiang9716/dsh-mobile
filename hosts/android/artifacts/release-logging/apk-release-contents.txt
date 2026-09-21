@@ -1,6 +1,6 @@
 # release.yml ships hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
--rw-r--r--@ 1 lixiang  staff  7821047 Sep 21 14:55 /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/build/outputs/apk/debug/app-debug.apk
--rw-r--r--@ 1 lixiang  staff  6542183 Sep 21 14:52 /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+-rw-r--r--@ 1 lixiang  staff  7822379 Sep 21 15:36 /Users/lixiang/workspace/dsh-mobile-rel-sink/hosts/android/app/build/outputs/apk/debug/app-debug.apk
+-rw-r--r--@ 1 lixiang  staff  6543439 Sep 21 15:35 /Users/lixiang/workspace/dsh-mobile-rel-sink/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
 
 ## the shipped release APK is UNSIGNED (expected: DOES NOT VERIFY)
 DOES NOT VERIFY
@@ -11,5 +11,5 @@ assets/official-web entries:   89
 assets/web-plugins entries:    129
 assets/spike entries:          254
       678  01-01-1981 01:01   assets/official-web/dist/index.html
-     1387  01-01-1981 01:01   assets/spike/logger.js
+     2929  01-01-1981 01:01   assets/spike/logger.js
      3837  01-01-1981 01:01   assets/spike/scenario/b-android-web-live.js

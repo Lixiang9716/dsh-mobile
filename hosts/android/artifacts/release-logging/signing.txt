@@ -3,7 +3,7 @@
 # signed APK, so a COPY was signed with ~/.android/debug.keystore:
 #   apksigner sign --ks ~/.android/debug.keystore --ks-pass pass:android \
 #     --key-pass pass:android --ks-key-alias androiddebugkey \
-#     --out /tmp/dsh-release-verify/app-release-verify-signed.apk /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+#     --out /tmp/dsh-release-verify/app-release-verify-signed.apk /Users/lixiang/workspace/dsh-mobile-rel-sink/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
 Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
 Signer #1 certificate SHA-256 digest: c6d58f9ff185ef6556b400d69ea4c58ccd00cb509417e3b35f39c77403e848fd
 Signer #1 certificate SHA-1 digest: e6bc3c9d08e77cf5c85922bdf189817c56bba6e3

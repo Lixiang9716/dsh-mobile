@@ -1,283 +1,278 @@
 --------- beginning of main
-09-21 14:59:39.170   356   356 I Zygote  : Process 2879 exited due to signal 9 (Killed)
-09-21 14:59:39.174   545   581 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10154/pid_2879
-09-21 14:59:39.175   545   581 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_99003/pid_2905
+09-21 15:40:45.809  1199  1199 D StatsLog: LAUNCHER_ONRESUME
+09-21 15:40:45.812  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=60, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher }
 --------- beginning of system
-09-21 14:59:39.218   545   727 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_RESTARTED on user 0
-09-21 14:59:39.218   545   727 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10154 package com.dshmobile.spike isStopped true
-09-21 14:59:39.219   906   906 D CarrierSvcBindHelper: onHandleForceStop: [com.dshmobile.spike]
-09-21 14:59:39.222  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=60, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher }
-09-21 14:59:39.223  1199  1199 D StatsLog: LAUNCHER_ONRESUME
-09-21 14:59:39.224   906   906 D CarrierSvcBindHelper: No carrier app for: 0
-09-21 14:59:39.239   785   794 V WindowManagerShell: onTransitionReady(transaction=2340757177141)
-09-21 14:59:39.239   785   818 V WindowManagerShell: onTransitionReady (#20) android.os.BinderProxy@2ce2316: {id=20 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@373b6f0} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xb6fb684 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@7a23469} m=CLOSE f=NONE leash=Surface(name=Task=68)/@0x6451e6d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0x15aa2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
-09-21 14:59:39.239   785   818 V WindowManagerShell: Playing animation for (#20) android.os.BinderProxy@2ce2316@0
-09-21 14:59:39.239   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
-09-21 14:59:39.239   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
-09-21 14:59:39.239   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
-09-21 14:59:39.239   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
-09-21 14:59:39.242   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
-09-21 14:59:39.243   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
-09-21 14:59:39.243   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
-09-21 14:59:39.243   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
-09-21 14:59:39.243   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=20 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@373b6f0} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xb6fb684 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@7a23469} m=CLOSE f=NONE leash=Surface(name=Task=68)/@0x6451e6d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0x15aa2 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
-09-21 14:59:39.243   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.243   785   818 D RemoteTransitionHandler: Found filterPair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.243   785   818 V WindowManagerShell:  Delegate animation for (#20) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }
-09-21 14:59:39.255  1199  1199 D StateManager: createAtomicAnimation - fromState: Background, toState: Normal, partial trace:
-09-21 14:59:39.255  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.prepareToAnimate(WorkspaceRevealAnim.java:130)
-09-21 14:59:39.255  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.<init>(WorkspaceRevealAnim.java:66)
-09-21 14:59:39.255  1199  1199 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(QuickstepTransitionManager.java:1716)
-09-21 14:59:39.256   545   568 V WindowManager: Sent Transition (#20) createdAt=09-21 14:59:39.079 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=68 displayId=0 isRunning=false baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=0 lastActiveTime=1049053 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{d9ed1df Task{2eb8622 #68 type=standard A=10154:com.dshmobile.spike}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 20 }
-09-21 14:59:39.258   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
-09-21 14:59:39.258   545   568 V WindowManager:     info={id=20 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[
-09-21 14:59:39.258   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
-09-21 14:59:39.258   545   568 V WindowManager:         {WCT{RemoteToken{d9ed1df Task{2eb8622 #68 type=standard A=10154:com.dshmobile.spike}}} m=CLOSE f=NONE leash=Surface(name=Task=68)/@0xfdbb083 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
-09-21 14:59:39.258   545   568 V WindowManager:         {null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0xcbedb54 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}
-09-21 14:59:39.258   545   568 V WindowManager:     ]}
-09-21 14:59:39.264   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
-09-21 14:59:39.264   545   665 I ImeTracker: com.android.launcher3:ddba56e2: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
-09-21 14:59:39.264   545   665 I ImeTracker: com.android.launcher3:ddba56e2: onCancelled at PHASE_SERVER_SHOULD_HIDE
-09-21 14:59:39.267   545   563 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.268   545   572 W ActivityTaskManager: Unable to send transaction to client proc com.dshmobile.spike: no app thread
-09-21 14:59:39.328   545   563 W ActivityTaskManager: callingPackage for (uid=2000, pid=3034) has no WPC
-09-21 14:59:39.328   545   563 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE
-09-21 14:59:39.329   545   563 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10154, packageName = null, attributionTag = null, token = android.os.Binder@eb157fd, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
-09-21 14:59:39.330   545   563 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
-09-21 14:59:39.330   545   563 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
-09-21 14:59:39.332  1199  1363 D EGL_emulation: app_time_stats: avg=6786.27ms min=5.04ms max=33659.43ms count=5
-09-21 14:59:39.333   379   467 I RanchuHwc: logCompositionFallbackIfChanged: layer 41 CompositionType fallback from 2 to 1
-09-21 14:59:39.333   379   467 I RanchuHwc: logCompositionFallbackIfChanged: layer 42 CompositionType fallback from 2 to 1
-09-21 14:59:39.342   545   563 V SplashScreenExceptionList: SplashScreen checking exception for package com.dshmobile.spike (target sdk:35) -> false
-09-21 14:59:39.353   545   563 I ActivityTaskManager: Add Task{2eb8622 #68 type=standard A=10154:com.dshmobile.spike} to hidden list because adding Task{7b5045b #69 type=standard A=10154:com.dshmobile.spike}
-09-21 14:59:39.354   545  1347 D CompatChangeReporter: Compat change id reported: 309578419; UID 10154; state: ENABLED
-09-21 14:59:39.355   545   563 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity (has extras)} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
-09-21 14:59:39.358   785   862 D SplashScreenView: Build android.window.SplashScreenView{7179bfa V.E...... ......ID 0,0-0,0}
-09-21 14:59:39.358   785   862 D SplashScreenView: Icon: view: android.widget.ImageView{3efc5ab V.ED..... ......I. 0,0-0,0 #1020504 android:id/splashscreen_icon_view} drawable: com.android.wm.shell.startingsurface.SplashscreenIconDrawableFactory$ImmobileIconDrawable@8937408 size: 420
-09-21 14:59:39.358   785   862 D SplashScreenView: Branding: view: android.view.View{a5307a1 G.ED..... ......I. 0,0-0,0 #1020503 android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
-09-21 14:59:39.366   785   818 V WindowManagerShell: Transition requested (#21): android.os.BinderProxy@6efc8b4 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=69 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} topActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=1 lastActiveTime=1083929 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@2777cdd} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 136 - 0, 0) topActivityInfo=ActivityInfo{4d9b052 com.dshmobile.spike.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=1080 topActivityLetterboxHeight=2400 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 21 }
-09-21 14:59:39.368   545   571 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10154, packageName = null, attributionTag = null, token = android.os.Binder@eb157fd, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
-09-21 14:59:39.394   545   563 D CoreBackPreview: Window{ab58b37 u0 Splash Screen com.dshmobile.spike}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@576f9c2, mPriority=0, mIsAnimationCallback=false}
+09-21 15:40:45.829   785   794 V WindowManagerShell: onTransitionReady(transaction=2340757177391)
+09-21 15:40:45.829   785   818 V WindowManagerShell: onTransitionReady (#28) android.os.BinderProxy@a3496f1: {id=28 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@98978b0} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xb8dc44 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@a6e3329} m=CLOSE f=NONE leash=Surface(name=Task=72)/@0x26ab12d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0xf375662 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+09-21 15:40:45.829   785   818 V WindowManagerShell: Playing animation for (#28) android.os.BinderProxy@a3496f1@0
+09-21 15:40:45.829   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
+09-21 15:40:45.831   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
+09-21 15:40:45.831   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
+09-21 15:40:45.831   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=28 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@98978b0} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xb8dc44 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@a6e3329} m=CLOSE f=NONE leash=Surface(name=Task=72)/@0x26ab12d sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0xf375662 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}]}
+09-21 15:40:45.831   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
+09-21 15:40:45.831   785   818 D RemoteTransitionHandler: Found filterPair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
+09-21 15:40:45.831   785   818 V WindowManagerShell:  Delegate animation for (#28) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }
+09-21 15:40:45.845  1199  1199 D StateManager: createAtomicAnimation - fromState: Background, toState: Normal, partial trace:
+09-21 15:40:45.845  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.prepareToAnimate(WorkspaceRevealAnim.java:130)
+09-21 15:40:45.845  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.<init>(WorkspaceRevealAnim.java:66)
+09-21 15:40:45.845  1199  1199 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(QuickstepTransitionManager.java:1716)
+09-21 15:40:45.852   545   568 V WindowManager: Sent Transition (#28) createdAt=09-21 15:40:45.650 via request=TransitionRequestInfo { type = CLOSE, triggerTask = TaskInfo{userId=0 taskId=72 displayId=0 isRunning=false baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=null topActivity=null origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=0 lastActiveTime=3521373 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{5294b47 Task{afee881 #72 type=standard A=10157:com.dshmobile.spike}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=null topActivityInfo=null launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=true isVisible=true isVisibleRequested=true isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=-1 topActivityLetterboxHeight=-1 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 28 }
+09-21 15:40:45.852   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+09-21 15:40:45.853   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
+09-21 15:40:45.857   545   568 V WindowManager:     info={id=28 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[
+09-21 15:40:45.857   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+09-21 15:40:45.857   545   568 V WindowManager:         {WCT{RemoteToken{5294b47 Task{afee881 #72 type=standard A=10157:com.dshmobile.spike}}} m=CLOSE f=NONE leash=Surface(name=Task=72)/@0xaf6bb61 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+09-21 15:40:45.857   545   568 V WindowManager:         {null m=TO_FRONT f=IS_WALLPAPER leash=Surface(name=WallpaperWindowToken{2be11ed token=android.os.Binder@62e4804})/@0xcbedb54 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0}
+09-21 15:40:45.857   545   568 V WindowManager:     ]}
+09-21 15:40:45.867   545   919 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:45.930  1199  1363 D EGL_emulation: app_time_stats: avg=1915.34ms min=1.83ms max=28393.67ms count=15
+09-21 15:40:45.932  1199  1203 I droid.launcher3: NativeAlloc concurrent mark compact GC freed 1841KB AllocSpace bytes, 10(812KB) LOS objects, 49% free, 5533KB/10MB, paused 915us,6.005ms total 71.057ms
+09-21 15:40:45.933  1199  1203 W droid.launcher3: Reducing the number of considered missed Gc histogram windows from 247 to 100
+09-21 15:40:45.934   379  3524 I RanchuHwc: logCompositionFallbackIfChanged: layer 55 CompositionType fallback from 2 to 1
+09-21 15:40:45.934   379  3524 I RanchuHwc: logCompositionFallbackIfChanged: layer 56 CompositionType fallback from 2 to 1
+09-21 15:40:45.976   545   665 I ImeTracker: com.android.launcher3:bc4a7042: onRequestHide at ORIGIN_SERVER reason HIDE_UNSPECIFIED_WINDOW fromUser false
+09-21 15:40:45.976   545   665 I ImeTracker: com.android.launcher3:bc4a7042: onCancelled at PHASE_SERVER_SHOULD_HIDE
+09-21 15:40:45.994   545   919 W ActivityTaskManager: callingPackage for (uid=2000, pid=3606) has no WPC
+09-21 15:40:45.995   545   919 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE
+09-21 15:40:45.996   545   919 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10157, packageName = null, attributionTag = null, token = android.os.Binder@eb157fd, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+09-21 15:40:45.996   545   919 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_RESIZEABLE_ACTIVITY_OVERRIDES
+09-21 15:40:45.996   545   919 W OptProp : Cannot read opt property android.window.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE
+09-21 15:40:46.011   545   919 V SplashScreenExceptionList: SplashScreen checking exception for package com.dshmobile.spike (target sdk:35) -> false
+09-21 15:40:46.018   545  1919 D CompatChangeReporter: Compat change id reported: 309578419; UID 10157; state: ENABLED
+09-21 15:40:46.019   785   862 D SplashScreenView: Build android.window.SplashScreenView{8194fba V.E...... ......ID 0,0-0,0}
+09-21 15:40:46.019   785   862 D SplashScreenView: Icon: view: android.widget.ImageView{cedce6b V.ED..... ......I. 0,0-0,0 #1020504 android:id/splashscreen_icon_view} drawable: com.android.wm.shell.startingsurface.SplashscreenIconDrawableFactory$ImmobileIconDrawable@7e7adc8 size: 420
+09-21 15:40:46.019   785   862 D SplashScreenView: Branding: view: android.view.View{5481e61 G.ED..... ......I. 0,0-0,0 #1020503 android:id/splashscreen_branding_view} drawable: null size w: 0 h: 0
+09-21 15:40:46.025   545   919 I ActivityTaskManager: Add Task{afee881 #72 type=standard A=10157:com.dshmobile.spike} to hidden list because adding Task{68d2ab #73 type=standard A=10157:com.dshmobile.spike}
+09-21 15:40:46.026   545   919 I ActivityTaskManager: START u0 {flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity (has extras)} with LAUNCH_SINGLE_TASK from uid 2000 (BAL_ALLOW_PERMISSION) result code=0
+09-21 15:40:46.035   785   818 V WindowManagerShell: Transition requested (#29): android.os.BinderProxy@eadde74 TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=73 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} topActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=1 lastActiveTime=3550600 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{android.window.IWindowContainerToken$Stub$Proxy@b873f9d} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 136 - 0, 0) topActivityInfo=ActivityInfo{e661c12 com.dshmobile.spike.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=1080 topActivityLetterboxHeight=2400 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 29 }
+09-21 15:40:46.040   545   572 W ActivityTaskManager: Unable to send transaction to client proc com.dshmobile.spike: no app thread
+09-21 15:40:46.044   545   571 V GrammaticalInflectionUtils: AttributionSource: AttributionSource { uid = 10157, packageName = null, attributionTag = null, token = android.os.Binder@eb157fd, deviceId = 0, next = null } does not have READ_SYSTEM_GRAMMATICAL_GENDER permission.
+09-21 15:40:46.114   356   356 D Zygote  : Forked child process 3612
+09-21 15:40:46.116   545   580 W ActivityManager: Slow operation: 72ms so far, now at startProcess: returned from zygote!
+09-21 15:40:46.116   545   580 W ActivityManager: Slow operation: 72ms so far, now at startProcess: done updating battery stats
+09-21 15:40:46.116   545   580 W ActivityManager: Slow operation: 72ms so far, now at startProcess: building log message
+09-21 15:40:46.116   545   580 I ActivityManager: Start proc 3612:com.dshmobile.spike/u0a157 for next-top-activity {com.dshmobile.spike/com.dshmobile.spike.MainActivity}
+09-21 15:40:46.116   545   580 W ActivityManager: Slow operation: 72ms so far, now at startProcess: starting to update pids map
 --------- beginning of kernel
-09-21 14:59:39.414   170   170 I logd    : logdr: UID=2000 GID=2000 PID=3038 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
-09-21 14:59:39.439   356   356 D Zygote  : Forked child process 3042
-09-21 14:59:39.439   545   580 W ActivityManager: Slow operation: 67ms so far, now at startProcess: returned from zygote!
-09-21 14:59:39.439   545   580 W ActivityManager: Slow operation: 68ms so far, now at startProcess: done updating battery stats
-09-21 14:59:39.439   545   580 W ActivityManager: Slow operation: 68ms so far, now at startProcess: building log message
-09-21 14:59:39.439   545   580 I ActivityManager: Start proc 3042:com.dshmobile.spike/u0a154 for next-top-activity {com.dshmobile.spike/com.dshmobile.spike.MainActivity}
-09-21 14:59:39.439   545   580 W ActivityManager: Slow operation: 68ms so far, now at startProcess: starting to update pids map
-09-21 14:59:39.439   545   580 W ActivityManager: Slow operation: 68ms so far, now at startProcess: done updating pids map
-09-21 14:59:39.457  3042  3042 I dshmobile.spike: Using CollectorTypeCMC GC.
-09-21 14:59:39.462  3042  3042 E dshmobile.spike: Not starting debugger since process cannot load the jdwp agent.
-09-21 14:59:39.475  3042  3042 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
-09-21 14:59:39.494  1199  1199 W SplitSelectStateCtor: Missing session instanceIds
-09-21 14:59:39.494  1199  1199 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
-09-21 14:59:39.496   785   818 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=false, height=294
-09-21 14:59:39.497   785  3037 V WindowManagerShell: onTransitionReady(transaction=2340757177160)
-09-21 14:59:39.498   785   818 V WindowManagerShell: onTransitionReady (#21) android.os.BinderProxy@6efc8b4: {id=21 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fc1b11} m=OPEN f=NONE leash=Surface(name=Task=69)/@0x28ef7aa sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8bce476} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xdd16f9b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
-09-21 14:59:39.498   785   818 V WindowManagerShell: Transition (#21) android.os.BinderProxy@6efc8b4@0 ready while (#20) android.os.BinderProxy@2ce2316@0 is still animating. Notify the animating transition in case they can be merged
-09-21 14:59:39.498  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=69, baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity }
-09-21 14:59:39.498   785   818 V WindowManagerShell:    Merge into remote: RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }
-09-21 14:59:39.503   545  1347 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.507   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#20) android.os.BinderProxy@2ce2316@0
-09-21 14:59:39.513   545  1347 E IPCThreadState: Binder transaction failure. id: 150173, BR_*: 29189, error: -22 (Invalid argument)
-09-21 14:59:39.513   545  1347 W ActivityManager: pid 545 system sent binder code 7 with flags 1 to frozen apps and got error -32
-09-21 14:59:39.514  1347  1347 I binder  : 1347:545 cannot find target node
-09-21 14:59:39.514  1347  1347 I binder  : 545:1347 transaction async to 0:0 failed 150173/29189/-22, size 64-0 line 3265
-09-21 14:59:39.514   545  1347 W WindowManager: Exception thrown during dispatchAppVisibility Window{7c87ab5 u0 com.dshmobile.spike/com.dshmobile.spike.MainActivity EXITING}
-09-21 14:59:39.514   545  1347 W WindowManager: android.os.DeadObjectException
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.os.BinderProxy.transactNative(Native Method)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.os.BinderProxy.transact(BinderProxy.java:586)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.view.IWindow$Stub$Proxy.dispatchAppVisibility(IWindow.java:553)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.WindowState.sendAppVisibilityToClients(WindowState.java:3253)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.WindowContainer.sendAppVisibilityToClients(WindowContainer.java:1289)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.WindowToken.setClientVisible(WindowToken.java:403)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.ActivityRecord.setClientVisible(ActivityRecord.java:7166)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.ActivityRecord.postApplyAnimation(ActivityRecord.java:5881)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.ActivityRecord.commitVisibility(ActivityRecord.java:5823)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.Transition.finishTransition(Transition.java:1286)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.TransitionController.finishTransition(TransitionController.java:937)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.WindowOrganizerController.finishTransition(WindowOrganizerController.java:494)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.window.IWindowOrganizerController$Stub.onTransact(IWindowOrganizerController.java:289)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at com.android.server.wm.WindowOrganizerController.onTransact(WindowOrganizerController.java:204)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.os.Binder.execTransactInternal(Binder.java:1505)
-09-21 14:59:39.514   545  1347 W WindowManager: 	at android.os.Binder.execTransact(Binder.java:1444)
-09-21 14:59:39.514   545  1347 W Process : Unable to open /proc/2879/status
-09-21 14:59:39.528  3042  3042 W ziparchive: Unable to open '/data/app/~~DQsL1ZjKviyNsteYnYXUwg==/com.dshmobile.spike-UNO46d_EVJRTj-RbkxJC4A==/base.dm': No such file or directory
-09-21 14:59:39.529  3042  3042 W ziparchive: Unable to open '/data/app/~~DQsL1ZjKviyNsteYnYXUwg==/com.dshmobile.spike-UNO46d_EVJRTj-RbkxJC4A==/base.dm': No such file or directory
-09-21 14:59:39.533   545   568 V WindowManager: Sent Transition (#21) createdAt=09-21 14:59:39.331 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=69 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} topActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=1 lastActiveTime=1083929 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{c735c28 Task{7b5045b #69 type=standard A=10154:com.dshmobile.spike}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 136 - 0, 0) topActivityInfo=ActivityInfo{2229d41 com.dshmobile.spike.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=1080 topActivityLetterboxHeight=2400 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 21 }
-09-21 14:59:39.533   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
-09-21 14:59:39.533   545   568 V WindowManager:     info={id=21 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[
-09-21 14:59:39.533   545   568 V WindowManager:         {WCT{RemoteToken{c735c28 Task{7b5045b #69 type=standard A=10154:com.dshmobile.spike}}} m=OPEN f=NONE leash=Surface(name=Task=69)/@0x4ab3b10 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
-09-21 14:59:39.533   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}
-09-21 14:59:39.533   545   568 V WindowManager:     ]}
-09-21 14:59:39.533   545   568 V WindowManager: Finish Transition (#20): created at 09-21 14:59:39.079 collect-started=0.989ms request-sent=1.427ms started=26.757ms ready=26.74ms sent=144.555ms finished=432.993ms
-09-21 14:59:39.541   545   727 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_UNSTOPPED on user 0
-09-21 14:59:39.541   545   727 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10154 package com.dshmobile.spike isStopped false
-09-21 14:59:39.576   785   818 V WindowManagerShell: Playing animation for (#21) android.os.BinderProxy@6efc8b4@0
-09-21 14:59:39.577   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
-09-21 14:59:39.578   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
-09-21 14:59:39.578   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
-09-21 14:59:39.578   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=21 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fc1b11} m=OPEN f=NONE leash=Surface(name=Task=69)/@0x28ef7aa sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8bce476} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xdd16f9b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
-09-21 14:59:39.579   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.579   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@5bf482e, appThread = android.app.IApplicationThread$Stub$Proxy@c03efcf, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.579   785   818 V WindowManagerShell:  Delegate animation for (#21) to null
-09-21 14:59:39.579   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@e8ad410
-09-21 14:59:39.579   785   818 V WindowManagerShell: start default transition animation, info = {id=21 t=OPEN f=0x0 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@1fc1b11} m=OPEN f=NONE leash=Surface(name=Task=69)/@0x28ef7aa sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@8bce476} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0xdd16f9b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
-09-21 14:59:39.579   785   818 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@f0ad202 animAttr=0x13 type=OPEN isEntrance=false
-09-21 14:59:39.580   785   818 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@3243713 animAttr=0x12 type=OPEN isEntrance=true
-09-21 14:59:39.581   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@e8ad410
-09-21 14:59:39.581   785   818 W Looper  : Slow dispatch took 74ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.RemoteTransitionHandler$1$$ExternalSyntheticLambda0@6de1b49 m=0
-09-21 14:59:39.612  3042  3042 D nativeloader: Configuring clns-7 for other apk /data/app/~~DQsL1ZjKviyNsteYnYXUwg==/com.dshmobile.spike-UNO46d_EVJRTj-RbkxJC4A==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~DQsL1ZjKviyNsteYnYXUwg==/com.dshmobile.spike-UNO46d_EVJRTj-RbkxJC4A==/lib/arm64:/data/app/~~DQsL1ZjKviyNsteYnYXUwg==/com.dshmobile.spike-UNO46d_EVJRTj-RbkxJC4A==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.dshmobile.spike
-09-21 14:59:39.613  3042  3042 D CompatChangeReporter: Compat change id reported: 202956589; UID 10154; state: ENABLED
-09-21 14:59:39.622  3042  3042 V GraphicsEnvironment: Currently set values for:
-09-21 14:59:39.622  3042  3042 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
-09-21 14:59:39.622  3042  3042 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
-09-21 14:59:39.622  3042  3042 V GraphicsEnvironment: Global.Settings values are invalid: number of packages: 0, number of values: 0
-09-21 14:59:39.622  3042  3042 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
-09-21 14:59:39.628   545  1003 D CompatChangeReporter: Compat change id reported: 324203798; UID 10154; state: ENABLED
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: Failed to execute the transaction: tId:-497368903 ClientTransaction{
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903   transactionItems=[
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903     LaunchActivityItem{activityToken=android.os.BinderProxy@b4e039c,intent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity (has extras) },ident=27584362,info=ActivityInfo{bfdadd2 com.dshmobile.spike.MainActivity},curConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.18 fontWeightAdjustment=0},overrideConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0},deviceId=0,referrer=com.android.shell,procState=2,state=null,persistentState=null,pendingResults=null,pendingNewIntents=null,sceneTransitionInfo=null,profilerInfo=null,assistToken=android.os.BinderProxy@5ab0907,shareableActivityToken=android.os.BinderProxy@8fd2a34,activityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 1080, 2400), taskFragmentBounds=Rect(0, 0 - 1080, 2400)}}
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903     ResumeActivityItem{mActivityToken=android.os.BinderProxy@b4e039c,procState=-1,updateProcState=false,isForward=true,shouldSendCompatFakeFocus=false}
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903     Target activity: com.dshmobile.spike.MainActivity
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903   ]
-09-21 14:59:39.646  3042  3042 E TransactionExecutor: tId:-497368903 }
-09-21 14:59:39.647  3042  3042 D AndroidRuntime: Shutting down VM
+09-21 15:40:46.095   170   170 I logd    : logdr: UID=2000 GID=2000 PID=3609 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
+09-21 15:40:46.119  3612  3612 I dshmobile.spike: Using CollectorTypeCMC GC.
+09-21 15:40:46.123  3612  3612 E dshmobile.spike: Not starting debugger since process cannot load the jdwp agent.
+09-21 15:40:46.136  3612  3612 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+09-21 15:40:46.144   545   580 W ActivityManager: Slow operation: 100ms so far, now at startProcess: done updating pids map
+09-21 15:40:46.145  1199  1199 W SplitSelectStateCtor: Missing session instanceIds
+09-21 15:40:46.145  1199  1199 D StatsLog: LAUNCHER_SPLIT_SELECTION_EXIT_INTERRUPTED
+09-21 15:40:46.146   785   818 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=false, height=294
+09-21 15:40:46.152   545   919 D CoreBackPreview: Window{7dfee87 u0 Splash Screen com.dshmobile.spike}: Setting back callback OnBackInvokedCallbackInfo{mCallback=android.window.IOnBackInvokedCallback$Stub$Proxy@cc2ec23, mPriority=0, mIsAnimationCallback=false}
+09-21 15:40:46.152   545   727 I AppWidgetServiceImpl: Received broadcast: android.intent.action.PACKAGE_UNSTOPPED on user 0
+09-21 15:40:46.152   545   727 I AppWidgetServiceImpl: Updating package stopped masked state for uid 10157 package com.dshmobile.spike isStopped false
+09-21 15:40:46.163  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=73, baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity }
+09-21 15:40:46.215  3612  3612 W ziparchive: Unable to open '/data/app/~~pMSkzOQuSzPOYYetXMTP8g==/com.dshmobile.spike-4uuI1RxrO5qKBTnL_ovV4A==/base.dm': No such file or directory
+09-21 15:40:46.215  3612  3612 W ziparchive: Unable to open '/data/app/~~pMSkzOQuSzPOYYetXMTP8g==/com.dshmobile.spike-4uuI1RxrO5qKBTnL_ovV4A==/base.dm': No such file or directory
+09-21 15:40:46.232   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#28) android.os.BinderProxy@a3496f1@0
+09-21 15:40:46.243   545   568 V WindowManager: Finish Transition (#28): created at 09-21 15:40:45.650 collect-started=0.115ms request-sent=1.016ms started=30.879ms ready=30.867ms sent=177.058ms finished=592.244ms
+09-21 15:40:46.259  3612  3612 D nativeloader: Configuring clns-7 for other apk /data/app/~~pMSkzOQuSzPOYYetXMTP8g==/com.dshmobile.spike-4uuI1RxrO5qKBTnL_ovV4A==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~pMSkzOQuSzPOYYetXMTP8g==/com.dshmobile.spike-4uuI1RxrO5qKBTnL_ovV4A==/lib/arm64:/data/app/~~pMSkzOQuSzPOYYetXMTP8g==/com.dshmobile.spike-4uuI1RxrO5qKBTnL_ovV4A==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.dshmobile.spike
+09-21 15:40:46.262  3612  3612 D CompatChangeReporter: Compat change id reported: 202956589; UID 10157; state: ENABLED
+09-21 15:40:46.263   545  1520 E IPCThreadState: Binder transaction failure. id: 330179, BR_*: 29189, error: -22 (Invalid argument)
+09-21 15:40:46.263   545  1520 W ActivityManager: pid 545 system sent binder code 7 with flags 1 to frozen apps and got error -32
+09-21 15:40:46.264   545  1520 W WindowManager: Exception thrown during dispatchAppVisibility Window{ef5cff7 u0 com.dshmobile.spike/com.dshmobile.spike.MainActivity EXITING}
+09-21 15:40:46.264   545  1520 W WindowManager: android.os.DeadObjectException
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.os.BinderProxy.transactNative(Native Method)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.os.BinderProxy.transact(BinderProxy.java:586)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.view.IWindow$Stub$Proxy.dispatchAppVisibility(IWindow.java:553)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.WindowState.sendAppVisibilityToClients(WindowState.java:3253)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.WindowContainer.sendAppVisibilityToClients(WindowContainer.java:1289)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.WindowToken.setClientVisible(WindowToken.java:403)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.ActivityRecord.setClientVisible(ActivityRecord.java:7166)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.ActivityRecord.postApplyAnimation(ActivityRecord.java:5881)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.ActivityRecord.commitVisibility(ActivityRecord.java:5823)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.Transition.finishTransition(Transition.java:1286)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.TransitionController.finishTransition(TransitionController.java:937)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.WindowOrganizerController.finishTransition(WindowOrganizerController.java:494)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.window.IWindowOrganizerController$Stub.onTransact(IWindowOrganizerController.java:289)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at com.android.server.wm.WindowOrganizerController.onTransact(WindowOrganizerController.java:204)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.os.Binder.execTransactInternal(Binder.java:1505)
+09-21 15:40:46.264   545  1520 W WindowManager: 	at android.os.Binder.execTransact(Binder.java:1444)
+09-21 15:40:46.264   545  1520 W Process : Unable to open /proc/3457/status
+09-21 15:40:46.265  1520  1520 I binder  : 1520:545 cannot find target node
+09-21 15:40:46.265  1520  1520 I binder  : 545:1520 transaction async to 0:0 failed 330179/29189/-22, size 64-0 line 3265
+09-21 15:40:46.283   785   818 V WindowManagerShell: Track 0 became idle
+09-21 15:40:46.283  3612  3612 V GraphicsEnvironment: Currently set values for:
+09-21 15:40:46.283  3612  3612 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+09-21 15:40:46.283  3612  3612 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+09-21 15:40:46.283  3612  3612 V GraphicsEnvironment: Global.Settings values are invalid: number of packages: 0, number of values: 0
+09-21 15:40:46.283   785   818 W Looper  : Slow dispatch took 51ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.RemoteTransitionHandler$1$$ExternalSyntheticLambda0@4451b6a m=0
+09-21 15:40:46.283  3612  3612 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+09-21 15:40:46.290   545   568 V WindowManager: Sent Transition (#29) createdAt=09-21 15:40:45.996 via request=TransitionRequestInfo { type = OPEN, triggerTask = TaskInfo{userId=0 taskId=73 displayId=0 isRunning=true baseIntent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity } baseActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} topActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} origActivity=null realActivity=ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity} numActivities=1 lastActiveTime=3550600 supportsMultiWindow=true resizeMode=1 isResizeable=true minWidth=-1 minHeight=-1 defaultMinSize=220 token=WCT{RemoteToken{d123c4d Task{68d2ab #73 type=standard A=10157:com.dshmobile.spike}}} topActivityType=1 pictureInPictureParams=null shouldDockBigOverlays=false launchIntoPipHostTaskId=-1 lastParentTaskIdBeforePip=-1 displayCutoutSafeInsets=Rect(0, 136 - 0, 0) topActivityInfo=ActivityInfo{fb15302 com.dshmobile.spike.MainActivity} launchCookies=[] positionInParent=Point(0, 0) parentTaskId=-1 isFocused=false isVisible=false isVisibleRequested=false isSleeping=false locusId=null displayAreaFeatureId=1 isTopActivityTransparent=false appCompatTaskInfo=AppCompatTaskInfo { topActivityInSizeCompat=false topActivityEligibleForLetterboxEducation= falseisLetterboxEducationEnabled= false isLetterboxDoubleTapEnabled= false topActivityEligibleForUserAspectRatioButton= false topActivityBoundsLetterboxed= false isFromLetterboxDoubleTap= false topActivityLetterboxVerticalPosition= -1 topActivityLetterboxHorizontalPosition= -1 topActivityLetterboxWidth=1080 topActivityLetterboxHeight=2400 isUserFullscreenOverrideEnabled=false isSystemFullscreenOverrideEnabled=false cameraCompatTaskInfo=CameraCompatTaskInfo { cameraCompatControlState=hidden freeformCameraCompatMode=inactive}}}, pipTask = null, remoteTransition = null, displayChange = null, flags = 0, debugId = 29 }
+09-21 15:40:46.291   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+09-21 15:40:46.291   545   568 V WindowManager:     info={id=29 t=OPEN f=0x0 trk=1 r=[0@Point(0, 0)] c=[
+09-21 15:40:46.291   545   568 V WindowManager:         {WCT{RemoteToken{d123c4d Task{68d2ab #73 type=standard A=10157:com.dshmobile.spike}}} m=OPEN f=NONE leash=Surface(name=Task=73)/@0x24d5576 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+09-21 15:40:46.291   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}
+09-21 15:40:46.291   545   568 V WindowManager:     ]}
+09-21 15:40:46.291   785   960 V WindowManagerShell: onTransitionReady(transaction=2340757177414)
+09-21 15:40:46.291   785   818 V WindowManagerShell: onTransitionReady (#29) android.os.BinderProxy@eadde74: {id=29 t=OPEN f=0x0 trk=1 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@8118436} m=OPEN f=NONE leash=Surface(name=Task=73)/@0xdc3285b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@d81ef37} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x3c618f8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
+09-21 15:40:46.291   785   818 V WindowManagerShell: Playing animation for (#29) android.os.BinderProxy@eadde74@1
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
+09-21 15:40:46.291   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
+09-21 15:40:46.291   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
+09-21 15:40:46.291   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=29 t=OPEN f=0x0 trk=1 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@8118436} m=OPEN f=NONE leash=Surface(name=Task=73)/@0xdc3285b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@d81ef37} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x3c618f8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
+09-21 15:40:46.292   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
+09-21 15:40:46.293   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@5bf482e, appThread = android.app.IApplicationThread$Stub$Proxy@c03efcf, debugName = QuickstepLaunchHome }}
+09-21 15:40:46.293   785   818 V WindowManagerShell:  Delegate animation for (#29) to null
+09-21 15:40:46.293   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultTransitionHandler@e8ad410
+09-21 15:40:46.293   785   818 V WindowManagerShell: start default transition animation, info = {id=29 t=OPEN f=0x0 trk=1 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@8118436} m=OPEN f=NONE leash=Surface(name=Task=73)/@0xdc3285b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@d81ef37} m=TO_BACK f=SHOW_WALLPAPER leash=Surface(name=Task=1)/@0x3c618f8 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
+09-21 15:40:46.293   785   818 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@2bfcca4 animAttr=0x13 type=OPEN isEntrance=false
+09-21 15:40:46.294   785   818 V WindowManagerShell: loadAnimation: anim=android.view.animation.AnimationSet@6dc4a0d animAttr=0x12 type=OPEN isEntrance=true
+09-21 15:40:46.295   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.DefaultTransitionHandler@e8ad410
+09-21 15:40:46.311   545  1646 D CompatChangeReporter: Compat change id reported: 324203798; UID 10157; state: ENABLED
+09-21 15:40:46.313   545  1646 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.314   545  1646 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.318   545  1919 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.333  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=72
+09-21 15:40:46.333  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=72
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: Failed to execute the transaction: tId:-1952942119 ClientTransaction{
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119   transactionItems=[
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119     LaunchActivityItem{activityToken=android.os.BinderProxy@b4e039c,intent=Intent { flg=0x10000000 cmp=com.dshmobile.spike/.MainActivity (has extras) },ident=113818874,info=ActivityInfo{bfdadd2 com.dshmobile.spike.MainActivity},curConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.18 fontWeightAdjustment=0},overrideConfig={1.0 310mcc260mnc [en_US] ldltr sw411dp w411dp h914dp 420dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0},deviceId=0,referrer=com.android.shell,procState=2,state=null,persistentState=null,pendingResults=null,pendingNewIntents=null,sceneTransitionInfo=null,profilerInfo=null,assistToken=android.os.BinderProxy@5ab0907,shareableActivityToken=android.os.BinderProxy@8fd2a34,activityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 1080, 2400), taskFragmentBounds=Rect(0, 0 - 1080, 2400)}}
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119     ResumeActivityItem{mActivityToken=android.os.BinderProxy@b4e039c,procState=-1,updateProcState=false,isForward=true,shouldSendCompatFakeFocus=false}
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119     Target activity: com.dshmobile.spike.MainActivity
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119   ]
+09-21 15:40:46.352  3612  3612 E TransactionExecutor: tId:-1952942119 }
+09-21 15:40:46.352  3612  3612 D AndroidRuntime: Shutting down VM
 --------- beginning of crash
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: FATAL EXCEPTION: main
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: Process: com.dshmobile.spike, PID: 3042
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity}: java.lang.IllegalStateException: DSHSpike release build: refusing 'dsh.llm'. This is the user-facing distribution build — the verification drives, the verdict panel and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Install the harness variant (dsh-android-harness) to drive E2E legs.
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4048)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4235)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:112)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:174)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:109)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:81)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2636)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:107)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:232)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:317)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8705)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:580)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:886)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: Caused by: java.lang.IllegalStateException: DSHSpike release build: refusing 'dsh.llm'. This is the user-facing distribution build — the verification drives, the verdict panel and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Install the harness variant (dsh-android-harness) to drive E2E legs.
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at com.dshmobile.spike.MainActivity.bootRelease(MainActivity.kt:213)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at com.dshmobile.spike.MainActivity.onCreate(MainActivity.kt:37)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:9002)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:8980)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1526)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4030)
-09-21 14:59:39.647  3042  3042 E AndroidRuntime: 	... 13 more
-09-21 14:59:39.648   545  1347 E ActivityManager: App crashed on incremental package com.dshmobile.spike which is 100% loaded.
-09-21 14:59:39.660   545  3058 I DropBoxManagerService: add tag=data_app_crash isTagEnabled=true flags=0x2
-09-21 14:59:39.660   545  1347 W ActivityTaskManager:   Force finishing activity com.dshmobile.spike/.MainActivity
-09-21 14:59:39.661   785   818 V WindowManagerShell: Transition requested (#22): android.os.BinderProxy@42c9f5a TransitionRequestInfo { type = CLOSE, triggerTask = null, pipTask = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 22 }
-09-21 14:59:39.663  3042  3042 I Process : Sending signal. PID: 3042 SIG: 9
-09-21 14:59:39.666   400   400 E BpTransactionCompletedListener: Failed to transact (-32)
-09-21 14:59:39.668   785   953 D EGL_emulation: app_time_stats: avg=4606.67ms min=4.64ms max=32016.54ms count=7
-09-21 14:59:39.669   545  1915 I ActivityManager: Process com.dshmobile.spike (pid 3042) has died: fg  TOP 
-09-21 14:59:39.674   545   569 D DisplayManagerService: Drop pending events for gone uid 10154
-09-21 14:59:39.674   545  1003 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.674   545   581 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10154/pid_3042
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed live tcp sockets for uids={10154} in 0ms
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
-09-21 14:59:39.679   545   701 D InetDiagMessage: Destroyed live tcp sockets for uids={20154} in 1ms
-09-21 14:59:39.687   356   356 I Zygote  : Process 3042 exited due to signal 9 (Killed)
-09-21 14:59:39.688   785  2876 V WindowManagerShell: onTransitionReady(transaction=2340757177172)
-09-21 14:59:39.688   785   818 V WindowManagerShell: onTransitionReady (#22) android.os.BinderProxy@42c9f5a: {id=22 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@8855726} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x929758b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@eb7df67} m=CLOSE f=NONE leash=Surface(name=Task=69)/@0xcf99668 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
-09-21 14:59:39.688   785   818 V WindowManagerShell: Transition (#22) android.os.BinderProxy@42c9f5a@0 ready while (#21) android.os.BinderProxy@6efc8b4@0 is still animating. Notify the animating transition in case they can be merged
-09-21 14:59:39.705   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#21) android.os.BinderProxy@6efc8b4@0
-09-21 14:59:39.708  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=68
-09-21 14:59:39.708  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=68
-09-21 14:59:39.739   545   568 V WindowManager: Sent Transition (#22) createdAt=09-21 14:59:39.660 via request=TransitionRequestInfo { type = CLOSE, triggerTask = null, pipTask = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 22 }
-09-21 14:59:39.739   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
-09-21 14:59:39.739   545   568 V WindowManager:     info={id=22 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[
-09-21 14:59:39.739   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
-09-21 14:59:39.739   545   568 V WindowManager:         {WCT{RemoteToken{c735c28 Task{7b5045b #69 type=standard A=10154:com.dshmobile.spike}}} m=CLOSE f=NONE leash=Surface(name=Task=69)/@0x4ab3b10 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}
-09-21 14:59:39.739   545   568 V WindowManager:     ]}
-09-21 14:59:39.742   545   568 V WindowManager: Finish Transition (#21): created at 09-21 14:59:39.331 collect-started=0.088ms request-sent=23.768ms started=43.68ms ready=165.427ms sent=166.074ms finished=410.873ms
-09-21 14:59:39.747   785   818 V WindowManagerShell: Playing animation for (#22) android.os.BinderProxy@42c9f5a@0
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
-09-21 14:59:39.747   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
-09-21 14:59:39.747   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
-09-21 14:59:39.747   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=22 t=CLOSE f=0x10 trk=0 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@8855726} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x929758b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@eb7df67} m=CLOSE f=NONE leash=Surface(name=Task=69)/@0xcf99668 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
-09-21 14:59:39.747   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.747   785   818 D RemoteTransitionHandler: Found filterPair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
-09-21 14:59:39.747   785   818 V WindowManagerShell:  Delegate animation for (#22) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }
-09-21 14:59:39.747   545  1003 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.752   545  1641 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.752   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
-09-21 14:59:39.752   785   818 W Looper  : Slow dispatch took 48ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.DefaultTransitionHandler$$ExternalSyntheticLambda11@6d90b03 m=0
-09-21 14:59:39.779   545  1915 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.779   545  1915 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:39.812  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=60, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher }
-09-21 14:59:39.814   785   818 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=true, height=294
-09-21 14:59:39.816   545   665 I ImeTracker: com.android.launcher3:8255b957: onRequestHide at ORIGIN_SERVER reason HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR fromUser false
-09-21 14:59:39.817   545   665 I ImeTracker: com.android.launcher3:8255b957: onCancelled at PHASE_SERVER_SHOULD_HIDE
-09-21 14:59:39.855  1199  1199 D StateManager: createAtomicAnimation - fromState: Background, toState: Normal, partial trace:
-09-21 14:59:39.855  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.prepareToAnimate(WorkspaceRevealAnim.java:130)
-09-21 14:59:39.855  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.<init>(WorkspaceRevealAnim.java:66)
-09-21 14:59:39.855  1199  1199 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(QuickstepTransitionManager.java:1716)
-09-21 14:59:39.856  1199  1199 D StatsLog: LAUNCHER_ONRESUME
-09-21 14:59:39.891   785   861 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@a7409d9
-09-21 14:59:39.892   545  1003 W InputManager-JNI: Input channel object 'ab58b37 Splash Screen com.dshmobile.spike (client)' was disposed without first being removed with the input manager!
-09-21 14:59:39.898   545  1915 W WindowManager: Failed looking up window session=Session{b0241a2 785:u0a10122} callers=com.android.server.wm.WindowManagerService.windowForClientLocked:6311 com.android.server.wm.Session.setOnBackInvokedCallbackInfo:1020 android.view.IWindowSession$Stub.onTransact:1199 
-09-21 14:59:39.898   545  1915 I WindowManager: setOnBackInvokedCallback(): No window state for package:com.android.systemui
-09-21 14:59:39.908  1199  1203 I droid.launcher3: NativeAlloc concurrent mark compact GC freed 1545KB AllocSpace bytes, 7(548KB) LOS objects, 49% free, 5448KB/10MB, paused 91us,15.547ms total 52.615ms
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 76, 35940, 117907274, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 76, 35940, 117907274, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 76, 35962, 184138608, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 76, 35962, 184138608, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 35999, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 35999, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 35999, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 36065, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 36065, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 36065, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 80, 36081, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 36081, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 36128, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 36128, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 36128, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 36142, 200373579, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 36142, 200373579, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.028  1199  1271 V PerfettoTrigger: Not triggering com.android.telemetry.interaction-jank-monitor-78 - not enough time since last trigger
-09-21 14:59:40.161   545   571 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{1a4e76a u0 com.dshmobile.spike/.MainActivity t69 f} isExiting}
-09-21 14:59:40.213   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#22) android.os.BinderProxy@42c9f5a@0
-09-21 14:59:40.223   785   818 V WindowManagerShell: Track 0 became idle
-09-21 14:59:40.223   785   818 V WindowManagerShell: All active transition animations finished
-09-21 14:59:40.224   545   568 V WindowManager: Finish Transition (#22): created at 09-21 14:59:39.660 collect-started=0.019ms request-sent=0.04ms started=2.72ms ready=11.689ms sent=15.55ms finished=558.446ms
-09-21 14:59:40.226   545  1003 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:40.234   545  1915 W UserManagerService: Requested status bar icon for non-badged user 0
-09-21 14:59:40.237  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=69
-09-21 14:59:40.237  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=69
-09-21 14:59:40.537  1199  1363 D EGL_emulation: app_time_stats: avg=62.12ms min=25.46ms max=241.09ms count=16
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 36304, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 36304, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 36304, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 36365, 134719344, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 36365, 134719344, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 36374, 148737346, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 36374, 148737346, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 36384, 166667265, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 36384, 166667265, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 36393, 147802975, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.585  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 36393, 147802975, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
-09-21 14:59:40.589  1199  1271 V PerfettoTrigger: Not triggering com.android.telemetry.interaction-jank-monitor-78 - not enough time since last trigger
-09-21 14:59:41.390   364   364 W healthd : battery l=100 v=5000 t=25.0 h=2 st=2 c=900000 fc=3000000 cc=10 chg=a
-09-21 14:59:41.470   170   170 I logd    : logdr: UID=2000 GID=2000 PID=3059 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: FATAL EXCEPTION: main
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: Process: com.dshmobile.spike, PID: 3612
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: java.lang.RuntimeException: Unable to start activity ComponentInfo{com.dshmobile.spike/com.dshmobile.spike.MainActivity}: java.lang.IllegalStateException: DSHSpike release build: refusing 'dsh.llm'. This is the user-facing distribution build — the verification drives, the verdict panel and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Install the harness variant (dsh-android-harness) to drive E2E legs.
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4048)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.ActivityThread.handleLaunchActivity(ActivityThread.java:4235)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.servertransaction.LaunchActivityItem.execute(LaunchActivityItem.java:112)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeNonLifecycleItem(TransactionExecutor.java:174)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.executeTransactionItems(TransactionExecutor.java:109)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.servertransaction.TransactionExecutor.execute(TransactionExecutor.java:81)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.ActivityThread$H.handleMessage(ActivityThread.java:2636)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:107)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:232)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:317)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.ActivityThread.main(ActivityThread.java:8705)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at java.lang.reflect.Method.invoke(Native Method)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:580)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:886)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: Caused by: java.lang.IllegalStateException: DSHSpike release build: refusing 'dsh.llm'. This is the user-facing distribution build — the verification drives, the verdict panel and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Install the harness variant (dsh-android-harness) to drive E2E legs.
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at com.dshmobile.spike.MainActivity.bootRelease(MainActivity.kt:213)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at com.dshmobile.spike.MainActivity.onCreate(MainActivity.kt:37)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:9002)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.Activity.performCreate(Activity.java:8980)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.Instrumentation.callActivityOnCreate(Instrumentation.java:1526)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	at android.app.ActivityThread.performLaunchActivity(ActivityThread.java:4030)
+09-21 15:40:46.352  3612  3612 E AndroidRuntime: 	... 13 more
+09-21 15:40:46.352   545  1919 E ActivityManager: App crashed on incremental package com.dshmobile.spike which is 100% loaded.
+09-21 15:40:46.355   545  3630 I DropBoxManagerService: add tag=data_app_crash isTagEnabled=true flags=0x2
+09-21 15:40:46.358   545  1919 W ActivityTaskManager:   Force finishing activity com.dshmobile.spike/.MainActivity
+09-21 15:40:46.368   785   818 V WindowManagerShell: Transition requested (#30): android.os.BinderProxy@493331a TransitionRequestInfo { type = CLOSE, triggerTask = null, pipTask = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 30 }
+09-21 15:40:46.381  3612  3612 I Process : Sending signal. PID: 3612 SIG: 9
+09-21 15:40:46.401   545  1641 I ActivityManager: Process com.dshmobile.spike (pid 3612) has died: fg  TOP 
+09-21 15:40:46.403   545   569 D DisplayManagerService: Drop pending events for gone uid 10157
+09-21 15:40:46.404   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+09-21 15:40:46.405   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+09-21 15:40:46.405   545   701 D InetDiagMessage: Destroyed live tcp sockets for uids={10157} in 0ms
+09-21 15:40:46.407   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET, states=14
+09-21 15:40:46.409   545   701 D InetDiagMessage: Destroyed 0 sockets, proto=IPPROTO_TCP, family=AF_INET6, states=14
+09-21 15:40:46.409   545   701 D InetDiagMessage: Destroyed live tcp sockets for uids={20157} in 5ms
+09-21 15:40:46.411   785   794 V WindowManagerShell: onTransitionReady(transaction=2340757177421)
+09-21 15:40:46.412   785   818 V WindowManagerShell: onTransitionReady (#30) android.os.BinderProxy@493331a: {id=30 t=CLOSE f=0x10 trk=1 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@92166e6} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xc5ade4b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@c771427} m=CLOSE f=NONE leash=Surface(name=Task=73)/@0xb6db028 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
+09-21 15:40:46.413   785   818 V WindowManagerShell: Transition (#30) android.os.BinderProxy@493331a@1 ready while (#29) android.os.BinderProxy@eadde74@1 is still animating. Notify the animating transition in case they can be merged
+09-21 15:40:46.434   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#29) android.os.BinderProxy@eadde74@1
+09-21 15:40:46.435   545   581 I libprocessgroup: Removed cgroup /sys/fs/cgroup/uid_10157/pid_3612
+09-21 15:40:46.441   356   356 I Zygote  : Process 3612 exited due to signal 9 (Killed)
+09-21 15:40:46.474  1199  1199 I TopTaskTracker: onTaskMovedToFront: (moved taskInfo to front) taskId=60, baseIntent=Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher }
+09-21 15:40:46.481   785   953 D EGL_emulation: app_time_stats: avg=3513.85ms min=3.95ms max=28014.44ms count=8
+09-21 15:40:46.484   400   400 E BpTransactionCompletedListener: Failed to transact (-32)
+09-21 15:40:46.484   785   818 V WindowManagerShell: Playing animation for (#30) android.os.BinderProxy@493331a@1
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.DefaultMixedHandler@7622d1
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.keyguard.KeyguardTransitionHandler@f8eb136
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.pip.PipTransition@f841837
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.activityembedding.ActivityEmbeddingController@c2941a4
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.recents.RecentsTransitionHandler@8691b0d
+09-21 15:40:46.485   785   818 V ShellRecents: RecentsTransitionHandler.startAnimation: no controller found
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.splitscreen.StageCoordinator@40caac2
+09-21 15:40:46.485   785   818 V WindowManagerShell:  try handler com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
+09-21 15:40:46.485   785   818 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match for {id=30 t=CLOSE f=0x10 trk=1 r=[0@Point(0, 0)] c=[{WCT{android.window.IWindowContainerToken$Stub$Proxy@92166e6} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0xc5ade4b sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},{WCT{android.window.IWindowContainerToken$Stub$Proxy@c771427} m=CLOSE f=NONE leash=Surface(name=Task=73)/@0xb6db028 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}]}
+09-21 15:40:46.485   785   818 V WindowManagerShell:  Checking filter Pair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
+09-21 15:40:46.485   785   818 D RemoteTransitionHandler: Found filterPair{{types=[] flags=0x0] notFlags=0x100 checks=[{atype=home independent=true modes=[OPEN,TO_FRONT] flags=NONE mustBeTask=false order=TOP topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} launchCookie=null},{atype=standard independent=true modes=[CLOSE,TO_BACK] flags=NONE mustBeTask=false order=ANY topActivity=null launchCookie=null}]} RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }}
+09-21 15:40:46.485   785   818 V WindowManagerShell:  Delegate animation for (#30) to RemoteTransition { remoteTransition = android.window.IRemoteTransition$Stub$Proxy@bc08e30, appThread = android.app.IApplicationThread$Stub$Proxy@56f5aa9, debugName = QuickstepLaunchHome }
+09-21 15:40:46.485   785   818 V WindowManagerShell:  animated by com.android.wm.shell.transition.RemoteTransitionHandler@97800d3
+09-21 15:40:46.485   785   818 W Looper  : Slow dispatch took 52ms wmshell.main h=android.os.Handler c=com.android.wm.shell.transition.DefaultTransitionHandler$$ExternalSyntheticLambda11@180d07d m=0
+09-21 15:40:46.485   785   818 D WindowManagerShell: setLauncherKeepClearAreaHeight: visible=true, height=294
+09-21 15:40:46.486   545   568 V WindowManager: Sent Transition (#30) createdAt=09-21 15:40:46.358 via request=TransitionRequestInfo { type = CLOSE, triggerTask = null, pipTask = null, remoteTransition = null, displayChange = null, flags = 16, debugId = 30 }
+09-21 15:40:46.486   545   568 V WindowManager:     startWCT=WindowContainerTransaction { changes = {} hops = [] errorCallbackToken=null taskFragmentOrganizer=null }
+09-21 15:40:46.486   545   568 V WindowManager:     info={id=30 t=CLOSE f=0x10 trk=1 r=[0@Point(0, 0)] c=[
+09-21 15:40:46.486   545   568 V WindowManager:         {WCT{RemoteToken{5474d9a Task{bc4e3a0 #1 type=home}}} m=TO_FRONT f=SHOW_WALLPAPER|MOVE_TO_TOP leash=Surface(name=Task=1)/@0x9242689 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1},
+09-21 15:40:46.486   545   568 V WindowManager:         {WCT{RemoteToken{d123c4d Task{68d2ab #73 type=standard A=10157:com.dshmobile.spike}}} m=CLOSE f=NONE leash=Surface(name=Task=73)/@0x24d5576 sb=Rect(0, 0 - 1080, 2400) eb=Rect(0, 0 - 1080, 2400) d=0 taskParent=-1}
+09-21 15:40:46.486   545   568 V WindowManager:     ]}
+09-21 15:40:46.491   545   568 V WindowManager: Finish Transition (#29): created at 09-21 15:40:45.996 collect-started=0.023ms request-sent=29.393ms started=45.625ms ready=287.089ms sent=292.655ms finished=485.508ms
+09-21 15:40:46.492  1199  1199 D StatsLog: LAUNCHER_ONRESUME
+09-21 15:40:46.496  1199  1199 D StateManager: createAtomicAnimation - fromState: Background, toState: Normal, partial trace:
+09-21 15:40:46.496  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.prepareToAnimate(WorkspaceRevealAnim.java:130)
+09-21 15:40:46.496  1199  1199 D StateManager: 	at com.android.quickstep.util.WorkspaceRevealAnim.<init>(WorkspaceRevealAnim.java:66)
+09-21 15:40:46.496  1199  1199 D StateManager: 	at com.android.launcher3.QuickstepTransitionManager.createWallpaperOpenAnimations(QuickstepTransitionManager.java:1716)
+09-21 15:40:46.556   545  1347 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.556   545  1347 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.556   545  1347 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.557   545  1646 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.634   379  3524 I RanchuHwc: logCompositionFallbackIfChanged: layer 58 CompositionType fallback from 2 to 1
+09-21 15:40:46.683   785   861 W WindowOnBackDispatcher: sendCancelIfRunning: isInProgress=false callback=android.view.ViewRootImpl$$ExternalSyntheticLambda11@69d3899
+09-21 15:40:46.683   545  1646 D CoreBackPreview: Window{7dfee87 u0 Splash Screen com.dshmobile.spike EXITING}: Setting back callback null
+09-21 15:40:46.684   545  1646 W InputManager-JNI: Input channel object '7dfee87 Splash Screen com.dshmobile.spike (client)' was disposed without first being removed with the input manager!
+09-21 15:40:46.695   545   665 I ImeTracker: com.android.launcher3:7732d4db: onRequestHide at ORIGIN_SERVER reason HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR fromUser false
+09-21 15:40:46.702   545   665 I ImeTracker: com.android.launcher3:7732d4db: onCancelled at PHASE_SERVER_SHOULD_HIDE
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 76, 55739, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 76, 55739, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 55739, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 76, 55771, 183497158, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 76, 55771, 183497158, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 55800, 250354701, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 55800, 250354701, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 55832, 230234871, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 55832, 230234871, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 55879, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 55879, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 55879, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:46.783  1199  1271 V PerfettoTrigger: Not triggering com.android.telemetry.interaction-jank-monitor-78 - not enough time since last trigger
+09-21 15:40:46.863   545   571 W ActivityTaskManager: Activity top resumed state loss timeout for ActivityRecord{6c8bcfa u0 com.dshmobile.spike/.MainActivity t73 f} isExiting}
+09-21 15:40:46.950  1199  1363 D EGL_emulation: app_time_stats: avg=75.64ms min=30.91ms max=133.26ms count=13
+09-21 15:40:46.966   785   818 V WindowManagerShell: Transition animation finished (aborted=false), notifying core (#30) android.os.BinderProxy@493331a@1
+09-21 15:40:46.973   545   568 V WindowManager: Finish Transition (#30): created at 09-21 15:40:46.358 collect-started=0.046ms request-sent=0.077ms started=16.468ms ready=48.096ms sent=51.632ms finished=614.872ms
+09-21 15:40:46.977   785   818 V WindowManagerShell: Track 1 became idle
+09-21 15:40:46.977   785   818 V WindowManagerShell: All active transition animations finished
+09-21 15:40:46.978   545  1347 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.979   545  1646 W UserManagerService: Requested status bar icon for non-badged user 0
+09-21 15:40:46.981  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=73
+09-21 15:40:46.981  1199  1199 I TopTaskTracker: onTaskRemoved: taskId=73
+09-21 15:40:47.242  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 56100, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 56100, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 56100, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 56131, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 56131, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 56131, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 73, 56169, 174784439, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 73, 56169, 174784439, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 88, 56208, 195906818, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 88, 56208, 195906818, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed App frame:UNKNOWN: 74, 56225, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missed SF frame:UNKNOWN: 74, 56225, 0, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.243  1199  1199 W FrameTracker: Missing HWUI jank callback for vsyncId: 56225, CUJ=J<LAUNCHER_APP_CLOSE_TO_HOME_FALLBACK>
+09-21 15:40:47.250  1199  1271 V PerfettoTrigger: Not triggering com.android.telemetry.interaction-jank-monitor-78 - not enough time since last trigger
+09-21 15:40:47.654   545   558 I system_server: NativeAlloc concurrent mark compact GC freed 10073KB AllocSpace bytes, 35(860KB) LOS objects, 49% free, 18MB/37MB, paused 333us,16.815ms total 251.837ms
+09-21 15:40:47.656   545   559 I BpBinder: onLastStrongRef automatically unlinking death recipients: 
+09-21 15:40:47.660   545   560 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/LatinIME/LatinIME.apk' with 1 weak references
+09-21 15:40:47.660   545   560 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /system/priv-app/InputDevices/InputDevices.apk' with 1 weak references
+09-21 15:40:47.660   545   560 W system_server: ApkAssets: Deleting an ApkAssets object '<empty> and /system_ext/app/AccessibilityMenu/AccessibilityMenu.apk' with 1 weak references
+09-21 15:40:48.159   170   170 I logd    : logdr: UID=2000 GID=2000 PID=3631 n tail=0 logMask=99 pid=0 start=0ns deadline=0ns
