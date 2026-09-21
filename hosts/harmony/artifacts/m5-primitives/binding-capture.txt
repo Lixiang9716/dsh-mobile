@@ -78,14 +78,14 @@ dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.seed"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
 dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.granted","mode":"file","scopeOpaque":true,"pathOpaque":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:56783f6f-9d6d-42ad-99cc-c84e6feffb42","path":"dsh-e2e-seed-db04b179-feba-4fb9-8cda-a11585dc7725.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:fd6e50ca-b986-47e3-b79d-ad57d8bab01f","path":"dsh-e2e-seed-71a36447-5a04-4476-9106-f6847acc9c41.txt"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
 dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.user.read","nonEmpty":true,"matches":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
 dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.persist","refOpaque":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:7f2c58c1-04d2-46de-8c3e-e42abb69c0ee","path":"dsh-e2e-seed-db04b179-feba-4fb9-8cda-a11585dc7725.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:14e6e253-2c70-44ec-bbe2-84b611c0b4e1","path":"dsh-e2e-seed-71a36447-5a04-4476-9106-f6847acc9c41.txt"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
 dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}

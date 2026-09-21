@@ -10,7 +10,7 @@
     "m5.host-binding"
   ],
   "exitStatus": 0,
-  "exitStatusDetail": "ONE launch drives the regression trio synchronously (m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23) then the event-driven binding phase runs scenario m5.host-binding at 27/27 — the three v1 'unavailable' primitives are now REAL and proven on the emulator: httpFetch streaming + abort over the loopback carrier, HUKS keychain set/get/delete, presentPicker grant with user-scope fsScope persist/resolve and content-matching read-back",
+  "exitStatusDetail": "ONE launch drives the regression trio synchronously (m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23) then the event-driven binding phase runs scenario m5.host-binding at 27/27 — the three v1 'unavailable' primitives are now REAL and proven on the emulator: httpFetch streaming + abort over the loopback carrier, HUKS keychain set/get/delete, presentPicker grant with user-scope fsScope persist/resolve and content-matching read-back; rebased onto main's D9 architecture (routed carrier + official-web phase), the whole 8-scenario suite is green in this one run",
   "descriptor": "9 available / 0 unavailable — fsRead, fsWrite, fsScope (app scope C-served), httpFetch, notify, presentApproval, presentPicker, keychainGet, keychainSet (user-scope fs forwarded to ArkTS); the flip is backed by this run's on-device proofs, never declared",
   "primitives": {
     "httpFetch": "HttpPrimitive.ets over @ohos.net.http requestInStream: settles {status, headers, bodyId:<callId>} at headers, then streams the body as http.body chunk events (<=4 KB raw, base64) plus http.end onto the runtime queue; loopback bodies that beat the settle are queued and flushed after it; abort() is real end-to-end (numeric bodyId survives the bridge abort seam -> HttpRequest.destroy()). Proven against the host's own carrier: /gateway-e2e/bytes 2 chunks/64 bytes consumed chunk-by-chunk, /gateway-e2e/slow aborted after the first chunk -> iterator rejects {code:'cancelled'}",
@@ -49,6 +49,38 @@
       "pass": true,
       "expected": 27,
       "logged": 27
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/b-harmony-official-web-mount.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/official-capture.txt",
+      "pass": true,
+      "expected": 17,
+      "logged": 17
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/b-harmony-httpfetch-v2.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/httpfetch-capture.txt",
+      "pass": true,
+      "expected": 6,
+      "logged": 6
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/b-harmony-session-live.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/session-capture.txt",
+      "pass": true,
+      "expected": 43,
+      "logged": 43
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/b-harmony-write-live.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/write-capture.txt",
+      "pass": true,
+      "expected": 33,
+      "logged": 33
     }
   ],
   "captures": {

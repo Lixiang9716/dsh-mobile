@@ -1,0 +1,8 @@
+{
+  "scenario": "b-harmony.session.live",
+  "pass": true,
+  "expected": 43,
+  "logged": 43,
+  "failures": [],
+  "parseErrors": []
+}

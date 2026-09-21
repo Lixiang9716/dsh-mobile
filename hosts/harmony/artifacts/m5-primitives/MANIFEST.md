@@ -13,7 +13,11 @@ this run is backed by an on-device proof, not a declaration.
 - Scenario: `m5.host-binding` — 27/27 expected↔logged, one-to-one, in order
   (verdict `dsh.spike.verdict: m5.host-binding PASS ... complete=1 pass=1`),
   plus the regression trio in the same launch (m1 7/7, m2.bridge 6/6, m2.session 23/23)
-- Checkers: `verdict-*.json` (tools/e2e/check.mjs, all pass)
+- Checkers: `verdict-*.json` (tools/e2e/check.mjs, all pass). The same launch
+  also carries main's D9 official-web suite on the rebased architecture:
+  b-harmony.official-web-mount 17/17, b-harmony.httpfetch-v2 6/6 (the D9
+  proof leg rides the same HttpPrimitive.ets), b-harmony.session.live 43/43,
+  b-harmony.write.live 33/33.
 
 ## Expected ↔ logged (manifest `tools/e2e/scenarios/m5-host-binding.json`
 ## vs capture `binding-capture.txt`, line = position in that file)
