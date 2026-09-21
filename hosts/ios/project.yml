@@ -70,6 +70,28 @@ targets:
         outputFiles:
           - App/Generated/SpikeBundle.h
           - App/Generated/SpikeBundle.c
+      # This phase was previously only in the COMMITTED pbxproj, not here — so
+      # `gen.sh` would have silently dropped it, and a regenerated project would
+      # have shipped a Release build with no embedded official web client (the
+      # release workflow's dist assertion catches that downstream, but only
+      # after a failing build). Declaring it here makes the generator the single
+      # source for it, and `basedOnDependencyAnalysis: false` states what the
+      # phase already does — run every build — which is also what silences
+      # Xcode's "will be run during every build because it does not specify any
+      # outputs" warning. It must run every build: it fails loud on a missing
+      # Release tree or a copied byte that drifts, which only holds if it runs.
+      - name: StageOfficialWeb
+        basedOnDependencyAnalysis: false
+        script: |
+          # Release only: embed the vendored official Web Client (dist + client
+          # bundles) so a plain launch reaches the official UI with nothing
+          # staged from outside. Debug is a no-op (the harness stages Documents
+          # itself, and the E2E evidence must keep reading exactly the tree it
+          # stages). The script fails loud when a Release source tree is missing
+          # or a copied byte drifts.
+          set -e
+          python3 "$SRCROOT/Tools/stage_official_web.py" "$CONFIGURATION" \
+            "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
     info:
       path: App/Info.plist
       properties:
@@ -89,3 +111,11 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike
         SWIFT_OBJC_BRIDGING_HEADER: App/Source/Bridge.h
         TARGETED_DEVICE_FAMILY: "1"
+      # The Release log-strip flag (AGENTS.md constraint 5 / rules.md rule L4).
+      # It lived ONLY in the committed pbxproj, so regenerating the project
+      # silently dropped it and the strip became cosmetic — a release build with
+      # full logging. `dev/ios` builds Debug and cannot see that; the `logging`
+      # gate's L4c reads the pbxproj and caught it on the regeneration.
+      configs:
+        Release:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: DSH_RELEASE
