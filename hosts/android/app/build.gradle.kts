@@ -94,6 +94,25 @@ android {
         buildConfig = true
     }
 
+    dshBuildTypes()
+    dshSourceSets(assetDir = dshAssets)
+    dshDefaultConfig()
+    dshNativeBuild()
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+}
+
+// The android {} sub-configurations, one unit each and called above in the
+// DSL's own order: the size gate measures Kotlin/Gradle blocks precisely since
+// govrail 0.48.0, and a 75-line configuration block is one unit nobody skims.
+private fun com.android.build.api.dsl.ApplicationExtension.dshBuildTypes() {
     buildTypes {
         // The harness (debug) is the verification vehicle: full structured
         // logging, the E2E drives run. The release build is what a user
@@ -117,14 +136,20 @@ android {
             buildConfigField("boolean", "DSH_RELEASE", "false")
         }
     }
+}
 
+private fun com.android.build.api.dsl.ApplicationExtension.dshSourceSets(
+    assetDir: Provider<Directory>,
+) {
     sourceSets {
         getByName("main") {
             // the staged official-web trees ride the normal assets merge
-            assets.srcDir(dshAssets)
+            assets.srcDir(assetDir)
         }
     }
+}
 
+private fun com.android.build.api.dsl.ApplicationExtension.dshDefaultConfig() {
     defaultConfig {
         applicationId = "com.dshmobile.spike"
         minSdk = 26
@@ -142,21 +167,14 @@ android {
             }
         }
     }
+}
 
+private fun com.android.build.api.dsl.ApplicationExtension.dshNativeBuild() {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
             version = "3.22.1"
         }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = "17"
     }
 }
 

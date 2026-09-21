@@ -2,7 +2,7 @@
   "title": "Night run: complete README milestones (M2 remainder, M3, M4, M5) with E2E by 09:00",
   "created": "2026-09-19T21:35:16+00:00",
   "rules": {
-    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "hash": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -18,5 +18,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0008"
+  "id": "T-0008",
+  "repins": [
+    {
+      "ts": "2026-09-21T18:10:47+00:00",
+      "by": "lixiang@lixiangdeMacBook-Air.local",
+      "from": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+      "to": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+      "reason": "The constitution moved (govrail 0.48.0 + the e2e-matrix gate, seal re-baselined); the brief is unchanged \u2014 this umbrella card's work is unaffected by the plane change."
+    }
+  ]
 }

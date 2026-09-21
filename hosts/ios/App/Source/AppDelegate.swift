@@ -37,24 +37,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         if BuildFlavor.isRelease {
             return bootRelease(window: window, root: root)
         }
-        let consoleFrame = CGRect(
-            x: 16, y: 64,
-            width: window.bounds.width - 32,
-            height: window.bounds.height * 0.55 - 64
-        )
-        let console = UITextView(frame: consoleFrame)
-        console.isEditable = false
-        console.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
-        console.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
-        console.text = "DSH spikes — m1.spike.boot, m1.carrier.loopback, then the m2 gateway binding …"
-        let webView = WKWebView(
-            frame: CGRect(
-                x: 0, y: window.bounds.height * 0.55,
-                width: window.bounds.width,
-                height: window.bounds.height * 0.45
-            )
-        )
-        webView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
+        let console = makeConsole(in: window)
+        let webView = makeWebView(in: window)
         root.view.addSubview(console)
         root.view.addSubview(webView)
         window.rootViewController = root
@@ -62,49 +46,86 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.mainWindow = window
         self.console = console
         self.webView = webView
-        if launchMode == "session" {
-            let surface = SessionLaunchConfig.scenarioName
-                .map { "scenario \($0) (real-LLM drive)" }
-                ?? SessionLaunchConfig.profileName
-                    .map { "profile \($0) (config-selected client)" }
-                ?? "Web Client \(SessionLaunchConfig.activeWebClient)"
-            console.text = "DSH session — m2.session over the system plugins, \(surface)…"
-            print("spike: app launched in session mode (\(surface))")
-            fflush(stdout)
-            runSession()
-            return true
-        }
-        if launchMode == "official-web" {
-            console.text = "DSH official web — b1.official-web.mount, the upstream app on the contract carrier…"
-            print("spike: app launched in official-web mode")
-            fflush(stdout)
-            webView.navigationDelegate = self
-            runOfficialWeb()
-            return true
-        }
-        if launchMode == "session-live" {
-            console.text = "DSH session live — b3.session.live, the upstream spine on-device answering the official app…"
-            print("spike: app launched in session-live mode")
-            fflush(stdout)
-            webView.navigationDelegate = self
-            runSessionLive()
-            return true
-        }
-        if launchMode == "session-write" {
-            console.text = "DSH session write — b4.write.live, the official composer driving the upstream spine…"
-            print("spike: app launched in session-write mode")
-            fflush(stdout)
-            webView.navigationDelegate = self
-            runSessionWrite()
-            return true
-        }
-        print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
-        fflush(stdout)
-        SpikeRuntime().run { [weak self] boot in
-            self?.show(boot, phase: "m1.spike.boot") { self?.bootVerdict = $0 }
-            self?.runCarrier()
-        }
+        startLaunchedMode()
         return true
+    }
+
+    /// The harness console: the drive's face, not its verdict (every canonical
+    /// line goes to the spike sink; this pane is what a human watches).
+    private func makeConsole(in window: UIWindow) -> UITextView {
+        let console = UITextView(frame: CGRect(
+            x: 16, y: 64,
+            width: window.bounds.width - 32,
+            height: window.bounds.height * 0.55 - 64
+        ))
+        console.isEditable = false
+        console.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
+        console.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
+        console.text = "DSH spikes — m1.spike.boot, m1.carrier.loopback, then the m2 gateway binding …"
+        return console
+    }
+
+    private func makeWebView(in window: UIWindow) -> WKWebView {
+        let webView = WKWebView(frame: CGRect(
+            x: 0, y: window.bounds.height * 0.55,
+            width: window.bounds.width,
+            height: window.bounds.height * 0.45
+        ))
+        webView.autoresizingMask = [.flexibleWidth, .flexibleTopMargin]
+        return webView
+    }
+
+    /// Dispatch on `-dsh-mode`, each drive announcing itself on the console
+    /// and in stdout first (the stdout lines are asserted on — they are spelled
+    /// out here rather than assembled from `mode`); the default keeps the
+    /// historical boot → carrier → gateway sequence.
+    private func startLaunchedMode() {
+        switch launchMode {
+        case "session":
+            let surface = sessionSurface
+            announce("DSH session — m2.session over the system plugins, \(surface)…",
+                     line: "spike: app launched in session mode (\(surface))", web: false)
+            runSession()
+        case "official-web":
+            announce("DSH official web — b1.official-web.mount, the upstream app on the contract carrier…",
+                     line: "spike: app launched in official-web mode", web: true)
+            runOfficialWeb()
+        case "session-live":
+            announce("DSH session live — b3.session.live, the upstream spine on-device answering the official app…",
+                     line: "spike: app launched in session-live mode", web: true)
+            runSessionLive()
+        case "session-write":
+            announce("DSH session write — b4.write.live, the official composer driving the upstream spine…",
+                     line: "spike: app launched in session-write mode", web: true)
+            runSessionWrite()
+        default:
+            print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
+            fflush(stdout)
+            SpikeRuntime().run { [weak self] boot in
+                self?.show(boot, phase: "m1.spike.boot") { self?.bootVerdict = $0 }
+                self?.runCarrier()
+            }
+        }
+    }
+
+    /// Console banner + stdout line for one drive; `web` marks the drives that
+    /// own the web view's navigation delegate.
+    private func announce(_ banner: String, line: String, web: Bool) {
+        console?.text = banner
+        print(line)
+        fflush(stdout)
+        if web {
+            webView?.navigationDelegate = self
+        }
+    }
+
+    /// The session drive's user-visible surface, for its banner and its line.
+    private var sessionSurface: String {
+        SessionLaunchConfig.scenarioName
+            .map { "scenario \($0) (real-LLM drive)" }
+            ?? SessionLaunchConfig.profileName
+                .map { "profile \($0) (config-selected client)" }
+            ?? "Web Client \(SessionLaunchConfig.activeWebClient)"
     }
 
     /// Launch mode from the launch arguments ("-dsh-mode session"): the

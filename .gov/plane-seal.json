@@ -1,10 +1,16 @@
 {
   "files": {
+    ".gov/pairing.json": {
+      "sha256": "7748c71c35d72d56b141b28dbed2587b6393a43fe30b798864f0adb288f3a64f"
+    },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
+    },
+    ".gov/rejections/case-e2e-matrix.sh": {
+      "sha256": "2f42fc7e7b589b7940317cf6f37b6219a524bd43aee3f6838cf7ff9c9bab8ca0"
     },
     ".gov/rejections/case-logging-l4.sh": {
       "sha256": "f410a435d2ab5b627ae27e7c8ec4c1283536e4d9b598f3708966eedb7b755a59"
@@ -16,13 +22,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+      "sha256": "3b316a30b8ffec428e2a2e10051eb85bbc91b2de9f6ce31ec2b6943706995a30"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-21T15:40:01+00:00",
+    "ts": "2026-09-21T18:10:14+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "Revert the e2e-matrix gate wiring: adding it changed the combined rules@ hash, which staled the pins of 7 open cards, and the task gate blocks on stale pins with no CLI exit for those cards (duplicate ids, govrail #352). Wiring the matrix therefore depends on a cleanable card ledger, which needs govrail 0.47.2. Restoring the pre-wiring constitution; the matrix stays enforced by docs/register until then."
+    "reason": "Wire the e2e-matrix gate (card T-0032): gate add e2e-matrix -> sh tools/e2e/matrix.sh --accept-known-gaps, in the default mode. Reviewed in this branch: gates.json gains the one entry plus its mode membership; the rejection case .gov/rejections/case-e2e-matrix.sh proves it rejects unregistered findings, stale register rows and unreadable registers. govrail 0.48.0's gov task repin (#368) is what lets the open cards' stale pins be advanced instead of reverting this. Authority: card T-0032 + Agent Note 2026-09-22-the-plane-moves-to-govrail-0-48-0-and-the-."
   }
 }
