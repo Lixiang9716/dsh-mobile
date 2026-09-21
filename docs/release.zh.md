@@ -1,33 +1,29 @@
 # 发布包(Release packages)
 
-发布流水线分三个阶段,每个阶段的 workflow 名字都直接说明自己是哪一段——
-`release/version` **准备**一次发布,随后**每个宿主一个打包阶段**负责构建并挂载。
-命名与 `dev/ios`、`dev/android`、`dev/harmonyos` 对齐,所以在 Actions 列表里
-不点开就能看出一次运行属于哪个阶段、哪个宿主。
+发布流水线是:先**准备**,再**逐个宿主打包**;每个 workflow 的名字都直接说明自己是哪一段。
+打包阶段是 `release/ios`、`release/android`、`release/harmony`——与 `dev/ios`、
+`dev/android`、`dev/harmonyos` 对齐,所以在 Actions 列表里不点开就能看出是哪个宿主。
 
-| 阶段 | Workflow | 触发 |
+| 阶段 | 是什么 | 触发 |
 | --- | --- | --- |
-| 准备 | `release/version` | 每次推送到 `main`;维持一个常驻 release PR,永不打标签 |
+| 准备 | 一个普通 pull request,运行 `tools/release/bump-version.py` | 你决定要发版的时候 |
 | 打包 | `release/ios` | **推送 `v*` 标签**,或手动触发 |
 | 打包 | `release/android` | 同上 |
 | 打包 | `release/harmony` | 同上 |
 
 **发布由标签推送触发**——`git push origin vX.Y.Z`。既不是 `release: published`
-事件,也不是 release-please 跑完:把发布挂在机器人跑完之上,正是这条流水线花了几天
-才走出来的失败模式——一个凭据、一个仓库设置、一次被抑制的事件,就能让发布停在一个
-什么都不报的步骤上。现在切一次发布只需要 `contents: write`,而同一个标签推送直接
-重试即可。
+事件,也不是某个机器人跑完:把发布挂在别的东西跑完之上,正是这条流水线花了几天才走出来的
+失败模式——一个凭据、一个仓库设置、一次被抑制的事件,就能让发布停在一个什么都不报的
+步骤上。现在切一次发布只需要 `contents: write`,失败就直接再推一次。
 
 两种入口,同一条构建路径:
 
-- **正式发布**——常规路径:落地工作 → 合并 release PR → 推标签。
-  `release/version` 读取落到 `main` 上的 conventional commits,维护**一个**常驻的
-  release PR:它会升级 `version.txt`、生成 `CHANGELOG.md`、并同步三个宿主的版本
-  清单——但到此为止(`skip-github-release: true`)。合并该 PR 只会推进那四个版本
-  文件;**推送标签**才会启动三个 `release/<宿主>` workflow,由它们构建各自的包并
-  **挂到该标签对应的 Release 上**(该标签还没有 Release 时先创建它)——于是标签就是
-  一个可下载的构建集。(`CHANGELOG.md` 由第一个合并的 release PR 创建——在那之前
-  它刻意不存在,所以第一个 `chore(main): release X.Y.Z` 落地前不必去找它。)
+- **正式发布**——常规路径:改版本 → 合并 → 推标签。
+  `tools/release/bump-version.py X.Y.Z` 一条命令写完四个版本文件和 `CHANGELOG.md`
+  的对应小节;然后你开一个**普通** pull request——这正是要点:人或 agent 开的 PR 会像
+  任何其他 PR 一样拿到必需的 `gates` 检查(D13/D14)。合并之后推标签,三个
+  `release/<宿主>` workflow 就会被触发,各自构建并把包**挂到该标签的 Release 上**,
+  该标签还没有 Release 时先创建它。于是标签就是一个可下载的构建集。
 - **手动触发**——Actions 页面(**release/ios**、**release/android** 或
   **release/harmony** → Run workflow)或 `gh workflow run release-ios.yml`。
   产物落在 workflow run 下而非 Release 上;`include_harness: true` 会额外构建
@@ -36,12 +32,17 @@
 ## 如何发一个版本
 
 1. 用 conventional commit 消息把工作合进 `main`(由 `commit-format` 门禁强制)。
-   `feat:` 升 minor,`fix:` 升 patch;低于 1.0 时破坏性变更升 minor,而不是
-   直接跳到 1.0.0。
-2. `release/version` 会维护一个标题为 `chore(main): release X.Y.Z` 的 PR。它是
-   生成出来的机械变更——`version.txt`、`CHANGELOG.md` 和三个宿主清单。
-   **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
-3. 合并它。四个版本文件在 `main` 上推进;此时还没有任何标签。
+   1.0 以下,`feat:` 或破坏性变更升 minor,`fix:` 升 patch。
+2. **改版本并写 changelog:**
+
+       tools/release/bump-version.py X.Y.Z            # 或先 --dry-run 看一眼
+
+   它会把"上一个标签以来的提交所隐含的版本号"作为提示打印出来(决定权在人),
+   然后改写 `version.txt`、iOS 的 `Info.plist`、Android 的 `versionName` 和
+   HarmonyOS 的 `versionName`,并从这些提交生成该版本的 `CHANGELOG.md` 小节。
+   **要审的是 changelog**;那才是人负责的部分。
+3. **用一个普通 pull request 提交并合并它。** 人或 agent 开的 PR 会正常拿到必需的
+   `gates` 检查——这正是"版本号变更走普通 PR"的原因(D13/D14)。此时还没有任何标签。
 4. **在那个合并提交上推标签:**
 
        git pull --ff-only && git tag vX.Y.Z && git push origin vX.Y.Z
@@ -51,10 +52,10 @@
    Android 11 分钟、HarmonyOS 2 分钟,之后每次完整运行都在 9–15 分钟内完成——
    单个 job 的超时是 60 分钟。
 
-   每个 workflow 都会先跑 `tools/release/check-tag-version.sh`,它会拒绝任何与
-   四个版本文件之一不符的标签。在 `version.txt` 还是 `0.0.2` 时推 `v0.0.3`,会在
-   任何构建开始前就失败,并逐个点名所有不一致——这正是"由人触发发布"否则会重新
-   引入的漂移:一个装在本不该属于它的版本号下的包,下游没有任何环节会察觉。
+   每个 workflow 都会先跑 `tools/release/check-tag-version.sh`,它会拒绝任何与四个
+   版本文件之一不符的标签。在 `version.txt` 还是 `0.0.2` 时推 `v0.0.3`,会在任何构建
+   开始前就失败,并逐个点名所有不一致——这正是"由人触发发布"否则会重新引入的漂移:
+   一个装在本不该属于它的版本号下的包,下游没有任何环节会察觉。
 5. **补救——某个 Release 上的包有问题。** 不要删掉 Release。触发那个宿主的
    workflow(例如 `release/harmony`)并填 **`release_tag: vX.Y.Z`**:包会从当前
    `main` 构建,然后就地替换该标签下的资产(`gh release upload --clobber`)。
@@ -63,63 +64,49 @@
    它一直在发布 debuggable 的包。**一次只重建一个宿主正是要点**:一个坏 HAP
    不需要把 iOS 一起重打。
 6. **补救——标签本身是错的。** 删掉重推:`git push --delete origin vX.Y.Z`,
-   修好版本文件(或合并 release PR),再打一次标签。如果 Release 已经被创建,
+   修好版本文件(开一个新的 bump PR),再打一次标签。如果 Release 已经被创建,
    连它一起删掉——Release 是打包 workflow 创建的,下次推标签会重新创建。
 
 ### 版本流
 
 整个仓库共用一个版本号:三个宿主在同一次构建里一起发布,因此共享一个号。
-`version.txt` 与 `.release-please-manifest.json` 是事实来源,宿主清单由
-`release-please-config.json` 里的 `extra-files` 接线保持一致:
+`version.txt` 是事实来源,而 **`tools/release/bump-version.py` 一条命令写完四个文件**,
+所以它们不会漂移:
 
-| 宿主 | 文件 | 字段 | 更新器 |
-| --- | --- | --- | --- |
-| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` | `xml` + xpath——源文件里无需任何标记 |
-| Android | `hosts/android/app/build.gradle.kts` | `versionName` | `generic` + `// x-release-please-version` |
-| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` | `json` + jsonpath——`.json5` 扩展名不会被自动识别,所以类型必须显式声明 |
+    tools/release/bump-version.py 0.1.0            # 改写所有版本文件
+    tools/release/bump-version.py 0.1.0 --dry-run  # 先看一眼会改什么
+
+| 宿主 | 文件 | 字段 |
+| --- | --- | --- |
+| — | `version.txt` | 事实来源 |
+| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` |
+| Android | `hosts/android/app/build.gradle.kts` | `versionName` |
+| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` |
+
+脚本会推导出 conventional commits 所隐含的版本号(1.0 以下,`feat` 或破坏性变更升
+minor,`fix` 升 patch)并作为提示打印出来,由人来决定;它同时根据这些提交写出该版本的
+`CHANGELOG.md` 小节,并把写过的每个文件重新读回校验——**部分应用**的版本变更会在写入
+之前就被拒绝,而不是写完之后。随后 `tools/release/check-tag-version.sh` 会拒绝任何与
+这四个文件不符的标签,两端因此不可能悄悄脱节。
 
 构建号**不**在此版本流内:`CFBundleVersion`、Android 的 `versionCode` 与
 HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工维护。
 
-### 配置(一次性):一个仓库设置
+### 配置:无
 
-`release/version` 使用 `secrets.GITHUB_TOKEN` 运行——**没有任何令牌需要配置**。
-但 `GITHUB_TOKEN` 能否开 pull request,取决于仓库是否允许:**Settings → Actions →
-General → Workflow permissions → "Allow GitHub Actions to create and approve
-pull requests"**。关着的时候,release-please 会一路走到最后一个 API 调用然后被拒:
-*"GitHub Actions is not permitted to create or approve pull requests"*——这正是过去
-那个 PAT 一直在掩盖的失败。
+没有令牌要配,没有仓库设置要记,也没有机器人要配——因为**发布的任何一步都不依赖它们**。
+版本号的改动是由人或 agent 开的普通 pull request,所以它像任何其他变更一样拿到普通的
+`gates` 检查;发布本身是标签推送,而打包 workflow 只需要 `contents: write`。
 
-它可以通过 API 设置,本仓库就是这么做的:
+这是刻意的,也是这条流水线的历史收敛出来的结论:用 `GITHUB_TOKEN` 开的 release PR
+拿不到必需的检查——它的 `pull_request` workflow 会以 `action_required` 到达;而由
+`workflow_dispatch` 运行产出的检查也不满足分支保护(PR #111 实测:在确切 head SHA 上
+是绿色 `gates`,app 与上下文都对,suite 也关联到该 PR,PR 仍是 `BLOCKED` 且检查列表
+为空)。分支保护只承认来自 pull request 自身事件流的检查。把版本号改动作为普通 PR 提交,
+就绕开了整件事。见 D13/D14。
 
-    gh api --method PUT repos/OWNER/REPO/actions/permissions/workflow --input - <<'JSON'
-    {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
-    JSON
-
-设置打开之后,`GITHUB_TOKEN` 确实可以创建 release PR。但**它依然无法让那个 PR 变成
-可合并**,这一点必须说清楚——这是整条流水线里唯一尚未解决的部分。
-
-用 `GITHUB_TOKEN` 开的 release PR 拿不到 `pull_request` workflow(它们以
-`action_required` 的形式到达),因此拿不到 `gates` 检查,而 `main` 要求它。
-`release/version` 会在最后一步派发一次门禁 workflow 到 release 分支,试图补上这个
-检查,但**在 PR #111 上实测:这条路不通**——那次派发在 PR 的**确切 head SHA** 上产出了
-绿色的 `gates` 检查,上下文、app 都对,suite 也关联到了该 PR,而 PR 在 12 分钟以上
-的时间里始终是 `BLOCKED`、检查列表为空。分支保护只承认来自 **pull request 自身事件流**
-的检查。见 D13;D10 最初的 PAT 要求(D11 曾否定)在这一点上是对的。
-
-**所以"版本号提交由谁写"才是真正待决的问题,有两条路:**
-
-| 路径 | 需要 | 现状 |
-| --- | --- | --- |
-| 由 release-please 开 release PR | 一个**归属到用户**的令牌(PAT 或 GitHub App),使其事件不被抑制——即 D10 当年的处方 | 在配置该令牌前处于阻塞 |
-| 由人或 agent 开一个普通 PR,改那四个版本文件 | 什么都不需要——人开的 PR 正常拿到检查 | 现在就能用,且是**推荐路径** |
-
-第二条正是 `tools/release/check-tag-version.sh` 存在的理由:把版本号变更放进普通 PR
-之后,防止标签与版本文件漂移的就是那道守卫。无论走哪条,**切发布本身都不受影响**——
-下面第 4 步的标签推送只需要 `contents: write`。
-
-`RELEASE_PLEASE_TOKEN` 已不再被任何 workflow 读取。如果它还留在 secret 里,就是
-被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。见 D11。
+`RELEASE_PLEASE_TOKEN` 若还留在 secret 里,则没有任何东西读它。`release-please` 本身
+已退役(D14);若将来想要回来,它的配置都在 `git log` 里。
 
 每个 job 也会在 workflow run 下上传各自独立的可下载产物。
 

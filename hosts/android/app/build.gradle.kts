@@ -130,7 +130,7 @@ android {
         minSdk = 26
         targetSdk = 35
         versionCode = 1
-        versionName = "0.0.1" // x-release-please-version
+        versionName = "0.0.1"
         ndk {
             // arm64-v8a drives the local AVD; x86_64 drives the CI emulator image.
             abiFilters += listOf("arm64-v8a", "x86_64")
