@@ -96,22 +96,27 @@ pull requests"**。关着的时候,release-please 会一路走到最后一个 AP
     {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
     JSON
 
-设置打开之后,release PR 就会由 `GITHUB_TOKEN` 创建出来。**这套机制的两半都重要,
-而派发是那半不能省掉的。**
+设置打开之后,`GITHUB_TOKEN` 确实可以创建 release PR。但**它依然无法让那个 PR 变成
+可合并**,这一点必须说清楚——这是整条流水线里唯一尚未解决的部分。
 
-`release/version` 会在最后一步**派发**一次门禁 workflow 到 release 分支
-(`gh workflow run gov.yml --ref <release-branch>`)。`workflow_dispatch` 是 GitHub
-对"`GITHUB_TOKEN` 创建的事件"抑制规则有明文记载的例外,所以那次运行报出的 `gates`
-检查会落在 release PR 的 head commit 上——也就是 `main` 唯一要求的那一个检查。它是
-**在真实 commit 上真跑的门禁**,绝不是通过 API 伪造的检查;派发被拒绝会让该 job 直接
-失败——于是"无法合并的 release PR"会自己喊出来(rules.md 规则 5)。
+用 `GITHUB_TOKEN` 开的 release PR 拿不到 `pull_request` workflow(它们以
+`action_required` 的形式到达),因此拿不到 `gates` 检查,而 `main` 要求它。
+`release/version` 会在最后一步派发一次门禁 workflow 到 release 分支,试图补上这个
+检查,但**在 PR #111 上实测:这条路不通**——那次派发在 PR 的**确切 head SHA** 上产出了
+绿色的 `gates` 检查,上下文、app 都对,suite 也关联到了该 PR,而 PR 在 12 分钟以上
+的时间里始终是 `BLOCKED`、检查列表为空。分支保护只承认来自 **pull request 自身事件流**
+的检查。见 D13;D10 最初的 PAT 要求(D11 曾否定)在这一点上是对的。
 
-抑制规则是**部分的**——这正是派发属于必需、而不是锦上添花的原因。在 PR #107 上实测:
-PR **首次创建**时,它的 `pull_request` workflow 确实起来了(`gates` 加三条平台流水线
-全绿);但之后一次**分支更新**(来自一次普通的 `push: main` 推送)被抑制了
-(`action_required`),PR 上**一个检查都没有**,于是 `BLOCKED`。release-please 在每次
-推送到 `main` 时都会重写 release 分支,所以"只是开着"的 release PR 不是你要处理的情况,
-**"当前"的 release PR 才是**。
+**所以"版本号提交由谁写"才是真正待决的问题,有两条路:**
+
+| 路径 | 需要 | 现状 |
+| --- | --- | --- |
+| 由 release-please 开 release PR | 一个**归属到用户**的令牌(PAT 或 GitHub App),使其事件不被抑制——即 D10 当年的处方 | 在配置该令牌前处于阻塞 |
+| 由人或 agent 开一个普通 PR,改那四个版本文件 | 什么都不需要——人开的 PR 正常拿到检查 | 现在就能用,且是**推荐路径** |
+
+第二条正是 `tools/release/check-tag-version.sh` 存在的理由:把版本号变更放进普通 PR
+之后,防止标签与版本文件漂移的就是那道守卫。无论走哪条,**切发布本身都不受影响**——
+下面第 4 步的标签推送只需要 `contents: write`。
 
 `RELEASE_PLEASE_TOKEN` 已不再被任何 workflow 读取。如果它还留在 secret 里,就是
 被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。见 D11。

@@ -82,6 +82,34 @@ the PR `BLOCKED`. The release branch is rewritten on every push to `main`, so
 the PR event cannot be relied on for the check that matters; **the dispatch is
 load-bearing**, and that is what D11 now records.
 
+## ...and the dispatch does not actually work either (D13)
+
+The paragraph above was written believing "load-bearing" meant "sufficient". It
+does not, and this note is left in place so the sequence is legible rather than
+tidied away.
+
+Measured on PR #111, after a `push: main` run opened it: the dispatched run
+produced a green `gates` check on the PR's **exact head SHA**, with the required
+context (`gates`) and app (`15368`), and its check suite linked to the PR. The
+PR stayed `BLOCKED` with an **empty check rollup** for 12+ minutes, with nothing
+else that could block it — `main` requires only `gates`, `strict: false`, zero
+required reviews, `enforce_admins: false`, and the head commit carried
+`gates = success` while the test-merge commit carried no checks at all.
+
+So branch protection honours a check only when it comes from the pull request's
+**own event flow**, and D10's original PAT requirement — which D11 dismissed as
+unnecessary — was right about this. Three wrong calls in one thread, each from
+reasoning past a measurement: first "the PR event will do it", then "the
+dispatch will do it", and only the third attempt asked what the check actually
+has to satisfy.
+
+What survives, and it is the part that matters operationally: **cutting a
+release no longer depends on any of this.** D12 made `git push origin vX.Y.Z`
+the trigger, the package workflows need only `contents: write`, and
+`tools/release/check-tag-version.sh` keeps the tag honest. The unresolved piece
+is narrow — who authors the version-bump commit — and D13 records both options
+and recommends the credential-free one.
+
 That step also needed a fix once it ran for real. The job never checks anything
 out — release-please does not need a working tree — so `gh` could not resolve
 the repository and the step died with `fatal: not a git repository`. It now
