@@ -1,0 +1,28 @@
+{
+  "title": "Android release build: emulator verification of the user-facing build",
+  "created": "2026-09-21T06:41:33+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "build the release variant (assembleRelease), note the APK name and signing state, verify embedded official-web + spike assets inside it",
+    "sign the unsigned APK locally with the debug keystore for verification only, and record that this is not the shipped artifact's state",
+    "plain launch (no extras, nothing staged) reaches the official DSH Web UI: screenshot + ZERO dsh.spike.log records, ZERO level:debug, ZERO level:info, no verdict text, no gateway-audit lines",
+    "the release build REFUSES an E2E drive by name (--ez dsh.llm true) rather than silently no-op-ing",
+    "contrast: dsh-android-harness (assembleDebug) on the same plain launch still emits the full E2E stream",
+    "evidence committed under hosts/android/artifacts/release-logging/ with a re-runnable run.sh (non-zero exit on violation) and MANIFEST.md",
+    "gov run green, PR opened and merged"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0024",
+  "void": {
+    "ts": "2026-09-21T07:11:19+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Android release verification CLOSED and merged (PR #87, squash 38b815d): the user-facing release build was verified on a real emulator (AVD pixel, API 35 arm64, emulator-5554), which is exactly the gap PR #83 recorded as 'static verification only (no emulator available)'. Deliverables in the merged PR: hosts/android/artifacts/release-logging/ (run.sh that re-runs and asserts with exit non-zero on violation, MANIFEST.md mapping every assertion to a file, raw logcat captures for both variants, the screenshots, apk-release-contents.txt, origin-release.txt, signing.txt, apk-release-listing.txt) + an Agent Note under .agents/notes/implemented/testing/ + a surprise record (sig the-release-strip-covers). Measured: assembleRelease ships app-release-unsigned.apk (apksigner: DOES NOT VERIFY) embedding 89 assets/official-web/ + 129 assets/web-plugins/ + 254 assets/spike/ entries; a plain launch renders the official DSH Web UI with 0 dsh.spike.log records / 0 level:debug / 0 level:info / 0 verdict text / 0 gateway-audit lines against the harness's 204 records (168 debug, 36 info, ALL PASS); --ez dsh.llm true is refused BY NAME; the local debug-keystore signing is named as a verification-only step in MANIFEST.md and signing.txt. CI: gates + android-e2e both green. Void rather than close because close stamps a receipt the task gate then rejects (#329/#339) -- the plane's standing dead-end, followed per the precedent note; the PR is the audit trail."
+  }
+}
