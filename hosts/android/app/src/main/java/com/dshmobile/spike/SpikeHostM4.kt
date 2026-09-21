@@ -395,6 +395,7 @@ class SpikeHostM4 private constructor(
             .put("module", "dsh.carrier")
             .put("message", "e2e")
             .put("data", JSONArray().put(payload))
+        if (!BuildFlavor.keeps(record.toString())) return
         Log.i(TAG, "dsh.spike.log: $record")
     }
 }

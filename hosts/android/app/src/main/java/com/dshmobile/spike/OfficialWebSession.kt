@@ -29,7 +29,11 @@ import org.json.JSONObject
  * unavailable — the next named gap, never faked. Kotlin sibling of hosts/ios
  * OfficialWebRuntime.swift; JS runs ONLY on SpikeRuntime's HandlerThread.
  */
-class OfficialWebSession private constructor(private val activity: Activity) {
+class OfficialWebSession private constructor(
+    private val activity: Activity,
+    /** Harness: drive for evidence. Release: serve the client, assert nothing. */
+    private val evidence: Boolean,
+) {
 
     companion object {
         const val SCENARIO = "b-android.official-web.mount"
@@ -60,9 +64,18 @@ class OfficialWebSession private constructor(private val activity: Activity) {
 
         @Volatile private var instance: OfficialWebSession? = null
 
-        /** Creates and starts the session; [onFinished] gets the verdict text. */
-        fun start(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): OfficialWebSession {
-            val session = OfficialWebSession(activity)
+        /** Creates and starts the session; [onFinished] gets the verdict text.
+         * [evidence] false is the release SERVING mode: the same carrier +
+         * web-boot runtime + official client served, with the probe, the
+         * watchdog and every canonical record switched off — a user-facing
+         * build runs no verification machinery. */
+        fun start(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+            evidence: Boolean = true,
+        ): OfficialWebSession {
+            val session = OfficialWebSession(activity, evidence)
             session.webView = webView
             instance = session
             session.start(onFinished)
@@ -110,6 +123,8 @@ class OfficialWebSession private constructor(private val activity: Activity) {
                 fail("official-web bootstrap: ${e::class.java.simpleName}: ${e.message}")
             }
         }
+        // Serving mode has no outcome to wait for; the watchdog is harness-only.
+        if (!evidence) return
         Handler(activity.mainLooper).postDelayed(
             {
                 if (!finished) {
@@ -167,6 +182,7 @@ class OfficialWebSession private constructor(private val activity: Activity) {
      * generates its own traffic (RPCs, mux opens) before the probe's, so the
      * once-guards pin the honest first observations in manifest order. */
     private fun wireEvidence() {
+        if (!evidence) return
         dist.onIndexRendered = { rows, bytes ->
             eventLog.emit(
                 "index.rendered",
@@ -387,6 +403,9 @@ class OfficialWebSession private constructor(private val activity: Activity) {
      * same-origin probe and read the TRUE rendered state. UI thread. */
     private fun pageDidFinish() {
         if (finished) return
+        // Serving mode: the page is up, that IS the outcome — no probe, no
+        // verdict, no canonical records (the release boot has nothing to assert).
+        if (!evidence) return
         Thread({
             // rule 8: poll the arrival condition with a deadline, fail loud
             val deadline = System.currentTimeMillis() + 30_000

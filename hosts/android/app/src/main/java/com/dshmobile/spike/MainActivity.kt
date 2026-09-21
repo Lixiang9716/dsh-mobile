@@ -33,6 +33,10 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (BuildFlavor.isRelease) {
+            bootRelease()
+            return
+        }
         verdictView = TextView(this).apply {
             setBackgroundColor(Color.BLACK)
             setTextColor(Color.WHITE)
@@ -181,9 +185,9 @@ class MainActivity : Activity() {
             copyAssetDir("official-web", File(filesDir, "official-web"))
             copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
-                session = OfficialWebSession.start(this, view) { verdict ->
+                session = OfficialWebSession.start(this, view, onFinished = { verdict ->
                     verdictView.text = verdict
-                }
+                })
             }
         }
     }
@@ -191,6 +195,54 @@ class MainActivity : Activity() {
     private var session: OfficialWebSession? = null
     private var sessionLive: SessionLiveSession? = null
     private var sessionWrite: SessionWriteSession? = null
+
+    /**
+     * The user-facing boot: the official DSH Web Client, full screen, no
+     * extras required. The vendored dist + client bundles are already in the
+     * APK's assets (the Gradle staging), so a plain launch needs nothing
+     * pushed from outside. No verification drive runs, no verdict panel
+     * exists, and no per-event E2E record is produced — the "release" half of
+     * AGENTS.md constraint 5 / rules.md rule L4. A launch that asks for an
+     * E2E drive is refused LOUD (rule 5): this binary has no drives.
+     */
+    private fun bootRelease() {
+        val requested = listOf(EXTRA_M4, EXTRA_LLM, EXTRA_WEB, EXTRA_SESSION, EXTRA_WRITE)
+            .firstOrNull { intent.getBooleanExtra(it, false) }
+        if (requested != null) {
+            error(
+                "DSHSpike release build: refusing '$requested'. This is the " +
+                    "user-facing distribution build — the verification drives, the " +
+                    "verdict panel and the per-event E2E log stream are compiled out " +
+                    "(AGENTS.md constraint 5, rules.md rule L4). Install the harness " +
+                    "variant (dsh-android-harness) to drive E2E legs.",
+            )
+        }
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    OfficialWebSession.dispatchPageFinished()
+                }
+            }
+        }
+        setContentView(view)
+        webView = view
+        // The carrier + runtime read filesDir trees: materialize FIRST, then
+        // serve. No verdict callback — nothing asserts on a user-facing boot.
+        SpikeRuntime.post {
+            materializeBundle()
+            copyAssetDir("official-web", File(filesDir, "official-web"))
+            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                // No verdict callback: a user-facing boot has nothing to assert.
+                session = OfficialWebSession.start(
+                    this, view, onFinished = { _ -> }, evidence = false,
+                )
+            }
+        }
+    }
 
     /** The probe's page-side result sink (JavaBridge thread → session). The
      * drives are addressed; each dispatcher no-ops when its session is not

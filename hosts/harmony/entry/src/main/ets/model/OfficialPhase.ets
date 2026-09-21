@@ -60,6 +60,7 @@ import { ApiBridge } from './ApiBridge';
 import { HttpFetch } from './HttpFetch';
 import { SessionLiveProbe, LegEvent } from './SessionLiveProbe';
 import { SessionWriteProbe, WriteVerdict, WriteLegEvent, WRITE_MESSAGE } from './SessionWriteProbe';
+import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
 const OFFICIAL_BASE_PORT: number = 17890;
@@ -831,6 +832,9 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     const fields: Record<string, Object> = passed ?
       { 'status': 'pass' } : { 'status': 'fail', 'reason': reason };
     this.emit(this.legScenario, complete, fields);
+    if (BuildFlavor.isRelease()) {
+      return;
+    }
     let line = 'dsh.spike.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
     line += ' probe=' + (passed ? 'pass' : 'fail');
     if (!passed) {
@@ -1364,6 +1368,10 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
       'message': 'e2e',
       'data': data,
     };
+    // Release strip: the canonical E2E stream is harness-only.
+    if (BuildFlavor.isRelease()) {
+      return;
+    }
     hostCarrierLine(2, 'dsh.spike.log: ' + JSON.stringify(envelope));
   }
 

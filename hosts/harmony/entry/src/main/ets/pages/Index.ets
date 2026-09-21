@@ -40,6 +40,7 @@ import { HostPhase } from '../model/HostPhase';
 import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
 import { PickerPrimitives } from '../model/PickerPrimitives';
+import { BuildFlavor } from '../model/BuildFlavor';
 
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
@@ -336,6 +337,20 @@ struct Index {
     // from `--ps dsh.e2e.leg`); absent = the default chain. An unknown value
     // fails loud instead of silently running the default chain (rule 5).
     const leg: string = E2eLeg.get();
+    if (BuildFlavor.isRelease()) {
+      // A user-facing build runs NO verification drive: the E2E machinery and
+      // the per-event log stream are compiled out (AGENTS.md constraint 5,
+      // rules.md rule L4). Refuse LOUD (rule 5) rather than silently running
+      // a leg or leaving a blank screen the user cannot read.
+      const detail: string = leg === ''
+        ? 'the user-facing serving path is not implemented yet (the serving '
+          + 'stack lives inside the E2E drives) — use the harness variant '
+          + '(dsh-harmony-harness) to run the host'
+        : 'dsh.e2e.leg ' + leg + ' asks for a verification drive';
+      this.verdict = 'DSH release build: refused — ' + detail;
+      hilog.error(0x0000, TAG, 'release build: refusing to start: %{public}s', detail);
+      return;
+    }
     if (leg === '') {
       this.runSpike();
     } else if (leg === LEG_LLM) {

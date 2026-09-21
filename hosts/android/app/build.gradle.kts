@@ -88,6 +88,36 @@ android {
     namespace = "com.dshmobile.spike"
     compileSdk = 35
 
+    // BuildConfig carries DSH_RELEASE into Kotlin; AGP 8 defaults the class
+    // off, so ask for it (the Release build type sets the field below).
+    buildFeatures {
+        buildConfig = true
+    }
+
+    buildTypes {
+        // The harness (debug) is the verification vehicle: full structured
+        // logging, the E2E drives run. The release build is what a user
+        // gets: the define reaches BOTH halves — BuildConfig.DSH_RELEASE in
+        // Kotlin and -DDSH_RELEASE in the spike .so (where the shared C host
+        // injects globalThis.__DSH_RELEASE__, which strips the JS logger to
+        // the critical set) — and the drives refuse to start.
+        release {
+            isMinifyEnabled = false
+            buildConfigField("boolean", "DSH_RELEASE", "true")
+            externalNativeBuild {
+                cmake {
+                    // The spike target is C-ONLY (CMakeLists: project(… C)), so
+                    // the define must ride cFlags — cppFlags covers C++ sources
+                    // and silently reaches nothing here.
+                    cFlags += "-DDSH_RELEASE=1"
+                }
+            }
+        }
+        debug {
+            buildConfigField("boolean", "DSH_RELEASE", "false")
+        }
+    }
+
     sourceSets {
         getByName("main") {
             // the staged official-web trees ride the normal assets merge

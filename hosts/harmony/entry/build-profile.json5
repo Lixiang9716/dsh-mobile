@@ -16,8 +16,41 @@
   },
   "buildOptionSet": [
     {
-      "name": "release",
+      // The harness: full structured logging, E2E drives run. It publishes
+      // the flavor field as false so the ArkTS import resolves in BOTH modes
+      // (an export that exists only in release would make every debug build
+      // fail to compile).
+      "name": "debug",
       "arkOptions": {
+        "buildProfileFields": {
+          "DSH_RELEASE": false
+        }
+      }
+    },
+    {
+      "name": "release",
+      // The release build is what a user gets, and the define reaches BOTH
+      // halves. `arguments` lands as a CMake cache variable (cppFlags maps to
+      // CMAKE_CXX_FLAGS only, so it would miss the C host); CMakeLists turns
+      // it into a compile definition for the whole spike target, the shared C
+      // host then injects globalThis.__DSH_RELEASE__, and the JS logger drops
+      // debug/info at the source. `buildProfileFields` publishes the same
+      // flag to ArkTS as a generated BuildProfile constant.
+      // `externalNativeOptions` is restated IN FULL so the per-mode merge can
+      // never drop the module's own `path` (a lost path fails the build loud
+      // rather than silently building nothing — rule 5).
+      "externalNativeOptions": {
+        "path": "./src/main/cpp/CMakeLists.txt",
+        "arguments": "-DDSH_RELEASE=1",
+        "cppFlags": "",
+        "abiFilters": [
+          "arm64-v8a"
+        ]
+      },
+      "arkOptions": {
+        "buildProfileFields": {
+          "DSH_RELEASE": true
+        },
         "obfuscation": {
           "ruleOptions": {
             "enable": false,

@@ -58,6 +58,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HttpPrimitive } from './HttpPrimitive';
 import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
+import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
 const PHASE_ID: number = 1;
@@ -327,6 +328,10 @@ export class HostPhase {
       'message': 'e2e',
       'data': data,
     };
+    // Release strip: the canonical E2E stream is harness-only.
+    if (BuildFlavor.isRelease()) {
+      return;
+    }
     hostCarrierLine(PHASE_ID, 'dsh.spike.log: ' + JSON.stringify(envelope));
   }
 
