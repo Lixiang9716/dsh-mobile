@@ -32,6 +32,34 @@ cd "$(dirname "$0")"
 DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
 NPM_BASE="https://registry.npmjs.org"
 
+# fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
+#
+# Measured: one upstream `curl: (56) The requested URL returned error: 504`
+# failed an entire CI job (run 35614651794, the iOS "Vendor quickjs-ng + the
+# pinned upstream DSH closure" step) and did not recur — transient, not
+# systemic. `--retry` alone does not cover it: that retries connection blips,
+# while a 504 from the origin or a proxy is not reliably in its retry set.
+#
+# The integrity check is deliberately NOT part of this: every caller still
+# verifies sha256 over what lands, so a retry can never turn a corrupt or
+# truncated download into an accepted one. Bounded at 3 attempts, and it fails
+# loud naming the URL.
+fetch_retry() {
+  _url="$1"; _out="$2"; _n=0
+  while [ "$_n" -lt 3 ]; do
+    _n=$((_n + 1))
+    if curl -fL --retry 3 --retry-delay 5 --connect-timeout 20 \
+         "$_url" -o "$_out" 2>/dev/null; then
+      return 0
+    fi
+    echo "vendor: download attempt $_n/3 failed: $_url" >&2
+    [ "$_n" -lt 3 ] && sleep 5
+  done
+  echo "vendor: download FAILED after 3 attempts: $_url" >&2
+  return 1
+}
+
+
 # name|version|sha256 — upstream dsh packages (vendor/dsh/<name>@<version>/)
 DSH_PACKAGES="
 agent|0.1.6-alpha.2|1e4a587e5f7ebe32155a2e2eca3e18ad3b9b18b45071bdb2aad809b8af60fbe2
@@ -75,7 +103,7 @@ fetch_dsh() {
     have_pkg "$dir" && { echo "vendor: $dir present"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    curl -sfL "$DSH_BASE/$tgz" -o "$tmp"
+    fetch_retry "$DSH_BASE/$tgz" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     mkdir -p "$dir"
     tar xzf "$tmp" -C "$dir" --strip-components=1
@@ -87,7 +115,7 @@ fetch_npm() {
     dir="$1"; suffix="$2"; sha="$3"
     have_pkg "npm/$dir" && { echo "vendor: npm/$dir present"; return; }
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    curl -sfL "$NPM_BASE/$suffix" -o "$tmp"
+    fetch_retry "$NPM_BASE/$suffix" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     mkdir -p "npm/$dir"
     tar xzf "$tmp" -C "npm/$dir" --strip-components=1

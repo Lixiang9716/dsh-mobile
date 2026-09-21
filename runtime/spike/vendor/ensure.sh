@@ -15,6 +15,34 @@ cd "$(dirname "$0")"
 PIN=0.17.0
 COMMIT=6d46d07d04041b40f4f49eaa7fdebe44c314c699
 TARBALL_SHA256=a62cf1ff7d6d2f82b90a2d247a57e9eb56b81c03feb1f372a53923426e358cb0
+
+# fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
+#
+# Measured: one upstream `curl: (56) The requested URL returned error: 504`
+# failed an entire CI job (run 35614651794, the iOS "Vendor quickjs-ng + the
+# pinned upstream DSH closure" step) and did not recur — transient, not
+# systemic. `--retry` alone does not cover it: that retries connection blips,
+# while a 504 from the origin or a proxy is not reliably in its retry set.
+#
+# The integrity check is deliberately NOT part of this: every caller still
+# verifies sha256 over what lands, so a retry can never turn a corrupt or
+# truncated download into an accepted one. Bounded at 3 attempts, and it fails
+# loud naming the URL.
+fetch_retry() {
+  _url="$1"; _out="$2"; _n=0
+  while [ "$_n" -lt 3 ]; do
+    _n=$((_n + 1))
+    if curl -fL --retry 3 --retry-delay 5 --connect-timeout 20 \
+         "$_url" -o "$_out" 2>/dev/null; then
+      return 0
+    fi
+    echo "vendor: download attempt $_n/3 failed: $_url" >&2
+    [ "$_n" -lt 3 ] && sleep 5
+  done
+  echo "vendor: download FAILED after 3 attempts: $_url" >&2
+  return 1
+}
+
 DIR="quickjs-ng/$PIN"
 
 FILES="dtoa.c libregexp.c libunicode.c quickjs.c \
@@ -34,7 +62,7 @@ fi
 
 mkdir -p "$DIR"
 TMP=$(mktemp /tmp/dsh-qjs.XXXXXX.tar.gz)
-curl -fL "https://github.com/quickjs-ng/quickjs/archive/$COMMIT.tar.gz" -o "$TMP"
+fetch_retry "https://github.com/quickjs-ng/quickjs/archive/$COMMIT.tar.gz" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 for f in $FILES; do
     tar xzf "$TMP" -C "$DIR" --strip-components=1 "quickjs-$COMMIT/$f"
