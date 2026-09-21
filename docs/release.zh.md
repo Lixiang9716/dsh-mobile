@@ -47,27 +47,35 @@
 构建号**不**在此版本流内:`CFBundleVersion`、Android 的 `versionCode` 与
 HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工维护。
 
-### 配置:无需任何令牌
+### 配置(一次性):一个仓库设置
 
-`release/please` 使用 `secrets.GITHUB_TOKEN` 运行。它过去要求一个 fine-grained
-PAT(`RELEASE_PLEASE_TOKEN`),因为 `GITHUB_TOKEN` 创建的事件不会触发 workflow,
-而 `main` 要求 `gates` 检查——用 `GITHUB_TOKEN` 开的 release PR 拿不到任何检查,
-永远无法合并。
+`release/please` 使用 `secrets.GITHUB_TOKEN` 运行——**没有任何令牌需要配置**。
+但 `GITHUB_TOKEN` 能否开 pull request,取决于仓库是否允许:**Settings → Actions →
+General → Workflow permissions → "Allow GitHub Actions to create and approve
+pull requests"**。关着的时候,release-please 会一路走到最后一个 API 调用然后被拒:
+*"GitHub Actions is not permitted to create or approve pull requests"*——这正是过去
+那个 PAT 一直在掩盖的失败。
 
-`workflow_dispatch` 是这条抑制规则**有明文记载的例外**,所以检查改为直接产出:
-`.github/workflows/gov.yml` 带上 `workflow_dispatch` 触发,`release/please`
-的最后一步执行 `gh workflow run gov.yml --ref <release-branch>`。该次派发运行会在
-release PR 自己的 head commit 上报告 `gates` 检查——是**在真实 commit 上真跑的
-门禁**,不是通过 API 伪造出来的检查。派发若被拒绝,该 job 直接失败,于是"无法合并
-的 release PR"会自己喊出来,而不是静静躺在那里没有检查(rules.md 规则 5)。
+它可以通过 API 设置,本仓库就是这么做的:
 
-代价说清楚:没有 PAT 之后,三条平台流水线(`dev/ios`、`dev/android`、
-`dev/harmonyos`)也不会在 release PR 上运行。release PR 只改动这些宿主里的版本号,
-而 `release/packages` 会在发布事件上构建并检验三个宿主——所以失去的是一次**预览**,
-不是一次验证。见 D11。
+    gh api --method PUT repos/OWNER/REPO/actions/permissions/workflow --input - <<'JSON'
+    {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
+    JSON
+
+设置打开之后,release PR 会被创建出来,而且**它的 `pull_request` workflow 会正常
+运行**。在 PR #107 上实测:`gates` 与三条平台流水线(`dev/ios`、`dev/android`、
+`dev/harmonyos`)全部报出绿色检查,PR 达到 `CLEAN`——在无人干预的情况下可合并。
+
+`release/please` 还会额外**派发**一次门禁 workflow 到 release 分支
+(`gh workflow run gov.yml --ref <release-branch>`),而这是**保底而非机制本身**:
+`workflow_dispatch` 是 GitHub 对"`GITHUB_TOKEN` 创建的事件"抑制规则有明文记载的
+例外,所以即使 PR 事件那条路没有触发,`main` 真正要求的那一个检查也会出现在
+release PR 的 head commit 上。它是**在真实 commit 上真跑的门禁**,绝不是通过 API
+伪造的检查;派发被拒绝会让该 job 直接失败——于是"无法合并的 release PR"会自己喊
+出来(rules.md 规则 5)。
 
 `RELEASE_PLEASE_TOKEN` 已不再被任何 workflow 读取。如果它还留在 secret 里,就是
-被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。
+被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。见 D11。
 
 每个 job 也会在 workflow run 下上传各自独立的可下载产物。
 

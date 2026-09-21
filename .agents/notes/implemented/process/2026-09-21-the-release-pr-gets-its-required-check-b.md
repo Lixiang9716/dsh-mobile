@@ -46,12 +46,27 @@ release PR that cannot be merged announces itself.
 
 The PAT path, its three probes, and the `RELEASE_PLEASE_TOKEN` requirement are
 removed. The secret is left in place, unread. `docs/release.md` and
-`docs/release.zh.md` now document "Setup: none", and the trade-off is stated
-rather than glossed: without a PAT the three platform pipelines also do not
-run on the release PR — a preview lost, not a verification, since
-`release/packages` builds and checks all three hosts on the published event.
+`docs/release.zh.md` document the one remaining prerequisite, which is a
+repository setting rather than a credential.
 
-Before choosing this, the release path was measured rather than assumed: a
+**One thing had to be measured rather than predicted, and the prediction was
+wrong.** Removing the PAT exposed the failure it had been masking: with
+`GITHUB_TOKEN` the action reached its final API call and was refused with
+*"GitHub Actions is not permitted to create or approve pull requests"*. The
+repository setting that lifts this, **"Allow GitHub Actions to create and
+approve pull requests"** (`can_approve_pull_request_reviews`), was off; it was
+enabled through the API. It is the operative fix.
+
+This note originally claimed — and D11 with it — that without a PAT the three
+platform pipelines would not run on the release PR. That is false, and the
+measurement says so: on PR #107, `gov` and all three platform pipelines
+(`dev/ios`, `dev/android`, `dev/harmonyos`) reported green checks from
+`pull_request` events, and the PR reached `CLEAN` and mergeable with no
+operator intervention. The dispatch is therefore a **guarantee, not the
+mechanism**: it costs one ~20s run and makes the single check `main` requires
+independent of the PR-event path, which is why it stays.
+
+Before any of this, the release path was measured rather than assumed: a
 release-please-shaped commit (version bump across `version.txt`, `CHANGELOG.md`
 and the three host manifests, under the generated `chore(main): release X.Y.Z`
 message) was built on a scratch branch and run through the full DAG — **8

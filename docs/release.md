@@ -55,32 +55,39 @@ Build numbers are **not** versioned here: `CFBundleVersion`, the Android
 `versionCode` and the HarmonyOS `versionCode` are monotonic integers that
 semver cannot express, so they stay hand-set.
 
-### Setup: none — there is no token to configure
+### Setup (once): one repository setting
 
-`release/please` runs with `secrets.GITHUB_TOKEN`. It used to demand a
-fine-grained PAT (`RELEASE_PLEASE_TOKEN`), because events created by
-`GITHUB_TOKEN` do not trigger workflows and `main` requires the `gates`
-check — a `GITHUB_TOKEN` release PR would receive no check and could never be
-merged.
+`release/please` runs with `secrets.GITHUB_TOKEN` — there is **no token to
+configure**. But `GITHUB_TOKEN` may only open a pull request at all if the
+repository permits it: **Settings → Actions → General → Workflow permissions →
+"Allow GitHub Actions to create and approve pull requests"**. With it off,
+release-please gets all the way to its final API call and is refused with
+*"GitHub Actions is not permitted to create or approve pull requests"* — which
+is the failure the old PAT had been masking.
 
-`workflow_dispatch` is a documented **exception** to that suppression, so the
-check is produced directly instead: `.github/workflows/gov.yml` carries a
-`workflow_dispatch` trigger, and `release/please`'s last step runs
-`gh workflow run gov.yml --ref <release-branch>`. The dispatched run reports
-the `gates` check on the release PR's own head commit — a real gate run on the
-real commit, not a check fabricated through the API. If the dispatch is
-refused the job fails, so a release PR that cannot be merged announces itself
-instead of sitting silently unchecked (rules.md rule 5).
+It is settable through the API, which is how this repository did it:
 
-The trade-off, stated plainly: with no PAT, the three platform pipelines
-(`dev/ios`, `dev/android`, `dev/harmonyos`) also do not run on the release PR.
-A release PR changes only version numbers inside those hosts, and
-`release/packages` builds and verifies all three on the published event — so
-what is lost is a preview, not a verification. See D11.
+    gh api --method PUT repos/OWNER/REPO/actions/permissions/workflow --input - <<'JSON'
+    {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
+    JSON
+
+With the setting on, the release PR is created and **its `pull_request`
+workflows run normally**. Measured on PR #107: `gates` and all three platform
+pipelines (`dev/ios`, `dev/android`, `dev/harmonyos`) reported green checks,
+and the PR reached `CLEAN` — mergeable with no operator action.
+
+`release/please` additionally **dispatches** the gate workflow at the release
+branch (`gh workflow run gov.yml --ref <release-branch>`), and that is a
+guarantee rather than the mechanism: `workflow_dispatch` is a documented
+exception to GitHub's suppression of `GITHUB_TOKEN`-created events, so the one
+check `main` actually requires exists on the release PR's head commit even if
+the PR-event path does not fire. It is a real gate run on the real commit,
+never a check fabricated through the API, and a refused dispatch fails the job
+— so a release PR that cannot be merged announces itself (rules.md rule 5).
 
 `RELEASE_PLEASE_TOKEN` is no longer read by any workflow. If it is still set as
 a secret it is simply ignored; nothing needs deleting, and its fine-grained
-permissions no longer matter.
+permissions no longer matter. See D11.
 
 Each job also uploads its own downloadable artifact under the workflow run.
 
