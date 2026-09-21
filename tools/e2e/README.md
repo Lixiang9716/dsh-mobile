@@ -39,10 +39,24 @@ everywhere, so one checker serves all hosts.
 | `m3-complete.json` | `m3.complete` | macOS CLI (and any spike host) | 41 events — the four M3 scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
 | `m3-fetch-install.json` | `m3.fetch-install` | iOS, profile mode (`run-ios-m3.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the m2.session-shaped agent session |
 | `m3-fetch-carrier.json` | `m3.fetch-carrier` | iOS, carrier-side (`run-ios-m3.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
+| `m2-llm.json` | `m2.llm` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/spike/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
+| `m2-llm-device.json` | `m2.llm` | iOS + Android (`run-ios-m2-llm.sh` / `hosts/android/ci/run-m2-llm.sh`) | 14 expectations — the REAL-backend leg: `llm.leg` = `gateway.httpFetch`, config from fs scope `app`, then the nondeterministic delta runs are asserted with the checker's `repeat` expectations (`llm.reasoning.delta` ≥1, `llm.delta` ≥1), `llm.stream.completed`, `llm.served-model` (logged verbatim — the server may substitute a model name), `llm.content.asserted` (non-empty aggregate), `llm.key.audit` `leaked: false` |
+| `m2-llm-carrier.json` | `m2.llm.carrier` | iOS + Android, carrier-side | 7 events — `client.selected`, Web Client mount, WS connect, the `llm` toolbar slot registered, first/last streamed LLM delta, session complete |
 
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
 match, exactly and in declaration order.
+
+### Repeat expectations (nondeterministic cardinality)
+
+An expectation with `"repeat": true` greedily consumes ONE-OR-MORE
+consecutive records matching its event name + matchers. It exists for the
+real LLM legs, where the number of streamed deltas is the server's
+decision — the expectation still asserts "at least one, in this position,
+matching these fields"; everything before and after stays one-to-one.
+Proven by `selftest.sh` fixtures (`m2-llm-repeat*.txt`: zero deltas fails
+AT the repeat expectation, a delta straying past the next expectation is
+extra).
 
 ## The audit stream (flat envelope)
 
@@ -123,6 +137,27 @@ receipt journal is append-only — the replay assertions need an empty
 container), then verifies BOTH `m3-fetch-install.json` and
 `m3-fetch-carrier.json`; evidence lands under
 `hosts/ios/artifacts/m3-complete/`.
+
+### M2 real-LLM runner (on-device, real backend)
+
+`run-ios-m2-llm.sh` drives the REAL-backend LLM E2E (scenario `m2.llm`,
+real leg) on the iOS simulator — NO UI interaction:
+
+```sh
+tools/e2e/run-ios-m2-llm.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It requires `ZAI_BASE_URL` / `ZAI_API_KEY` / `ZAI_MODEL` in the environment
+(or the repo-root `.env` — missing credentials fail loud), stages them as
+`m2-llm/config.json` into fs scope "app" (the app container's
+`Documents/profiles/default/`), launches the app with
+`-dsh-mode session -dsh-scenario m2-llm`, and verifies BOTH
+`m2-llm-device.json` and `m2-llm-carrier.json`. The Android sibling is
+`hosts/android/ci/run-m2-llm.sh` (emulator; config staged via `run-as`
+into `files/profiles/default/m2-llm/config.json`, launch extra
+`--ez dsh.llm true`; evidence under `hosts/android/artifacts/m2-llm/`).
+Both runners end with a `grep -F` of the RAW captured log for the API key —
+the key must appear nowhere.
 
 It builds DSHSpike, launches it in session mode (`-dsh-mode session`),
 waits for the `webclient.mounted` / `ws.token-delta` / terminal

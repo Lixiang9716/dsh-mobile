@@ -1,0 +1,219 @@
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"main begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"host.ready","signalled":true}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"descriptor leg probe","data":[]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.leg","leg":"scripted","transport":"scripted-sse"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.config.loaded","source":"scripted-fixture","model":"scripted"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"session.created","sessionId":"s-m2-llm-0001","scope":"app"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"session"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"agent.started","model":"scripted","tools":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"agent"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"turn begin","data":[{"model":"scripted"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.stream.started","turn":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"scripted","messages":1,"maxTokens":64}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"scripted://m2-llm/chat/completions","bytes":144}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted fetch","data":[{"url":"scripted://m2-llm/chat/completions"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted sse build","data":[{"deltas":7}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":1120}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunking","data":[{"bytes":1120,"sizes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse drain begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse splitter created","data":[]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":6}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":7}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":8}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":179}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.reasoning.delta","index":0,"text":"Pondering the greeting."}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":10}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":11}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":12}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":13}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":132}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":0,"text":"Hello"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":14}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":15}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":16}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":18}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":19}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":132}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":1,"text":" from"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":20}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":21}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":22}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":25}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":131}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":2,"text":" the"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":26}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":27}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":28}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":29}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":132}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":3,"text":" real"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":33}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":36}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":37}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":38}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":131}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":4,"text":" LLM"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":39}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":40}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":41}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":42}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":43}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":61}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":136}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.delta","index":5,"text":" backend."}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":44}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":17}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":17}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":45}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":9}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":46}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":23}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":47}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":5}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scripted chunk yield","data":[{"index":48}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":48}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":48}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":117}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":12}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat done","data":[{"deltas":6,"chars":32}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.stream.completed","turn":1,"deltas":6,"reasoningDeltas":1,"chars":32,"finishReason":"stop"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.served-model","requested":"scripted","served":"scripted-fixture"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.content.asserted","text":"Hello from the real LLM backend.","chars":32}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.key.audit","lines":215,"leaked":false}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"session.completed","sessionId":"s-m2-llm-0001","status":"pass","deltas":6,"chars":32}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"complete"}]}
+spike: PASS (complete=1 pass=1)

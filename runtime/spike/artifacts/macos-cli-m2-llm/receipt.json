@@ -1,0 +1,20 @@
+{
+  "host": "macos-cli (darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "package": "@deepseek-ai/dsh-util-crypto@0.1.6-alpha.1",
+  "scenario": "m2.llm (scripted leg)",
+  "proves": [
+    "the OpenAI-compatible streaming chat client (runtime/spike/llm.js) runs its FULL path — request build, SSE parse, delta fold, aggregation — over a scripted transport with the exact gateway httpFetch response shape ({status, headers, body: AsyncIterable<Uint8Array>, abort()}), the same code the device legs drive with the REAL httpFetch (leg negotiated from the RuntimeDescriptor — llm.leg scripted/gateway.httpFetch — never a hostType branch)",
+    "SSE parser tolerance: the scripted stream is split at odd byte boundaries [9,23,5,61,17] (mid-line, mid-JSON) and still folds 1 reasoning delta + 6 content deltas with exact texts (llm.reasoning.delta 'Pondering the greeting.', llm.delta Hello/ from/ the/ real/ LLM/ backend.)",
+    "stream facts logged honestly: llm.stream.completed {deltas 6, reasoningDeltas 1, chars 32, finishReason stop}, llm.served-model {requested scripted, served scripted-fixture}, aggregated text asserted (llm.content.asserted 'Hello from the real LLM backend.', 32 chars)",
+    "key-leak audit (rule 5): the scenario wraps the log sink from its first line and audits EVERY line for the active key string — here the non-secret fixture key 'sk-scripted-fixture-key-not-a-secret' used in the scripted Authorization header — and fails loud on a leak (llm.key.audit {lines 214, leaked false}; the key string appears nowhere in logs.txt)"
+  ],
+  "fixture": "in-module scripted SSE stream (buildScriptedSse): role+reasoning_content chunk, 6 content chunks, finish_reason stop chunk, data: [DONE]",
+  "checker": "tools/e2e/scenarios/m2-llm.json",
+  "events": 19,
+  "determinism": "scripted stream is fully deterministic; repeated runs byte-identical modulo log-sink line count",
+  "exitCode": 0
+}

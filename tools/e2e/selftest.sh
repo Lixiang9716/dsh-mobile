@@ -50,6 +50,13 @@ expect_fail_at "$AUDIT" "$TD/m2-gateway-audit.negative.txt" 2
 # envelope — the slimmed m1 fixture (derived from the committed M1 capture,
 # non-deterministic fields stripped) still passes its manifest.
 expect_pass tools/e2e/scenarios/m1-spike-boot.json tools/e2e/testdata/m1-spike-boot.positive.txt
+# Repeat expectations (the real-LLM legs' nondeterministic delta counts):
+# one-or-more deltas at the repeated position pass; ZERO deltas fail AT the
+# repeat expectation; a delta straying past stream.completed is extra.
+REPEAT=tools/e2e/testdata/m2-llm-repeat.json
+expect_pass "$REPEAT" "$TD/m2-llm-repeat.positive.txt"
+expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-zero.txt" 1
+expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-extra.txt" none
 
 if [ "$FAILURES" -gt 0 ]; then
   echo "selftest: $FAILURES failure(s)"; exit 1

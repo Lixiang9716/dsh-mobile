@@ -1,0 +1,5 @@
+dsh.spike.log: {"level":"info","module":"t","message":"e2e","data":[{"scenario":"m2.llm.fixture","event":"llm.stream.started","turn":1}]}
+dsh.spike.log: {"level":"info","module":"t","message":"e2e","data":[{"scenario":"m2.llm.fixture","event":"llm.delta","index":0,"text":"a"}]}
+dsh.spike.log: {"level":"info","module":"t","message":"e2e","data":[{"scenario":"m2.llm.fixture","event":"llm.delta","index":1,"text":"b"}]}
+dsh.spike.log: {"level":"info","module":"t","message":"e2e","data":[{"scenario":"m2.llm.fixture","event":"llm.stream.completed","turn":1,"deltas":3}]}
+dsh.spike.log: {"level":"info","module":"t","message":"e2e","data":[{"scenario":"m2.llm.fixture","event":"llm.delta","index":2,"text":"stray"}]}

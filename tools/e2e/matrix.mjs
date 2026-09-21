@@ -97,19 +97,32 @@ const checkVerdict = (file, manifestDir) => {
   }
   const findings = [];
   if (v.pass !== true) findings.push(finding('VERDICT_FAIL', file, v.scenario));
-  if (v.expected !== v.logged) {
-    findings.push(finding('VERDICT_MALFORMED', file,
-      `${v.scenario}: expected=${v.expected} logged=${v.logged} but pass=true`));
-  }
   const out = { file: relative(process.cwd(), file), scenario: v.scenario, pass: v.pass,
     expected: v.expected, logged: v.logged };
-  const manifest = join(manifestDir, `${v.scenario.replace(/\./g, '-')}.json`);
+  // Manifest resolution: prefer the verdict file's own stem
+  // (verdict-<stem>.json → scenarios/<stem>.json — several manifests may
+  // share one scenario id, e.g. the m2.llm CLI vs device legs), falling
+  // back to the scenario-id convention for plain verdict.json files.
+  const stem = (/^verdict-(.+)\.json$/.exec(baseName(file)) ?? [])[1];
+  let manifest = join(manifestDir, `${v.scenario.replace(/\./g, '-')}.json`);
+  if (stem && statSafe(join(manifestDir, `${stem}.json`))) {
+    manifest = join(manifestDir, `${stem}.json`);
+  }
   out.manifest = relative(process.cwd(), manifest);
+  let repeatAware = false;
   if (!statSafe(manifest)) {
     findings.push(finding('SCENARIO_WITHOUT_MANIFEST', file, v.scenario));
   } else {
-    out.manifestExpect = JSON.parse(readFileSync(manifest, 'utf8')).expect.length;
+    const expect = JSON.parse(readFileSync(manifest, 'utf8')).expect;
+    out.manifestExpect = expect.length;
     out.drift = out.manifestExpect !== v.expected;
+    // Repeat expectations (one-to-many, e.g. the real-LLM legs' delta runs)
+    // make logged > expected legitimate for a passing verdict.
+    repeatAware = expect.some((e) => e && e.repeat === true);
+  }
+  if (v.expected !== v.logged && !repeatAware) {
+    findings.push(finding('VERDICT_MALFORMED', file,
+      `${v.scenario}: expected=${v.expected} logged=${v.logged} but pass=true`));
   }
   return { verdict: out, findings };
 };

@@ -1,0 +1,20 @@
+{
+  "scenario": "m2.llm",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "host.ready", "match": { "signalled": true } },
+    { "event": "llm.leg", "match": { "leg": "real", "transport": "gateway.httpFetch" } },
+    { "event": "llm.config.loaded", "match": { "source": "app-scope" } },
+    { "event": "session.created", "match": { "sessionId": "s-m2-llm-0001", "scope": "app" } },
+    { "event": "agent.started", "match": { "tools": 0 } },
+    { "event": "llm.stream.started", "match": { "turn": 1 } },
+    { "event": "llm.reasoning.delta", "repeat": true },
+    { "event": "llm.delta", "repeat": true },
+    { "event": "llm.stream.completed", "match": { "turn": 1 } },
+    { "event": "llm.served-model", "match": {} },
+    { "event": "llm.content.asserted", "match": {} },
+    { "event": "llm.key.audit", "match": { "leaked": false } },
+    { "event": "session.completed", "match": { "sessionId": "s-m2-llm-0001", "status": "pass" } }
+  ]
+}
