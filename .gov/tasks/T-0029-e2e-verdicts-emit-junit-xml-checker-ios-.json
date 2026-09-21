@@ -1,0 +1,27 @@
+{
+  "title": "E2E verdicts emit JUnit XML (checker + iOS dev pipeline)",
+  "created": "2026-09-21T15:22:41+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "tools/e2e/junit.mjs converts one or more verdicts into ONE JUnit XML (stdlib-only ESM)",
+    "check.mjs --junit <path> reuses the converter for the verdict it produced",
+    "dev-ios.yml passes --junit on both checkers and uploads the XML",
+    "evidence: passing and failing verdict both produce well-formed XML (python3 parse)",
+    "Agent Note (class testing) filled with Problem/Decision/Alternatives",
+    "gov run green; branch pushed; PR opened (not merged)"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0029",
+  "void": {
+    "ts": "2026-09-21T15:25:10+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE on branch feat/e2e-junit-xml, PR #123 (awaiting the integrator's merge). Deliverables: tools/e2e/junit.mjs (stdlib-only ESM converter, 251 lines), check.mjs --junit writing the same verdict through the same converter before exit, dev-ios.yml passing --junit on both m1 checkers with the XMLs named in the artifact path list, plus Agent Note .agents/notes/implemented/testing/2026-09-21-e2e-verdicts-emit-junit-xml-so-a-red-sce.md. Checklist verified against the tree and by RUNNING it: real PASS verdict, the deliberate m2-gateway-binding failure (expected[4] fs.denied), the m2-llm-repeat trailing-extra failure and an unparsable-line capture all produced XML accepted by python3 xml.dom.minidom; junit.mjs --out merged four verdicts into tests=4 failures=3; tools/e2e/selftest.sh green; check.mjs without the flag unchanged. gov run 12/12 (same on the pre-push hook). Retired as void rather than closed per this plane's recorded exit (.agents/notes/implemented/process/2026-09-21-task-cards-retire-by-void-the-close-rece.md): on 0.47.1 close stamps a receipt whose verify-decisions NOT_SELECTED entry _check_receipt reads as not-green. The PR is the audit trail."
+  }
+}
