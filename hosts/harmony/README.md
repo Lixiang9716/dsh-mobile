@@ -69,6 +69,17 @@ ONE launch on the emulator now proves the host end to end in two phases:
 
 ## D9 official phases (mount + httpFetch v2 + session-live + write-live)
 
+The SERVING half of this stack is one seat — `model/OfficialServe.ets` — and
+it is what a RELEASE launch runs: routes -> listen -> the web-boot runtime
+composes the boot wire -> `web.boot` rows into the index render pipeline ->
+ArkWeb mounts the origin. No drive, no probe, no record. The EVIDENCE half
+is `model/OfficialPhase.ets`, which attaches to that seat through its hook
+properties and adds the canonical `dsh.spike.log:` records, the same-origin
+probes, the proof legs below and the verdicts. A release build therefore
+serves the official UI on a plain launch (`--ps dsh.e2e.leg <leg>` refuses
+loud by name — rule 5), and the harness behaviour below is unchanged.
+Evidence: [artifacts/release-logging/](artifacts/release-logging/).
+
 ONE launch chains four D9 phases after the m5 verdict (each on a FRESH
 runtime; every phase's capture file holds exactly its own manifest's
 records):

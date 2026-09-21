@@ -26,6 +26,13 @@
  *    (b-harmony.session.live, W-HARMONY3): a fresh runtime boots the FULL
  *    upstream spine and claims session.list + the mux journal from
  *    ctx.sessions — the official page then reads REAL session data.
+ *
+ * RELEASE builds take the SAME serving seat as phase 3 without any of the
+ * drives (see model/OfficialServe.ets): a plain launch — no launch
+ * parameter, nothing staged — mounts the official DSH Web UI over the same
+ * carrier and the same web-boot runtime, and emits no record at all. A
+ * release launch that asks for an E2E leg is refused LOUD by name (rule 5):
+ * a user-facing binary has no drives.
  */
 import { startSpike } from 'libspike.so';
 import { fileIo as fs } from '@kit.CoreFileKit';
@@ -39,6 +46,7 @@ import { E2eLeg } from '../model/E2eLeg';
 import { HostPhase } from '../model/HostPhase';
 import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
+import { OfficialServe } from '../model/OfficialServe';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
 
@@ -331,6 +339,9 @@ struct Index {
   private approvalController: CustomDialogController | null = null;
   private carrier: CarrierServer = new CarrierServer();
   private webController: webview.WebviewController = new webview.WebviewController();
+  /** The release boot's serving seat (null in the harness: OfficialPhase
+   * owns the seat there). */
+  private releaseServe: OfficialServe | null = null;
 
   aboutToAppear(): void {
     // The launch parameter picks the leg (E2eLeg, set by EntryAbility.onCreate
@@ -338,17 +349,25 @@ struct Index {
     // fails loud instead of silently running the default chain (rule 5).
     const leg: string = E2eLeg.get();
     if (BuildFlavor.isRelease()) {
-      // A user-facing build runs NO verification drive: the E2E machinery and
-      // the per-event log stream are compiled out (AGENTS.md constraint 5,
-      // rules.md rule L4). Refuse LOUD (rule 5) rather than silently running
-      // a leg or leaving a blank screen the user cannot read.
-      const detail: string = leg === ''
-        ? 'the user-facing serving path is not implemented yet (the serving '
-          + 'stack lives inside the E2E drives) — use the harness variant '
-          + '(dsh-harmony-harness) to run the host'
-        : 'dsh.e2e.leg ' + leg + ' asks for a verification drive';
-      this.verdict = 'DSH release build: refused — ' + detail;
-      hilog.error(0x0000, TAG, 'release build: refusing to start: %{public}s', detail);
+      // The user-facing build SERVES the official Web UI — the same serving
+      // seat the harness's D9 phase runs, with no drive attached (the E2E
+      // machinery and the per-event log stream are compiled out: AGENTS.md
+      // constraint 5, rules.md rule L4). A launch that asks for a leg must
+      // refuse LOUD by name (rule 5): a user-facing binary has no drives, and
+      // a silent default chain would look like a pass.
+      if (leg !== '') {
+        const detail = 'dsh.e2e.leg ' + leg + ' asks for a verification drive; a '
+          + 'user-facing build runs none — use the harness variant '
+          + '(dsh-harmony-harness) to drive E2E legs';
+        this.verdict = 'DSH release build: refused — ' + detail;
+        hilog.error(0x0000, TAG, 'release build: refusing: %{public}s', detail);
+        return;
+      }
+      // The user-facing page carries NO verdict: the panel above (and the
+      // initial "spike: running..." placeholder, which the harness shows
+      // while the trio runs) belongs to the verification UI.
+      this.verdict = '';
+      this.startReleaseServe();
       return;
     }
     if (leg === '') {
@@ -363,9 +382,41 @@ struct Index {
   }
 
   aboutToDisappear(): void {
+    if (BuildFlavor.isRelease()) {
+      if (this.releaseServe !== null) {
+        this.releaseServe.destroy();
+      }
+      return;
+    }
     HostPhase.getInstance().destroy();
     OfficialPhase.getInstance().destroy();
     this.carrier.stop();
+  }
+
+  /** The user-facing boot (release only): materialize the bundled web-boot
+   * closure, then run the serving seat — carrier up, the web-boot runtime
+   * composes the official boot wire from the vendored dist + client bundles
+   * in rawfile, and the origin opens in ArkWeb. No leg, no probe, no record:
+   * the serving seat's evidence hooks are left at their no-op defaults. */
+  private startReleaseServe(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const serve = new OfficialServe();
+    this.releaseServe = serve;
+    serve.onOrigin = (url: string): void => {
+      // The official origin becomes the Web's initial src (nothing is
+      // mounted yet, so this is exactly one navigation).
+      this.webUrl = url;
+    };
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    this.materializeBundle(ctx)
+      .then((root: string): void => {
+        serve.begin(ctx, root, ctx.cacheDir + '/dsh-official-serve.log', fsRoot);
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'release serve failed: %{public}s',
+          err.message ?? 'unknown');
+      });
   }
 
   private copyRawFile(ctx: common.Context, rel: string, dst: string): Promise<void> {
@@ -573,13 +624,24 @@ struct Index {
 
   build() {
     Column({ space: 8 }) {
-      Text('DSH host — HarmonyOS')
-        .fontSize(20)
-        .fontWeight(FontWeight.Bold)
-      Text(this.verdict)
-        .fontSize(14)
-        .fontColor(this.verdict.startsWith('PASS') ? '#0a7d32' : '#b3261e')
-        .maxLines(3)
+      // The harness shows its verdict panel above the mounted page (the E2E
+      // verdict is the checker over the captured records; the Text is the
+      // human summary). The release build shows the official app and nothing
+      // else — except a refusal, which must stay readable (rule 5).
+      if (!BuildFlavor.isRelease()) {
+        Text('DSH host — HarmonyOS')
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+        Text(this.verdict)
+          .fontSize(14)
+          .fontColor(this.verdict.startsWith('PASS') ? '#0a7d32' : '#b3261e')
+          .maxLines(3)
+      } else if (this.verdict !== '') {
+        Text(this.verdict)
+          .fontSize(14)
+          .fontColor('#b3261e')
+          .maxLines(6)
+      }
       if (this.webUrl !== '') {
         Web({ src: this.webUrl, controller: this.webController })
           .width('100%')
@@ -592,11 +654,14 @@ struct Index {
           .onPageEnd((event) => {
             hilog.info(0x0000, TAG, 'arkweb: page end %{public}s',
               event?.url ?? this.webUrl);
+            if (BuildFlavor.isRelease()) {
+              return; // a user-facing build runs no probe (no drives at all)
+            }
             OfficialPhase.getInstance().onPageFinished(event?.url ?? '',
               (script: string): Promise<string> =>
                 this.webController.runJavaScript(script));
           })
-      } else {
+      } else if (!BuildFlavor.isRelease()) {
         Text('carrier: starting...').fontSize(12).fontColor('#666666')
       }
     }

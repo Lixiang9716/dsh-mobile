@@ -81,6 +81,24 @@ if [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; then
 fi
 "$HDC" shell hilog -r >/dev/null
 
+# hilog FLOW CONTROL drops the canonical record stream under burst, and the
+# drives below wait on specific lines in it: the committed d9-* artifacts
+# carry 6 of the httpfetch leg's 368 records, and one 2026-09-21 run delivered
+# NONE of the four lines drive-official.mjs waits for (0 records survived a
+# 26-minute window), starving its whole 600s deadline while every leg had in
+# fact completed (all four captures carried their terminal verdicts — the
+# checkers read those files, the drives read the stream). Off for the drive: a
+# temporary device setting (lost on reboot), not a code path, so a device that
+# refuses it still runs — warned loud, because the starvation it causes looks
+# exactly like a host failure.
+for knob in pidoff domainoff; do
+    out=$("$HDC" shell hilog -Q "$knob" 2>&1 || true)
+    case "$out" in
+        *successfully*) ;;
+        *) echo "::warning::hilog -Q $knob failed ($out) — the record stream may be dropped and a drive may starve its deadline" >&2 ;;
+    esac
+done
+
 # Launch VERIFIED: `aa start`'s exit code is not evidence — right after a
 # fresh `install -r` the BMS is still settling and a start reports success
 # without any process appearing (observed on the cold-booted emulator: no

@@ -1,0 +1,12 @@
+09-21 15:17:59.831  3734  3734 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onCreate
+09-21 15:17:59.965  3734  3734 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onWindowStageCreate
+09-21 15:17:59.991  3734  3734 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onForeground
+09-21 15:18:00.451  3734  3734 I A00000/com.dshmobile.spike/dsh.app: Index loaded
+09-21 15:18:03.042  3734  3734 I A00000/com.dshmobile.spike/dsh.app: plugins route: 58 staged entries
+09-21 15:18:03.071  3734  3734 I A00000/com.dshmobile.spike/dsh.app: carrier: listening on 17890
+09-21 15:18:03.205  3734  3734 I A00000/com.dshmobile.spike/dsh.app: official: delivering web.plugins (58 packages in 15 chunks)
+09-21 15:18:04.544  3734  3734 I A00000/com.dshmobile.spike/dsh.app: official: opening origin http://127.0.0.1:17890/?token=1ff19ee499cfa0330fb5e1e75fb535c2
+09-21 15:18:04.544  3734  3734 I A00000/com.dshmobile.spike/dsh.app: official: web.plugins delivered (final chunk)
+09-21 15:18:05.055  3734  3734 I A00000/com.dshmobile.spike/dsh.app: arkweb: controller attached for http://127.0.0.1:17890/?token=1ff19ee499cfa0330fb5e1e75fb535c2
+09-21 15:18:06.600  3734  3734 I A00000/com.dshmobile.spike/dsh.app: carrier: ws established /api/remote.mux
+09-21 15:18:06.839  3734  3734 I A00000/com.dshmobile.spike/dsh.app: arkweb: page end http://127.0.0.1:17890/

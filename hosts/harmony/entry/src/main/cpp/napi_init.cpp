@@ -309,9 +309,17 @@ napi_value start_spike(napi_env env, napi_callback_info info) {
     ScenarioResult m2 = run_m2(bundle_root, &sink, &sink_ctx, fs_root);
     ScenarioResult session = run_session(bundle_root, &sink, &sink_ctx, fs_root);
 
+    /* The verdict stream is verification machinery, so a Release build keeps
+     * none of it (AGENTS.md constraint 5, rules.md rule L4): a user-facing
+     * launch runs no drive, and a drive that somehow reached this path must
+     * not leave a verdict line in the user's log. The returned summary is
+     * unaffected — it is the ArkTS verdict Text, which the same release
+     * branch in Index.ets never renders. */
+#ifndef DSH_RELEASE
     OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", m1.verdict.c_str());
     OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", m2.verdict.c_str());
     OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", session.verdict.c_str());
+#endif
     if (sink_ctx.capture != nullptr) {
         fclose(sink_ctx.capture);
         sink_ctx.capture = nullptr;
@@ -441,8 +449,15 @@ int phase_drive(HostPhase *p) {
         if (served == 0) break; /* parked — the next mutator re-drives */
     }
     if (!dsh_spike_complete(p->spike)) return 0;
+    /* The phase verdict is a drive's terminal evidence, so a Release build
+     * keeps none of it (AGENTS.md constraint 5, rules.md rule L4) — this is
+     * the path a user-facing launch actually reaches (the official serving
+     * seat runs the mount entry through it), and a verdict line there would
+     * be verification machinery leaking into the user's log. The latch stays
+     * outside the guard: the verdict is decided once per phase regardless. */
     if (!p->verdict_logged) {
         p->verdict_logged = 1;
+#ifndef DSH_RELEASE
         const char *scenario = p->scenario[0] != 0 ? p->scenario : DSH_SCENARIO_BINDING;
         std::string v = std::string(scenario) +
                         (dsh_spike_pass(p->spike) ? " PASS" : " FAIL");
@@ -455,6 +470,7 @@ int phase_drive(HostPhase *p) {
             v += std::string(" error=\"") + dsh_spike_error(p->spike) + "\"";
         }
         OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", v.c_str());
+#endif
     }
     return dsh_spike_pass(p->spike) ? 1 : 2;
 }

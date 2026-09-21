@@ -1,0 +1,26 @@
+# Harness contrast — dsh-harmony-harness (debug), the same host
+
+The SAME plain launch (no leg parameter) in the debug configuration runs
+the full default chain (regression trio -> m5 binding -> the four D9 legs)
+and emits the full structured stream. Re-run: DSH_SKIP_BUILD=1 \
+hosts/harmony/ci/run-host-e2e.sh <dir> (this file's own run: see run.sh 3/3).
+
+records emitted (six capture files, in run order): 832
+release records in the same window: 0
+
+## Checker verdicts (tools/e2e/check.mjs, one manifest each)
+  b-harmony-httpfetch-v2: "logged": 6
+  b-harmony-official-web-mount: "logged": 17
+  b-harmony-session-live: "logged": 43
+  b-harmony-write-live: "logged": 33
+  m1-spike-boot: "logged": 7
+  m2-bridge-smoke: "logged": 6
+  m2-session: "logged": 23
+  m5-host-binding: "logged": 27
+
+run-host-e2e: PASS (m1.spike.boot + m2.bridge.smoke + m2.session + m5.host-binding + b-harmony.official-web-mount + b-harmony.httpfetch-v2 + b-harmony.session.live + b-harmony.write.live)
+
+The committed per-leg evidence (captures, verdicts, screenshots) for the
+same suite lives in hosts/harmony/artifacts/d9-official-web/,
+d9-session-live/, d9-write-live/ and m5-host/ — this run must not change
+their outcomes.
