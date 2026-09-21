@@ -1,0 +1,20 @@
+{
+  "title": "Make the client-bundles build reproducible, or stop renewing its manifest",
+  "created": "2026-09-21T17:34:17+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Reproduce the mismatch: the CI materialize step prints shasum WARNING 40 computed checksums did NOT match against the committed MANIFEST",
+    "Establish the cause: build-client-bundles.sh regenerates MANIFEST.sha256 from its own output and ensure-client-bundles.sh then verifies against it, so a cold run self-confirms and cannot detect non-reproducibility",
+    "Fix it either way: make the build byte-reproducible, or commit the manifest the build actually produces",
+    "Once reproducible, the official-web cache hits for the npm half too, removing the 230 s rebuild from dev/android and the larger one from release/ios"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0031"
+}
