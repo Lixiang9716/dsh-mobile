@@ -147,7 +147,6 @@ jobs:
       # either way for diagnosis).
       - name: Run m1.spike.boot + m1.carrier.loopback on simulator and verify
         id: spike-run
-        continue-on-error: true
         run: |
           set -euo pipefail
           ART=hosts/ios/artifacts/m1-spike
@@ -173,6 +172,17 @@ jobs:
           echo "using simulator $UDID"
           xcrun simctl boot "$UDID" || true
           xcrun simctl bootstatus "$UDID" -b
+          # `bootstatus -b` returns early on an already-booted device, and on the
+          # first boot of a freshly downloaded runtime it can return before
+          # SpringBoard is up — the launch is then denied (SBMainWorkspace,
+          # code=1). Poll a real readiness condition with a deadline; never a
+          # fixed sleep.
+          for i in $(seq 1 30); do
+            xcrun simctl spawn "$UDID" launchctl print system >/dev/null 2>&1 && break
+            sleep 1
+          done
+          xcrun simctl spawn "$UDID" launchctl print system >/dev/null 2>&1 \
+            || echo "::warning::simulator readiness probe never succeeded — continuing, but the launch may be denied"
           xcrun simctl install "$UDID" hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
           # simctl launch APPENDS to the capture files; the committed evidence
           # from the local run must go so the checker sees only this run.
@@ -187,7 +197,22 @@ jobs:
           # checkers say what the captured log supports. A crash then shows up
           # as failed verdicts (the honest outcome) instead of a red annotation
           # on a green run that nobody reads.
+          # ROOT CAUSE of the launch crash (measured, not guessed): the binary
+          # hard-links /usr/lib/swift/libswiftWebKit.dylib because exactly one
+          # symbol comes from the WebKit Swift overlay (WKWebView
+          # .callAsyncJavaScript, NS_REFINED_FOR_SWIFT). On the iOS 18.5
+          # simulator that path does not exist under RuntimeRoot — only under
+          # System/Cryptexes/OS — so dyld aborts BEFORE main() and the app
+          # produces a 0-byte log. Upstream defect: WebKit bug 293831, hitting
+          # apps whose deployment target is <= 18.3 (this project: 17.0). Real
+          # devices are unaffected. Verified on the exact runtime (22F77):
+          # 7/7 launches died without this, 3/3 succeeded with it, and it is
+          # harmless on a runtime that already has the path.
+          RTKEY=$(xcrun simctl list devices --json | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(k for k,vs in d.items() for v in vs if v['udid']=='$UDID'))")
+          RUNTIME_ROOT=$(xcrun simctl list runtimes --json | python3 -c "import json,sys; print(next(r['runtimeRoot'] for r in json.load(sys.stdin)['runtimes'] if r['identifier']=='$RTKEY'))")
+          echo "runtime: $RTKEY"
           launch_rc=0
+          SIMCTL_CHILD_DYLD_FALLBACK_LIBRARY_PATH="$RUNTIME_ROOT/System/Cryptexes/OS/usr/lib/swift" \
           xcrun simctl launch --terminate-running-process \
             --stdout="$PWD/$ART/logs.txt" \
             --stderr="$PWD/$ART/nslog-stderr.txt" \
