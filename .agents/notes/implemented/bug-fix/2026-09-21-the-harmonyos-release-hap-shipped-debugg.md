@@ -73,12 +73,18 @@ had been uploading the build system's internal output paths as asset names —
 `entry-default-unsigned.hap`, `app-release-unsigned.apk` — while the
 workflow-artifact names right beside them already said `dsh-harmony` and
 `dsh-android`. A downloader saw a name invented by hvigor and Gradle. The
-attach steps now `cp` each output to a `dsh-<host>…` filename before uploading,
-so the assets are `dsh-harmony-unsigned.hap`, `dsh-android-unsigned.apk`,
-`dsh-ios-device-unsigned.zip` and `dsh-ios-simulator-unsigned.zip`, while the
-build outputs keep the names their toolchains dictate. The `-unsigned` suffix
-stays: it is the one property a downloader must know before the file is any
-use.
+attach steps now upload `dsh-harmony.hap`, `dsh-android.apk` and
+`dsh-ios.ipa`, while the build outputs keep whatever their toolchains dictate.
+
+`dsh-ios.ipa` is built as a **real** `.ipa` rather than renamed: the device
+`.app` is repackaged under `Payload/`, the layout AltStore, Sideloadly and
+`xcrun devicectl` expect, and the build step asserts `Payload/DSHSpike.app`
+is inside it before the file is allowed to exist. Calling a zip rooted at
+`Release-iphoneos/…` an `.ipa` would be a name no iOS tool agrees with. All
+three packages remain **unsigned** — that is stated in the release notes and
+the doc, since the filename no longer carries it. `dsh-ios-simulator.zip`
+stays as a fourth asset because it is the only one that runs without any
+signing setup.
 
 The first attempt at that rename got it wrong and was caught against the
 release API rather than by reading the docs: `gh release upload`'s

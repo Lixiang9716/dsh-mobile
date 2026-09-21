@@ -124,37 +124,44 @@ jobs:
             | tail -20
           test -f /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app/official-web/dist/index.html \
             || { echo "::error::the release .app embeds no official dist"; exit 1; }
-          cd /tmp/dsh-rel-device-dd/Build/Products
-          zip -qry /tmp/DSHSpike-release-device-unsigned.zip Release-iphoneos/DSHSpike.app
+          # The device build is packaged as a real `.ipa`: a zip whose root
+          # holds Payload/<App>.app. That layout is what AltStore, Sideloadly
+          # and `xcrun devicectl` expect, and it is the only thing the `.ipa`
+          # extension can honestly mean — handing out a zip rooted at
+          # `Release-iphoneos/…` under that name would be a name no iOS tool
+          # agrees with. It is UNSIGNED (CI holds no Apple certificates):
+          # the signer replaces the profile and re-seals it.
+          rm -rf /tmp/dsh-ipa && mkdir -p /tmp/dsh-ipa/Payload
+          cp -R /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app \
+            /tmp/dsh-ipa/Payload/
+          ( cd /tmp/dsh-ipa && zip -qry /tmp/dsh-ios.ipa Payload )
+          unzip -l /tmp/dsh-ios.ipa | grep -q 'Payload/DSHSpike.app/' \
+            || { echo "::error::the .ipa does not carry Payload/DSHSpike.app"; exit 1; }
           cd /tmp/dsh-rel-sim-dd/Build/Products
-          zip -qry /tmp/DSHSpike-release-simulator.zip Release-iphonesimulator/DSHSpike.app
+          zip -qry /tmp/dsh-ios-simulator.zip Release-iphonesimulator/DSHSpike.app
 
       - name: Upload dsh-ios
         uses: actions/upload-artifact@v4
         with:
           name: dsh-ios
           path: |
-            /tmp/DSHSpike-release-device-unsigned.zip
-            /tmp/DSHSpike-release-simulator.zip
+            /tmp/dsh-ios.ipa
+            /tmp/dsh-ios-simulator.zip
           if-no-files-found: error
 
       - name: Attach dsh-ios to the release
         # A release asset's NAME is the uploaded file's basename. `gh release
         # upload`'s `file#text` form sets only the display LABEL, which a
-        # download ignores — so the outputs are RENAMED here instead. An asset
-        # is named for what it is (`dsh-<host>…`), never for the build system's
-        # internal output path; the workflow-artifact names above already
-        # follow that convention and the assets must match them.
+        # download ignores — so both files are built under the names they ship
+        # with, in the build step above.
         if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          cp /tmp/DSHSpike-release-device-unsigned.zip /tmp/dsh-ios-device-unsigned.zip
-          cp /tmp/DSHSpike-release-simulator.zip      /tmp/dsh-ios-simulator-unsigned.zip
           gh release upload "$RELEASE_TAG" \
-            /tmp/dsh-ios-device-unsigned.zip \
-            /tmp/dsh-ios-simulator-unsigned.zip \
+            /tmp/dsh-ios.ipa \
+            /tmp/dsh-ios-simulator.zip \
             --clobber
 
       - name: Build the harness .app (debug, device + simulator, unsigned)
@@ -264,8 +271,8 @@ jobs:
         run: |
           set -euo pipefail
           cp hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-            /tmp/dsh-android-unsigned.apk
-          gh release upload "$RELEASE_TAG" /tmp/dsh-android-unsigned.apk --clobber
+            /tmp/dsh-android.apk
+          gh release upload "$RELEASE_TAG" /tmp/dsh-android.apk --clobber
 
       - name: Build the harness APK (debug — debug-keystore signed, installs directly)
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness
@@ -379,8 +386,8 @@ jobs:
         run: |
           set -euo pipefail
           cp hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
-            /tmp/dsh-harmony-unsigned.hap
-          gh release upload "$RELEASE_TAG" /tmp/dsh-harmony-unsigned.hap --clobber
+            /tmp/dsh-harmony.hap
+          gh release upload "$RELEASE_TAG" /tmp/dsh-harmony.hap --clobber
 
       - name: Build the harness HAP (debug, unsigned)
         # Same output path as the release HAP (both modes write

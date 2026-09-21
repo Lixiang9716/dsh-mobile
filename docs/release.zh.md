@@ -60,15 +60,23 @@ fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
 
 | 产物 | 配置 | Release 资产名 | 可直接安装? |
 | --- | --- | --- | --- |
-| `dsh-ios` | Release | `dsh-ios-device-unsigned.zip` + `dsh-ios-simulator-unsigned.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
-| `dsh-android` | Release | `dsh-android-unsigned.apk`(官方 web app 打进 assets) | 否——先签名 |
-| `dsh-harmony` | Release | `dsh-harmony-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
+| `dsh-ios` | Release | `dsh-ios.ipa` + `dsh-ios-simulator.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
+| `dsh-android` | Release | `dsh-android.apk`(官方 web app 打进 assets) | 否——先签名 |
+| `dsh-harmony` | Release | `dsh-harmony.hap` | 否——经 DevEco/hdc 签名(见下) |
 
-Release 资产一律按 `dsh-<宿主>…` 命名,绝不沿用构建系统的内部产物路径
+Release 资产一律按 `dsh-<宿主>.<扩展名>` 命名,绝不沿用构建系统的内部产物路径
 (`entry-default-unsigned.hap`、`app-release-unsigned.apk`)。工作流在上传前
 先把构建产物改名:`gh release upload` 的 `file#text` 形式设置的是显示
-label(下载时会被忽略),真正生效的是文件名本身。`-unsigned` 后缀是刻意的:
-它是下载者在文件可用之前必须知道的唯一属性。
+**label**(下载时会被忽略),真正生效的是文件名本身。
+
+其中两个名字必须对得起它们的内容:
+
+- **`dsh-ios.ipa`** 是真正的(未签名)`.ipa` —— 根目录下是
+  `Payload/DSHSpike.app`,即 AltStore / Sideloadly / `xcrun devicectl`
+  所期望的布局,而不是把 `Release-iphoneos/…` 换个扩展名。
+- **三个包都未签名。** CI 不持有 Apple 证书,也没有 HarmonyOS 签名材料,
+  所以每个包都需要本地签名才能安装。`dsh-ios-simulator.zip` 是例外:
+  它在模拟器上可直接运行,也是无需任何签名配置就能试用本 App 的唯一途径。
 
 **`include_harness: true` 会额外上传 HARNESS 包**——即 E2E 验证载体:debug
 配置、完整结构化日志、验证驱动照常运行。它们存在的意义是在真机上手工验证;
@@ -91,7 +99,8 @@ App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装�
 
 真机 `.app` 刻意未签名(CI 不持有任何 Apple 证书)。装上 iPhone:
 
-1. 解压 `dsh-ios-device-unsigned.zip`。
+1. 取 `dsh-ios.ipa` —— 一个未签名的 `.ipa`(`Payload/DSHSpike.app`)。
+   不需要先解压:签名工具直接吃 `.ipa` 本身。
 2. 用免费 Apple ID(7 天有效期)或付费团队签名:
    - **Xcode**:打开 `hosts/ios/DSHSpike.xcodeproj`,在 target 的
      Signing & Capabilities 里选你的团队,连上手机直接 Run——或把解压的
