@@ -221,7 +221,7 @@ export class CarrierServer {
 
   stop(): void {
     this.conns.forEach((conn: ConnState): void => {
-      conn.client.close();
+      this.closeQuietly(conn);
     });
     this.conns = [];
     this.servers.forEach((server: socket.TCPSocketServer): void => {
@@ -306,6 +306,22 @@ export class CarrierServer {
 
   private static readonly SEND_CHUNK_BYTES: number = 64 * 1024;
 
+  /** Tear a connection down from inside a socket callback. `close()` is
+   * documented to throw, and every call site here is a protocol dead end
+   * (oversized header, unmatched upgrade, missing WS key, close frame) whose
+   * only job is to drop the socket — a throw would escape into the socket
+   * event handler and take the carrier's fault handling with it, so the
+   * failure is logged and swallowed: the connection is going away either way. */
+  private closeQuietly(conn: ConnState): void {
+    try {
+      conn.client.close();
+    } catch (e) {
+      const be = e as BusinessError;
+      hilog.warn(0x0000, TAG, 'carrier: close failed code=%{public}d: %{public}s',
+        be.code ?? -1, be.message ?? 'unknown');
+    }
+  }
+
   private handleConnect(client: socket.TCPSocketConnection): void {
     const conn: ConnState = { client: client, buffer: new Uint8Array(0), seat: null };
     this.conns.push(conn);
@@ -337,7 +353,7 @@ export class CarrierServer {
     const end = text.indexOf('\r\n\r\n');
     if (end < 0) {
       if (conn.buffer.length > MAX_HEADER) {
-        conn.client.close();
+        this.closeQuietly(conn);
       }
       return;
     }
@@ -445,11 +461,11 @@ export class CarrierServer {
   private runUpgrade(conn: ConnState, request: CarrierRequest): void {
     const handler = this.upgradeRoutes.get(request.rawPath);
     if (handler === undefined || request.path === null) {
-      conn.client.close();
+      this.closeQuietly(conn);
       return;
     }
     if (!handler(request)) {
-      conn.client.close();
+      this.closeQuietly(conn);
       return;
     }
     this.acceptUpgrade(conn, request.rawPath,
@@ -459,7 +475,7 @@ export class CarrierServer {
   private acceptUpgrade(conn: ConnState, path: string, key: string): void {
     if (key.length === 0) {
       hilog.error(0x0000, TAG, 'carrier: ws upgrade without a key');
-      conn.client.close();
+      this.closeQuietly(conn);
       return;
     }
     const digest = hexToBytes(sha1Hex(utf8Encode(key + WS_GUID)));
@@ -530,7 +546,7 @@ export class CarrierServer {
           this.onWsText(text);
         }
       } else if (opcode === 0x8) {
-        conn.client.close();
+        this.closeQuietly(conn);
         return;
       } else if (opcode === 0x9) {
         this.sendRawFrame(conn, 0x0a, payload);

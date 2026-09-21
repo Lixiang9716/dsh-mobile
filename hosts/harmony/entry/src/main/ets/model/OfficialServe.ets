@@ -51,6 +51,9 @@ import { HttpFetch } from './HttpFetch';
 const TAG: string = 'dsh.app';
 /** The official carrier's first port (the legacy m2/m5 phases keep 17877). */
 export const OFFICIAL_BASE_PORT: number = 17890;
+/** The rawfile prefix the staged web-plugins packages live under (the same
+ * tree the build's vendor-official.sh stages, one dir per published package). */
+const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-ai/';
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
 const ENTRY_MOUNT = 'scenario/b1-web-live.js';
@@ -176,9 +179,23 @@ export class OfficialServe {
     return this.port;
   }
 
+  /** The staged web-plugins package directory listing. The rawfile APIs are
+   * documented to throw, and a throw here means the build never staged the
+   * official plugins into rawfile — so the failure is re-stated with the
+   * searched prefix (that text names the defect; a bare BusinessError does
+   * not) and the drive that requested the delivery reports it. */
+  private pluginPackageDirs(ctx: common.UIAbilityContext): string[] {
+    try {
+      return ctx.resourceManager.getRawFileListSync(PLUGIN_PACKAGES_PREFIX);
+    } catch (e) {
+      const be = e as BusinessError;
+      throw new Error('official-web plugins not staged: ' + PLUGIN_PACKAGES_PREFIX +
+        ' (code=' + (be.code ?? -1) + ' ' + (be.message ?? 'unknown') + ')');
+    }
+  }
+
   private startCarrier(ctx: common.UIAbilityContext): void {
-    const dirs = ctx.resourceManager.getRawFileListSync(
-      'spike/officialweb/plugins/npm/@deepseek-ai/');
+    const dirs = this.pluginPackageDirs(ctx);
     this.dist = new WebDist(this.server,
       (rel: string): Uint8Array | null => this.rawFile(ctx, rel), this.token);
     this.plugins = new WebPlugins(this.server,
@@ -330,8 +347,7 @@ export class OfficialServe {
    * last; the iOS drive's single-delivery shape is unchanged. */
   deliverWebPlugins(ctx: common.UIAbilityContext): void {
     const base64 = new util.Base64Helper();
-    const dirs = ctx.resourceManager.getRawFileListSync(
-      'spike/officialweb/plugins/npm/@deepseek-ai/').slice().sort();
+    const dirs = this.pluginPackageDirs(ctx).slice().sort();
     const packages: string[] = [];
     for (let i = 0; i < dirs.length; i++) {
       const dirName = dirs[i];

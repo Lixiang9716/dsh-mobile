@@ -420,7 +420,20 @@ struct Index {
   }
 
   private copyRawFile(ctx: common.Context, rel: string, dst: string): Promise<void> {
-    return ctx.resourceManager.getRawFileContent('spike/' + rel).then((data: Uint8Array) => {
+    // getRawFileContent is documented to throw for a missing/renamed rawfile
+    // in addition to rejecting; the throw is turned into the SAME rejected
+    // promise the materialization chain already reports by name, so a
+    // mismatched bundle manifest fails the boot with the file that is absent
+    // rather than escaping the promise chain.
+    let content: Promise<Uint8Array>;
+    try {
+      content = ctx.resourceManager.getRawFileContent('spike/' + rel);
+    } catch (e) {
+      const be = e as BusinessError;
+      return Promise.reject(new Error(
+        `copyRawFile ${rel}: rawfile read refused (${be.message ?? 'unknown'})`));
+    }
+    return content.then((data: Uint8Array) => {
       try {
         const dir: string = dst.substring(0, dst.lastIndexOf('/'));
         if (!fs.accessSync(dir)) {

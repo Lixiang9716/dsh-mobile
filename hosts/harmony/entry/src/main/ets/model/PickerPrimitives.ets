@@ -207,7 +207,10 @@ export class PickerPrimitives {
     const ref = BOOKMARK_PREFIX + util.generateRandomUUID(true);
     const registry: Record<string, RegistryEntry> = this.readRegistry();
     registry[ref] = entry;
-    this.writeRegistry(registry);
+    if (!this.writeRegistry(registry)) {
+      reject(callId, settle, 'io', 'fsScope.persist', 'registry write failed');
+      return;
+    }
     settle(callId, '{"ref":"' + ref + '"}', true);
   }
 
@@ -332,13 +335,26 @@ export class PickerPrimitives {
     }
   }
 
-  private writeRegistry(registry: Record<string, RegistryEntry>): void {
-    const file = fs.openSync(this.registryFile,
-      fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+  /** Persist the ref -> grant registry. The file APIs are documented to
+   * throw, and this is called from the dispatch path where a throw would
+   * escape into the NAPI sink — so the failure becomes a false answer, which
+   * `persist` maps to an `io` rejection: a ref the next launch cannot resolve
+   * is a failed persist, never a silent one. */
+  private writeRegistry(registry: Record<string, RegistryEntry>): boolean {
     try {
-      fs.writeSync(file.fd, JSON.stringify(registry));
-    } finally {
-      fs.closeSync(file.fd);
+      const file = fs.openSync(this.registryFile,
+        fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+      try {
+        fs.writeSync(file.fd, JSON.stringify(registry));
+      } finally {
+        fs.closeSync(file.fd);
+      }
+      return true;
+    } catch (e) {
+      const be = e as BusinessError;
+      hilog.error(0x0000, TAG, 'fsScope.persist: registry write failed code=%{public}d: %{public}s',
+        be.code ?? -1, be.message ?? 'unknown');
+      return false;
     }
   }
 }
