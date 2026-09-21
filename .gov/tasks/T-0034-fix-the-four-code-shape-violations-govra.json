@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "Inventory the gate's findings under 0.48.0: build.gradle.kts android{} 75 lines, OfficialWebProbe.kt probeScript 54, AppDelegate.swift application(_:didFinishLaunchingWithOptions:) 78, WebBootRuntimeDrive.swift start() 69 \u2014 4 distinct functions reported as 6 (the Swift one twice)",
-    "Refactor each into units under 50 lines without changing behavior: the Gradle block into per-concern extension functions, the Kotlin probe payload into a data val, the iOS launch delegate into panes + a mode dispatch, the iOS web-boot start() into boot/gateway/sinks/eval/staging helpers",
-    "Prove the Kotlin probe's emitted JS is byte-identical (2539 bytes vs HEAD with the same substitutions) so the b1 leg's on-device evidence is unaffected",
-    "code-size reports 0 violations under govrail 0.48.0 (230 files)",
-    "Both platforms compile: hosts/android gradlew assembleDebug and hosts/ios xcodebuild build",
-    "Land with the plane upgrade that makes them visible: the pin bump + re-seal in the same change"
+    "[x] Inventory the gate's findings under 0.48.0: build.gradle.kts android{} 75 lines, OfficialWebProbe.kt probeScript 54, AppDelegate.swift application(_:didFinishLaunchingWithOptions:) 78, WebBootRuntimeDrive.swift start() 69 \u2014 4 distinct functions reported as 6 (the Swift one twice)",
+    "[x] Refactor each into units under 50 lines without changing behavior: the Gradle block into per-concern extension functions, the Kotlin probe payload into a data val, the iOS launch delegate into panes + a mode dispatch, the iOS web-boot start() into boot/gateway/sinks/eval/staging helpers",
+    "[x] Prove the Kotlin probe's emitted JS is byte-identical (2539 bytes vs HEAD with the same substitutions) so the b1 leg's on-device evidence is unaffected",
+    "[x] code-size reports 0 violations under govrail 0.48.0 (230 files)",
+    "[x] Both platforms compile: hosts/android gradlew assembleDebug and hosts/ios xcodebuild build",
+    "[x] Land with the plane upgrade that makes them visible: the pin bump + re-seal in the same change"
   ],
   "status": "open",
   "receipt": null,
