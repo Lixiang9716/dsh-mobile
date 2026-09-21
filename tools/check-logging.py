@@ -84,7 +84,8 @@ cs = _load_sibling()
 
 def tracked_files():
     out = subprocess.run(
-        ["git", "ls-files"], capture_output=True, text=True, check=True,
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+        capture_output=True, text=True, check=True,
         encoding="utf-8", errors="replace",
     ).stdout
     return [
@@ -92,6 +93,22 @@ def tracked_files():
         if n.startswith(SCOPE_DIRS) and VENDOR_SEGMENT not in n
         and Path(n).suffix in EXTS and Path(n).exists()
     ]
+
+
+def untracked_in(files):
+    """How many of ``files`` git does not track yet (#338): the same
+    widened scope as check-size — a brand-new file is exactly where an
+    uninspected bare console call hides."""
+    try:
+        out = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True, text=True, check=True,
+            encoding="utf-8", errors="replace",
+        ).stdout
+    except Exception:
+        return 0
+    loose = set(out.splitlines())
+    return sum(1 for f in files if f in loose)
 
 
 def is_exempt(text):
@@ -183,8 +200,11 @@ def main():
         violations.extend(check_file(f))
     for v in violations:
         print(v)
+    untracked = untracked_in(files)
     print(f"logging: {len(files)} file(s) checked (L1 console / L2 module logger / "
-          f"L3 function logs / L4 release silence); {len(violations)} violation(s)")
+          f"L3 function logs / L4 release silence"
+          + (f"; {untracked} untracked" if untracked else "")
+          + f"); {len(violations)} violation(s)")
     return 1 if violations else 0
 
 

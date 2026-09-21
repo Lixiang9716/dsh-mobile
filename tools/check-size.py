@@ -60,13 +60,36 @@ SIG_PATTERNS = [
 def tracked_sources():
     try:
         out = subprocess.run(
-            ["git", "ls-files"], capture_output=True, text=True, check=True,
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+            capture_output=True, text=True, check=True,
             encoding="utf-8", errors="replace",
         ).stdout
         names = out.splitlines()
     except Exception:
         names = [str(p) for p in Path(".").rglob("*") if p.is_file()]
     return [n for n in names if Path(n).suffix in SOURCE_EXTS and Path(n).exists()]
+
+
+def untracked_sources(files):
+    """How many of ``files`` git does not track yet (#338).
+
+    `git ls-files` alone hid brand-new files — the ones most likely to be
+    wrong — so the working-tree phase of development reported a green
+    gate that had never looked at them, and the violation surfaced only
+    after `git add` (a late red that cost a rebuild + re-verify cycle).
+    The scope is now git's "what would be committed" set; this count
+    keeps the widened scope visible in the summary instead of implied.
+    """
+    try:
+        out = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            capture_output=True, text=True, check=True,
+            encoding="utf-8", errors="replace",
+        ).stdout
+    except Exception:
+        return 0
+    loose = set(out.splitlines())
+    return sum(1 for f in files if f in loose)
 
 
 def gov_facts(files):
@@ -335,11 +358,13 @@ def main():
     for v in all_violations:
         print(v)
     gov_count = sum(1 for b in backends.values() if b == "gov-parse")
+    untracked = untracked_sources(files)
     print(
         f"code-size: {len(files)} source file(s) checked "
         f"({gov_count} via gov parse, {len(files) - gov_count} fallback; "
-        f"file<={MAX_FILE_LINES}, func<={MAX_FUNC_LINES}, indent<={MAX_INDENT_LEVEL}); "
-        f"{len(all_violations)} violation(s)"
+        + (f"{untracked} untracked; " if untracked else "")
+        + f"file<={MAX_FILE_LINES}, func<={MAX_FUNC_LINES}, "
+        f"indent<={MAX_INDENT_LEVEL}); {len(all_violations)} violation(s)"
     )
     return 1 if all_violations else 0
 
