@@ -1,0 +1,27 @@
+{
+  "title": "W-HARMONY5: the m2.llm real-LLM leg on the HarmonyOS host (M5's last open item)",
+  "created": "2026-09-21T05:03:46+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "host surfaces: scenario/m2-llm.js + llm.js in the rawfile closure, BUNDLE_FILES and vendor-official.sh, check-bundle-files green both directions",
+    "phase selection by launch parameter (aa start --ps dsh.e2e.leg m2-llm): ONE launch runs ONLY the m2.llm leg, no quota burned by the default chain",
+    "credential staging handshake: app publishes the stage-ready marker, the driver writes the placeholder via hdc file send, the app imports + seals it; both sides fail loud",
+    "E2E on the emulator: real z.ai streaming turn, checkers m2-llm-device.json + m2-llm-carrier.json PASS against the pulled capture, API key 0 hits in the RAW streams",
+    "evidence hosts/harmony/artifacts/m5-m2-llm/ committed (logs + capture + scenario.jsonl + verdicts + MANIFEST.md expected<->logged line refs + receipt.json)",
+    "status surfaces: README M5 row (en+zh) and ARCHITECTURE M5 bullet updated, gov verify pairing clean, agent note filed, gov run green, PR merged"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0021",
+  "void": {
+    "ts": "2026-09-21T05:26:29+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Implementation + driver + transport-proven evidence land in the opened PR (audit trail = the PR, #329/#339 precedent): the leg is launch-selected (aa start --ps dsh.e2e.leg m2.llm), stages credentials through the platform-forced handshake, runs the canonical scenario over this host's real httpFetch, and its carrier/mount chain + backend round trip are proven on the emulator. Items 4's SERVED turn is not claimed: the account's coding-plan quota is exhausted (HTTP 429 code 1310, reset 2026-09-22 14:43:53), so the checkers' PASS and the served records await one re-run of hosts/harmony/ci/run-m2-llm.sh; the status surfaces, MANIFEST.md and receipt.json say exactly that. Void rather than close because the card's served-turn acceptance cannot be receipted from a quota-refused run."
+  }
+}
