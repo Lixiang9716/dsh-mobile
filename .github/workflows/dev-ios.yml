@@ -72,6 +72,7 @@ jobs:
       # simulator devices the runner image ships.
       - name: Build spike app
         run: |
+          set -o pipefail
           cd hosts/ios
           xcodebuild build \
             -project DSHSpike.xcodeproj \

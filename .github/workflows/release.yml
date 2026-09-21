@@ -1,0 +1,177 @@
+name: release/packages
+# Manual release packaging: one dispatch builds all three host apps and
+# uploads each as its own artifact (docs/release.md is the user guide).
+#
+#   dsh-ios      — unsigned device .app (sign locally, see INSTALL.txt) +
+#                  simulator .app
+#   dsh-android  — debug APK (debug-keystore signed; installs directly)
+#   dsh-harmony  — unsigned debug HAP (sign/install via DevEco or hdc)
+#
+# Build commands mirror the dev/* pipelines (they are the proven recipes);
+# every build step runs under `set -o pipefail` so a piped tail can never
+# mask a red xcodebuild/gradle/hvigor exit code. Dispatch-only by design:
+# packages are produced when a human asks for them.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ios-package:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vendor quickjs-ng + the pinned upstream DSH closure
+        # Both trees are untracked by design (upstream discipline D6);
+        # gen_bundle_header.py pins the alpha.2 dsh closure at build time.
+        run: |
+          set -euo pipefail
+          sh runtime/spike/vendor/ensure.sh
+          sh runtime/spike/vendor/ensure-dsh.sh
+
+      - name: Build device .app (unsigned) + simulator .app
+        run: |
+          set -euo pipefail
+          cd hosts/ios
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/dsh-device-dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            | tail -20
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath /tmp/dsh-sim-dd \
+            | tail -20
+          cd /tmp/dsh-device-dd/Build/Products
+          zip -qry /tmp/DSHSpike-device-unsigned.zip Debug-iphoneos/DSHSpike.app
+          cd /tmp/dsh-sim-dd/Build/Products
+          zip -qry /tmp/DSHSpike-simulator.zip Debug-iphonesimulator/DSHSpike.app
+
+      - name: Upload dsh-ios
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-ios
+          path: |
+            /tmp/DSHSpike-device-unsigned.zip
+            /tmp/DSHSpike-simulator.zip
+          if-no-files-found: error
+
+  android-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install the pinned NDK and CMake
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" > /dev/null
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The APK packs the vendored official web app (reproducible, manifest-
+      # verified); the Gradle build fails loud without them. Same swap belt
+      # as dev/android: the upstream monorepo builds die SIGKILLed under RAM
+      # pressure on hosted runners.
+      - name: Add swap for the upstream builds
+        run: |
+          sudo fallocate -l 6G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+
+      - name: Materialize the vendored web app + DSH closure
+        env:
+          COREPACK_INTEGRITY_KEYS: '0'
+          NODE_OPTIONS: '--max-old-space-size=3072'
+        run: |
+          set -euo pipefail
+          corepack enable
+          runtime/spike/vendor/ensure-dsh.sh > /dev/null
+          tools/e2e/ensure-official-dist.sh
+          tools/e2e/ensure-client-bundles.sh
+
+      - name: Build APK (debug — debug-keystore signed, installs directly)
+        working-directory: hosts/android
+        run: |
+          set -euo pipefail
+          ./gradlew assembleDebug --no-daemon
+          test -f app/build/outputs/apk/debug/app-debug.apk || {
+            echo "::error::APK not produced"; exit 1
+          }
+
+      - name: Upload dsh-android
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-android
+          path: hosts/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  harmony-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Cache the unpacked HarmonyOS CLT
+        id: clt-cache
+        uses: actions/cache@v4
+        with:
+          path: clt
+          key: hos-clt-linux-unpacked-26.0.0.821
+
+      - name: Install HarmonyOS CLT (Linux, cache miss only)
+        if: steps.clt-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          URL="${{ vars.HOS_CLT_LINUX_URL }}"
+          if [ -z "$URL" ]; then
+            echo "::error::Repository variable HOS_CLT_LINUX_URL is not set — cannot build the HAP (set it to the signed Linux CLT zip link from the Huawei download page)"
+            exit 1
+          fi
+          for attempt in 1 2 3; do
+            echo "download attempt $attempt..."
+            curl -sS -L --retry 3 --retry-delay 5 -o /tmp/clt.zip "$URL" || true
+            unzip -tq /tmp/clt.zip > /dev/null 2>&1 && break
+            sleep 5
+          done
+          unzip -tq /tmp/clt.zip > /dev/null || { echo "::error::CLT zip corrupt/missing after retries"; exit 1; }
+          unzip -q /tmp/clt.zip -d "$GITHUB_WORKSPACE/clt"
+          chmod -R u+w "$GITHUB_WORKSPACE/clt"
+
+      - name: Vendor quickjs-ng
+        run: sh runtime/spike/vendor/ensure.sh
+
+      - name: Install dependencies (ohpm) and build HAP (debug, unsigned)
+        working-directory: hosts/harmony
+        run: |
+          set -euo pipefail
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/ohpm" install --all
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
+            --mode module -p product=default -p buildMode=debug --no-daemon
+          test -f entry/build/default/outputs/default/entry-default-unsigned.hap \
+            || { echo "::error::HAP not produced"; exit 1; }
+
+      - name: Upload dsh-harmony
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-harmony
+          path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
+          if-no-files-found: error
