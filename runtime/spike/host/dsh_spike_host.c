@@ -13,7 +13,7 @@
  *     dsh_spike_gateway_event — both RUNTIME-THREAD-ONLY (M1's canned
  *     responses are gone: the host no longer invents gateway results);
  *   - an ESM loader over the spike bundle: "dsh:util-crypto" (legacy spike
- *     specifier), bare npm specifiers (@deepseek-ai/*, zod) map into the
+ *     specifier), bare npm specifiers (@deepseek-ai/<pkg>, zod) map into the
  *     vendored upstream closure, node: builtins map to the spike shims
  *     (runtime/spike/upstream/shims/), everything else resolves
  *     bundle-root-relative; unmapped bare specifiers fail loud.
@@ -104,16 +104,6 @@ typedef struct dsh_spike {
 
 static void dsh_seterr(dsh_spike_t *s, const char *fmt, const char *arg) {
     snprintf(s->err, sizeof(s->err), fmt, arg);
-}
-
-static void dsh_emit(dsh_spike_t *s, const char *json_line) {
-    if (!s->sink.on_log) return;
-    size_t n = strlen(DSH_LOG_PREFIX) + strlen(json_line) + 2;
-    char *line = malloc(n);
-    if (!line) return;
-    snprintf(line, n, "%s%s", DSH_LOG_PREFIX, json_line);
-    s->sink.on_log(s->sink.ud, line);
-    free(line);
 }
 
 /* ---- platform RNG ------------------------------------------------------- */
@@ -311,6 +301,7 @@ static JSValue js_launch_env(JSContext *ctx, JSValueConst this_val,
 static JSValue js_complete(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
+    (void)argc;
     dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
     int pass = JS_ToBool(ctx, argv[0]); /* -1 on exception; anything falsy = fail */
     s->completed = 1;
@@ -448,6 +439,7 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
  * `out` and returns 1, or returns 0 when the request escapes the bundle root
  * (caller fails loud). */
 static int dsh_require_resolve(const char *rel, const char *request, char *out, size_t out_len) {
+    (void)out_len;   /* writes into a fixed-size caller buffer; see the constants below */
     char dir[512];
     char joined[768];
     snprintf(dir, sizeof(dir), "%s", rel);
