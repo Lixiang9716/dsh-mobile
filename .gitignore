@@ -17,6 +17,11 @@ out/
 # the directory's MANIFEST.sha256 + ROSTER.json + PROVENANCE.md, and
 # tools/e2e/ensure-client-bundles.sh materializes + verifies the tree.
 presentation/official-web/client-bundles/npm/
+# …and the record of the tree THIS environment built, which is what a cache
+# restore is verified against: the upstream build embeds its absolute work
+# path, so the committed record above is satisfiable only where that path
+# matches (D15). It travels with the tree, never with the repository.
+presentation/official-web/client-bundles/MANIFEST.sha256.computed
 
 # D9 W-HARMONY official-web mount assets, copied VERBATIM into the app
 # rawfile by hosts/harmony/ci/vendor-official.sh (dist + staged client

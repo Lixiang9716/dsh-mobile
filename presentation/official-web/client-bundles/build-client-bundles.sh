@@ -26,15 +26,29 @@
 #
 # The work dir is a FIXED path (not mktemp): the upstream build embeds the
 # absolute source path in its outputs (`//#region dsh-css:<abs-path>` comments
-# and the css-module class-name hashes derive from it), so a random temp dir
-# would change the bundle bytes on every run and MANIFEST.sha256 could never
-# verify a rebuild. The committed bytes were produced at this exact path.
+# and the css-module `[hash]` — lightningcss hashes the absolute virtual
+# filename), so a random temp dir would change the bundle bytes on every run.
+# It also means the bytes are bound to THIS PATH'S REALPATH: /tmp is
+# /private/tmp on macOS, so a macOS build and the Linux CI build differ in
+# exactly the files that embed it (measured: 40 of 116). This script therefore
+# writes its own record to MANIFEST.sha256.computed and COMPARES it against the
+# committed MANIFEST.sha256 with verify-manifest.mjs — it never renews the
+# committed record, because a build that re-issues its own certificate is not a
+# verification (D15). Refresh the record deliberately, after reviewing the diff:
+#   cp MANIFEST.sha256.computed MANIFEST.sha256   (and update PROVENANCE.md)
 set -euo pipefail
 
 PIN="${1:-ddefc45fbc7f8e46dd73185e68295696d1297887}"  # dsh-v0.1.6-alpha.2
 UPSTREAM_URL="https://github.com/deepseek-ai/deepseek-harness"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 WORK="/tmp/dsh-harness-src"
+# The embedded path is the REALPATH: on macOS /tmp is a symlink to /private/tmp,
+# so the bytes a macOS build emits differ from the Linux CI build's in exactly
+# the files that embed it. Pass the resolved path to the comparison so it names
+# the class it is comparing against. Resolved before the clone, so the
+# directory exists by the time `pwd -P` runs.
+mkdir -p "$WORK"
+WORK_REAL="$(cd "$WORK" && pwd -P)"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> clone $UPSTREAM_URL @ $PIN into $WORK"
@@ -81,13 +95,29 @@ COPY
 echo "==> copy the roster record (reproducibility evidence)"
 mv "$HERE/ROSTER.json.tmp" "$HERE/ROSTER.json"
 
-echo "==> regenerate MANIFEST.sha256"
-# LC_ALL=C pins the sort collation: a manifest generated under another
-# locale lists the same digests in a different order and shasum -c
-# (order-sensitive) then fails on the other platform.
-( cd "$HERE/npm" && find . -type f | LC_ALL=C sort | xargs shasum -a 256 ) > "$HERE/MANIFEST.sha256"
+echo "==> write this build's record to MANIFEST.sha256.computed"
+# LC_ALL=C pins the sort collation: a record generated under another locale
+# lists the same digests in a different order and shasum -c (order-sensitive)
+# then fails on the other platform.
+( cd "$HERE/npm" && find . -type f | LC_ALL=C sort | xargs shasum -a 256 ) \
+    > "$HERE/MANIFEST.sha256.computed"
+
+echo "==> compare it against the committed reference record"
+( cd "$HERE/npm" && shasum -a 256 -c "$HERE/MANIFEST.sha256.computed" ) >/dev/null \
+    && echo "this build's own record verifies clean"
+if ! node "$HERE/verify-manifest.mjs" --tree "$HERE/npm" \
+        --reference "$HERE/MANIFEST.sha256" --work "$WORK_REAL"; then
+    echo "the rebuilt tree diverges from the committed reference OUTSIDE the" >&2
+    echo "embedded-work-path class — a real byte change, not an environment" >&2
+    echo "difference. Read the diff before re-recording anything:" >&2
+    echo "    diff <(sort $HERE/MANIFEST.sha256) <(sort $HERE/MANIFEST.sha256.computed)" >&2
+    exit 1
+fi
 
 echo "==> done"
-( cd "$HERE/npm" && shasum -a 256 -c "$HERE/MANIFEST.sha256" ) >/dev/null && echo "manifest verifies clean"
-shasum -a 256 "$HERE/MANIFEST.sha256"
-echo "Review the diff, update PROVENANCE.md digests, and commit."
+echo "The committed MANIFEST.sha256 was NOT touched. If the comparison above"
+echo "reported a divergence outside the work-path class it failed; otherwise the"
+echo "reference record still describes this tree. To re-record it deliberately,"
+echo "after reviewing the diff:"
+echo "    cp $HERE/MANIFEST.sha256.computed $HERE/MANIFEST.sha256"
+echo "and update PROVENANCE.md in the same change."

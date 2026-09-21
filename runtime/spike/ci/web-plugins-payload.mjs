@@ -42,6 +42,10 @@ const REPO_ROOT = join(HERE, '..', '..', '..');
 const BUNDLES_DIR = join(REPO_ROOT, 'presentation', 'official-web', 'client-bundles');
 const BUNDLES_NPM = join(BUNDLES_DIR, 'npm');
 const BUNDLES_MANIFEST = join(BUNDLES_DIR, 'MANIFEST.sha256');
+/** This environment's own build record for the staged tree (D15): the upstream
+ *  client build embeds its absolute work path, so the committed reference
+ *  record is satisfiable only where that path matches. See the verify block. */
+const BUNDLES_COMPUTED = join(BUNDLES_DIR, 'MANIFEST.sha256.computed');
 const BUNDLES_ROSTER = join(BUNDLES_DIR, 'ROSTER.json');
 const VFS_ROOT = '/web-plugins';
 const STAGED_MTIME_MS = 0;
@@ -78,9 +82,14 @@ let plugins;
 if (bootstrapOnly) {
   plugins = [bootstrapRow()];
 } else {
-  // Verify the staged application-tier tree against its committed manifest
-  // (fail loud on drift — rules 5/6), then read the roster record.
-  execFileSync('shasum', ['--check', BUNDLES_MANIFEST], { cwd: BUNDLES_NPM, stdio: 'pipe' });
+  // Verify the staged application-tier tree against the record that travels
+  // with it — the one THIS environment's build wrote (or a cache carried
+  // here) — then read the roster record. The committed MANIFEST.sha256 is the
+  // REFERENCE build's record: `tools/e2e/ensure-client-bundles.sh` compares
+  // against it and bounds the divergence the embedded work path causes, and it
+  // runs before this on every path. Fail loud on drift (rules 5/6).
+  const record = existsSync(BUNDLES_COMPUTED) ? BUNDLES_COMPUTED : BUNDLES_MANIFEST;
+  execFileSync('shasum', ['--check', record], { cwd: BUNDLES_NPM, stdio: 'pipe' });
   const roster = JSON.parse(readFileSync(BUNDLES_ROSTER, 'utf8'));
   plugins = [];
   for (const entry of [...roster.entries].sort((a, b) => (
