@@ -16,7 +16,12 @@
     "docs/release.md + release.zh.md document the flow and the stale DSHSpike-device-unsigned.zip filename is fixed on both sides; pairing re-stamped",
     "gov run green; PR opened; gates check green; squash merged"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0026"
+  "id": "T-0026",
+  "void": {
+    "ts": "2026-09-21T08:29:56+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE and merged (PR #94, squash 7eb843d). Void rather than close per the documented govrail #329/#339 dead-end: on the pinned 0.47.1 a close stamps a receipt whose verify-decisions NOT_SELECTED entry _check_receipt reads as not-green, and void then refuses a done card \u2014 the same unexitable state that retired T-0021/T-0022/T-0023/T-0025. Deliverables, all in the merged PR: release-please-config.json + .release-please-manifest.json + version.txt at the repo root (outside the plane seal); the three host manifests wired through extra-files (xml+xpath for Info.plist with no in-file annotation, the generic annotation for build.gradle.kts, json+jsonpath for app.json5 since .json5 is not auto-detected); .github/workflows/release-please.yml keeping one standing release PR and FAILING LOUD without RELEASE_PLEASE_TOKEN (verified live: the first run on main failed with exactly that message and skipped the action step, because GITHUB_TOKEN-created events would never give the release PR its required gates check); release.yml gaining a release:published trigger that attaches the three user-facing packages to the Release via gh release upload, with the harness packages explicitly dispatch-only; the stale DSHSpike-device-unsigned.zip name fixed on both sides of the release doc pair and both README doc lines updated. Proven offline before wiring by driving release-please's own updater classes (and its extra-files dispatch from strategies/base.js) against the real files: all three host manifests plus version.txt reach the next version, and the config validates against release-please's shipped JSON schema. gov run 12/12 green; CI gates + android-e2e green. Refs D10; Agent Note .agents/notes/implemented/process/2026-09-21-release-please-gives-the-packages-a-vers.md. Remaining owner action: set the RELEASE_PLEASE_TOKEN secret."
+  }
 }
