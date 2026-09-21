@@ -1,0 +1,21 @@
+{
+  "title": "Refresh the cross-host E2E evidence matrix to the current tree (quota-blocked m2.llm entry included)",
+  "created": "2026-09-21T05:47:07+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Re-run the inventory on this branch (node tools/e2e/matrix.mjs --out /tmp/inv.json) and verify its claims against the tree: m5-m2-llm FAIL verdicts are quota-blocked (429/1310) and b4-write-live receipt.json is genuinely absent from disk and from git history",
+    "docs/e2e-matrix.md: currency pin, totals, scenario x platform coverage matrix, evidence-dir inventory table, findings count and currency note all match the current tree; every new entry classified green / quota-blocked / pre-existing finding",
+    "docs/e2e-matrix.zh.md carries the same refresh in Chinese, keeping the cross-language links intact",
+    "gov verify pairing --write e2e-matrix reports PASS for both sides",
+    "gov run is green on this branch (12 gates)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0022"
+}
