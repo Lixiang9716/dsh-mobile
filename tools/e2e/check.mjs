@@ -90,6 +90,21 @@ const matchOne = (expect, rec) => {
   return null;
 };
 
+// Provenance: WHICH run produced this verdict. Without it a committed verdict
+// file is indistinguishable from one this run earned, and a CI step that merely
+// `cat`s the file reports a stale PASS as if it were today's result — measured
+// live: a dev/ios run that exited before its checkers ran printed the committed
+// 9/9. The reader (dev-ios.yml, "Report verdict") refuses a verdict whose runId
+// is not the current run's. Empty outside CI, so local use is unchanged.
+const provenance = () =>
+  process.env.GITHUB_RUN_ID
+    ? {
+        runId: process.env.GITHUB_RUN_ID,
+        commit: process.env.GITHUB_SHA || null,
+        producedAt: new Date().toISOString(),
+      }
+    : {};
+
 const run = () => {
   const args = parseArgs(process.argv.slice(2));
   const manifest = JSON.parse(readFileSync(args.manifest, 'utf8'));
@@ -124,6 +139,7 @@ const run = () => {
     logged: records.length,
     failures,
     parseErrors,
+    ...provenance(),
   };
   if (args.out) writeFileSync(args.out, JSON.stringify(verdict, null, 2) + '\n');
   if (verdict.pass) {
