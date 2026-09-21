@@ -9,6 +9,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 ## 文档
 
 - [整体架构方案](docs/ARCHITECTURE.md) —— 分层设计、关键技术决策、里程碑
+- [发布包](docs/release.md) —— 三个宿主 App 的打包与安装(手动触发)
 
 ## 里程碑
 
