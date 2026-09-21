@@ -220,22 +220,51 @@ tools/e2e/selftest.sh   # exit 0 = all checker assertions hold
 every directory carrying `verdict*.json` is an evidence unit, checked for
 the deliverables (`logs.txt` + `scenario.jsonl` + `receipt.json`), PNG
 magic-byte integrity of its screenshots, and a manifest in `scenarios/`
-for every verdict scenario id. A failed or internally inconsistent
-verdict, a missing/empty deliverable, a broken PNG, or a scenario without
-a manifest exits non-zero. Manifest-revision drift (an older dir checked
-against a since-grown manifest) is reported (`drift`), not failed — the
-verdict is the record of what ran. PNGs outside evidence dirs (app icons)
-are not evidence and are not checked. Not wired into `gates.json` — the
-plane seal owns that decision.
+for every verdict scenario id. A failed verdict, an internally
+inconsistent *passing* verdict, a missing/empty deliverable, a broken PNG,
+a scenario without a manifest, or a defect in the known-gaps register
+exits non-zero. Manifest-revision drift (an older dir checked against a
+since-grown manifest) is reported (`drift`), not failed — the verdict is
+the record of what ran. PNGs outside evidence dirs (app icons) are not
+evidence and are not checked. Every path it prints or keys on is relative
+to the audited root, never to the process cwd.
+
+One truth, two invocations — the second is what a gate wires in:
 
 ```sh
-node tools/e2e/matrix.mjs [--out inventory.json]   # exit 0 = clean, 1 = findings
-node tools/e2e/matrix.mjs --self-test              # 8 rejection assertions
+node tools/e2e/matrix.mjs [--out inventory.json]  # every finding, exit 1 on any
+node tools/e2e/matrix.mjs --accept-known-gaps     # exit 0 while the register owns them
+node tools/e2e/matrix.mjs --register <doc.md>     # read the register from another doc
+node tools/e2e/matrix.mjs --self-test             # 18 rejection assertions
 ```
+
+The **known-gaps register** is machine-read from the
+`| code | file | owner | closes with |` table of `docs/e2e-matrix.md` (the
+cells are read literally, so no backtick formatting inside that table) —
+the human honest list is the only copy, and it cannot drift from the
+checker. With `--accept-known-gaps` the run is green while every finding is
+a register row — each printed with its owner and the command that closes
+it, never silently tolerated — and red on a finding no row names (a new
+regression), a row whose finding is gone (a closed gap is struck from the
+register in the same change), a register grown past `KNOWN_GAP_BUDGET`
+(accepting a new gap is a deliberate edit), or a register that cannot be
+read at all. `gates.json` sits inside the plane seal, so the wiring is the
+owner's ritual — `gov gate add e2e-matrix … -- node tools/e2e/matrix.mjs
+--accept-known-gaps`, the project rejection case
+`.gov/rejections/case-e2e-matrix.sh` that rule 6 asks of every gate (this
+checker's `--self-test` is the assertion set to wrap), and
+`gov verify-plane --write`; the command and the current blocking count are in
+[docs/e2e-matrix.md](../../docs/e2e-matrix.md#the-checker-and-its-rejection-proof).
 
 Rejection assertions, each proved by `--self-test` (rule 6): positive
 control (a well-formed tree rejects nothing), `VERDICT_FAIL`
-(`pass: false`), `MISSING_DELIVERABLE` (receipt removed),
-`EMPTY_DELIVERABLE` (zero-byte scenario.jsonl), `PNG_BROKEN` (JPEG bytes
-under a `.png` name), `SCENARIO_WITHOUT_MANIFEST`, `VERDICT_MALFORMED`
-(unparsable verdict), `RECEIPT_MALFORMED` (unparsable receipt).
+(`pass: false`), a FAIL verdict drawing exactly one finding and no derived
+count notice, a *passing* verdict with differing counts,
+`MISSING_DELIVERABLE` (receipt removed), `EMPTY_DELIVERABLE` (zero-byte
+scenario.jsonl), `PNG_BROKEN` (JPEG bytes under a `.png` name),
+`SCENARIO_WITHOUT_MANIFEST`, `VERDICT_MALFORMED` (unparsable verdict),
+`RECEIPT_MALFORMED` (unparsable receipt) — plus the register's own classes:
+a row is read, a table-less doc is refused, a row that is not four cells is
+refused, a listed gap is accepted, an unlisted finding blocks, a row whose
+finding vanished blocks, an unreadable register is a finding of its own,
+and a register grown past the budget blocks.

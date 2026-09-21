@@ -1,0 +1,27 @@
+{
+  "title": "Make the cross-host E2E evidence matrix gate-able (known-gaps register, no gates.json edit)",
+  "created": "2026-09-21T15:25:56+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Run node tools/e2e/matrix.mjs and --self-test on this branch; record the baseline exit code and finding count verbatim",
+    "Classify all 10 findings honestly (closable here / not closable) with the evidence for each call; fabricate no receipt and delete no evidence",
+    "tools/e2e/matrix.mjs: the checker becomes wireable as a gate (unregistered findings block, stale register rows block, the backlog cannot grow silently) and its self-test proves each new rejection class",
+    "docs/e2e-matrix.md regenerated from the actual tree (numbers match the tool output exactly) and docs/e2e-matrix.zh.md carries the same change; gov verify pairing --write docs/e2e-matrix.md re-confirms the pair",
+    "tools/e2e/README.md documents the checker's real behaviour; gates.json untouched; the PR body carries the exact gov gate add command and the remaining blocking count",
+    "gov run green in the worktree (12 gates) and the branch pushed with the PR opened (not merged)"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0029",
+  "void": {
+    "ts": "2026-09-21T15:34:43+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE, landed as PR #125 (open, CI 'gates' pass in 13s, NOT merged per the brief's explicit instruction). All six checklist items verified: baseline recorded (10 findings / exit 1); the 10 findings classified with evidence (7 receipts + 2 quota verdicts = bucket b, owned in the register with per-row owner + closing command; the 10th = the checker's own false-positive count notice on a FAIL verdict, closed in code with both-directions self-test proof); matrix.mjs gained the --accept-known-gaps invocation (unregistered finding blocks, stale register row blocks, KNOWN_GAP_BUDGET, unreadable register is a finding) with 18 self-test assertions; docs/e2e-matrix.md regenerated from the tool's own output on this tree and the zh pair mirrored + pairing re-confirmed; tools/e2e/README.md truthful; gates.json + the plane seal untouched, the wiring command (gov gate add e2e-matrix ... -- node tools/e2e/matrix.mjs --accept-known-gaps) reported in the PR with 0 blocking findings. Retired as void per the repo's recorded #329/#339 exit (#322 'explicitly defer it'): on the pinned 0.47.1 a close stamps a receipt whose verify-decisions NOT_SELECTED entry _check_receipt reads as not-green (task.py:232 \u2014 outcome != PASS), and void then refuses a done card. Trail: PR #125 + the branch's two commits."
+  }
+}
