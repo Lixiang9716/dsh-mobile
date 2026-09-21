@@ -40,6 +40,18 @@ name: release/harmony
 # steps are guarded explicitly rather than by that accident.
 
 on:
+  # THE RELEASE TRIGGER IS THE TAG PUSH (D12). Pushing `vX.Y.Z` is what builds
+  # and publishes this host's package — deliberately NOT the `release:
+  # published` event, because that event is produced by release-please, and
+  # cutting a release should not depend on the bot completing. It is also not
+  # both triggers: this workflow CREATES the Release when the tag has none, and
+  # listening to `release: published` would then fire a second build of the
+  # same tag.
+  #
+  # `git push origin vX.Y.Z` fires this. A tag created through the Releases UI
+  # is not a `git push`, so it is not relied on — push the tag.
+  push:
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       include_harness:
@@ -59,8 +71,9 @@ on:
         type: string
         required: false
         default: ''
-  release:
-    types: [published]
+  # `release: published` is deliberately NOT a trigger: this workflow CREATEs
+  # the Release when a tag has none, so listening to that event would fire a
+  # second build of the same tag. The tag push is the one trigger.
 
 # `gh release upload` writes the asset onto the published release.
 permissions:
@@ -74,9 +87,16 @@ jobs:
       DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
       # Empty on a plain dispatch (the package stays on the run); the release
       # tag otherwise — the event's own tag, or the one a dispatch asked for.
-      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+      RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify the tag agrees with every version file
+        # The tag is the human's decision (D12); this is what keeps that from
+        # becoming a mislabelled build. Skipped on a plain dispatch with no
+        # release_tag, where nothing is attached to anything.
+        if: env.RELEASE_TAG != ''
+        run: sh tools/release/check-tag-version.sh "$RELEASE_TAG"
 
       - uses: actions/setup-node@v4
         with:
@@ -162,6 +182,15 @@ jobs:
           set -euo pipefail
           cp hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
             /tmp/dsh-harmony.hap
+          # The tag may exist with no Release object yet — pushing the tag is
+          # the trigger now, so "publish the Release" is this step's job. Three
+          # hosts run concurrently against one tag, so a lost create race is
+          # tolerated rather than reported as a failure.
+          if ! gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --verify-tag \
+              --title "$RELEASE_TAG" --generate-notes \
+              || gh release view "$RELEASE_TAG" > /dev/null 2>&1
+          fi
           gh release upload "$RELEASE_TAG" /tmp/dsh-harmony.hap --clobber
 
       - name: Build the harness HAP (debug, unsigned)
