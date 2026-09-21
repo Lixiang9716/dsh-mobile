@@ -1,0 +1,67 @@
+{
+  "host": "harmonyos emulator dsh_phone (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "bundleName": "com.dshmobile.spike",
+  "scenarios": [
+    "m1.spike.boot",
+    "m2.bridge.smoke",
+    "m2.session",
+    "m5.host-binding"
+  ],
+  "exitStatus": 0,
+  "exitStatusDetail": "ONE launch drives the regression trio synchronously (m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23) then the event-driven binding phase runs scenario m5.host-binding at 27/27 — the three v1 'unavailable' primitives are now REAL and proven on the emulator: httpFetch streaming + abort over the loopback carrier, HUKS keychain set/get/delete, presentPicker grant with user-scope fsScope persist/resolve and content-matching read-back",
+  "descriptor": "9 available / 0 unavailable — fsRead, fsWrite, fsScope (app scope C-served), httpFetch, notify, presentApproval, presentPicker, keychainGet, keychainSet (user-scope fs forwarded to ArkTS); the flip is backed by this run's on-device proofs, never declared",
+  "primitives": {
+    "httpFetch": "HttpPrimitive.ets over @ohos.net.http requestInStream: settles {status, headers, bodyId:<callId>} at headers, then streams the body as http.body chunk events (<=4 KB raw, base64) plus http.end onto the runtime queue; loopback bodies that beat the settle are queued and flushed after it; abort() is real end-to-end (numeric bodyId survives the bridge abort seam -> HttpRequest.destroy()). Proven against the host's own carrier: /gateway-e2e/bytes 2 chunks/64 bytes consumed chunk-by-chunk, /gateway-e2e/slow aborted after the first chunk -> iterator rejects {code:'cancelled'}",
+    "keychain": "KeychainPrimitives.ets over @ohos.security.huks: AES-256-GCM fixed-alias master key (generate-on-set on first use, load-on-get), sealed blob = 12-byte random nonce + ciphertext(+tag) at <filesDir>/keychain/<sha256(ref)>; set -> get returns identical bytes, unknown ref resolves null, set null deletes. Image quirks handled: isKeyItemExist throws 12000011 for a missing key instead of resolving false; GCM decrypt needs the tag via HUKS_TAG_AE_TAG with the ciphertext body as inData",
+    "presentPicker": "PickerPrimitives.ets over @ohos.file.picker DocumentViewPicker (user scope): dismissal resolves null and grants nothing; the grant binds user:<uuid> to the picked URI, fsScope.persist writes bkm:<uuid> into <filesDir>/scope-registry.json, fsScope.resolve restores a fresh handle, fsRead reads picker URIs through fileIo. The image ships an EMPTY user store and is undebuggable, so the binding phase bootstraps a seed file via the platform save dialog (driver-tapped, unique per-run name) and hands its name to the scenario as the host.seed bridge event; user-scope surface is read-only (creation needs picker.save, outside the contract select) — same proof shape as Android m4.host-binding"
+  },
+  "checker": [
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m1-spike-boot.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/sink-capture.txt",
+      "pass": true,
+      "expected": 7,
+      "logged": 7
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-bridge-smoke.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/sink-capture.txt",
+      "pass": true,
+      "expected": 6,
+      "logged": 6
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-session.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/sink-capture.txt",
+      "pass": true,
+      "expected": 23,
+      "logged": 23
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m5-host-binding.json",
+      "log": "hosts/harmony/artifacts/m5-primitives/binding-capture.txt",
+      "pass": true,
+      "expected": 27,
+      "logged": 27
+    }
+  ],
+  "captures": {
+    "primary": "sink-capture.txt + binding-capture.txt (app-side capture files pulled via hdc file recv; named .txt because the repo ignores *.log)",
+    "second": "logs.txt (continuous `hdc shell hilog` stream filtered to dsh.spike lines)",
+    "screenshots": "m5-live-deltas.png (first token delta streaming into the mounted page) and m5-binding-complete.png (session complete rendered in ArkWeb) — human evidence only"
+  },
+  "uiAutomation": "hosts/harmony/ci/run-host-e2e.sh + ci/drive-binding.mjs: polled uitest driving of the save dialog (seed bootstrap), the DocumentViewPicker close X (dismiss -> null) and Browse->My phone->seed file->done (grant), the approval Approve button, and the notification lifecycle (Home, shade, DSH E2E tap). Every wait is a polled condition with a deadline",
+  "toolchain": {
+    "clt": "HarmonyOS Command Line Tools 26.0.0.821 (mac-arm64)",
+    "hvigor": "6.26.4",
+    "sdk": "HarmonyOS 26.0.0 Release (API Version 26)",
+    "signing": "none — the emulator accepts the unsigned debug HAP via hdc install"
+  },
+  "timestamp": "2026-09-21T11:48:00+08:00"
+}
