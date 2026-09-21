@@ -13,8 +13,16 @@ Rules:
   L3  every block-bodied function body contains at least one `log.*` call
       (expression-bodied arrows are exempt; nested-function bodies are
       attributed to the innermost function, never the outer one)
-  L4  runtime/logger keeps its `__DSH_RELEASE__` no-op branch — the mechanism
-      that makes logging disappear in release builds must stay wired
+  L4  the release strip is REAL end to end, not a branch one file carries:
+      a) runtime/logger keeps its `__DSH_RELEASE__` no-op branch;
+      b) runtime/spike/logger.js — the logger the SHIPPED app actually runs —
+         honors the injected `globalThis.__DSH_RELEASE__`;
+      c) every host's Release configuration actually DEFINES the flag (iOS,
+         Android, HarmonyOS) and the desktop CLI has a release build mode.
+      The 2026-09-21 audit found (a) true while (b) did not exist and (c) was
+      empty, so the "mechanism" was cosmetic: nothing ever set the flag and
+      the shipping logger had no branch at all. (c) is what makes this rule
+      able to see that violation.
 
 Function boundaries are reused from tools/check-size.py (same heuristic ruler).
 Exit 0 clean, 1 on any violation.
@@ -44,6 +52,23 @@ VENDOR_SEGMENT = "/vendor/"
 LOGGER_FACTORY = re.compile(r"\bcreateLogger\s*\(")
 BARE_CONSOLE = re.compile(r"\bconsole\.(log|debug|info|warn|error|trace)\s*\(")
 LOG_CALL = re.compile(r"\blog\s*\.(debug|info|warn|error)\s*\(")
+
+# L4: the operative logger (the one the shipped app actually runs — the
+# canonical TS file is bundled by nothing) and the JS global the shared C host
+# injects under -DDSH_RELEASE.
+OPERATIVE_LOGGER = "runtime/spike/logger.js"
+RELEASE_GLOBAL = "globalThis.__DSH_RELEASE__"
+
+# L4c: every host's Release configuration must DEFINE the flag. One row per
+# platform; the marker is the define as it appears in that build system, so a
+# silently dropped define names the exact file that lost it (rule 5).
+PLUMBING = (
+    ("iOS", "hosts/ios/DSHSpike.xcodeproj/project.pbxproj",
+     "SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE"),
+    ("Android", "hosts/android/app/build.gradle.kts", "DSH_RELEASE"),
+    ("HarmonyOS", "hosts/harmony/entry/build-profile.json5", "DSH_RELEASE"),
+    ("macOS CLI", "runtime/spike/host/build.sh", "DSH_RELEASE"),
+)
 
 
 def _load_sibling():
@@ -106,12 +131,46 @@ def check_file(path):
 
 
 def check_release_silence(files):
+    out = []
     logger_files = [f for f in files if f.startswith(LOGGER_DIR) and f.endswith((".ts", ".js"))]
     if not logger_files:
-        return []
-    wired = any("__DSH_RELEASE__" in Path(f).read_text(encoding="utf-8", errors="replace")
-                for f in logger_files)
-    return [] if wired else [f"{LOGGER_DIR}: L4 release no-op branch (__DSH_RELEASE__) missing"]
+        out.append(f"{LOGGER_DIR}: L4 no logger module found — the canonical logger is missing")
+    elif not any("__DSH_RELEASE__" in Path(f).read_text(encoding="utf-8", errors="replace")
+                 for f in logger_files):
+        out.append(f"{LOGGER_DIR}: L4a release no-op branch (__DSH_RELEASE__) missing")
+
+    # L4b: the logger the SHIPPED app runs. The canonical TS logger is bundled
+    # by nothing; runtime/spike/logger.js is embedded byte-identically into the
+    # iOS C arrays, the Android assets and the HarmonyOS rawfile tree. A
+    # release branch in the canonical file alone strips nothing.
+    operative = Path(OPERATIVE_LOGGER)
+    if not operative.exists():
+        out.append(f"{OPERATIVE_LOGGER}: L4b the operative spike logger is missing")
+    else:
+        text = operative.read_text(encoding="utf-8", errors="replace")
+        if RELEASE_GLOBAL not in text:
+            out.append(
+                f"{OPERATIVE_LOGGER}: L4b does not honor the injected "
+                f"{RELEASE_GLOBAL} — the shipped app's debug/info would survive "
+                f"a release build")
+        for level in ("debug", "info"):
+            if not re.search(rf"\b{level}\b\s*\(\s*\)\s*\{{", text):
+                out.append(
+                    f"{OPERATIVE_LOGGER}: L4b no release no-op for '{level}' "
+                    f"(warn/error must stay live, debug/info must fold away)")
+
+    # L4c: a branch nobody defines is cosmetic — the flag must be DEFINED by
+    # each host's Release configuration and by the CLI's release mode.
+    for label, path, marker in PLUMBING:
+        f = Path(path)
+        if not f.exists():
+            out.append(f"{path}: L4c {label} build config is missing — cannot confirm "
+                       f"the release flag is defined")
+            continue
+        if marker not in f.read_text(encoding="utf-8", errors="replace"):
+            out.append(f"{path}: L4c {label} Release configuration does not define "
+                       f"the release flag ('{marker}' absent) — the strip is cosmetic")
+    return out
 
 
 def main():
