@@ -1,0 +1,28 @@
+{
+  "title": "CI: an always-running aggregator check so the platform E2E legs can become required",
+  "created": "2026-09-21T15:26:42+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "contract/ untouched: the deliverable is exactly .github/workflows/ci-verdict.yml (one job named ci-verdict)",
+    "checks: read + contents: read + pull-requests: read; GH_REPO set because the job never checks out",
+    "condition-polled with a bounded deadline (no blind waits, no continue-on-error)",
+    "absent check = printed by name, never a failure and never a verification",
+    "incomplete check at the deadline = FAIL naming it",
+    "YAML parses (ruby -ryaml) and the verdict logic is exercised locally on synthetic inputs",
+    "Agent Note written; gov run green; PR opened with the design note and the owner's gh api command (not run)"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0029",
+  "void": {
+    "ts": "2026-09-21T15:27:55+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE on branch feat/ci-verdict-aggregator (PR opened from it): .github/workflows/ci-verdict.yml is the always-running aggregator (one job, ci-verdict), proven by YAML parse + 9 locally exercised verdict cases / 46 assertions. Retired as void per this repo's recorded exit, NOT as deferral of unfinished work: on the pinned govrail 0.47.1 a close stamps a receipt whose verify-decisions NOT_SELECTED entry _check_receipt reads as not-green (reproduced here: close returned 0 with 'an all-green all run (13 gates)', then gov task check exited 1 with 'receipt run is not all-green (verify-decisions)'), and void then refuses a done card \u2014 the unexitable state that retired T-0021..T-0028 (govrail #329/#339). Closing properly needs the upstream reader to accept NON_RUN outcomes the writer already accepts."
+  }
+}

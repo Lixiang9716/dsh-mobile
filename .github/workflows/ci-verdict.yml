@@ -1,0 +1,245 @@
+name: ci-verdict
+# The one ALWAYS-RUNNING check whose verdict is derived from the legs that ran.
+#
+# `main` requires exactly one context today — `gates`, which always runs
+# (`gov.yml` has no path filter). The three platform pipelines ARE path-filtered
+# (`dev-ios.yml`, `dev-android.yml`, `dev-harmonyos.yml`), so a docs-only PR
+# triggers none of them: naming any of them as a required check would leave that
+# check "expected" and block the merge forever. That combination is the whole
+# reason the platform legs are not required. This job closes the gap: it is
+# path-less, so it always runs, and its verdict is "every check run that exists
+# on this commit is green" — with the legs that never ran named out loud.
+#
+# The two hazards it is built against:
+#   (a) an aggregator that is itself flaky wedges every merge in the repo. So it
+#       does no work of its own — no checkout, no toolchain, one read-only
+#       `gh api` call per poll — and its failure surface is bounded: transient
+#       API errors are retried inside the loop (the deadline decides, not a
+#       hiccup), the deadline is longer than any leg's own job timeout so a
+#       legal slow run cannot red it, and `timeout-minutes` backstops the job.
+#   (b) "absent" must never silently become "verified". A check that never ran
+#       is reported BY NAME and distinguished from one that passed; the
+#       settling window below keeps a not-yet-registered check run from being
+#       mistaken for a path-filtered-out one; and an unreadable check set is a
+#       failure, never an empty (i.e. all-absent, i.e. green) one.
+on:
+  pull_request:
+
+# The Checks API needs `checks: read`; `contents` and `pull-requests` are read
+# for the log line. Nothing here writes anything anywhere.
+permissions:
+  checks: read
+  contents: read
+  pull-requests: read
+
+# Superseded runs cancel, exactly like the platform pipelines: a newer push's
+# verdict is the branch's state, and an interleaved stale run answering late
+# reads as a flake. `github.ref` is `refs/pull/<n>/merge` for this event, so one
+# group covers every push to one PR.
+concurrency:
+  group: ci-verdict-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci-verdict:
+    runs-on: ubuntu-latest
+    # The poll loop owns the real deadline (70 min, i.e. longer than the longest
+    # leg's own timeout of 40 min); this is the hard backstop, so a wedged
+    # aggregator cannot sit on a runner for GitHub's 6-hour default.
+    timeout-minutes: 85
+    steps:
+      - name: Aggregate the check runs on the PR head SHA
+        env:
+          # `gh` cannot resolve a repository from the cwd — this job checks
+          # nothing out ON PURPOSE, and without GH_REPO it dies with
+          # "fatal: not a git repository" (a failure this repo already paid for
+          # once, in release/version).
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The PR's HEAD commit, not the merge commit: that is the commit the
+          # platform pipelines report on, and the commit this check judges.
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          # ---- knobs ---------------------------------------------------------
+          # Every wait below is a POLL of a condition with a deadline (rules.md
+          # rule 8), never a blind pause.
+          POLL_SECONDS="${POLL_SECONDS:-30}"
+          # Longer than every leg's own job timeout (ios 30, harmonyos 30,
+          # android 40 minutes): measured PR-event runs land between 1.5 and 11
+          # minutes plus queue time, so a SHORTER deadline would red this check
+          # on a legal slow run — hazard (a) in its most likely form. A leg that
+          # never reports at all is still caught here and never walks away green.
+          DEADLINE_SECONDS="${DEADLINE_SECONDS:-4200}"    # 70 min
+          # A check run is registered seconds after the PR event fires, not at
+          # the same instant. Absence is therefore trusted only after this
+          # settling window, measured from the first poll that could see ANY
+          # expected check (or from the start, when nothing was ever seen).
+          ABSENT_GRACE_SECONDS="${ABSENT_GRACE_SECONDS:-120}"
+          # `gates` always runs; the three platform legs are path-filtered and
+          # may legitimately be absent. `ci-verdict` itself is deliberately NOT
+          # in this list: it is in_progress while it judges.
+          EXPECTED="gates ios-e2e android-e2e harmonyos-build"
+          SNAP="$(mktemp)"
+          RAW="$(mktemp)"
+          trap 'rm -f "$SNAP" "$RAW"' EXIT
+
+          # ---- reading the head SHA's check runs -----------------------------
+          # Paginated on purpose: a truncated first page would hide a check run,
+          # and a hidden run reads as ABSENT — the silent "not run == verified"
+          # conversion this job exists to prevent.
+          fetch_rows() {
+            gh api --paginate \
+              "repos/$GH_REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+              --jq '.check_runs[] | [.name, .status, (.conclusion // "-"),
+                    (.started_at // .created_at // "")] | @tsv'
+          }
+
+          # One row per check NAME, the latest run winning (a re-run supersedes
+          # its own predecessor). `started_at` is ISO-8601, so a lexicographic
+          # sort is chronological; sorting by name first lets awk keep the last.
+          # An EMPTY row set is reported as a failed read, not as a snapshot:
+          # this job's own check run exists on the SHA while it judges, so zero
+          # rows means the read is wrong — and an empty set judged as "nothing
+          # exists, nothing is wrong" is the silent green this job forbids.
+          snapshot() {
+            fetch_rows > "$RAW" || return 1
+            sort -k1,1 -k4,4 "$RAW" \
+              | awk -F'\t' 'NF > 0 { row[$1] = $0 }
+                            END { for (n in row) print row[n] }' \
+              | sort > "$SNAP"
+            [ -s "$SNAP" ] || return 1
+          }
+
+          state_of() {   # $1 = name -> absent | pending:<status> | done:<conclusion>
+            local row status
+            row="$(awk -F'\t' -v n="$1" '$1 == n { print; exit }' "$SNAP")"
+            if [ -z "$row" ]; then printf 'absent'; return 0; fi
+            status="$(printf '%s' "$row" | cut -f2)"
+            if [ "$status" = completed ]; then
+              printf 'done:%s' "$(printf '%s' "$row" | cut -f3)"
+            else
+              printf 'pending:%s' "$status"
+            fi
+          }
+
+          # GitHub counts success, skipped and neutral as passing; every other
+          # completed conclusion (failure, cancelled, timed_out,
+          # action_required, stale) blocks.
+          passes() { case "$1" in success|skipped|neutral) return 0 ;; *) return 1 ;; esac; }
+
+          # ---- one judgment pass ---------------------------------------------
+          # Sets FAILED / PENDING / ABSENT (space-joined "name(detail)" items),
+          # SEEN (any expected check visible), ABSENCE_SETTLED and FINAL. FINAL
+          # means the verdict is already decided: a red leg is final at once,
+          # and so is "everything visible is green and nothing else can appear".
+          judge() {
+            local name state elapsed baseline now
+            now="$(date +%s)"
+            FAILED=""; PENDING=""; ABSENT=""; SEEN=no; ABSENCE_SETTLED=no; FINAL=no
+            for name in $EXPECTED; do
+              state="$(state_of "$name")"
+              case "$state" in
+                absent)    ABSENT="$ABSENT $name" ;;
+                pending:*) SEEN=yes; PENDING="$PENDING $name(${state#pending:})" ;;
+                done:*)    SEEN=yes
+                           passes "${state#done:}" \
+                             || FAILED="$FAILED $name(${state#done:})" ;;
+              esac
+            done
+            if [ "$SEEN" = yes ] && [ "$ANCHOR_TS" = 0 ]; then ANCHOR_TS="$now"; fi
+            baseline="$STARTED_TS"
+            if [ "$ANCHOR_TS" != 0 ]; then baseline="$ANCHOR_TS"; fi
+            elapsed=$(( now - baseline ))
+            if [ "$elapsed" -ge "$ABSENT_GRACE_SECONDS" ]; then ABSENCE_SETTLED=yes; fi
+            if [ -n "$FAILED" ]; then FINAL=yes; return 0; fi
+            if [ -n "$PENDING" ]; then return 0; fi
+            if [ -z "$ABSENT" ] || [ "$ABSENCE_SETTLED" = yes ]; then FINAL=yes; fi
+            return 0
+          }
+
+          # ---- the poll loop --------------------------------------------------
+          STARTED_TS="$(date +%s)"
+          DEADLINE_TS=$(( STARTED_TS + DEADLINE_SECONDS ))
+          ANCHOR_TS=0
+          POLLS=0; READS=0; EXPIRED=no
+          while :; do
+            POLLS=$(( POLLS + 1 ))
+            if snapshot; then
+              READS=$(( READS + 1 ))
+            else
+              echo "::warning::poll $POLLS: the check-run read failed or came back empty — retrying; a read error never decides a verdict, the deadline does"
+            fi
+            judge
+            echo "poll $POLLS: pending=[${PENDING# }] failed=[${FAILED# }] absent=[${ABSENT# }]"
+            if [ "$FINAL" = yes ]; then break; fi
+            NOW="$(date +%s)"
+            if [ "$NOW" -ge "$DEADLINE_TS" ]; then EXPIRED=yes; break; fi
+            LEFT=$(( DEADLINE_TS - NOW ))
+            if [ "$LEFT" -lt "$POLL_SECONDS" ]; then sleep "$LEFT"; else sleep "$POLL_SECONDS"; fi
+          done
+
+          # ---- verdict --------------------------------------------------------
+          # An unreadable (or empty) check set is a FAILURE, never an empty one
+          # that would silently read as "nothing exists, nothing is wrong".
+          if [ "$READS" = 0 ]; then
+            echo "::error::no usable check-run read in $POLLS poll(s) (API error, rate limit, or an empty check set) — that is not a green check set"
+            exit 1
+          fi
+          # A leg still incomplete at the deadline is a FAILURE, named: a hung
+          # platform leg must not walk away with a green aggregator.
+          if [ "$EXPIRED" = yes ]; then
+            for name in $EXPECTED; do
+              state="$(state_of "$name")"
+              case "$state" in
+                pending:*) FAILED="$FAILED $name(still-${state#pending:}-after-${DEADLINE_SECONDS}s)" ;;
+              esac
+            done
+          fi
+
+          echo
+          echo "check runs on $HEAD_SHA (PR #$PR_NUMBER) after $POLLS poll(s), $(( $(date +%s) - STARTED_TS ))s:"
+          for name in $EXPECTED; do
+            state="$(state_of "$name")"
+            case "$state" in
+              absent)
+                echo "  ABSENT   $name — no check run exists on this commit: its workflow is path-filtered out by this PR's diff, so the leg did not run."
+                echo "::warning::$name did not run on $HEAD_SHA (path-filtered). Not a failure — and NOT a verification: nothing was tested there." ;;
+              pending:*)
+                echo "  RUNNING  $name=${state#pending:} (incomplete at the deadline)" ;;
+              done:*) if passes "${state#done:}"; then
+                        echo "  PASS     $name=${state#done:}"
+                      else
+                        echo "  FAIL     $name=${state#done:}"
+                      fi ;;
+            esac
+          done
+          # Informational only: checks outside EXPECTED (including this job's own
+          # run, which is in_progress while it judges) are printed, never judged.
+          awk -F'\t' -v keep=" $EXPECTED " \
+            'index(keep, " " $1 " ") == 0 { print "  other:   " $1 "=" $2 "/" $3 }' "$SNAP"
+
+          if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+            {
+              echo "## ci-verdict — \`$HEAD_SHA\` (PR #$PR_NUMBER)"
+              echo
+              for name in $EXPECTED; do
+                state="$(state_of "$name")"
+                case "$state" in
+                  absent)    echo "- \`$name\`: **ABSENT** — did not run (path-filtered): not a failure, not a verification" ;;
+                  pending:*) echo "- \`$name\`: **INCOMPLETE** at the deadline (\`${state#pending:}\`)" ;;
+                  done:*)    echo "- \`$name\`: \`${state#done:}\`" ;;
+                esac
+              done
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ -n "$FAILED" ]; then
+            for item in $FAILED; do
+              echo "::error::ci-verdict: $item — the aggregated verdict for $HEAD_SHA is FAIL"
+            done
+            exit 1
+          fi
+          echo "ci-verdict: PASS for $HEAD_SHA — every check run that exists on this commit is green; legs that did not run are named above and were never verified."
