@@ -12,7 +12,8 @@
       "doc-crosslinks",
       "archive",
       "task",
-      "plane"
+      "plane",
+      "e2e-matrix"
     ],
     "quick": [
       "notes"
@@ -179,6 +180,16 @@
         ".gov/plane-seal.json"
       ],
       "timeoutMs": 60000
+    },
+    {
+      "id": "e2e-matrix",
+      "command": [
+        "sh",
+        "tools/e2e/matrix.sh",
+        "--accept-known-gaps"
+      ],
+      "description": "cross-host E2E evidence matrix: every finding must be an owned row of the known-gaps register",
+      "timeoutMs": 300000
     }
   ]
 }
