@@ -137,9 +137,9 @@ final class SessionRuntime {
             self?.carrierEvent("http.served", ["path": path, "bytes": bytes])
         }
         do {
-            try server.start(webRoot: root.appendingPathComponent(
-                resolvedDir + "/web")) {
-                [weak self] in
+            try server.installLegacyRoutes(webRoot: root.appendingPathComponent(
+                resolvedDir + "/web"))
+            try server.start { [weak self] in
                 self?.openOrigin()
             }
         } catch {

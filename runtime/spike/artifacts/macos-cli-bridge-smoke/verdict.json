@@ -1,0 +1,8 @@
+{
+  "scenario": "m2.bridge.smoke",
+  "pass": true,
+  "expected": 6,
+  "logged": 6,
+  "failures": [],
+  "parseErrors": []
+}

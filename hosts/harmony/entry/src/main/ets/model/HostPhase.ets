@@ -80,6 +80,11 @@ export class HostPhase {
   private lastDeltaIndex: number = -1;
   private nextNotificationId: number = 1;
   private approvalPresenter: ApprovalPresenter | null = null;
+  private completeSignaled = false;
+
+  /** Fired once when the phase scenario reaches a terminal verdict (mutator
+   * status >= 1) — Index chains the D9 official-web phase off it. */
+  onPhaseComplete: (passed: boolean) => void = (passed: boolean): void => {};
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -161,6 +166,7 @@ export class HostPhase {
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: bus deliver failed');
     }
+    this.signalComplete(status);
   }
 
   /** Ability lifecycle edge (EntryAbility) → app.state channel. */
@@ -204,6 +210,18 @@ export class HostPhase {
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: event failed: %{public}s', eventJson);
     }
+    this.signalComplete(status);
+  }
+
+  /** One mutator verdict check: status >= 1 means the scenario reached a
+   * terminal verdict — fire the completion chain once. */
+  private signalComplete(status: number): void {
+    if (status < 1 || this.completeSignaled || !this.started) {
+      return;
+    }
+    this.completeSignaled = true;
+    hilog.info(0x0000, TAG, 'phase: scenario complete (status %{public}d)', status);
+    this.onPhaseComplete(status === 1);
   }
 
   private settleCall(callId: number, payloadJson: string, ok: boolean): void {
@@ -211,6 +229,7 @@ export class HostPhase {
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: settle failed for call %{public}d', callId);
     }
+    this.signalComplete(status);
   }
 
   private sendToPage(text: string): void {

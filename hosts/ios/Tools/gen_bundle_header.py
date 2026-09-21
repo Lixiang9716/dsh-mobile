@@ -45,7 +45,7 @@ RESOURCES = [
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
-     SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.1" / "lib" / "index.js"),
+     SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.2" / "lib" / "index.js"),
     # system implementation plugins (repo-root tree, staged bundle-relative
     # under system-plugins/ — the scenario's canonical import specifier)
     ("plugin_fs_manifest", REPO / "system-plugins" / "dsh-fs" / "manifest.json"),
@@ -70,7 +70,187 @@ RESOURCES = [
      REPO / "presentation" / "web-client-mini" / "web" / "index.html"),
     ("webclient_mini_main_js",
      REPO / "presentation" / "web-client-mini" / "web" / "main.js"),
+    # W-INTEG web-boot closure: the OFFICIAL web boot producer scenario plus
+    # the upstream web-boot adapter, its shims, and the vendored npm libs the
+    # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
+    # client-modules node + browser faces). NOT the full agent spine — the
+    # b1-web-live drive composes the boot wire without runtime services.
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "b1-web-live.js"),
+    ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
+    ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
+    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
+    ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
+    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"),
+    ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
+    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
+    ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
+    ("npm_cordis_js",
+     SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
+    ("npm_cosmokit_js",
+     SPIKE / "vendor" / "npm" / "cosmokit@1.8.3" / "lib" / "index.js"),
+    ("npm_schemastery_mjs",
+     SPIKE / "vendor" / "npm" / "schemastery@3.18.2" / "lib" / "index.mjs"),
+    ("npm_client_modules_index_js",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "index.js"),
+    ("npm_client_modules_client_js",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "client.js"),
+    # W-SESS spine closure (D9): the FULL upstream agent spine boots
+    # on-device — the mobile profile boot, its settings backend, the gateway
+    # llm transport, and the node shims the spine needs beyond the web-boot
+    # set (async-hooks, util, util/types, os, process, the
+    # session-persistence errors shim).
+    ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
+    ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
+    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
+    ("scenario_b3_web_live_js", SPIKE / "scenario" / "b3-web-live.js"),
+    # W-RPC write surface (D9): the official app's composer send
+    # (`POST /api/session/prompt`) answered from the REAL spine — the write
+    # adapter plus the scenario that boots the runtime composed with it.
+    ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
+    ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
+    ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
+    ("scenario_b4_web_live_js", SPIKE / "scenario" / "b4-web-live.js"),
+    ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
+    ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
+    ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),
+    ("shims_os_js", SPIKE / "upstream" / "shims" / "os.js"),
+    ("shims_process_js", SPIKE / "upstream" / "shims" / "process.js"),
+    ("shims_dsh_session_persistence_js",
+     SPIKE / "upstream" / "shims" / "dsh-session-persistence.js"),
 ]
+
+# Directory trees embedded whole and staged back under the same
+# bundle-relative paths: the vendored upstream spine packages (verbatim
+# lib/ trees, the loader's `vendor/dsh/<pkg>@<ver>/lib/**` map). Trees are
+# UNTRACKED upstream code — embedded from the materialized vendor checkout,
+# sha256-pinned by ensure-dsh.sh.
+TREES = [
+    (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
+     SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
+    for pkg in [
+        "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
+        "session", "session-projection", "settings", "system-prompt",
+        "timeout", "tools", "typert-protocol", "util-values",
+    ]
+] + [
+    # the pinned npm packages' package.json (the node-module shim serves the
+    # upstream attribution reads: `require('../package.json')`) — the lib/
+    # bundles themselves are embedded individually in RESOURCES above.
+    ("vendor/npm/cordis@4.0.2/package.json",
+     SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "package.json"),
+    ("vendor/npm/cosmokit@1.8.3/package.json",
+     SPIKE / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
+    ("vendor/npm/schemastery@3.18.2/package.json",
+     SPIKE / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
+    ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "package.json"),
+]
+
+# The pinned zod's runtime closure: `zod` → index.js → the classic build's
+# relative import graph (computed once by walking imports from index.js at
+# the pin). The rest of the package (src/, v3/, mini/, .d.ts) never loads.
+ZOD_ROOT = ("vendor/npm/zod@4.4.3", SPIKE / "vendor" / "npm" / "zod@4.4.3")
+ZOD_FILES = [
+    "index.js",
+    "v4/classic/checks.js",
+    "v4/classic/coerce.js",
+    "v4/classic/compat.js",
+    "v4/classic/errors.js",
+    "v4/classic/external.js",
+    "v4/classic/from-json-schema.js",
+    "v4/classic/iso.js",
+    "v4/classic/parse.js",
+    "v4/classic/schemas.js",
+    "v4/core/api.js",
+    "v4/core/checks.js",
+    "v4/core/core.js",
+    "v4/core/doc.js",
+    "v4/core/errors.js",
+    "v4/core/index.js",
+    "v4/core/json-schema-generator.js",
+    "v4/core/json-schema-processors.js",
+    "v4/core/json-schema.js",
+    "v4/core/parse.js",
+    "v4/core/regexes.js",
+    "v4/core/registries.js",
+    "v4/core/schemas.js",
+    "v4/core/to-json-schema.js",
+    "v4/core/util.js",
+    "v4/core/versions.js",
+    "v4/locales/ar.js",
+    "v4/locales/az.js",
+    "v4/locales/be.js",
+    "v4/locales/bg.js",
+    "v4/locales/ca.js",
+    "v4/locales/cs.js",
+    "v4/locales/da.js",
+    "v4/locales/de.js",
+    "v4/locales/el.js",
+    "v4/locales/en.js",
+    "v4/locales/eo.js",
+    "v4/locales/es.js",
+    "v4/locales/fa.js",
+    "v4/locales/fi.js",
+    "v4/locales/fr-CA.js",
+    "v4/locales/fr.js",
+    "v4/locales/he.js",
+    "v4/locales/hr.js",
+    "v4/locales/hu.js",
+    "v4/locales/hy.js",
+    "v4/locales/id.js",
+    "v4/locales/index.js",
+    "v4/locales/is.js",
+    "v4/locales/it.js",
+    "v4/locales/ja.js",
+    "v4/locales/ka.js",
+    "v4/locales/kh.js",
+    "v4/locales/km.js",
+    "v4/locales/ko.js",
+    "v4/locales/lt.js",
+    "v4/locales/mk.js",
+    "v4/locales/ms.js",
+    "v4/locales/nl.js",
+    "v4/locales/no.js",
+    "v4/locales/ota.js",
+    "v4/locales/pl.js",
+    "v4/locales/ps.js",
+    "v4/locales/pt.js",
+    "v4/locales/ro.js",
+    "v4/locales/ru.js",
+    "v4/locales/sl.js",
+    "v4/locales/sv.js",
+    "v4/locales/ta.js",
+    "v4/locales/th.js",
+    "v4/locales/tr.js",
+    "v4/locales/ua.js",
+    "v4/locales/uk.js",
+    "v4/locales/ur.js",
+    "v4/locales/uz.js",
+    "v4/locales/vi.js",
+    "v4/locales/yo.js",
+    "v4/locales/zh-CN.js",
+    "v4/locales/zh-TW.js",
+]
+
+
+def collect_tree_files():
+    """The staged tree: (bundle_relative_path, absolute source path), in
+    stable order (trees first, then the zod list)."""
+    out = []
+    for rel_dir, src_dir in TREES:
+        if src_dir.is_file():
+            out.append((rel_dir, src_dir))
+            continue
+        for path in sorted(src_dir.rglob("*")):
+            if path.is_file() and path.suffix in (".js", ".mjs", ".json"):
+                out.append((f"{rel_dir}/{path.relative_to(src_dir)}", path))
+    rel_root, abs_root = ZOD_ROOT
+    for rel in ZOD_FILES:
+        out.append((f"{rel_root}/{rel}", abs_root / rel))
+    return out
 
 
 def c_array(symbol: str, data: bytes, raw: bytes) -> str:
@@ -85,9 +265,7 @@ def c_array(symbol: str, data: bytes, raw: bytes) -> str:
     return f"static const unsigned char {symbol}[] = {{\n{body}\n  0x00\n}};\n"
 
 
-def emit() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
-    parts, decls, funcs = [], [], []
+def emit_resources(parts: list, decls: list, funcs: list) -> None:
     for suffix, path in RESOURCES:
         if not path.is_file():
             raise SystemExit(f"gen_bundle_header: missing input {path}")
@@ -102,6 +280,60 @@ def emit() -> None:
             f"  return (const char *){symbol};\n"
             f"}}\n"
         )
+
+
+def tree_c_source(tree: list) -> str:
+    """The staged tree as one C section: per-file arrays addressed by a
+    single index accessor (the Swift stager walks it without N decls)."""
+    tree_arrays, tree_paths, tree_lens = [], [], []
+    for i, (rel, path) in enumerate(tree):
+        if not path.is_file():
+            raise SystemExit(f"gen_bundle_header: missing tree input {path}")
+        symbol = f"DSH_TREE_{i:03d}"
+        raw = path.read_bytes()
+        if b"\x00" in raw:
+            raise SystemExit(f"gen_bundle_header: {rel} contains a NUL byte")
+        tree_arrays.append(
+            f"/* {path.relative_to(REPO)} ({len(raw)} bytes) */\n{c_array(symbol, raw, raw)}")
+        tree_paths.append(f'  "{rel}",')
+        tree_lens.append(f"  sizeof({symbol}) - 1,")
+    return (
+        "/* ---- the staged tree (vendored spine packages + zod closure) ---- */\n"
+        + "\n".join(tree_arrays)
+        + "\nstatic const char *const DSH_TREE_PATHS[] = {\n"
+        + "\n".join(tree_paths)
+        + "\n};\n\nstatic const unsigned char *const DSH_TREE_DATA[] = {\n"
+        + "\n".join(f"  DSH_TREE_{i:03d}," for i in range(len(tree)))
+        + "\n};\n\nstatic const size_t DSH_TREE_LENS[] = {\n"
+        + "\n".join(tree_lens)
+        + "\n};\n\n"
+        + "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
+        + "                               const char **data, size_t *len) {\n"
+        + f"  if (index >= {len(tree)}) return 0;\n"
+        + "  if (path) *path = DSH_TREE_PATHS[index];\n"
+        + "  if (data) *data = (const char *)DSH_TREE_DATA[index];\n"
+        + "  if (len) *len = DSH_TREE_LENS[index];\n"
+        + "  return 1;\n"
+        + "}\n")
+
+
+TREE_WALKER_DECL = (
+    "/* The staged tree walker (vendored spine packages + zod closure):\n"
+    " * fills path/data/len for `index`, returns 0 past the end. */\n"
+    "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
+    "                               const char **data, size_t *len);")
+
+
+def emit() -> None:
+    OUT.mkdir(parents=True, exist_ok=True)
+    parts, decls, funcs = [], [], []
+    emit_resources(parts, decls, funcs)
+    tree = collect_tree_files()
+    parts.append(tree_c_source(tree))
+    decls.append(TREE_WALKER_DECL)
+    total = sum(p.stat().st_size for _, p in tree)
+    print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
+          f"({total / 1024:.0f} KiB)")
 
     header = "\n".join([
         "/* Generated by hosts/ios/Tools/gen_bundle_header.py — do not edit.",

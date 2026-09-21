@@ -121,14 +121,17 @@ static char *m4_join(const char *dir, const char *rel) {
 __attribute__((visibility("default")))
 jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
         JNIEnv *env, jobject thiz, jstring j_context, jstring j_entry,
-        jstring j_source, jstring j_descriptor, jobject bridge) {
+        jstring j_source, jstring j_descriptor, jstring j_capture,
+        jobject bridge) {
     (void)thiz;
     g_m4_err[0] = 0;
     const char *context = (*env)->GetStringUTFChars(env, j_context, NULL);
     const char *entry = (*env)->GetStringUTFChars(env, j_entry, NULL);
     const char *source = (*env)->GetStringUTFChars(env, j_source, NULL);
     const char *descriptor = (*env)->GetStringUTFChars(env, j_descriptor, NULL);
-    if (!context || !entry || !source || !descriptor) {
+    const char *capture_label = j_capture
+        ? (*env)->GetStringUTFChars(env, j_capture, NULL) : NULL;
+    if (!context || !entry || !source || !descriptor || !capture_label) {
         snprintf(g_m4_err, M4_ERR_MAX, "GetStringUTFChars failed");
         return 0;
     }
@@ -144,9 +147,15 @@ jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
      * fire while eval/pump run, and they resolve their JNIEnv through it. */
     g_m4_ctx = ctx;
     char *bundle_root = m4_join(context, "spike");
-    char *capture_path =
-            m4_join(context, "spike-capture-m4-host-binding.log");
-    FILE *capture = capture_path ? fopen(capture_path, "w") : NULL;
+    /* "<context>/spike-capture-<label>.log" — the scenario names its capture. */
+    size_t cap_len = strlen(context) + strlen(capture_label) + 32;
+    char *capture_file = malloc(cap_len);
+    FILE *capture = NULL;
+    if (capture_file) {
+        snprintf(capture_file, cap_len, "%s/spike-capture-%s.log", context,
+                 capture_label);
+        capture = fopen(capture_file, "w");
+    }
     dsh_spike_t *spike = NULL;
     if (!bundle_root || !capture) {
         snprintf(g_m4_err, M4_ERR_MAX,
@@ -159,7 +168,7 @@ jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
         }
     }
     free(bundle_root);
-    free(capture_path);
+    free(capture_file);
     if (spike) {
         dsh_spike_set_descriptor(spike, descriptor);
         dsh_spike_set_gateway_dispatch(spike, m4_on_call, ctx);
@@ -183,6 +192,9 @@ jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
     (*env)->ReleaseStringUTFChars(env, j_entry, entry);
     (*env)->ReleaseStringUTFChars(env, j_source, source);
     (*env)->ReleaseStringUTFChars(env, j_descriptor, descriptor);
+    if (capture_label) {
+        (*env)->ReleaseStringUTFChars(env, j_capture, capture_label);
+    }
     return (jlong)(intptr_t)spike;
 }
 

@@ -1,0 +1,21 @@
+{
+  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 incl. dsh-llm + dsh-llm-mock-server (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "m2.upstream-session",
+  "proves": [
+    "the vendored upstream agent spine runs VERBATIM inside quickjs-ng: @deepseek-ai/dsh-session/agent/tools/system-prompt/agent-loop/session-projection/settings mount as cordis services over the pinned vendor closure — no upstream file is edited (D6/D9)",
+    "the llm service is the VENDORED dsh-llm LlmRuntime (the staged value-helper shim retired): ctx.llm.prepareCall resolves through the adapter registry, adapterDefaults/retryPolicy ride the upstream prepared-call protocol, and the request is assembled and marked by the upstream agent loop (isAgentLoopRequest evidenced in llm.request.built)",
+    "the transport seam is real HTTP/SSE over the gateway: the gateway adapter (upstream/llm-transport.js) POSTs the chat-completions wire request through gateway httpFetch to the VENDORED dsh-llm-mock-server (node-side, real loopback TCP), attribution headers come from the vendored package (user-agent read through the node:module require seam), and the SSE body streams back through the http.body AsyncIterable where the adapter's upstream-SHAPE parser/translator yields harness StreamChunks (deltas, usage, finish) — consumed by the upstream BlockAssembler into the durable assistant message",
+    "structured transport errors surface as the upstream error-finish protocol: the scripted 401 behavior streams through ctx.llm.stream and lands as one terminal finish chunk with the provider-neutral AUTH failure (llm.transport.error)",
+    "the session log is the upstream vocabulary (agent/inbox/spliced, turn/start, step/start, system/message, user/message, request/header, request/context, assistant/message, step/end, turn/end), asserted one-to-one (session.log.asserted) plus the turn-boundary projection (projection.lastTurn = 1)"
+  ],
+  "checker": "tools/e2e/scenarios/m2-upstream-session.json",
+  "events": 31,
+  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 c1d7ac78b472622e90f55920646678df)",
+  "exitCode": 0
+}

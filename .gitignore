@@ -10,6 +10,23 @@ dist/
 build/
 out/
 
+# W-SHELL application-tier client bundles — built output of the pinned
+# upstream client face (presentation/official-web/client-bundles/
+# build-client-bundles.sh), untracked like the official dist so the content
+# gates never judge verbatim upstream JS; the tracked provenance record is
+# the directory's MANIFEST.sha256 + ROSTER.json + PROVENANCE.md, and
+# tools/e2e/ensure-client-bundles.sh materializes + verifies the tree.
+presentation/official-web/client-bundles/npm/
+
+# D9 W-HARMONY official-web mount assets, copied VERBATIM into the app
+# rawfile by hosts/harmony/ci/vendor-official.sh (dist + staged client
+# bundles; the web-boot closure it also copies IS committed — those files
+# are ours or gate-excluded /vendor/). Untracked for the same reason as the
+# client-bundles above: the content gates must never judge bundled upstream
+# JS (the iOS surprise ledger: 5087 violations); the vendor script is the
+# materialize + cmp-verify step and runs inside run-host-e2e.sh's build.
+hosts/harmony/entry/src/main/resources/rawfile/spike/officialweb/
+
 # iOS / Xcode
 hosts/ios/**/*.xcuserstate
 hosts/ios/**/xcuserdata/
@@ -37,11 +54,51 @@ tmp/
 # govrail 运行账本（本地趋势数据，不入库）
 .gov/history/
 
-# vendored engine sources — pinned + sha256-verified by
-# runtime/spike/vendor/ensure.sh; untracked so the syntax-class checker
-# never judges upstream C (compile truth belongs to the compilers)
+# vendored engine sources + vendored upstream DSH runtime packages — pinned
+# + sha256-verified by runtime/spike/vendor/ensure.sh and ensure-dsh.sh;
+# untracked so the syntax-class checker never judges upstream C or the
+# verbatim upstream JS bundles (adaptation lives in our shims, never in the
+# vendored copies — D6/D9; the pin tables in the ensure scripts are the
+# tracked provenance record)
 runtime/spike/vendor/quickjs-ng/
+runtime/spike/vendor/dsh/
+runtime/spike/vendor/npm/
+
+# The Android asset stage of the D9 spine closure is the SAME vendored
+# upstream code, untracked for the same reason (the stage script is the
+# reproducible materializer; the web-boot closure below stayed tracked at
+# #63 and is frozen as-is):
+#   hosts/android/ci/stage-spine-closure.sh — byte-identity-verified copy
+#   from the ensure-dsh.sh pin, wired into the Gradle build (stageSpineClosure)
+hosts/android/app/src/main/assets/spike/vendor/dsh/agent@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/agent-loop@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/brand@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/llm@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/sandbox@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/scope@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/session@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/session-projection@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/settings@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/system-prompt@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/timeout@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/tools@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/typert-protocol@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/util-values@*/
+hosts/android/app/src/main/assets/spike/vendor/npm/zod@*/
 
 # Python
 __pycache__/
 .gov/tasks/.new.lock
+runtime/spike/logs-upstream.txt
+runtime/spike/logs-upstream-boot.txt
+
+# D9 W-HARMONY3: the pinned zod classic closure inside the harmony rawfile
+# spine closure. VERBATIM upstream bytes (sha256-pinned by
+# runtime/spike/vendor/ensure-dsh.sh, copied + cmp-verified by
+# hosts/harmony/ci/vendor-official.sh) that the syntax-class checker cannot
+# parse (`export { _instanceof as instanceof }` — a tree-sitter-javascript
+# false positive on valid ES module syntax), and upstream discipline (D6)
+# forbids editing the bytes to satisfy a checker. Untracked for the same
+# reason as officialweb/ above: the content gates never judge vendored
+# upstream JS; the vendor script is the materialize + verify step.
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/

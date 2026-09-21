@@ -6,8 +6,16 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `1914412`
-> (audited 2026-09-20). It is REGENERATED, not maintained by hand:
+> **Currency**: this matrix reflects `origin/main` as of commit `a536277`
+> (the harmony composer write path #70 landed the sixth D9 dir
+> `d9-write-live`, adding the `b-harmony.write.live` scenario; on top of
+> the `m2-gateway` row refreshed and its receipt gap closed 2026-09-21 by
+> the W-GR bounded attempt, on top of the W-RECEIPT b3 closure; the five
+> earlier D9 dirs `android-upstream` / `d9-official-web` / `b4-write-live` /
+> `android-session-live` / `d9-session-live` entered the inventory with
+> #63/#64/#65/#66/#67;
+> totals re-run against this tree). It is
+> REGENERATED, not maintained by hand:
 >
 > ```sh
 > node tools/e2e/matrix.mjs              # exit 0 = inventory clean
@@ -32,11 +40,11 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 14 |
-| Verdicts (all `pass: true`, `expected == logged`) | 28 |
-| Scenarios with at least one committed evidence dir | 12 of 12 manifests |
-| Screenshots verified PNG | 25 |
-| Acceptance-bar findings | 4 (below) |
+| Evidence dirs | 26 |
+| Verdicts (all `pass: true`, `expected == logged`) | 59 |
+| Scenarios with at least one committed evidence dir | 25 of 25 manifests |
+| Screenshots verified PNG | 64 |
+| Acceptance-bar findings | 6 (below) |
 
 ## Coverage matrix — scenario × platform
 
@@ -46,20 +54,33 @@ evidence on that platform.
 
 | Scenario | iOS | Android | HarmonyOS | macOS CLI |
 | --- | --- | --- | --- | --- |
-| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7 | 9/9 |
+| `b-android.official-web.mount` | — | 14/14 | — | — |
+| `b-android.session.live` | — | 46/46 | — | — |
+| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6 | — |
+| `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17 | — |
+| `b-harmony.session.live` | — | — | 43/43, 43/43 | — |
+| `b-harmony.write.live` | — | — | 33/33 | — |
+| `b1.official-web.mount` | 14/14 | — | — | — |
+| `b3.session.live` | 46/46 | — | — | — |
+| `b4.write.live` | 43/43 | — | — | — |
+| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7, 7/7 | 9/9 |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
-| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6 | — (gap 4) |
+| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6 | 6/6 |
 | `m2.gateway.audit` | 16/16 | 16/16 | — | — |
 | `m2.gateway.binding` | 19/19 | — | — | — |
-| `m2.session` | 23/23, 23/23 | 22/22 (drift), 23/23 | 23/23 | 23/23 |
+| `m2.session` | 23/23, 23/23 | 22/22 (drift), 23/23 | 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
+| `m2.upstream-session` | — | — | — | 31/31 |
+| `m2.upstream-boot` | — | — | — | 12/12 |
 | `m3.ui-swap` | 7/7 | — | — | — |
-| `m3.install` | — | — (in flight) | — | 22/22 |
-| `m3.complete` | — | — | — (in flight) | 41/41 |
+| `m3.install` | — | — | — | 22/22 |
+| `m3.complete` | — | — | — | 41/41 |
+| `m3.fetch-install` | 46/46 | — | — | — |
+| `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
-| `m5.host-binding` | — | — | 20/20 | — |
+| `m5.host-binding` | — | — | 20/20, 20/20, 20/20 | — |
 
-All 12 scenario manifests have at least one green committed evidence dir;
+All 25 scenario manifests have at least one green committed evidence dir;
 `m2.session` runs green on all four hosts. Every verdict on main is green.
 
 ## Evidence-dir inventory
@@ -69,20 +90,32 @@ present. `shots` = PNG count (all magic-verified except where noted).
 
 | Dir | Platform | Verdicts (`expected/logged`) | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✗ (gap 1) | 7 |
-| `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
-| `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
+| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
+| `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗ (gap 2) | 4 |
+| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗ (gap 5) | 6 |
+| `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗ (gap 6) | 9 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✗ (gap 2) | ✓ | 2 (gap 3) |
+| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗ (gap 1) | 3 |
+| `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
+| `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 
 CLI hosts are headless: zero screenshots is compliant (bar clause 2 makes
 screenshots optional debugging aids, never deliverables or inputs).
@@ -90,27 +123,96 @@ screenshots optional debugging aids, never deliverables or inputs).
 ## Known gaps (honest list)
 
 The checker (`tools/e2e/matrix.mjs`) currently exits non-zero on exactly
-these; they are listed here instead of fixed because each sits in an
-owned/in-flight area or is not trivially fixable:
+six findings: receipts pending their dirs' first post-landing host
+re-run, each owned by the host work stream that landed the dir with
+#63/#64/#65/#66/#67/#70. (The rcpt column above cites these list numbers.)
 
-1. **`hosts/ios/artifacts/m2-gateway/` has no `receipt.json`** — the dir
-   predates the #26 receipt convention. iOS-owned area (worker mid-flight
-   at audit time); not fixed here.
-2. **`hosts/harmony/artifacts/m5-host/` has no `scenario.jsonl`** — the
-   extractor step was not committed for this run. Regenerating it needs
-   the Harmony runner on a device (synthesizing one from `logs.txt` would
-   be evidence fabrication); left to the Harmony owner.
-3. **Two harmony screenshots are JPEG data under `.png` names** —
-   `hosts/harmony/artifacts/m5-host/m5-binding-complete.png` and
-   `m5-live-deltas.png` start `ffd8ffe0`, not the PNG magic. The images
-   render fine; renaming would break doc links, so the Harmony owner
-   should re-emit (or rename + fix references) in their stream.
-4. **`m2.bridge.smoke` has no committed macOS CLI evidence** although the
-   CLI is the scenario's canonical host per the e2e README; current
-   committed verdicts are Android (`m4-host`, `m4-complete`) and Harmony
-   (`m5-host`). Open for whoever next runs the CLI spike.
+1. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
+   dir landed with #65 (the session-write surface); the receipt is
+   owned by the b4 work stream's next `run-ios-b4.sh` run on a tree
+   carrying #65.
+2. **`hosts/harmony/artifacts/d9-official-web/` has no `receipt.json`**
+   — the dir landed with #64 (the harmony webServer carrier); the
+   receipt is owned by the harmony work stream's next host re-run.
+3. **`hosts/android/artifacts/android-upstream/` has no `receipt.json`**
+   — the dir landed with #63 (the android official-web boot); the
+   receipt is owned by the android work stream's next host re-run.
+4. **`hosts/android/artifacts/android-session-live/` has no
+   `receipt.json`** — the dir landed with #66 (the android session.live
+   spine, b-android.session.live 46/46 green); the receipt is owned by
+   the android work stream's next host re-run.
+5. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
+   — the dir landed with #67 (the harmony session.live spine,
+   b-harmony.session.live 43/43 green); the receipt is owned by the
+   harmony work stream's next host re-run.
+6. **`hosts/harmony/artifacts/d9-write-live/` has no `receipt.json`** —
+   the dir landed with #70 (the harmony composer write path,
+   b-harmony.write.live 33/33 green); the receipt is owned by the
+   harmony work stream's next host re-run.
 
-### Informational, not failures
+### Closed by the 2026-09-20 evidence-gap closure (fix/evidence-gaps)
+
+- **Gap 2 (harmony `scenario.jsonl`)** — closed by a full
+  `hosts/harmony/ci/run-host-e2e.sh` re-run on this tree: all four
+  verdicts re-matched the committed manifests (m1.spike.boot 7/7,
+  m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20), and the
+  runner now extracts `scenario.jsonl` from the run's own capture files
+  (`grep -h '^dsh.spike.log:'` over sink + binding captures — the same
+  extraction convention as the Android runner). The re-run required a
+  one-line host fix: #53 bumped `dsh:util-crypto` to 0.1.6-alpha.2 in
+  the loader path, manifest, and rawfile copy but not
+  `Index.ets`'s `BUNDLE_FILES`, so a fresh launch died at
+  `GetRawfileContent` before any scenario line was logged.
+- **Gap 3 (JPEG bytes under `.png` names)** — the emulator's
+  `snapshot_display` emits JPEG; the runner now converts the two
+  screenshots in place with a documented `sips -s format png` step, and
+  both re-captured files carry the real PNG magic.
+- **Gap 4 (no macOS CLI evidence for `m2.bridge.smoke`)** — closed by a
+  real headless run of the scenario's canonical host:
+  `runtime/spike/artifacts/macos-cli-bridge-smoke/` carries logs.txt +
+  scenario.jsonl + `verdict.json` (6/6, one-to-one) + receipt.json from
+  `./build/dsh-spike-cli . scenario/m2-bridge-smoke.js`.
+
+### Closed by the 2026-09-21 receipt closure (fix/receipt-gaps)
+
+- **b3-session-live receipt** — closed by a real `run-ios-b3.sh` re-run
+  on final main (fresh worktree at `618f2f8`): b3.session.live 46/46
+  green (expected == logged, exit 0), evidence refreshed from the run,
+  and `receipt.json` authored from it in the established evidence
+  format. (The first cold-worktree run exposed a runner ordering gap —
+  the bundle build needs the vendored DSH closure that the runner only
+  stages at step 4b, after the build; materializing
+  `runtime/spike/vendor/ensure-dsh.sh` before the runner is the
+  workaround, surprise-recorded.)
+
+### Closed by the 2026-09-21 m2-gateway receipt closure (fix/m2-gateway-receipt)
+
+- **m2-gateway receipt** — closed by a real `run-ios.sh` re-run on this
+  branch (fresh worktree at `e3bd333`): the four checkers re-matched the
+  manifests one-to-one (m1.spike.boot 7/7, m1.carrier.loopback 7/7,
+  m2.gateway.binding 19/19, m2.gateway.audit 16/16, expected == logged,
+  exit 0), the evidence was refreshed from the run, and `receipt.json`
+  is machine-authored IN-RUN by the runner's new green-path step
+  (reachable only after all four checkers pass — a receipt can never
+  exist without a real green run). The attempt also retired the picker
+  blocker the previous entry described, whose "index timing" was only
+  half the story: the drive never SUBMITTED its search — on the iOS 26.5
+  sheet, typing "notes" through WDA renders only the 名称包含 suggestion
+  row, and the results appear only after the keyboard return, now sent
+  through the same locale-independent element `/value` endpoint
+  (`wda_submit_search`). The result-tile calibration moved accordingly
+  (px (204,894) → (163,712) / 2). Around it the runner now (a) stages
+  the picker target ONCE — rewriting it, and even re-installing the app
+  (the data container migrated UUID across a same-version reinstall),
+  knocks the doc out of the volatile provider search index, which
+  repopulates after a few minutes of settle; (b) fails loud when node is
+  missing and removes stale verdict files before checking, after a run
+  PASSed by grepping the previous run's verdicts (`|| true` had masked
+  "command not found"); (c) records everything on the surprises ledger
+  (index volatility beyond rewrites, archive-a-green-dir-before-rerun,
+  driver deadline wedge).
+
+## Informational, not failures
 
 - **Manifest-revision drift** (5 verdicts): `m1.spike.boot` was captured
   at 9 events in `hosts/{ios,android,harmony}/artifacts/m1-spike/` and
@@ -135,7 +237,7 @@ scenario id without a manifest in `tools/e2e/scenarios/`. Its
 (8 assertions, rule 6) — the assertion set is documented in the
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs).
 
-The checker is deliberately **not wired into `gates.json`**: the current
-findings above are real regressions against the acceptance bar, and the
-decision to gate on the matrix belongs to the plane seal, after the
-owned gaps are closed.
+The checker is deliberately **not wired into `gates.json`**: six owned
+findings above remain open (the six D9-era receipts blocked on their
+hosts' next re-runs), and the decision to gate on the matrix belongs to
+the plane seal.

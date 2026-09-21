@@ -42,6 +42,10 @@ everywhere, so one checker serves all hosts.
 | `m2-llm.json` | `m2.llm` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/spike/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
 | `m2-llm-device.json` | `m2.llm` | iOS + Android (`run-ios-m2-llm.sh` / `hosts/android/ci/run-m2-llm.sh`) | 14 expectations — the REAL-backend leg: `llm.leg` = `gateway.httpFetch`, config from fs scope `app`, then the nondeterministic delta runs are asserted with the checker's `repeat` expectations (`llm.reasoning.delta` ≥1, `llm.delta` ≥1), `llm.stream.completed`, `llm.served-model` (logged verbatim — the server may substitute a model name), `llm.content.asserted` (non-empty aggregate), `llm.key.audit` `leaked: false` |
 | `m2-llm-carrier.json` | `m2.llm.carrier` | iOS + Android, carrier-side | 7 events — `client.selected`, Web Client mount, WS connect, the `llm` toolbar slot registered, first/last streamed LLM delta, session complete |
+| `b1-official-web-mount.json` | `b1.official-web.mount` | iOS, carrier-side + runtime (`run-ios-b1.sh`) | 14 events — the contract carrier mounting the OFFICIAL upstream web app with the RUNTIME LIVE and the APPLICATION TIER booting (W-INTEG + W-SHELL; `docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `web.boot.applied` (the runtime's composed rows replace the carrier defaults) + `runtime.booted` (the vendored client-modules composer over the full 58-package `dsh.client` roster), `index.rendered` (5 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the runtime graph's bootstrap combo — the REAL vendored browser bundle, 36040 bytes), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (the page's own first POST envelope answered structured `gateway/unimplemented`), `session.attached` (the page's first mux stream open) + `session.services.pending` (no agent spine embedded — the session API is the next named gap), `module.system.live` (the official facade materialized the vendored bundle; mode flipped queue→live), `app.shell.rendered` (the boot page DISPOSED — the UI renderer mounted the real shell: the W-SHELL milestone past "Loading plugins…") + `page.rendered` (probe: final DOM state, no failure text; no upstream code edited) |
+| `m2-upstream-boot.json` | `m2.upstream-boot` | macOS CLI (`run-upstream-boot-e2e.sh`) | 12 events — the CLI proof of the OFFICIAL web-boot wire over the full application tier: the mobile profile boots with one real agent turn, the vendored `ClientModuleRegistry` composes `__DSH_BOOT__` from the staged `web.plugins` delivery (58 entries, bootstrap batch exact, application combo over the other 57, externals ordered — `web/boot/composed` + `web/boot/rows`), and the claimed surface self-probes `session.list` + the journal stream (baseline, live frames, cancel) |
+| `b4-write-live.json` | `b4.write.live` | iOS, UI-driven (`run-ios-b4.sh`) | 43 events — the D9 write path: the upstream spine answers the OFFICIAL app's write surface (real `session/create`, `session/prompt` admission, `settings/describe` + `mutate` with the in-memory `ui-onboarding` namespace, the `session/follow` / `workspace/follow` / `session/control` / `$events` mux streams), the same-origin probe picks the seeded workspace and types into the REAL composer, the send drives a REAL upstream agent-loop turn (scripted-llm transport), and the assistant reply renders in the official DOM (`write.reply.rendered`); structured-unavailable endpoints (dynamicCordisRunner, credentials, model catalog, presets, listings) stay pinned as such |
+| `b3-session-live.json` | `b3.session.live` | iOS, probe-driven (`run-ios-b3.sh`) | 46 events — the read-surface predecessor: the spine claims `session.list` + the mux `session/journal` streams and answers the official envelope with REAL data (one scripted-llm turn before the page loads, one streamed live into the attached page) |
 
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
@@ -165,6 +169,29 @@ waits for the `webclient.mounted` / `ws.token-delta` / terminal
 mid-stream, final transcript), then verifies the captured log against
 BOTH `m2-session.json` and the active client's carrier manifest. Same
 rule-8 polling discipline and 300s overall deadline as `run-ios.sh`.
+
+### Phase-B official-web mount runner (on-device, contract carrier)
+
+`run-ios-b1.sh` drives the Phase-B mount E2E — NO UI interaction:
+
+```sh
+tools/e2e/run-ios-b1.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It first materializes the vendored official dist (`ensure-official-dist.sh`:
+verify against the committed sha256 MANIFEST, rebuild reproducibly from the
+pinned upstream if absent) and the W-SHELL application-tier client bundles
+(`presentation/official-web/client-bundles/`, MANIFEST-verified), builds
+DSHSpike, stages the dist (`Documents/official-web/dist`) plus the full
+web-plugins tree (`Documents/web-plugins` — 58 `dsh.client` packages, the
+vendored tarball winning for the bootstrap), and launches
+`-dsh-mode official-web`. The carrier serves the dist through the
+`ctx.webServer` contract surface (route table, fallback seat, `/plugins`
+combos, `/api` envelope, `/api/remote.mux` mux, injected index); the
+platform-side probe runs inside the page (same-origin fetch + WebSocket),
+and the rendered state is read from the REAL DOM. Verdict per the
+one-to-one manifest `b1-official-web-mount.json`. Screenshots are debugging
+artifacts only.
 
 The m2-bridge-smoke scenario runs on the macOS CLI (not iOS) and is checked
 directly:

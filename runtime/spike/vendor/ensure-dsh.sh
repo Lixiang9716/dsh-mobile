@@ -1,0 +1,108 @@
+#!/bin/sh
+# Fetch + verify the vendored upstream DSH runtime packages (the agent-loop
+# dependency closure) and their pinned third-party npm dependencies.
+#
+# Pattern (see the pin tables below — the tracked provenance record): each
+# package is vendored VERBATIM from its upstream tarball, pinned by tgz
+# sha256. The vendored trees are UNTRACKED by design (like
+# vendor/quickjs-ng/, so the syntax-class checker never judges upstream
+# code); this script materializes any missing package (first checkout on a
+# fresh machine, or after `git clean -fdX`) and sha256-verifies every fetch.
+#
+#   - dsh packages: anywhere-labs/dsh-desktop @ master,
+#     vendor/dsh-runtime/0.1.6-alpha.2/deepseek-ai-dsh-<name>-0.1.6-alpha.2.tgz
+#   - npm packages: registry.npmjs.org, exact pinned versions
+#
+# Run before the upstream E2E (runtime/spike/ci/run-upstream-e2e.sh). Network
+# is only needed for packages missing on disk. @deepseek-ai/dsh-client-modules
+# is vendored since the W-INTEG web-boot leg: the OFFICIAL web boot composer
+# (its node half) plus the browser bootstrap bundle the injected facade queue
+# expects (lib/client.js). Still staged OUT of the
+# closure: session-persistence-jsonl (native koffi dep), subagent, base, and
+# the transport adapters (llm-deepseek / llm-pi-ai — their direct-fetch
+# transport is the desktop's; the mobile seam is the gateway adapter in
+# runtime/spike/upstream/llm-transport.js). dsh-llm is vendored since the
+# W-LLM leg; llm-mock-server is vendored as the E2E test vehicle (its
+# node-side driver is runtime/spike/ci/mock-llm-server.mjs); llm-replay stays
+# out (peer deps on compaction + api-extensions, none of it needed). See
+# runtime/spike/upstream/README.md for the shim coverage table.
+set -e
+cd "$(dirname "$0")"
+
+DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
+NPM_BASE="https://registry.npmjs.org"
+
+# name|version|sha256 — upstream dsh packages (vendor/dsh/<name>@<version>/)
+DSH_PACKAGES="
+agent|0.1.6-alpha.2|1e4a587e5f7ebe32155a2e2eca3e18ad3b9b18b45071bdb2aad809b8af60fbe2
+agent-loop|0.1.6-alpha.2|ec0350fd72ccb78e85220168055339fb53dd16f84cded1740c306f4f28784898
+brand|0.1.6-alpha.2|47e97c6e19c562c2581b6e1ee0e30a5b38babec662142cbd28d3d1786c991b95
+cordis-host-runner|0.1.6-alpha.2|b95b934a24a9cae50712ef7c907551b294b3883eed8b788004879e7e2826df49
+fs|0.1.6-alpha.2|dc9a540f4c6d870d5654f313c1fbb9f5d5d4798365f836e1cd29caa72995f23a
+hook-protocol|0.1.6-alpha.2|f884c7b4e421844dc94889d394fbc1346b24b38ad5cc09e1a9cb2a2eb0efc04a
+invariants|0.1.6-alpha.2|7d9c6f674454d497fb9664b44a214982d9fee6af2883b301a667b1ab9bc92804
+llm|0.1.6-alpha.2|2220720d9ed9ec912f94b6e10588a1e7d891436b83c1ec192cc00ee61a132d84
+llm-mock-server|0.1.6-alpha.2|9b1f40a8711955c804afa3136460b33abea98898a7b73989a0b234deb38c75e1
+sandbox|0.1.6-alpha.2|70bb044347254721533f7cc752cf6192666c87cd47620628edd52fc128386886
+scope|0.1.6-alpha.2|1874e45d916d08fa402858ebdeb0de8be7ce3bee1b661a2015d7e243fe2605e0
+sdk-protocol|0.1.6-alpha.2|accc5edff215d44a5ca39236ef1872a2d503db4ee2b282278ac9620cc8f8651e
+session|0.1.6-alpha.2|bc2b7bf123067c3c328545f2fd36a03caf6d16a1a3c01bbba996ec410e0951b1
+session-projection|0.1.6-alpha.2|dc9fd6db1c58e67ae80ccea5f4136439c8a665db2fd69b11ec5dde6373aa1d80
+settings|0.1.6-alpha.2|4f96cf1446883c32e909951ecf6ddcb140e0080fe3ba80ea8796ac675cec806a
+system-prompt|0.1.6-alpha.2|b270e70c50392d983657ff0e4d8f117e9297dd56415f86f924eff4629e10e7b7
+timeout|0.1.6-alpha.2|1321ef1e4fb31818ae30743173251f03b07edc9976d9769a9102db9a8e850503
+tools|0.1.6-alpha.2|7c1e080bb765f44e1cac4890f5fdedd37059a569e21475dbb46d94c54c617cf5
+typert-protocol|0.1.6-alpha.2|de7447ec069d8f00ca1bfaddd2487adf93446ec75f7852dffc82ff9eca8286e8
+util-crypto|0.1.6-alpha.2|71ef6845f82a76ec058d405ca1c15c0f410e609216eb01dd9cc4873255af4d91
+util-values|0.1.6-alpha.2|17cb0a738bd28ce8206c1583277b04b244622ec4c201530f88003a4954af86de
+"
+
+# dir|tarball-url-suffix|sha256 — pinned third-party npm packages
+# (vendor/npm/<dir>/); versions are exactly what the dsh closure requires.
+NPM_PACKAGES="
+cordis@4.0.2|@deepseek-ai/cordis/-/cordis-4.0.2.tgz|686ca44fc6e8d217804de9062b716b7c72755dde09c2a433dd07045eea3c6a97
+cosmokit@1.8.3|@deepseek-ai/cosmokit/-/cosmokit-1.8.3.tgz|552f10313ddfdc2b92cce1867b9bf30b2a4c9de55543ad222fe67c22015e4400
+schemastery@3.18.2|@deepseek-ai/schemastery/-/schemastery-3.18.2.tgz|a0fe700b9c055f04dfec87cb46ae4a1106c6fac6c271f8a1df00e10038f0aac1
+zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a51684314563c8d60f279c
+@deepseek-ai/dsh-client-modules@0.1.6-alpha.2|@deepseek-ai/dsh-client-modules/-/dsh-client-modules-0.1.6-alpha.2.tgz|ebeccd78185289d1ca14f48e921c2dd8d96c6d455a76debf2fd2601bbd27d512
+"
+
+have_pkg() { [ -f "$1/package.json" ]; }
+
+fetch_dsh() {
+    name="$1"; ver="$2"; sha="$3"
+    dir="dsh/$name@$ver"
+    have_pkg "$dir" && { echo "vendor: $dir present"; return; }
+    tgz="deepseek-ai-dsh-$name-$ver.tgz"
+    tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
+    curl -sfL "$DSH_BASE/$tgz" -o "$tmp"
+    echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
+    mkdir -p "$dir"
+    tar xzf "$tmp" -C "$dir" --strip-components=1
+    rm -f "$tmp"
+    echo "vendor: fetched $dir (sha256 verified)"
+}
+
+fetch_npm() {
+    dir="$1"; suffix="$2"; sha="$3"
+    have_pkg "npm/$dir" && { echo "vendor: npm/$dir present"; return; }
+    tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
+    curl -sfL "$NPM_BASE/$suffix" -o "$tmp"
+    echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
+    mkdir -p "npm/$dir"
+    tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    rm -f "$tmp"
+    echo "vendor: fetched npm/$dir (sha256 verified)"
+}
+
+echo "$DSH_PACKAGES" | while IFS='|' read -r name ver sha; do
+    [ -z "$name" ] && continue
+    fetch_dsh "$name" "$ver" "$sha"
+done
+
+echo "$NPM_PACKAGES" | while IFS='|' read -r dir suffix sha; do
+    [ -z "$dir" ] && continue
+    fetch_npm "$dir" "$suffix" "$sha"
+done
+
+echo "vendor: upstream DSH closure ready"

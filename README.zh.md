@@ -21,6 +21,19 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 | M4 | Android 宿主（QuickJS 同构） | 完成（完成会话 `m4.host-binding` 在模拟器 35/35 全绿：回环 carrier 将内嵌的 Web Client 装载进真实 WebView 并实时渲染会话；九原语网关真实绑定——描述符 9 可用 / 0 不可用，强制审计经 `m2.gateway.audit` 16/16 复核；三场景回归同跑保持全绿——证据 `hosts/android/artifacts/m4-complete/`；同一真实 httpFetch 绑定亦在模拟器上驱动真实 LLM 流式会话 `m2.llm` —— `m2.llm` 设备 14/14 + carrier 7/7，证据 `hosts/android/artifacts/m2-llm/`） |
 | M5 | 鸿蒙宿主（ArkTS + NAPI） | 完成（同构宿主已验证：回环载体——向 Web Client 提供静态文件服务 + RFC 6455 WS 泵——ArkWeb 挂载实时会话，真实绑定原语（notify、presentApproval、fsScope app 作用域、`app.state`/`notify.response` 通道），picker/keychain/httpFetch 诚实 `unavailable`，`m5.host-binding` 20/20 加上 `m1.spike.boot`/`m2.bridge.smoke`/`m2.session`（23/23）回归一次启动在模拟器全绿——证据见 `hosts/harmony/artifacts/m5-host/`；仍未完成：HUKS keychain、用户作用域 picker 文件系统、httpFetch 流式传输） |
 
+### 上游移植（D9）
+
+上表记录各里程碑以自身证据证明的内容。自决策 [D9](docs/decisions.md) 起，Harness 层本身
+不再是自研重实现：上游 DSH 运行时在 quickjs 上**原样**运行——26 个包由
+`runtime/spike/vendor/ensure-dsh.sh` pin 并做 sha256 校验（21 个上游 DSH 包
+@ 0.1.6-alpha.2 + 5 个 pinned npm 依赖），自研代码只留胶水（垫层、适配器、契约 carrier）。
+经 carrier 在 iOS / Android / 鸿蒙上已点亮：官方 client-modules web 启动、官方 App 壳
+（#61 的 58 包 application 层）、真实 `session.list`/日志，以及 composer 写入路径。汇总
+数字与逐目录清单见 [docs/e2e-matrix.md](docs/e2e-matrix.md)——26 个证据目录、59 条绿色
+verdict——位于 `hosts/{ios,android,harmony}/artifacts/`（`b1-official-web`、
+`b3-session-live`、`b4-write-live`、`android-upstream`、`android-session-live`、
+`d9-official-web`、`d9-session-live`、`d9-write-live`）。
+
 ## 治理
 
 本仓库由 [govrail](https://github.com/Lixiang9716/govrail) 门禁管理：pre-commit 内容门、推送前 `gov run` 门 DAG、CI 强制（`.github/workflows/gov.yml`），并启用 `agent-heavy` preset 支持多 agent 并行开发。安装方式 `pip install govrail`，入口命令为 `gov`。

@@ -1,0 +1,8 @@
+{
+  "scenario": "m2.upstream-boot",
+  "pass": true,
+  "expected": 12,
+  "logged": 12,
+  "failures": [],
+  "parseErrors": []
+}

@@ -1,0 +1,8 @@
+{
+  "scenario": "b-android.write.live",
+  "pass": true,
+  "expected": 45,
+  "logged": 45,
+  "failures": [],
+  "parseErrors": []
+}

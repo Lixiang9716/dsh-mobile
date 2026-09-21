@@ -25,11 +25,12 @@ import org.json.JSONObject
  */
 class SpikeHostM4 private constructor(
     private val activity: Activity,
-    /** Carrier-side evidence scenario id + JS entry for this drive. The
-     * default is the M4 binding; the real-LLM drive (`m2.llm`) overrides
-     * both — same host flow, different scenario. */
+    /** Carrier-side evidence scenario id + JS entry + capture label for this
+     * drive. The default is the M4 binding; the real-LLM drive (`m2.llm`)
+     * overrides them — same host flow, different scenario. */
     private val scenarioId: String = SCENARIO,
     private val entryPath: String = ENTRY,
+    private val captureLabel: String = "m4-host-binding",
 ) {
 
     companion object {
@@ -67,8 +68,8 @@ class SpikeHostM4 private constructor(
         }
 
         /** The M2 real-LLM drive (scenario `m2.llm`): same carrier + WebView
-         * + gateway flow, but the JS entry streams one real LLM turn through
-         * the gateway httpFetch. Credentials ride fs scope "app"
+         * + gateway flow, but the JS entry streams one real chat completion
+         * through the gateway httpFetch. Credentials ride fs scope "app"
          * (files/profiles/default/m2-llm/config.json), staged by the E2E
          * runner before launch. */
         fun startLlm(
@@ -80,6 +81,7 @@ class SpikeHostM4 private constructor(
                 activity,
                 scenarioId = LLM_SCENARIO,
                 entryPath = LLM_ENTRY,
+                captureLabel = "m2-llm",
             )
             host.webView = webView
             instance = host
@@ -155,7 +157,8 @@ class SpikeHostM4 private constructor(
         carrier.start(webRoot) { /* readiness consumed below */ }
         val entry = File(bundle, entryPath)
         handle = SpikeRuntime.m4Begin(
-            activity.filesDir.absolutePath, entryPath, entry.readText(), DESCRIPTOR, bridge,
+            activity.filesDir.absolutePath, entryPath, entry.readText(), DESCRIPTOR,
+            captureLabel, bridge,
         )
         if (handle == 0L) fail("m4 begin: ${SpikeRuntime.m4LastError()}")
         deliverHostHello() // in case bus.ready arrived during eval

@@ -34,7 +34,7 @@ final class HTTPPrimitive: NSObject, URLSessionDataDelegate {
             return done(.failure(GatewayError(
                 code: "invalid", primitive: "httpFetch", message: "malformed url")))
         }
-        let request = Self.request(url: url, call: call)
+        let request = Self.request(url: url, args: call.args)
         let task = session.dataTask(with: request)
         lock.lock()
         callByTask[task.taskIdentifier] = call.callId
@@ -43,24 +43,19 @@ final class HTTPPrimitive: NSObject, URLSessionDataDelegate {
         task.resume()
     }
 
-    /// Builds the URLRequest from the shim's FLATTENED arg encoding — the
-    /// gateway shim sends `{url, method, headers, bodyB64}` at the top level
-    /// of the args JSON (gateway.js `httpFetch`), so that is where method /
-    /// headers / body are read from; the nested `init` object form is
-    /// accepted tolerantly (the same dual reading FSPrimitives applies to
-    /// fsWrite opts). Reading ONLY a nested object silently dropped every
-    /// header — caught by the m2.llm real-backend leg's 401 (the server
-    /// never saw the Authorization header).
-    private static func request(url: URL, call: GatewayCall) -> URLRequest {
-        let initDict = call.dict("init")
-        func arg(_ key: String) -> Any? { initDict[key] ?? call.args[key] }
+    /// The frozen shim sends FLAT args (`{url, method, headers, bodyB64}`,
+    /// contract/primitives.md §httpFetch — `httpFetch(url, init?)` flattens
+    /// onto the bridge call). Method/headers/body previously rode a nested
+    /// `init` dict that never existed, so every call silently degraded to a
+    /// headerless GET; the gateway llm transport (W-SESS) is the first POST.
+    private static func request(url: URL, args: [String: Any]) -> URLRequest {
         var request = URLRequest(url: url)
-        request.httpMethod = arg("method") as? String ?? "GET"
-        if let headers = arg("headers") as? [String: String] {
-            for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
+        request.httpMethod = args["method"] as? String ?? "GET"
+        if let headers = args["headers"] as? [String: String] {
+            for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
         }
         // Contract HttpFetchInit.body rides base64 as bodyB64.
-        if let text = arg("bodyB64") as? String ?? arg("body") as? String,
+        if let text = args["bodyB64"] as? String,
            let body = Data(base64Encoded: text) {
             request.httpBody = body
         }

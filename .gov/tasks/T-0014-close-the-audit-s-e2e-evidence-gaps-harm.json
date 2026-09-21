@@ -1,0 +1,26 @@
+{
+  "title": "Close the audit's e2e evidence gaps (harmony capture, CLI bridge-smoke, matrix refresh)",
+  "created": "2026-09-20T09:44:36+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Harmony m5-host: re-run run-host-e2e.sh with scenario.jsonl extraction + real-PNG screenshots committed",
+    "macOS CLI: build host, run m2-bridge-smoke, commit evidence under runtime/spike/artifacts/macos-cli-bridge-smoke/",
+    "iOS m2-gateway receipt: probe WDA; clean re-run or documented skip in docs/e2e-matrix",
+    "Regenerate matrix + update docs/e2e-matrix.md + zh gap tables, pairing re-stamped",
+    "Agent note, gov run green, card voided, PR opened"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0014",
+  "void": {
+    "ts": "2026-09-20T10:05:10+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work complete and verifiable in the opened PR rather than by a card-closure receipt (#329/#339 precedent): harmony m5-host re-run green 7/7+6/6+23/23+20/20 with scenario.jsonl extracted by the runner and real-PNG screenshots (gaps 2+3 closed); macOS CLI bridge-smoke evidence 6/6 committed under runtime/spike/artifacts/macos-cli-bridge-smoke/ (gap 4 closed); m2-gateway receipt skip documented in docs/e2e-matrix \u00b1zh per the degraded-WDA process note (gap 1 remains the matrix's single owned finding); matrix regenerated and pairing re-stamped. Receipt-closure structurally unreliable per govrail #329/#339 \u2014 the PR is the audit trail."
+  }
+}

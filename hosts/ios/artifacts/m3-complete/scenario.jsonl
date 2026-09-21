@@ -1,5 +1,5 @@
-dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"slotSet":["notes.toolbar"],"event":"config.resolved","format":"cordis.patch.json","profile":"m3-complete","webClient":"dsh-web-client-mini","scenario":"m3.fetch-carrier"}],"level":"info"}
-dsh.spike.log: {"message":"e2e","data":[{"client":"dsh-web-client-mini","scenario":"m3.fetch-carrier","source":"config","event":"client.selected"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"message":"e2e","level":"info","data":[{"format":"cordis.patch.json","scenario":"m3.fetch-carrier","webClient":"dsh-web-client-mini","profile":"m3-complete","slotSet":["notes.toolbar"],"event":"config.resolved"}],"module":"dsh.carrier"}
+dsh.spike.log: {"message":"e2e","data":[{"source":"config","event":"client.selected","client":"dsh-web-client-mini","scenario":"m3.fetch-carrier"}],"level":"info","module":"dsh.carrier"}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"main begin","data":[]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
@@ -52,18 +52,18 @@ dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs",
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"fs.ready","service":"fs"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"wait for event","data":[{"name":"carrier.info"}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m3.fetch-carrier","event":"webclient.mounted","client":"dsh-web-client-mini","path":"\/index.html"}]}
-dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"event":"ws.connected","protocol":"session-projection@0","scenario":"m3.fetch-carrier"}],"level":"info"}
+dsh.spike.log: {"module":"dsh.carrier","level":"info","data":[{"event":"webclient.mounted","path":"\/index.html","scenario":"m3.fetch-carrier","client":"dsh-web-client-mini"}],"message":"e2e"}
+dsh.spike.log: {"data":[{"event":"ws.connected","protocol":"session-projection@0","scenario":"m3.fetch-carrier"}],"message":"e2e","module":"dsh.carrier","level":"info"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":37}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"carrier.ready","source":"carrier.info","port":49884}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"carrier.ready","source":"carrier.info","port":62230}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"carrier route register","data":[{"path":"/packages/dsh-notes-0.1.0.tar","bytes":3584}]}
-dsh.spike.log: {"level":"info","message":"e2e","data":[{"event":"http.route-registered","scenario":"m3.fetch-carrier","bytes":3584,"path":"\/packages\/dsh-notes-0.1.0.tar"}],"module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","message":"e2e","module":"dsh.carrier","data":[{"event":"http.route-registered","bytes":3584,"scenario":"m3.fetch-carrier","path":"\/packages\/dsh-notes-0.1.0.tar"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"fixture.built","members":2,"bytes":3584}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:49884/packages/dsh-notes-0.1.0.tar","id":"dsh-notes","txId":"m3-f001"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"install.fetch.start","url":"http://127.0.0.1:49884/packages/dsh-notes-0.1.0.tar"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:49884/packages/dsh-notes-0.1.0.tar","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:62230/packages/dsh-notes-0.1.0.tar","id":"dsh-notes","txId":"m3-f001"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"install.fetch.start","url":"http://127.0.0.1:62230/packages/dsh-notes-0.1.0.tar"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62230/packages/dsh-notes-0.1.0.tar","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"data":[{"event":"http.served","path":"\/packages\/dsh-notes-0.1.0.tar","bytes":3584,"scenario":"m3.fetch-carrier"}],"level":"info","module":"dsh.carrier","message":"e2e"}
+dsh.spike.log: {"message":"e2e","module":"dsh.carrier","data":[{"event":"http.served","path":"\/packages\/dsh-notes-0.1.0.tar","scenario":"m3.fetch-carrier","bytes":3584}],"level":"info"}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"install.fetch.status","status":200}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4826}]}
@@ -165,13 +165,13 @@ dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service looku
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"installed.loaded","id":"dsh-notes","moduleId":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"project toolbar slots","data":[{"count":2}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"projection push","data":[{"kind":"slot.register"}]}
-dsh.spike.log: {"data":[{"event":"slot.denied","id":"debug.console","set":["notes.toolbar"],"scenario":"m3.fetch-carrier"}],"level":"info","module":"dsh.carrier","message":"e2e"}
+dsh.spike.log: {"level":"info","message":"e2e","module":"dsh.carrier","data":[{"event":"slot.denied","id":"debug.console","set":["notes.toolbar"],"scenario":"m3.fetch-carrier"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"projection push","data":[{"kind":"slot.register"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"replay phase begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"simulate crash","data":[{"txId":"m3-f002","omit":[]}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m3-f002/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","data":[{"id":"notes.toolbar","event":"slot.registered","label":"notes","by":"dsh-notes","scenario":"m3.fetch-carrier"}],"message":"e2e"}
+dsh.spike.log: {"module":"dsh.carrier","level":"info","data":[{"label":"notes","event":"slot.registered","scenario":"m3.fetch-carrier","id":"notes.toolbar","by":"dsh-notes"}],"message":"e2e"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m3-f002/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -271,7 +271,7 @@ dsh.spike.log: {"level":"debug","module":"m3.spike","message":"stream turn","dat
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"llm.stream.started","turn":1}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"llm.delta","index":0,"text":"Hello"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"index":0,"first":true,"scenario":"m3.fetch-carrier","event":"ws.token-delta"}],"message":"e2e","level":"info"}
+dsh.spike.log: {"data":[{"event":"ws.token-delta","index":0,"first":true,"scenario":"m3.fetch-carrier"}],"message":"e2e","module":"dsh.carrier","level":"info"}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"llm.delta","index":1,"text":" from"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"projection push","data":[{"kind":"token-delta"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"llm.delta","index":2,"text":" DSH"}]}
@@ -322,5 +322,5 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m3-fetch-install/result.txt","chars":33}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"m3.fetch-install","event":"session.completed","sessionId":"s-m3-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"projection push","data":[{"kind":"complete"}]}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"last":true,"index":4,"first":false,"scenario":"m3.fetch-carrier","event":"ws.token-delta"}],"message":"e2e","level":"info"}
-dsh.spike.log: {"level":"info","module":"dsh.carrier","data":[{"status":"pass","event":"ws.session-complete","scenario":"m3.fetch-carrier"}],"message":"e2e"}
+dsh.spike.log: {"data":[{"event":"ws.token-delta","last":true,"index":4,"first":false,"scenario":"m3.fetch-carrier"}],"message":"e2e","module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"level":"info","message":"e2e","module":"dsh.carrier","data":[{"event":"ws.session-complete","scenario":"m3.fetch-carrier","status":"pass"}]}

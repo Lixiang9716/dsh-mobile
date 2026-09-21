@@ -1,0 +1,379 @@
+{
+  "scenario": "b-android.session.live",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-official",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile",
+        "root": "empty (patch layers compose over it)",
+        "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+        "layers": [
+          "session",
+          "agent",
+          "system-prompt",
+          "tools",
+          "session-projection",
+          "settings",
+          "agent-loop"
+        ]
+      }
+    },
+    {
+      "event": "upstream/services",
+      "match": {
+        "kernel": "@deepseek-ai/cordis@4.0.2",
+        "services": [
+          "sessions",
+          "agents",
+          "systemPrompt",
+          "tools",
+          "sessionProjections",
+          "settings",
+          "agentLoop",
+          "llm"
+        ],
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+      }
+    },
+    {
+      "event": "session/created",
+      "match": {
+        "sessionId": "s-android-live-0001"
+      }
+    },
+    {
+      "event": "agent/created",
+      "match": {
+        "id": "main",
+        "sessionId": "s-android-live-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 2,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "session.log",
+      "match": {
+        "count": 11,
+        "types": [
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "step/start",
+          "system/message",
+          "user/message",
+          "request/header",
+          "request/context",
+          "assistant/message",
+          "step/end",
+          "turn/end"
+        ]
+      }
+    },
+    {
+      "event": "assistant/text/asserted",
+      "match": {
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "web.boot.applied",
+      "match": {
+        "rows": 5,
+        "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
+      }
+    },
+    {
+      "event": "runtime.booted",
+      "match": {
+        "entryCount": 58,
+        "source": "vendored @deepseek-ai/dsh-client-modules composed in-runtime"
+      }
+    },
+    {
+      "event": "session.services.claimed",
+      "match": {
+        "endpoints": [
+          "session.list"
+        ],
+        "stream": "session/journal",
+        "source": "the on-device spine (ctx.sessions)"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "rows": 5
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/assets/index-8VXBH-f-.js"
+      }
+    },
+    {
+      "event": "plugins.served",
+      "match": {
+        "bytes": 36040
+      }
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "session.list.responded",
+      "match": {
+        "ok": true,
+        "sessions": 1,
+        "source": "the on-device spine (ctx.sessions)"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "agentPresets/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "credentials/describe",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "dynamicCordisRunner/inventory",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "dynamicCordisRunner/syncInspectManifest",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/modelCatalog",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "settings/describe",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session.list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "session.attached",
+      "match": {
+        "streamId": "bandroid-probe-journal",
+        "stream": "session/journal"
+      }
+    },
+    {
+      "event": "journal.frame.forwarded",
+      "match": {
+        "direction": "tx",
+        "source": "REAL session log records (baseline + live turn)",
+        "first": true
+      }
+    },
+    {
+      "event": "session.journal.attached",
+      "match": {
+        "sessionId": "s-android-live-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 4,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "journal/live",
+      "match": {
+        "turn": 2,
+        "events": 8,
+        "note": "streamed live to every attached session/journal stream"
+      }
+    },
+    {
+      "event": "session.list.real",
+      "match": {
+        "sessionId": "s-android-live-0001",
+        "sessions": 1,
+        "running": false,
+        "blank": false
+      }
+    },
+    {
+      "event": "session.journal.real",
+      "match": {
+        "baseline": 11,
+        "lastType": "turn/end",
+        "frames": 19,
+        "live": 8
+      }
+    },
+    {
+      "event": "module.system.live",
+      "match": {
+        "mode": "live",
+        "bootstrap": "@deepseek-ai/dsh-client-modules (vendored)"
+      }
+    },
+    {
+      "event": "page.rendered",
+      "match": {
+        "moduleMode": "live",
+        "boot": false,
+        "rootHasChild": true
+      }
+    }
+  ]
+}

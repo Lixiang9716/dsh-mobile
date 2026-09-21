@@ -12,9 +12,88 @@ val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
     commandLine("bash", ensureSpikeScript.asFile.absolutePath)
 }
 
+// The official upstream web app is vendored UNTRACKED too
+// (presentation/official-web: the dist + the application-tier client
+// bundles; PROVENANCE + MANIFEST pinned). Stage both into the assets merge
+// dir (official-web/dist/**, web-plugins/npm/@deepseek-ai/**) — Gradle packs
+// them into the APK. Missing trees fail loud with the ensure-script fix —
+// the check is a plain task because a Copy whose source is absent skips as
+// NO-SOURCE before any doFirst can fire (rule 5); the D6 pin record wins
+// for the bootstrap package (identical copy rule, same as the iOS runner's
+// staging order). Paths are rootProject-relative: hosts/android + ../.. is
+// the repo root (the app-module-relative ../../../ convention above does
+// not apply here).
+val officialDistDir = rootProject.file("../../presentation/official-web/dist")
+val clientBundlesDir = rootProject.file("../../presentation/official-web/client-bundles")
+val vendoredBootstrap = rootProject.file(
+    "../../runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
+)
+val dshAssets = layout.buildDirectory.dir("generated/dsh-assets")
+
+// The D9 spine closure (W-SESS vendored trees: 14 spine packages + the zod
+// classic runtime closure) is UNTRACKED by the same discipline as the engine
+// sources: hosts/android/ci/stage-spine-closure.sh materializes it from the
+// ensure-dsh.sh pin (byte-identity-verified) into assets before packaging.
+// The script fails loud when the runtime pin checkout is missing.
+val stageSpineScript = rootProject.file("../../hosts/android/ci/stage-spine-closure.sh")
+val stageSpineClosure = tasks.register<Exec>("stageSpineClosure") {
+    commandLine("bash", stageSpineScript.absolutePath)
+}
+
+val verifyOfficialTrees = tasks.register("verifyOfficialTrees") {
+    group = "dsh"
+    doLast {
+        if (!officialDistDir.isDirectory) {
+            throw GradleException(
+                "official dist missing: $officialDistDir — run tools/e2e/ensure-official-dist.sh",
+            )
+        }
+        if (!clientBundlesDir.resolve("npm").isDirectory) {
+            throw GradleException(
+                "client bundles missing: $clientBundlesDir — run tools/e2e/ensure-client-bundles.sh",
+            )
+        }
+    }
+}
+
+val stageOfficialDist = tasks.register<Copy>("stageOfficialDist") {
+    group = "dsh"
+    dependsOn(verifyOfficialTrees)
+    from(officialDistDir)
+    into(dshAssets.map { it.dir("official-web/dist") })
+}
+
+val stageWebPlugins = tasks.register<Copy>("stageWebPlugins") {
+    group = "dsh"
+    dependsOn(stageOfficialDist)
+    // The overlay below re-copies the bootstrap package over the build
+    // output at the same path — the LAST copy wins (the pin), which is the
+    // declared intent, so duplicates are included, not excluded.
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(clientBundlesDir.resolve("npm"))
+    into(dshAssets.map { it.dir("web-plugins/npm") })
+    // The pinned vendored tarball wins for the bootstrap package (D6 pin
+    // record; byte-identical lib/client.js to the workspace build —
+    // PROVENANCE); the path is relative to web-plugins/npm so the overlay
+    // lands ON the staged package, not in a dead npm/npm/ double. When the
+    // vendored tree is absent the manifest-verified build output stands.
+    if (vendoredBootstrap.isDirectory) {
+        from(vendoredBootstrap) {
+            into("@deepseek-ai/dsh-client-modules@0.1.6-alpha.2")
+        }
+    }
+}
+
 android {
     namespace = "com.dshmobile.spike"
     compileSdk = 35
+
+    sourceSets {
+        getByName("main") {
+            // the staged official-web trees ride the normal assets merge
+            assets.srcDir(dshAssets)
+        }
+    }
 
     defaultConfig {
         applicationId = "com.dshmobile.spike"
@@ -55,10 +134,14 @@ dependencies {
     // Intentionally none: plain android.app.Activity + TextView.
 }
 
-// Belt and braces: whatever task graph shape AGP picks, the native build and
-// preBuild both wait for the vendored engine sources to be on disk.
+// Belt and braces: whatever task graph shape AGP picks, the native build,
+// preBuild, and asset packaging all wait for the staged trees to be on disk.
 tasks.configureEach {
-    if (name.startsWith("buildCMake") || name.startsWith("externalNativeBuild") || name == "preBuild") {
-        dependsOn(ensureSpikeVendor)
+    if (name.startsWith("buildCMake") || name.startsWith("externalNativeBuild") ||
+        name == "preBuild" || name.startsWith("merge") && name.endsWith("Assets") ||
+        name.startsWith("package") && name.endsWith("Assets") ||
+        name.startsWith("bundleDebug") || name.startsWith("assemble")
+    ) {
+        dependsOn(ensureSpikeVendor, stageSpineClosure, stageWebPlugins)
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Index — the M5 host page. Two phases on ONE launch:
+ * Index — the D9 host page. THREE phases on ONE launch:
  *
  * 1. Regression (synchronous): materializes the bundled spike (byte-identical
  *    rawfile copies of the runtime/spike originals + the Web Client plugin)
@@ -13,6 +13,17 @@
  *    Web Client, ArkWeb mounts it, and HostPhase drives scenario
  *    m5.host-binding over the real dispatch bridge — approval dialog below,
  *    notification lifecycle, live token deltas rendered by the page.
+ *
+ * 3. Official-web phase (D9 W-HARMONY, event-driven): the m5 verdict chains
+ *    into OfficialPhase — the canonical b1-web-live runtime composes the
+ *    OFFICIAL boot wire, the carrier serves the vendored upstream dist from
+ *    rawfile with the runtime's rows, and ArkWeb mounts the official app
+ *    (b-harmony.official-web-mount). The verdict chains through the
+ *    httpFetch v2 proof leg against the live carrier
+ *    (b-harmony.httpfetch-v2) into the SESSION-LIVE leg
+ *    (b-harmony.session.live, W-HARMONY3): a fresh runtime boots the FULL
+ *    upstream spine and claims session.list + the mux journal from
+ *    ctx.sessions — the official page then reads REAL session data.
  */
 import { startSpike } from 'libspike.so';
 import { fileIo as fs } from '@kit.CoreFileKit';
@@ -21,7 +32,9 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { webview } from '@kit.ArkWeb';
 import { CarrierServer } from '../model/CarrierServer';
+import { installLegacyRoutes } from '../model/CarrierRoutes';
 import { HostPhase } from '../model/HostPhase';
+import { OfficialPhase } from '../model/OfficialPhase';
 
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
@@ -30,28 +43,244 @@ const CARRIER_BASE_PORT: number = 17877;
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
 // the scenarios at <bundle>/scenario/..., the vendored package under
 // <bundle>/vendor/... (the spike host's ESM loader resolves these paths).
-// webclient/... is the ACTIVE Web Client plugin the carrier serves (byte-
-// identical to presentation/web-client); extend whenever the closure grows.
+// webclient/... is the ACTIVE Web Client plugin the m5 carrier serves;
+// upstream/... + the vendor/npm libs are the D9 web-boot closure the
+// official-web phase runs, and the W-SESS spine closure below it is the
+// full upstream agent spine the session-live leg boots (byte-identical to
+// the runtime/spike canonicals — ci/vendor-official.sh cmp-verifies every
+// copy; ci/check-bundle-files.mjs pins this list == the tracked rawfile
+// tree). EXTEND whenever the closure grows.
 const BUNDLE_FILES: string[] = [
-  'logger.js',
   'gateway.js',
-  'registry.js',
   'install-pipeline.js',
+  'logger.js',
+  'registry.js',
   'sha256.js',
   'tar-mini.js',
-  'fixtures/dsh-notes.js',
   'fixtures/dsh-notes-source.js',
+  'fixtures/dsh-notes.js',
+  'scenario/b1-web-live.js',
+  'scenario/harmony-httpfetch-v2.js',
+  'scenario/harmony-session-live.js',
+  'scenario/harmony-write-live.js',
   'scenario/m1-spike-boot.js',
   'scenario/m2-bridge-smoke.js',
   'scenario/m2-session.js',
   'scenario/m5-host-binding.js',
   'system-plugins/dsh-fs/index.js',
+  'system-plugins/dsh-fs/manifest.json',
   'system-plugins/dsh-subprocess-quickjs/index.js',
+  'system-plugins/dsh-subprocess-quickjs/manifest.json',
   'system-plugins/dsh-ui/index.js',
-  'vendor/dsh/util-crypto@0.1.6-alpha.1/lib/index.js',
+  'system-plugins/dsh-ui/manifest.json',
+  'upstream/boot.js',
+  'upstream/llm-transport.js',
+  'upstream/settings-memory.js',
+  'upstream/web-boot.js',
+  'upstream/web-shims.js',
+  'upstream/web-write-settings.js',
+  'upstream/web-write-streams.js',
+  'upstream/web-write.js',
+  'upstream/shims/async-hooks.js',
+  'upstream/shims/buffer.js',
+  'upstream/shims/crypto.js',
+  'upstream/shims/dsh-session-persistence.js',
+  'upstream/shims/fs.js',
+  'upstream/shims/node-module.js',
+  'upstream/shims/os.js',
+  'upstream/shims/path.js',
+  'upstream/shims/process.js',
+  'upstream/shims/url.js',
+  'upstream/shims/util-types.js',
+  'upstream/shims/util.js',
+  'vendor/dsh/agent-loop@0.1.6-alpha.2/package.json',
+  'vendor/dsh/agent-loop@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/agent-loop@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/package.json',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/consumed-work.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/dispatch.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/invariant.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/model-selection.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/projection.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/runtime-types.js',
+  'vendor/dsh/agent@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/brand@0.1.6-alpha.2/package.json',
+  'vendor/dsh/brand@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/package.json',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/typert.host.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/typert.remote-client.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/adapter-failure.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/api-key.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/assembler.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/assistant-stream.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/attribution.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/brand.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/call-config.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/content.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/error.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/invariant.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/message.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/retry-policy.js',
+  'vendor/dsh/llm@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/sandbox@0.1.6-alpha.2/package.json',
+  'vendor/dsh/sandbox@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/scope@0.1.6-alpha.2/package.json',
+  'vendor/dsh/scope@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/scope@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/session-projection@0.1.6-alpha.2/package.json',
+  'vendor/dsh/session-projection@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/session-projection@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/session-projection@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/session@0.1.6-alpha.2/package.json',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/invariant.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/known-event-types.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/preparation.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/repair.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/request-header.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/seq-ranges.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/surface.js',
+  'vendor/dsh/session@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/package.json',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/types/invariant.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/types/redact.js',
+  'vendor/dsh/settings@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/system-prompt@0.1.6-alpha.2/package.json',
+  'vendor/dsh/system-prompt@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/system-prompt@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/timeout@0.1.6-alpha.2/package.json',
+  'vendor/dsh/timeout@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/package.json',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/invariant.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/invariant.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/json-schema.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/presentation.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/ptc.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/py-types.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/schema.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/testing.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/ts-types.js',
+  'vendor/dsh/tools@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/package.json',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/index.js',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/owned-value.js',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/remote-error.js',
+  'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/types.js',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/LICENSE',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/PROVENANCE.md',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/README.i18n.yaml',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/README.md',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/README.zh.md',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/package.json',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js',
+  'vendor/dsh/util-crypto@0.1.6-alpha.2/lib/types/index.d.ts',
+  'vendor/dsh/util-values@0.1.6-alpha.2/package.json',
+  'vendor/dsh/util-values@0.1.6-alpha.2/lib/index.js',
+  'vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json',
+  'vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/client.js',
+  'vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/index.js',
+  'vendor/npm/cordis@4.0.2/package.json',
+  'vendor/npm/cordis@4.0.2/lib/index.js',
+  'vendor/npm/cosmokit@1.8.3/package.json',
+  'vendor/npm/cosmokit@1.8.3/lib/index.js',
+  'vendor/npm/schemastery@3.18.2/package.json',
+  'vendor/npm/schemastery@3.18.2/lib/index.mjs',
+  'vendor/npm/zod@4.4.3/index.js',
+  'vendor/npm/zod@4.4.3/v4/classic/checks.js',
+  'vendor/npm/zod@4.4.3/v4/classic/coerce.js',
+  'vendor/npm/zod@4.4.3/v4/classic/compat.js',
+  'vendor/npm/zod@4.4.3/v4/classic/errors.js',
+  'vendor/npm/zod@4.4.3/v4/classic/external.js',
+  'vendor/npm/zod@4.4.3/v4/classic/from-json-schema.js',
+  'vendor/npm/zod@4.4.3/v4/classic/iso.js',
+  'vendor/npm/zod@4.4.3/v4/classic/parse.js',
+  'vendor/npm/zod@4.4.3/v4/classic/schemas.js',
+  'vendor/npm/zod@4.4.3/v4/core/api.js',
+  'vendor/npm/zod@4.4.3/v4/core/checks.js',
+  'vendor/npm/zod@4.4.3/v4/core/core.js',
+  'vendor/npm/zod@4.4.3/v4/core/doc.js',
+  'vendor/npm/zod@4.4.3/v4/core/errors.js',
+  'vendor/npm/zod@4.4.3/v4/core/index.js',
+  'vendor/npm/zod@4.4.3/v4/core/json-schema-generator.js',
+  'vendor/npm/zod@4.4.3/v4/core/json-schema-processors.js',
+  'vendor/npm/zod@4.4.3/v4/core/json-schema.js',
+  'vendor/npm/zod@4.4.3/v4/core/parse.js',
+  'vendor/npm/zod@4.4.3/v4/core/regexes.js',
+  'vendor/npm/zod@4.4.3/v4/core/registries.js',
+  'vendor/npm/zod@4.4.3/v4/core/schemas.js',
+  'vendor/npm/zod@4.4.3/v4/core/to-json-schema.js',
+  'vendor/npm/zod@4.4.3/v4/core/util.js',
+  'vendor/npm/zod@4.4.3/v4/core/versions.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ar.js',
+  'vendor/npm/zod@4.4.3/v4/locales/az.js',
+  'vendor/npm/zod@4.4.3/v4/locales/be.js',
+  'vendor/npm/zod@4.4.3/v4/locales/bg.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ca.js',
+  'vendor/npm/zod@4.4.3/v4/locales/cs.js',
+  'vendor/npm/zod@4.4.3/v4/locales/da.js',
+  'vendor/npm/zod@4.4.3/v4/locales/de.js',
+  'vendor/npm/zod@4.4.3/v4/locales/el.js',
+  'vendor/npm/zod@4.4.3/v4/locales/en.js',
+  'vendor/npm/zod@4.4.3/v4/locales/eo.js',
+  'vendor/npm/zod@4.4.3/v4/locales/es.js',
+  'vendor/npm/zod@4.4.3/v4/locales/fa.js',
+  'vendor/npm/zod@4.4.3/v4/locales/fi.js',
+  'vendor/npm/zod@4.4.3/v4/locales/fr-CA.js',
+  'vendor/npm/zod@4.4.3/v4/locales/fr.js',
+  'vendor/npm/zod@4.4.3/v4/locales/he.js',
+  'vendor/npm/zod@4.4.3/v4/locales/hr.js',
+  'vendor/npm/zod@4.4.3/v4/locales/hu.js',
+  'vendor/npm/zod@4.4.3/v4/locales/hy.js',
+  'vendor/npm/zod@4.4.3/v4/locales/id.js',
+  'vendor/npm/zod@4.4.3/v4/locales/index.js',
+  'vendor/npm/zod@4.4.3/v4/locales/is.js',
+  'vendor/npm/zod@4.4.3/v4/locales/it.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ja.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ka.js',
+  'vendor/npm/zod@4.4.3/v4/locales/kh.js',
+  'vendor/npm/zod@4.4.3/v4/locales/km.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ko.js',
+  'vendor/npm/zod@4.4.3/v4/locales/lt.js',
+  'vendor/npm/zod@4.4.3/v4/locales/mk.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ms.js',
+  'vendor/npm/zod@4.4.3/v4/locales/nl.js',
+  'vendor/npm/zod@4.4.3/v4/locales/no.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ota.js',
+  'vendor/npm/zod@4.4.3/v4/locales/pl.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ps.js',
+  'vendor/npm/zod@4.4.3/v4/locales/pt.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ro.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ru.js',
+  'vendor/npm/zod@4.4.3/v4/locales/sl.js',
+  'vendor/npm/zod@4.4.3/v4/locales/sv.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ta.js',
+  'vendor/npm/zod@4.4.3/v4/locales/th.js',
+  'vendor/npm/zod@4.4.3/v4/locales/tr.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ua.js',
+  'vendor/npm/zod@4.4.3/v4/locales/uk.js',
+  'vendor/npm/zod@4.4.3/v4/locales/ur.js',
+  'vendor/npm/zod@4.4.3/v4/locales/uz.js',
+  'vendor/npm/zod@4.4.3/v4/locales/vi.js',
+  'vendor/npm/zod@4.4.3/v4/locales/yo.js',
+  'vendor/npm/zod@4.4.3/v4/locales/zh-CN.js',
+  'vendor/npm/zod@4.4.3/v4/locales/zh-TW.js',
   'webclient/dsh-web-client/manifest.json',
   'webclient/dsh-web-client/web/index.html',
-  'webclient/dsh-web-client/web/main.js'
+  'webclient/dsh-web-client/web/main.js',
 ];
 
 // Custom approval dialog — presentApproval's native surface (contract §4:
@@ -98,6 +327,7 @@ struct Index {
 
   aboutToDisappear(): void {
     HostPhase.getInstance().destroy();
+    OfficialPhase.getInstance().destroy();
     this.carrier.stop();
   }
 
@@ -141,7 +371,10 @@ struct Index {
       });
   }
 
-  /** Phase 2: carrier up → page mounts → scenario runs (see HostPhase). */
+  /** Phase 2: carrier up → page mounts → scenario runs (see HostPhase). The
+   * m5 verdict chains into the D9 official-web phase on a later tick — the
+   * completion callback fires from inside a mutator call, so the teardown
+   * (hostFree) must never run on that stack (ARCHITECTURE.md §6). */
   private startBindingPhase(ctx: common.UIAbilityContext, fsRoot: string): void {
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
@@ -159,15 +392,49 @@ struct Index {
     const capturePath: string = ctx.cacheDir + '/dsh-host-capture.log';
     this.materializeBundle(ctx)
       .then((root: string): Promise<number> => {
+        phase.onPhaseComplete = (passed: boolean): void => {
+          hilog.info(0x0000, TAG, 'm5 phase complete (passed %{public}s)',
+            String(passed));
+          setTimeout((): void => {
+            this.startOfficialPhase(ctx, fsRoot);
+          }, 200);
+        };
         phase.begin(ctx, root, capturePath, fsRoot);
-        return this.carrier.start(root + '/webclient/dsh-web-client/web', CARRIER_BASE_PORT);
-      })
-      .then((port: number): void => {
-        phase.onCarrierListening(port);
-        this.webUrl = 'http://127.0.0.1:' + port + '/';
+        installLegacyRoutes(this.carrier, root + '/webclient/dsh-web-client/web');
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          this.webUrl = 'http://127.0.0.1:' + port + '/';
+          return port;
+        });
       })
       .catch((err: BusinessError): void => {
         hilog.error(0x0000, TAG, 'binding phase bootstrap failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
+  /** Phase 3: the D9 official-web mount (see OfficialPhase). */
+  private startOfficialPhase(ctx: common.UIAbilityContext, fsRoot: string): void {
+    HostPhase.getInstance().destroy();
+    this.carrier.stop();
+    const official = OfficialPhase.getInstance();
+    official.openOrigin = (url: string): void => {
+      // The official origin becomes a FRESH Web's initial src: a src state
+      // change on the live m5 Web does not re-navigate, and an explicit
+      // loadUrl (from the compose call stack or after the remount) either
+      // is swallowed or double-loads. Unmount (webUrl '') and remount with
+      // the official origin on a later tick — exactly one navigation.
+      this.webUrl = '';
+      setTimeout((): void => {
+        this.webUrl = url;
+      }, 50);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): void => {
+        official.begin(ctx, root, ctx.cacheDir + '/dsh-official-capture.log', fsRoot);
+      })
+      .catch((err: BusinessError): void => {
+        hilog.error(0x0000, TAG, 'official phase bootstrap failed: %{public}s',
           err.message ?? 'unknown');
       });
   }
@@ -194,7 +461,7 @@ struct Index {
 
   build() {
     Column({ space: 8 }) {
-      Text('DSH M5 host — HarmonyOS')
+      Text('DSH host — HarmonyOS')
         .fontSize(20)
         .fontWeight(FontWeight.Bold)
       Text(this.verdict)
@@ -209,6 +476,13 @@ struct Index {
           .domStorageAccess(true)
           .onControllerAttached(() => {
             hilog.info(0x0000, TAG, 'arkweb: controller attached for %{public}s', this.webUrl);
+          })
+          .onPageEnd((event) => {
+            hilog.info(0x0000, TAG, 'arkweb: page end %{public}s',
+              event?.url ?? this.webUrl);
+            OfficialPhase.getInstance().onPageFinished(event?.url ?? '',
+              (script: string): Promise<string> =>
+                this.webController.runJavaScript(script));
           })
       } else {
         Text('carrier: starting...').fontSize(12).fontColor('#666666')

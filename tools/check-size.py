@@ -30,6 +30,12 @@ MAX_INDENT_LEVEL = 5
 
 SOURCE_EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".swift", ".kt", ".kts", ".py"}
 
+# Vendored upstream packages live under a vendor/ dir and are kept verbatim
+# (upstream discipline, D6/D9): their bundled single-file builds cannot be
+# refactored to our size limits, so the unified-size contract applies only to
+# code this repo authors. Same precedent as the logging gate's VENDOR_SEGMENT.
+VENDOR_SEGMENT = "/vendor/"
+
 # Bare-method signature: `name(args) {` — exclude control-flow keywords so
 # `if (...) {` is not counted as a function start.
 CTRL = r"(?!(if|for|while|switch|catch|else|try|do|match|when|with|return|function)\b)"
@@ -162,11 +168,12 @@ def brace_functions(lines):
                 stack[-1][1] += 1
             elif ch == "}":
                 stack[-1][1] -= 1
-                if stack[-1][1] <= 0:
-                    if _closes_function(stack, raw, code[pos:]):
-                        results.append((stack.pop()[0], idx))
-                        break
-                    stack[-1][1] = 1
+                if stack[-1][1] > 0:
+                    continue
+                if _closes_function(stack, raw, code[pos:]):
+                    results.append((stack.pop()[0], idx))
+                    break
+                stack[-1][1] = 1
     return results
 
 
@@ -248,6 +255,11 @@ def check(path, facts):
 
 def main():
     files = tracked_sources()
+    # Vendored upstream packages are kept verbatim (D6/D9): their bundled
+    # single-file builds cannot be refactored to our size limits, so the
+    # unified-size contract applies only to code this repo authors. Same
+    # precedent as the logging gate's VENDOR_SEGMENT exemption.
+    files = [f for f in files if VENDOR_SEGMENT not in f]
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0

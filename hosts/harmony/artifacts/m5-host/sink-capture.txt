@@ -1,8 +1,8 @@
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
-dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"5b84b23a-d578-4e01-a947-b88db1366420","v4":true}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.2"}]}
+dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"f6671d85-9494-446d-bd6b-1d315726cac1","v4":true}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
 dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}

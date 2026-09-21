@@ -47,7 +47,8 @@ final class GatewaySession {
         wireCore()
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
         do {
-            try server.start(webRoot: root.appendingPathComponent("web")) { [weak self] in
+            try server.installLegacyRoutes(webRoot: root.appendingPathComponent("web"))
+            try server.start { [weak self] in
                 self?.runtimeThread.async { self?.deliverHostInfo() }
             }
         } catch {

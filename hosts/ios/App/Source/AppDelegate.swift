@@ -18,6 +18,15 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The m2 on-device session phase (session launch mode only).
     private var session: SessionRuntime?
     private var sessionVerdict = "PENDING"
+    /// The Phase-B official-web mount drive (`-dsh-mode official-web`).
+    private var official: OfficialWebRuntime?
+    private var officialVerdict = "PENDING"
+    /// The W-SESS session-live drive (`-dsh-mode session-live`).
+    private var sessionLive: SessionLiveRuntime?
+    private var sessionLiveVerdict = "PENDING"
+    /// The W-RPC session-write drive (`-dsh-mode session-write`).
+    private var sessionWrite: SessionWriteRuntime?
+    private var sessionWriteVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -62,6 +71,30 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             runSession()
             return true
         }
+        if launchMode == "official-web" {
+            console.text = "DSH official web — b1.official-web.mount, the upstream app on the contract carrier…"
+            print("spike: app launched in official-web mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runOfficialWeb()
+            return true
+        }
+        if launchMode == "session-live" {
+            console.text = "DSH session live — b3.session.live, the upstream spine on-device answering the official app…"
+            print("spike: app launched in session-live mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runSessionLive()
+            return true
+        }
+        if launchMode == "session-write" {
+            console.text = "DSH session write — b4.write.live, the official composer driving the upstream spine…"
+            print("spike: app launched in session-write mode")
+            fflush(stdout)
+            webView.navigationDelegate = self
+            runSessionWrite()
+            return true
+        }
         print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
         fflush(stdout)
         SpikeRuntime().run { [weak self] boot in
@@ -96,6 +129,62 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.session = nil
             // The session runner polls for this terminal marker.
             print("spike: sequence session=\(self.sessionVerdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The Phase-B official-web mount: the contract carrier serves the
+    /// vendored upstream dist; the drive probes the wire + rendered state.
+    private func runOfficialWeb() {
+        let official = OfficialWebRuntime()
+        self.official = official
+        official.attach(webView: webView!)
+        official.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        official.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b1.official-web.mount") { self.officialVerdict = $0 }
+            self.official = nil
+            print("spike: sequence official-web=\(self.officialVerdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The W-SESS session-live mount: the spine runs on-device, the claimed
+    /// session surface answers the official app, the journal streams real
+    /// records.
+    private func runSessionLive() {
+        let live = SessionLiveRuntime()
+        self.sessionLive = live
+        live.attach(webView: webView!)
+        live.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        live.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b3.session.live") { self.sessionLiveVerdict = $0 }
+            self.sessionLive = nil
+            print("spike: sequence session-live=\(self.sessionLiveVerdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The W-RPC session-write mount: the spine answers the official app's
+    /// write surface; the probe types into the real composer and the reply
+    /// renders in the official UI.
+    private func runSessionWrite() {
+        let write = SessionWriteRuntime()
+        self.sessionWrite = write
+        write.attach(webView: webView!)
+        write.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        write.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "b4.write.live") { self.sessionWriteVerdict = $0 }
+            self.sessionWrite = nil
+            print("spike: sequence session-write=\(self.sessionWriteVerdict)")
             fflush(stdout)
         }
     }
@@ -147,5 +236,16 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         console?.text = (console?.text ?? "") + "\n\n" + text
         print("spike: verdict \(outcome.verdict) (\(phase), events logged: \(outcome.canonicalLines.count))")
         fflush(stdout)
+    }
+}
+
+extension AppDelegate: WKNavigationDelegate {
+    /// The official page finished loading: all head subresources have
+    /// arrived — the drive emits its mount evidence, probes the wire, and
+    /// reads the rendered state.
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        official?.pageDidFinish()
+        sessionLive?.pageDidFinish()
+        sessionWrite?.pageDidFinish()
     }
 }

@@ -1,0 +1,368 @@
+{
+  "scenario": "b-android.write.live",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-official",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile",
+        "root": "empty (patch layers compose over it)",
+        "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+        "layers": [
+          "session",
+          "agent",
+          "system-prompt",
+          "tools",
+          "session-projection",
+          "settings",
+          "agent-loop"
+        ]
+      }
+    },
+    {
+      "event": "upstream/services",
+      "match": {
+        "kernel": "@deepseek-ai/cordis@4.0.2",
+        "services": [
+          "sessions",
+          "agents",
+          "systemPrompt",
+          "tools",
+          "sessionProjections",
+          "settings",
+          "agentLoop",
+          "llm"
+        ],
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+      }
+    },
+    {
+      "event": "web.boot.applied",
+      "match": {
+        "rows": 5,
+        "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
+      }
+    },
+    {
+      "event": "runtime.booted",
+      "match": {
+        "entryCount": 58,
+        "source": "vendored @deepseek-ai/dsh-client-modules composed in-runtime"
+      }
+    },
+    {
+      "event": "write.surface.claimed",
+      "match": {
+        "endpoints": [
+          "session.list",
+          "session/list",
+          "session/create",
+          "session/prompt",
+          "settings/describe",
+          "settings/update",
+          "settings/mutate"
+        ],
+        "streams": [
+          "session/follow",
+          "workspace/follow",
+          "session/control",
+          "$events"
+        ],
+        "source": "the on-device spine (ctx.sessions/agents/settings)"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "rows": 5,
+        "bytes": 30352
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/assets/index-8VXBH-f-.js"
+      }
+    },
+    {
+      "event": "plugins.served",
+      "match": {
+        "bytes": 36040
+      }
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "journal.frame.forwarded",
+      "match": {
+        "direction": "tx",
+        "first": true,
+        "source": "REAL session log records + assistant-stream frames"
+      }
+    },
+    {
+      "event": "workspace.picked",
+      "match": {
+        "composer": true,
+        "notice": false
+      }
+    },
+    {
+      "event": "composer.typed",
+      "match": {
+        "found": "div",
+        "editable": true,
+        "value": "Say hello from the composer",
+        "text": "Say hello from the composer",
+        "active": "DIV"
+      }
+    },
+    {
+      "event": "composer.ready",
+      "match": {
+        "found": "div",
+        "value": "Say hello from the composer"
+      }
+    },
+    {
+      "event": "write.prompt.observed",
+      "match": {
+        "seq": 5
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 2,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "write.turn.settled",
+      "match": {
+        "events": 11,
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "write.follow.frames",
+      "match": {
+        "frames": 1,
+        "shapes": [
+          "snapshot:10"
+        ]
+      }
+    },
+    {
+      "event": "write.reply.rendered",
+      "match": {
+        "reply": "Hello from upstream",
+        "userText": "Say hello from the composer",
+        "moduleMode": "live"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "agentPresets/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "commands/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "credentials/describe",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "dynamicCordisRunner/inventory",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "dynamicCordisRunner/syncInspectManifest",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "llm/listConfigurableProviders",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "llm/listProviders",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "permissionPresets/catalog",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session.list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/create",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/modelCatalog",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/prompt",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "settings/describe",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "settings/mutate",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "skills/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "subagents/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "terminal/list",
+        "answered": "unavailable"
+      }
+    }
+  ]
+}

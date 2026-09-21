@@ -1,0 +1,29 @@
+{
+  "title": "D9 W-SHELL: application-tier client bundles boot the official app shell",
+  "created": "2026-09-20T12:30:50+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Write the prepared-module format answer (vendored client-modules scan + desktop composition) into the PR/agent note",
+    "Build the 58-package application-tier client bundles at pin dsh-v0.1.6-alpha.2 and vendor them under presentation/official-web/client-bundles with PROVENANCE + MANIFEST.sha256 + reproducible script",
+    "Stage the full web-plugins tree in run-ios-b1.sh and extend WebBootRuntimeDrive.webPluginsDelivery to enumerate it",
+    "Extend CarrierPlugins to serve package-local chunks (client.<name>.js + .map) at the upstream chunk URLs",
+    "b1 drive: graph with application batches; probe reports the honest app-shell rendered state; screenshots at each stage",
+    "CLI-first: web-plugins-payload.mjs carries the full roster; m2.upstream-boot asserts the application-tier graph shape",
+    "E2E green: b1 manifest one-to-one + regressions m2.upstream-session 31/31, m2.session 23/23, m2.webclient.mount 7/7, m2.upstream-boot",
+    "Agent note (architecture, ref D9/D3) + task card exited via gov task void before push + gov run green + PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0015",
+  "void": {
+    "ts": "2026-09-20T13:13:49+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work completes in the opened PR (audit trail = the PR, #329/#339 precedent): the prepared-module format answered from the vendored client-modules source + the desktop composition (per-package dsh.client declaration + lazy-CJS factory bundle, composed into the bootstrap/application batch graph); 58-package roster built at pin dsh-v0.1.6-alpha.2 with upstream's own client-face build and vendored as MANIFEST+ROSTER+PROVENANCE (bytes untracked like the dist, materialized by ensure-client-bundles.sh); b1.official-web.mount green 14/14 four consecutive runs on dsh-iphone with the boot page DISPOSED and the official app shell rendered (app.shell.rendered; committed screenshots 01 Loading-plugins boot page, 02 rendered shell); m2.upstream-boot CLI-first graph proof 12/12 (bootstrap batch exact, application combo, externals ordered); regressions m2.session 23/23, m2.webclient.mount 7/7, m2.upstream-session 31/31; carrier endpoint validation fixed to the upstream per-segment rule (found by the live page); single-emission wire evidence; gov run 10/10."
+  }
+}

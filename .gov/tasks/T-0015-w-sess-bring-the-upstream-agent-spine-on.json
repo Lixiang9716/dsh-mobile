@@ -1,0 +1,28 @@
+{
+  "title": "W-SESS: bring the upstream agent spine on-device; claim the session /api endpoints + mux journal with real data",
+  "created": "2026-09-20T12:24:54+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Embed the full vendored spine closure (dsh libs + shims + zod) into the iOS bundle via gen_bundle_header.py tree mode + SpikeBundleStager",
+    "b3-web-live.js scenario: bootUpstream spine + one scripted-llm turn + web-boot runtime on the same ctx",
+    "Scripted mock chat-completions SSE endpoint on the carrier (mirrors the vendored dsh-llm-mock-server)",
+    "WebBootRuntimeDrive: scenario parameter + gateway wiring + completion reporting; claims/respond/mux bridged to CarrierAPIBridge",
+    "SessionLiveRuntime drive + AppDelegate session-live mode + regenerated xcodeproj",
+    "run-ios-b3.sh + b3.session.live one-to-one manifest green; b1 13/13 + m2 regressions green",
+    "agent note (architecture, ref D9); task card exited before push; gov run green; PR open"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0015",
+  "void": {
+    "ts": "2026-09-20T15:03:50+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "W-SESS completed in feat/ondevice-session: spine embedded (172-file tree + shims), b3.session.live 40/40 on-device (real session.list answer + 19 journal frames incl. live turn 2), regressions green (b1 13/13, m2.upstream-session 31/31, m2.upstream-boot 12/12, m2.session 23/23, m2.webclient.mount 7/7, m3.fetch-install 46/46, m3.fetch-carrier 11/11); run-ios.sh picker watchdog recorded as surprise (manifests green)"
+  }
+}

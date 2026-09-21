@@ -67,6 +67,67 @@ ONE launch on the emulator now proves the host end to end in two phases:
   consent Allow, Home, notification-center tap) -> capture pull -> four
   checker verdicts + screenshots.
 
+## D9 official phases (mount + httpFetch v2 + session-live + write-live)
+
+ONE launch chains four D9 phases after the m5 verdict (each on a FRESH
+runtime; every phase's capture file holds exactly its own manifest's
+records):
+
+1. **b-harmony.official-web-mount** — the ArkTS carrier implements the
+   `ctx.webServer` contract subset: `WebDist` (fallback), `WebPlugins`
+   (/plugins combos), `ApiBridge` (/api envelope + /api/remote.mux mux
+   seat). A fresh runtime runs the canonical `b1-web-live` scenario, posts
+   `web.boot` over the bus seam, the carrier swaps the rows into the index
+   render pipeline, and ArkWeb mounts the official app; the same-origin
+   probe reads module.system.live / app.shell.rendered / page.rendered.
+2. **b-harmony.httpfetch-v2** — `HttpFetch.ets` serves the httpFetch
+   primitive over `@ohos.net.http requestInStream` (streaming body, abort,
+   refused); the proof scenario runs against the live carrier.
+3. **b-harmony.session.live** (W-HARMONY3) — the FULL upstream agent spine
+   boots in a fresh runtime (`harmony-session-live.js` → `upstream/boot.js`:
+   ctx.sessions / agents / agentLoop / tools / systemPrompt /
+   sessionProjections / settings + the vendored dsh-llm `LlmRuntime` whose
+   transport is the REAL gateway httpFetch against the carrier's SCRIPTED
+   `/mock-llm/chat/completions` SSE endpoint — real transport, scripted
+   model, logged as such). One scripted-llm turn is the journal baseline;
+   then `web.boot` + the claims go live on the SAME ctx
+   (`session.list` + `session/journal` answered from ctx.sessions —
+   everything else stays structured-unavailable), the official page mounts,
+   and the b3 probe (`SessionLiveProbe.ets`) posts the REAL session.list,
+   attaches the mux journal stream, collects the 19 frames (11-event
+   baseline + the 8-event live turn 2), and reads the rendered state.
+   The runtime half stays resident; the verdict is the drive's
+   (`dsh.spike.verdict: b-harmony.session.live`).
+4. **b-harmony.write.live** (W-HARMONY4) — the SESSION WRITE surface: a
+   fresh runtime boots the spine and the web-boot producer composes WITH
+   the write surface (`harmony-write-live.js` → `upstream/web-write.js`):
+   `session/create` + `session/prompt` (upstream commands.prompt
+   admission: `{accepted:true}` without awaiting the turn),
+   `settings/describe|update|mutate` (the real vendored provider, the
+   mobile `ui-onboarding` namespace volatile), and the mux
+   `session/follow` / `workspace/follow` / `session/control` / `$events`
+   streams. The write probe (`SessionWriteProbe.ets`) drives the OFFICIAL
+   UI like a user — settle at the workspace picker, pick the seeded
+   workspace, type into the real Lexical composer, click send — and the
+   page's own message admits a REAL upstream agent-loop turn
+   (user/message → agent-loop events → assistant deltas → turn/end,
+   11 events) streamed live over the mux and rendered in the official DOM
+   (the reply screenshot). Everything the spine does not implement stays
+   structured-unavailable. Verdict: `dsh.spike.verdict:
+   b-harmony.write.live`.
+
+The spine closure travels in `rawfile/spike/` byte-identical to the
+runtime/spike canonicals: `ci/vendor-official.sh` copies + cmp-verifies the
+authored spine files, the 14 vendored spine packages (lib/ trees +
+package.json) and the pinned zod classic closure (gitignored verbatim
+bytes — the content gates never judge vendored upstream JS), and
+`ci/check-bundle-files.mjs` pins `Index.ets` BUNDLE_FILES == the rawfile
+tree in both directions (the #56-class drift guard; dsh-mobile#57 proposes
+the gate). Evidence: [artifacts/d9-official-web/](artifacts/d9-official-web/)
+and [artifacts/d9-write-live/](artifacts/d9-write-live/) (eight verdicts,
+captures, screenshots — the write dir carries the composer-typed +
+reply-rendered pair).
+
 Threading (ARCHITECTURE.md §6): the regression trio runs synchronously inside
 the NAPI call on the caller thread; the binding phase is driven per event —
 but every mutator (WS frame in, UI settle, lifecycle edge) still executes on
@@ -114,8 +175,11 @@ One command drives the whole on-emulator E2E (start the emulator first —
 ```sh
 hosts/harmony/ci/run-host-e2e.sh [artifacts-dir]
 # build -> install -> launch -> hilog-tailed UI automation (uitest) ->
-# capture pull -> 4 checker verdicts (m1.spike.boot, m2.bridge.smoke,
-# m2.session, m5.host-binding) + screenshots; DSH_SKIP_BUILD=1 skips hvigor
+# capture pull -> 8 checker verdicts (m1.spike.boot, m2.bridge.smoke,
+# m2.session, m5.host-binding, b-harmony.official-web-mount,
+# b-harmony.httpfetch-v2, b-harmony.session.live,
+# b-harmony.write.live) + screenshots;
+# DSH_SKIP_BUILD=1 skips hvigor
 ```
 
 Manual flow, step by step:
