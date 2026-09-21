@@ -53,13 +53,13 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Same unpacked-cache pattern as dev/harmonyos: xcodebuild uses
       # -derivedDataPath hosts/ios/DerivedData so incremental builds restore
       # from this cache (SwiftPM + module cache).
       - name: Cache DerivedData
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: hosts/ios/DerivedData
           # Keyed on the SOURCES, not a frozen literal. `dev-ios-deriveddata-v2`
@@ -138,7 +138,7 @@ jobs:
         # re-verify sha256 over whatever lands: a restored tree is verified, not
         # trusted. Single-line key on purpose — a folded scalar can resolve to a
         # literal and give a cache that never hits.
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -280,9 +280,9 @@ jobs:
           grep -q '^dsh.spike.log:' "$ART/logs.txt" \
             || { echo "::error::no dsh.spike.log lines — the app never ran"; exit 1; }
           grep -q "spike: sequence" "$ART/logs.txt" \
-            || echo "::warning::terminal marker absent (the UI-driven m2 leg cannot be driven on CI) — verifying the completed m1 scenarios only"
+            || echo "::notice::terminal marker absent (the UI-driven m2 leg cannot be driven on CI) — the completed m1 scenarios are verified below. Expected, not a defect."
           if grep -q "spike: ui-wait" "$ART/logs.txt" && ! grep -q "spike: sequence" "$ART/logs.txt"; then
-            echo "::warning::run stalled at a UI-driven m2 prompt (no UI driver on CI) — verifying the completed m1 scenarios only"
+            echo "::notice::run stalled at a UI-driven m2 prompt (no UI driver on CI) — the completed m1 scenarios are verified below. Expected, not a defect: see this step's header."
           fi
           xcrun simctl io "$UDID" screenshot "$ART2/screenshot.png" || true
           grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
@@ -362,7 +362,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: m1-spike-ios
           path: |

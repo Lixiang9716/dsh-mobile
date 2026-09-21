@@ -96,7 +96,7 @@ jobs:
       # tag otherwise — the event's own tag, or the one a dispatch asked for.
       RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Verify the tag agrees with every version file
         # The tag is the human's decision (D12); this is what keeps that from
@@ -105,7 +105,7 @@ jobs:
         if: env.RELEASE_TAG != ''
         run: sh tools/release/check-tag-version.sh "$RELEASE_TAG"
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -114,7 +114,7 @@ jobs:
       - name: Install the pinned NDK and CMake
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" > /dev/null
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
 
@@ -148,7 +148,7 @@ jobs:
         # Restoring it lets install resolve locally while the build still
         # PRODUCES AND VERIFIES the tree — so nothing here depends on a cached
         # artifact being byte-reproducible.
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/build-client-bundles.sh') }}
@@ -163,7 +163,7 @@ jobs:
         # bytes (both MANIFESTs, both build recipes, the roster, and the two
         # verifiers); any pin or recipe change changes the key and the tree is
         # rebuilt. Never a silent stale tree: the verifiers check it either way.
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             presentation/official-web/dist
@@ -177,7 +177,7 @@ jobs:
         # re-verify sha256 over whatever lands: a restored tree is verified, not
         # trusted. Single-line key on purpose — a folded scalar can resolve to a
         # literal and give a cache that never hits.
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -210,7 +210,7 @@ jobs:
           }
 
       - name: Upload dsh-android
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dsh-android
           path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
@@ -247,7 +247,7 @@ jobs:
 
       - name: Upload dsh-android-harness
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dsh-android-harness
           path: hosts/android/app/build/outputs/apk/debug/app-debug.apk
