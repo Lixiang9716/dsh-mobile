@@ -62,7 +62,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: hosts/ios/DerivedData
-          key: dev-ios-deriveddata-v2
+          # Keyed on the SOURCES, not a frozen literal. `dev-ios-deriveddata-v2`
+          # was a static key: actions/cache writes it once and then never
+          # refreshes it, so the cache was frozen at whatever first populated
+          # it — measured, the app binary's UUID was byte-identical across three
+          # consecutive runs. Keying on the sources rotates it when the app
+          # changes, and the restore-keys prefix below still lands on the newest
+          # previous cache, so an incremental build survives the rotation.
+          #
+          # Every pattern was checked to match tracked files (29 under
+          # App/Source, 2 under Tools, project.yml, project.pbxproj) — a glob
+          # that matches nothing makes hashFiles return the empty string, giving
+          # a constant key and a cache step that silently never helps.
+          key: dev-ios-deriveddata-${{ hashFiles('hosts/ios/App/Source/**', 'hosts/ios/App/Generated/**', 'hosts/ios/Tools/**', 'hosts/ios/project.yml', 'hosts/ios/DSHSpike.xcodeproj/project.pbxproj') }}
           # A static key with no fallback is written once and then never
           # refreshed — every later run restores the same frozen tree. The
           # prefix fallback lets a newer save land and be picked up, while the
