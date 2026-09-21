@@ -1,0 +1,23 @@
+{
+  "title": "W-H: the release sink strip covers every emitter (console shim + cordis exporter)",
+  "created": "2026-09-21T07:16:52+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "The hole is reproduced by a live probe BEFORE the fix (release emits level:info/level:debug through upstream/web-shims.js console shim)",
+    "One shared release policy (runtime/spike/logger.js: RELEASE_CRITICAL_LEVELS + releaseKeeps) is consulted by createLogger, upstream/web-shims.js console and upstream/boot.js wireLogger \u2014 no emitter re-reads __DSH_RELEASE__ on its own",
+    "The sink probe exercises console.log/info/warn/error AND the boot.js cordis exporter AND createLogger in BOTH variants: debug keeps all four, release keeps warn+error only, zero debug/info on any route",
+    "release-logging evidence run.sh asserts the new probe and exits 0; MANIFEST.md documents the four-level results per route",
+    "Host copies re-synced byte-identically (android assets, harmony rawfile, iOS generated C arrays) and the repo's byte-identity checks stay green",
+    "iOS release+harness evidence and android release+harness evidence re-run green (or the gap is named honestly)",
+    "Debug harness regression proven: CLI m2.bridge.smoke + one on-device harness scenario still emit their full structured streams"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0025"
+}

@@ -1,4 +1,4 @@
-Archive:  /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+Archive:  /Users/lixiang/workspace/dsh-mobile-rel-sink/hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
   Length      Date    Time    Name
 ---------  ---------- -----   ----
        56  01-01-1981 01:01   META-INF/com/android/build/gradle/app-metadata.properties
@@ -100,7 +100,7 @@ Archive:  /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/buil
      6520  01-01-1981 01:01   assets/spike/gateway.js
     17251  01-01-1981 01:01   assets/spike/install-pipeline.js
     11085  01-01-1981 01:01   assets/spike/llm.js
-     1387  01-01-1981 01:01   assets/spike/logger.js
+     2929  01-01-1981 01:01   assets/spike/logger.js
       290  01-01-1981 01:01   assets/spike/manifest.json
      2866  01-01-1981 01:01   assets/spike/registry.js
     10576  01-01-1981 01:01   assets/spike/scenario/b-android-session-live.js
@@ -119,7 +119,7 @@ Archive:  /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/buil
      2582  01-01-1981 01:01   assets/spike/system-plugins/dsh-ui/index.js
       262  01-01-1981 01:01   assets/spike/system-plugins/dsh-ui/manifest.json
      4907  01-01-1981 01:01   assets/spike/tar-mini.js
-     8532  01-01-1981 01:01   assets/spike/upstream/boot.js
+     9029  01-01-1981 01:01   assets/spike/upstream/boot.js
     18328  01-01-1981 01:01   assets/spike/upstream/llm-transport.js
      1461  01-01-1981 01:01   assets/spike/upstream/settings-memory.js
      3292  01-01-1981 01:01   assets/spike/upstream/shims/async-hooks.js
@@ -135,7 +135,7 @@ Archive:  /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/buil
      1725  01-01-1981 01:01   assets/spike/upstream/shims/util-types.js
      2337  01-01-1981 01:01   assets/spike/upstream/shims/util.js
     14699  01-01-1981 01:01   assets/spike/upstream/web-boot.js
-    11375  01-01-1981 01:01   assets/spike/upstream/web-shims.js
+    12464  01-01-1981 01:01   assets/spike/upstream/web-shims.js
      3398  01-01-1981 01:01   assets/spike/upstream/web-write-settings.js
     11125  01-01-1981 01:01   assets/spike/upstream/web-write-streams.js
     10441  01-01-1981 01:01   assets/spike/upstream/web-write.js
@@ -489,4 +489,4 @@ Archive:  /Users/lixiang/workspace/dsh-mobile-rel-android/hosts/android/app/buil
      2464  01-01-1981 01:01   AndroidManifest.xml
        40  01-01-1981 01:01   resources.arsc
 ---------                     -------
- 16828966                     487 files
+ 16832094                     487 files
