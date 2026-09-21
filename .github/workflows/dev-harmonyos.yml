@@ -32,6 +32,15 @@ on:
       - "presentation/**"
       - ".github/workflows/dev-harmonyos.yml"
 
+# Superseded runs cancel here: a newer push's verdict is the branch's state, and
+# an interleaved stale run answering late reads as a flake. The release
+# pipelines deliberately do NOT cancel (see theirs) — and note this block is
+# new: without it, two pushes in quick succession each kept a macOS runner and
+# two ubuntu runners running to completion.
+concurrency:
+  group: dev-harmonyos-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   harmonyos-build:
     runs-on: ubuntu-latest
