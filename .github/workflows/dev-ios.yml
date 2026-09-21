@@ -147,9 +147,19 @@ jobs:
           # Match any iPhone device line regardless of name suffix ("iPhone 16",
           # "dsh-iphone", …) — the literal 'iPhone (' never occurs in stock
           # runner device names, which silently disabled this stage.
-          UDID=$(xcrun simctl list devices available \
-            | grep -iE 'iphone' \
-            | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          # Same PINNED preference list as the prewarm step above — see the
+          # comment there for why it is a preference and not a hard pin.
+          UDID=""
+          for want in "iPhone 16 Pro" "iPhone 17" "iPhone 16" "iPhone 15"; do
+            UDID=$(xcrun simctl list devices available | grep -F "$want (" \
+              | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+            [ -n "$UDID" ] && break
+          done
+          if [ -z "$UDID" ]; then
+            echo "::warning::no preferred simulator on this runner — falling back to any iPhone, which weakens run-to-run comparability"
+            UDID=$(xcrun simctl list devices available | grep -iE 'iphone' \
+              | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          fi
           [ -n "$UDID" ] || { echo "::warning::no available iPhone simulator on this runner"; exit 1; }
           echo "using simulator $UDID"
           xcrun simctl boot "$UDID" || true
