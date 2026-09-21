@@ -130,6 +130,22 @@ jobs:
           ( xcrun simctl boot "$UDID" >/dev/null 2>&1 || true ) &
           echo "prewarm dispatched"
 
+      - name: Cache the vendored upstream closure
+        # ensure.sh + ensure-dsh.sh re-download the pinned quickjs-ng / DSH
+        # closure on every run, and six workflows do it — 29 s of it in dev/ios
+        # alone. Keyed on the pin scripts, which ARE the tracked provenance
+        # record (D6/D9), so a pin change rotates the key. Safe because they
+        # re-verify sha256 over whatever lands: a restored tree is verified, not
+        # trusted. Single-line key on purpose — a folded scalar can resolve to a
+        # literal and give a cache that never hits.
+        uses: actions/cache@v4
+        with:
+          path: |
+            runtime/spike/vendor/quickjs-ng
+            runtime/spike/vendor/dsh
+            runtime/spike/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         run: |
           set -euo pipefail
@@ -276,16 +292,24 @@ jobs:
           # into per-scenario annotations, so a red run names the scenario and
           # the mismatched expectation instead of only reddening the step. It
           # is written before the checker exits, so a FAILING run ships one too.
+          # Both checkers ALWAYS run. Under `set -e` a failing first checker
+          # aborted the step, so the second scenario produced no verdict and no
+          # JUnit XML — a real failure was partially invisible, which is the
+          # class of dishonesty this pipeline was just cleaned of. Accumulate
+          # the exit codes and fail at the end if either failed, so both
+          # verdicts and both XMLs are always authoritative.
+          check_rc=0
           node tools/e2e/check.mjs \
             --manifest tools/e2e/scenarios/m1-spike-boot.json \
             --log "$ART/logs.txt" \
             --out "$ART/verdict.json" \
-            --junit "$ART/verdict.xml"
+            --junit "$ART/verdict.xml" || check_rc=1
           node tools/e2e/check.mjs \
             --manifest tools/e2e/scenarios/m1-carrier-loopback.json \
             --log "$ART/logs.txt" \
             --out "$ART2/verdict.json" \
-            --junit "$ART2/verdict.xml"
+            --junit "$ART2/verdict.xml" || check_rc=1
+          [ "$check_rc" = "0" ] || { echo "::error::one or more m1 scenarios FAILED — the verdicts above are authoritative"; exit 1; }
 
       # The M2 gateway-binding E2E is UI-driven — permission alert, Files
       # picker, approval dialog, notification banner (see

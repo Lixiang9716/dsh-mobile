@@ -110,6 +110,22 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Cache the vendored upstream closure
+        # ensure.sh + ensure-dsh.sh re-download the pinned quickjs-ng / DSH
+        # closure on every run, and six workflows do it — 29 s of it in dev/ios
+        # alone. Keyed on the pin scripts, which ARE the tracked provenance
+        # record (D6/D9), so a pin change rotates the key. Safe because they
+        # re-verify sha256 over whatever lands: a restored tree is verified, not
+        # trusted. Single-line key on purpose — a folded scalar can resolve to a
+        # literal and give a cache that never hits.
+        uses: actions/cache@v4
+        with:
+          path: |
+            runtime/spike/vendor/quickjs-ng
+            runtime/spike/vendor/dsh
+            runtime/spike/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         # Both trees are untracked by design (upstream discipline D6);
         # gen_bundle_header.py pins the alpha.2 dsh closure at build time.
