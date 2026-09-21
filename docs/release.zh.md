@@ -7,20 +7,27 @@
 
 | 阶段 | Workflow | 触发 |
 | --- | --- | --- |
-| 准备 | `release/version` | 每次推送到 `main`;维持一个常驻 release PR |
-| 打包 | `release/ios` | `release: published` 事件,或手动触发 |
+| 准备 | `release/version` | 每次推送到 `main`;维持一个常驻 release PR,永不打标签 |
+| 打包 | `release/ios` | **推送 `v*` 标签**,或手动触发 |
 | 打包 | `release/android` | 同上 |
 | 打包 | `release/harmony` | 同上 |
 
+**发布由标签推送触发**——`git push origin vX.Y.Z`。既不是 `release: published`
+事件,也不是 release-please 跑完:把发布挂在机器人跑完之上,正是这条流水线花了几天
+才走出来的失败模式——一个凭据、一个仓库设置、一次被抑制的事件,就能让发布停在一个
+什么都不报的步骤上。现在切一次发布只需要 `contents: write`,而同一个标签推送直接
+重试即可。
+
 两种入口,同一条构建路径:
 
-- **正式发布**——常规路径。`release/version` 读取落到 `main` 上的
-  conventional commits,维护**一个**常驻的 release PR:它会升级 `version.txt`、
-  生成 `CHANGELOG.md`、并同步三个宿主的版本清单。合并该 PR 即打出 `vX.Y.Z`
-  标签并发布 GitHub Release;随后三个 `release/<宿主>` 打包 workflow 构建各自的
-  App 并**把它们作为资产挂到该 Release 上**——于是标签就是一个可下载的构建集。
-  (`CHANGELOG.md` 由第一个合并的 release PR 创建——在那之前它刻意不存在,
-  所以第一个 `chore(main): release X.Y.Z` 落地前不必去找它。)
+- **正式发布**——常规路径:落地工作 → 合并 release PR → 推标签。
+  `release/version` 读取落到 `main` 上的 conventional commits,维护**一个**常驻的
+  release PR:它会升级 `version.txt`、生成 `CHANGELOG.md`、并同步三个宿主的版本
+  清单——但到此为止(`skip-github-release: true`)。合并该 PR 只会推进那四个版本
+  文件;**推送标签**才会启动三个 `release/<宿主>` workflow,由它们构建各自的包并
+  **挂到该标签对应的 Release 上**(该标签还没有 Release 时先创建它)——于是标签就是
+  一个可下载的构建集。(`CHANGELOG.md` 由第一个合并的 release PR 创建——在那之前
+  它刻意不存在,所以第一个 `chore(main): release X.Y.Z` 落地前不必去找它。)
 - **手动触发**——Actions 页面(**release/ios**、**release/android** 或
   **release/harmony** → Run workflow)或 `gh workflow run release-ios.yml`。
   产物落在 workflow run 下而非 Release 上;`include_harness: true` 会额外构建
@@ -34,17 +41,30 @@
 2. `release/version` 会维护一个标题为 `chore(main): release X.Y.Z` 的 PR。它是
    生成出来的机械变更——`version.txt`、`CHANGELOG.md` 和三个宿主清单。
    **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
-3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,三个
-   `release/<宿主>` workflow 各自构建并挂载自己的包。三者并发执行;在 v0.0.1
-   那次 release 事件上实测为 iOS 15 分钟、Android 11 分钟、HarmonyOS 2 分钟,
-   之后每次完整运行都在 9–15 分钟内完成——单个 job 的超时是 60 分钟。
-4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。触发那个宿主的
+3. 合并它。四个版本文件在 `main` 上推进;此时还没有任何标签。
+4. **在那个合并提交上推标签:**
+
+       git pull --ff-only && git tag vX.Y.Z && git push origin vX.Y.Z
+
+   这会触发三个 `release/<宿主>` workflow,各自构建自己的宿主并把包挂到该标签的
+   Release 上。三者并发执行;在 v0.0.1 那次 release 事件上实测为 iOS 15 分钟、
+   Android 11 分钟、HarmonyOS 2 分钟,之后每次完整运行都在 9–15 分钟内完成——
+   单个 job 的超时是 60 分钟。
+
+   每个 workflow 都会先跑 `tools/release/check-tag-version.sh`,它会拒绝任何与
+   四个版本文件之一不符的标签。在 `version.txt` 还是 `0.0.2` 时推 `v0.0.3`,会在
+   任何构建开始前就失败,并逐个点名所有不一致——这正是"由人触发发布"否则会重新
+   引入的漂移:一个装在本不该属于它的版本号下的包,下游没有任何环节会察觉。
+5. **补救——某个 Release 上的包有问题。** 不要删掉 Release。触发那个宿主的
    workflow(例如 `release/harmony`)并填 **`release_tag: vX.Y.Z`**:包会从当前
    `main` 构建,然后就地替换该标签下的资产(`gh release upload --clobber`)。
    当你合并的修复改变了某个平台必须构建的内容时,就用这条路——例如 HarmonyOS
    的 HAP,在把产品级 `debuggable` 覆盖移进模块的按模式 `buildOptionSet` 之前,
    它一直在发布 debuggable 的包。**一次只重建一个宿主正是要点**:一个坏 HAP
    不需要把 iOS 一起重打。
+6. **补救——标签本身是错的。** 删掉重推:`git push --delete origin vX.Y.Z`,
+   修好版本文件(或合并 release PR),再打一次标签。如果 Release 已经被创建,
+   连它一起删掉——Release 是打包 workflow 创建的,下次推标签会重新创建。
 
 ### 版本流
 

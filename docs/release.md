@@ -8,22 +8,31 @@ without opening it.
 
 | Stage | Workflow | Trigger |
 | --- | --- | --- |
-| Prepare | `release/version` | every push to `main`; keeps one release PR open |
-| Package | `release/ios` | the `release: published` event, or a manual dispatch |
+| Prepare | `release/version` | every push to `main`; keeps one release PR open, never tags |
+| Package | `release/ios` | **a `v*` tag push**, or a manual dispatch |
 | Package | `release/android` | the same |
 | Package | `release/harmony` | the same |
 
+**The tag push is the release trigger** — `git push origin vX.Y.Z`. Not the
+`release: published` event, and not release-please finishing: a release that
+depends on the bot completing has exactly the failure mode this pipeline spent
+days in, where a credential, a repository setting or a suppressed event stops
+the release at a step that reports nothing. Cutting a release now needs nothing
+but `contents: write`, and the same tag push can simply be retried.
+
 Two ways in, one build path:
 
-- **A release** — the normal path. `release/version` reads the conventional
-  commits landing on `main` and keeps ONE open release PR that bumps
-  `version.txt`, writes `CHANGELOG.md` and syncs the three host version
-  manifests. Merging that PR tags `vX.Y.Z` and publishes a GitHub Release; the
-  three `release/<host>` package workflows then build the host apps and
-  **attach them to that release**, so a tag is a downloadable build set.
-  (`CHANGELOG.md` is created by the first merged release PR — it is
-  deliberately absent until then, so do not go looking for it before the
-  first `chore(main): release X.Y.Z` lands.)
+- **A release** — the normal path: land work, merge the release PR, push the
+  tag. `release/version` reads the conventional commits landing on `main` and
+  keeps ONE open release PR that bumps `version.txt`, writes `CHANGELOG.md` and
+  syncs the three host version manifests — but it stops there
+  (`skip-github-release: true`). Merging that PR advances the four version
+  files; **pushing the tag** is what starts the three `release/<host>`
+  workflows, which build each host and **attach the packages to that tag's
+  Release** (creating the Release first if the tag has none), so a tag is a
+  downloadable build set. (`CHANGELOG.md` is created by the first merged
+  release PR — it is deliberately absent until then, so do not go looking for
+  it before the first `chore(main): release X.Y.Z` lands.)
 - **A manual run** — Actions tab (**release/ios**, **release/android** or
   **release/harmony** → Run workflow) or `gh workflow run release-ios.yml`. The
   packages land on the workflow run instead of on a release;
@@ -38,12 +47,24 @@ Two ways in, one build path:
    It is generated and mechanical — `version.txt`, `CHANGELOG.md` and the
    three host manifests. **Review the changelog**; that is the part a human
    owns, the version bumps follow from the commits.
-3. Merge it. release-please tags `vX.Y.Z` and publishes the Release, and the
-   three `release/<host>` workflows build and attach their package. The three
-   run concurrently; measured on the v0.0.1 release event they took 15 min
-   (iOS), 11 min (Android) and 2 min (HarmonyOS), and every full run since
-   finished in 9–15 min — the per-job timeout is 60 min.
-4. **Recovery — a release shipped a bad package.** Do not delete the release.
+3. Merge it. The four version files advance on `main`; nothing is tagged yet.
+4. **Push the tag on that merge commit:**
+
+       git pull --ff-only && git tag vX.Y.Z && git push origin vX.Y.Z
+
+   That fires the three `release/<host>` workflows, which build their host and
+   attach the package to the tag's Release. They run concurrently; measured on
+   the v0.0.1 release event they took 15 min (iOS), 11 min (Android) and 2 min
+   (HarmonyOS), and every full run since finished in 9–15 min — the per-job
+   timeout is 60 min.
+
+   Each one first runs `tools/release/check-tag-version.sh`, which refuses a
+   tag that disagrees with any of the four version files. Pushing `v0.0.3`
+   while `version.txt` says `0.0.2` fails before anything builds, naming every
+   mismatch — the drift that a human-triggered release would otherwise
+   reintroduce, since nothing downstream would notice a package installed
+   under the wrong number.
+5. **Recovery — a release shipped a bad package.** Do not delete the release.
    Dispatch that host's workflow (e.g. `release/harmony`) with **`release_tag:
    vX.Y.Z`**: the package builds from the current `main` and replaces that
    tag's asset in place (`gh release upload --clobber`). Use it when you have
@@ -52,6 +73,11 @@ Two ways in, one build path:
    `debuggable` override was moved into the module's per-mode
    `buildOptionSet`. One host at a time is the point: a bad HAP does not
    require rebuilding iOS.
+6. **Recovery — the tag is wrong.** Delete it and re-push:
+   `git push --delete origin vX.Y.Z`, fix the version files (or merge the
+   release PR), then tag again. If a Release was already created, delete that
+   too — the package workflows create it, so they will re-create it on the
+   next push.
 
 ### The version stream
 

@@ -3,12 +3,28 @@ name: release/version
 # release. release-please reads the conventional commits landing on main and
 # keeps ONE open release PR that bumps `version.txt`, writes `CHANGELOG.md`,
 # and syncs the three host version manifests (see release-please-config.json
-# for the extra-file wiring). Merging that PR is what cuts a release: a
-# `vX.Y.Z` tag plus a GitHub Release, which is the event the three PACKAGE
-# stages build for and attach to — release/ios, release/android and
+# for the extra-file wiring).
+#
+# THIS STAGE DOES NOT CUT THE RELEASE (D12). `skip-github-release: true` below
+# stops release-please at the pull request: it never tags and never publishes.
+# Merging the release PR advances the four version files on `main`, and the
+# release itself is cut by PUSHING THE TAG — `git push origin vX.Y.Z` — which
+# is the trigger for the three PACKAGE stages (release/ios, release/android,
 # release/harmony, one workflow per host, so the Actions list names the stage
-# a run belongs to. (This file used to be `release/please`: a name that named
-# neither the stage nor the host.)
+# a run belongs to; this file used to be `release/please`, a name that named
+# neither the stage nor the host).
+#
+# WHY THE TAG AND NOT THE BOT: a release that depends on release-please
+# completing has exactly the failure mode this pipeline spent days in — the
+# credential, the repository setting, the suppressed event, each one stopping
+# the release at a step that reported nothing. The tag is a gesture a human
+# makes deliberately and can retry, and the package workflows need only
+# `contents: write`, so cutting a release no longer depends on any of the
+# machinery above. What the bot keeps is the mechanical half it is good at:
+# computing the version and writing the changelog, reviewed in a PR like any
+# other change. `tools/release/check-tag-version.sh` runs in the package
+# workflows and refuses a tag that disagrees with the version files, so the
+# human-triggered path cannot ship a mislabelled build.
 #
 # WHY secrets.GITHUB_TOKEN, AND NO PAT
 # This workflow used to demand a fine-grained PAT, on the reasoning that
@@ -76,6 +92,12 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          # The stage stops at the PR (see "THIS STAGE DOES NOT CUT THE
+          # RELEASE" above). Without this, release-please would also tag and
+          # publish on merge — and the package workflows, which listen to the
+          # tag, would then build the same release twice from two different
+          # triggers.
+          skip-github-release: true
 
       - name: Give the release PR its required gates check
         # See "WHY secrets.GITHUB_TOKEN" above: the PR this run just opened or
