@@ -108,7 +108,10 @@ final class CarrierWebDist {
             ?? html.range(of: pattern, options: [.caseInsensitive]) else {
             return markup + html
         }
-        return html[..<range.upperBound] + markup + html[range.upperBound...]
+        // Both slices convert explicitly: used directly in `+`, the
+        // PartialRangeFrom<String.Index> overload resolves to the
+        // Int-bounded subscript on the Xcode 16.4 SDK and fails to compile.
+        return String(html[..<range.upperBound]) + markup + String(html[range.upperBound...])
     }
 
     // ---- assets (§2.1 fixed MIME table + §3.6 fonts/png) ----------------------
