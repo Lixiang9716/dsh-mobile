@@ -55,37 +55,32 @@ Build numbers are **not** versioned here: `CFBundleVersion`, the Android
 `versionCode` and the HarmonyOS `versionCode` are monotonic integers that
 semver cannot express, so they stay hand-set.
 
-### Setup (once): the release token
+### Setup: none — there is no token to configure
 
-`release/please` requires a secret named `RELEASE_PLEASE_TOKEN` — a
-fine-grained PAT (or a GitHub App installation token) with **contents: write**,
-**pull requests: write** and **issues: write** on this repository.
-`secrets.GITHUB_TOKEN` is not a substitute: events it creates do not trigger
-workflows, so the release PR would never receive the required `gates` check
-and could never be merged. The workflow fails loud when the secret is absent
-rather than degrading into that broken path.
+`release/please` runs with `secrets.GITHUB_TOKEN`. It used to demand a
+fine-grained PAT (`RELEASE_PLEASE_TOKEN`), because events created by
+`GITHUB_TOKEN` do not trigger workflows and `main` requires the `gates`
+check — a `GITHUB_TOKEN` release PR would receive no check and could never be
+merged.
 
-The `issues: write` leg is only there for release-please's `autorelease:`
-labels; setting `skip-labeling: true` on the action drops the requirement.
+`workflow_dispatch` is a documented **exception** to that suppression, so the
+check is produced directly instead: `.github/workflows/gov.yml` carries a
+`workflow_dispatch` trigger, and `release/please`'s last step runs
+`gh workflow run gov.yml --ref <release-branch>`. The dispatched run reports
+the `gates` check on the release PR's own head commit — a real gate run on the
+real commit, not a check fabricated through the API. If the dispatch is
+refused the job fails, so a release PR that cannot be merged announces itself
+instead of sitting silently unchecked (rules.md rule 5).
 
-Skipping any one of these produces a *different* failure, and the token is
-probed for each before the action runs — three steps, so the failure names
-itself instead of surfacing from deep inside release-please:
+The trade-off, stated plainly: with no PAT, the three platform pipelines
+(`dev/ios`, `dev/android`, `dev/harmonyos`) also do not run on the release PR.
+A release PR changes only version numbers inside those hosts, and
+`release/packages` builds and verifies all three on the published event — so
+what is lost is a preview, not a verification. See D11.
 
-| Probe | What it catches | Failure it replaces |
-| --- | --- | --- |
-| secret present | an unset secret | the action silently skipping its step |
-| `GET /user` = 200 | trailing whitespace, expired/revoked PAT, truncated paste | an opaque `Bad credentials` |
-| `POST /pulls` = 422 | a valid token missing **pull requests: write** | `Resource not accessible by personal access token` |
-
-The third probe posts an empty body on purpose: for a token that *may* open
-PRs that is a validation error (422) and **creates nothing**, while a token
-that may not gets 403/404. A PAT with `contents: write` alone gets past the
-first two probes — it authenticates and release-please even creates its branch
-and commit — and then dies at the PR step. If that is what you are seeing,
-add the permission to the PAT at
-<https://github.com/settings/personal-access-tokens>; adding a permission does
-not change the token's value, so the secret needs no re-set.
+`RELEASE_PLEASE_TOKEN` is no longer read by any workflow. If it is still set as
+a secret it is simply ignored; nothing needs deleting, and its fine-grained
+permissions no longer matter.
 
 Each job also uploads its own downloadable artifact under the workflow run.
 

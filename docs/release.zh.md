@@ -47,33 +47,27 @@
 构建号**不**在此版本流内:`CFBundleVersion`、Android 的 `versionCode` 与
 HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工维护。
 
-### 一次性配置:发布令牌
+### 配置:无需任何令牌
 
-`release/please` 需要一个名为 `RELEASE_PLEASE_TOKEN` 的 secret——一个
-fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
-**contents: write**、**pull requests: write** 与 **issues: write**。
-`secrets.GITHUB_TOKEN` 不能替代:它创建的事件不会触发 workflow,于是
-release PR 永远拿不到 `main` 分支保护所要求的 `gates` 检查,也就永远无法合并。
-该 secret 缺失时工作流会大声失败,而不是悄悄退化成这条坏路径。
+`release/please` 使用 `secrets.GITHUB_TOKEN` 运行。它过去要求一个 fine-grained
+PAT(`RELEASE_PLEASE_TOKEN`),因为 `GITHUB_TOKEN` 创建的事件不会触发 workflow,
+而 `main` 要求 `gates` 检查——用 `GITHUB_TOKEN` 开的 release PR 拿不到任何检查,
+永远无法合并。
 
-`issues: write` 只服务于 release-please 的 `autorelease:` 标签;在 action 上
-设置 `skip-labeling: true` 即可免掉这项要求。
+`workflow_dispatch` 是这条抑制规则**有明文记载的例外**,所以检查改为直接产出:
+`.github/workflows/gov.yml` 带上 `workflow_dispatch` 触发,`release/please`
+的最后一步执行 `gh workflow run gov.yml --ref <release-branch>`。该次派发运行会在
+release PR 自己的 head commit 上报告 `gates` 检查——是**在真实 commit 上真跑的
+门禁**,不是通过 API 伪造出来的检查。派发若被拒绝,该 job 直接失败,于是"无法合并
+的 release PR"会自己喊出来,而不是静静躺在那里没有检查(rules.md 规则 5)。
 
-三项权限缺任何一项,失败方式都不同,而令牌会在 action 运行前被逐一探测——
-三个步骤,让失败自己报出名字,而不是从 release-please 内部冒出来:
+代价说清楚:没有 PAT 之后,三条平台流水线(`dev/ios`、`dev/android`、
+`dev/harmonyos`)也不会在 release PR 上运行。release PR 只改动这些宿主里的版本号,
+而 `release/packages` 会在发布事件上构建并检验三个宿主——所以失去的是一次**预览**,
+不是一次验证。见 D11。
 
-| 探测 | 捕获的故障 | 它替代的失败 |
-| --- | --- | --- |
-| secret 是否存在 | secret 未设置 | action 静默跳过自己的步骤 |
-| `GET /user` = 200 | 尾部空白、PAT 过期/吊销、粘贴被截断 | 语焉不详的 `Bad credentials` |
-| `POST /pulls` = 422 | 令牌有效但缺 **pull requests: write** | `Resource not accessible by personal access token` |
-
-第三个探测是刻意用空 body 发 POST 的:对**有权**开 PR 的令牌来说那是一个校验
-错误(422)且**不会创建任何东西**,而无权的令牌会拿到 403/404。只有
-`contents: write` 的 PAT 能通过前两个探测——它能认证成功,release-please 甚至
-已经建好了分支和 commit——然后在开 PR 这一步倒下。如果你看到的正是这个,
-请到 <https://github.com/settings/personal-access-tokens> 给该 PAT 加上权限;
-增加权限不会改变令牌的值,所以 secret 无需重设。
+`RELEASE_PLEASE_TOKEN` 已不再被任何 workflow 读取。如果它还留在 secret 里,就是
+被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。
 
 每个 job 也会在 workflow run 下上传各自独立的可下载产物。
 
