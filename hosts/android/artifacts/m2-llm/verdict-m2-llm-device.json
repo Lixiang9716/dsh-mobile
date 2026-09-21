@@ -2,7 +2,7 @@
   "scenario": "m2.llm",
   "pass": true,
   "expected": 14,
-  "logged": 68,
+  "logged": 65,
   "failures": [],
   "parseErrors": []
 }

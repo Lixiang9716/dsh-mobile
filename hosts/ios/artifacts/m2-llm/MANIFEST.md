@@ -10,28 +10,27 @@
   endpoint), `stream: true`, through the REAL gateway `httpFetch`
   (`llm.leg {leg: real, transport: gateway.httpFetch}`, line 12).
 
-## streamed facts (logs.txt — one run at the final code state)
+## streamed facts (logs.txt — one run at the final code state, post D9-merge)
 
 - `llm.config.loaded {source: app-scope, model: glm-4.6}` — line 23
 - `llm.stream.started {turn: 1}` — line 29
-- 35 × `llm.reasoning.delta` (reasoning traces streamed first, token-sized)
-- 24 × `llm.delta` → aggregated text: `Hello, it's wonderful to hear from
-  you today! I hope you're doing well and am happy to help with whatever
-  you need.` (115 chars)
-- `llm.stream.completed {turn: 1, deltas: 24, reasoningDeltas: 35, chars:
-  115, finishReason: stop}` — line 320
-- `llm.served-model {requested: glm-4.6, served: glm-5.3-flash}` — line 321
+- 127 × `llm.reasoning.delta` (reasoning traces streamed first, token-sized)
+- 9 × `llm.delta` → aggregated text: `Hello, and welcome! It's wonderful to
+  see you today.` (52 chars)
+- `llm.stream.completed {turn: 1, deltas: 9, reasoningDeltas: 127, chars:
+  52, finishReason: stop}` — line 634
+- `llm.served-model {requested: glm-4.6, served: glm-5.3-flash}` — line 635
   (the server reports a different model name; logged verbatim)
-- `llm.content.asserted {text: …, chars: 115}` — line 322
-- `llm.key.audit {lines: 314, leaked: false}` — line 323
-- `session.completed {sessionId: s-m2-llm-0001, status: pass, deltas: 24,
-  chars: 115}` — line 324
+- `llm.content.asserted {text: …, chars: 52}` — line 636
+- `llm.key.audit {lines: 628, leaked: false}` — line 637
+- `session.completed {sessionId: s-m2-llm-0001, status: pass, deltas: 9,
+  chars: 52}` — line 638
 
 ## carrier side (scenario m2.llm.carrier)
 
 client.selected (2) → webclient.mounted (7) → ws.connected (8) →
-slot.registered `llm` slot (9) → ws.token-delta first (191) →
-ws.token-delta last (326) → ws.session-complete (327) — the real deltas
+slot.registered `llm` slot (9) → ws.token-delta first (587) →
+ws.token-delta last (640) → ws.session-complete (641) — the real deltas
 streamed live into the mounted Web Client.
 
 ## key-leak checks
