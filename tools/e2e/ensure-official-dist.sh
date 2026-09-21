@@ -15,6 +15,11 @@ FORCE=0
 [ "${1:-}" = "--force" ] && FORCE=1
 
 ok() { (cd "$DIST" && shasum -a 256 -c "$MANIFEST" >/dev/null 2>&1); }
+# The mismatch itself, on demand: `ok` is a predicate, but a bare
+# "mismatch" with no filename is undiagnosable — it cost a full
+# investigation to learn that a rebuilt tree can differ from the
+# committed MANIFEST. Print the offending lines instead.
+why() { (cd "$DIST" && shasum -a 256 -c "$MANIFEST" 2>&1 | grep -v ": OK$" || true); }
 
 if [ "$FORCE" -eq 1 ]; then
   rm -rf "$DIST"
@@ -27,6 +32,7 @@ fi
 
 if [ -f "$DIST/index.html" ]; then
   echo "ensure-official-dist: dist present but MANIFEST mismatch — rebuilding" >&2
+  why >&2
   rm -rf "$DIST"
 fi
 
