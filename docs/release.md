@@ -69,16 +69,25 @@ critical log set (`warn` + `error`); debug/info are stripped at the source
 
 | Artifact | Configuration | Release assets | Installs as-is? |
 | --- | --- | --- | --- |
-| `dsh-ios` | Release | `dsh-ios-device-unsigned.zip` + `dsh-ios-simulator-unsigned.zip`; the official Web Client is EMBEDDED | No — sign first (below) |
-| `dsh-android` | Release | `dsh-android-unsigned.apk` (official web app packed in assets) | No — sign first |
-| `dsh-harmony` | Release | `dsh-harmony-unsigned.hap` | No — sign via DevEco/hdc (below) |
+| `dsh-ios` | Release | `dsh-ios.ipa` + `dsh-ios-simulator.zip`; the official Web Client is EMBEDDED | No — sign first (below) |
+| `dsh-android` | Release | `dsh-android.apk` (official web app packed in assets) | No — sign first |
+| `dsh-harmony` | Release | `dsh-harmony.hap` | No — sign via DevEco/hdc (below) |
 
-Release assets are named `dsh-<host>…` and never after the build system's
+Release assets are named `dsh-<host>.<ext>` and never after the build system's
 internal output path (`entry-default-unsigned.hap`, `app-release-unsigned.apk`).
 The workflow renames each build output before uploading: `gh release upload`'s
-`file#text` form sets only the display label, which a download ignores, so the
-filename itself is what changes. The `-unsigned` suffix is deliberate: it is
-the one property a downloader must know before the file is any use.
+`file#text` form sets only the display *label*, which a download ignores, so the
+filename itself is what has to change.
+
+Two of those names need to stay honest about what they contain:
+
+- **`dsh-ios.ipa`** is a real (unsigned) `.ipa` — a zip whose root holds
+  `Payload/DSHSpike.app`, the layout AltStore, Sideloadly and
+  `xcrun devicectl` expect. It is not a renamed `Release-iphoneos/…` archive.
+- **All three are unsigned.** CI holds no Apple certificates and no HarmonyOS
+  signing material, so every package needs local signing before it will
+  install. `dsh-ios-simulator.zip` is the exception: it runs as-is on a
+  simulator, which is the only way to try the app without a signing setup.
 
 **`include_harness: true` additionally uploads the HARNESS packages** — the
 E2E verification vehicles: debug configuration, full structured logging, the
@@ -105,7 +114,8 @@ packages still need local signing to install.
 The device `.app` is built unsigned on purpose (CI holds no Apple
 certificates). To put it on your iPhone:
 
-1. Unzip `dsh-ios-device-unsigned.zip`.
+1. Take `dsh-ios.ipa` — an unsigned `.ipa` (`Payload/DSHSpike.app`). Nothing
+   needs unzipping first: the signing tools take the `.ipa` itself.
 2. Sign with a free Apple ID (7-day validity) or a paid team:
    - **Xcode**: open `hosts/ios/DSHSpike.xcodeproj`, set your team on the
      target's Signing & Capabilities, connect the phone, and build to the
