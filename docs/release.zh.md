@@ -21,6 +21,12 @@
    **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
 3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,`release/packages`
    构建三个宿主并挂上去(每个宿主 30–60 分钟,全部由 release 事件触发)。
+4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。用手动触发
+   `release/packages` 并填 **`release_tag: vX.Y.Z`**:包会从当前 `main` 构建,
+   然后就地替换该标签下的资产(`gh release upload --clobber`)。当你合并的修复
+   改变了某个平台必须构建的内容时,就用这条路——例如 HarmonyOS 的 HAP,
+   在把产品级 `debuggable` 覆盖移进模块的按模式 `buildOptionSet` 之前,
+   它一直在发布 debuggable 的包。
 
 ### 版本流
 

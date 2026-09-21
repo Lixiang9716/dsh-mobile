@@ -11,10 +11,13 @@
         "name": "default",
         "compatibleSdkVersion": "26.0.0",
         "targetSdkVersion": "26.0.0",
-        "runtimeOS": "HarmonyOS",
-        "buildOption": {
-          "debuggable": true
-        }
+        "runtimeOS": "HarmonyOS"
+        // NO product-level `buildOption.debuggable` here. It was hardcoded
+        // `true`, and a product buildOption applies to EVERY buildMode — so
+        // the release HAP still packed `debug: true` / `buildMode: debug` in
+        // its module.json (the schema's own default for the field is `true`
+        // too, so removing the line alone is not enough). The switch now
+        // lives per-mode in entry/build-profile.json5's buildOptionSet.
       }
     ],
     "buildModeSet": [

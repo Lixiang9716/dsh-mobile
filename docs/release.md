@@ -24,6 +24,13 @@ Two triggers, one build path:
 3. Merge it. release-please tags `vX.Y.Z` and publishes the Release, and
    `release/packages` builds all three hosts and attaches them (30–60 min per
    host, all on the release event).
+4. **Recovery — a release shipped a bad package.** Do not delete the release.
+   Dispatch `release/packages` with **`release_tag: vX.Y.Z`**: the packages
+   build from the current `main` and replace that tag's assets in place
+   (`gh release upload --clobber`). Use it when you have merged a fix that
+   changes what a platform must build — for example the HarmonyOS HAP that was
+   shipping debuggable until the product-level `debuggable` override was moved
+   into the module's per-mode `buildOptionSet`.
 
 ### The version stream
 
