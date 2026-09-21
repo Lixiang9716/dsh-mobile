@@ -150,19 +150,19 @@ jobs:
           if-no-files-found: error
 
       - name: Attach dsh-ios to the release
-        # A release asset's NAME is the uploaded file's basename. `gh release
-        # upload`'s `file#text` form sets only the display LABEL, which a
-        # download ignores — so both files are built under the names they ship
-        # with, in the build step above.
+        # One asset per host: the `.ipa`. The simulator build is a
+        # development convenience, not something a release page offers — it
+        # ships on the run's `dsh-ios` artifact only (see the upload above).
+        # A release asset's NAME is the uploaded file's basename, and
+        # `gh release upload`'s `file#text` form sets only the display LABEL,
+        # which a download ignores — so the `.ipa` is built under the name it
+        # ships with, in the build step above.
         if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "$RELEASE_TAG" \
-            /tmp/dsh-ios.ipa \
-            /tmp/dsh-ios-simulator.zip \
-            --clobber
+          gh release upload "$RELEASE_TAG" /tmp/dsh-ios.ipa --clobber
 
       - name: Build the harness .app (debug, device + simulator, unsigned)
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness

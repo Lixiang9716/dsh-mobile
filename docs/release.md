@@ -69,7 +69,7 @@ critical log set (`warn` + `error`); debug/info are stripped at the source
 
 | Artifact | Configuration | Release assets | Installs as-is? |
 | --- | --- | --- | --- |
-| `dsh-ios` | Release | `dsh-ios.ipa` + `dsh-ios-simulator.zip`; the official Web Client is EMBEDDED | No — sign first (below) |
+| `dsh-ios` | Release | `dsh-ios.ipa`; the official Web Client is EMBEDDED | No — sign first (below) |
 | `dsh-android` | Release | `dsh-android.apk` (official web app packed in assets) | No — sign first |
 | `dsh-harmony` | Release | `dsh-harmony.hap` | No — sign via DevEco/hdc (below) |
 
@@ -79,15 +79,20 @@ The workflow renames each build output before uploading: `gh release upload`'s
 `file#text` form sets only the display *label*, which a download ignores, so the
 filename itself is what has to change.
 
-Two of those names need to stay honest about what they contain:
+A release offers **one package per host** — three assets, matching the three
+platforms. Anything a release page should not carry ships on the run instead:
+the iOS **simulator** build (`dsh-ios-simulator.zip`) is a development
+convenience, so it is an artifact of the `dsh-ios` job rather than a release
+asset. Same for the `-harness` packages.
 
-- **`dsh-ios.ipa`** is a real (unsigned) `.ipa` — a zip whose root holds
-  `Payload/DSHSpike.app`, the layout AltStore, Sideloadly and
-  `xcrun devicectl` expect. It is not a renamed `Release-iphoneos/…` archive.
-- **All three are unsigned.** CI holds no Apple certificates and no HarmonyOS
-  signing material, so every package needs local signing before it will
-  install. `dsh-ios-simulator.zip` is the exception: it runs as-is on a
-  simulator, which is the only way to try the app without a signing setup.
+**`dsh-ios.ipa`** is a real (unsigned) `.ipa` — a zip whose root holds
+`Payload/DSHSpike.app`, the layout AltStore, Sideloadly and
+`xcrun devicectl` expect. It is not a renamed `Release-iphoneos/…` archive.
+
+**All three are unsigned.** CI holds no Apple certificates and no HarmonyOS
+signing material, so every package needs local signing before it will install.
+For a no-signing way to run the app, take the simulator build off the run's
+`dsh-ios` artifact.
 
 **`include_harness: true` additionally uploads the HARNESS packages** — the
 E2E verification vehicles: debug configuration, full structured logging, the

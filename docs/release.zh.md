@@ -60,7 +60,7 @@ fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
 
 | 产物 | 配置 | Release 资产名 | 可直接安装? |
 | --- | --- | --- | --- |
-| `dsh-ios` | Release | `dsh-ios.ipa` + `dsh-ios-simulator.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
+| `dsh-ios` | Release | `dsh-ios.ipa`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
 | `dsh-android` | Release | `dsh-android.apk`(官方 web app 打进 assets) | 否——先签名 |
 | `dsh-harmony` | Release | `dsh-harmony.hap` | 否——经 DevEco/hdc 签名(见下) |
 
@@ -69,14 +69,18 @@ Release 资产一律按 `dsh-<宿主>.<扩展名>` 命名,绝不沿用构建系�
 先把构建产物改名:`gh release upload` 的 `file#text` 形式设置的是显示
 **label**(下载时会被忽略),真正生效的是文件名本身。
 
-其中两个名字必须对得起它们的内容:
+一个 Release **每个宿主一个包** —— 正好三个资产,对应三个平台。不该出现在
+Release 页面的东西随 workflow run 发布:iOS 的**模拟器**包
+(`dsh-ios-simulator.zip`)是开发便利品,因此它是 `dsh-ios` 这个 job 的
+artifact,不是 release asset。`-harness` 包同理。
 
-- **`dsh-ios.ipa`** 是真正的(未签名)`.ipa` —— 根目录下是
-  `Payload/DSHSpike.app`,即 AltStore / Sideloadly / `xcrun devicectl`
-  所期望的布局,而不是把 `Release-iphoneos/…` 换个扩展名。
-- **三个包都未签名。** CI 不持有 Apple 证书,也没有 HarmonyOS 签名材料,
-  所以每个包都需要本地签名才能安装。`dsh-ios-simulator.zip` 是例外:
-  它在模拟器上可直接运行,也是无需任何签名配置就能试用本 App 的唯一途径。
+**`dsh-ios.ipa`** 是真正的(未签名)`.ipa` —— 根目录下是
+`Payload/DSHSpike.app`,即 AltStore / Sideloadly / `xcrun devicectl`
+所期望的布局,而不是把 `Release-iphoneos/…` 换个扩展名。
+
+**三个包都未签名。** CI 不持有 Apple 证书,也没有 HarmonyOS 签名材料,
+所以每个包都需要本地签名才能安装。想免签名跑起来,就去 run 的 `dsh-ios`
+artifact 里取模拟器包。
 
 **`include_harness: true` 会额外上传 HARNESS 包**——即 E2E 验证载体:debug
 配置、完整结构化日志、验证驱动照常运行。它们存在的意义是在真机上手工验证;
