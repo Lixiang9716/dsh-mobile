@@ -6,14 +6,21 @@
 数据来自已提交的 artifacts 目录。由
 [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映提交 `a536277`
-> （鸿蒙 composer 写入路径 #70 落地了第六个 D9 目录
-> `d9-write-live`，并新增 `b-harmony.write.live` scenario；叠加以往
-> `m2-gateway` 行由 2026-09-21 的 W-GR 有界尝试刷新并闭合其 receipt 缺口，
-> 再叠加 W-RECEIPT 的 b3 收口；更早的五个 D9 目录 `android-upstream` /
-> `d9-official-web` / `b4-write-live` / `android-session-live` /
-> `d9-session-live` 随 #63/#64/#65/#66/#67 进入清单；
-> 总量按本树重算）
+> **时效性**：本矩阵反映提交 `49fce4f`
+> （发布手册 #80 与打包流水线 #77 未落地任何证据目录；
+> 叠加上鸿蒙 `m2.llm` 真实 LLM 分支 #79——其目录
+> `hosts/harmony/artifacts/m5-m2-llm/` 被**有意**以
+> **FAIL** verdict 提交：会话中途 coding-plan 配额耗尽，故传输往返已证明、
+> 而被服务的轮次明确不予声明（缺口 8/9）；再叠加 M5 v2 原语 #76
+> （`m5-primitives`，descriptor 9/0，`m5.host-binding` 27/27）、
+> 真实 LLM 流式分支 #74（`macos-cli-m2-llm`，以及 iOS 与 Android 的
+> `m2-llm`）、android 写入表面 #72（`android-write-live`）、
+> 鸿蒙 composer 写入路径 #70（第六个 D9 目录 `d9-write-live`，并新增
+> `b-harmony.write.live` scenario；`m2-gateway` 行由 2026-09-21 的
+> W-GR 有界尝试刷新并闭合其 receipt 缺口，再叠加 W-RECEIPT 的 b3 收口）；
+> 以及更早的五个 D9 目录 `android-upstream` / `d9-official-web` /
+> `b4-write-live` / `android-session-live` / `d9-session-live`，
+> 它们随 #63/#64/#65/#66/#67 进入清单；总量按本树重算）
 > 时的 `origin/main`。它是**再生成**的，不是手工维护的：
 >
 > ```sh
@@ -37,11 +44,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 26 |
-| Verdict（全部 `pass: true`、`expected == logged`） | 59 |
-| 至少有一份已提交证据的 scenario | 25 / 25 个 manifest |
-| 已验证 PNG 的截图 | 64 |
-| 验收标准缺口 | 6（见下） |
+| 证据目录 | 32 |
+| 已提交 verdict（73 绿，2 条配额阻塞红） | 75 |
+| 至少有一份已提交证据的 scenario | 28 / 28 个不同的 scenario id（29 个 manifest） |
+| 已验证 PNG 的截图 | 81 |
+| 验收标准缺口 | 10（见下） |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -52,19 +59,22 @@
 | --- | --- | --- | --- | --- |
 | `b-android.official-web.mount` | — | 14/14 | — | — |
 | `b-android.session.live` | — | 46/46 | — | — |
-| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6 | — |
-| `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17 | — |
-| `b-harmony.session.live` | — | — | 43/43, 43/43 | — |
-| `b-harmony.write.live` | — | — | 33/33 | — |
+| `b-android.write.live` | — | 45/45 | — | — |
+| `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6, 6/6 | — |
+| `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17, 17/17 | — |
+| `b-harmony.session.live` | — | — | 43/43, 43/43, 43/43 | — |
+| `b-harmony.write.live` | — | — | 33/33, 33/33 | — |
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
-| `m1.spike.boot` | 9/9, 7/7 | 9/9, 7/7, 7/7 | 9/9, 7/7, 7/7, 7/7 | 9/9 |
+| `m1.spike.boot` | 9/9（漂移）, 7/7 | 9/9（漂移）, 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9（漂移）, 7/7, 7/7 | 9/9（漂移） |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
-| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6 | 6/6 |
+| `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
 | `m2.gateway.audit` | 16/16 | 16/16 | — | — |
 | `m2.gateway.binding` | 19/19 | — | — | — |
-| `m2.session` | 23/23, 23/23 | 22/22（漂移）, 23/23 | 23/23, 23/23, 23/23 | 23/23 |
+| `m2.llm` | 14/148 | 14/171 | 14/8 **FAIL**（配额） | 19/19 |
+| `m2.llm.carrier` | 7/7 | 7/7 | 7/4 **FAIL**（配额） | — |
+| `m2.session` | 23/23, 23/23 | 23/23, 22/22（漂移） | 23/23, 23/23, 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
 | `m2.upstream-session` | — | — | — | 31/31 |
 | `m2.upstream-boot` | — | — | — | 12/12 |
@@ -74,10 +84,22 @@
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
-| `m5.host-binding` | — | — | 20/20, 20/20, 20/20 | — |
+| `m5.host-binding` | — | — | 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 27/27 | — |
 
-25 个 scenario manifest 全部至少有一份绿色已提交证据；`m2.session`
-在全部四个主机上绿色。main 上的每一条 verdict 都是绿的。
+`（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
+（见[信息性说明](#信息性说明不算失败)）。
+
+28 个不同的 scenario id（29 个 manifest——`m2.llm` 有两个：19 事件的
+scripted-SSE CLI 分支与 14 事件的设备分支）全部至少有一份绿色已提交证据；
+`m2.session` 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的，
+只有 `hosts/harmony/artifacts/m5-m2-llm/` 的两条配额阻塞 verdict 例外
+（缺口 8/9，属有意提交）。
+
+`m2.llm` 的设备分支是**repeat 感知**的：其 manifest 用一条
+`repeat: true` 期望贪婪匹配 delta 流，因此 verdict 里的 `logged` 是整份
+capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/148`（iOS）
+都是 `pass: true` 且 `drift: false`，checker 在 PASS 时打印
+`14/14 events, in order`。
 
 ## 证据目录清单
 
@@ -88,7 +110,9 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 3） | 4 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
+| `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗（缺口 2） | 4 |
@@ -96,31 +120,39 @@
 | `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗（缺口 6） | 9 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
+| `hosts/harmony/artifacts/m5-m2-llm` | HarmonyOS | m2.llm.carrier 7/4 **FAIL**, m2.llm 14/8 **FAIL**（配额阻塞，属有意提交——缺口 8/9） | ✓ | ✓ | ✓（`blocked-on-quota`） | 1 |
+| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗（缺口 1） | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
+| `hosts/ios/artifacts/m2-llm` | iOS | m2.llm.carrier 7/7, m2.llm 14/148 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19（scripted-SSE 分支） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
-CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是可选的调试辅助，
-既非交付物也非输入）。
+零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，
+既非交付物也非输入）：CLI 主机目录本就无头，
+`hosts/android/artifacts/m2-llm/` 则把 capture 存为
+`dsh-m2-llm-stream.txt` 而非图片。
 
 ## 已知缺口（如实列出）
 
-检查器（`tools/e2e/matrix.mjs`）当前恰好因六项以非零码退出：均为其目录
-随 #63/#64/#65/#66/#67/#70 落地后尚待各自主机首次 re-run 的 receipt（归各自
-的落地主机工作流所有）。（上方 rcpt 列引用的即本清单编号。）
+检查器（`tools/e2e/matrix.mjs`）当前恰好因十项以非零码退出：七项是
+其目录落地后尚待各自主机首次 re-run 的 receipt（归各自随
+#63/#64/#65/#66/#67/#70/#72 落地的主机工作流所有），另有三项集中在唯一
+那个配额阻塞目录 `hosts/harmony/artifacts/m5-m2-llm/`。
+（上方 rcpt 列引用的即本清单编号。）
 
 1. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
    #65（session 写表面）落地；receipt 归 b4 工作流下一次在携带 #65 的树
@@ -140,6 +172,43 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 6. **`hosts/harmony/artifacts/d9-write-live/` 缺 `receipt.json`** ——
    目录随 #70（harmony composer 写入路径，b-harmony.write.live 33/33
    绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
+7. **`hosts/android/artifacts/android-write-live/` 缺 `receipt.json`**
+   —— 目录随 #72（android session 写表面，b-android.write.live 45/45
+   绿色）落地；receipt 归 android 工作流的下一次主机 re-run 所有。
+8. **`hosts/harmony/artifacts/m5-m2-llm/` 的 `m2.llm` 设备 verdict 是
+   红色（14/8），且属有意提交。** 该目录随 #79（鸿蒙真实 LLM 分支）落地。
+   分支完全按设计运行，请求也确实经过本主机真实的 `httpFetch` 离开了
+   模拟器，但 z.ai 后端**拒绝**了它——`HTTP 429`、code `1310`、
+   "Weekly/Monthly Limit Exhausted. Your limit will reset at
+   2026-09-22 14:43:53"（用同一把 key 在设备外以 `curl` 复现，因此阻塞
+   方是账户而非主机）。被服务的轮次因此从未发生，checker 按设计 FAIL：
+   **已提交的 verdict JSON 就是精确诊断，不是绿色声明。** 本次运行确实
+   证明的（一对一且有序）：manifest 的前七条设备记录
+   （`gateway.negotiated` → `host.ready` → `llm.leg` 经
+   `gateway.httpFetch` 选为 real——能力协商，绝非 `hostType` 分支 →
+   `llm.config.loaded` app-scope → `session.created` →
+   `agent.started` → `llm.stream.started`）、真实的传输往返（请求穿越了
+   设备网络栈并由真实服务器应答——后端回 429 本身就是证据），以及该平台
+   强制的完整凭据握手（运行时写入 0666 占位 → runner 覆写 → 应用导入并
+   校验 → 如实上报封印结果 → 运行结束后删除），且对两条原始流做 key 泄漏
+   审计均为干净。被服务的轮次明确不予声明——README.md 的 M5 行在两种语言
+   里都这么写。`receipt.json` 记录 `status: blocked-on-quota` 与
+   `exitCode: 1`。**收口（归 harmony 工作流所有）：** 配额恢复后执行
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh`——无需改代码；它必须
+   以退出码 0 结束且两条 verdict JSON 全绿，刷新的证据回到本目录，并翻转
+   README 的相应从句。
+9. **`hosts/harmony/artifacts/m5-m2-llm/` 的 `m2.llm.carrier` verdict 是
+   红色（7/4），同一次运行、同一原因。** carrier 挂载链
+   （`client.selected` → `webclient.mounted` → `ws.connected` →
+   `slot.registered`）已记录并匹配；`ws.token-delta` 的首/末条与
+   `ws.session-complete` 仍在等待被拒绝的轮次永远不会产生的 delta。
+   收口方式同缺口 8。
+10. **`hosts/harmony/artifacts/m5-m2-llm/` —— 检查器在同一条 carrier
+    verdict 上派生的 `VERDICT_MALFORMED` 提示。** 只要 `expected !=
+    logged` 且 manifest 非 repeat 感知，检查器就会附加这条计数不一致
+    提示，而 FAIL verdict 永远无法满足该条件；其 detail 行虽写着
+    "but pass=true"，该 verdict 实为 `pass: false`。它是缺口 9 的镜像，
+    而非第二个缺陷，随之一起消失。
 
 ### 由 2026-09-20 证据缺口收口闭合（fix/evidence-gaps）
 
@@ -194,16 +263,28 @@ CLI 主机无头运行：零截图是合规的（标准第 2 条使截图只是�
 
 ### 信息性说明，不算失败
 
-- **Manifest 版本漂移**（5 条 verdict）：`m1.spike.boot` 在
+- **Manifest 版本漂移**（9 条 verdict）：`m1.spike.boot` 在
   `hosts/{ios,android,harmony}/artifacts/m1-spike/` 与
   `runtime/spike/artifacts/macos-cli/` 捕获时为 9 事件，而现行 manifest 声明
   7；`hosts/android/artifacts/m4-host/` 的 `m2.session` 捕获时 22 事件，现行
-  23。verdict 是捕获时的记录；旧日志不保证能用增长后的 manifest 重新校验。
-  检查器报告 `drift: true`，但不因此失败。
-- **审计时仍在进行中（已排除）**：`hosts/android/artifacts/m3-android-install/`、
-  `hosts/harmony/artifacts/m5-complete/`、
-  `runtime/spike/artifacts/macos-cli-m2-llm/`。落地后请再生成
-  （`node tools/e2e/matrix.mjs`）——它们的缺口会自动进入本文的缺口清单。
+  23；`m5.host-binding` 在
+  `hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live,m5-host}/`
+  捕获时为 20 事件，而 #76 把 manifest 增长到 27（`m5-primitives` 是
+  27/27 的重新捕获）。verdict 是捕获时的记录；旧日志不保证能用增长后的
+  manifest 重新校验。检查器报告 `drift: true`，但不因此失败。
+- **此前列为「进行中」的三个目录均已尘埃落定。**
+  `runtime/spike/artifacts/macos-cli-m2-llm/` 随 #74 落地，现为绿色表行
+  （scripted-SSE CLI 分支，`m2.llm` 19/19）；M5 的收尾证据则以
+  `hosts/harmony/artifacts/m5-primitives/`（#76，descriptor 9/0）与
+  `hosts/harmony/artifacts/m5-m2-llm/`（#79，配额阻塞——缺口 8/9）落地。
+  `hosts/android/artifacts/m3-android-install/` 与
+  `hosts/harmony/artifacts/m5-complete/` 从未被任何分支提交过
+  （两条路径的 `git log --all` 均为空）——并不存在这样的证据可报。
+- **FAIL verdict 上的检查器措辞**：对非 repeat 感知的 manifest，只要计数
+  不一致，检查器就会额外报一条 `VERDICT_MALFORMED`，detail 为
+  `expected=N logged=M but pass=true`——即便该 verdict 是
+  `pass: false`、计数不一致本身就是失败所在。它是派生提示——即针对唯一
+  红色目录的缺口 10——从不会单独出现。
 
 ## 检查器及其拒绝证明
 
@@ -213,6 +294,7 @@ scenario id 在 `tools/e2e/scenarios/` 无 manifest。其 `--self-test` 模式
 证明每个拒绝类别都真的会拒绝（8 条断言，规则 6）——断言集记录在
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
 
-检查器**有意不接入 `gates.json`**：上方尚余六项有主缺口（六个 D9 时代的
-receipt，等待各自主机的下一次 re-run）；是否以该矩阵设卡，属于 plane
-seal 的决定。
+检查器**有意不接入 `gates.json`**：上方尚余十项有主缺口——七项 D9 时代的
+receipt，等待各自主机的下一次 re-run；另三项是唯一那个配额阻塞目录
+`m5-m2-llm` 的 verdict 发现项，待配额恢复后一次 re-run 即可一并清除。
+是否以该矩阵设卡，属于 plane seal 的决定。
