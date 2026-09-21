@@ -48,9 +48,9 @@ jobs:
     env:
       DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
 
@@ -60,7 +60,7 @@ jobs:
         # actions/cache saves the unpacked tree when the job succeeds.
         # Bump the version suffix in the key when the CLT link changes.
         id: clt-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: clt
           key: hos-clt-linux-unpacked-26.0.0.821
@@ -105,7 +105,7 @@ jobs:
         # re-verify sha256 over whatever lands: a restored tree is verified, not
         # trusted. Single-line key on purpose — a folded scalar can resolve to a
         # literal and give a cache that never hits.
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload the HAP artifact
         if: env.PROJECT_PRESENT == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dsh-spike-hap
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
