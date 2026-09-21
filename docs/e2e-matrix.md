@@ -6,7 +6,7 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `49fce4f`
+> **Currency**: this matrix reflects `origin/main` as of commit `940ae02`
 > (the release recipe #80 and the packaging pipeline #77 land no evidence
 > dirs; on top of the harmony `m2.llm` real-LLM leg #79, whose dir
 > `hosts/harmony/artifacts/m5-m2-llm/` is deliberately committed with
@@ -29,6 +29,12 @@ dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 > node tools/e2e/matrix.mjs              # exit 0 = inventory clean
 > node tools/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory
 > ```
+>
+> The 2026-09-21 *gateability* change (branch `docs/e2e-matrix-gateable`)
+> leaves every number below untouched — it made the same inventory wireable
+> as a gate (finding count 10 → 9, the register in
+> [Known gaps](#known-gaps-honest-list) and the checker's second invocation).
+> The regeneration is the tool's own output on this tree.
 
 ## The acceptance bar
 
@@ -52,7 +58,7 @@ following hold:
 | Verdicts committed (73 green, 2 quota-blocked red) | 75 |
 | Scenarios with at least one committed evidence dir | 28 of 28 distinct scenario ids (29 manifests) |
 | Screenshots verified PNG | 81 |
-| Acceptance-bar findings | 10 (below) |
+| Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
 
@@ -153,39 +159,111 @@ are headless, and `hosts/android/artifacts/m2-llm/` carries its capture as
 
 ## Known gaps (honest list)
 
-The checker (`tools/e2e/matrix.mjs`) currently exits non-zero on exactly
-ten findings: seven receipts pending their dirs' first post-landing host
-re-run, each owned by the host work stream that landed the dir with
-#63/#64/#65/#66/#67/#70/#72, plus three on the one quota-blocked dir
-`hosts/harmony/artifacts/m5-m2-llm/`. (The rcpt column above cites these
-list numbers.)
+Nine findings are open on this tree, and **every one of them is owned**. The
+checker reports all nine and exits non-zero by default; the table below is
+the **known-gaps register** that makes the very same run wireable as a gate.
+
+- `node tools/e2e/matrix.mjs` — prints every finding, registered or not, and
+  exits 1: the unvarnished list.
+- `node tools/e2e/matrix.mjs --accept-known-gaps` — exits 0 while every
+  finding is a row of the register below, and 1 on (a) a finding no row
+  names, i.e. a NEW regression; (b) a row whose finding is gone — a gap that
+  closes is struck from the register in the same change; (c) a register
+  grown past the checker's budget of 9 rows — accepting a new gap is a
+  deliberate edit, never a drift. **This is the invocation a gate wires, and
+  it is green on this tree: 0 blocking findings.**
+
+The register is machine-read out of the table below, so this honest list is
+the only copy and cannot drift from the checker. Its cells are read
+literally (no backtick formatting inside that table); a table that is
+missing or malformed is a finding of its own, never a silent pass.
+
+| code | file | owner | closes with |
+| --- | --- | --- | --- |
+| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 work stream (#65) | run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony work stream (#64) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web + receipt step |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android work stream (#63) | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh + receipt step |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android work stream (#66) | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
+
+### Why none of these nine is closed here (the honest reason)
+
+Seven of them need a `receipt.json` only the owning host work stream's next
+device/emulator run can produce; the other two are a deliberate record of a
+real backend refusal. Writing those receipts from this branch would mean
+inventing them:
+
+- **The receipt certifies a run, and the run's device is not in the
+  committed artifacts.** `host` names the machine a run happened on — the
+  iOS simulator UDID and runtime, the android emulator instance with its AVD
+  and API level, the harmony hdc target — and `tools/e2e/run-ios.sh` reads
+  it from `xcrun simctl` at run time. Verified on this tree:
+  `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone' hosts/android/artifacts/{android-upstream,android-session-live,android-write-live}/`,
+  `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc' hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live}/`
+  and `grep -rliE 'simctl|UDID|iOS 26|A4AE41BF' hosts/ios/artifacts/b4-write-live/`
+  all return **nothing**: the green verdicts, the captures and the engine
+  line (`quickjs-ng 0.17.0`, in the android `results.txt`) are committed;
+  the device is not. Acceptance-bar clause 3 and the receipt convention
+  forbid synthesizing the rest.
+- **A receipt can never exist without a real green run.** `run-ios.sh`
+  machine-authors its receipt on the green path only (step 7, reachable
+  after every checker passed). The android, harmony and `run-ios-b4.sh`
+  runners have no such step yet, so those rows close as a runner change
+  (adopt the same green-path emission) *plus* the re-run named in the row —
+  both owned by the work stream that landed the dir.
+- **The two harmony verdicts are the diagnosis, not a green claim.** The
+  request left the emulator over the host's real `httpFetch` and the backend
+  refused it (`HTTP 429`, code `1310`, weekly/monthly limit exhausted). No
+  change in this repository can serve that turn; the harmony re-run can,
+  once the quota returns.
+
+The gaps in detail (the numbering the `rcpt` column of the inventory above
+cites, and the register's rows in order):
 
 1. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
-   dir landed with #65 (the session-write surface); the receipt is
-   owned by the b4 work stream's next `run-ios-b4.sh` run on a tree
-   carrying #65.
+   dir landed with #65 (the session-write surface, `b4.write.live` 43/43
+   green). Owned by the iOS b4 work stream: a green
+   `tools/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`
+   on a tree carrying #65, with the receipt emitted on that runner's green
+   path (the `run-ios.sh` step-7 pattern).
 2. **`hosts/harmony/artifacts/d9-official-web/` has no `receipt.json`**
-   — the dir landed with #64 (the harmony webServer carrier); the
-   receipt is owned by the harmony work stream's next host re-run.
+   — the dir landed with #64 (the harmony webServer carrier). Owned by the
+   harmony work stream: a green
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web`
+   plus the same runner emission.
 3. **`hosts/android/artifacts/android-upstream/` has no `receipt.json`**
-   — the dir landed with #63 (the android official-web boot); the
-   receipt is owned by the android work stream's next host re-run.
+   — the dir landed with #63 (the android official-web boot). Owned by the
+   android work stream: a green
+   `DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh`
+   plus the same runner emission.
 4. **`hosts/android/artifacts/android-session-live/` has no
    `receipt.json`** — the dir landed with #66 (the android session.live
-   spine, b-android.session.live 46/46 green); the receipt is owned by
-   the android work stream's next host re-run.
+   spine, b-android.session.live 46/46 green). Owned by the android work
+   stream: a green
+   `DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh`
+   plus the same runner emission.
 5. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
    — the dir landed with #67 (the harmony session.live spine,
-   b-harmony.session.live 43/43 green); the receipt is owned by the
-   harmony work stream's next host re-run.
+   b-harmony.session.live 43/43 green). Owned by the harmony work stream: a
+   green
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live`
+   plus the same runner emission.
 6. **`hosts/harmony/artifacts/d9-write-live/` has no `receipt.json`** —
    the dir landed with #70 (the harmony composer write path,
-   b-harmony.write.live 33/33 green); the receipt is owned by the
-   harmony work stream's next host re-run.
+   b-harmony.write.live 33/33 green). Owned by the harmony work stream: a
+   green
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live`
+   plus the same runner emission.
 7. **`hosts/android/artifacts/android-write-live/` has no `receipt.json`**
    — the dir landed with #72 (the android session write surface,
-   b-android.write.live 45/45 green); the receipt is owned by the
-   android work stream's next host re-run.
+   b-android.write.live 45/45 green). Owned by the android work stream: a
+   green
+   `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
+   plus the same runner emission.
 8. **`hosts/harmony/artifacts/m5-m2-llm/` — the `m2.llm` device verdict is
    RED (14/8) and intentionally committed.** The dir landed with #79 (the
    harmony real-LLM leg). The leg ran exactly as designed and the request
@@ -219,13 +297,27 @@ list numbers.)
    `slot.registered`) is logged and matched; `ws.token-delta`
    first/last and `ws.session-complete` await the served deltas the
    refused turn never produced. Same closure as gap 8.
-10. **`hosts/harmony/artifacts/m5-m2-llm/` — the checker's derived
-    `VERDICT_MALFORMED` notice on that same carrier verdict.** The checker
-    adds its count-inconsistency notice whenever `expected != logged` and
-    the manifest is not repeat-aware, which a FAIL verdict can never
-    satisfy; its detail line reads "but pass=true" even though the verdict
-    is `pass: false`. It is the mirror of gap 9, not a second defect, and
-    it clears with it.
+
+### Closed by the 2026-09-21 gateability change (docs/e2e-matrix-gateable)
+
+- **Gap 10 (the derived `VERDICT_MALFORMED` notice on a FAIL verdict)** —
+  closed in the checker, not by touching the evidence. The count-consistency
+  notice exists to catch a *passing* record whose counts disagree
+  (`pass: true` with `expected != logged` is the contradiction); on a
+  `pass: false` verdict the differing counts ARE the failure, already
+  reported by `VERDICT_FAIL`, and the notice's detail line claimed
+  `but pass=true` about a verdict saying otherwise. The condition is now
+  `v.pass === true && v.expected !== v.logged`, and `--self-test` proves
+  both directions: a FAIL verdict draws one finding and no notice, while a
+  passing verdict with differing counts is still rejected.
+- **Finding paths became root-relative** (`relative(root, …)`, they used
+  `relative(process.cwd(), …)`); the printed path only *looked* right
+  because the tool is always run from the repo root. A register cannot be
+  keyed on a path that moves with the cwd, and the register keys are now the
+  same strings the doc's table carries.
+- No evidence was deleted, no receipt was authored, and no verdict was
+  edited to make a finding disappear: the count went 10 → 9 because one
+  finding was a checker false-positive, not because anything was hidden.
 
 ### Closed by the 2026-09-20 evidence-gap closure (fix/evidence-gaps)
 
@@ -311,25 +403,53 @@ list numbers.)
   `hosts/harmony/artifacts/m5-complete/` were never committed by any
   branch (`git log --all` is empty for both paths) — no such evidence
   exists to report.
-- **Checker wording on a FAIL verdict**: for a non-repeat-aware manifest
-  the checker also reports `VERDICT_MALFORMED` with the detail
-  `expected=N logged=M but pass=true` whenever the counts differ — even
-  when the verdict is `pass: false`, where differing counts are the
-  failure itself. It is a derived notice — gap 10 against the one red dir
-  — and never fires on its own.
+- **The FAIL verdicts' derived notice is gone.** The checker adds its
+  count-consistency notice only to a `pass: true` record now; the same
+  count disagreement on a `pass: false` verdict is the `VERDICT_FAIL`
+  itself, reported once. (That was gap 10 — see the closure note above.)
 
 ## The checker and its rejection proof
 
 `tools/e2e/matrix.mjs` (stdlib-only) regenerates the inventory from the
 working tree and exits non-zero on any regression: failed verdict,
-missing/empty deliverable, broken PNG, malformed verdict/receipt, or a
-scenario id without a manifest in `tools/e2e/scenarios/`. Its
-`--self-test` mode proves every rejection class actually rejects
-(8 assertions, rule 6) — the assertion set is documented in the
+missing/empty deliverable, broken PNG, malformed verdict/receipt, a
+scenario id without a manifest in `tools/e2e/scenarios/`, or a defect in
+the known-gaps register itself. Its `--self-test` mode proves every
+rejection class actually rejects (18 assertions, rule 6) — the assertion
+set is documented in the
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs).
 
-The checker is deliberately **not wired into `gates.json`**: ten owned
-findings above remain open — the seven D9-era receipts blocked on their
-hosts' next re-runs, and the three verdict findings on the quota-blocked
-`m5-m2-llm` dir, which clear together on one quota-restored re-run. The
-decision to gate on the matrix belongs to the plane seal.
+One truth, two invocations (the file header carries the same contract):
+
+```sh
+node tools/e2e/matrix.mjs                       # every finding printed, exit 1
+node tools/e2e/matrix.mjs --accept-known-gaps   # exit 0 while the register owns them all
+node tools/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory (+ the evaluation)
+```
+
+The checker is **still not wired into `gates.json`**: that file is inside
+the plane seal, and re-sealing is a recorded governance ritual, not a side
+effect of a docs change. What this change makes true is that the wiring is
+now *possible and small* — the gate invocation is green on this tree with
+**0 blocking findings**, the nine gaps it accepts are named, owned and
+closable in the register above, and the first new finding turns the very
+same command red. The wiring is one gate plus the seal:
+
+```sh
+gov gate add e2e-matrix --description "cross-host E2E evidence inventory (known-gaps register)" \
+  --timeout 120000 -- node tools/e2e/matrix.mjs --accept-known-gaps
+gov verify-plane --write     # the ritual that accepts the gates.json diff
+```
+
+One more piece rides the same ritual: rule 6 wants a project rejection case
+per gate (`gov self-test` counts it, and a new gate is reported as
+`NONE — rule 6` until it ships one). `.gov/rejections/case-e2e-matrix.sh`
+is also inside the seal, so it is the owner's file to add — the checker's
+`--self-test` (18 assertions) is the assertion set such a case wraps: build
+a fixture tree with a violation, assert the run goes red, list the gap in a
+register, assert the same run goes green.
+
+(The command resolves `node` through the PATH of whoever runs the gates: the
+CI runner's default node is on it — `.github/workflows/dev-ios.yml` already
+runs the checkers with a bare `node` and no setup step — and the host
+runners fail loud when it is not, per rule 5.)
