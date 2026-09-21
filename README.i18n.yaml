@@ -8,8 +8,8 @@
 # instant of the confirmation (datetime.isoformat(), +00:00).
 pair:
   en: c86ddf6e8798d09fd1df7621b7fc6c5a1f7ba83f
-  zh: 77574796b6b8dc0cafab485ca2d4988dd5d5bd0e
+  zh: dfc3e56c7d51b15bde27e3bd91e8c197d4c91f08
 counterpart: README.zh.md
-last_confirmed: 2026-09-21T13:11:52+00:00
+last_confirmed: 2026-09-21T13:12:04+00:00
 en_commit: e8a3767
 zh_commit: cf41402
