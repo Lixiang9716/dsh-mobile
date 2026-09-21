@@ -98,20 +98,57 @@ const boundsCenter = (bounds) => {
     y: Math.round((Number(m[2]) + Number(m[4])) / 2) };
 };
 
+const boundsArea = (bounds) => {
+  const m = /^\[(\d+),(\d+)\]\[(\d+),(\d+)\]$/.exec(bounds);
+  if (!m) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+  return (Number(m[3]) - Number(m[1])) * (Number(m[4]) - Number(m[2]));
+};
+
+/** INNERMOST match wins: menu rows wrap their label text in a large
+ * clickable item whose own center is not tappable (observed on the
+ * DocumentViewPicker 多选 row — tapping the wrapper did nothing). */
 const findText = (node, regex) => {
+  let best = null;
+  const consider = (cand) => {
+    if (cand !== null && (best === null || cand.area < best.area)) {
+      best = cand;
+    }
+  };
   if (node?.attributes && regex.test(node.attributes.text ?? '')) {
     const center = boundsCenter(node.attributes.bounds);
     if (center) {
-      return center;
+      consider({ x: center.x, y: center.y, area: boundsArea(node.attributes.bounds) });
     }
   }
   for (const child of node?.children ?? []) {
-    const hit = findText(child, regex);
-    if (hit) {
-      return hit;
+    consider(findText(child, regex));
+  }
+  return best;
+};
+
+/** Nodes whose bounds center falls inside the region box; CLICKABLE nodes
+ * win over decorative containers (the picker's top-right ✓ confirm vs the
+ * wrappers around it). */
+const findInRegion = (node, region) => {
+  const a = node?.attributes;
+  let best = null;
+  if (a) {
+    const center = boundsCenter(a.bounds ?? '');
+    if (center && center.x >= region.x0 && center.x <= region.x1 &&
+        center.y >= region.y0 && center.y <= region.y1) {
+      best = { x: center.x, y: center.y, enabled: a.enabled === 'true',
+        clickable: a.clickable === 'true' };
     }
   }
-  return null;
+  for (const child of node?.children ?? []) {
+    const hit = findInRegion(child, region);
+    if (hit !== null && (best === null || (hit.clickable && !best.clickable))) {
+      best = hit;
+    }
+  }
+  return best;
 };
 
 const tapText = async (what, regex, ms, soft = false) => {
@@ -153,6 +190,9 @@ const state = {
   backgrounded: false,
   liveShot: false,
   verdict: null,
+  pickerDismiss: false,
+  pickerGrant: false,
+  seedWait: false,
 };
 
 const onLine = async (line) => {
@@ -179,12 +219,31 @@ const onLine = async (line) => {
     state.liveShot = true;
     snapshot(args['shot-live']);
   }
+  if (line.includes('ui-wait picker-seed')) {
+    state.seedWait = true;
+  }
+  // two picker presentations (both mode file): dismiss first, grant second
+  if (line.includes('ui-wait picker file')) {
+    if (!state.pickerSeen) {
+      state.pickerSeen = 0;
+    }
+    state.pickerSeen += 1;
+    if (state.pickerSeen === 1) {
+      state.pickerDismiss = true;
+    } else if (state.pickerSeen === 2) {
+      state.pickerGrant = true;
+    }
+  }
   if (line.includes('dsh.spike.verdict: m5.host-binding')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
 };
 
 const act = async () => {
+  if (state.seedWait && !state.seedHandled) {
+    state.seedHandled = true;
+    await driveSeed();
+  }
   if (state.permissionWait && !state.permissionTapTried) {
     // The consent dialog races the grant; poll briefly, then move on — the
     // ui-done marker (or publish failure) is the authoritative outcome.
@@ -199,6 +258,14 @@ const act = async () => {
           console.log('drive: no permission dialog (already granted)');
         }
       });
+  }
+  if (state.pickerDismiss && !state.pickerDismissTried) {
+    state.pickerDismissTried = true;
+    await drivePicker('dismiss');
+  }
+  if (state.pickerGrant && !state.pickerGrantTried) {
+    state.pickerGrantTried = true;
+    await drivePicker('grant');
   }
   if (state.approvalWait && !state.approvalTapped) {
     state.approvalTapped = true;
@@ -217,6 +284,69 @@ const act = async () => {
     await pollUntil('app.state background edge', async () => state.backgrounded, STEP);
     await tapText('DSH notification', /DSH E2E/, STEP);
   }
+};
+
+/** The DocumentViewPicker dialog (a separate Files ability). Observed on the
+ * dsh_phone emulator (HarmonyOS 7.0/26.0.0): the dialog opens on the 最近
+ * (Recent) page under a first-run explainer (知道了); 浏览 (Browse) lists
+ * 位置 → 我的手机 → Download/ Documents/ (empty on a fresh image — the host
+ * bootstrap seeds Download/dsh-e2e-seed.txt through the save dialog, driven
+ * by driveSeed — it confirms with the same top-right ✓ and lands the file
+ * in the store root). Dismissal taps that X too (完成 stays inert with
+ * 已选 (0)); the grant leg navigates to the seed file and taps 完成. */
+const PICKER = {
+  gotIt: /^知道了$/,
+  browse: /^浏览$/,
+  myPhone: /^我的手机$/,
+  seedFile: /^dsh-e2e-seed-.*\.txt$/,
+  done: /^完成$/,
+  closeRegion: { x0: 1030, x1: 1260, y0: 180, y1: 400 },
+};
+const tapAt = (what, x, y) => {
+  execFileSync(args.hdc,
+    ['shell', 'uitest', 'uiInput', 'click', String(x), String(y)]);
+  console.log(`drive: tapped ${what} at ${x},${y}`);
+};
+const layoutProbe = (probe) => {
+  try {
+    return probe(dumpLayout());
+  } catch {
+    return null; // transient dump failures (window transitions)
+  }
+};
+const drivePicker = async (leg) => {
+  await tapText('picker first-run got-it', PICKER.gotIt, 8000, true);
+  if (leg === 'dismiss') {
+    const at = await pollUntil('picker close X', () =>
+      layoutProbe((root) => findInRegion(root, PICKER.closeRegion)), STEP, true);
+    if (at === null) {
+      console.error('drive: picker dismiss leg found no close control');
+      return;
+    }
+    tapAt('picker close', at.x, at.y);
+    return;
+  }
+  await tapText('picker Browse tab', PICKER.browse, STEP);
+  await tapText('picker My phone', PICKER.myPhone, STEP);
+  await tapText('picker seed file', PICKER.seedFile, STEP);
+  await tapText('picker done', PICKER.done, STEP, true);
+};
+
+/** The bootstrap save dialog (host-staged seed, see PickerPrimitives.
+ * seedUserFile): soft-tap the first-run explainer, confirm the save, and
+ * accept a replace prompt when a previous run's seed is still there. */
+const driveSeed = async () => {
+  await tapText('seed first-run got-it', PICKER.gotIt, 8000, true);
+  // the save dialog confirms with the top-right ✓ (the filename is
+  // prefilled); the file lands in the store root
+  const confirm = await pollUntil('seed save confirm', () =>
+    layoutProbe((root) => findInRegion(root, PICKER.closeRegion)), STEP, true);
+  if (confirm === null) {
+    console.error('drive: seed save confirm not found');
+    return;
+  }
+  tapAt('seed save confirm', confirm.x, confirm.y);
+  await tapText('seed replace confirm', /^替换$|^覆盖$|^Replace$/, 8000, true);
 };
 
 const stream = spawn(args.hdc, ['shell', 'hilog'], { stdio: ['ignore', 'pipe', 'ignore'] });
