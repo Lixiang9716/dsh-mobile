@@ -79,6 +79,14 @@ on:
 permissions:
   contents: write
 
+# Queued, never cancelled. Three hosts build one tag and each ends in
+# `gh release upload --clobber`; cancelling mid-upload would leave whichever
+# finished last, and a re-dispatch for the same tag must not race the run it is
+# repairing. A queued run is cheap; a half-uploaded release is not.
+concurrency:
+  group: release-android-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   android-package:
     runs-on: ubuntu-latest
@@ -121,6 +129,22 @@ jobs:
           sudo mkswap /mnt/swapfile
           sudo swapon /mnt/swapfile
 
+      - name: Cache the materialized official web tree
+        # The most expensive single item in this repository's CI: the upstream
+        # monorepo build behind `official-web/dist` + `client-bundles/npm`
+        # measured 334-465 s on ubuntu and 602-779 s on macOS before it was
+        # cached. Both ensure-*.sh scripts are idempotent — tree present and
+        # MANIFEST-verified means exit 0 — so restoring the cache turns that
+        # build into a verify. The key is the provenance set that decides the
+        # bytes (both MANIFESTs, both build recipes, the roster, and the two
+        # verifiers); any pin or recipe change changes the key and the tree is
+        # rebuilt. Never a silent stale tree: the verifiers check it either way.
+        uses: actions/cache@v4
+        with:
+          path: |
+            presentation/official-web/dist
+            presentation/official-web/client-bundles/npm
+          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'tools/e2e/ensure-official-dist.sh', 'tools/e2e/ensure-client-bundles.sh') }}
       - name: Materialize the vendored web app + DSH closure
         env:
           COREPACK_INTEGRITY_KEYS: '0'

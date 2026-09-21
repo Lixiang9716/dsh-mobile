@@ -79,6 +79,14 @@ on:
 permissions:
   contents: write
 
+# Queued, never cancelled. Three hosts build one tag and each ends in
+# `gh release upload --clobber`; cancelling mid-upload would leave whichever
+# finished last, and a re-dispatch for the same tag must not race the run it is
+# repairing. A queued run is cheap; a half-uploaded release is not.
+concurrency:
+  group: release-harmony-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   harmony-package:
     runs-on: ubuntu-latest
