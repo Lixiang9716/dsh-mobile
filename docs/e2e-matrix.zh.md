@@ -27,6 +27,11 @@
 > node tools/e2e/matrix.mjs              # 退出码 0 = 清单干净
 > node tools/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单
 > ```
+>
+> 2026-09-21 的**可设卡化**变更（分支 `docs/e2e-matrix-gateable`）不改动
+> 下方任何数字——它让同一份清单可被接成门禁（发现项 10 → 9、
+> [已知缺口](#已知缺口如实列出) 中的登记表，以及检查器的第二种调用方式）。
+> 清单本身即工具在本树上的输出。
 
 ## 验收标准
 
@@ -48,7 +53,7 @@
 | 已提交 verdict（73 绿，2 条配额阻塞红） | 75 |
 | 至少有一份已提交证据的 scenario | 28 / 28 个不同的 scenario id（29 个 manifest） |
 | 已验证 PNG 的截图 | 81 |
-| 验收标准缺口 | 10（见下） |
+| 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -148,33 +153,104 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 
 ## 已知缺口（如实列出）
 
-检查器（`tools/e2e/matrix.mjs`）当前恰好因十项以非零码退出：七项是
-其目录落地后尚待各自主机首次 re-run 的 receipt（归各自随
-#63/#64/#65/#66/#67/#70/#72 落地的主机工作流所有），另有三项集中在唯一
-那个配额阻塞目录 `hosts/harmony/artifacts/m5-m2-llm/`。
-（上方 rcpt 列引用的即本清单编号。）
+本树上有九项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
+非零码退出；下方这张表就是**已知缺口登记表（known-gaps register）**，
+它让同一次运行可以被接成门禁。
+
+- `node tools/e2e/matrix.mjs` —— 打印全部发现项（不论是否已登记）并以
+  退出码 1 结束：不加修饰的完整清单。
+- `node tools/e2e/matrix.mjs --accept-known-gaps` —— 当每个发现项都是下方
+  登记表的一行时以退出码 0 结束；以下情况以 1 结束：(a) 出现没有任何一行
+  命名的发现项，即**新回归**；(b) 某一行对应的发现项已不存在——缺口闭合
+  必须在同一变更中把该行划掉；(c) 登记表行数超过检查器的上限 9 行
+  ——接受一个新缺口是刻意的编辑，不是漂移。**这条调用就是门禁要接的
+  方式，且在本树上已绿：0 项阻塞。**
+
+登记表由下方这张表机器读取，因此这份如实清单是唯一的副本、不会与检查器
+漂移。表内单元格按字面读取（该表内不要使用反引号格式）；表格缺失或格式
+错误本身就是一条发现项，绝不会静默通过。
+
+| code | file | owner | closes with |
+| --- | --- | --- | --- |
+| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 工作流（#65） | run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live 绿色运行 ＋ 该 runner 的 receipt 步骤 |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony 工作流（#64） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web ＋ 同样的 runner 落盘步骤 |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android 工作流（#63） | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android 工作流（#66） | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
+| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
+| MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android 工作流（#72） | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh（重置时间 2026-09-22 14:43:53） |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh（重置时间 2026-09-22 14:43:53） |
+
+（检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
+是源；本表为读者保留等价的中文渲染。）
+
+### 为什么这九项都不在本分支闭合（如实说明）
+
+其中七项需要一份 `receipt.json`，而它只能由各自主机工作流下一次在
+设备/模拟器上的运行产出；另两项是对一次真实后端拒绝的有意记录。在本分支
+里补写这些 receipt 就等于凭空编造：
+
+- **receipt 证明的是一次运行，而该运行的设备不在已提交工件里。** `host`
+  字段记的是运行发生在哪台机器上——iOS 模拟器 UDID 与运行时版本、android
+  模拟器实例及其 AVD 与 API 级别、harmony 的 hdc 目标——而
+  `tools/e2e/run-ios.sh` 是在运行时从 `xcrun simctl` 读取它的。已在本树
+  核验：对三个 android 目录执行
+  `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone'`、对三个 harmony D9
+  目录执行 `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc'`、对
+  `hosts/ios/artifacts/b4-write-live/` 执行
+  `grep -rliE 'simctl|UDID|iOS 26|A4AE41BF'`，**全部无输出**：绿色
+  verdict、capture 与引擎行（`quickjs-ng 0.17.0`，在 android 的
+  `results.txt` 中）都已提交，唯独设备不在其中。验收标准第 3 条与 receipt
+  约定禁止凭空合成其余字段。
+- **没有一次真实绿色运行，receipt 就不可能存在。** `run-ios.sh` 只在绿色
+  路径上机器撰写 receipt（第 7 步，仅在全部 checker 通过后可达）。android、
+  harmony 与 `run-ios-b4.sh` 的 runner 尚无该步骤，因此这些行需先做 runner
+  变更（照搬同样的绿色路径落盘）**再**执行该行点名的重跑——两件事都归目录
+  落地的工作流所有。
+- **那两条 harmony verdict 是诊断，不是绿色声明。** 请求经本主机真实的
+  `httpFetch` 离开了模拟器，而后端拒绝了它（`HTTP 429`、code `1310`、
+  周/月额度耗尽）。本仓库内没有任何改动能服务那个轮次；配额恢复后的
+  harmony 重跑可以。
+
+按缺口编号的细节（与本清单上方 `rcpt` 列引用的编号一致，也即登记表各行的
+顺序）：
 
 1. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
-   #65（session 写表面）落地；receipt 归 b4 工作流下一次在携带 #65 的树
-   上运行 `run-ios-b4.sh` 所有。
+   #65（session 写表面，`b4.write.live` 43/43 绿色）落地。归 iOS b4 工作流
+   所有：在携带 #65 的树上跑一次绿色的
+   `tools/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`，
+   并在该 runner 的绿色路径上落盘 receipt（即 `run-ios.sh` 第 7 步的做法）。
 2. **`hosts/harmony/artifacts/d9-official-web/` 缺 `receipt.json`** ——
-   目录随 #64（harmony webServer carrier）落地；receipt 归 harmony 工作
-   流的下一次主机 re-run 所有。
+   目录随 #64（harmony webServer carrier）落地。归 harmony 工作流所有：一次
+   绿色的
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web`
+   加上同样的 runner 落盘。
 3. **`hosts/android/artifacts/android-upstream/` 缺 `receipt.json`** ——
-   目录随 #63（android official-web boot）落地；receipt 归 android 工作
-   流的下一次主机 re-run 所有。
+   目录随 #63（android official-web boot）落地。归 android 工作流所有：一次
+   绿色的
+   `DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh`
+   加上同样的 runner 落盘。
 4. **`hosts/android/artifacts/android-session-live/` 缺 `receipt.json`**
    —— 目录随 #66（android session.live 主线脊柱，b-android.session.live
-   46/46 绿色）落地；receipt 归 android 工作流的下一次主机 re-run 所有。
+   46/46 绿色）落地。归 android 工作流所有：一次绿色的
+   `DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh`
+   加上同样的 runner 落盘。
 5. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
    目录随 #67（harmony session.live 主线脊柱，b-harmony.session.live
-   43/43 绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
+   43/43 绿色）落地。归 harmony 工作流所有：一次绿色的
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live`
+   加上同样的 runner 落盘。
 6. **`hosts/harmony/artifacts/d9-write-live/` 缺 `receipt.json`** ——
    目录随 #70（harmony composer 写入路径，b-harmony.write.live 33/33
-   绿色）落地；receipt 归 harmony 工作流的下一次主机 re-run 所有。
+   绿色）落地。归 harmony 工作流所有：一次绿色的
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live`
+   加上同样的 runner 落盘。
 7. **`hosts/android/artifacts/android-write-live/` 缺 `receipt.json`**
    —— 目录随 #72（android session 写表面，b-android.write.live 45/45
-   绿色）落地；receipt 归 android 工作流的下一次主机 re-run 所有。
+   绿色）落地。归 android 工作流所有：一次绿色的
+   `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
+   加上同样的 runner 落盘。
 8. **`hosts/harmony/artifacts/m5-m2-llm/` 的 `m2.llm` 设备 verdict 是
    红色（14/8），且属有意提交。** 该目录随 #79（鸿蒙真实 LLM 分支）落地。
    分支完全按设计运行，请求也确实经过本主机真实的 `httpFetch` 离开了
@@ -203,12 +279,24 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
    `slot.registered`）已记录并匹配；`ws.token-delta` 的首/末条与
    `ws.session-complete` 仍在等待被拒绝的轮次永远不会产生的 delta。
    收口方式同缺口 8。
-10. **`hosts/harmony/artifacts/m5-m2-llm/` —— 检查器在同一条 carrier
-    verdict 上派生的 `VERDICT_MALFORMED` 提示。** 只要 `expected !=
-    logged` 且 manifest 非 repeat 感知，检查器就会附加这条计数不一致
-    提示，而 FAIL verdict 永远无法满足该条件；其 detail 行虽写着
-    "but pass=true"，该 verdict 实为 `pass: false`。它是缺口 9 的镜像，
-    而非第二个缺陷，随之一起消失。
+
+### 由 2026-09-21 可设卡化变更闭合（docs/e2e-matrix-gateable）
+
+- **缺口 10（FAIL verdict 上派生的 `VERDICT_MALFORMED` 提示）** —— 在检查器
+  内闭合，而非改动证据。该计数一致性提示是为了捕捉**通过**记录内部自相矛盾
+  （`pass: true` 却 `expected != logged`）；而 `pass: false` 的 verdict 上
+  计数不一致本身就是失败、已由 `VERDICT_FAIL` 报出，且该提示的 detail 行
+  会对一条实际写着 `pass: false` 的 verdict 声称 `but pass=true`。现条件为
+  `v.pass === true && v.expected !== v.logged`，且 `--self-test` 双向证明：
+  FAIL verdict 只产生一条发现项、不再附加该提示；而计数不一致的通过 verdict
+  仍被拒绝。
+- **发现项路径改为相对仓库根**（`relative(root, …)`，此前是
+  `relative(process.cwd(), …)`）；打印出来的路径只是**看起来**正确，因为
+  该工具总是从仓库根运行。登记表的键不能建立在随 cwd 漂移的路径上，而现在
+  登记表的键就是文档表格里的那些字符串。
+- 没有删除任何证据、没有撰写任何 receipt、没有改过任何 verdict 来让发现项
+  消失：数量从 10 降到 9，是因为其中一条本就是检查器的误报，而不是因为
+  隐藏了什么。
 
 ### 由 2026-09-20 证据缺口收口闭合（fix/evidence-gaps）
 
@@ -280,21 +368,48 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
   `hosts/android/artifacts/m3-android-install/` 与
   `hosts/harmony/artifacts/m5-complete/` 从未被任何分支提交过
   （两条路径的 `git log --all` 均为空）——并不存在这样的证据可报。
-- **FAIL verdict 上的检查器措辞**：对非 repeat 感知的 manifest，只要计数
-  不一致，检查器就会额外报一条 `VERDICT_MALFORMED`，detail 为
-  `expected=N logged=M but pass=true`——即便该 verdict 是
-  `pass: false`、计数不一致本身就是失败所在。它是派生提示——即针对唯一
-  红色目录的缺口 10——从不会单独出现。
+- **FAIL verdict 上的派生提示已消失。** 检查器现在只对 `pass: true` 的记录
+  附加计数一致性提示；`pass: false` 的 verdict 上同样的计数不一致就是
+  `VERDICT_FAIL` 本身，只报一次。（即上方的缺口 10 收口说明。）
 
 ## 检查器及其拒绝证明
 
 `tools/e2e/matrix.mjs`（仅标准库）从工作树再生成清单，任何回归即以非零码
-退出：verdict 失败、交付物缺失/为空、PNG 损坏、verdict/receipt 畸形，或
-scenario id 在 `tools/e2e/scenarios/` 无 manifest。其 `--self-test` 模式
-证明每个拒绝类别都真的会拒绝（8 条断言，规则 6）——断言集记录在
+退出：verdict 失败、交付物缺失/为空、PNG 损坏、verdict/receipt 畸形、
+scenario id 在 `tools/e2e/scenarios/` 无 manifest，或已知缺口登记表本身有
+缺陷。其 `--self-test` 模式证明每个拒绝类别都真的会拒绝（18 条断言，
+规则 6）——断言集记录在
 [e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
 
-检查器**有意不接入 `gates.json`**：上方尚余十项有主缺口——七项 D9 时代的
-receipt，等待各自主机的下一次 re-run；另三项是唯一那个配额阻塞目录
-`m5-m2-llm` 的 verdict 发现项，待配额恢复后一次 re-run 即可一并清除。
-是否以该矩阵设卡，属于 plane seal 的决定。
+一种事实，两种调用（文件头写着同一份契约）：
+
+```sh
+node tools/e2e/matrix.mjs                       # 打印全部发现项，退出码 1
+node tools/e2e/matrix.mjs --accept-known-gaps   # 全部由登记表认领时退出码 0
+node tools/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单（含评估结果）
+```
+
+检查器**仍未接入 `gates.json`**：该文件在 plane seal 之内，而重新封印是一次
+被记录的治理仪式，不是一项文档变更的副作用。本次变更让「接线」变得
+**可行且小**：门禁调用在本树上为绿（**0 项阻塞**），它接受的那九个缺口都在
+上方登记表中有主、可收口，而第一个新发现项会让同一条命令立刻变红。接线
+就是一次 gate 加上封印：
+
+```sh
+gov gate add e2e-matrix --description "cross-host E2E evidence inventory (known-gaps register)" \
+  --timeout 120000 -- node tools/e2e/matrix.mjs --accept-known-gaps
+gov verify-plane --write     # 接受 gates.json 差异的那次仪式
+```
+
+还有一件同属该仪式：规则 6 要求每个门禁配一个项目级拒绝用例（`gov self-test`
+会统计它，新门禁在此前会被标为 `NONE — rule 6`）。
+`.gov/rejections/case-e2e-matrix.sh` 同样在 seal 之内，因此也归 owner 添加——
+检查器的 `--self-test`（18 条断言）就是这样一个用例可以包裹的断言集：构造一棵
+含违规的 fixture 树，断言运行变红；把该缺口列入登记表，断言同一次运行转绿。
+
+（该命令按运行者的 PATH 解析 `node`：macOS runner（`dev-ios.yml`）早已用裸
+`node` 运行这些 checker 且无 setup 步骤；而在 `gov.yml` 使用的 ubuntu runner
+上，环境里的 node 即 `dev-android.yml` 记录的那个——"the runner's default node
+carries an older corepack"，存在但旧到值得平台构建各自 pin 一个。命令无法解析
+时门禁会以 `MISSING` 大声失败、而非静默通过，因此在两种情况下接线都安全，
+符合规则 5。）
