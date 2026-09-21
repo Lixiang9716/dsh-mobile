@@ -110,3 +110,20 @@ at each stage.
 
 CI (`.github/workflows/dev-android.yml`) runs the three-scenario regression script against an
 API 35 x86_64 emulator.
+
+
+## M2 real-LLM session (scenario `m2.llm`, real leg)
+
+Launch with `--ez dsh.llm true` (`hosts/android/ci/run-m2-llm.sh`): the M4
+completion flow (loopback carrier + WebView + real nine-primitive gateway)
+drives `scenario/m2-llm.js` — ONE streamed chat completion against an
+OpenAI-compatible backend through the REAL gateway `httpFetch`. Credentials
+ride fs scope "app": the runner stages
+`files/profiles/default/m2-llm/config.json` (`{baseUrl, apiKey, model}` from
+`ZAI_BASE_URL`/`ZAI_API_KEY`/`ZAI_MODEL` in the env or repo-root `.env`) via
+`run-as` before launch — the key is never echoed and is grepped OUT of the
+captured log afterwards (fail loud on a leak). The served model name is
+logged verbatim (`llm.served-model`); the deltas stream live into the
+WebView-mounted Web Client. Evidence: `artifacts/m2-llm/` (logs.txt +
+scenario.jsonl + verdict-m2-llm-device.json 14/14 +
+verdict-m2-llm-carrier.json 7/7 + receipt.json + MANIFEST.md).

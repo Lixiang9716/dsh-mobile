@@ -23,11 +23,20 @@ import org.json.JSONObject
  * evidence rides the canonical `dsh.spike.log: ` envelope as scenario
  * `m4.host-binding` so one checker manifest covers the whole flow.
  */
-class SpikeHostM4 private constructor(private val activity: Activity) {
+class SpikeHostM4 private constructor(
+    private val activity: Activity,
+    /** Carrier-side evidence scenario id + JS entry for this drive. The
+     * default is the M4 binding; the real-LLM drive (`m2.llm`) overrides
+     * both — same host flow, different scenario. */
+    private val scenarioId: String = SCENARIO,
+    private val entryPath: String = ENTRY,
+) {
 
     companion object {
         const val SCENARIO = "m4.host-binding"
         const val ENTRY = "scenario/m4-host-binding.js"
+        const val LLM_SCENARIO = "m2.llm.carrier"
+        const val LLM_ENTRY = "scenario/m2-llm.js"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -51,6 +60,27 @@ class SpikeHostM4 private constructor(private val activity: Activity) {
             onFinished: (String) -> Unit,
         ): SpikeHostM4 {
             val host = SpikeHostM4(activity)
+            host.webView = webView
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The M2 real-LLM drive (scenario `m2.llm`): same carrier + WebView
+         * + gateway flow, but the JS entry streams one real LLM turn through
+         * the gateway httpFetch. Credentials ride fs scope "app"
+         * (files/profiles/default/m2-llm/config.json), staged by the E2E
+         * runner before launch. */
+        fun startLlm(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = LLM_SCENARIO,
+                entryPath = LLM_ENTRY,
+            )
             host.webView = webView
             instance = host
             host.start(onFinished)
@@ -123,9 +153,9 @@ class SpikeHostM4 private constructor(private val activity: Activity) {
         }
         val webRoot = File(bundle, "webclient/web")
         carrier.start(webRoot) { /* readiness consumed below */ }
-        val entry = File(bundle, ENTRY)
+        val entry = File(bundle, entryPath)
         handle = SpikeRuntime.m4Begin(
-            activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR, bridge,
+            activity.filesDir.absolutePath, entryPath, entry.readText(), DESCRIPTOR, bridge,
         )
         if (handle == 0L) fail("m4 begin: ${SpikeRuntime.m4LastError()}")
         deliverHostHello() // in case bus.ready arrived during eval
@@ -339,7 +369,7 @@ class SpikeHostM4 private constructor(private val activity: Activity) {
     private fun finish(passed: Boolean, error: String) {
         if (finished) return
         finished = true
-        val line = "$SCENARIO ${if (passed) "PASS" else "FAIL"} | $ENGINE_LABEL" +
+        val line = "$scenarioId ${if (passed) "PASS" else "FAIL"} | $ENGINE_LABEL" +
             (if (error.isEmpty()) "" else " | error: $error")
         Log.i(RESULT_TAG, line)
         Log.i(RESULT_TAG, "ALL ${if (passed) "PASS" else "FAIL"}")
@@ -355,7 +385,7 @@ class SpikeHostM4 private constructor(private val activity: Activity) {
      * unified-logger shape) so the carrier's own events ride the same
      * checker stream as the JS scenario's. */
     private fun carrierLog(event: String, fields: JSONObject) {
-        val payload = JSONObject().put("scenario", SCENARIO).put("event", event)
+        val payload = JSONObject().put("scenario", scenarioId).put("event", event)
         fields.keys().forEach { key -> payload.put(key, fields.get(key)) }
         val record = JSONObject()
             .put("level", "info")

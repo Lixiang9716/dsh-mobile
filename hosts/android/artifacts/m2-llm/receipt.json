@@ -1,0 +1,18 @@
+{
+  "host": "Android emulator (emulator-5554, sdk_phone64_arm64 / API 35)",
+  "app": "com.dshmobile.spike, launch extra --ez dsh.llm true (SpikeHostM4.startLlm — scenario m2.llm, entry scenario/m2-llm.js)",
+  "scenario": "m2.llm (REAL leg)",
+  "backend": "OpenAI-compatible chat/completions (z.ai coding endpoint), streamed through the gateway httpFetch primitive (HttpURLConnection, settle-at-headers + http.body/http.end events)",
+  "proves": [
+    "REAL streaming LLM turn on the emulator: llm.js (OpenAI-compatible SSE client over the gateway httpFetch response shape) streamed 38 reasoning deltas (llm.reasoning.delta) THEN 18 content deltas (llm.delta), aggregated assistant text 'Hello, it's wonderful to meet you! I hope your day is going well so far.' (72 chars), finishReason stop",
+    "served-model honesty: the server reported model glm-5.3-flash for the requested glm-4.6 — logged verbatim (llm.served-model {requested: glm-4.6, served: glm-5.3-flash}), never assumed",
+    "capability negotiation, not hostType branching: the descriptor offers httpFetch so the scenario negotiated the REAL leg (llm.leg {leg: real, transport: gateway.httpFetch}); the same scenario code ran the scripted leg on the CLI and the real leg on iOS",
+    "credentials never in logs: config rides fs scope app (files/profiles/default/m2-llm/config.json, staged by hosts/android/ci/run-m2-llm.sh via run-as); the scenario's sink audit scanned 345 log lines for the API key (llm.key.audit leaked false) and the runner greps the RAW logcat stream — 0 occurrences",
+    "carrier-side evidence rides scenario m2.llm.carrier (client.selected, webclient.mounted, ws.connected, slot.registered llm slot, ws.token-delta first/last, ws.session-complete) — the deltas streamed live into the WebView-mounted Web Client; the drive reuses the M4 completion flow with only the scenario id + JS entry swapped"
+  ],
+  "checker": "tools/e2e/scenarios/m2-llm-device.json (14 expectations, repeat-aware deltas) + tools/e2e/scenarios/m2-llm-carrier.json (7) — both PASS",
+  "runner": "hosts/android/ci/run-m2-llm.sh",
+  "screenshots": "none for this scenario — the verdict is logs only (E2E verification contract); the WebView renders the live session on screen",
+  "quota": "1 request, max_tokens 256 (an earlier stalled drive made no request — it died at the bus.ready page-load gate before config load)",
+  "exitCode": 0
+}
