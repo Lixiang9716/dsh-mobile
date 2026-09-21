@@ -16,17 +16,16 @@
 
 - `llm.config.loaded {source: app-scope, model: glm-4.6}` — line 22
 - `llm.stream.started {turn: 1}` — line 28
-- 40 × `llm.reasoning.delta` (reasoning traces streamed first, token-sized)
-- 13 × `llm.delta` → aggregated text: `Hello, and welcome! It's wonderful to
-  see you here today.` (57 chars)
-- `llm.stream.completed {turn: 1, deltas: 13, reasoningDeltas: 40, chars:
-  57, finishReason: stop}` — line 304
-- `llm.served-model {requested: glm-4.6, served: glm-5.3-flash}` — line 305
+- 139 × `llm.reasoning.delta` (reasoning traces streamed first, token-sized)
+- 20 × `llm.delta` → aggregated text: `Hello, and welcome! I'm glad you're here and happy to help with whatever you need.` (82 chars)
+- `llm.stream.completed {turn: 1, deltas: 20, reasoningDeltas: 139, chars:
+  82, finishReason: stop}` — line 833
+- `llm.served-model {requested: glm-4.6, served: glm-5.3-flash}` — line 834
   (the server reports a different model name; logged verbatim)
-- `llm.content.asserted {text: …, chars: 57}` — line 306
-- `llm.key.audit {lines: 300, leaked: false}` — line 307
-- `session.completed {sessionId: s-m2-llm-0001, status: pass, deltas: 13,
-  chars: 57}` — line 308
+- `llm.content.asserted {text: …, chars: 82}` — line 835
+- `llm.key.audit {lines: 829, leaked: false}` — line 836
+- `session.completed {sessionId: s-m2-llm-0001, status: pass, deltas: 20,
+  chars: 82}` — line 837
 
 ## carrier side (scenario m2.llm.carrier)
 
@@ -39,7 +38,7 @@ and JS entry swapped (`--ez dsh.llm true`).
 ## key-leak checks
 
 - In-scenario: every log-sink line audited for the API key —
-  `llm.key.audit {lines: 300, leaked: false}`.
+  `llm.key.audit {lines: 829, leaked: false}`.
 - Runner: `grep -F "$ZAI_API_KEY"` over the RAW captured logcat stream —
   0 occurrences.
 

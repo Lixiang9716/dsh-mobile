@@ -112,18 +112,21 @@ class MainActivity : Activity() {
         SpikeRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = if (llm) {
-                    SpikeHostM4.startLlm(this, view) { verdict ->
-                        verdictView.text = verdict
-                    }
-                } else {
-                    SpikeHostM4.start(this, view) { verdict ->
-                        verdictView.text = verdict
-                    }
-                }
+                spikeHost = startHost(llm, view)
             }
         }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
+    }
+
+    /** UI thread: constructs the drive — the real-LLM scenario (m2.llm) or
+     * the M4 binding — with the same carrier + WebView flow. */
+    private fun startHost(llm: Boolean, view: WebView): SpikeHostM4 {
+        val onVerdict = { verdict: String -> verdictView.text = verdict }
+        return if (llm) {
+            SpikeHostM4.startLlm(this, view, onVerdict)
+        } else {
+            SpikeHostM4.start(this, view, onVerdict)
+        }
     }
 
     companion object {

@@ -4,10 +4,10 @@
   "scenario": "m2.llm (REAL leg)",
   "backend": "OpenAI-compatible chat/completions (z.ai coding endpoint), streamed through the gateway httpFetch primitive (HttpURLConnection, settle-at-headers + http.body/http.end events)",
   "proves": [
-    "REAL streaming LLM turn on the emulator: llm.js (OpenAI-compatible SSE client over the gateway httpFetch response shape) streamed 40 reasoning deltas (llm.reasoning.delta) THEN 13 content deltas (llm.delta), aggregated assistant text 'Hello, and welcome! It's wonderful to see you here today.' (57 chars), finishReason stop",
+    "REAL streaming LLM turn on the emulator: llm.js (OpenAI-compatible SSE client over the gateway httpFetch response shape) streamed 139 reasoning deltas (llm.reasoning.delta) THEN 20 content deltas (llm.delta), aggregated assistant text \"Hello, and welcome! I'm glad you're here and happy to help with whatever you need.\" (82 chars), finishReason stop",
     "served-model honesty: the server reported model glm-5.3-flash for the requested glm-4.6 — logged verbatim (llm.served-model {requested: glm-4.6, served: glm-5.3-flash}), never assumed",
     "capability negotiation, not hostType branching: the descriptor offers httpFetch so the scenario negotiated the REAL leg (llm.leg {leg: real, transport: gateway.httpFetch}); the same scenario code ran the scripted leg on the CLI and the real leg on iOS",
-    "credentials never in logs: config rides fs scope app (files/profiles/default/m2-llm/config.json, staged by hosts/android/ci/run-m2-llm.sh via run-as); the scenario's sink audit scanned 300 log lines for the API key (llm.key.audit leaked false) and the runner greps the RAW logcat stream — 0 occurrences",
+    "credentials never in logs: config rides fs scope app (files/profiles/default/m2-llm/config.json, staged by hosts/android/ci/run-m2-llm.sh via run-as); the scenario's sink audit scanned 829 log lines for the API key (llm.key.audit leaked false) and the runner greps the RAW logcat stream — 0 occurrences",
     "carrier-side evidence rides scenario m2.llm.carrier (client.selected, webclient.mounted, ws.connected, slot.registered llm slot, ws.token-delta first/last, ws.session-complete) — the deltas streamed live into the WebView-mounted Web Client; the drive reuses the M4 completion flow with only the scenario id + JS entry swapped"
   ],
   "checker": "tools/e2e/scenarios/m2-llm-device.json (14 expectations, repeat-aware deltas) + tools/e2e/scenarios/m2-llm-carrier.json (7) — both PASS",
