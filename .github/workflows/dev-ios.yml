@@ -98,8 +98,17 @@ jobs:
         # went wrong — and absorbing it would be another failure nobody sees.
         run: |
           set -euo pipefail
-          UDID=$(xcrun simctl list devices available | grep -iE 'iphone' \
-            | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+          # The SAME pinned preference list as the E2E step below, and that is
+          # not cosmetic: the prewarm exists to warm the device the E2E will
+          # use. Taking any iPhone here could warm a different one, in which
+          # case the E2E pays the cold-boot cost the prewarm was meant to
+          # remove — a silent no-op that looks like a working optimisation.
+          UDID=""
+          for want in "iPhone 16 Pro" "iPhone 17" "iPhone 16" "iPhone 15"; do
+            UDID=$(xcrun simctl list devices available | grep -F "$want (" \
+              | grep -m1 -oE '[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}' || true)
+            [ -n "$UDID" ] && break
+          done
           if [ -z "$UDID" ]; then
             echo "::warning::no available iPhone simulator to prewarm"
             exit 0
