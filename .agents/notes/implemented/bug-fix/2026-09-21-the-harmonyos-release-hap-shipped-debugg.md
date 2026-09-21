@@ -73,12 +73,25 @@ had been uploading the build system's internal output paths as asset names —
 `entry-default-unsigned.hap`, `app-release-unsigned.apk` — while the
 workflow-artifact names right beside them already said `dsh-harmony` and
 `dsh-android`. A downloader saw a name invented by hvigor and Gradle. The
-attach steps now use `gh release upload`'s `file#name` display label, so the
-assets are `dsh-harmony-unsigned.hap`, `dsh-android-unsigned.apk`,
+attach steps now `cp` each output to a `dsh-<host>…` filename before uploading,
+so the assets are `dsh-harmony-unsigned.hap`, `dsh-android-unsigned.apk`,
 `dsh-ios-device-unsigned.zip` and `dsh-ios-simulator-unsigned.zip`, while the
 build outputs keep the names their toolchains dictate. The `-unsigned` suffix
 stays: it is the one property a downloader must know before the file is any
 use.
+
+The first attempt at that rename got it wrong and was caught against the
+release API rather than by reading the docs: `gh release upload`'s
+`file#text` form reads as "rename this to text", but it sets only the asset's
+display **label** —
+
+```
+name=entry-default-unsigned.hap   label=dsh-harmony-unsigned.hap
+```
+
+— and a browser download uses the **name**. Renaming the file before upload is
+what actually changes it. The distinction is why the attach steps carry a
+comment saying so.
 
 ## Alternatives considered
 

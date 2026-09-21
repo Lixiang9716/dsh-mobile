@@ -74,10 +74,11 @@ critical log set (`warn` + `error`); debug/info are stripped at the source
 | `dsh-harmony` | Release | `dsh-harmony-unsigned.hap` | No — sign via DevEco/hdc (below) |
 
 Release assets are named `dsh-<host>…` and never after the build system's
-internal output path (`entry-default-unsigned.hap`, `app-release-unsigned.apk`)
-— the workflow uses `gh release upload`'s `file#name` display label for that.
-The `-unsigned` suffix is deliberate: it is the one property a downloader must
-know before the file is any use.
+internal output path (`entry-default-unsigned.hap`, `app-release-unsigned.apk`).
+The workflow renames each build output before uploading: `gh release upload`'s
+`file#text` form sets only the display label, which a download ignores, so the
+filename itself is what changes. The `-unsigned` suffix is deliberate: it is
+the one property a downloader must know before the file is any use.
 
 **`include_harness: true` additionally uploads the HARNESS packages** — the
 E2E verification vehicles: debug configuration, full structured logging, the

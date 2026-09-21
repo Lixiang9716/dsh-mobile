@@ -65,8 +65,9 @@ fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
 | `dsh-harmony` | Release | `dsh-harmony-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
 
 Release 资产一律按 `dsh-<宿主>…` 命名,绝不沿用构建系统的内部产物路径
-(`entry-default-unsigned.hap`、`app-release-unsigned.apk`)——工作流用
-`gh release upload` 的 `file#name` 显示名做到这一点。`-unsigned` 后缀是刻意的:
+(`entry-default-unsigned.hap`、`app-release-unsigned.apk`)。工作流在上传前
+先把构建产物改名:`gh release upload` 的 `file#text` 形式设置的是显示
+label(下载时会被忽略),真正生效的是文件名本身。`-unsigned` 后缀是刻意的:
 它是下载者在文件可用之前必须知道的唯一属性。
 
 **`include_harness: true` 会额外上传 HARNESS 包**——即 E2E 验证载体:debug
