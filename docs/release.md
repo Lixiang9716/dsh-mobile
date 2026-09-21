@@ -1,38 +1,35 @@
 # Release packages
 
-The release pipeline is three stages, and each stage's workflow name says which
-one it is — `release/version` PREPARES a release, then one PACKAGE stage per
-host builds and attaches it. The names mirror `dev/ios`, `dev/android` and
-`dev/harmonyos`, so a run in the Actions list tells you its stage and its host
-without opening it.
+The release pipeline is PREPARE, then PACKAGE one host at a time, and each
+workflow's name says which. The package stages are `release/ios`,
+`release/android` and `release/harmony` — mirroring `dev/ios`, `dev/android`
+and `dev/harmonyos`, so a run in the Actions list tells you its host without
+opening it.
 
-| Stage | Workflow | Trigger |
+| Stage | What it is | Trigger |
 | --- | --- | --- |
-| Prepare | `release/version` | every push to `main`; keeps one release PR open, never tags |
+| Prepare | an ordinary pull request running `tools/release/bump-version.py` | whenever you decide to release |
 | Package | `release/ios` | **a `v*` tag push**, or a manual dispatch |
 | Package | `release/android` | the same |
 | Package | `release/harmony` | the same |
 
 **The tag push is the release trigger** — `git push origin vX.Y.Z`. Not the
-`release: published` event, and not release-please finishing: a release that
-depends on the bot completing has exactly the failure mode this pipeline spent
-days in, where a credential, a repository setting or a suppressed event stops
-the release at a step that reports nothing. Cutting a release now needs nothing
-but `contents: write`, and the same tag push can simply be retried.
+`release: published` event, and not a bot finishing: a release that depends on
+something else completing has exactly the failure mode this pipeline spent days
+in, where a credential, a repository setting or a suppressed event stops the
+release at a step that reports nothing. Cutting a release needs nothing but
+`contents: write`, and a failed attempt is retried by pushing again.
 
 Two ways in, one build path:
 
-- **A release** — the normal path: land work, merge the release PR, push the
-  tag. `release/version` reads the conventional commits landing on `main` and
-  keeps ONE open release PR that bumps `version.txt`, writes `CHANGELOG.md` and
-  syncs the three host version manifests — but it stops there
-  (`skip-github-release: true`). Merging that PR advances the four version
-  files; **pushing the tag** is what starts the three `release/<host>`
-  workflows, which build each host and **attach the packages to that tag's
-  Release** (creating the Release first if the tag has none), so a tag is a
-  downloadable build set. (`CHANGELOG.md` is created by the first merged
-  release PR — it is deliberately absent until then, so do not go looking for
-  it before the first `chore(main): release X.Y.Z` lands.)
+- **A release** — the normal path: bump, merge, tag.
+  `tools/release/bump-version.py X.Y.Z` writes all four version files and the
+  `CHANGELOG.md` section in one command; you open an **ordinary** pull request
+  with it — which is the point, because a PR from a person or an agent gets the
+  required `gates` check the way any other PR does (D13/D14). Merge it, then
+  push the tag: that fires the three `release/<host>` workflows, which build
+  each host and **attach the package to that tag's Release**, creating the
+  Release first if the tag has none. A tag is a downloadable build set.
 - **A manual run** — Actions tab (**release/ios**, **release/android** or
   **release/harmony** → Run workflow) or `gh workflow run release-ios.yml`. The
   packages land on the workflow run instead of on a release;
@@ -41,13 +38,20 @@ Two ways in, one build path:
 ## Cutting a release
 
 1. Land work on `main` with conventional commit messages (enforced by the
-   `commit-format` gate). `feat:` bumps the minor, `fix:` the patch; below
-   1.0 a breaking change bumps the minor rather than jumping to 1.0.0.
-2. `release/version` keeps a PR titled `chore(main): release X.Y.Z` up to date.
-   It is generated and mechanical — `version.txt`, `CHANGELOG.md` and the
-   three host manifests. **Review the changelog**; that is the part a human
-   owns, the version bumps follow from the commits.
-3. Merge it. The four version files advance on `main`; nothing is tagged yet.
+   `commit-format` gate). A `feat:` or a breaking change bumps the minor while
+   below 1.0; a `fix:` the patch.
+2. **Bump, and write the changelog:**
+
+       tools/release/bump-version.py X.Y.Z            # or --dry-run first
+
+   It prints the version the commits since the last tag imply as a hint — a
+   person makes the call — writes `version.txt`, the iOS `Info.plist`, the
+   Android `versionName` and the HarmonyOS `versionName`, and prepends the
+   release's `CHANGELOG.md` section from those commits. **Read the changelog**;
+   that is the part a human owns.
+3. **Open an ordinary pull request with it and merge it.** A PR authored by a
+   person or an agent receives the required `gates` check normally; that is why
+   the bump is a normal PR at all (D13/D14). Nothing is tagged yet.
 4. **Push the tag on that merge commit:**
 
        git pull --ff-only && git tag vX.Y.Z && git push origin vX.Y.Z
@@ -74,75 +78,60 @@ Two ways in, one build path:
    `buildOptionSet`. One host at a time is the point: a bad HAP does not
    require rebuilding iOS.
 6. **Recovery — the tag is wrong.** Delete it and re-push:
-   `git push --delete origin vX.Y.Z`, fix the version files (or merge the
-   release PR), then tag again. If a Release was already created, delete that
+   `git push --delete origin vX.Y.Z`, fix the version files (a
+   new bump PR), then tag again. If a Release was already created, delete that
    too — the package workflows create it, so they will re-create it on the
    next push.
 
 ### The version stream
 
-One version for the whole repository: the three hosts ship together in a
-single build, so they share one number. `version.txt` plus
-`.release-please-manifest.json` are the source of truth, and the host
-manifests are kept in step by the `extra-files` wiring in
-`release-please-config.json`:
+One version for the whole repository: the three hosts ship together in a single
+build, so they share one number. `version.txt` is the source of truth, and
+**`tools/release/bump-version.py` writes all four files in one command**, so
+they cannot drift:
 
-| Host | File | Field | Updater |
-| --- | --- | --- | --- |
-| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` | `xml` + xpath — no in-file annotation needed |
-| Android | `hosts/android/app/build.gradle.kts` | `versionName` | `generic` + `// x-release-please-version` |
-| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` | `json` + jsonpath — the `.json5` extension is not auto-detected, so the type is explicit |
+    tools/release/bump-version.py 0.1.0            # bump every version file
+    tools/release/bump-version.py 0.1.0 --dry-run  # show what would change
+
+| Host | File | Field |
+| --- | --- | --- |
+| — | `version.txt` | the source of truth |
+| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` |
+| Android | `hosts/android/app/build.gradle.kts` | `versionName` |
+| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` |
+
+The script derives the version the conventional commits imply (a `feat` or a
+breaking change bumps the minor pre-1.0, a `fix` the patch) and prints it as a
+hint; a person makes the call. It also writes the `CHANGELOG.md` section for
+the release from those commits, and re-reads every file it writes — a
+partially-applied bump is refused before anything is written, not after.
+`tools/release/check-tag-version.sh` then refuses a tag that disagrees with any
+of the four, so the two ends cannot come apart silently.
 
 Build numbers are **not** versioned here: `CFBundleVersion`, the Android
 `versionCode` and the HarmonyOS `versionCode` are monotonic integers that
 semver cannot express, so they stay hand-set.
 
-### Setup (once): one repository setting
+### Setup: none
 
-`release/version` runs with `secrets.GITHUB_TOKEN` — there is **no token to
-configure**. But `GITHUB_TOKEN` may only open a pull request at all if the
-repository permits it: **Settings → Actions → General → Workflow permissions →
-"Allow GitHub Actions to create and approve pull requests"**. With it off,
-release-please gets all the way to its final API call and is refused with
-*"GitHub Actions is not permitted to create or approve pull requests"* — which
-is the failure the old PAT had been masking.
+There is no token to configure, no repository setting to remember and no bot to
+configure, because **no step of the release depends on one**. The version bump
+is a normal pull request authored by a person or an agent, so it gets the
+ordinary `gates` check like any other change; the release is the tag push, and
+the package workflows need only `contents: write`.
 
-It is settable through the API, which is how this repository did it:
+That is deliberate, and it is what the pipeline's history converged on: a
+release PR opened by `GITHUB_TOKEN` cannot receive the required check — its
+`pull_request` workflows arrive as `action_required`, and a check produced by a
+`workflow_dispatch` run does not satisfy branch protection either (measured on
+PR #111: green `gates` on the exact head SHA, correct app and context, suite
+linked to the PR, still `BLOCKED` with an empty rollup). Branch protection
+honours only checks from the pull request's own event flow. Authoring the bump
+as a normal PR sidesteps all of it. See D13/D14.
 
-    gh api --method PUT repos/OWNER/REPO/actions/permissions/workflow --input - <<'JSON'
-    {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
-    JSON
-
-With the setting on, `GITHUB_TOKEN` may open the release PR. **It still cannot
-make that PR mergeable**, and this is worth stating plainly because it is the
-one part of the pipeline that is not solved.
-
-A release PR opened with `GITHUB_TOKEN` gets no `pull_request` workflows — they
-arrive as `action_required` — so it receives no `gates` check, and `main`
-requires one. `release/version` dispatches the gate workflow at the release
-branch as a best-effort attempt at supplying it, but **measured on PR #111,
-that does not work**: the dispatched run produced a green `gates` check on the
-PR's exact head SHA, with the right context and app and its suite linked to the
-PR, and the PR stayed `BLOCKED` with an empty check rollup for 12+ minutes.
-Branch protection only honours a check that comes from the pull request's own
-event flow. See D13; D10's original PAT requirement, which D11 dismissed, was
-correct on this point.
-
-**So the version-bump commit is the open question, and there are two ways:**
-
-| Path | Needs | State |
-| --- | --- | --- |
-| A release PR from release-please | a **user-attributed token** (PAT or GitHub App) so its events are not suppressed — what D10 prescribed | blocked until such a token is configured |
-| A normal human/agent PR that bumps the four version files | nothing — a PR from a person gets its checks normally | works today; the recommended path |
-
-The second is why `tools/release/check-tag-version.sh` exists: with the bump in
-a normal PR, the guard is what keeps the tag and the version files from
-drifting apart. Whichever path is used, **cutting the release is unaffected** —
-step 4 below is the tag push, and it needs only `contents: write`.
-
-`RELEASE_PLEASE_TOKEN` is no longer read by any workflow. If it is still set as
-a secret it is simply ignored; nothing needs deleting, and its fine-grained
-permissions no longer matter. See D11.
+`RELEASE_PLEASE_TOKEN`, if still set as a secret, is read by nothing.
+`release-please` itself is retired (D14); `git log` has its configuration if it
+is ever wanted back.
 
 Each job also uploads its own downloadable artifact under the workflow run.
 

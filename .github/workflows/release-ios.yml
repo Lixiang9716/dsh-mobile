@@ -29,10 +29,10 @@ name: release/ios
 #
 # TWO TRIGGERS, one build path:
 #
-#   release: published  — release-please cut a release. The user-facing package
-#                         builds and is ATTACHED as an asset of that GitHub
-#                         Release, so a tag is a downloadable build set and not
-#                         just a diff.
+#   push: tags v*       — a release. The user-facing package builds and is
+#                         ATTACHED as an asset of that tag's GitHub Release
+#                         (created here if the tag has none), so a tag is a
+#                         downloadable build set and not just a diff.
 #   workflow_dispatch   — manual packaging, when a human asks for a run that is
 #                         not tied to a release. Artifacts land on the run.
 #

@@ -4,7 +4,7 @@
 # WHY THIS EXISTS
 # The release trigger is the tag push, which puts the *timing* decision in a
 # human's hands — deliberately, so cutting a release does not depend on
-# release-please completing (D12). But the same gesture would also put the
+# a bot completing (D12). But the same gesture would also put the
 # *bookkeeping* in a human's hands, and that is the drift D10 was adopted to
 # prevent: pushing `v0.0.3` while `version.txt` still says `0.0.2` ships an
 # app whose Info.plist, versionName and app.json5 all disagree with the tag it
@@ -35,9 +35,9 @@ check() { # <label> <actual-version>
 want=$(tr -d '[:space:]' < version.txt)
 check "version.txt" "$want"
 
-# The three host manifests are kept in step by release-please's extra-files
-# wiring (release-please-config.json); a manual bump that missed one is exactly
-# what this catches.
+# The four files are kept in step by tools/release/bump-version.py, which
+# writes them together; a bump that missed one — or a tag chosen by hand — is
+# exactly what this catches.
 ios=$(sed -n '/<key>CFBundleShortVersionString<\/key>/{n;s/.*<string>\([^<]*\)<\/string>.*/\1/p;}' \
   hosts/ios/App/Info.plist | head -1)
 check "hosts/ios/App/Info.plist CFBundleShortVersionString" "$ios"
