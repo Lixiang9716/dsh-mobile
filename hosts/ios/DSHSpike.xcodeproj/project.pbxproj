@@ -235,6 +235,7 @@
 			buildPhases = (
 				405A338A89E2FBE347355326 /* GenerateSpikeBundle */,
 				EB4572C5EB0CCEA1304E8FD7 /* Sources */,
+				7C4E1A90B6D243F18E5A0C31 /* StageOfficialWeb */,
 			);
 			buildRules = (
 			);
@@ -327,6 +328,25 @@
 			shellPath = /bin/sh;
 			shellScript = "python3 \"$SRCROOT/Tools/gen_bundle_header.py\"\n";
 		};
+		7C4E1A90B6D243F18E5A0C31 /* StageOfficialWeb */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				Tools/stage_official_web.py,
+			);
+			name = StageOfficialWeb;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Release only: embed the vendored official Web Client (dist + client\n# bundles) so a plain launch reaches the official UI with nothing staged\n# from outside. Debug is a no-op (the harness stages Documents itself, and\n# the E2E evidence must keep reading exactly the tree it stages). The script\n# fails loud when a Release source tree is missing or a copied byte drifts.\nset -e\npython3 \"$SRCROOT/Tools/stage_official_web.py\" \"$CONFIGURATION\" \\\n  \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -413,6 +433,10 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DSH_RELEASE=1",
+				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -429,6 +453,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;

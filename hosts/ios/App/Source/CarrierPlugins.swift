@@ -336,11 +336,12 @@ final class CarrierPlugins {
         return CarrierPlugins(bundles: bundles, chunks: chunks)
     }
 
-    /// The staged package directories under Documents/web-plugins/npm/@deepseek-ai,
-    /// in sorted (= delivery = graph scan-order) sequence.
+    /// The staged package directories under <scope>/@deepseek-ai, in sorted
+    /// (= delivery = graph scan-order) sequence. SpikeBundleStager decides
+    /// which tree: the embedded app resource in a user-facing build, else
+    /// the Documents tree the E2E runners stage.
     private static func stagedPackageDirs() -> [URL] {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let scope = docs.appendingPathComponent("web-plugins/npm/@deepseek-ai", isDirectory: true)
+        guard let scope = SpikeBundleStager.stagedPluginScope() else { return [] }
         return ((try? FileManager.default.contentsOfDirectory(
             at: scope, includingPropertiesForKeys: nil, options: []))?
             .filter(\.hasDirectoryPath)

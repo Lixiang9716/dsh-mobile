@@ -34,6 +34,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         let root = UIViewController()
+        if BuildFlavor.isRelease {
+            return bootRelease(window: window, root: root)
+        }
         let consoleFrame = CGRect(
             x: 16, y: 64,
             width: window.bounds.width - 32,
@@ -107,11 +110,43 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// Launch mode from the launch arguments ("-dsh-mode session"): the
     /// default keeps the historical boot → carrier → gateway sequence.
     private var launchMode: String {
+        requestedLaunchMode ?? "spikes"
+    }
+
+    /// The `-dsh-mode` value, or nil when the flag is absent.
+    private var requestedLaunchMode: String? {
         let args = ProcessInfo.processInfo.arguments
         guard let at = args.firstIndex(of: "-dsh-mode"), at + 1 < args.count else {
-            return "spikes"
+            return nil
         }
         return args[at + 1]
+    }
+
+    /// The user-facing boot: the official DSH Web Client, full screen, with
+    /// no launch arguments required. No verification drive runs, no verdict
+    /// panel exists, and no per-event E2E record is produced — the "release"
+    /// half of AGENTS.md constraint 5 / rules.md rule L4. A launch that asks
+    /// for an E2E drive is refused LOUD (rule 5): this binary has no drives.
+    private func bootRelease(window: UIWindow, root: UIViewController) -> Bool {
+        if let mode = requestedLaunchMode, mode != "official-web" {
+            fatalError("""
+                DSHSpike release build: refusing '-dsh-mode \(mode)'. This is the \
+                user-facing distribution build — the verification drives, the \
+                verdict panel, and the per-event E2E log stream are compiled out \
+                (AGENTS.md constraint 5, rules.md rule L4). Build/run the harness \
+                variant (dsh-ios-harness) to drive E2E legs.
+                """)
+        }
+        let webView = WKWebView(frame: window.bounds)
+        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        root.view.addSubview(webView)
+        window.rootViewController = root
+        window.makeKeyAndVisible()
+        self.mainWindow = window
+        self.webView = webView
+        webView.navigationDelegate = self
+        runOfficialWeb()
+        return true
     }
 
     /// The on-device session: the scenario runs behind the mounted Web
@@ -135,15 +170,17 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// The Phase-B official-web mount: the contract carrier serves the
     /// vendored upstream dist; the drive probes the wire + rendered state.
+    /// In a release build the same serving stack runs with the evidence
+    /// machinery off (no probe, no watchdog, no canonical records).
     private func runOfficialWeb() {
-        let official = OfficialWebRuntime()
+        let official = OfficialWebRuntime(evidence: !BuildFlavor.isRelease)
         self.official = official
         official.attach(webView: webView!)
         official.onOpenOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))
         }
         official.run { [weak self] outcome in
-            guard let self else { return }
+            guard let self, !BuildFlavor.isRelease else { return }
             self.show(outcome, phase: "b1.official-web.mount") { self.officialVerdict = $0 }
             self.official = nil
             print("spike: sequence official-web=\(self.officialVerdict)")

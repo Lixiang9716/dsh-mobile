@@ -447,6 +447,7 @@ final class SessionRuntime {
             "level": "info", "module": "dsh.carrier", "message": "e2e",
             "data": [payload],
         ]) else { return }
+        guard BuildFlavor.keeps(data) else { return }
         print(SpikeLogSink.prefix + data)
         fflush(stdout)
     }
