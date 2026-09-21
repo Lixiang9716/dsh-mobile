@@ -48,6 +48,16 @@ on:
           cover the debug harness on every push.
         type: boolean
         default: false
+      release_tag:
+        description: >-
+          Attach the built packages to this existing release tag (e.g. v0.0.1),
+          REPLACING that tag's assets in place — the recovery path for a
+          release whose asset was built wrong, without deleting and
+          re-publishing the release. Leave empty for a plain manual run, whose
+          packages stay on the workflow run only.
+        type: string
+        required: false
+        default: ''
   release:
     types: [published]
 
@@ -59,6 +69,10 @@ jobs:
   ios-package:
     runs-on: macos-15
     timeout-minutes: 60
+    env:
+      # Empty on a plain dispatch (packages stay on the run); the release tag
+      # otherwise — the event's own tag, or the one a dispatch asked for.
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -125,14 +139,18 @@ jobs:
           if-no-files-found: error
 
       - name: Attach dsh-ios to the release
-        if: github.event_name == 'release'
+        # The `file#name` form is the display label: a release asset is
+        # NAMED for what it is (`dsh-<host>…`), never for the build system's
+        # internal output path. The workflow-artifact names above already
+        # follow that convention; the assets must match them.
+        if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "${{ github.event.release.tag_name }}" \
-            /tmp/DSHSpike-release-device-unsigned.zip \
-            /tmp/DSHSpike-release-simulator.zip \
+          gh release upload "$RELEASE_TAG" \
+            /tmp/DSHSpike-release-device-unsigned.zip#dsh-ios-device-unsigned.zip \
+            /tmp/DSHSpike-release-simulator.zip#dsh-ios-simulator-unsigned.zip \
             --clobber
 
       - name: Build the harness .app (debug, device + simulator, unsigned)
@@ -173,6 +191,10 @@ jobs:
   android-package:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # Empty on a plain dispatch (packages stay on the run); the release tag
+      # otherwise — the event's own tag, or the one a dispatch asked for.
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -232,13 +254,13 @@ jobs:
           if-no-files-found: error
 
       - name: Attach dsh-android to the release
-        if: github.event_name == 'release'
+        if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "${{ github.event.release.tag_name }}" \
-            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+          gh release upload "$RELEASE_TAG" \
+            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk#dsh-android-unsigned.apk \
             --clobber
 
       - name: Build the harness APK (debug — debug-keystore signed, installs directly)
@@ -264,6 +286,9 @@ jobs:
     timeout-minutes: 60
     env:
       DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
+      # Empty on a plain dispatch (packages stay on the run); the release tag
+      # otherwise — the event's own tag, or the one a dispatch asked for.
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
     steps:
       - uses: actions/checkout@v4
 
@@ -313,6 +338,27 @@ jobs:
             entry/build/default/generated/profile/default/BuildProfile.ets \
             || { echo "::error::the release HAP did not publish DSH_RELEASE"; exit 1; }
 
+      - name: Assert the release HAP is genuinely release configuration
+        # The guard above proves the LOG STRIP and says nothing about the
+        # debuggable bit — which is exactly how a debuggable "release" HAP
+        # shipped: a product-level `buildOption.debuggable` beat buildMode.
+        # This reads the packaged metadata, where the two axes are distinct.
+        working-directory: hosts/harmony
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, zipfile
+          hap = "entry/build/default/outputs/default/entry-default-unsigned.hap"
+          with zipfile.ZipFile(hap) as z:
+              app = json.loads(z.read("module.json"))["app"]
+          debug, mode = app.get("debug"), app.get("buildMode")
+          if debug is not False or mode != "release":
+              raise SystemExit(
+                  "::error::release HAP is not release configuration "
+                  f"(debug={debug!r}, buildMode={mode!r})")
+          print(f"release HAP: debug={debug} buildMode={mode}")
+          PY
+
       - name: Upload dsh-harmony
         uses: actions/upload-artifact@v4
         with:
@@ -323,13 +369,13 @@ jobs:
       - name: Attach dsh-harmony to the release
         # Runs BEFORE the harness build below, which overwrites this same
         # output path (both modes write entry-default-unsigned.hap).
-        if: github.event_name == 'release'
+        if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "${{ github.event.release.tag_name }}" \
-            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
+          gh release upload "$RELEASE_TAG" \
+            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap#dsh-harmony-unsigned.hap \
             --clobber
 
       - name: Build the harness HAP (debug, unsigned)

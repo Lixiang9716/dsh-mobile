@@ -1,0 +1,21 @@
+{
+  "title": "Fix the HarmonyOS release build: it was shipping a debuggable HAP, and add a re-attach path",
+  "created": "2026-09-21T09:39:42+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "reproduced: -p buildMode=release produced a HAP whose module.json says buildMode=debug / debug=true, because product-level buildOption.debuggable=true applies to every mode",
+    "debuggable moves into the module buildOptionSet (true for debug, false for release) since the schema default is true; the dangling obfuscation-rules.txt reference is dropped (the file never existed; hvigor only skipped it because the build was debuggable)",
+    "both modes re-verified by a real local build: release -> buildMode=release/debug=false with DSH_RELEASE strip intact; debug -> buildMode=debug/debug=true",
+    "release.yml gains a release_tag dispatch input so packages can be rebuilt and re-attached to an existing release without deleting it",
+    "gov run green; PR opened; gates check green; squash merged; the corrected HAP replaces the bad asset on v0.0.1"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0028"
+}

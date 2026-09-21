@@ -21,6 +21,12 @@
    **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
 3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,`release/packages`
    构建三个宿主并挂上去(每个宿主 30–60 分钟,全部由 release 事件触发)。
+4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。用手动触发
+   `release/packages` 并填 **`release_tag: vX.Y.Z`**:包会从当前 `main` 构建,
+   然后就地替换该标签下的资产(`gh release upload --clobber`)。当你合并的修复
+   改变了某个平台必须构建的内容时,就用这条路——例如 HarmonyOS 的 HAP,
+   在把产品级 `debuggable` 覆盖移进模块的按模式 `buildOptionSet` 之前,
+   它一直在发布 debuggable 的包。
 
 ### 版本流
 
@@ -52,11 +58,16 @@ fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
 任何验证机制,只输出关键日志集(`warn` + `error`);debug/info 在源头就被剥离
 (AGENTS.md 约束 5,rules.md 规则 L4):
 
-| 产物 | 配置 | 内容 | 可直接安装? |
+| 产物 | 配置 | Release 资产名 | 可直接安装? |
 | --- | --- | --- | --- |
-| `dsh-ios` | Release | `DSHSpike-release-device-unsigned.zip` + `DSHSpike-release-simulator.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
-| `dsh-android` | Release | `app-release-unsigned.apk`(官方 web app 打进 assets) | 否——先签名 |
-| `dsh-harmony` | Release | `entry-default-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
+| `dsh-ios` | Release | `dsh-ios-device-unsigned.zip` + `dsh-ios-simulator-unsigned.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
+| `dsh-android` | Release | `dsh-android-unsigned.apk`(官方 web app 打进 assets) | 否——先签名 |
+| `dsh-harmony` | Release | `dsh-harmony-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
+
+Release 资产一律按 `dsh-<宿主>…` 命名,绝不沿用构建系统的内部产物路径
+(`entry-default-unsigned.hap`、`app-release-unsigned.apk`)——工作流用
+`gh release upload` 的 `file#name` 显示名做到这一点。`-unsigned` 后缀是刻意的:
+它是下载者在文件可用之前必须知道的唯一属性。
 
 **`include_harness: true` 会额外上传 HARNESS 包**——即 E2E 验证载体:debug
 配置、完整结构化日志、验证驱动照常运行。它们存在的意义是在真机上手工验证;
@@ -79,7 +90,7 @@ App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装�
 
 真机 `.app` 刻意未签名(CI 不持有任何 Apple 证书)。装上 iPhone:
 
-1. 解压 `DSHSpike-release-device-unsigned.zip`。
+1. 解压 `dsh-ios-device-unsigned.zip`。
 2. 用免费 Apple ID(7 天有效期)或付费团队签名:
    - **Xcode**:打开 `hosts/ios/DSHSpike.xcodeproj`,在 target 的
      Signing & Capabilities 里选你的团队,连上手机直接 Run——或把解压的

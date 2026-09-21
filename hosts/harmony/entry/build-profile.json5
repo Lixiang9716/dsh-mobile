@@ -21,6 +21,10 @@
       // (an export that exists only in release would make every debug build
       // fail to compile).
       "name": "debug",
+      // `debuggable` is declared in BOTH entries on purpose: the field's
+      // schema default is `true`, so omitting it in the release entry ships a
+      // debuggable release build (which is exactly the bug this pair fixes).
+      "debuggable": true,
       "arkOptions": {
         "buildProfileFields": {
           "DSH_RELEASE": false
@@ -47,14 +51,23 @@
           "arm64-v8a"
         ]
       },
+      "debuggable": false,
       "arkOptions": {
         "buildProfileFields": {
           "DSH_RELEASE": true
         },
         "obfuscation": {
+          // Obfuscation stays OFF, and `files` is deliberately absent: the
+          // previous entry pointed at './obfuscation-rules.txt', a file that
+          // has never existed in this repository. It went unnoticed because
+          // the product-level `debuggable: true` made every build debuggable,
+          // and hvigor skips obfuscation for a debuggable build — so the
+          // dangling path was never resolved. Turning the build genuinely
+          // release-mode is what exposed it. `ruleOptions` requires only
+          // `enable` (verified against hvigor's own schema), and obfuscation
+          // is disabled, so no rules file is needed.
           "ruleOptions": {
-            "enable": false,
-            "files": [ "./obfuscation-rules.txt" ]
+            "enable": false
           }
         }
       }
