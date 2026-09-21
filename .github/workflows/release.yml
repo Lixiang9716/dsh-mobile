@@ -139,18 +139,22 @@ jobs:
           if-no-files-found: error
 
       - name: Attach dsh-ios to the release
-        # The `file#name` form is the display label: a release asset is
-        # NAMED for what it is (`dsh-<host>…`), never for the build system's
-        # internal output path. The workflow-artifact names above already
-        # follow that convention; the assets must match them.
+        # A release asset's NAME is the uploaded file's basename. `gh release
+        # upload`'s `file#text` form sets only the display LABEL, which a
+        # download ignores — so the outputs are RENAMED here instead. An asset
+        # is named for what it is (`dsh-<host>…`), never for the build system's
+        # internal output path; the workflow-artifact names above already
+        # follow that convention and the assets must match them.
         if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          cp /tmp/DSHSpike-release-device-unsigned.zip /tmp/dsh-ios-device-unsigned.zip
+          cp /tmp/DSHSpike-release-simulator.zip      /tmp/dsh-ios-simulator-unsigned.zip
           gh release upload "$RELEASE_TAG" \
-            /tmp/DSHSpike-release-device-unsigned.zip#dsh-ios-device-unsigned.zip \
-            /tmp/DSHSpike-release-simulator.zip#dsh-ios-simulator-unsigned.zip \
+            /tmp/dsh-ios-device-unsigned.zip \
+            /tmp/dsh-ios-simulator-unsigned.zip \
             --clobber
 
       - name: Build the harness .app (debug, device + simulator, unsigned)
@@ -259,9 +263,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "$RELEASE_TAG" \
-            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk#dsh-android-unsigned.apk \
-            --clobber
+          cp hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            /tmp/dsh-android-unsigned.apk
+          gh release upload "$RELEASE_TAG" /tmp/dsh-android-unsigned.apk --clobber
 
       - name: Build the harness APK (debug — debug-keystore signed, installs directly)
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness
@@ -374,9 +378,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          gh release upload "$RELEASE_TAG" \
-            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap#dsh-harmony-unsigned.hap \
-            --clobber
+          cp hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
+            /tmp/dsh-harmony-unsigned.hap
+          gh release upload "$RELEASE_TAG" /tmp/dsh-harmony-unsigned.hap --clobber
 
       - name: Build the harness HAP (debug, unsigned)
         # Same output path as the release HAP (both modes write
