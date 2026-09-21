@@ -122,10 +122,27 @@ hosts/android/artifacts/m2-llm/ for the evidence flow).
 The HAP is unsigned (signing material is device-specific). `dsh-harmony`
 is the release configuration (the `DSH_RELEASE` define reaches both ArkTS and
 the native spike library, so debug/info fold away); `dsh-harmony-harness` is
-the debug/E2E vehicle. **Honest gap:** the HarmonyOS host's serving stack
-still lives inside its E2E drives, so a plain launch on the release HAP
-refuses loudly instead of showing the official UI — the user-facing serving
-path is follow-up work. Use `dsh-harmony-harness` to run the host today.
+the debug/E2E vehicle.
+
+**`dsh-harmony` (release): a plain launch reaches the official DSH Web UI.**
+The serving stack is ONE seat —
+`hosts/harmony/entry/src/main/ets/model/OfficialServe.ets`: the loopback
+carrier serving the vendored dist and the client bundles straight from
+rawfile, the web-boot runtime composing the official boot wire, ArkWeb
+mounting the origin — and it runs in BOTH configurations. The E2E drives
+(`model/OfficialPhase.ets`: the per-event records, the same-origin probes,
+the httpFetch / session-live / write legs, the verdicts) attach to that seat
+only through hooks, so a release launch has no drive and no probe and emits
+no record at all; asking a release build for an E2E leg
+(`--ps dsh.e2e.leg <leg>`) refuses LOUD by name (rule 5). The gaps that
+remain are the mount leg's own honest ones, the same on every host: `/api`
+and the mux answer unclaimed endpoints structurally — the session surface is
+served only on the harness's spine legs — and a real chat turn needs
+credentials the user supplies, since the mobile hosts ship no model endpoint.
+Evidence: `hosts/harmony/artifacts/release-logging/` (plain launch, no launch
+parameter, nothing staged → the official UI, zero `dsh.spike.log:` records,
+zero verdict text, zero debug/info records; the refusal; the harness suite
+re-run green).
 
 Signing:
 

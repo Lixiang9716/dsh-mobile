@@ -1,0 +1,6 @@
+09-21 15:18:15.867  3902  3902 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onCreate
+09-21 15:18:15.868  3902  3902 I A00000/com.dshmobile.spike/dsh.app: leg m2.llm selected at launch
+09-21 15:18:15.894  3902  3902 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onWindowStageCreate
+09-21 15:18:15.906  3902  3902 I A00000/com.dshmobile.spike/dsh.app: EntryAbility onForeground
+09-21 15:18:16.018  3902  3902 I A00000/com.dshmobile.spike/dsh.app: Index loaded
+09-21 15:18:16.065  3902  3902 E A00000/com.dshmobile.spike/dsh.app: release build: refusing: dsh.e2e.leg m2.llm asks for a verification drive; a user-facing build runs none — use the harness variant (dsh-harmony-harness) to drive E2E legs

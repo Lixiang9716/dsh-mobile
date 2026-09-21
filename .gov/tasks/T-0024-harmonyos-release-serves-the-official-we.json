@@ -1,0 +1,24 @@
+{
+  "title": "HarmonyOS release serves the official Web UI (serving/evidence split)",
+  "created": "2026-09-21T06:42:42+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Read hosts/harmony README + ci/run-host-e2e.sh + drive-official.mjs; map the serving stack vs the evidence plumbing in OfficialPhase.ets/Index.ets",
+    "Split the serving path (carrier + WebDist/WebPlugins/ApiBridge + web-boot runtime + origin open) from the evidence path (wire hooks, probes, D9 legs, verdicts) behind a file boundary; no hostType branching, rawfile copies stay byte-identical",
+    "dsh-harmony (release) plain launch: no --ps leg, no staged files -> official DSH Web UI renders in ArkWeb, ZERO dsh.spike.log: records, ZERO debug/info records",
+    "dsh-harmony (release) asked for an E2E leg refuses LOUDLY by name (rule 5)",
+    "dsh-harmony-harness (debug) unchanged: re-run ci/run-host-e2e.sh, all 8 checker verdicts green, artifacts/d9-*/ intact",
+    "Evidence hosts/harmony/artifacts/release-logging/ (run.sh re-runs both configurations + asserts, real PNG screenshot, log captures, refusal capture, MANIFEST.md in the ios/spike house style)",
+    "docs/release.md + release.zh.md tell the truth about the harmony release; gov verify pairing --write release",
+    "Agent Note (class feature) all three sections; gov run green (12 gates); PR -> gh pr checks --watch -> squash merge"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0024"
+}

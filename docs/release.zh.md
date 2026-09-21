@@ -107,10 +107,22 @@ DSH Web UI;harness 则通过 `hosts/android/ci/` runner 脚本跑 E2E 腿
 
 HAP 未签名(签名材料与设备相关)。`dsh-harmony` 是 release 配置
 (`DSH_RELEASE` 定义同时到达 ArkTS 与原生 spike 库,debug/info 因此折叠掉);
-`dsh-harmony-harness` 是 debug/E2E 载体。**如实说明的缺口:** HarmonyOS 宿主的
-服务栈仍在它的 E2E 驱动里,所以 release HAP 直接启动会大声拒绝,而不是显示
-官方 UI——面向用户的服务路径是后续工作。今天要跑宿主请用
-`dsh-harmony-harness`。
+`dsh-harmony-harness` 是 debug/E2E 载体。
+
+**`dsh-harmony`(release):直接启动即可到达官方 DSH Web UI。**
+服务栈只有一处座位——`hosts/harmony/entry/src/main/ets/model/OfficialServe.ets`:
+回环 carrier 直接以 rawfile 提供 vendored dist 与客户端 bundle,web-boot 运行时
+组装官方 boot wire,ArkWeb 挂载 origin——两种配置都跑它。E2E 驱动
+(`model/OfficialPhase.ets`:逐事件记录、同源探针、httpFetch / session-live /
+write 三段腿、verdict)只通过 hook 挂到这个座位上,所以 release 启动没有驱动、
+没有探针,也不产生任何记录;release 构建被要求跑 E2E 腿
+(`--ps dsh.e2e.leg <leg>`)时会按名字大声拒绝(rule 5)。仍然存在的缺口是挂载腿
+自己如实说明的那些,各宿主一致:`/api` 与 mux 对未认领端点按契约返回结构化错误
+——session 面只在 harness 的 spine 腿上被服务——而真正的对话需要用户自己提供
+凭据,移动宿主不带模型端点。证据:
+`hosts/harmony/artifacts/release-logging/`(直接启动、无启动参数、无外部投放 →
+官方 UI、零 `dsh.spike.log:` 记录、零 verdict 文本、零 debug/info 记录;拒绝;
+harness 套件重跑全绿)。
 
 签名:
 

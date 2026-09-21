@@ -1,0 +1,1 @@
+09-21 15:18:16.065  3902  3902 E A00000/com.dshmobile.spike/dsh.app: release build: refusing: dsh.e2e.leg m2.llm asks for a verification drive; a user-facing build runs none — use the harness variant (dsh-harmony-harness) to drive E2E legs
