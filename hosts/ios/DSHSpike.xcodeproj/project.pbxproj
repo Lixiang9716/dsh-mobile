@@ -13,19 +13,17 @@
 		1B385B3BBC82C30A9C4BFAA8 /* OfficialWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */; };
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
 		283B8F98CD41140278AC43FC /* CarrierBootConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */; };
-		3410739F0E2FF33F65298179 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */; };
 		4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */; };
 		4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */; };
 		534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */; };
 		54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */; };
+		573579F6F12471E4424B727A /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 40F1780B39D9032EE9BB32BC /* libunicode.c */; };
 		5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */; };
 		61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */; };
 		6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */; };
-		6ED6144E17B3ACD3B34B2B5F /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */; };
 		7137721E1CD8809EAC1499B5 /* CarrierRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */; };
-		864357306EA83A2FF72A1532 /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = DB6B13352D14347144692813 /* dtoa.c */; };
+		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
 		88615C1BC61F9ED55E38A30C /* CarrierRoutes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93462855086C75B4830CEEAA /* CarrierRoutes.swift */; };
-		8B202B596DE89A8DA4553955 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = A71D2A1134F00FED56B8F179 /* quickjs.c */; };
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
 		90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */; };
 		9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */; };
@@ -35,10 +33,12 @@
 		A4D64D8E5942951A64D738C2 /* SessionWriteProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */; };
 		A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DD761A8299F885CFFFBF71 /* AppDelegate.swift */; };
 		ACE8B4FB83C7BC5C05C91032 /* SessionRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */; };
+		AD11658A84414177D0FCCB8D /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EC9F5F6929C9D36E65D032D /* dtoa.c */; };
 		B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */; };
 		C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D699FF5BB908578B359B9B14 /* RuntimeThread.swift */; };
-		C9A8C0C6C66F5B9C7EA9C177 /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = FAD82A5AD5F23A41AE66F49B /* libunicode.c */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
+		E42F06323D11206F2C413149 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C1AD386700DAC0A6BB463CE /* libregexp.c */; };
+		EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */; };
 		F5F0070F74E81DE98B176234 /* CarrierPlugins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */; };
 		F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */; };
 /* End PBXBuildFile section */
@@ -49,31 +49,31 @@
 		0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewaySession.swift; sourceTree = "<group>"; };
 		183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPPrimitive.swift; sourceTree = "<group>"; };
 		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
+		1C1AD386700DAC0A6BB463CE /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
 		2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSPrimitives.swift; sourceTree = "<group>"; };
 		3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebRuntime.swift; sourceTree = "<group>"; };
+		40F1780B39D9032EE9BB32BC /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 		43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAPIBridge.swift; sourceTree = "<group>"; };
 		4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPrimitive.swift; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
+		6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
 		74DD761A8299F885CFFFBF71 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRuntime.swift; sourceTree = "<group>"; };
+		7EC9F5F6929C9D36E65D032D /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93462855086C75B4830CEEAA /* CarrierRoutes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRoutes.swift; sourceTree = "<group>"; };
 		95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebProbe.swift; sourceTree = "<group>"; };
 		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
-		A71D2A1134F00FED56B8F179 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 		B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierPlugins.swift; sourceTree = "<group>"; };
-		B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
-		BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRuntime.swift; sourceTree = "<group>"; };
 		C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIPrimitives.swift; sourceTree = "<group>"; };
 		CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierWebDist.swift; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
 		D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveRuntime.swift; sourceTree = "<group>"; };
 		D699FF5BB908578B359B9B14 /* RuntimeThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeThread.swift; sourceTree = "<group>"; };
-		DB6B13352D14347144692813 /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierServer.swift; sourceTree = "<group>"; };
 		E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRequest.swift; sourceTree = "<group>"; };
 		EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierBootConfig.swift; sourceTree = "<group>"; };
@@ -81,10 +81,27 @@
 		F1AFB09BF1FF590997FA7731 /* SessionLiveProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveProbe.swift; sourceTree = "<group>"; };
 		F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainPrimitives.swift; sourceTree = "<group>"; };
 		F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBootRuntimeDrive.swift; sourceTree = "<group>"; };
-		FAD82A5AD5F23A41AE66F49B /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
+		FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		18BCF6D2637A0604C13D003A /* runtime */ = {
+			isa = PBXGroup;
+			children = (
+				A5B60BF5C6260FCBD4137563 /* spike */,
+			);
+			path = runtime;
+			sourceTree = "<group>";
+		};
+		246E2CA954878CE8897E2C83 /* dsh-mobile */ = {
+			isa = PBXGroup;
+			children = (
+				18BCF6D2637A0604C13D003A /* runtime */,
+			);
+			name = "dsh-mobile";
+			path = ../..;
+			sourceTree = "<group>";
+		};
 		261210B6C944DA738F7FBC65 /* Source */ = {
 			isa = PBXGroup;
 			children = (
@@ -115,48 +132,21 @@
 			path = Source;
 			sourceTree = "<group>";
 		};
-		489463185FD153B3E23901AF /* quickjs-ng */ = {
-			isa = PBXGroup;
-			children = (
-				56A4DA58379F37328EB7E33F /* 0.17.0 */,
-			);
-			path = "quickjs-ng";
-			sourceTree = "<group>";
-		};
-		495293BC28B259851D365E28 /* host */ = {
-			isa = PBXGroup;
-			children = (
-				B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */,
-			);
-			path = host;
-			sourceTree = "<group>";
-		};
-		56A4DA58379F37328EB7E33F /* 0.17.0 */ = {
-			isa = PBXGroup;
-			children = (
-				DB6B13352D14347144692813 /* dtoa.c */,
-				BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */,
-				FAD82A5AD5F23A41AE66F49B /* libunicode.c */,
-				A71D2A1134F00FED56B8F179 /* quickjs.c */,
-			);
-			path = 0.17.0;
-			sourceTree = "<group>";
-		};
-		6E7292DDD7F5EA7B1C0E407C /* runtime */ = {
-			isa = PBXGroup;
-			children = (
-				F7118AA557120774F32D294E /* spike */,
-			);
-			path = runtime;
-			sourceTree = "<group>";
-		};
 		84F95FD6AADCA843676C4DF9 = {
 			isa = PBXGroup;
 			children = (
 				EAA4B75B2F1CFEF88CAB445B /* App */,
-				ADAED633E62153D4DB6088FB /* dsh-wt-llm */,
+				246E2CA954878CE8897E2C83 /* dsh-mobile */,
 				AF09F1B8671210489366EA0F /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		978D35D8850CE0F9B67467A7 /* quickjs-ng */ = {
+			isa = PBXGroup;
+			children = (
+				D5E827790BA094B86B9650BE /* 0.17.0 */,
+			);
+			path = "quickjs-ng";
 			sourceTree = "<group>";
 		};
 		A551A48B835E92B60D8D2724 /* Generated */ = {
@@ -168,13 +158,13 @@
 			path = Generated;
 			sourceTree = "<group>";
 		};
-		ADAED633E62153D4DB6088FB /* dsh-wt-llm */ = {
+		A5B60BF5C6260FCBD4137563 /* spike */ = {
 			isa = PBXGroup;
 			children = (
-				6E7292DDD7F5EA7B1C0E407C /* runtime */,
+				B38A1FC5129B317D9437AF5C /* host */,
+				C479559F39BBD427C25F13B6 /* vendor */,
 			);
-			name = "dsh-wt-llm";
-			path = ../..;
+			path = spike;
 			sourceTree = "<group>";
 		};
 		AEA110DACF229E48D1B6EFFC /* Gateway */ = {
@@ -199,12 +189,31 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		CA103AF11CF0007112B89653 /* vendor */ = {
+		B38A1FC5129B317D9437AF5C /* host */ = {
 			isa = PBXGroup;
 			children = (
-				489463185FD153B3E23901AF /* quickjs-ng */,
+				6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */,
+			);
+			path = host;
+			sourceTree = "<group>";
+		};
+		C479559F39BBD427C25F13B6 /* vendor */ = {
+			isa = PBXGroup;
+			children = (
+				978D35D8850CE0F9B67467A7 /* quickjs-ng */,
 			);
 			path = vendor;
+			sourceTree = "<group>";
+		};
+		D5E827790BA094B86B9650BE /* 0.17.0 */ = {
+			isa = PBXGroup;
+			children = (
+				7EC9F5F6929C9D36E65D032D /* dtoa.c */,
+				1C1AD386700DAC0A6BB463CE /* libregexp.c */,
+				40F1780B39D9032EE9BB32BC /* libunicode.c */,
+				FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */,
+			);
+			path = 0.17.0;
 			sourceTree = "<group>";
 		};
 		EAA4B75B2F1CFEF88CAB445B /* App */ = {
@@ -217,15 +226,6 @@
 			path = App;
 			sourceTree = "<group>";
 		};
-		F7118AA557120774F32D294E /* spike */ = {
-			isa = PBXGroup;
-			children = (
-				495293BC28B259851D365E28 /* host */,
-				CA103AF11CF0007112B89653 /* vendor */,
-			);
-			path = spike;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -234,8 +234,8 @@
 			buildConfigurationList = 76CE008D03C6EE3793B0F2BC /* Build configuration list for PBXNativeTarget "DSHSpike" */;
 			buildPhases = (
 				405A338A89E2FBE347355326 /* GenerateSpikeBundle */,
+				BFBB6C07DDCAFB1A3FE93954 /* StageOfficialWeb */,
 				EB4572C5EB0CCEA1304E8FD7 /* Sources */,
-				7C4E1A90B6D243F18E5A0C31 /* StageOfficialWeb */,
 			);
 			buildRules = (
 			);
@@ -328,15 +328,15 @@
 			shellPath = /bin/sh;
 			shellScript = "python3 \"$SRCROOT/Tools/gen_bundle_header.py\"\n";
 		};
-		7C4E1A90B6D243F18E5A0C31 /* StageOfficialWeb */ = {
+		BFBB6C07DDCAFB1A3FE93954 /* StageOfficialWeb */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				Tools/stage_official_web.py,
 			);
 			name = StageOfficialWeb;
 			outputFileListPaths = (
@@ -345,7 +345,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Release only: embed the vendored official Web Client (dist + client\n# bundles) so a plain launch reaches the official UI with nothing staged\n# from outside. Debug is a no-op (the harness stages Documents itself, and\n# the E2E evidence must keep reading exactly the tree it stages). The script\n# fails loud when a Release source tree is missing or a copied byte drifts.\nset -e\npython3 \"$SRCROOT/Tools/stage_official_web.py\" \"$CONFIGURATION\" \\\n  \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
+			shellScript = "# Release only: embed the vendored official Web Client (dist + client\n# bundles) so a plain launch reaches the official UI with nothing\n# staged from outside. Debug is a no-op (the harness stages Documents\n# itself, and the E2E evidence must keep reading exactly the tree it\n# stages). The script fails loud when a Release source tree is missing\n# or a copied byte drifts.\nset -e\npython3 \"$SRCROOT/Tools/stage_official_web.py\" \"$CONFIGURATION\" \\\n  \"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -383,11 +383,11 @@
 				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
 				9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */,
 				6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */,
-				3410739F0E2FF33F65298179 /* dsh_spike_host.c in Sources */,
-				864357306EA83A2FF72A1532 /* dtoa.c in Sources */,
-				6ED6144E17B3ACD3B34B2B5F /* libregexp.c in Sources */,
-				C9A8C0C6C66F5B9C7EA9C177 /* libunicode.c in Sources */,
-				8B202B596DE89A8DA4553955 /* quickjs.c in Sources */,
+				7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */,
+				AD11658A84414177D0FCCB8D /* dtoa.c in Sources */,
+				E42F06323D11206F2C413149 /* libregexp.c in Sources */,
+				573579F6F12471E4424B727A /* libunicode.c in Sources */,
+				EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,10 +433,6 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(inherited)",
-					"DSH_RELEASE=1",
-				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -453,7 +449,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -489,6 +484,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.dsh.DSHSpike;
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE;
 				SWIFT_OBJC_BRIDGING_HEADER = App/Source/Bridge.h;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
