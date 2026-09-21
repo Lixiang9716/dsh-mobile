@@ -32,11 +32,48 @@ App Store / AppGallery)不在范围内:这些包面向真机验证。
 3. 手机上:设置 → 通用 → VPN 与设备管理 → 信任你的开发者描述文件,然后
    启动 **DSHSpike**。
 
-如实说明:打包的是验证载体。直接启动会拉起运行时、回环 carrier 和挂载
-的官方 Web Client;真实 LLM 流式驱动(`m2.llm`)需要以
-`-dsh-scenario m2-llm` 启动参数运行,且凭据由 E2E runner
+如实说明:打包的是验证载体。直接启动会拉起运行时、回环 carrier,并在
+WebView 里渲染 M1 carrier 页面。官方 DSH Web UI 需要在应用容器里暂存两棵
+目录树并指定启动模式——见下面「看到官方 Web UI」。真实 LLM 流式驱动
+(`m2.llm`)需要以 `-dsh-scenario m2-llm` 启动参数运行,且凭据由 E2E runner
 (tools/e2e/run-ios-m2-llm.sh)预先注入 `app` fs scope——侧载手机上的
 交互式真 LLM 对话尚未接线。
+
+### 看到官方 Web UI(iOS 模拟器已验证,2026-09-21)
+
+vendored 官方 dist 一旦进入应用容器,carrier 就会通过 `ctx.webServer` 契约
+把它服务出来;应用随后以官方 web 驱动(`b1.official-web.mount`,打包应用实跑
+验证 PASS 13/13)启动。
+
+```sh
+# 1. 本地物化三棵未跟踪目录树(均按 MANIFEST 校验)
+tools/e2e/ensure-official-dist.sh
+tools/e2e/ensure-client-bundles.sh
+runtime/spike/vendor/ensure-dsh.sh
+
+# 2. 暂存进应用容器
+#    模拟器:
+APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
+#    真机(iOS 17+;设备名/UDID 见 `xcrun devicectl list devices`):
+#      xcrun devicectl device copy to --device "$DEVICE" \
+#        --domain-type appDataContainer --domain-identifier org.dsh.DSHSpike \
+#        --source <tree> --destination Documents/...
+#    两者相同:dist → Documents/official-web/dist
+#             客户端 bundles → Documents/web-plugins/npm/@deepseek-ai/
+#             vendored bootstrap 包覆盖其构建孪生
+#            (精确的目录操作见 tools/e2e/run-ios-b1.sh 第 4/4b 步)
+
+# 3. 以 official-web 模式启动
+#    模拟器:
+xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
+#    真机:
+#      xcrun devicectl device process launch --device "$DEVICE" \
+#        org.dsh.DSHSpike -dsh-mode official-web
+```
+
+真实对话回合还需要把凭据放进
+`Documents/profiles/default/m2-llm/config.json`(`{baseUrl, apiKey, model}`)
+并加 `-dsh-scenario m2-llm` 启动参数;密钥只留在应用容器里,绝不进仓库。
 
 ## Android
 
