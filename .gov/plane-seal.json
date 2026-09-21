@@ -1,5 +1,8 @@
 {
   "files": {
+    ".gov/pairing.json": {
+      "sha256": "7748c71c35d72d56b141b28dbed2587b6393a43fe30b798864f0adb288f3a64f"
+    },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
@@ -20,9 +23,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-21T15:40:01+00:00",
+    "ts": "2026-09-21T18:09:18+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "Revert the e2e-matrix gate wiring: adding it changed the combined rules@ hash, which staled the pins of 7 open cards, and the task gate blocks on stale pins with no CLI exit for those cards (duplicate ids, govrail #352). Wiring the matrix therefore depends on a cleanable card ledger, which needs govrail 0.47.2. Restoring the pre-wiring constitution; the matrix stays enforced by docs/register until then."
+    "reason": "gov update --apply migration (0.47.1 -> 0.48.0)"
   }
 }

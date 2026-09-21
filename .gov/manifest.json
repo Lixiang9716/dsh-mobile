@@ -1,5 +1,5 @@
 {
-  "version": "0.47.1",
+  "version": "0.48.0",
   "created": [
     "gates.json",
     ".agents/notes/README.md",
@@ -9,7 +9,9 @@
     ".agents/skills/archive-agent-notes/SKILL.md",
     ".gov/rejections/README.md",
     ".github/workflows/gov.yml",
-    ".agents/skills/govrail/SKILL.md"
+    ".agents/skills/govrail/SKILL.md",
+    ".gov/pairing.json",
+    ".claude/settings.json"
   ],
   "gitHooks": [
     "pre-push",
@@ -18,13 +20,17 @@
   "templates": {
     ".gov/rules.md": "96fd0e5ea27ee87bf1cb3faed88a46d5286edf2f6f911104e4be233b82996976",
     "gates.json": "bbd3517b6d95e5fd7857ffe88c62902114e6c79525d0c263944b41c557cb8989",
-    ".agents/notes/README.md": "5a0651b310cd1729b9d9082a659b4580dc8b8a2fede4fb7501212c2d4b038ca8",
-    ".agents/skills/recall-first/SKILL.md": "0f6db72eefb7c22e01fa9789a8b8b1069ee1b78883960bb9b4fdf72503931ade",
-    ".agents/skills/pre-push-checks/SKILL.md": "a9f9d615b1551fcc3e8b7fe513dfd049ad57bc0e70deb5e5736e3ca898af2ffb",
+    ".agents/notes/README.md": "325306ba583055250c3d28416cf6ebc9cdeacd9ff7109b388d523234c83dbb2f",
+    ".agents/skills/recall-first/SKILL.md": "a8bb8c3047f1e018ced0da65991b84f1200511e0b49970b95574450096e467c8",
+    ".agents/skills/pre-push-checks/SKILL.md": "8bceb67f320ab0dad294e66c0cc5efd36bcebe3857e1aacbb925356ced840315",
     ".agents/skills/code-review/SKILL.md": "5d875393d0ce4365d6da803219099dfe110e767afa9b345181548dafcd1e54e1",
     ".agents/skills/archive-agent-notes/SKILL.md": "4f1d650ca566adaec1dbfc401badd4b1b5c7515a97a00b6f12e946fb50f1dda1",
     ".gov/rejections/README.md": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419",
     ".github/workflows/gov.yml": "da44ec3f7781aef2b3302377e78620fc9d242586ebb994160850d00b44277265",
-    ".agents/skills/govrail/SKILL.md": "3275be59efece7c2a12876fc9497cddab48848a7c14a246c7ea8808eeaa3c2f9"
-  }
+    ".agents/skills/govrail/SKILL.md": "fd7b06a012d32889c4bb975404d83d11fe46436d2b52d45acfe757cae0c706b8",
+    ".gov/pairing.json": "7748c71c35d72d56b141b28dbed2587b6393a43fe30b798864f0adb288f3a64f"
+  },
+  "platforms": [
+    "claude"
+  ]
 }

@@ -53,7 +53,10 @@ push (the pre-push hook re-runs the scoped DAG automatically).
 - `gov agent-hooks <event> [--dialect <platform>]` — the plane's
   presence at the agent's lifecycle events across platforms: claude
   (default), codex, copilot, gemini — same five events, each platform's
-  own deny/context contract. pre-tool-use judges from a deny-rules
+  own deny/context contract. To see what a platform actually sends,
+  `--capture <path>` (or `GOV_AGENT_HOOK_CAPTURE=1` for every
+  invocation, into gitignored `.gov/history/`) appends the payload
+  verbatim — event, dialect, cwd, argv, the stdin JSON. pre-tool-use judges from a deny-rules
   table (built-ins for forced-recursive `rm` and `git reset --hard`;
   `.gov/hook-deny.json` adds rules and allow-exemptions); `stop`
   surfaces an advisory (open cards, dirty tree). A presence, not a
@@ -81,7 +84,9 @@ push (the pre-push hook re-runs the scoped DAG automatically).
   into gates.json (validated against the runner's schema, merged
   atomically, then one verification `gov run --gate <id>`). Use for
   every test/lint/build wiring; hand-edited gates.json is the
-  exception, not the path. In a governed repo the seal speaks after
+  exception, not the path. `--dry-run` previews the entry, its mode
+  memberships and the verification argv without writing — the way to
+  quote a wiring in a PR without drifting a sealed gates.json. In a governed repo the seal speaks after
   the edit — accept it with `gov verify-plane --write`.
 - `gov run --every-gate` — the full matrix. CI owns this; use it when
   several push ranges make one base ref insufficient (the hook does
@@ -95,10 +100,15 @@ push (the pre-push hook re-runs the scoped DAG automatically).
   what a change will cost; rule 1's smallest-sufficient-set starts here.
 - `gov check` — the syntax-class static checkers, by hand. The `check`
   gate runs them scoped; invoke directly to re-judge one tree on demand
-  (`--strict` makes warnings block).
+  (`--strict` makes warnings block). Vendored trees the lite grammar
+  cannot judge are declared in `.gov/checks/exclude.json` (glob + reason)
+  — every exclusion surfaces as a counted SKIP, never invisible.
 - `gov self-test` — every governance gate proves it can reject (rule
   6). Run it whenever touching gates.json, a checker, or a rejection
-  case; a gate whose rejection proof is red is vacuous, not green.
+  case; a gate whose rejection proof is red is vacuous, not green. The
+  closing coverage line reports counts; `--explain` prints the per-gate
+  ledger and the case-authoring remedy (a project that chose not to
+  author project cases is a state, not a fresh action item).
 - `gov receipt verify/show` — cited receipts: verify one against its
   commit before trusting a claim that cites it; show renders one
   (`show --markdown` renders a paste-ready PR/job-summary block).
@@ -132,10 +142,23 @@ push (the pre-push hook re-runs the scoped DAG automatically).
 - `gov lease acquire` / `release` / `locks` — only when ≥2 workers may touch
   one resource; busy is exit 3, `--wait S` polls. Single worker: skip.
 - `gov task new/check/close` — briefs for subagents; a `done` card
-  without a green receipt is named by `task check`.
+  without a green receipt is named by `task check`. `gov task tick <id>
+  <n>` ticks a checklist item (the canonical `[x] `; hand-editing the
+  card JSON is the one move that is never OK); `gov task show <id>`
+  renders a card whole — checklist, void reason, receipt — which is why
+  `task check` can stay one line per card (`--verbose` keeps the reasons
+  in the gate output). `close` refuses while items are unticked: tick
+  what the work satisfies, or void the card if the checklist no longer
+  describes it. `gov task repin <id> --reason <why>` advances a stale
+  pin when the constitution moved but the brief did not (a recorded act,
+  not a re-brief). Claims are keyed by the card's own identity, so two
+  worktrees' same-numbered cards lease independently.
 
 **Memory and history**
 - `gov recall` — before proposing anything (see the recall-first skill).
+  A cold start has no vocabulary: `gov recall --recent [N]` primes the
+  corpus with the newest entries. A quoted phrase searches the same terms
+  as separate arguments (the AND is over words, not the literal string).
 - `gov surprise record "<expectation>" --reality "<what happened>"` —
   rule 11's teeth: record expectation-vs-reality the session you notice
   it; the ledger counts recurrences per signature and the `surprises`
