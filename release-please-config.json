@@ -1,6 +1,6 @@
 {
   "release-type": "simple",
-  "bootstrap-sha": "6680d87fa0e89d87f914c98f3c149ea18aae8caa",
+  "bootstrap-sha": "a5dc56ba9da129a1a50dfb01c16f1e1fbf5afcf7",
   "include-component-in-tag": false,
   "bump-minor-pre-major": true,
   "packages": {

@@ -91,7 +91,8 @@ stream) and `release/packages` (the builds). A release is a merge of a
 generated PR, so the changelog is the only part a human has to actually read.
 
 Two follow-ups are deliberately left open and are visible rather than papered
-over: the first release PR will normalise the three hosts to one number (that
-is the PR where the existing `1.0.0` / `0.1.0-spike` drift disappears), and the
+over: the first release change normalises the three hosts to one number (that
+is where the existing `1.0.0` / `0.1.0-spike` drift disappears), and the
 `RELEASE_PLEASE_TOKEN` secret is an owner-side action — until it exists, the
-workflow is red by design.
+workflow is red by design, and the first release (`v0.0.1`) is therefore cut by
+hand rather than by the bot.
