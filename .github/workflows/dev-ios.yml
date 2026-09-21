@@ -64,8 +64,17 @@ jobs:
       # Materialize the pinned quickjs-ng engine sources (sha256-verified;
       # network only needed on first fetch). Must precede any build that
       # embeds the engine (runtime/spike/README.md embedding contract).
-      - name: Vendor quickjs-ng sources
-        run: runtime/spike/vendor/ensure.sh
+      # ensure-dsh.sh materializes the pinned upstream DSH closure — the
+      # GenerateSpikeBundle phase pins it at alpha.2 (gen_bundle_header.py),
+      # so a build without it fails PhaseScriptExecution. That failure was
+      # INVISIBLE here until the build step got `set -o pipefail` (the
+      # `| tail -30` swallowed xcodebuild's exit status); this step is the
+      # fix for the breakage that had been landing green since the D9 bump.
+      - name: Vendor quickjs-ng + the pinned upstream DSH closure
+        run: |
+          set -euo pipefail
+          runtime/spike/vendor/ensure.sh
+          runtime/spike/vendor/ensure-dsh.sh
 
       # Real, unconditional build: compiles + links the app for the iOS
       # simulator. Generic destination so it does not depend on which
