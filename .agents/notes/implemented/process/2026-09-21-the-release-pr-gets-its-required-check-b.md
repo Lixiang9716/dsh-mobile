@@ -66,6 +66,13 @@ operator intervention. The dispatch is therefore a **guarantee, not the
 mechanism**: it costs one ~20s run and makes the single check `main` requires
 independent of the PR-event path, which is why it stays.
 
+That step also needed a fix once it ran for real. The job never checks anything
+out — release-please does not need a working tree — so `gh` could not resolve
+the repository and the step died with `fatal: not a git repository`. It now
+passes `GH_REPO: ${{ github.repository }}` rather than cloning the repository
+for a single API call. Worth recording because the first version of the step
+was written from the local test, which happened to run inside a git checkout.
+
 Before any of this, the release path was measured rather than assumed: a
 release-please-shaped commit (version bump across `version.txt`, `CHANGELOG.md`
 and the three host manifests, under the generated `chore(main): release X.Y.Z`
