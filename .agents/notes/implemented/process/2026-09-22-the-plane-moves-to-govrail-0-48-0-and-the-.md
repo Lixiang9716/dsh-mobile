@@ -56,8 +56,28 @@ time to establish and neither is what the tool says it will do: `gov update
 --apply` reported the hook drift and promised `--apply` re-wires it, but the
 hook was untouched (`gov init --hooks` is what does it — and it additionally
 installs a `.claude/settings.json` for a platform this plane never adopted,
-which was removed here and reported upstream). Both are field feedback to
-govrail, not silent workarounds.
+which was removed here and reported upstream).
+
+And the hook it installed could not push a new branch at all: the template's
+`#363` branch exports `GOV_CHANGE_BASE` **without** `GOV_CHANGE_ROOT` — the
+guard the template's own comment above `repo_root` describes for exactly this
+hazard — so `gov self-test`, which builds scratch repositories in a temp dir,
+had them diff against a sha from this repository:
+
+```
+FAIL test_conflict_markers_rejects_marked_file (… cannot diff against '87fd52b…': fatal: bad object 87fd52b…)
+self-test: 6 failure(s) (tools 56 + project 4) — tool-defect 6, environment-suspect 0
+```
+
+`self-test` is in the default DAG, so the run went red and the push was
+refused — the ordinary branch → commit → push flow, blocked, with
+`--no-verify` as the only way past it. Proven by the variable:
+`GOV_CHANGE_BASE=<sha> gov self-test` → 6 failures;
+`GOV_CHANGE_BASE=<sha> GOV_CHANGE_ROOT=$PWD gov self-test` → all pass. Filed
+as govrail **#371**, and the installed hook is **locally patched** to the
+two-variable form (with the issue named at the patch site) until the template
+is fixed. The hooks are not among the seal's files, so this patch is a
+tracked-plane change rather than a constitution change.
 
 ## Alternatives considered
 
