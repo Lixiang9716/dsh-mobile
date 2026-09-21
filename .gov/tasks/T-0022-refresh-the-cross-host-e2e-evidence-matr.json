@@ -15,7 +15,12 @@
     "gov verify pairing --write e2e-matrix reports PASS for both sides",
     "gov run is green on this branch (12 gates)"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0022"
+  "id": "T-0022",
+  "void": {
+    "ts": "2026-09-21T05:52:18+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Work COMPLETE and merged (PR #81, squash e45a6eb): docs/e2e-matrix.md + .zh.md regenerated to the current tree (32 dirs / 75 verdicts, 73 green / 81 PNGs / 10 findings / 28 of 28 scenario ids), the quota-blocked hosts/harmony/artifacts/m5-m2-llm/ dir presented as deliberately-red (gaps 8/9, closure command named) and the b4-write-live receipt finding kept as genuinely absent; pairing re-confirmed (5 pairs ok) and gov run 12/12 green pre-push. The card was closed first (all-green mode=all, 13 gates) but the stamped receipt is rejected by the task gate's _check_receipt (verify-decisions NOT_SELECTED in mode=all) while void refuses a done card \u2014 the documented govrail #329/#339 dead-end; escaped by restoring the close's card mutation with git and voiding per repo precedent. The PR is the audit trail."
+  }
 }
