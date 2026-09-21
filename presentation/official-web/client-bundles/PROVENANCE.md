@@ -69,7 +69,7 @@ the generated record (names, versions, declarations, file lists).
   `../PROVENANCE.md` for the pin-authority records)
 - **Version**: 0.1.6-alpha.2
 
-## Build (reproduced 2026-09-20, re-verified 2026-09-21)
+## Build (reproduced 2026-09-20, re-verified 2026-09-21 and 2026-09-22)
 
 - Toolchain: Node v24.14.0, pnpm 11.7.0 (the repo's `packageManager`
   field, via corepack), macOS arm64 (darwin 25.5.0).
@@ -77,14 +77,27 @@ the generated record (names, versions, declarations, file lists).
   `pnpm install --frozen-lockfile` → `pnpm run build:lib:host` (the client
   face type-checks against the host face's typert augmentations) →
   `pnpm run build:lib:client` (`tsdown --env.DSH_BUILD_FACE client`) →
-  `roster.mjs` closure → staged allowlist copy → `MANIFEST.sha256`.
-- **The work dir is part of the bytes**: the upstream build embeds the
-  absolute source path in its outputs (`//#region dsh-css:<abs-path>`
-  comments; the css-module class-name hashes derive from it), so the build
-  clones into the FIXED path `/tmp/dsh-harness-src` — never a random temp
-  dir. Rebuilding anywhere else produces different (still verbatim-upstream)
-  bytes that cannot verify this manifest. The 2026-09-21 re-run at the fixed
-  path reproduced all 116 staged files byte-identically.
+  `roster.mjs` closure → staged allowlist copy → `MANIFEST.sha256.computed`.
+- **The work dir, and its realpath, are part of the bytes**: the upstream
+  build embeds the absolute source path in its outputs (`//#region
+  dsh-css:<abs-path>` comments; the css-module class name is
+  lightningcss's `[hash]_[local]`, which hashes that absolute virtual
+  filename), so the build clones into the FIXED path `/tmp/dsh-harness-src`
+  — never a random temp dir. Rebuilding anywhere else produces different
+  (still verbatim-upstream) bytes that cannot verify this record.
+- **And the fixed path is not one path across platforms**: `/tmp` is
+  `/private/tmp` on macOS, so a macOS build and the Linux CI build differ in
+  exactly the files that embed it — measured 2026-09-22: **40 of 116**, the
+  same 40 files the Linux `dev-android` job reports as mismatching, and the
+  same 40 that contain the path. Nothing else diverges; that bound is what
+  `verify-manifest.mjs` enforces. A macOS↔Linux byte-identical record is not
+  achievable while upstream's build embeds the path (the class-name hash
+  cannot be normalised after the fact), so the record below is the REFERENCE
+  build's record, and each environment's own record is the basis on which its
+  tree is verified.
+- The 2026-09-21 and 2026-09-22 re-runs at the fixed path each reproduced all
+  116 staged files byte-identically (manifest sha256
+  `e20c31675cbaff1068710083bdb71c660002860852471360e0f935deeda68abb`).
 - Bootstrap bundle equivalence check: the workspace-built
   `dsh-client-modules/lib/client.js` is byte-identical (sha256
   `3f7769d5f860961d412810d6a88a359ba05fe19b77624bf6a31207dae6c22760`) to the
@@ -96,18 +109,46 @@ the generated record (names, versions, declarations, file lists).
 ## What is committed here
 
 - `MANIFEST.sha256` — sha256 over every staged file (paths relative to
-  `npm/`), sorted.
-- `ROSTER.json` — the generated roster record.
-- `roster.mjs`, `build-client-bundles.sh` — the reproducible derivation and
-  recipe.
+  `npm/`), sorted. This is the **reference build's** record (the one
+  described under Build above); see the two-record note below.
+- `ROSTER.json` — the generated roster record: the parts of the identity that
+  are environment-independent (package names, versions, exact staged file
+  list) and therefore verifiable everywhere.
+- `roster.mjs`, `build-client-bundles.sh`, `verify-manifest.mjs` — the
+  reproducible derivation, the recipe, and the comparison that bounds the
+  divergence from the reference record.
 
 The `npm/` tree itself is UNTRACKED (like `../dist`): content gates never
-judge verbatim upstream JS, and the bytes are reproducible. Verify or
-materialize it with `tools/e2e/ensure-client-bundles.sh`:
+judge verbatim upstream JS, and the bytes are reproducible **at the fixed
+work path, per environment**. Verify or materialize it with
+`tools/e2e/ensure-client-bundles.sh`:
 
 ```sh
 tools/e2e/ensure-client-bundles.sh            # verify, or rebuild + verify
-cd presentation/official-web/client-bundles/npm && shasum -a 256 -c ../MANIFEST.sha256
+```
+
+### Two records, and what each one proves
+
+| record | travels with | answers |
+| --- | --- | --- |
+| `MANIFEST.sha256.computed` (untracked, gitignored, cached with the tree) | the tree | "are these the bytes the build **in this environment** produced?" — the integrity question a cache restore can answer everywhere |
+| `MANIFEST.sha256` (committed) | the repository | "are these the bytes the **reference** build produced?" — compared on every run, divergence bounded to the embedded-work-path class |
+
+A build writes the first and **never renews the second**: a build that
+re-issues its own certificate is not a verification, and the previous recipe
+did exactly that (`MANIFEST.sha256` was regenerated at the end of every
+build, so `ensure-client-bundles.sh` verified a freshly written record and
+could never detect non-reproducibility — while the CI cache, keyed on the
+committed record, could never hit either). `verify-manifest.mjs` is the
+comparison: a divergence outside the work-path class fails loud, so the
+reference record is not decoration.
+
+Re-record the reference deliberately after reviewing the diff, and update
+this file in the same change:
+
+```sh
+diff <(sort MANIFEST.sha256) <(sort MANIFEST.sha256.computed)
+cp MANIFEST.sha256.computed MANIFEST.sha256
 ```
 
 At this pin the tree is 58 packages, 116 files, 5.8 MB.
