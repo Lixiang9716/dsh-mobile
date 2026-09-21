@@ -19,6 +19,9 @@ FORCE=0
 [ "${1:-}" = "--force" ] && FORCE=1
 
 ok() { (cd "$NPM" && shasum -a 256 -c "$MANIFEST" >/dev/null 2>&1); }
+# See ensure-official-dist.sh why(): name the offending files rather
+# than reporting an anonymous mismatch.
+why() { (cd "$NPM" && shasum -a 256 -c "$MANIFEST" 2>&1 | grep -v ": OK$" || true); }
 
 if [ "$FORCE" -eq 1 ]; then
   rm -rf "$NPM"
@@ -31,6 +34,7 @@ fi
 
 if [ -d "$NPM" ]; then
   echo "ensure-client-bundles: npm tree present but MANIFEST mismatch — rebuilding" >&2
+  why >&2
   rm -rf "$NPM"
 fi
 

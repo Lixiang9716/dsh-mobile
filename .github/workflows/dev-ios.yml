@@ -167,11 +167,31 @@ jobs:
           # are complete before the UI-driven leg starts). Locally, via
           # tools/e2e/run-ios.sh, the terminal `spike: sequence` marker
           # appears as before.
+          # Stop on the terminal marker, OR once the log has gone QUIET with
+          # the app having emitted: measured on CI, `simctl launch` returns and
+          # the m1 events are all written, but the terminal marker never comes
+          # because the UI-driven m2 leg cannot be tapped. The old marker-only
+          # condition then exited 1 before the checkers ran, so real evidence on
+          # disk went unverified and every green run carried a red annotation.
+          # Idle is asserted (no new bytes for 8 x 2 s), never a blind sleep.
+          last=-1; idle=0
           for i in $(seq 1 90); do
             grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" 2>/dev/null && break
+            now=$(wc -c < "$ART/logs.txt" 2>/dev/null || echo 0)
+            if [ "$now" = "$last" ] && [ "$now" -gt 0 ]; then
+              idle=$((idle + 1))
+              [ "$idle" -ge 8 ] && break
+            else
+              idle=0
+            fi
+            last="$now"
             sleep 2
           done
-          grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" || { echo "verdict never appeared"; exit 1; }
+          # The only thing worth failing on is "the app produced nothing".
+          grep -q '^dsh.spike.log:' "$ART/logs.txt" \
+            || { echo "::error::no dsh.spike.log lines — the app never ran"; exit 1; }
+          grep -q "spike: sequence" "$ART/logs.txt" \
+            || echo "::warning::terminal marker absent (the UI-driven m2 leg cannot be driven on CI) — verifying the completed m1 scenarios only"
           if grep -q "spike: ui-wait" "$ART/logs.txt" && ! grep -q "spike: sequence" "$ART/logs.txt"; then
             echo "::warning::run stalled at a UI-driven m2 prompt (no UI driver on CI) — verifying the completed m1 scenarios only"
           fi
@@ -207,8 +227,13 @@ jobs:
             sleep 2
           done
           if ! grep -q "spike: sequence gateway=" "$LOG"; then
+            # Warn, do not exit 1. This step cannot succeed on hosted CI by
+            # construction (no idb/UI driver), so `exit 1` here carried no
+            # signal — continue-on-error absorbed it — while GitHub painted it
+            # as a red error on every green run, which is how a pipeline
+            # teaches people to ignore red. The absence is the expected
+            # outcome and the log is uploaded either way.
             echo "::warning::m2 terminal marker never appeared — expected on CI (no UI driver). Full E2E: tools/e2e/run-ios.sh"
-            exit 1
           fi
           grep '^dsh.gateway.audit:' "$LOG" > "$ART/gateway-audit.jsonl"
           node tools/e2e/check.mjs \
