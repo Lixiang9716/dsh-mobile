@@ -36,6 +36,10 @@ import { SettingsMemory } from 'upstream/settings-memory.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
+// The FIRST ported tool package (D9). It exports `{Config, apply, inject,
+// name}` and no default, so the namespace object IS the cordis plugin (it
+// carries the apply/inject/name/Config the kernel reads).
+import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
 
 /** cordis logger records ride the unified sink as diagnostics (module prefix
  * distinguishes them from scenario events; they carry no scenario tag, so the
@@ -68,6 +72,7 @@ export const wireLogger = (ctx) => {
 /** Pin the profile container (the $DSH_HOME / cwd / tmpdir equivalents). */
 const pinProfileContainer = (container) => {
   globalThis.__dshProfileCwd = container.cwd;
+  globalThis.__dshProfileScopeRoot = container.scopeRoot;
   globalThis.__dshProfileTmpdir = container.tmpdir;
   globalThis.__dshProfileHome = container.home;
   globalThis.__dshProfilePlatform = container.platform ?? 'mobile';
@@ -108,6 +113,10 @@ const mountSpine = async (ctx, identity) => {
   await ctx.plugin(ToolRuntime);
   await ctx.plugin(SessionProjectionRegistry);
   await ctx.plugin(SettingsMemory);
+  // The ported tool packages (D9): mounted AFTER `tools`, because a tool
+  // registers into that service at apply time. `allowParallelInProgress:
+  // false` is the mobile profile's shape — one agent, sequential work.
+  await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -146,6 +155,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     apiKey: llm.apiKey,
     provider: llm.provider,
     name: llm.adapterName ?? 'mock loopback chat-completions (dsh-llm-mock-server)',
+    userEndpoint: llm.userEndpoint === true,
     onWire: llm.onWire,
     onSse: llm.onSse,
   }));

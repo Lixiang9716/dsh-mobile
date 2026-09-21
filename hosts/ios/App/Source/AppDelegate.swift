@@ -21,6 +21,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The Phase-B official-web mount drive (`-dsh-mode official-web`).
     private var official: OfficialWebRuntime?
     private var officialVerdict = "PENDING"
+    /// The user-facing serving seat (release boot only; no hooks, no drive).
+    private var serve: SessionServe?
+    /// The release boot's launch surface, held until the page renders.
+    private var bootOverlay: UIView?
+    private var bootOverlayLabel: UILabel?
     /// The W-SESS session-live drive (`-dsh-mode session-live`).
     private var sessionLive: SessionLiveRuntime?
     private var sessionLiveVerdict = "PENDING"
@@ -98,6 +103,16 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH session write — b4.write.live, the official composer driving the upstream spine…",
                      line: "spike: app launched in session-write mode", web: true)
             runSessionWrite()
+        case "serve":
+            // The USER-FACING serving seat with the harness's logging intact:
+            // no probe, no watchdog, no evidence hooks — a human drives the
+            // page exactly as a user would — but the runtime's own records
+            // still print, which is the only way to see what the product path
+            // does (a release build drops every debug/info record by design).
+            // This is the mode to reproduce a user-visible failure in.
+            announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
+                     line: "spike: app launched in serve mode", web: true)
+            runServingBoot()
         default:
             print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
             fflush(stdout)
@@ -143,11 +158,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         return args[at + 1]
     }
 
-    /// The user-facing boot: the official DSH Web Client, full screen, with
-    /// no launch arguments required. No verification drive runs, no verdict
-    /// panel exists, and no per-event E2E record is produced — the "release"
-    /// half of AGENTS.md constraint 5 / rules.md rule L4. A launch that asks
-    /// for an E2E drive is refused LOUD (rule 5): this binary has no drives.
+    /// The user-facing boot: the official DSH Web Client over a LIVE agent
+    /// spine (`SessionServe`), full screen, with no launch arguments
+    /// required — workspace picking, the composer, the session streams, the
+    /// settings surface and the tool surface all answer. No verification
+    /// drive runs, no verdict panel exists, and no per-event E2E record is
+    /// produced — the "release" half of AGENTS.md constraint 5 / rules.md
+    /// rule L4. A launch that asks for an E2E drive is refused LOUD (rule 5):
+    /// this binary has no drives.
     private func bootRelease(window: UIWindow, root: UIViewController) -> Bool {
         if let mode = requestedLaunchMode, mode != "official-web" {
             fatalError("""
@@ -158,16 +176,125 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                 variant (dsh-ios-harness) to drive E2E legs.
                 """)
         }
-        let webView = WKWebView(frame: window.bounds)
-        webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        let webView = WKWebView(frame: .zero)
+        webView.translatesAutoresizingMaskIntoConstraints = false
+        webView.navigationDelegate = self
+        // The page is a full-bleed app shell with its OWN fixed chrome — a
+        // side rail and a tab row — and the vendored dist cannot be edited
+        // (D6). It does not opt into edge-to-edge drawing either (`its
+        // index.html` carries no `viewport-fit=cover`), so the safe area is
+        // the HOST's job: the WebView starts below the status bar / Dynamic
+        // Island instead of drawing under them. Measured before this change:
+        // the page's own 对话/轨迹 row rendered at the same y as the clock.
+        // The bottom stays edge-to-edge on purpose — the page's composer
+        // already clears the home indicator, and insetting it would float the
+        // composer away from the bottom edge.
+        let overlay = makeBootOverlay()
+        // The inset above the WebView (and below the page, past the home
+        // indicator) is the WINDOW's own background showing through. Left at
+        // its default it reads as a black letterbox bar under the status bar,
+        // which looks like a defect rather than a safe-area decision — so the
+        // chrome around the page is painted to match the app's surface.
+        window.backgroundColor = .systemBackground
+        root.view.backgroundColor = .systemBackground
         root.view.addSubview(webView)
+        root.view.addSubview(overlay)
+        NSLayoutConstraint.activate([
+            webView.topAnchor.constraint(equalTo: root.view.safeAreaLayoutGuide.topAnchor),
+            webView.leadingAnchor.constraint(equalTo: root.view.leadingAnchor),
+            webView.trailingAnchor.constraint(equalTo: root.view.trailingAnchor),
+            webView.bottomAnchor.constraint(equalTo: root.view.bottomAnchor),
+            overlay.topAnchor.constraint(equalTo: root.view.topAnchor),
+            overlay.leadingAnchor.constraint(equalTo: root.view.leadingAnchor),
+            overlay.trailingAnchor.constraint(equalTo: root.view.trailingAnchor),
+            overlay.bottomAnchor.constraint(equalTo: root.view.bottomAnchor),
+        ])
         window.rootViewController = root
         window.makeKeyAndVisible()
         self.mainWindow = window
         self.webView = webView
-        webView.navigationDelegate = self
-        runOfficialWeb()
+        runServingBoot()
         return true
+    }
+
+    /// The launch surface for the user-facing boot: the seat stages the JS
+    /// bundle, boots the spine and only then opens the origin, so for the
+    /// first seconds the WebView has nothing in it. A blank white screen is
+    /// indistinguishable from an app that is idle and working, which is the
+    /// worst of both — so the boot owns the screen until the page renders,
+    /// and says what happened when it cannot.
+    private func makeBootOverlay() -> UIView {
+        let overlay = UIView(frame: .zero)
+        overlay.translatesAutoresizingMaskIntoConstraints = false
+        overlay.backgroundColor = .systemBackground
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.startAnimating()
+        let label = UILabel()
+        label.text = "正在启动 DSH…"
+        label.font = .preferredFont(forTextStyle: .callout)
+        label.textColor = .secondaryLabel
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        let stack = UIStackView(arrangedSubviews: [spinner, label])
+        stack.axis = .vertical
+        stack.alignment = .center
+        stack.spacing = 16
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        overlay.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: overlay.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: overlay.centerYAnchor),
+            stack.leadingAnchor.constraint(greaterThanOrEqualTo: overlay.leadingAnchor, constant: 32),
+            stack.trailingAnchor.constraint(lessThanOrEqualTo: overlay.trailingAnchor, constant: -32),
+        ])
+        bootOverlay = overlay
+        bootOverlayLabel = label
+        return overlay
+    }
+
+    /// The page rendered: the boot surface has nothing left to say.
+    private func hideBootOverlay() {
+        guard let overlay = bootOverlay else { return }
+        bootOverlay = nil
+        bootOverlayLabel = nil
+        UIView.animate(withDuration: 0.2, animations: { overlay.alpha = 0 }) { _ in
+            overlay.removeFromSuperview()
+        }
+    }
+
+    /// A boot that cannot finish leaves the user looking at nothing. Name the
+    /// failure on screen — the same strings the Console carries, so the two
+    /// channels agree — instead of a white screen that reads as "loading".
+    private func showBootFailure(_ reason: String) {
+        guard let label = bootOverlayLabel else { return }
+        label.text = "启动失败：\(reason)"
+        label.textColor = .systemRed
+    }
+
+    /// The user-facing serving boot: the `SessionServe` seat, with NO hooks
+    /// assigned — the serving facts go nowhere, and the user drives the page.
+    /// The seat is the same one `b4.write.live` verifies, so the path the
+    /// manifest proves and the path a user runs cannot drift apart.
+    private func runServingBoot() {
+        let serve = SessionServe(credential: SessionServe.loadCredential())
+        self.serve = serve
+        serve.onOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        // A failure here leaves an inert page, which is indistinguishable
+        // from a working-but-idle one. Say so on BOTH channels: the screen
+        // (which is what the user is looking at) and the Console (which is
+        // what a warn-keeping release build records).
+        serve.onRuntimeFailure = { [weak self] message in
+            NSLog("%@", "dsh.session.serve: runtime failed: \(message)")
+            DispatchQueue.main.async { self?.showBootFailure(message) }
+        }
+        do {
+            try serve.start()
+        } catch {
+            NSLog("%@", "dsh.session.serve: bootstrap failed: \(error)")
+            showBootFailure("\(error)")
+        }
     }
 
     /// The on-device session: the scenario runs behind the mounted Web
@@ -300,10 +427,28 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: WKNavigationDelegate {
     /// The official page finished loading: all head subresources have
     /// arrived — the drive emits its mount evidence, probes the wire, and
-    /// reads the rendered state.
+    /// reads the rendered state. The release boot's launch surface retires
+    /// here: the page is what the user asked for.
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         official?.pageDidFinish()
         sessionLive?.pageDidFinish()
         sessionWrite?.pageDidFinish()
+        hideBootOverlay()
+    }
+
+    /// A page that never arrives is the one failure the seat cannot see (the
+    /// origin was served, so from the host's side everything worked). Without
+    /// this the user keeps looking at "正在启动…" forever with no reason why.
+    func webView(
+        _ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!,
+        withError error: Error
+    ) {
+        showBootFailure(error.localizedDescription)
+    }
+
+    func webView(
+        _ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error
+    ) {
+        showBootFailure(error.localizedDescription)
     }
 }

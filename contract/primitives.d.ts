@@ -1,5 +1,6 @@
 /**
- * dsh-mobile capability gateway — primitive contract v1.0.0 (FROZEN at M0, D5).
+ * dsh-mobile capability gateway — primitive contract v1.1.0 (FROZEN at M0, D5;
+ * v1.1.0 is the additive filesystem revision of 2026-09-22).
  *
  * Spec of record: contract/primitives.md. Shapes here are immutable for the
  * life of major version 1; additions require a minor bump of the contract.
@@ -51,6 +52,43 @@ export declare namespace fsScope {
   export declare function persist(scope: ScopeHandle): Promise<{ ref: ScopeRef }>;
   export declare function resolve(ref: ScopeRef): Promise<{ scope: ScopeHandle }>;
 }
+
+// ---- 10-14 · filesystem additions (v1.1.0) ------------------------------
+// The operations @deepseek-ai/dsh-fs-local performs on top of fsRead/fsWrite:
+// resolve/stat/list before a read, mkdir + rename for the atomic-write path,
+// remove for cleanup. Same scope-relative POSIX path rule as fsRead/fsWrite.
+
+/** What a path is. `other` covers sockets, devices and anything else the
+ * platform refuses to classify as a plain file or directory. */
+export type FsEntryKind = "file" | "dir" | "other";
+
+export declare function fsStat(
+  scope: ScopeHandle,
+  path: string,
+): Promise<{ kind: FsEntryKind; size: number; mtime: string }>;
+
+export declare function fsList(
+  scope: ScopeHandle,
+  path: string,
+): Promise<{ entries: Array<{ name: string; kind: FsEntryKind }> }>;
+
+export declare function fsMkdir(
+  scope: ScopeHandle,
+  path: string,
+  opts?: { existing?: "ok" | "error" },
+): Promise<Record<string, never>>;
+
+export declare function fsRemove(
+  scope: ScopeHandle,
+  path: string,
+  opts?: { recursive?: boolean; missing?: "ok" | "error" },
+): Promise<Record<string, never>>;
+
+export declare function fsRename(
+  scope: ScopeHandle,
+  from: string,
+  to: string,
+): Promise<Record<string, never>>;
 
 // ---- 4 · network --------------------------------------------------------
 

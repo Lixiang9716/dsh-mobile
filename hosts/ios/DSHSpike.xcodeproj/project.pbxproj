@@ -20,6 +20,7 @@
 		573579F6F12471E4424B727A /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 40F1780B39D9032EE9BB32BC /* libunicode.c */; };
 		5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */; };
 		61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */; };
+		61EEC98694105A362CEC3707 /* SessionServe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1279CFC8FB988D80AD896E16 /* SessionServe.swift */; };
 		6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */; };
 		7137721E1CD8809EAC1499B5 /* CarrierRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */; };
 		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
@@ -47,6 +48,7 @@
 		05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewayCore.swift; sourceTree = "<group>"; };
 		09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SpikeBundle.c; sourceTree = "<group>"; };
 		0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GatewaySession.swift; sourceTree = "<group>"; };
+		1279CFC8FB988D80AD896E16 /* SessionServe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionServe.swift; sourceTree = "<group>"; };
 		183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPPrimitive.swift; sourceTree = "<group>"; };
 		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
 		1C1AD386700DAC0A6BB463CE /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				F1AFB09BF1FF590997FA7731 /* SessionLiveProbe.swift */,
 				D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */,
 				BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */,
+				1279CFC8FB988D80AD896E16 /* SessionServe.swift */,
 				EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */,
 				9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
@@ -376,6 +379,7 @@
 				184D40FA4E64ACB3D27FE975 /* SessionLiveProbe.swift in Sources */,
 				4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */,
 				ACE8B4FB83C7BC5C05C91032 /* SessionRuntime.swift in Sources */,
+				61EEC98694105A362CEC3707 /* SessionServe.swift in Sources */,
 				A4D64D8E5942951A64D738C2 /* SessionWriteProbe.swift in Sources */,
 				9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,

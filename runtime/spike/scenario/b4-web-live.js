@@ -34,6 +34,48 @@ const AGENT_ID = 'main';
 const SESSION_ID = 's-b4-ondevice-0001'; // the configured agent; the page creates its own session
 const EXPECTED_TEXT = 'Hello from upstream'; // the scripted endpoint's successText
 
+/** The llm route for this boot, from the host's runtime.config. TWO shapes,
+ * and which one is live decides whether the turn text is asserted:
+ *
+ *   llmBaseUrl present → a REAL user-supplied OpenAI-compatible endpoint (the
+ *     user-facing serving boot). The turn is a genuine model call, so its text
+ *     is nondeterministic and NOT asserted — the settled event carries whatever
+ *     the model said (the m2.llm leg's honesty: a served turn is reported, not
+ *     predicted).
+ *   otherwise → the carrier's scripted loopback endpoint (the E2E determinism
+ *     boundary b4.write.live pins). The loopback demand is what keeps a drive
+ *     from silently reaching the network, so it stays fail-loud.
+ *
+ * The key never reaches a record: it rides apiKey only, and the transport
+ * labels name the endpoint's HOST, never the credential. */
+const resolveLlmRoute = (cfg) => {
+  if (typeof cfg.llmBaseUrl === 'string' && cfg.llmBaseUrl.length > 0) {
+    demand(typeof cfg.llmApiKey === 'string' && cfg.llmApiKey.length > 0,
+      'runtime.config llmBaseUrl given without llmApiKey');
+    demand(typeof cfg.llmModel === 'string' && cfg.llmModel.length > 0,
+      'runtime.config llmBaseUrl given without llmModel');
+    const provider = typeof cfg.llmProvider === 'string' && cfg.llmProvider.length > 0
+      ? cfg.llmProvider : 'openai-compatible';
+    let host = 'the configured endpoint';
+    try { host = new URL(cfg.llmBaseUrl).host; } catch { /* keep the generic label */ }
+    return {
+      baseURL: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, provider,
+      model: cfg.llmModel, scripted: false, userEndpoint: true,
+      adapterName: `user-supplied OpenAI-compatible endpoint (${provider})`,
+      transportLabel: `gateway httpFetch → ${host} (user-supplied endpoint)`,
+    };
+  }
+  demand(typeof cfg.mockLlmUrl === 'string' && cfg.mockLlmUrl.startsWith('http://127.0.0.1:'),
+    `runtime.config mock endpoint missing: ${JSON.stringify(cfg.mockLlmUrl)}`);
+  return {
+    baseURL: cfg.mockLlmUrl, apiKey: cfg.apiKey, provider: 'mock',
+    model: 'mock-1', scripted: true, userEndpoint: false,
+    adapterName: 'scripted loopback chat-completions (carrier mock-llm endpoint)',
+    transportLabel: 'gateway httpFetch → carrier scripted chat-completions '
+      + '(E2E determinism boundary, mirrors the CLI mock server)',
+  };
+};
+
 const log = createLogger('b4.web');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
@@ -93,7 +135,7 @@ const awaitAgent = async (ctx) => {
 /** Boot the spine: the profile container is the host-granted root from the
  * runtime.config delivery (the seeded workspace's REAL directory), the llm
  * route the carrier's scripted endpoint. */
-const bootPhase = async (cfg) => {
+const bootPhase = async (cfg, route) => {
   const root = cfg.containerRoot;
   demand(typeof root === 'string' && root.startsWith('/'),
     `profile container not granted by the host: ${JSON.stringify(root)}`);
@@ -107,17 +149,21 @@ const bootPhase = async (cfg) => {
       cwd: root,
       tmpdir: `${root}/tmp`,
       home: `${root}/home`,
-      env: { DSH_MOCK_LLM_URL: cfg.mockLlmUrl, DSH_MOCK_LLM_KEY: cfg.apiKey },
+      // The granted scope's root: the fs shims map absolute paths onto
+      // (scope, scope-relative path) through it. Absent on a host that grants
+      // no scope, in which case the shims refuse rather than guess.
+      scopeRoot: cfg.fsScopeRoot,
+      env: { DSH_MOCK_LLM_URL: route.baseURL, DSH_MOCK_LLM_KEY: route.apiKey },
       argv: ['dsh', '--profile', 'mobile'],
     },
     llm: {
-      baseURL: cfg.mockLlmUrl,
-      apiKey: cfg.apiKey,
-      provider: 'mock',
-      model: 'mock-1',
-      adapterName: 'scripted loopback chat-completions (carrier mock-llm endpoint)',
-      transportLabel: 'gateway httpFetch → carrier scripted chat-completions '
-        + '(E2E determinism boundary, mirrors the CLI mock server)',
+      baseURL: route.baseURL,
+      apiKey: route.apiKey,
+      provider: route.provider,
+      model: route.model,
+      userEndpoint: route.userEndpoint,
+      adapterName: route.adapterName,
+      transportLabel: route.transportLabel,
       onWire: (info) => emit('llm/request/built', info),
       onSse: (info) => emit('llm/sse', info),
     },
@@ -132,8 +178,11 @@ const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
 
 /** Turn evidence for the PAGE-driven session: the runtime never prompts —
  * the user/message event can only come from the composer's admitted prompt.
- * On turn/end the assistant text is asserted against the scripted stream. */
-const installTurnEvidence = (ctx) => {
+ * On turn/end the assistant text is asserted against the scripted stream —
+ * ONLY on the scripted route: a real endpoint's turn is nondeterministic, so
+ * it is reported verbatim and never predicted (asserting it would turn every
+ * honest answer into a drive failure). */
+const installTurnEvidence = (ctx, route) => {
   const turns = new Map(); // sessionId → {prompt, events, text, settled}
   ctx.on('session/event', (session, event) => {
     if (session?.id === undefined || event === undefined) return;
@@ -150,8 +199,10 @@ const installTurnEvidence = (ctx) => {
     if (event.type === 'assistant/message') turn.text = assistantTextOf(event);
     if (event.type === 'turn/end' && !turn.settled) {
       turn.settled = true;
-      demand(turn.text === EXPECTED_TEXT,
-        `page session "${session.id}" assistant text is "${turn.text}"`);
+      if (route.scripted) {
+        demand(turn.text === EXPECTED_TEXT,
+          `page session "${session.id}" assistant text is "${turn.text}"`);
+      }
       emit('write.turn.settled', {
         sessionId: session.id, events: turn.events, text: turn.text,
       });
@@ -162,7 +213,7 @@ const installTurnEvidence = (ctx) => {
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: a claimed endpoint failing is a defect and kills the drive. */
-const installRuntimeHalf = (ctx, cfg) => {
+const installRuntimeHalf = (ctx, cfg, route) => {
   const onHandler = (msg, outcome) => {
     outcome.run().then(
       (value) => post({ type: 'api.respond', rpcId: msg.rpcId, result: { ok: true, value } }),
@@ -176,7 +227,7 @@ const installRuntimeHalf = (ctx, cfg) => {
   };
   const runtime = createWebBootRuntime({
     ctx, post,
-    write: { root: cfg.containerRoot, provider: 'mock', model: 'mock-1' },
+    write: { root: cfg.containerRoot, provider: route.provider, model: route.model },
   });
   const busHandler = (msg) => {
     const outcome = runtime.deliver(msg);
@@ -199,16 +250,70 @@ const installRuntimeHalf = (ctx, cfg) => {
   for (const msg of queue.splice(0)) busHandler(msg);
 };
 
+
+/** TEMPORARY DIAGNOSTIC (removed before landing): exercise the five contract
+ * v1.1.0 filesystem primitives on the device and print what came back. Uses
+ * log.debug so no canonical record is added and the manifest's one-to-one
+ * match is untouched. */
+const probeFsPrimitives = async () => {
+  const gw = await import('gateway.js');
+  const { encodeUtf8, decodeUtf8 } = await import('node:buffer');
+  const out = { stage: 'start' };
+  const check = async (label, fn) => {
+    try {
+      out[label] = await fn();
+    } catch (error) {
+      out[label] = `ERR ${error?.code ?? '?'}: ${error?.message ?? error}`;
+    }
+  };
+  await check('mkdir', async () => { await gw.fsMkdir('app', 'probe/sub'); return 'ok'; });
+  await check('write', async () => {
+    const r = await gw.fsWrite('app', 'probe/sub/hello.txt', encodeUtf8('hello primitives'));
+    return `written=${r.written}`;
+  });
+  await check('read', async () => {
+    const r = await gw.fsRead('app', 'probe/sub/hello.txt');
+    return decodeUtf8(r.bytes);
+  });
+  await check('stat', async () => {
+    const r = await gw.fsStat('app', 'probe/sub/hello.txt');
+    return `${r.kind} size=${r.size}`;
+  });
+  await check('list', async () => {
+    const r = await gw.fsList('app', 'probe/sub');
+    return r.entries.map((e) => `${e.name}:${e.kind}`).join(',');
+  });
+  await check('rename', async () => {
+    await gw.fsRename('app', 'probe/sub/hello.txt', 'probe/sub/moved.txt');
+    const r = await gw.fsList('app', 'probe/sub');
+    return r.entries.map((e) => e.name).join(',');
+  });
+  await check('statDir', async () => {
+    const r = await gw.fsStat('app', 'probe/sub');
+    return r.kind;
+  });
+  await check('remove', async () => {
+    await gw.fsRemove('app', 'probe/sub', { recursive: true });
+    return 'removed';
+  });
+  await check('statAfterRemove', async () => {
+    const r = await gw.fsStat('app', 'probe/sub');
+    return `still there: ${r.kind}`;
+  });
+  out.stage = 'done';
+  log.debug('fs primitives probe', out);
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = await take('runtime.config');
-  demand(typeof cfg.mockLlmUrl === 'string' && cfg.mockLlmUrl.startsWith('http://127.0.0.1:'),
-    `runtime.config mock endpoint missing: ${JSON.stringify(cfg.mockLlmUrl)}`);
+  const route = resolveLlmRoute(cfg);
 
-  const ctx = await bootPhase(cfg);
+  const ctx = await bootPhase(cfg, route);
+  await probeFsPrimitives();
   await awaitAgent(ctx);
-  installTurnEvidence(ctx);
-  installRuntimeHalf(ctx, cfg);
+  installTurnEvidence(ctx, route);
+  installRuntimeHalf(ctx, cfg, route);
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});
 };
 
