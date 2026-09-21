@@ -11,13 +11,20 @@
  *                       routes back as onNotifyResponse → notify.response)
  *   - presentApproval → custom ArkUI dialog, presented via the presenter
  *                       callback Index registers (ui-wait/ui-done markers)
- *   - presentPicker,
- *     keychainGet/Set,
- *     httpFetch       → honestly `unavailable` (binding descriptor; the v2
- *                       paths — user-scope fs + persist, HUKS, streaming
- *                       body bridge — are documented in the agent note)
- *   - fsScope         → app-scope v1 (persist = resolve to the app files
- *                       scope), served by the C backend
+ *   - httpFetch       → @ohos.net.http requestInStream; body streams onto
+ *                       the runtime queue as http.body/http.end events, the
+ *                       call settles at headers; abort() destroys the
+ *                       request (model/HttpPrimitive.ets)
+ *   - keychainGet/Set → HUKS AES-256-GCM sealed blobs under a fixed-alias
+ *                       key, ciphertext app-private (model/
+ *                       KeychainPrimitives.ets)
+ *   - presentPicker   → DocumentViewPicker (user scope); a pick grants a
+ *                       `user:` scope bound to the picked URI, fsScope
+ *                       persists it, user-scope fsRead/fsWrite ride fileIo
+ *                       (model/PickerPrimitives.ets)
+ *   - fsScope         → app scope stays C-served (persist = resolve to the
+ *                       app files scope); user scopes land here via the
+ *                       binding backend's forward hook
  *   - app.state       → EntryAbility lifecycle edges → hostEvent
  *
  * Threading: every NAPI call runs on the ArkTS main thread — the ONE serial
@@ -39,16 +46,21 @@ import { wantAgent } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
 import notification from '@ohos.notification';
 import { hilog } from '@kit.PerformanceAnalysisKit';
+import { HttpPrimitive } from './HttpPrimitive';
+import { KeychainPrimitives } from './KeychainPrimitives';
+import { PickerPrimitives } from './PickerPrimitives';
 
 const TAG: string = 'dsh.app';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'm5.host-binding';
 
-/** Binding RuntimeDescriptor: 5 available / 4 unavailable (honest v1 — see
- * the class comment; keep in sync with the agent note's decision record). */
-export const BINDING_DESCRIPTOR: string = '{"available":["fsRead","fsWrite",' +
-  '"fsScope","notify","presentApproval"],' +
-  '"unavailable":["presentPicker","keychainGet","keychainSet","httpFetch"]}';
+/** Binding RuntimeDescriptor: all nine contract primitives available, none
+ * unavailable (conformance §7 — proven on the emulator; keep in sync with
+ * the agent note's decision record and the C fallback in gateway_smoke.cpp). */
+export const BINDING_DESCRIPTOR: string =
+  '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
+  '"presentApproval","presentPicker","keychainGet","keychainSet"],' +
+  '"unavailable":[]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
 export type ApprovalPresenter = (title: string,
@@ -68,6 +80,7 @@ interface ProjectionEvent {
 interface DispatchArgs {
   title?: string;
   body?: string;
+  callId?: number;
 }
 
 export class HostPhase {
@@ -85,6 +98,10 @@ export class HostPhase {
   /** Fired once when the phase scenario reaches a terminal verdict (mutator
    * status >= 1) — Index chains the D9 official-web phase off it. */
   onPhaseComplete: (passed: boolean) => void = (passed: boolean): void => {};
+  private seedPath: string = '';
+  private http: HttpPrimitive = new HttpPrimitive();
+  private keychain: KeychainPrimitives | null = null;
+  private picker: PickerPrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -97,11 +114,20 @@ export class HostPhase {
     this.approvalPresenter = presenter;
   }
 
+  /** The staged user-store seed file (PickerPrimitives.seedUserFile), '');
+   * delivered as the host.seed bridge event right after eval ('' = the seed
+   * did not happen — the scenario fails loud on that). */
+  setSeedPath(seedPath: string): void {
+    this.seedPath = seedPath;
+  }
+
   /** Create the phase runtime (hostStart). The bus/dispatch callbacks only
    * queue or send — the one-thread rule holds (see class comment). */
   begin(ctx: common.UIAbilityContext, bundleRoot: string, capturePath: string,
     fsRoot: string): void {
     this.capturePath = capturePath;
+    this.keychain = new KeychainPrimitives(ctx.filesDir);
+    this.picker = new PickerPrimitives(ctx);
     hostStart(bundleRoot, capturePath, fsRoot, BINDING_DESCRIPTOR,
       (line: string): void => {
         this.onBusLine(line);
@@ -134,8 +160,8 @@ export class HostPhase {
   }
 
   /** The page hello: mark connected, greet, then eval the entry and deliver
-   * host.info — the order that pins the manifest (carrier events before the
-   * scenario's first line). */
+   * host.info + host.seed — the order that pins the manifest (carrier events
+   * before the scenario's first line). */
   onPageHello(protocol: string): void {
     this.carrierLine('ws.connected', { 'protocol': protocol });
     const status = hostEval(PHASE_ID, 'scenario/m5-host-binding.js');
@@ -144,6 +170,7 @@ export class HostPhase {
       return;
     }
     this.deliverEvent('{"event":"host.info","port":' + this.carrierPort + '}');
+    this.deliverEvent('{"event":"host.seed","path":"' + this.seedPath + '"}');
   }
 
   /** Page WS message: only the page hello is carrier-state; everything else
@@ -267,7 +294,10 @@ export class HostPhase {
   }
 
   /** Platform primitives forwarded by the C backend (never settle from
-   * inside — queue work, settle on async completion). */
+   * inside — queue work, settle on async completion). The C binding backend
+   * serves the app-scope fs itself; fsRead/fsWrite/fsScope.* arrive here
+   * only for user scopes. httpFetch.abort never settles — the abort seam
+   * has no pending promise, it just cancels the in-flight request. */
   private onDispatch(ctx: common.UIAbilityContext, callId: number,
     name: string, args: string): void {
     hilog.info(0x0000, TAG, 'phase: dispatch %{public}s call=%{public}d', name, callId);
@@ -283,10 +313,39 @@ export class HostPhase {
       this.handleNotify(ctx, callId, parsed.title ?? 'DSH', parsed.body ?? '');
     } else if (name === 'presentApproval') {
       this.handleApproval(callId, parsed.title ?? 'Approval');
+    } else if (name === 'httpFetch') {
+      this.http.fetch(callId, args, this.settleFn(), (eventJson: string): void => {
+        this.deliverEvent(eventJson);
+      });
+    } else if (name === 'httpFetch.abort') {
+      const target = typeof parsed.callId === 'number' ? parsed.callId : callId;
+      this.http.abort(target);
+    } else if (name === 'presentPicker') {
+      this.picker?.present(callId, args, this.settleFn());
+    } else if (name === 'keychainGet') {
+      this.keychain?.get(callId, args, this.settleFn());
+    } else if (name === 'keychainSet') {
+      this.keychain?.set(callId, args, this.settleFn());
+    } else if (name === 'fsRead') {
+      this.picker?.read(callId, args, this.settleFn());
+    } else if (name === 'fsWrite') {
+      this.picker?.write(callId, args, this.settleFn());
+    } else if (name === 'fsScope.persist') {
+      this.picker?.persist(callId, args, this.settleFn());
+    } else if (name === 'fsScope.resolve') {
+      this.picker?.resolve(callId, args, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);
     }
+  }
+
+  /** settleCall with its receiver bound — handed to the primitive modules so
+   * they settle dispatches from their async completions. */
+  private settleFn(): (callId: number, payloadJson: string, ok: boolean) => void {
+    return (callId: number, payloadJson: string, ok: boolean): void => {
+      this.settleCall(callId, payloadJson, ok);
+    };
   }
 
   private handleApproval(callId: number, title: string): void {

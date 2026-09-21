@@ -1,0 +1,24 @@
+{
+  "title": "HarmonyOS v2 primitives: real httpFetch streaming, HUKS keychain, user-scope picker",
+  "created": "2026-09-21T01:51:47+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Study: HostPhase/gateway_smoke/drive-binding/m5-host-binding.js + Android M4 twin design",
+    "httpFetch: @ohos.net.http streaming body (http.body/end events) + abort() honoured, proven against the host's own loopback carrier",
+    "keychain: HUKS AES256 sealed store (generate-on-set, load-on-get), set->get identical, unknown ref null, set null deletes",
+    "presentPicker: DocumentViewPicker user-scope grant + fsScope persist/resolve + read-back, null-on-dismiss leg",
+    "descriptor flips honestly to 9 available / 0 unavailable after on-emulator proof; scenario + manifest one-to-one",
+    "Emulator E2E green + evidence hosts/harmony/artifacts/m5-primitives/ (raw log + MANIFEST.md)",
+    "Status surfaces: README.md M5 row + README.zh.md + gov verify pairing + ARCHITECTURE M5 bullets",
+    "gov run green, note check, push, gh pr create, gates green, squash merge, task close"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0013"
+}

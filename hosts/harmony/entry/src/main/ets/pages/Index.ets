@@ -34,9 +34,10 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { webview } from '@kit.ArkWeb';
 import { CarrierServer } from '../model/CarrierServer';
-import { installLegacyRoutes } from '../model/CarrierRoutes';
+import { installE2EStreams, installLegacyRoutes } from '../model/CarrierRoutes';
 import { HostPhase } from '../model/HostPhase';
 import { OfficialPhase } from '../model/OfficialPhase';
+import { PickerPrimitives } from '../model/PickerPrimitives';
 
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
@@ -373,10 +374,13 @@ struct Index {
       });
   }
 
-  /** Phase 2: carrier up → page mounts → scenario runs (see HostPhase). The
-   * m5 verdict chains into the D9 official-web phase on a later tick — the
-   * completion callback fires from inside a mutator call, so the teardown
-   * (hostFree) must never run on that stack (ARCHITECTURE.md §6). */
+  /** Phase 2: seed the user store (E2E bootstrap, see PickerPrimitives.
+   * seedUserFile) → carrier up → page mounts → scenario runs (see HostPhase).
+   * The seeding gates the phase start so the save dialog is done before the
+   * scenario's own picker presentations open. The m5 verdict chains into the
+   * D9 official-web phase on a later tick — the completion callback fires
+   * from inside a mutator call, so the teardown (hostFree) must never run on
+   * that stack (ARCHITECTURE.md §6). */
   private startBindingPhase(ctx: common.UIAbilityContext, fsRoot: string): void {
     const phase = HostPhase.getInstance();
     phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
@@ -392,7 +396,18 @@ struct Index {
       phase.onPageText(text);
     };
     const capturePath: string = ctx.cacheDir + '/dsh-host-capture.log';
-    this.materializeBundle(ctx)
+    const seeder = new PickerPrimitives(ctx);
+    seeder.seedUserFile()
+      .catch((err: BusinessError): string => {
+        hilog.error(0x0000, TAG, 'picker seed errored: %{public}s',
+          err.message ?? 'unknown');
+        return '';
+      })
+      .then((seedName: string): Promise<string> => {
+        phase.setSeedPath(seedName);
+        hilog.info(0x0000, TAG, 'picker seed result: %{public}s', seedName);
+        return this.materializeBundle(ctx);
+      })
       .then((root: string): Promise<number> => {
         phase.onPhaseComplete = (passed: boolean): void => {
           hilog.info(0x0000, TAG, 'm5 phase complete (passed %{public}s)',
@@ -403,6 +418,7 @@ struct Index {
         };
         phase.begin(ctx, root, capturePath, fsRoot);
         installLegacyRoutes(this.carrier, root + '/webclient/dsh-web-client/web');
+        installE2EStreams(this.carrier);
         return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
           phase.onCarrierListening(port);
           this.webUrl = 'http://127.0.0.1:' + port + '/';

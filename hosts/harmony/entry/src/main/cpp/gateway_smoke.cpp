@@ -51,15 +51,14 @@ const char *DSH_SMOKE_DESCRIPTOR =
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
     "\"presentPicker\",\"keychainGet\",\"keychainSet\"]}";
 
-/* Binding descriptor: the primitives the ArkTS capability layer serves for
- * real, and the honest v1 unavailable set (picker needs the user-scope fs
- * surface, keychain the HUKS bridge, httpFetch the streaming body bridge —
- * all documented v2 paths in the agent note). */
+/* Binding descriptor: all nine contract primitives are served for real —
+ * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
+ * presentPicker (and user-scope fs) forwarded to the ArkTS capability layer
+ * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets). */
 const char *DSH_BINDING_DESCRIPTOR =
-    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"notify\","
-    "\"presentApproval\"],"
-    "\"unavailable\":[\"presentPicker\",\"keychainGet\",\"keychainSet\","
-    "\"httpFetch\"]}";
+    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
+    "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
+    "\"keychainSet\"],\"unavailable\":[]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
 
@@ -310,33 +309,64 @@ static void smoke_fs_read(dsh_smoke_backend *b, int call_id, const char *args) {
     smoke_fs_args_free(&a);
 }
 
+/* True when the flat-JSON args' `key` names something other than `value` —
+ * the user-scope test for forwarded fs ops (scope != "app", ref not the
+ * app bookmark). Missing key counts as "not the app value" (the ArkTS side
+ * re-validates and settles `invalid`/`denied` itself). */
+static int smoke_arg_differs(const char *json, const char *key,
+                             const char *value) {
+    char *at = json_str_dup(json, key);
+    if (!at) return 1;
+    int differs = strcmp(at, value) != 0;
+    free(at);
+    return differs;
+}
+
 /* ---- primitive table ------------------------------------------------------ */
 
+/* Binding mode reaches the table only for the C-served app-scope fs (and
+ * httpFetch.abort, which returns above); regression mode serves everything
+ * here, rejecting what its descriptor declares unavailable. */
 static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
                         const char *args) {
     if (b->forward_fn != nullptr) {
-        /* binding mode: the platform primitives the ArkTS capability layer
-         * serves for real ride the forward hook (settled later from its UI
-         * callbacks — never from inside this callback); everything else the
-         * binding descriptor declares unavailable rejects here. httpFetch
-         * v2 (D9 W-HARMONY): the streaming body bridge lives ArkTS-side, so
-         * the call and its control-plane abort both forward. */
+        /* binding mode: platform primitives and user-scope fs ride the
+         * forward hook to the ArkTS capability layer (settled later from
+         * its async completions — never from inside this callback); the
+         * app-scope fs stays C-served below. */
         if (strcmp(name, "notify") == 0 || strcmp(name, "presentApproval") == 0 ||
-            strcmp(name, "httpFetch") == 0 || strcmp(name, "httpFetch.abort") == 0) {
+            strcmp(name, "presentPicker") == 0 || strcmp(name, "keychainGet") == 0 ||
+            strcmp(name, "keychainSet") == 0 || strcmp(name, "httpFetch") == 0) {
             b->forward_fn(b->forward_ud, call_id, name, args);
             return;
         }
-        if (strcmp(name, "presentPicker") == 0) {
-            return smoke_reject(b, call_id, name, "unavailable",
-                                "declared unavailable by the host descriptor");
+        if (strcmp(name, "httpFetch.abort") == 0) {
+            /* abort control plane: no pending promise — never settled. */
+            b->forward_fn(b->forward_ud, call_id, name, args);
+            return;
+        }
+        if (strcmp(name, "fsRead") == 0 || strcmp(name, "fsWrite") == 0) {
+            if (smoke_arg_differs(args, "scope", "app")) {
+                b->forward_fn(b->forward_ud, call_id, name, args);
+                return;
+            }
+        }
+        if (strcmp(name, "fsScope.persist") == 0 &&
+            smoke_arg_differs(args, "scope", "app")) {
+            b->forward_fn(b->forward_ud, call_id, name, args);
+            return;
+        }
+        if (strcmp(name, "fsScope.resolve") == 0 &&
+            smoke_arg_differs(args, "ref", "bkm:app")) {
+            b->forward_fn(b->forward_ud, call_id, name, args);
+            return;
         }
     }
     if (strcmp(name, "fsWrite") == 0) return smoke_fs_write(b, call_id, args);
     if (strcmp(name, "fsRead") == 0) return smoke_fs_read(b, call_id, args);
     if (strcmp(name, "fsScope.persist") == 0) {
         if (b->forward_fn != nullptr) {
-            /* app-scope v1: only the app scope persists (contract §4 —
-             * user-scope persistence is the documented v2 path). */
+            /* app scope (user scopes were forwarded above) */
             char *scope = json_str_dup(args, "scope");
             int ok = scope != nullptr && strcmp(scope, "app") == 0;
             free(scope);
@@ -349,6 +379,7 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
     }
     if (strcmp(name, "fsScope.resolve") == 0) {
         if (b->forward_fn != nullptr) {
+            /* the app bookmark (user refs were forwarded above) */
             char *ref = json_str_dup(args, "ref");
             int ok = ref != nullptr && strcmp(ref, "bkm:app") == 0;
             free(ref);
