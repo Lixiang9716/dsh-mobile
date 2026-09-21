@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "Blocked on govrail 0.47.2: re-sealing gates.json stales open card pins, and the duplicate-id cards cannot be retired (govrail issue 368)",
-    "Bump the gov.yml pin from 0.47.1 when 0.47.2 reaches PyPI",
-    "Retire the duplicate-id cards, then run: gov gate add e2e-matrix -- sh tools/e2e/matrix.sh --accept-known-gaps",
-    "Re-seal with gov verify-plane --write and confirm 13 gates pass, then add the rule 6 rejection case .gov rejections case-e2e-matrix.sh"
+    "[x] Blocked on govrail 0.47.2: re-sealing gates.json stales open card pins, and the duplicate-id cards cannot be retired (govrail issue 368)",
+    "[x] Bump the gov.yml pin from 0.47.1 when 0.47.2 reaches PyPI",
+    "[x] Retire the duplicate-id cards, then run: gov gate add e2e-matrix -- sh tools/e2e/matrix.sh --accept-known-gaps",
+    "[x] Re-seal with gov verify-plane --write and confirm 13 gates pass, then add the rule 6 rejection case .gov rejections case-e2e-matrix.sh"
   ],
   "status": "open",
   "receipt": null,
