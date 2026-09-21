@@ -39,14 +39,14 @@ this run is backed by an on-device proof, not a declaration.
 | 17 | approval.approved {approved:true} | 94 | custom ArkUI dialog |
 | 18 | keychain.roundtrip {set:true, match:true} | 99 | HUKS AES-256-GCM seal → open, bytes identical |
 | 19 | keychain.deleted {gone:true} | 103 | keychainSet(ref, null) → get resolves null |
-| 20 | notify.scheduled {idOpaque:true} | 105 | |
-| 21 | app.state {state:'background'} | 108 | |
-| 22 | notify.response {idMatches:true} | 111 | notification tap (wantAgent) |
-| 23 | app.state {state:'foreground'} | 114 | |
-| 24 | ws.token-delta {first:true, index:0} | 119 | host-side (dsh.carrier) |
-| 25 | ws.token-delta {last:true, index:4} | 125 | |
-| 26 | ws.session-complete {status:'pass'} | 126 | |
-| 27 | scenario.complete {status:'pass'} | 127 | |
+| 20 | notify.scheduled {idOpaque:true} | 106 | |
+| 21 | app.state {state:'background'} | 109 | |
+| 22 | notify.response {idMatches:true} | 112 | notification tap (wantAgent) |
+| 23 | app.state {state:'foreground'} | 115 | |
+| 24 | ws.token-delta {first:true, index:0} | 120 | host-side (dsh.carrier) |
+| 25 | ws.token-delta {last:true, index:4} | 126 | |
+| 26 | ws.session-complete {status:'pass'} | 127 | |
+| 27 | scenario.complete {status:'pass'} | 128 | |
 
 ## Files
 

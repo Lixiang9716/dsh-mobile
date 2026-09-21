@@ -1,334 +1,335 @@
-09-21 11:57:24.134  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"567446bb-fc92-45b3-a0cf-90e0a0ad114d","v4":true}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
-09-21 11:57:24.136  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe.txt"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.write.ok","written":17}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe.txt"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"../escape"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.137  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.invalid","code":"invalid"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
-09-21 11:57:24.138  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"scenario.complete","status":"pass"}]}
-09-21 11:57:24.141  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"gateway.negotiated","version":"gateway@1"}]}
-09-21 11:57:24.143  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs","data":[]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-subprocess-quickjs"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-subprocess-quickjs"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"activating dsh-subprocess-quickjs","data":[]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"subprocess"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-ui"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-ui"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.ui","message":"activating dsh-ui","data":[]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"ui"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"plugins.installed","count":3,"services":"fs,subprocess,ui"}]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"notes install begin","data":[]}
-09-21 11:57:24.144  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar write","data":[{"members":2}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":13}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":258}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":15}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":908}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
-09-21 11:57:24.145  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
-09-21 11:57:24.146  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-21 11:57:24.146  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
-09-21 11:57:24.146  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
-09-21 11:57:24.150  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584,"journal":false}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
-09-21 11:57:24.154  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.155  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4780}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":3584}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":3584}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
-09-21 11:57:24.159  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-notes"}]}
-09-21 11:57:24.160  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":2}]}
-09-21 11:57:24.160  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
-09-21 11:57:24.160  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
-09-21 11:57:24.161  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-m2-session-0001","files":2}]}
-09-21 11:57:24.161  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
-09-21 11:57:24.161  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.162  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
-09-21 11:57:24.164  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.164  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
-09-21 11:57:24.165  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.166  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/manifest.json"}]}
-09-21 11:57:24.166  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
-09-21 11:57:24.166  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.166  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
-09-21 11:57:24.167  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
-09-21 11:57:24.167  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
-09-21 11:57:24.167  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.167  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
-09-21 11:57:24.169  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/integrity.json"}]}
-09-21 11:57:24.169  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
-09-21 11:57:24.169  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.169  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","files":3}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/manifest.json"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.170  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/integrity.json"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/m2-session-0001.json"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/m2-session-0001.json"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","receiptPath":"receipts/m2-session-0001.json"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-notes"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-notes"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes","message":"activating dsh-notes","data":[]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"notes"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"notes"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"host.ready","signalled":true}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"subprocess"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.created","sessionId":"s-m2-0001","scope":"app"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"session"}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"agent.started","model":"mock-mini","tools":1}]}
-09-21 11:57:24.171  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"agent"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":1,"tokens":3}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":1}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":0,"text":"Hello"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":1,"text":" from"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":2,"text":" DSH"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":1,"deltas":3,"toolCalls":1}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.invoked","name":"notes.persist","call":"t-1"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"spawn","data":[{"id":"task-1","steps":2}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle created","data":[{"id":"task-1"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"complete"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.spawned","taskId":"task-1","steps":2}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"progress"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"task started","data":[{"id":"task-1","steps":2}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"started","steps":2}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":1}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","label":"computed"}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task compute step done","data":[]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":1,"of":2}]}
-09-21 11:57:24.172  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":1}]}
-09-21 11:57:24.173  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":2}]}
-09-21 11:57:24.173  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task persist step begin","data":[{"path":"m2-session/result.txt"}]}
-09-21 11:57:24.173  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.writeText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.write","data":[{"scope":"app","path":"m2-session/result.txt","bytes":27,"append":false}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":2,"of":2}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":2}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"complete","ok":true,"result":{"written":27}}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"complete observed","data":[{"id":"task-1","ok":true}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"fs.write.ok","written":27,"path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.completed","taskId":"task-1","ok":true}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.result","name":"notes.persist","call":"t-1","ok":true}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":2,"tokens":2}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":2}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":3,"text":" Saved"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":4,"text":" ok"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":2,"deltas":2,"toolCalls":0}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.read","data":[{"scope":"app","path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m2-session/result.txt"}]}
-09-21 11:57:24.174  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":36}]}
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m1.spike.boot PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=7
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.bridge.smoke PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=17
-09-21 11:57:24.175  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.session PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=179
-09-21 11:57:34.072  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
-09-21 11:57:34.470  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
-09-21 11:57:34.843  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.connected","protocol":"session-projection@0"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"scenario main","data":[{"descriptor":"gateway@1"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"gateway.negotiated","version":"gateway@1"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"descriptor.declared","available":9,"unavailable":0}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.info"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.write.ok","written":17}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:nowhere","path":"x"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"fsRead"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.denied","code":"denied"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"http leg","data":[{"base":"http://127.0.0.1:17877"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/bytes","method":"GET"}]}
-09-21 11:57:34.846  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-09-21 11:57:34.850  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":84}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.status","status":200,"loopback":true}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.body","chunks":2,"totalBytes":64}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/slow","method":"GET"}]}
-09-21 11:57:34.925  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-09-21 11:57:36.490  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":5}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.aborted","code":"cancelled"}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"picker leg","data":[{"dismiss":"file","grant":"file"}]}
-09-21 11:57:36.491  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
-09-21 11:57:36.492  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-09-21 11:57:52.444  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.dismissed","null":true}]}
-09-21 11:57:52.444  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.seed"}]}
-09-21 11:57:52.444  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
-09-21 11:58:04.803  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.granted","mode":"file","scopeOpaque":true,"pathOpaque":true}]}
-09-21 11:58:04.803  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:ec663590-4c21-469f-ae34-b077d5e6142e","path":"dsh-e2e-seed-39ff62bf-ed48-49b8-b760-ef22f407e094.txt"}]}
-09-21 11:58:04.803  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:58:04.805  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
-09-21 11:58:04.805  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.user.read","nonEmpty":true,"matches":true}]}
-09-21 11:58:04.805  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
-09-21 11:58:04.806  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.persist","refOpaque":true}]}
-09-21 11:58:04.806  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
-09-21 11:58:04.807  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:970b7ad2-3b1f-4615-91ec-1ef6c5be2e71","path":"dsh-e2e-seed-39ff62bf-ed48-49b8-b760-ef22f407e094.txt"}]}
-09-21 11:58:04.807  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-21 11:58:04.807  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
-09-21 11:58:04.808  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
-09-21 11:58:04.808  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"credential leg","data":[{}]}
-09-21 11:58:04.808  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
-09-21 11:58:35.773  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"approval.approved","approved":true}]}
-09-21 11:58:35.774  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
-09-21 11:58:35.811  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-09-21 11:58:35.811  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-09-21 11:58:35.817  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.roundtrip","set":true,"match":true}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.deleted","gone":true}]}
-09-21 11:58:35.818  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
-09-21 11:58:35.870  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab1ab6bcba80 0 0]dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.scheduled","idOpaque":true}]}
-09-21 11:58:35.870  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab1ab6bcba80 0 0]dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
-09-21 11:58:37.214  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
-09-21 11:58:37.215  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"background"}]}
-09-21 11:58:37.215  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"notify.response"}]}
-09-21 11:58:44.606  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
-09-21 11:58:44.606  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.response","idMatches":true}]}
-09-21 11:58:44.606  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
-09-21 11:58:44.631  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
-09-21 11:58:44.632  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"foreground"}]}
-09-21 11:58:44.632  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
-09-21 11:58:44.632  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
-09-21 11:58:44.637  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
-09-21 11:58:44.638  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:58:44.639  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","first":true,"index":0}]}
-09-21 11:58:44.639  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:58:44.639  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:58:44.639  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:58:44.640  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-21 11:58:44.640  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"complete"}]}
-09-21 11:58:44.641  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","last":true,"index":4}]}
-09-21 11:58:44.641  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.session-complete","status":"pass"}]}
-09-21 11:58:44.641  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"scenario.complete","status":"pass"}]}
-09-21 11:58:44.642  5906  5906 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m5.host-binding PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=127
+09-21 12:02:02.411 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+09-21 12:02:02.411 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"sink.bound"}]}
+09-21 12:02:02.411 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 12:02:02.411 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.1"}]}
+09-21 12:02:02.411 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"crypto.shim.ok","uuid":"cefee978-856e-441d-97a3-a6cc006db63f","v4":true}]}
+09-21 12:02:02.412 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+09-21 12:02:02.412 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"m1.spike.boot","event":"scenario.complete","status":"pass"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe.txt"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.write.ok","written":17}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe.txt"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"../escape"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"fs.read.invalid","code":"invalid"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
+09-21 12:02:02.417 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.bridge.smoke","event":"scenario.complete","status":"pass"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs","data":[]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"activating dsh-subprocess-quickjs","data":[]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"subprocess"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-ui"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-ui"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.ui","message":"activating dsh-ui","data":[]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"ui"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"plugins.installed","count":3,"services":"fs,subprocess,ui"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"notes install begin","data":[]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar write","data":[{"members":2}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":13}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.421 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":258}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":15}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":908}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
+09-21 12:02:02.422 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
+09-21 12:02:02.426 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"m2-session-0001","bytes":3584,"journal":false}]}
+09-21 12:02:02.429 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56","bytes":3584}]}
+09-21 12:02:02.429 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56"}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.430 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4780}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":3584}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":3584}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":908}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-notes"}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":2}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
+09-21 12:02:02.434 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-m2-session-0001","files":2}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.436 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-21 12:02:02.437 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 12:02:02.437 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 12:02:02.437 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.437 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
+09-21 12:02:02.438 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 12:02:02.438 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 12:02:02.438 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.438 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","files":3}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/manifest.json"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/manifest.json"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/bundle/index.js"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1212}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
+09-21 12:02:02.439 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-m2-session-0001/integrity.json"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/integrity.json"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/m2-session-0001.json"}]}
+09-21 12:02:02.440 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/m2-session-0001.json"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","receiptPath":"receipts/m2-session-0001.json"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-notes"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-notes"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes","message":"activating dsh-notes","data":[]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"notes"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"notes"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"host.ready","signalled":true}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"subprocess"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.created","sessionId":"s-m2-0001","scope":"app"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"session"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"agent.started","model":"mock-mini","tools":1}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"agent"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":1,"tokens":3}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":1}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":0,"text":"Hello"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":1,"text":" from"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":2,"text":" DSH"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":1,"deltas":3,"toolCalls":1}]}
+09-21 12:02:02.441 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.invoked","name":"notes.persist","call":"t-1"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"spawn","data":[{"id":"task-1","steps":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle created","data":[{"id":"task-1"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"complete"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.spawned","taskId":"task-1","steps":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"progress"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"task started","data":[{"id":"task-1","steps":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"started","steps":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":1}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","label":"computed"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task compute step done","data":[]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":1,"of":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":1}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task persist step begin","data":[{"path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.writeText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.write","data":[{"scope":"app","path":"m2-session/result.txt","bytes":27,"append":false}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":2,"of":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.progress","taskId":"task-1","step":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"complete","ok":true,"result":{"written":27}}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"complete observed","data":[{"id":"task-1","ok":true}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"fs.write.ok","written":27,"path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"subprocess.completed","taskId":"task-1","ok":true}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"tool.result","name":"notes.persist","call":"t-1","ok":true}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":2,"tokens":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.started","turn":2}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":3,"text":" Saved"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.delta","index":4,"text":" ok"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"llm.stream.completed","turn":2,"deltas":2,"toolCalls":0}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.read","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m2-session/result.txt"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":36}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"m2-session/result.txt","chars":27}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"m2.session","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
+09-21 12:02:02.442 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m1.spike.boot PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=7
+09-21 12:02:02.443 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.bridge.smoke PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=17
+09-21 12:02:02.443 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.session PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=179
+09-21 12:02:12.333 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"carrier.listening","transport":"tcp","loopback":true,"port":17877}]}
+09-21 12:02:12.855 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+09-21 12:02:13.224 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.connected","protocol":"session-projection@0"}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"scenario main","data":[{"descriptor":"gateway@1"}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"gateway.negotiated","version":"gateway@1"}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"descriptor.declared","available":9,"unavailable":0}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.info"}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+09-21 12:02:13.225 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.write.ok","written":17}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m5/binding-probe.txt"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.read.ok","bytes":17,"matches":true}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:nowhere","path":"x"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"fsRead"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.denied","code":"denied"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"http leg","data":[{"base":"http://127.0.0.1:17877"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/bytes","method":"GET"}]}
+09-21 12:02:13.226 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+09-21 12:02:13.229 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":84}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.status","status":200,"loopback":true}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":90}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":4,"buffered":0}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.body","chunks":2,"totalBytes":64}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:17877/gateway-e2e/slow","method":"GET"}]}
+09-21 12:02:13.305 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+09-21 12:02:14.826 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
+09-21 12:02:14.826 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.826 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch abort","data":[{"bodyId":5}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":5,"buffered":0}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"cancelled","primitive":"httpFetch"}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"http.aborted","code":"cancelled"}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"picker leg","data":[{"dismiss":"file","grant":"file"}]}
+09-21 12:02:14.827 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":70}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
+09-21 12:02:14.828 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+09-21 12:02:30.772 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.dismissed","null":true}]}
+09-21 12:02:30.773 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"host.seed"}]}
+09-21 12:02:30.774 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+09-21 12:02:42.155 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"picker.granted","mode":"file","scopeOpaque":true,"pathOpaque":true}]}
+09-21 12:02:42.157 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:56783f6f-9d6d-42ad-99cc-c84e6feffb42","path":"dsh-e2e-seed-db04b179-feba-4fb9-8cda-a11585dc7725.txt"}]}
+09-21 12:02:42.157 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:42.160 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
+09-21 12:02:42.160 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.user.read","nonEmpty":true,"matches":true}]}
+09-21 12:02:42.160 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.persist"}]}
+09-21 12:02:42.162 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.persist","refOpaque":true}]}
+09-21 12:02:42.162 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+09-21 12:02:42.162 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:7f2c58c1-04d2-46de-8c3e-e42abb69c0ee","path":"dsh-e2e-seed-db04b179-feba-4fb9-8cda-a11585dc7725.txt"}]}
+09-21 12:02:42.162 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-21 12:02:42.163 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":16}]}
+09-21 12:02:42.163 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
+09-21 12:02:42.163 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"credential leg","data":[{}]}
+09-21 12:02:42.163 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentApproval"}]}
+09-21 12:03:13.277 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"approval.approved","approved":true}]}
+09-21 12:03:13.282 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+09-21 12:03:13.337 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-21 12:03:13.337 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-21 12:03:13.350 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-21 12:03:13.350 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.roundtrip","set":true,"match":true}]}
+09-21 12:03:13.350 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+09-21 12:03:13.351 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-21 12:03:13.351 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-21 12:03:13.351 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"keychain.deleted","gone":true}]}
+09-21 12:03:13.351 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"lifecycle leg","data":[{}]}
+09-21 12:03:13.351 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"notify"}]}
+09-21 12:03:13.390 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab1ac81593ca 0 0]dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.scheduled","idOpaque":true}]}
+09-21 12:03:13.390 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: [a92ab1ac81593ca 0 0]dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+09-21 12:03:14.919 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-21 12:03:14.919 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"background"}]}
+09-21 12:03:14.919 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"notify.response"}]}
+09-21 12:03:21.964 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":38}]}
+09-21 12:03:21.964 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"notify.response","idMatches":true}]}
+09-21 12:03:21.964 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"wait for event","data":[{"name":"app.state"}]}
+09-21 12:03:21.982 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-21 12:03:21.982 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"app.state","state":"foreground"}]}
+09-21 12:03:21.982 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"stream deltas","data":[{"count":5}]}
+09-21 12:03:21.982 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"session"}]}
+09-21 12:03:21.988 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"agent"}]}
+09-21 12:03:21.988 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:03:21.989 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","first":true,"index":0}]}
+09-21 12:03:21.990 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:03:21.990 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:03:21.990 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:03:21.990 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-21 12:03:21.990 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"m5.spike","message":"projection push","data":[{"kind":"complete"}]}
+09-21 12:03:21.991 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.token-delta","last":true,"index":4}]}
+09-21 12:03:21.991 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m5.host-binding","event":"ws.session-complete","status":"pass"}]}
+09-21 12:03:21.991 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"m5.spike","message":"e2e","data":[{"scenario":"m5.host-binding","event":"scenario.complete","status":"pass"}]}
+09-21 12:03:21.991 10929 10929 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m5.host-binding PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=128

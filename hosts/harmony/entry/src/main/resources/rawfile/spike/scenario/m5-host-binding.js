@@ -142,6 +142,7 @@ async function main() {
  * then the live five-delta session through the carrier into the mounted
  * page; the carrier logs first/last + session-complete evidence. */
 async function lifecycleLeg() {
+  log.debug('lifecycle leg', {});
   const notification = await notify({ title: 'DSH E2E', body: 'm5 host binding' });
   emit('notify.scheduled', { idOpaque: notification.id.startsWith('n:') });
 
