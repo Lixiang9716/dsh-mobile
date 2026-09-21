@@ -17,7 +17,12 @@
     "evidence committed under hosts/android/artifacts/release-logging/ with a re-runnable run.sh (non-zero exit on violation) and MANIFEST.md",
     "gov run green, PR opened and merged"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0024"
+  "id": "T-0024",
+  "void": {
+    "ts": "2026-09-21T07:11:19+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Android release verification CLOSED and merged (PR #87, squash 38b815d): the user-facing release build was verified on a real emulator (AVD pixel, API 35 arm64, emulator-5554), which is exactly the gap PR #83 recorded as 'static verification only (no emulator available)'. Deliverables in the merged PR: hosts/android/artifacts/release-logging/ (run.sh that re-runs and asserts with exit non-zero on violation, MANIFEST.md mapping every assertion to a file, raw logcat captures for both variants, the screenshots, apk-release-contents.txt, origin-release.txt, signing.txt, apk-release-listing.txt) + an Agent Note under .agents/notes/implemented/testing/ + a surprise record (sig the-release-strip-covers). Measured: assembleRelease ships app-release-unsigned.apk (apksigner: DOES NOT VERIFY) embedding 89 assets/official-web/ + 129 assets/web-plugins/ + 254 assets/spike/ entries; a plain launch renders the official DSH Web UI with 0 dsh.spike.log records / 0 level:debug / 0 level:info / 0 verdict text / 0 gateway-audit lines against the harness's 204 records (168 debug, 36 info, ALL PASS); --ez dsh.llm true is refused BY NAME; the local debug-keystore signing is named as a verification-only step in MANIFEST.md and signing.txt. CI: gates + android-e2e both green. Void rather than close because close stamps a receipt the task gate then rejects (#329/#339) -- the plane's standing dead-end, followed per the precedent note; the PR is the audit trail."
+  }
 }
