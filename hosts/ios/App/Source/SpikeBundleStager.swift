@@ -222,3 +222,31 @@ enum SpikeBundleStager {
 enum SpikeBundleError: Error {
     case emptyResource(String)
 }
+
+extension SpikeBundleStager {
+    /// The `@deepseek-ai` package scope the /plugins route and the web-boot
+    /// plugin delivery both read their client bundles from. The EMBEDDED app
+    /// resource wins when present: a user-facing build ships the vendored
+    /// official client bundles inside the app (Tools/stage_official_web.py),
+    /// so a plain launch needs nothing staged from outside. The harness
+    /// (Debug) embeds nothing and falls through to Documents/web-plugins,
+    /// which the E2E runners stage — the harness keeps reading exactly the
+    /// tree it staged. Nil when neither tree carries a package.
+    static func stagedPluginScope() -> URL? {
+        var scopes: [URL] = []
+        if let resources = Bundle.main.resourceURL {
+            scopes.append(resources.appendingPathComponent(
+                "official-web/plugins/npm/@deepseek-ai", isDirectory: true))
+        }
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+        scopes.append(docs.appendingPathComponent(
+            "web-plugins/npm/@deepseek-ai", isDirectory: true))
+        for scope in scopes {
+            let dirs = ((try? FileManager.default.contentsOfDirectory(
+                at: scope, includingPropertiesForKeys: nil, options: []))?
+                .filter(\.hasDirectoryPath)) ?? []
+            if !dirs.isEmpty { return scope }
+        }
+        return nil
+    }
+}

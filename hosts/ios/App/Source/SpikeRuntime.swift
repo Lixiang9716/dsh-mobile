@@ -28,6 +28,31 @@ struct SpikeOutcome {
     }
 }
 
+/// The build flavor, decided at compile time by the configuration's defines
+/// (project.pbxproj: `SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE` on
+/// Release, `DSH_RELEASE=1` in GCC_PREPROCESSOR_DEFINITIONS for the C host).
+/// The harness (Debug) is the verification vehicle — full structured logging,
+/// E2E drives run. The release build is what a user gets: no E2E machinery,
+/// no per-event stream, and the critical set (warn/error) retained.
+enum BuildFlavor {
+    static let isRelease: Bool = {
+        #if DSH_RELEASE
+        return true
+        #else
+        return false
+        #endif
+    }()
+
+    /// One canonical record survives into a release build only when it is
+    /// warn/error class. The record is the unified logger's JSON envelope
+    /// (`{"level":…,"module":…,"message":…,"data":[…]}`), so the level is
+    /// read off the envelope rather than guessed from the text.
+    static func keeps(_ line: String) -> Bool {
+        guard isRelease else { return true }
+        return line.contains("\"level\":\"warn\"") || line.contains("\"level\":\"error\"")
+    }
+}
+
 /// Receives each canonical E2E line from the C host: appended (for the UI
 /// and the outcome), printed to stdout (the E2E capture channel), and NSLog'd
 /// (os_log evidence). Called only from the runtime queue while it drives the
@@ -48,6 +73,7 @@ final class SpikeLogSink {
     }
 
     private func consume(_ line: String) {
+        guard BuildFlavor.keeps(line) else { return }
         lines.append(line)
         print(line)
         fflush(stdout)

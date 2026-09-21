@@ -19,6 +19,7 @@ final class CarrierEventLog {
         queue.sync { [self] in
             guard let line = Self.envelope(scenario: scenario, event: event, fields: fields)
             else { return }
+            guard BuildFlavor.keeps(line) else { return }
             lines.append(line)
             print(CarrierEventLog.prefix + line)
             fflush(stdout)
@@ -34,6 +35,7 @@ final class CarrierEventLog {
             emittedEvents.insert(event)
             guard let line = Self.envelope(scenario: scenario, event: event, fields: fields)
             else { return }
+            guard BuildFlavor.keeps(line) else { return }
             lines.append(line)
             print(CarrierEventLog.prefix + line)
             fflush(stdout)
@@ -80,6 +82,17 @@ final class OfficialWebRuntime {
     /// bundles fetched + activated + the shell mounted) inside the probe.
     static let watchdogSeconds = 150
 
+    /// Evidence mode: the harness drives for a verdict (wire hooks, watchdog,
+    /// same-origin probe, canonical records, an outcome). The release boot
+    /// serves the SAME carrier + web-boot runtime + official Web Client with
+    /// all of that off — a user-facing build runs no verification machinery
+    /// and produces no E2E stream (rule L4's release half).
+    private let evidence: Bool
+
+    init(evidence: Bool = true) {
+        self.evidence = evidence
+    }
+
     private let server = CarrierServer()
     private let eventLog = CarrierEventLog(scenario: OfficialWebRuntime.scenario)
     private var bridge: CarrierAPIBridge?
@@ -108,7 +121,7 @@ final class OfficialWebRuntime {
 
     func run(completion: @escaping (SpikeOutcome) -> Void) {
         self.completion = completion
-        armWatchdog()
+        if evidence { armWatchdog() }
         do {
             try startCarrier()
         } catch {
@@ -125,6 +138,7 @@ final class OfficialWebRuntime {
     private func wireEvidence(
         dist: CarrierWebDist, plugins: CarrierPlugins, bridge: CarrierAPIBridge
     ) {
+        guard evidence else { return }
         dist.onIndexRendered = { [weak self] rows, bytes in
             self?.eventLog.emit("index.rendered", ["rows": rows, "bytes": bytes])
         }
@@ -335,6 +349,9 @@ final class OfficialWebRuntime {
     /// same-origin probe and read the TRUE rendered state.
     func pageDidFinish() {
         guard !finished else { return }
+        // Serving mode: the page is up, that IS the outcome. No probe, no
+        // verdict, no E2E records — the release boot has nothing to assert.
+        guard evidence else { return }
         DispatchQueue.global().async { [weak self] in
             guard let self else { return }
             // rule 8: poll the arrival condition with a deadline, fail loud
@@ -432,11 +449,25 @@ final class OfficialWebRuntime {
     /// The vendored official dist, staged into the app container by the E2E
     /// runner (`ensure-official-dist.sh`); fail loud when absent.
     static func locateDist() throws -> URL {
+        // The EMBEDDED bundle copy wins when present: a user-facing build
+        // ships the official Web Client inside the app (Tools/
+        // stage_official_web.py), so a plain launch needs nothing staged.
+        // The harness (Debug) embeds nothing and falls through to the
+        // Documents tree its runners stage.
+        if let resources = Bundle.main.resourceURL {
+            let bundled = resources.appendingPathComponent("official-web/dist", isDirectory: true)
+            if FileManager.default.fileExists(
+                atPath: bundled.appendingPathComponent("index.html").path) {
+                return bundled
+            }
+        }
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let dist = docs.appendingPathComponent("official-web/dist", isDirectory: true)
         guard FileManager.default.fileExists(
             atPath: dist.appendingPathComponent("index.html").path) else {
-            throw SpikeBundleError.emptyResource("Documents/official-web/dist/index.html")
+            throw SpikeBundleError.emptyResource(
+                "official-web/dist/index.html (neither the embedded bundle resource nor "
+                + "Documents/official-web/dist — run tools/e2e/ensure-official-dist.sh)")
         }
         return dist
     }

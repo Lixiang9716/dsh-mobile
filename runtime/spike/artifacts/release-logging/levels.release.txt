@@ -1,0 +1,2 @@
+dsh.spike.log: {"level":"warn","module":"probe.levels","message":"warn-level","data":[{"kept":true}]}
+dsh.spike.log: {"level":"error","module":"probe.levels","message":"error-level","data":[{"kept":true}]}

@@ -966,6 +966,17 @@ static char *dsh_normalize(JSContext *ctx, const char *base_name, const char *na
 static void dsh_bind_globals(dsh_spike_t *s) {
     JSContext *ctx = s->ctx;
     JSValue global = JS_GetGlobalObject(ctx);
+#ifdef DSH_RELEASE
+    /* Release build: the platforms' Release configurations compile THIS host
+     * with -DDSH_RELEASE, so the JS layer's release branch is live and
+     * createLogger() drops debug/info at the source. The flag is INJECTED
+     * here at context-bind time rather than baked into a staged bundle —
+     * every embedded logger.js stays byte-identical to the canonical
+     * checkout, and there is no second source to drift. Debug builds are
+     * untouched (the global is simply absent, which is what the logger
+     * already treats as "not release"). */
+    JS_SetPropertyStr(ctx, global, "__DSH_RELEASE__", JS_TRUE);
+#endif
     JS_SetPropertyStr(ctx, global, "__DSH_LOG_SINK__",
                       JS_NewCFunction(ctx, js_log_sink, "__DSH_LOG_SINK__", 1));
     JS_SetPropertyStr(ctx, global, "__dshBusPost",

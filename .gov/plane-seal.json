@@ -6,6 +6,9 @@
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
+    ".gov/rejections/case-logging-l4.sh": {
+      "sha256": "f410a435d2ab5b627ae27e7c8ec4c1283536e4d9b598f3708966eedb7b755a59"
+    },
     ".gov/rejections/case-logging.sh": {
       "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
     },
@@ -17,9 +20,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-19T23:06:03+00:00",
+    "ts": "2026-09-21T06:26:26+00:00",
     "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "Rule 6: add project rejection cases .gov/rejections/case-code-size.sh + case-logging.sh proving code-size and logging L3 go red on the exact span shapes that made them vacuous (indented ' */' closers, destructured signatures); authority: agent note .agents/notes/implemented/bug-fix/2026-09-20-checker-function-spans-were-vacuous-or-w.md"
+    "reason": "Rule 6: add the project rejection case .gov/rejections/case-logging-l4.sh proving logging L4b/L4c go red on the cosmetic release strip the 2026-09-21 audit found (canonical TS logger branch only, operative logger unconditional, no build config defining the flag), plus its positive control; authority: agent note .agents/notes/implemented/feature/2026-09-21-the-release-log-strip-is-real-end-to-end.md"
   }
 }

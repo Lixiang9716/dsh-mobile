@@ -23,6 +23,7 @@ class CarrierEventLog(private val scenario: String) {
     fun emit(event: String, fields: JSONObject) {
         synchronized(lock) {
             val line = envelope(event, fields) ?: return
+            if (!BuildFlavor.keeps(line)) return
             lines.add(line)
             Log.i(TAG, PREFIX + line)
         }
@@ -35,6 +36,7 @@ class CarrierEventLog(private val scenario: String) {
         synchronized(lock) {
             if (!emittedEvents.add(event)) return
             val line = envelope(event, fields) ?: return
+            if (!BuildFlavor.keeps(line)) return
             lines.add(line)
             Log.i(TAG, PREFIX + line)
         }

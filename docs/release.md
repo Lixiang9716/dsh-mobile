@@ -7,18 +7,38 @@ from the GitHub Actions tab (**release/packages → Run workflow**) or:
 gh workflow run release.yml
 ```
 
-Each job uploads its own downloadable artifact under the workflow run:
+Each job uploads its own downloadable artifact under the workflow run.
 
-| Artifact | Contents | Installs as-is? |
+**Default dispatch produces the USER-FACING builds** — what you hand to a
+user. A distribution build runs no verification machinery and emits only the
+critical log set (`warn` + `error`); debug/info are stripped at the source
+(AGENTS.md constraint 5, rules.md rule L4):
+
+| Artifact | Configuration | Contents | Installs as-is? |
+| --- | --- | --- | --- |
+| `dsh-ios` | Release | `DSHSpike-release-device-unsigned.zip` + `DSHSpike-release-simulator.zip`; the official Web Client is EMBEDDED | No — sign first (below) |
+| `dsh-android` | Release | `app-release-unsigned.apk` (official web app packed in assets) | No — sign first |
+| `dsh-harmony` | Release | `entry-default-unsigned.hap` | No — sign via DevEco/hdc (below) |
+
+**`include_harness: true` additionally uploads the HARNESS packages** — the
+E2E verification vehicles: debug configuration, full structured logging, the
+verification drives run. They exist for hand-testing on physical devices; the
+`dev/*` pipelines already build and run the debug harness on every push, so
+the opt-in default is off:
+
+| Artifact | Configuration | Contents |
 | --- | --- | --- |
-| `dsh-ios` | `DSHSpike-device-unsigned.zip` (device .app, unsigned) + `DSHSpike-simulator.zip` | No — sign first (below) |
-| `dsh-android` | `app-debug.apk` (debug-keystore signed) | Yes — "install unknown apps", or `adb install` |
-| `dsh-harmony` | `entry-default-unsigned.hap` | No — sign via DevEco/hdc (below) |
+| `dsh-ios-harness` | Debug | `DSHSpike-harness-*-unsigned.zip` (device + simulator) |
+| `dsh-android-harness` | Debug | `app-debug.apk` (debug-keystore signed — installs directly) |
+| `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
+
+Which one do you want? **Release when you want to use the app**; harness when
+you want to verify it (run the E2E legs, read the `dsh.spike.log:` stream).
 
 The three builds mirror the proven `dev/ios` / `dev/android` /
 `dev/harmonyos` recipes (same vendors, same pinned toolchains). Release-mode
 signing (distribution certs, App Store / AppGallery) is out of scope: these
-packages exist for on-device verification.
+packages still need local signing to install.
 
 ## iOS — signing and installing on a phone
 
@@ -36,21 +56,25 @@ certificates). To put it on your iPhone:
 3. On the phone: Settings → General → VPN & Device Management → trust your
    developer profile, then launch **DSHSpike**.
 
-Honest limitation: the packaged app is the verification harness. A plain
-launch boots the runtime, the loopback carrier, and renders the M1 carrier
-page in the WebView. The official DSH Web UI needs two staged trees inside
-the app container plus a launch mode — see "Seeing the official Web UI"
-below. The real-LLM streaming drive (`m2.llm`) is launched with
-`-dsh-scenario m2-llm` and credentials staged into the `app` fs scope by the
-E2E runner (tools/e2e/run-ios-m2-llm.sh) — interactive real-LLM chat from a
-sideloaded phone is not wired yet.
+**`dsh-ios` (release): a plain launch reaches the official DSH Web UI.** The
+official dist (89 files) and the client bundles (129 files) are EMBEDDED in
+the app as resources (`Tools/stage_official_web.py`, run by the
+`StageOfficialWeb` build phase in the Release configuration only), so nothing
+is staged from outside. Evidence: `hosts/ios/artifacts/release-logging/`
+(plain launch, empty container, no arguments → the official UI, zero
+`dsh.spike.log:` records, zero verdict text, zero debug/info records).
 
-### Seeing the official Web UI (verified on the iOS simulator, 2026-09-21)
+**`dsh-ios-harness` (debug): the verification vehicle.** It embeds nothing
+and reads the `Documents/` trees its runners stage — exactly as before. It
+also carries the full E2E stream. Passing it an E2E launch mode works; the
+release build REFUSES one loudly instead (rule 5), because a user-facing
+binary has no drives.
 
-The carrier serves the vendored official dist through the `ctx.webServer`
-contract once it is in the app container; the app is then launched in its
-official-web drive (`b1.official-web.mount`, verified PASS 13/13 from the
-packaged app).
+### Seeing the official Web UI from the HARNESS (verified 2026-09-21)
+
+Only needed for `dsh-ios-harness`: it embeds nothing, so the carrier needs
+the vendored official dist in the app container before the official-web
+drive (`b1.official-web.mount`) can serve it.
 
 ```sh
 # 1. materialize the three untracked trees locally (manifest-verified)
@@ -85,14 +109,25 @@ container, never in the repository.
 
 ## Android
 
-`app-debug.apk` is signed with the debug keystore: copy it to the phone,
-enable "install unknown apps", tap to install — or `adb install app-debug.apk`.
-The real-LLM drive runs via `bash hosts/android/ci/...` runner scripts on a
-connected device (see hosts/android/artifacts/m2-llm/ for the evidence flow).
+`app-release-unsigned.apk` (release) carries the official web app in its
+assets and needs signing before install; `app-debug.apk` (harness) is signed
+with the debug keystore — copy it to the phone, enable "install unknown
+apps", tap to install, or `adb install app-debug.apk`. On release, a plain
+launch reaches the official DSH Web UI; the harness drives run the E2E legs
+via the `hosts/android/ci/` runner scripts (see
+hosts/android/artifacts/m2-llm/ for the evidence flow).
 
 ## HarmonyOS
 
-The HAP is debug-mode but unsigned (signing material is device-specific):
+The HAP is unsigned (signing material is device-specific). `dsh-harmony`
+is the release configuration (the `DSH_RELEASE` define reaches both ArkTS and
+the native spike library, so debug/info fold away); `dsh-harmony-harness` is
+the debug/E2E vehicle. **Honest gap:** the HarmonyOS host's serving stack
+still lives inside its E2E drives, so a plain launch on the release HAP
+refuses loudly instead of showing the official UI — the user-facing serving
+path is follow-up work. Use `dsh-harmony-harness` to run the host today.
+
+Signing:
 
 1. Import `hosts/harmony` into DevEco Studio, add the HAP to a run
    configuration — DevEco auto-signs with a local debug certificate and

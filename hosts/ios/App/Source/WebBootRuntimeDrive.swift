@@ -92,8 +92,10 @@ final class WebBootRuntimeDrive {
                 return
             }
             guard let plugins else {
-                onFailure?("web-boot: Documents/web-plugins is not staged "
-                    + "(run tools/e2e/run-ios-b1.sh)")
+                onFailure?("web-boot: no client bundles staged — neither the "
+                    + "embedded official-web/plugins resource nor "
+                    + "Documents/web-plugins (harness: run tools/e2e/run-ios-b1.sh; "
+                    + "release: tools/e2e/ensure-client-bundles.sh before the build)")
                 return
             }
             if let config { deliver(config) }
@@ -215,10 +217,11 @@ extension WebBootRuntimeDrive {
     /// Staged files per package: the manifest + the `./client` bundle (+ any
     /// staged package-local chunks); the graph's revs come from the runtime.
     static func webPluginsDelivery() -> [[String: Any]]? {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let scope = docs.appendingPathComponent("web-plugins/npm/@deepseek-ai", isDirectory: true)
-        guard let packageDirs = try? FileManager.default.contentsOfDirectory(
-            at: scope, includingPropertiesForKeys: nil, options: []) else { return nil }
+        // The embedded bundle scope in a user-facing build, else the
+        // Documents tree the E2E runners stage (SpikeBundleStager decides).
+        guard let scope = SpikeBundleStager.stagedPluginScope(),
+              let packageDirs = try? FileManager.default.contentsOfDirectory(
+                  at: scope, includingPropertiesForKeys: nil, options: []) else { return nil }
         var plugins: [[String: Any]] = []
         for pkg in packageDirs.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
             guard pkg.hasDirectoryPath else { continue }

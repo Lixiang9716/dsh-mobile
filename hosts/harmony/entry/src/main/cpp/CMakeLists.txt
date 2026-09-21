@@ -54,6 +54,21 @@ set_target_properties(spike PROPERTIES
   CXX_STANDARD 17
 )
 target_compile_definitions(spike PRIVATE _GNU_SOURCE)
+
+# Release logging regime. entry/build-profile.json5's release buildOptionSet
+# passes -DDSH_RELEASE=1 as a CMake cache variable (cppFlags maps to
+# CMAKE_CXX_FLAGS only and would miss the C host), and this turns it into a
+# compile definition for the WHOLE target — C host included — so the shared
+# host's dsh_bind_globals() injects globalThis.__DSH_RELEASE__ and the JS
+# logger drops debug/info at the source. The status line makes the regime
+# visible in the build log, so the flag is never silently absent.
+if(DSH_RELEASE)
+  message(STATUS "dsh spike: DSH_RELEASE=1 — release logging regime (warn/error only)")
+  target_compile_definitions(spike PRIVATE DSH_RELEASE=1)
+else()
+  message(STATUS "dsh spike: debug logging regime (full structured logging)")
+endif()
+
 target_compile_options(spike PRIVATE
   -O1
   -Wno-unused-parameter

@@ -1,26 +1,53 @@
 name: release/packages
-# Manual release packaging: one dispatch builds all three host apps and
+# Manual release packaging: one dispatch builds the three host apps and
 # uploads each as its own artifact (docs/release.md is the user guide).
 #
-#   dsh-ios      — unsigned device .app (sign locally, see INSTALL.txt) +
-#                  simulator .app
-#   dsh-android  — debug APK (debug-keystore signed; installs directly)
-#   dsh-harmony  — unsigned debug HAP (sign/install via DevEco or hdc)
+# DEFAULT DISPATCH — the USER-FACING builds. A distribution build is what a
+# user gets: no E2E machinery, no per-event log stream, warn/error only
+# (AGENTS.md constraint 5 / rules.md rule L4):
+#   dsh-ios      — unsigned Release device .app (sign locally) + Release
+#                  simulator .app; the official Web Client is EMBEDDED
+#   dsh-android  — Release APK (unsigned; sign to install), official web app
+#                  packed in assets
+#   dsh-harmony  — unsigned Release HAP
 #
-# Build commands mirror the dev/* pipelines (they are the proven recipes);
-# every build step runs under `set -o pipefail` so a piped tail can never
-# mask a red xcodebuild/gradle/hvigor exit code. Dispatch-only by design:
-# packages are produced when a human asks for them.
+# `include_harness: true` additionally builds the HARNESS artifacts — the E2E
+# verification vehicles (debug configuration, full structured logging, the
+# verification drives run). They exist for hand-testing on physical devices;
+# the dev/* pipelines already build and run the debug harness on every push,
+# so this is opt-in:
+#   dsh-ios-harness      — unsigned Debug device .app + Debug simulator .app
+#   dsh-android-harness  — debug APK (debug-keystore signed; installs directly)
+#   dsh-harmony-harness  — unsigned debug HAP
+#
+# One job per platform, both configurations inside it: the expensive
+# vendoring/materialization steps are shared, and the macOS runner (billed at
+# a premium) is not paid for twice. Build commands mirror the dev/* pipelines
+# (they are the proven recipes); every build step runs under `set -o pipefail`
+# so a piped tail can never mask a red xcodebuild/gradle/hvigor exit code.
+# Dispatch-only by design: packages are produced when a human asks for them.
 
 on:
   workflow_dispatch:
+    inputs:
+      include_harness:
+        description: >-
+          Also build the E2E harness packages (debug configuration, full
+          logs, verification drives). Off by default — the dev/* pipelines
+          cover the debug harness on every push.
+        type: boolean
+        default: false
 
 jobs:
   ios-package:
     runs-on: macos-15
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
 
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         # Both trees are untracked by design (upstream discipline D6);
@@ -30,40 +57,94 @@ jobs:
           sh runtime/spike/vendor/ensure.sh
           sh runtime/spike/vendor/ensure-dsh.sh
 
-      - name: Build device .app (unsigned) + simulator .app
+      - name: Materialize the official Web Client the release build embeds
+        # The RELEASE configuration EMBEDS the official dist + client bundles
+        # as app resources (Tools/stage_official_web.py, run from the
+        # StageOfficialWeb build phase) so a plain launch reaches the official
+        # UI with nothing staged from outside. Same reproducible rebuild the
+        # Android job runs.
+        env:
+          COREPACK_INTEGRITY_KEYS: '0'
+          NODE_OPTIONS: '--max-old-space-size=3072'
         run: |
           set -euo pipefail
+          corepack enable
+          tools/e2e/ensure-official-dist.sh
+          tools/e2e/ensure-client-bundles.sh
+
+      - name: Build the release .app (device + simulator, unsigned)
+        run: |
+          set -o pipefail
           cd hosts/ios
           xcodebuild build \
             -project DSHSpike.xcodeproj \
             -scheme DSHSpike \
+            -configuration Release \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath /tmp/dsh-device-dd \
+            -derivedDataPath /tmp/dsh-rel-device-dd \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             | tail -20
           xcodebuild build \
             -project DSHSpike.xcodeproj \
             -scheme DSHSpike \
+            -configuration Release \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath /tmp/dsh-sim-dd \
+            -derivedDataPath /tmp/dsh-rel-sim-dd \
             | tail -20
-          cd /tmp/dsh-device-dd/Build/Products
-          zip -qry /tmp/DSHSpike-device-unsigned.zip Debug-iphoneos/DSHSpike.app
-          cd /tmp/dsh-sim-dd/Build/Products
-          zip -qry /tmp/DSHSpike-simulator.zip Debug-iphonesimulator/DSHSpike.app
+          test -f /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app/official-web/dist/index.html \
+            || { echo "::error::the release .app embeds no official dist"; exit 1; }
+          cd /tmp/dsh-rel-device-dd/Build/Products
+          zip -qry /tmp/DSHSpike-release-device-unsigned.zip Release-iphoneos/DSHSpike.app
+          cd /tmp/dsh-rel-sim-dd/Build/Products
+          zip -qry /tmp/DSHSpike-release-simulator.zip Release-iphonesimulator/DSHSpike.app
 
       - name: Upload dsh-ios
         uses: actions/upload-artifact@v4
         with:
           name: dsh-ios
           path: |
-            /tmp/DSHSpike-device-unsigned.zip
-            /tmp/DSHSpike-simulator.zip
+            /tmp/DSHSpike-release-device-unsigned.zip
+            /tmp/DSHSpike-release-simulator.zip
+          if-no-files-found: error
+
+      - name: Build the harness .app (debug, device + simulator, unsigned)
+        if: inputs.include_harness
+        run: |
+          set -o pipefail
+          cd hosts/ios
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/dsh-harness-device-dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            | tail -20
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath /tmp/dsh-harness-sim-dd \
+            | tail -20
+          cd /tmp/dsh-harness-device-dd/Build/Products
+          zip -qry /tmp/DSHSpike-harness-device-unsigned.zip Debug-iphoneos/DSHSpike.app
+          cd /tmp/dsh-harness-sim-dd/Build/Products
+          zip -qry /tmp/DSHSpike-harness-simulator.zip Debug-iphonesimulator/DSHSpike.app
+
+      - name: Upload dsh-ios-harness
+        if: inputs.include_harness
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-ios-harness
+          path: |
+            /tmp/DSHSpike-harness-device-unsigned.zip
+            /tmp/DSHSpike-harness-simulator.zip
           if-no-files-found: error
 
   android-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -102,25 +183,47 @@ jobs:
           tools/e2e/ensure-official-dist.sh
           tools/e2e/ensure-client-bundles.sh
 
-      - name: Build APK (debug — debug-keystore signed, installs directly)
+      - name: Build the release APK (unsigned; the defines live in app/build.gradle.kts)
         working-directory: hosts/android
         run: |
           set -euo pipefail
-          ./gradlew assembleDebug --no-daemon
-          test -f app/build/outputs/apk/debug/app-debug.apk || {
-            echo "::error::APK not produced"; exit 1
+          ./gradlew assembleRelease --no-daemon
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk || {
+            echo "::error::release APK not produced"; exit 1
+          }
+          unzip -l app/build/outputs/apk/release/app-release-unsigned.apk \
+            | grep -q 'assets/official-web/dist/index.html' || {
+            echo "::error::the release APK embeds no official dist"; exit 1
           }
 
       - name: Upload dsh-android
         uses: actions/upload-artifact@v4
         with:
           name: dsh-android
+          path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+
+      - name: Build the harness APK (debug — debug-keystore signed, installs directly)
+        if: inputs.include_harness
+        working-directory: hosts/android
+        run: |
+          set -euo pipefail
+          ./gradlew assembleDebug --no-daemon
+          test -f app/build/outputs/apk/debug/app-debug.apk || {
+            echo "::error::harness APK not produced"; exit 1
+          }
+
+      - name: Upload dsh-android-harness
+        if: inputs.include_harness
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-android-harness
           path: hosts/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
 
   harmony-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
     steps:
@@ -159,19 +262,44 @@ jobs:
       - name: Vendor quickjs-ng
         run: sh runtime/spike/vendor/ensure.sh
 
-      - name: Install dependencies (ohpm) and build HAP (debug, unsigned)
+      - name: Install dependencies (ohpm) and build the release HAP (unsigned)
         working-directory: hosts/harmony
         run: |
           set -euo pipefail
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/ohpm" install --all
           "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
-            --mode module -p product=default -p buildMode=debug --no-daemon
+            --mode module -p product=default -p buildMode=release --no-daemon
           test -f entry/build/default/outputs/default/entry-default-unsigned.hap \
-            || { echo "::error::HAP not produced"; exit 1; }
+            || { echo "::error::release HAP not produced"; exit 1; }
+          grep -q 'DSH_RELEASE = true' \
+            entry/build/default/generated/profile/default/BuildProfile.ets \
+            || { echo "::error::the release HAP did not publish DSH_RELEASE"; exit 1; }
 
       - name: Upload dsh-harmony
         uses: actions/upload-artifact@v4
         with:
           name: dsh-harmony
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
+          if-no-files-found: error
+
+      - name: Build the harness HAP (debug, unsigned)
+        # Same output path as the release HAP (both modes write
+        # entry-default-unsigned.hap), so copy it out before anything else.
+        if: inputs.include_harness
+        working-directory: hosts/harmony
+        run: |
+          set -euo pipefail
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
+            --mode module -p product=default -p buildMode=debug --no-daemon
+          test -f entry/build/default/outputs/default/entry-default-unsigned.hap \
+            || { echo "::error::harness HAP not produced"; exit 1; }
+          cp entry/build/default/outputs/default/entry-default-unsigned.hap \
+            /tmp/entry-default-debug-unsigned.hap
+
+      - name: Upload dsh-harmony-harness
+        if: inputs.include_harness
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-harmony-harness
+          path: /tmp/entry-default-debug-unsigned.hap
           if-no-files-found: error

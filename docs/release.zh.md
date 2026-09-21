@@ -7,17 +7,34 @@
 gh workflow run release.yml
 ```
 
-每个 job 在 workflow run 下上传各自独立的可下载产物:
+每个 job 在 workflow run 下上传各自独立的可下载产物。
 
-| 产物 | 内容 | 可直接安装? |
+**默认触发产出的是面向用户的构建**——就是你交给用户的那一份。分发构建不跑
+任何验证机制,只输出关键日志集(`warn` + `error`);debug/info 在源头就被剥离
+(AGENTS.md 约束 5,rules.md 规则 L4):
+
+| 产物 | 配置 | 内容 | 可直接安装? |
+| --- | --- | --- | --- |
+| `dsh-ios` | Release | `DSHSpike-release-device-unsigned.zip` + `DSHSpike-release-simulator.zip`;官方 Web 客户端已内嵌 | 否——先签名(见下) |
+| `dsh-android` | Release | `app-release-unsigned.apk`(官方 web app 打进 assets) | 否——先签名 |
+| `dsh-harmony` | Release | `entry-default-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
+
+**`include_harness: true` 会额外上传 HARNESS 包**——即 E2E 验证载体:debug
+配置、完整结构化日志、验证驱动照常运行。它们存在的意义是在真机上手工验证;
+`dev/*` 流水线本来就在每次 push 时构建并运行 debug harness,所以这里默认关闭:
+
+| 产物 | 配置 | 内容 |
 | --- | --- | --- |
-| `dsh-ios` | `DSHSpike-device-unsigned.zip`(真机 .app,未签名)+ `DSHSpike-simulator.zip` | 否——先签名(见下) |
-| `dsh-android` | `app-debug.apk`(debug 签名) | 是——允许未知来源后直接装,或 `adb install` |
-| `dsh-harmony` | `entry-default-unsigned.hap` | 否——经 DevEco/hdc 签名(见下) |
+| `dsh-ios-harness` | Debug | `DSHSpike-harness-*-unsigned.zip`(真机 + 模拟器) |
+| `dsh-android-harness` | Debug | `app-debug.apk`(debug 签名,可直接安装) |
+| `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
+
+该选哪个?**想用这个 App 就选 Release;想验证它就选 harness**(跑 E2E 腿、
+读 `dsh.spike.log:` 流)。
 
 三条构建镜像自已验证过的 `dev/ios` / `dev/android` / `dev/harmonyos`
 配方(同样的 vendor、同样的钉死工具链)。发行级签名(分发证书、上架
-App Store / AppGallery)不在范围内:这些包面向真机验证。
+App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装。
 
 ## iOS —— 真机签名与安装
 
@@ -32,18 +49,21 @@ App Store / AppGallery)不在范围内:这些包面向真机验证。
 3. 手机上:设置 → 通用 → VPN 与设备管理 → 信任你的开发者描述文件,然后
    启动 **DSHSpike**。
 
-如实说明:打包的是验证载体。直接启动会拉起运行时、回环 carrier,并在
-WebView 里渲染 M1 carrier 页面。官方 DSH Web UI 需要在应用容器里暂存两棵
-目录树并指定启动模式——见下面「看到官方 Web UI」。真实 LLM 流式驱动
-(`m2.llm`)需要以 `-dsh-scenario m2-llm` 启动参数运行,且凭据由 E2E runner
-(tools/e2e/run-ios-m2-llm.sh)预先注入 `app` fs scope——侧载手机上的
-交互式真 LLM 对话尚未接线。
+**`dsh-ios`(release):直接启动就进官方 DSH Web UI。** 官方 dist(89 个文件)
+与客户端 bundles(129 个文件)作为资源内嵌进 App(`Tools/stage_official_web.py`,
+仅 Release 配置由 `StageOfficialWeb` 构建阶段执行),因此不需要从外部暂存任何
+东西。证据:`hosts/ios/artifacts/release-logging/`(直接启动、容器为空、无启动
+参数 → 官方 UI,`dsh.spike.log:` 记录 0 条、verdict 文本 0 条、debug/info 记录
+0 条)。
 
-### 看到官方 Web UI(iOS 模拟器已验证,2026-09-21)
+**`dsh-ios-harness`(debug):验证载体。** 它什么都不内嵌,读的是 runner 暂存到
+`Documents/` 的目录树——与之前完全一致,并带完整 E2E 流。给它传 E2E 启动模式
+可以跑;release 构建则会大声拒绝(规则 5),因为面向用户的二进制没有驱动。
 
-vendored 官方 dist 一旦进入应用容器,carrier 就会通过 `ctx.webServer` 契约
-把它服务出来;应用随后以官方 web 驱动(`b1.official-web.mount`,打包应用实跑
-验证 PASS 13/13)启动。
+### 从 HARNESS 看到官方 Web UI(2026-09-21 已验证)
+
+只有 `dsh-ios-harness` 需要这一步:它不内嵌,所以 carrier 需要应用容器里先有
+vendored 官方 dist,官方 web 驱动(`b1.official-web.mount`)才能把它服务出来。
 
 ```sh
 # 1. 本地物化三棵未跟踪目录树(均按 MANIFEST 校验)
@@ -77,14 +97,22 @@ xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
 
 ## Android
 
-`app-debug.apk` 用 debug 密钥库签名:拷到手机、允许"安装未知应用"、
-点按安装——或 `adb install app-debug.apk`。真 LLM 驱动通过
-`bash hosts/android/ci/...` runner 脚本在连接的设备上运行
+`app-release-unsigned.apk`(release)把官方 web app 打进 assets,安装前需要
+签名;`app-debug.apk`(harness)用 debug 密钥库签名:拷到手机、允许"安装未知
+应用"、点按安装——或 `adb install app-debug.apk`。release 直接启动即进官方
+DSH Web UI;harness 则通过 `hosts/android/ci/` runner 脚本跑 E2E 腿
 (证据流程见 hosts/android/artifacts/m2-llm/)。
 
 ## HarmonyOS
 
-HAP 是 debug 模式但未签名(签名材料与设备相关):
+HAP 未签名(签名材料与设备相关)。`dsh-harmony` 是 release 配置
+(`DSH_RELEASE` 定义同时到达 ArkTS 与原生 spike 库,debug/info 因此折叠掉);
+`dsh-harmony-harness` 是 debug/E2E 载体。**如实说明的缺口:** HarmonyOS 宿主的
+服务栈仍在它的 E2E 驱动里,所以 release HAP 直接启动会大声拒绝,而不是显示
+官方 UI——面向用户的服务路径是后续工作。今天要跑宿主请用
+`dsh-harmony-harness`。
+
+签名:
 
 1. 用 DevEco Studio 导入 `hosts/harmony`,把 HAP 加进 run 配置——
    DevEco 会用本地 debug 证书自动签名并装到连接的设备/模拟器;或

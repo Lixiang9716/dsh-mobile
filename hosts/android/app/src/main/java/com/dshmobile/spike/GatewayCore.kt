@@ -47,8 +47,10 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             JSONObject().put("code", code).put("primitive", primitive)
                 .put("message", message).toString()
 
-        /** E2E driver marker (NOT the canonical stream): ui-wait / ui-done. */
+        /** E2E driver marker (NOT the canonical stream): ui-wait / ui-done.
+         * Harness-only — a release build runs no UI-driven verification. */
         fun uiMarker(name: String, phase: String) {
+            if (BuildFlavor.isRelease) return
             Log.i(UI_TAG, "ui-$phase $name")
         }
     }
@@ -148,8 +150,11 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         audit(name, "granted", "ok")
     }
 
-    /** Mandatory structured audit (contract §6): never payload contents. */
+    /** Mandatory structured audit (contract §6): never payload contents.
+     * The audit line rides the `dsh.gateway.audit:` E2E stream — debug-only
+     * by construction, so a release build emits none. */
     private fun audit(primitive: String, verdict: String, outcome: String) {
+        if (BuildFlavor.isRelease) return
         val record = JSONObject()
             .put("ts", java.time.Instant.now().toString())
             .put("primitive", primitive)
