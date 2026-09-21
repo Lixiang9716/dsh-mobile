@@ -1,0 +1,53 @@
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"placeholder write begin","data":[{"path":"m2-llm/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"m2-llm/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"placeholder written","data":[{"path":"m2-llm/config.json","written":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"bus post","data":[{"type":"stage.ready"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m2.llm.carrier","event":"client.selected","client":"dsh-web-client","source":"launch"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m2.llm.carrier","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m2.llm.carrier","event":"ws.connected","protocol":"session-projection@0"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"main begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"host.ready","signalled":true}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"descriptor leg probe","data":[]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.leg","leg":"real","transport":"gateway.httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"real config load begin","data":[{"path":"m2-llm/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"m2-llm/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":172}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.config.loaded","source":"app-scope","model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"session.created","sessionId":"s-m2-llm-0001","scope":"app"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"session"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"agent.started","model":"glm-4.6","tools":0}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"projection push","data":[{"kind":"agent"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"turn begin","data":[{"model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"llm.stream.started","turn":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"glm-4.6","messages":1,"maxTokens":256}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","bytes":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"m2.llm.carrier","event":"slot.registered","id":"notes.toolbar","label":"llm","by":"m2-llm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":429}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"status error drain","data":[{"status":429}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":3,"buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":198}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":152}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":114}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":3,"buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm error","data":[{"code":"network"}]}
+dsh.spike.log: {"level":"debug","module":"m2.llm.spike","message":"scenario failed","data":[{"reason":"uncaught: chat/completions status 429: {\"error\":{\"code\":\"1310\",\"message\":\"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\"}}"}]}
+dsh.spike.log: {"level":"info","module":"m2.llm.spike","message":"e2e","data":[{"scenario":"m2.llm","event":"scenario.failed","reason":"uncaught: chat/completions status 429: {\"error\":{\"code\":\"1310\",\"message\":\"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\"}}"}]}

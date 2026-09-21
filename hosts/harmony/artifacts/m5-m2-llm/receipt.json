@@ -1,0 +1,49 @@
+{
+  "host": "harmonyos emulator dsh_phone (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "bundleName": "com.dshmobile.spike",
+  "scenario": "m2.llm (REAL leg)",
+  "status": "blocked-on-quota",
+  "launch": "hdc shell aa start -b com.dshmobile.spike -a EntryAbility --ps dsh.e2e.leg m2.llm (EntryAbility.onCreate parks the leg in E2eLeg; Index.aboutToAppear runs the m2.llm leg alone — harmony has no scenario list to append to, and the default chain that run-host-e2e.sh drives is untouched, so it never spends serve quota)",
+  "runner": "hosts/harmony/ci/run-m2-llm.sh",
+  "backend": "OpenAI-compatible chat/completions on the .env coding endpoint, streamed through this host's REAL httpFetch (HttpPrimitive.ets over @ohos.net.http requestInStream: settle at headers, http.body/http.end events, mid-body abort -> cancelled)",
+  "proves": [
+    "the canonical runtime/spike/scenario/m2-llm.js + runtime/spike/llm.js run UNCHANGED on this third host: llm.leg {leg: real, transport: gateway.httpFetch} was negotiated from the RuntimeDescriptor (capability negotiation, never a hostType branch), the config came from fs scope app (source: app-scope), and the turn opened on the real transport",
+    "the request left the device through the real httpFetch and the real backend answered: POST https://api.z.ai/api/coding/paas/v4/chat/completions, response body streamed back as http.body + http.end, status drained by llm.js — the backend refused it with HTTP 429 code 1310 (Weekly/Monthly Limit Exhausted, reset 2026-09-22 14:43:53). A 429 from the real server is proof the transport carried the request end-to-end",
+    "the carrier/mount chain on this host: client.selected -> webclient.mounted -> ws.connected -> slot.registered (the mounted page rendered and acked the projected llm slot) -> ws.token-delta/ws.session-complete await the served deltas",
+    "the credential handshake this platform forces: the app sandbox is not shell-writable (hdc file send can open an existing app-owned file, never create one; an ArkTS create lands 0660; the app-side chmod is a silent no-op), so the runtime writes the 0666 placeholder through the C-side app-scope fsWrite, the runner overwrites it, the app imports + validates it (stage-loaded bytes=129 model=glm-4.6), REPORTS the seal honestly (stage-seal ineffective (platform chmod no-op) mode=666 wanted=600) and DELETES it when the leg ends (stage-cleanup, asserted by the runner)",
+    "credentials never in logs: the runner's grep -F over the RAW bounded hilog stream and the RAW pulled capture found 0 occurrences of the staged key; the in-scenario llm.key.audit record is BLOCKED (it is the scenario's last record and the turn was refused) and is not claimed"
+  ],
+  "blocked": {
+    "line": "llm.reasoning.delta -> llm.delta -> llm.stream.completed -> llm.served-model -> llm.content.asserted -> llm.key.audit -> session.completed",
+    "reason": "the z.ai account's coding-plan quota is exhausted as of 2026-09-21T13:13+08:00: HTTP 429 code 1310 \"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\" (reproduced off-device with the same key by curl; glm-4.5/glm-4.5-air also 1310, glm-4.5-flash 1305, glm-4.6-flash 403, the standard paas endpoints 1113 insufficient balance)",
+    "closesWith": "DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh once quota returns (or with a funded key) — no code change; the runner exits non-zero on this state by design"
+  },
+  "checker": [
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-llm-device.json",
+      "log": "hosts/harmony/artifacts/m5-m2-llm/capture.txt",
+      "pass": false,
+      "expected": 14,
+      "logged": 8,
+      "note": "records 1-8 of the manifest are logged and matched (gateway.negotiated, host.ready, llm.leg real, llm.config.loaded app-scope, session.created, agent.started, llm.stream.started); everything after is the refused turn"
+    },
+    {
+      "tool": "tools/e2e/check.mjs",
+      "manifest": "tools/e2e/scenarios/m2-llm-carrier.json",
+      "log": "hosts/harmony/artifacts/m5-m2-llm/capture.txt",
+      "pass": false,
+      "expected": 7,
+      "logged": 4,
+      "note": "client.selected, webclient.mounted, ws.connected, slot.registered are logged in order; ws.token-delta first/last and ws.session-complete await the served deltas"
+    }
+  ],
+  "scenarioVerdictLine": "dsh.spike.verdict: m2.llm FAIL engine=quickjs-ng version=0.17.0 complete=1 pass=0 logLines=53",
+  "keyLeakAudit": "runner grep -F over logs.txt (raw bounded hilog, 54 lines) and capture.txt (raw pulled capture, 53 lines): 0 occurrences of the staged API key",
+  "credentialRemoval": "asserted after the run: the app removed <filesDir>/spike-fs/m2-llm/config.json (this platform cannot seal by chmod, so removal bounds the key's on-disk life to one run)",
+  "screenshots": "m2-llm-live-page.png — the mounted Web Client with the projected llm slot (supplementary only; the verdict is logs)",
+  "quota": "1 refused request (HTTP 429, no tokens served); no quota was consumed by the handshake or the mount",
+  "exitCode": 1
+}

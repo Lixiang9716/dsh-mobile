@@ -1,0 +1,91 @@
+{
+  "scenario": "m2.llm",
+  "pass": false,
+  "expected": 14,
+  "logged": 8,
+  "failures": [
+    {
+      "index": 7,
+      "expected": {
+        "event": "llm.reasoning.delta"
+      },
+      "logged": {
+        "line": 53,
+        "payload": {
+          "scenario": "m2.llm",
+          "event": "scenario.failed",
+          "reason": "uncaught: chat/completions status 429: {\"error\":{\"code\":\"1310\",\"message\":\"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\"}}"
+        }
+      }
+    },
+    {
+      "index": 8,
+      "expected": {
+        "event": "llm.delta"
+      },
+      "logged": {
+        "line": 53,
+        "payload": {
+          "scenario": "m2.llm",
+          "event": "scenario.failed",
+          "reason": "uncaught: chat/completions status 429: {\"error\":{\"code\":\"1310\",\"message\":\"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\"}}"
+        }
+      }
+    },
+    {
+      "index": 9,
+      "expected": {
+        "event": "llm.stream.completed",
+        "match": {
+          "turn": 1
+        }
+      },
+      "logged": {
+        "line": 53,
+        "payload": {
+          "scenario": "m2.llm",
+          "event": "scenario.failed",
+          "reason": "uncaught: chat/completions status 429: {\"error\":{\"code\":\"1310\",\"message\":\"Weekly/Monthly Limit Exhausted. Your limit will reset at 2026-09-22 14:43:53\"}}"
+        }
+      }
+    },
+    {
+      "index": 10,
+      "expected": {
+        "event": "llm.served-model",
+        "match": {}
+      },
+      "logged": null
+    },
+    {
+      "index": 11,
+      "expected": {
+        "event": "llm.content.asserted",
+        "match": {}
+      },
+      "logged": null
+    },
+    {
+      "index": 12,
+      "expected": {
+        "event": "llm.key.audit",
+        "match": {
+          "leaked": false
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 13,
+      "expected": {
+        "event": "session.completed",
+        "match": {
+          "sessionId": "s-m2-llm-0001",
+          "status": "pass"
+        }
+      },
+      "logged": null
+    }
+  ],
+  "parseErrors": []
+}
