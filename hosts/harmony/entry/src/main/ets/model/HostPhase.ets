@@ -53,7 +53,6 @@ import {
 import { common } from '@kit.AbilityKit';
 import { wantAgent } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
-import notification from '@ohos.notification';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HttpPrimitive } from './HttpPrimitive';
 import { KeychainPrimitives } from './KeychainPrimitives';
@@ -510,7 +509,10 @@ export class HostPhase {
         id: numericId,
         wantAgent: agent,
         content: {
-          contentType: notification.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
+          // notificationContentType is the API-11 successor of the
+          // @ohos.notification `contentType` field (deprecated since 11).
+          notificationContentType:
+            notificationManager.ContentType.NOTIFICATION_CONTENT_BASIC_TEXT,
           normal: { title: title, text: body, additionalText: 'dsh' },
         },
       };
