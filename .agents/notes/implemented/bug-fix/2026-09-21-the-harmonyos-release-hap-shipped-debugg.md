@@ -68,6 +68,18 @@ release was to delete the release and re-publish it; the new input builds from
 the current `main` and replaces that tag's assets in place — which is how the
 corrected HAP replaces the bad one on `v0.0.1`.
 
+Release assets are also renamed to the project's own vocabulary. The workflow
+had been uploading the build system's internal output paths as asset names —
+`entry-default-unsigned.hap`, `app-release-unsigned.apk` — while the
+workflow-artifact names right beside them already said `dsh-harmony` and
+`dsh-android`. A downloader saw a name invented by hvigor and Gradle. The
+attach steps now use `gh release upload`'s `file#name` display label, so the
+assets are `dsh-harmony-unsigned.hap`, `dsh-android-unsigned.apk`,
+`dsh-ios-device-unsigned.zip` and `dsh-ios-simulator-unsigned.zip`, while the
+build outputs keep the names their toolchains dictate. The `-unsigned` suffix
+stays: it is the one property a downloader must know before the file is any
+use.
+
 ## Alternatives considered
 
 - **Adding the missing `obfuscation-rules.txt`.** Rejected: obfuscation is

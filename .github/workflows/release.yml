@@ -139,14 +139,18 @@ jobs:
           if-no-files-found: error
 
       - name: Attach dsh-ios to the release
+        # The `file#name` form is the display label: a release asset is
+        # NAMED for what it is (`dsh-<host>…`), never for the build system's
+        # internal output path. The workflow-artifact names above already
+        # follow that convention; the assets must match them.
         if: env.RELEASE_TAG != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           gh release upload "$RELEASE_TAG" \
-            /tmp/DSHSpike-release-device-unsigned.zip \
-            /tmp/DSHSpike-release-simulator.zip \
+            /tmp/DSHSpike-release-device-unsigned.zip#dsh-ios-device-unsigned.zip \
+            /tmp/DSHSpike-release-simulator.zip#dsh-ios-simulator-unsigned.zip \
             --clobber
 
       - name: Build the harness .app (debug, device + simulator, unsigned)
@@ -256,7 +260,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "$RELEASE_TAG" \
-            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk#dsh-android-unsigned.apk \
             --clobber
 
       - name: Build the harness APK (debug — debug-keystore signed, installs directly)
@@ -371,7 +375,7 @@ jobs:
         run: |
           set -euo pipefail
           gh release upload "$RELEASE_TAG" \
-            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
+            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap#dsh-harmony-unsigned.hap \
             --clobber
 
       - name: Build the harness HAP (debug, unsigned)
