@@ -1,0 +1,161 @@
+name: release/android
+# The Android PACKAGE stage of the release pipeline: build the user-facing
+# Android build and attach it to the release (docs/release.md is the user
+# guide).
+#
+# One workflow per host, so the Actions list names the stage a run belongs to —
+# release/ios, release/android, release/harmony — the way dev/ios, dev/android
+# and dev/harmonyos already do. The stage that PREPARES the release (the
+# version stream) is release/version.
+#
+# DEFAULT DISPATCH — the USER-FACING build. A distribution build is what a user
+# gets: no E2E machinery, no per-event log stream, warn/error only (AGENTS.md
+# constraint 5 / rules.md rule L4):
+#   dsh-android — unsigned Release APK (sign to install), official web app
+#                 packed in assets
+#
+# `include_harness: true` additionally builds the HARNESS artifact — the E2E
+# verification vehicle (debug configuration, full structured logging, the
+# verification drives run). It exists for hand-testing on physical devices; the
+# dev/android pipeline already builds and runs the debug harness on every push,
+# so this is opt-in:
+#   dsh-android-harness — debug APK (debug-keystore signed; installs directly)
+#
+# One job, BOTH configurations inside it: the expensive materialization steps
+# are shared. Build commands mirror dev/android (they are the proven recipes);
+# every build step runs under `set -euo pipefail` so a piped tail or a stale
+# output file can never mask a red gradle exit code.
+#
+# TWO TRIGGERS, one build path:
+#
+#   release: published  — release-please cut a release. The user-facing package
+#                         builds and is ATTACHED as an asset of that GitHub
+#                         Release, so a tag is a downloadable build set and not
+#                         just a diff.
+#   workflow_dispatch   — manual packaging, when a human asks for a run that is
+#                         not tied to a release. Artifacts land on the run.
+#
+# A release run never builds the harness package: it is a verification vehicle
+# (above), and the `inputs` context is empty outside a dispatch, so the harness
+# steps are guarded explicitly rather than by that accident.
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_harness:
+        description: >-
+          Also build the E2E harness package (debug configuration, full logs,
+          verification drives). Off by default — the dev/android pipeline
+          covers the debug harness on every push.
+        type: boolean
+        default: false
+      release_tag:
+        description: >-
+          Attach the built package to this existing release tag (e.g. v0.0.1),
+          REPLACING that tag's asset in place — the recovery path for a release
+          whose asset was built wrong, without deleting and re-publishing the
+          release. Leave empty for a plain manual run, whose package stays on
+          the workflow run only.
+        type: string
+        required: false
+        default: ''
+  release:
+    types: [published]
+
+# `gh release upload` writes the asset onto the published release.
+permissions:
+  contents: write
+
+jobs:
+  android-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Empty on a plain dispatch (the package stays on the run); the release
+      # tag otherwise — the event's own tag, or the one a dispatch asked for.
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Install the pinned NDK and CMake
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.0.12077973" "cmake;3.22.1" > /dev/null
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # The APK packs the vendored official web app (reproducible, manifest-
+      # verified); the Gradle build fails loud without them. Same swap belt
+      # as dev/android: the upstream monorepo builds die SIGKILLed under RAM
+      # pressure on hosted runners.
+      - name: Add swap for the upstream builds
+        run: |
+          sudo fallocate -l 6G /mnt/swapfile
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+
+      - name: Materialize the vendored web app + DSH closure
+        env:
+          COREPACK_INTEGRITY_KEYS: '0'
+          NODE_OPTIONS: '--max-old-space-size=3072'
+        run: |
+          set -euo pipefail
+          corepack enable
+          runtime/spike/vendor/ensure-dsh.sh > /dev/null
+          tools/e2e/ensure-official-dist.sh
+          tools/e2e/ensure-client-bundles.sh
+
+      - name: Build the release APK (unsigned; the defines live in app/build.gradle.kts)
+        working-directory: hosts/android
+        run: |
+          set -euo pipefail
+          ./gradlew assembleRelease --no-daemon
+          test -f app/build/outputs/apk/release/app-release-unsigned.apk || {
+            echo "::error::release APK not produced"; exit 1
+          }
+          unzip -l app/build/outputs/apk/release/app-release-unsigned.apk \
+            | grep -q 'assets/official-web/dist/index.html' || {
+            echo "::error::the release APK embeds no official dist"; exit 1
+          }
+
+      - name: Upload dsh-android
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-android
+          path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          if-no-files-found: error
+
+      - name: Attach dsh-android to the release
+        if: env.RELEASE_TAG != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cp hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            /tmp/dsh-android.apk
+          gh release upload "$RELEASE_TAG" /tmp/dsh-android.apk --clobber
+
+      - name: Build the harness APK (debug — debug-keystore signed, installs directly)
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
+        working-directory: hosts/android
+        run: |
+          set -euo pipefail
+          ./gradlew assembleDebug --no-daemon
+          test -f app/build/outputs/apk/debug/app-debug.apk || {
+            echo "::error::harness APK not produced"; exit 1
+          }
+
+      - name: Upload dsh-android-harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-android-harness
+          path: hosts/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

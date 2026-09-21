@@ -1,0 +1,202 @@
+name: release/ios
+# The iOS PACKAGE stage of the release pipeline: build the user-facing iOS
+# build and attach it to the release (docs/release.md is the user guide).
+#
+# One workflow per host, so the Actions list names the stage a run belongs to —
+# release/ios, release/android, release/harmony — the way dev/ios, dev/android
+# and dev/harmonyos already do. The stage that PREPARES the release (the
+# version stream) is release/version.
+#
+# DEFAULT DISPATCH — the USER-FACING build. A distribution build is what a user
+# gets: no E2E machinery, no per-event log stream, warn/error only (AGENTS.md
+# constraint 5 / rules.md rule L4):
+#   dsh-ios — unsigned Release device .app, packaged as a real .ipa (sign
+#             locally to install) + a Release simulator .app; the official Web
+#             Client is EMBEDDED
+#
+# `include_harness: true` additionally builds the HARNESS artifact — the E2E
+# verification vehicle (debug configuration, full structured logging, the
+# verification drives run). It exists for hand-testing on physical devices; the
+# dev/ios pipeline already builds and runs the debug harness on every push, so
+# this is opt-in:
+#   dsh-ios-harness — unsigned Debug device .app + Debug simulator .app
+#
+# One job, BOTH configurations inside it: the expensive vendoring and
+# materialization steps are shared, and the macOS runner (billed at a premium)
+# is not paid for twice. Build commands mirror dev/ios (they are the proven
+# recipes); every build step runs under `set -o pipefail` so a piped tail can
+# never mask a red xcodebuild exit code.
+#
+# TWO TRIGGERS, one build path:
+#
+#   release: published  — release-please cut a release. The user-facing package
+#                         builds and is ATTACHED as an asset of that GitHub
+#                         Release, so a tag is a downloadable build set and not
+#                         just a diff.
+#   workflow_dispatch   — manual packaging, when a human asks for a run that is
+#                         not tied to a release. Artifacts land on the run.
+#
+# A release run never builds the harness package: it is a verification vehicle
+# (above), and the `inputs` context is empty outside a dispatch, so the harness
+# steps are guarded explicitly rather than by that accident.
+
+on:
+  workflow_dispatch:
+    inputs:
+      include_harness:
+        description: >-
+          Also build the E2E harness package (debug configuration, full logs,
+          verification drives). Off by default — the dev/ios pipeline covers
+          the debug harness on every push.
+        type: boolean
+        default: false
+      release_tag:
+        description: >-
+          Attach the built package to this existing release tag (e.g. v0.0.1),
+          REPLACING that tag's asset in place — the recovery path for a release
+          whose asset was built wrong, without deleting and re-publishing the
+          release. Leave empty for a plain manual run, whose package stays on
+          the workflow run only.
+        type: string
+        required: false
+        default: ''
+  release:
+    types: [published]
+
+# `gh release upload` writes the asset onto the published release.
+permissions:
+  contents: write
+
+jobs:
+  ios-package:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      # Empty on a plain dispatch (the package stays on the run); the release
+      # tag otherwise — the event's own tag, or the one a dispatch asked for.
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Vendor quickjs-ng + the pinned upstream DSH closure
+        # Both trees are untracked by design (upstream discipline D6);
+        # gen_bundle_header.py pins the alpha.2 dsh closure at build time.
+        run: |
+          set -euo pipefail
+          sh runtime/spike/vendor/ensure.sh
+          sh runtime/spike/vendor/ensure-dsh.sh
+
+      - name: Materialize the official Web Client the release build embeds
+        # The RELEASE configuration EMBEDS the official dist + client bundles
+        # as app resources (Tools/stage_official_web.py, run from the
+        # StageOfficialWeb build phase) so a plain launch reaches the official
+        # UI with nothing staged from outside. Same reproducible rebuild the
+        # release/android workflow runs.
+        env:
+          COREPACK_INTEGRITY_KEYS: '0'
+          NODE_OPTIONS: '--max-old-space-size=3072'
+        run: |
+          set -euo pipefail
+          corepack enable
+          tools/e2e/ensure-official-dist.sh
+          tools/e2e/ensure-client-bundles.sh
+
+      - name: Build the release .app (device + simulator, unsigned)
+        run: |
+          set -o pipefail
+          cd hosts/ios
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/dsh-rel-device-dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            | tail -20
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Release \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath /tmp/dsh-rel-sim-dd \
+            | tail -20
+          test -f /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app/official-web/dist/index.html \
+            || { echo "::error::the release .app embeds no official dist"; exit 1; }
+          # The device build is packaged as a real `.ipa`: a zip whose root
+          # holds Payload/<App>.app. That layout is what AltStore, Sideloadly
+          # and `xcrun devicectl` expect, and it is the only thing the `.ipa`
+          # extension can honestly mean — handing out a zip rooted at
+          # `Release-iphoneos/…` under that name would be a name no iOS tool
+          # agrees with. It is UNSIGNED (CI holds no Apple certificates):
+          # the signer replaces the profile and re-seals it.
+          rm -rf /tmp/dsh-ipa && mkdir -p /tmp/dsh-ipa/Payload
+          cp -R /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app \
+            /tmp/dsh-ipa/Payload/
+          ( cd /tmp/dsh-ipa && zip -qry /tmp/dsh-ios.ipa Payload )
+          unzip -l /tmp/dsh-ios.ipa | grep -q 'Payload/DSHSpike.app/' \
+            || { echo "::error::the .ipa does not carry Payload/DSHSpike.app"; exit 1; }
+          cd /tmp/dsh-rel-sim-dd/Build/Products
+          zip -qry /tmp/dsh-ios-simulator.zip Release-iphonesimulator/DSHSpike.app
+
+      - name: Upload dsh-ios
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-ios
+          path: |
+            /tmp/dsh-ios.ipa
+            /tmp/dsh-ios-simulator.zip
+          if-no-files-found: error
+
+      - name: Attach dsh-ios to the release
+        # One asset per host: the `.ipa`. The simulator build is a
+        # development convenience, not something a release page offers — it
+        # ships on the run's `dsh-ios` artifact only (see the upload above).
+        # A release asset's NAME is the uploaded file's basename, and
+        # `gh release upload`'s `file#text` form sets only the display LABEL,
+        # which a download ignores — so the `.ipa` is built under the name it
+        # ships with, in the build step above.
+        if: env.RELEASE_TAG != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "$RELEASE_TAG" /tmp/dsh-ios.ipa --clobber
+
+      - name: Build the harness .app (debug, device + simulator, unsigned)
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
+        run: |
+          set -o pipefail
+          cd hosts/ios
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath /tmp/dsh-harness-device-dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            | tail -20
+          xcodebuild build \
+            -project DSHSpike.xcodeproj \
+            -scheme DSHSpike \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath /tmp/dsh-harness-sim-dd \
+            | tail -20
+          cd /tmp/dsh-harness-device-dd/Build/Products
+          zip -qry /tmp/DSHSpike-harness-device-unsigned.zip Debug-iphoneos/DSHSpike.app
+          cd /tmp/dsh-harness-sim-dd/Build/Products
+          zip -qry /tmp/DSHSpike-harness-simulator.zip Debug-iphonesimulator/DSHSpike.app
+
+      - name: Upload dsh-ios-harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
+        uses: actions/upload-artifact@v4
+        with:
+          name: dsh-ios-harness
+          path: |
+            /tmp/DSHSpike-harness-device-unsigned.zip
+            /tmp/DSHSpike-harness-simulator.zip
+          if-no-files-found: error

@@ -1,36 +1,50 @@
 # 发布包(Release packages)
 
-两种触发,一条构建路径:
+发布流水线分三个阶段,每个阶段的 workflow 名字都直接说明自己是哪一段——
+`release/version` **准备**一次发布,随后**每个宿主一个打包阶段**负责构建并挂载。
+命名与 `dev/ios`、`dev/android`、`dev/harmonyos` 对齐,所以在 Actions 列表里
+不点开就能看出一次运行属于哪个阶段、哪个宿主。
 
-- **正式发布**——常规路径。`release/please` 读取落到 `main` 上的
+| 阶段 | Workflow | 触发 |
+| --- | --- | --- |
+| 准备 | `release/version` | 每次推送到 `main`;维持一个常驻 release PR |
+| 打包 | `release/ios` | `release: published` 事件,或手动触发 |
+| 打包 | `release/android` | 同上 |
+| 打包 | `release/harmony` | 同上 |
+
+两种入口,同一条构建路径:
+
+- **正式发布**——常规路径。`release/version` 读取落到 `main` 上的
   conventional commits,维护**一个**常驻的 release PR:它会升级 `version.txt`、
   生成 `CHANGELOG.md`、并同步三个宿主的版本清单。合并该 PR 即打出 `vX.Y.Z`
-  标签并发布 GitHub Release;随后 `release/packages` 工作流构建三个宿主 App 并
-  **把它们作为资产挂到该 Release 上**——于是标签就是一个可下载的构建集。
+  标签并发布 GitHub Release;随后三个 `release/<宿主>` 打包 workflow 构建各自的
+  App 并**把它们作为资产挂到该 Release 上**——于是标签就是一个可下载的构建集。
   (`CHANGELOG.md` 由第一个合并的 release PR 创建——在那之前它刻意不存在,
   所以第一个 `chore(main): release X.Y.Z` 落地前不必去找它。)
-- **手动触发**——Actions 页面(**release/packages → Run workflow**)或
-  `gh workflow run release.yml`。产物落在 workflow run 下而非 Release 上;
-  `include_harness: true` 会额外构建验证载体。
+- **手动触发**——Actions 页面(**release/ios**、**release/android** 或
+  **release/harmony** → Run workflow)或 `gh workflow run release-ios.yml`。
+  产物落在 workflow run 下而非 Release 上;`include_harness: true` 会额外构建
+  该宿主的验证载体。
 
 ## 如何发一个版本
 
 1. 用 conventional commit 消息把工作合进 `main`(由 `commit-format` 门禁强制)。
    `feat:` 升 minor,`fix:` 升 patch;低于 1.0 时破坏性变更升 minor,而不是
    直接跳到 1.0.0。
-2. `release/please` 会维护一个标题为 `chore(main): release X.Y.Z` 的 PR。它是
+2. `release/version` 会维护一个标题为 `chore(main): release X.Y.Z` 的 PR。它是
    生成出来的机械变更——`version.txt`、`CHANGELOG.md` 和三个宿主清单。
    **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
-3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,`release/packages`
-   构建三个宿主并挂上去。三个宿主 job 并发执行;在 v0.0.1 那次 release 事件上
-   实测为 iOS 15 分钟、Android 11 分钟、HarmonyOS 2 分钟,之后每次完整运行都在
-   9–15 分钟内完成——单个 job 的超时是 60 分钟。
-4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。用手动触发
-   `release/packages` 并填 **`release_tag: vX.Y.Z`**:包会从当前 `main` 构建,
-   然后就地替换该标签下的资产(`gh release upload --clobber`)。当你合并的修复
-   改变了某个平台必须构建的内容时,就用这条路——例如 HarmonyOS 的 HAP,
-   在把产品级 `debuggable` 覆盖移进模块的按模式 `buildOptionSet` 之前,
-   它一直在发布 debuggable 的包。
+3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,三个
+   `release/<宿主>` workflow 各自构建并挂载自己的包。三者并发执行;在 v0.0.1
+   那次 release 事件上实测为 iOS 15 分钟、Android 11 分钟、HarmonyOS 2 分钟,
+   之后每次完整运行都在 9–15 分钟内完成——单个 job 的超时是 60 分钟。
+4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。触发那个宿主的
+   workflow(例如 `release/harmony`)并填 **`release_tag: vX.Y.Z`**:包会从当前
+   `main` 构建,然后就地替换该标签下的资产(`gh release upload --clobber`)。
+   当你合并的修复改变了某个平台必须构建的内容时,就用这条路——例如 HarmonyOS
+   的 HAP,在把产品级 `debuggable` 覆盖移进模块的按模式 `buildOptionSet` 之前,
+   它一直在发布 debuggable 的包。**一次只重建一个宿主正是要点**:一个坏 HAP
+   不需要把 iOS 一起重打。
 
 ### 版本流
 
@@ -49,7 +63,7 @@ HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工�
 
 ### 配置(一次性):一个仓库设置
 
-`release/please` 使用 `secrets.GITHUB_TOKEN` 运行——**没有任何令牌需要配置**。
+`release/version` 使用 `secrets.GITHUB_TOKEN` 运行——**没有任何令牌需要配置**。
 但 `GITHUB_TOKEN` 能否开 pull request,取决于仓库是否允许:**Settings → Actions →
 General → Workflow permissions → "Allow GitHub Actions to create and approve
 pull requests"**。关着的时候,release-please 会一路走到最后一个 API 调用然后被拒:
@@ -62,17 +76,22 @@ pull requests"**。关着的时候,release-please 会一路走到最后一个 AP
     {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
     JSON
 
-设置打开之后,release PR 会被创建出来,而且**它的 `pull_request` workflow 会正常
-运行**。在 PR #107 上实测:`gates` 与三条平台流水线(`dev/ios`、`dev/android`、
-`dev/harmonyos`)全部报出绿色检查,PR 达到 `CLEAN`——在无人干预的情况下可合并。
+设置打开之后,release PR 就会由 `GITHUB_TOKEN` 创建出来。**这套机制的两半都重要,
+而派发是那半不能省掉的。**
 
-`release/please` 还会额外**派发**一次门禁 workflow 到 release 分支
-(`gh workflow run gov.yml --ref <release-branch>`),而这是**保底而非机制本身**:
-`workflow_dispatch` 是 GitHub 对"`GITHUB_TOKEN` 创建的事件"抑制规则有明文记载的
-例外,所以即使 PR 事件那条路没有触发,`main` 真正要求的那一个检查也会出现在
-release PR 的 head commit 上。它是**在真实 commit 上真跑的门禁**,绝不是通过 API
-伪造的检查;派发被拒绝会让该 job 直接失败——于是"无法合并的 release PR"会自己喊
-出来(rules.md 规则 5)。
+`release/version` 会在最后一步**派发**一次门禁 workflow 到 release 分支
+(`gh workflow run gov.yml --ref <release-branch>`)。`workflow_dispatch` 是 GitHub
+对"`GITHUB_TOKEN` 创建的事件"抑制规则有明文记载的例外,所以那次运行报出的 `gates`
+检查会落在 release PR 的 head commit 上——也就是 `main` 唯一要求的那一个检查。它是
+**在真实 commit 上真跑的门禁**,绝不是通过 API 伪造的检查;派发被拒绝会让该 job 直接
+失败——于是"无法合并的 release PR"会自己喊出来(rules.md 规则 5)。
+
+抑制规则是**部分的**——这正是派发属于必需、而不是锦上添花的原因。在 PR #107 上实测:
+PR **首次创建**时,它的 `pull_request` workflow 确实起来了(`gates` 加三条平台流水线
+全绿);但之后一次**分支更新**(来自一次普通的 `push: main` 推送)被抑制了
+(`action_required`),PR 上**一个检查都没有**,于是 `BLOCKED`。release-please 在每次
+推送到 `main` 时都会重写 release 分支,所以"只是开着"的 release PR 不是你要处理的情况,
+**"当前"的 release PR 才是**。
 
 `RELEASE_PLEASE_TOKEN` 已不再被任何 workflow 读取。如果它还留在 secret 里,就是
 被忽略而已;不需要删除,它的 fine-grained 权限也不再有任何影响。见 D11。

@@ -1,37 +1,45 @@
-name: release/please
-# The version stream. release-please reads the conventional commits landing on
-# main and keeps ONE open release PR that bumps `version.txt`, writes
-# `CHANGELOG.md`, and syncs the three host version manifests (see
-# release-please-config.json for the extra-file wiring). Merging that PR is
-# what cuts a release: a `vX.Y.Z` tag plus a GitHub Release, which is the
-# event `release.yml` then builds the three host packages for and attaches.
+name: release/version
+# The VERSION stage of the release pipeline — the stage that PREPARES a
+# release. release-please reads the conventional commits landing on main and
+# keeps ONE open release PR that bumps `version.txt`, writes `CHANGELOG.md`,
+# and syncs the three host version manifests (see release-please-config.json
+# for the extra-file wiring). Merging that PR is what cuts a release: a
+# `vX.Y.Z` tag plus a GitHub Release, which is the event the three PACKAGE
+# stages build for and attach to — release/ios, release/android and
+# release/harmony, one workflow per host, so the Actions list names the stage
+# a run belongs to. (This file used to be `release/please`: a name that named
+# neither the stage nor the host.)
 #
 # WHY secrets.GITHUB_TOKEN, AND NO PAT
-# Events created by GITHUB_TOKEN do not trigger workflows, and `main` requires
-# the `gates` check — so a release PR opened with GITHUB_TOKEN receives no
-# check and could never be merged through normal review. That is why this
-# workflow used to demand a fine-grained PAT.
+# This workflow used to demand a fine-grained PAT, on the reasoning that
+# GITHUB_TOKEN-created events do not trigger workflows and `main` requires the
+# `gates` check. The reasoning was half right and the medicine did not work:
+# what actually blocked the release PR was a REPOSITORY SETTING —
+# "Allow GitHub Actions to create and approve pull requests"
+# (can_approve_pull_request_reviews), which must be ON. With it off, `POST
+# /pulls` is refused outright with "GitHub Actions is not permitted to create
+# or approve pull requests" — the failure the PAT had been masking, and one
+# that names its own fix.
 #
-# But `workflow_dispatch` is a documented EXCEPTION to the suppression rule, so
-# the check can be produced without any long-lived credential: the last step
-# runs the `gov` workflow on the release branch explicitly, and its `gates`
-# check lands on the same commit `main` protection asks about. That is a real
-# gate run on the real commit — nothing is bypassed, and nothing is fabricated
-# through the Checks API.
+# The suppression rule is real, though, and it bites on the UPDATE path:
+# measured on PR #107, the release PR's FIRST creation did start its
+# `pull_request` workflows (gov plus all three platform pipelines, all green),
+# while a later branch UPDATE from a `push: main` run produced a suppressed
+# run (`action_required`) and no checks at all. So the check cannot be left to
+# the PR event.
 #
-# The PAT it replaces had become the pipeline's single point of failure: a
-# fine-grained PAT that authenticates and carries `contents: write` but not
-# `pull requests: write` gets release-please all the way to its final API call
-# and then dies there, leaving the version stream dead for days (live case:
-# runs 35589125560 / 35597056914). A credential this workflow no longer needs
-# cannot be misconfigured.
+# `workflow_dispatch` is a documented EXCEPTION to the suppression, so the last
+# step runs the `gov` workflow on the release branch explicitly. Its `gates`
+# check lands on the same commit `main` protection asks about — a real gate run
+# on the real commit, nothing bypassed and nothing fabricated through the
+# Checks API. That dispatch is LOAD-BEARING, not belt-and-braces.
 #
-# WHAT IS GIVEN UP: the three platform pipelines (`dev/ios`, `dev/android`,
-# `dev/harmonyos`) also do not run on the release PR, since a PAT's events
-# were the only thing that would have started them. A release PR changes only
-# version numbers in those hosts, and `release/packages` builds and verifies
-# all three on the `release: published` event regardless — so the loss is a
-# preview, not a verification.
+# The PAT had also become the pipeline's single point of failure: one that
+# authenticates and carries `contents: write` but not `pull requests: write`
+# gets release-please all the way to its final API call and dies there, leaving
+# the version stream dead for days while every visible signal looked healthy
+# (live case: runs 35589125560 / 35597056914). A credential this workflow does
+# not need cannot be misconfigured.
 #
 # The trigger is `push: main` only: release-please derives every state
 # transition from what already landed. `workflow_dispatch` exists for recovery

@@ -36,35 +36,51 @@ dispatching the gate workflow.**
 
 `workflow_dispatch` is a documented *exception* to that suppression, so
 `.github/workflows/gov.yml` gains a `workflow_dispatch` trigger, and the last
-step of `release/please` runs `gh workflow run gov.yml --ref <release-branch>`.
-The dispatched run executes the gates on the release branch and reports the
-`gates` check on the release PR's own head commit — the exact context, from
-the exact app (`15368`), that `main` protection requires, and a real gate run
-rather than a check fabricated through the Checks API. `actions: write` is
-added to the workflow's permissions; a refused dispatch fails the job, so a
-release PR that cannot be merged announces itself.
+step of the version stage (`release/version`, then named `release/please`) runs
+`gh workflow run gov.yml --ref <release-branch>`. The dispatched run executes
+the gates on the release branch and reports the `gates` check on the release
+PR's own head commit — the exact context, from the exact app (`15368`), that
+`main` protection requires, and a real gate run rather than a check fabricated
+through the Checks API. `actions: write` is added to the workflow's
+permissions; a refused dispatch fails the job, so a release PR that cannot be
+merged announces itself.
 
 The PAT path, its three probes, and the `RELEASE_PLEASE_TOKEN` requirement are
 removed. The secret is left in place, unread. `docs/release.md` and
 `docs/release.zh.md` document the one remaining prerequisite, which is a
 repository setting rather than a credential.
 
+The three package stages were also split by host — `release/ios`,
+`release/android`, `release/harmony`, one workflow each, and the version stage
+became `release/version`. They were one `release.yml` named `release/packages`,
+which said neither which stage a run was nor which host: the repo already names
+its dev pipelines by host (`dev/ios`, `dev/android`, `dev/harmonyos`), and the
+release side now matches. The three jobs were already independent — no `needs`,
+no shared state — so the split is a move, verified faithful by comparing each
+job's `runs-on`, `timeout-minutes`, `env` and full step list against the
+original. It also makes the recovery path better: re-attaching one bad asset
+dispatches one host's workflow instead of rebuilding all three.
+
 **One thing had to be measured rather than predicted, and the prediction was
-wrong.** Removing the PAT exposed the failure it had been masking: with
+wrong — twice.** Removing the PAT exposed the failure it had been masking: with
 `GITHUB_TOKEN` the action reached its final API call and was refused with
 *"GitHub Actions is not permitted to create or approve pull requests"*. The
 repository setting that lifts this, **"Allow GitHub Actions to create and
 approve pull requests"** (`can_approve_pull_request_reviews`), was off; it was
-enabled through the API. It is the operative fix.
+enabled through the API.
 
-This note originally claimed — and D11 with it — that without a PAT the three
-platform pipelines would not run on the release PR. That is false, and the
-measurement says so: on PR #107, `gov` and all three platform pipelines
-(`dev/ios`, `dev/android`, `dev/harmonyos`) reported green checks from
-`pull_request` events, and the PR reached `CLEAN` and mergeable with no
-operator intervention. The dispatch is therefore a **guarantee, not the
-mechanism**: it costs one ~20s run and makes the single check `main` requires
-independent of the PR-event path, which is why it stays.
+This note first claimed that without a PAT the platform pipelines would not run
+on the release PR. Then, on seeing the PR's first creation run all four
+pipelines, it claimed the opposite — that the dispatch was a "guarantee, not
+the mechanism", with the PR event doing the real work. **Both are wrong, and
+the second error is the more instructive one**: it generalised from a single
+observation of a single moment. The suppression is *partial*. On PR #107 the
+first creation did start `gov` and all three platform pipelines (`pull_request`
+events, all green, PR `CLEAN`) — but a later branch update, from an ordinary
+`push: main` run, produced `action_required` and **no checks at all**, leaving
+the PR `BLOCKED`. The release branch is rewritten on every push to `main`, so
+the PR event cannot be relied on for the check that matters; **the dispatch is
+load-bearing**, and that is what D11 now records.
 
 That step also needed a fix once it ran for real. The job never checks anything
 out — release-please does not need a working tree — so `gh` could not resolve
