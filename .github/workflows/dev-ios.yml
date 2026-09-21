@@ -155,10 +155,24 @@ jobs:
           # simctl launch APPENDS to the capture files; the committed evidence
           # from the local run must go so the checker sees only this run.
           rm -f "$ART/logs.txt" "$ART/nslog-stderr.txt"
+          # Capture the launch outcome; do not let it abort the step.
+          # `simctl launch` exits 3 when the app launched and then exited or
+          # crashed (FBSOpenApplicationServiceErrorDomain, code=3) — measured on
+          # run 35610169977, where `set -e` then killed the step BEFORE the
+          # wait loop and the checkers ran, so CI reported green having
+          # verified nothing at all. The launch result is EVIDENCE, not a
+          # control-flow signal: record it loudly, keep going, and let the
+          # checkers say what the captured log supports. A crash then shows up
+          # as failed verdicts (the honest outcome) instead of a red annotation
+          # on a green run that nobody reads.
+          launch_rc=0
           xcrun simctl launch --terminate-running-process \
             --stdout="$PWD/$ART/logs.txt" \
             --stderr="$PWD/$ART/nslog-stderr.txt" \
-            "$UDID" org.dsh.DSHSpike
+            "$UDID" org.dsh.DSHSpike || launch_rc=$?
+          if [ "$launch_rc" != "0" ]; then
+            echo "::error::simctl launch exited $launch_rc — the app launched and then exited or crashed. Captured log + screenshot are uploaded; the checks below run on whatever was captured."
+          fi
           # One launch drives the two m1 scenarios and then the UI-driven m2
           # leg; wait with a deadline — never a blind sleep. On CI nobody can
           # tap the m2 prompts, so the run stalls at the first `spike:
