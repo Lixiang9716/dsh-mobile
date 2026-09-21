@@ -89,6 +89,13 @@ hosts/android/app/src/main/assets/spike/vendor/npm/zod@*/
 # Python
 __pycache__/
 .gov/tasks/.new.lock
+# `gov decision add` takes this lock and by design NEVER unlinks it (the
+# close-and-unlink form is a classic lockfile race — gov/decision.py:_locked
+# keeps the path stable so a second writer cannot slip into a fresh inode).
+# The sibling .gov/tasks/.new.lock above is ignored for the same reason; this
+# one lands under docs/, so without this line it is permanent `git status`
+# noise in an otherwise clean tree.
+docs/.decision.lock
 runtime/spike/logs-upstream.txt
 runtime/spike/logs-upstream-boot.txt
 

@@ -20,10 +20,14 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
    adaptations live in `system-plugins/` as outboard implementation packages.
 4. **No `hostType` branching (RFC 0002 anti-pattern)**: platform differences are expressed only via
    capability negotiation.
-5. **Logging through the unified logger only**: `createLogger` from `runtime/logger`,
-   `log.debug(...)` at entry of every non-trivial function; bare `console.*` fails the
-   `logging` gate. Release builds compile logs away (`__DSH_RELEASE__`) — keep that
-   branch wired (rule L4). Exemption marker: `// dsh:logging-exempt`.
+5. **Logging through the unified logger only**: `createLogger` — the module every host actually
+   bundles is `runtime/spike/logger.js` (the canonical TS source `runtime/logger/index.ts` is the
+   contract that port must match, but nothing bundles it; the `logging` gate names the operative
+   one) — with `log.debug(...)` at entry of every non-trivial function; bare `console.*` fails the
+   `logging` gate. Release builds keep only `warn`/`error`: each platform's Release configuration
+   compiles the shared C host with `-DDSH_RELEASE`, which injects `globalThis.__DSH_RELEASE__`, and
+   the logger's `debug`/`info` become no-ops — keep that branch wired (rule L4).
+   Exemption marker: `// dsh:logging-exempt`.
 6. **Event-driven only (D8)**: modules communicate via events or explicit async interfaces —
    no polling another component's state, no shared mutable state across module boundaries, and
    any long-running work (LLM streaming, tool runs, subagents) reports progress as an event
@@ -41,8 +45,9 @@ system implementation plugins, and the UI as a pluggable Web Client. Full design
 ## Quality gates
 
 This repo is gated by govrail: `gov run` executes the gate DAG (wired into pre-push and CI via
-`.github/workflows/gov.yml`); pre-commit runs cheap content gates on staged files. If `gov` is not
-on PATH, it lives at `~/Library/Python/3.9/bin/gov` (installed via `pip install govrail`).
+`.github/workflows/gov.yml`); pre-commit runs cheap content gates on staged files. `gov` is not on
+PATH by default — it is a uv tool install (`uv tool install govrail`, entry point `gov`), which on
+this machine lands at `~/.local/bin/gov`. Govrail requires Python ≥3.10.
 
 ## Where things live
 

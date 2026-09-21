@@ -14,7 +14,12 @@
     "gov run green; PR opened; gates check green; squash merged",
     "GitHub Release v0.0.1 published and the release.yml release-event run attaches the three host packages as downloadable assets"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0027"
+  "id": "T-0027",
+  "void": {
+    "ts": "2026-09-21T11:58:29+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Mission DELIVERED, retired as void per the repo's recorded exit (govrail 0.47.1 close stamps a receipt that the task gate then rejects \u2014 verify-decisions NOT_SELECTED, #329/#339). Checklist verified against the tree: all five version sources read 0.0.1 (version.txt, .release-please-manifest.json, hosts/ios/App/Info.plist, hosts/android/app/build.gradle.kts, hosts/harmony/AppScope/app.json5); bootstrap-sha advanced to af1c104 (#102); v0.0.1 published with exactly THREE assets, one package per host \u2014 dsh-ios.ipa, dsh-android.apk, dsh-harmony.hap \u2014 attached by the release/packages release event (#101/#103). Audit trail: the merged PRs #97-#103 plus the live v0.0.1 release."
+  }
 }
