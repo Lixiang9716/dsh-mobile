@@ -78,8 +78,14 @@ jobs:
         #
         # No wait on the dispatched run: the check on the PR IS the
         # enforcement, and waiting here would only duplicate it.
+        #
+        # GH_REPO, not a checkout: `gh` has to resolve the repository, the
+        # action does not check anything out, and the step is one API call —
+        # so pass the slug rather than pay for a full clone. (Without it this
+        # step dies with "fatal: not a git repository".)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
           branch=$(gh pr list --state open --limit 100 --json headRefName \
