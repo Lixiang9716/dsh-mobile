@@ -46,7 +46,7 @@ jobs:
           TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: |
           if [ -z "$TOKEN" ]; then
-            echo "::error::RELEASE_PLEASE_TOKEN is not set — the release PR cannot be opened with the token that would make it mergeable. Add a fine-grained PAT (contents: write + pull requests: write on this repository) as the RELEASE_PLEASE_TOKEN secret. secrets.GITHUB_TOKEN is NOT a substitute: its events do not trigger workflows, so the release PR would never get the required 'gates' check."
+            echo "::error::RELEASE_PLEASE_TOKEN is not set — the release PR cannot be opened with the token that would make it mergeable. Add a fine-grained PAT (contents: write + pull requests: write on this repository, plus issues: write for the autorelease label — or set skip-labeling: true) as the RELEASE_PLEASE_TOKEN secret. secrets.GITHUB_TOKEN is NOT a substitute: its events do not trigger workflows, so the release PR would never get the required 'gates' check."
             exit 1
           fi
 
@@ -67,6 +67,43 @@ jobs:
             exit 1
           fi
           echo "release token authenticates (HTTP 200)"
+
+      - name: Verify the release token can open a pull request
+        # Authenticating is not the same as being ALLOWED to open a PR. A PAT
+        # carrying contents: write but not pull requests: write passes the
+        # probe above, lets the action create its branch and commit, and then
+        # dies at POST /pulls with "Resource not accessible by personal access
+        # token" — which names neither the missing permission nor the fix
+        # (live case: run 35589125560 on main). So probe the write itself.
+        #
+        # POST /pulls with an EMPTY body is a validation error (422) for a
+        # token that may open PRs, and it creates nothing — 422 is the pass
+        # condition. A token that may not gets 403/404. Verified against a
+        # real token before wiring: HTTP 422, no PR created.
+        env:
+          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          hdr=$(mktemp)
+          code=$(curl -sS -o /dev/null -D "$hdr" -w '%{http_code}' -X POST \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls" \
+            -d '{}') || code=000
+          if [ "$code" = "422" ]; then
+            echo "release token may open pull requests (HTTP 422 = validation error, nothing created)"
+            exit 0
+          fi
+          accepted=$(grep -i '^x-accepted-github-permissions:' "$hdr" | tr -d '\r' || true)
+          case "$code" in
+            401|000)
+              echo "::error::RELEASE_PLEASE_TOKEN could not be used at all (HTTP $code from POST /pulls). That is a credential problem, not a permission one — see the authentication probe above (re-set the secret without trailing whitespace: gh secret set RELEASE_PLEASE_TOKEN --body \"\$TOKEN\")."
+              ;;
+            *)
+              echo "::error::RELEASE_PLEASE_TOKEN cannot open a pull request (HTTP $code from POST /pulls)${accepted:+ — api says: $accepted}. The token AUTHENTICATES, so contents: write is probably already granted; the release PR needs pull requests: write as well (and issues: write for the autorelease label, or set skip-labeling: true on the action). Edit the fine-grained PAT's repository permissions at https://github.com/settings/personal-access-tokens — adding a permission does not change the token's value, so the secret needs no re-set."
+              ;;
+          esac
+          exit 1
 
       - uses: googleapis/release-please-action@v4
         with:

@@ -8,6 +8,9 @@ Two triggers, one build path:
   manifests. Merging that PR tags `vX.Y.Z` and publishes a GitHub Release; the
   `release/packages` workflow then builds the three host apps and **attaches
   them to that release**, so a tag is a downloadable build set.
+  (`CHANGELOG.md` is created by the first merged release PR — it is
+  deliberately absent until then, so do not go looking for it before the
+  first `chore(main): release X.Y.Z` lands.)
 - **A manual run** — Actions tab (**release/packages → Run workflow**) or
   `gh workflow run release.yml`. The packages land on the workflow run instead
   of on a release; `include_harness: true` adds the verification vehicles.
@@ -22,8 +25,10 @@ Two triggers, one build path:
    three host manifests. **Review the changelog**; that is the part a human
    owns, the version bumps follow from the commits.
 3. Merge it. release-please tags `vX.Y.Z` and publishes the Release, and
-   `release/packages` builds all three hosts and attaches them (30–60 min per
-   host, all on the release event).
+   `release/packages` builds all three hosts and attaches them. The three host
+   jobs run concurrently; measured on the v0.0.1 release event they took 15 min
+   (iOS), 11 min (Android) and 2 min (HarmonyOS), and every full run since
+   finished in 9–15 min — the per-job timeout is 60 min.
 4. **Recovery — a release shipped a bad package.** Do not delete the release.
    Dispatch `release/packages` with **`release_tag: vX.Y.Z`**: the packages
    build from the current `main` and replace that tag's assets in place
@@ -53,12 +58,34 @@ semver cannot express, so they stay hand-set.
 ### Setup (once): the release token
 
 `release/please` requires a secret named `RELEASE_PLEASE_TOKEN` — a
-fine-grained PAT (or a GitHub App installation token) with
-**contents: write** and **pull requests: write** on this repository.
+fine-grained PAT (or a GitHub App installation token) with **contents: write**,
+**pull requests: write** and **issues: write** on this repository.
 `secrets.GITHUB_TOKEN` is not a substitute: events it creates do not trigger
 workflows, so the release PR would never receive the required `gates` check
 and could never be merged. The workflow fails loud when the secret is absent
 rather than degrading into that broken path.
+
+The `issues: write` leg is only there for release-please's `autorelease:`
+labels; setting `skip-labeling: true` on the action drops the requirement.
+
+Skipping any one of these produces a *different* failure, and the token is
+probed for each before the action runs — three steps, so the failure names
+itself instead of surfacing from deep inside release-please:
+
+| Probe | What it catches | Failure it replaces |
+| --- | --- | --- |
+| secret present | an unset secret | the action silently skipping its step |
+| `GET /user` = 200 | trailing whitespace, expired/revoked PAT, truncated paste | an opaque `Bad credentials` |
+| `POST /pulls` = 422 | a valid token missing **pull requests: write** | `Resource not accessible by personal access token` |
+
+The third probe posts an empty body on purpose: for a token that *may* open
+PRs that is a validation error (422) and **creates nothing**, while a token
+that may not gets 403/404. A PAT with `contents: write` alone gets past the
+first two probes — it authenticates and release-please even creates its branch
+and commit — and then dies at the PR step. If that is what you are seeing,
+add the permission to the PAT at
+<https://github.com/settings/personal-access-tokens>; adding a permission does
+not change the token's value, so the secret needs no re-set.
 
 Each job also uploads its own downloadable artifact under the workflow run.
 
@@ -102,7 +129,7 @@ the opt-in default is off:
 
 | Artifact | Configuration | Contents |
 | --- | --- | --- |
-| `dsh-ios-harness` | Debug | `DSHSpike-harness-*-unsigned.zip` (device + simulator) |
+| `dsh-ios-harness` | Debug | `DSHSpike-harness-device-unsigned.zip` + `DSHSpike-harness-simulator.zip` |
 | `dsh-android-harness` | Debug | `app-debug.apk` (debug-keystore signed — installs directly) |
 | `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
 

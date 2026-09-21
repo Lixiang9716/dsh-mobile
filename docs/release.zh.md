@@ -7,6 +7,8 @@
   生成 `CHANGELOG.md`、并同步三个宿主的版本清单。合并该 PR 即打出 `vX.Y.Z`
   标签并发布 GitHub Release;随后 `release/packages` 工作流构建三个宿主 App 并
   **把它们作为资产挂到该 Release 上**——于是标签就是一个可下载的构建集。
+  (`CHANGELOG.md` 由第一个合并的 release PR 创建——在那之前它刻意不存在,
+  所以第一个 `chore(main): release X.Y.Z` 落地前不必去找它。)
 - **手动触发**——Actions 页面(**release/packages → Run workflow**)或
   `gh workflow run release.yml`。产物落在 workflow run 下而非 Release 上;
   `include_harness: true` 会额外构建验证载体。
@@ -20,7 +22,9 @@
    生成出来的机械变更——`version.txt`、`CHANGELOG.md` 和三个宿主清单。
    **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
 3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,`release/packages`
-   构建三个宿主并挂上去(每个宿主 30–60 分钟,全部由 release 事件触发)。
+   构建三个宿主并挂上去。三个宿主 job 并发执行;在 v0.0.1 那次 release 事件上
+   实测为 iOS 15 分钟、Android 11 分钟、HarmonyOS 2 分钟,之后每次完整运行都在
+   9–15 分钟内完成——单个 job 的超时是 60 分钟。
 4. **补救——某个 Release 上的包有问题。** 不要删掉 Release。用手动触发
    `release/packages` 并填 **`release_tag: vX.Y.Z`**:包会从当前 `main` 构建,
    然后就地替换该标签下的资产(`gh release upload --clobber`)。当你合并的修复
@@ -47,10 +51,29 @@ HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工�
 
 `release/please` 需要一个名为 `RELEASE_PLEASE_TOKEN` 的 secret——一个
 fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
-**contents: write** 与 **pull requests: write**。`secrets.GITHUB_TOKEN`
-不能替代:它创建的事件不会触发 workflow,于是 release PR 永远拿不到 `main`
-分支保护所要求的 `gates` 检查,也就永远无法合并。该 secret 缺失时工作流会
-大声失败,而不是悄悄退化成这条坏路径。
+**contents: write**、**pull requests: write** 与 **issues: write**。
+`secrets.GITHUB_TOKEN` 不能替代:它创建的事件不会触发 workflow,于是
+release PR 永远拿不到 `main` 分支保护所要求的 `gates` 检查,也就永远无法合并。
+该 secret 缺失时工作流会大声失败,而不是悄悄退化成这条坏路径。
+
+`issues: write` 只服务于 release-please 的 `autorelease:` 标签;在 action 上
+设置 `skip-labeling: true` 即可免掉这项要求。
+
+三项权限缺任何一项,失败方式都不同,而令牌会在 action 运行前被逐一探测——
+三个步骤,让失败自己报出名字,而不是从 release-please 内部冒出来:
+
+| 探测 | 捕获的故障 | 它替代的失败 |
+| --- | --- | --- |
+| secret 是否存在 | secret 未设置 | action 静默跳过自己的步骤 |
+| `GET /user` = 200 | 尾部空白、PAT 过期/吊销、粘贴被截断 | 语焉不详的 `Bad credentials` |
+| `POST /pulls` = 422 | 令牌有效但缺 **pull requests: write** | `Resource not accessible by personal access token` |
+
+第三个探测是刻意用空 body 发 POST 的:对**有权**开 PR 的令牌来说那是一个校验
+错误(422)且**不会创建任何东西**,而无权的令牌会拿到 403/404。只有
+`contents: write` 的 PAT 能通过前两个探测——它能认证成功,release-please 甚至
+已经建好了分支和 commit——然后在开 PR 这一步倒下。如果你看到的正是这个,
+请到 <https://github.com/settings/personal-access-tokens> 给该 PAT 加上权限;
+增加权限不会改变令牌的值,所以 secret 无需重设。
 
 每个 job 也会在 workflow run 下上传各自独立的可下载产物。
 
@@ -88,7 +111,7 @@ artifact 里取模拟器包。
 
 | 产物 | 配置 | 内容 |
 | --- | --- | --- |
-| `dsh-ios-harness` | Debug | `DSHSpike-harness-*-unsigned.zip`(真机 + 模拟器) |
+| `dsh-ios-harness` | Debug | `DSHSpike-harness-device-unsigned.zip` + `DSHSpike-harness-simulator.zip` |
 | `dsh-android-harness` | Debug | `app-debug.apk`(debug 签名,可直接安装) |
 | `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
 

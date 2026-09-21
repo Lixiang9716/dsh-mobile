@@ -15,7 +15,12 @@
     "release.yml gains a release_tag dispatch input so packages can be rebuilt and re-attached to an existing release without deleting it",
     "gov run green; PR opened; gates check green; squash merged; the corrected HAP replaces the bad asset on v0.0.1"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0028"
+  "id": "T-0028",
+  "void": {
+    "ts": "2026-09-21T11:58:33+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Mission DELIVERED in #98 (squash a5f26a6), retired as void per the repo's recorded exit (govrail 0.47.1 close stamps a receipt the task gate then rejects \u2014 verify-decisions NOT_SELECTED, #329/#339). Checklist verified: the product-level buildOption.debuggable=true that applied to EVERY buildMode was moved into the module's per-mode buildOptionSet (true for debug, false for release, explicit in both because the schema default is true); the dangling ./obfuscation-rules.txt reference was dropped (it never existed \u2014 hvigor only skipped it while the build was debuggable); a new release.yml guard reads the built HAP's module.json and refuses unless debug=false and buildMode=release, proven BOTH directions against real artifacts; release_tag dispatch input added so packages rebuild and re-attach to an existing release. The corrected HAP replaced the bad asset on v0.0.1 \u2014 run 35586338946 printed 'release HAP: debug=False buildMode=release' and the dsh-harmony.hap asset carries updatedAt 2026-09-21T10:01:13Z. Audit trail: the merged PR + the live release."
+  }
 }

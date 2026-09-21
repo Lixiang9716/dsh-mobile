@@ -13,7 +13,12 @@
     "#342 code-size documents + labels the language-blind fallback INDENT",
     "#340 comment-state regression fixtures (--self-test) pin the */-at-EOL cases"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0020"
+  "id": "T-0020",
+  "void": {
+    "ts": "2026-09-21T11:58:33+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Mission DELIVERED in #75 (squash 1213390), retired as void per the repo's recorded exit (govrail 0.47.1 close stamps a receipt the task gate then rejects \u2014 verify-decisions NOT_SELECTED, #329/#339). Checklist verified against the repo's own tools: #343 \u2014 tools/check-logging.py EXTS includes '.ets' and hosts/harmony/entry/src/main/ets/pages/Index.ets:1 declares '// dsh:logging-exempt \u2014 ArkTS UI logs natively via hilog'; #342 \u2014 tools/check-size.py documents the language-blind fallback and emits INDENT(indent-fallback) so the ruler names itself; #340 \u2014 tools/check-size.py _self_test() pins the */-at-EOL comment-state cases in known-answer fixtures, with rejection proofs .gov/rejections/case-{logging,logging-l4,code-size}.sh. NOTE: the upstream half (govrail shipping #340/#342/#343) is not in the pinned 0.47.1 \u2014 it is staged in govrail 0.48.0 (PR #330), and THIS card is what a future card can finally close as done once that lands here. Audit trail: the merged PR."
+  }
 }
