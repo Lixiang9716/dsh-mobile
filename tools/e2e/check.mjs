@@ -7,6 +7,13 @@
  * The failure report IS the diagnosis: it lists the first mismatched index
  * with both sides, plus any unparsable entries.
  *
+ * ONE exception to one-to-one: an expectation with "repeat": true greedily
+ * consumes one-or-more consecutive records matching it (name + matchers).
+ * It exists for genuinely nondeterministic stream cardinality — the real
+ * LLM legs' delta counts (scenario m2.llm) — and still asserts "at least
+ * one, in this position, matching these fields"; it is proven by the
+ * repeat fixtures in selftest.sh (rule 6).
+ *
  * tools/ dev script (out of the logging gate's scope; console IS the product).
  *
  * usage: check.mjs --manifest <scenarios/foo.json> --log <captured-log>
@@ -89,13 +96,25 @@ const run = () => {
   const { records, parseErrors } = extract(readFileSync(args.log, 'utf8'), manifest);
 
   const failures = [];
+  let at = 0;
   for (let i = 0; i < manifest.expect.length; i++) {
-    const rec = records[i];
-    const bad = matchOne({ ...manifest.expect[i], index: i }, rec);
-    if (bad) failures.push(bad);
+    const expect = { ...manifest.expect[i], index: i };
+    if (expect.repeat) {
+      // Greedy run of one-or-more matching records (see header docs).
+      let consumed = 0;
+      while (at < records.length && matchOne(expect, records[at]) === null) {
+        at += 1;
+        consumed += 1;
+      }
+      if (consumed === 0) failures.push(mismatch(expect, records[at]));
+    } else {
+      const bad = matchOne(expect, records[at]);
+      if (bad) failures.push(bad);
+      at += 1;
+    }
   }
-  if (records.length > manifest.expect.length) {
-    failures.push({ extra: records.slice(manifest.expect.length).map((r) => r.payload) });
+  if (records.length > at) {
+    failures.push({ extra: records.slice(at).map((r) => r.payload) });
   }
 
   const verdict = {

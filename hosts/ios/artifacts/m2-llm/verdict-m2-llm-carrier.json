@@ -1,0 +1,8 @@
+{
+  "scenario": "m2.llm.carrier",
+  "pass": true,
+  "expected": 7,
+  "logged": 7,
+  "failures": [],
+  "parseErrors": []
+}

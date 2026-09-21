@@ -1,0 +1,24 @@
+{
+  "title": "Real LLM streaming session over gateway httpFetch (z.ai backend)",
+  "created": "2026-09-21T01:48:32+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "runtime/spike/llm.js \u2014 OpenAI-compatible streaming chat client over the gateway httpFetch response shape (SSE parser tolerant to partial chunks; delta + reasoning delta events; aggregated text; abort; key never logged)",
+    "runtime/spike/scenario/m2-llm.js \u2014 scenario m2.llm with descriptor-negotiated legs: scripted SSE transport (CI-safe) and real z.ai transport (config from scope app, fail loud when missing); key-leak audit assertion in-scenario",
+    "tools/e2e: manifests m2-llm.json / m2-llm-device.json / m2-llm-carrier.json + checker repeat support with rejection-proof selftest",
+    "CLI leg evidence runtime/spike/artifacts/macos-cli-m2-llm (logs + MANIFEST.md)",
+    "iOS device leg evidence hosts/ios/artifacts/m2-llm (real z.ai streaming; runner tools/e2e/run-ios-m2-llm.sh)",
+    "Android device leg evidence hosts/android/artifacts/m2-llm (real z.ai streaming; emulator runner)",
+    "Status surfaces: README M2/M4 rows, ARCHITECTURE milestones (incl. stale M3 drift), zh counterparts, pairing verify",
+    "Agent Note (gov note new --class feature) + gov run green + note check"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0013"
+}

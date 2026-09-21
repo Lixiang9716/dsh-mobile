@@ -55,6 +55,8 @@ targets:
           - ../../runtime/spike/scenario/b4-web-live.js
           - ../../runtime/spike/web/index.html
           - ../../runtime/spike/web/carrier-page.js
+          - ../../runtime/spike/llm.js
+          - ../../runtime/spike/scenario/m2-llm.js
           - ../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js
           - ../../system-plugins/dsh-fs/manifest.json
           - ../../system-plugins/dsh-fs/index.js

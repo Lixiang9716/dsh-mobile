@@ -1,0 +1,9 @@
+{
+  "scenario": "m2.llm.fixture",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "llm.stream.started", "match": { "turn": 1 } },
+    { "event": "llm.delta", "repeat": true },
+    { "event": "llm.stream.completed", "match": { "turn": 1 } }
+  ]
+}

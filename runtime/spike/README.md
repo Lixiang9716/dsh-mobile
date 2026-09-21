@@ -79,6 +79,15 @@ embedder plus a typed JS shim (`gateway.js`).
   declare it unavailable (the CLI smoke backend) pass a logged scope-read
   stub with the same shape, keeping the streaming path under test
   everywhere.
+- `llm.js` — the OpenAI-compatible STREAMING chat client
+  (`streamChat`): POST `{baseUrl}/chat/completions` with `stream:true`,
+  parsed as SSE with an incremental UTF-8 decoder (the spike host ships no
+  TextDecoder) and a partial-line-tolerant splitter. The fetch impl is a
+  PARAMETER with the gateway `httpFetch` response shape; `reasoning_content`
+  deltas ride `llm.reasoning.delta`, content deltas `llm.delta` (the
+  m2.session event shapes), the aggregated assistant text resolves with the
+  stream facts, and the API key NEVER enters a log line (headers are never
+  logged; the m2-llm scenario audits every sink line for the key).
 - `config-layer.js` — the FIRST of the three UI-plugin levels
   (ARCHITECTURE.md §6): `cordis.patch`-style LAYERED OVERRIDES (base →
   hostFace → profile → overlay; JSON in the spike, documented in the module
@@ -194,6 +203,25 @@ embedder plus a typed JS shim (`gateway.js`).
   processes), `dsh-ui` (approval / picker / notify + notify.response
   round trip). Each ships a manifest.json that validates against
   contract/schemas/manifest.schema.json.
+- `scenario/m2-llm.js` — the `m2.llm` E2E scenario: ONE streamed chat
+  completion through the gateway, closing the mock-LLM gap `m2.session`
+  left open. The LEG is negotiated from the RuntimeDescriptor (httpFetch
+  offered → the REAL backend, credentials read from `m2-llm/config.json`
+  in fs scope "app", staged by the E2E runner; declared unavailable on the
+  CLI smoke backend → a scripted SSE feed with odd chunk boundaries and a
+  NON-SECRET fixture key through the same client code — the install-fetch
+  stub's production twin). Events: the m2.session vocabulary plus
+  `llm.reasoning.delta`, `llm.leg`, `llm.config.loaded`,
+  `llm.served-model` (the server-reported model name, logged verbatim),
+  `llm.content.asserted`, and `llm.key.audit` (every log-sink line audited
+  for the active key — a leak fails loud, rule 5). Manifests:
+  `tools/e2e/scenarios/m2-llm.json` (scripted, exact deltas) /
+  `m2-llm-device.json` (real, repeat-aware delta runs) /
+  `m2-llm-carrier.json` (carrier-side mount/projection evidence as
+  scenario `m2.llm.carrier`). Runners: `tools/e2e/run-ios-m2-llm.sh`,
+  `hosts/android/ci/run-m2-llm.sh`. Evidence:
+  `runtime/spike/artifacts/macos-cli-m2-llm/`,
+  `hosts/ios/artifacts/m2-llm/`, `hosts/android/artifacts/m2-llm/`.
 - `scenario/m1-carrier-loopback.js` — the `m1.carrier.loopback` E2E
   scenario: the local-carrier topology (static files + WS pump) asserted
   through the bus seam, for hosts that implement it (see below).

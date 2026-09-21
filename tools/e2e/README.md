@@ -39,6 +39,9 @@ everywhere, so one checker serves all hosts.
 | `m3-complete.json` | `m3.complete` | macOS CLI (and any spike host) | 41 events — the four M3 scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
 | `m3-fetch-install.json` | `m3.fetch-install` | iOS, profile mode (`run-ios-m3.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the m2.session-shaped agent session |
 | `m3-fetch-carrier.json` | `m3.fetch-carrier` | iOS, carrier-side (`run-ios-m3.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
+| `m2-llm.json` | `m2.llm` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/spike/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
+| `m2-llm-device.json` | `m2.llm` | iOS + Android (`run-ios-m2-llm.sh` / `hosts/android/ci/run-m2-llm.sh`) | 14 expectations — the REAL-backend leg: `llm.leg` = `gateway.httpFetch`, config from fs scope `app`, then the nondeterministic delta runs are asserted with the checker's `repeat` expectations (`llm.reasoning.delta` ≥1, `llm.delta` ≥1), `llm.stream.completed`, `llm.served-model` (logged verbatim — the server may substitute a model name), `llm.content.asserted` (non-empty aggregate), `llm.key.audit` `leaked: false` |
+| `m2-llm-carrier.json` | `m2.llm.carrier` | iOS + Android, carrier-side | 7 events — `client.selected`, Web Client mount, WS connect, the `llm` toolbar slot registered, first/last streamed LLM delta, session complete |
 | `b1-official-web-mount.json` | `b1.official-web.mount` | iOS, carrier-side + runtime (`run-ios-b1.sh`) | 14 events — the contract carrier mounting the OFFICIAL upstream web app with the RUNTIME LIVE and the APPLICATION TIER booting (W-INTEG + W-SHELL; `docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `web.boot.applied` (the runtime's composed rows replace the carrier defaults) + `runtime.booted` (the vendored client-modules composer over the full 58-package `dsh.client` roster), `index.rendered` (5 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the runtime graph's bootstrap combo — the REAL vendored browser bundle, 36040 bytes), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (the page's own first POST envelope answered structured `gateway/unimplemented`), `session.attached` (the page's first mux stream open) + `session.services.pending` (no agent spine embedded — the session API is the next named gap), `module.system.live` (the official facade materialized the vendored bundle; mode flipped queue→live), `app.shell.rendered` (the boot page DISPOSED — the UI renderer mounted the real shell: the W-SHELL milestone past "Loading plugins…") + `page.rendered` (probe: final DOM state, no failure text; no upstream code edited) |
 | `m2-upstream-boot.json` | `m2.upstream-boot` | macOS CLI (`run-upstream-boot-e2e.sh`) | 12 events — the CLI proof of the OFFICIAL web-boot wire over the full application tier: the mobile profile boots with one real agent turn, the vendored `ClientModuleRegistry` composes `__DSH_BOOT__` from the staged `web.plugins` delivery (58 entries, bootstrap batch exact, application combo over the other 57, externals ordered — `web/boot/composed` + `web/boot/rows`), and the claimed surface self-probes `session.list` + the journal stream (baseline, live frames, cancel) |
 | `b4-write-live.json` | `b4.write.live` | iOS, UI-driven (`run-ios-b4.sh`) | 43 events — the D9 write path: the upstream spine answers the OFFICIAL app's write surface (real `session/create`, `session/prompt` admission, `settings/describe` + `mutate` with the in-memory `ui-onboarding` namespace, the `session/follow` / `workspace/follow` / `session/control` / `$events` mux streams), the same-origin probe picks the seeded workspace and types into the REAL composer, the send drives a REAL upstream agent-loop turn (scripted-llm transport), and the assistant reply renders in the official DOM (`write.reply.rendered`); structured-unavailable endpoints (dynamicCordisRunner, credentials, model catalog, presets, listings) stay pinned as such |
@@ -47,6 +50,17 @@ everywhere, so one checker serves all hosts.
 Field matchers are SUBSET matchers: a record may carry extra
 non-deterministic fields (uuid, paths); only the manifest's fields must
 match, exactly and in declaration order.
+
+### Repeat expectations (nondeterministic cardinality)
+
+An expectation with `"repeat": true` greedily consumes ONE-OR-MORE
+consecutive records matching its event name + matchers. It exists for the
+real LLM legs, where the number of streamed deltas is the server's
+decision — the expectation still asserts "at least one, in this position,
+matching these fields"; everything before and after stays one-to-one.
+Proven by `selftest.sh` fixtures (`m2-llm-repeat*.txt`: zero deltas fails
+AT the repeat expectation, a delta straying past the next expectation is
+extra).
 
 ## The audit stream (flat envelope)
 
@@ -127,6 +141,27 @@ receipt journal is append-only — the replay assertions need an empty
 container), then verifies BOTH `m3-fetch-install.json` and
 `m3-fetch-carrier.json`; evidence lands under
 `hosts/ios/artifacts/m3-complete/`.
+
+### M2 real-LLM runner (on-device, real backend)
+
+`run-ios-m2-llm.sh` drives the REAL-backend LLM E2E (scenario `m2.llm`,
+real leg) on the iOS simulator — NO UI interaction:
+
+```sh
+tools/e2e/run-ios-m2-llm.sh [--udid U] [--art-dir D] [--skip-build]
+```
+
+It requires `ZAI_BASE_URL` / `ZAI_API_KEY` / `ZAI_MODEL` in the environment
+(or the repo-root `.env` — missing credentials fail loud), stages them as
+`m2-llm/config.json` into fs scope "app" (the app container's
+`Documents/profiles/default/`), launches the app with
+`-dsh-mode session -dsh-scenario m2-llm`, and verifies BOTH
+`m2-llm-device.json` and `m2-llm-carrier.json`. The Android sibling is
+`hosts/android/ci/run-m2-llm.sh` (emulator; config staged via `run-as`
+into `files/profiles/default/m2-llm/config.json`, launch extra
+`--ez dsh.llm true`; evidence under `hosts/android/artifacts/m2-llm/`).
+Both runners end with a `grep -F` of the RAW captured log for the API key —
+the key must appear nowhere.
 
 It builds DSHSpike, launches it in session mode (`-dsh-mode session`),
 waits for the `webclient.mounted` / `ws.token-delta` / terminal

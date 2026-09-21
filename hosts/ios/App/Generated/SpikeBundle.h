@@ -17,6 +17,8 @@ const char *dsh_spike_res_scenario_m2_js(size_t *len);
 const char *dsh_spike_res_scenario_m2_smoke_js(size_t *len);
 const char *dsh_spike_res_scenario_m2_session_js(size_t *len);
 const char *dsh_spike_res_scenario_carrier_js(size_t *len);
+const char *dsh_spike_res_llm_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_llm_js(size_t *len);
 const char *dsh_spike_res_scenario_m3_fetch_install_js(size_t *len);
 const char *dsh_spike_res_install_fetch_js(size_t *len);
 const char *dsh_spike_res_receipt_journal_js(size_t *len);

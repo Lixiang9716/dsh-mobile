@@ -13,6 +13,7 @@
 		1B385B3BBC82C30A9C4BFAA8 /* OfficialWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */; };
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
 		283B8F98CD41140278AC43FC /* CarrierBootConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */; };
+		3410739F0E2FF33F65298179 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */; };
 		4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */; };
 		4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */; };
 		534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */; };
@@ -20,11 +21,13 @@
 		5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */; };
 		61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */; };
 		6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */; };
-		6F231A772A8FEF9FF9EB2847 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = DFD6E6183E293094C7BC9AAF /* libregexp.c */; };
+		6ED6144E17B3ACD3B34B2B5F /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */; };
 		7137721E1CD8809EAC1499B5 /* CarrierRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */; };
+		864357306EA83A2FF72A1532 /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = DB6B13352D14347144692813 /* dtoa.c */; };
 		88615C1BC61F9ED55E38A30C /* CarrierRoutes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93462855086C75B4830CEEAA /* CarrierRoutes.swift */; };
-		8BB9B0FDF7FE91E22CEEA78F /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = 26622E6CD598D9E1CB358020 /* dtoa.c */; };
+		8B202B596DE89A8DA4553955 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = A71D2A1134F00FED56B8F179 /* quickjs.c */; };
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
+		90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */; };
 		9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */; };
 		9A79E46043F2C71B973B8995 /* CarrierWebDist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */; };
 		9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */; };
@@ -34,10 +37,8 @@
 		ACE8B4FB83C7BC5C05C91032 /* SessionRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */; };
 		B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */; };
 		C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D699FF5BB908578B359B9B14 /* RuntimeThread.swift */; };
+		C9A8C0C6C66F5B9C7EA9C177 /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = FAD82A5AD5F23A41AE66F49B /* libunicode.c */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
-		D2648741A37D8C22A9CA051B /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = F2C09A1AA804FC0238E64454 /* libunicode.c */; };
-		DFBE3C27F14321CC1E84AE7C /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = D60C149C757C018941446ABE /* quickjs.c */; };
-		E4591A2389B98AD9AD6D5415 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = E3E095D019B5EE391EEA0377 /* dsh_spike_host.c */; };
 		F5F0070F74E81DE98B176234 /* CarrierPlugins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */; };
 		F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */; };
 /* End PBXBuildFile section */
@@ -49,7 +50,6 @@
 		183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPPrimitive.swift; sourceTree = "<group>"; };
 		19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeBundleStager.swift; sourceTree = "<group>"; };
 		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
-		26622E6CD598D9E1CB358020 /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSPrimitives.swift; sourceTree = "<group>"; };
 		3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebRuntime.swift; sourceTree = "<group>"; };
 		43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAPIBridge.swift; sourceTree = "<group>"; };
@@ -60,26 +60,28 @@
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93462855086C75B4830CEEAA /* CarrierRoutes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRoutes.swift; sourceTree = "<group>"; };
 		95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebProbe.swift; sourceTree = "<group>"; };
+		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
+		A71D2A1134F00FED56B8F179 /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 		B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierPlugins.swift; sourceTree = "<group>"; };
+		B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
+		BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRuntime.swift; sourceTree = "<group>"; };
 		C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIPrimitives.swift; sourceTree = "<group>"; };
 		CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierWebDist.swift; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
 		D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveRuntime.swift; sourceTree = "<group>"; };
-		D60C149C757C018941446ABE /* quickjs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = quickjs.c; sourceTree = "<group>"; };
 		D699FF5BB908578B359B9B14 /* RuntimeThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeThread.swift; sourceTree = "<group>"; };
-		DFD6E6183E293094C7BC9AAF /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
+		DB6B13352D14347144692813 /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
 		E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierServer.swift; sourceTree = "<group>"; };
-		E3E095D019B5EE391EEA0377 /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
 		E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRequest.swift; sourceTree = "<group>"; };
 		EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierBootConfig.swift; sourceTree = "<group>"; };
 		EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteProbe.swift; sourceTree = "<group>"; };
 		F1AFB09BF1FF590997FA7731 /* SessionLiveProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveProbe.swift; sourceTree = "<group>"; };
-		F2C09A1AA804FC0238E64454 /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 		F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainPrimitives.swift; sourceTree = "<group>"; };
 		F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBootRuntimeDrive.swift; sourceTree = "<group>"; };
+		FAD82A5AD5F23A41AE66F49B /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -99,6 +101,7 @@
 				95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */,
 				3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */,
 				D699FF5BB908578B359B9B14 /* RuntimeThread.swift */,
+				988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */,
 				F1AFB09BF1FF590997FA7731 /* SessionLiveProbe.swift */,
 				D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */,
 				BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */,
@@ -112,54 +115,48 @@
 			path = Source;
 			sourceTree = "<group>";
 		};
-		34C0B83FAA5E280FB99A7527 /* runtime */ = {
+		489463185FD153B3E23901AF /* quickjs-ng */ = {
 			isa = PBXGroup;
 			children = (
-				E4D4EC29FB4412078F14ADCC /* spike */,
+				56A4DA58379F37328EB7E33F /* 0.17.0 */,
+			);
+			path = "quickjs-ng";
+			sourceTree = "<group>";
+		};
+		495293BC28B259851D365E28 /* host */ = {
+			isa = PBXGroup;
+			children = (
+				B5F6435FCEE5E276E9E1DEAF /* dsh_spike_host.c */,
+			);
+			path = host;
+			sourceTree = "<group>";
+		};
+		56A4DA58379F37328EB7E33F /* 0.17.0 */ = {
+			isa = PBXGroup;
+			children = (
+				DB6B13352D14347144692813 /* dtoa.c */,
+				BB2A6D0F5BC6B84FF6F3934B /* libregexp.c */,
+				FAD82A5AD5F23A41AE66F49B /* libunicode.c */,
+				A71D2A1134F00FED56B8F179 /* quickjs.c */,
+			);
+			path = 0.17.0;
+			sourceTree = "<group>";
+		};
+		6E7292DDD7F5EA7B1C0E407C /* runtime */ = {
+			isa = PBXGroup;
+			children = (
+				F7118AA557120774F32D294E /* spike */,
 			);
 			path = runtime;
-			sourceTree = "<group>";
-		};
-		3B74452DB4B164C06D785416 /* vendor */ = {
-			isa = PBXGroup;
-			children = (
-				8E2236BEEABA004976D6432F /* quickjs-ng */,
-			);
-			path = vendor;
-			sourceTree = "<group>";
-		};
-		78BB0C4CFF1F58863374652A /* dsh-mobile-rpc */ = {
-			isa = PBXGroup;
-			children = (
-				34C0B83FAA5E280FB99A7527 /* runtime */,
-			);
-			name = "dsh-mobile-rpc";
-			path = ../..;
 			sourceTree = "<group>";
 		};
 		84F95FD6AADCA843676C4DF9 = {
 			isa = PBXGroup;
 			children = (
 				EAA4B75B2F1CFEF88CAB445B /* App */,
-				78BB0C4CFF1F58863374652A /* dsh-mobile-rpc */,
+				ADAED633E62153D4DB6088FB /* dsh-wt-llm */,
 				AF09F1B8671210489366EA0F /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		8E2236BEEABA004976D6432F /* quickjs-ng */ = {
-			isa = PBXGroup;
-			children = (
-				DB574B6F2060C3695DA78BFA /* 0.17.0 */,
-			);
-			path = "quickjs-ng";
-			sourceTree = "<group>";
-		};
-		A49124B15FCB2BD5AFE30A37 /* host */ = {
-			isa = PBXGroup;
-			children = (
-				E3E095D019B5EE391EEA0377 /* dsh_spike_host.c */,
-			);
-			path = host;
 			sourceTree = "<group>";
 		};
 		A551A48B835E92B60D8D2724 /* Generated */ = {
@@ -169,6 +166,15 @@
 				24888637EE42A0E9E40132A8 /* SpikeBundle.h */,
 			);
 			path = Generated;
+			sourceTree = "<group>";
+		};
+		ADAED633E62153D4DB6088FB /* dsh-wt-llm */ = {
+			isa = PBXGroup;
+			children = (
+				6E7292DDD7F5EA7B1C0E407C /* runtime */,
+			);
+			name = "dsh-wt-llm";
+			path = ../..;
 			sourceTree = "<group>";
 		};
 		AEA110DACF229E48D1B6EFFC /* Gateway */ = {
@@ -193,24 +199,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		DB574B6F2060C3695DA78BFA /* 0.17.0 */ = {
+		CA103AF11CF0007112B89653 /* vendor */ = {
 			isa = PBXGroup;
 			children = (
-				26622E6CD598D9E1CB358020 /* dtoa.c */,
-				DFD6E6183E293094C7BC9AAF /* libregexp.c */,
-				F2C09A1AA804FC0238E64454 /* libunicode.c */,
-				D60C149C757C018941446ABE /* quickjs.c */,
+				489463185FD153B3E23901AF /* quickjs-ng */,
 			);
-			path = 0.17.0;
-			sourceTree = "<group>";
-		};
-		E4D4EC29FB4412078F14ADCC /* spike */ = {
-			isa = PBXGroup;
-			children = (
-				A49124B15FCB2BD5AFE30A37 /* host */,
-				3B74452DB4B164C06D785416 /* vendor */,
-			);
-			path = spike;
+			path = vendor;
 			sourceTree = "<group>";
 		};
 		EAA4B75B2F1CFEF88CAB445B /* App */ = {
@@ -221,6 +215,15 @@
 				261210B6C944DA738F7FBC65 /* Source */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		F7118AA557120774F32D294E /* spike */ = {
+			isa = PBXGroup;
+			children = (
+				495293BC28B259851D365E28 /* host */,
+				CA103AF11CF0007112B89653 /* vendor */,
+			);
+			path = spike;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -300,6 +303,8 @@
 				"../../runtime/spike/scenario/b4-web-live.js",
 				../../runtime/spike/web/index.html,
 				"../../runtime/spike/web/carrier-page.js",
+				../../runtime/spike/llm.js,
+				"../../runtime/spike/scenario/m2-llm.js",
 				"../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js",
 				"../../system-plugins/dsh-fs/manifest.json",
 				"../../system-plugins/dsh-fs/index.js",
@@ -347,6 +352,7 @@
 				4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */,
 				1B385B3BBC82C30A9C4BFAA8 /* OfficialWebRuntime.swift in Sources */,
 				C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */,
+				90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */,
 				184D40FA4E64ACB3D27FE975 /* SessionLiveProbe.swift in Sources */,
 				4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */,
 				ACE8B4FB83C7BC5C05C91032 /* SessionRuntime.swift in Sources */,
@@ -357,11 +363,11 @@
 				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
 				9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */,
 				6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */,
-				E4591A2389B98AD9AD6D5415 /* dsh_spike_host.c in Sources */,
-				8BB9B0FDF7FE91E22CEEA78F /* dtoa.c in Sources */,
-				6F231A772A8FEF9FF9EB2847 /* libregexp.c in Sources */,
-				D2648741A37D8C22A9CA051B /* libunicode.c in Sources */,
-				DFBE3C27F14321CC1E84AE7C /* quickjs.c in Sources */,
+				3410739F0E2FF33F65298179 /* dsh_spike_host.c in Sources */,
+				864357306EA83A2FF72A1532 /* dtoa.c in Sources */,
+				6ED6144E17B3ACD3B34B2B5F /* libregexp.c in Sources */,
+				C9A8C0C6C66F5B9C7EA9C177 /* libunicode.c in Sources */,
+				8B202B596DE89A8DA4553955 /* quickjs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
