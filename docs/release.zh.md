@@ -1,13 +1,52 @@
 # 发布包(Release packages)
 
-三个宿主 App 的手动打包,每次触发各出一份。在 GitHub Actions 页面触发
-(**release/packages → Run workflow**),或:
+两种触发,一条构建路径:
 
-```sh
-gh workflow run release.yml
-```
+- **正式发布**——常规路径。`release/please` 读取落到 `main` 上的
+  conventional commits,维护**一个**常驻的 release PR:它会升级 `version.txt`、
+  生成 `CHANGELOG.md`、并同步三个宿主的版本清单。合并该 PR 即打出 `vX.Y.Z`
+  标签并发布 GitHub Release;随后 `release/packages` 工作流构建三个宿主 App 并
+  **把它们作为资产挂到该 Release 上**——于是标签就是一个可下载的构建集。
+- **手动触发**——Actions 页面(**release/packages → Run workflow**)或
+  `gh workflow run release.yml`。产物落在 workflow run 下而非 Release 上;
+  `include_harness: true` 会额外构建验证载体。
 
-每个 job 在 workflow run 下上传各自独立的可下载产物。
+## 如何发一个版本
+
+1. 用 conventional commit 消息把工作合进 `main`(由 `commit-format` 门禁强制)。
+   `feat:` 升 minor,`fix:` 升 patch;低于 1.0 时破坏性变更升 minor,而不是
+   直接跳到 1.0.0。
+2. `release/please` 会维护一个标题为 `chore(main): release X.Y.Z` 的 PR。它是
+   生成出来的机械变更——`version.txt`、`CHANGELOG.md` 和三个宿主清单。
+   **要审的是 changelog**;那才是人负责的部分,版本号是跟随 commit 推导的。
+3. 合并它。release-please 打出 `vX.Y.Z` 并发布 Release,`release/packages`
+   构建三个宿主并挂上去(每个宿主 30–60 分钟,全部由 release 事件触发)。
+
+### 版本流
+
+整个仓库共用一个版本号:三个宿主在同一次构建里一起发布,因此共享一个号。
+`version.txt` 与 `.release-please-manifest.json` 是事实来源,宿主清单由
+`release-please-config.json` 里的 `extra-files` 接线保持一致:
+
+| 宿主 | 文件 | 字段 | 更新器 |
+| --- | --- | --- | --- |
+| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` | `xml` + xpath——源文件里无需任何标记 |
+| Android | `hosts/android/app/build.gradle.kts` | `versionName` | `generic` + `// x-release-please-version` |
+| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` | `json` + jsonpath——`.json5` 扩展名不会被自动识别,所以类型必须显式声明 |
+
+构建号**不**在此版本流内:`CFBundleVersion`、Android 的 `versionCode` 与
+HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工维护。
+
+### 一次性配置:发布令牌
+
+`release/please` 需要一个名为 `RELEASE_PLEASE_TOKEN` 的 secret——一个
+fine-grained PAT(或 GitHub App 安装令牌),在本仓库上具备
+**contents: write** 与 **pull requests: write**。`secrets.GITHUB_TOKEN`
+不能替代:它创建的事件不会触发 workflow,于是 release PR 永远拿不到 `main`
+分支保护所要求的 `gates` 检查,也就永远无法合并。该 secret 缺失时工作流会
+大声失败,而不是悄悄退化成这条坏路径。
+
+每个 job 也会在 workflow run 下上传各自独立的可下载产物。
 
 **默认触发产出的是面向用户的构建**——就是你交给用户的那一份。分发构建不跑
 任何验证机制,只输出关键日志集(`warn` + `error`);debug/info 在源头就被剥离
@@ -40,7 +79,7 @@ App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装�
 
 真机 `.app` 刻意未签名(CI 不持有任何 Apple 证书)。装上 iPhone:
 
-1. 解压 `DSHSpike-device-unsigned.zip`。
+1. 解压 `DSHSpike-release-device-unsigned.zip`。
 2. 用免费 Apple ID(7 天有效期)或付费团队签名:
    - **Xcode**:打开 `hosts/ios/DSHSpike.xcodeproj`,在 target 的
      Signing & Capabilities 里选你的团队,连上手机直接 Run——或把解压的

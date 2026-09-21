@@ -1,0 +1,22 @@
+{
+  "title": "Introduce release-please: a version stream, changelog and tagged releases for the three host packages",
+  "created": "2026-09-21T08:14:19+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "release-please config lands at the repo root (release-please-config.json + .release-please-manifest.json + version.txt), not under .gov/ \u2014 the plane seal stays intact",
+    "the three host version sources are wired: Info.plist via xml+xpath (no source annotation), build.gradle.kts via the generic updater, app.json5 via json+jsonpath \u2014 each proven by an offline updater probe before wiring",
+    ".github/workflows/release-please.yml runs on push to main and FAILS LOUD when the release token secret is absent (no silent GITHUB_TOKEN degradation)",
+    "release.yml attaches the three host packages to the published GitHub Release, and the manual dispatch path still works",
+    "docs/release.md + release.zh.md document the flow and the stale DSHSpike-device-unsigned.zip filename is fixed on both sides; pairing re-stamped",
+    "gov run green; PR opened; gates check green; squash merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0026"
+}

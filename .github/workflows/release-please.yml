@@ -1,0 +1,57 @@
+name: release/please
+# The version stream. release-please reads the conventional commits landing on
+# main and keeps ONE open release PR that bumps `version.txt`, writes
+# `CHANGELOG.md`, and syncs the three host version manifests (see
+# release-please-config.json for the extra-file wiring). Merging that PR is
+# what cuts a release: a `vX.Y.Z` tag plus a GitHub Release, which is the
+# event `release.yml` then builds the three host packages for and attaches.
+#
+# WHY A PAT AND NOT secrets.GITHUB_TOKEN
+# Events created by GITHUB_TOKEN do not trigger workflows. `main` requires the
+# `gates` check, so a release PR opened with GITHUB_TOKEN would never receive
+# that check and could never be merged through normal review — the pipeline
+# would be dead on arrival. The workflow therefore requires a token that does
+# trigger events (a fine-grained PAT, or a GitHub App installation token) and
+# FAILS LOUD when it is absent rather than degrading to the broken path
+# (rules.md rule 5). Setup is documented in docs/release.md.
+#
+# The trigger is `push: main` only: release-please derives every state
+# transition from what already landed. `workflow_dispatch` exists for recovery
+# — re-running after the secret is first configured, or after a failure.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One release PR at a time. Deliberately NOT cancel-in-progress: the action
+# mutates the release branch, and cancelling it mid-write leaves that branch
+# in a state the next run has to reconcile. A queued run is cheap.
+concurrency:
+  group: release-please-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Require the release token
+        env:
+          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::error::RELEASE_PLEASE_TOKEN is not set — the release PR cannot be opened with the token that would make it mergeable. Add a fine-grained PAT (contents: write + pull requests: write on this repository) as the RELEASE_PLEASE_TOKEN secret. secrets.GITHUB_TOKEN is NOT a substitute: its events do not trigger workflows, so the release PR would never get the required 'gates' check."
+            exit 1
+          fi
+
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
