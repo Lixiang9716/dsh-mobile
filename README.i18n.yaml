@@ -7,18 +7,9 @@
 # compares only the en/zh hashes. last_confirmed is the UTC ISO-8601
 # instant of the confirmation (datetime.isoformat(), +00:00).
 pair:
-<<<<<<< HEAD
-  en: 9a3297f87d6a68243c4d11bc95e8ae5fcb1dc60c
-  zh: 42e0e7b5efd6355a558936df0e8ea040e8046688
+  en: 24a80e8abb3eb3b8e76b66b7a00d726bcded3ef6
+  zh: 4c0599025e4dd0d204c3cb00d6b137b1d1b1889a
 counterpart: README.zh.md
-last_confirmed: 2026-09-21T02:42:32+00:00
-en_commit: fb53d62
-zh_commit: fb53d62
-=======
-  en: a198a6496976e20e974d37d20f58fdb810f9131c
-  zh: 3fb649b37d5aa98e25e6259911936243973ed587
-counterpart: README.zh.md
-last_confirmed: 2026-09-21T03:53:33+00:00
-en_commit: 56a3e17
-zh_commit: 56a3e17
->>>>>>> 99499be (docs(milestones): M5 ships all nine primitives — status surfaces + agent note)
+last_confirmed: 2026-09-21T04:14:57+00:00
+en_commit: 03013bb
+zh_commit: 03013bb
