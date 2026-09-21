@@ -92,7 +92,10 @@ jobs:
         # runs, instead of landing inside the E2E step where it is measured and
         # mistaken for a hang. Idempotent: the E2E step boots again and tolerates
         # "already booted".
-        continue-on-error: true
+        #
+        # No continue-on-error: it already exits 0 with a warning when there is
+        # no simulator to prewarm, so a non-zero exit here means something real
+        # went wrong — and absorbing it would be another failure nobody sees.
         run: |
           set -euo pipefail
           UDID=$(xcrun simctl list devices available | grep -iE 'iphone' \
@@ -221,60 +224,54 @@ jobs:
             --log "$ART/logs.txt" \
             --out "$ART2/verdict.json"
 
-      # M2 gateway-binding E2E + audit-stream check. HONEST: this scenario is
-      # UI-driven (permission alert, Files picker, approval dialog,
-      # notification banner — see tools/e2e/run-ios.sh) and hosted CI runners
-      # have no idb/UI driver, so the terminal `spike: sequence
-      # gateway=<verdict>` marker never appears here: this step warns and
-      # exits 1, absorbed by continue-on-error. The build above is the hard
-      # gate; the full m2 E2E runs locally via tools/e2e/run-ios.sh.
-      - name: Check m2.gateway.binding + audit stream (needs UI driver; watchdogs on CI)
-        id: m2-run
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          ART=hosts/ios/artifacts/m2-gateway
-          mkdir -p "$ART"
-          LOG=hosts/ios/artifacts/m1-spike/logs.txt   # one launch drives m1+m1+m2
-          for i in $(seq 1 30); do
-            grep -q "spike: sequence gateway=" "$LOG" 2>/dev/null && break
-            sleep 2
-          done
-          if ! grep -q "spike: sequence gateway=" "$LOG"; then
-            # Warn, do not exit 1. This step cannot succeed on hosted CI by
-            # construction (no idb/UI driver), so `exit 1` here carried no
-            # signal — continue-on-error absorbed it — while GitHub painted it
-            # as a red error on every green run, which is how a pipeline
-            # teaches people to ignore red. The absence is the expected
-            # outcome and the log is uploaded either way.
-            echo "::warning::m2 terminal marker never appeared — expected on CI (no UI driver). Full E2E: tools/e2e/run-ios.sh"
-          fi
-          grep '^dsh.gateway.audit:' "$LOG" > "$ART/gateway-audit.jsonl"
-          node tools/e2e/check.mjs \
-            --manifest tools/e2e/scenarios/m2-gateway-binding.json \
-            --log "$LOG" \
-            --out "$ART/verdict.json"
-          node tools/e2e/check.mjs \
-            --manifest tools/e2e/scenarios/m2-gateway-audit.json \
-            --log "$LOG" \
-            --out "$ART/verdict-audit.json"
+      # The M2 gateway-binding E2E is UI-driven — permission alert, Files
+      # picker, approval dialog, notification banner (see
+      # tools/e2e/run-ios.sh, which drives it with WebDriverAgent/idb). Hosted
+      # runners have no UI driver, so that leg CANNOT run here, and it used to
+      # sit in this file as a step that warned and exited non-zero on every
+      # run under continue-on-error: a failure that could never pass, absorbed
+      # on every green run, which is how a pipeline teaches people to ignore
+      # red. A check that cannot run is not a check, so it is not here. The
+      # m2 E2E runs locally via tools/e2e/run-ios.sh and its committed
+      # evidence is what the matrix cites.
+      #
+      # What gates in this workflow: the build, and (below) the m1 scenarios —
+      # which are log-driven and DO run on a hosted simulator.
 
       - name: Report verdict
         if: always()
         run: |
+          # A verdict is only reported when THIS RUN produced it. Every one of
+          # these paths is also a committed file, so `cat` alone cannot tell
+          # today's result from a stale committed one — and it printed a
+          # committed 9/9 PASS for a run that exited before its checkers ran.
+          # check.mjs stamps runId when it runs under CI; a verdict without this
+          # run's id is reported as ABSENT, which is the truth.
+          reported=0
           for f in \
             hosts/ios/artifacts/m1-spike/verdict.json \
             hosts/ios/artifacts/m1-carrier/verdict.json \
             hosts/ios/artifacts/m2-gateway/verdict.json \
             hosts/ios/artifacts/m2-gateway/verdict-audit.json; do
-            if [ -f "$f" ]; then
-              cat "$f" | tee -a "$GITHUB_STEP_SUMMARY"
-            elif [ "$(dirname "$f")" = "hosts/ios/artifacts/m2-gateway" ]; then
-              echo "m2-gateway: no verdict for $(basename "$f") (UI-driven leg cannot complete on CI; run tools/e2e/run-ios.sh locally)" | tee -a "$GITHUB_STEP_SUMMARY"
-            else
-              echo "$(dirname "$f" | xargs basename): no verdict (simulator stage unavailable on this runner)" | tee -a "$GITHUB_STEP_SUMMARY"
+            name="$(basename "$f")"
+            if [ ! -f "$f" ]; then
+              echo "$(dirname "$f" | xargs basename)/$name: no verdict file" | tee -a "$GITHUB_STEP_SUMMARY"
+              continue
             fi
+            rid=$(sed -n 's/.*"runId": *"\([^"]*\)".*/\1/p' "$f" | head -1)
+            if [ -z "$rid" ]; then
+              echo "$(dirname "$f" | xargs basename)/$name: NO PROVENANCE — not produced by a CI run (a committed file?)" | tee -a "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            if [ "$rid" != "$GITHUB_RUN_ID" ]; then
+              echo "$(dirname "$f" | xargs basename)/$name: STALE — produced by run $rid, not this one" | tee -a "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            cat "$f" | tee -a "$GITHUB_STEP_SUMMARY"
+            reported=$((reported + 1))
           done
+          echo "" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "verdicts produced by THIS run: $reported" | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifacts
         if: always()
