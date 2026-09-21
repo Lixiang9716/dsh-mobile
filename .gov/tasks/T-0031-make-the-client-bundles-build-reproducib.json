@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "Reproduce the mismatch: the CI materialize step prints shasum WARNING 40 computed checksums did NOT match against the committed MANIFEST",
-    "Establish the cause: build-client-bundles.sh regenerates MANIFEST.sha256 from its own output and ensure-client-bundles.sh then verifies against it, so a cold run self-confirms and cannot detect non-reproducibility",
-    "Fix it either way: make the build byte-reproducible, or commit the manifest the build actually produces",
-    "Once reproducible, the official-web cache hits for the npm half too, removing the 230 s rebuild from dev/android and the larger one from release/ios"
+    "[x] Reproduce the mismatch: the CI materialize step prints shasum WARNING 40 computed checksums did NOT match against the committed MANIFEST",
+    "[x] Establish the cause: build-client-bundles.sh regenerates MANIFEST.sha256 from its own output and ensure-client-bundles.sh then verifies against it, so a cold run self-confirms and cannot detect non-reproducibility",
+    "[x] Fix it either way: make the build byte-reproducible, or commit the manifest the build actually produces",
+    "[x] Once reproducible, the official-web cache hits for the npm half too, removing the 230 s rebuild from dev/android and the larger one from release/ios"
   ],
   "status": "open",
   "receipt": null,
