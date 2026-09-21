@@ -1,0 +1,24 @@
+{
+  "title": "Make the release log-strip real end to end (flag plumbing, emitter gating, gate L4, both release variants)",
+  "created": "2026-09-21T05:54:23+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Flag plumbing, Release config only: iOS SWIFT_ACTIVE_COMPILATION_CONDITIONS + GCC_PREPROCESSOR_DEFINITIONS, Android buildTypes.release (BuildConfig + externalNativeBuild cFlags -DDSH_RELEASE), HarmonyOS release buildMode reaching ArkTS + native, CLI build.sh release mode",
+    "JS: runtime/spike/logger.js honors the flag (debug/info no-op when set, warn/error still emit); embedded copies stay byte-identical to the canonical in the debug path (no canonical source fork)",
+    "Native emitter gating: the dsh.spike.log E2E streams and gateway audit lines are debug-only; release keeps warn/error only and fails loud when asked to run an E2E drive",
+    "tools/check-logging.py L4 covers the operative logger runtime/spike/logger.js; a release-flag branch in the TS logger alone no longer passes; rejection case under .gov/rejections/ + gov self-test green",
+    "release.yml keeps dsh-ios/dsh-android/dsh-harmony as the debug HARNESS packages (logs on) and adds dsh-ios-release/dsh-android-release/dsh-harmony-release (log-stripped); honest about any platform blocked without signing material",
+    "Evidence committed under hosts/<host>/artifacts/release-logging/ (MANIFEST.md style): same command debug vs release, with zero \"level\":\"debug\"/\"level\":\"info\" lines and no E2E verdict streams in the release capture",
+    "docs/release.md + zh state which artifact is the harness and which is the distribution build; pairing record re-confirmed; ARCHITECTURE.md logging/E2E wording made true",
+    "Agent Note (class feature) cites the constraint + rule L4 with all three sections; gov run green; PR to gh pr checks --watch; squash merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0023"
+}
