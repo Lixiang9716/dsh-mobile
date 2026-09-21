@@ -85,6 +85,30 @@ jobs:
           sudo swapon /mnt/swapfile
           free -h
 
+      - name: Locate the pnpm store
+        # Resolved, never guessed: `pnpm store path` prints it, and a guessed
+        # path would silently cache nothing.
+        id: pnpm-store
+        run: |
+          set -euo pipefail
+          corepack enable
+          echo "path=$(corepack pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the pnpm store
+        # The upstream build's `pnpm install --frozen-lockfile` pulls the whole
+        # monorepo's dependency graph on every run, and it is a large part of
+        # why this step costs minutes. The STORE is the thing that is safe to
+        # cache: it is content-addressed and carries no path assumptions,
+        # unlike node_modules or a build output whose symlinks point at paths
+        # that only exist on the machine that made them (pnpm#6374, #10081).
+        # Restoring it lets install resolve locally while the build still
+        # PRODUCES AND VERIFIES the tree — so nothing here depends on a cached
+        # artifact being byte-reproducible.
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/build-client-bundles.sh') }}
+
       - name: Cache the materialized official web tree
         # The most expensive single item in this repository's CI: the upstream
         # monorepo build behind `official-web/dist` + `client-bundles/npm`

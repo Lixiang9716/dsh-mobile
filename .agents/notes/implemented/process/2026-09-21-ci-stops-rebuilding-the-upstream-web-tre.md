@@ -75,7 +75,38 @@ verifiable tree* — the script would reject it, so the build would re-run anywa
 and the cache would silently never help. Note this is a live latent issue in
 the iOS DerivedData cache, which has no `restore-keys` and a static key.
 
-**Fix the iOS E2E hang, which is the larger number.** Not done here, and it
+## Follow-up: the remaining free levers, and the reason the npm half missed
+
+**The client-bundles cache miss is a reproducibility defect, not a caching
+one.** `client-bundles/build-client-bundles.sh` REGENERATES `MANIFEST.sha256`
+from its own output, and `ensure-client-bundles.sh` verifies against the
+committed one. So a cold run builds, rewrites the manifest, and verifies
+against its own fresh output — it cannot fail, and it cannot detect
+non-reproducibility. A warm run restores the tree and checks it against the
+*committed* manifest, which disagrees — hence "npm tree present but MANIFEST
+mismatch — rebuilding". The `dist` half is genuinely reproducible and its cache
+works. Measured net effect of the output cache on `dev/android`: **456 s →
+251 s** (the dist half; the npm half still rebuilt). Caching build output was
+the wrong target; the store is the right one.
+
+**Added, all free:** the **pnpm store** is cached for the three workflows that
+run the upstream build — content-addressed with no path assumptions, unlike
+`node_modules` or build output whose symlinks point at paths that only exist on
+the machine that made them (pnpm#6374, #10081) — with the path *resolved* by
+`pnpm store path` rather than guessed, so a wrong guess cannot silently cache
+nothing. The iOS `DerivedData` cache gains `restore-keys`, because its static
+key with no fallback is written once and never refreshed. And `dev/ios`
+gains a **background simulator prewarm** plus a **portable deadline** on
+`simctl launch` (perl's `alarm`, since macOS ships no `timeout`), because that
+single call was measured taking **385 s of silence** on a cold runner —
+indistinguishable from a hang. The deadline reports exit 142 as its own
+diagnosis rather than as a launch failure.
+
+**Deliberately not taken, because they cost money:** larger runners (worth it
+only above a measured 1.5× wall-clock gain, and wasted on single-threaded
+steps), and anything that raises the macOS share of the bill.
+
+**Still open, and it is the larger number.** Not done here, and it
 should be done next: `dev/ios` spent 652 s + 69 s — 87.8 % of its wall clock —
 in two `continue-on-error: true` steps that **both failed** on a run the API
 reports as green (`verdict never appeared`; the m2 verdict files were missing).

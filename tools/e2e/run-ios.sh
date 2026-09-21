@@ -380,9 +380,26 @@ log "4/6 launch (log capture truncated — checker must see only this run)"
 rm -f "$LOG" "$ART/nslog-stderr.txt"
 case "$LOG" in /*) LOG_ABS="$LOG" ;; *) LOG_ABS="$PWD/$LOG" ;; esac
 case "$ART" in /*) NSLOG_ABS="$ART/nslog-stderr.txt" ;; *) NSLOG_ABS="$PWD/$ART/nslog-stderr.txt" ;; esac
-xcrun simctl launch --terminate-running-process \
-  --stdout="$LOG_ABS" --stderr="$NSLOG_ABS" \
-  "$UDID" "$APP_BUNDLE_ID" >/dev/null
+# Bounded: `simctl launch` has been measured taking 385 s of silence on a cold
+# runner (the runtime's one-time dyld work), which is indistinguishable from a
+# hang and burns the step's budget. macOS ships no `timeout`, so perl's alarm is
+# the portable deadline. 142 = the deadline fired (SIGALRM) — reported as such
+# rather than as a launch failure, because those are different diagnoses.
+rc=0
+perl -e 'alarm shift; exec @ARGV' "${DSH_LAUNCH_DEADLINE:-180}" \
+  xcrun simctl launch --terminate-running-process \
+    --stdout="$LOG_ABS" --stderr="$NSLOG_ABS" \
+    "$UDID" "$APP_BUNDLE_ID" >/dev/null || rc=$?
+if [ "$rc" != "0" ]; then
+  # `|| rc=$?`, not `if ! cmd; then rc=$?` — negation makes $? the inverted
+  # status, which is always 0 there, so the deadline branch would be dead code.
+  if [ "$rc" = "142" ]; then
+    log "run-ios: LAUNCH DEADLINE ($DSH_LAUNCH_DEADLINE s) — simctl launch did not return; treating as no verdict"
+  else
+    log "run-ios: launch failed (exit $rc)"
+  fi
+  exit 1
+fi
 
 # ---- 5. driver: react to spike: markers on the live log --------------------
 log "5/6 driving scenario markers (deadline 900s)"
