@@ -113,26 +113,32 @@ It is settable through the API, which is how this repository did it:
     {"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}
     JSON
 
-With the setting on, the release PR is created by `GITHUB_TOKEN`. **Both halves
-of the mechanism matter, and the dispatch is the half you cannot drop.**
+With the setting on, `GITHUB_TOKEN` may open the release PR. **It still cannot
+make that PR mergeable**, and this is worth stating plainly because it is the
+one part of the pipeline that is not solved.
 
-`release/version` **dispatches** the gate workflow at the release branch
-(`gh workflow run gov.yml --ref <release-branch>`) as its last step.
-`workflow_dispatch` is a documented exception to GitHub's suppression of
-`GITHUB_TOKEN`-created events, so that run's `gates` check lands on the release
-PR's head commit — the one check `main` requires. It is a real gate run on the
-real commit, never a check fabricated through the API, and a refused dispatch
-fails the job, so a release PR that cannot be merged announces itself
-(rules.md rule 5).
+A release PR opened with `GITHUB_TOKEN` gets no `pull_request` workflows — they
+arrive as `action_required` — so it receives no `gates` check, and `main`
+requires one. `release/version` dispatches the gate workflow at the release
+branch as a best-effort attempt at supplying it, but **measured on PR #111,
+that does not work**: the dispatched run produced a green `gates` check on the
+PR's exact head SHA, with the right context and app and its suite linked to the
+PR, and the PR stayed `BLOCKED` with an empty check rollup for 12+ minutes.
+Branch protection only honours a check that comes from the pull request's own
+event flow. See D13; D10's original PAT requirement, which D11 dismissed, was
+correct on this point.
 
-The suppression is **partial**, which is what makes the dispatch necessary
-rather than merely tidy. Measured on PR #107: the PR's first creation did start
-its `pull_request` workflows (`gates` plus all three platform pipelines,
-green), but a later **branch update** — from an ordinary `push: main` — was
-suppressed (`action_required`) and left the PR with **no checks at all**, hence
-`BLOCKED`. release-please rewrites the release branch on every push to `main`,
-so a release PR that is merely *open* is not the case you have to handle; a
-release PR that is *current* is.
+**So the version-bump commit is the open question, and there are two ways:**
+
+| Path | Needs | State |
+| --- | --- | --- |
+| A release PR from release-please | a **user-attributed token** (PAT or GitHub App) so its events are not suppressed — what D10 prescribed | blocked until such a token is configured |
+| A normal human/agent PR that bumps the four version files | nothing — a PR from a person gets its checks normally | works today; the recommended path |
+
+The second is why `tools/release/check-tag-version.sh` exists: with the bump in
+a normal PR, the guard is what keeps the tag and the version files from
+drifting apart. Whichever path is used, **cutting the release is unaffected** —
+step 4 below is the tag push, and it needs only `contents: write`.
 
 `RELEASE_PLEASE_TOKEN` is no longer read by any workflow. If it is still set as
 a secret it is simply ignored; nothing needs deleting, and its fine-grained
