@@ -1,0 +1,20 @@
+{
+  "title": "Cut the first release: align the version stream to 0.0.1 and publish v0.0.1 on the Releases page",
+  "created": "2026-09-21T09:18:52+00:00",
+  "rules": {
+    "hash": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "all five version sources read 0.0.1: version.txt, .release-please-manifest.json, iOS Info.plist, Android versionName, HarmonyOS versionName",
+    "bootstrap-sha advances to the pre-change main HEAD so release-please does not re-propose the work this release already contains",
+    "gov run green; PR opened; gates check green; squash merged",
+    "GitHub Release v0.0.1 published and the release.yml release-event run attaches the three host packages as downloadable assets"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0027"
+}
