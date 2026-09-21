@@ -50,6 +50,24 @@ jobs:
             exit 1
           fi
 
+      - name: Verify the release token authenticates
+        # `-z` above catches an EMPTY secret, not a useless one, and the action
+        # only says "Bad credentials" from deep inside its own run. A token
+        # pasted into the secret field with a trailing newline, an expired or
+        # revoked PAT, and a truncated paste are indistinguishable from there.
+        # Probe the credential here, where the message can name the real cause.
+        env:
+          TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          code=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H "Authorization: Bearer $TOKEN" https://api.github.com/user) || code=000
+          if [ "$code" != "200" ]; then
+            echo "::error::RELEASE_PLEASE_TOKEN does not authenticate (HTTP $code from GET /user). A trailing newline or space pasted with the value, an expired/revoked PAT, and a truncated paste all look exactly like this. Re-set it without trailing whitespace: gh secret set RELEASE_PLEASE_TOKEN --body \"\$TOKEN\""
+            exit 1
+          fi
+          echo "release token authenticates (HTTP 200)"
+
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
