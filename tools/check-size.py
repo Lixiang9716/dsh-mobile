@@ -13,9 +13,19 @@ Parsing backend, in order:
 
 Indent depth is checked on code lines only — pure comment/string lines are
 skipped so JSDoc continuation lines cannot poison the indent-unit detection.
+The fallback backend's INDENT counter is LANGUAGE-BLIND: it measures the
+indentation of every code line, so a line sitting 6 units deep fails no
+matter what opened it — closure bodies count exactly like control-flow
+blocks. Idiomatic closure-chain languages (Kotlin's `Thread { }`,
+`use { }`) read deeper than brace-logic languages at the same real
+nesting; violations from this backend are labeled `INDENT(indent-fallback)`
+so a flagged file tells you which ruler named it (#342). Extracting named
+functions is the compliant fix, not flattening below any natural style.
 
 Output: one `path:line kind detail` line per violation, then a summary line
 reporting which backend each file used. Exit 0 clean, 1 on any violation.
+`--self-test` runs the known-answer fixtures (comment-state regression
+cases, #340) and exits nonzero on any mismatch.
 """
 import ast
 import json
@@ -249,11 +259,59 @@ def check(path, facts):
         if end - start + 1 > MAX_FUNC_LINES:
             violations.append((start, "FUNC", f"{end - start + 1} lines > {MAX_FUNC_LINES}"))
     for line_no, level in indent_violations(lines, is_python):
-        violations.append((line_no, "INDENT", f"indent level {level} > {MAX_INDENT_LEVEL}"))
+        kind = "INDENT" if backend == "gov-parse" else "INDENT(indent-fallback)"
+        violations.append((line_no, kind, f"indent level {level} > {MAX_INDENT_LEVEL}"))
     return violations, backend
 
 
+def _self_test():
+    """Known-answer fixtures for the comment-state machine (#340).
+
+    A `*/` closing at end-of-line — the `/** ... */` one-liner style, an
+    indented ` */` closer, a closer after prose on the same line — must
+    always clear the block-comment state: a stuck state blanked every
+    downstream signature, `brace_functions` found zero bodies, and the
+    logging gate's L3 passed vacuously for the whole file. Each case
+    pins the function span the heuristic must see.
+    """
+    cases = [
+        # one-liner doc comment, closer at EOL
+        (["/** doc */", "function f() {", "  return 1;", "}"],
+         [(2, 4)]),
+        # multi-line doc, indented ` */` closer at EOL
+        (["/** doc", " * more", " */", "function g() {", "  return 1;", "}"],
+         [(4, 6)]),
+        # closer trailing prose on the signature's own line
+        (["/** doc", " * more prose */", "function h() {", "  return 1;", "}"],
+         [(3, 5)]),
+        # two one-liner doc comments between functions
+        (["/** a */", "function i() {", "  return 1;", "}",
+          "/** b */", "function j() {", "  return 2;", "}"],
+         [(2, 4), (6, 8)]),
+    ]
+    failures = []
+    for lines, expected in cases:
+        got = brace_functions(lines)
+        if got != expected:
+            failures.append(f"brace_functions({lines!r}) = {got}, want {expected}")
+    # the state machine must end clean on every case (no leaked bc/bt/q)
+    for lines, _ in cases:
+        state = {"bc": False, "bt": False, "q": None}
+        for raw in lines:
+            strip_code(raw, state)
+        if any([state["bc"], state["bt"], state["q"]]):
+            failures.append(f"state leaked after {lines!r}: {state}")
+    for failure in failures:
+        print(f"code-size self-test: FAIL {failure}")
+    if failures:
+        return 1
+    print(f"code-size self-test: {len(cases)} case(s) ok")
+    return 0
+
+
 def main():
+    if "--self-test" in sys.argv:
+        return _self_test()
     files = tracked_sources()
     # Vendored upstream packages are kept verbatim (D6/D9): their bundled
     # single-file builds cannot be refactored to our size limits, so the

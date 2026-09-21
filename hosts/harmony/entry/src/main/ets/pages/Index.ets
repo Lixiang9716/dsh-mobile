@@ -1,3 +1,5 @@
+// dsh:logging-exempt — ArkTS UI logs natively via hilog; the JS
+// createLogger contract does not reach this layer (#343).
 /*
  * Index — the D9 host page. THREE phases on ONE launch:
  *

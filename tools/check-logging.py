@@ -26,7 +26,13 @@ import sys
 from pathlib import Path
 
 SCOPE_DIRS = ("runtime/", "system-plugins/", "presentation/", "hosts/")
-EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"}
+# .ets is ArkTS (#343): the layer most likely to log natively was the one
+# this gate never inspected — a false green (rule 6). The tree-sitter TS
+# grammar ERRORs on ArkTS `struct` syntax, so gov parse skips these files
+# and the brace heuristic carries them, exactly like Kotlin/Swift in the
+# size gate. Files whose contract is a native logger (hilog) declare
+# // dsh:logging-exempt instead of silently sitting outside scope.
+EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".ets"}
 LOGGER_DIR = "runtime/logger"
 EXEMPT_MARKER = "// dsh:logging-exempt"
 EXEMPT_SCAN_LINES = 12
