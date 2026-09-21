@@ -37,11 +37,51 @@ certificates). To put it on your iPhone:
    developer profile, then launch **DSHSpike**.
 
 Honest limitation: the packaged app is the verification harness. A plain
-launch boots the runtime, the loopback carrier, and the mounted official Web
-Client; the real-LLM streaming drive (`m2.llm`) is launched with
+launch boots the runtime, the loopback carrier, and renders the M1 carrier
+page in the WebView. The official DSH Web UI needs two staged trees inside
+the app container plus a launch mode — see "Seeing the official Web UI"
+below. The real-LLM streaming drive (`m2.llm`) is launched with
 `-dsh-scenario m2-llm` and credentials staged into the `app` fs scope by the
 E2E runner (tools/e2e/run-ios-m2-llm.sh) — interactive real-LLM chat from a
 sideloaded phone is not wired yet.
+
+### Seeing the official Web UI (verified on the iOS simulator, 2026-09-21)
+
+The carrier serves the vendored official dist through the `ctx.webServer`
+contract once it is in the app container; the app is then launched in its
+official-web drive (`b1.official-web.mount`, verified PASS 13/13 from the
+packaged app).
+
+```sh
+# 1. materialize the three untracked trees locally (manifest-verified)
+tools/e2e/ensure-official-dist.sh
+tools/e2e/ensure-client-bundles.sh
+runtime/spike/vendor/ensure-dsh.sh
+
+# 2. stage them into the app container
+#    simulator:
+APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
+#    device (iOS 17+; UDID or name from `xcrun devicectl list devices`):
+#      xcrun devicectl device copy to --device "$DEVICE" \
+#        --domain-type appDataContainer --domain-identifier org.dsh.DSHSpike \
+#        --source <tree> --destination Documents/...
+#    both: dist → Documents/official-web/dist
+#          client bundles → Documents/web-plugins/npm/@deepseek-ai/
+#          the vendored bootstrap package overrides its built twin
+#          (see tools/e2e/run-ios-b1.sh steps 4/4b for the exact tree ops)
+
+# 3. launch in official-web mode
+#    simulator:
+xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
+#    device:
+#      xcrun devicectl device process launch --device "$DEVICE" \
+#        org.dsh.DSHSpike -dsh-mode official-web
+```
+
+A real chat turn additionally needs credentials in
+`Documents/profiles/default/m2-llm/config.json` (`{baseUrl, apiKey, model}`)
+and the `-dsh-scenario m2-llm` launch argument; the key stays in the app
+container, never in the repository.
 
 ## Android
 
