@@ -17,16 +17,20 @@
  * tools/ dev script (out of the logging gate's scope; console IS the product).
  *
  * usage: check.mjs --manifest <scenarios/foo.json> --log <captured-log>
- *                  [--out <verdict.json>]   exit 0 = pass, 1 = fail.
+ *                  [--out <verdict.json>] [--junit <verdict.xml>]
+ *                  exit 0 = pass, 1 = fail. The --junit form is the SAME
+ *                  verdict rendered for CI by junit.mjs, so a red scenario can
+ *                  annotate the pull request instead of only reddening the step.
  *
  * Manifests default to the unified-logger envelope; "extract.envelope":
  * "flat" switches to a plain-JSON stream (gateway audit: one flat record per
  * line, matched on its top-level primitive/verdict/outcome fields).
  */
 import { readFileSync, writeFileSync } from 'node:fs';
+import { writeJUnit } from './junit.mjs';
 
 const usage = () => {
-  console.error('usage: check.mjs --manifest <json> --log <file> [--out <json>]');
+  console.error('usage: check.mjs --manifest <json> --log <file> [--out <json>] [--junit <xml>]');
   process.exit(2);
 };
 
@@ -142,6 +146,9 @@ const run = () => {
     ...provenance(),
   };
   if (args.out) writeFileSync(args.out, JSON.stringify(verdict, null, 2) + '\n');
+  // Written before the exit, so the verdict of a FAILING run reaches CI too —
+  // a JUnit file that only exists on green is the report that never needed it.
+  if (args.junit) writeJUnit(args.junit, [verdict]);
   if (verdict.pass) {
     console.log(`e2e: PASS ${verdict.scenario} (${verdict.expected}/${verdict.expected} events, in order)`);
   } else {

@@ -259,14 +259,21 @@ jobs:
           xcrun simctl io "$UDID" screenshot "$ART2/screenshot.png" || true
           grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
           cp "$ART/scenario.jsonl" "$ART2/scenario.jsonl"
+          # --junit writes the SAME verdict the --out file carries, rendered as
+          # JUnit XML (tools/e2e/junit.mjs): the artifact a PR reporter turns
+          # into per-scenario annotations, so a red run names the scenario and
+          # the mismatched expectation instead of only reddening the step. It
+          # is written before the checker exits, so a FAILING run ships one too.
           node tools/e2e/check.mjs \
             --manifest tools/e2e/scenarios/m1-spike-boot.json \
             --log "$ART/logs.txt" \
-            --out "$ART/verdict.json"
+            --out "$ART/verdict.json" \
+            --junit "$ART/verdict.xml"
           node tools/e2e/check.mjs \
             --manifest tools/e2e/scenarios/m1-carrier-loopback.json \
             --log "$ART/logs.txt" \
-            --out "$ART2/verdict.json"
+            --out "$ART2/verdict.json" \
+            --junit "$ART2/verdict.xml"
 
       # The M2 gateway-binding E2E is UI-driven — permission alert, Files
       # picker, approval dialog, notification banner (see
@@ -326,4 +333,8 @@ jobs:
             hosts/ios/artifacts/m1-spike/
             hosts/ios/artifacts/m1-carrier/
             hosts/ios/artifacts/m2-gateway/
+            # The JUnit XMLs rode along inside the dirs above already; naming
+            # them keeps the annotation contract explicit rather than incidental.
+            hosts/ios/artifacts/m1-spike/verdict.xml
+            hosts/ios/artifacts/m1-carrier/verdict.xml
           if-no-files-found: warn
