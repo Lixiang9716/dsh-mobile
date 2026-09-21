@@ -15,7 +15,12 @@
     "docs/release.md + zh pair crosslinked; README/README.zh Documentation sections link it; pairing records confirmed",
     "gov run green, PR created, gates check green, squash merged"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0021"
+  "id": "T-0021",
+  "void": {
+    "ts": "2026-09-21T05:17:38+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "Release pipeline work COMPLETE and merged (PR #77, squash c68bbea): release.yml packages all three hosts on workflow_dispatch (dsh-ios/dsh-android/dsh-harmony artifacts), dev-ios vendoring + pipefail fix + the Xcode 16.4 Swift slice fix landed with CI green (gates + ios-e2e 8m19s). Closed green first (13 gates) but the stamped receipt is rejected by _check_receipt (verify-decisions NOT_SELECTED in mode=all) while void refused the done card \u2014 the documented govrail #329/#339 dead-end; escaped by restoring the close's card mutation and voiding per repo precedent. The PR is the audit trail."
+  }
 }
