@@ -30,6 +30,9 @@
 #     via gen_bundle_header.py tree mode (172 tree files + the authored
 #     spine files). #56-class drift guard: ci/check-bundle-files.mjs
 #     cross-checks this list against Index.ets's BUNDLE_FILES.
+#   + the m2.llm real-LLM leg closure (W-HARMONY5): scenario/m2-llm.js and
+#     llm.js, byte-identical to runtime/spike (the leg runs the SAME scenario
+#     code as iOS/Android/CLI over this host's real httpFetch).
 #
 # Every copied file is byte-verified (cmp) against its source; the closure
 # files additionally carry a shasum check in ci/run-host-e2e.sh's build step.
@@ -199,7 +202,9 @@ vendor/npm/zod@4.4.3/v4/locales/yo.js
 vendor/npm/zod@4.4.3/v4/locales/zh-CN.js
 vendor/npm/zod@4.4.3/v4/locales/zh-TW.js"
 CLOSURE="$CLOSURE
-$SPINE_OURS"
+$SPINE_OURS
+llm.js
+scenario/m2-llm.js"
 for rel in $CLOSURE; do
     mkdir -p "$RAW/$(dirname "$rel")"
     cp "runtime/spike/$rel" "$RAW/$rel"

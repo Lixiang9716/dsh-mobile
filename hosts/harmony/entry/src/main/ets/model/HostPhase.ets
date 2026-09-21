@@ -27,6 +27,15 @@
  *                       binding backend's forward hook
  *   - app.state       → EntryAbility lifecycle edges → hostEvent
  *
+ * The SAME controller hosts the `m2.llm` real-LLM leg (beginLlm): only the
+ * scenario id, the JS entry and the carrier-side evidence set change —
+ * exactly how the Android host's SpikeHostM4 swaps its entry for
+ * `--ez dsh.llm true`. The leg evals the canonical
+ * `runtime/spike/scenario/m2-llm.js` byte for byte (the platform-neutral
+ * client over this host's REAL httpFetch), and emits the carrier-side
+ * records its own manifest pins (`m2.llm.carrier`); the m5-only records are
+ * gated because each manifest is one-to-one with nothing extra.
+ *
  * Threading: every NAPI call runs on the ArkTS main thread — the ONE serial
  * JS runtime thread (ARCHITECTURE.md §6). The onBus/onDispatch callbacks
  * fire from C while JS runs; they only queue/send (never re-enter the
@@ -53,6 +62,15 @@ import { PickerPrimitives } from './PickerPrimitives';
 const TAG: string = 'dsh.app';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'm5.host-binding';
+const ENTRY_BINDING: string = 'scenario/m5-host-binding.js';
+/** The real-LLM leg (m2.llm): the canonical scenario, unchanged, over this
+ * host's real httpFetch; its carrier-side evidence rides the sibling id. */
+const SCENARIO_LLM: string = 'm2.llm';
+const SCENARIO_LLM_CARRIER: string = 'm2.llm.carrier';
+const ENTRY_LLM: string = 'scenario/m2-llm.js';
+/** The credential-placeholder writer the llm leg evals first (harmony-only
+ * E2E glue; see the file's header for why the C side must create it). */
+const ENTRY_STAGE: string = 'e2e-stage.js';
 
 /** Binding RuntimeDescriptor: all nine contract primitives available, none
  * unavailable (conformance §7 — proven on the emulator; keep in sync with
@@ -69,6 +87,15 @@ export type ApprovalPresenter = (title: string,
 interface BusMessage {
   type?: string;
   payload?: ProjectionEvent;
+  /** slot.ack fields (the mounted page rendered a projected slot:
+   * `{type:'slot.ack', id, label, by}` — webclient main.js). */
+  id?: string;
+  label?: string;
+  by?: string;
+  /** stage.ready / stage.error fields (the credential handshake that
+   * e2e-stage.js and LlmConfigStaging carry, llm leg only). */
+  path?: string;
+  message?: string;
 }
 
 interface ProjectionEvent {
@@ -76,6 +103,9 @@ interface ProjectionEvent {
   index?: number;
   status?: string;
 }
+
+/** The mounted page's slot acknowledgement (webclient main.js sends
+ * `{type:'slot.ack', id, label, by}` once it rendered a projected slot). */
 
 interface DispatchArgs {
   title?: string;
@@ -94,6 +124,13 @@ export class HostPhase {
   private nextNotificationId: number = 1;
   private approvalPresenter: ApprovalPresenter | null = null;
   private completeSignaled = false;
+
+  /** The leg being hosted: the m5 binding phase by default; beginLlm flips
+   * these to the m2.llm leg (its own scenario id, entry and evidence set). */
+  private scenario: string = SCENARIO;
+  private carrierScenario: string = SCENARIO;
+  private entry: string = ENTRY_BINDING;
+  private llmLeg: boolean = false;
 
   /** Fired once when the phase scenario reaches a terminal verdict (mutator
    * status >= 1) — Index chains the D9 official-web phase off it. */
@@ -125,6 +162,39 @@ export class HostPhase {
    * queue or send — the one-thread rule holds (see class comment). */
   begin(ctx: common.UIAbilityContext, bundleRoot: string, capturePath: string,
     fsRoot: string): void {
+    this.scenario = SCENARIO;
+    this.carrierScenario = SCENARIO;
+    this.entry = ENTRY_BINDING;
+    this.llmLeg = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
+  /** The m2.llm real-LLM leg (ONE launch, its own scenario id): the same
+   * carrier, page shuttle and dispatch seam, the canonical m2-llm scenario
+   * as the entry, and the carrier-side evidence set that scenario's sibling
+   * manifest pins. The runtime is created FIRST and immediately evals the
+   * staging module (`e2e-stage.js`), because the credentials must exist in
+   * fs scope "app" before the page hello evals the scenario: the placeholder
+   * is created C-side (the only writer that lands a shell-openable mode),
+   * its `stage.ready` bus post becomes the `stage-ready` drive marker, and
+   * Index waits for the runner's config (LlmConfigStaging) before starting
+   * the carrier. The scenario reads the config through the C-served app
+   * scope — this controller never touches the credentials. */
+  beginLlm(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_LLM;
+    this.carrierScenario = SCENARIO_LLM_CARRIER;
+    this.entry = ENTRY_LLM;
+    this.llmLeg = true;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+    const status = hostEval(PHASE_ID, ENTRY_STAGE);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'llm leg: staging eval failed');
+    }
+  }
+
+  private start(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
     this.capturePath = capturePath;
     this.keychain = new KeychainPrimitives(ctx.filesDir);
     this.picker = new PickerPrimitives(ctx);
@@ -134,9 +204,10 @@ export class HostPhase {
       },
       (callId: number, name: string, args: string): void => {
         this.onDispatch(ctx, callId, name, args);
-      });
+      }, this.scenario);
     this.started = true;
-    hilog.info(0x0000, TAG, 'phase: started, capture %{public}s', capturePath);
+    hilog.info(0x0000, TAG, 'phase: started %{public}s, capture %{public}s',
+      this.scenario, capturePath);
   }
 
   isStarted(): boolean {
@@ -145,6 +216,16 @@ export class HostPhase {
 
   onCarrierListening(port: number): void {
     this.carrierPort = port;
+    if (this.llmLeg) {
+      // The carrier-side selection record (the m2-llm carrier manifest); the
+      // m5 manifest has no such record, so it stays a leg-only emission.
+      // Emitted before the origin opens: client.selected precedes
+      // webclient.mounted in the manifest's declaration order.
+      this.carrierLine('client.selected', {
+        'client': 'dsh-web-client', 'source': 'launch',
+      });
+      return;
+    }
     this.carrierLine('carrier.listening', {
       'transport': 'tcp', 'loopback': true, 'port': port,
     });
@@ -160,21 +241,28 @@ export class HostPhase {
   }
 
   /** The page hello: mark connected, greet, then eval the entry and deliver
-   * host.info + host.seed — the order that pins the manifest (carrier events
-   * before the scenario's first line). */
+   * host.info (+ host.seed on the binding leg) — the order that pins the
+   * manifest (carrier events before the scenario's first line). The m2.llm
+   * scenario awaits host.info before its first turn and never reads
+   * host.seed, so the leg delivers only what its contract uses. */
   onPageHello(protocol: string): void {
     this.carrierLine('ws.connected', { 'protocol': protocol });
-    const status = hostEval(PHASE_ID, 'scenario/m5-host-binding.js');
+    const status = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed');
       return;
     }
     this.deliverEvent('{"event":"host.info","port":' + this.carrierPort + '}');
-    this.deliverEvent('{"event":"host.seed","path":"' + this.seedPath + '"}');
+    if (!this.llmLeg) {
+      this.deliverEvent('{"event":"host.seed","path":"' + this.seedPath + '"}');
+    }
   }
 
-  /** Page WS message: only the page hello is carrier-state; everything else
-   * rides the bus seam into JS. */
+  /** Page WS message: hello and slot.ack are carrier-state (the slot ack is
+   * the page's own render confirmation — the binding leg folds it into the
+   * bus seam, the llm leg records it as slot.registered and stops there,
+   * matching the Android host's slotAck); everything else rides the bus
+   * seam into JS. */
   onPageText(text: string): void {
     let msg: BusMessage = {};
     try {
@@ -189,11 +277,24 @@ export class HostPhase {
       this.onPageHello('session-projection@0');
       return;
     }
+    if (this.llmLeg && msg.type === 'slot.ack') {
+      this.onSlotAck(msg);
+      return;
+    }
     const status = hostBusDeliver(PHASE_ID, text);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: bus deliver failed');
     }
     this.signalComplete(status);
+  }
+
+  /** The page rendered the projected slot and acked it (main.js
+   * slot.ack) — the carrier-side `slot.registered` record. */
+  private onSlotAck(msg: BusMessage): void {
+    hilog.info(0x0000, TAG, 'phase: slot ack %{public}s', msg.id ?? '');
+    this.carrierLine('slot.registered', {
+      'id': msg.id ?? '', 'label': msg.label ?? '', 'by': msg.by ?? '',
+    });
   }
 
   /** Ability lifecycle edge (EntryAbility) → app.state channel. */
@@ -212,7 +313,7 @@ export class HostPhase {
    * extract prefix), routed host→sink for hilog + capture. */
   private carrierLine(event: string, fields: Record<string, Object>): void {
     const payload: Record<string, Object> = {
-      'scenario': SCENARIO,
+      'scenario': this.carrierScenario,
       'event': event,
     };
     const keys: string[] = Object.keys(fields);
@@ -274,6 +375,17 @@ export class HostPhase {
     } catch (e) {
       return;
     }
+    // The staging module's handshake (llm leg only): its bus post is the
+    // `stage-ready` drive marker. NEVER a canonical dsh.spike.log record —
+    // it belongs to no manifest, and the manifests allow nothing extra.
+    if (this.llmLeg && msg.type === 'stage.ready') {
+      hilog.info(0x0000, TAG, 'stage-ready path=%{public}s', msg.path ?? '');
+      return;
+    }
+    if (this.llmLeg && msg.type === 'stage.error') {
+      hilog.error(0x0000, TAG, 'stage-error %{public}s', msg.message ?? 'unknown');
+      return;
+    }
     if (msg.type !== 'ws.send' || msg.payload === undefined) {
       return;
     }
@@ -286,9 +398,16 @@ export class HostPhase {
       }
       this.lastDeltaIndex = payload.index;
     } else if (payload.kind === 'complete') {
-      this.carrierLine('ws.token-delta', {
+      // The closing delta record: the m2-llm carrier manifest pins
+      // `{first:false, last:true}` (the Android/iOS host's shape), the m5
+      // manifest pins `{last:true, index}` — each leg emits its own.
+      const lastDelta: Record<string, Object> = {
         'last': true, 'index': this.lastDeltaIndex,
-      });
+      };
+      if (this.llmLeg) {
+        lastDelta['first'] = false;
+      }
+      this.carrierLine('ws.token-delta', lastDelta);
       this.carrierLine('ws.session-complete', { 'status': payload.status ?? 'pass' });
     }
   }

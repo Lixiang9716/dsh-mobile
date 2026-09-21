@@ -35,12 +35,16 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { webview } from '@kit.ArkWeb';
 import { CarrierServer } from '../model/CarrierServer';
 import { installE2EStreams, installLegacyRoutes } from '../model/CarrierRoutes';
+import { E2eLeg } from '../model/E2eLeg';
 import { HostPhase } from '../model/HostPhase';
+import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
+/** The launch parameter EntryAbility parks in E2eLeg — `--ps dsh.e2e.leg`. */
+const LEG_LLM: string = 'm2.llm';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -54,8 +58,10 @@ const CARRIER_BASE_PORT: number = 17877;
 // copy; ci/check-bundle-files.mjs pins this list == the tracked rawfile
 // tree). EXTEND whenever the closure grows.
 const BUNDLE_FILES: string[] = [
+  'e2e-stage.js',
   'gateway.js',
   'install-pipeline.js',
+  'llm.js',
   'logger.js',
   'registry.js',
   'sha256.js',
@@ -68,6 +74,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/harmony-write-live.js',
   'scenario/m1-spike-boot.js',
   'scenario/m2-bridge-smoke.js',
+  'scenario/m2-llm.js',
   'scenario/m2-session.js',
   'scenario/m5-host-binding.js',
   'system-plugins/dsh-fs/index.js',
@@ -325,7 +332,19 @@ struct Index {
   private webController: webview.WebviewController = new webview.WebviewController();
 
   aboutToAppear(): void {
-    this.runSpike();
+    // The launch parameter picks the leg (E2eLeg, set by EntryAbility.onCreate
+    // from `--ps dsh.e2e.leg`); absent = the default chain. An unknown value
+    // fails loud instead of silently running the default chain (rule 5).
+    const leg: string = E2eLeg.get();
+    if (leg === '') {
+      this.runSpike();
+    } else if (leg === LEG_LLM) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runLlmLeg();
+    } else {
+      this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
+      hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
+    }
   }
 
   aboutToDisappear(): void {
@@ -371,6 +390,66 @@ struct Index {
       .catch((err: BusinessError) => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
         hilog.error(0x0000, TAG, 'spike failed: %{public}s', err.message ?? 'unknown');
+      });
+  }
+
+  /** The `m2.llm` leg (ONE launch; ci/run-m2-llm.sh): the phase runtime
+   * starts FIRST and evals the staging module, whose C-side app-scope
+   * fsWrite creates the credential placeholder at the mode the hdc shell
+   * user can open (see LlmConfigStaging's header — the sandbox refuses every
+   * other path). Then the SAME carrier + HostPhase wiring the binding phase
+   * uses, with the canonical m2-llm scenario as the entry. No user-store
+   * seeding and no D9 chain: this leg is the whole run, so the default chain
+   * never spends serve quota. The verdict is the C `dsh.spike.verdict:
+   * m2.llm` line, asserted record by record by the E2E checkers. */
+  private runLlmLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const configPath: string = fsRoot + '/m2-llm/config.json';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' m2.llm (logs are the verdict)';
+      // One run is the credentials' whole on-disk life (see LlmConfigStaging
+      // cleanup): removed on both the pass and the fail path.
+      LlmConfigStaging.cleanup(configPath);
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    let root: string = '';
+    this.materializeBundle(ctx)
+      .then((bundleRoot: string): Promise<number> => {
+        root = bundleRoot;
+        this.verdict = 'llm leg: staging credentials...';
+        LlmConfigStaging.prepare(configPath);
+        phase.beginLlm(ctx, root, ctx.cacheDir + '/dsh-m2-llm-capture.log', fsRoot);
+        return LlmConfigStaging.awaitStaged(configPath);
+      })
+      .then((stagedBytes: number): Promise<number> => {
+        hilog.info(0x0000, TAG, 'llm leg: credentials staged (%{public}d bytes)',
+          stagedBytes);
+        installLegacyRoutes(this.carrier, root + '/webclient/dsh-web-client/web');
+        installE2EStreams(this.carrier);
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          this.webUrl = 'http://127.0.0.1:' + port + '/';
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'llm leg: running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'llm leg failed: %{public}s',
+          err.message ?? 'unknown');
+        LlmConfigStaging.cleanup(configPath);
       });
   }
 
