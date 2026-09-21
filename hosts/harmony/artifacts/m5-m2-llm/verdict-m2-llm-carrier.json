@@ -1,0 +1,41 @@
+{
+  "scenario": "m2.llm.carrier",
+  "pass": false,
+  "expected": 7,
+  "logged": 4,
+  "failures": [
+    {
+      "index": 4,
+      "expected": {
+        "event": "ws.token-delta",
+        "match": {
+          "first": true,
+          "index": 0
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 5,
+      "expected": {
+        "event": "ws.token-delta",
+        "match": {
+          "first": false,
+          "last": true
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 6,
+      "expected": {
+        "event": "ws.session-complete",
+        "match": {
+          "status": "pass"
+        }
+      },
+      "logged": null
+    }
+  ],
+  "parseErrors": []
+}

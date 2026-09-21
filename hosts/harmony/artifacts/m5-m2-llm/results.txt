@@ -1,0 +1,1 @@
+09-21 13:28:33.329 16120 16120 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: m2.llm FAIL engine=quickjs-ng version=0.17.0 complete=1 pass=0 logLines=53
