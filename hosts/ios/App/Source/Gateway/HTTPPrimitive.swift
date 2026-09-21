@@ -34,8 +34,7 @@ final class HTTPPrimitive: NSObject, URLSessionDataDelegate {
             return done(.failure(GatewayError(
                 code: "invalid", primitive: "httpFetch", message: "malformed url")))
         }
-        let initDict = call.dict("init")
-        let request = Self.request(url: url, initDict: initDict)
+        let request = Self.request(url: url, call: call)
         let task = session.dataTask(with: request)
         lock.lock()
         callByTask[task.taskIdentifier] = call.callId
@@ -44,14 +43,24 @@ final class HTTPPrimitive: NSObject, URLSessionDataDelegate {
         task.resume()
     }
 
-    private static func request(url: URL, initDict: [String: Any]) -> URLRequest {
+    /// Builds the URLRequest from the shim's FLATTENED arg encoding — the
+    /// gateway shim sends `{url, method, headers, bodyB64}` at the top level
+    /// of the args JSON (gateway.js `httpFetch`), so that is where method /
+    /// headers / body are read from; the nested `init` object form is
+    /// accepted tolerantly (the same dual reading FSPrimitives applies to
+    /// fsWrite opts). Reading ONLY a nested object silently dropped every
+    /// header — caught by the m2.llm real-backend leg's 401 (the server
+    /// never saw the Authorization header).
+    private static func request(url: URL, call: GatewayCall) -> URLRequest {
+        let initDict = call.dict("init")
+        func arg(_ key: String) -> Any? { initDict[key] ?? call.args[key] }
         var request = URLRequest(url: url)
-        request.httpMethod = initDict["method"] as? String ?? "GET"
-        if let headers = initDict["headers"] as? [String: String] {
-            for (field, value) in headers { request.setValue(value, forHTTPHeaderField: field) }
+        request.httpMethod = arg("method") as? String ?? "GET"
+        if let headers = arg("headers") as? [String: String] {
+            for (name, value) in headers { request.setValue(value, forHTTPHeaderField: name) }
         }
-        // Contract HttpFetchInit.body rides base64 as init.bodyB64.
-        if let text = initDict["bodyB64"] as? String ?? initDict["body"] as? String,
+        // Contract HttpFetchInit.body rides base64 as bodyB64.
+        if let text = arg("bodyB64") as? String ?? arg("body") as? String,
            let body = Data(base64Encoded: text) {
             request.httpBody = body
         }

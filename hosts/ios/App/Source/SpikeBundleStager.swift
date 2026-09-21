@@ -46,12 +46,16 @@ enum SpikeBundleStager {
     }
 
     /// Scenario entries (the m1/m2 E2E scenarios, plus the M3 on-device
-    /// fetch-install scenario and its modules + the profile config patch).
+    /// fetch-install scenario and its modules + the profile config patch,
+    /// and the M2 real-LLM scenario with its client module).
     private static func writeScenarioEntries(_ root: URL) throws {
         try write("scenario/m2-session.js",
                   data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
         try write("scenario/m3-fetch-install.js",
                   data: resData(dsh_spike_res_scenario_m3_fetch_install_js), under: root)
+        try write("scenario/m2-llm.js",
+                  data: resData(dsh_spike_res_scenario_m2_llm_js), under: root)
+        try write("llm.js", data: resData(dsh_spike_res_llm_js), under: root)
         try write("install-fetch.js",
                   data: resData(dsh_spike_res_install_fetch_js), under: root)
         try write("receipt-journal.js",

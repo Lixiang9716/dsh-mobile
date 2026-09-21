@@ -1,0 +1,19 @@
+{
+  "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5, Apple Silicon)",
+  "app": "DSHSpike (org.dsh.DSHSpike), session mode, -dsh-scenario m2-llm",
+  "scenario": "m2.llm (REAL leg)",
+  "backend": "OpenAI-compatible chat/completions (z.ai coding endpoint), streamed through the gateway httpFetch primitive (URLSession, settle-at-headers + http.body/http.end events)",
+  "proves": [
+    "REAL streaming LLM turn on device: llm.js (OpenAI-compatible SSE client over the gateway httpFetch response shape) streamed 35 reasoning deltas (llm.reasoning.delta) THEN 24 content deltas (llm.delta), aggregated assistant text 'Hello, it's wonderful to hear from you today! I hope you're doing well and am happy to help with whatever you need.' (115 chars), finishReason stop",
+    "served-model honesty: the server reported model glm-5.3-flash for the requested glm-4.6 — logged verbatim (llm.served-model {requested: glm-4.6, served: glm-5.3-flash}), never assumed",
+    "capability negotiation, not hostType branching: the descriptor offers httpFetch so the scenario negotiated the REAL leg (llm.leg {leg: real, transport: gateway.httpFetch}); the CLI runs the SAME scenario code with the scripted transport",
+    "credentials never in logs: config rides fs scope app (m2-llm/config.json, staged by tools/e2e/run-ios-m2-llm.sh); the scenario's sink audit scanned 314 log lines for the API key (llm.key.audit leaked false) and the runner greps the RAW platform stream — 0 occurrences",
+    "the leg caught + fixed a real iOS bug: HTTPPrimitive read a nested 'init' object the typed shim never sends, silently dropping ALL request headers (z.ai 401 'Authorization header not received'); it now reads the shim's flattened {method, headers, bodyB64} encoding (gov surprise ledger)",
+    "carrier-side evidence rides scenario m2.llm.carrier (client.selected, webclient.mounted, ws.connected, slot.registered llm slot, ws.token-delta first/last, ws.session-complete) — the deltas streamed live into the mounted Web Client"
+  ],
+  "checker": "tools/e2e/scenarios/m2-llm-device.json (14 expectations, repeat-aware deltas) + tools/e2e/scenarios/m2-llm-carrier.json (7) — both PASS",
+  "runner": "tools/e2e/run-ios-m2-llm.sh",
+  "screenshots": "screens/01-webclient-loaded.png, 02-mid-stream.png, 03-final-transcript.png (human evidence only — the verdict is logs)",
+  "quota": "one request per green run, max_tokens 256 (an earlier run failed 401 before streaming due to the header-drop bug above — it exposed the bug and cost one 401)",
+  "exitCode": 0
+}

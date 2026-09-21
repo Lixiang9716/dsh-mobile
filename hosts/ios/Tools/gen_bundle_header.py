@@ -32,6 +32,10 @@ RESOURCES = [
     ("scenario_m2_smoke_js", SPIKE / "scenario" / "m2-bridge-smoke.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "m2-session.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
+    # M2 real-LLM scenario + its client module (scenario m2.llm; the device
+    # leg drives the real gateway httpFetch against the configured backend)
+    ("llm_js", SPIKE / "llm.js"),
+    ("scenario_m2_llm_js", SPIKE / "scenario" / "m2-llm.js"),
     # M3 completion: on-device fetch-install scenario + its new modules
     ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "m3-fetch-install.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),

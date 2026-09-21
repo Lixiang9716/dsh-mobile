@@ -14,44 +14,8 @@ import UIKit
 /// the toolbar slot allow-set, the carrier self-hosts the plugin package,
 /// and the scenario installs it through the REAL gateway httpFetch.
 final class SessionRuntime {
-    /// Host configuration: which Web Client plugin is ACTIVE (presentation/
-    /// is pluggable; the host mounts exactly one). Overridable for E2E via
-    /// launch argument `-dsh-web-client <id>`; the staged bundle carries the
-    /// plugin under its own directory. Selecting the mini client also flips
-    /// the carrier-side evidence to scenario `m3.ui-swap` (M3 UI-swap E2E).
-    static var activeWebClient: String = {
-        let args = ProcessInfo.processInfo.arguments
-        if let at = args.firstIndex(of: "-dsh-web-client"), at + 1 < args.count {
-            return args[at + 1]
-        }
-        return "dsh-web-client"
-    }()
-
-    /// M3 config layer (ARCHITECTURE.md §6 UI-plugin level 1): `-dsh-profile
-    /// <name>` selects the staged `profiles/<name>/cordis.patch.json` whose
-    /// layered override (base → hostFace → profile) decides the ACTIVE Web
-    /// Client and the toolbar slot allow-set. The carrier-side evidence
-    /// flips to scenario `m3.fetch-carrier` and the drive runs the
-    /// `m3.fetch-install` JS scenario (real on-device httpFetch install).
-    static var profileName: String? = {
-        let args = ProcessInfo.processInfo.arguments
-        guard let at = args.firstIndex(of: "-dsh-profile"), at + 1 < args.count else {
-            return nil
-        }
-        return args[at + 1]
-    }()
-
-    /// Staged directory of a Web Client plugin id (fail loud on an unknown
-    /// id — the config, not a default, decides).
-    static func webClientDir(_ id: String) -> String {
-        switch id {
-        case "dsh-web-client": return "webclient"
-        case "dsh-web-client-mini": return "webclient-mini"
-        default: fatalError("unknown Web Client plugin id: \(id)")
-        }
-    }
-
     private let profileMode: Bool
+    private let llmMode: Bool
     /// Config-layer resolution: the ACTIVE client id, its staged directory,
     /// and the toolbar slot allow-set the carrier enforces on projections.
     private var resolvedClient: String
@@ -59,23 +23,28 @@ final class SessionRuntime {
     private var resolvedSlotSet: [String]
 
     /// Carrier-side evidence rides the scenario manifest that matches the
-    /// drive: profile mode asserts `m3.fetch-carrier`; the launch-selected
-    /// mini client keeps asserting `m3.ui-swap`; the default `m2.webclient.mount`.
+    /// drive: the real-LLM drive asserts `m2.llm.carrier`; profile mode
+    /// asserts `m3.fetch-carrier`; the launch-selected mini client keeps
+    /// asserting `m3.ui-swap`; the default `m2.webclient.mount`.
     private var scenario: String {
+        if llmMode { return "m2.llm.carrier" }
         if profileMode { return "m3.fetch-carrier" }
         return resolvedClient == "dsh-web-client-mini" ? "m3.ui-swap" : "m2.webclient.mount"
     }
 
-    /// The JS entry: the profile-mode drive runs the on-device fetch-install
-    /// scenario; every other drive keeps the m2 session.
+    /// The JS entry: the real-LLM drive runs the m2.llm scenario; the
+    /// profile-mode drive runs the on-device fetch-install scenario; every
+    /// other drive keeps the m2 session.
     private var entryModule: String {
-        profileMode ? "scenario/m3-fetch-install.js" : "scenario/m2-session.js"
+        if llmMode { return "scenario/m2-llm.js" }
+        return profileMode ? "scenario/m3-fetch-install.js" : "scenario/m2-session.js"
     }
 
     init() {
-        profileMode = Self.profileName != nil
-        resolvedClient = Self.activeWebClient
-        resolvedDir = Self.webClientDir(resolvedClient)
+        profileMode = SessionLaunchConfig.profileName != nil
+        llmMode = SessionLaunchConfig.scenarioName == "m2-llm"
+        resolvedClient = SessionLaunchConfig.activeWebClient
+        resolvedDir = SessionLaunchConfig.webClientDir(resolvedClient)
         // Base slot defaults; a profile patch's slots.allow REPLACES them.
         resolvedSlotSet = ["notes.toolbar", "debug.console"]
     }
@@ -85,7 +54,7 @@ final class SessionRuntime {
     /// frozen gateway; documented in runtime/spike/config-layer.js) and
     /// applies its webClient + slots.allow over the launch configuration.
     private func resolveProfileConfig(root: URL) throws {
-        guard let profile = Self.profileName else { return }
+        guard let profile = SessionLaunchConfig.profileName else { return }
         let patchURL = root.appendingPathComponent(
             "profiles/\(profile)/cordis.patch.json")
         guard let data = try? Data(contentsOf: patchURL),
@@ -96,7 +65,7 @@ final class SessionRuntime {
         }
         if let webClient = patch["webClient"] as? String {
             resolvedClient = webClient
-            resolvedDir = Self.webClientDir(webClient)
+            resolvedDir = SessionLaunchConfig.webClientDir(webClient)
         }
         if let slots = patch["slots"] as? [String: Any],
            let allow = slots["allow"] as? [String] {
@@ -221,9 +190,15 @@ final class SessionRuntime {
                 callId: Int(callId), name: String(cString: name),
                 argsJSON: String(cString: argsJSON))
         }, Unmanaged.passUnretained(self).toOpaque())
-        let source = String(cString: profileMode
-            ? dsh_spike_res_scenario_m3_fetch_install_js(nil)
-            : dsh_spike_res_scenario_m2_session_js(nil))
+        let source: String
+        switch entryModule {
+        case "scenario/m2-llm.js":
+            source = String(cString: dsh_spike_res_scenario_m2_llm_js(nil))
+        case "scenario/m3-fetch-install.js":
+            source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
+        default:
+            source = String(cString: dsh_spike_res_scenario_m2_session_js(nil))
+        }
         if dsh_spike_eval(host, entryModule, source) != 0 {
             return finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
         }
