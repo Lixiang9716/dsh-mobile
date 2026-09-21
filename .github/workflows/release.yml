@@ -25,7 +25,18 @@ name: release/packages
 # a premium) is not paid for twice. Build commands mirror the dev/* pipelines
 # (they are the proven recipes); every build step runs under `set -o pipefail`
 # so a piped tail can never mask a red xcodebuild/gradle/hvigor exit code.
-# Dispatch-only by design: packages are produced when a human asks for them.
+# TWO TRIGGERS, one build path:
+#
+#   release: published  — release-please cut a release. The three USER-FACING
+#                         packages build and are ATTACHED as assets of that
+#                         GitHub Release, so a tag is a downloadable build set
+#                         and not just a diff.
+#   workflow_dispatch   — manual packaging, when a human asks for a run that
+#                         is not tied to a release. Artifacts land on the run.
+#
+# A release run never builds the harness packages: they are verification
+# vehicles (above), and the `inputs` context is empty outside a dispatch, so
+# the harness steps are guarded explicitly rather than by that accident.
 
 on:
   workflow_dispatch:
@@ -37,6 +48,12 @@ on:
           cover the debug harness on every push.
         type: boolean
         default: false
+  release:
+    types: [published]
+
+# `gh release upload` writes assets onto the published release.
+permissions:
+  contents: write
 
 jobs:
   ios-package:
@@ -107,8 +124,19 @@ jobs:
             /tmp/DSHSpike-release-simulator.zip
           if-no-files-found: error
 
+      - name: Attach dsh-ios to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ github.event.release.tag_name }}" \
+            /tmp/DSHSpike-release-device-unsigned.zip \
+            /tmp/DSHSpike-release-simulator.zip \
+            --clobber
+
       - name: Build the harness .app (debug, device + simulator, unsigned)
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         run: |
           set -o pipefail
           cd hosts/ios
@@ -133,7 +161,7 @@ jobs:
           zip -qry /tmp/DSHSpike-harness-simulator.zip Debug-iphonesimulator/DSHSpike.app
 
       - name: Upload dsh-ios-harness
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         uses: actions/upload-artifact@v4
         with:
           name: dsh-ios-harness
@@ -203,8 +231,18 @@ jobs:
           path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
 
+      - name: Attach dsh-android to the release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ github.event.release.tag_name }}" \
+            hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            --clobber
+
       - name: Build the harness APK (debug — debug-keystore signed, installs directly)
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         working-directory: hosts/android
         run: |
           set -euo pipefail
@@ -214,7 +252,7 @@ jobs:
           }
 
       - name: Upload dsh-android-harness
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         uses: actions/upload-artifact@v4
         with:
           name: dsh-android-harness
@@ -282,10 +320,22 @@ jobs:
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
           if-no-files-found: error
 
+      - name: Attach dsh-harmony to the release
+        # Runs BEFORE the harness build below, which overwrites this same
+        # output path (both modes write entry-default-unsigned.hap).
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "${{ github.event.release.tag_name }}" \
+            hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap \
+            --clobber
+
       - name: Build the harness HAP (debug, unsigned)
         # Same output path as the release HAP (both modes write
         # entry-default-unsigned.hap), so copy it out before anything else.
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         working-directory: hosts/harmony
         run: |
           set -euo pipefail
@@ -297,7 +347,7 @@ jobs:
             /tmp/entry-default-debug-unsigned.hap
 
       - name: Upload dsh-harmony-harness
-        if: inputs.include_harness
+        if: github.event_name == 'workflow_dispatch' && inputs.include_harness
         uses: actions/upload-artifact@v4
         with:
           name: dsh-harmony-harness

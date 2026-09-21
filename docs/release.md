@@ -1,13 +1,59 @@
 # Release packages
 
-Manual packaging for all three host apps, one dispatch each run. Trigger it
-from the GitHub Actions tab (**release/packages → Run workflow**) or:
+Two triggers, one build path:
 
-```sh
-gh workflow run release.yml
-```
+- **A release** — the normal path. `release/please` reads the conventional
+  commits landing on `main` and keeps ONE open release PR that bumps
+  `version.txt`, writes `CHANGELOG.md` and syncs the three host version
+  manifests. Merging that PR tags `vX.Y.Z` and publishes a GitHub Release; the
+  `release/packages` workflow then builds the three host apps and **attaches
+  them to that release**, so a tag is a downloadable build set.
+- **A manual run** — Actions tab (**release/packages → Run workflow**) or
+  `gh workflow run release.yml`. The packages land on the workflow run instead
+  of on a release; `include_harness: true` adds the verification vehicles.
 
-Each job uploads its own downloadable artifact under the workflow run.
+## Cutting a release
+
+1. Land work on `main` with conventional commit messages (enforced by the
+   `commit-format` gate). `feat:` bumps the minor, `fix:` the patch; below
+   1.0 a breaking change bumps the minor rather than jumping to 1.0.0.
+2. `release/please` keeps a PR titled `chore(main): release X.Y.Z` up to date.
+   It is generated and mechanical — `version.txt`, `CHANGELOG.md` and the
+   three host manifests. **Review the changelog**; that is the part a human
+   owns, the version bumps follow from the commits.
+3. Merge it. release-please tags `vX.Y.Z` and publishes the Release, and
+   `release/packages` builds all three hosts and attaches them (30–60 min per
+   host, all on the release event).
+
+### The version stream
+
+One version for the whole repository: the three hosts ship together in a
+single build, so they share one number. `version.txt` plus
+`.release-please-manifest.json` are the source of truth, and the host
+manifests are kept in step by the `extra-files` wiring in
+`release-please-config.json`:
+
+| Host | File | Field | Updater |
+| --- | --- | --- | --- |
+| iOS | `hosts/ios/App/Info.plist` | `CFBundleShortVersionString` | `xml` + xpath — no in-file annotation needed |
+| Android | `hosts/android/app/build.gradle.kts` | `versionName` | `generic` + `// x-release-please-version` |
+| HarmonyOS | `hosts/harmony/AppScope/app.json5` | `versionName` | `json` + jsonpath — the `.json5` extension is not auto-detected, so the type is explicit |
+
+Build numbers are **not** versioned here: `CFBundleVersion`, the Android
+`versionCode` and the HarmonyOS `versionCode` are monotonic integers that
+semver cannot express, so they stay hand-set.
+
+### Setup (once): the release token
+
+`release/please` requires a secret named `RELEASE_PLEASE_TOKEN` — a
+fine-grained PAT (or a GitHub App installation token) with
+**contents: write** and **pull requests: write** on this repository.
+`secrets.GITHUB_TOKEN` is not a substitute: events it creates do not trigger
+workflows, so the release PR would never receive the required `gates` check
+and could never be merged. The workflow fails loud when the secret is absent
+rather than degrading into that broken path.
+
+Each job also uploads its own downloadable artifact under the workflow run.
 
 **Default dispatch produces the USER-FACING builds** — what you hand to a
 user. A distribution build runs no verification machinery and emits only the
@@ -45,7 +91,7 @@ packages still need local signing to install.
 The device `.app` is built unsigned on purpose (CI holds no Apple
 certificates). To put it on your iPhone:
 
-1. Unzip `DSHSpike-device-unsigned.zip`.
+1. Unzip `DSHSpike-release-device-unsigned.zip`.
 2. Sign with a free Apple ID (7-day validity) or a paid team:
    - **Xcode**: open `hosts/ios/DSHSpike.xcodeproj`, set your team on the
      target's Signing & Capabilities, connect the phone, and build to the

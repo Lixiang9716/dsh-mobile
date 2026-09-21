@@ -1,0 +1,28 @@
+{
+  "release-type": "simple",
+  "bootstrap-sha": "6680d87fa0e89d87f914c98f3c149ea18aae8caa",
+  "include-component-in-tag": false,
+  "bump-minor-pre-major": true,
+  "packages": {
+    ".": {
+      "package-name": "dsh-mobile",
+      "changelog-path": "CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "xml",
+          "path": "hosts/ios/App/Info.plist",
+          "xpath": "//key[.='CFBundleShortVersionString']/following-sibling::string[1]"
+        },
+        {
+          "type": "generic",
+          "path": "hosts/android/app/build.gradle.kts"
+        },
+        {
+          "type": "json",
+          "path": "hosts/harmony/AppScope/app.json5",
+          "jsonpath": "$.app.versionName"
+        }
+      ]
+    }
+  }
+}
