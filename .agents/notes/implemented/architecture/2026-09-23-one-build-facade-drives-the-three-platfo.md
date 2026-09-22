@@ -42,10 +42,18 @@ The repository is layered periphery-around-project, and one facade drives it:
   makes the committed copies themselves a claim that can fail: android and
   harmony stagers gained `--check` (byte-verify, no writes — a gate that
   heals what it checks is vacuous), iOS verifies by deterministic regen +
-  `git diff --quiet` with restore. Rejection proven live: a one-byte probe
-  in a staged copy fails the gate naming the file. The same change lands
-  the harmony re-sync (10 stale files + the missing js-yaml + its closure
-  list entry) so the gate is born green, and fixes the latent launch break.
+  `git diff --quiet` with restore. The comparison judges only the files the
+  repo TRACKS — the deliberately-untracked vendor subtrees (Gradle's
+  stageSpineClosure / this very script materialize them at build time)
+  surface as one counted SKIP, never as drift and never invisibly. Four
+  probes hold the semantics: a tracked drift trips (android gateway.js, a
+  tracked vendor file, a harmony rawfile file), an untracked vendor edit
+  does not. The same change lands the harmony re-sync (10 stale files + the
+  missing js-yaml + its closure list entry — a latent copyRawfile launch
+  break) so the gate is born green. Chasing the first CI red of this gate
+  also fixed `ensure-dsh.sh`'s idempotence lie: "present" now means
+  pin-stamped (`.vendor-pin`), not "directory exists" — the stale-local-tree
+  vs fresh-CI-fetch disagreement that hid the 2026-09-22 upstream re-cut.
 
 ## Alternatives considered
 
