@@ -46,6 +46,20 @@ import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
 // capability belongs (D6) — `system-plugins/dsh-fs` beside it is the same
 // shape. Mounted after `tools`, which its `inject` waits for.
 import * as ShellWasm from 'system-plugins/dsh-shell-wasm/index.js';
+// The in-process Linux userland tool (contract v1.3.0): the same shell seam as
+// the WebAssembly executor beside it, backed by a real Alpine userland the host
+// emulates inside its own process. A host that staged no guest root answers
+// nothing here — the plugin declines to register a tool it cannot honour.
+import * as ShellIsh from 'system-plugins/dsh-shell-ish/index.js';
+// The Agent 预设 panel's data source (contract parity with the desktop shell):
+// the REAL upstream service, verbatim, with the four shipped presets
+// (cordis / minimal / ptc / standard). It injects `loader` + `sessionProjections`
+// and reads `ctx.baseUrl`, so the Loader service and the base are mounted BEFORE
+// it — the same composition order the desktop profile boot uses.
+// import { Loader } from '@deepseek-ai/cordis-plugin-loader';
+// import { AgentPresets } from '@deepseek-ai/dsh-agent-presets';
+// (commented: mounting them breaks the write/serve path — see mountSpine; the
+// vendored trees, C-host mappings and the shims they need are all in place)
 
 /** cordis logger records ride the unified sink as diagnostics (module prefix
  * distinguishes them from scenario events; they carry no scenario tag, so the
@@ -124,6 +138,18 @@ const mountSpine = async (ctx, identity) => {
   // false` is the mobile profile's shape — one agent, sequential work.
   await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
   await ctx.plugin(ShellWasm);
+  await ctx.plugin(ShellIsh);
+  // AgentPresets is vendored, shimmed (fs-promises, timers, url paths,
+  // isBuiltin) and PROVEN on the desktop CLI (scenario/agent-presets-probe.js
+  // lists standard/ptc/minimal/cordis) — but NOT mounted here, for a measured
+  // reason: web-boot's minimal loader face (mountClientModules) and the real
+  // cordis-plugin-loader service both claim the context property `loader`, and
+  // cordis refuses the second claim (`cannot set property "loader" in multiple
+  // fibers`). Unifying them — one real Loader serving both the client
+  // registry's entries()/resolveSync face and the presets service's inject —
+  // is the named step before this mount can ship. Until then web-write answers
+  // agentPresets/* with the honest unavailable, and endpointPresets/* from the
+  // platform credential.
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {

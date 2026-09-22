@@ -57,7 +57,7 @@ final class CarrierRuntime {
         }
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
         var cSink = sink.cSink
-        guard let host = dsh_spike_new(root.path, &cSink)
+        guard let host = dsh_spike_new_declaring(root.path, &cSink)
         else {
             finish(failOutcome("dsh_spike_new returned NULL"))
             return

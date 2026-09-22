@@ -72,6 +72,11 @@ final class SpikeLogSink {
         )
     }
 
+    /// One host-side line into the same capture the JS log rides: a drive that
+    /// has something to say before the entry module runs (the launch env it
+    /// declared, say) must not have to reach into the private sink.
+    func note(_ line: String) { consume(line) }
+
     private func consume(_ line: String) {
         guard BuildFlavor.keeps(line) else { return }
         lines.append(line)
@@ -112,7 +117,9 @@ final class SpikeRuntime {
 
     private func drive(bundleRoot: String, sink: SpikeLogSink) -> SpikeOutcome {
         var cSink = sink.cSink
-        guard let host = dsh_spike_new(bundleRoot, &cSink) else {
+        // Created through the shared factory so the guest-userland declaration
+        // (contract v1.3.0 `ishRun`) is made on EVERY drive, not just this one.
+        guard let host = dsh_spike_new_declaring(bundleRoot, &cSink, note: sink.note) else {
             return fail(sink, "dsh_spike_new returned NULL")
         }
         defer { dsh_spike_free(host) }

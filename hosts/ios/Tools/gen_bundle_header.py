@@ -81,6 +81,8 @@ RESOURCES = [
     ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
     ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
     ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"),
+    ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"),
+    ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
     ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
     ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
     ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
@@ -96,6 +98,21 @@ RESOURCES = [
     ("npm_client_modules_client_js",
      SPIKE / "vendor" / "npm"
      / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "client.js"),
+    # The agent-presets closure (the Agent 预设 panel's data source): the
+    # presets service package plus the five dependency libs its import chain
+    # resolves through the spike's bare map. js-yaml ships an ESM dist face.
+    ("npm_agent_presets_index_js",
+     SPIKE / "vendor" / "dsh" / "agent-presets@0.1.6-alpha.2" / "lib" / "index.js"),
+    ("npm_plugin_loader_js",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-loader@1.0.3" / "lib" / "index.js"),
+    ("npm_plugin_include_js",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-include@1.0.7" / "lib" / "index.js"),
+    ("npm_atomic_write_js",
+     SPIKE / "vendor" / "dsh" / "atomic-write@0.0.1-rc.1" / "lib" / "index.js"),
+    ("npm_home_paths_js",
+     SPIKE / "vendor" / "dsh" / "home-paths@0.0.1-rc.3" / "lib" / "index.js"),
+    ("npm_js_yaml_mjs",
+     SPIKE / "vendor" / "npm" / "js-yaml@4.1.0" / "dist" / "js-yaml.mjs"),
     # W-SESS spine closure (D9): the FULL upstream agent spine boots
     # on-device — the mobile profile boot, its settings backend, the gateway
     # llm transport, and the node shims the spine needs beyond the web-boot
@@ -125,6 +142,12 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-shell-wasm" / "manifest.json"),
     ("plugin_shell_wasm_js",
      SPIKE / "system-plugins" / "dsh-shell-wasm" / "index.js"),
+    # The outboard in-process Linux shell (contract v1.3.0): the same shape,
+    # with the guest engine's `ishRun` behind it.
+    ("plugin_shell_ish_manifest",
+     SPIKE / "system-plugins" / "dsh-shell-ish" / "manifest.json"),
+    ("plugin_shell_ish_js",
+     SPIKE / "system-plugins" / "dsh-shell-ish" / "index.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same
@@ -137,6 +160,7 @@ TREES = [
      SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
     for pkg in [
         "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
+        "agent-presets",
         "session", "session-projection", "settings", "system-prompt",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
     ]
@@ -251,7 +275,7 @@ def collect_tree_files():
             out.append((rel_dir, src_dir))
             continue
         for path in sorted(src_dir.rglob("*")):
-            if path.is_file() and path.suffix in (".js", ".mjs", ".json"):
+            if path.is_file() and path.suffix in (".js", ".mjs", ".json", ".yaml", ".yml", ".md"):
                 out.append((f"{rel_dir}/{path.relative_to(src_dir)}", path))
     rel_root, abs_root = ZOD_ROOT
     for rel in ZOD_FILES:

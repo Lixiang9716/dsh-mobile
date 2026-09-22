@@ -1,0 +1,2 @@
+dsh_ish_stage: wrote /etc/resolv.conf (the archive carried none; apk/pip/npm need it)
+dsh_ish_stage: 88 files, 98 dirs, 335 links, 0 skipped -> /Users/lixiang/workspace/dsh-mobile/runtime/spike/artifacts/macos-cli-ish-shell/guest-root

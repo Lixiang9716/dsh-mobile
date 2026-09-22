@@ -47,11 +47,19 @@ export const nextTick = (fn, ...args) => {
 };
 export const version = () => globalThis.__dshEngineInfo?.().version ?? 'unknown';
 
+// versions.node: packages probe the NODE major to pick runtime-specific
+// internals (cordis-plugin-loader's fromInternal: >= 22 tries Node's internal
+// ESM loader). This runtime is NOT node, and the honest answer is a major
+// below that gate: the caller takes its documented no-internals path — no
+// pretense, no crash.
+const versions = { node: '20.0.0' };
+
 const proc = {
   get env() { return env; },
   get argv() { return argv(); },
   get platform() { return platform(); },
   get version() { return version(); },
+  get versions() { return versions; },
   cwd,
   nextTick,
 };

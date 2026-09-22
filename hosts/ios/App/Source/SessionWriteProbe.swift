@@ -8,9 +8,16 @@ import WebKit
 /// state (the user bubble + the streamed assistant reply). Split from
 /// SessionWriteRuntime to keep both under the file-size gate.
 enum SessionWriteProbe {
-    /// The typed message and the scripted reply it must render.
-    static let messageText = "Say hello from the composer"
-    static let expectedReply = "Hello from upstream"
+    /// The typed message and the reply fragment the drive waits for. The
+    /// defaults are the scripted-loopback pair; a DEBUG drive may override both
+    /// from the environment (DSH_E2E_PROMPT / DSH_E2E_EXPECT) to run the SAME
+    /// composer path against a REAL model — pick an expect word the prompt
+    /// forces, so the render check stays deterministic either way. Release
+    /// builds keep the literals (no env dependence in the shipped app).
+    static let messageText = ProcessInfo.processInfo.environment["DSH_E2E_PROMPT"]
+        ?? "Say hello from the composer"
+    static let expectedReply = ProcessInfo.processInfo.environment["DSH_E2E_EXPECT"]
+        ?? "Hello from upstream"
     /// The seeded workspace's title: the profile container's basename
     /// (the staged spike bundle directory).
     static let workspaceTitle = "spike"

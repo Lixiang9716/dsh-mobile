@@ -146,7 +146,7 @@ final class SessionRuntime {
             return finish(failOutcome("session server: \(error)"))
         }
         var cSink = sink.cSink
-        guard let host = dsh_spike_new(root.path, &cSink) else {
+        guard let host = dsh_spike_new_declaring(root.path, &cSink) else {
             return finish(failOutcome("dsh_spike_new returned NULL"))
         }
         self.host = host

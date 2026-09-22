@@ -68,8 +68,8 @@ const vfs = () => {
 export const seedWebPlugins = (files) => {
   const mounted = new Map();
   for (const [path, file] of Object.entries(files)) {
-    if (typeof path !== 'string' || !path.startsWith(`${WEB_PLUGINS_ROOT}/`)) {
-      throw new Error(`node:fs: staged web-plugin path escapes ${WEB_PLUGINS_ROOT}: ${path}`);
+    if (typeof path !== 'string' || !VFS_ROOTS.some((root) => path.startsWith(root))) {
+      throw new Error(`node:fs: staged seed path outside the VFS roots: ${path}`);
     }
     if (!(file.bytes instanceof Uint8Array) || typeof file.mtimeMs !== 'number') {
       throw new Error(`node:fs: staged web-plugin file ${path} needs {bytes, mtimeMs}`);
@@ -89,8 +89,8 @@ export const seedWebPlugins = (files) => {
 export const mergeWebPlugins = (files) => {
   const mounted = vfs() ?? new Map();
   for (const [path, file] of Object.entries(files)) {
-    if (typeof path !== 'string' || !path.startsWith(`${WEB_PLUGINS_ROOT}/`)) {
-      throw new Error(`node:fs: staged web-plugin path escapes ${WEB_PLUGINS_ROOT}: ${path}`);
+    if (typeof path !== 'string' || !VFS_ROOTS.some((root) => path.startsWith(root))) {
+      throw new Error(`node:fs: staged seed path outside the VFS roots: ${path}`);
     }
     if (!(file.bytes instanceof Uint8Array) || typeof file.mtimeMs !== 'number') {
       throw new Error(`node:fs: staged web-plugin file ${path} needs {bytes, mtimeMs}`);
@@ -100,7 +100,12 @@ export const mergeWebPlugins = (files) => {
   globalThis.__DSH_WEB_PLUGINS_VFS__ = mounted;
 };
 
-const underVFS = (path) => typeof path === 'string' && path.startsWith(`${WEB_PLUGINS_ROOT}/`);
+/** The staged read-only roots the VFS serves. Besides the web-plugins scan
+ * view, vendored packages delivered as seed data (the agent-presets presets
+ * tree, under the package's own bundle-relative directory) are readable —
+ * that is what the fs/promises shim walks for the presets service. */
+const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alpha.2/'];
+const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
 const refuse = (name) => () => {
   throw new Error(
@@ -129,7 +134,8 @@ export const readFileSync = (path, encoding) => {
   if (files !== null && underVFS(path)) {
     const file = files.get(path);
     if (file === undefined) throw enoent('open', path);
-    if (typeof encoding === 'string' && encoding !== 'utf8' && encoding !== 'utf-8') {
+    if (typeof encoding === 'string'
+        && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
       throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
     }
     if (encoding === undefined || encoding === null || encoding === 'buffer') {
@@ -144,13 +150,21 @@ export const statSync = (path) => {
   const files = vfs();
   if (files !== null && underVFS(path)) {
     const file = files.get(path);
-    if (file === undefined) throw enoent('stat', path);
-    return {
-      isFile: () => true,
-      isDirectory: () => false,
-      size: file.bytes.length,
-      mtimeMs: file.mtimeMs,
-    };
+    if (file !== undefined) {
+      return {
+        isFile: () => true,
+        isDirectory: () => false,
+        size: file.bytes.length,
+        mtimeMs: file.mtimeMs,
+      };
+    }
+    // A directory is a SHAPE of the seeded keys, not a seeded entry: any
+    // prefix that has at least one file under it stats as a directory.
+    const names = vfsReaddir(path);
+    if (names !== null) {
+      return { isFile: () => false, isDirectory: () => true, size: 0, mtimeMs: 0 };
+    }
+    throw enoent('stat', path);
   }
   return refuse('statSync')();
 };
@@ -163,7 +177,28 @@ export const lstatSync = refuse('lstatSync');
 export const writeFileSync = refuse('writeFileSync');
 export const mkdirSync = refuse('mkdirSync');
 export const rmSync = refuse('rmSync');
-export const readdirSync = refuse('readdirSync');
+/** Directory names derivable from the seeded file keys: one level, sorted —
+ * the same contract readdir(3) has and the presets walk expects. */
+const vfsReaddir = (path) => {
+  const files = vfs();
+  if (files === null) return null;
+  const prefix = path.endsWith('/') ? path : `${path}/`;
+  if (!underVFS(prefix)) return null;
+  const names = new Set();
+  for (const key of files.keys()) {
+    if (!key.startsWith(prefix)) continue;
+    const rest = key.slice(prefix.length);
+    const slash = rest.indexOf('/');
+    names.add(slash === -1 ? rest : rest.slice(0, slash));
+  }
+  return names.size > 0 ? [...names].sort() : null;
+};
+
+export const readdirSync = (path) => {
+  const names = vfsReaddir(path);
+  if (names !== null) return names;
+  return refuse('readdirSync')();
+};
 
 export default {
   constants,
@@ -173,6 +208,7 @@ export default {
   existsSync,
   readFileSync,
   statSync,
+  readdirSync,
   accessSync,
   realpathSync,
   lstatSync,

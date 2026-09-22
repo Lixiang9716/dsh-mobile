@@ -84,6 +84,9 @@ tools|0.1.6-alpha.2|7c1e080bb765f44e1cac4890f5fdedd37059a569e21475dbb46d94c54c61
 typert-protocol|0.1.6-alpha.2|de7447ec069d8f00ca1bfaddd2487adf93446ec75f7852dffc82ff9eca8286e8
 util-crypto|0.1.6-alpha.2|71ef6845f82a76ec058d405ca1c15c0f410e609216eb01dd9cc4873255af4d91
 util-values|0.1.6-alpha.2|17cb0a738bd28ce8206c1583277b04b244622ec4c201530f88003a4954af86de
+agent-presets|0.1.6-alpha.2|6361a84a128f7b4d4fd23ae067ba9806a7ab2e5746a5eb04b72fd4db69722535
+atomic-write|0.0.1-rc.1|0de7eaac575cbf823498e914da6c826e28991164655fbd1cee596d5b9cd61736
+home-paths|0.0.1-rc.3|dcfd9d5dd8979f19388055b58cdf60731ae6568be5fe368c53b25776286056a3
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
@@ -94,6 +97,9 @@ cosmokit@1.8.3|@deepseek-ai/cosmokit/-/cosmokit-1.8.3.tgz|552f10313ddfdc2b92cce1
 schemastery@3.18.2|@deepseek-ai/schemastery/-/schemastery-3.18.2.tgz|a0fe700b9c055f04dfec87cb46ae4a1106c6fac6c271f8a1df00e10038f0aac1
 zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a51684314563c8d60f279c
 @deepseek-ai/dsh-client-modules@0.1.6-alpha.2|@deepseek-ai/dsh-client-modules/-/dsh-client-modules-0.1.6-alpha.2.tgz|ebeccd78185289d1ca14f48e921c2dd8d96c6d455a76debf2fd2601bbd27d512
+@deepseek-ai/cordis-plugin-loader@1.0.3|@deepseek-ai/cordis-plugin-loader/-/cordis-plugin-loader-1.0.3.tgz|86df86a31f58f306a4bb71c7b9bfe5d47dba8afaacf550ddc3bb654b57821e2f
+@deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
+js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
 "
 
 have_pkg() { [ -f "$1/package.json" ]; }

@@ -16,6 +16,7 @@
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
 		283B8F98CD41140278AC43FC /* CarrierBootConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */; };
 		3968E99707B8EE09B8BF21DC /* m3_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 348E19DFC4C7450AC2F83CF9 /* m3_core.c */; };
+		3DA7229FEF7035585AAC0A85 /* ish-rootfs.tar.gz in Resources */ = {isa = PBXBuildFile; fileRef = 44860052D2DC42B3DF47D91D /* ish-rootfs.tar.gz */; };
 		4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */; };
 		47B1DB0AB4554772EA362CA2 /* m3_exec.c in Sources */ = {isa = PBXBuildFile; fileRef = 70E06553B3925E2F3AD91392 /* m3_exec.c */; };
 		493EA6E4657656CB0A5233AF /* m3_info.c in Sources */ = {isa = PBXBuildFile; fileRef = 38A515451007C09B17F3FEE5 /* m3_info.c */; };
@@ -47,9 +48,11 @@
 		ACE8B4FB83C7BC5C05C91032 /* SessionRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */; };
 		AD11658A84414177D0FCCB8D /* dtoa.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EC9F5F6929C9D36E65D032D /* dtoa.c */; };
 		B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */; };
+		B8533465AAD53C871400EEA6 /* IshPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC9A237E8BDE80E952ABA50F /* IshPrimitive.swift */; };
 		C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D699FF5BB908578B359B9B14 /* RuntimeThread.swift */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
 		D4F5B2B89D5A8745FDD87339 /* m3_function.c in Sources */ = {isa = PBXBuildFile; fileRef = 8D0099AAC070F4DE9DD15D1B /* m3_function.c */; };
+		D9680FC8B9E74933627DB174 /* SpikeHostFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */; };
 		E42F06323D11206F2C413149 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C1AD386700DAC0A6BB463CE /* libregexp.c */; };
 		EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */; };
 		F5F0070F74E81DE98B176234 /* CarrierPlugins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */; };
@@ -73,6 +76,7 @@
 		3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebRuntime.swift; sourceTree = "<group>"; };
 		40F1780B39D9032EE9BB32BC /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 		43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAPIBridge.swift; sourceTree = "<group>"; };
+		44860052D2DC42B3DF47D91D /* ish-rootfs.tar.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "ish-rootfs.tar.gz"; sourceTree = "<group>"; };
 		4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPrimitive.swift; sourceTree = "<group>"; };
 		5A23156072E07F33C5E489FE /* m3_bind.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_bind.c; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
@@ -91,12 +95,14 @@
 		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
+		AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeHostFactory.swift; sourceTree = "<group>"; };
 		AE2C804755A0EA5F7CF5B366 /* m3_validate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_validate.c; sourceTree = "<group>"; };
 		B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierPlugins.swift; sourceTree = "<group>"; };
 		BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRuntime.swift; sourceTree = "<group>"; };
 		C1AB00E24EB2C6C477B0DDF8 /* m3_code.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_code.c; sourceTree = "<group>"; };
 		C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIPrimitives.swift; sourceTree = "<group>"; };
 		CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierWebDist.swift; sourceTree = "<group>"; };
+		CC9A237E8BDE80E952ABA50F /* IshPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IshPrimitive.swift; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
 		D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLiveRuntime.swift; sourceTree = "<group>"; };
 		D699FF5BB908578B359B9B14 /* RuntimeThread.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeThread.swift; sourceTree = "<group>"; };
@@ -152,6 +158,7 @@
 				EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */,
 				9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
+				AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */,
 				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
 				F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */,
 				AEA110DACF229E48D1B6EFFC /* Gateway */,
@@ -205,6 +212,7 @@
 		A551A48B835E92B60D8D2724 /* Generated */ = {
 			isa = PBXGroup;
 			children = (
+				44860052D2DC42B3DF47D91D /* ish-rootfs.tar.gz */,
 				09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */,
 				24888637EE42A0E9E40132A8 /* SpikeBundle.h */,
 			);
@@ -227,6 +235,7 @@
 				05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */,
 				0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */,
 				183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */,
+				CC9A237E8BDE80E952ABA50F /* IshPrimitive.swift */,
 				F3A09CE3CC3ADAB701ADF9A1 /* KeychainPrimitives.swift */,
 				4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */,
 				C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */,
@@ -297,8 +306,11 @@
 			buildConfigurationList = 76CE008D03C6EE3793B0F2BC /* Build configuration list for PBXNativeTarget "DSHSpike" */;
 			buildPhases = (
 				405A338A89E2FBE347355326 /* GenerateSpikeBundle */,
+				844897D01504929715F8A1DA /* FetchIshRootfs */,
+				662B783888523ECA4CDD4657 /* BuildIshEngine */,
 				BFBB6C07DDCAFB1A3FE93954 /* StageOfficialWeb */,
 				EB4572C5EB0CCEA1304E8FD7 /* Sources */,
+				653D711BEA78CB972BAB6B0A /* Resources */,
 			);
 			buildRules = (
 			);
@@ -341,6 +353,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		653D711BEA78CB972BAB6B0A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3DA7229FEF7035585AAC0A85 /* ish-rootfs.tar.gz in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXShellScriptBuildPhase section */
 		405A338A89E2FBE347355326 /* GenerateSpikeBundle */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -376,6 +399,8 @@
 				"../../system-plugins/dsh-subprocess-quickjs/index.js",
 				"../../system-plugins/dsh-ui/manifest.json",
 				"../../system-plugins/dsh-ui/index.js",
+				"../../system-plugins/dsh-shell-ish/manifest.json",
+				"../../system-plugins/dsh-shell-ish/index.js",
 				"../../presentation/web-client/manifest.json",
 				"../../presentation/web-client/web/index.html",
 				"../../presentation/web-client/web/main.js",
@@ -390,6 +415,46 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "python3 \"$SRCROOT/Tools/gen_bundle_header.py\"\n";
+		};
+		662B783888523ECA4CDD4657 /* BuildIshEngine */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = BuildIshEngine;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Xcode's build environment carries the system paths only, so a\n# Homebrew cmake has to be found by hand (and named loudly when absent\n# — the engine cannot be built without it).\nif ! command -v cmake >/dev/null 2>&1; then\n  for dir in /opt/homebrew/bin /usr/local/bin; do\n    [ -x \"$dir/cmake\" ] && PATH=\"$dir:$PATH\"\n  done\nfi\ncommand -v cmake >/dev/null 2>&1 || {\n  echo \"error: cmake not found — install CMake (brew install cmake)\"; exit 1; }\nset -e\nREPO=\"$SRCROOT/../..\"\n\"$REPO/runtime/spike/vendor/ensure-ish.sh\"\n# The guest vdso is a GUEST aarch64 elf, so it is identical on every\n# platform: a HOST configure builds it once and the iOS build reuses\n# it. The zero-byte placeholder a cross-compile would write is not an\n# option — a zeroed vdso makes the kernel ABORT the app on the first\n# signal delivered to a guest task (kernel/vdso.c's fail path), and\n# ISH_VDSO_ELF_DIR refuses it.\nVDSO=\"$REPO/runtime/spike/build/ish/vdso\"\nif [ ! -s \"$VDSO/libvdso.so.elf\" ]; then\n  cmake -S \"$REPO/runtime/spike/host/ish\" -B \"$REPO/runtime/spike/build/ish\"\n  cmake --build \"$REPO/runtime/spike/build/ish\" --target ish-vdso\nfi\nBUILD=\"$REPO/runtime/spike/build/ish-ios-$SDK_NAME\"\ncmake -S \"$REPO/runtime/spike/host/ish\" -B \"$BUILD\" \\\n  -DISH_SDK=\"$SDK_NAME\" \\\n  -DCMAKE_SYSTEM_NAME=iOS \\\n  -DCMAKE_OSX_SYSROOT=\"$SDK_NAME\" \\\n  -DCMAKE_OSX_ARCHITECTURES=arm64 \\\n  -DCMAKE_OSX_DEPLOYMENT_TARGET=\"$IPHONEOS_DEPLOYMENT_TARGET\" \\\n  -DISH_VDSO_ELF_DIR=\"$VDSO\"\ncmake --build \"$BUILD\" --target dsh_ish\n";
+		};
+		844897D01504929715F8A1DA /* FetchIshRootfs */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"../../runtime/spike/vendor/ensure-ish-rootfs.sh",
+			);
+			name = FetchIshRootfs;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"App/Generated/ish-rootfs.tar.gz",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/../../runtime/spike/vendor/ensure-ish-rootfs.sh\" \"$SRCROOT/App/Generated\"\n";
 		};
 		BFBB6C07DDCAFB1A3FE93954 /* StageOfficialWeb */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -430,6 +495,7 @@
 				54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */,
 				B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */,
 				534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */,
+				B8533465AAD53C871400EEA6 /* IshPrimitive.swift in Sources */,
 				F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */,
 				61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */,
 				4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */,
@@ -444,6 +510,7 @@
 				9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
 				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
+				D9680FC8B9E74933627DB174 /* SpikeHostFactory.swift in Sources */,
 				D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */,
 				9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */,
 				6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */,
@@ -537,10 +604,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../runtime/spike/build/ish-ios-$(SDK_NAME)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ldsh_ish",
+					"-lishcore",
+					"-lsqlite3",
+					"-lz",
+					"-lresolv",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.dsh.DSHSpike;
 				SDKROOT = iphoneos;
@@ -554,10 +634,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = x86_64;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../runtime/spike/build/ish-ios-$(SDK_NAME)",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ldsh_ish",
+					"-lishcore",
+					"-lsqlite3",
+					"-lz",
+					"-lresolv",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.dsh.DSHSpike;
 				SDKROOT = iphoneos;

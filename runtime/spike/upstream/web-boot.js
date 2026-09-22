@@ -372,6 +372,17 @@ export const createWebBootRuntime = ({ ctx, post, write }) => {
       }
       case 'mux.cancel':
         return mounted ? mux.cancel(msg) : { kind: 'not-mounted' };
+      case 'agentPresets.seed': {
+        // The host delivers the vendored presets tree it staged (base64, the
+        // web.plugins shape's file map) — the fs/promises shim's VFS is the
+        // only filesystem the presets walk sees. Seed BEFORE the panel asks.
+        const files = {};
+        for (const [path, file] of Object.entries(msg.files ?? {})) {
+          files[path] = { bytes: decodeB64(file.b64), mtimeMs: file.mtimeMs ?? 0 };
+        }
+        mergeWebPlugins(files);
+        return { kind: 'seeded' };
+      }
       default:
         return { kind: 'unknown', type: msg.type };
     }

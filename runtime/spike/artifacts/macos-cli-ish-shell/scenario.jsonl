@@ -1,0 +1,74 @@
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"scenario start","data":[{"name":"ish.shell"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"pin scope container","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"plugin","name":"dsh-shell-ish","tool":"ish"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"uname -m","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"uname -m"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"uname -m","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"uname -m","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.machine","command":"uname -m","exitCode":0}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.machine","command":"uname -m","exitCode":0,"stdout":"aarch64\n","stderr":""}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"cat /etc/alpine-release","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"cat /etc/alpine-release"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"cat /etc/alpine-release","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"cat /etc/alpine-release","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.release","command":"cat /etc/alpine-release","exitCode":0}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.release","command":"cat /etc/alpine-release","exitCode":0,"stdout":"3.21.8\n","stderr":""}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"id -un","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"id -un"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"id -un","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"id -un","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.user","command":"id -un","exitCode":0}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.user","command":"id -un","exitCode":0,"stdout":"root\n","stderr":""}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"printf 'deliverable from the emulated guest\\n' > ish-deliverable.txt","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"printf 'deliverable from the emulated guest\\n' > ish-deliverable.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"printf 'deliverable from the emulated guest\\n' > ish-deliverable.txt","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"printf 'deliverable from the emulated guest\\n' > ish-deliverable.txt","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.wrote","command":"printf … > ish-deliverable.txt","exitCode":0}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"workdir prefix","data":[{"prefix":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"ish-deliverable.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":48}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"deliverable read back","data":[{"bytes":36}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"deliverable","file":"ish-deliverable.txt","bytes":36,"sha256":"7cd0a652c005c4e8432f3670c549dd53cb49e7a3ff8c52a82cdc48183d8d69d8","text":"deliverable from the emulated guest"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"echo expected-on-stderr >&2; exit 7","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"echo expected-on-stderr >&2; exit 7"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"echo expected-on-stderr >&2; exit 7","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"echo expected-on-stderr >&2; exit 7","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.stderr","command":"echo expected-on-stderr >&2; exit 7","exitCode":7}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.stderr","command":"echo expected-on-stderr >&2; exit 7","exitCode":7,"stdout":"","stderr":"expected-on-stderr\n"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.pipeline","command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'","exitCode":0}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.pipeline","command":"printf 'b\\na\\nc\\n' | sort | tr '\\n' '-'","exitCode":0,"stdout":"a-b-c-","stderr":""}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"sleep 30; echo never","timeoutMs":1500}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"sleep 30; echo never"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"sleep 30; echo never","timeoutMs":1500}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"sleep 30; echo never","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.timeout","command":"sleep 30; echo never","timedOut":true}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"ish command","data":[{"command":"echo still-alive","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell resolve","data":[{"command":"echo still-alive"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"shell run","data":[{"command":"echo still-alive","timeoutMs":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"ish run","data":[{"command":"echo still-alive","workdir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"workspace mapped into the guest","data":[{"guestDir":""}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"ishRun"}]}
+dsh.spike.log: {"level":"debug","module":"ish.spike","message":"step done","data":[{"event":"guest.recovered","command":"echo still-alive","exitCode":0}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"guest.recovered","command":"echo still-alive","exitCode":0,"stdout":"still-alive\n","stderr":""}]}
+dsh.spike.log: {"level":"info","module":"ish.spike","message":"e2e","data":[{"scenario":"ish.shell","event":"scenario.complete","commands":9}]}

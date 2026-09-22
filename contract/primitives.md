@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.2.0
+# Capability Gateway — Primitive Contract v1.3.0
 
 > **Status: FROZEN at M0** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -16,6 +16,15 @@
 > this architecture refuses subprocesses (D2), so the alternative to an in-process
 > interpreter is no WebAssembly at all, not a child process. Same additive rule as v1.1.0:
 > a host without it answers `unavailable`.
+>
+> **v1.3.0 (additive, 2026-09-22)**: `ishRun` — run one program in the host's **in-process
+> emulated Linux userland** (§4, "emulated userland"): a userspace interpreter emulates both
+> the guest's instructions and its syscalls, so a real Alpine userland runs inside the app
+> process with no child process and no second OS (the same D2 reasoning as `wasmRun`, one
+> step further out). Same additive rule as v1.1.0/v1.2.0: a host without it answers
+> `unavailable` — iOS implements it today (the iSH-arm64 engine, vendored and sha256-pinned
+> as an engine, never modified); the Android and HarmonyOS hosts answer `unavailable` and
+> keep the WebAssembly shell, which is capability negotiation, not a platform branch.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -71,6 +80,12 @@ permission flags, so no new capability has to be negotiated:
 | # | Primitive | Purpose | Permission flag | Streams |
 | --- | --- | --- | --- | --- |
 | 15 | `wasmRun` | execute one export of a WebAssembly module in-process | `wasm` | no |
+
+**v1.3.0 addition (1)**:
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 16 | `ishRun` | run one program in the host's in-process emulated Linux userland | `ishRun` | no |
 
 Reserved identifiers: the scope handle `"app"` denotes the host's own profile container
 (the storage layout of [data-protocols.md](data-protocols.md)); the capability name
@@ -176,6 +191,50 @@ and the run occupies the runtime's serial queue like every other primitive.
 `wasmRun` reads its module through the same scope machinery `fsRead` uses and adds
 no filesystem capability of its own; the `wasm` flag is what gates *executing* one.
 
+### emulated userland (v1.3.0)
+
+`ishRun(scope, path, argv, opts?) → { exitCode, stdout, stderr, timedOut, truncated }` —
+runs **one program** in the host's in-process emulated Linux userland and returns what it
+printed and how it exited. "Emulated" is the whole design: the interpreter reproduces a
+guest AArch64 instruction set and the Linux syscall surface *inside the app process* (no
+child process, no second OS, no JIT — D2), so the program is an ordinary ELF binary from a
+staged userland rather than a program the host could have spawned.
+
+- `(scope, path)` names the **authorized directory the program starts in**. The host mounts
+  that workspace inside the guest, so a relative path the program writes is a file the
+  session sees and `fsRead` can read back — the round trip is the point of the primitive.
+- `argv` is the program plus its arguments, resolved **inside the guest userland**:
+  `["/bin/sh", "-c", "<line>"]` is how a shell command line is expressed. The primitive
+  takes argv and never a command line — quoting, pipelines and redirection belong to the
+  guest's own `/bin/sh`, and its exit status is the guest shell's.
+- `opts.timeoutMs` is the run's deadline (the host clips it to a declared range).
+
+Results and rejections, in the vocabulary of §3:
+
+- A **non-zero exit status is a result, not a rejection**: `exitCode` carries it. An unknown
+  program is the guest's own `127`, exactly as a Linux shell reports it.
+- `timedOut: true` means the deadline fired and the guest task was killed (the reference host
+  reports `exitCode: 128` for that kill — the shell convention for a signal death).
+  `truncated: true` means the host's output cap was reached: the guest is **drained, never
+  blocked** on a full pipe, and the streams come back cut rather than the call failing.
+- `unavailable` means the host has **no guest userland staged** — a capability gap that
+  negotiation should have caught, not an error to retry. `denied` when the caller has no grant
+  for the scope; `invalid` for a malformed working directory or an empty argv; `io` when the
+  guest cannot boot or the program cannot be started at all.
+- The guest's filesystem, environment and process table live **inside the emulator**. What a
+  program installs (`apk`, `pip`, `npm`) persists as long as the host keeps that userland
+  staged, and a background job inside the guest survives only as long as the host process
+  does: device lifecycle rules (suspension, memory pressure) take guest state with the
+  process. D7's checkpoint format carries sessions — never a live userland.
+
+**Audit honesty (see §6).** The host audits **the call** like every other primitive (caller,
+verdict, outcome — never payloads) and **cannot** audit what the program does inside the
+guest: the guest's sockets and files go through the emulator's own syscall layer, so
+`fsWrite` / `httpFetch` permission flags do not gate them and no per-call record exists for
+them. A host that offers this primitive is offering a whole Linux userland behind one grant;
+its approval policy — not a per-call flag — is the control, and a host must say so in its
+RuntimeDescriptor prose rather than let this document imply otherwise.
+
 ### httpFetch
 - `httpFetch(url, init?) → { status, headers, body, abort() }` — the response **body is an
   async iterable** of byte chunks: one event sequence, never a blocking whole-result (D8).
@@ -235,7 +294,9 @@ A host conforms to `gateway@1` when, and only when:
 1. it implements **all nine primitives** with the shapes of this document, or declares an
    absent primitive `unavailable` honestly in its `RuntimeDescriptor` — absence is
    information for negotiation, never faked (ARCHITECTURE.md §12);
-2. it enforces permission flags and emits the audit records of §6;
+2. it enforces permission flags and emits the audit records of §6 — and, for `ishRun`,
+   states in the descriptor what §6's audit cannot reach (the guest's own I/O), because a
+   host that stays silent about it is claiming an enforcement it does not have;
 3. it delivers §5 channels and completes every call by dispatching onto the runtime queue;
 4. platform-specific behavior lives behind the same table — a conforming host adds no
    primitives outside this contract and no conditionals above it.

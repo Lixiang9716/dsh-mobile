@@ -1,0 +1,8 @@
+{
+  "scenario": "ish.shell",
+  "pass": true,
+  "expected": 11,
+  "logged": 11,
+  "failures": [],
+  "parseErrors": []
+}
