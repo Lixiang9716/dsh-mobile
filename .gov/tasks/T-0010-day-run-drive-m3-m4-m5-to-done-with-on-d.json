@@ -2,7 +2,7 @@
   "title": "Day run: drive M3/M4/M5 to Done with on-device E2E by tomorrow 09:00",
   "created": "2026-09-20T02:25:26+00:00",
   "rules": {
-    "hash": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -24,6 +24,13 @@
       "from": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
       "to": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
       "reason": "The constitution moved (govrail 0.48.0 + the e2e-matrix gate, seal re-baselined); the brief is unchanged \u2014 this umbrella card's work is unaffected by the plane change."
+    },
+    {
+      "ts": "2026-09-22T17:29:53+00:00",
+      "by": "lx@DESKTOP-AOFQD6F",
+      "from": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+      "to": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "reason": "stale pin sweep 2026-09-23: the brief predates the govrail 0.48.0 rules adoption; the work state is unchanged"
     }
   ]
 }

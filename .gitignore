@@ -7,7 +7,7 @@ package-lock.json
 
 # 构建产物
 dist/
-build/
+/runtime/spike/build/
 out/
 
 # W-SHELL application-tier client bundles — built output of the pinned

@@ -10,7 +10,7 @@
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
     ".gov/rejections/case-e2e-matrix.sh": {
-      "sha256": "2f42fc7e7b589b7940317cf6f37b6219a524bd43aee3f6838cf7ff9c9bab8ca0"
+      "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
     },
     ".gov/rejections/case-logging-l4.sh": {
       "sha256": "f410a435d2ab5b627ae27e7c8ec4c1283536e4d9b598f3708966eedb7b755a59"
@@ -26,9 +26,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-22T17:24:41+00:00",
+    "ts": "2026-09-22T17:29:35+00:00",
     "caller": "lx@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "D17 (docs/decisions.md) + agent note 2026-09-23-one-build-facade + task T-0036: one build facade and the periphery ring; gates.json gains the 'closures' gate via gov gate add"
+    "reason": "path move tools/e2e -> test/e2e (D17): the e2e-matrix rejection case's fixture and script paths follow the moved checker; verified green by hand before sealing"
   }
 }
