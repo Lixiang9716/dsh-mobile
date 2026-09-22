@@ -68,6 +68,8 @@ const char *dsh_spike_res_shims_util_types_js(size_t *len);
 const char *dsh_spike_res_shims_os_js(size_t *len);
 const char *dsh_spike_res_shims_process_js(size_t *len);
 const char *dsh_spike_res_shims_dsh_session_persistence_js(size_t *len);
+const char *dsh_spike_res_plugin_shell_wasm_manifest(size_t *len);
+const char *dsh_spike_res_plugin_shell_wasm_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,
