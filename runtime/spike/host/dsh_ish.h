@@ -30,7 +30,16 @@
  * the guest at `guest_path` (NULL to mount none); `guest_path` may be NULL, then
  * the default mount point is used. Returns 0 on success, -1 on failure with a
  * malloc'd `*error` message (caller frees). Booting twice is a no-op that
- * returns 0 and keeps the first configuration. */
+ * returns 0 and keeps the first configuration.
+ *
+ * Before the tree is mounted, its bytes are re-verified against the manifest
+ * `dsh_ish_stage` sealed next to it (`<rootfs>.manifest`, dsh_ish_verify.h):
+ * integrity at every mount, not only at fetch/staging time. A tampered or
+ * partially-written tree refuses the boot with the offending entry and the
+ * expected vs actual digest; a tree with no manifest yet is sealed on first
+ * boot (trust on first use — the only anchor for trees this seam did not
+ * stage). Guest-authored additions and the mutable set (apk's bookkeeping,
+ * the resolver, identity files) are tolerated and counted. */
 int dsh_ish_boot(const char *rootfs, const char *workspace,
                  const char *guest_path, char **error);
 

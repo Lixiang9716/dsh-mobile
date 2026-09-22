@@ -44,7 +44,14 @@ file(MAKE_DIRECTORY "${GEN}")
 # exactly one configuration, and a wrong -D must fail the build rather than
 # silently compile the other backend.
 add_compile_definitions(GUEST_ARM64=1 ENGINE_ASBESTOS=1 LOG_HANDLER_DPRINTF=1)
-add_compile_options(-Wno-switch -Wimplicit-fallthrough -Wtautological-constant-in-range-compare)
+# -Wtautological-constant-in-range-compare is clang-only (upstream's meson
+# build assumes clang); gcc errors out on it, and this CMake project also
+# carries the Linux build (host/build.sh's "macOS/Linux proof run"), so the
+# flag rides only where the compiler knows it.
+add_compile_options(-Wno-switch -Wimplicit-fallthrough)
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wtautological-constant-in-range-compare)
+endif()
 
 if(APPLE)
   # CMAKE_SYSTEM_NAME is "iOS" when the iOS toolchain file is in use; upstream's
@@ -293,9 +300,12 @@ set_source_files_properties("${ISH_SRC}/kernel/vdso.c" PROPERTIES
 # ------------------------------------------------------- the host seam (our code)
 # dsh_ish.c is OURS, not vendored: it boots the kernel, mounts the guest root and
 # the authorized workspace, and runs one program per call with stdout/stderr
-# collected. It is compiled here so every target that embeds the engine links the
-# same seam.
-add_library(dsh_ish STATIC "${CMAKE_CURRENT_SOURCE_DIR}/../dsh_ish.c")
+# collected. dsh_ish_verify.c is the integrity-at-every-mount half: it seals
+# the staged tree into a manifest at staging time and re-verifies it at every
+# boot (no engine dependency — plain POSIX + sha256). Both are compiled here
+# so every target that embeds the engine links the same seam.
+add_library(dsh_ish STATIC "${CMAKE_CURRENT_SOURCE_DIR}/../dsh_ish.c"
+                           "${CMAKE_CURRENT_SOURCE_DIR}/../dsh_ish_verify.c")
 target_include_directories(dsh_ish PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(dsh_ish PUBLIC ishcore)
 # zlib inflates the pinned guest-userland tarball that dsh_ish_stage() extracts

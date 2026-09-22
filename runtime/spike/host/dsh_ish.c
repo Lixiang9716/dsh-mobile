@@ -47,6 +47,7 @@
 #include "fs/real.h"
 
 #include "dsh_ish.h"
+#include "dsh_ish_verify.h"
 
 #define DSH_ISH_DEFAULT_MOUNT DSH_ISH_GUEST_MOUNT
 #define DSH_ISH_INIT "/bin/sh"
@@ -208,6 +209,24 @@ int dsh_ish_boot(const char *rootfs, const char *workspace,
         if (error != NULL)
             *error = msgf("guest root %s: %s", rootfs == NULL ? "(none)" : rootfs,
                           rootfs == NULL ? "not given" : strerror(errno));
+        pthread_mutex_unlock(&g_lock);
+        return -1;
+    }
+
+    /* Integrity at every mount: the tarball's digest was checked when it was
+     * fetched, and staging sealed the tree it became — but that says nothing
+     * about the bytes on disk NOW. Re-verify the sealed manifest before the
+     * tree becomes a guest root (still under the boot lock, still on this
+     * thread; the walk is a one-shot read pass — see dsh_ish_verify.c for the
+     * measured cost). A tampered or partially-written tree refuses the boot
+     * instead of failing somewhere inside the guest. */
+    char *verify_error = NULL;
+    if (dsh_ish_rootfs_verify(rootfs, &verify_error) < 0) {
+        if (error != NULL)
+            *error = verify_error != NULL ? verify_error
+                                          : msgf("guest root %s failed verification", rootfs);
+        else
+            free(verify_error);
         pthread_mutex_unlock(&g_lock);
         return -1;
     }
@@ -939,6 +958,20 @@ int dsh_ish_stage(const char *tarball, const char *dest, char **error) {
     }
     if (stage_seed_resolver(dest) != 0) {
         if (error != NULL) *error = msgf("stage: cannot write a resolver into %s", dest);
+        return -1;
+    }
+    /* Seal what was just published: this manifest is what every later boot
+     * verifies the tree against (integrity at every mount, dsh_ish_verify.c).
+     * A userland this seam cannot seal is not one it can vouch for — remove
+     * it rather than leave a tree a later boot would trust on first use. */
+    char *verify_error = NULL;
+    if (dsh_ish_manifest_write(dest, tarball, &verify_error) != 0) {
+        if (error != NULL)
+            *error = verify_error != NULL ? verify_error
+                                          : msgf("stage: cannot seal %s", dest);
+        else
+            free(verify_error);
+        (void) stage_remove_tree(dest);
         return -1;
     }
     printf("dsh_ish_stage: %lld files, %lld dirs, %lld links, %lld skipped -> %s\n",
