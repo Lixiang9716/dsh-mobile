@@ -996,7 +996,7 @@ static char *smoke_tmpdir(void) {
 
 int main(int argc, char **argv) {
     const char *base = argc > 1 ? argv[1] : "..";
-    const char *entry = argc > 2 ? argv[2] : "scenario/m1-spike-boot.js";
+    const char *entry = argc > 2 ? argv[2] : "scenario/boot-verification.js";
     char entry_path[1024];
     snprintf(entry_path, sizeof(entry_path), "%s/%s", base, entry);
 

@@ -13,7 +13,7 @@
  * An expectation with "repeat": true greedily consumes one-or-more
  * consecutive records matching it (name + matchers). It exists for
  * genuinely nondeterministic stream cardinality — the real LLM legs' delta
- * counts (scenario m2.llm) — and still asserts "at least one, in this
+ * counts (scenario llm.live-stream) — and still asserts "at least one, in this
  * position, matching these fields".
  *
  * An expectation with "order": "any" claims the FIRST unconsumed record

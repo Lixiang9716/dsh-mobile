@@ -1,7 +1,7 @@
 #!/bin/sh
 # run-android-full.sh — the FULL Android E2E: the three-scenario regression
 # (run-spike-e2e.sh, untouched) plus the M4 completion session
-# (`m4.host-binding`: loopback carrier + WebView mount + the real
+# (`android.capability-binding`: loopback carrier + WebView mount + the real
 # nine-primitive gateway binding, UI-driven where native). Evidence: the
 # canonical log stream bounded at the first `dsh.spike.result: ALL` line
 # (see run-spike-e2e.sh for the streaming-capture discipline), one checker
@@ -50,12 +50,12 @@ adb shell "printf 'gateway e2e target file - dsh-mobile m4\n' > /sdcard/dsh-e2e/
 adb shell cat /sdcard/dsh-e2e/notes.txt | grep -q "dsh-mobile m4" \
     || die "picker target /sdcard/dsh-e2e/notes.txt not staged"
 
-# ---- phase 1: the regression suite (m1 + m2.bridge.smoke + m2.session)
+# ---- phase 1: the regression suite (m1 + gateway.bridge-smoke + session.mock-llm)
 say "phase 1: three-scenario regression"
 bash hosts/android/ci/run-spike-e2e.sh
 
 # ---- phase 2: the M4 completion session -------------------------------
-say "phase 2: m4.host-binding (carrier + WebView + gateway binding)"
+say "phase 2: android.capability-binding (carrier + WebView + gateway binding)"
 
 shot() { adb exec-out screencap -p > "$OUT/dsh-m4-$1.png" 2>/dev/null || true; }
 
@@ -191,24 +191,24 @@ grep 'dsh.spike.log:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-scenario.jsonl"
 grep 'dsh.gateway.audit:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-audit.jsonl" || true
 
 # E2E by logs: the binding scenario + the mandatory audit sequence (the
-# audit records reuse the frozen m2.gateway.audit manifest — the scenario's
+# audit records reuse the frozen gateway.audit manifest — the scenario's
 # call order matches it), against the shared canonical stream.
-node test/e2e/check.mjs --manifest $SCEN/m4-host-binding.json \
+node test/e2e/check.mjs --manifest $SCEN/android-capability-binding.json \
     --log "$OUT/dsh-m4-logs.txt" --out "$OUT/dsh-m4-verdict-binding.json"
 cat "$OUT/dsh-m4-verdict-binding.json"
-node test/e2e/check.mjs --manifest $SCEN/m2-gateway-audit.json \
+node test/e2e/check.mjs --manifest $SCEN/gateway-audit.json \
     --log "$OUT/dsh-m4-logs.txt" --out "$OUT/dsh-m4-verdict-audit.json"
 cat "$OUT/dsh-m4-verdict-audit.json"
 shot 05-final
 say "phase 2 complete — evidence under $OUT/dsh-m4-*"
 
-# ---- phase 3: the official upstream web mount (b-android.official-web-mount)
+# ---- phase 3: the official upstream web mount (android.officialweb.mount)
 # The carrier serves the vendored official dist with the runtime-composed
 # boot wire (web.boot over the bus seam) into the WebView; the same-origin
 # probe drives POST /api + the remote.mux upgrade from inside the page.
 # Same capture discipline as phase 2: a line-buffered logcat stream bounded
 # at the first `dsh.spike.result: ALL` line; screenshots are human evidence.
-say "phase 3: b-android.official-web.mount (official dist + web.boot drive + probe)"
+say "phase 3: android.officialweb.mount (official dist + web.boot drive + probe)"
 
 ART=${DSH_WEB_ART:-hosts/android/artifacts/android-upstream}
 WEB_STREAM=$OUT/dsh-web-stream.txt
@@ -270,19 +270,19 @@ sed '/dsh.spike.result: ALL/q' "$WEB_STREAM" > "$ART/logs.txt"
 grep 'dsh.spike.result' "$ART/logs.txt" > "$ART/results.txt"
 cat "$ART/results.txt"
 grep 'dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl" || true
-adb pull "/data/data/$PKG/files/spike-capture-b-android-official-web-mount.log" \
-    "$ART/capture-b-android-official-web-mount.log" >/dev/null 2>&1 \
+adb pull "/data/data/$PKG/files/spike-capture-android-officialweb-mount.log" \
+    "$ART/capture-android-officialweb-mount.log" >/dev/null 2>&1 \
     || say "capture file pull skipped (run-as fallback)"
-[ -f "$ART/capture-b-android-official-web-mount.log" ] ||
-    adb exec-out run-as $PKG cat files/spike-capture-b-android-official-web-mount.log \
-    > "$ART/capture-b-android-official-web-mount.log" 2>/dev/null || true
+[ -f "$ART/capture-android-officialweb-mount.log" ] ||
+    adb exec-out run-as $PKG cat files/spike-capture-android-officialweb-mount.log \
+    > "$ART/capture-android-officialweb-mount.log" 2>/dev/null || true
 
-node test/e2e/check.mjs --manifest $SCEN/b-android-official-web-mount.json \
-    --log "$ART/logs.txt" --out "$ART/verdict-b-android-official-web-mount.json"
-cat "$ART/verdict-b-android-official-web-mount.json"
+node test/e2e/check.mjs --manifest $SCEN/android-officialweb-mount.json \
+    --log "$ART/logs.txt" --out "$ART/verdict-android-officialweb-mount.json"
+cat "$ART/verdict-android-officialweb-mount.json"
 say "phase 3 complete — evidence under $ART"
 
-# ---- phase 4: the session-live mount (b-android.session.live) -------------
+# ---- phase 4: the session-live mount (android.session.live-read) -------------
 # The FULL upstream agent spine boots on-device and claims /api/session.list
 # + the mux session/journal streams over the bus seam; the official page
 # boots with REAL session data: one scripted-llm turn before the page loads
@@ -290,7 +290,7 @@ say "phase 3 complete — evidence under $ART"
 # scripted /mock-llm/chat/completions carrier endpoint is the model boundary
 # (E2E determinism, logged as such by the scenario's llm/runtime record).
 # Same capture discipline as phase 3; screenshots are human evidence.
-say "phase 4: b-android.session.live (spine boot + claims + journal probe)"
+say "phase 4: android.session.live-read (spine boot + claims + journal probe)"
 
 SART=${DSH_SESSION_ART:-hosts/android/artifacts/android-session-live}
 SESSION_STREAM=$OUT/dsh-session-stream.txt
@@ -354,15 +354,15 @@ sed '/dsh.spike.result: ALL/q' "$SESSION_STREAM" > "$SART/logs.txt"
 grep 'dsh.spike.result' "$SART/logs.txt" > "$SART/results.txt"
 cat "$SART/results.txt"
 grep 'dsh.spike.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
-adb exec-out run-as $PKG cat files/spike-capture-b-android-session-live.log \
-    > "$SART/capture-b-android-session-live.log" 2>/dev/null || true
+adb exec-out run-as $PKG cat files/spike-capture-android-session-live-read.log \
+    > "$SART/capture-android-session-live-read.log" 2>/dev/null || true
 
-node test/e2e/check.mjs --manifest $SCEN/b-android-session-live.json \
-    --log "$SART/logs.txt" --out "$SART/verdict-b-android-session-live.json"
-cat "$SART/verdict-b-android-session-live.json"
+node test/e2e/check.mjs --manifest $SCEN/android-session-live-read.json \
+    --log "$SART/logs.txt" --out "$SART/verdict-android-session-live-read.json"
+cat "$SART/verdict-android-session-live-read.json"
 say "phase 4 complete — evidence under $SART"
 
-# ---- phase 5: the session WRITE mount (b-android.write.live) ---------------
+# ---- phase 5: the session WRITE mount (android.composer.live-write) ---------------
 # The spine + the official WRITE surface over the bus seam; the probe drives
 # the REAL composer (pick the seeded workspace, type, click send) and the
 # page's own message produces a REAL upstream agent-loop turn — the reply
@@ -370,7 +370,7 @@ say "phase 4 complete — evidence under $SART"
 # The scripted /mock-llm/chat/completions carrier endpoint is the model
 # boundary (E2E determinism, logged as such by the llm/runtime record).
 # Same capture discipline as phases 3-4; screenshots are human evidence.
-say "phase 5: b-android.write.live (spine + write surface + composer probe)"
+say "phase 5: android.composer.live-write (spine + write surface + composer probe)"
 
 WART=${DSH_WRITE_ART:-hosts/android/artifacts/android-write-live}
 WRITE_STREAM=$OUT/dsh-write-stream.txt
@@ -434,10 +434,10 @@ sed '/dsh.spike.result: ALL/q' "$WRITE_STREAM" > "$WART/logs.txt"
 grep 'dsh.spike.result' "$WART/logs.txt" > "$WART/results.txt"
 cat "$WART/results.txt"
 grep 'dsh.spike.log:' "$WART/logs.txt" > "$WART/scenario.jsonl" || true
-adb exec-out run-as $PKG cat files/spike-capture-b-android-write-live.log \
-    > "$WART/capture-b-android-write-live.log" 2>/dev/null || true
+adb exec-out run-as $PKG cat files/spike-capture-android-composer-live-write.log \
+    > "$WART/capture-android-composer-live-write.log" 2>/dev/null || true
 
-node test/e2e/check.mjs --manifest $SCEN/b-android-write-live.json \
-    --log "$WART/logs.txt" --out "$WART/verdict-b-android-write-live.json"
-cat "$WART/verdict-b-android-write-live.json"
+node test/e2e/check.mjs --manifest $SCEN/android-composer-live-write.json \
+    --log "$WART/logs.txt" --out "$WART/verdict-android-composer-live-write.json"
+cat "$WART/verdict-android-composer-live-write.json"
 say "phase 5 complete — evidence under $WART"

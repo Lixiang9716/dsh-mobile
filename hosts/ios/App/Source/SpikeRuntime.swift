@@ -91,7 +91,7 @@ final class SpikeLogSink {
 /// block on ONE thread — the only threading model the spike allows
 /// (ARCHITECTURE.md §6 thread rules).
 final class SpikeRuntime {
-    static let entryModule = "scenario/m1-spike-boot.js"
+    static let entryModule = "scenario/boot-verification.js"
     private let queue = DispatchQueue(label: "org.dsh.spike.runtime")
 
     func run(completion: @escaping (SpikeOutcome) -> Void) {

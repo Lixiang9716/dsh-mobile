@@ -9,7 +9,7 @@ Web Client from plugin configuration and hardcodes no UI:
   protocol and renders the session projection (`session-projection@0`:
   session/agent/token-delta/tool/complete events appending into a live
   transcript). Zero host awareness. Mounted by the iOS carrier in session
-  mode (`m2.webclient.mount` 7/7) and by the Android and HarmonyOS hosts
+  mode (`webclient.mount` 7/7) and by the Android and HarmonyOS hosts
   in their binding phases — each embeds a byte-identical copy of `web/`;
   the scenario replay keeps late-connecting pages consistent.
 - `web-client-mini/` — v0 config-selected variant (`dsh-web-client-mini`),
@@ -28,14 +28,14 @@ Web Client from plugin configuration and hardcodes no UI:
   dist index, `/plugins` bundles, the `POST /api` envelope bridge, the
   `WS /api/remote.mux` journal), so a plain release launch reaches the
   official UI with nothing staged from outside. Evidence:
-  `b1.official-web.mount` 14/14 (iOS), `b-android.official-web.mount`
-  14/14 (Android), `b-harmony.official-web-mount` 17/17 (HarmonyOS) in
+  `officialweb.mount` 14/14 (iOS), `android.officialweb.mount`
+  14/14 (Android), `harmony.officialweb.mount` 17/17 (HarmonyOS) in
   [docs/e2e-matrix.md](../docs/e2e-matrix.md).
 
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
 launch argument on the iOS spike; default `dsh-web-client`) — the device
 evidence behind the swappable-UI claim being the config-selected client
-swap (`m3.ui-swap` 7/7) and a component-level slot registration (the
+swap (`ui.client-swap` 7/7) and a component-level slot registration (the
 `dsh-notes` plugin's `notes.toolbar`, logged `slot.register` →
 `slot.registered`):
 [hosts/ios/artifacts/m3-pluginization](../hosts/ios/artifacts/m3-pluginization).

@@ -1,7 +1,7 @@
 #!/bin/sh
 # runtime/spike/ci/run-upstream-boot-e2e.sh — the CLI proof run for the
 # OFFICIAL WEB BOOT over the vendored runtime (decision D9, W-INTEG leg):
-# boots the mobile profile exactly as m2.upstream-session does, streams ONE
+# boots the mobile profile exactly as upstream.session does, streams ONE
 # REAL agent-loop turn through the vendored dsh-llm (so the session journal
 # carries real records), then mounts the VENDORED @deepseek-ai/dsh-client-
 # modules node half over the staged `web.plugins` delivery and lets IT compose
@@ -12,7 +12,7 @@
 # session/journal mux stream (baseline + live change frames + cancel).
 #
 # The captured log is verified one-to-one against
-# test/e2e/scenarios/m2-upstream-boot.json. Artifacts:
+# test/e2e/scenarios/upstream-web-boot.json. Artifacts:
 # runtime/spike/artifacts/macos-cli-upstream-boot/.
 #
 # The mock server script is widened for this drive (two success turns) via
@@ -74,7 +74,7 @@ echo "mock llm server: $MOCK_URL" >&2
 
 # 5. run the scenario (--http: loopback httpFetch; --bus-inject: the staged
 #    web.plugins delivery; --env: the launch env snapshot) and verify.
-./build/dsh-spike-cli . scenario/m2-upstream-boot.js \
+./build/dsh-spike-cli . scenario/upstream-web-boot.js \
     --http \
     --bus-inject "$PAYLOAD" \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
@@ -84,7 +84,7 @@ cp logs-upstream-boot.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-upstream-boot.txt > "$ART_DIR/scenario.jsonl"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
 node "$ROOT/test/e2e/check.mjs" \
-    --manifest "$ROOT/test/e2e/scenarios/m2-upstream-boot.json" \
+    --manifest "$ROOT/test/e2e/scenarios/upstream-web-boot.json" \
     --log logs-upstream-boot.txt \
     --out "$ART_DIR/verdict.json"
 
@@ -98,13 +98,13 @@ cat > "$ART_DIR/receipt.json" <<EOF
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 incl. dsh-client-modules (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh) + the W-SHELL application tier (presentation/official-web/client-bundles, MANIFEST.sha256-verified)",
   "kernel": "@deepseek-ai/cordis@4.0.2",
-  "scenario": "m2.upstream-boot",
+  "scenario": "upstream.web-boot",
   "proves": [
     "the OFFICIAL web boot wire is composed INSIDE the runtime by the vendored @deepseek-ai/dsh-client-modules node half over the full application-tier staging: 58 dsh.client entries, the bootstrap batch exactly [@deepseek-ai/dsh-client-modules], the application batches over the other 57, external-dependency rows ordered before their consumers (web/boot/composed)",
     "the injected rows carry the facade queue script, the application script-preload, the bootstrap script-src, and the graph global last (web/boot/rows); the vendored parseBootManifest cross-parses the composed graph (parseOk)",
     "the /api + mux claims answer from the REAL vendored services: session.list from the session store, the session/journal stream in the Remote-journal envelope (baseline + live change frames + cancel)"
   ],
-  "checker": "test/e2e/scenarios/m2-upstream-boot.json",
+  "checker": "test/e2e/scenarios/upstream-web-boot.json",
   "events": $EVENTS,
   "exitCode": 0
 }

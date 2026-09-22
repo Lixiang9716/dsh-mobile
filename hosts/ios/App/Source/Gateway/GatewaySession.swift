@@ -10,7 +10,7 @@ import UIKit
 /// the UI choreography takes time). JS runs ONLY on the runtime thread;
 /// primitive handlers run off it; nothing blocks (ARCHITECTURE.md §6).
 final class GatewaySession {
-    static let entryModule = "scenario/m2-gateway-binding.js"
+    static let entryModule = "scenario/gateway-binding.js"
     static let watchdogSeconds = 180
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.gateway")

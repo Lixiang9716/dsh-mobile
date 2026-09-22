@@ -4,7 +4,7 @@
  * mirrors runtime/spike/host/main_cli.c: calls are only QUEUED inside
  * on_call (which fires synchronously on the runtime thread) and settled in
  * the post-pump drain pass — the deferred later-tick settlement the
- * m2.bridge.smoke scenario exists to prove. fs payloads travel base64; the
+ * gateway.bridge-smoke scenario exists to prove. fs payloads travel base64; the
  * scope root is an app-private directory instead of /tmp.
  */
 #include "dsh_spike_smoke.h"

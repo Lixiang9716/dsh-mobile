@@ -7,10 +7,10 @@
 #   UI-automation drive (ci/drive-binding.mjs, the m5 phase) ->
 #   official-web drive (ci/drive-official.mjs, the D9 phases: mount +
 #   httpfetch-v2 + session-live + write-live) -> captures ->
-#   8 checker verdicts (m1.spike.boot, m2.bridge.smoke, m2.session — the
-#   23-event regression, m5.host-binding, b-harmony.official-web-mount,
-#   b-harmony.httpfetch-v2, b-harmony.session.live,
-#   b-harmony.write.live) + the full deliverable set (logs.txt +
+#   8 checker verdicts (boot.verification, gateway.bridge-smoke, session.mock-llm — the
+#   23-event regression, harmony.capability-binding, harmony.officialweb.mount,
+#   harmony.httpfetch-streaming, harmony.session.live-read,
+#   harmony.composer.live-write) + the full deliverable set (logs.txt +
 #   scenario.jsonl + receipt-fodder verdicts + real-PNG screenshots) into
 #   the artifacts dir.
 #
@@ -127,29 +127,29 @@ trap 'kill "$streamer" 2>/dev/null || true' EXIT
 
 node hosts/harmony/ci/drive-binding.mjs --hdc "$HDC" \
     --overall-deadline 300 \
-    --shot-live "$OUT/m5-live-deltas.png" \
-    --shot-final "$OUT/m5-binding-complete.png"
+    --shot-live "$OUT/harmony-capability-live-deltas.png" \
+    --shot-final "$OUT/harmony-capability-binding-complete.png"
 
 # The m5 verdict chains into the D9 phases on-device; this drive only takes
 # the evidence screenshots and waits for the terminal markers.
 node hosts/harmony/ci/drive-official.mjs --hdc "$HDC" \
     --overall-deadline 600 \
-    --shot-boot "$OUT/b1-official-boot-screen.png" \
-    --shot-final "$OUT/b1-final-state.png" \
-    --shot-session-boot "$OUT/b3-official-boot-screen.png" \
-    --shot-session "$OUT/b3-session-live-final.png" \
-    --shot-write-boot "$OUT/b4-write-boot-screen.png" \
-    --shot-write-composer "$OUT/b4-composer-typed.png" \
-    --shot-write-reply "$OUT/b4-reply-rendered.png"
+    --shot-boot "$OUT/officialweb-boot-screen.png" \
+    --shot-final "$OUT/officialweb-final-state.png" \
+    --shot-session-boot "$OUT/session-live-boot-screen.png" \
+    --shot-session "$OUT/session-live-read-final.png" \
+    --shot-write-boot "$OUT/composer-write-boot-screen.png" \
+    --shot-write-composer "$OUT/composer-typed.png" \
+    --shot-write-reply "$OUT/composer-reply-rendered.png"
 
 # snapshot_display emits JPEG; evidence screenshots must be real PNGs for
 # their .png names — documented one-line conversion (macOS sips), applied
 # in place right after the capture (audit gap: JPEG bytes under .png).
-for shot in "$OUT/m5-live-deltas.png" "$OUT/m5-binding-complete.png" \
-            "$OUT/b1-official-boot-screen.png" "$OUT/b1-final-state.png" \
-            "$OUT/b3-official-boot-screen.png" "$OUT/b3-session-live-final.png" \
-            "$OUT/b4-write-boot-screen.png" "$OUT/b4-composer-typed.png" \
-            "$OUT/b4-reply-rendered.png"; do
+for shot in "$OUT/harmony-capability-live-deltas.png" "$OUT/harmony-capability-binding-complete.png" \
+            "$OUT/officialweb-boot-screen.png" "$OUT/officialweb-final-state.png" \
+            "$OUT/session-live-boot-screen.png" "$OUT/session-live-read-final.png" \
+            "$OUT/composer-write-boot-screen.png" "$OUT/composer-typed.png" \
+            "$OUT/composer-reply-rendered.png"; do
     sips -s format png "$shot" --out "$shot" >/dev/null
 done
 
@@ -190,17 +190,17 @@ check() {
         fail=1
     fi
 }
-check test/e2e/scenarios/m1-spike-boot.json "$OUT/sink-capture.txt"
-check test/e2e/scenarios/m2-bridge-smoke.json "$OUT/sink-capture.txt"
-check test/e2e/scenarios/m2-session.json "$OUT/sink-capture.txt"
-check test/e2e/scenarios/m5-host-binding.json "$OUT/binding-capture.txt"
-check test/e2e/scenarios/b-harmony-official-web-mount.json "$OUT/official-capture.txt"
-check test/e2e/scenarios/b-harmony-httpfetch-v2.json "$OUT/httpfetch-capture.txt"
-check test/e2e/scenarios/b-harmony-session-live.json "$OUT/session-capture.txt"
-check test/e2e/scenarios/b-harmony-write-live.json "$OUT/write-capture.txt"
+check test/e2e/scenarios/boot-verification.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/gateway-bridge-smoke.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/session-mock-llm.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/harmony-capability-binding.json "$OUT/binding-capture.txt"
+check test/e2e/scenarios/harmony-officialweb-mount.json "$OUT/official-capture.txt"
+check test/e2e/scenarios/harmony-httpfetch-streaming.json "$OUT/httpfetch-capture.txt"
+check test/e2e/scenarios/harmony-session-live-read-read.json "$OUT/session-capture.txt"
+check test/e2e/scenarios/harmony-composer-live-write.json "$OUT/write-capture.txt"
 
 if [ "$fail" != "0" ]; then
     echo "::error::one or more E2E checkers failed — see $OUT/verdict-*.json"
     exit 1
 fi
-echo "run-host-e2e: PASS (m1.spike.boot + m2.bridge.smoke + m2.session + m5.host-binding + b-harmony.official-web-mount + b-harmony.httpfetch-v2 + b-harmony.session.live + b-harmony.write.live)"
+echo "run-host-e2e: PASS (boot.verification + gateway.bridge-smoke + session.mock-llm + harmony.capability-binding + harmony.officialweb.mount + harmony.httpfetch-streaming + harmony.session.live-read + harmony.composer.live-write)"

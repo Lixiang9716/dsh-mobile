@@ -11,7 +11,7 @@
  *     E2E: the package is served by the loopback carrier itself);
  *   - hosts without a network surface (the desktop CLI smoke backend
  *     declares httpFetch unavailable, honestly) pass a stub with the same
- *     response shape — the m3.complete scenario logs its stub as
+ *     response shape — the install.full-cycle scenario logs its stub as
  *     `fetch.stub`, keeping the streaming path under test everywhere.
  *
  * Lifecycle progress rides the same `on(step, fields)` callback as the

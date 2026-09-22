@@ -17,7 +17,7 @@ embedder plus a typed JS shim (`gateway.js`).
   (the tracked provenance record). Like `vendor/quickjs-ng/`, the vendored
   trees are untracked by design and materialized by `ensure-dsh.sh`, so the
   syntax-class checker never judges upstream code. The upstream E2E
-  (`scenario/m2-upstream-session.js`) runs the vendored agent spine
+  (`scenario/upstream-session.js`) runs the vendored agent spine
   verbatim inside quickjs-ng over these files; adaptation lives in the shim
   layer (`upstream/`), never in the vendored copies.
 - `upstream/` — the SYSTEM LAYER for the upstream port: web-API + `node:`
@@ -85,9 +85,9 @@ embedder plus a typed JS shim (`gateway.js`).
   TextDecoder) and a partial-line-tolerant splitter. The fetch impl is a
   PARAMETER with the gateway `httpFetch` response shape; `reasoning_content`
   deltas ride `llm.reasoning.delta`, content deltas `llm.delta` (the
-  m2.session event shapes), the aggregated assistant text resolves with the
+  session.mock-llm event shapes), the aggregated assistant text resolves with the
   stream facts, and the API key NEVER enters a log line (headers are never
-  logged; the m2-llm scenario audits every sink line for the key).
+  logged; the llm-live-stream scenario audits every sink line for the key).
 - `config-layer.js` — the FIRST of the three UI-plugin levels
   (ARCHITECTURE.md §6): `cordis.patch`-style LAYERED OVERRIDES (base →
   hostFace → profile → overlay; JSON in the spike, documented in the module
@@ -118,19 +118,19 @@ embedder plus a typed JS shim (`gateway.js`).
 - `manifest.json` — the scenario bundle's plugin manifest
   (`dsh.spike.scenario`); the embedder reads it from
   `bundle_root/manifest.json` and enforces the declared capabilities.
-- `scenario/m1-spike-boot.js` — the `m1.spike.boot` E2E scenario: ESM
+- `scenario/boot-verification.js` — the `boot.verification` E2E scenario: ESM
   package load, host Web-API shims, gateway negotiation. (The M1 canned
   gateway-call blocks are GONE — real primitive dispatch lives in the m2
   scenarios below.)
-- `scenario/m2-bridge-smoke.js` — the `m2.bridge.smoke` E2E scenario,
+- `scenario/gateway-bridge-smoke.js` — the `gateway.bridge-smoke` E2E scenario,
   runnable headless on the desktop CLI: deferred settlement (later-tick),
   tmpdir-backed fs over base64 payloads, scope-escape rejection, and the
   declared-unavailable path.
-- `scenario/m2-gateway-binding.js` — the `m2.gateway.binding` E2E scenario
+- `scenario/gateway-binding.js` — the `gateway.binding` E2E scenario
   for the full embedder (iOS): all nine primitives, streaming httpFetch
   body + abort, picker → fsScope roundtrip, keychain roundtrip, and the
   notification/app-state lifecycle, driven by host events.
-- `scenario/m2-session.js` — the `m2.session` E2E scenario: the first MINI
+- `scenario/session-mock-llm.js` — the `session.mock-llm` E2E scenario: the first MINI
   agent session over the system implementation plugins. Platform-neutral
   (CLI + carrier hosts alike): registry installs dsh-fs /
   dsh-subprocess-quickjs / dsh-ui, the host readiness signal (`host.info`
@@ -145,15 +145,15 @@ embedder plus a typed JS shim (`gateway.js`).
   stream identical everywhere. On iOS the session phase mounts the active
   Web Client and starts the scenario only when the page connects, so the
   deltas stream live into the rendered transcript (carrier-side evidence
-  logged as scenario `m2.webclient.mount`; runner
-  `test/e2e/run-ios-session.sh`). M3 extends the session: `dsh-notes`
+  logged as scenario `webclient.mount`; runner
+  `test/e2e/run-ios-session-mock-llm.sh`). M3 extends the session: `dsh-notes`
   arrives through the install pipeline BEFORE the host readiness signal and
   projects its toolbar slot into the active Web Client — carrier hosts gate
   host.info on the page's slot ack, so the deltas always stream into a fully
   rendered client (the slot renders via replay even for a late-connecting
   page), and the installed plugin is loaded through `__dshModuleDefine`
-  exactly as in `m3.install`.
-- `scenario/m3-install.js` — the `m3.install` E2E scenario: builds the
+  exactly as in `install.verified-tarball`.
+- `scenario/install-verified-tarball.js` — the `install.verified-tarball` E2E scenario: builds the
   dsh-notes package in JS, installs it through `install-pipeline.js`,
   asserts the committed receipt field-by-field + the content-addressed blob
   + the unpacked layout through fsRead, loads the INSTALLED entry through
@@ -162,31 +162,31 @@ embedder plus a typed JS shim (`gateway.js`).
   with drifting bytes is rejected by the trust record before unpack
   (`install.integrity-rejected`), the installed tree stays byte-identical,
   and no receipt is written for the rejected transaction.
-- `scenario/m3-complete.js` — the `m3.complete` E2E scenario, the four M3
+- `scenario/install-full-cycle.js` — the `install.full-cycle` E2E scenario, the four M3
   scope items in one platform-neutral stream: the CONFIG LAYER resolves the
   session stack's Web Client + toolbar slot set and the slot gate refuses a
   slot the profile override trimmed; the FETCH-BASED installer runs the
   package through `installFromFetch` (CLI: the logged scope-read stub —
   `install.fetch.stub`; carrier hosts: the real gateway `httpFetch`,
-  scenario `m3.fetch-install`); two CRASH-SIMULATED pending receipts are
+  scenario `install.from-http`); two CRASH-SIMULATED pending receipts are
   STARTUP-REPLAYED (staged-verifies → committed, staging-incomplete →
   rolled-back with the tree untouched); and a package requiring `notify`
   (declared unavailable by this host's descriptor) is rejected by
   INSTALL-TIME NEGOTIATION before unpack. Evidence:
   `runtime/spike/artifacts/macos-cli-m3-complete/`.
-- `scenario/m3-fetch-install.js` — the `m3.fetch-install` E2E scenario for
+- `scenario/install-from-http.js` — the `install.from-http` E2E scenario for
   carrier hosts: the dsh-notes package is SELF-HOSTED by the loopback
   carrier itself (the scenario hands the bytes to the host over the bus
   seam, `{type:"http.serve", path, bodyB64}`; the carrier registers an
   in-memory route and serves it over real TCP) and installed through
   `installFromFetch` with the REAL gateway `httpFetch` — the fetch stub's
   production twin. Then two crash-simulated pending receipts are
-  startup-replayed and the m2-session-shaped agent session runs. Carrier
+  startup-replayed and the session-mock-llm-shaped agent session runs. Carrier
   evidence (config resolution, route registration/serve, slot
-  allow-set enforcement) rides scenario `m3.fetch-carrier`; runner
-  `test/e2e/run-ios-m3.sh` (launch configuration
-  `-dsh-profile m3-complete`).
-- `profiles/m3-complete/cordis.patch.json` — the m3-complete PROFILE patch
+  allow-set enforcement) rides scenario `install.carrier-evidence`; runner
+  `test/e2e/run-ios-install-ui.sh` (launch configuration
+  `-dsh-profile install-full-cycle`).
+- `profiles/install-full-cycle/cordis.patch.json` — the install-full-cycle PROFILE patch
   for the config layer: selects `dsh-web-client-mini` as the ACTIVE Web
   Client and trims the toolbar slot allow-set to `notes.toolbar`. JSON
   (documented in config-layer.js); the iOS carrier merges it
@@ -203,29 +203,29 @@ embedder plus a typed JS shim (`gateway.js`).
   processes), `dsh-ui` (approval / picker / notify + notify.response
   round trip). Each ships a manifest.json that validates against
   contract/schemas/manifest.schema.json.
-- `scenario/m2-llm.js` — the `m2.llm` E2E scenario: ONE streamed chat
-  completion through the gateway, closing the mock-LLM gap `m2.session`
+- `scenario/llm-live-stream.js` — the `llm.live-stream` E2E scenario: ONE streamed chat
+  completion through the gateway, closing the mock-LLM gap `session.mock-llm`
   left open. The LEG is negotiated from the RuntimeDescriptor (httpFetch
-  offered → the REAL backend, credentials read from `m2-llm/config.json`
+  offered → the REAL backend, credentials read from `llm-live-stream/config.json`
   in fs scope "app", staged by the E2E runner; declared unavailable on the
   CLI smoke backend → a scripted SSE feed with odd chunk boundaries and a
   NON-SECRET fixture key through the same client code — the install-fetch
-  stub's production twin). Events: the m2.session vocabulary plus
+  stub's production twin). Events: the session.mock-llm vocabulary plus
   `llm.reasoning.delta`, `llm.leg`, `llm.config.loaded`,
   `llm.served-model` (the server-reported model name, logged verbatim),
   `llm.content.asserted`, and `llm.key.audit` (every log-sink line audited
   for the active key — a leak fails loud, rule 5). Manifests:
-  `test/e2e/scenarios/m2-llm.json` (scripted, exact deltas) /
-  `m2-llm-device.json` (real, repeat-aware delta runs) /
-  `m2-llm-carrier.json` (carrier-side mount/projection evidence as
-  scenario `m2.llm.carrier`). Runners: `test/e2e/run-ios-m2-llm.sh`,
-  `hosts/android/ci/run-m2-llm.sh`. Evidence:
+  `test/e2e/scenarios/llm-live-stream.json` (scripted, exact deltas) /
+  `llm-live-stream-device.json` (real, repeat-aware delta runs) /
+  `llm-live-stream-carrier.json` (carrier-side mount/projection evidence as
+  scenario `llm.live-stream.carrier`). Runners: `test/e2e/run-ios-live-llm.sh`,
+  `hosts/android/ci/run-live-llm.sh`. Evidence:
   `runtime/spike/artifacts/macos-cli-m2-llm/`,
   `hosts/ios/artifacts/m2-llm/`, `hosts/android/artifacts/m2-llm/`.
-- `scenario/m1-carrier-loopback.js` — the `m1.carrier.loopback` E2E
+- `scenario/carrier-loopback.js` — the `carrier.loopback` E2E
   scenario: the local-carrier topology (static files + WS pump) asserted
   through the bus seam, for hosts that implement it (see below).
-- `scenario/m2-upstream-session.js` — the `m2.upstream-session` E2E
+- `scenario/upstream-session.js` — the `upstream.session` E2E
   scenario, the D9 proof: ONE REAL upstream agent-loop turn over the
   vendored runtime inside quickjs-ng, driven by the REAL vendored dsh-llm
   service. `upstream/boot.js` composes the mobile profile (the dsh-base
@@ -268,7 +268,7 @@ libunicode,quickjs}.c`, then from a SINGLE thread:
    - `dsh_spike_set_descriptor(s, descriptor_json)` — stores the runtime
      descriptor JS reads via `__dshGatewayDescriptor()` (verbatim, or
      `"null"` when never set).
-3. read + `dsh_spike_eval(s, "scenario/m2-gateway-binding.js", source)`.
+3. read + `dsh_spike_eval(s, "scenario/gateway-binding.js", source)`.
 4. settle and stream from the RUNTIME THREAD ONLY (dispatch your platform
    results onto that queue first — ARCHITECTURE.md §6 thread rules):
    - `dsh_spike_gateway_settle(s, call_id, ok, payload_json)` — resolves
@@ -292,7 +292,7 @@ ending `B64`; errors are objects `{"code","primitive","message"}` with
 and refs are opaque strings. `__dshGatewayAbort(callId)` dispatches an
 `on_call` with name `httpFetch.abort` and args `{"callId":<n>}`.
 
-### Carrier bus seam (m1.carrier.loopback only)
+### Carrier bus seam (carrier.loopback only)
 
 Hosts proving the local-carrier topology additionally register
 `dsh_spike_set_bus_sink(s, on_bus, ud)` BEFORE eval, then keep the runtime
@@ -312,10 +312,10 @@ projection protocol — do not build on it.
 
 ```sh
 runtime/spike/host/build.sh
-cd runtime/spike && ./build/dsh-spike-cli . scenario/m1-spike-boot.js > logs.txt
-node test/e2e/check.mjs --manifest test/e2e/scenarios/m1-spike-boot.json --log runtime/spike/logs.txt
-./build/dsh-spike-cli . scenario/m2-bridge-smoke.js > logs-m2.txt
-node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-bridge-smoke.json --log runtime/spike/logs-m2.txt
+cd runtime/spike && ./build/dsh-spike-cli . scenario/boot-verification.js > logs.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/boot-verification.json --log runtime/spike/logs.txt
+./build/dsh-spike-cli . scenario/gateway-bridge-smoke.js > logs-m2.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/gateway-bridge-smoke.json --log runtime/spike/logs-m2.txt
 ```
 
 The CLI driver doubles as the gateway bridge SMOKE BACKEND: it declares
@@ -324,31 +324,31 @@ calls from a fresh temp dir exposed as scope "app" (creating intermediate
 directories on write, like the platform fs primitives), delivers the
 host-readiness signal (`host.info`, port 0) right after eval, and defers
 every settlement to the post-pump drain pass — proving the later-tick
-pattern. The `m2.session` scenario runs on the same driver:
+pattern. The `session.mock-llm` scenario runs on the same driver:
 ```sh
-./build/dsh-spike-cli . scenario/m2-session.js > logs-m2-session.txt
-node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-session.json \
-  --log logs-m2-session.txt
+./build/dsh-spike-cli . scenario/session-mock-llm.js > logs-session-mock-llm.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/session-mock-llm.json \
+  --log logs-session-mock-llm.txt
 ```
 
-So does the M3 install pipeline (`m3.install`):
+So does the M3 install pipeline (`install.verified-tarball`):
 
 ```sh
-./build/dsh-spike-cli . scenario/m3-install.js > logs-m3-install.txt
-node test/e2e/check.mjs --manifest test/e2e/scenarios/m3-install.json \
-  --log logs-m3-install.txt
+./build/dsh-spike-cli . scenario/install-verified-tarball.js > logs-install-verified-tarball.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/install-verified-tarball.json \
+  --log logs-install-verified-tarball.txt
 ```
 
 And the M3 completion scenario (config layer + fetch-based install + pending-
 receipt startup replay + install-time capability negotiation):
 
 ```sh
-./build/dsh-spike-cli . scenario/m3-complete.js > logs-m3-complete.txt
-node test/e2e/check.mjs --manifest test/e2e/scenarios/m3-complete.json \
-  --log logs-m3-complete.txt
+./build/dsh-spike-cli . scenario/install-full-cycle.js > logs-install-full-cycle.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/install-full-cycle.json \
+  --log logs-install-full-cycle.txt
 ```
 
-The D9 upstream-port scenario (`m2.upstream-session` — the vendored runtime
+The D9 upstream-port scenario (`upstream.session` — the vendored runtime
 inside quickjs-ng, one real upstream agent-loop turn) has its own runner,
 which materializes the vendored closure, runs the scenario, verifies
 one-to-one, and writes the committed evidence:

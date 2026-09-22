@@ -1,0 +1,439 @@
+{
+  "scenario": "session.live-read",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-official",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile",
+        "root": "empty (patch layers compose over it)",
+        "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+        "layers": [
+          "session",
+          "agent",
+          "system-prompt",
+          "tools",
+          "session-projection",
+          "settings",
+          "agent-loop"
+        ]
+      }
+    },
+    {
+      "event": "upstream/services",
+      "match": {
+        "kernel": "@deepseek-ai/cordis@4.0.2",
+        "services": [
+          "sessions",
+          "agents",
+          "systemPrompt",
+          "tools",
+          "sessionProjections",
+          "settings",
+          "agentLoop",
+          "llm"
+        ],
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+      }
+    },
+    {
+      "event": "session/created",
+      "match": {
+        "sessionId": "s-b3-ondevice-0001"
+      }
+    },
+    {
+      "event": "agent/created",
+      "match": {
+        "id": "main",
+        "sessionId": "s-b3-ondevice-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 2,
+        "tools": 7,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "session.log",
+      "match": {
+        "count": 11,
+        "types": [
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "step/start",
+          "system/message",
+          "user/message",
+          "request/header",
+          "request/context",
+          "assistant/message",
+          "step/end",
+          "turn/end"
+        ]
+      }
+    },
+    {
+      "event": "assistant/text/asserted",
+      "match": {
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "web.boot.applied",
+      "match": {
+        "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)",
+        "rows": 5
+      }
+    },
+    {
+      "event": "runtime.booted",
+      "match": {
+        "entries": [
+          "@deepseek-ai/dsh-api-gateway",
+          "@deepseek-ai/dsh-api-remotes",
+          "@deepseek-ai/dsh-api-session-controller",
+          "@deepseek-ai/dsh-api-terminal-controller",
+          "@deepseek-ai/dsh-api-workspace-controller",
+          "@deepseek-ai/dsh-api-workspace-files",
+          "@deepseek-ai/dsh-client-connection",
+          "@deepseek-ai/dsh-client-file-upload",
+          "@deepseek-ai/dsh-client-hmr",
+          "@deepseek-ai/dsh-client-locale",
+          "@deepseek-ai/dsh-client-modules",
+          "@deepseek-ai/dsh-client-resources",
+          "@deepseek-ai/dsh-client-ui-agent-preset",
+          "@deepseek-ai/dsh-client-ui-approval",
+          "@deepseek-ai/dsh-client-ui-attachment",
+          "@deepseek-ai/dsh-client-ui-brand-official",
+          "@deepseek-ai/dsh-client-ui-chat",
+          "@deepseek-ai/dsh-client-ui-commands",
+          "@deepseek-ai/dsh-client-ui-conversation",
+          "@deepseek-ai/dsh-client-ui-cordis",
+          "@deepseek-ai/dsh-client-ui-deliverables",
+          "@deepseek-ai/dsh-client-ui-goal",
+          "@deepseek-ai/dsh-client-ui-input-trigger",
+          "@deepseek-ai/dsh-client-ui-jobs",
+          "@deepseek-ai/dsh-client-ui-layout",
+          "@deepseek-ai/dsh-client-ui-message-feedback",
+          "@deepseek-ai/dsh-client-ui-model-selection",
+          "@deepseek-ai/dsh-client-ui-open-in-app",
+          "@deepseek-ai/dsh-client-ui-permission-presets",
+          "@deepseek-ai/dsh-client-ui-plan",
+          "@deepseek-ai/dsh-client-ui-plugin-manager",
+          "@deepseek-ai/dsh-client-ui-reference",
+          "@deepseek-ai/dsh-client-ui-renderer",
+          "@deepseek-ai/dsh-client-ui-schedule",
+          "@deepseek-ai/dsh-client-ui-session",
+          "@deepseek-ai/dsh-client-ui-settings-general",
+          "@deepseek-ai/dsh-client-ui-settings-models",
+          "@deepseek-ai/dsh-client-ui-settings-plugin-inventory",
+          "@deepseek-ai/dsh-client-ui-settings-plugins",
+          "@deepseek-ai/dsh-client-ui-settings-unarchive-sessions",
+          "@deepseek-ai/dsh-client-ui-settings",
+          "@deepseek-ai/dsh-client-ui-sidebar-browser",
+          "@deepseek-ai/dsh-client-ui-sidebar-documentpreview",
+          "@deepseek-ai/dsh-client-ui-sidebar-files",
+          "@deepseek-ai/dsh-client-ui-sidebar-right",
+          "@deepseek-ai/dsh-client-ui-sidebar-terminal",
+          "@deepseek-ai/dsh-client-ui-sidebar",
+          "@deepseek-ai/dsh-client-ui-skill",
+          "@deepseek-ai/dsh-client-ui-subagent",
+          "@deepseek-ai/dsh-client-ui-theme",
+          "@deepseek-ai/dsh-client-ui-tool",
+          "@deepseek-ai/dsh-client-ui-trajectory",
+          "@deepseek-ai/dsh-client-ui-user-questions",
+          "@deepseek-ai/dsh-client-ui-workflow-run",
+          "@deepseek-ai/dsh-client-ui-workspace",
+          "@deepseek-ai/dsh-cordis-client-runner",
+          "@deepseek-ai/dsh-session-log-export",
+          "@deepseek-ai/dsh-typert-registry"
+        ],
+        "source": "vendored @deepseek-ai/dsh-client-modules composed in-runtime"
+      }
+    },
+    {
+      "event": "session.services.claimed",
+      "match": {
+        "endpoints": [
+          "session.list"
+        ],
+        "stream": "session/journal",
+        "source": "the on-device spine (ctx.sessions)"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "bytes": 30352,
+        "rows": 5
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/assets/index-8VXBH-f-.js"
+      }
+    },
+    {
+      "event": "plugins.served",
+      "match": {
+        "bytes": 36040
+      }
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "answered": "unavailable",
+        "endpoint": "settings/describe"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "answered": "unavailable",
+        "endpoint": "dynamicCordisRunner/syncInspectManifest"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "dynamicCordisRunner/inventory",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "answered": "unavailable",
+        "endpoint": "credentials/describe"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/modelCatalog",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "agentPresets/list",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session.list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "session.list.responded",
+      "match": {
+        "ok": true,
+        "sessions": 1,
+        "source": "the on-device spine (ctx.sessions)"
+      }
+    },
+    {
+      "event": "session.attached",
+      "match": {
+        "stream": "session/journal",
+        "streamId": "b3-probe-journal"
+      }
+    },
+    {
+      "event": "journal.frame.forwarded",
+      "match": {
+        "direction": "tx",
+        "source": "REAL session log records (baseline + live turn)",
+        "first": true
+      }
+    },
+    {
+      "event": "session.journal.attached",
+      "match": {
+        "sessionId": "s-b3-ondevice-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 4,
+        "tools": 7,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "journal/live",
+      "match": {
+        "turn": 2,
+        "events": 8,
+        "note": "streamed live to every attached session/journal stream"
+      }
+    },
+    {
+      "event": "session.list.real",
+      "match": {
+        "sessionId": "s-b3-ondevice-0001",
+        "sessions": 1,
+        "running": false,
+        "blank": false
+      }
+    },
+    {
+      "event": "session.journal.real",
+      "match": {
+        "baseline": 11,
+        "lastType": "turn/end",
+        "frames": 19,
+        "live": 8
+      }
+    },
+    {
+      "event": "module.system.live",
+      "match": {
+        "mode": "live",
+        "bootstrap": "@deepseek-ai/dsh-client-modules (vendored)"
+      }
+    },
+    {
+      "event": "page.rendered",
+      "match": {
+        "moduleMode": "live",
+        "boot": false,
+        "rootHasChild": true
+      }
+    }
+  ]
+}

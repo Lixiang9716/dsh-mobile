@@ -7,13 +7,13 @@
  * thread); it takes well under a second. No extra JS-driving threads exist.
  *
  * One launch drives ALL THREE spike scenarios:
- *   - m1.spike.boot (regression): loader + seams + gateway negotiation;
- *   - m2.bridge.smoke: the real gateway bridge, served by the smoke backend
+ *   - boot.verification (regression): loader + seams + gateway negotiation;
+ *   - gateway.bridge-smoke: the real gateway bridge, served by the smoke backend
  *     in gateway_smoke.cpp (fs on the app dir as scope "app", keychain
  *     honestly unavailable, unknown primitives invalid), with deferred
  *     settlement — calls queue in the dispatch callback and settle on the
  *     post-pump drain pass, exactly like the desktop CLI twin;
- *   - m2.session: the mini agent session over the three system plugins
+ *   - session.mock-llm: the mini agent session over the three system plugins
  *     (registry + dsh-fs + dsh-subprocess-quickjs + dsh-ui), started by the
  *     host.info readiness event after eval.
  *
@@ -44,14 +44,14 @@ extern "C" {
 
 namespace {
 
-constexpr const char *DSH_ENTRY_M1 = "scenario/m1-spike-boot.js";
-constexpr const char *DSH_ENTRY_M2 = "scenario/m2-bridge-smoke.js";
-constexpr const char *DSH_ENTRY_SESSION = "scenario/m2-session.js";
+constexpr const char *DSH_ENTRY_M1 = "scenario/boot-verification.js";
+constexpr const char *DSH_ENTRY_M2 = "scenario/gateway-bridge-smoke.js";
+constexpr const char *DSH_ENTRY_SESSION = "scenario/session-mock-llm.js";
 constexpr const char *DSH_ENGINE_NAME = "quickjs-ng";
 constexpr const char *DSH_ENGINE_VERSION = "0.17.0";
-constexpr const char *DSH_SCENARIO_M1 = "m1.spike.boot";
-constexpr const char *DSH_SCENARIO_M2 = "m2.bridge.smoke";
-constexpr const char *DSH_SCENARIO_SESSION = "m2.session";
+constexpr const char *DSH_SCENARIO_M1 = "boot.verification";
+constexpr const char *DSH_SCENARIO_M2 = "gateway.bridge-smoke";
+constexpr const char *DSH_SCENARIO_SESSION = "session.mock-llm";
 /* Host readiness signal through the same gateway-event channel the desktop
  * backend uses: {"event":"host.info","port":0} — this embedder has no carrier,
  * so port 0. Scenarios waiting on it start after eval; scenarios without a
@@ -106,7 +106,7 @@ std::string join_path(const std::string &dir, const std::string &rel) {
 
 struct ScenarioResult {
     bool pass = false;
-    std::string verdict; /* "m1.spike.boot PASS complete=1 pass=1 ..." */
+    std::string verdict; /* "boot.verification PASS complete=1 pass=1 ..." */
 };
 
 /* Drive {pump → drain} until the scenario completes, an exception fires, or
@@ -161,7 +161,7 @@ ScenarioResult run_scenario(dsh_spike_t *spike, const std::string &bundle_root,
 /* Same, but over the gateway bridge: the smoke backend answers dispatched
  * calls (queued, then settled by the pump loop). ready_event (nullable) is
  * delivered once after eval, before the first pump pass — the host readiness
- * signal m2.session waits on. */
+ * signal session.mock-llm waits on. */
 ScenarioResult run_smoke_scenario(dsh_spike_t *spike,
                                   const std::string &bundle_root,
                                   const char *scenario, const char *entry,
@@ -242,7 +242,7 @@ ScenarioResult run_m2(const std::string &bundle_root, dsh_spike_sink *sink,
     return res;
 }
 
-/* m2.session — the mini agent session over the three system plugins; same
+/* session.mock-llm — the mini agent session over the three system plugins; same
  * smoke backend, plus the host.info readiness event after eval. */
 ScenarioResult run_session(const std::string &bundle_root, dsh_spike_sink *sink,
                            SinkCtx *sink_ctx, const char *fs_root) {
@@ -349,7 +349,7 @@ napi_value start_spike(napi_env env, napi_callback_info info) {
  * Mutator return codes (the drive step's verdict): -1 runtime error,
  * 0 running, 1 complete+pass, 2 complete+fail. */
 
-constexpr const char *DSH_SCENARIO_BINDING = "m5.host-binding";
+constexpr const char *DSH_SCENARIO_BINDING = "harmony.capability-binding";
 
 struct PhaseHandlers {
     napi_ref on_bus = nullptr;      /* (line: string) => void        */

@@ -10,7 +10,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Drives the M4 completion session (`m4.host-binding`) — the Android
+ * Drives the M4 completion session (`android.capability-binding`) — the Android
  * sibling of hosts/ios SessionRuntime.swift + GatewaySession.swift combined:
  * one C runtime on the single serial HandlerThread, the loopback carrier
  * ([CarrierServer]) serving the embedded Web Client in front of it, the
@@ -21,23 +21,23 @@ import org.json.JSONObject
  * handlers run off it (UI thread / fetch threads); every settle/event hops
  * back via SpikeRuntime.post (ARCHITECTURE.md §6 thread rules). Carrier-side
  * evidence rides the canonical `dsh.spike.log: ` envelope as scenario
- * `m4.host-binding` so one checker manifest covers the whole flow.
+ * `android.capability-binding` so one checker manifest covers the whole flow.
  */
 class SpikeHostM4 private constructor(
     private val activity: Activity,
     /** Carrier-side evidence scenario id + JS entry + capture label for this
-     * drive. The default is the M4 binding; the real-LLM drive (`m2.llm`)
+     * drive. The default is the M4 binding; the real-LLM drive (`llm.live-stream`)
      * overrides them — same host flow, different scenario. */
     private val scenarioId: String = SCENARIO,
     private val entryPath: String = ENTRY,
-    private val captureLabel: String = "m4-host-binding",
+    private val captureLabel: String = "android-capability-binding",
 ) {
 
     companion object {
-        const val SCENARIO = "m4.host-binding"
-        const val ENTRY = "scenario/m4-host-binding.js"
-        const val LLM_SCENARIO = "m2.llm.carrier"
-        const val LLM_ENTRY = "scenario/m2-llm.js"
+        const val SCENARIO = "android.capability-binding"
+        const val ENTRY = "scenario/android-capability-binding.js"
+        const val LLM_SCENARIO = "llm.live-stream.carrier"
+        const val LLM_ENTRY = "scenario/llm-live-stream.js"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -67,10 +67,10 @@ class SpikeHostM4 private constructor(
             return host
         }
 
-        /** The M2 real-LLM drive (scenario `m2.llm`): same carrier + WebView
+        /** The M2 real-LLM drive (scenario `llm.live-stream`): same carrier + WebView
          * + gateway flow, but the JS entry streams one real chat completion
          * through the gateway httpFetch. Credentials ride fs scope "app"
-         * (files/profiles/default/m2-llm/config.json), staged by the E2E
+         * (files/profiles/default/llm-live-stream/config.json), staged by the E2E
          * runner before launch. */
         fun startLlm(
             activity: Activity,
@@ -81,7 +81,7 @@ class SpikeHostM4 private constructor(
                 activity,
                 scenarioId = LLM_SCENARIO,
                 entryPath = LLM_ENTRY,
-                captureLabel = "m2-llm",
+                captureLabel = "llm-live-stream",
             )
             host.webView = webView
             instance = host

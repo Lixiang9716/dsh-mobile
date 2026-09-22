@@ -1,0 +1,13 @@
+{
+  "scenario": "ui.client-swap",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "client.selected", "match": { "client": "dsh-web-client-mini" } },
+    { "event": "webclient.mounted", "match": { "client": "dsh-web-client-mini", "path": "/index.html" } },
+    { "event": "ws.connected", "match": { "protocol": "session-projection@0" } },
+    { "event": "slot.registered", "match": { "id": "notes.toolbar", "label": "notes", "by": "dsh-notes" } },
+    { "event": "ws.token-delta", "match": { "first": true, "index": 0 } },
+    { "event": "ws.token-delta", "match": { "last": true, "index": 4 } },
+    { "event": "ws.session-complete", "match": { "status": "pass" } }
+  ]
+}

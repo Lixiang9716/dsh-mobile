@@ -52,9 +52,37 @@ const REGISTER_DOC = 'docs/e2e-matrix.md';
 const REGISTER_HEADER = ['code', 'file', 'owner', 'closes with'];
 /** The register size at which this checker first became gate-able: the seven
  *  host receipts awaiting their owning work stream's re-run plus the two
- *  quota-blocked harmony m2.llm verdicts. Accepting a NEW gap means raising
+ *  quota-blocked harmony llm.live-stream verdicts. Accepting a NEW gap means raising
  *  this number in the same change — deliberate and reviewed, never a drift. */
 const KNOWN_GAP_BUDGET = 9;
+
+/** Pre-rename scenario vocabulary (the 2026-09 "human-readable scenario
+ *  names" branch): committed historical verdicts record the OLD ids and
+ *  their verdict-<stem>.json files carry the OLD stems, while the
+ *  manifests under test/e2e/scenarios/ now live at the new names. Frozen
+ *  evidence is never edited, so resolution maps legacy stems/ids onto
+ *  their renamed manifests — old stem in, new stem out. A verdict naming
+ *  neither an old nor a new manifest still fails loud (rule 5). */
+const LEGACY_STEMS = new Map(Object.entries({
+  'm1-spike-boot': 'boot-verification', 'm1-carrier-loopback': 'carrier-loopback',
+  'm2-bridge-smoke': 'gateway-bridge-smoke', 'm2-gateway-binding': 'gateway-binding',
+  'm2-gateway-audit': 'gateway-audit', 'm2-session': 'session-mock-llm',
+  'm2-llm': 'llm-live-stream', 'm2-llm-device': 'llm-live-stream-device',
+  'm2-llm-carrier': 'llm-live-stream-carrier', 'm2-upstream-session': 'upstream-session',
+  'm2-upstream-boot': 'upstream-web-boot', 'm2-webclient-mount': 'webclient-mount',
+  'm3-install': 'install-verified-tarball', 'm3-complete': 'install-full-cycle',
+  'm3-fetch-install': 'install-from-http', 'm3-fetch-carrier': 'install-carrier-evidence',
+  'm3-ui-swap': 'ui-client-swap', 'm4-host-binding': 'android-capability-binding',
+  'm5-host-binding': 'harmony-capability-binding', 'b1-official-web-mount': 'officialweb-mount',
+  'b3-session-live': 'session-live-read', 'b4-write-live': 'composer-live-write',
+  'b-android-official-web-mount': 'android-officialweb-mount',
+  'b-android-session-live': 'android-session-live-read', 'b-android-write-live': 'android-composer-live-write',
+  'b-harmony-official-web-mount': 'harmony-officialweb-mount',
+  'b-harmony-session-live': 'harmony-session-live-read',
+  'b-harmony-write-live': 'harmony-composer-live-write',
+  'b-harmony-httpfetch-v2': 'harmony-httpfetch-streaming', 'ish-shell-local': 'userland-shell-local',
+  'settings-surfaces-cli': 'settings-surfaces',
+}));
 
 const usage = () => {
   console.error('usage: matrix.mjs [--root <repo-root>] [--out <inventory.json>] ' +
@@ -127,12 +155,17 @@ const checkVerdict = (root, file, manifestDir) => {
     expected: v.expected, logged: v.logged };
   // Manifest resolution: prefer the verdict file's own stem
   // (verdict-<stem>.json → scenarios/<stem>.json — several manifests may
-  // share one scenario id, e.g. the m2.llm CLI vs device legs), falling
-  // back to the scenario-id convention for plain verdict.json files.
+  // share one scenario id, e.g. the llm.live-stream CLI vs device legs), falling
+  // back to the scenario-id convention for plain verdict.json files. Both
+  // legs route through LEGACY_STEMS so pre-rename evidence resolves the
+  // renamed manifests (frozen verdicts name the old vocabulary).
   const stem = (/^verdict-(.+)\.json$/.exec(baseName(file)) ?? [])[1];
-  let manifest = join(manifestDir, `${v.scenario.replace(/\./g, '-')}.json`);
-  if (stem && statSafe(join(manifestDir, `${stem}.json`))) {
-    manifest = join(manifestDir, `${stem}.json`);
+  const idStem = LEGACY_STEMS.get(v.scenario.replace(/\./g, '-')) ??
+    v.scenario.replace(/\./g, '-');
+  const stemStem = stem ? (LEGACY_STEMS.get(stem) ?? stem) : null;
+  let manifest = join(manifestDir, `${idStem}.json`);
+  if (stemStem && statSafe(join(manifestDir, `${stemStem}.json`))) {
+    manifest = join(manifestDir, `${stemStem}.json`);
   }
   out.manifest = relative(root, manifest);
   let repeatAware = false;

@@ -1,6 +1,6 @@
 // dsh:logging-exempt (named route: evidence rides the phase sink)
 /**
- * SessionWriteProbe — the b-harmony.write.live same-origin probe (the
+ * SessionWriteProbe — the harmony.composer.live-write same-origin probe (the
  * harmony twin of hosts/ios SessionWriteProbe.swift): the page is untouched
  * upstream code — the probe defines `__b4w.*` helpers plus THREE parked leg
  * functions that drive the OFFICIAL UI like a user: pick the seeded

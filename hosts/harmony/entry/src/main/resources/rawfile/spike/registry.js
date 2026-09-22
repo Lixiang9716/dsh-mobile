@@ -1,5 +1,5 @@
 /**
- * Spike service registry — the plugin mounting point the m2.session scenario
+ * Spike service registry — the plugin mounting point the session.mock-llm scenario
  * boots (the Harness core's real registry arrives with the upstream runtime;
  * this is the smallest thing that proves the plugin shape end to end).
  *

@@ -7,15 +7,15 @@ Subprocesses are designed as unavailable; store-review posture to be verified in
 
 ONE launch on the emulator now proves the host end to end in two phases:
 
-1. **Regression trio (synchronous)** — `startSpike` runs `m1.spike.boot`
-   (7/7), `m2.bridge.smoke` (6/6) over the REAL gateway dispatch bridge, and
-   `m2.session` (23/23, the notes.installed manifest) on the ONE serial JS
+1. **Regression trio (synchronous)** — `startSpike` runs `boot.verification`
+   (7/7), `gateway.bridge-smoke` (6/6) over the REAL gateway dispatch bridge, and
+   `session.mock-llm` (23/23, the notes.installed manifest) on the ONE serial JS
    thread inside the NAPI call.
 2. **Binding phase (event-driven)** — `CarrierServer.ets` serves the
    materialized `presentation/web-client` over loopback HTTP and pumps a
    minimal RFC 6455 WS text-frame channel; ArkWeb mounts the page
    (`webclient.mounted` -> `ws.connected`), `HostPhase.ets` evals
-   `scenario/m5-host-binding.js` and delivers `host.info`, and the
+   `scenario/harmony-capability-binding.js` and delivers `host.info`, and the
    scenario drives the REAL binding primitives: approval dialog (custom
    ArkUI, driver taps Approve), notification lifecycle (publish with a
    wantAgent -> Home -> notification-center tap -> `notify.response` +
@@ -84,18 +84,18 @@ ONE launch chains four D9 phases after the m5 verdict (each on a FRESH
 runtime; every phase's capture file holds exactly its own manifest's
 records):
 
-1. **b-harmony.official-web-mount** — the ArkTS carrier implements the
+1. **harmony.officialweb.mount** — the ArkTS carrier implements the
    `ctx.webServer` contract subset: `WebDist` (fallback), `WebPlugins`
    (/plugins combos), `ApiBridge` (/api envelope + /api/remote.mux mux
-   seat). A fresh runtime runs the canonical `b1-web-live` scenario, posts
+   seat). A fresh runtime runs the canonical `officialweb-web-live` scenario, posts
    `web.boot` over the bus seam, the carrier swaps the rows into the index
    render pipeline, and ArkWeb mounts the official app; the same-origin
    probe reads module.system.live / app.shell.rendered / page.rendered.
-2. **b-harmony.httpfetch-v2** — `HttpFetch.ets` serves the httpFetch
+2. **harmony.httpfetch-streaming** — `HttpFetch.ets` serves the httpFetch
    primitive over `@ohos.net.http requestInStream` (streaming body, abort,
    refused); the proof scenario runs against the live carrier.
-3. **b-harmony.session.live** (W-HARMONY3) — the FULL upstream agent spine
-   boots in a fresh runtime (`harmony-session-live.js` → `upstream/boot.js`:
+3. **harmony.session.live-read** (W-HARMONY3) — the FULL upstream agent spine
+   boots in a fresh runtime (`harmony-session-live-read.js` → `upstream/boot.js`:
    ctx.sessions / agents / agentLoop / tools / systemPrompt /
    sessionProjections / settings + the vendored dsh-llm `LlmRuntime` whose
    transport is the REAL gateway httpFetch against the carrier's SCRIPTED
@@ -108,10 +108,10 @@ records):
    attaches the mux journal stream, collects the 19 frames (11-event
    baseline + the 8-event live turn 2), and reads the rendered state.
    The runtime half stays resident; the verdict is the drive's
-   (`dsh.spike.verdict: b-harmony.session.live`).
-4. **b-harmony.write.live** (W-HARMONY4) — the SESSION WRITE surface: a
+   (`dsh.spike.verdict: harmony.session.live-read`).
+4. **harmony.composer.live-write** (W-HARMONY4) — the SESSION WRITE surface: a
    fresh runtime boots the spine and the web-boot producer composes WITH
-   the write surface (`harmony-write-live.js` → `upstream/web-write.js`):
+   the write surface (`harmony-composer-live-write.js` → `upstream/web-write.js`):
    `session/create` + `session/prompt` (upstream commands.prompt
    admission: `{accepted:true}` without awaiting the turn),
    `settings/describe|update|mutate` (the real vendored provider, the
@@ -125,7 +125,7 @@ records):
    11 events) streamed live over the mux and rendered in the official DOM
    (the reply screenshot). Everything the spine does not implement stays
    structured-unavailable. Verdict: `dsh.spike.verdict:
-   b-harmony.write.live`.
+   harmony.composer.live-write`.
 
 The spine closure travels in `rawfile/spike/` byte-identical to the
 runtime/spike canonicals: `ci/vendor-official.sh` copies + cmp-verifies the
@@ -150,7 +150,7 @@ runtime); settlement rides later UI-callback ticks.
 
 The original carrier spike that embedded the merged M1 core spike
 ([runtime/spike/README.md](../../runtime/spike/README.md)) and verified scenario
-`m1.spike.boot` on the local HarmonyOS emulator. Evidence:
+`boot.verification` on the local HarmonyOS emulator. Evidence:
 [artifacts/m1-spike/](artifacts/m1-spike/) (logs, sink capture, verdict, screenshot,
 receipt).
 
@@ -169,7 +169,7 @@ Layout:
   three system plugins, and the vendored util-crypto package) into the app cache dir
   preserving layout, then calls `startSpike` ONCE and shows the returned verdict.
 - `entry/src/main/resources/rawfile/spike/` — the bundled spike JS (kept byte-identical
-  to the `runtime/spike/` and `system-plugins/` originals; the m1-spike-boot.js copy
+  to the `runtime/spike/` and `system-plugins/` originals; the boot-verification.js copy
   was found stale after the M2 slimming landed upstream and is refreshed here — drift
   in these copies is silent otherwise, see the surprise ledger).
 
@@ -186,10 +186,10 @@ One command drives the whole on-emulator E2E (start the emulator first —
 ```sh
 hosts/harmony/ci/run-host-e2e.sh [artifacts-dir]
 # build -> install -> launch -> hilog-tailed UI automation (uitest) ->
-# capture pull -> 8 checker verdicts (m1.spike.boot, m2.bridge.smoke,
-# m2.session, m5.host-binding, b-harmony.official-web-mount,
-# b-harmony.httpfetch-v2, b-harmony.session.live,
-# b-harmony.write.live) + screenshots;
+# capture pull -> 8 checker verdicts (boot.verification, gateway.bridge-smoke,
+# session.mock-llm, harmony.capability-binding, harmony.officialweb.mount,
+# harmony.httpfetch-streaming, harmony.session.live-read,
+# harmony.composer.live-write) + screenshots;
 # DSH_SKIP_BUILD=1 skips hvigor
 ```
 
@@ -214,10 +214,10 @@ HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 "$HDC" shell snapshot_display -f /data/local/tmp/m5-screenshot.jpeg
 "$HDC" file recv /data/local/tmp/m5-screenshot.jpeg .
 
-node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m1-spike-boot.json --log sink-capture.txt
-node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m2-bridge-smoke.json --log sink-capture.txt
-node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m2-session.json --log sink-capture.txt
-node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m5-host-binding.json --log binding-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/boot-verification.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/gateway-bridge-smoke.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/session-mock-llm.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/harmony-capability-binding.json --log binding-capture.txt
 ```
 
 No signing config is needed: the emulator accepts the unsigned debug HAP via

@@ -1,0 +1,28 @@
+{
+  "scenario": "install.verified-tarball",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "fs.ready", "match": { "service": "fs" } },
+    { "event": "fixture.built", "match": { "members": 2, "bytes": 3584 } },
+    { "event": "install.started", "match": { "pkg": "dsh-notes", "version": "0.1.0" } },
+    { "event": "install.blob.stored", "match": { "sha256": "eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56", "bytes": 3584 } },
+    { "event": "install.digest.verified", "match": { "sha256": "eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56" } },
+    { "event": "install.manifest.validated", "match": { "id": "dsh-notes", "version": "0.1.0" } },
+    { "event": "install.integrity.computed", "match": { "files": 2, "manifestSha256": "26d16425d35d55800325345d53375ace7a9f8f1d3f794fb5b71ae62d6ae99358" } },
+    { "event": "install.negotiated", "match": { "required": 2, "skipped": false } },
+    { "event": "install.staged.verified", "match": { "files": 3 } },
+    { "event": "install.promoted", "match": { "dir": "plugins/dsh-notes@0.1.0", "files": 3 } },
+    { "event": "install.committed", "match": { "status": "committed", "previousVersion": null, "treeSha256": "a7c1a54bab6caa41055a0d7b4086d6e41ecf7cb74c846490304d87ddeda51a4d" } },
+    { "event": "install.receipt.asserted", "match": { "status": "committed", "id": "dsh-notes", "version": "0.1.0", "blobSha256": "eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56" } },
+    { "event": "install.layout.asserted", "match": { "manifest": true, "integrity": true, "entry": true } },
+    { "event": "installed.loaded", "match": { "id": "dsh-notes", "moduleId": "plugins/dsh-notes@0.1.0/bundle/index.js" } },
+    { "event": "notes.write.ok", "match": { "path": "install-verified-tarball/notes/first.txt", "written": 20 } },
+    { "event": "notes.read.ok", "match": { "text": "hello from dsh-notes" } },
+    { "event": "install.tampered.built", "match": { "bytes": 3584 } },
+    { "event": "install.blob.stored", "match": { "sha256": "996203cefae6310f978382f7cac5d0fb3769f7b31e536fc101a005dcc0da0764", "bytes": 3584 } },
+    { "event": "install.integrity-rejected", "match": { "expected": "eb478c292d671deac3617f2759a0a44293cbf292b17b0233677aa3a871b4dd56", "actual": "996203cefae6310f978382f7cac5d0fb3769f7b31e536fc101a005dcc0da0764" } },
+    { "event": "install.tree.intact", "match": { "verified": true } },
+    { "event": "install.completed", "match": { "status": "pass", "committed": 1, "rejected": 1 } }
+  ]
+}

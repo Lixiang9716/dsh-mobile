@@ -3,7 +3,7 @@
 
 The harness (Debug) drives the E2E legs, and its runners stage the official
 dist + client bundles into the app CONTAINER (Documents/official-web,
-Documents/web-plugins) before launch — test/e2e/run-ios-b1.sh is the
+Documents/web-plugins) before launch — test/e2e/run-ios-official-web-mount.sh is the
 reference. A user-facing build has no runner: a plain launch must reach the
 official DSH Web UI with nothing staged from outside. So the release build
 EMBEDS the same two trees as app bundle resources:
@@ -40,7 +40,7 @@ OFFICIAL = REPO / "presentation" / "official-web"
 DIST = OFFICIAL / "dist"
 CLIENT_NPM = OFFICIAL / "client-bundles" / "npm"
 # The pinned vendored tarball wins for the bootstrap package (D6 pin record;
-# the same precedence test/e2e/run-ios-b1.sh and the Android staging apply).
+# the same precedence test/e2e/run-ios-official-web-mount.sh and the Android staging apply).
 VENDORED_BOOTSTRAP = (
     REPO / "runtime" / "spike" / "vendor" / "npm"
     / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2"

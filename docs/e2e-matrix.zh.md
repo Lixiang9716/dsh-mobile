@@ -174,15 +174,15 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 
 | code | file | owner | closes with |
 | --- | --- | --- | --- |
-| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 工作流（#65） | run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live 绿色运行 ＋ 该 runner 的 receipt 步骤 |
+| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 工作流（#65） | run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live 绿色运行 ＋ 该 runner 的 receipt 步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony 工作流（#64） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android 工作流（#63） | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android 工作流（#66） | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android 工作流（#72） | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh（重置时间 2026-09-22 14:43:53） |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh（重置时间 2026-09-22 14:43:53） |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh（重置时间 2026-09-22 14:43:53） |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony 工作流（#79） | 配额恢复后 DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh（重置时间 2026-09-22 14:43:53） |
 
 （检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
 是源；本表为读者保留等价的中文渲染。）
@@ -272,7 +272,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
    审计均为干净。被服务的轮次明确不予声明——README.md 的 M5 行在两种语言
    里都这么写。`receipt.json` 记录 `status: blocked-on-quota` 与
    `exitCode: 1`。**收口（归 harmony 工作流所有）：** 配额恢复后执行
-   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh`——无需改代码；它必须
+   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh`——无需改代码；它必须
    以退出码 0 结束且两条 verdict JSON 全绿，刷新的证据回到本目录，并翻转
    README 的相应从句。
 9. **`hosts/harmony/artifacts/m5-m2-llm/` 的 `m2.llm.carrier` verdict 是

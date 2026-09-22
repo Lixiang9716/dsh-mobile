@@ -1,7 +1,7 @@
 // dsh:logging-exempt (hilog markers drive the E2E UI automation; canonical
 // lines route through the phase sink via hostCarrierLine — ONE writer)
 /**
- * OfficialPhase — the D9 EVIDENCE drive (b-harmony.official-web-mount), the
+ * OfficialPhase — the D9 EVIDENCE drive (harmony.officialweb.mount), the
  * harmony twin of hosts/ios OfficialWebRuntime.swift + the b1 half of
  * WebBootRuntimeDrive.swift. It owns everything that exists to VERIFY the
  * host and nothing that exists to SERVE it: the official serving stack
@@ -27,7 +27,7 @@
  * transport, scripted output), and the b3 probe drives the read path
  * through the official envelope (SessionLiveProbe.ets). A passing
  * session-live leg chains into the FOURTH leg, the session WRITE surface
- * (W-HARMONY4, b-harmony.write.live): the web-boot runtime composes WITH
+ * (W-HARMONY4, harmony.composer.live-write): the web-boot runtime composes WITH
  * upstream/web-write.js, and the write probe drives the OFFICIAL composer
  * like a user — the page's own message admits a REAL upstream agent-loop
  * turn, streamed live over the mux session/follow and rendered in the
@@ -48,20 +48,20 @@ import { SessionWriteProbe, WriteVerdict, WriteLegEvent, WRITE_MESSAGE } from '.
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
-const SCENARIO_OFFICIAL = 'b-harmony.official-web-mount';
-const SCENARIO_HTTPFETCH = 'b-harmony.httpfetch-v2';
+const SCENARIO_OFFICIAL = 'harmony.officialweb.mount';
+const SCENARIO_HTTPFETCH = 'harmony.httpfetch-streaming';
 /** The session-live leg (W-HARMONY3): the FULL spine boots in a fresh
  * runtime, session.list + the mux journal are CLAIMED and answered from
  * ctx.sessions. */
-const SCENARIO_SESSION = 'b-harmony.session.live';
+const SCENARIO_SESSION = 'harmony.session.live-read';
 /** The write leg (W-HARMONY4): the web-boot runtime composes WITH the write
  * surface (upstream/web-write.js) — the official composer send
  * (`POST /api/session/prompt`) admits a REAL upstream agent-loop turn and the
  * reply streams live over the mux session/follow into the official UI. */
-const SCENARIO_WRITE = 'b-harmony.write.live';
-const ENTRY_HTTPFETCH = 'scenario/harmony-httpfetch-v2.js';
-const ENTRY_SESSION = 'scenario/harmony-session-live.js';
-const ENTRY_WRITE = 'scenario/harmony-write-live.js';
+const SCENARIO_WRITE = 'harmony.composer.live-write';
+const ENTRY_HTTPFETCH = 'scenario/harmony-httpfetch-streaming.js';
+const ENTRY_SESSION = 'scenario/harmony-session-live-read.js';
+const ENTRY_WRITE = 'scenario/harmony-composer-live-write.js';
 /** The SCRIPTED model boundary of the session-live leg (the platform twin
  * of iOS CarrierRoutes.registerScriptedLlm): a real loopback HTTP + SSE
  * endpoint mirroring the vendored dsh-llm-mock-server's success stream

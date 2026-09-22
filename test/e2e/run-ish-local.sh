@@ -7,9 +7,9 @@
 #
 #   1. the C gate — runtime/spike/build/ish/ish-smoke boots the guest and runs
 #      commands straight through the seam (no JS, no simulator);
-#   2. the JS gate — the desktop CLI runs scenario/ish-shell.js, which goes
+#   2. the JS gate — the desktop CLI runs scenario/userland-shell.js, which goes
 #      scenario → plugin executor → gateway `ishRun` → the host backend → the
-#      guest, and whose records test/e2e/scenarios/ish-shell-local.json matches
+#      guest, and whose records test/e2e/scenarios/userland-shell-local.json matches
 #      one-to-one.
 #
 # And then the part the logs cannot carry on their own: the DELIVERABLE. The
@@ -25,7 +25,7 @@
 set -e
 cd "$(dirname "$0")/../.."
 
-ART=runtime/spike/artifacts/macos-cli-ish-shell
+ART=runtime/spike/artifacts/macos-cli-userland-shell
 ROOTFS=""
 ROOTFS_OVERRIDE=0
 SKIP_BUILD=0
@@ -142,10 +142,10 @@ rm -f "$LOG"
 # workspace so the deliverable below is a known path.
 (cd runtime/spike && \
     DSH_ISH_ROOTFS="$ROOTFS" DSH_SPIKE_TMPDIR="$WORKSPACE" \
-    ./build/dsh-spike-cli . scenario/ish-shell.js > "$LOG" 2>&1) || true
+    ./build/dsh-spike-cli . scenario/userland-shell.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
-node test/e2e/check.mjs --manifest test/e2e/scenarios/ish-shell-local.json \
-    --log "$LOG" --out "$ART/verdict-ish-shell-local.json"
+node test/e2e/check.mjs --manifest test/e2e/scenarios/userland-shell-local.json \
+    --log "$LOG" --out "$ART/verdict-userland-shell-local.json"
 
 echo "== 5/5 deliverables =="
 printf '%s\n' "$EXPECTED_TEXT" > "$ART/expected-deliverable.txt"
@@ -173,11 +173,11 @@ cat > "$ART/receipt.json" <<EOF
  "engineVersion": "OpenMinis/ish-arm64 e1d579480fba88e8f0428e3cf23811bcdd05421f, vendored + sha256-pinned by runtime/spike/vendor/ensure-ish.sh",
  "guestRoot": "Alpine 3.21.8 aarch64 minirootfs (sha256 $ROOTFS_SHA256)",
  "phase": "contract v1.3.0 \`ishRun\` — a real Linux userland running INSIDE the host process (no child process, no second OS), driven from the JS layer through system-plugins/dsh-shell-ish",
- "launchConfiguration": "(cd runtime/spike) ./build/dsh-spike-cli . scenario/ish-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
+ "launchConfiguration": "(cd runtime/spike) ./build/dsh-spike-cli . scenario/userland-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
  "scenarios": [
   {
-   "id": "ish.shell",
-   "checker": "test/e2e/scenarios/ish-shell-local.json",
+   "id": "userland.shell",
+   "checker": "test/e2e/scenarios/userland-shell-local.json",
    "result": "pass",
    "note": "11 records, one-to-one: guest identity (uname/alpine-release/id), a pipeline, a separated stderr stream with exit 7, a file the guest wrote and the JS layer read back, a hung command killed by the deadline, and a command after the kill"
   }

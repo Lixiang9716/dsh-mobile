@@ -5,8 +5,8 @@
  * complete) on the CALLING thread; Kotlin keeps that caller a single
  * dedicated HandlerThread for the life of the process, so the JS runtime is
  * touched by exactly one serial thread (ARCHITECTURE.md §6 thread rules).
- * One launch drives BOTH scenarios: the m1.spike.boot regression and the
- * m2.bridge.smoke gateway-bridge scenario (backend in dsh_spike_smoke.c).
+ * One launch drives BOTH scenarios: the boot.verification regression and the
+ * gateway.bridge-smoke gateway-bridge scenario (backend in dsh_spike_smoke.c).
  *
  * Each canonical E2E line the host sink receives goes out UNMODIFIED to both:
  *   - logcat under tag "dsh.spike" (the CI-captured stream), and
@@ -36,12 +36,12 @@ typedef struct dsh_scenario {
 } dsh_scenario;
 
 static const dsh_scenario DSH_SCENARIOS[] = {
-        {"m1.spike.boot", "scenario/m1-spike-boot.js",
-         "spike-capture-m1-spike-boot.log"},
-        {"m2.bridge.smoke", "scenario/m2-bridge-smoke.js",
-         "spike-capture-m2-bridge-smoke.log"},
-        {"m2.session", "scenario/m2-session.js",
-         "spike-capture-m2-session.log"},
+        {"boot.verification", "scenario/boot-verification.js",
+         "spike-capture-boot-verification.log"},
+        {"gateway.bridge-smoke", "scenario/gateway-bridge-smoke.js",
+         "spike-capture-gateway-bridge-smoke.log"},
+        {"session.mock-llm", "scenario/session-mock-llm.js",
+         "spike-capture-session-mock-llm.log"},
 };
 
 static void dsh_sink_log(void *ud, const char *line) {
@@ -88,7 +88,7 @@ static char *dsh_read_all(const char *path) {
 }
 
 /* Appends one per-scenario verdict line to the result tag and the response
- * buffer ("m1.spike.boot PASS | quickjs-ng 0.17.0 | error: ..."). */
+ * buffer ("boot.verification PASS | quickjs-ng 0.17.0 | error: ..."). */
 static void dsh_report(const dsh_scenario *sc, int passed, const char *err,
                        char *out, size_t out_sz) {
     char line[DSH_ERR_MAX + 128];

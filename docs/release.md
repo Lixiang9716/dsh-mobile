@@ -222,7 +222,7 @@ binary has no drives.
 
 Only needed for `dsh-ios-harness`: it embeds nothing, so the carrier needs
 the vendored official dist in the app container before the official-web
-drive (`b1.official-web.mount`) can serve it.
+drive (`officialweb.mount`) can serve it.
 
 ```sh
 # 1. materialize the three untracked trees locally (manifest-verified)
@@ -240,7 +240,7 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 #    both: dist → Documents/official-web/dist
 #          client bundles → Documents/web-plugins/npm/@deepseek-ai/
 #          the vendored bootstrap package overrides its built twin
-#          (see test/e2e/run-ios-b1.sh steps 4/4b for the exact tree ops)
+#          (see test/e2e/run-ios-official-web-mount.sh steps 4/4b for the exact tree ops)
 
 # 3. launch in official-web mode
 #    simulator:
@@ -251,8 +251,8 @@ xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
 ```
 
 A real chat turn additionally needs credentials in
-`Documents/profiles/default/m2-llm/config.json` (`{baseUrl, apiKey, model}`)
-and the `-dsh-scenario m2-llm` launch argument; the key stays in the app
+`Documents/profiles/default/llm-live-stream/config.json` (`{baseUrl, apiKey, model}`)
+and the `-dsh-scenario llm-live-stream` launch argument; the key stays in the app
 container, never in the repository.
 
 ## Android

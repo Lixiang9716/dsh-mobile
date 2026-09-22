@@ -2,7 +2,7 @@
 // waits for these `dsh.app` markers; canonical evidence rides the scenario's
 // own sink, never this module)
 /**
- * LlmConfigStaging — the credential handoff for the `m2.llm` leg.
+ * LlmConfigStaging — the credential handoff for the `llm.live-stream` leg.
  *
  * The guest platform has no `run-as` twin of the Android host, and neither
  * the hdc shell user nor the app alone can produce a file the OTHER side can
@@ -13,9 +13,9 @@
  *
  *   1. the RUNTIME creates the placeholder — `e2e-stage.js` asks the C-side
  *      app-scope fsWrite (fopen, mode 0666) for `<filesDir>/spike-fs/
- *      m2-llm/config.json` = `{}` and posts `stage.ready` on the bus seam,
+ *      llm-live-stream/config.json` = `{}` and posts `stage.ready` on the bus seam,
  *      which HostPhase turns into the `stage-ready` drive marker;
- *   2. `hosts/harmony/ci/run-m2-llm.sh` waits for that marker, then writes
+ *   2. `hosts/harmony/ci/run-live-llm.sh` waits for that marker, then writes
  *      the real credentials over the placeholder with `hdc file send` (the
  *      shell user may open, never create) and keeps them in its own 0600
  *      temp file only — never echoed, never committed;

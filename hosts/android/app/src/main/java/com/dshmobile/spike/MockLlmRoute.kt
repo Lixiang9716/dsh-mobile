@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 /**
  * POST /mock-llm/chat/completions — the SCRIPTED model boundary of the
- * on-device session-live drive (b-android.session.live): a real loopback
+ * on-device session-live drive (android.session.live-read): a real loopback
  * HTTP + SSE endpoint on the carrier whose script mirrors the vendored
  * dsh-llm-mock-server's success stream byte-for-byte (successText
  * 'Hello from upstream', chunkSize 5, terminal chunk with finish_reason +

@@ -1,0 +1,13 @@
+{
+  "scenario": "carrier.loopback",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "runtime.created", "match": { "engine": "quickjs-ng", "engineVersion": "0.17.0" } },
+    { "event": "carrier.listening", "match": { "transport": "tcp", "loopback": true } },
+    { "event": "carrier.http.served", "match": { "paths": ["/", "/carrier-page.js"], "count": 2 } },
+    { "event": "carrier.ws.connected", "match": { "state": "open" } },
+    { "event": "carrier.ws.echo", "match": { "matched": true, "transport": "ws" } },
+    { "event": "carrier.push.delivered", "match": { "transport": "ws" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

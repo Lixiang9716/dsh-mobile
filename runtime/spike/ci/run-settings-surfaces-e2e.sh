@@ -16,7 +16,7 @@
 # llm route is a never-dialed placeholder).
 #
 # The captured log is verified one-to-one against
-# test/e2e/scenarios/settings-surfaces-cli.json. Artifacts:
+# test/e2e/scenarios/settings-surfaces.json. Artifacts:
 # runtime/spike/artifacts/macos-cli-settings-surfaces/.
 #
 # usage: run-settings-surfaces-e2e.sh   (artifacts: .../macos-cli-settings-surfaces)
@@ -47,19 +47,19 @@ trap cleanup EXIT INT TERM
 
 # 4. run the scenario (--bus-inject: the staged web.plugins delivery; --env:
 #    the never-dialed llm placeholder the boot demands) and verify one-to-one.
-./build/dsh-spike-cli . scenario/settings-surfaces-cli.js \
+./build/dsh-spike-cli . scenario/settings-surfaces.js \
     --bus-inject "$PAYLOAD" \
     --env "DSH_SETTINGS_LLM_BASEURL=http://127.0.0.1:1" > logs-settings-surfaces.txt
 mkdir -p "$ART_DIR"
 cp logs-settings-surfaces.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-settings-surfaces.txt > "$ART_DIR/scenario.jsonl"
 node "$ROOT/test/e2e/check.mjs" \
-    --manifest "$ROOT/test/e2e/scenarios/settings-surfaces-cli.json" \
+    --manifest "$ROOT/test/e2e/scenarios/settings-surfaces.json" \
     --log logs-settings-surfaces.txt \
     --out "$ART_DIR/verdict.json"
 
 # 5. the receipt (what this run proves; one JSON document).
-EVENTS="$(grep -c '"scenario":"settings.surfaces.cli"' logs-settings-surfaces.txt)"
+EVENTS="$(grep -c '"scenario":"settings.surfaces"' logs-settings-surfaces.txt)"
 cat > "$ART_DIR/receipt.json" <<EOF
 {
   "host": "$(uname -s | tr '[:upper:]' '[:lower:]')-cli ($(uname -sr) $(uname -m))",
@@ -69,7 +69,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 incl. dsh-client-modules + dsh-agent-presets (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh) + the W-SHELL application tier (presentation/official-web/client-bundles)",
   "kernel": "@deepseek-ai/cordis@4.0.2",
-  "scenario": "settings.surfaces.cli",
+  "scenario": "settings.surfaces",
   "proves": [
     "the official client's Agent 预设 screen loads real data: the REAL vendored AgentPresets service (mounted on the mobile spine with the cordis Loader service) answers agentPresets/list with the shipped roster (cordis/minimal/ptc/standard), the deployment default marked, and honest per-preset health verdicts over the staged presets VFS",
     "agentPresets/read answers the default preset's composition document from the staged presets tree, and agentPresets/copy refuses with the upstream agent-preset/read-only RemoteError (the staged fs has no user root — authoring is refused, never faked)",
@@ -77,7 +77,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "the plugin-manager write machinery stays UNCLAIMED: pluginManager/listBundles answers the runtime's structured gateway/unimplemented — fail loud, never a fake",
     "ONE cordis Loader service serves both the presets inject and the web-boot client composition's entries()/internal.resolveSync face — the unification that lets the presets mount ship without breaking the proven web.plugins path"
   ],
-  "checker": "test/e2e/scenarios/settings-surfaces-cli.json",
+  "checker": "test/e2e/scenarios/settings-surfaces.json",
   "events": $EVENTS,
   "exitCode": 0
 }

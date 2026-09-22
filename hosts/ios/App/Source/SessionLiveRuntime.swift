@@ -1,7 +1,7 @@
 import Foundation
 import WebKit
 
-/// Drives `b3.session.live` (the W-SESS leg, decision D9): the FULL upstream
+/// Drives `session.live-read` (the W-SESS leg, decision D9): the FULL upstream
 /// agent spine boots ON-DEVICE (upstream/boot.js over the vendored closure —
 /// ctx.sessions / agents / agentLoop / tools / systemPrompt / projections /
 /// settings + the vendored dsh-llm LlmRuntime whose transport is the REAL
@@ -17,7 +17,7 @@ import WebKit
 /// surface boundary is frozen in the manifest — endpoints the spine does
 /// not implement stay structured-unavailable, never faked.
 final class SessionLiveRuntime {
-    static let scenario = "b3.session.live"
+    static let scenario = "session.live-read"
     static let clientID = "dsh-web-official"
     static let watchdogSeconds = 150
 
@@ -299,7 +299,7 @@ final class SessionLiveRuntime {
                      "apiKey": CarrierServer.mockLlmKey,
                      "containerRoot": bundleRoot.path],
             scenario: dsh_spike_res_scenario_b3_web_live_js,
-            scenarioPath: "scenario/b3-web-live.js",
+            scenarioPath: "scenario/session-web-live.js",
             gateway: true)
     }
 

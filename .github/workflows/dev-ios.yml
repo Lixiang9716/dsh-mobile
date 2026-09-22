@@ -1,14 +1,14 @@
 name: dev/ios
 # End-to-end iOS pipeline. Since M1 this builds the spike app in hosts/ios
 # (quickjs-ng + dsh_spike_host.c) and, when the runner has a usable iOS
-# simulator, runs BOTH spike scenarios — m1.spike.boot (runtime shim) and
-# m1.carrier.loopback (loopback static+WS carrier) — in one launch and
+# simulator, runs BOTH spike scenarios — boot.verification (runtime shim) and
+# carrier.loopback (loopback static+WS carrier) — in one launch and
 # verifies the canonical log lines with the shared checker
 # (test/e2e/check.mjs) — logs are the verdict, screenshots are never
 # asserted on (docs/ARCHITECTURE.md).
 #
-# Since M2 it also checks m2.gateway.binding + the gateway audit stream
-# (test/e2e/scenarios/m2-gateway-*.json). HONEST LIMITATION: that scenario
+# Since M2 it also checks gateway.binding + the gateway audit stream
+# (test/e2e/scenarios/gateway-*.json). HONEST LIMITATION: that scenario
 # is UI-driven (permission alert, Files picker, approval dialog, notification
 # banner) and hosted CI runners have no idb/UI driver, so the m2 leg cannot
 # complete here — its step is continue-on-error and expected to skip/warn.
@@ -173,7 +173,7 @@ jobs:
       # is available this step must be green too; a red here with green
       # build is reported, not hidden (the verdict file + logs are uploaded
       # either way for diagnosis).
-      - name: Run m1.spike.boot + m1.carrier.loopback on simulator and verify
+      - name: Run boot.verification + carrier.loopback on simulator and verify
         id: spike-run
         run: |
           set -euo pipefail
@@ -300,12 +300,12 @@ jobs:
           # verdicts and both XMLs are always authoritative.
           check_rc=0
           node test/e2e/check.mjs \
-            --manifest test/e2e/scenarios/m1-spike-boot.json \
+            --manifest test/e2e/scenarios/boot-verification.json \
             --log "$ART/logs.txt" \
             --out "$ART/verdict.json" \
             --junit "$ART/verdict.xml" || check_rc=1
           node test/e2e/check.mjs \
-            --manifest test/e2e/scenarios/m1-carrier-loopback.json \
+            --manifest test/e2e/scenarios/carrier-loopback.json \
             --log "$ART/logs.txt" \
             --out "$ART2/verdict.json" \
             --junit "$ART2/verdict.xml" || check_rc=1
@@ -338,8 +338,8 @@ jobs:
           for f in \
             hosts/ios/artifacts/m1-spike/verdict.json \
             hosts/ios/artifacts/m1-carrier/verdict.json \
-            hosts/ios/artifacts/m2-gateway/verdict.json \
-            hosts/ios/artifacts/m2-gateway/verdict-audit.json; do
+            hosts/ios/artifacts/gateway/verdict.json \
+            hosts/ios/artifacts/gateway/verdict-audit.json; do
             name="$(basename "$f")"
             if [ ! -f "$f" ]; then
               echo "$(dirname "$f" | xargs basename)/$name: no verdict file" | tee -a "$GITHUB_STEP_SUMMARY"
@@ -368,7 +368,7 @@ jobs:
           path: |
             hosts/ios/artifacts/m1-spike/
             hosts/ios/artifacts/m1-carrier/
-            hosts/ios/artifacts/m2-gateway/
+            hosts/ios/artifacts/gateway/
             # The JUnit XMLs rode along inside the dirs above already; naming
             # them keeps the annotation contract explicit rather than incidental.
             hosts/ios/artifacts/m1-spike/verdict.xml

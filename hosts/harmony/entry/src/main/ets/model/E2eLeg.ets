@@ -10,8 +10,8 @@
  * the window stage loads pages/Index, so the page's aboutToAppear sees it.
  * An ABSENT parameter means the default chain: the regression trio, the m5
  * binding phase, and the D9 official-web legs — exactly what
- * ci/run-host-e2e.sh drives. `m2.llm` selects the real-LLM leg alone
- * (ci/run-m2-llm.sh), so the default chain never spends serve quota.
+ * ci/run-host-e2e.sh drives. `llm.live-stream` selects the real-LLM leg alone
+ * (ci/run-live-llm.sh), so the default chain never spends serve quota.
  *
  * Unknown values fail loud at the consumer (Index) instead of silently
  * running the default chain — a mistyped leg must never look like a pass.

@@ -5,7 +5,7 @@
 # upstream agent-loop turn through the REAL vendored dsh-llm service — the
 # gateway transport adapter (upstream/llm-transport.js) streaming the VENDORED
 # dsh-llm-mock-server over real loopback HTTP/SSE — and verifies the captured
-# log one-to-one against test/e2e/scenarios/m2-upstream-session.json.
+# log one-to-one against test/e2e/scenarios/upstream-session.json.
 #
 # The mock server is a NODE package (node:http): it runs node-side, outside
 # quickjs, started/killed by this script. Node has no condition push for
@@ -65,7 +65,7 @@ echo "mock llm server: $MOCK_URL" >&2
 # 4. run the scenario (--http: the CLI's loopback httpFetch backend; --env:
 #    the launch-env snapshot the scenario merges into its profile container)
 #    and verify one-to-one.
-./build/dsh-spike-cli . scenario/m2-upstream-session.js \
+./build/dsh-spike-cli . scenario/upstream-session.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-upstream.txt
@@ -73,15 +73,15 @@ mkdir -p "$ART_DIR"
 cp logs-upstream.txt "$ART_DIR/logs.txt"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
 node "$ROOT/test/e2e/check.mjs" \
-    --manifest "$ROOT/test/e2e/scenarios/m2-upstream-session.json" \
+    --manifest "$ROOT/test/e2e/scenarios/upstream-session.json" \
     --log logs-upstream.txt \
     --out "$ART_DIR/verdict.json"
 
 # 5. per-event evidence line (the structured scenario records, in log order).
-grep '"scenario":"m2.upstream-session"' logs-upstream.txt > "$ART_DIR/scenario.jsonl"
+grep '"scenario":"upstream.session"' logs-upstream.txt > "$ART_DIR/scenario.jsonl"
 
 # 6. the receipt (what this run proves; one JSON document).
-EVENTS="$(grep -c '"scenario":"m2.upstream-session"' "$ART_DIR/logs.txt")"
+EVENTS="$(grep -c '"scenario":"upstream.session"' "$ART_DIR/logs.txt")"
 SCENARIO_MD5="$(md5 -q "$ART_DIR/scenario.jsonl" 2>/dev/null || md5sum "$ART_DIR/scenario.jsonl" | cut -d' ' -f1)"
 cat > "$ART_DIR/receipt.json" <<EOF
 {
@@ -92,7 +92,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 incl. dsh-llm + dsh-llm-mock-server (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
   "kernel": "@deepseek-ai/cordis@4.0.2",
-  "scenario": "m2.upstream-session",
+  "scenario": "upstream.session",
   "proves": [
     "the vendored upstream agent spine runs VERBATIM inside quickjs-ng: @deepseek-ai/dsh-session/agent/tools/system-prompt/agent-loop/session-projection/settings mount as cordis services over the pinned vendor closure — no upstream file is edited (D6/D9)",
     "the llm service is the VENDORED dsh-llm LlmRuntime (the staged value-helper shim retired): ctx.llm.prepareCall resolves through the adapter registry, adapterDefaults/retryPolicy ride the upstream prepared-call protocol, and the request is assembled and marked by the upstream agent loop (isAgentLoopRequest evidenced in llm.request.built)",
@@ -100,7 +100,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "structured transport errors surface as the upstream error-finish protocol: the scripted 401 behavior streams through ctx.llm.stream and lands as one terminal finish chunk with the provider-neutral AUTH failure (llm.transport.error)",
     "the session log is the upstream vocabulary (agent/inbox/spliced, turn/start, step/start, system/message, user/message, request/header, request/context, assistant/message, step/end, turn/end), asserted one-to-one (session.log.asserted) plus the turn-boundary projection (projection.lastTurn = 1)"
   ],
-  "checker": "test/e2e/scenarios/m2-upstream-session.json",
+  "checker": "test/e2e/scenarios/upstream-session.json",
   "events": $EVENTS,
   "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 $SCENARIO_MD5)",
   "exitCode": 0

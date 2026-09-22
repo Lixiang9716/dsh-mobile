@@ -4,7 +4,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * The claims seam of the session-live drive (b-android.session.live): the
+ * The claims seam of the session-live drive (android.session.live-read): the
  * bus protocol's runtime→carrier half folded into CarrierAPIBridge, plus
  * the once-guarded wire observers. The runtime CLAIMS `/api/session.list`
  * and the mux `session/journal` streams over the bus seam

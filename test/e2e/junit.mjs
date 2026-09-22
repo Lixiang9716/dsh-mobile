@@ -8,7 +8,7 @@
  * request as "the step is red" and nothing else. JUnit XML is the artifact
  * GitHub turns into per-test annotations (uploaded, or handed to a reporter),
  * so the SAME diagnosis arrives attached to the scenario that produced it —
- * "m2.gateway.binding missed fs.denied at expected[4]" instead of "e2e failed".
+ * "gateway.binding missed fs.denied at expected[4]" instead of "e2e failed".
  *
  * Shape: one <testsuite> per verdict, one <testcase> per verdict, with
  *   classname = e2e.<scenario>, name = <scenario>,

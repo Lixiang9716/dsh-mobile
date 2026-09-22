@@ -1,4 +1,4 @@
-// dsh-mobile Android host — M1 spike embed (scenario m1.spike.boot).
+// dsh-mobile Android host — M1 spike embed (scenario boot.verification).
 pluginManagement {
     repositories {
         google()

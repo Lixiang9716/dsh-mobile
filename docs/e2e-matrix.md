@@ -190,15 +190,15 @@ missing or malformed is a finding of its own, never a silent pass.
 
 | code | file | owner | closes with |
 | --- | --- | --- | --- |
-| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 work stream (#65) | run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step |
+| MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 work stream (#65) | run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony work stream (#64) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android work stream (#63) | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android work stream (#66) | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
+| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
 
 ### Why none of these nine is closed here (the honest reason)
 
@@ -297,7 +297,7 @@ cites, and the register's rows in order):
    raw streams. The served turn is explicitly NOT claimed — README.md's M5
    row says so in both languages. `receipt.json` records
    `status: blocked-on-quota` and `exitCode: 1`. **Closure (owned by the
-   harmony work stream):** `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-m2-llm.sh`
+   harmony work stream):** `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh`
    once the quota returns — no code change; it must exit 0 with both
    verdict JSONs green, the evidence refreshed here, and the README clause
    flipped.

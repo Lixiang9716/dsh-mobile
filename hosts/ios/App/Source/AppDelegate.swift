@@ -66,7 +66,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         console.isEditable = false
         console.font = .monospacedSystemFont(ofSize: 13, weight: .regular)
         console.autoresizingMask = [.flexibleWidth, .flexibleBottomMargin]
-        console.text = "DSH spikes — m1.spike.boot, m1.carrier.loopback, then the m2 gateway binding …"
+        console.text = "DSH spikes — boot.verification, carrier.loopback, then the m2 gateway binding …"
         return console
     }
 
@@ -88,19 +88,19 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         switch launchMode {
         case "session":
             let surface = sessionSurface
-            announce("DSH session — m2.session over the system plugins, \(surface)…",
+            announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
                      line: "spike: app launched in session mode (\(surface))", web: false)
             runSession()
         case "official-web":
-            announce("DSH official web — b1.official-web.mount, the upstream app on the contract carrier…",
+            announce("DSH official web — officialweb.mount, the upstream app on the contract carrier…",
                      line: "spike: app launched in official-web mode", web: true)
             runOfficialWeb()
         case "session-live":
-            announce("DSH session live — b3.session.live, the upstream spine on-device answering the official app…",
+            announce("DSH session live — session.live-read, the upstream spine on-device answering the official app…",
                      line: "spike: app launched in session-live mode", web: true)
             runSessionLive()
         case "session-write":
-            announce("DSH session write — b4.write.live, the official composer driving the upstream spine…",
+            announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
                      line: "spike: app launched in session-write mode", web: true)
             runSessionWrite()
         case "serve":
@@ -114,10 +114,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      line: "spike: app launched in serve mode", web: true)
             runServingBoot()
         default:
-            print("spike: app launched, driving m1.spike.boot then m1.carrier.loopback")
+            print("spike: app launched, driving boot.verification then carrier.loopback")
             fflush(stdout)
             SpikeRuntime().run { [weak self] boot in
-                self?.show(boot, phase: "m1.spike.boot") { self?.bootVerdict = $0 }
+                self?.show(boot, phase: "boot.verification") { self?.bootVerdict = $0 }
                 self?.runCarrier()
             }
         }
@@ -273,7 +273,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// The user-facing serving boot: the `SessionServe` seat, with NO hooks
     /// assigned — the serving facts go nowhere, and the user drives the page.
-    /// The seat is the same one `b4.write.live` verifies, so the path the
+    /// The seat is the same one `composer.live-write` verifies, so the path the
     /// manifest proves and the path a user runs cannot drift apart.
     private func runServingBoot() {
         let serve = SessionServe(credential: SessionServe.loadCredential())
@@ -308,7 +308,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         session.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "m2.session") { self.sessionVerdict = $0 }
+            self.show(outcome, phase: "session.mock-llm") { self.sessionVerdict = $0 }
             self.session = nil
             // The session runner polls for this terminal marker.
             print("spike: sequence session=\(self.sessionVerdict)")
@@ -329,7 +329,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         official.run { [weak self] outcome in
             guard let self, !BuildFlavor.isRelease else { return }
-            self.show(outcome, phase: "b1.official-web.mount") { self.officialVerdict = $0 }
+            self.show(outcome, phase: "officialweb.mount") { self.officialVerdict = $0 }
             self.official = nil
             print("spike: sequence official-web=\(self.officialVerdict)")
             fflush(stdout)
@@ -348,7 +348,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         live.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "b3.session.live") { self.sessionLiveVerdict = $0 }
+            self.show(outcome, phase: "session.live-read") { self.sessionLiveVerdict = $0 }
             self.sessionLive = nil
             print("spike: sequence session-live=\(self.sessionLiveVerdict)")
             fflush(stdout)
@@ -367,7 +367,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         write.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "b4.write.live") { self.sessionWriteVerdict = $0 }
+            self.show(outcome, phase: "composer.live-write") { self.sessionWriteVerdict = $0 }
             self.sessionWrite = nil
             print("spike: sequence session-write=\(self.sessionWriteVerdict)")
             fflush(stdout)
@@ -382,7 +382,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         carrier.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "m1.carrier.loopback") { self.carrierVerdict = $0 }
+            self.show(outcome, phase: "carrier.loopback") { self.carrierVerdict = $0 }
             self.carrier = nil
             self.runGateway()
         }
@@ -395,7 +395,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.gateway = gateway
         gateway.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "m2.gateway.binding") { self.gatewayVerdict = $0 }
+            self.show(outcome, phase: "gateway.binding") { self.gatewayVerdict = $0 }
             self.gateway = nil
             // The CI poll waits for this final marker before running the checkers.
             print("spike: sequence boot=\(self.bootVerdict) carrier=\(self.carrierVerdict)"

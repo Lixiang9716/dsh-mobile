@@ -32,7 +32,7 @@ final class WebBootRuntimeDrive {
 
     /// Boots the scenario and delivers the staged plugin files. `plugins`
     /// nil means the staging is missing — a loud drive failure (the runner
-    /// stages it; a fresh install without run-ios-b1.sh cannot boot).
+    /// stages it; a fresh install without run-ios-official-web-mount.sh cannot boot).
     /// `config` (b3) rides in BEFORE the plugins: the runtime.config facts
     /// (scripted llm endpoint) the spine boot needs. `scenario` selects the
     /// embedded entry (default: the b1 compose-only scenario).
@@ -40,7 +40,7 @@ final class WebBootRuntimeDrive {
         bundleRoot: URL, plugins: [[String: Any]]?, config: [String: Any]? = nil,
         scenario: @escaping (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>? =
             dsh_spike_res_scenario_b1_web_live_js,
-        scenarioPath: String = "scenario/b1-web-live.js",
+        scenarioPath: String = "scenario/officialweb-web-live.js",
         gateway: Bool = false
     ) {
         thread.start()
@@ -133,12 +133,12 @@ final class WebBootRuntimeDrive {
     /// Delivers the staged plugin files (and the b3 config first — the
     /// runtime.config facts the spine boot needs). `plugins` nil means the
     /// staging is missing: a loud drive failure, because the runner stages it
-    /// and a fresh install without run-ios-b1.sh cannot boot.
+    /// and a fresh install without run-ios-official-web-mount.sh cannot boot.
     private func deliverStaging(_ plugins: [[String: Any]]?, _ config: [String: Any]?, _ stagedRoot: String) -> Bool {
         guard let plugins else {
             onFailure?("web-boot: no client bundles staged — neither the "
                 + "embedded official-web/plugins resource nor "
-                + "Documents/web-plugins (harness: run tools/e2e/run-ios-b1.sh; "
+                + "Documents/web-plugins (harness: run tools/e2e/run-ios-official-web-mount.sh; "
                 + "release: tools/e2e/ensure-client-bundles.sh before the build)")
             return false
         }

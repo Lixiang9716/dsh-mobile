@@ -148,7 +148,7 @@ done
 
 # The scenarios ride the same copy (assets stay byte-identical to the
 # runtime bundle, like every other staged scenario).
-for s in b-android-session-live.js b-android-write-live.js; do
+for s in android-session-live-read.js android-composer-live-write.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
         cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
     fi

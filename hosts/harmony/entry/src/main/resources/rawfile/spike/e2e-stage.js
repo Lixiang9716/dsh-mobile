@@ -3,7 +3,7 @@
  * that lives ONLY in this host's bundle: it is not part of the portable
  * scenario set and is not vendored from runtime/spike).
  *
- * Why it exists: `hosts/harmony/ci/run-m2-llm.sh` must hand the m2.llm
+ * Why it exists: `hosts/harmony/ci/run-live-llm.sh` must hand the llm.live-stream
  * credentials to the app, but the app sandbox is not shell-writable on this
  * platform — the hdc shell user can OPEN an existing app-owned file, never
  * create one, and an ArkTS-side create lands 0660 (unopenable by the shell)
@@ -25,7 +25,7 @@ import { createLogger } from 'logger.js';
 import { fsWrite } from 'gateway.js';
 
 const log = createLogger('dsh.stage');
-const PATH = 'm2-llm/config.json';
+const PATH = 'llm-live-stream/config.json';
 /** '{}' + '\n' — the empty placeholder, replaced by the runner. */
 const PLACEHOLDER = new Uint8Array([123, 125, 10]);
 

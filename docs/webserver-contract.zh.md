@@ -355,7 +355,7 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 
 官方页面不可改动以输出 `dsh.spike.log:` 行，因此一对一清单（基于
 日志的 E2E，唯一 scenario id，期望 ↔ 日志）由**载体对线缆的观察**加
-一条平台侧渲染态探针承载。拟议场景 `b1.official-web.mount`（先 iOS，
+一条平台侧渲染态探针承载。拟议场景 `officialweb.mount`（先 iOS，
 后 Android/Harmony），顺序固定：
 
 | # | 事件（载体日志） | 事实来源 |

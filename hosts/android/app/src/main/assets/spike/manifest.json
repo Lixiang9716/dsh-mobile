@@ -1,1 +1,1 @@
-{"schemaVersion":1,"id":"dsh.spike.scenario","version":"0.1.0","type":"service","entry":"scenario/m2-gateway-binding.js","capabilities":{"required":["gateway@1","fsRead","fsWrite","fsScope","httpFetch","notify","presentApproval","presentPicker","keychainGet","keychainSet"],"optional":[]}}
+{"schemaVersion":1,"id":"dsh.spike.scenario","version":"0.1.0","type":"service","entry":"scenario/gateway-binding.js","capabilities":{"required":["gateway@1","fsRead","fsWrite","fsScope","httpFetch","notify","presentApproval","presentPicker","keychainGet","keychainSet"],"optional":[]}}

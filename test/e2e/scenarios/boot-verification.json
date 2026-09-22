@@ -1,0 +1,13 @@
+{
+  "scenario": "boot.verification",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "runtime.created", "match": { "engine": "quickjs-ng", "engineVersion": "0.17.0" } },
+    { "event": "sink.bound", "match": {} },
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "package.loaded", "match": { "name": "@deepseek-ai/dsh-util-crypto", "version": "0.1.6-alpha.2" } },
+    { "event": "crypto.shim.ok", "match": { "v4": true } },
+    { "event": "base64.shim.ok", "match": { "b64": "aGVsbG8=" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "scenario": "gateway.bridge-smoke",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
+    { "event": "fs.write.ok", "match": { "written": 17 } },
+    { "event": "fs.read.ok", "match": { "bytes": 17, "matches": true } },
+    { "event": "fs.read.invalid", "match": { "code": "invalid" } },
+    { "event": "keychain.unavailable", "match": { "name": "keychainGet", "code": "unavailable" } },
+    { "event": "scenario.complete", "match": { "status": "pass" } }
+  ]
+}

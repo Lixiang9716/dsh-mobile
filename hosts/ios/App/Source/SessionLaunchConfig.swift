@@ -10,7 +10,7 @@ enum SessionLaunchConfig {
     /// is pluggable; the host mounts exactly one). Overridable for E2E via
     /// launch argument `-dsh-web-client <id>`; the staged bundle carries the
     /// plugin under its own directory. Selecting the mini client also flips
-    /// the carrier-side evidence to scenario `m3.ui-swap` (M3 UI-swap E2E).
+    /// the carrier-side evidence to scenario `ui.client-swap` (M3 UI-swap E2E).
     static var activeWebClient: String {
         arg(after: "-dsh-web-client") ?? "dsh-web-client"
     }
@@ -19,21 +19,21 @@ enum SessionLaunchConfig {
     /// <name>` selects the staged `profiles/<name>/cordis.patch.json` whose
     /// layered override (base → hostFace → profile) decides the ACTIVE Web
     /// Client and the toolbar slot allow-set. The carrier-side evidence
-    /// flips to scenario `m3.fetch-carrier` and the drive runs the
-    /// `m3.fetch-install` JS scenario (real on-device httpFetch install).
+    /// flips to scenario `install.carrier-evidence` and the drive runs the
+    /// `install.from-http` JS scenario (real on-device httpFetch install).
     static var profileName: String? {
         arg(after: "-dsh-profile")
     }
 
-    /// M2 real-LLM drive: `-dsh-scenario m2-llm` runs the `m2.llm` scenario —
+    /// M2 real-LLM drive: `-dsh-scenario llm-live-stream` runs the `llm.live-stream` scenario —
     /// one REAL streaming chat turn through the gateway httpFetch (the
     /// OpenAI-compatible backend; credentials ride fs scope "app", staged by
     /// the E2E runner before launch). Carrier-side evidence flips to scenario
-    /// `m2.llm.carrier`.
+    /// `llm.live-stream.carrier`.
     static var scenarioName: String? {
         guard let name = arg(after: "-dsh-scenario") else { return nil }
         switch name {
-        case "m2-llm": return name
+        case "llm-live-stream": return name
         default: fatalError("unknown -dsh-scenario: \(name)")
         }
     }

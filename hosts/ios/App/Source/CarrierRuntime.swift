@@ -1,6 +1,6 @@
 import Foundation
 
-/// Drives `m1.carrier.loopback`: one C runtime session with the bus seam
+/// Drives `carrier.loopback`: one C runtime session with the bus seam
 /// wired, the loopback carrier server in front of it, and every crossing
 /// marshaled onto the right queues — server (carrier queue) → JS via
 /// `dsh_spike_bus_deliver` on the dedicated runtime thread; JS
@@ -11,7 +11,7 @@ import Foundation
 /// (`RuntimeThread` — the dedicated serial thread this phase runs on —
 /// lives in its own file; the gateway phase reuses it unchanged.)
 final class CarrierRuntime {
-    static let entryModule = "scenario/m1-carrier-loopback.js"
+    static let entryModule = "scenario/carrier-loopback.js"
     static let watchdogSeconds = 30
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.carrier")

@@ -34,6 +34,6 @@ enforced in JS with unknown fields failing loud) → integrity ledger →
 bytes drift from the trust record is rejected before anything is unpacked;
 the installed tree stays untouched and no receipt is journaled.
 `dsh-notes` (the `runtime/spike/fixtures/` package) is the reference plugin
-that rides this pipeline in the `m3.install` scenario; the system plugins
+that rides this pipeline in the `install.verified-tarball` scenario; the system plugins
 above ship inside the bundle and mount through the same registry either
 way — activation semantics do not depend on how the bytes arrived.
