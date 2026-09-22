@@ -38,6 +38,19 @@ expect_fail_at() { # $1=manifest $2=log $3=expected first failure index
   fi
 }
 
+expect_parse_error() { # $1=manifest $2=log — the verdict must fail WITH a parseError
+  if node tools/e2e/check.mjs --manifest "$1" --log "$2" --out "$TMP/v.json" >/dev/null 2>&1; then
+    echo "selftest: FAIL  $(basename "$1") should reject $(basename "$2")"; FAILURES=$((FAILURES + 1)); return 0
+  fi
+  local count
+  count=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1])).get("parseErrors", [])))' "$TMP/v.json")
+  if [ "$count" -gt 0 ]; then
+    echo "selftest: PASS  $(basename "$1") rejects $(basename "$2") with $count parseError(s) (as expected)"
+  else
+    echo "selftest: FAIL  $(basename "$1") rejects $(basename "$2") without a parseError"; FAILURES=$((FAILURES + 1))
+  fi
+}
+
 BIND=tools/e2e/scenarios/m2-gateway-binding.json
 AUDIT=tools/e2e/scenarios/m2-gateway-audit.json
 TD=tools/e2e/testdata
@@ -65,6 +78,13 @@ ANY=tools/e2e/testdata/order-any.json
 expect_pass "$ANY" "$TD/order-any.positive.txt"
 expect_fail_at "$ANY" "$TD/order-any.negative-missing.txt" -1
 expect_fail_at "$ANY" "$TD/order-any.negative-extra.txt" 2
+# Host-side notes (a drive declaring its launch env before the entry module
+# runs): the canonical envelope under the reserved host.launch scenario id is
+# FILTERED out of every scenario's stream, while free text after the prefix
+# is a parse error against every scenario riding the capture — the exact
+# shape that reddened both m1 verdicts on dev/ios (run 35756986102).
+expect_pass tools/e2e/scenarios/m1-spike-boot.json "$TD/host-note.positive.txt"
+expect_parse_error tools/e2e/scenarios/m1-spike-boot.json "$TD/host-note.negative-free-text.txt"
 
 if [ "$FAILURES" -gt 0 ]; then
   echo "selftest: $FAILURES failure(s)"; exit 1
