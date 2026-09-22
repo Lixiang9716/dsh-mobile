@@ -68,6 +68,11 @@ tmp/
 runtime/spike/vendor/quickjs-ng/
 runtime/spike/vendor/dsh/
 runtime/spike/vendor/npm/
+# The WebAssembly interpreter (wasm3) is vendored on the same terms — pinned +
+# sha256-verified by runtime/spike/vendor/ensure-wasm3.sh, untracked for the
+# same reason as the engines above: upstream's real-world C cannot survive an
+# editor-level parse gate, and the pin table is the provenance record.
+runtime/spike/vendor/wasm3/
 
 # The Android asset stage of the D9 spine closure is the SAME vendored
 # upstream code, untracked for the same reason (the stage script is the

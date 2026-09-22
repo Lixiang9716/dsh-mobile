@@ -20,6 +20,9 @@ settings:
     HEADER_SEARCH_PATHS:
       - "$(SRCROOT)/../../runtime/spike/host"
       - "$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0"
+      # The wasm3 interpreter's own headers (dsh_wasm.c includes them by
+      # quoted name from a different directory than the vendored sources).
+      - "$(SRCROOT)/../../runtime/spike/vendor/wasm3/0.9.0/source"
       - "$(SRCROOT)/App/Generated"
 
 targets:
@@ -33,6 +36,23 @@ targets:
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libregexp.c
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libunicode.c
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/quickjs.c
+      # The WebAssembly interpreter (contract v1.2.0 `wasmRun`): vendored +
+      # sha256-pinned by runtime/spike/vendor/ensure-wasm3.sh, compiled from
+      # the same vendor tree the quickjs sources come from. Only the core is
+      # linked; the WASI backends stay out (the app's boundary is our own
+      # imported functions, not WASI's descriptor table).
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_core.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_env.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_parse.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_compile.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_code.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_module.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_function.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_bind.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_info.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_exec.c
+      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_validate.c
+      - path: ../../runtime/spike/host/dsh_wasm.c
     preBuildScripts:
       - name: GenerateSpikeBundle
         script: |

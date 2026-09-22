@@ -119,6 +119,12 @@ RESOURCES = [
     ("shims_process_js", SPIKE / "upstream" / "shims" / "process.js"),
     ("shims_dsh_session_persistence_js",
      SPIKE / "upstream" / "shims" / "dsh-session-persistence.js"),
+    # The outboard WebAssembly tool plugin (contract v1.2.0): a service plugin
+    # that registers the model-facing `wasm_run` tool into the spine.
+    ("plugin_shell_wasm_manifest",
+     SPIKE / "system-plugins" / "dsh-shell-wasm" / "manifest.json"),
+    ("plugin_shell_wasm_js",
+     SPIKE / "system-plugins" / "dsh-shell-wasm" / "index.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same

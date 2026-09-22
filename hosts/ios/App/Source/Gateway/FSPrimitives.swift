@@ -39,6 +39,8 @@ final class FSPrimitives {
         core.register(name: "fsMkdir") { call, done in self.mkdir(call, done) }
         core.register(name: "fsRemove") { call, done in self.remove(call, done) }
         core.register(name: "fsRename") { call, done in self.rename(call, done) }
+        // Contract v1.2.0: one export of one module, executed in-process.
+        core.register(name: "wasmRun") { call, done in self.wasmRun(call, done) }
     }
 
     /// Binds a fresh user scope handle to a security-scoped URL (picker
@@ -324,6 +326,56 @@ final class FSPrimitives {
         case .typeRegular: return "file"
         default: return "other"
         }
+    }
+
+    /// wasmRun (contract v1.2.0) — one export of one module, executed
+    /// IN-PROCESS by the vendored interpreter. It lives here because it reads
+    /// the module through the SAME scope registry the fs primitives use: the
+    /// module is an ordinary file inside the scope, and executing one adds no
+    /// filesystem capability of its own (`wasm` is the flag that gates it).
+    private func wasmRun(_ call: GatewayCall, _ done: @escaping GatewayDone) {
+        guard let (scope, rel) = target(call, primitive: "wasmRun", done),
+              let function = call.string("func")
+        else {
+            return done(.failure(Self.invalid(
+                "wasmRun", "malformed scope/path/func")))
+        }
+        let input = call.string("input") ?? ""
+        inScope(scope) { base in
+            let module = base.appendingPathComponent(rel)
+            done(Self.runModule(at: module, function: function, input: input, rel: rel))
+        } onDenied: {
+            done(.failure(Self.denied("wasmRun", scope)))
+        }
+    }
+
+    private static func runModule(
+        at url: URL, function: String, input: String, rel: String
+    ) -> Result<Any, GatewayError> {
+        guard let module = FileManager.default.contents(atPath: url.path) else {
+            return .failure(GatewayError(
+                code: "io", primitive: "wasmRun", message: "cannot read \(rel)"))
+        }
+        var error: UnsafeMutablePointer<CChar>?
+        let json = module.withUnsafeBytes { raw -> UnsafeMutablePointer<CChar>? in
+            guard let base = raw.bindMemory(to: UInt8.self).baseAddress else { return nil }
+            return dsh_wasm_run(base, module.count, function, input, &error)
+        }
+        guard let json else {
+            let message = error.map { String(cString: $0) } ?? "wasm run failed"
+            if let error { free(error) }
+            return .failure(GatewayError(
+                code: "io", primitive: "wasmRun", message: message))
+        }
+        defer { free(json) }
+        guard let text = String(validatingUTF8: json),
+              let payload = (try? JSONSerialization.jsonObject(with: Data(text.utf8)))
+                as? [String: Any]
+        else {
+            return .failure(GatewayError(
+                code: "io", primitive: "wasmRun", message: "unreadable result"))
+        }
+        return .success(payload)
     }
 
     // ---- scope plumbing -----------------------------------------------------
