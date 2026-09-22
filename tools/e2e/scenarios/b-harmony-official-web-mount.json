@@ -94,8 +94,8 @@
     {
       "event": "index.injected",
       "match": {
-        "rows": 5,
-        "bytes": 30352
+        "rows": 6,
+        "bytes": 31304
       }
     },
     {

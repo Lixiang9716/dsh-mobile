@@ -1,0 +1,20 @@
+{
+  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 incl. dsh-client-modules + dsh-agent-presets (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh) + the W-SHELL application tier (presentation/official-web/client-bundles)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "settings.surfaces.cli",
+  "proves": [
+    "the official client's Agent 预设 screen loads real data: the REAL vendored AgentPresets service (mounted on the mobile spine with the cordis Loader service) answers agentPresets/list with the shipped roster (cordis/minimal/ptc/standard), the deployment default marked, and honest per-preset health verdicts over the staged presets VFS",
+    "agentPresets/read answers the default preset's composition document from the staged presets tree, and agentPresets/copy refuses with the upstream agent-preset/read-only RemoteError (the staged fs has no user root — authoring is refused, never faked)",
+    "the official client's 插件 screen renders its list instead of the error state: pluginInventory/list answers the honest read-only snapshot — the mounted runtime spine (every row read from the live context) + the staged client bundles (the composed boot roster) + the 预设 compositions, with managementAvailable false",
+    "the plugin-manager write machinery stays UNCLAIMED: pluginManager/listBundles answers the runtime's structured gateway/unimplemented — fail loud, never a fake",
+    "ONE cordis Loader service serves both the presets inject and the web-boot client composition's entries()/internal.resolveSync face — the unification that lets the presets mount ship without breaking the proven web.plugins path"
+  ],
+  "checker": "tools/e2e/scenarios/settings-surfaces-cli.json",
+  "events": 12,
+  "exitCode": 0
+}

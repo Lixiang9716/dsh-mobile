@@ -1,0 +1,8 @@
+{
+  "scenario": "settings.surfaces.cli",
+  "pass": true,
+  "expected": 12,
+  "logged": 12,
+  "failures": [],
+  "parseErrors": []
+}

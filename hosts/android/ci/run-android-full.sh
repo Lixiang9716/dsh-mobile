@@ -22,6 +22,18 @@ M4_STREAM=$OUT/dsh-m4-stream.txt
 say() { echo "run-android-full: $*"; }
 die() { echo "::error::run-android-full: $*" >&2; exit 1; }
 
+# ---- Build here, not "bring your own APK": a stale pre-built APK silently
+# re-proves a build that is no longer the tree (measured 2026-09-22: a
+# pre-change APK passed every manifest while the tree had moved on, and an
+# mtime guard cannot see staged-asset staleness because re-staging identical
+# bytes bumps their mtimes past the APK). gradlew is the guard: it re-runs
+# the asset stager and packaging in dependency order and no-ops when the
+# tree is truly unchanged.
+say "building the APK (assembleDebug; no-ops when up to date)"
+( cd hosts/android && ./gradlew :app:assembleDebug -q ) \
+    || die "gradle :app:assembleDebug failed — set ANDROID_HOME if the SDK is missing"
+[ -f "$APK" ] || die "build produced no APK at $APK"
+
 # ---- device + boot, one bounded poll (same discipline as run-spike-e2e.sh)
 deadline=$(( $(date +%s) + 600 ))
 until adb get-state >/dev/null 2>&1 &&

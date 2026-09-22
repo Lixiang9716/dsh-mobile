@@ -92,7 +92,17 @@
           "session/prompt",
           "settings/describe",
           "settings/update",
-          "settings/mutate"
+          "settings/mutate",
+          "agentPresets/list",
+          "agentPresets/read",
+          "agentPresets/copy",
+          "agentPresets/deletePreset",
+          "agentPresets/select",
+          "pluginInventory/list",
+          "pluginManager/listBundles",
+          "pluginManager/listPlugins",
+          "credentials/describe",
+          "session/modelCatalog"
         ],
         "streams": [
           "session/follow",
@@ -106,8 +116,8 @@
     {
       "event": "index.injected",
       "match": {
-        "rows": 5,
-        "bytes": 30352
+        "rows": 6,
+        "bytes": 31304
       }
     },
     {

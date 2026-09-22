@@ -164,6 +164,50 @@ export class WebDist {
   static readyMarkup: string =
     '<script>(globalThis.__DSH_BOOT_READY__ ??= Promise.withResolvers()).resolve()</script>';
 
+  /** The settings dialog's phone adaptation, injected as a §1.5 `style` row
+   * into every official-page render. Upstream's SettingsRoot panel is a
+   * fixed 800px desktop modal with a 188px side nav and no narrow layout,
+   * so on a phone it arrived as a ~342pt modal squeezed against the screen
+   * edge — the owner complaint this patch answers (the main screen needs no
+   * help: the AppFrame measures its own width and drops the sidebar below
+   * 1024). Two tiers, mirroring upstream's own responsive conventions:
+   * ≤1024 (the app frame's auto-collapse width) near-full-bleed, ≤560 (the
+   * narrow tweak settings-models ships) full-bleed with the nav flipped
+   * into a horizontal chip row. The scope hook is STRUCTURAL, never the
+   * hash classes (they change on upstream re-pins): the settings panel is
+   * the served page's only `role=dialog` element carrying `aria-modal` AND
+   * `aria-labelledby` — the attachment lightbox and the shell's dialog use
+   * `aria-label` instead (verified across the pinned dist and every client
+   * bundle). Cascade safety: the selector is specificity (0,3,0) and beats
+   * the bundle's hash classes (0,1,0) no matter which <style> lands first,
+   * while inline styles still win. Kept verbatim in step with the iOS
+   * sibling (CarrierBootConfig.settingsPhoneCSS) and the Android sibling
+   * (CarrierIndexRows.SETTINGS_PHONE_CSS). */
+  static settingsPhoneCss: string = '@media (max-width:1024px){' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby]' +
+    '{width:min(calc(100vw - 24px),800px);max-width:calc(100vw - 24px);' +
+    'height:min(calc(100vh - 24px),800px);border-radius:20px}} ' +
+    '@media (max-width:560px){' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby] ' +
+    '{width:100vw;max-width:100vw;height:100vh;border-radius:0;' +
+    'flex-direction:column} ' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby]>nav ' +
+    '{flex-direction:row;align-items:center;gap:12px;width:auto;max-width:100%;' +
+    'padding:10px 12px 0} ' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby]>nav>div:first-child ' +
+    '{flex:none;padding:0;white-space:nowrap} ' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby]>nav>div:last-child ' +
+    '{flex-direction:row;flex:1 1 auto;min-width:0;overflow-x:auto;overflow-y:hidden; ' +
+    'padding-bottom:8px} ' +
+    'div[role="dialog"][aria-modal="true"][aria-labelledby] nav button ' +
+    '{flex:none;height:36px;padding:6px 12px;white-space:nowrap} }';
+
+  /** The `style` row every official-page render carries (OfficialServe
+   * pushes it beside the runtime's rows). */
+  static settingsPhoneAdaptation: BootRow = {
+    kind: 'style', text: WebDist.settingsPhoneCss,
+  };
+
   static renderRow(row: BootRow): PlacementMarkup {
     if (row.kind === 'global' && row.name !== undefined && row.value !== undefined) {
       // The name rides a QUOTED member expression (a bare identifier that
@@ -185,8 +229,18 @@ export class WebDist {
         markup: '<link rel="preload" as="script" href="' +
           WebDist.attrEscape(row.src) + '">' };
     }
-    // Unknown row kinds are skipped (upstream tolerates absence of the
-    // optional theme/preview/inspector rows).
+    if (row.kind === 'style' && row.text !== undefined) {
+      return { placement: 'head', markup: '<style>' + row.text + '</style>' };
+    }
+    // A KNOWN kind with a missing field keeps the page's tolerance of absent
+    // optional rows (upstream emits theme/preview rows the page is fine
+    // without). An UNKNOWN kind is contract drift (docs/webserver-contract.md
+    // §1.5 names the row kinds) — fail loud with the offending name
+    // (rules.md rule 5), never a silent skip.
+    if (row.kind !== 'global' && row.kind !== 'script' && row.kind !== 'script-src' &&
+      row.kind !== 'script-preload' && row.kind !== 'style') {
+      throw new Error('webDist: unknown boot row kind: ' + (row.kind ?? '(none)'));
+    }
     return { placement: 'head', markup: '' };
   }
 

@@ -7,12 +7,22 @@
  * The failure report IS the diagnosis: it lists the first mismatched index
  * with both sides, plus any unparsable entries.
  *
- * ONE exception to one-to-one: an expectation with "repeat": true greedily
- * consumes one-or-more consecutive records matching it (name + matchers).
- * It exists for genuinely nondeterministic stream cardinality — the real
- * LLM legs' delta counts (scenario m2.llm) — and still asserts "at least
- * one, in this position, matching these fields"; it is proven by the
- * repeat fixtures in selftest.sh (rule 6).
+ * TWO exceptions to strict in-order matching, both proven by fixtures in
+ * selftest.sh (rule 6):
+ *
+ * An expectation with "repeat": true greedily consumes one-or-more
+ * consecutive records matching it (name + matchers). It exists for
+ * genuinely nondeterministic stream cardinality — the real LLM legs' delta
+ * counts (scenario m2.llm) — and still asserts "at least one, in this
+ * position, matching these fields".
+ *
+ * An expectation with "order": "any" claims the FIRST unconsumed record
+ * matching it, wherever that record sits in the log (a pre-pass before the
+ * ordered walk). It exists for records whose position races other recorded
+ * events by construction — the b4 session/journal attach lands between the
+ * page's concurrent initial RPC answers, run to run — and still asserts
+ * "exactly one such record exists in this log, matching these fields";
+ * every other record must still match the ordered walk one-to-one.
  *
  * tools/ dev script (out of the logging gate's scope; console IS the product).
  *
@@ -109,31 +119,51 @@ const provenance = () =>
       }
     : {};
 
+
+/**
+ * The `order: "any"` pre-pass: such rows claim the first unconsumed record
+ * matching them, wherever it sits (see header docs). One-to-one holds —
+ * each row consumes exactly one record; the ordered walk covers all the
+ * rest, so a missing or duplicated record still fails.
+ */
+const claimAnyOrder = (manifest, records, failures) => {
+  const consumed = new Array(records.length).fill(false);
+  const remaining = [];
+  for (const raw of manifest.expect) {
+    if (raw.order !== 'any') { remaining.push(raw); continue; }
+    const j = records.findIndex((r, i) => !consumed[i] && matchOne(raw, r) === null);
+    if (j === -1) failures.push(mismatch({ ...raw, index: -1 }, records[0] ?? null));
+    else consumed[j] = true;
+  }
+  return { remaining, orderedRecords: records.filter((_, i) => !consumed[i]) };
+};
+
 const run = () => {
   const args = parseArgs(process.argv.slice(2));
   const manifest = JSON.parse(readFileSync(args.manifest, 'utf8'));
   const { records, parseErrors } = extract(readFileSync(args.log, 'utf8'), manifest);
 
   const failures = [];
+  const { remaining, orderedRecords } = claimAnyOrder(manifest, records, failures);
   let at = 0;
-  for (let i = 0; i < manifest.expect.length; i++) {
-    const expect = { ...manifest.expect[i], index: i };
+  for (let i = 0; i < remaining.length; i++) {
+    const expect = { ...remaining[i], index: i };
     if (expect.repeat) {
       // Greedy run of one-or-more matching records (see header docs).
-      let consumed = 0;
-      while (at < records.length && matchOne(expect, records[at]) === null) {
+      let used = 0;
+      while (at < orderedRecords.length && matchOne(expect, orderedRecords[at]) === null) {
         at += 1;
-        consumed += 1;
+        used += 1;
       }
-      if (consumed === 0) failures.push(mismatch(expect, records[at]));
+      if (used === 0) failures.push(mismatch(expect, orderedRecords[at]));
     } else {
-      const bad = matchOne(expect, records[at]);
+      const bad = matchOne(expect, orderedRecords[at]);
       if (bad) failures.push(bad);
       at += 1;
     }
   }
-  if (records.length > at) {
-    failures.push({ extra: records.slice(at).map((r) => r.payload) });
+  if (orderedRecords.length > at) {
+    failures.push({ extra: orderedRecords.slice(at).map((r) => r.payload) });
   }
 
   const verdict = {

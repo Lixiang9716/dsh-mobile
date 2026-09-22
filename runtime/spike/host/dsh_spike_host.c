@@ -789,17 +789,6 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
                  DSH_UPSTREAM_VERSION, lib);
         return 1;
     }
-    if (strcmp(name, "@deepseek-ai/dsh-atomic-write") == 0) {
-        snprintf(out, out_len, "vendor/dsh/atomic-write@0.0.1-rc.1/lib/index.js");
-        return 1;
-    }
-    if (strcmp(name, "@deepseek-ai/dsh-home-paths") == 0) {
-        snprintf(out, out_len, "vendor/dsh/home-paths@0.0.1-rc.3/lib/index.js");
-        return 1;
-    }
-    /* NOTE: these two sit BEFORE the generic dsh- rule below — that rule pins
-     * DSH_UPSTREAM_VERSION, which would build paths for versions that do not
-     * exist (both packages version on their own 0.0.1-rc stream). */
     if (strncmp(name, "@deepseek-ai/dsh-", 17) == 0) {
         const char *rest = name + 17;
         const char *slash = strchr(rest, '/');
@@ -822,9 +811,10 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     /* The agent-presets closure (the Agent 预设 panel's data source) — same
      * rule as dsh-client-modules: npm-published packages outside the
      * dsh-desktop runtime version stream, mapped to their vendor/npm trees.
-     * atomic-write and home-paths ARE dsh-* packages, but their versions ride
-     * their own stream (0.0.1-rc.x), so the generic dsh- map's shared version
-     * constant cannot build their paths. */
+     * atomic-write and home-paths are dsh-* packages on the shared
+     * 0.1.6-alpha.2 stream since the 2026-09-22 re-pin (upstream promoted
+     * them out of their 0.0.1-rc stream), so the generic dsh- rule maps
+     * them. */
     if (strcmp(name, "@deepseek-ai/cordis-plugin-loader") == 0) {
         snprintf(out, out_len,
                  "vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js");

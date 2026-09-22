@@ -26,7 +26,7 @@
  * list (the iOS sibling logs the full array — no such cap there).
  */
 import { createLogger } from 'logger.js';
-import { bootUpstream } from 'upstream/boot.js';
+import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 
@@ -177,7 +177,13 @@ const installRuntimeHalf = (ctx, cfg) => {
   };
   const runtime = createWebBootRuntime({
     ctx, post,
-    write: { root: cfg.containerRoot, provider: 'mock', model: 'mock-1' },
+    write: {
+      root: cfg.containerRoot,
+      provider: 'mock',
+      model: 'mock-1',
+      // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
+      spine: () => spineInventory(ctx),
+    },
   });
   const busHandler = (msg) => {
     const outcome = runtime.deliver(msg);

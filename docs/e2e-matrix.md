@@ -6,7 +6,14 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 
-> **Currency**: this matrix reflects `origin/main` as of commit `940ae02`
+> **Currency**: this matrix reflects the T-0035 settings-surfaces + file-tools
+> change (2026-09-22): the official client's 预设/插件 panels load real data on
+> device (b4 46/46 asserting the preset roster, the plugin inventory, the
+> read-only manager legs, and the settings shell's model-catalog/credential
+> loads; android-write 45/45 the same), the FILE-TOOLS row mounts in the
+> product boot (`tool.fs`), and the settings dialog is phone-adaptive
+> (human evidence: `hosts/ios/artifacts/settings-screens/`). On top of
+> `origin/main` as of commit `940ae02`
 > (the release recipe #80 and the packaging pipeline #77 land no evidence
 > dirs; on top of the harmony `m2.llm` real-LLM leg #79, whose dir
 > `hosts/harmony/artifacts/m5-m2-llm/` is deliberately committed with
@@ -54,10 +61,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 32 |
-| Verdicts committed (73 green, 2 quota-blocked red) | 75 |
-| Scenarios with at least one committed evidence dir | 28 of 28 distinct scenario ids (29 manifests) |
-| Screenshots verified PNG | 81 |
+| Evidence dirs | 35 |
+| Verdicts committed (78 green, 2 quota-blocked red) | 80 |
+| Scenarios with at least one committed evidence dir | 30 of 30 distinct scenario ids (31 manifests) |
+| Screenshots verified PNG | 84 |
 | Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -122,6 +129,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
+| `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -151,6 +159,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs

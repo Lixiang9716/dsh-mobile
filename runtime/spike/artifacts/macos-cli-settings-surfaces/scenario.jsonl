@@ -1,0 +1,25 @@
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"launch env phase begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"boot phase begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsScope.resolve"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → loopback chat-completions mock server","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"shell"}]}
+dsh.spike.log: {"level":"warn","module":"dsh.shell.wasm","message":"starter program not written","data":[{"reason":"the host granted no scoped workspace (no __dshProfileScopeRoot)"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"","offered":false}]}
+dsh.spike.log: {"level":"info","module":"dsh.shell.ish","message":"no Linux guest staged by this host; the ish tool is not offered","data":[]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.services","loader":"mounted","agentPresets":"mounted","baseUrl":"file:///vendor/dsh/agent-presets@0.1.6-alpha.2/"}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"bus phase mounted","data":[{"stagedPlugins":58}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"claims phase begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.claims","endpoints":18,"settingsLegs":10,"pluginManagerReadonly":true}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"probe phase begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.preset.roster","presets":["standard","ptc","minimal","cordis"],"default":"standard","authorable":false,"healthy":0}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.preset.read","preset":"standard","bytes":12162,"ok":true}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.preset.copyRefused","code":"agent-preset/read-only","preset":"standard"}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.preset.selectRefused","code":"session/not-found","agent":"s-not-attached"}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.plugin.inventory","managementAvailable":false,"spineEntries":16,"clientEntries":58,"presets":4,"presetRows":0,"spineSample":[{"id":"agent-loop","enabled":true,"fiberPhase":"active"},{"id":"llm","enabled":true,"fiberPhase":"active"},{"id":"shell-wasm","enabled":true,"fiberPhase":"active"},{"id":"shell-ish","enabled":false,"fiberPhase":null}]}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.pluginManager.readonly","bundles":2,"bundleRows":74,"plugins":74,"readOnlyReason":"management-required"}]}
+dsh.spike.log: {"level":"debug","module":"settings.surfaces","message":"probe phase done","data":[{}]}
+dsh.spike.log: {"level":"info","module":"settings.surfaces","message":"e2e","data":[{"scenario":"settings.surfaces.cli","event":"settings.surfaces/completed","status":"pass","upstream":"0.1.6-alpha.2","surfaces":"the official client 预设 roster + 插件 inventory over the real spine"}]}

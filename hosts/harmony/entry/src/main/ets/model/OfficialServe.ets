@@ -539,6 +539,10 @@ export class OfficialServe {
       kind: 'global', name: '__DSH_CONNECTION_RECOVERY__',
       value: RECOVERY_DEFAULTS,
     });
+    // The settings dialog's phone adaptation rides every render (the §1.5
+    // `style` row WebDist.settingsPhoneAdaptation carries; see its doc for
+    // why the page needs it).
+    rows.push(WebDist.settingsPhoneAdaptation);
     if (this.dist !== null) {
       this.dist.indexRows = (): BootRow[] => rows;
     }

@@ -101,6 +101,9 @@ final class SessionServe {
     /// Boot rows received from the runtime (`web.boot`), nil until then.
     private var webBootRows: [[String: Any]]?
     private var runtimeBootApplied = false
+    /// The runtime's settings probes finished (bus line `settings.probes.done`):
+    /// the page open gates on this so the drive's record order is deterministic.
+    private var settingsProbesDone = false
     /// The runtime graph's application batch URL.
     private var comboURL = ""
 
@@ -306,6 +309,14 @@ final class SessionServe {
                 runtimeRows().count,
                 "runtime (spine + vendored @deepseek-ai/dsh-client-modules)")
             maybeOpenOrigin()
+        case "settings.probes.done":
+            // The runtime's settings-surface probes (预设 roster + 插件
+            // inventory) finished: the page may open. Gating here makes the
+            // probe records strictly precede the page-serve records in the
+            // captured log — the E2E manifest order is deterministic (the
+            // two orderings otherwise alternate between runs; measured).
+            settingsProbesDone = true
+            maybeOpenOrigin()
         case "api.claim":
             bridge?.claim(endpoints: msg["endpoints"] as? [String] ?? [])
         case "mux.claim":
@@ -346,7 +357,8 @@ final class SessionServe {
     // ---- index injection + origin -------------------------------------------
 
     /// The injection rows the index renders: the runtime's `web.boot` rows
-    /// once received (plus the recovery global), else the carrier defaults.
+    /// once received (plus the recovery global and the settings phone
+    /// adaptation), else the carrier defaults.
     private func runtimeRows() -> [CarrierIndexInjection] {
         guard let rows = webBootRows else { return [] }
         var out = rows.compactMap { OfficialWebRuntime.injectionRow($0) }
@@ -355,6 +367,7 @@ final class SessionServe {
             value: CarrierIndexInjection.jsonGlobalValue(
                 "{\"backoffBaseMs\":500,\"backoffFactor\":2,\"backoffMaxMs\":10000,"
                     + "\"generationReadyWarnMs\":3000,\"generationReadyTimeoutMs\":15000}"))))
+        out.append(CarrierBootConfig.settingsPhoneAdaptation)
         return out
     }
 
@@ -363,10 +376,10 @@ final class SessionServe {
     /// reads them) and on a bound port, and hopped to the main thread because
     /// the load has to happen there.
     private func maybeOpenOrigin() {
-        guard runtimeBootApplied, server.port != 0 else { return }
+        guard runtimeBootApplied, settingsProbesDone, server.port != 0 else { return }
         DispatchQueue.main.async { [weak self] in
             guard let self, !self.stopped, self.origin == nil,
-                  self.runtimeBootApplied, self.server.port != 0,
+                  self.runtimeBootApplied, self.settingsProbesDone, self.server.port != 0,
                   let origin = URL(string: "http://127.0.0.1:\(self.server.port)/?token=\(self.token)")
             else { return }
             self.origin = origin

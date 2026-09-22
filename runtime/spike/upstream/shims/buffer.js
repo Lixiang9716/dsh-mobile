@@ -173,6 +173,14 @@ const toStringBase64 = (bytes) => {
 
 const ENCODINGS = { utf8: decodeUtf8, 'utf-8': decodeUtf8, hex: toStringHex, base64: toStringBase64 };
 
+/** buffer.constants — the byte-cap bounds vendored code validates against
+ * (fs-local's diff-basis ceiling). The VFS holds whole files in memory, so
+ * the values are the theoretical maxima, not a real allocation limit. */
+export const constants = {
+  MAX_LENGTH: 4294967296,
+  MAX_STRING_LENGTH: 536870888,
+};
+
 export class DshBuffer extends Uint8Array {
   static from(input, encoding = 'utf8') {
     if (typeof input === 'string') {
@@ -190,6 +198,27 @@ export class DshBuffer extends Uint8Array {
       return out;
     }
     throw new TypeError(`buffer: Buffer.from(${typeof input}) is not supported`);
+  }
+
+  /** Buffer.alloc(size[, fill]) — zero-filled by default (node's contract;
+   * a number fill is truncated to one byte). */
+  static alloc(size, fill = 0) {
+    const out = new DshBuffer(size);
+    if (typeof fill === 'number') out.fill(fill & 0xff);
+    else if (typeof fill === 'string') {
+      const bytes = encodeUtf8(fill);
+      for (let at = 0; at < size; at += bytes.length) out.set(bytes.subarray(0, Math.min(bytes.length, size - at)), at);
+    } else if (fill instanceof Uint8Array && fill.length > 0) {
+      for (let at = 0; at < size; at += fill.length) out.set(fill.subarray(0, Math.min(fill.length, size - at)), at);
+    }
+    return out;
+  }
+
+  /** Buffer.allocUnsafe(size) — node returns uninitialized memory for speed;
+   * there is no uninitialized memory to hand out here, so this is alloc(0)
+   * with the same signature (callers overwrite every byte they read back). */
+  static allocUnsafe(size) {
+    return new DshBuffer(size);
   }
 
   static fromBytes(bytes) {
@@ -236,3 +265,8 @@ export class DshBuffer extends Uint8Array {
 
   get byteLength() { return this.length; }
 }
+
+/** The module face: node:buffer exports the Buffer binding itself (the
+ * vendored dsh-attachment imports `{ Buffer } from 'node:buffer'`), and it
+ * is the SAME class web-shims.js installs as the global. */
+export { DshBuffer as Buffer };

@@ -14,7 +14,7 @@
     {
       "event": "web.boot.applied",
       "match": {
-        "rows": 5,
+        "rows": 6,
         "source": "runtime (vendored @deepseek-ai/dsh-client-modules)"
       }
     },
@@ -27,7 +27,8 @@
     {
       "event": "index.rendered",
       "match": {
-        "rows": 5
+        "rows": 6,
+        "bytes": 31299
       }
     },
     {

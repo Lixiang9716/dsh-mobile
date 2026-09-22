@@ -58,7 +58,7 @@
     {
       "event": "web.boot.applied",
       "match": {
-        "rows": 5,
+        "rows": 6,
         "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
       }
     },
@@ -79,7 +79,17 @@
           "session/prompt",
           "settings/describe",
           "settings/update",
-          "settings/mutate"
+          "settings/mutate",
+          "agentPresets/list",
+          "agentPresets/read",
+          "agentPresets/copy",
+          "agentPresets/deletePreset",
+          "agentPresets/select",
+          "pluginInventory/list",
+          "pluginManager/listBundles",
+          "pluginManager/listPlugins",
+          "credentials/describe",
+          "session/modelCatalog"
         ],
         "streams": [
           "session/follow",
@@ -93,8 +103,8 @@
     {
       "event": "index.rendered",
       "match": {
-        "rows": 5,
-        "bytes": 30352
+        "rows": 6,
+        "bytes": 31299
       }
     },
     {
@@ -112,9 +122,8 @@
     },
     {
       "event": "plugins.served",
-      "match": {
-        "bytes": 36040
-      }
+      "match": {},
+      "note": "combo size now floats with the page's lazy request set (the shell loads succeed, so the full app tier streams through /plugins); presence + path shape is the contract"
     },
     {
       "event": "upgrade.accepted",
@@ -166,7 +175,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,
@@ -242,7 +251,7 @@
       "event": "rpc.observed",
       "match": {
         "endpoint": "agentPresets/list",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {
@@ -256,7 +265,7 @@
       "event": "rpc.observed",
       "match": {
         "endpoint": "credentials/describe",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {
@@ -319,7 +328,7 @@
       "event": "rpc.observed",
       "match": {
         "endpoint": "session/modelCatalog",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {

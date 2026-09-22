@@ -155,11 +155,17 @@ final class WebBootRuntimeDrive {
 
     /// The staged presets tree (vendor/dsh/agent-presets@…/presets/**, written
     /// by SpikeBundleStager from the embedded spine tree) as an
-    /// `agentPresets.seed` delivery: every file base64 under its VFS path.
+    /// `agentPresets.seed` delivery: every file base64 under its VFS path,
+    /// plus one node_modules resolution marker per staged dsh package — the
+    /// same rule runtime/spike/ci/gen-presets-seed.py generates for the CLI.
+    /// A preset row naming a package that is NOT staged stays honestly
+    /// `broken` (no speculative markers); a row naming a staged package
+    /// resolves through its marker onto the bare map's vendored tree.
     private func agentPresetsSeedDelivery(stagedRoot: String) -> [String: Any]? {
         // `stagedRoot` is the spike bundle root (SpikeBundleStager.stage()'s
         // return) — the vendored tree is staged beneath it verbatim.
-        let rootPath = stagedRoot + "/vendor/dsh/agent-presets@0.1.6-alpha.2/presets"
+        let vendorRoot = stagedRoot + "/vendor/dsh"
+        let rootPath = vendorRoot + "/agent-presets@0.1.6-alpha.2/presets"
         let root = URL(fileURLWithPath: rootPath, isDirectory: true)
         guard FileManager.default.fileExists(atPath: root.path) else { return nil }
         var files: [String: Any] = [:]
@@ -172,6 +178,26 @@ final class WebBootRuntimeDrive {
             let rel = String(filePath[suffixIndex...])
             files["/vendor/dsh/agent-presets@0.1.6-alpha.2/presets\(rel)"] =
                 ["b64": b64, "mtimeMs": 0]
+        }
+        // Resolution markers: one per staged dsh package, name+version read
+        // from the package's own staged package.json.
+        let markerData = "resolution marker (the bare map vendors this package)"
+        if let dirs = try? FileManager.default.contentsOfDirectory(atPath: vendorRoot) {
+            for dir in dirs.sorted() where dir.contains("@") {
+                let manifestPath = vendorRoot + "/" + dir + "/package.json"
+                guard let raw = FileManager.default.contents(atPath: manifestPath),
+                      let manifest = try? JSONSerialization.jsonObject(with: raw) as? [String: Any],
+                      let name = manifest["name"] as? String,
+                      let version = manifest["version"] as? String else { continue }
+                let marker: [String: Any] = [
+                    "name": name, "version": version, "_spike": markerData,
+                ]
+                guard let json = try? JSONSerialization.data(withJSONObject: marker),
+                      !json.isEmpty else { continue }
+                let b64 = json.base64EncodedString()
+                files["/vendor/dsh/agent-presets@0.1.6-alpha.2/node_modules/\(name)/package.json"] =
+                    ["b64": b64, "mtimeMs": 0]
+            }
         }
         return files.isEmpty ? nil : ["type": "agentPresets.seed", "files": files]
     }

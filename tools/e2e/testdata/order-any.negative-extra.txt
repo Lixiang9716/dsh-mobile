@@ -1,0 +1,6 @@
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "burst.start", "n": 1}]}
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "attach.frame", "stream": "journal"}]}
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "burst.rpc", "id": "a"}]}
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "attach.frame", "stream": "journal"}]}
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "burst.rpc", "id": "b"}]}
+dsh.spike.log: {"level": "info", "module": "fix", "message": "e2e", "data": [{"scenario": "order-any.fixture", "event": "burst.done", "n": 1}]}

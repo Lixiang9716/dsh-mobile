@@ -233,8 +233,8 @@
     {
       "event": "index.injected",
       "match": {
-        "bytes": 30352,
-        "rows": 5
+        "bytes": 31304,
+        "rows": 6
       }
     },
     {

@@ -96,12 +96,44 @@ const parseAbsolute = (input) => {
   return { scheme, authority: authorityFinal, pathname, search, fragment };
 };
 
+/** POSIX dirname+pjoin with '.'/'..' resolution (lexical; no fs access). */
+const resolvePath = (path) => {
+  const out = [];
+  for (const seg of path.split('/')) {
+    if (seg === '' || seg === '.') continue;
+    if (seg === '..') { out.pop(); continue; }
+    out.push(seg);
+  }
+  return '/' + out.join('/');
+};
+
+/** Resolve a scheme-less input (spike path space) against an optional base —
+ * see the constructor: import.meta.url is a bundle-relative staged path, and
+ * vendored packages join their own resources against it. */
+const parsePathUrl = (asString, base) => {
+  if (base !== undefined) {
+    const baseParsed = new DshURL(base);
+    const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
+    return { ...baseParsed, pathname: resolvePath(dir + asString), search: '', fragment: '' };
+  }
+  return {
+    scheme: '', authority: '', pathname: resolvePath(`/${asString}`),
+    search: '', fragment: '',
+  };
+};
+
 export class DshURL {
   constructor(input, base = undefined) {
     let parsed;
     const asString = String(input);
     const hasScheme = /^[A-Za-z][A-Za-z0-9+.\-]*:/.test(asString);
-    if (hasScheme) {
+    // A scheme-less input is a spike PATH-URL (the loader pins import.meta.url
+    // to the staged bundle-relative path — plain POSIX, no scheme); lexical
+    // joins keep new URL('../presets/', import.meta.url) in the same space,
+    // and fileURLToPath passes path URLs through unchanged.
+    if (!hasScheme) {
+      parsed = parsePathUrl(asString, base);
+    } else if (hasScheme) {
       parsed = parseAbsolute(asString);
     } else if (base !== undefined) {
       const baseParsed = new DshURL(base);
@@ -109,6 +141,11 @@ export class DshURL {
         parsed = { ...baseParsed, pathname: asString, search: '', fragment: '' };
       } else if (asString === '') {
         parsed = { ...baseParsed };
+      } else if (baseParsed.scheme === '' || asString.startsWith('.')) {
+        // Lexical join in PATH space (scheme-less spike URLs): '.'/'..' kept
+        // verbatim would corrupt the walk; resolve them the way realpath does.
+        const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
+        parsed = { ...baseParsed, pathname: resolvePath(dir + asString), search: '', fragment: '' };
       } else {
         const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
         parsed = { ...baseParsed, pathname: dir + asString, search: '', fragment: '' };
@@ -152,7 +189,10 @@ export class DshURL {
     if (this.scheme === 'file') {
       return `file://${pathEncode(this.pathname)}${this.search}${this.fragment}`;
     }
-    return `${this.scheme}://${this.authority}${pathEncode(this.pathname)}${this.search}${this.fragment}`;
+    // Path URLs (empty scheme) serialize as plain paths — a '://' with an
+    // empty scheme would be unparseable noise round-tripping through href.
+    const head = this.scheme === '' ? '' : `${this.scheme}://${this.authority}`;
+    return `${head}${pathEncode(this.pathname)}${this.search}${this.fragment}`;
   }
   toString() { return this.href; }
   toJSON() { return this.href; }
@@ -176,7 +216,12 @@ export const pathToFileURL = (path) => {
 /** POSIX `fileURLToPath`: file: URL (string or URL-like) → absolute path. */
 export const fileURLToPath = (input) => {
   const href = typeof input === 'string' ? input : String(input?.href ?? input);
-  if (typeof href !== 'string' || !href.startsWith('file:')) {
+  // A scheme-less absolute path is already the spike's path space — identity.
+  if (!href.startsWith('file:')) {
+    // ':///path' is a path URL a caller stringified through a file:-expecting
+    // API — the empty-scheme serialization. Strip the marker, keep the path.
+    if (href.startsWith(':///')) return href.slice(3);
+    if (href.startsWith('/')) return href;
     throw new Error(`node:url: fileURLToPath needs a file: URL, got ${JSON.stringify(href)}`);
   }
   const parsed = parseAbsolute(href);

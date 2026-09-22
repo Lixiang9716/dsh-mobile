@@ -92,6 +92,7 @@ class CarrierIndexInjection private constructor(private val kind: Kind) {
         data class Script(val placement: Placement, val text: String) : Kind()
         data class ScriptSrc(val placement: Placement, val src: String) : Kind()
         data class ScriptPreload(val src: String) : Kind()
+        data class Style(val text: String) : Kind()
     }
 
     /** The row's markup and the region it lands in (upstream `renderRow`). */
@@ -111,6 +112,7 @@ class CarrierIndexInjection private constructor(private val kind: Kind) {
             is Kind.ScriptPreload ->
                 Placement.HEAD to
                     "<link rel=\"preload\" as=\"script\" href=\"${htmlAttribute(k.src)}\">"
+            is Kind.Style -> Placement.HEAD to "<style>${k.text}</style>"
         }
 
     companion object {
@@ -120,6 +122,7 @@ class CarrierIndexInjection private constructor(private val kind: Kind) {
         fun scriptSrc(src: String) =
             CarrierIndexInjection(Kind.ScriptSrc(Placement.HEAD, src))
         fun scriptPreload(src: String) = CarrierIndexInjection(Kind.ScriptPreload(src))
+        fun style(text: String) = CarrierIndexInjection(Kind.Style(text))
 
         /** JSON-encode one string (the member-expression face of a `global`
          * row's name). */

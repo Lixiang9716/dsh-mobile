@@ -49,10 +49,10 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 32 |
-| 已提交 verdict（73 绿，2 条配额阻塞红） | 75 |
-| 至少有一份已提交证据的 scenario | 28 / 28 个不同的 scenario id（29 个 manifest） |
-| 已验证 PNG 的截图 | 81 |
+| 证据目录 | 35 |
+| 已提交 verdict（78 绿，2 条配额阻塞红） | 80 |
+| 至少有一份已提交证据的 scenario | 30 / 30 个不同的 scenario id（31 个 manifest） |
+| 已验证 PNG 的截图 | 84 |
 | 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
@@ -144,6 +144,8 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，
