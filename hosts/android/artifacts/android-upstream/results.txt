@@ -1,2 +1,2 @@
-09-22 23:51:38.172 14427 14494 I dsh.spike.result: b-android.official-web.mount PASS | quickjs-ng 0.17.0
-09-22 23:51:38.172 14427 14494 I dsh.spike.result: ALL PASS
+09-23 02:08:05.231  5313  5425 I dsh.spike.result: b-android.official-web.mount PASS | quickjs-ng 0.17.0
+09-23 02:08:05.231  5313  5425 I dsh.spike.result: ALL PASS

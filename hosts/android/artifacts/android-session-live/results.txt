@@ -1,2 +1,2 @@
-09-22 23:51:58.525 14566 14634 I dsh.spike.result: b-android.session.live PASS | quickjs-ng 0.17.0
-09-22 23:51:58.525 14566 14634 I dsh.spike.result: ALL PASS
+09-23 02:08:24.442  5458  5580 I dsh.spike.result: b-android.session.live PASS | quickjs-ng 0.17.0
+09-23 02:08:24.442  5458  5580 I dsh.spike.result: ALL PASS
