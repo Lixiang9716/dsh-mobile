@@ -121,8 +121,31 @@ if [ "$ROOTFS_OVERRIDE" -eq 0 ]; then
     [ -x "$STAGED/bin/busybox" ] || { echo "   FAIL: the staged tree has no executable busybox" >&2; exit 1; }
     [ -L "$STAGED/usr/bin/top" ] || { echo "   FAIL: the staged tree lost its symlinks" >&2; exit 1; }
     [ -f "$STAGED/etc/resolv.conf" ] || { echo "   FAIL: no resolver seeded" >&2; exit 1; }
-    echo "   staged: $(tail -1 "$ART/stage.jsonl")"
+    echo "   staged: $(grep 'dsh_ish_stage:' "$ART/stage.jsonl" | tail -1)"
+    grep -q 'dsh_ish_verify: verdict=stage-sealed' "$ART/stage.jsonl" \
+        || { echo "   FAIL: staging sealed no manifest" >&2; exit 1; }
     ROOTFS="$STAGED"
+
+    # The rejection case "integrity at every mount" owes the matrix (rule 6:
+    # a verify that never failed is not evidence): append one byte to the
+    # SEALED busybox and demand the boot refuse it with a structured record
+    # naming the entry and the expected digest. The byte goes straight back
+    # so the gates below boot the real userland. Staged-flow only — an
+    # override tree has no manifest until its first boot seals it.
+    TAMPER="$ART/verify-tamper.jsonl"
+    cp -p "$STAGED/bin/busybox" "$ART/busybox.pristine"
+    printf 'x' >> "$STAGED/bin/busybox"
+    if runtime/spike/build/ish/ish-smoke --rootfs "$STAGED" -c 'true' > "$TAMPER" 2>&1; then
+        echo "   FAIL: the guest booted a tampered userland" >&2; exit 1
+    fi
+    grep -q 'dsh_ish_verify: verdict=refused' "$TAMPER" \
+        || { echo "   FAIL: no structured refusal record" >&2; exit 1; }
+    grep -q 'entry=bin/busybox' "$TAMPER" \
+        || { echo "   FAIL: the refusal does not name the entry" >&2; exit 1; }
+    grep -q 'expected=sha256=' "$TAMPER" \
+        || { echo "   FAIL: the refusal carries no expected digest" >&2; exit 1; }
+    cp -p "$ART/busybox.pristine" "$STAGED/bin/busybox"
+    echo "   tamper refused: $(grep 'dsh_ish_verify: verdict=refused' "$TAMPER" | head -1)"
 fi
 
 echo "== 3/5 C gate: the seam itself =="
