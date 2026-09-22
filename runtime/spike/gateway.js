@@ -107,6 +107,16 @@ export const fsRemove = async (scope, path, opts = {}) => await call('fsRemove',
 export const fsRename = async (scope, from, to) =>
   await call('fsRename', { scope, from, to });
 
+// ---- wasm (contract v1.2.0) ---------------------------------------------
+// One export of one module, executed IN-PROCESS by the host's interpreter.
+// iOS forbids JIT and this architecture refuses subprocesses (D2), so the
+// alternative is no WebAssembly at all rather than a child process. The module
+// talks back through the imported function `dsh.emit(ptr, len)`.
+
+/** `{ result, output }`; a trap or a missing export is an `io` rejection. */
+export const wasmRun = async (scope, path, func, input = '') =>
+  await call('wasmRun', { scope, path, func, input });
+
 // ---- httpFetch (streaming response body) ---------------------------------
 
 /** In-flight response-body streams keyed by bodyId. */

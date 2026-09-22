@@ -12,6 +12,13 @@
 set -e
 cd "$(dirname "$0")"
 
+# The other engine this repository embeds — the WebAssembly interpreter — has
+# its own pin record (ensure-wasm3.sh). Vendoring the engines is ONE step at
+# every call site, so this script delegates rather than duplicating the
+# fetch-and-verify logic; a caller that wants only quickjs can run that script
+# on its own.
+sh ./ensure-wasm3.sh   # cwd is this script's directory (cd above)
+
 PIN=0.17.0
 COMMIT=6d46d07d04041b40f4f49eaa7fdebe44c314c699
 TARBALL_SHA256=a62cf1ff7d6d2f82b90a2d247a57e9eb56b81c03feb1f372a53923426e358cb0

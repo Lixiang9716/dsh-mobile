@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.1.0
+# Capability Gateway — Primitive Contract v1.2.0
 
 > **Status: FROZEN at M0** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -10,6 +10,12 @@
 > "filesystem additions"). v1.0.0's nine primitives are untouched, so a `gateway@1` host
 > that does not implement the additions keeps negotiating exactly as before and reports
 > them `unavailable` — this is a minor bump in the sense §8 defines, not a new major.
+>
+> **v1.2.0 (additive, 2026-09-22)**: `wasmRun` — run one exported function of one
+> WebAssembly module **inside the caller's own process** (§4, "wasm"). iOS forbids JIT and
+> this architecture refuses subprocesses (D2), so the alternative to an in-process
+> interpreter is no WebAssembly at all, not a child process. Same additive rule as v1.1.0:
+> a host without it answers `unavailable`.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -59,6 +65,12 @@ permission flags, so no new capability has to be negotiated:
 | 12 | `fsMkdir` | create a directory (recursively) inside an authorized scope | `fsWrite` | no |
 | 13 | `fsRemove` | remove a file or directory inside an authorized scope | `fsWrite` | no |
 | 14 | `fsRename` | rename or move inside an authorized scope | `fsWrite` | no |
+
+**v1.2.0 addition (1)**:
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 15 | `wasmRun` | execute one export of a WebAssembly module in-process | `wasm` | no |
 
 Reserved identifiers: the scope handle `"app"` denotes the host's own profile container
 (the storage layout of [data-protocols.md](data-protocols.md)); the capability name
@@ -133,6 +145,36 @@ rejected as `invalid` **before** any host call, exactly as those two do.
 Hosts that do not implement a listing may serve `fsList` as `unavailable` and everything
 else as usual; a caller that needs listings must treat that as a capability gap, not an
 error to retry.
+
+### wasm (v1.2.0)
+
+`wasmRun(scope, path, func, input?) → { result, output }` — loads the module at
+`path` **inside the authorized scope** (the same scope-relative path rule the fs
+primitives use, so a module is an ordinary file the user or a plugin put there)
+and calls its export `func` with the caller's `input` string.
+
+The module's ABI is what makes this a *seam* rather than a sandbox escape:
+
+- the module exports its memory, and `func` takes `(param i32 ptr) (param i32 len)`
+  and returns `i32`;
+- the host writes `input` into the **last 4096 bytes of the module's current
+  memory** and passes that offset and length, so a module keeps its own data below
+  that region — or grows its memory and uses the new top, which the host
+  recomputes on every run;
+- everything the module reports goes through the imported function
+  `dsh.emit(ptr, len)`; the host collects those bytes into `output`;
+- `result` is the export's own `i32` return value (a status code is the intended
+  use).
+
+`input` is UTF-8 and `output` is UTF-8; a module that emits other bytes gets them
+back as-is (the host escapes for JSON, it does not transcode). A trap, a missing
+export, a module that does not parse or does not load, and a call that exceeds the
+host's output buffer are all `io` rejections naming which of those happened —
+never a partial result. Modules run **in-process**: no child process, no thread,
+and the run occupies the runtime's serial queue like every other primitive.
+
+`wasmRun` reads its module through the same scope machinery `fsRead` uses and adds
+no filesystem capability of its own; the `wasm` flag is what gates *executing* one.
 
 ### httpFetch
 - `httpFetch(url, init?) → { status, headers, body, abort() }` — the response **body is an

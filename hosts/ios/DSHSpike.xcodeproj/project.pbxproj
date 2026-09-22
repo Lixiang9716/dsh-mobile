@@ -8,28 +8,39 @@
 
 /* Begin PBXBuildFile section */
 		0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */; };
+		13A8B251A2D5A29FDC9CBC51 /* m3_module.c in Sources */ = {isa = PBXBuildFile; fileRef = 7B3935A60D3190F43EB378EB /* m3_module.c */; };
 		13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */ = {isa = PBXBuildFile; fileRef = 09284B9F0D5242AA9BAB8375 /* SpikeBundle.c */; };
 		184D40FA4E64ACB3D27FE975 /* SessionLiveProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1AFB09BF1FF590997FA7731 /* SessionLiveProbe.swift */; };
 		1B385B3BBC82C30A9C4BFAA8 /* OfficialWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */; };
+		1D7D0AD548CFBBAD7AE41441 /* m3_bind.c in Sources */ = {isa = PBXBuildFile; fileRef = 5A23156072E07F33C5E489FE /* m3_bind.c */; };
 		2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */; };
 		283B8F98CD41140278AC43FC /* CarrierBootConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAD16B88BE29DAEE57E0D9B8 /* CarrierBootConfig.swift */; };
+		3968E99707B8EE09B8BF21DC /* m3_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 348E19DFC4C7450AC2F83CF9 /* m3_core.c */; };
 		4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */; };
+		47B1DB0AB4554772EA362CA2 /* m3_exec.c in Sources */ = {isa = PBXBuildFile; fileRef = 70E06553B3925E2F3AD91392 /* m3_exec.c */; };
+		493EA6E4657656CB0A5233AF /* m3_info.c in Sources */ = {isa = PBXBuildFile; fileRef = 38A515451007C09B17F3FEE5 /* m3_info.c */; };
 		4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */; };
 		534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183BA893CC40AAE4768063F6 /* HTTPPrimitive.swift */; };
 		54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */; };
+		55506887E19CECE57845EDA9 /* dsh_wasm.c in Sources */ = {isa = PBXBuildFile; fileRef = 36B8D5A76FAD892DE4F18315 /* dsh_wasm.c */; };
 		573579F6F12471E4424B727A /* libunicode.c in Sources */ = {isa = PBXBuildFile; fileRef = 40F1780B39D9032EE9BB32BC /* libunicode.c */; };
 		5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */; };
 		61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */; };
 		61EEC98694105A362CEC3707 /* SessionServe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1279CFC8FB988D80AD896E16 /* SessionServe.swift */; };
 		6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3DF3E05EAD1DB69CC635369 /* WebBootRuntimeDrive.swift */; };
+		6CD05538F74F45643A8E8B31 /* m3_env.c in Sources */ = {isa = PBXBuildFile; fileRef = 2DCD309A4F81A1BFCC728EF9 /* m3_env.c */; };
 		7137721E1CD8809EAC1499B5 /* CarrierRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */; };
+		756A056B137E2D96A8F8C637 /* m3_code.c in Sources */ = {isa = PBXBuildFile; fileRef = C1AB00E24EB2C6C477B0DDF8 /* m3_code.c */; };
+		7BEFA9CB7F409E767A7ECF56 /* m3_validate.c in Sources */ = {isa = PBXBuildFile; fileRef = AE2C804755A0EA5F7CF5B366 /* m3_validate.c */; };
 		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
+		836949EFC4785527B44F0A4D /* m3_parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A5C6985445CEF30C1D7D980 /* m3_parse.c */; };
 		88615C1BC61F9ED55E38A30C /* CarrierRoutes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93462855086C75B4830CEEAA /* CarrierRoutes.swift */; };
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
 		90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */; };
 		9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */; };
 		9A79E46043F2C71B973B8995 /* CarrierWebDist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */; };
 		9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */; };
+		9D35980B133786B11600B115 /* m3_compile.c in Sources */ = {isa = PBXBuildFile; fileRef = 71939D55828A56CBA1F3085D /* m3_compile.c */; };
 		A1B000276ECF160A051C1000 /* CarrierAPIBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */; };
 		A4D64D8E5942951A64D738C2 /* SessionWriteProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */; };
 		A5823CFF26EFBEF3964F86FD /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DD761A8299F885CFFFBF71 /* AppDelegate.swift */; };
@@ -38,6 +49,7 @@
 		B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */; };
 		C00FC0282AE281696A47D435 /* RuntimeThread.swift in Sources */ = {isa = PBXBuildFile; fileRef = D699FF5BB908578B359B9B14 /* RuntimeThread.swift */; };
 		D0DCF41C09E6E2AEE074E698 /* SpikeRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */; };
+		D4F5B2B89D5A8745FDD87339 /* m3_function.c in Sources */ = {isa = PBXBuildFile; fileRef = 8D0099AAC070F4DE9DD15D1B /* m3_function.c */; };
 		E42F06323D11206F2C413149 /* libregexp.c in Sources */ = {isa = PBXBuildFile; fileRef = 1C1AD386700DAC0A6BB463CE /* libregexp.c */; };
 		EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */ = {isa = PBXBuildFile; fileRef = FFC9F6DD88A34104FD3BC6B3 /* quickjs.c */; };
 		F5F0070F74E81DE98B176234 /* CarrierPlugins.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */; };
@@ -54,23 +66,35 @@
 		1C1AD386700DAC0A6BB463CE /* libregexp.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libregexp.c; sourceTree = "<group>"; };
 		24888637EE42A0E9E40132A8 /* SpikeBundle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SpikeBundle.h; sourceTree = "<group>"; };
 		2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FSPrimitives.swift; sourceTree = "<group>"; };
+		2DCD309A4F81A1BFCC728EF9 /* m3_env.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_env.c; sourceTree = "<group>"; };
+		348E19DFC4C7450AC2F83CF9 /* m3_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_core.c; sourceTree = "<group>"; };
+		36B8D5A76FAD892DE4F18315 /* dsh_wasm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_wasm.c; sourceTree = "<group>"; };
+		38A515451007C09B17F3FEE5 /* m3_info.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_info.c; sourceTree = "<group>"; };
 		3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebRuntime.swift; sourceTree = "<group>"; };
 		40F1780B39D9032EE9BB32BC /* libunicode.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = libunicode.c; sourceTree = "<group>"; };
 		43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAPIBridge.swift; sourceTree = "<group>"; };
 		4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPrimitive.swift; sourceTree = "<group>"; };
+		5A23156072E07F33C5E489FE /* m3_bind.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_bind.c; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
 		6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dsh_spike_host.c; sourceTree = "<group>"; };
+		70E06553B3925E2F3AD91392 /* m3_exec.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_exec.c; sourceTree = "<group>"; };
+		71939D55828A56CBA1F3085D /* m3_compile.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_compile.c; sourceTree = "<group>"; };
 		74DD761A8299F885CFFFBF71 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRuntime.swift; sourceTree = "<group>"; };
+		7B3935A60D3190F43EB378EB /* m3_module.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_module.c; sourceTree = "<group>"; };
 		7EC9F5F6929C9D36E65D032D /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
+		8A5C6985445CEF30C1D7D980 /* m3_parse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_parse.c; sourceTree = "<group>"; };
+		8D0099AAC070F4DE9DD15D1B /* m3_function.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_function.c; sourceTree = "<group>"; };
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		93462855086C75B4830CEEAA /* CarrierRoutes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRoutes.swift; sourceTree = "<group>"; };
 		95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialWebProbe.swift; sourceTree = "<group>"; };
 		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
+		AE2C804755A0EA5F7CF5B366 /* m3_validate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_validate.c; sourceTree = "<group>"; };
 		B0E3BCFD74C8ACD203C3B004 /* CarrierPlugins.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierPlugins.swift; sourceTree = "<group>"; };
 		BF970AD8D229CCE9C077FCE1 /* SessionRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRuntime.swift; sourceTree = "<group>"; };
+		C1AB00E24EB2C6C477B0DDF8 /* m3_code.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_code.c; sourceTree = "<group>"; };
 		C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIPrimitives.swift; sourceTree = "<group>"; };
 		CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierWebDist.swift; sourceTree = "<group>"; };
 		CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeRuntime.swift; sourceTree = "<group>"; };
@@ -135,6 +159,14 @@
 			path = Source;
 			sourceTree = "<group>";
 		};
+		31A88533D352D1A735289610 /* wasm3 */ = {
+			isa = PBXGroup;
+			children = (
+				F2FC6793251B9DAD59B15905 /* 0.9.0 */,
+			);
+			path = wasm3;
+			sourceTree = "<group>";
+		};
 		84F95FD6AADCA843676C4DF9 = {
 			isa = PBXGroup;
 			children = (
@@ -142,6 +174,24 @@
 				246E2CA954878CE8897E2C83 /* dsh-mobile */,
 				AF09F1B8671210489366EA0F /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		85B3ABB1D5FDBFBD29CCD060 /* source */ = {
+			isa = PBXGroup;
+			children = (
+				5A23156072E07F33C5E489FE /* m3_bind.c */,
+				C1AB00E24EB2C6C477B0DDF8 /* m3_code.c */,
+				71939D55828A56CBA1F3085D /* m3_compile.c */,
+				348E19DFC4C7450AC2F83CF9 /* m3_core.c */,
+				2DCD309A4F81A1BFCC728EF9 /* m3_env.c */,
+				70E06553B3925E2F3AD91392 /* m3_exec.c */,
+				8D0099AAC070F4DE9DD15D1B /* m3_function.c */,
+				38A515451007C09B17F3FEE5 /* m3_info.c */,
+				7B3935A60D3190F43EB378EB /* m3_module.c */,
+				8A5C6985445CEF30C1D7D980 /* m3_parse.c */,
+				AE2C804755A0EA5F7CF5B366 /* m3_validate.c */,
+			);
+			path = source;
 			sourceTree = "<group>";
 		};
 		978D35D8850CE0F9B67467A7 /* quickjs-ng */ = {
@@ -196,6 +246,7 @@
 			isa = PBXGroup;
 			children = (
 				6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */,
+				36B8D5A76FAD892DE4F18315 /* dsh_wasm.c */,
 			);
 			path = host;
 			sourceTree = "<group>";
@@ -204,6 +255,7 @@
 			isa = PBXGroup;
 			children = (
 				978D35D8850CE0F9B67467A7 /* quickjs-ng */,
+				31A88533D352D1A735289610 /* wasm3 */,
 			);
 			path = vendor;
 			sourceTree = "<group>";
@@ -227,6 +279,14 @@
 				261210B6C944DA738F7FBC65 /* Source */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		F2FC6793251B9DAD59B15905 /* 0.9.0 */ = {
+			isa = PBXGroup;
+			children = (
+				85B3ABB1D5FDBFBD29CCD060 /* source */,
+			);
+			path = 0.9.0;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -388,9 +448,21 @@
 				9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */,
 				6C640EF14ABB68E423762CC3 /* WebBootRuntimeDrive.swift in Sources */,
 				7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */,
+				55506887E19CECE57845EDA9 /* dsh_wasm.c in Sources */,
 				AD11658A84414177D0FCCB8D /* dtoa.c in Sources */,
 				E42F06323D11206F2C413149 /* libregexp.c in Sources */,
 				573579F6F12471E4424B727A /* libunicode.c in Sources */,
+				1D7D0AD548CFBBAD7AE41441 /* m3_bind.c in Sources */,
+				756A056B137E2D96A8F8C637 /* m3_code.c in Sources */,
+				9D35980B133786B11600B115 /* m3_compile.c in Sources */,
+				3968E99707B8EE09B8BF21DC /* m3_core.c in Sources */,
+				6CD05538F74F45643A8E8B31 /* m3_env.c in Sources */,
+				47B1DB0AB4554772EA362CA2 /* m3_exec.c in Sources */,
+				D4F5B2B89D5A8745FDD87339 /* m3_function.c in Sources */,
+				493EA6E4657656CB0A5233AF /* m3_info.c in Sources */,
+				13A8B251A2D5A29FDC9CBC51 /* m3_module.c in Sources */,
+				836949EFC4785527B44F0A4D /* m3_parse.c in Sources */,
+				7BEFA9CB7F409E767A7ECF56 /* m3_validate.c in Sources */,
 				EEAEF2022E2D8AF1B85B43B1 /* quickjs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -446,6 +518,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../runtime/spike/host",
 					"$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0",
+					"$(SRCROOT)/../../runtime/spike/vendor/wasm3/0.9.0/source",
 					"$(SRCROOT)/App/Generated",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -548,6 +621,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(SRCROOT)/../../runtime/spike/host",
 					"$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0",
+					"$(SRCROOT)/../../runtime/spike/vendor/wasm3/0.9.0/source",
 					"$(SRCROOT)/App/Generated",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

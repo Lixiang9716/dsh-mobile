@@ -1,6 +1,7 @@
 /**
- * dsh-mobile capability gateway — primitive contract v1.1.0 (FROZEN at M0, D5;
- * v1.1.0 is the additive filesystem revision of 2026-09-22).
+ * dsh-mobile capability gateway — primitive contract v1.2.0 (FROZEN at M0, D5;
+ * v1.1.0 is the additive filesystem revision of 2026-09-22, v1.2.0 the
+ * in-process WebAssembly addition).
  *
  * Spec of record: contract/primitives.md. Shapes here are immutable for the
  * life of major version 1; additions require a minor bump of the contract.
@@ -144,3 +145,16 @@ export declare function keychainSet(ref: KeyRef, secret: Uint8Array | null): Pro
 
 export type AppStateChanged = { state: "foreground" | "background" };
 export type NotifyResponse = { id: string; action?: string };
+
+// ---- 15 · wasm (v1.2.0) -------------------------------------------------
+// One export of one module, executed IN-PROCESS: iOS forbids JIT and this
+// architecture refuses subprocesses (D2), so the alternative is no WebAssembly
+// at all rather than a child process. The module talks to the host through the
+// imported function `dsh.emit(ptr, len)`; the host writes `input` into the last
+// 4096 bytes of the module's current memory and passes (ptr, len) to `func`.
+export declare function wasmRun(
+  scope: ScopeHandle,
+  path: string,
+  func: string,
+  input?: string,
+): Promise<{ result: number; output: string }>;
