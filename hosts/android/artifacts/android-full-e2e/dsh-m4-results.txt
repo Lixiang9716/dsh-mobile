@@ -1,0 +1,2 @@
+09-23 02:07:49.953  4984  5041 I dsh.spike.result: m4.host-binding PASS | quickjs-ng 0.17.0
+09-23 02:07:49.954  4984  5041 I dsh.spike.result: ALL PASS

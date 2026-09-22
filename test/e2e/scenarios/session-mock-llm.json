@@ -17,7 +17,7 @@
     { "event": "subprocess.spawned", "match": { "taskId": "task-1", "steps": 2 } },
     { "event": "subprocess.progress", "match": { "taskId": "task-1", "step": 1 } },
     { "event": "subprocess.progress", "match": { "taskId": "task-1", "step": 2 } },
-    { "event": "fs.write.ok", "match": { "written": 27, "path": "session-mock-llm/result.txt" } },
+    { "event": "fs.write.ok", "match": { "written": 33, "path": "session-mock-llm/result.txt" } },
     { "event": "subprocess.completed", "match": { "taskId": "task-1", "ok": true } },
     { "event": "tool.result", "match": { "name": "notes.persist", "call": "t-1", "ok": true } },
     { "event": "llm.stream.started", "match": { "turn": 2 } },

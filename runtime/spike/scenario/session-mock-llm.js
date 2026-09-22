@@ -69,7 +69,7 @@ const project = (event) => {
 
 const SESSION_ID = 's-m2-0001';
 const RESULT_PATH = 'session-mock-llm/result.txt';
-const RESULT_TEXT = 'session-mock-llm result: 5 deltas'; // 27 ASCII bytes
+const RESULT_TEXT = 'session-mock-llm result: 5 deltas'; // 33 ASCII bytes
 const TURN_ONE = ['Hello', ' from', ' DSH'];
 const TURN_TWO = [' Saved', ' ok'];
 const toText = (bytes) => [...bytes].map((c) => String.fromCharCode(c)).join('');
