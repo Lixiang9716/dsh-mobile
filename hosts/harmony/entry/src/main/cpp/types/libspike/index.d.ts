@@ -1,8 +1,8 @@
 /**
  * NAPI surface of libspike.so — the M5 spike host binding.
  *
- * startSpike runs ALL spike scenarios (m1.spike.boot regression +
- * m2.bridge.smoke + m2.session over the gateway bridge) synchronously on the
+ * startSpike runs ALL spike scenarios (boot.verification regression +
+ * gateway.bridge-smoke + session.mock-llm over the gateway bridge) synchronously on the
  * caller thread — new + eval + pump + settle per scenario — and returns the
  * combined verdict summary (PASS/FAIL + per-scenario verdicts). The
  * canonical `dsh.spike.log:` lines stream to hilog (domain 0xD5E0, tag
@@ -25,7 +25,7 @@ export const startSpike: (bundleRoot: string, capturePath: string, fsRoot: strin
  * `(callId: number, name: string, args: string) => void` (platform
  * primitive dispatch — queue it, never settle from inside). The optional
  * scenario label names the `dsh.spike.verdict:` line (default
- * m5.host-binding).
+ * harmony.capability-binding).
  */
 export const hostStart: (bundleRoot: string, capturePath: string, fsRoot: string,
   descriptor: string, onBus: (line: string) => void,

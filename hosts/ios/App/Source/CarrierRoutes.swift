@@ -102,7 +102,7 @@ extension CarrierServer {
         })
     }
 
-    // ---- scripted llm endpoint (b3.session.live; W-SESS) ---------------------
+    // ---- scripted llm endpoint (session.live-read; W-SESS) ---------------------
 
     /// POST /mock-llm/chat/completions — the SCRIPTED model boundary of the
     /// on-device session-live drive: a real loopback HTTP + SSE endpoint on

@@ -1,0 +1,100 @@
+{
+  "scenario": "android.officialweb.mount",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-official",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "web.boot.applied",
+      "match": {
+        "rows": 6,
+        "source": "runtime (vendored @deepseek-ai/dsh-client-modules)"
+      }
+    },
+    {
+      "event": "runtime.booted",
+      "match": {
+        "source": "vendored @deepseek-ai/dsh-client-modules composed in-runtime"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "rows": 6,
+        "bytes": 31299
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/assets/index-8VXBH-f-.js"
+      }
+    },
+    {
+      "event": "plugins.served",
+      "match": {}
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "settings/describe",
+        "answered": "unavailable"
+      }
+    },
+    {
+      "event": "session.attached",
+      "match": {
+        "stream": "workspace/follow"
+      }
+    },
+    {
+      "event": "session.services.pending",
+      "match": {
+        "leg": "workspace/follow"
+      }
+    },
+    {
+      "event": "module.system.live",
+      "match": {
+        "mode": "live",
+        "bootstrap": "@deepseek-ai/dsh-client-modules (vendored)"
+      }
+    },
+    {
+      "event": "app.shell.rendered",
+      "match": {
+        "mounted": true,
+        "rootHasChild": true,
+        "bootPageDisposed": true
+      }
+    },
+    {
+      "event": "page.rendered",
+      "match": {
+        "boot": false,
+        "rootHasChild": true,
+        "moduleMode": "live"
+      }
+    }
+  ]
+}

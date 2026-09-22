@@ -9,7 +9,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Drives `b-android.session.live` (the Android D9 session leg): the FULL
+ * Drives `android.session.live-read` (the Android D9 session leg): the FULL
  * upstream agent spine boots ON-DEVICE (upstream/boot.js over the staged
  * vendor closure — ctx.sessions / agents / agentLoop / tools / systemPrompt
  * / projections / settings + the vendored dsh-llm LlmRuntime whose transport
@@ -28,8 +28,8 @@ import org.json.JSONObject
 class SessionLiveSession private constructor(private val activity: Activity) {
 
     companion object {
-        const val SCENARIO = "b-android.session.live"
-        const val ENTRY = "scenario/b-android-session-live.js"
+        const val SCENARIO = "android.session.live-read"
+        const val ENTRY = "scenario/android-session-live-read.js"
         const val CLIENT_ID = "dsh-web-official"
         // Bound, not pacing: the drive's stages carry their own deadlines
         // (spine boot + two turns before the page, composition + page boot +
@@ -238,7 +238,7 @@ class SessionLiveSession private constructor(private val activity: Activity) {
         val entry = File(bundle, ENTRY)
         handle = SpikeRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
-            "b-android-session-live", runtimeBridge,
+            "android-session-live-read", runtimeBridge,
         )
         if (handle == 0L) throw IllegalStateException("session-live begin: ${SpikeRuntime.m4LastError()}")
         deliverRuntime(

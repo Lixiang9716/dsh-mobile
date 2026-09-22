@@ -7,7 +7,7 @@ expressed via RuntimeDescriptor capabilities.
 ## M4 status: completion — carrier + WebView mount + the real nine-primitive binding
 
 On top of the three-scenario regression (below), the M4 completion session
-(`m4.host-binding`, launch with `--ez dsh.m4 true`) proves the host behaves like the iOS host:
+(`android.capability-binding`, launch with `--ez dsh.m4 true`) proves the host behaves like the iOS host:
 
 - **Local carrier** (`CarrierServer.kt`) — a raw `ServerSocket` on 127.0.0.1 (the Kotlin sibling
   of hosts/ios `CarrierServer.swift`): loopback HTTP static serving of the embedded Web Client
@@ -30,7 +30,7 @@ On top of the three-scenario regression (below), the M4 completion session
   channels: `app.state` from activity lifecycle edges (deduped), `notify.response` from the
   notification's PendingIntent. Descriptor: nine available, zero unavailable (conformance §7).
 - **Audit**: one structured record per call on the `dsh.spike.audit` tag
-  (`dsh.gateway.audit: ` prefix, never payload contents) — the frozen `m2.gateway.audit`
+  (`dsh.gateway.audit: ` prefix, never payload contents) — the frozen `gateway.audit`
   manifest re-verified against the m4 session's call sequence.
 
 Threading law unchanged: JS executes only on `HandlerThread("dsh-spike-js")`; the carrier
@@ -38,7 +38,7 @@ threads, fetch threads, and the UI thread never touch the runtime — every sett
 delivery hops through `SpikeRuntime.post`.
 
 Evidence (one run, final code state): `artifacts/m4-complete/` — `logs.txt` + `scenario.jsonl`
-+ `audit.jsonl`, `verdict-m4-host-binding.json` + `verdict-m2-gateway-audit.json` (checker
++ `audit.jsonl`, `verdict-android-capability-binding.json` + `verdict-gateway-audit.json` (checker
 PASS), the regression verdicts, `screens/` (mount, picker, approval, notification shade,
 final — human evidence only), `receipt.json`.
 
@@ -48,19 +48,19 @@ The app embeds the shared M2 spike host (`runtime/spike/host/dsh_spike_host.c`) 
 gateway dispatch bridge (no canned responses — the M1 single-call slot is gone) and runs ALL
 THREE scenarios in one launch, judged by the shared checker:
 
-- `m1.spike.boot` — boot regression, 7/7 canonical events.
-- `m2.bridge.smoke` — the gateway bridge end to end, 6/6 canonical events: fsWrite/fsRead of 17
+- `boot.verification` — boot regression, 7/7 canonical events.
+- `gateway.bridge-smoke` — the gateway bridge end to end, 6/6 canonical events: fsWrite/fsRead of 17
   base64-carried bytes, the scope-escape `invalid` rejection, and `keychainGet` rejected with the
   honest `unavailable` code.
-- `m2.session` — the first MINI agent session on Android, 23/23 canonical events: the three
+- `session.mock-llm` — the first MINI agent session on Android, 23/23 canonical events: the three
   system plugins (dsh-fs / dsh-subprocess-quickjs / dsh-ui) install through `registry.js`, the
   `host.info` readiness event starts the session, the mock LLM streams token deltas, one tool
   call runs through the subprocess plugin and persists via dsh-fs under scope `app`
-  (`smoke-fs/m2-session/result.txt`, roundtripped).
+  (`smoke-fs/session-mock-llm/result.txt`, roundtripped).
 
 Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logcat `-s dsh.spike`),
-`scenario.jsonl` (canonical `dsh.spike.log:` lines), `verdict-m1-spike-boot.json` +
-`verdict-m2-bridge-smoke.json` + `verdict-m2-session.json` (checker PASS), `screenshot.png`
+`scenario.jsonl` (canonical `dsh.spike.log:` lines), `verdict-boot-verification.json` +
+`verdict-gateway-bridge-smoke.json` + `verdict-session-mock-llm.json` (checker PASS), `screenshot.png`
 (human evidence only — never a checker input), `receipt.json`.
 
 ## How it works
@@ -79,8 +79,8 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
   lifecycle on the CALLING thread; Kotlin (`SpikeRuntime`) keeps that caller a single
   `HandlerThread("dsh-spike-js")` (logcat pid/tid columns prove the split from the UI thread).
 - `app/src/main/assets/spike/` — the spike bundle as byte-identical copies of `runtime/spike/`
-  (`gateway.js`, `registry.js`, `scenario/m1-spike-boot.js`, `scenario/m2-bridge-smoke.js`,
-  `scenario/m2-session.js`, `logger.js`, `vendor/dsh/util-crypto@0.1.6-alpha.1`) plus the three
+  (`gateway.js`, `registry.js`, `scenario/boot-verification.js`, `scenario/gateway-bridge-smoke.js`,
+  `scenario/session-mock-llm.js`, `logger.js`, `vendor/dsh/util-crypto@0.1.6-alpha.1`) plus the three
   system plugins (`system-plugins/dsh-fs`, `dsh-subprocess-quickjs`, `dsh-ui` from the repo
   root), cmp-verified at authoring time; unpacked to `filesDir/spike` at first run because the C
   host fopen()s real paths. The repo has no drift-check tool for these copies yet — provenance
@@ -100,7 +100,7 @@ echo "sdk.dir=$ANDROID_HOME" > hosts/android/local.properties
 $ANDROID_HOME/emulator/emulator -avd pixel -no-window -no-audio -no-boot-anim -no-snapshot -port 5554 &
 (cd hosts/android && ./gradlew assembleDebug --no-daemon)
 bash hosts/android/ci/run-spike-e2e.sh      # the three-scenario regression (what CI runs)
-bash hosts/android/ci/run-android-full.sh   # regression + the m4.host-binding completion session
+bash hosts/android/ci/run-android-full.sh   # regression + the android.capability-binding completion session
 ```
 
 `run-android-full.sh` stages the SAF picker target (`/sdcard/dsh-e2e/notes.txt`), pre-grants
@@ -112,18 +112,18 @@ CI (`.github/workflows/dev-android.yml`) runs the three-scenario regression scri
 API 35 x86_64 emulator.
 
 
-## M2 real-LLM session (scenario `m2.llm`, real leg)
+## M2 real-LLM session (scenario `llm.live-stream`, real leg)
 
-Launch with `--ez dsh.llm true` (`hosts/android/ci/run-m2-llm.sh`): the M4
+Launch with `--ez dsh.llm true` (`hosts/android/ci/run-live-llm.sh`): the M4
 completion flow (loopback carrier + WebView + real nine-primitive gateway)
-drives `scenario/m2-llm.js` — ONE streamed chat completion against an
+drives `scenario/llm-live-stream.js` — ONE streamed chat completion against an
 OpenAI-compatible backend through the REAL gateway `httpFetch`. Credentials
 ride fs scope "app": the runner stages
-`files/profiles/default/m2-llm/config.json` (`{baseUrl, apiKey, model}` from
+`files/profiles/default/llm-live-stream/config.json` (`{baseUrl, apiKey, model}` from
 `ZAI_BASE_URL`/`ZAI_API_KEY`/`ZAI_MODEL` in the env or repo-root `.env`) via
 `run-as` before launch — the key is never echoed and is grepped OUT of the
 captured log afterwards (fail loud on a leak). The served model name is
 logged verbatim (`llm.served-model`); the deltas stream live into the
 WebView-mounted Web Client. Evidence: `artifacts/m2-llm/` (logs.txt +
-scenario.jsonl + verdict-m2-llm-device.json 14/14 +
-verdict-m2-llm-carrier.json 7/7 + receipt.json + MANIFEST.md).
+scenario.jsonl + verdict-llm-live-stream-device.json 14/14 +
+verdict-llm-live-stream-carrier.json 7/7 + receipt.json + MANIFEST.md).

@@ -1,0 +1,47 @@
+{
+  "scenario": "harmony.httpfetch-streaming",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 6,
+        "unavailable": 3
+      }
+    },
+    {
+      "event": "http.headers",
+      "match": {
+        "status": 200,
+        "bodyStream": true
+      }
+    },
+    {
+      "event": "http.body.streamed",
+      "match": {
+        "streaming": true
+      }
+    },
+    {
+      "event": "http.aborted",
+      "match": {
+        "code": "cancelled",
+        "cancelled": true
+      }
+    },
+    {
+      "event": "http.refused",
+      "match": {
+        "code": "network"
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

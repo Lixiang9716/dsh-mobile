@@ -408,7 +408,7 @@ The official page cannot be edited to emit `dsh.spike.log:` lines, so
 the one-to-one manifest (log-based E2E, unique scenario id, expected ↔
 logged) is carried by **carrier-side observations of the wire**, plus
 one platform-side rendered-state probe. Proposed scenario
-`b1.official-web.mount` (iOS first, then Android/Harmony), in fixed
+`officialweb.mount` (iOS first, then Android/Harmony), in fixed
 order:
 
 | # | event (carrier log) | source of truth |

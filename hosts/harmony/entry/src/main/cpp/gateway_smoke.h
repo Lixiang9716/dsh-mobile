@@ -2,7 +2,7 @@
  * gateway_smoke.h — the HarmonyOS gateway-bridge smoke backend (M5).
  *
  * The platform twin of the desktop CLI driver's smoke backend
- * (runtime/spike/host/main_cli.c): it answers scenario m2.bridge.smoke
+ * (runtime/spike/host/main_cli.c): it answers scenario gateway.bridge-smoke
  * over the REAL dsh_spike dispatch bridge — fs primitives on a
  * host-app directory exposed as scope "app", keychain honestly
  * "unavailable" (declared so in the descriptor), unknown primitives

@@ -183,7 +183,7 @@ App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装�
 ### 从 HARNESS 看到官方 Web UI(2026-09-21 已验证)
 
 只有 `dsh-ios-harness` 需要这一步:它不内嵌,所以 carrier 需要应用容器里先有
-vendored 官方 dist,官方 web 驱动(`b1.official-web.mount`)才能把它服务出来。
+vendored 官方 dist,官方 web 驱动(`officialweb.mount`)才能把它服务出来。
 
 ```sh
 # 1. 本地物化三棵未跟踪目录树(均按 MANIFEST 校验)
@@ -201,7 +201,7 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 #    两者相同:dist → Documents/official-web/dist
 #             客户端 bundles → Documents/web-plugins/npm/@deepseek-ai/
 #             vendored bootstrap 包覆盖其构建孪生
-#            (精确的目录操作见 test/e2e/run-ios-b1.sh 第 4/4b 步)
+#            (精确的目录操作见 test/e2e/run-ios-official-web-mount.sh 第 4/4b 步)
 
 # 3. 以 official-web 模式启动
 #    模拟器:
@@ -212,8 +212,8 @@ xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
 ```
 
 真实对话回合还需要把凭据放进
-`Documents/profiles/default/m2-llm/config.json`(`{baseUrl, apiKey, model}`)
-并加 `-dsh-scenario m2-llm` 启动参数;密钥只留在应用容器里,绝不进仓库。
+`Documents/profiles/default/llm-live-stream/config.json`(`{baseUrl, apiKey, model}`)
+并加 `-dsh-scenario llm-live-stream` 启动参数;密钥只留在应用容器里,绝不进仓库。
 
 ## Android
 

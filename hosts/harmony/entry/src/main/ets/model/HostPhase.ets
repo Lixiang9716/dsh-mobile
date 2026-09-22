@@ -27,13 +27,13 @@
  *                       binding backend's forward hook
  *   - app.state       → EntryAbility lifecycle edges → hostEvent
  *
- * The SAME controller hosts the `m2.llm` real-LLM leg (beginLlm): only the
+ * The SAME controller hosts the `llm.live-stream` real-LLM leg (beginLlm): only the
  * scenario id, the JS entry and the carrier-side evidence set change —
  * exactly how the Android host's SpikeHostM4 swaps its entry for
  * `--ez dsh.llm true`. The leg evals the canonical
- * `runtime/spike/scenario/m2-llm.js` byte for byte (the platform-neutral
+ * `runtime/spike/scenario/llm-live-stream.js` byte for byte (the platform-neutral
  * client over this host's REAL httpFetch), and emits the carrier-side
- * records its own manifest pins (`m2.llm.carrier`); the m5-only records are
+ * records its own manifest pins (`llm.live-stream.carrier`); the m5-only records are
  * gated because each manifest is one-to-one with nothing extra.
  *
  * Threading: every NAPI call runs on the ArkTS main thread — the ONE serial
@@ -61,13 +61,13 @@ import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
 const PHASE_ID: number = 1;
-const SCENARIO: string = 'm5.host-binding';
-const ENTRY_BINDING: string = 'scenario/m5-host-binding.js';
-/** The real-LLM leg (m2.llm): the canonical scenario, unchanged, over this
+const SCENARIO: string = 'harmony.capability-binding';
+const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';
+/** The real-LLM leg (llm.live-stream): the canonical scenario, unchanged, over this
  * host's real httpFetch; its carrier-side evidence rides the sibling id. */
-const SCENARIO_LLM: string = 'm2.llm';
-const SCENARIO_LLM_CARRIER: string = 'm2.llm.carrier';
-const ENTRY_LLM: string = 'scenario/m2-llm.js';
+const SCENARIO_LLM: string = 'llm.live-stream';
+const SCENARIO_LLM_CARRIER: string = 'llm.live-stream.carrier';
+const ENTRY_LLM: string = 'scenario/llm-live-stream.js';
 /** The credential-placeholder writer the llm leg evals first (harmony-only
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
@@ -126,7 +126,7 @@ export class HostPhase {
   private completeSignaled = false;
 
   /** The leg being hosted: the m5 binding phase by default; beginLlm flips
-   * these to the m2.llm leg (its own scenario id, entry and evidence set). */
+   * these to the llm.live-stream leg (its own scenario id, entry and evidence set). */
   private scenario: string = SCENARIO;
   private carrierScenario: string = SCENARIO;
   private entry: string = ENTRY_BINDING;
@@ -169,8 +169,8 @@ export class HostPhase {
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
-  /** The m2.llm real-LLM leg (ONE launch, its own scenario id): the same
-   * carrier, page shuttle and dispatch seam, the canonical m2-llm scenario
+  /** The llm.live-stream real-LLM leg (ONE launch, its own scenario id): the same
+   * carrier, page shuttle and dispatch seam, the canonical llm-live-stream scenario
    * as the entry, and the carrier-side evidence set that scenario's sibling
    * manifest pins. The runtime is created FIRST and immediately evals the
    * staging module (`e2e-stage.js`), because the credentials must exist in
@@ -217,7 +217,7 @@ export class HostPhase {
   onCarrierListening(port: number): void {
     this.carrierPort = port;
     if (this.llmLeg) {
-      // The carrier-side selection record (the m2-llm carrier manifest); the
+      // The carrier-side selection record (the llm-live-stream carrier manifest); the
       // m5 manifest has no such record, so it stays a leg-only emission.
       // Emitted before the origin opens: client.selected precedes
       // webclient.mounted in the manifest's declaration order.
@@ -242,7 +242,7 @@ export class HostPhase {
 
   /** The page hello: mark connected, greet, then eval the entry and deliver
    * host.info (+ host.seed on the binding leg) — the order that pins the
-   * manifest (carrier events before the scenario's first line). The m2.llm
+   * manifest (carrier events before the scenario's first line). The llm.live-stream
    * scenario awaits host.info before its first turn and never reads
    * host.seed, so the leg delivers only what its contract uses. */
   onPageHello(protocol: string): void {
@@ -402,7 +402,7 @@ export class HostPhase {
       }
       this.lastDeltaIndex = payload.index;
     } else if (payload.kind === 'complete') {
-      // The closing delta record: the m2-llm carrier manifest pins
+      // The closing delta record: the llm-live-stream carrier manifest pins
       // `{first:false, last:true}` (the Android/iOS host's shape), the m5
       // manifest pins `{last:true, index}` — each leg emits its own.
       const lastDelta: Record<string, Object> = {

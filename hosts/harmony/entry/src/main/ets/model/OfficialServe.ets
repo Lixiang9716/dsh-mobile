@@ -56,9 +56,9 @@ export const OFFICIAL_BASE_PORT: number = 17890;
 const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-ai/';
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
-const ENTRY_MOUNT = 'scenario/b1-web-live.js';
+const ENTRY_MOUNT = 'scenario/officialweb-web-live.js';
 /** The mount entry's scenario label (the C host logs its verdict under it). */
-const SCENARIO_MOUNT = 'b-harmony.official-web-mount';
+const SCENARIO_MOUNT = 'harmony.officialweb.mount';
 /** The recovery defaults row the carrier injects beside the runtime's rows
  * (upstream `__DSH_CONNECTION_RECOVERY__`). */
 const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +

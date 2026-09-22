@@ -32,11 +32,11 @@ export function activate({ register, service }) {
   register('notes', {
     async write(scope, rel, text) {
       log.debug('notes.write', { scope, rel });
-      return await fs.writeText(scope, 'm3-install/' + rel, text);
+      return await fs.writeText(scope, 'install-verified-tarball/' + rel, text);
     },
     async read(scope, rel) {
       log.debug('notes.read', { scope, rel });
-      return await fs.readText(scope, 'm3-install/' + rel);
+      return await fs.readText(scope, 'install-verified-tarball/' + rel);
     },
   });
 }

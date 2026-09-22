@@ -1,7 +1,7 @@
 import Foundation
 import WebKit
 
-/// Drives `b4.write.live` (the W-RPC leg, decision D9): the upstream spine
+/// Drives `composer.live-write` (the W-RPC leg, decision D9): the upstream spine
 /// answers the OFFICIAL app's WRITE surface. The web-boot producer is
 /// composed WITH the write surface (upstream/web-write.js — real
 /// session/create, prompt admission, the session/follow + workspace/follow
@@ -20,7 +20,7 @@ import WebKit
 /// probe and decides the verdict. One implementation of the serving path,
 /// verified by this manifest and run by users, never two that drift.
 final class SessionWriteRuntime {
-    static let scenario = "b4.write.live"
+    static let scenario = "composer.live-write"
     static let clientID = SessionServe.clientID
     static let watchdogSeconds = 180
 

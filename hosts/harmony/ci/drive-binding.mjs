@@ -2,7 +2,7 @@
 // dsh:logging-exempt (E2E UI-automation driver: a dev script whose console
 // output IS the drive evidence — same standing as test/e2e/check.mjs)
 /**
- * drive-binding.mjs — UI-automation driver for the m5.host-binding phase on
+ * drive-binding.mjs — UI-automation driver for the harmony.capability-binding phase on
  * the local HarmonyOS emulator. It tails the hilog stream and, event by
  * event, drives the surfaces that need a human hand (rules.md rule 8: every
  * wait is a polled condition with a deadline; every exhaustion fails loud):
@@ -15,7 +15,7 @@
  *                                      notification shade → tap the DSH
  *                                      notification (wantAgent → response +
  *                                      foreground edges)
- *   dsh.spike.verdict: m5.host-binding → done (exit 0 on PASS)
+ *   dsh.spike.verdict: harmony.capability-binding → done (exit 0 on PASS)
  *
  * tools/ dev script (out of the logging gate's scope; console IS the
  * product). It never asserts on pixels — screenshots are local evidence.
@@ -234,7 +234,7 @@ const onLine = async (line) => {
       state.pickerGrant = true;
     }
   }
-  if (line.includes('dsh.spike.verdict: m5.host-binding')) {
+  if (line.includes('dsh.spike.verdict: harmony.capability-binding')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
 };
@@ -362,7 +362,7 @@ stream.stdout.on('data', (chunk) => {
 });
 stream.on('exit', () => die('hilog stream ended early'));
 
-pollUntil('m5.host-binding verdict', async () => {
+pollUntil('harmony.capability-binding verdict', async () => {
   await act();
   return state.verdict;
 }, OVERALL).then((verdict) => {
@@ -371,6 +371,6 @@ pollUntil('m5.host-binding verdict', async () => {
   if (verdict !== 'pass') {
     die(`verdict ${verdict}`);
   }
-  console.log('drive: PASS (m5.host-binding verdict on the log stream)');
+  console.log('drive: PASS (harmony.capability-binding verdict on the log stream)');
   process.exit(0);
 }).catch((e) => die(e.message));

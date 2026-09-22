@@ -11,7 +11,7 @@
 #   test/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
 #   runtime/spike/vendor/ensure-dsh.sh → runtime/spike/vendor/npm (the pinned
 #     @deepseek-ai/dsh-client-modules wins for the bootstrap package, the
-#     same precedence test/e2e/run-ios-b1.sh applies on iOS)
+#     same precedence test/e2e/run-ios-official-web-mount.sh applies on iOS)
 #
 # Layout under entry/src/main/resources/rawfile/spike/:
 #   officialweb/www/…                     ← the official dist (www: the repo
@@ -19,10 +19,10 @@
 #                                            dir, so the rawfile copy carries
 #                                            a neutral name; bytes verbatim)
 #   officialweb/plugins/npm/@deepseek-ai/… ← the staged client bundles
-#   scenario/b1-web-live.js, upstream/…, vendor/npm/… ← the web-boot closure
+#   scenario/officialweb-web-live.js, upstream/…, vendor/npm/… ← the web-boot closure
 #     (byte-identical to the runtime/spike canonicals — the m5 surprise
 #     ledger: drift in these copies is silent)
-#   + the W-SESS SPINE closure (b-harmony.session.live): the mobile profile
+#   + the W-SESS SPINE closure (harmony.session.live-read): the mobile profile
 #     boot, its settings backend, the gateway llm transport, the session-live
 #     scenario, the spine shims beyond the web-boot set, and the vendored
 #     upstream spine packages (14 verbatim lib/ trees + package.json each)
@@ -30,7 +30,7 @@
 #     via gen_bundle_header.py tree mode (172 tree files + the authored
 #     spine files). #56-class drift guard: ci/check-bundle-files.mjs
 #     cross-checks this list against Index.ets's BUNDLE_FILES.
-#   + the m2.llm real-LLM leg closure (W-HARMONY5): scenario/m2-llm.js and
+#   + the llm.live-stream real-LLM leg closure (W-HARMONY5): scenario/llm-live-stream.js and
 #     llm.js, byte-identical to runtime/spike (the leg runs the SAME scenario
 #     code as iOS/Android/CLI over this host's real httpFetch).
 #
@@ -94,10 +94,10 @@ if [ "$MODE" = "full" ]; then
     cp -R "$VENDORED" "$RAW/officialweb/plugins/npm/@deepseek-ai/"
 fi
 
-# The web-boot closure (b1-web-live drive): the adapter, its shims, and the
+# The web-boot closure (officialweb-web-live drive): the adapter, its shims, and the
 # vendored npm libs the client-modules composition imports — the exact
 # bundle-root relative paths the C loader's bare map resolves.
-CLOSURE="scenario/b1-web-live.js
+CLOSURE="scenario/officialweb-web-live.js
 upstream/web-boot.js
 upstream/web-shims.js
 upstream/shims/buffer.js
@@ -113,12 +113,12 @@ vendor/npm/@deepseek-ai/$PIN/lib/index.js
 vendor/npm/@deepseek-ai/$PIN/lib/client.js
 vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
 
-# The W-SESS spine closure (b-harmony.session.live): OUR authored spine
+# The W-SESS spine closure (harmony.session.live-read): OUR authored spine
 # files first, then the vendored upstream trees — generated from the
 # materialized vendor checkout (suffix filter .js/.mjs/.json, sorted, the
 # same rule as hosts/ios/Tools/gen_bundle_header.py collect_tree_files).
-SPINE_OURS="scenario/harmony-session-live.js
-scenario/harmony-write-live.js
+SPINE_OURS="scenario/harmony-session-live-read.js
+scenario/harmony-composer-live-write.js
 upstream/boot.js
 upstream/settings-memory.js
 upstream/llm-transport.js
@@ -234,7 +234,7 @@ vendor/npm/zod@4.4.3/v4/locales/zh-TW.js"
 CLOSURE="$CLOSURE
 $SPINE_OURS
 llm.js
-scenario/m2-llm.js"
+scenario/llm-live-stream.js"
 if [ "$MODE" != "check" ]; then
     for rel in $CLOSURE; do
         mkdir -p "$RAW/$(dirname "$rel")"

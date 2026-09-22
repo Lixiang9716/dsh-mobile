@@ -21,13 +21,13 @@ enum SpikeBundleStager {
                   under: root)
         try write("manifest.json", data: resData(dsh_spike_res_manifest_json),
                   under: root)
-        try write("scenario/m1-spike-boot.js", data: resData(dsh_spike_res_scenario_js),
+        try write("scenario/boot-verification.js", data: resData(dsh_spike_res_scenario_js),
                   under: root)
-        try write("scenario/m2-gateway-binding.js",
+        try write("scenario/gateway-binding.js",
                   data: resData(dsh_spike_res_scenario_m2_js), under: root)
-        try write("scenario/m2-bridge-smoke.js",
+        try write("scenario/gateway-bridge-smoke.js",
                   data: resData(dsh_spike_res_scenario_m2_smoke_js), under: root)
-        try write("scenario/m1-carrier-loopback.js",
+        try write("scenario/carrier-loopback.js",
                   data: resData(dsh_spike_res_scenario_carrier_js), under: root)
         try write("registry.js", data: resData(dsh_spike_res_registry_js), under: root)
         try write("install-pipeline.js",
@@ -52,27 +52,27 @@ enum SpikeBundleStager {
     /// fetch-install scenario and its modules + the profile config patch,
     /// and the M2 real-LLM scenario with its client module).
     private static func writeScenarioEntries(_ root: URL) throws {
-        try write("scenario/m2-session.js",
+        try write("scenario/session-mock-llm.js",
                   data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
-        try write("scenario/m3-fetch-install.js",
+        try write("scenario/install-from-http.js",
                   data: resData(dsh_spike_res_scenario_m3_fetch_install_js), under: root)
-        try write("scenario/m2-llm.js",
+        try write("scenario/llm-live-stream.js",
                   data: resData(dsh_spike_res_scenario_m2_llm_js), under: root)
         try write("llm.js", data: resData(dsh_spike_res_llm_js), under: root)
         try write("install-fetch.js",
                   data: resData(dsh_spike_res_install_fetch_js), under: root)
         try write("receipt-journal.js",
                   data: resData(dsh_spike_res_receipt_journal_js), under: root)
-        try write("profiles/m3-complete/cordis.patch.json",
+        try write("profiles/install-full-cycle/cordis.patch.json",
                   data: resData(dsh_spike_res_profile_m3_patch_json), under: root)
     }
 
-    /// The W-INTEG web-boot closure (b1-web-live drive): the upstream
+    /// The W-INTEG web-boot closure (officialweb-web-live drive): the upstream
     /// web-boot adapter, its shims, and the vendored npm libs the official
     /// client-modules composition imports — staged at the exact bundle-root
     /// relative paths the C loader's bare map resolves.
     private static func writeWebBootClosure(_ root: URL) throws {
-        try write("scenario/b1-web-live.js",
+        try write("scenario/officialweb-web-live.js",
                   data: resData(dsh_spike_res_scenario_b1_web_live_js), under: root)
         try write("upstream/web-boot.js",
                   data: resData(dsh_spike_res_upstream_web_boot_js), under: root)
@@ -166,7 +166,7 @@ enum SpikeBundleStager {
     /// bundle-relative paths the C loader resolves (imports fail loud
     /// otherwise).
     private static func writeSpineClosure(_ root: URL) throws {
-        try write("scenario/b3-web-live.js",
+        try write("scenario/session-web-live.js",
                   data: resData(dsh_spike_res_scenario_b3_web_live_js), under: root)
         try write("upstream/boot.js",
                   data: resData(dsh_spike_res_upstream_boot_js), under: root)
@@ -191,7 +191,7 @@ enum SpikeBundleStager {
         // row's world; split from fs.js at the file-size gate).
         try write("upstream/shims/fs-workspace.js",
                   data: resData(dsh_spike_res_shims_fs_workspace_js), under: root)
-        try write("scenario/b4-web-live.js",
+        try write("scenario/composer-web-live.js",
                   data: resData(dsh_spike_res_scenario_b4_web_live_js), under: root)
         try write("upstream/shims/async-hooks.js",
                   data: resData(dsh_spike_res_shims_async_hooks_js), under: root)

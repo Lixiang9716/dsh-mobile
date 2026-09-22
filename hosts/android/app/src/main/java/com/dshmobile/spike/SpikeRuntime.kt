@@ -26,7 +26,7 @@ object SpikeRuntime {
     /**
      * Runs the full spike lifecycle on the CALLING thread (the runtime
      * thread): one dsh_spike runtime per scenario inside nativeRunSpike —
-     * m1.spike.boot (regression) then m2.bridge.smoke + m2.session.
+     * boot.verification (regression) then gateway.bridge-smoke + session.mock-llm.
      * Returns the combined multi-line verdict.
      */
     fun runOnce(contextDir: String): String = nativeRunSpike(contextDir)

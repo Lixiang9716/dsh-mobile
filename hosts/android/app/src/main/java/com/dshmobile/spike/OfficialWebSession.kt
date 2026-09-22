@@ -11,10 +11,10 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Drives `b-android.official-web.mount`: the carrier as a REAL implementation
+ * Drives `android.officialweb.mount`: the carrier as a REAL implementation
  * of the upstream `ctx.webServer` contract, mounting the OFFICIAL web app
  * (vendored dist, zero upstream edits) in the Android WebView — with the
- * runtime live: a spike session running the b-android-web-live scenario
+ * runtime live: a spike session running the android-officialweb-web-live scenario
  * composes the OFFICIAL boot wire with the vendored client-modules node half
  * and posts `web.boot` over the bus seam; the carrier swaps the delivered
  * rows into the index render pipeline, overrides the /plugins revs, and only
@@ -36,8 +36,8 @@ class OfficialWebSession private constructor(
 ) {
 
     companion object {
-        const val SCENARIO = "b-android.official-web.mount"
-        const val ENTRY = "scenario/b-android-web-live.js"
+        const val SCENARIO = "android.officialweb.mount"
+        const val ENTRY = "scenario/android-officialweb-web-live.js"
         const val CLIENT_ID = "dsh-web-official"
         // Bound, not pacing: the drive's own stages carry their deadlines
         // (composition delivery ~50-110s on the emulator under load, page
@@ -281,7 +281,7 @@ class OfficialWebSession private constructor(
         val entry = File(activity.filesDir, "spike/$ENTRY")
         handle = SpikeRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
-            "b-android-official-web-mount", runtimeBridge,
+            "android-officialweb-mount", runtimeBridge,
         )
         if (handle == 0L) throw IllegalStateException("official-web begin: ${SpikeRuntime.m4LastError()}")
         deliverRuntime(

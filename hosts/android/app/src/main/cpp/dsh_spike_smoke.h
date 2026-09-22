@@ -22,7 +22,7 @@
  * {pump -> drain} loop with deferred post-pump settlement (the exact
  * later-tick pattern main_cli.c proves on the desktop).
  *   source     entry module text (caller-read, e.g. from filesDir/spike)
- *   entry_name bundle-root-relative module name ("scenario/m2-bridge-smoke.js")
+ *   entry_name bundle-root-relative module name ("scenario/gateway-bridge-smoke.js")
  *   fs_root    absolute directory backing gateway scope "app" (must exist)
  *   sink       receives each canonical "dsh.spike.log: " line
  * Returns 1 when the scenario completed and passed, 0 otherwise; err_out

@@ -17,7 +17,7 @@ import java.io.File
  * M4 spike host activity. Two launch modes:
  * - default (no extras): copies the spike bundle from assets into
  *   filesDir/spike (the C host fopen()s real paths), then drives ALL THREE
- *   regression scenarios (m1.spike.boot + m2.bridge.smoke + m2.session) on
+ *   regression scenarios (boot.verification + gateway.bridge-smoke + session.mock-llm) on
  *   the serial runtime thread and shows the combined verdict.
  * - `--ez dsh.m4 true`: the M4 completion session — the loopback carrier
  *   serves the embedded Web Client into a real WebView and the full
@@ -122,7 +122,7 @@ class MainActivity : Activity() {
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
     }
 
-    /** UI thread: constructs the drive — the real-LLM scenario (m2.llm) or
+    /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream) or
      * the M4 binding — with the same carrier + WebView flow. */
     private fun startHost(llm: Boolean, view: WebView): SpikeHostM4 {
         val onVerdict = { verdict: String -> verdictView.text = verdict }
@@ -142,7 +142,7 @@ class MainActivity : Activity() {
     }
 
     /**
-     * The official-web session (`b-android.official-web.mount`): the loopback
+     * The official-web session (`android.officialweb.mount`): the loopback
      * carrier serves the vendored official dist with the runtime-composed
      * boot wire into a real WebView; the web-boot runtime composes the
      * official boot graph over the bus seam (OfficialWebSession).
@@ -262,7 +262,7 @@ class MainActivity : Activity() {
     }
 
     /**
-     * The session-live session (`b-android.session.live`): the FULL upstream
+     * The session-live session (`android.session.live-read`): the FULL upstream
      * agent spine boots on-device and claims `/api/session.list` + the mux
      * `session/journal` streams over the bus seam, so the official page gets
      * REAL session data (SessionLiveSession). Same WebView + carrier shape
@@ -315,7 +315,7 @@ class MainActivity : Activity() {
     }
 
     /**
-     * The write-live session (`b-android.write.live`): the spine + the
+     * The write-live session (`android.composer.live-write`): the spine + the
      * official write surface over the bus seam (SessionWriteSession); the
      * probe drives the REAL composer (pick the workspace, type, send) and
      * the page's own message produces a real upstream turn rendered back

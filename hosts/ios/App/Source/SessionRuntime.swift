@@ -1,16 +1,16 @@
 import Foundation
 import UIKit
 
-/// Drives the first ON-DEVICE session (`m2.session`): one C runtime session
+/// Drives the first ON-DEVICE session (`session.mock-llm`): one C runtime session
 /// on the dedicated RuntimeThread with the capability gateway bound, the
 /// loopback carrier serving the ACTIVE Web Client plugin's web/ directory,
 /// and the session projection pushed JS → bus → WS → page. The scenario
 /// starts only when the Web Client is mounted AND connected (the host.info
 /// readiness signal), so the token deltas stream live into the rendered
 /// page. Carrier-side evidence is logged through the canonical
-/// `dsh.spike.log:` envelope. M3: `-dsh-profile m3-complete` runs the
-/// on-device fetch-install drive (`m3.fetch-install` + carrier evidence
-/// `m3.fetch-carrier`) — the config patch selects the ACTIVE Web Client and
+/// `dsh.spike.log:` envelope. M3: `-dsh-profile install-full-cycle` runs the
+/// on-device fetch-install drive (`install.from-http` + carrier evidence
+/// `install.carrier-evidence`) — the config patch selects the ACTIVE Web Client and
 /// the toolbar slot allow-set, the carrier self-hosts the plugin package,
 /// and the scenario installs it through the REAL gateway httpFetch.
 final class SessionRuntime {
@@ -23,26 +23,26 @@ final class SessionRuntime {
     private var resolvedSlotSet: [String]
 
     /// Carrier-side evidence rides the scenario manifest that matches the
-    /// drive: the real-LLM drive asserts `m2.llm.carrier`; profile mode
-    /// asserts `m3.fetch-carrier`; the launch-selected mini client keeps
-    /// asserting `m3.ui-swap`; the default `m2.webclient.mount`.
+    /// drive: the real-LLM drive asserts `llm.live-stream.carrier`; profile mode
+    /// asserts `install.carrier-evidence`; the launch-selected mini client keeps
+    /// asserting `ui.client-swap`; the default `webclient.mount`.
     private var scenario: String {
-        if llmMode { return "m2.llm.carrier" }
-        if profileMode { return "m3.fetch-carrier" }
-        return resolvedClient == "dsh-web-client-mini" ? "m3.ui-swap" : "m2.webclient.mount"
+        if llmMode { return "llm.live-stream.carrier" }
+        if profileMode { return "install.carrier-evidence" }
+        return resolvedClient == "dsh-web-client-mini" ? "ui.client-swap" : "webclient.mount"
     }
 
-    /// The JS entry: the real-LLM drive runs the m2.llm scenario; the
+    /// The JS entry: the real-LLM drive runs the llm.live-stream scenario; the
     /// profile-mode drive runs the on-device fetch-install scenario; every
     /// other drive keeps the m2 session.
     private var entryModule: String {
-        if llmMode { return "scenario/m2-llm.js" }
-        return profileMode ? "scenario/m3-fetch-install.js" : "scenario/m2-session.js"
+        if llmMode { return "scenario/llm-live-stream.js" }
+        return profileMode ? "scenario/install-from-http.js" : "scenario/session-mock-llm.js"
     }
 
     init() {
         profileMode = SessionLaunchConfig.profileName != nil
-        llmMode = SessionLaunchConfig.scenarioName == "m2-llm"
+        llmMode = SessionLaunchConfig.scenarioName == "llm-live-stream"
         resolvedClient = SessionLaunchConfig.activeWebClient
         resolvedDir = SessionLaunchConfig.webClientDir(resolvedClient)
         // Base slot defaults; a profile patch's slots.allow REPLACES them.
@@ -192,9 +192,9 @@ final class SessionRuntime {
         }, Unmanaged.passUnretained(self).toOpaque())
         let source: String
         switch entryModule {
-        case "scenario/m2-llm.js":
+        case "scenario/llm-live-stream.js":
             source = String(cString: dsh_spike_res_scenario_m2_llm_js(nil))
-        case "scenario/m3-fetch-install.js":
+        case "scenario/install-from-http.js":
             source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
         default:
             source = String(cString: dsh_spike_res_scenario_m2_session_js(nil))

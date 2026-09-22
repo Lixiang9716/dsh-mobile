@@ -2,11 +2,11 @@
 # test/e2e/selftest.sh — proves the checker logic against the synthetic
 # fixtures in testdata/ (rule 6: a gate that never fails is vacuous).
 #
-#   positive:  m2-gateway.positive.txt must PASS m2-gateway-binding.json AND
-#              m2-gateway-audit.json (one file drives both, proving the two
+#   positive:  gateway.positive.txt must PASS gateway-binding.json AND
+#              gateway-audit.json (one file drives both, proving the two
 #              extraction prefixes isolate their streams).
-#   negative:  m2-gateway-binding.negative.txt must FAIL at expected index 4
-#              (fs.denied code); m2-gateway-audit.negative.txt must FAIL at
+#   negative:  gateway-binding.negative.txt must FAIL at expected index 4
+#              (fs.denied code); gateway-audit.negative.txt must FAIL at
 #              expected index 2 (fsRead denied/denied).
 #
 # usage: selftest.sh   (exit 0 = all assertions hold)
@@ -38,25 +38,25 @@ expect_fail_at() { # $1=manifest $2=log $3=expected first failure index
   fi
 }
 
-BIND=test/e2e/scenarios/m2-gateway-binding.json
-AUDIT=test/e2e/scenarios/m2-gateway-audit.json
+BIND=test/e2e/scenarios/gateway-binding.json
+AUDIT=test/e2e/scenarios/gateway-audit.json
 TD=test/e2e/testdata
 
-expect_pass "$BIND" "$TD/m2-gateway.positive.txt"
-expect_pass "$AUDIT" "$TD/m2-gateway.positive.txt"
-expect_fail_at "$BIND" "$TD/m2-gateway-binding.negative.txt" 4
-expect_fail_at "$AUDIT" "$TD/m2-gateway-audit.negative.txt" 2
+expect_pass "$BIND" "$TD/gateway.positive.txt"
+expect_pass "$AUDIT" "$TD/gateway.positive.txt"
+expect_fail_at "$BIND" "$TD/gateway-binding.negative.txt" 4
+expect_fail_at "$AUDIT" "$TD/gateway-audit.negative.txt" 2
 # Regression guard: the flat-envelope change must not disturb the logger
 # envelope — the slimmed m1 fixture (derived from the committed M1 capture,
 # non-deterministic fields stripped) still passes its manifest.
-expect_pass test/e2e/scenarios/m1-spike-boot.json test/e2e/testdata/m1-spike-boot.positive.txt
+expect_pass test/e2e/scenarios/boot-verification.json test/e2e/testdata/boot-verification.positive.txt
 # Repeat expectations (the real-LLM legs' nondeterministic delta counts):
 # one-or-more deltas at the repeated position pass; ZERO deltas fail AT the
 # repeat expectation; a delta straying past stream.completed is extra.
-REPEAT=test/e2e/testdata/m2-llm-repeat.json
-expect_pass "$REPEAT" "$TD/m2-llm-repeat.positive.txt"
-expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-zero.txt" 1
-expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-extra.txt" none
+REPEAT=test/e2e/testdata/llm-live-stream-repeat.json
+expect_pass "$REPEAT" "$TD/llm-live-stream-repeat.positive.txt"
+expect_fail_at "$REPEAT" "$TD/llm-live-stream-repeat.negative-zero.txt" 1
+expect_fail_at "$REPEAT" "$TD/llm-live-stream-repeat.negative-extra.txt" none
 # order:"any" expectations (records whose position races other recorded
 # events, e.g. the b4 journal attach among the page's concurrent RPC
 # answers): a mid-burst record is claimed wherever it sits; a MISSING record

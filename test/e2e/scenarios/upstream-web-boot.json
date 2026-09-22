@@ -1,0 +1,157 @@
+{
+  "scenario": "upstream.web-boot",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → loopback chat-completions mock server",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile",
+        "root": "empty (patch layers compose over it)",
+        "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+        "layers": [
+          "session",
+          "agent",
+          "system-prompt",
+          "tools",
+          "session-projection",
+          "settings",
+          "agent-loop"
+        ]
+      }
+    },
+    {
+      "event": "upstream/services",
+      "match": {
+        "kernel": "@deepseek-ai/cordis@4.0.2",
+        "services": [
+          "sessions",
+          "agents",
+          "systemPrompt",
+          "tools",
+          "sessionProjections",
+          "settings",
+          "agentLoop",
+          "llm"
+        ],
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+      }
+    },
+    {
+      "event": "session/created",
+      "match": {
+        "sessionId": "s-upstream-web-boot-1"
+      }
+    },
+    {
+      "event": "web/turn/done",
+      "match": {
+        "text": "Hello from upstream",
+        "events": 11
+      }
+    },
+    {
+      "event": "web/boot/composed",
+      "match": {
+        "upstream": "0.1.6-alpha.2 (vendored @deepseek-ai/dsh-client-modules)",
+        "entryCount": 58,
+        "deliveredCount": 58,
+        "batchCount": 2,
+        "bootstrapOnly": false,
+        "bootstrapBatchExact": true,
+        "externalsOrdered": true,
+        "everyEntryBatchedOnce": true,
+        "revIs12Hex": true,
+        "parseOk": true
+      }
+    },
+    {
+      "event": "web/boot/rows",
+      "match": {
+        "kinds": ["global", "script", "script-preload", "script-src"],
+        "preloadCount": 1,
+        "facadeIsQueueScript": true,
+        "bootstrapScriptPreloaded": true,
+        "graphGlobalLastRow": true,
+        "recoveryDefaults": true,
+        "pluginRowsSample": [
+          { "id": "@deepseek-ai/dsh-client-modules", "urlIsSingleCombo": true },
+          { "id": "@deepseek-ai/dsh-client-ui-renderer", "urlIsSingleCombo": true }
+        ]
+      }
+    },
+    {
+      "event": "web/api/session.list",
+      "match": {
+        "ok": true,
+        "items": 1,
+        "firstSessionId": "s-upstream-web-boot-1",
+        "notBlank": true
+      }
+    },
+    {
+      "event": "web/journal/baseline",
+      "match": {
+        "stream": "session/journal",
+        "frames": 11,
+        "types": [
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "step/start",
+          "system/message",
+          "user/message",
+          "request/header",
+          "request/context",
+          "assistant/message",
+          "step/end",
+          "turn/end"
+        ],
+        "envelopeOk": true
+      }
+    },
+    {
+      "event": "web/journal/live",
+      "match": {
+        "frames": 8,
+        "types": [
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "step/start",
+          "user/message",
+          "assistant/message",
+          "step/end",
+          "turn/end"
+        ],
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "web/journal/cancelled",
+      "match": {
+        "streamId": "probe/session-journal-1",
+        "ended": true
+      }
+    },
+    {
+      "event": "web/boot/completed",
+      "match": {
+        "status": "pass",
+        "upstream": "0.1.6-alpha.2",
+        "boot": "official client-modules wire composed in-runtime over the bus seam"
+      }
+    }
+  ]
+}

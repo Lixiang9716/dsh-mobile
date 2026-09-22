@@ -63,20 +63,20 @@ targets:
           - ../../runtime/spike/gateway.js
           - ../../runtime/spike/registry.js
           - ../../runtime/spike/manifest.json
-          - ../../runtime/spike/scenario/m1-spike-boot.js
-          - ../../runtime/spike/scenario/m2-gateway-binding.js
-          - ../../runtime/spike/scenario/m2-bridge-smoke.js
-          - ../../runtime/spike/scenario/m2-session.js
-          - ../../runtime/spike/scenario/m1-carrier-loopback.js
-          - ../../runtime/spike/scenario/b3-web-live.js
+          - ../../runtime/spike/scenario/boot-verification.js
+          - ../../runtime/spike/scenario/gateway-binding.js
+          - ../../runtime/spike/scenario/gateway-bridge-smoke.js
+          - ../../runtime/spike/scenario/session-mock-llm.js
+          - ../../runtime/spike/scenario/carrier-loopback.js
+          - ../../runtime/spike/scenario/session-web-live.js
           - ../../runtime/spike/upstream/web-write.js
           - ../../runtime/spike/upstream/web-write-streams.js
           - ../../runtime/spike/upstream/web-write-settings.js
-          - ../../runtime/spike/scenario/b4-web-live.js
+          - ../../runtime/spike/scenario/composer-web-live.js
           - ../../runtime/spike/web/index.html
           - ../../runtime/spike/web/carrier-page.js
           - ../../runtime/spike/llm.js
-          - ../../runtime/spike/scenario/m2-llm.js
+          - ../../runtime/spike/scenario/llm-live-stream.js
           - ../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js
           - ../../system-plugins/dsh-fs/manifest.json
           - ../../system-plugins/dsh-fs/index.js

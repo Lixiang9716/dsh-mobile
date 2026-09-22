@@ -8,8 +8,8 @@ import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
 
-    /** Drives `b-android.write.live` (the Android D9 write leg, the sibling
-     * of the iOS b4.write.live): the FULL upstream agent spine boots
+    /** Drives `android.composer.live-write` (the Android D9 write leg, the sibling
+     * of the iOS composer.live-write): the FULL upstream agent spine boots
      * ON-DEVICE and the official web boot wire is composed WITH THE WRITE
      * SURFACE (upstream/web-write.js) over the bus seam (SessionWriteSeam
      * folds the claims + answers into the carrier bridge). The probe drives
@@ -27,8 +27,8 @@ import org.json.JSONObject
 class SessionWriteSession private constructor(private val activity: Activity) {
 
     companion object {
-        const val SCENARIO = "b-android.write.live"
-        const val ENTRY = "scenario/b-android-write-live.js"
+        const val SCENARIO = "android.composer.live-write"
+        const val ENTRY = "scenario/android-composer-live-write.js"
         const val CLIENT_ID = "dsh-web-official"
         // Bound, not pacing: the drive's stages carry their own deadlines;
         // 270s sits inside the runner's 300s phase window (session-live's budget).
@@ -224,7 +224,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         val entry = File(bundle, ENTRY)
         handle = SpikeRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
-            "b-android-write-live", runtimeBridge,
+            "android-composer-live-write", runtimeBridge,
         )
         if (handle == 0L) throw IllegalStateException("write-live begin: ${SpikeRuntime.m4LastError()}")
         val config = JSONObject()

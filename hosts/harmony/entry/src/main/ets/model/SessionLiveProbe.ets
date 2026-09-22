@@ -1,6 +1,6 @@
 // dsh:logging-exempt (named route: evidence rides the phase sink)
 /**
- * SessionLiveProbe — the b3 same-origin probe of b-harmony.session.live
+ * SessionLiveProbe — the b3 same-origin probe of harmony.session.live-read
  * (the harmony twin of hosts/ios SessionLiveProbe.swift): the page is
  * untouched upstream code — the probe defines `__b3Run`, posts the REAL
  * session.list RPC through the official envelope, attaches the mux

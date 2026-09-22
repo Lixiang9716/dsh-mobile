@@ -6,24 +6,24 @@
  * 1. Regression (synchronous): materializes the bundled spike (byte-identical
  *    rawfile copies of the runtime/spike originals + the Web Client plugin)
  *    into the app cache dir preserving layout, then calls startSpike ONCE on
- *    the UI thread — m1.spike.boot, m2.bridge.smoke, m2.session on the ONE
+ *    the UI thread — boot.verification, gateway.bridge-smoke, session.mock-llm on the ONE
  *    serial JS thread (ARCHITECTURE.md §6). The returned summary is the human
  *    verdict; the E2E verdict is the checker over the captured
  *    `dsh.spike.log:` lines (never this Text, never a screenshot).
  *
  * 2. Binding phase (event-driven): the loopback carrier serves the materialized
  *    Web Client, ArkWeb mounts it, and HostPhase drives scenario
- *    m5.host-binding over the real dispatch bridge — approval dialog below,
+ *    harmony.capability-binding over the real dispatch bridge — approval dialog below,
  *    notification lifecycle, live token deltas rendered by the page.
  *
  * 3. Official-web phase (D9 W-HARMONY, event-driven): the m5 verdict chains
- *    into OfficialPhase — the canonical b1-web-live runtime composes the
+ *    into OfficialPhase — the canonical officialweb-web-live runtime composes the
  *    OFFICIAL boot wire, the carrier serves the vendored upstream dist from
  *    rawfile with the runtime's rows, and ArkWeb mounts the official app
- *    (b-harmony.official-web-mount). The verdict chains through the
+ *    (harmony.officialweb.mount). The verdict chains through the
  *    httpFetch v2 proof leg against the live carrier
- *    (b-harmony.httpfetch-v2) into the SESSION-LIVE leg
- *    (b-harmony.session.live, W-HARMONY3): a fresh runtime boots the FULL
+ *    (harmony.httpfetch-streaming) into the SESSION-LIVE leg
+ *    (harmony.session.live-read, W-HARMONY3): a fresh runtime boots the FULL
  *    upstream spine and claims session.list + the mux journal from
  *    ctx.sessions — the official page then reads REAL session data.
  *
@@ -53,7 +53,7 @@ import { BuildFlavor } from '../model/BuildFlavor';
 const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
 /** The launch parameter EntryAbility parks in E2eLeg — `--ps dsh.e2e.leg`. */
-const LEG_LLM: string = 'm2.llm';
+const LEG_LLM: string = 'llm.live-stream';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -77,15 +77,15 @@ const BUNDLE_FILES: string[] = [
   'tar-mini.js',
   'fixtures/dsh-notes-source.js',
   'fixtures/dsh-notes.js',
-  'scenario/b1-web-live.js',
-  'scenario/harmony-httpfetch-v2.js',
-  'scenario/harmony-session-live.js',
-  'scenario/harmony-write-live.js',
-  'scenario/m1-spike-boot.js',
-  'scenario/m2-bridge-smoke.js',
-  'scenario/m2-llm.js',
-  'scenario/m2-session.js',
-  'scenario/m5-host-binding.js',
+  'scenario/officialweb-web-live.js',
+  'scenario/harmony-httpfetch-streaming.js',
+  'scenario/harmony-session-live-read.js',
+  'scenario/harmony-composer-live-write.js',
+  'scenario/boot-verification.js',
+  'scenario/gateway-bridge-smoke.js',
+  'scenario/llm-live-stream.js',
+  'scenario/session-mock-llm.js',
+  'scenario/harmony-capability-binding.js',
   'system-plugins/dsh-fs/index.js',
   'system-plugins/dsh-fs/manifest.json',
   'system-plugins/dsh-subprocess-quickjs/index.js',
@@ -301,7 +301,7 @@ const BUNDLE_FILES: string[] = [
   'webclient/dsh-web-client/manifest.json',
   'webclient/dsh-web-client/web/index.html',
   'webclient/dsh-web-client/web/main.js',
-  'scenario/harmony-write-live.js',
+  'scenario/harmony-composer-live-write.js',
   'upstream/shims/fs-promises.js',
   'upstream/shims/npm-bridges.js',
   'upstream/web-write-inventory.js',
@@ -560,22 +560,22 @@ struct Index {
       });
   }
 
-  /** The `m2.llm` leg (ONE launch; ci/run-m2-llm.sh): the phase runtime
+  /** The `llm.live-stream` leg (ONE launch; ci/run-live-llm.sh): the phase runtime
    * starts FIRST and evals the staging module, whose C-side app-scope
    * fsWrite creates the credential placeholder at the mode the hdc shell
    * user can open (see LlmConfigStaging's header — the sandbox refuses every
    * other path). Then the SAME carrier + HostPhase wiring the binding phase
-   * uses, with the canonical m2-llm scenario as the entry. No user-store
+   * uses, with the canonical llm-live-stream scenario as the entry. No user-store
    * seeding and no D9 chain: this leg is the whole run, so the default chain
    * never spends serve quota. The verdict is the C `dsh.spike.verdict:
-   * m2.llm` line, asserted record by record by the E2E checkers. */
+   * llm.live-stream` line, asserted record by record by the E2E checkers. */
   private runLlmLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/spike-fs';
-    const configPath: string = fsRoot + '/m2-llm/config.json';
+    const configPath: string = fsRoot + '/llm-live-stream/config.json';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
-      this.verdict = (passed ? 'PASS' : 'FAIL') + ' m2.llm (logs are the verdict)';
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' llm.live-stream (logs are the verdict)';
       // One run is the credentials' whole on-disk life (see LlmConfigStaging
       // cleanup): removed on both the pass and the fail path.
       LlmConfigStaging.cleanup(configPath);
@@ -595,7 +595,7 @@ struct Index {
         root = bundleRoot;
         this.verdict = 'llm leg: staging credentials...';
         LlmConfigStaging.prepare(configPath);
-        phase.beginLlm(ctx, root, ctx.cacheDir + '/dsh-m2-llm-capture.log', fsRoot);
+        phase.beginLlm(ctx, root, ctx.cacheDir + '/dsh-llm-live-stream-capture.log', fsRoot);
         return LlmConfigStaging.awaitStaged(configPath);
       })
       .then((stagedBytes: number): Promise<number> => {

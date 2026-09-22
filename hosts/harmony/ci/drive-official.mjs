@@ -3,22 +3,22 @@
 // output IS the drive evidence — same standing as test/e2e/check.mjs)
 /**
  * drive-official.mjs — driver for the D9 official phases on the local
- * HarmonyOS emulator (the harmony twin of test/e2e/run-ios-b1.sh's wait
+ * HarmonyOS emulator (the harmony twin of test/e2e/run-ios-official-web-mount.sh's wait
  * loop). It tails the hilog stream and, event by event, takes the evidence
  * screenshots and waits for the terminal markers (rules.md rule 8: every
  * wait is a polled condition with a deadline; every exhaustion fails loud).
  * No taps: the official-web phases are driverless — the page boots itself.
  *
- *   b-harmony.official-web-mount index.served → boot-screen screenshot
- *   b-harmony.official-web-mount mount.complete → final screenshot
- *   b-harmony.session.live      index.served → session boot screenshot
- *   b-harmony.session.live      session.live.complete → session screenshot
- *   b-harmony.write.live        index.served → write boot screenshot
- *   b-harmony.write.live        composer.typed → composer-typed screenshot
- *   b-harmony.write.live        write.reply.rendered → reply-rendered screenshot
- *   dsh.spike.verdict: b-harmony.httpfetch-v2     → leg done
- *   dsh.spike.verdict: b-harmony.session.live     → leg done
- *   dsh.spike.verdict: b-harmony.write.live       → done (exit 0 on PASS)
+ *   harmony.officialweb.mount index.served → boot-screen screenshot
+ *   harmony.officialweb.mount mount.complete → final screenshot
+ *   harmony.session.live-read      index.served → session boot screenshot
+ *   harmony.session.live-read      session.live.complete → session screenshot
+ *   harmony.composer.live-write        index.served → write boot screenshot
+ *   harmony.composer.live-write        composer.typed → composer-typed screenshot
+ *   harmony.composer.live-write        write.reply.rendered → reply-rendered screenshot
+ *   dsh.spike.verdict: harmony.httpfetch-streaming     → leg done
+ *   dsh.spike.verdict: harmony.session.live-read     → leg done
+ *   dsh.spike.verdict: harmony.composer.live-write       → done (exit 0 on PASS)
  *
  * usage: drive-official.mjs --hdc <path> [--overall-deadline S]
  *                            [--shot-boot PNG] [--shot-final PNG]
@@ -108,10 +108,10 @@ const state = {
 
 const onLine = (line) => {
   if (line.includes('"event":"index.served"') &&
-      line.includes('b-harmony.official-web-mount') && !state.bootShot) {
+      line.includes('harmony.officialweb.mount') && !state.bootShot) {
     state.bootShot = true;
     // The application tier activates in seconds; shoot immediately (the
-    // boot screen is the evidence — same posture as run-ios-b1.sh).
+    // boot screen is the evidence — same posture as run-ios-official-web-mount.sh).
     snapshot(args['shot-boot']);
   }
   if (line.includes('"event":"mount.complete"') && !state.mountDone) {
@@ -119,7 +119,7 @@ const onLine = (line) => {
     snapshot(args['shot-final']);
   }
   if (line.includes('"event":"index.served"') &&
-      line.includes('b-harmony.session.live') && !state.sessionBootShot) {
+      line.includes('harmony.session.live-read') && !state.sessionBootShot) {
     state.sessionBootShot = true;
     snapshot(args['shot-session-boot']);
   }
@@ -128,12 +128,12 @@ const onLine = (line) => {
     snapshot(args['shot-session']);
   }
   if (line.includes('"event":"index.served"') &&
-      line.includes('b-harmony.write.live') && !state.writeBootShot) {
+      line.includes('harmony.composer.live-write') && !state.writeBootShot) {
     state.writeBootShot = true;
     snapshot(args['shot-write-boot']);
   }
   if (line.includes('"event":"composer.typed"') &&
-      line.includes('b-harmony.write.live') && !state.writeComposerShot) {
+      line.includes('harmony.composer.live-write') && !state.writeComposerShot) {
     state.writeComposerShot = true;
     // The carrier paces ~2.5s between this line and the send; a short
     // settle lets the composer render the IME state before the capture.
@@ -146,13 +146,13 @@ const onLine = (line) => {
     state.writeReplyShot = true;
     snapshot(args['shot-write-reply']);
   }
-  if (line.includes('dsh.spike.verdict: b-harmony.httpfetch-v2')) {
+  if (line.includes('dsh.spike.verdict: harmony.httpfetch-streaming')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
-  if (line.includes('dsh.spike.verdict: b-harmony.session.live')) {
+  if (line.includes('dsh.spike.verdict: harmony.session.live-read')) {
     state.sessionVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
-  if (line.includes('dsh.spike.verdict: b-harmony.write.live')) {
+  if (line.includes('dsh.spike.verdict: harmony.composer.live-write')) {
     state.writeVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
 };
@@ -186,7 +186,7 @@ pollUntil('b-harmony verdicts', async () => {
   if (verdicts[2] !== 'pass') {
     die(`write.live verdict ${verdicts[2]}`);
   }
-  console.log('drive-official: PASS (mount.complete + b-harmony.httpfetch-v2 ' +
-    '+ b-harmony.session.live + b-harmony.write.live verdicts)');
+  console.log('drive-official: PASS (mount.complete + harmony.httpfetch-streaming ' +
+    '+ harmony.session.live-read + harmony.composer.live-write verdicts)');
   process.exit(0);
 }).catch((e) => die(e.message));

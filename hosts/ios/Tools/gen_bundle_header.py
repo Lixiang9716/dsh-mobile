@@ -27,21 +27,21 @@ RESOURCES = [
     ("sha256_js", SPIKE / "sha256.js"),
     ("tar_mini_js", SPIKE / "tar-mini.js"),
     ("manifest_json", SPIKE / "manifest.json"),
-    ("scenario_js", SPIKE / "scenario" / "m1-spike-boot.js"),
-    ("scenario_m2_js", SPIKE / "scenario" / "m2-gateway-binding.js"),
-    ("scenario_m2_smoke_js", SPIKE / "scenario" / "m2-bridge-smoke.js"),
-    ("scenario_m2_session_js", SPIKE / "scenario" / "m2-session.js"),
-    ("scenario_carrier_js", SPIKE / "scenario" / "m1-carrier-loopback.js"),
-    # M2 real-LLM scenario + its client module (scenario m2.llm; the device
+    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
+    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_m2_smoke_js", SPIKE / "scenario" / "gateway-bridge-smoke.js"),
+    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
+    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
+    # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
     # leg drives the real gateway httpFetch against the configured backend)
     ("llm_js", SPIKE / "llm.js"),
-    ("scenario_m2_llm_js", SPIKE / "scenario" / "m2-llm.js"),
+    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
     # M3 completion: on-device fetch-install scenario + its new modules
-    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "m3-fetch-install.js"),
+    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
-    # M3 config layer: the m3-complete profile patch (cordis.patch, JSON)
-    ("profile_m3_patch_json", SPIKE / "profiles" / "m3-complete" / "cordis.patch.json"),
+    # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
+    ("profile_m3_patch_json", SPIKE / "profiles" / "install-full-cycle" / "cordis.patch.json"),
     ("web_index_html", SPIKE / "web" / "index.html"),
     ("web_page_js", SPIKE / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
@@ -74,8 +74,8 @@ RESOURCES = [
     # the upstream web-boot adapter, its shims, and the vendored npm libs the
     # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
     # client-modules node + browser faces). NOT the full agent spine — the
-    # b1-web-live drive composes the boot wire without runtime services.
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "b1-web-live.js"),
+    # officialweb-web-live drive composes the boot wire without runtime services.
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
     ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
@@ -119,7 +119,7 @@ RESOURCES = [
     ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
-    ("scenario_b3_web_live_js", SPIKE / "scenario" / "b3-web-live.js"),
+    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     # W-RPC write surface (D9): the official app's composer send
     # (`POST /api/session/prompt`) answered from the REAL spine — the write
     # adapter plus the scenario that boots the runtime composed with it.
@@ -127,7 +127,7 @@ RESOURCES = [
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
-    ("scenario_b4_web_live_js", SPIKE / "scenario" / "b4-web-live.js"),
+    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
     ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),

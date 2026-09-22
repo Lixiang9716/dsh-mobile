@@ -58,10 +58,10 @@ final class CarrierEventLog {
     }
 }
 
-/// Drives `b1.official-web.mount`: the carrier as a REAL implementation of
+/// Drives `officialweb.mount`: the carrier as a REAL implementation of
 /// the upstream `ctx.webServer` contract, mounting the OFFICIAL web app
 /// (vendored dist, zero upstream edits) in the WebView — now with the
-/// runtime live (W-INTEG): a spike session running the b1-web-live scenario
+/// runtime live (W-INTEG): a spike session running the officialweb-web-live scenario
 /// composes the OFFICIAL boot wire with the vendored client-modules node
 /// half and posts `web.boot` over the bus seam; the carrier swaps the
 /// delivered rows into the index render pipeline, overrides the /plugins
@@ -76,7 +76,7 @@ final class CarrierEventLog {
 /// there are no session services) and the carrier answers them structured-
 /// unavailable — the next named gap, never faked.
 final class OfficialWebRuntime {
-    static let scenario = "b1.official-web.mount"
+    static let scenario = "officialweb.mount"
     static let clientID = "dsh-web-official"
     /// Generous: the drive now waits for the full application tier (58
     /// bundles fetched + activated + the shell mounted) inside the probe.
@@ -286,9 +286,9 @@ final class OfficialWebRuntime {
         }
     }
 
-    /// Starts the b1-web-live scenario through the drive and delivers the
+    /// Starts the officialweb-web-live scenario through the drive and delivers the
     /// staged `web.plugins` files (Documents/web-plugins, put there by
-    /// tools/e2e/run-ios-b1.sh from the pinned vendor tree).
+    /// tools/e2e/run-ios-official-web-mount.sh from the pinned vendor tree).
     private func startWebBootRuntime(bundleRoot: URL) {
         let drive = WebBootRuntimeDrive()
         drive.onBusPost = { [weak self] msg in

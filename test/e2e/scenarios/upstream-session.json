@@ -1,0 +1,268 @@
+{
+  "scenario": "upstream.session",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+        "transport": "gateway httpFetch → loopback chat-completions mock server",
+        "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile",
+        "root": "empty (patch layers compose over it)",
+        "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+        "layers": [
+          "session",
+          "agent",
+          "system-prompt",
+          "tools",
+          "session-projection",
+          "settings",
+          "agent-loop"
+        ]
+      }
+    },
+    {
+      "event": "upstream/services",
+      "match": {
+        "kernel": "@deepseek-ai/cordis@4.0.2",
+        "services": [
+          "sessions",
+          "agents",
+          "systemPrompt",
+          "tools",
+          "sessionProjections",
+          "settings",
+          "agentLoop",
+          "llm"
+        ],
+        "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+      }
+    },
+    {
+      "event": "session/created",
+      "match": {
+        "sessionId": "s-m2-upstream-0001",
+        "observed": true
+      }
+    },
+    {
+      "event": "agent/created",
+      "match": {
+        "id": "main",
+        "sessionId": "s-m2-upstream-0001"
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 2,
+        "tools": 6,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": true,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "Hello"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " from"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": " upst"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "delta": "ream"
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "finish": "stop",
+        "usage": {
+          "inputTokens": 3,
+          "outputTokens": 19,
+          "totalTokens": 22
+        }
+      }
+    },
+    {
+      "event": "llm/sse",
+      "match": {
+        "done": true
+      }
+    },
+    {
+      "event": "agent/inbox/spliced",
+      "match": {
+        "seq": 0
+      }
+    },
+    {
+      "event": "turn/start",
+      "match": {
+        "turn": 1
+      }
+    },
+    {
+      "event": "agent/inbox/spliced",
+      "match": {
+        "seq": 2
+      }
+    },
+    {
+      "event": "step/start",
+      "match": {
+        "turn": 1,
+        "step": 1
+      }
+    },
+    {
+      "event": "system/message",
+      "match": {
+        "seq": 4,
+        "plugin": "@deepseek-ai/dsh-system-prompt"
+      }
+    },
+    {
+      "event": "user/message",
+      "match": {
+        "seq": 5
+      }
+    },
+    {
+      "event": "request/header",
+      "match": {
+        "seq": 6
+      }
+    },
+    {
+      "event": "request/context",
+      "match": {
+        "seq": 7
+      }
+    },
+    {
+      "event": "assistant/message",
+      "match": {
+        "seq": 8,
+        "blocks": [
+          "text"
+        ],
+        "text": "Hello from upstream",
+        "provider": "mock",
+        "model": "mock-1"
+      }
+    },
+    {
+      "event": "step/end",
+      "match": {
+        "turn": 1,
+        "step": 1
+      }
+    },
+    {
+      "event": "turn/end",
+      "match": {
+        "turn": 1,
+        "reason": "completed"
+      }
+    },
+    {
+      "event": "session/log/asserted",
+      "match": {
+        "count": 11,
+        "types": [
+          "agent/inbox/spliced",
+          "turn/start",
+          "agent/inbox/spliced",
+          "step/start",
+          "system/message",
+          "user/message",
+          "request/header",
+          "request/context",
+          "assistant/message",
+          "step/end",
+          "turn/end"
+        ]
+      }
+    },
+    {
+      "event": "assistant/text/asserted",
+      "match": {
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "agent/status",
+      "match": {
+        "status": "running"
+      }
+    },
+    {
+      "event": "agent/status",
+      "match": {
+        "status": "idle"
+      }
+    },
+    {
+      "event": "projection/turn-boundary",
+      "match": {
+        "lastTurn": 1
+      }
+    },
+    {
+      "event": "llm/request/built",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1",
+        "messages": 1,
+        "tools": 0,
+        "path": "/chat/completions",
+        "method": "POST",
+        "agentLoopMarked": false,
+        "stream": true
+      }
+    },
+    {
+      "event": "llm/transport/error",
+      "match": {
+        "kind": "error",
+        "code": "AUTH",
+        "status": 401
+      }
+    },
+    {
+      "event": "upstream/completed",
+      "match": {
+        "status": "pass",
+        "upstream": "0.1.6-alpha.2",
+        "llm": "vendored dsh-llm over gateway httpFetch (dsh-llm-mock-server)"
+      }
+    }
+  ]
+}

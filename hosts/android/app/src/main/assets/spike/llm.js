@@ -3,7 +3,7 @@
  * PARAMETER with the gateway `httpFetch` response shape — `{status, headers,
  * body: AsyncIterable<Uint8Array>, abort()}` — so the same code runs against
  * the real gateway primitive (device hosts) and a scripted SSE feed (the
- * CI-safe CLI leg; the m2-llm scenario negotiates the leg via the
+ * CI-safe CLI leg; the llm-live-stream scenario negotiates the leg via the
  * RuntimeDescriptor, never via a hostType branch — D5).
  *
  * Wire: POST {baseUrl}/chat/completions with stream:true; the reply is SSE —
@@ -15,7 +15,7 @@
  * spike host ships no TextDecoder) and folded line by line.
  *
  * Events ride the `on(name, fields)` callback as an event sequence (D8 —
- * never a blocking whole result), in the m2-session vocabulary so downstream
+ * never a blocking whole result), in the session-mock-llm vocabulary so downstream
  * consumers stay unchanged: content deltas are `llm.delta` {index, text};
  * reasoning deltas are `llm.reasoning.delta` {index, text} (same shape,
  * separate stream — the two index spaces are independent per-turn counters).
@@ -26,7 +26,7 @@
  *
  * The API key NEVER enters a log line: log calls carry only the URL, byte
  * counts, and model names — headers and bodies are never logged. The
- * m2-llm scenario additionally audits every log-sink line for the key
+ * llm-live-stream scenario additionally audits every log-sink line for the key
  * string and fails loud on a leak (rule 5).
  */
 import { createLogger } from 'logger.js';

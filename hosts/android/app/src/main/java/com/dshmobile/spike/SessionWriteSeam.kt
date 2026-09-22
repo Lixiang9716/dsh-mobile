@@ -5,7 +5,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * The claims seam of the write-live drive (b-android.write.live): the bus
+ * The claims seam of the write-live drive (android.composer.live-write): the bus
  * protocol's runtime→carrier half folded into CarrierAPIBridge, plus the
  * once-guarded wire observers. The runtime CLAIMS the write surface
  * (session/list + session/create + session/prompt + the settings legs, and

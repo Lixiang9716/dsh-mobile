@@ -4,7 +4,7 @@
  * (docs/webserver-contract.md §3.2 "migrate the existing wiring"): the static
  * fallback seat over the materialized Web Client directory and the `/ws`
  * exact upgrade. Behavior is byte-compatible with the pre-Phase-B carrier —
- * the m5.host-binding manifest is frozen and stays green unchanged.
+ * the harmony.capability-binding manifest is frozen and stays green unchanged.
  */
 import { socket } from '@kit.NetworkKit';
 import { fileIo as fs } from '@kit.CoreFileKit';

@@ -12,7 +12,7 @@ import Foundation
 ///
 /// It runs in BOTH configurations. A user-facing launch constructs it with NO
 /// hooks assigned and no launch parameter (`AppDelegate.bootRelease`) — the
-/// user drives the page. The `b4.write.live` evidence drive
+/// user drives the page. The `composer.live-write` evidence drive
 /// (`SessionWriteRuntime`) holds an instance, assigns the hooks below and
 /// verifies it. The seam is the hook block, and its defaults are no-ops: the
 /// seat reports serving FACTS, and which `dsh.spike.log:` record a fact
@@ -192,7 +192,7 @@ final class SessionServe {
 
     /// Starts the b4 runtime half: gateway wired (fs scope + httpFetch), the
     /// model endpoint facts ride runtime.config (the port is bound). The
-    /// entry is the SAME runtime half the `b4.write.live` manifest verifies —
+    /// entry is the SAME runtime half the `composer.live-write` manifest verifies —
     /// one implementation of the serving path, never a second copy that
     /// drifts from the one the manifests prove.
     private func startRuntime(bundleRoot: URL) {
@@ -212,7 +212,7 @@ final class SessionServe {
             plugins: WebBootRuntimeDrive.webPluginsDelivery(),
             config: runtimeConfig(port: server.port, bundleRoot: bundleRoot),
             scenario: dsh_spike_res_scenario_b4_web_live_js,
-            scenarioPath: "scenario/b4-web-live.js",
+            scenarioPath: "scenario/composer-web-live.js",
             gateway: true)
     }
 
@@ -257,7 +257,7 @@ final class SessionServe {
 
     /// Where the credential comes from: `<Documents>/profiles/default/llm/
     /// config.json` — the reserved app scope (`FSPrimitives`), the same shape
-    /// and location the `m2.llm` runner stages credentials at, mode 0600.
+    /// and location the `llm.live-stream` runner stages credentials at, mode 0600.
     /// The file is the app's own Documents directory, which this build
     /// exposes in Files.app (`UIFileSharingEnabled`), so a user can drop the
     /// endpoint in without a runner. A malformed or partial file yields nil

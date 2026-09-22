@@ -41,7 +41,7 @@ PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140
 BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
-ART="hosts/ios/artifacts/m2-gateway"
+ART="hosts/ios/artifacts/gateway"
 SKIP_BUILD=0
 NO_REBOOT=0
 SKIP_INSTALL=0
@@ -444,13 +444,13 @@ run_check() { # MANIFEST OUT
   rm -f "$2"   # a failed/absent checker must never leave a stale verdict (rule 5)
   node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$2" || true
 }
-run_check test/e2e/scenarios/m1-spike-boot.json       "$ART/verdict-m1-spike-boot.json"
-run_check test/e2e/scenarios/m1-carrier-loopback.json "$ART/verdict-m1-carrier-loopback.json"
-run_check test/e2e/scenarios/m2-gateway-binding.json  "$ART/verdict-m2-gateway-binding.json"
-run_check test/e2e/scenarios/m2-gateway-audit.json    "$ART/verdict-m2-gateway-audit.json"
+run_check test/e2e/scenarios/boot-verification.json       "$ART/verdict-boot-verification.json"
+run_check test/e2e/scenarios/carrier-loopback.json "$ART/verdict-carrier-loopback.json"
+run_check test/e2e/scenarios/gateway-binding.json  "$ART/verdict-gateway-binding.json"
+run_check test/e2e/scenarios/gateway-audit.json    "$ART/verdict-gateway-audit.json"
 
 echo "==================== E2E summary ($ART) ===================="
-for s in m1-spike-boot m1-carrier-loopback m2-gateway-binding m2-gateway-audit; do
+for s in boot-verification carrier-loopback gateway-binding gateway-audit; do
   v="$ART/verdict-$s.json"
   if [ ! -f "$v" ]; then
     st="FAIL (no verdict file)"; FAIL=$((FAIL + 1)); FAILED="$FAILED $s"
@@ -472,7 +472,7 @@ log "ALL CHECKERS PASS"
 # receipt.json. Machine-authored HERE, after the summary loop above died on
 # any failing checker, so a receipt can never exist without this real green
 # run (never synthesized). Format mirrors the established evidence receipts
-# (hosts/ios/artifacts/b3-session-live/receipt.json).
+# (hosts/ios/artifacts/session-live-read/receipt.json).
 RECEIPT="$ART/receipt.json"
 TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
 ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
@@ -489,8 +489,8 @@ def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
 host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
             for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
 scenarios = []
-for sid in ["m1-spike-boot", "m1-carrier-loopback", "m2-gateway-binding",
-            "m2-gateway-audit"]:
+for sid in ["boot-verification", "carrier-loopback", "gateway-binding",
+            "gateway-audit"]:
     v = json.load(open(os.path.join(art, f"verdict-{sid}.json")))
     scenarios.append({
         "id": v["scenario"],
@@ -518,7 +518,7 @@ receipt = {
     "scenarios": scenarios,
     "runner": "test/e2e/run-ios.sh",
     "screens": screens,
-    "regressions": ("this run refreshed ONLY hosts/ios/artifacts/m2-gateway "
+    "regressions": ("this run refreshed ONLY hosts/ios/artifacts/gateway "
                     "(its four verdicts re-matched the committed manifests on "
                     "this tree); every other evidence dir carries its own "
                     "committed verdicts — see docs/e2e-matrix.md"),
