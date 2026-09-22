@@ -139,18 +139,31 @@ CI 的端到端测试只对**结构化日志**做断言，绝不用截图（截�
 
 ## 9. 工程结构
 
+环绕项目的周边环(D17):最外层承载项目相邻的表面——`build/`(唯一的构建
+门面,见 [BUILD.md](../BUILD.md))、`test/`(日志校验的 e2e 校验器 + 场景
+清单 + runner)、`docs/`、`packages/`(发布打包)、`tools/`(govrail 检查
+器)。内部是项目本身——共享核心仅一份(DSH 方法,D9/D6)加上三个平台宿主:
+
 ```
 dsh-mobile/
+├── build/               # 构建门面: build|test|check|sync × 平台(可多选) — 见 BUILD.md
+├── test/                # e2e 校验器(check.mjs)、场景清单、各平台 runner
+├── docs/                # 架构文档、决策记录
+├── packages/            # 发布打包(版本提升、tag 守卫)
+├── tools/               # govrail 门禁检查脚本(治理工具)
 ├── contract/            # M0: 原语契约 + 数据协议(bundle/manifest/receipt) — 先冻结
-├── runtime/             # quickjs-ng 集成 + ESM 加载器 + 垫层(平台无关)
+├── runtime/             # quickjs-ng 集成 + ESM 加载器 + 垫层(平台无关, 规范闭包)
 ├── system-plugins/      # 系统实现插件·契约适配层(JS, 三端共用)
 ├── presentation/        # mobile-ui Web Client(三端共用)
-├── hosts/
-│   ├── ios/             # Swift 特权层 + 网关 + carrier + SwiftUI 壳
-│   ├── android/         # (M4)
-│   └── harmony/         # (M5)
-└── docs/                # 架构文档、决策记录
+└── hosts/
+    ├── ios/             # Swift 特权层 + 网关 + carrier + SwiftUI 壳
+    ├── android/         # (M4)
+    └── harmony/         # (M5)
 ```
+
+每个宿主内嵌规范 `runtime/spike` 闭包的一份**已提交副本**;`closures`
+门禁把每份副本与规范源逐字节比对(副本是刻意的——自包含的 APK/HAP——
+门禁让它们保持诚实;用 `build/build.sh sync <platform>` 重新暂存)。
 
 ## 10. 里程碑
 

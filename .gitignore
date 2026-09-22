@@ -134,3 +134,6 @@ runtime/spike/logs-settings-surfaces.txt
 # reason as officialweb/ above: the content gates never judge vendored
 # upstream JS; the vendor script is the materialize + verify step.
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/
+
+# graphify knowledge-graph analysis output (local tooling artifact, not product)
+graphify-out/

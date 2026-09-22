@@ -29,8 +29,21 @@ VER=0.1.6-alpha.2
 say() { echo "stage-spine-closure: $*"; }
 die() { echo "::error::stage-spine-closure: $*" >&2; exit 1; }
 
+# --check: NO writes — run only the byte-identity proof against the committed
+# assets (the closures gate; a gate that heals what it checks is vacuous).
+MODE=stage
+[ "${1:-}" = "--check" ] && MODE=check
+[ $# -eq 0 ] || [ "$MODE" = "check" ] || die "unknown argument '$1' (only --check)"
+
 [ -d "$SPIKE/vendor/dsh/session@$VER/lib" ] ||
     die "runtime vendor closure missing — run runtime/spike/vendor/ensure-dsh.sh"
+
+# Verify-phase variables, defined before the staging guard so --check mode
+# (staging skipped) still has them.
+ZOD_SRC=$SPIKE/vendor/npm/zod@4.4.3
+ZOD_DST=$ASSETS/vendor/npm/zod@4.4.3
+
+if [ "$MODE" != "check" ]; then
 
 # One vendored spine package: LICENSE + package.json + lib/** minus .d.ts,
 # plus presets/** when the package carries it (agent-presets — the seeded
@@ -90,8 +103,6 @@ mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm"
     done
 
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
-ZOD_SRC=$SPIKE/vendor/npm/zod@4.4.3
-ZOD_DST=$ASSETS/vendor/npm/zod@4.4.3
 say "staging vendor/npm/zod@4.4.3 (classic runtime closure)"
 mkdir -p "$ZOD_DST/v4/classic" "$ZOD_DST/v4/core" "$ZOD_DST/v4/locales"
 cp "$ZOD_SRC/index.js" "$ZOD_DST/index.js"
@@ -143,6 +154,8 @@ for s in b-android-session-live.js b-android-write-live.js; do
     fi
 done
 
+fi # MODE != check — staging skipped above in check mode
+
 # Byte-identity proof over everything this script stages (rule 6: the
 # copy is evidence only when a check can fail). Drift markers collect in a
 # temp file because the pipeline `while` loops run in subshells — a `fail=1`
@@ -184,6 +197,10 @@ for f in gateway.js logger.js registry.js; do
 done
 if [ -s "$DRIFT" ]; then
     while IFS= read -r rel; do echo "::error::stage drift: $rel"; done < "$DRIFT"
-    die "staged trees drifted from the runtime pins"
+    die "staged assets drifted from the runtime pins (re-run build/build.sh sync android, or this script without --check)"
 fi
-say "staged + verified byte-identical to the runtime pins"
+if [ "$MODE" = "check" ]; then
+    say "assets verified in place (check mode, no writes)"
+else
+    say "staged + verified byte-identical to the runtime pins"
+fi

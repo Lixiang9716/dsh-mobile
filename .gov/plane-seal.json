@@ -22,13 +22,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "3b316a30b8ffec428e2a2e10051eb85bbc91b2de9f6ce31ec2b6943706995a30"
+      "sha256": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-21T18:10:14+00:00",
-    "caller": "lixiang@lixiangdeMacBook-Air.local",
+    "ts": "2026-09-22T17:24:41+00:00",
+    "caller": "lx@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "Wire the e2e-matrix gate (card T-0032): gate add e2e-matrix -> sh tools/e2e/matrix.sh --accept-known-gaps, in the default mode. Reviewed in this branch: gates.json gains the one entry plus its mode membership; the rejection case .gov/rejections/case-e2e-matrix.sh proves it rejects unregistered findings, stale register rows and unreadable registers. govrail 0.48.0's gov task repin (#368) is what lets the open cards' stale pins be advanced instead of reverting this. Authority: card T-0032 + Agent Note 2026-09-22-the-plane-moves-to-govrail-0-48-0-and-the-."
+    "reason": "D17 (docs/decisions.md) + agent note 2026-09-23-one-build-facade + task T-0036: one build facade and the periphery ring; gates.json gains the 'closures' gate via gov gate add"
   }
 }
