@@ -159,18 +159,34 @@ Reuse: `contract/` + `runtime/` + the `system-plugins/` semantic layer + `presen
 
 ## 9. Repository Layout
 
+Periphery ring around the project (D17): the outermost level carries the
+project-adjacent surfaces — `build/` (the one build facade,
+[BUILD.md](../BUILD.md)), `test/` (the log-verified e2e checker + scenarios +
+runners), `docs/`, `packages/` (release packaging), `tools/` (govrail
+checkers). Inside is the project itself — the shared core in ONE copy (the DSH
+method, D9/D6) plus the three platform hosts:
+
 ```
 dsh-mobile/
+├── build/               # the build facade: build|test|check|sync × platform(s) — see BUILD.md
+├── test/                # e2e checker (check.mjs), scenario manifests, per-platform runners
+├── docs/                # architecture, decision records
+├── packages/            # release packaging (version bump, tag guards)
+├── tools/               # govrail gate checkers (governance tooling)
 ├── contract/            # M0: primitive contract + data protocols (bundle/manifest/receipt) — frozen first
-├── runtime/             # quickjs-ng integration + ESM loader + shims (platform-independent)
+├── runtime/             # quickjs-ng integration + ESM loader + shims (platform-independent, canonical closure)
 ├── system-plugins/      # system implementation plugins · contract adaptation (JS, shared across platforms)
 ├── presentation/        # mobile-ui Web Client (shared across platforms)
-├── hosts/
-│   ├── ios/             # Swift privileged layer + gateway + carrier + SwiftUI shell
-│   ├── android/         # (M4)
-│   └── harmony/         # (M5)
-└── docs/                # architecture, decision records
+└── hosts/
+    ├── ios/             # Swift privileged layer + gateway + carrier + SwiftUI shell
+    ├── android/         # (M4)
+    └── harmony/         # (M5)
 ```
+
+Each host embeds a **committed copy** of the canonical `runtime/spike` closure;
+the `closures` gate byte-verifies every copy against the canonical source
+(the copies are deliberate — self-contained APK/HAP — and the gate keeps them
+honest; re-stage with `build/build.sh sync <platform>`).
 
 ## 10. Milestones
 

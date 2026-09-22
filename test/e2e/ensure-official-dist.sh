@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/ensure-official-dist.sh — materialize the vendored official web
+# test/e2e/ensure-official-dist.sh — materialize the vendored official web
 # dist (presentation/official-web/dist) and verify it against the committed
 # MANIFEST.sha256. The dist bytes are reproducible from upstream's own build
 # (presentation/official-web/build-upstream.sh at the PROVENANCE pin), so a

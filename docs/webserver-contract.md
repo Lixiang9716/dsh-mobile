@@ -462,4 +462,4 @@ boot-failure screen — fail loud, by design.
 - Current spike carriers: `hosts/ios/App/Source/CarrierServer.swift`,
   `hosts/android/app/src/main/java/com/dshmobile/spike/CarrierServer.kt`,
   `hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`.
-- E2E manifest conventions: `tools/e2e/README.md`, `docs/e2e-matrix.md`.
+- E2E manifest conventions: `test/e2e/README.md`, `docs/e2e-matrix.md`.

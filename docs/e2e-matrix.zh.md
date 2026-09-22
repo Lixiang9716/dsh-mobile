@@ -4,7 +4,7 @@
 
 汇总四个主机（iOS、Android、HarmonyOS、macOS CLI）全部 E2E 声明的验收证据，
 数据来自已提交的 artifacts 目录。由
-[tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs) 机器校验。
+[test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
 > **时效性**：本矩阵反映提交 `49fce4f`
 > （发布手册 #80 与打包流水线 #77 未落地任何证据目录；
@@ -24,8 +24,8 @@
 > 时的 `origin/main`。它是**再生成**的，不是手工维护的：
 >
 > ```sh
-> node tools/e2e/matrix.mjs              # 退出码 0 = 清单干净
-> node tools/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单
+> node test/e2e/matrix.mjs              # 退出码 0 = 清单干净
+> node test/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单
 > ```
 >
 > 2026-09-21 的**可设卡化**变更（分支 `docs/e2e-matrix-gateable`）不改动
@@ -37,7 +37,7 @@
 
 本仓库的每一条 E2E 声明，只有同时满足以下各条才被接受：
 
-1. **日志一对一比对绿色** —— 由 `tools/e2e/check.mjs` 产出的
+1. **日志一对一比对绿色** —— 由 `test/e2e/check.mjs` 产出的
    `verdict*.json`，`pass: true` 且 `expected == logged`
    （精确、有序、不缺、不多）。
 2. **截图仅作调试工件** —— 永远不作为检查器输入；证据目录下的截图必须是
@@ -159,9 +159,9 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 非零码退出；下方这张表就是**已知缺口登记表（known-gaps register）**，
 它让同一次运行可以被接成门禁。
 
-- `node tools/e2e/matrix.mjs` —— 打印全部发现项（不论是否已登记）并以
+- `node test/e2e/matrix.mjs` —— 打印全部发现项（不论是否已登记）并以
   退出码 1 结束：不加修饰的完整清单。
-- `node tools/e2e/matrix.mjs --accept-known-gaps` —— 当每个发现项都是下方
+- `node test/e2e/matrix.mjs --accept-known-gaps` —— 当每个发现项都是下方
   登记表的一行时以退出码 0 结束；以下情况以 1 结束：(a) 出现没有任何一行
   命名的发现项，即**新回归**；(b) 某一行对应的发现项已不存在——缺口闭合
   必须在同一变更中把该行划掉；(c) 登记表行数超过检查器的上限 9 行
@@ -196,7 +196,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 - **receipt 证明的是一次运行，而该运行的设备不在已提交工件里。** `host`
   字段记的是运行发生在哪台机器上——iOS 模拟器 UDID 与运行时版本、android
   模拟器实例及其 AVD 与 API 级别、harmony 的 hdc 目标——而
-  `tools/e2e/run-ios.sh` 是在运行时从 `xcrun simctl` 读取它的。已在本树
+  `test/e2e/run-ios.sh` 是在运行时从 `xcrun simctl` 读取它的。已在本树
   核验：对三个 android 目录执行
   `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone'`、对三个 harmony D9
   目录执行 `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc'`、对
@@ -221,7 +221,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 1. **`hosts/ios/artifacts/b4-write-live/` 缺 `receipt.json`** —— 目录随
    #65（session 写表面，`b4.write.live` 43/43 绿色）落地。归 iOS b4 工作流
    所有：在携带 #65 的树上跑一次绿色的
-   `tools/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`，
+   `test/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`，
    并在该 runner 的绿色路径上落盘 receipt（即 `run-ios.sh` 第 7 步的做法）。
 2. **`hosts/harmony/artifacts/d9-official-web/` 缺 `receipt.json`** ——
    目录随 #64（harmony webServer carrier）落地。归 harmony 工作流所有：一次
@@ -376,19 +376,19 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 
 ## 检查器及其拒绝证明
 
-`tools/e2e/matrix.mjs`（仅标准库）从工作树再生成清单，任何回归即以非零码
+`test/e2e/matrix.mjs`（仅标准库）从工作树再生成清单，任何回归即以非零码
 退出：verdict 失败、交付物缺失/为空、PNG 损坏、verdict/receipt 畸形、
-scenario id 在 `tools/e2e/scenarios/` 无 manifest，或已知缺口登记表本身有
+scenario id 在 `test/e2e/scenarios/` 无 manifest，或已知缺口登记表本身有
 缺陷。其 `--self-test` 模式证明每个拒绝类别都真的会拒绝（18 条断言，
 规则 6）——断言集记录在
-[e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs)。
+[e2e README](../test/e2e/README.md#inventory-matrix-matrixmjs)。
 
 一种事实，两种调用（文件头写着同一份契约）：
 
 ```sh
-node tools/e2e/matrix.mjs                       # 打印全部发现项，退出码 1
-node tools/e2e/matrix.mjs --accept-known-gaps   # 全部由登记表认领时退出码 0
-node tools/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单（含评估结果）
+node test/e2e/matrix.mjs                       # 打印全部发现项，退出码 1
+node test/e2e/matrix.mjs --accept-known-gaps   # 全部由登记表认领时退出码 0
+node test/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单（含评估结果）
 ```
 
 检查器**仍未接入 `gates.json`**：该文件在 plane seal 之内，而重新封印是一次
@@ -399,7 +399,7 @@ node tools/e2e/matrix.mjs --out /tmp/inv.json   # 机器可读清单（含评估
 
 ```sh
 gov gate add e2e-matrix --description "cross-host E2E evidence inventory (known-gaps register)" \
-  --timeout 120000 -- node tools/e2e/matrix.mjs --accept-known-gaps
+  --timeout 120000 -- node test/e2e/matrix.mjs --accept-known-gaps
 gov verify-plane --write     # 接受 gates.json 差异的那次仪式
 ```
 

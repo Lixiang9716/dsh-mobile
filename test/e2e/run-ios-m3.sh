@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios-m3.sh — local M3 "on-device fetch-install" E2E driver.
+# test/e2e/run-ios-m3.sh — local M3 "on-device fetch-install" E2E driver.
 #
 # Builds DSHSpike, launches it on a booted simulator IN SESSION MODE with
 # the m3-complete PROFILE (-dsh-mode session -dsh-profile m3-complete). The
@@ -126,14 +126,14 @@ log "5/5 running checkers"
 grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
-  if node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
+  if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
     PASS=$((PASS + 1))
   else
     FAILED="$FAILED $2"
   fi
 }
-run_check tools/e2e/scenarios/m3-fetch-install.json m3-fetch-install
-run_check tools/e2e/scenarios/m3-fetch-carrier.json m3-fetch-carrier
+run_check test/e2e/scenarios/m3-fetch-install.json m3-fetch-install
+run_check test/e2e/scenarios/m3-fetch-carrier.json m3-fetch-carrier
 
 echo "==================== E2E summary ($ART) ===================="
 for s in m3-fetch-install m3-fetch-carrier; do

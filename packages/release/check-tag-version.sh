@@ -35,7 +35,7 @@ check() { # <label> <actual-version>
 want=$(tr -d '[:space:]' < version.txt)
 check "version.txt" "$want"
 
-# The four files are kept in step by tools/release/bump-version.py, which
+# The four files are kept in step by packages/release/bump-version.py, which
 # writes them together; a bump that missed one — or a tag chosen by hand — is
 # exactly what this catches.
 ios=$(sed -n '/<key>CFBundleShortVersionString<\/key>/{n;s/.*<string>\([^<]*\)<\/string>.*/\1/p;}' \

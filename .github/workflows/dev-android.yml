@@ -1,7 +1,7 @@
 name: dev/android
 # End-to-end Android pipeline: builds the M1 spike APK (hosts/android) and
 # verifies scenario `m1.spike.boot` on a real emulator, judged by logs only
-# (tools/e2e/check.mjs one-to-one match; screenshots are never the assertion
+# (test/e2e/check.mjs one-to-one match; screenshots are never the assertion
 # — docs/ARCHITECTURE.md, "E2E verification").
 #
 # ubuntu-latest ships the Android SDK (ANDROID_HOME, sdkmanager, emulator)
@@ -125,7 +125,7 @@ jobs:
             presentation/official-web/dist
             presentation/official-web/client-bundles/npm
             presentation/official-web/client-bundles/MANIFEST.sha256.computed
-          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'tools/e2e/ensure-official-dist.sh', 'tools/e2e/ensure-client-bundles.sh') }}
+          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'test/e2e/ensure-official-dist.sh', 'test/e2e/ensure-client-bundles.sh') }}
       - name: Cache the vendored upstream closure
         # ensure.sh + ensure-dsh.sh re-download the pinned quickjs-ng / DSH
         # closure on every run, and six workflows do it — 29 s of it in dev/ios
@@ -152,11 +152,11 @@ jobs:
           # `corepack pnpm` entry point alone dies there ("pnpm: not found").
           corepack enable
           runtime/spike/vendor/ensure-dsh.sh > /dev/null
-          tools/e2e/ensure-official-dist.sh || {
+          test/e2e/ensure-official-dist.sh || {
             free -h; df -h / /tmp /mnt
             exit 1
           }
-          tools/e2e/ensure-client-bundles.sh || {
+          test/e2e/ensure-client-bundles.sh || {
             free -h; df -h / /tmp /mnt
             exit 1
           }
@@ -200,7 +200,7 @@ jobs:
           nohup "$ANDROID_HOME/emulator/emulator" -avd dsh-spike -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -port 5554 > /tmp/emulator.log 2>&1 < /dev/null &
 
       # E2E by logs (AGENTS.md rule 7): capture the canonical dsh.spike lines
-      # from logcat and let tools/e2e/check.mjs deliver the verdict. One
+      # from logcat and let test/e2e/check.mjs deliver the verdict. One
       # invocation; every wait inside is a polled condition with a deadline.
       - name: Run m1.spike.boot + m2.bridge.smoke + m2.session on the emulator and verify (logs only)
         run: bash hosts/android/ci/run-spike-e2e.sh

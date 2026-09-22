@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // dsh:logging-exempt (E2E UI-automation driver: a dev script whose console
-// output IS the drive evidence — same standing as tools/e2e/check.mjs)
+// output IS the drive evidence — same standing as test/e2e/check.mjs)
 /**
  * drive-binding.mjs — UI-automation driver for the m5.host-binding phase on
  * the local HarmonyOS emulator. It tails the hilog stream and, event by

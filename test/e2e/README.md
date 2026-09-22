@@ -1,4 +1,4 @@
-# tools/e2e/
+# test/e2e/
 
 Log-based E2E verdict tooling (no screenshots — those are a local
 interactive-debugging aid only; see docs/ARCHITECTURE.md, "E2E
@@ -13,8 +13,8 @@ verification").
   the first mismatched index with both sides and any unparsable entries.
 
 ```sh
-node tools/e2e/check.mjs \
-  --manifest tools/e2e/scenarios/m1-spike-boot.json \
+node test/e2e/check.mjs \
+  --manifest test/e2e/scenarios/m1-spike-boot.json \
   --log <captured-platform-log> \
   --out <verdict.json>   # exit 0 = pass, 1 = fail
 ```
@@ -79,7 +79,7 @@ run it (hosted runners have no idb/UI driver), so the real M2 E2E happens
 here:
 
 ```sh
-tools/e2e/run-ios.sh [--udid U] [--art-dir D] [--skip-build]
+test/e2e/run-ios.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
 It vendors the engine, builds DSHSpike, installs and launches it with
@@ -110,7 +110,7 @@ plugin's toolbar slot (host.info readiness signal) and uses only scope
 `app` fs (no alerts, pickers, or banners), so no idb/WDA driving is needed:
 
 ```sh
-tools/e2e/run-ios-session.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]
+test/e2e/run-ios-session.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]
 ```
 
 `--client mini` proves UI pluggability (M3): the app launches with
@@ -126,7 +126,7 @@ carrier-side checker becomes `m3-ui-swap.json` with evidence under
 `run-ios-m3.sh` drives the on-device M3 completion E2E — NO UI interaction:
 
 ```sh
-tools/e2e/run-ios-m3.sh [--udid U] [--art-dir D] [--skip-build]
+test/e2e/run-ios-m3.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
 It launches the app in session mode with the m3-complete PROFILE
@@ -148,7 +148,7 @@ container), then verifies BOTH `m3-fetch-install.json` and
 real leg) on the iOS simulator — NO UI interaction:
 
 ```sh
-tools/e2e/run-ios-m2-llm.sh [--udid U] [--art-dir D] [--skip-build]
+test/e2e/run-ios-m2-llm.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
 It requires `ZAI_BASE_URL` / `ZAI_API_KEY` / `ZAI_MODEL` in the environment
@@ -175,7 +175,7 @@ rule-8 polling discipline and 300s overall deadline as `run-ios.sh`.
 `run-ios-b1.sh` drives the Phase-B mount E2E — NO UI interaction:
 
 ```sh
-tools/e2e/run-ios-b1.sh [--udid U] [--art-dir D] [--skip-build]
+test/e2e/run-ios-b1.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
 It first materializes the vendored official dist (`ensure-official-dist.sh`:
@@ -197,7 +197,7 @@ The m2-bridge-smoke scenario runs on the macOS CLI (not iOS) and is checked
 directly:
 
 ```sh
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-bridge-smoke.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-bridge-smoke.json \
   --log <cli-run-log> --out <verdict.json>
 ```
 
@@ -210,7 +210,7 @@ index — proving one-to-one matching, order, prefix isolation, and the flat
 envelope.
 
 ```sh
-tools/e2e/selftest.sh   # exit 0 = all checker assertions hold
+test/e2e/selftest.sh   # exit 0 = all checker assertions hold
 ```
 
 ## Inventory matrix (`matrix.mjs`)
@@ -232,10 +232,10 @@ to the audited root, never to the process cwd.
 One truth, two invocations — the second is what a gate wires in:
 
 ```sh
-node tools/e2e/matrix.mjs [--out inventory.json]  # every finding, exit 1 on any
-node tools/e2e/matrix.mjs --accept-known-gaps     # exit 0 while the register owns them
-node tools/e2e/matrix.mjs --register <doc.md>     # read the register from another doc
-node tools/e2e/matrix.mjs --self-test             # 18 rejection assertions
+node test/e2e/matrix.mjs [--out inventory.json]  # every finding, exit 1 on any
+node test/e2e/matrix.mjs --accept-known-gaps     # exit 0 while the register owns them
+node test/e2e/matrix.mjs --register <doc.md>     # read the register from another doc
+node test/e2e/matrix.mjs --self-test             # 18 rejection assertions
 ```
 
 The **known-gaps register** is machine-read from the
@@ -249,7 +249,7 @@ regression), a row whose finding is gone (a closed gap is struck from the
 register in the same change), a register grown past `KNOWN_GAP_BUDGET`
 (accepting a new gap is a deliberate edit), or a register that cannot be
 read at all. `gates.json` sits inside the plane seal, so the wiring is the
-owner's ritual — `gov gate add e2e-matrix … -- node tools/e2e/matrix.mjs
+owner's ritual — `gov gate add e2e-matrix … -- node test/e2e/matrix.mjs
 --accept-known-gaps`, the project rejection case
 `.gov/rejections/case-e2e-matrix.sh` that rule 6 asks of every gate (this
 checker's `--self-test` is the assertion set to wrap), and

@@ -33,7 +33,7 @@
  *
  * --self-test synthesizes fixture trees in a temp dir and proves every
  * rejection class actually rejects (rule 6: verify the world, not the
- * self-report) — the assertion set is documented in tools/e2e/README.md.
+ * self-report) — the assertion set is documented in test/e2e/README.md.
  */
 import {
   mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync,
@@ -288,7 +288,7 @@ export const registerDefectFindings = (reg, unmatched) => {
   if (reg.rows.length > KNOWN_GAP_BUDGET) {
     out.push({ code: 'REGISTER_GROWN', file: reg.doc,
       detail: `${reg.rows.length} rows exceed the budget ${KNOWN_GAP_BUDGET} — accepting a new ` +
-        'gap means raising KNOWN_GAP_BUDGET in tools/e2e/matrix.mjs, deliberately' });
+        'gap means raising KNOWN_GAP_BUDGET in test/e2e/matrix.mjs, deliberately' });
   }
   return out;
 };
@@ -461,7 +461,7 @@ const main = () => {
   const args = parseArgs(process.argv.slice(2));
   if (args.selfTest) { selfTest(); return; }
   const reg = loadRegister(args.register ?? join(REPO_ROOT, REGISTER_DOC));
-  report(audit(args.root, join(args.root, 'tools/e2e/scenarios')), reg, args);
+  report(audit(args.root, join(args.root, 'test/e2e/scenarios')), reg, args);
 };
 
 main();

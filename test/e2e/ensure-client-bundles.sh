@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/ensure-client-bundles.sh — materialize the W-SHELL application-
+# test/e2e/ensure-client-bundles.sh — materialize the W-SHELL application-
 # tier client bundles (presentation/official-web/client-bundles/npm) and
 # verify them. The bundle bytes are reproducible from upstream's own build
 # (presentation/official-web/client-bundles/build-client-bundles.sh at the

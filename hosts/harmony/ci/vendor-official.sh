@@ -7,11 +7,11 @@
 #
 # Sources (all untracked trees materialized + sha256-verified by their
 # ensure scripts — the tracked provenance record):
-#   tools/e2e/ensure-official-dist.sh  → presentation/official-web/dist
-#   tools/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
+#   test/e2e/ensure-official-dist.sh  → presentation/official-web/dist
+#   test/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
 #   runtime/spike/vendor/ensure-dsh.sh → runtime/spike/vendor/npm (the pinned
 #     @deepseek-ai/dsh-client-modules wins for the bootstrap package, the
-#     same precedence tools/e2e/run-ios-b1.sh applies on iOS)
+#     same precedence test/e2e/run-ios-b1.sh applies on iOS)
 #
 # Layout under entry/src/main/resources/rawfile/spike/:
 #   officialweb/www/…                     ← the official dist (www: the repo
@@ -42,10 +42,37 @@ ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT"
 RAW=hosts/harmony/entry/src/main/resources/rawfile/spike
 
-echo "vendor-official: ensuring the source trees"
-tools/e2e/ensure-official-dist.sh
-tools/e2e/ensure-client-bundles.sh
-runtime/spike/vendor/ensure-dsh.sh > /dev/null
+# Modes (build/build.sh sync + the closures gate are the callers):
+#   (default)        full CI materialization: ensure scripts + officialweb + closure
+#   --closure-only   the spike closure only, from the local canonical trees —
+#                    no network, no officialweb re-sync (the local re-stage)
+#   --check          NO writes: byte-verify the committed closure only (the
+#                    closures gate — a gate that heals what it checks is vacuous)
+MODE=full
+for arg in "$@"; do
+    case "$arg" in
+        --closure-only) MODE=closure ;;
+        --check) MODE=check ;;
+        *) echo "vendor-official: unknown argument '$arg'" >&2
+           echo "usage: vendor-official.sh [--closure-only|--check]" >&2
+           exit 2 ;;
+    esac
+done
+
+if [ "$MODE" != "full" ]; then
+    # The closure's vendor sources are the local materialized pin trees —
+    # untracked by design (D6), so name the remedy when they are absent.
+    [ -d runtime/spike/vendor/dsh ] || {
+        echo "::error::vendor-official: runtime/spike/vendor/dsh missing — run runtime/spike/vendor/ensure-dsh.sh first" >&2
+        exit 1
+    }
+fi
+if [ "$MODE" = "full" ]; then
+    echo "vendor-official: ensuring the source trees"
+    test/e2e/ensure-official-dist.sh
+    test/e2e/ensure-client-bundles.sh
+    runtime/spike/vendor/ensure-dsh.sh > /dev/null
+fi
 
 PIN=dsh-client-modules@0.1.6-alpha.2
 VENDORED="runtime/spike/vendor/npm/@deepseek-ai/$PIN"
@@ -54,16 +81,18 @@ VENDORED="runtime/spike/vendor/npm/@deepseek-ai/$PIN"
     exit 1
 }
 
-echo "vendor-official: syncing rawfile (officialweb/www + officialweb/plugins + closure)"
-rm -rf "$RAW/officialweb"
-mkdir -p "$RAW/officialweb/plugins/npm/@deepseek-ai"
-cp -R presentation/official-web/dist "$RAW/officialweb/www"
-cp -R presentation/official-web/client-bundles/npm/@deepseek-ai/. \
-    "$RAW/officialweb/plugins/npm/@deepseek-ai/"
-# The pinned vendored tarball wins for the bootstrap package (D6 pin record;
-# lib/client.js is byte-identical to the workspace build — PROVENANCE).
-rm -rf "$RAW/officialweb/plugins/npm/@deepseek-ai/$PIN"
-cp -R "$VENDORED" "$RAW/officialweb/plugins/npm/@deepseek-ai/"
+if [ "$MODE" = "full" ]; then
+    echo "vendor-official: syncing rawfile (officialweb/www + officialweb/plugins + closure)"
+    rm -rf "$RAW/officialweb"
+    mkdir -p "$RAW/officialweb/plugins/npm/@deepseek-ai"
+    cp -R presentation/official-web/dist "$RAW/officialweb/www"
+    cp -R presentation/official-web/client-bundles/npm/@deepseek-ai/. \
+        "$RAW/officialweb/plugins/npm/@deepseek-ai/"
+    # The pinned vendored tarball wins for the bootstrap package (D6 pin record;
+    # lib/client.js is byte-identical to the workspace build — PROVENANCE).
+    rm -rf "$RAW/officialweb/plugins/npm/@deepseek-ai/$PIN"
+    cp -R "$VENDORED" "$RAW/officialweb/plugins/npm/@deepseek-ai/"
+fi
 
 # The web-boot closure (b1-web-live drive): the adapter, its shims, and the
 # vendored npm libs the client-modules composition imports — the exact
@@ -81,7 +110,8 @@ vendor/npm/cordis@4.0.2/lib/index.js
 vendor/npm/cosmokit@1.8.3/lib/index.js
 vendor/npm/schemastery@3.18.2/lib/index.mjs
 vendor/npm/@deepseek-ai/$PIN/lib/index.js
-vendor/npm/@deepseek-ai/$PIN/lib/client.js"
+vendor/npm/@deepseek-ai/$PIN/lib/client.js
+vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
 
 # The W-SESS spine closure (b-harmony.session.live): OUR authored spine
 # files first, then the vendored upstream trees — generated from the
@@ -205,19 +235,47 @@ CLOSURE="$CLOSURE
 $SPINE_OURS
 llm.js
 scenario/m2-llm.js"
-for rel in $CLOSURE; do
-    mkdir -p "$RAW/$(dirname "$rel")"
-    cp "runtime/spike/$rel" "$RAW/$rel"
-done
+if [ "$MODE" != "check" ]; then
+    for rel in $CLOSURE; do
+        mkdir -p "$RAW/$(dirname "$rel")"
+        cp "runtime/spike/$rel" "$RAW/$rel"
+    done
+fi
 
 echo "vendor-official: byte-verifying the closure copies"
+DRIFT=$(mktemp)
+trap 'rm -f "$DRIFT"' EXIT
+# In --check mode the comparison judges only the files the repo TRACKS: parts
+# of the vendored closure (the zod runtime files, .gitignore) are deliberately
+# untracked and materialized by THIS script at build time — a fresh checkout
+# legitimately lacks them. Untracked-but-closure files surface as one counted
+# SKIP, never as drift and never invisibly.
+SKIPS=0
+TRACKED=""
+if [ "$MODE" = "check" ]; then
+    # git prints repo-relative paths and $RAW is repo-relative — same base,
+    # compared as-is (the android twin had an absolute/relative mismatch
+    # that silently skipped everything; this is why the probes exist).
+    TRACKED=$(git ls-files "$RAW")
+fi
 for rel in $CLOSURE; do
-    cmp -s "runtime/spike/$rel" "$RAW/$rel" || {
-        echo "::error::rawfile closure drift: $rel (re-run vendor-official.sh)" >&2
-        exit 1
-    }
+    if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+       ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+        SKIPS=$((SKIPS + 1))
+        continue
+    fi
+    cmp -s "runtime/spike/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
 done
+if [ -s "$DRIFT" ]; then
+    while IFS= read -r rel; do echo "::error::rawfile closure drift: $rel"; done < "$DRIFT"
+    echo "::error::rawfile closure drifted (re-run build/build.sh sync harmony, or vendor-official.sh)" >&2
+    exit 1
+fi
 
+if [ "$MODE" = "check" ]; then
+    echo "vendor-official: closure verified in place (check mode, no writes, $SKIPS untracked-but-closure file(s) skipped — materialized at build time)"
+    exit 0
+fi
 files=$(find "$RAW/officialweb" -type f | wc -l | tr -d ' ')
 closure_count=$(printf '%s\n' "$CLOSURE" | grep -c .)
 echo "vendor-official: rawfile fresh (officialweb: $files files, closure: $closure_count files, byte-verified)"

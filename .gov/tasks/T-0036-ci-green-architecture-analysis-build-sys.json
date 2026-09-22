@@ -1,0 +1,30 @@
+{
+  "title": "CI green + architecture analysis + build system restructure",
+  "created": "2026-09-22T17:04:44+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "3b316a30b8ffec428e2a2e10051eb85bbc91b2de9f6ce31ec2b6943706995a30"
+    }
+  },
+  "checklist": [
+    "[x] pull latest main and settle the dirty tree",
+    "[x] fix both failing iOS m1 scenarios (parse error on the launch-env note)",
+    "[x] graphify build + overall architecture analysis",
+    "[x] restructure build layout: outer periphery (build/test/docs/packages), inner 3 platforms, per-platform selectable build, build = compile + test",
+    "land via PRs with green gates"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0036",
+  "repins": [
+    {
+      "ts": "2026-09-22T17:29:54+00:00",
+      "by": "lx@DESKTOP-AOFQD6F",
+      "from": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+      "to": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "reason": "stale pin sweep 2026-09-23: the brief predates the govrail 0.48.0 rules adoption; the work state is unchanged"
+    }
+  ]
+}

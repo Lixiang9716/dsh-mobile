@@ -183,21 +183,21 @@ check() {
     manifest=$1
     log=$2
     name=$(basename "$manifest" .json)
-    if node tools/e2e/check.mjs --manifest "$manifest" --log "$log" \
+    if node test/e2e/check.mjs --manifest "$manifest" --log "$log" \
         --out "$OUT/verdict-$name.json"; then
         :
     else
         fail=1
     fi
 }
-check tools/e2e/scenarios/m1-spike-boot.json "$OUT/sink-capture.txt"
-check tools/e2e/scenarios/m2-bridge-smoke.json "$OUT/sink-capture.txt"
-check tools/e2e/scenarios/m2-session.json "$OUT/sink-capture.txt"
-check tools/e2e/scenarios/m5-host-binding.json "$OUT/binding-capture.txt"
-check tools/e2e/scenarios/b-harmony-official-web-mount.json "$OUT/official-capture.txt"
-check tools/e2e/scenarios/b-harmony-httpfetch-v2.json "$OUT/httpfetch-capture.txt"
-check tools/e2e/scenarios/b-harmony-session-live.json "$OUT/session-capture.txt"
-check tools/e2e/scenarios/b-harmony-write-live.json "$OUT/write-capture.txt"
+check test/e2e/scenarios/m1-spike-boot.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/m2-bridge-smoke.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/m2-session.json "$OUT/sink-capture.txt"
+check test/e2e/scenarios/m5-host-binding.json "$OUT/binding-capture.txt"
+check test/e2e/scenarios/b-harmony-official-web-mount.json "$OUT/official-capture.txt"
+check test/e2e/scenarios/b-harmony-httpfetch-v2.json "$OUT/httpfetch-capture.txt"
+check test/e2e/scenarios/b-harmony-session-live.json "$OUT/session-capture.txt"
+check test/e2e/scenarios/b-harmony-write-live.json "$OUT/write-capture.txt"
 
 if [ "$fail" != "0" ]; then
     echo "::error::one or more E2E checkers failed — see $OUT/verdict-*.json"

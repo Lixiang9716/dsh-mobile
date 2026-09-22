@@ -4,16 +4,16 @@ name: dev/ios
 # simulator, runs BOTH spike scenarios — m1.spike.boot (runtime shim) and
 # m1.carrier.loopback (loopback static+WS carrier) — in one launch and
 # verifies the canonical log lines with the shared checker
-# (tools/e2e/check.mjs) — logs are the verdict, screenshots are never
+# (test/e2e/check.mjs) — logs are the verdict, screenshots are never
 # asserted on (docs/ARCHITECTURE.md).
 #
 # Since M2 it also checks m2.gateway.binding + the gateway audit stream
-# (tools/e2e/scenarios/m2-gateway-*.json). HONEST LIMITATION: that scenario
+# (test/e2e/scenarios/m2-gateway-*.json). HONEST LIMITATION: that scenario
 # is UI-driven (permission alert, Files picker, approval dialog, notification
 # banner) and hosted CI runners have no idb/UI driver, so the m2 leg cannot
 # complete here — its step is continue-on-error and expected to skip/warn.
 # The build is the hard gate; the FULL m2 E2E runs locally via
-# tools/e2e/run-ios.sh (see tools/e2e/README.md).
+# test/e2e/run-ios.sh (see test/e2e/README.md).
 #
 # Manual trigger plus path-filtered pushes/PRs: macOS runner minutes bill at
 # 10x, so docs-only changes never reach this pipeline.
@@ -27,7 +27,7 @@ on:
       - "runtime/**"
       - "system-plugins/**"
       - "presentation/**"
-      - "tools/e2e/**"
+      - "test/e2e/**"
       - ".github/workflows/dev-ios.yml"
   pull_request:
     paths:
@@ -36,7 +36,7 @@ on:
       - "runtime/**"
       - "system-plugins/**"
       - "presentation/**"
-      - "tools/e2e/**"
+      - "test/e2e/**"
       - ".github/workflows/dev-ios.yml"
 
 # Superseded runs cancel here: a newer push's verdict is the branch's state, and
@@ -254,7 +254,7 @@ jobs:
           # ui-wait` marker; accepting that marker as the stop condition lets
           # the m1 checks still run on the captured m1 lines (all m1 events
           # are complete before the UI-driven leg starts). Locally, via
-          # tools/e2e/run-ios.sh, the terminal `spike: sequence` marker
+          # test/e2e/run-ios.sh, the terminal `spike: sequence` marker
           # appears as before.
           # Stop on the terminal marker, OR once the log has gone QUIET with
           # the app having emitted: measured on CI, `simctl launch` returns and
@@ -288,7 +288,7 @@ jobs:
           grep '^dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl"
           cp "$ART/scenario.jsonl" "$ART2/scenario.jsonl"
           # --junit writes the SAME verdict the --out file carries, rendered as
-          # JUnit XML (tools/e2e/junit.mjs): the artifact a PR reporter turns
+          # JUnit XML (test/e2e/junit.mjs): the artifact a PR reporter turns
           # into per-scenario annotations, so a red run names the scenario and
           # the mismatched expectation instead of only reddening the step. It
           # is written before the checker exits, so a FAILING run ships one too.
@@ -299,13 +299,13 @@ jobs:
           # the exit codes and fail at the end if either failed, so both
           # verdicts and both XMLs are always authoritative.
           check_rc=0
-          node tools/e2e/check.mjs \
-            --manifest tools/e2e/scenarios/m1-spike-boot.json \
+          node test/e2e/check.mjs \
+            --manifest test/e2e/scenarios/m1-spike-boot.json \
             --log "$ART/logs.txt" \
             --out "$ART/verdict.json" \
             --junit "$ART/verdict.xml" || check_rc=1
-          node tools/e2e/check.mjs \
-            --manifest tools/e2e/scenarios/m1-carrier-loopback.json \
+          node test/e2e/check.mjs \
+            --manifest test/e2e/scenarios/m1-carrier-loopback.json \
             --log "$ART/logs.txt" \
             --out "$ART2/verdict.json" \
             --junit "$ART2/verdict.xml" || check_rc=1
@@ -313,13 +313,13 @@ jobs:
 
       # The M2 gateway-binding E2E is UI-driven — permission alert, Files
       # picker, approval dialog, notification banner (see
-      # tools/e2e/run-ios.sh, which drives it with WebDriverAgent/idb). Hosted
+      # test/e2e/run-ios.sh, which drives it with WebDriverAgent/idb). Hosted
       # runners have no UI driver, so that leg CANNOT run here, and it used to
       # sit in this file as a step that warned and exited non-zero on every
       # run under continue-on-error: a failure that could never pass, absorbed
       # on every green run, which is how a pipeline teaches people to ignore
       # red. A check that cannot run is not a check, so it is not here. The
-      # m2 E2E runs locally via tools/e2e/run-ios.sh and its committed
+      # m2 E2E runs locally via test/e2e/run-ios.sh and its committed
       # evidence is what the matrix cites.
       #
       # What gates in this workflow: the build, and (below) the m1 scenarios —

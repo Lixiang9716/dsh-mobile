@@ -406,4 +406,4 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 - 现有 spike 载体：`hosts/ios/App/Source/CarrierServer.swift`、
   `hosts/android/app/src/main/java/com/dshmobile/spike/CarrierServer.kt`、
   `hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`。
-- E2E 清单惯例：`tools/e2e/README.md`、`docs/e2e-matrix.md`。
+- E2E 清单惯例：`test/e2e/README.md`、`docs/e2e-matrix.md`。

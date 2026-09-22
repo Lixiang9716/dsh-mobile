@@ -16,7 +16,7 @@
 # llm route is a never-dialed placeholder).
 #
 # The captured log is verified one-to-one against
-# tools/e2e/scenarios/settings-surfaces-cli.json. Artifacts:
+# test/e2e/scenarios/settings-surfaces-cli.json. Artifacts:
 # runtime/spike/artifacts/macos-cli-settings-surfaces/.
 #
 # usage: run-settings-surfaces-e2e.sh   (artifacts: .../macos-cli-settings-surfaces)
@@ -53,8 +53,8 @@ trap cleanup EXIT INT TERM
 mkdir -p "$ART_DIR"
 cp logs-settings-surfaces.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-settings-surfaces.txt > "$ART_DIR/scenario.jsonl"
-node "$ROOT/tools/e2e/check.mjs" \
-    --manifest "$ROOT/tools/e2e/scenarios/settings-surfaces-cli.json" \
+node "$ROOT/test/e2e/check.mjs" \
+    --manifest "$ROOT/test/e2e/scenarios/settings-surfaces-cli.json" \
     --log logs-settings-surfaces.txt \
     --out "$ART_DIR/verdict.json"
 
@@ -77,7 +77,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "the plugin-manager write machinery stays UNCLAIMED: pluginManager/listBundles answers the runtime's structured gateway/unimplemented — fail loud, never a fake",
     "ONE cordis Loader service serves both the presets inject and the web-boot client composition's entries()/internal.resolveSync face — the unification that lets the presets mount ship without breaking the proven web.plugins path"
   ],
-  "checker": "tools/e2e/scenarios/settings-surfaces-cli.json",
+  "checker": "test/e2e/scenarios/settings-surfaces-cli.json",
   "events": $EVENTS,
   "exitCode": 0
 }

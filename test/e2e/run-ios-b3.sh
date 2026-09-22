@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios-b3.sh — the session-live E2E driver (W-SESS leg;
+# test/e2e/run-ios-b3.sh — the session-live E2E driver (W-SESS leg;
 # b3.session.live, decision D9): the FULL upstream agent spine boots
 # on-device, claims /api/session.list + the mux session/journal streams,
 # and answers the official web app with REAL data — one scripted-llm turn
@@ -55,7 +55,7 @@ fail_deadline() {
 
 # ---- 1-4. dist, vendor, build, install, stage ---------------------------------
 log "1/5 official dist present + manifest-verified"
-tools/e2e/ensure-official-dist.sh
+test/e2e/ensure-official-dist.sh
 
 log "2/5 vendor quickjs-ng sources"
 runtime/spike/vendor/ensure.sh
@@ -80,7 +80,7 @@ cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
 
 log "4b/5 stage the web-plugins tree (W-SHELL application tier + vendored bootstrap; fixed stamp)"
 runtime/spike/vendor/ensure-dsh.sh > /dev/null
-tools/e2e/ensure-client-bundles.sh
+test/e2e/ensure-client-bundles.sh
 PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 [ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
 rm -rf "$APP_DATA/Documents/web-plugins"
@@ -116,7 +116,7 @@ shot 02-final-state
 # ---- checkers -------------------------------------------------------------------
 log "6/6 running checkers"
 grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
-if node tools/e2e/check.mjs --manifest tools/e2e/scenarios/b3-session-live.json \
+if node test/e2e/check.mjs --manifest test/e2e/scenarios/b3-session-live.json \
     --log "$LOG" --out "$ART/verdict-b3-session-live.json"; then
   echo "==================== E2E summary ($ART) ===================="
   echo "  b3-session-live           PASS"

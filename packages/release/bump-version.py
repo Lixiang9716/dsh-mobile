@@ -8,8 +8,8 @@ mechanical and easy to get subtly wrong by hand — four files, three formats,
 one of them JSON5 — so it is one command instead of four edits, and every edit
 is re-read and asserted.
 
-    tools/release/bump-version.py 0.1.0            # bump to 0.1.0
-    tools/release/bump-version.py 0.1.0 --dry-run  # show what would change
+    packages/release/bump-version.py 0.1.0            # bump to 0.1.0
+    packages/release/bump-version.py 0.1.0 --dry-run  # show what would change
 
 Then: commit, open a PR, merge it, and push the tag. The tag is the release
 trigger (D12) and `check-tag-version.sh` runs in the package workflows, so the

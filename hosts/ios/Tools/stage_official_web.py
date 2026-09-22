@@ -3,7 +3,7 @@
 
 The harness (Debug) drives the E2E legs, and its runners stage the official
 dist + client bundles into the app CONTAINER (Documents/official-web,
-Documents/web-plugins) before launch — tools/e2e/run-ios-b1.sh is the
+Documents/web-plugins) before launch — test/e2e/run-ios-b1.sh is the
 reference. A user-facing build has no runner: a plain launch must reach the
 official DSH Web UI with nothing staged from outside. So the release build
 EMBEDS the same two trees as app bundle resources:
@@ -40,7 +40,7 @@ OFFICIAL = REPO / "presentation" / "official-web"
 DIST = OFFICIAL / "dist"
 CLIENT_NPM = OFFICIAL / "client-bundles" / "npm"
 # The pinned vendored tarball wins for the bootstrap package (D6 pin record;
-# the same precedence tools/e2e/run-ios-b1.sh and the Android staging apply).
+# the same precedence test/e2e/run-ios-b1.sh and the Android staging apply).
 VENDORED_BOOTSTRAP = (
     REPO / "runtime" / "spike" / "vendor" / "npm"
     / "@deepseek-ai" / "dsh-client-modules@0.1.6-alpha.2"
@@ -57,8 +57,8 @@ def copy_tree(src: Path, dst: Path) -> int:
     """Copy `src` under `dst` verbatim, then re-read and hash both sides."""
     files = sorted(p for p in src.rglob("*") if p.is_file())
     if not files:
-        die(f"{src} is empty (run tools/e2e/ensure-official-dist.sh and "
-            f"tools/e2e/ensure-client-bundles.sh)")
+        die(f"{src} is empty (run test/e2e/ensure-official-dist.sh and "
+            f"test/e2e/ensure-client-bundles.sh)")
     for path in files:
         target = dst / path.relative_to(src)
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -79,7 +79,7 @@ def main() -> int:
         return 0
     for src in (DIST, CLIENT_NPM, VENDORED_BOOTSTRAP):
         if not src.is_dir():
-            die(f"missing source tree {src} — run tools/e2e/"
+            die(f"missing source tree {src} — run test/e2e/"
                 f"ensure-official-dist.sh + ensure-client-bundles.sh + "
                 f"runtime/spike/vendor/ensure-dsh.sh before the release build")
 

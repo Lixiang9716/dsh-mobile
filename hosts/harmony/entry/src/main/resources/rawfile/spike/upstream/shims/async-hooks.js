@@ -20,6 +20,18 @@
  */
 const frames = [];
 
+/** Frames whose `run()` has not settled yet.
+ *
+ * Deliberately OUTSIDE the capture/restore machinery: `runWithCapturedContext`
+ * swaps the whole `frames` ARRAY, so a frame removed from it can be written
+ * back by a later restore (measured with the probe — `after-run` kept the
+ * store that way). Liveness is a property of the run, not of the array
+ * contents, so it lives in its own structure that capture/restore cannot
+ * touch. A frame that comes back this way is skipped, which keeps the
+ * semantics callers depend on: the store is visible for the operation's
+ * lifetime and gone once it settles. */
+const liveFrames = new Set();
+
 export const captureContext = () => (frames.length > 0 ? [...frames] : undefined);
 
 export const runWithCapturedContext = (captured, fn) => {
@@ -34,25 +46,61 @@ export const runWithCapturedContext = (captured, fn) => {
 
 export class AsyncLocalStorage {
   run(store, callback, ...args) {
-    frames.push({ als: this, store });
+    const frame = { als: this, store };
+    frames.push(frame);
+    liveFrames.add(frame);
+    const drop = () => {
+      liveFrames.delete(frame);
+      const at = frames.lastIndexOf(frame);
+      if (at >= 0) frames.splice(at, 1);
+    };
+    let result;
     try {
-      return callback(...args);
-    } finally {
-      frames.pop();
+      result = callback(...args);
+    } catch (error) {
+      drop();
+      throw error;
     }
+    // A promise-returning operation keeps its frame installed until it
+    // settles. MEASURED, not assumed: quickjs-ng runs `await` continuations
+    // through its own job queue, not through the patched
+    // Promise.prototype.then (scenario/als-shim-probe.js: the store is gone
+    // at the first `await`), so patching the prototype alone cannot reach
+    // them. Leaving the frame installed for the operation's lifetime is what
+    // makes the store visible to everything the operation awaits — which is
+    // exactly the contract callers rely on: `dsh-agent` scopes the
+    // initiating Agent around one bounded driver operation and the agent
+    // loop reads it later, when it executes a tool call. Without this the
+    // first tool call of every session fails with "no initiating agent is
+    // active" while plain turns look healthy.
+    if (result !== null && typeof result === 'object'
+        && typeof result.then === 'function') {
+      return result.then(
+        (value) => { drop(); return value; },
+        (error) => { drop(); throw error; },
+      );
+    }
+    drop();
+    return result;
   }
   getStore() {
     for (let i = frames.length - 1; i >= 0; i--) {
-      if (frames[i].als === this) return frames[i].store;
+      const frame = frames[i];
+      if (frame.als === this && liveFrames.has(frame)) return frame.store;
     }
     return undefined;
   }
   enterWith(store) {
-    frames.push({ als: this, store });
+    const frame = { als: this, store };
+    frames.push(frame);
+    liveFrames.add(frame);
   }
   disable() {
     for (let i = frames.length - 1; i >= 0; i--) {
-      if (frames[i].als === this) frames.splice(i, 1);
+      if (frames[i].als === this) {
+        liveFrames.delete(frames[i]);
+        frames.splice(i, 1);
+      }
     }
   }
 }

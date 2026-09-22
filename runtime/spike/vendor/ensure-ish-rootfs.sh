@@ -23,7 +23,7 @@ DEST="${1:-$(cd "$(dirname "$0")/../../.." && pwd)/hosts/ios/App/Generated}"
 FILE="ish-rootfs.tar.gz"
 
 # Alpine 3.21.8 aarch64 minirootfs — the same image the desktop e2e fetches
-# (tools/e2e/run-ish-local.sh carries the identical pin; the guest identity the
+# (test/e2e/run-ish-local.sh carries the identical pin; the guest identity the
 # scenario asserts is this release's).
 URL=https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-minirootfs-3.21.8-aarch64.tar.gz
 SHA256=f25a96d2846a4bc439093107c1b48a8b0c93dcb411e2cb9cfded6f790b2bc001

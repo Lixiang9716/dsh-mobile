@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // dsh:logging-exempt (E2E UI-automation driver: a dev script whose console
-// output IS the drive evidence — same standing as tools/e2e/check.mjs)
+// output IS the drive evidence — same standing as test/e2e/check.mjs)
 /**
  * drive-official.mjs — driver for the D9 official phases on the local
- * HarmonyOS emulator (the harmony twin of tools/e2e/run-ios-b1.sh's wait
+ * HarmonyOS emulator (the harmony twin of test/e2e/run-ios-b1.sh's wait
  * loop). It tails the hilog stream and, event by event, takes the evidence
  * screenshots and waits for the terminal markers (rules.md rule 8: every
  * wait is a polled condition with a deadline; every exhaustion fails loud).

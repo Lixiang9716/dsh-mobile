@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios-m2-llm.sh — the REAL-backend LLM E2E on the iOS simulator
+# test/e2e/run-ios-m2-llm.sh — the REAL-backend LLM E2E on the iOS simulator
 # (scenario `m2.llm`, real leg).
 #
 # Builds DSHSpike, stages the LLM credentials into fs scope "app"
@@ -128,14 +128,14 @@ log "5/5 running checkers"
 grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
-  if node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
+  if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
     PASS=$((PASS + 1))
   else
     FAILED="$FAILED $2"
   fi
 }
-run_check tools/e2e/scenarios/m2-llm-device.json m2-llm-device
-run_check tools/e2e/scenarios/m2-llm-carrier.json m2-llm-carrier
+run_check test/e2e/scenarios/m2-llm-device.json m2-llm-device
+run_check test/e2e/scenarios/m2-llm-carrier.json m2-llm-carrier
 
 # The key-leak re-check over the RAW platform stream (stdout + stderr).
 if grep -qF "$ZAI_API_KEY" "$LOG" "$ART/nslog-stderr.txt" 2>/dev/null; then

@@ -9,7 +9,7 @@
 #      commands straight through the seam (no JS, no simulator);
 #   2. the JS gate — the desktop CLI runs scenario/ish-shell.js, which goes
 #      scenario → plugin executor → gateway `ishRun` → the host backend → the
-#      guest, and whose records tools/e2e/scenarios/ish-shell-local.json matches
+#      guest, and whose records test/e2e/scenarios/ish-shell-local.json matches
 #      one-to-one.
 #
 # And then the part the logs cannot carry on their own: the DELIVERABLE. The
@@ -18,7 +18,7 @@
 # expected bytes — so a green run means the guest's filesystem effects are real
 # host files, not a transcript of one.
 #
-#   tools/e2e/run-ish-local.sh [--art-dir DIR] [--rootfs DIR] [--skip-build]
+#   test/e2e/run-ish-local.sh [--art-dir DIR] [--rootfs DIR] [--skip-build]
 #
 # `--rootfs` points at an already-extracted Alpine userland; without it the
 # pinned minirootfs is fetched (sha256-verified) into ~/dsh-verify/ish-rootfs.
@@ -144,7 +144,7 @@ rm -f "$LOG"
     DSH_ISH_ROOTFS="$ROOTFS" DSH_SPIKE_TMPDIR="$WORKSPACE" \
     ./build/dsh-spike-cli . scenario/ish-shell.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/ish-shell-local.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/ish-shell-local.json \
     --log "$LOG" --out "$ART/verdict-ish-shell-local.json"
 
 echo "== 5/5 deliverables =="
@@ -177,7 +177,7 @@ cat > "$ART/receipt.json" <<EOF
  "scenarios": [
   {
    "id": "ish.shell",
-   "checker": "tools/e2e/scenarios/ish-shell-local.json",
+   "checker": "test/e2e/scenarios/ish-shell-local.json",
    "result": "pass",
    "note": "11 records, one-to-one: guest identity (uname/alpine-release/id), a pipeline, a separated stderr stream with exit 7, a file the guest wrote and the JS layer read back, a hung command killed by the deadline, and a command after the kill"
   }

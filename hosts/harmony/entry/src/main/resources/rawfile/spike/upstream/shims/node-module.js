@@ -31,4 +31,21 @@ export function createRequire(base) {
   };
 }
 
-export default { createRequire };
+/** isBuiltin(specifier): the presets service classifies composition rows with
+ * it (a row naming `node:fs` is a builtin row; one naming a package needs a
+ * resolver). The spike's builtin surface is exactly the shim table — a bare
+ * specifier is built-in only when it names one of those node: modules. */
+const BUILTIN_PREFIXES = [
+  'node:', 'fs', 'path', 'crypto', 'util', 'os', 'url', 'events',
+  'buffer', 'process', 'string_decoder', 'timers', 'async_hooks', 'module',
+];
+export function isBuiltin(specifier) {
+  if (typeof specifier !== 'string') return false;
+  if (specifier.startsWith('node:')) return true;
+  const pkg = specifier.startsWith('@')
+    ? specifier.split('/').slice(0, 2).join('/')
+    : (specifier.split('/')[0] ?? '');
+  return BUILTIN_PREFIXES.includes(pkg);
+}
+
+export default { createRequire, isBuiltin };

@@ -69,8 +69,12 @@ const relative = (from, to) => {
 
 export const sep = '/';
 export const delimiter = ':';
+/** POSIX identity: namespacing (\\?\ prefixes) is a win32-only concern, and
+ * the vendored fs-local calls it only inside its win32 branch. Declared
+ * BEFORE the `posix` object, which folds it in. */
+export const toNamespacedPath = (path) => path;
 export const posix = {
-  basename, delimiter, dirname, extname, isAbsolute, join, normalize, relative, resolve, sep,
+  basename, delimiter, dirname, extname, isAbsolute, join, normalize, relative, resolve, sep, toNamespacedPath,
 };
 export const win32 = undefined; // loud: `import { win32 }` yields undefined, property use throws
 export { basename, dirname, extname, isAbsolute, join, normalize, relative, resolve };

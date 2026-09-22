@@ -8,7 +8,7 @@ opening it.
 
 | Stage | What it is | Trigger |
 | --- | --- | --- |
-| Prepare | an ordinary pull request running `tools/release/bump-version.py` | whenever you decide to release |
+| Prepare | an ordinary pull request running `packages/release/bump-version.py` | whenever you decide to release |
 | Package | `release/ios` | **a `v*` tag push**, or a manual dispatch |
 | Package | `release/android` | the same |
 | Package | `release/harmony` | the same |
@@ -23,7 +23,7 @@ release at a step that reports nothing. Cutting a release needs nothing but
 Two ways in, one build path:
 
 - **A release** — the normal path: bump, merge, tag.
-  `tools/release/bump-version.py X.Y.Z` writes all four version files and the
+  `packages/release/bump-version.py X.Y.Z` writes all four version files and the
   `CHANGELOG.md` section in one command; you open an **ordinary** pull request
   with it — which is the point, because a PR from a person or an agent gets the
   required `gates` check the way any other PR does (D13/D14). Merge it, then
@@ -42,7 +42,7 @@ Two ways in, one build path:
    below 1.0; a `fix:` the patch.
 2. **Bump, and write the changelog:**
 
-       tools/release/bump-version.py X.Y.Z            # or --dry-run first
+       packages/release/bump-version.py X.Y.Z            # or --dry-run first
 
    It prints the version the commits since the last tag imply as a hint — a
    person makes the call — writes `version.txt`, the iOS `Info.plist`, the
@@ -62,7 +62,7 @@ Two ways in, one build path:
    (HarmonyOS), and every full run since finished in 9–15 min — the per-job
    timeout is 60 min.
 
-   Each one first runs `tools/release/check-tag-version.sh`, which refuses a
+   Each one first runs `packages/release/check-tag-version.sh`, which refuses a
    tag that disagrees with any of the four version files. Pushing `v0.0.3`
    while `version.txt` says `0.0.2` fails before anything builds, naming every
    mismatch — the drift that a human-triggered release would otherwise
@@ -87,11 +87,11 @@ Two ways in, one build path:
 
 One version for the whole repository: the three hosts ship together in a single
 build, so they share one number. `version.txt` is the source of truth, and
-**`tools/release/bump-version.py` writes all four files in one command**, so
+**`packages/release/bump-version.py` writes all four files in one command**, so
 they cannot drift:
 
-    tools/release/bump-version.py 0.1.0            # bump every version file
-    tools/release/bump-version.py 0.1.0 --dry-run  # show what would change
+    packages/release/bump-version.py 0.1.0            # bump every version file
+    packages/release/bump-version.py 0.1.0 --dry-run  # show what would change
 
 | Host | File | Field |
 | --- | --- | --- |
@@ -105,7 +105,7 @@ breaking change bumps the minor pre-1.0, a `fix` the patch) and prints it as a
 hint; a person makes the call. It also writes the `CHANGELOG.md` section for
 the release from those commits, and re-reads every file it writes — a
 partially-applied bump is refused before anything is written, not after.
-`tools/release/check-tag-version.sh` then refuses a tag that disagrees with any
+`packages/release/check-tag-version.sh` then refuses a tag that disagrees with any
 of the four, so the two ends cannot come apart silently.
 
 Build numbers are **not** versioned here: `CFBundleVersion`, the Android
@@ -226,8 +226,8 @@ drive (`b1.official-web.mount`) can serve it.
 
 ```sh
 # 1. materialize the three untracked trees locally (manifest-verified)
-tools/e2e/ensure-official-dist.sh
-tools/e2e/ensure-client-bundles.sh
+test/e2e/ensure-official-dist.sh
+test/e2e/ensure-client-bundles.sh
 runtime/spike/vendor/ensure-dsh.sh
 
 # 2. stage them into the app container
@@ -240,7 +240,7 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 #    both: dist → Documents/official-web/dist
 #          client bundles → Documents/web-plugins/npm/@deepseek-ai/
 #          the vendored bootstrap package overrides its built twin
-#          (see tools/e2e/run-ios-b1.sh steps 4/4b for the exact tree ops)
+#          (see test/e2e/run-ios-b1.sh steps 4/4b for the exact tree ops)
 
 # 3. launch in official-web mode
 #    simulator:

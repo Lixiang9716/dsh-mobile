@@ -10,7 +10,7 @@
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
     ".gov/rejections/case-e2e-matrix.sh": {
-      "sha256": "2f42fc7e7b589b7940317cf6f37b6219a524bd43aee3f6838cf7ff9c9bab8ca0"
+      "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
     },
     ".gov/rejections/case-logging-l4.sh": {
       "sha256": "f410a435d2ab5b627ae27e7c8ec4c1283536e4d9b598f3708966eedb7b755a59"
@@ -22,13 +22,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "3b316a30b8ffec428e2a2e10051eb85bbc91b2de9f6ce31ec2b6943706995a30"
+      "sha256": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-21T18:10:14+00:00",
-    "caller": "lixiang@lixiangdeMacBook-Air.local",
+    "ts": "2026-09-22T17:29:35+00:00",
+    "caller": "lx@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "Wire the e2e-matrix gate (card T-0032): gate add e2e-matrix -> sh tools/e2e/matrix.sh --accept-known-gaps, in the default mode. Reviewed in this branch: gates.json gains the one entry plus its mode membership; the rejection case .gov/rejections/case-e2e-matrix.sh proves it rejects unregistered findings, stale register rows and unreadable registers. govrail 0.48.0's gov task repin (#368) is what lets the open cards' stale pins be advanced instead of reverting this. Authority: card T-0032 + Agent Note 2026-09-22-the-plane-moves-to-govrail-0-48-0-and-the-."
+    "reason": "path move tools/e2e -> test/e2e (D17): the e2e-matrix rejection case's fixture and script paths follow the moved checker; verified green by hand before sealing"
   }
 }

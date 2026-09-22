@@ -13,7 +13,8 @@
       "archive",
       "task",
       "plane",
-      "e2e-matrix"
+      "e2e-matrix",
+      "closures"
     ],
     "quick": [
       "notes"
@@ -185,11 +186,19 @@
       "id": "e2e-matrix",
       "command": [
         "sh",
-        "tools/e2e/matrix.sh",
+        "test/e2e/matrix.sh",
         "--accept-known-gaps"
       ],
       "description": "cross-host E2E evidence matrix: every finding must be an owned row of the known-gaps register",
       "timeoutMs": 300000
+    },
+    {
+      "id": "closures",
+      "command": [
+        "sh",
+        "build/check-closures.sh"
+      ],
+      "description": "committed host copies of the canonical runtime/spike closure are byte-identical (android assets, harmony rawfile, ios generated bundle)"
     }
   ]
 }

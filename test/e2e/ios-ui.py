@@ -2,7 +2,7 @@
 """ios-ui — drive the iOS simulator's DSH app by LABEL, through WebDriverAgent.
 
 Backend: the WebDriverAgent this repository already knows how to bootstrap
-(tools/e2e/run-ios.sh `wda_bootstrap`, appium/WebDriverAgent on localhost:8100).
+(test/e2e/run-ios.sh `wda_bootstrap`, appium/WebDriverAgent on localhost:8100).
 It publishes the COMPLETE accessibility tree of the WKWebView — the thing idb
 cannot do here: `idb ui describe-all` returns only the app root, so idb can
 only be driven by sampling points (~20s per screen) and gets a coordinate wrong

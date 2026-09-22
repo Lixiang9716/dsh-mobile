@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # gate: e2e-matrix
-# The gate wires `sh tools/e2e/matrix.sh --accept-known-gaps`, whose whole job
+# The gate wires `sh test/e2e/matrix.sh --accept-known-gaps`, whose whole job
 # is to stay green while every finding is an OWNED row of docs/e2e-matrix.md.
 # A gate that only ever accepts is vacuous, so this case drives the real CLI
 # over a fixture tree and requires it to REJECT in three directions: an
@@ -17,7 +17,7 @@ trap 'rm -rf "$TMP"' EXIT
 ROOT="$TMP/tree"
 EV="$ROOT/hosts/x/artifacts/run1"
 REG="$ROOT/docs/e2e-matrix.md"
-mkdir -p "$EV" "$ROOT/tools/e2e/scenarios" "$ROOT/docs"
+mkdir -p "$EV" "$ROOT/test/e2e/scenarios" "$ROOT/docs"
 
 # One evidence unit that is well-formed in every respect except its verdict:
 # a FAIL verdict is a finding, and the manifest is present so the finding is
@@ -25,10 +25,10 @@ mkdir -p "$EV" "$ROOT/tools/e2e/scenarios" "$ROOT/docs"
 printf 'log\n' > "$EV/logs.txt"
 printf 'entry\n' > "$EV/scenario.jsonl"
 printf '{}\n' > "$EV/receipt.json"
-printf '{ "scenario": "x.run", "expect": [{}] }\n' > "$ROOT/tools/e2e/scenarios/x-run.json"
+printf '{ "scenario": "x.run", "expect": [{}] }\n' > "$ROOT/test/e2e/scenarios/x-run.json"
 printf '{ "scenario": "x.run", "pass": false, "expected": 1, "logged": 1 }\n' > "$EV/verdict.json"
 
-matrix() { sh "$REPO/tools/e2e/matrix.sh" --root "$ROOT" --register "$REG" "$@"; }
+matrix() { sh "$REPO/test/e2e/matrix.sh" --root "$ROOT" --register "$REG" "$@"; }
 
 reg_rows() { # reg_rows <row...> — a register whose table is exactly these rows
     {

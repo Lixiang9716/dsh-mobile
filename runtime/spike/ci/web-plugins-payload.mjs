@@ -85,7 +85,7 @@ if (bootstrapOnly) {
   // Verify the staged application-tier tree against the record that travels
   // with it — the one THIS environment's build wrote (or a cache carried
   // here) — then read the roster record. The committed MANIFEST.sha256 is the
-  // REFERENCE build's record: `tools/e2e/ensure-client-bundles.sh` compares
+  // REFERENCE build's record: `test/e2e/ensure-client-bundles.sh` compares
   // against it and bounds the divergence the embedded work path causes, and it
   // runs before this on every path. Fail loud on drift (rules 5/6).
   const record = existsSync(BUNDLES_COMPUTED) ? BUNDLES_COMPUTED : BUNDLES_MANIFEST;

@@ -6,7 +6,7 @@
 
 | 阶段 | 是什么 | 触发 |
 | --- | --- | --- |
-| 准备 | 一个普通 pull request,运行 `tools/release/bump-version.py` | 你决定要发版的时候 |
+| 准备 | 一个普通 pull request,运行 `packages/release/bump-version.py` | 你决定要发版的时候 |
 | 打包 | `release/ios` | **推送 `v*` 标签**,或手动触发 |
 | 打包 | `release/android` | 同上 |
 | 打包 | `release/harmony` | 同上 |
@@ -19,7 +19,7 @@
 两种入口,同一条构建路径:
 
 - **正式发布**——常规路径:改版本 → 合并 → 推标签。
-  `tools/release/bump-version.py X.Y.Z` 一条命令写完四个版本文件和 `CHANGELOG.md`
+  `packages/release/bump-version.py X.Y.Z` 一条命令写完四个版本文件和 `CHANGELOG.md`
   的对应小节;然后你开一个**普通** pull request——这正是要点:人或 agent 开的 PR 会像
   任何其他 PR 一样拿到必需的 `gates` 检查(D13/D14)。合并之后推标签,三个
   `release/<宿主>` workflow 就会被触发,各自构建并把包**挂到该标签的 Release 上**,
@@ -35,7 +35,7 @@
    1.0 以下,`feat:` 或破坏性变更升 minor,`fix:` 升 patch。
 2. **改版本并写 changelog:**
 
-       tools/release/bump-version.py X.Y.Z            # 或先 --dry-run 看一眼
+       packages/release/bump-version.py X.Y.Z            # 或先 --dry-run 看一眼
 
    它会把"上一个标签以来的提交所隐含的版本号"作为提示打印出来(决定权在人),
    然后改写 `version.txt`、iOS 的 `Info.plist`、Android 的 `versionName` 和
@@ -52,7 +52,7 @@
    Android 11 分钟、HarmonyOS 2 分钟,之后每次完整运行都在 9–15 分钟内完成——
    单个 job 的超时是 60 分钟。
 
-   每个 workflow 都会先跑 `tools/release/check-tag-version.sh`,它会拒绝任何与四个
+   每个 workflow 都会先跑 `packages/release/check-tag-version.sh`,它会拒绝任何与四个
    版本文件之一不符的标签。在 `version.txt` 还是 `0.0.2` 时推 `v0.0.3`,会在任何构建
    开始前就失败,并逐个点名所有不一致——这正是"由人触发发布"否则会重新引入的漂移:
    一个装在本不该属于它的版本号下的包,下游没有任何环节会察觉。
@@ -70,11 +70,11 @@
 ### 版本流
 
 整个仓库共用一个版本号:三个宿主在同一次构建里一起发布,因此共享一个号。
-`version.txt` 是事实来源,而 **`tools/release/bump-version.py` 一条命令写完四个文件**,
+`version.txt` 是事实来源,而 **`packages/release/bump-version.py` 一条命令写完四个文件**,
 所以它们不会漂移:
 
-    tools/release/bump-version.py 0.1.0            # 改写所有版本文件
-    tools/release/bump-version.py 0.1.0 --dry-run  # 先看一眼会改什么
+    packages/release/bump-version.py 0.1.0            # 改写所有版本文件
+    packages/release/bump-version.py 0.1.0 --dry-run  # 先看一眼会改什么
 
 | 宿主 | 文件 | 字段 |
 | --- | --- | --- |
@@ -86,7 +86,7 @@
 脚本会推导出 conventional commits 所隐含的版本号(1.0 以下,`feat` 或破坏性变更升
 minor,`fix` 升 patch)并作为提示打印出来,由人来决定;它同时根据这些提交写出该版本的
 `CHANGELOG.md` 小节,并把写过的每个文件重新读回校验——**部分应用**的版本变更会在写入
-之前就被拒绝,而不是写完之后。随后 `tools/release/check-tag-version.sh` 会拒绝任何与
+之前就被拒绝,而不是写完之后。随后 `packages/release/check-tag-version.sh` 会拒绝任何与
 这四个文件不符的标签,两端因此不可能悄悄脱节。
 
 构建号**不**在此版本流内:`CFBundleVersion`、Android 的 `versionCode` 与
@@ -187,8 +187,8 @@ vendored 官方 dist,官方 web 驱动(`b1.official-web.mount`)才能把它服�
 
 ```sh
 # 1. 本地物化三棵未跟踪目录树(均按 MANIFEST 校验)
-tools/e2e/ensure-official-dist.sh
-tools/e2e/ensure-client-bundles.sh
+test/e2e/ensure-official-dist.sh
+test/e2e/ensure-client-bundles.sh
 runtime/spike/vendor/ensure-dsh.sh
 
 # 2. 暂存进应用容器
@@ -201,7 +201,7 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 #    两者相同:dist → Documents/official-web/dist
 #             客户端 bundles → Documents/web-plugins/npm/@deepseek-ai/
 #             vendored bootstrap 包覆盖其构建孪生
-#            (精确的目录操作见 tools/e2e/run-ios-b1.sh 第 4/4b 步)
+#            (精确的目录操作见 test/e2e/run-ios-b1.sh 第 4/4b 步)
 
 # 3. 以 official-web 模式启动
 #    模拟器:

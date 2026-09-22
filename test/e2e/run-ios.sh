@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios.sh — local M2 "real gateway binding" E2E driver.
+# test/e2e/run-ios.sh — local M2 "real gateway binding" E2E driver.
 #
 # Builds DSHSpike, installs and launches it on a booted iOS simulator, drives
 # the NATIVE UI the scenario blocks on (permission alert, Files picker,
@@ -442,12 +442,12 @@ grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0; FAILED=""
 run_check() { # MANIFEST OUT
   rm -f "$2"   # a failed/absent checker must never leave a stale verdict (rule 5)
-  node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$2" || true
+  node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$2" || true
 }
-run_check tools/e2e/scenarios/m1-spike-boot.json       "$ART/verdict-m1-spike-boot.json"
-run_check tools/e2e/scenarios/m1-carrier-loopback.json "$ART/verdict-m1-carrier-loopback.json"
-run_check tools/e2e/scenarios/m2-gateway-binding.json  "$ART/verdict-m2-gateway-binding.json"
-run_check tools/e2e/scenarios/m2-gateway-audit.json    "$ART/verdict-m2-gateway-audit.json"
+run_check test/e2e/scenarios/m1-spike-boot.json       "$ART/verdict-m1-spike-boot.json"
+run_check test/e2e/scenarios/m1-carrier-loopback.json "$ART/verdict-m1-carrier-loopback.json"
+run_check test/e2e/scenarios/m2-gateway-binding.json  "$ART/verdict-m2-gateway-binding.json"
+run_check test/e2e/scenarios/m2-gateway-audit.json    "$ART/verdict-m2-gateway-audit.json"
 
 echo "==================== E2E summary ($ART) ===================="
 for s in m1-spike-boot m1-carrier-loopback m2-gateway-binding m2-gateway-audit; do
@@ -494,7 +494,7 @@ for sid in ["m1-spike-boot", "m1-carrier-loopback", "m2-gateway-binding",
     v = json.load(open(os.path.join(art, f"verdict-{sid}.json")))
     scenarios.append({
         "id": v["scenario"],
-        "checker": f"tools/e2e/scenarios/{sid}.json",
+        "checker": f"test/e2e/scenarios/{sid}.json",
         "events": v["logged"],
         "result": "pass" if v["pass"] else "fail",
     })
@@ -516,7 +516,7 @@ receipt = {
                             "stage-once per the provider index-settle recipe"),
     "tree": tree,
     "scenarios": scenarios,
-    "runner": "tools/e2e/run-ios.sh",
+    "runner": "test/e2e/run-ios.sh",
     "screens": screens,
     "regressions": ("this run refreshed ONLY hosts/ios/artifacts/m2-gateway "
                     "(its four verdicts re-matched the committed manifests on "

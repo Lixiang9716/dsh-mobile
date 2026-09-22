@@ -12,7 +12,7 @@
 # session/journal mux stream (baseline + live change frames + cancel).
 #
 # The captured log is verified one-to-one against
-# tools/e2e/scenarios/m2-upstream-boot.json. Artifacts:
+# test/e2e/scenarios/m2-upstream-boot.json. Artifacts:
 # runtime/spike/artifacts/macos-cli-upstream-boot/.
 #
 # The mock server script is widened for this drive (two success turns) via
@@ -83,8 +83,8 @@ mkdir -p "$ART_DIR"
 cp logs-upstream-boot.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-upstream-boot.txt > "$ART_DIR/scenario.jsonl"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
-node "$ROOT/tools/e2e/check.mjs" \
-    --manifest "$ROOT/tools/e2e/scenarios/m2-upstream-boot.json" \
+node "$ROOT/test/e2e/check.mjs" \
+    --manifest "$ROOT/test/e2e/scenarios/m2-upstream-boot.json" \
     --log logs-upstream-boot.txt \
     --out "$ART_DIR/verdict.json"
 
@@ -104,7 +104,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "the injected rows carry the facade queue script, the application script-preload, the bootstrap script-src, and the graph global last (web/boot/rows); the vendored parseBootManifest cross-parses the composed graph (parseOk)",
     "the /api + mux claims answer from the REAL vendored services: session.list from the session store, the session/journal stream in the Remote-journal envelope (baseline + live change frames + cancel)"
   ],
-  "checker": "tools/e2e/scenarios/m2-upstream-boot.json",
+  "checker": "test/e2e/scenarios/m2-upstream-boot.json",
   "events": $EVENTS,
   "exitCode": 0
 }

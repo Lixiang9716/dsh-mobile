@@ -5,7 +5,7 @@
 # upstream agent-loop turn through the REAL vendored dsh-llm service — the
 # gateway transport adapter (upstream/llm-transport.js) streaming the VENDORED
 # dsh-llm-mock-server over real loopback HTTP/SSE — and verifies the captured
-# log one-to-one against tools/e2e/scenarios/m2-upstream-session.json.
+# log one-to-one against test/e2e/scenarios/m2-upstream-session.json.
 #
 # The mock server is a NODE package (node:http): it runs node-side, outside
 # quickjs, started/killed by this script. Node has no condition push for
@@ -72,8 +72,8 @@ echo "mock llm server: $MOCK_URL" >&2
 mkdir -p "$ART_DIR"
 cp logs-upstream.txt "$ART_DIR/logs.txt"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
-node "$ROOT/tools/e2e/check.mjs" \
-    --manifest "$ROOT/tools/e2e/scenarios/m2-upstream-session.json" \
+node "$ROOT/test/e2e/check.mjs" \
+    --manifest "$ROOT/test/e2e/scenarios/m2-upstream-session.json" \
     --log logs-upstream.txt \
     --out "$ART_DIR/verdict.json"
 
@@ -100,7 +100,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "structured transport errors surface as the upstream error-finish protocol: the scripted 401 behavior streams through ctx.llm.stream and lands as one terminal finish chunk with the provider-neutral AUTH failure (llm.transport.error)",
     "the session log is the upstream vocabulary (agent/inbox/spliced, turn/start, step/start, system/message, user/message, request/header, request/context, assistant/message, step/end, turn/end), asserted one-to-one (session.log.asserted) plus the turn-boundary projection (projection.lastTurn = 1)"
   ],
-  "checker": "tools/e2e/scenarios/m2-upstream-session.json",
+  "checker": "test/e2e/scenarios/m2-upstream-session.json",
   "events": $EVENTS,
   "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 $SCENARIO_MD5)",
   "exitCode": 0

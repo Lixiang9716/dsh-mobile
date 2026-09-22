@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# tools/e2e/run-ios-session.sh — local M2 "first on-device session" E2E driver.
+# test/e2e/run-ios-session.sh — local M2 "first on-device session" E2E driver.
 #
 # Builds DSHSpike, launches it on a booted simulator IN SESSION MODE
 # (-dsh-mode session), and waits for the Web Client to mount + the
@@ -46,11 +46,11 @@ while [ $# -gt 0 ]; do
 done
 [ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] \
   || { echo "run-ios-session: unknown --client '$CLIENT' (mini|default)" >&2; exit 2; }
-CARRIER_MANIFEST=tools/e2e/scenarios/m2-webclient-mount.json
+CARRIER_MANIFEST=test/e2e/scenarios/m2-webclient-mount.json
 CARRIER_STEM=m2-webclient-mount
 LAUNCH_ARGS=()
 if [ "$CLIENT" = "mini" ]; then
-  CARRIER_MANIFEST=tools/e2e/scenarios/m3-ui-swap.json
+  CARRIER_MANIFEST=test/e2e/scenarios/m3-ui-swap.json
   CARRIER_STEM=m3-ui-swap
   LAUNCH_ARGS=(-dsh-web-client dsh-web-client-mini)
   [ -n "$ART" ] || ART="hosts/ios/artifacts/m3-pluginization"
@@ -129,13 +129,13 @@ log "5/5 running checkers"
 grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
-  if node tools/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
+  if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
     PASS=$((PASS + 1))
   else
     FAILED="$FAILED $2"
   fi
 }
-run_check tools/e2e/scenarios/m2-session.json m2-session
+run_check test/e2e/scenarios/m2-session.json m2-session
 run_check "$CARRIER_MANIFEST" "$CARRIER_STEM"
 
 echo "==================== E2E summary ($ART) ===================="
