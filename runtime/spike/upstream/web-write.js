@@ -170,6 +170,66 @@ const makeCreateSession = (ctx, deps) => async (args) => {
 
 /** The REAL prompt admission (upstream commands.prompt, narrowed): admit
  * into the agent inbox and return — the turn streams via the journal. */
+/** The agentPresets/* handlers: thin forwarders onto the service boot.js
+ * mounted from @deepseek-ai/dsh-agent-presets. Method names follow the
+ * package's own @Remote exports (remoteExportList/read/copy/deletePreset/
+ * select); the panel's wire names are agentPresets/list, /read, /copy,
+ * /deletePreset, /select. */
+const makeAgentPresetHandlers = (ctx) => {
+  const call = async (method, args) => {
+    const service = ctx.get('agentPresets');
+    if (service === undefined) {
+      throw remoteError('gateway/unavailable', 'agentPresets service is not mounted', {});
+    }
+    if (method === 'list') return service.remoteExportList();
+    return service[method](...args);
+  };
+  return {
+    'agentPresets/list': (args) => call('list', []),
+    'agentPresets/read': (args) => call('read', [args?.id ?? args?.presetId]),
+    'agentPresets/copy': (args) => call('copy', [args?.from, args?.id, args?.name]),
+    'agentPresets/deletePreset': (args) => call('deletePreset', [args?.id]),
+    'agentPresets/select': (args) => call('select', [args?.sessionId, args?.staged]),
+  };
+};
+
+/** The endpointPresets adapter. The desktop keeps this service closed-source,
+ * so there is nothing to port (D9 forbids inventing product behavior); what
+ * THIS host knows is a platform fact: one model endpoint, the user's staged
+ * credential. Reads project it (no key material); writes refuse honestly. */
+const makeEndpointPresetAdapter = (options) => {
+  const one = {
+    id: 'default',
+    name: 'This device (staged credential)',
+    baseUrl: options.llm?.baseURL ?? '',
+    model: options.llm?.model ?? '',
+    readonly: true,
+  };
+  return {
+    'endpointPresets/list': async () => ({
+      presets: [one],
+      default: one.id,
+      authorable: false,
+    }),
+    'endpointPresets/read': async (args) => {
+      if (String(args?.id ?? '') === one.id) return one;
+      throw remoteError('endpoint-preset/not-found', `no endpoint preset "${String(args?.id)}"`, {});
+    },
+    'endpointPresets/create': async () => {
+      throw remoteError('gateway/unimplemented',
+        'endpoint presets are read-only on this host (one staged credential)', {});
+    },
+    'endpointPresets/update': async () => {
+      throw remoteError('gateway/unimplemented',
+        'endpoint presets are read-only on this host (one staged credential)', {});
+    },
+    'endpointPresets/delete': async () => {
+      throw remoteError('gateway/unimplemented',
+        'endpoint presets are read-only on this host (one staged credential)', {});
+    },
+  };
+};
+
 const makePromptSession = (ctx) => async (args) => {
   const request = args?.request ?? args;
   if (request === null || typeof request !== 'object'
@@ -245,6 +305,16 @@ export const createWriteSurface = (ctx, post, options) => {
       'settings/mutate': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.mutate(
           String(args.ns), args.ops, args.expectedRevision)),
+      // The Agent 预设 panel (contract parity with the desktop shell): the
+      // presets service is the REAL vendored @deepseek-ai/dsh-agent-presets,
+      // mounted by boot.js — these handlers forward, they do not reimplement.
+      ...makeAgentPresetHandlers(ctx),
+      // The desktop's endpointPresets service is NOT public (no npm package —
+      // unlike agentPresets). The platform fact this host can honestly serve:
+      // exactly ONE model endpoint, the user's staged credential (its base
+      // URL, model and label — never the key). Reads answer from it; writes
+      // fail with the upstream RemoteError shape naming the limitation.
+      ...makeEndpointPresetAdapter(options),
     },
     openStream: streams.openStream,
     dispose: streams.dispose,

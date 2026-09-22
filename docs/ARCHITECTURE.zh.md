@@ -131,6 +131,7 @@ CI 的端到端测试只对**结构化日志**做断言，绝不用截图（截�
 | --- | --- | --- | --- |
 | 引擎 | quickjs-ng | quickjs-ng（v2 可选 nodejs-mobile 高保真形态） | quickjs-ng (NAPI) |
 | 子进程 | ❌ 协程实现 | ✅ Termux 模式(jniLibs) | ⚠️ 按 ❌ 设计 |
+| Linux 用户态(`ishRun`,D16) | ✅ 进程内模拟用户态(iSH-arm64,vendor) | ❌ unavailable → WASM shell | ❌ unavailable → WASM shell |
 | 后台 | 冻结+checkpoint | 前台服务长跑 | 长时任务类别制 |
 | 原生壳 | SwiftUI | Compose | ArkUI |
 
@@ -170,6 +171,27 @@ quickjs-ng 而非 nodejs-mobile（D1）、单线程协程替代子进程（D2）
 ## 12. 已知边界（诚实声明）
 
 以下能力在本宿主上**声明不支持**（capability 协商标记，不假装支持）：真实子进程生态（bash/git hook/playwright/python PTC/SSH/Windows ACL）、桌面级后台常驻（上限为 checkpoint/resume + 通知唤醒）、整盘文件访问（上限为用户授权的 security-scoped 目录）。
+
+**模拟 Linux 用户态**（契约 v1.3.0 `ishRun`，D16）是本宿主上唯一**支持**真实用户态的地方，它带着自己的诚实声明，而不是躲在"不支持"后面：
+
+- **它是什么。** 一个用户态 AArch64 解释器（iSH-arm64，逐字 vendor）在 **app 进程内**同时模拟
+  客体的指令与系统调用。因此一个真实的 Alpine 用户态在无子进程、无第二个操作系统的情况下运行
+  ——这正是 iOS 得以拥有 `sh`、`apk`、`pip`、`npm` 和编译器的原因（D2）。客体的任务拥有自己的
+  宿主线程;JS 运行时的串行队列法则（§6）不变,网关照常派发。
+- **它不是免费的。** 在本机对原生的实测:计算慢 **11–34×**,jitless Node 慢 **40–108×**;
+  客体内核在 app 内启动 **41–79 ms**,而桌面 CLI 每次调用先付约 1 s 的固定成本。jitless Node
+  **没有 WebAssembly**,所以任何走 undici 的东西(fetch、MCP 客户端)都需要引擎 vendor 的纯 JS
+  llhttp/fetch polyfill。
+- **审计边界移动了,而且这点被明说,而不是被糊过去。** 客体的 socket 就是宿主 BSD socket
+  (`fs/sock.c`),客体的路径就是宿主路径(`fs/real.c`),因此原语契约的逐调用权限旗标与强制审计
+  记录**到不了它内部**:客体里的程序访问网络与文件系统时,任何地方都没有逐调用记录。剩下的控制
+  手段是审批策略与宿主选择布署的那个用户态本身——是**策略**,不是强制。契约 §7 第 2 条要求宿主
+  在描述符里讲明这一点,本节就是本宿主的这句声明。
+- **生命周期。** 已布署的用户态是**数据**,能跨重启存活;运行中的客体进程不能。挂起会冻结它,
+  内存压力会把它连同进程一起带走(D7 的 checkpoint 承载会话,**从不承载一个活的用户态**),
+  所以客体里的后台工作不是可以依赖的东西。
+- **仅 iOS,经协商。** Android 与 HarmonyOS 宿主对 `ishRun` 答 `unavailable` 并继续使用
+  WebAssembly shell;任何地方都没有 `hostType` 分支——描述符就是差异所在。
 
 ## 13. 上游依据（关键证据索引）
 

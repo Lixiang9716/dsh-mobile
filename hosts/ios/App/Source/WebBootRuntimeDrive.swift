@@ -49,7 +49,7 @@ final class WebBootRuntimeDrive {
             if gateway && !wireGateway(bundleRoot: bundleRoot, host: host) { return }
             wireSinks(host: host)
             guard evalScenario(host: host, scenario: scenario, path: scenarioPath) else { return }
-            guard deliverStaging(plugins: plugins, config: config) else { return }
+            guard deliverStaging(plugins, config, bundleRoot.path) else { return }
             if dsh_spike_pump(host) != 0 {
                 onFailure?("web-boot pump: \(String(cString: dsh_spike_error(host)))")
             }
@@ -60,7 +60,7 @@ final class WebBootRuntimeDrive {
     /// failure has already been reported through `onFailure`.
     private func bootHost(bundleRoot: URL) -> OpaquePointer? {
         var cSink = sink.cSink
-        guard let host = dsh_spike_new(bundleRoot.path, &cSink) else {
+        guard let host = dsh_spike_new_declaring(bundleRoot.path, &cSink) else {
             onFailure?("web-boot runtime: dsh_spike_new returned NULL")
             return nil
         }
@@ -134,7 +134,7 @@ final class WebBootRuntimeDrive {
     /// runtime.config facts the spine boot needs). `plugins` nil means the
     /// staging is missing: a loud drive failure, because the runner stages it
     /// and a fresh install without run-ios-b1.sh cannot boot.
-    private func deliverStaging(plugins: [[String: Any]]?, config: [String: Any]?) -> Bool {
+    private func deliverStaging(_ plugins: [[String: Any]]?, _ config: [String: Any]?, _ stagedRoot: String) -> Bool {
         guard let plugins else {
             onFailure?("web-boot: no client bundles staged — neither the "
                 + "embedded official-web/plugins resource nor "
@@ -144,7 +144,36 @@ final class WebBootRuntimeDrive {
         }
         if let config { deliver(config) }
         deliver(["type": "web.plugins", "plugins": plugins])
+        // The Agent 预设 panel's data source: the vendored presets tree the
+        // bundle staged on disk. Delivered as seed bytes because the runtime's
+        // fs view is the in-memory VFS, not the staged disk (the same reason
+        // web.plugins exists). Nil/absent = this build staged no tree; the
+        // panel then shows an empty roster rather than an error.
+        if let seed = agentPresetsSeedDelivery(stagedRoot: stagedRoot) { deliver(seed) }
         return true
+    }
+
+    /// The staged presets tree (vendor/dsh/agent-presets@…/presets/**, written
+    /// by SpikeBundleStager from the embedded spine tree) as an
+    /// `agentPresets.seed` delivery: every file base64 under its VFS path.
+    private func agentPresetsSeedDelivery(stagedRoot: String) -> [String: Any]? {
+        // `stagedRoot` is the spike bundle root (SpikeBundleStager.stage()'s
+        // return) — the vendored tree is staged beneath it verbatim.
+        let rootPath = stagedRoot + "/vendor/dsh/agent-presets@0.1.6-alpha.2/presets"
+        let root = URL(fileURLWithPath: rootPath, isDirectory: true)
+        guard FileManager.default.fileExists(atPath: root.path) else { return nil }
+        var files: [String: Any] = [:]
+        let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil)
+        while let file = enumerator?.nextObject() as? URL {
+            guard file.isFileURL, let b64 = Self.stagedFileB64(file) else { continue }
+            let filePath = file.path
+            guard filePath.hasPrefix(root.path) else { continue }
+            let suffixIndex = filePath.index(filePath.startIndex, offsetBy: root.path.count)
+            let rel = String(filePath[suffixIndex...])
+            files["/vendor/dsh/agent-presets@0.1.6-alpha.2/presets\(rel)"] =
+                ["b64": b64, "mtimeMs": 0]
+        }
+        return files.isEmpty ? nil : ["type": "agentPresets.seed", "files": files]
     }
 
     /// Carrier → runtime: one bus delivery (any queue; hops onto the

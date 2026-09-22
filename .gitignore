@@ -74,6 +74,20 @@ runtime/spike/vendor/npm/
 # editor-level parse gate, and the pin table is the provenance record.
 runtime/spike/vendor/wasm3/
 
+# The emulated-Linux userland engine (iSH-arm64) is vendored on exactly those
+# terms — pinned + sha256-verified by runtime/spike/vendor/ensure-ish.sh, kept
+# VERBATIM (D6: adaptation lives in our own host layer, never in the engine), and
+# untracked so the content gates never judge ~1,000 files of upstream C/asm that
+# no editor-level parse gate can survive. The pin table in the ensure script is
+# the tracked provenance record; the fork's GPL text travels with the sources.
+runtime/spike/vendor/ish/
+# …and the guest USERLAND that app rides in the iOS bundle: the pinned Alpine
+# minirootfs, fetched + sha256-verified by
+# runtime/spike/vendor/ensure-ish-rootfs.sh, which is the tracked provenance
+# record. Untracked for the usual two reasons — a 3.8 MB binary in git, and the
+# content gates have no business parsing a tarball.
+hosts/ios/App/Generated/ish-rootfs.tar.gz
+
 # The Android asset stage of the D9 spine closure is the SAME vendored
 # upstream code, untracked for the same reason (the stage script is the
 # reproducible materializer; the web-boot closure below stayed tracked at

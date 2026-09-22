@@ -117,6 +117,23 @@ export const fsRename = async (scope, from, to) =>
 export const wasmRun = async (scope, path, func, input = '') =>
   await call('wasmRun', { scope, path, func, input });
 
+// ---- ish (contract v1.3.0) ----------------------------------------------
+// One program in the host's IN-PROCESS Linux userland. The guest is emulated
+// instruction by instruction inside the app process (no child process, no
+// second OS — D2), and (scope, path) names the directory the program starts in:
+// the authorized workspace is mounted inside the guest, so a relative path the
+// guest writes is a file the session sees.
+
+/** `{ exitCode, stdout, stderr, timedOut, truncated }`. A non-zero exit status
+ * is a result, not a rejection; only a command the guest cannot start rejects. */
+export const ishRun = async (scope, path, argv, opts) =>
+  await call('ishRun', {
+    scope,
+    path,
+    argv: Array.isArray(argv) ? argv.map((item) => String(item)) : [],
+    timeoutMs: Number.isFinite(opts?.timeoutMs) ? opts.timeoutMs : 0,
+  });
+
 // ---- httpFetch (streaming response body) ---------------------------------
 
 /** In-flight response-body streams keyed by bodyId. */

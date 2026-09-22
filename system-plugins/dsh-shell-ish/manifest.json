@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-shell-ish",
+  "version": "0.1.0",
+  "type": "service",
+  "entry": "index.js",
+  "capabilities": {
+    "required": ["ishRun", "fsRead"],
+    "optional": []
+  },
+  "hooks": {
+    "activate": "activate"
+  }
+}

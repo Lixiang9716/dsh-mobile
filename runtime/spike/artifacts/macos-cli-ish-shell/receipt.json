@@ -1,0 +1,20 @@
+{
+ "host": "macOS arm64 (the desktop CLI, no simulator)",
+ "engine": "iSH-arm64 (userspace AArch64 emulator, threaded-code interpreter)",
+ "engineVersion": "OpenMinis/ish-arm64 e1d579480fba88e8f0428e3cf23811bcdd05421f, vendored + sha256-pinned by runtime/spike/vendor/ensure-ish.sh",
+ "guestRoot": "Alpine 3.21.8 aarch64 minirootfs (sha256 f25a96d2846a4bc439093107c1b48a8b0c93dcb411e2cb9cfded6f790b2bc001)",
+ "phase": "contract v1.3.0 `ishRun` — a real Linux userland running INSIDE the host process (no child process, no second OS), driven from the JS layer through system-plugins/dsh-shell-ish",
+ "launchConfiguration": "(cd runtime/spike) ./build/dsh-spike-cli . scenario/ish-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
+ "scenarios": [
+  {
+   "id": "ish.shell",
+   "checker": "tools/e2e/scenarios/ish-shell-local.json",
+   "result": "pass",
+   "note": "11 records, one-to-one: guest identity (uname/alpine-release/id), a pipeline, a separated stderr stream with exit 7, a file the guest wrote and the JS layer read back, a hung command killed by the deadline, and a command after the kill"
+  }
+ ],
+ "deliverables": [
+  "ish-deliverable.txt — written by the guest into the mounted workspace, read back through the gateway by the scenario, and byte-compared here"
+ ],
+ "notes": "Two gates: ish-smoke (C, no JS) then the scenario (JS). The logs matching is the checker's verdict; the deliverable is the independent fact beside it."
+}

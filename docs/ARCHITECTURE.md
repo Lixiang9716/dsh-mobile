@@ -151,6 +151,7 @@ Backup tiers: `cache/` → Caches (regenerable); `profiles/` → Documents (back
 | --- | --- | --- | --- |
 | Engine | quickjs-ng | quickjs-ng (v2 optional nodejs-mobile high-fidelity mode) | quickjs-ng (NAPI) |
 | Subprocess | ❌ coroutine re-implementation | ✅ Termux pattern (jniLibs) | ⚠️ designed as ❌ |
+| Linux userland (`ishRun`, D16) | ✅ in-process emulated userland (iSH-arm64, vendored) | ❌ unavailable → WASM shell | ❌ unavailable → WASM shell |
 | Background | suspension + checkpoint | foreground service | category-gated long tasks |
 | Native shell | SwiftUI | Compose | ArkUI |
 
@@ -192,6 +193,34 @@ records the alternative it beat — read it before proposing a change to any of 
 ## 12. Known Boundaries (honest statement)
 
 The following are **declared unsupported** on this host (flagged via capability negotiation, never faked): the real-subprocess ecosystem (bash/git hooks/playwright/python PTC/SSH/Windows ACL), desktop-grade background residency (the ceiling is checkpoint/resume + notification wake), whole-disk file access (the ceiling is user-granted security-scoped directories).
+
+The **emulated Linux userland** (contract v1.3.0 `ishRun`, D16) is the one place where a real
+userland *is* supported, and it carries its own honest statement rather than hiding behind
+"unsupported":
+
+- **What it is.** A userspace AArch64 interpreter (iSH-arm64, vendored verbatim) emulates both
+  the guest's instructions and its syscalls *inside the app process*. A real Alpine userland
+  therefore runs with no child process and no second OS — this is why iOS can have `sh`, `apk`,
+  `pip`, `npm` and a compiler at all (D2). The guest's tasks get their own host threads; the JS
+  runtime's serial-queue rule (§6) is unchanged, and the gateway dispatches as it always does.
+- **It is not free.** Measured on this machine against native: compute **11–34×** slower,
+  jitless Node **40–108×**; a guest kernel boot is **41–79 ms** in-app, a desktop-CLI invocation
+  pays ~1 s fixed before the workload. jitless Node has **no WebAssembly**, so anything on
+  undici (fetch, MCP clients) needs the engine vendor's pure-JS llhttp/fetch polyfills.
+- **The audit boundary moves, and that is stated, not papered over.** The guest's sockets are
+  host BSD sockets (`fs/sock.c`) and its paths are host paths (`fs/real.c`), so the per-call
+  permission flags and the mandatory audit records of the primitive contract do **not** reach
+  inside it: a program in the guest reaches the network and the filesystem with no per-call
+  record anywhere. The controls that remain are the approval policy and the userland the host
+  chose to stage — policy, not enforcement. Contract §7 point 2 requires a host to say this in
+  its descriptor, and this section is that statement for this host.
+- **Lifecycle.** The staged userland is *data* and survives relaunch; a running guest process
+  does not. Suspension freezes it and memory pressure takes it with the process (D7's checkpoint
+  carries sessions, never a live userland), so background work inside the guest is not a thing to
+  build on.
+- **iOS only, by negotiation.** The Android and HarmonyOS hosts answer `ishRun` unavailable and
+  keep the WebAssembly shell; there is no `hostType` branch anywhere — the descriptor is the
+  difference.
 
 ## 13. Upstream Evidence Index
 

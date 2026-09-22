@@ -49,9 +49,16 @@ export const manifest = {
 
 /** The starter program: `echo` — emits its argument text, exits 0.
  * Hand-assembled from echo.wat (77 bytes); it imports dsh.emit, exports its
- * memory, and `run(ptr, len)` reports the argument text back to the host. */
+ * memory, and `run(ptr, len)` reports the argument text back to the host.
+ *
+ * It returns 0 — a CONSTANT, not `local.get 1`. The first revision returned the
+ * argument LENGTH, and the executor faithfully reports a module's i32 return as
+ * the exit status, so `echo hi` exited 2 and `echo hello from wasm` exited 15: a
+ * program that reports failure exactly when it works. (`i32.const 0` is 0x41 0x00
+ * against `local.get 1`'s 0x20 0x01, so the module is the same 77 bytes and no
+ * offset moves.) */
 const STARTER_ECHO = Uint8Array.from([
-  0, 97, 115, 109, 1, 0, 0, 0, 1, 12, 2, 96, 2, 127, 127, 0, 96, 2, 127, 127, 1, 127, 2, 12, 1, 3, 100, 115, 104, 4, 101, 109, 105, 116, 0, 0, 3, 2, 1, 1, 5, 3, 1, 0, 1, 7, 16, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 3, 114, 117, 110, 0, 1, 10, 12, 1, 10, 0, 32, 0, 32, 1, 16, 0, 32, 1, 11]);
+  0, 97, 115, 109, 1, 0, 0, 0, 1, 12, 2, 96, 2, 127, 127, 0, 96, 2, 127, 127, 1, 127, 2, 12, 1, 3, 100, 115, 104, 4, 101, 109, 105, 116, 0, 0, 3, 2, 1, 1, 5, 3, 1, 0, 1, 7, 16, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 3, 114, 117, 110, 0, 1, 10, 12, 1, 10, 0, 32, 0, 32, 1, 16, 0, 65, 0, 11]);
 
 /** The workspace-relative path mapped onto the gateway's (scope, path) pair;
  * the same convention the wasm tool used — both roots are pinned globals the
@@ -187,7 +194,10 @@ export const shellExecutor = {
   sandboxMode: undefined,
 };
 
-const SHELL_DESCRIPTION = 'Run one command line. The programs are WebAssembly '
+const SHELL_DESCRIPTION = 'A MINIMAL executor: one WebAssembly module per command, no '
+  + 'shell semantics. If this host also offers a real shell or Linux tool, prefer THAT '
+  + 'for anything but a trivial module already in the workspace. '
+  + 'Run one command line. The programs are WebAssembly '
   + 'modules in your workspace (a program named foo is foo.wasm), executed '
   + 'inside the app process — no shell binary, no child process, so NOTHING '
   + 'from a normal PATH exists here (no ls, no cat, no sh). Write or place a '

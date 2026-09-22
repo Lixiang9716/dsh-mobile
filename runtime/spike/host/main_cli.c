@@ -21,6 +21,7 @@
  * usage: dsh-spike-cli [base] [entry] [--http] [--env KEY=VALUE ...]
  */
 #include "dsh_spike_host.h"
+#include "dsh_ish.h"
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -79,6 +80,10 @@ typedef struct smoke_backend {
     smoke_req *tail;
     int failed;
     int http; /* --http: the loopback httpFetch backend is live */
+    /* Where the in-process Linux guest sees this backend's scope root. The
+     * same files, one mount away: the guest command's cwd is
+     * <ish_mount>/<scope-relative path>. */
+    const char *ish_mount;
 } smoke_backend;
 
 static const char *SMOKE_DESCRIPTOR =
@@ -173,6 +178,89 @@ static int json_bool(const char *json, const char *key, int dflt) {
     if (strncmp(at, "true", 4) == 0) return 1;
     if (strncmp(at, "false", 5) == 0) return 0;
     return dflt;
+}
+
+/* Copy an unescaped JSON string. Unlike json_str_dup this one handles escapes:
+ * the argv of an ish call carries a COMMAND LINE, which contains quotes and
+ * backslashes as a matter of course. */
+static char *json_str_unescape(const char *at, const char *end) {
+    char *out = malloc((size_t)(end - at) + 1);
+    if (!out) return NULL;
+    size_t o = 0;
+    for (const char *p = at; p < end; p++) {
+        if (*p != '\\' || p + 1 >= end) { out[o++] = *p; continue; }
+        p++;
+        switch (*p) {
+            case 'n': out[o++] = '\n'; break;
+            case 't': out[o++] = '\t'; break;
+            case 'r': out[o++] = '\r'; break;
+            case 'b': out[o++] = '\b'; break;
+            case 'f': out[o++] = '\f'; break;
+            case 'u': {
+                /* \uXXXX: only the ASCII range is decoded, which is all a shell
+                 * command needs; anything else is dropped rather than mangled. */
+                if (p + 4 >= end) break;
+                char hex[5] = { p[1], p[2], p[3], p[4], 0 };
+                long cp = strtol(hex, NULL, 16);
+                if (cp > 0 && cp < 0x80) out[o++] = (char) cp;
+                p += 4;
+                break;
+            }
+            default: out[o++] = *p;
+        }
+    }
+    out[o] = 0;
+    return out;
+}
+
+/* Split a flat JSON object's string array value: returns a malloc'd
+ * NULL-terminated vector (caller frees each element and the vector). */
+static char **json_str_array(const char *json, const char *key, int *count_out) {
+    *count_out = 0;
+    char needle[64];
+    snprintf(needle, sizeof(needle), "\"%s\":[", key);
+    const char *at = strstr(json, needle);
+    if (!at) return NULL;
+    at += strlen(needle);
+    char **items = NULL;
+    int n = 0;
+    while (*at && *at != ']') {
+        if (*at == ',') { at++; continue; }
+        if (*at != '"') break;
+        const char *p = at + 1;
+        while (*p && *p != '"') {
+            if (*p == '\\') p++;
+            p++;
+        }
+        if (*p != '"') break;
+        char **grown = realloc(items, sizeof(char *) * ((size_t) n + 2));
+        if (!grown) break;
+        items = grown;
+        items[n] = json_str_unescape(at + 1, p);
+        if (items[n] == NULL) break;
+        n++;
+        at = p + 1;
+    }
+    if (items != NULL) items[n] = NULL;
+    *count_out = n;
+    return items;
+}
+
+static int json_int(const char *json, const char *key, int dflt) {
+    char needle[64];
+    snprintf(needle, sizeof(needle), "\"%s\":", key);
+    const char *at = strstr(json, needle);
+    if (!at) return dflt;
+    at += strlen(needle);
+    while (*at == ' ') at++;
+    if (*at < '0' || *at > '9') return dflt;
+    return (int) strtol(at, NULL, 10);
+}
+
+static void json_str_array_free(char **items, int count) {
+    if (items == NULL) return;
+    for (int i = 0; i < count; i++) free(items[i]);
+    free(items);
 }
 
 /* ---- loopback httpFetch backend (--http) --------------------------------- */
@@ -778,9 +866,61 @@ static void smoke_fs_read(smoke_backend *b, int call_id, const char *args) {
     smoke_fs_args_free(&a);
 }
 
+/* `ishRun` — one program in the host's in-process Linux userland (contract
+ * v1.3.0). The scope root this backend already owns is what gets mounted inside
+ * the guest, so the command runs against the same files the fs primitives serve;
+ * the guest cwd is that scope-relative path. A host with no staged guest root
+ * (no DSH_ISH_ROOTFS) answers `unavailable` rather than pretending, which is what
+ * a host without an engine must say. */
+static void smoke_ish_run(smoke_backend *b, int call_id, const char *args) {
+    char *scope = json_str_dup(args, "scope");
+    char *path = json_str_dup(args, "path");
+    int argc = 0;
+    char **argv = json_str_array(args, "argv", &argc);
+    int timeout_ms = json_int(args, "timeoutMs", 0);
+    const char *rootfs = getenv("DSH_ISH_ROOTFS");
+
+    if (!scope || strcmp(scope, "app") != 0) {
+        smoke_reject(b, call_id, "ishRun", "denied", "scope not granted");
+    } else if (!path || (path[0] != '\0' && !smoke_path_ok(path))) {
+        /* An empty path is the scope root — the workspace the guest sees at its
+         * mount point; anything else is an fs-style escape check. */
+        smoke_reject(b, call_id, "ishRun", "invalid", "bad working directory");
+    } else if (rootfs == NULL || rootfs[0] == '\0') {
+        smoke_reject(b, call_id, "ishRun", "unavailable",
+                     "no Linux guest root staged (DSH_ISH_ROOTFS)");
+    } else if (argc == 0) {
+        smoke_reject(b, call_id, "ishRun", "invalid", "empty argv");
+    } else {
+        char guest_workdir[1024];
+        if (path[0] == '\0')
+            snprintf(guest_workdir, sizeof(guest_workdir), "%s", b->ish_mount);
+        else
+            snprintf(guest_workdir, sizeof(guest_workdir), "%s/%s", b->ish_mount, path);
+        char *error = NULL;
+        if (dsh_ish_boot(rootfs, b->tmpdir, b->ish_mount, &error) < 0) {
+            smoke_reject(b, call_id, "ishRun", "io", error ? error : "guest boot failed");
+        } else {
+            char *json = dsh_ish_run(guest_workdir, (const char *const *) argv,
+                                     timeout_ms, &error);
+            if (json == NULL) {
+                smoke_reject(b, call_id, "ishRun", "io", error ? error : "guest run failed");
+            } else {
+                smoke_settle(b, call_id, 1, json);
+                free(json);
+            }
+        }
+        free(error);
+    }
+    free(scope);
+    free(path);
+    json_str_array_free(argv, argc);
+}
+
 static void smoke_serve(smoke_backend *b, int call_id, const char *name,
                         const char *args) {
     if (strcmp(name, "fsWrite") == 0) return smoke_fs_write(b, call_id, args);
+    if (strcmp(name, "ishRun") == 0) return smoke_ish_run(b, call_id, args);
     if (strcmp(name, "fsRead") == 0) return smoke_fs_read(b, call_id, args);
     if (strcmp(name, "httpFetch") == 0 && b->http) return smoke_http_fetch(b, call_id, args);
     if (strcmp(name, "httpFetch.abort") == 0 && b->http) {
@@ -841,6 +981,14 @@ static int smoke_drain(smoke_backend *b) {
 }
 
 static char *smoke_tmpdir(void) {
+    /* DSH_SPIKE_TMPDIR pins the workspace: an E2E driver that wants to check a
+     * file the guest wrote needs to know where the scope root is. */
+    const char *pinned = getenv("DSH_SPIKE_TMPDIR");
+    if (pinned != NULL && pinned[0] != '\0') {
+        char *dir = strdup(pinned);
+        if (dir != NULL) smoke_mkdirs(dir);
+        return dir;
+    }
     char tmpl[] = "/tmp/dsh-spike-smoke.XXXXXX";
     char *dir = mkdtemp(tmpl);
     return dir ? strdup(dir) : NULL; /* temp litter is left for /tmp cleanup */
@@ -914,6 +1062,7 @@ int main(int argc, char **argv) {
     dsh_spike_sink sink = { on_log, NULL };
     smoke_backend b = {0};
     b.tmpdir = smoke_tmpdir();
+    b.ish_mount = DSH_ISH_GUEST_MOUNT;
     b.spike = dsh_spike_new(base, &sink);
     if (!b.spike || !b.tmpdir) {
         fprintf(stderr, "spike: runtime init failed\n");

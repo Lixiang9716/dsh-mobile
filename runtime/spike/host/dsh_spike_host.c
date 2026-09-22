@@ -50,6 +50,8 @@ static const char *dsh_node_shim(const char *name) {
         { "node:util", "upstream/shims/util.js" },
         { "node:util/types", "upstream/shims/util-types.js" },
         { "node:fs", "upstream/shims/fs.js" },
+        { "node:fs/promises", "upstream/shims/fs-promises.js" },
+        { "node:timers/promises", "upstream/shims/timers-promises.js" },
         /* node:buffer: imported by @deepseek-ai/dsh-attachment (and by the
          * fs-promises shim the file tools need) — Buffer.from / concat /
          * byteLength / isBuffer over the Uint8Array-backed DshBuffer. */
@@ -617,35 +619,39 @@ static char *dsh_read_file(const char *path, size_t *out_len) {
     return buf;
 }
 
-/* Compile module source under a name (the loader's one compile site). */
-static JSModuleDef *dsh_compile_module(JSContext *ctx, const char *name,
-                                       const char *buf, size_t len) {
+/* Compile module source under a name (the loader's one compile site).
+ * `url` is what import.meta.url pins to: the module NAME for entry scripts,
+ * the bundle-relative staged path for mapped modules — the path is what lets
+ * a vendored package locate ITS OWN files (agent-presets resolves presets/
+ * beside lib/ through new URL('../presets/', import.meta.url); the url shim's
+ * path URLs and the bundle-require seam both speak bundle-relative paths). */
+static JSModuleDef *dsh_compile_module_url(JSContext *ctx, const char *name,
+                                           const char *url,
+                                           const char *buf, size_t len) {
     JSValue res = JS_Eval(ctx, buf, len, name,
                           JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_COMPILE_ONLY);
     if (JS_IsException(res)) return NULL;
     /* quickjs-ng loader contract: the compiled module value's pointer IS the
      * JSModuleDef*; the importer already holds a reference, so free the value. */
     JSModuleDef *m = (JSModuleDef *)JS_VALUE_GET_PTR(res);
-    /* Pin import.meta.url to the module NAME — what quickjs's own module
-     * loader does; the vendored closure reads it through the node:module
-     * createRequire seam (dsh-llm attribution headers). */
     JSValue meta = JS_GetImportMeta(ctx, m);
     if (!JS_IsException(meta)) {
-        JS_SetPropertyStr(ctx, meta, "url", JS_NewString(ctx, name));
+        JS_SetPropertyStr(ctx, meta, "url", JS_NewString(ctx, url));
         JS_FreeValue(ctx, meta);
     }
     JS_FreeValue(ctx, res);
     return m;
 }
 
-static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path, const char *name) {
+static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path,
+                                    const char *name, const char *url) {
     size_t len = 0;
     char *buf = dsh_read_file(abs_path, &len);
     if (!buf) {
         JS_ThrowReferenceError(ctx, "cannot load module '%s'", name);
         return NULL;
     }
-    JSModuleDef *m = dsh_compile_module(ctx, name, buf, len);
+    JSModuleDef *m = dsh_compile_module_url(ctx, name, url, buf, len);
     free(buf);
     return m;
 }
@@ -783,6 +789,17 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
                  DSH_UPSTREAM_VERSION, lib);
         return 1;
     }
+    if (strcmp(name, "@deepseek-ai/dsh-atomic-write") == 0) {
+        snprintf(out, out_len, "vendor/dsh/atomic-write@0.0.1-rc.1/lib/index.js");
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/dsh-home-paths") == 0) {
+        snprintf(out, out_len, "vendor/dsh/home-paths@0.0.1-rc.3/lib/index.js");
+        return 1;
+    }
+    /* NOTE: these two sit BEFORE the generic dsh- rule below — that rule pins
+     * DSH_UPSTREAM_VERSION, which would build paths for versions that do not
+     * exist (both packages version on their own 0.0.1-rc stream). */
     if (strncmp(name, "@deepseek-ai/dsh-", 17) == 0) {
         const char *rest = name + 17;
         const char *slash = strchr(rest, '/');
@@ -800,6 +817,26 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
         }
         snprintf(out, out_len, "vendor/dsh/%.*s@%s/lib/%s", (int)pkg_len, rest,
                  DSH_UPSTREAM_VERSION, sub);
+        return 1;
+    }
+    /* The agent-presets closure (the Agent 预设 panel's data source) — same
+     * rule as dsh-client-modules: npm-published packages outside the
+     * dsh-desktop runtime version stream, mapped to their vendor/npm trees.
+     * atomic-write and home-paths ARE dsh-* packages, but their versions ride
+     * their own stream (0.0.1-rc.x), so the generic dsh- map's shared version
+     * constant cannot build their paths. */
+    if (strcmp(name, "@deepseek-ai/cordis-plugin-loader") == 0) {
+        snprintf(out, out_len,
+                 "vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js");
+        return 1;
+    }
+    if (strcmp(name, "@deepseek-ai/cordis-plugin-include") == 0) {
+        snprintf(out, out_len,
+                 "vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js");
+        return 1;
+    }
+    if (strcmp(name, "js-yaml") == 0) {
+        snprintf(out, out_len, "vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs");
         return 1;
     }
     if (strcmp(name, "@deepseek-ai/cordis") == 0) {
@@ -831,7 +868,7 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
      * the bare-specifier map, then the bundle root on disk. */
     for (dsh_def_module *m = s->defined; m; m = m->next) {
         if (strcmp(m->name, name) == 0) {
-            return dsh_compile_module(ctx, name, m->source, m->source_len);
+            return dsh_compile_module_url(ctx, name, name, m->source, m->source_len);
         }
     }
     const char *rel = NULL;
@@ -871,7 +908,7 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
         JS_ThrowOutOfMemory(ctx);
         return NULL;
     }
-    JSModuleDef *m = dsh_load_module(ctx, abs, name);
+    JSModuleDef *m = dsh_load_module(ctx, abs, name, rel);
     free(abs);
     return m;
 }

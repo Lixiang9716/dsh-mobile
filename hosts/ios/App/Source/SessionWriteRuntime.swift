@@ -24,7 +24,20 @@ final class SessionWriteRuntime {
     static let clientID = SessionServe.clientID
     static let watchdogSeconds = 180
 
-    private let serve = SessionServe()
+    /// A DEBUG drive may point the composer's real-model route at an
+    /// OpenAI-compatible endpoint from the environment (DSH_E2E_LLM_URL/KEY/
+    /// MODEL) — the b4 scenario's documented live route, exercised end to end.
+    /// Release keeps `SessionServe()` (no credential ⇒ the scripted loopback).
+    private lazy var serve: SessionServe = {
+        let env = ProcessInfo.processInfo.environment
+        if let url = env["DSH_E2E_LLM_URL"], let key = env["DSH_E2E_LLM_KEY"],
+           let model = env["DSH_E2E_LLM_MODEL"] {
+            return SessionServe(credential: SessionServe.LlmCredential(
+                baseUrl: url, apiKey: key, model: model,
+                provider: env["DSH_E2E_LLM_PROVIDER"] ?? "openai-compatible"))
+        }
+        return SessionServe()
+    }()
     private let eventLog = CarrierEventLog(scenario: SessionWriteRuntime.scenario)
     private weak var webView: WKWebView?
     private var completion: ((SpikeOutcome) -> Void)?

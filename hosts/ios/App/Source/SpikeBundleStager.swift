@@ -100,6 +100,25 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_npm_client_modules_index_js), under: root)
         try write("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/lib/client.js",
                   data: resData(dsh_spike_res_npm_client_modules_client_js), under: root)
+        // The agent-presets closure (the Agent 预设 panel's data source): the
+        // import chain the C-host bare map resolves — every mapped specifier
+        // needs its staged file, or boot fails with `cannot load module`.
+        try write("upstream/shims/fs-promises.js",
+                  data: resData(dsh_spike_res_shims_fs_promises_js), under: root)
+        try write("upstream/shims/timers-promises.js",
+                  data: resData(dsh_spike_res_shims_timers_promises_js), under: root)
+        try write("vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js",
+                  data: resData(dsh_spike_res_npm_agent_presets_index_js), under: root)
+        try write("vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js",
+                  data: resData(dsh_spike_res_npm_plugin_loader_js), under: root)
+        try write("vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js",
+                  data: resData(dsh_spike_res_npm_plugin_include_js), under: root)
+        try write("vendor/dsh/atomic-write@0.0.1-rc.1/lib/index.js",
+                  data: resData(dsh_spike_res_npm_atomic_write_js), under: root)
+        try write("vendor/dsh/home-paths@0.0.1-rc.3/lib/index.js",
+                  data: resData(dsh_spike_res_npm_home_paths_js), under: root)
+        try write("vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs",
+                  data: resData(dsh_spike_res_npm_js_yaml_mjs), under: root)
     }
 
     /// System implementation plugins + the install-pipeline fixture + both
@@ -117,6 +136,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_plugin_shell_wasm_manifest), under: root)
         try write("system-plugins/dsh-shell-wasm/index.js",
                   data: resData(dsh_spike_res_plugin_shell_wasm_js), under: root)
+        try write("system-plugins/dsh-shell-ish/manifest.json",
+                  data: resData(dsh_spike_res_plugin_shell_ish_manifest), under: root)
+        try write("system-plugins/dsh-shell-ish/index.js",
+                  data: resData(dsh_spike_res_plugin_shell_ish_js), under: root)
         try write("system-plugins/dsh-ui/manifest.json",
                   data: resData(dsh_spike_res_plugin_ui_manifest), under: root)
         try write("system-plugins/dsh-ui/index.js",

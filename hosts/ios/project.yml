@@ -84,12 +84,75 @@ targets:
           - ../../system-plugins/dsh-subprocess-quickjs/index.js
           - ../../system-plugins/dsh-ui/manifest.json
           - ../../system-plugins/dsh-ui/index.js
+          - ../../system-plugins/dsh-shell-ish/manifest.json
+          - ../../system-plugins/dsh-shell-ish/index.js
           - ../../presentation/web-client/manifest.json
           - ../../presentation/web-client/web/index.html
           - ../../presentation/web-client/web/main.js
         outputFiles:
           - App/Generated/SpikeBundle.h
           - App/Generated/SpikeBundle.c
+      # The guest USERLAND, as a tarball. The extracted tree cannot ride in an
+      # app bundle — the Alpine userland carries 335 symlinks, most of them
+      # absolute (`/usr/bin/top -> /bin/busybox`), and installd refuses the app
+      # outright (`invalid symlink at …`). A `.tar.gz` is a plain data file, so
+      # the pinned minirootfs ships here and the app materializes it into its
+      # container at first launch (`dsh_ish_stage`, gzip via zlib). `App` is
+      # already a source path, so the file XcodeGen finds under App/Generated is
+      # copied into the bundle as a resource; the script's own pin + sha256 is
+      # the provenance record (the tarball itself is untracked).
+      - name: FetchIshRootfs
+        basedOnDependencyAnalysis: false
+        script: |
+          "$SRCROOT/../../runtime/spike/vendor/ensure-ish-rootfs.sh" "$SRCROOT/App/Generated"
+        inputFiles:
+          - ../../runtime/spike/vendor/ensure-ish-rootfs.sh
+        outputFiles:
+          - App/Generated/ish-rootfs.tar.gz
+      # The in-process Linux guest (contract v1.3.0 `ishRun`): the vendored
+      # iSH-arm64 engine is built by the SAME CMake file the macOS CLI uses,
+      # configured here for this SDK and architecture, and the app links the
+      # two static libraries it produces — Xcode compiles no engine source
+      # itself. `basedOnDependencyAnalysis: false` is what this phase means: the
+      # engine's input set is the vendor tree plus the CMake file, and CMake is
+      # the thing that knows what is out of date (the same reason, and the same
+      # warning, as StageOfficialWeb below).
+      - name: BuildIshEngine
+        basedOnDependencyAnalysis: false
+        script: |
+          # Xcode's build environment carries the system paths only, so a
+          # Homebrew cmake has to be found by hand (and named loudly when absent
+          # — the engine cannot be built without it).
+          if ! command -v cmake >/dev/null 2>&1; then
+            for dir in /opt/homebrew/bin /usr/local/bin; do
+              [ -x "$dir/cmake" ] && PATH="$dir:$PATH"
+            done
+          fi
+          command -v cmake >/dev/null 2>&1 || {
+            echo "error: cmake not found — install CMake (brew install cmake)"; exit 1; }
+          set -e
+          REPO="$SRCROOT/../.."
+          "$REPO/runtime/spike/vendor/ensure-ish.sh"
+          # The guest vdso is a GUEST aarch64 elf, so it is identical on every
+          # platform: a HOST configure builds it once and the iOS build reuses
+          # it. The zero-byte placeholder a cross-compile would write is not an
+          # option — a zeroed vdso makes the kernel ABORT the app on the first
+          # signal delivered to a guest task (kernel/vdso.c's fail path), and
+          # ISH_VDSO_ELF_DIR refuses it.
+          VDSO="$REPO/runtime/spike/build/ish/vdso"
+          if [ ! -s "$VDSO/libvdso.so.elf" ]; then
+            cmake -S "$REPO/runtime/spike/host/ish" -B "$REPO/runtime/spike/build/ish"
+            cmake --build "$REPO/runtime/spike/build/ish" --target ish-vdso
+          fi
+          BUILD="$REPO/runtime/spike/build/ish-ios-$SDK_NAME"
+          cmake -S "$REPO/runtime/spike/host/ish" -B "$BUILD" \
+            -DISH_SDK="$SDK_NAME" \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_OSX_SYSROOT="$SDK_NAME" \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET="$IPHONEOS_DEPLOYMENT_TARGET" \
+            -DISH_VDSO_ELF_DIR="$VDSO"
+          cmake --build "$BUILD" --target dsh_ish
       # This phase was previously only in the COMMITTED pbxproj, not here — so
       # `gen.sh` would have silently dropped it, and a regenerated project would
       # have shipped a Release build with no embedded official web client (the
@@ -131,6 +194,32 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike
         SWIFT_OBJC_BRIDGING_HEADER: App/Source/Bridge.h
         TARGETED_DEVICE_FAMILY: "1"
+        # The in-process Linux guest is an aarch64 HOST engine — its interpreter
+        # gadgets are hand-written aarch64 assembly and its guest is aarch64 —
+        # so an x86_64 simulator slice cannot exist. Without this exclusion a
+        # generic simulator build compiles both archs and the x86_64 link fails
+        # on the engine's symbols (an `-destination` naming one simulator still
+        # builds a single arch, which is why CI never sees it).
+        EXCLUDED_ARCHS[sdk=iphonesimulator*]: x86_64
+        # The engine's static libraries (BuildIshEngine above, one build dir per
+        # SDK) and the sqlite3 the guest's fake filesystem metadata uses — a
+        # system library on iOS, hence no path for it.
+        LIBRARY_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(SRCROOT)/../../runtime/spike/build/ish-ios-$(SDK_NAME)"
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-ldsh_ish"
+          - "-lishcore"
+          - "-lsqlite3"
+          # zlib and libresolv are the seam's own dependencies, not the
+          # engine's: dsh_ish_stage() inflates the pinned guest userland tarball
+          # with zlib and seeds the guest's /etc/resolv.conf from the HOST's
+          # resolvers with res_ninit (Darwin's res_9_ninit lives in libresolv).
+          # A static library does not carry its dependencies, so the consumer
+          # names them — build.sh does the same for the desktop CLI.
+          - "-lz"
+          - "-lresolv"
       # The Release log-strip flag (AGENTS.md constraint 5 / rules.md rule L4).
       # It lived ONLY in the committed pbxproj, so regenerating the project
       # silently dropped it and the strip became cosmetic — a release build with

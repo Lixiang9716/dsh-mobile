@@ -158,3 +158,28 @@ export declare function wasmRun(
   func: string,
   input?: string,
 ): Promise<{ result: number; output: string }>;
+
+// ---- 16 · emulated userland (v1.3.0) ------------------------------------
+// One program in the host's in-process emulated Linux userland: a userspace
+// interpreter reproduces the guest's instruction set and syscall surface inside
+// the app process (no child process, no second OS — D2). `(scope, path)` is the
+// authorized directory the program starts in; the host mounts that workspace
+// inside the guest, so a relative write is a file the session can read back.
+// `argv` is the program plus arguments, resolved INSIDE the guest (run a shell
+// line as ["/bin/sh", "-c", line]). A non-zero exit status is a result, not a
+// rejection; `timedOut` means the deadline killed the guest task; `truncated`
+// means the host's output cap was reached (the guest is drained, never blocked).
+// The guest's own I/O is NOT gated by other primitives' flags and cannot be
+// audited per call — see §4 "emulated userland" and §6.
+export declare function ishRun(
+  scope: ScopeHandle,
+  path: string,
+  argv: string[],
+  opts?: { timeoutMs?: number },
+): Promise<{
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+  timedOut: boolean;
+  truncated: boolean;
+}>;
