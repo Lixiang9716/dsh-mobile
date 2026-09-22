@@ -40,6 +40,12 @@ import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 // name}` and no default, so the namespace object IS the cordis plugin (it
 // carries the apply/inject/name/Config the kernel reads).
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
+// The outboard WebAssembly tool (contract v1.2.0). It is a staged system
+// plugin, not a vendored upstream package: the closure has no WebAssembly tool
+// to port, and an in-house implementation package is where a host-specific
+// capability belongs (D6) — `system-plugins/dsh-fs` beside it is the same
+// shape. Mounted after `tools`, which its `inject` waits for.
+import * as ShellWasm from 'system-plugins/dsh-shell-wasm/index.js';
 
 /** cordis logger records ride the unified sink as diagnostics (module prefix
  * distinguishes them from scenario events; they carry no scenario tag, so the
@@ -117,6 +123,7 @@ const mountSpine = async (ctx, identity) => {
   // registers into that service at apply time. `allowParallelInProgress:
   // false` is the mobile profile's shape — one agent, sequential work.
   await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
+  await ctx.plugin(ShellWasm);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {

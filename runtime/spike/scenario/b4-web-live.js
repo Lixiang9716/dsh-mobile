@@ -304,6 +304,39 @@ const probeFsPrimitives = async () => {
   log.debug('fs primitives probe', out);
 };
 
+
+/** TEMPORARY DIAGNOSTIC (removed before landing): the contract v1.2.0 `wasmRun`
+ * path end to end — a real WebAssembly module written into the app scope, then
+ * executed in-process, its output collected through the host-linked `dsh.emit`
+ * import. log.debug, so no canonical record is added. */
+const WASM_PROBE_MODULE = [0,97,115,109,1,0,0,0,1,12,2,96,2,127,127,0,96,2,127,127,1,127,2,12,1,3,100,115,104,4,101,109,105,116,0,0,3,2,1,1,5,3,1,0,1,7,16,2,6,109,101,109,111,114,121,2,0,3,114,117,110,0,1,10,12,1,10,0,32,0,32,1,16,0,32,1,11];
+
+const probeWasmRun = async () => {
+  const gw = await import('gateway.js');
+  const out = { stage: 'start' };
+  try {
+    await gw.fsMkdir('app', 'probe/wasm');
+    await gw.fsWrite('app', 'probe/wasm/echo.wasm',
+      Uint8Array.from(WASM_PROBE_MODULE));
+    out.module = 'written ' + WASM_PROBE_MODULE.length + ' bytes';
+    const run = await gw.wasmRun('app', 'probe/wasm/echo.wasm', 'run',
+      'hello from wasm');
+    out.run = 'result=' + run.result + ' output=' + JSON.stringify(run.output);
+    out.missingExport = await gw
+      .wasmRun('app', 'probe/wasm/echo.wasm', 'nope', '')
+      .then(() => 'no error', (error) => error.code + ': ' + error.message);
+    out.noModule = await gw
+      .wasmRun('app', 'probe/wasm/absent.wasm', 'run', '')
+      .then(() => 'no error', (error) => error.code + ': ' + error.message);
+  } catch (error) {
+    out.ok = false;
+    out.error = (error && error.code ? error.code : '?') + ': ' +
+      (error && error.message ? error.message : String(error));
+  }
+  out.stage = 'done';
+  log.debug('wasm probe', out);
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = await take('runtime.config');
@@ -311,6 +344,7 @@ const main = async () => {
 
   const ctx = await bootPhase(cfg, route);
   await probeFsPrimitives();
+  await probeWasmRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route);
   installRuntimeHalf(ctx, cfg, route);
