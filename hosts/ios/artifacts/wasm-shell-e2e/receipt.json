@@ -1,0 +1,23 @@
+{
+ "host": "iOS simulator dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+ "engine": "quickjs-ng + wasm3",
+ "engineVersion": "quickjs-ng 0.17.0 / wasm3 0.9.0 (both vendored, sha256-pinned)",
+ "phase": "D5/D9 — the WebAssembly seam (contract v1.2.0 `wasmRun`) and the shell executor built on it: the model-facing `shell` tool runs a command line in a WASM program from the workspace, interpreted IN-PROCESS (no subprocess, no thread — D2), and the official UI renders its output and exit status",
+ "launchConfiguration": "Release build (`dsh-ios`), plain launch: the official dist and the client bundles are embedded, the model endpoint is staged at Documents/profiles/default/llm/config.json, and the workspace is Documents/profiles/default/spike — the plugin writes its starter `echo.wasm` there on activation",
+ "runtime": "iOS 26.5",
+ "scenarios": [
+  {
+   "id": "b4.write.live",
+   "checker": "tools/e2e/scenarios/b4-write-live.json",
+   "events": 43,
+   "result": "pass",
+   "note": "the regression this rode in on: the drive still passes 43/43 in order with the shell plugin mounted, and `tools` is pinned at 2 (todo_write + shell)"
+  }
+ ],
+ "screenshots": [
+  "01-tool-call.png",
+  "02-keyboard-up.png",
+  "03-clean.png"
+ ],
+ "notes": "The screenshots are the acceptance: a real turn in which the model calls `shell { command: 'echo hello from wasm' }`, the module's dsh.emit output renders in a terminal card, and the exit status (15 — the starter module returns the emitted length) is reported. The model's own turn text observes that a Unix echo would have exited 0, which is the clearest evidence that a WASM program ran. logs.txt and scenario.jsonl are the b4 run's captures: this directory's claim is the screenshot E2E, and the log-based claim beside it is the regression."
+}
