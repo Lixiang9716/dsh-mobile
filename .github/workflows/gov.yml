@@ -35,6 +35,25 @@ jobs:
         # Pinned to the plane version (see .gov/manifest.json) — migrated
         # 0.37.1 → 0.45.0 deliberately: plane re-sealed, new templates adopted.
         run: pip install govrail==0.48.0
+      - name: Cache the vendored closure
+        # The closures gate byte-verifies the committed host copies against
+        # the canonical runtime/spike closure; the closure's vendored source
+        # trees are untracked by design (D6) and materialized by sha256-pinned
+        # ensure scripts — cached the same way the platform workflows do,
+        # keyed on the pin tables themselves.
+        uses: actions/cache@v4
+        with:
+          path: |
+            runtime/spike/vendor/quickjs-ng
+            runtime/spike/vendor/dsh
+            runtime/spike/vendor/npm
+          key: vendor-gov-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+      - name: Materialize the vendored closure
+        # Idempotent with the cache above; without it the closures gate (and
+        # its iOS regen leg) fail loud on absent sources instead of verifying.
+        run: |
+          runtime/spike/vendor/ensure.sh
+          runtime/spike/vendor/ensure-dsh.sh
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an
