@@ -16,6 +16,6 @@
   ],
   "checker": "tools/e2e/scenarios/m2-upstream-session.json",
   "events": 31,
-  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 c1d7ac78b472622e90f55920646678df)",
+  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 c41505c8e3960029af93a15fe64f087b)",
   "exitCode": 0
 }

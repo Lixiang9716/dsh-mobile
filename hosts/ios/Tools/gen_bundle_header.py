@@ -81,11 +81,13 @@ RESOURCES = [
     ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
     ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
     ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"),
+    ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
     ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"),
     ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
     ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
     ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
     ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
+    ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),
     ("npm_cordis_js",
      SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
     ("npm_cosmokit_js",
@@ -107,10 +109,6 @@ RESOURCES = [
      SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-loader@1.0.3" / "lib" / "index.js"),
     ("npm_plugin_include_js",
      SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-include@1.0.7" / "lib" / "index.js"),
-    ("npm_atomic_write_js",
-     SPIKE / "vendor" / "dsh" / "atomic-write@0.0.1-rc.1" / "lib" / "index.js"),
-    ("npm_home_paths_js",
-     SPIKE / "vendor" / "dsh" / "home-paths@0.0.1-rc.3" / "lib" / "index.js"),
     ("npm_js_yaml_mjs",
      SPIKE / "vendor" / "npm" / "js-yaml@4.1.0" / "dist" / "js-yaml.mjs"),
     # W-SESS spine closure (D9): the FULL upstream agent spine boots
@@ -126,6 +124,7 @@ RESOURCES = [
     # (`POST /api/session/prompt`) answered from the REAL spine — the write
     # adapter plus the scenario that boots the runtime composed with it.
     ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
+    ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "b4-web-live.js"),
@@ -160,10 +159,17 @@ TREES = [
      SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
     for pkg in [
         "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
-        "agent-presets",
+        "agent-presets", "atomic-write", "home-paths",
+        "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
     ]
+] + [
+    # the npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports
+    # vendor/npm/diff@9.0.0/libesm/index.js behind the bare specifier the
+    # vendored tool-fs imports for structuredPatch)
+    ("vendor/npm/diff@9.0.0/libesm",
+     SPIKE / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/

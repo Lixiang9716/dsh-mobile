@@ -32,7 +32,9 @@ die() { echo "::error::stage-spine-closure: $*" >&2; exit 1; }
 [ -d "$SPIKE/vendor/dsh/session@$VER/lib" ] ||
     die "runtime vendor closure missing — run runtime/spike/vendor/ensure-dsh.sh"
 
-# One vendored spine package: LICENSE + package.json + lib/** minus .d.ts.
+# One vendored spine package: LICENSE + package.json + lib/** minus .d.ts,
+# plus presets/** when the package carries it (agent-presets — the seeded
+# tree the presets service walks; without it the 预设 roster is empty).
 stage_pkg() {
     src=$1
     dst=$2
@@ -44,15 +46,48 @@ stage_pkg() {
         mkdir -p "$dst/$(dirname "$rel")"
         cp "$src/$rel" "$dst/$rel"
     done
+    if [ -d "$src/presets" ]; then
+        (cd "$src" && find presets -type f) | while IFS= read -r rel; do
+            mkdir -p "$dst/$(dirname "$rel")"
+            cp "$src/$rel" "$dst/$rel"
+        done
+    fi
 }
 
-# The iOS embedder's TREES list: the verbatim spine packages (D9).
+# The iOS embedder's TREES list: the verbatim spine packages (D9), the
+# Agent 预设 closure (2026-09-22 settings-surfaces leg), and the FILE-TOOLS
+# row (vendored fs-local backend + upstream file tools).
 for pkg in agent agent-loop brand llm sandbox scope session \
            session-projection settings system-prompt timeout tools \
-           typert-protocol util-values; do
+           typert-protocol util-values agent-presets atomic-write \
+           home-paths fs attachment fs-local tool-fs \
+           tool-str-replace-editor tool-todo; do
     say "staging vendor/dsh/$pkg@$VER"
     stage_pkg "$SPIKE/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"
 done
+
+# The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
+# libesm/index.js behind the bare specifier vendored tool-fs imports).
+# The Agent presets closure's npm faces (boot.js imports them statically:
+# the cordis Loader service + the include walker + js-yaml's ESM dist).
+say "staging presets-closure npm packages"
+mkdir -p "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib"
+cp "$SPIKE/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js" \
+   "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js"
+mkdir -p "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib"
+cp "$SPIKE/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js" \
+   "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js"
+mkdir -p "$ASSETS/vendor/npm/js-yaml@4.1.0/dist"
+cp "$SPIKE/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs" \
+   "$ASSETS/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
+
+say "staging vendor/npm/diff@9.0.0 (libesm)"
+mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm"
+(cd "$SPIKE/vendor/npm/diff@9.0.0/libesm" && find . -type f ! -name '*.d.ts') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/diff@9.0.0/libesm/$rel" "$ASSETS/vendor/npm/diff@9.0.0/libesm/$rel"
+    done
 
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
 ZOD_SRC=$SPIKE/vendor/npm/zod@4.4.3
@@ -64,14 +99,40 @@ cp "$ZOD_SRC"/v4/classic/*.js "$ZOD_DST/v4/classic/"
 cp "$ZOD_SRC"/v4/core/*.js "$ZOD_DST/v4/core/"
 cp "$ZOD_SRC"/v4/locales/*.js "$ZOD_DST/v4/locales/"
 
-# The spine boot layer (upstream adapters + the shims beyond the web-boot set).
-say "staging upstream boot layer"
-for f in boot.js llm-transport.js settings-memory.js; do
-    cp "$SPIKE/upstream/$f" "$ASSETS/upstream/$f"
+# The spine boot layer: EVERY upstream adapter + shim, mirrored wholesale —
+# per-file lists went stale twice (2026-09-22: a committed fs.js shim predat-
+# ing the FILE-TOOLS row's realpath/mountWorkspace, and gateway.js predating
+# wasmRun, both invisible until a fresh install booted the spine). The
+# directory mirror makes drift impossible by construction; the drift check
+# below compares every file.
+say "staging upstream boot layer (whole-dir mirror)"
+mkdir -p "$ASSETS/upstream/shims"
+find "$SPIKE/upstream" -maxdepth 1 -name '*.js' -type f | while IFS= read -r src; do
+    cp "$src" "$ASSETS/upstream/$(basename "$src")"
 done
-for f in async-hooks.js util.js util-types.js os.js process.js \
-         dsh-session-persistence.js; do
-    cp "$SPIKE/upstream/shims/$f" "$ASSETS/upstream/shims/$f"
+find "$SPIKE/upstream/shims" -name '*.js' -type f | while IFS= read -r src; do
+    cp "$src" "$ASSETS/upstream/shims/$(basename "$src")"
+done
+for f in gateway.js logger.js registry.js; do
+    cmp -s "$SPIKE/$f" "$ASSETS/$f" || cp "$SPIKE/$f" "$ASSETS/$f"
+done
+
+# The spike-root runtime files the boot graph imports (gateway.js grows
+# with the contract: the shell plugins import wasmRun/ishRun from it).
+for f in gateway.js logger.js registry.js; do
+    cmp -s "$SPIKE/$f" "$ASSETS/$f" || cp "$SPIKE/$f" "$ASSETS/$f"
+done
+
+# The system-plugins the boot's static graph imports (the two shell tools;
+# the three older plugins are committed in assets directly and refreshed
+# here too — byte-identical to runtime/spike, the single source).
+say "staging system-plugins"
+for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-subprocess-quickjs dsh-ui; do
+    mkdir -p "$ASSETS/system-plugins/$p"
+    for f in manifest.json index.js; do
+        cmp -s "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f" ||
+            cp "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f"
+    done
 done
 
 # The scenarios ride the same copy (assets stay byte-identical to the
@@ -91,7 +152,9 @@ trap 'rm -f "$DRIFT"' EXIT
 note_drift() { echo "$1" >> "$DRIFT"; }
 for pkg in agent agent-loop brand llm sandbox scope session \
            session-projection settings system-prompt timeout tools \
-           typert-protocol util-values; do
+           typert-protocol util-values agent-presets atomic-write \
+           home-paths fs attachment fs-local tool-fs \
+           tool-str-replace-editor tool-todo; do
     (cd "$SPIKE/vendor/dsh/$pkg@$VER" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r rel; do
         [ -f "$SPIKE/vendor/dsh/$pkg@$VER/$rel" ] || continue
@@ -99,15 +162,25 @@ for pkg in agent agent-loop brand llm sandbox scope session \
             note_drift "vendor/dsh/$pkg@$VER/$rel"
     done
 done
+(cd "$SPIKE/vendor/npm/diff@9.0.0/libesm" && find . -type f ! -name '*.d.ts') |
+    while IFS= read -r rel; do
+        cmp -s "$SPIKE/vendor/npm/diff@9.0.0/libesm/$rel" "$ASSETS/vendor/npm/diff@9.0.0/libesm/$rel" ||
+            note_drift "npm/diff@9.0.0/libesm/$rel"
+    done
 (cd "$ZOD_SRC" && find v4/classic v4/core v4/locales -name '*.js'; echo index.js) |
     while IFS= read -r rel; do
         cmp -s "$ZOD_SRC/$rel" "$ZOD_DST/$rel" || note_drift "zod/$rel"
     done
-for f in boot.js llm-transport.js settings-memory.js; do
-    cmp -s "$SPIKE/upstream/$f" "$ASSETS/upstream/$f" || note_drift "upstream/$f"
-done
-for f in async-hooks.js util.js util-types.js os.js process.js dsh-session-persistence.js; do
-    cmp -s "$SPIKE/upstream/shims/$f" "$ASSETS/upstream/shims/$f" || note_drift "shims/$f"
+(cd "$SPIKE/upstream" && find . -maxdepth 1 -name '*.js' -type f) |
+    while IFS= read -r rel; do
+        cmp -s "$SPIKE/upstream/$rel" "$ASSETS/upstream/$rel" || note_drift "upstream/$rel"
+    done
+(cd "$SPIKE/upstream/shims" && find . -name '*.js' -type f) |
+    while IFS= read -r rel; do
+        cmp -s "$SPIKE/upstream/shims/$rel" "$ASSETS/upstream/shims/$rel" || note_drift "shims/$rel"
+    done
+for f in gateway.js logger.js registry.js; do
+    cmp -s "$SPIKE/$f" "$ASSETS/$f" || note_drift "$f"
 done
 if [ -s "$DRIFT" ]; then
     while IFS= read -r rel; do echo "::error::stage drift: $rel"; done < "$DRIFT"

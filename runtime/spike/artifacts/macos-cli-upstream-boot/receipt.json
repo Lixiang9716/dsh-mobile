@@ -13,6 +13,6 @@
     "the /api + mux claims answer from the REAL vendored services: session.list from the session store, the session/journal stream in the Remote-journal envelope (baseline + live change frames + cancel)"
   ],
   "checker": "tools/e2e/scenarios/m2-upstream-boot.json",
-  "events": 70,
+  "events": 74,
   "exitCode": 0
 }

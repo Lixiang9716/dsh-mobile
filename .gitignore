@@ -122,6 +122,7 @@ __pycache__/
 docs/.decision.lock
 runtime/spike/logs-upstream.txt
 runtime/spike/logs-upstream-boot.txt
+runtime/spike/logs-settings-surfaces.txt
 
 # D9 W-HARMONY3: the pinned zod classic closure inside the harmony rawfile
 # spine closure. VERBATIM upstream bytes (sha256-pinned by

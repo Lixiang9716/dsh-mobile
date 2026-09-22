@@ -28,12 +28,29 @@ import {
   makeDescribeSettings,
   makeSettingsWrite,
 } from 'upstream/web-write-settings.js';
+import { makePluginInventoryHandler, makePluginManagerHandlers } from 'upstream/web-write-inventory.js';
 
 /** The /api endpoints this surface claims (the generated TypertRemoteMap
- * spellings; `session.list` is the b3 probe's dot alias). */
+ * spellings; `session.list` is the b3 probe's dot alias). The settings
+ * legs: the 预设 panel's roster (agentPresets/*), the 插件 list's read-only
+ * snapshot (pluginInventory/list), and the settings namespaces. */
 export const WRITE_ENDPOINTS = [
   'session.list', 'session/list', 'session/create', 'session/prompt',
   'settings/describe', 'settings/update', 'settings/mutate',
+  'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
+  'agentPresets/deletePreset', 'agentPresets/select',
+  'pluginInventory/list',
+  // The settings 内置插件 section reads the manager's LIST legs directly
+  // (no managementAvailable gate there — measured on device); both answer
+  // READ-ONLY rows (`readOnlyReason: 'management-required'`). The WRITE
+  // legs stay unclaimed: management is desktop machinery.
+  'pluginManager/listBundles', 'pluginManager/listPlugins',
+  // The settings 内置插件 SHELL's own loads: the subagent model-selection
+  // card reads the model catalog and the credential state (measured on
+  // device: both answering unavailable left the shell's generic
+  // 暂时无法读取插件 banner up even with the inventory itself healthy).
+  // Both answer the honest single-route facts of this host.
+  'credentials/describe', 'session/modelCatalog',
 ];
 
 /** The mux stream endpoints this surface attaches. */
@@ -45,10 +62,20 @@ export const WRITE_STREAMS = [
 export const remoteError = (code, message, details = {}) => (
   { remote: true, code, message, details });
 
-/** Map one thrown value onto the wire error triple (RemoteError pass-through). */
+/** Map one thrown value onto the wire error triple. Two pass-throughs: this
+ * adapter's own `remoteError` shape, and the VENDORED upstream RemoteError
+ * (identified structurally by its `isDSHRemoteError` marker — the same
+ * cross-realm identification upstream's own gateway uses), so a refusal
+ * thrown by the real service (agent-preset/read-only, agent-preset/not-
+ * found, ...) reaches the page with its real code, never flattened into a
+ * generic unavailable. */
 export const errorOf = (error) => {
   if (error && typeof error === 'object' && error.remote === true) {
     return { code: error.code, message: error.message, details: error.details };
+  }
+  if (error && typeof error === 'object' && error.isDSHRemoteError === true
+    && typeof error.code === 'string') {
+    return { code: error.code, message: error.message, details: error.details ?? {} };
   }
   return {
     code: 'gateway/unavailable',
@@ -171,25 +198,36 @@ const makeCreateSession = (ctx, deps) => async (args) => {
 /** The REAL prompt admission (upstream commands.prompt, narrowed): admit
  * into the agent inbox and return — the turn streams via the journal. */
 /** The agentPresets/* handlers: thin forwarders onto the service boot.js
- * mounted from @deepseek-ai/dsh-agent-presets. Method names follow the
- * package's own @Remote exports (remoteExportList/read/copy/deletePreset/
- * select); the panel's wire names are agentPresets/list, /read, /copy,
- * /deletePreset, /select. */
+ * mounted from @deepseek-ai/dsh-agent-presets. Wire names, argument names,
+ * and the IMPLEMENTATION each wire method maps to follow the package's own
+ * @Remote descriptors (dsh-api-remotes): list→remoteExportList,
+ * read→readDocument, copy→remoteExportCopy, deletePreset→remoteExportDelete,
+ * select→select — and select's `agent` parameter arrives on the wire as an
+ * agentId, which the host resolves to the LIVE agent before invoking (the
+ * same resolution commands.prompt does). The panel's wire names are
+ * agentPresets/list, /read, /copy, /deletePreset, /select. */
 const makeAgentPresetHandlers = (ctx) => {
   const call = async (method, args) => {
     const service = ctx.get('agentPresets');
     if (service === undefined) {
       throw remoteError('gateway/unavailable', 'agentPresets service is not mounted', {});
     }
-    if (method === 'list') return service.remoteExportList();
     return service[method](...args);
   };
   return {
-    'agentPresets/list': (args) => call('list', []),
-    'agentPresets/read': (args) => call('read', [args?.id ?? args?.presetId]),
-    'agentPresets/copy': (args) => call('copy', [args?.from, args?.id, args?.name]),
-    'agentPresets/deletePreset': (args) => call('deletePreset', [args?.id]),
-    'agentPresets/select': (args) => call('select', [args?.sessionId, args?.staged]),
+    'agentPresets/list': () => call('remoteExportList', []),
+    'agentPresets/read': (args) => call('readDocument', [args?.agentPreset]),
+    'agentPresets/copy': (args) => call('remoteExportCopy', [args?.from, args?.id, args?.name]),
+    'agentPresets/deletePreset': (args) => call('remoteExportDelete', [args?.id]),
+    'agentPresets/select': async (args) => {
+      const agent = ctx.agents.get(args?.agent);
+      if (agent === undefined) {
+        throw remoteError('session/not-found',
+          `session ${JSON.stringify(args?.agent ?? null)} is not attached to the mobile runtime`,
+          { sessionId: args?.agent ?? null });
+      }
+      return call('select', [agent, args?.agentPreset]);
+    },
   };
 };
 
@@ -271,29 +309,45 @@ const makePromptSession = (ctx) => async (args) => {
 
 /**
  * The write surface over one booted spine ctx.
- * @param ctx - the spine context (ctx.sessions / agents / settings).
+ * @param ctx - the spine context (ctx.sessions / agents / settings /
+ *   loader / agentPresets).
  * @param post - the bus post fn (mux frames toward the carrier).
  * @param options.root - the profile container root: the seeded workspace's
  *   REAL directory and the default cwd for workspace-less creates.
  * @param options.provider, options.model - the llm route new agents select.
+ * @param options.spine - () => the mounted runtime spine as plugin-inventory
+ *   rows (boot.js `spineInventory`; the caller wires it so this adapter never
+ *   imports boot.js — the bare compose-only embed does not carry the spine).
  * @returns {api, openStream, dispose}
  */
-export const createWriteSurface = (ctx, post, options) => {
-  const root = options.root;
-  if (typeof root !== 'string' || !root.startsWith('/')) {
-    throw new Error(
-      `web-write: profile container root not granted: ${JSON.stringify(root)}`);
-  }
-  const seeded = seedWorkspace(root);
-  const workspaces = new Map([[seeded.workspaceId, seeded]]);
-  const streams = createFollowStreams(ctx, post, root, workspaces);
-  const ensureNamespaces = makeNamespaceGuard(ctx);
-  const deps = {
-    streams, root, workspaces, seeded,
-    llmRoute: { provider: options.provider, model: options.model },
-  };
-  return {
-    api: {
+
+/** The settings 内置插件 SHELL's loads, from the boot's llm route: ONE
+ * provider with ONE configured model (the staged credential). The catalog's
+ * `default` IS the route the agent loop uses; nothing is invented.
+ * credentials/set stays unclaimed (the credential file is the user's staged
+ * profile, not writable through the wire). */
+const shellLoadHandlers = (llmRoute) => ({
+  'credentials/describe': async () => ({
+    [llmRoute.provider]: {
+      configured: true,
+      source: 'staged profile credential (profiles/default/llm)',
+      writable: false,
+    },
+  }),
+  'session/modelCatalog': async () => ({
+    default: { provider: llmRoute.provider, model: llmRoute.model },
+    routableProviders: [llmRoute.provider],
+    groups: [{
+      id: llmRoute.provider,
+      name: llmRoute.provider,
+      models: [{ id: llmRoute.model, name: llmRoute.model }],
+    }],
+  }),
+});
+
+/** The /api handler map (split from createWriteSurface at the file-size
+ * gate): every claimed endpoint's handler, keyed by wire name. */
+const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       'session.list': makeListSessions(ctx),
       'session/list': makeListSessions(ctx),
       'session/create': makeCreateSession(ctx, deps),
@@ -309,13 +363,48 @@ export const createWriteSurface = (ctx, post, options) => {
       // presets service is the REAL vendored @deepseek-ai/dsh-agent-presets,
       // mounted by boot.js — these handlers forward, they do not reimplement.
       ...makeAgentPresetHandlers(ctx),
+      // The settings 插件 list: an honest read-only snapshot of the mounted
+      // spine + the staged client bundles + the Agent 预设 compositions
+      // (upstream/web-write-inventory.js). managementAvailable is false —
+      // the plugin-manager's write machinery stays unclaimed (fail loud).
+      'pluginInventory/list': makePluginInventoryHandler(ctx, {
+        spine: options.spine,
+        stagedPlugins: options.stagedPlugins,
+      }),
+      // The manager's LIST legs: the same snapshot as read-only rows (the
+      // wire's own `readOnlyReason: 'management-required'` member). Writes
+      // stay unclaimed (fail loud).
+      ...Object.fromEntries(Object.entries(
+        makePluginManagerHandlers(ctx, {
+          spine: options.spine,
+          stagedPlugins: options.stagedPlugins,
+        }),
+      ).map(([name, handler]) => [`pluginManager/${name}`, handler])),
+      ...shellLoadHandlers(deps.llmRoute),
       // The desktop's endpointPresets service is NOT public (no npm package —
       // unlike agentPresets). The platform fact this host can honestly serve:
       // exactly ONE model endpoint, the user's staged credential (its base
       // URL, model and label — never the key). Reads answer from it; writes
       // fail with the upstream RemoteError shape naming the limitation.
       ...makeEndpointPresetAdapter(options),
-    },
+    });
+
+export const createWriteSurface = (ctx, post, options) => {
+  const root = options.root;
+  if (typeof root !== 'string' || !root.startsWith('/')) {
+    throw new Error(
+      `web-write: profile container root not granted: ${JSON.stringify(root)}`);
+  }
+  const seeded = seedWorkspace(root);
+  const workspaces = new Map([[seeded.workspaceId, seeded]]);
+  const streams = createFollowStreams(ctx, post, root, workspaces);
+  const ensureNamespaces = makeNamespaceGuard(ctx);
+  const deps = {
+    streams, root, workspaces, seeded,
+    llmRoute: { provider: options.provider, model: options.model },
+  };
+  return {
+    api: buildApiMap(ctx, deps, options, ensureNamespaces),
     openStream: streams.openStream,
     dispose: streams.dispose,
   };

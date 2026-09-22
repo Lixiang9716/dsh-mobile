@@ -74,7 +74,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,
@@ -150,7 +150,7 @@
     {
       "event": "web.boot.applied",
       "match": {
-        "rows": 5,
+        "rows": 6,
         "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
       }
     },
@@ -174,7 +174,8 @@
     {
       "event": "index.rendered",
       "match": {
-        "rows": 5
+        "rows": 6,
+        "bytes": 31299
       }
     },
     {
@@ -286,7 +287,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 4,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,

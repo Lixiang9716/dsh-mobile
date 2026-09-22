@@ -81,6 +81,59 @@ export const fsScope = {
   resolve: async (ref) => await call('fsScope.resolve', { ref }),
 };
 
+// ---- filesystem additions (contract v1.1.0) -----------------------------
+// What the upstream file service (@deepseek-ai/dsh-fs-local) needs on top of
+// read/write: stat and list to resolve a target, mkdir + rename for its
+// atomic-write path, remove for cleanup. A host that does not implement one
+// of these answers `unavailable`, and the caller must treat that as a
+// capability gap rather than an error to retry (contract/primitives.md §4).
+
+/** `{ kind: "file" | "dir" | "other", size, mtime }`; a missing path is `io`. */
+export const fsStat = async (scope, path) => await call('fsStat', { scope, path });
+
+/** One directory level, sorted by name: `{ entries: [{ name, kind }] }`. */
+export const fsList = async (scope, path) => await call('fsList', { scope, path });
+
+/** Create a directory and any missing parents (`mkdir -p` by default). */
+export const fsMkdir = async (scope, path, opts = {}) =>
+  await call('fsMkdir', { scope, path, existing: opts.existing ?? 'ok' });
+
+/** Remove a file, or a tree with `{ recursive: true }`. */
+export const fsRemove = async (scope, path, opts = {}) => await call('fsRemove', {
+  scope, path, recursive: opts.recursive ?? false, missing: opts.missing ?? 'ok',
+});
+
+/** Move within the scope; an existing destination is replaced (POSIX rename). */
+export const fsRename = async (scope, from, to) =>
+  await call('fsRename', { scope, from, to });
+
+// ---- wasm (contract v1.2.0) ---------------------------------------------
+// One export of one module, executed IN-PROCESS by the host's interpreter.
+// iOS forbids JIT and this architecture refuses subprocesses (D2), so the
+// alternative is no WebAssembly at all rather than a child process. The module
+// talks back through the imported function `dsh.emit(ptr, len)`.
+
+/** `{ result, output }`; a trap or a missing export is an `io` rejection. */
+export const wasmRun = async (scope, path, func, input = '') =>
+  await call('wasmRun', { scope, path, func, input });
+
+// ---- ish (contract v1.3.0) ----------------------------------------------
+// One program in the host's IN-PROCESS Linux userland. The guest is emulated
+// instruction by instruction inside the app process (no child process, no
+// second OS — D2), and (scope, path) names the directory the program starts in:
+// the authorized workspace is mounted inside the guest, so a relative path the
+// guest writes is a file the session sees.
+
+/** `{ exitCode, stdout, stderr, timedOut, truncated }`. A non-zero exit status
+ * is a result, not a rejection; only a command the guest cannot start rejects. */
+export const ishRun = async (scope, path, argv, opts) =>
+  await call('ishRun', {
+    scope,
+    path,
+    argv: Array.isArray(argv) ? argv.map((item) => String(item)) : [],
+    timeoutMs: Number.isFinite(opts?.timeoutMs) ? opts.timeoutMs : 0,
+  });
+
 // ---- httpFetch (streaming response body) ---------------------------------
 
 /** In-flight response-body streams keyed by bodyId. */

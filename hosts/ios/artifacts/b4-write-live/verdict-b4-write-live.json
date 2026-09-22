@@ -1,8 +1,8 @@
 {
   "scenario": "b4.write.live",
   "pass": true,
-  "expected": 43,
-  "logged": 43,
+  "expected": 46,
+  "logged": 46,
   "failures": [],
   "parseErrors": []
 }

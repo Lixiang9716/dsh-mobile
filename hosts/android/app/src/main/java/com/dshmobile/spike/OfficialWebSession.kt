@@ -338,39 +338,13 @@ class OfficialWebSession private constructor(
     }
 
     /** The injection rows the index renders: the runtime's `web.boot` rows
-     * once received (plus the recovery global), else none (the origin never
-     * opens before the runtime wire lands). Runtime thread; called per
-     * render. Mirrors OfficialWebRuntime.runtimeRows. */
+     * once received (plus the recovery global and the settings phone
+     * adaptation), else none (the origin never opens before the runtime wire
+     * lands). Runtime thread; called per render. The row mapping lives in
+     * CarrierIndexRows — the one seat all three sessions share. */
     private fun runtimeRows(): List<CarrierIndexInjection> {
         val rows = webBootRows ?: return emptyList()
-        val out = ArrayList<CarrierIndexInjection>()
-        for (i in 0 until rows.length()) {
-            injectionRow(rows.getJSONObject(i))?.let { out.add(it) }
-        }
-        out.add(
-            CarrierIndexInjection.global(
-                "__DSH_CONNECTION_RECOVERY__",
-                CarrierIndexInjection.jsonGlobalValue(CarrierBootConfig.recoveryDefaults),
-            ),
-        )
-        return out
-    }
-
-    /** One upstream row shape → the carrier's typed injection row. */
-    private fun injectionRow(row: JSONObject): CarrierIndexInjection? = when (row.optString("kind")) {
-        "script" -> row.optString("text").takeIf { it.isNotEmpty() }
-            ?.let { CarrierIndexInjection.script(it) }
-        "script-src" -> row.optString("src").takeIf { it.isNotEmpty() }
-            ?.let { CarrierIndexInjection.scriptSrc(it) }
-        "script-preload" -> row.optString("src").takeIf { it.isNotEmpty() }
-            ?.let { CarrierIndexInjection.scriptPreload(it) }
-        "global" -> {
-            val name = row.optString("name")
-            val value = row.optString("value")
-            if (name.isEmpty() || value.isEmpty()) null
-            else CarrierIndexInjection.global(name, value)
-        }
-        else -> null
+        return CarrierIndexRows.runtimeRows(rows)
     }
 
     /** Carrier → runtime: one bus delivery (any thread; hops onto the runtime

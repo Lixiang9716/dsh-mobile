@@ -227,16 +227,17 @@ class SessionWriteSession private constructor(private val activity: Activity) {
             "b-android-write-live", runtimeBridge,
         )
         if (handle == 0L) throw IllegalStateException("write-live begin: ${SpikeRuntime.m4LastError()}")
-        deliverRuntime(
-            JSONObject()
-                .put("type", "runtime.config")
-                .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
-                .put("apiKey", MockLlmRoute.KEY)
-                .put("containerRoot", bundle.absolutePath),
-        )
+        val config = JSONObject()
+            .put("type", "runtime.config")
+            .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
+            .put("apiKey", MockLlmRoute.KEY)
+            .put("containerRoot", bundle.absolutePath)
+        deliverRuntime(config)
         deliverRuntime(
             JSONObject().put("type", "web.plugins").put("plugins", pluginsDelivery),
         )
+        // The Agent presets seed (T-0035).
+        AgentPresetsSeed.build(bundle)?.let { deliverRuntime(it) }
     }
 
     /** The M4Bridge the C host calls back (runtime thread): gateway calls
@@ -489,7 +490,6 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         val verdict = line
         activity.runOnUiThread { onFinished?.invoke(verdict) }
     }
-
     private fun randomToken(): String = java.security.SecureRandom()
         .run { ByteArray(16).also { nextBytes(it) } }.joinToString("") { "%02x".format(it) }
 

@@ -246,7 +246,8 @@ final class OfficialWebRuntime {
     private var defaultComboURL = ""
 
     /// The injection rows the index renders: the runtime's `web.boot` rows
-    /// once received (plus the recovery global), else the carrier defaults.
+    /// once received (plus the recovery global and the settings phone
+    /// adaptation), else the carrier defaults.
     private func runtimeRows() -> [CarrierIndexInjection] {
         guard let rows = webBootRows else { return [] }
         var out = rows.compactMap { Self.injectionRow($0) }
@@ -255,10 +256,13 @@ final class OfficialWebRuntime {
             value: CarrierIndexInjection.jsonGlobalValue(
                 "{\"backoffBaseMs\":500,\"backoffFactor\":2,\"backoffMaxMs\":10000,"
                     + "\"generationReadyWarnMs\":3000,\"generationReadyTimeoutMs\":15000}"))))
+        out.append(CarrierBootConfig.settingsPhoneAdaptation)
         return out
     }
 
-    /// One upstream row shape → the carrier's typed injection row.
+    /// One upstream row shape → the carrier's typed injection row. An unknown
+    /// row kind is contract drift (§1.5 names the kinds) and aborts with the
+    /// offending name (rule 5); a known kind with a missing field maps to nil.
     static func injectionRow(_ row: [String: Any]) -> CarrierIndexInjection? {
         switch row["kind"] as? String {
         case "script":
@@ -270,12 +274,15 @@ final class OfficialWebRuntime {
         case "script-preload":
             guard let src = row["src"] as? String else { return nil }
             return CarrierIndexInjection(kind: .scriptPreload(src: src))
+        case "style":
+            guard let text = row["text"] as? String else { return nil }
+            return CarrierIndexInjection(kind: .style(text: text))
         case "global":
             guard let name = row["name"] as? String, let value = row["value"] as? String
             else { return nil }
             return CarrierIndexInjection(kind: .global(name: name, value: value))
-        default:
-            return nil
+        case let kind:
+            preconditionFailure("official-web: unknown web.boot row kind: \(kind ?? "nil")")
         }
     }
 

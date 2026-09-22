@@ -57,6 +57,14 @@ REPEAT=tools/e2e/testdata/m2-llm-repeat.json
 expect_pass "$REPEAT" "$TD/m2-llm-repeat.positive.txt"
 expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-zero.txt" 1
 expect_fail_at "$REPEAT" "$TD/m2-llm-repeat.negative-extra.txt" none
+# order:"any" expectations (records whose position races other recorded
+# events, e.g. the b4 journal attach among the page's concurrent RPC
+# answers): a mid-burst record is claimed wherever it sits; a MISSING record
+# fails at the any-row; a DUPLICATE leaves one as extra.
+ANY=tools/e2e/testdata/order-any.json
+expect_pass "$ANY" "$TD/order-any.positive.txt"
+expect_fail_at "$ANY" "$TD/order-any.negative-missing.txt" -1
+expect_fail_at "$ANY" "$TD/order-any.negative-extra.txt" 2
 
 if [ "$FAILURES" -gt 0 ]; then
   echo "selftest: $FAILURES failure(s)"; exit 1

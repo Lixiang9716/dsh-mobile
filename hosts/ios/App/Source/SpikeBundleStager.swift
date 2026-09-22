@@ -113,10 +113,8 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_npm_plugin_loader_js), under: root)
         try write("vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js",
                   data: resData(dsh_spike_res_npm_plugin_include_js), under: root)
-        try write("vendor/dsh/atomic-write@0.0.1-rc.1/lib/index.js",
-                  data: resData(dsh_spike_res_npm_atomic_write_js), under: root)
-        try write("vendor/dsh/home-paths@0.0.1-rc.3/lib/index.js",
-                  data: resData(dsh_spike_res_npm_home_paths_js), under: root)
+        // atomic-write / home-paths moved to the shared 0.1.6-alpha.2 stream
+        // (2026-09-22 re-pin) and now stage through the spine-tree embed.
         try write("vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs",
                   data: resData(dsh_spike_res_npm_js_yaml_mjs), under: root)
     }
@@ -179,10 +177,20 @@ enum SpikeBundleStager {
         // The W-RPC write surface (b4): the composer-send adapter + scenario.
         try write("upstream/web-write.js",
                   data: resData(dsh_spike_res_upstream_web_write_js), under: root)
+        try write("upstream/web-write-inventory.js",
+                  data: resData(dsh_spike_res_upstream_web_write_inventory_js), under: root)
         try write("upstream/web-write-streams.js",
                   data: resData(dsh_spike_res_upstream_web_write_streams_js), under: root)
         try write("upstream/web-write-settings.js",
                   data: resData(dsh_spike_res_upstream_web_write_settings_js), under: root)
+        // The npm bridge shim registers bare `diff` before the file tools
+        // resolve it (upstream/boot.js's FILE-TOOLS row).
+        try write("upstream/shims/npm-bridges.js",
+                  data: resData(dsh_spike_res_shims_npm_bridges_js), under: root)
+        // The writable workspace VFS half of the fs shim (the FILE-TOOLS
+        // row's world; split from fs.js at the file-size gate).
+        try write("upstream/shims/fs-workspace.js",
+                  data: resData(dsh_spike_res_shims_fs_workspace_js), under: root)
         try write("scenario/b4-web-live.js",
                   data: resData(dsh_spike_res_scenario_b4_web_live_js), under: root)
         try write("upstream/shims/async-hooks.js",

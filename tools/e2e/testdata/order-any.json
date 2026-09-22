@@ -1,0 +1,39 @@
+{
+ "scenario": "order-any.fixture",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  {
+   "event": "burst.start",
+   "match": {
+    "n": 1
+   }
+  },
+  {
+   "event": "burst.rpc",
+   "match": {
+    "id": "a"
+   }
+  },
+  {
+   "event": "attach.frame",
+   "order": "any",
+   "match": {
+    "stream": "journal"
+   }
+  },
+  {
+   "event": "burst.rpc",
+   "match": {
+    "id": "b"
+   }
+  },
+  {
+   "event": "burst.done",
+   "match": {
+    "n": 1
+   }
+  }
+ ]
+}

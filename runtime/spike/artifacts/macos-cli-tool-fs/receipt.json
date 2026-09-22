@@ -1,0 +1,14 @@
+{
+  "host": "darwin-cli",
+  "engine": "quickjs-ng 0.17.0",
+  "scenario": "tool.fs",
+  "proves": [
+    "the dsh-desktop FILE-TOOLS row mounts in the product boot (upstream/boot.js mountSpine): the vendored fs-local backend as the ctx.fs service over one in-memory workspace world pinned to the container cwd",
+    "the upstream file tools register into the REAL ToolRuntime: read / write / edit (+read_image when an attachments service exists) and str_replace_editor",
+    "create/read/write/edit/view/str_replace all execute end-to-end through the REAL tool dispatch, and a path outside the workspace root refuses with the upstream boundary error",
+    "the boot-owned mount and the probe's assertions are one-to-one expected-vs-logged (scenario tool.fs)"
+  ],
+  "events": 15,
+  "scenarioJsonlMd5": "7f06a604d5dbe9217fb281230b65e6df",
+  "exitCode": 0
+}

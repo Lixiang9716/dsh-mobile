@@ -25,7 +25,7 @@
  *                    mux.item | mux.error | mux.end
  */
 import { createLogger } from 'logger.js';
-import { bootUpstream } from 'upstream/boot.js';
+import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 
@@ -107,7 +107,13 @@ globalThis.__dshBusOnMessage = (line) => {
   queue.push(msg);
   wake?.();
 };
-const post = (msg) => globalThis.__dshBusPost?.(JSON.stringify(msg));
+/** All posted bus frames, in order — the settings-surface probes assert on
+ * the api.respond frames (the exact wire the carrier hands the page). */
+const posted = [];
+const post = (msg) => {
+  posted.push(msg);
+  globalThis.__dshBusPost?.(JSON.stringify(msg));
+};
 
 /** Wait for (and remove) the next delivery of one type. */
 const take = async (type) => {
@@ -227,7 +233,13 @@ const installRuntimeHalf = (ctx, cfg, route) => {
   };
   const runtime = createWebBootRuntime({
     ctx, post,
-    write: { root: cfg.containerRoot, provider: route.provider, model: route.model },
+    write: {
+      root: cfg.containerRoot,
+      provider: route.provider,
+      model: route.model,
+      // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
+      spine: () => spineInventory(ctx),
+    },
   });
   const busHandler = (msg) => {
     const outcome = runtime.deliver(msg);
@@ -249,6 +261,119 @@ const installRuntimeHalf = (ctx, cfg, route) => {
   dispatch = busHandler;
   for (const msg of queue.splice(0)) busHandler(msg);
 };
+
+/** The settings-surface probes (预设 roster + 插件 inventory), driven at the
+ * same wire boundary the page uses: a synthesized `api.request` answered by
+ * the resident runtime half, the api.respond asserted on the bus frames.
+ * Runs BEFORE the page loads — the record order is deterministic (page
+ * traffic cannot interleave). The 插件 snapshot must be the honest read-only
+ * one (managementAvailable false), and a plugin-manager write endpoint must
+ * stay UNCLAIMED (the carrier's structured unimplemented, not a handler). */
+const SETTINGS_PROBES = [
+  { rpcId: 'probe/agentPresets-list-1', endpoint: 'agentPresets/list' },
+  { rpcId: 'probe/pluginInventory-list-1', endpoint: 'pluginInventory/list' },
+  { rpcId: 'probe/pluginManager-listBundles-1', endpoint: 'pluginManager/listBundles' },
+];
+
+const awaitRespond = async (rpcId) => {
+  let guard = 0;
+  while (!posted.some((f) => f.type === 'api.respond' && f.rpcId === rpcId) && guard++ < 10000) {
+    await Promise.resolve();
+  }
+  const respond = posted.find((f) => f.type === 'api.respond' && f.rpcId === rpcId);
+  demand(respond !== undefined, `no api.respond for the ${rpcId} probe`);
+  return respond.result;
+};
+
+const probeSettingsRoster = async () => {
+  log.debug('settings probes begin', {});
+  for (const { rpcId, endpoint } of SETTINGS_PROBES) {
+    dispatch({ type: 'api.request', rpcId, endpoint, payload: { args: {} } });
+  }
+  // 预设 roster: the REAL vendored service's answer over the wire.
+  const roster = (await awaitRespond('probe/agentPresets-list-1'));
+  demand(roster.ok === true,
+    `agentPresets/list did not answer ok: ${JSON.stringify(roster.error ?? roster)}`);
+  const presets = roster.value.presets ?? [];
+  const ids = presets.map((p) => p.id);
+  demand(ids.length >= 1, 'the preset roster is empty');
+  emit('settings.preset.roster', {
+    presets: ids,
+    default: presets.find((p) => p.isDefault === true)?.id ?? null,
+    authorable: roster.value.authorable === true,
+    modeSelectionEnabled: roster.value.modeSelectionEnabled === true,
+    healthy: presets.filter((p) => p.broken === undefined).length,
+  });
+};
+
+/** The 插件 inventory + manager-legs probes and the probe-done bus line
+ * (split from probeSettingsSurfaces at the file-size gate). */
+
+/** The manager LIST-legs probe (split out at the file-size gate). */
+const probeManagerLegs = async () => {
+  // The manager LIST legs answer READ-ONLY rows (the wire's own
+  // `readOnlyReason: 'management-required'`); the write legs stay unclaimed.
+  const manager = await awaitRespond('probe/pluginManager-listBundles-1');
+  demand(manager.ok === true,
+    `pluginManager/listBundles did not answer ok: ${JSON.stringify(manager.error ?? manager)}`);
+  const bundles = manager.value ?? [];
+  demand(bundles.length >= 1 && bundles.every((b) => b.readOnlyReason === 'management-required'
+    && Array.isArray(b.rows) && b.rows.length > 0),
+    `the read-only bundles are misshaped: ${JSON.stringify(bundles).slice(0, 160)}`);
+  emit('settings.pluginManager.readonly', {
+    bundles: bundles.length,
+    bundleRows: bundles.reduce((sum, b) => sum + b.rows.length, 0),
+    readOnlyReason: 'management-required',
+  });
+  // Tell the carrier seat the probes are done: it gates the page open on
+  // this line, so the settings.* records are always on the log BEFORE the
+  // page-serve records — the manifest order is deterministic, never a race
+  // (measured 2026-09-22: without the gate the two orderings alternated
+  // between runs).
+  post({ type: 'settings.probes.done' });
+  log.debug('settings probes done', {});
+};
+
+const probeSettingsPlugins = async () => {
+  // 插件 inventory: the honest read-only snapshot (spine + staged bundles +
+  // the 预设 compositions).
+  const inventory = await awaitRespond('probe/pluginInventory-list-1');
+  demand(inventory.ok === true,
+    `pluginInventory/list did not answer ok: ${JSON.stringify(inventory.error ?? inventory)}`);
+  const snapshot = inventory.value;
+  demand(snapshot.managementAvailable === false,
+    'the plugin inventory must be a read-only snapshot (managementAvailable false)');
+  demand(Array.isArray(snapshot.entries) && snapshot.entries.length > 0,
+    'the plugin inventory answered no entries');
+  demand(Array.isArray(snapshot.agentPresets) && snapshot.agentPresets.length > 0,
+    'the plugin inventory answered no agentPresets plane');
+  const everyRowWired = snapshot.entries.every((e) => typeof e.entryId === 'string'
+    && typeof e.moduleName === 'string' && typeof e.enabled === 'boolean'
+    && e.fiberPhase !== undefined);
+  demand(everyRowWired, 'an inventory entry is missing its wire fields');
+  const stagedIds = snapshot.entries.map((e) => e.entryId)
+    .filter((id) => id.startsWith('@deepseek-ai/dsh-client-'));
+  demand(stagedIds.length > 0,
+    'the plugin inventory does not cover the staged client bundles');
+  emit('settings.plugin.inventory', {
+    managementAvailable: false,
+    entries: snapshot.entries.length,
+    clientEntries: stagedIds.length,
+    presets: snapshot.agentPresets.length,
+    presetRows: snapshot.agentPresets.reduce((sum, p) => sum + (p.rows?.length ?? 0), 0),
+    spineSample: snapshot.entries
+      .filter((e) => ['agent-loop', 'llm', 'shell-wasm', 'shell-ish'].includes(e.entryId))
+      .map((e) => ({ id: e.entryId, enabled: e.enabled, fiberPhase: e.fiberPhase })),
+  });
+  await probeManagerLegs();
+
+};
+
+const probeSettingsSurfaces = async () => {
+  await probeSettingsRoster();
+  await probeSettingsPlugins();
+};
+
 
 
 /** TEMPORARY DIAGNOSTIC (removed before landing): exercise the five contract
@@ -348,6 +473,7 @@ const main = async () => {
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route);
   installRuntimeHalf(ctx, cfg, route);
+  await probeSettingsSurfaces();
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});
 };
 

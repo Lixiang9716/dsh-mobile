@@ -30,7 +30,7 @@ DSH（DeepSeek Harness）生态的移动宿主（Mobile Host）。基于社区 F
 @ 0.1.6-alpha.2 + 5 个 pinned npm 依赖），自研代码只留胶水（垫层、适配器、契约 carrier）。
 经 carrier 在 iOS / Android / 鸿蒙上已点亮：官方 client-modules web 启动、官方 App 壳
 （#61 的 58 包 application 层）、真实 `session.list`/日志，以及 composer 写入路径。汇总
-数字与逐目录清单见 [docs/e2e-matrix.md](docs/e2e-matrix.md)——32 个证据目录、73 条绿色
+数字与逐目录清单见 [docs/e2e-matrix.md](docs/e2e-matrix.md)——35 个证据目录、78 条绿色
 verdict（另有 2 条因配额阻塞而红，已如实披露）——位于 `hosts/{ios,android,harmony}/artifacts/`（`b1-official-web`、
 `b3-session-live`、`b4-write-live`、`android-upstream`、`android-session-live`、
 `d9-official-web`、`d9-session-live`、`d9-write-live`）。

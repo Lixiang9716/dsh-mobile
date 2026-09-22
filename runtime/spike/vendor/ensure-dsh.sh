@@ -24,7 +24,15 @@
 # runtime/spike/upstream/llm-transport.js). dsh-llm is vendored since the
 # W-LLM leg; llm-mock-server is vendored as the E2E test vehicle (its
 # node-side driver is runtime/spike/ci/mock-llm-server.mjs); llm-replay stays
-# out (peer deps on compaction + api-extensions, none of it needed). See
+# out (peer deps on compaction + api-extensions, none of it needed).
+# The FILE-TOOLS row (the dsh-desktop fs tool family over ctx.fs) vendors
+# fs-local + tool-fs + tool-str-replace-editor + attachment (tool-fs' only
+# not-yet-vendored link-time import) plus the npm `diff` (tool-fs' hunk
+# diffs). tool-fs-search STAYS OUT the same way the other native rows do:
+# its engine is the @vscode/ripgrep packaged BINARY (a postinstall platform
+# download) driven through real OS subprocesses — no in-runtime equivalent;
+# grep/glob on mobile waits for the PR-B subprocess/fs-service seam.
+# util-workspace-path stays out: nothing in this closure imports it. See
 # runtime/spike/upstream/README.md for the shim coverage table.
 set -e
 cd "$(dirname "$0")"
@@ -61,6 +69,10 @@ fetch_retry() {
 
 
 # name|version|sha256 — upstream dsh packages (vendor/dsh/<name>@<version>/)
+# 2026-09-22 re-pin: upstream re-cut agent-presets 0.1.6-alpha.2 in place and
+# PROMOTED atomic-write / home-paths from their rc versions into 0.1.6-alpha.2,
+# deleting the rc tarballs — a cold fetch of the old pins now 404s / mismatches.
+# New digests verified against the upstream manifest on this date.
 DSH_PACKAGES="
 agent|0.1.6-alpha.2|1e4a587e5f7ebe32155a2e2eca3e18ad3b9b18b45071bdb2aad809b8af60fbe2
 agent-loop|0.1.6-alpha.2|ec0350fd72ccb78e85220168055339fb53dd16f84cded1740c306f4f28784898
@@ -84,9 +96,13 @@ tools|0.1.6-alpha.2|7c1e080bb765f44e1cac4890f5fdedd37059a569e21475dbb46d94c54c61
 typert-protocol|0.1.6-alpha.2|de7447ec069d8f00ca1bfaddd2487adf93446ec75f7852dffc82ff9eca8286e8
 util-crypto|0.1.6-alpha.2|71ef6845f82a76ec058d405ca1c15c0f410e609216eb01dd9cc4873255af4d91
 util-values|0.1.6-alpha.2|17cb0a738bd28ce8206c1583277b04b244622ec4c201530f88003a4954af86de
-agent-presets|0.1.6-alpha.2|6361a84a128f7b4d4fd23ae067ba9806a7ab2e5746a5eb04b72fd4db69722535
-atomic-write|0.0.1-rc.1|0de7eaac575cbf823498e914da6c826e28991164655fbd1cee596d5b9cd61736
-home-paths|0.0.1-rc.3|dcfd9d5dd8979f19388055b58cdf60731ae6568be5fe368c53b25776286056a3
+agent-presets|0.1.6-alpha.2|e69c10522c4ca4da5c375711d541f1e64fdefd4b15ce50a7781a492efaf8c272
+attachment|0.1.6-alpha.2|f7d1a01cbc0009272b7913daa96fbde2990451f2c25f68c0e50097ebd740a18d
+atomic-write|0.1.6-alpha.2|491c5b10694a2234c29e5f00807f7ed52c9f92800c8134909be0f2e79727bb4a
+home-paths|0.1.6-alpha.2|1f08b24e43ec0418f1fcea84cf079bb010597c732de08ec89d59f632cfa04b3d
+fs-local|0.1.6-alpha.2|716dac273817e25133b0b600fefd1fa7556dcf904840d6468518e99ec81255d8
+tool-fs|0.1.6-alpha.2|3d649b28a3bd7719d02eeae600074890b12ef108dde19bf3188293c086e1c9be
+tool-str-replace-editor|0.1.6-alpha.2|a4ac3ac8f4fae0fec43a0400071964e4be64296550840534a5e2dd9e49bcf31c
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
@@ -100,6 +116,7 @@ zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a5168431
 @deepseek-ai/cordis-plugin-loader@1.0.3|@deepseek-ai/cordis-plugin-loader/-/cordis-plugin-loader-1.0.3.tgz|86df86a31f58f306a4bb71c7b9bfe5d47dba8afaacf550ddc3bb654b57821e2f
 @deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
 js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
+diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 "
 
 have_pkg() { [ -f "$1/package.json" ]; }
