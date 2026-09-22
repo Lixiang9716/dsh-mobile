@@ -22,8 +22,31 @@ func dsh_spike_new_declaring(
         if let data = try? JSONSerialization.data(withJSONObject: env),
            let json = String(data: data, encoding: .utf8) {
             dsh_spike_set_launch_env(host, json)
-            note?("dsh.spike.log: launch env declares the guest userland: \(guestRoot)")
+            note?(launchEnvRecord(guestRoot))
         }
     }
     return host
+}
+
+/// The declaration as ONE canonical record on the `dsh.spike.log:` stream —
+/// every prefixed line a checker reads must be the unified-logger envelope or
+/// it counts as a parse error against EVERY scenario riding the capture (free
+/// text after the prefix broke both m1 verdicts). The fact belongs to no
+/// scenario (a host with no userland stays silent), so it rides the reserved
+/// `host.launch` scenario id: manifests filter on their own scenario and never
+/// see it, while the capture keeps the evidence. Level `info`, so the release
+/// build's warn/error strip drops it like every other debug-fact line.
+private func launchEnvRecord(_ guestRoot: String) -> String {
+    let payload: [String: Any] = [
+        "scenario": "host.launch",
+        "event": "ish.rootfs.declared",
+        "env": "DSH_ISH_ROOTFS",
+        "rootfs": guestRoot,
+    ]
+    let envelope = GatewayCore.jsonLine([
+        "level": "info", "module": "dsh.host",
+        "message": "launch env declares the guest userland",
+        "data": [payload],
+    ]) ?? "{}"
+    return SpikeLogSink.prefix + envelope
 }
