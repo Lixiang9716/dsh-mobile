@@ -104,7 +104,7 @@ jobs:
         # becoming a mislabelled build. Skipped on a plain dispatch with no
         # release_tag, where nothing is attached to anything.
         if: env.RELEASE_TAG != ''
-        run: sh tools/release/check-tag-version.sh "$RELEASE_TAG"
+        run: sh packages/release/check-tag-version.sh "$RELEASE_TAG"
 
       - uses: actions/setup-node@v5
         with:
@@ -174,7 +174,7 @@ jobs:
             presentation/official-web/dist
             presentation/official-web/client-bundles/npm
             presentation/official-web/client-bundles/MANIFEST.sha256.computed
-          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'tools/e2e/ensure-official-dist.sh', 'tools/e2e/ensure-client-bundles.sh') }}
+          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'test/e2e/ensure-official-dist.sh', 'test/e2e/ensure-client-bundles.sh') }}
       - name: Materialize the official Web Client the release build embeds
         # The RELEASE configuration EMBEDS the official dist + client bundles
         # as app resources (Tools/stage_official_web.py, run from the
@@ -187,8 +187,8 @@ jobs:
         run: |
           set -euo pipefail
           corepack enable
-          tools/e2e/ensure-official-dist.sh
-          tools/e2e/ensure-client-bundles.sh
+          test/e2e/ensure-official-dist.sh
+          test/e2e/ensure-client-bundles.sh
 
       - name: Build the release .app (device + simulator, unsigned)
         run: |

@@ -146,7 +146,7 @@ embedder plus a typed JS shim (`gateway.js`).
   Web Client and starts the scenario only when the page connects, so the
   deltas stream live into the rendered transcript (carrier-side evidence
   logged as scenario `m2.webclient.mount`; runner
-  `tools/e2e/run-ios-session.sh`). M3 extends the session: `dsh-notes`
+  `test/e2e/run-ios-session.sh`). M3 extends the session: `dsh-notes`
   arrives through the install pipeline BEFORE the host readiness signal and
   projects its toolbar slot into the active Web Client — carrier hosts gate
   host.info on the page's slot ack, so the deltas always stream into a fully
@@ -184,7 +184,7 @@ embedder plus a typed JS shim (`gateway.js`).
   startup-replayed and the m2-session-shaped agent session runs. Carrier
   evidence (config resolution, route registration/serve, slot
   allow-set enforcement) rides scenario `m3.fetch-carrier`; runner
-  `tools/e2e/run-ios-m3.sh` (launch configuration
+  `test/e2e/run-ios-m3.sh` (launch configuration
   `-dsh-profile m3-complete`).
 - `profiles/m3-complete/cordis.patch.json` — the m3-complete PROFILE patch
   for the config layer: selects `dsh-web-client-mini` as the ACTIVE Web
@@ -215,10 +215,10 @@ embedder plus a typed JS shim (`gateway.js`).
   `llm.served-model` (the server-reported model name, logged verbatim),
   `llm.content.asserted`, and `llm.key.audit` (every log-sink line audited
   for the active key — a leak fails loud, rule 5). Manifests:
-  `tools/e2e/scenarios/m2-llm.json` (scripted, exact deltas) /
+  `test/e2e/scenarios/m2-llm.json` (scripted, exact deltas) /
   `m2-llm-device.json` (real, repeat-aware delta runs) /
   `m2-llm-carrier.json` (carrier-side mount/projection evidence as
-  scenario `m2.llm.carrier`). Runners: `tools/e2e/run-ios-m2-llm.sh`,
+  scenario `m2.llm.carrier`). Runners: `test/e2e/run-ios-m2-llm.sh`,
   `hosts/android/ci/run-m2-llm.sh`. Evidence:
   `runtime/spike/artifacts/macos-cli-m2-llm/`,
   `hosts/ios/artifacts/m2-llm/`, `hosts/android/artifacts/m2-llm/`.
@@ -284,7 +284,7 @@ libunicode,quickjs}.c`, then from a SINGLE thread:
 5. `dsh_spike_pump(s)` — drains microtasks until quiescent (settlement now
    happens exclusively through the two calls above).
 6. verdict = `dsh_spike_complete(s) && dsh_spike_pass(s)` (plus the
-   `tools/e2e/check.mjs` one-to-one match over the captured lines).
+   `test/e2e/check.mjs` one-to-one match over the captured lines).
 
 JSON conventions on the bridge: byte payloads travel base64 in fields
 ending `B64`; errors are objects `{"code","primitive","message"}` with
@@ -313,9 +313,9 @@ projection protocol — do not build on it.
 ```sh
 runtime/spike/host/build.sh
 cd runtime/spike && ./build/dsh-spike-cli . scenario/m1-spike-boot.js > logs.txt
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m1-spike-boot.json --log runtime/spike/logs.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m1-spike-boot.json --log runtime/spike/logs.txt
 ./build/dsh-spike-cli . scenario/m2-bridge-smoke.js > logs-m2.txt
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-bridge-smoke.json --log runtime/spike/logs-m2.txt
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-bridge-smoke.json --log runtime/spike/logs-m2.txt
 ```
 
 The CLI driver doubles as the gateway bridge SMOKE BACKEND: it declares
@@ -327,7 +327,7 @@ every settlement to the post-pump drain pass — proving the later-tick
 pattern. The `m2.session` scenario runs on the same driver:
 ```sh
 ./build/dsh-spike-cli . scenario/m2-session.js > logs-m2-session.txt
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-session.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-session.json \
   --log logs-m2-session.txt
 ```
 
@@ -335,7 +335,7 @@ So does the M3 install pipeline (`m3.install`):
 
 ```sh
 ./build/dsh-spike-cli . scenario/m3-install.js > logs-m3-install.txt
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-install.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m3-install.json \
   --log logs-m3-install.txt
 ```
 
@@ -344,7 +344,7 @@ receipt startup replay + install-time capability negotiation):
 
 ```sh
 ./build/dsh-spike-cli . scenario/m3-complete.js > logs-m3-complete.txt
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m3-complete.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m3-complete.json \
   --log logs-m3-complete.txt
 ```
 

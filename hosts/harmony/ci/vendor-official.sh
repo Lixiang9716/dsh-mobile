@@ -7,11 +7,11 @@
 #
 # Sources (all untracked trees materialized + sha256-verified by their
 # ensure scripts — the tracked provenance record):
-#   tools/e2e/ensure-official-dist.sh  → presentation/official-web/dist
-#   tools/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
+#   test/e2e/ensure-official-dist.sh  → presentation/official-web/dist
+#   test/e2e/ensure-client-bundles.sh → presentation/official-web/client-bundles/npm
 #   runtime/spike/vendor/ensure-dsh.sh → runtime/spike/vendor/npm (the pinned
 #     @deepseek-ai/dsh-client-modules wins for the bootstrap package, the
-#     same precedence tools/e2e/run-ios-b1.sh applies on iOS)
+#     same precedence test/e2e/run-ios-b1.sh applies on iOS)
 #
 # Layout under entry/src/main/resources/rawfile/spike/:
 #   officialweb/www/…                     ← the official dist (www: the repo
@@ -43,8 +43,8 @@ cd "$ROOT"
 RAW=hosts/harmony/entry/src/main/resources/rawfile/spike
 
 echo "vendor-official: ensuring the source trees"
-tools/e2e/ensure-official-dist.sh
-tools/e2e/ensure-client-bundles.sh
+test/e2e/ensure-official-dist.sh
+test/e2e/ensure-client-bundles.sh
 runtime/spike/vendor/ensure-dsh.sh > /dev/null
 
 PIN=dsh-client-modules@0.1.6-alpha.2

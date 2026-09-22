@@ -104,7 +104,7 @@ jobs:
         # becoming a mislabelled build. Skipped on a plain dispatch with no
         # release_tag, where nothing is attached to anything.
         if: env.RELEASE_TAG != ''
-        run: sh tools/release/check-tag-version.sh "$RELEASE_TAG"
+        run: sh packages/release/check-tag-version.sh "$RELEASE_TAG"
 
       - uses: actions/setup-node@v5
         with:

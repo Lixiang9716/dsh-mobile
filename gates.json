@@ -185,7 +185,7 @@
       "id": "e2e-matrix",
       "command": [
         "sh",
-        "tools/e2e/matrix.sh",
+        "test/e2e/matrix.sh",
         "--accept-known-gaps"
       ],
       "description": "cross-host E2E evidence matrix: every finding must be an owned row of the known-gaps register",

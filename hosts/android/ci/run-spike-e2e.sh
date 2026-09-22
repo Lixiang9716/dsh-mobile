@@ -102,18 +102,18 @@ cat /tmp/dsh-spike-results.txt
 
 # E2E by logs: one checker verdict per scenario manifest against the shared
 # canonical stream (checkers filter on the records' scenario field).
-node tools/e2e/check.mjs \
-    --manifest tools/e2e/scenarios/m1-spike-boot.json \
+node test/e2e/check.mjs \
+    --manifest test/e2e/scenarios/m1-spike-boot.json \
     --log /tmp/dsh-spike-logs.txt \
     --out /tmp/dsh-spike-verdict-m1.json
 cat /tmp/dsh-spike-verdict-m1.json
-node tools/e2e/check.mjs \
-    --manifest tools/e2e/scenarios/m2-bridge-smoke.json \
+node test/e2e/check.mjs \
+    --manifest test/e2e/scenarios/m2-bridge-smoke.json \
     --log /tmp/dsh-spike-logs.txt \
     --out /tmp/dsh-spike-verdict-m2.json
 cat /tmp/dsh-spike-verdict-m2.json
-node tools/e2e/check.mjs \
-    --manifest tools/e2e/scenarios/m2-session.json \
+node test/e2e/check.mjs \
+    --manifest test/e2e/scenarios/m2-session.json \
     --log /tmp/dsh-spike-logs.txt \
     --out /tmp/dsh-spike-verdict-session.json
 cat /tmp/dsh-spike-verdict-session.json

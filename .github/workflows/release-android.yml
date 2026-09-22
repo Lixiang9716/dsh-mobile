@@ -103,7 +103,7 @@ jobs:
         # becoming a mislabelled build. Skipped on a plain dispatch with no
         # release_tag, where nothing is attached to anything.
         if: env.RELEASE_TAG != ''
-        run: sh tools/release/check-tag-version.sh "$RELEASE_TAG"
+        run: sh packages/release/check-tag-version.sh "$RELEASE_TAG"
 
       - uses: actions/setup-java@v5
         with:
@@ -169,7 +169,7 @@ jobs:
             presentation/official-web/dist
             presentation/official-web/client-bundles/npm
             presentation/official-web/client-bundles/MANIFEST.sha256.computed
-          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'tools/e2e/ensure-official-dist.sh', 'tools/e2e/ensure-client-bundles.sh') }}
+          key: official-web-${{ hashFiles('presentation/official-web/MANIFEST.sha256', 'presentation/official-web/build-upstream.sh', 'presentation/official-web/client-bundles/MANIFEST.sha256', 'presentation/official-web/client-bundles/build-client-bundles.sh', 'presentation/official-web/client-bundles/ROSTER.json', 'test/e2e/ensure-official-dist.sh', 'test/e2e/ensure-client-bundles.sh') }}
       - name: Cache the vendored upstream closure
         # ensure.sh + ensure-dsh.sh re-download the pinned quickjs-ng / DSH
         # closure on every run, and six workflows do it — 29 s of it in dev/ios
@@ -194,8 +194,8 @@ jobs:
           set -euo pipefail
           corepack enable
           runtime/spike/vendor/ensure-dsh.sh > /dev/null
-          tools/e2e/ensure-official-dist.sh
-          tools/e2e/ensure-client-bundles.sh
+          test/e2e/ensure-official-dist.sh
+          test/e2e/ensure-client-bundles.sh
 
       - name: Build the release APK (unsigned; the defines live in app/build.gradle.kts)
         working-directory: hosts/android

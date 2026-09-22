@@ -4,7 +4,7 @@ English | [简体中文](e2e-matrix.zh.md)
 
 Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
-dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
+dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
 > **Currency**: this matrix reflects the T-0035 settings-surfaces + file-tools
 > change (2026-09-22): the official client's 预设/插件 panels load real data on
@@ -33,8 +33,8 @@ dirs. Machine-checked by [tools/e2e/matrix.mjs](../tools/e2e/matrix.mjs).
 > REGENERATED, not maintained by hand:
 >
 > ```sh
-> node tools/e2e/matrix.mjs              # exit 0 = inventory clean
-> node tools/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory
+> node test/e2e/matrix.mjs              # exit 0 = inventory clean
+> node test/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory
 > ```
 >
 > The 2026-09-21 *gateability* change (branch `docs/e2e-matrix-gateable`)
@@ -49,7 +49,7 @@ Every E2E claim in this repository is accepted only when ALL of the
 following hold:
 
 1. **Green one-to-one log comparison** — a `verdict*.json` produced by
-   `tools/e2e/check.mjs` with `pass: true`, `expected == logged`
+   `test/e2e/check.mjs` with `pass: true`, `expected == logged`
    (exact, ordered, nothing missing, nothing extra).
 2. **Screenshots are debugging artifacts** — never checker inputs; under
    an evidence dir they must be real PNGs (magic bytes).
@@ -173,9 +173,9 @@ Nine findings are open on this tree, and **every one of them is owned**. The
 checker reports all nine and exits non-zero by default; the table below is
 the **known-gaps register** that makes the very same run wireable as a gate.
 
-- `node tools/e2e/matrix.mjs` — prints every finding, registered or not, and
+- `node test/e2e/matrix.mjs` — prints every finding, registered or not, and
   exits 1: the unvarnished list.
-- `node tools/e2e/matrix.mjs --accept-known-gaps` — exits 0 while every
+- `node test/e2e/matrix.mjs --accept-known-gaps` — exits 0 while every
   finding is a row of the register below, and 1 on (a) a finding no row
   names, i.e. a NEW regression; (b) a row whose finding is gone — a gap that
   closes is struck from the register in the same change; (c) a register
@@ -210,7 +210,7 @@ inventing them:
 - **The receipt certifies a run, and the run's device is not in the
   committed artifacts.** `host` names the machine a run happened on — the
   iOS simulator UDID and runtime, the android emulator instance with its AVD
-  and API level, the harmony hdc target — and `tools/e2e/run-ios.sh` reads
+  and API level, the harmony hdc target — and `test/e2e/run-ios.sh` reads
   it from `xcrun simctl` at run time. Verified on this tree:
   `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone' hosts/android/artifacts/{android-upstream,android-session-live,android-write-live}/`,
   `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc' hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live}/`
@@ -237,7 +237,7 @@ cites, and the register's rows in order):
 1. **`hosts/ios/artifacts/b4-write-live/` has no `receipt.json`** — the
    dir landed with #65 (the session-write surface, `b4.write.live` 43/43
    green). Owned by the iOS b4 work stream: a green
-   `tools/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`
+   `test/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`
    on a tree carrying #65, with the receipt emitted on that runner's green
    path (the `run-ios.sh` step-7 pattern).
 2. **`hosts/harmony/artifacts/d9-official-web/` has no `receipt.json`**
@@ -420,21 +420,21 @@ cites, and the register's rows in order):
 
 ## The checker and its rejection proof
 
-`tools/e2e/matrix.mjs` (stdlib-only) regenerates the inventory from the
+`test/e2e/matrix.mjs` (stdlib-only) regenerates the inventory from the
 working tree and exits non-zero on any regression: failed verdict,
 missing/empty deliverable, broken PNG, malformed verdict/receipt, a
-scenario id without a manifest in `tools/e2e/scenarios/`, or a defect in
+scenario id without a manifest in `test/e2e/scenarios/`, or a defect in
 the known-gaps register itself. Its `--self-test` mode proves every
 rejection class actually rejects (18 assertions, rule 6) — the assertion
 set is documented in the
-[e2e README](../tools/e2e/README.md#inventory-matrix-matrixmjs).
+[e2e README](../test/e2e/README.md#inventory-matrix-matrixmjs).
 
 One truth, two invocations (the file header carries the same contract):
 
 ```sh
-node tools/e2e/matrix.mjs                       # every finding printed, exit 1
-node tools/e2e/matrix.mjs --accept-known-gaps   # exit 0 while the register owns them all
-node tools/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory (+ the evaluation)
+node test/e2e/matrix.mjs                       # every finding printed, exit 1
+node test/e2e/matrix.mjs --accept-known-gaps   # exit 0 while the register owns them all
+node test/e2e/matrix.mjs --out /tmp/inv.json   # machine inventory (+ the evaluation)
 ```
 
 The checker is **still not wired into `gates.json`**: that file is inside
@@ -447,7 +447,7 @@ same command red. The wiring is one gate plus the seal:
 
 ```sh
 gov gate add e2e-matrix --description "cross-host E2E evidence inventory (known-gaps register)" \
-  --timeout 120000 -- node tools/e2e/matrix.mjs --accept-known-gaps
+  --timeout 120000 -- node test/e2e/matrix.mjs --accept-known-gaps
 gov verify-plane --write     # the ritual that accepts the gates.json diff
 ```
 

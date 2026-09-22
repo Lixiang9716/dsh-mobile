@@ -300,10 +300,10 @@ say "credentials removed by the app after the run"
 # carry the precise expected<->logged diff (a blocked run's whole diagnosis
 # lives in those two files), then assert on both legs of the acceptance: the
 # scenario's own verdict line AND each checker's pass field.
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-llm-device.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-llm-device.json \
     --log "$OUT/capture.txt" --out "$OUT/verdict-m2-llm-device.json" || true
 cat "$OUT/verdict-m2-llm-device.json"
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-llm-carrier.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-llm-carrier.json \
     --log "$OUT/capture.txt" --out "$OUT/verdict-m2-llm-carrier.json" || true
 cat "$OUT/verdict-m2-llm-carrier.json"
 

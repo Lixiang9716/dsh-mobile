@@ -109,10 +109,10 @@ fi
 say "key-leak re-check clean (raw log stream carries no API key)"
 
 # ---- E2E by logs: one checker verdict per manifest ---------------------------
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-llm-device.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-llm-device.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-m2-llm-device.json"
 cat "$OUT/verdict-m2-llm-device.json"
-node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-llm-carrier.json \
+node test/e2e/check.mjs --manifest test/e2e/scenarios/m2-llm-carrier.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-m2-llm-carrier.json"
 cat "$OUT/verdict-m2-llm-carrier.json"
 say "m2.llm real-backend leg complete — evidence under $OUT"

@@ -214,10 +214,10 @@ HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 "$HDC" shell snapshot_display -f /data/local/tmp/m5-screenshot.jpeg
 "$HDC" file recv /data/local/tmp/m5-screenshot.jpeg .
 
-node ../../tools/e2e/check.mjs --manifest ../../tools/e2e/scenarios/m1-spike-boot.json --log sink-capture.txt
-node ../../tools/e2e/check.mjs --manifest ../../tools/e2e/scenarios/m2-bridge-smoke.json --log sink-capture.txt
-node ../../tools/e2e/check.mjs --manifest ../../tools/e2e/scenarios/m2-session.json --log sink-capture.txt
-node ../../tools/e2e/check.mjs --manifest ../../tools/e2e/scenarios/m5-host-binding.json --log binding-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m1-spike-boot.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m2-bridge-smoke.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m2-session.json --log sink-capture.txt
+node ../../test/e2e/check.mjs --manifest ../../test/e2e/scenarios/m5-host-binding.json --log binding-capture.txt
 ```
 
 No signing config is needed: the emulator accepts the unsigned debug HAP via

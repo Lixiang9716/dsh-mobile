@@ -16,7 +16,7 @@ set -eu
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 PKG=com.dshmobile.spike
 OUT=${DSH_M4_OUT:-/tmp}
-SCEN=tools/e2e/scenarios
+SCEN=test/e2e/scenarios
 M4_STREAM=$OUT/dsh-m4-stream.txt
 
 say() { echo "run-android-full: $*"; }
@@ -193,10 +193,10 @@ grep 'dsh.gateway.audit:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-audit.jsonl" || 
 # E2E by logs: the binding scenario + the mandatory audit sequence (the
 # audit records reuse the frozen m2.gateway.audit manifest — the scenario's
 # call order matches it), against the shared canonical stream.
-node tools/e2e/check.mjs --manifest $SCEN/m4-host-binding.json \
+node test/e2e/check.mjs --manifest $SCEN/m4-host-binding.json \
     --log "$OUT/dsh-m4-logs.txt" --out "$OUT/dsh-m4-verdict-binding.json"
 cat "$OUT/dsh-m4-verdict-binding.json"
-node tools/e2e/check.mjs --manifest $SCEN/m2-gateway-audit.json \
+node test/e2e/check.mjs --manifest $SCEN/m2-gateway-audit.json \
     --log "$OUT/dsh-m4-logs.txt" --out "$OUT/dsh-m4-verdict-audit.json"
 cat "$OUT/dsh-m4-verdict-audit.json"
 shot 05-final
@@ -277,7 +277,7 @@ adb pull "/data/data/$PKG/files/spike-capture-b-android-official-web-mount.log" 
     adb exec-out run-as $PKG cat files/spike-capture-b-android-official-web-mount.log \
     > "$ART/capture-b-android-official-web-mount.log" 2>/dev/null || true
 
-node tools/e2e/check.mjs --manifest $SCEN/b-android-official-web-mount.json \
+node test/e2e/check.mjs --manifest $SCEN/b-android-official-web-mount.json \
     --log "$ART/logs.txt" --out "$ART/verdict-b-android-official-web-mount.json"
 cat "$ART/verdict-b-android-official-web-mount.json"
 say "phase 3 complete — evidence under $ART"
@@ -357,7 +357,7 @@ grep 'dsh.spike.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
 adb exec-out run-as $PKG cat files/spike-capture-b-android-session-live.log \
     > "$SART/capture-b-android-session-live.log" 2>/dev/null || true
 
-node tools/e2e/check.mjs --manifest $SCEN/b-android-session-live.json \
+node test/e2e/check.mjs --manifest $SCEN/b-android-session-live.json \
     --log "$SART/logs.txt" --out "$SART/verdict-b-android-session-live.json"
 cat "$SART/verdict-b-android-session-live.json"
 say "phase 4 complete — evidence under $SART"
@@ -437,7 +437,7 @@ grep 'dsh.spike.log:' "$WART/logs.txt" > "$WART/scenario.jsonl" || true
 adb exec-out run-as $PKG cat files/spike-capture-b-android-write-live.log \
     > "$WART/capture-b-android-write-live.log" 2>/dev/null || true
 
-node tools/e2e/check.mjs --manifest $SCEN/b-android-write-live.json \
+node test/e2e/check.mjs --manifest $SCEN/b-android-write-live.json \
     --log "$WART/logs.txt" --out "$WART/verdict-b-android-write-live.json"
 cat "$WART/verdict-b-android-write-live.json"
 say "phase 5 complete — evidence under $WART"
