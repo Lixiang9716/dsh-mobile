@@ -245,7 +245,25 @@ fi
 echo "vendor-official: byte-verifying the closure copies"
 DRIFT=$(mktemp)
 trap 'rm -f "$DRIFT"' EXIT
+# In --check mode the comparison judges only the files the repo TRACKS: parts
+# of the vendored closure (the zod runtime files, .gitignore) are deliberately
+# untracked and materialized by THIS script at build time — a fresh checkout
+# legitimately lacks them. Untracked-but-closure files surface as one counted
+# SKIP, never as drift and never invisibly.
+SKIPS=0
+TRACKED=""
+if [ "$MODE" = "check" ]; then
+    # git prints repo-relative paths and $RAW is repo-relative — same base,
+    # compared as-is (the android twin had an absolute/relative mismatch
+    # that silently skipped everything; this is why the probes exist).
+    TRACKED=$(git ls-files "$RAW")
+fi
 for rel in $CLOSURE; do
+    if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+       ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+        SKIPS=$((SKIPS + 1))
+        continue
+    fi
     cmp -s "runtime/spike/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
 done
 if [ -s "$DRIFT" ]; then
@@ -255,7 +273,7 @@ if [ -s "$DRIFT" ]; then
 fi
 
 if [ "$MODE" = "check" ]; then
-    echo "vendor-official: closure verified in place (check mode, no writes)"
+    echo "vendor-official: closure verified in place (check mode, no writes, $SKIPS untracked-but-closure file(s) skipped — materialized at build time)"
     exit 0
 fi
 files=$(find "$RAW/officialweb" -type f | wc -l | tr -d ' ')

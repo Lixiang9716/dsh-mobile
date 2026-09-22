@@ -121,30 +121,42 @@ diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf07
 
 have_pkg() { [ -f "$1/package.json" ]; }
 
+# A package counts as present only when its stamp names the pin it carries —
+# "the directory exists" is not evidence (the upstream re-cut surprise: the
+# same version re-published with different bytes, and a present-but-stale
+# tree short-circuits the fetch, so the pins silently stop describing the
+# tree — measured again 2026-09-23 when the closures gate disagreed between
+# a stale local tree and CI's fresh fetch).
+stamped() { [ -f "$1/.vendor-pin" ] && [ "$(cat "$1/.vendor-pin")" = "$2" ]; }
+
 fetch_dsh() {
     name="$1"; ver="$2"; sha="$3"
     dir="dsh/$name@$ver"
-    have_pkg "$dir" && { echo "vendor: $dir present"; return; }
+    have_pkg "$dir" && stamped "$dir" "$sha" && { echo "vendor: $dir present (pin-stamped)"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
     fetch_retry "$DSH_BASE/$tgz" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
+    rm -rf "$dir"
     mkdir -p "$dir"
     tar xzf "$tmp" -C "$dir" --strip-components=1
+    echo "$sha" > "$dir/.vendor-pin"
     rm -f "$tmp"
-    echo "vendor: fetched $dir (sha256 verified)"
+    echo "vendor: fetched $dir (sha256 verified, pin-stamped)"
 }
 
 fetch_npm() {
     dir="$1"; suffix="$2"; sha="$3"
-    have_pkg "npm/$dir" && { echo "vendor: npm/$dir present"; return; }
+    have_pkg "npm/$dir" && stamped "npm/$dir" "$sha" && { echo "vendor: npm/$dir present (pin-stamped)"; return; }
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
     fetch_retry "$NPM_BASE/$suffix" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
+    rm -rf "npm/$dir"
     mkdir -p "npm/$dir"
     tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    echo "$sha" > "npm/$dir/.vendor-pin"
     rm -f "$tmp"
-    echo "vendor: fetched npm/$dir (sha256 verified)"
+    echo "vendor: fetched npm/$dir (sha256 verified, pin-stamped)"
 }
 
 echo "$DSH_PACKAGES" | while IFS='|' read -r name ver sha; do
