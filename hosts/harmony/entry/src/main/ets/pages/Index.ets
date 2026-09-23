@@ -628,7 +628,7 @@ struct Index {
       this.verdict = (passed ? 'PASS' : 'FAIL') + ' upstream.suite (per-test verdicts in the capture)';
     };
     this.materializeBundle(ctx)
-      .then((bundleRoot: string): Promise<void> => {
+      .then((bundleRoot: string): Promise<string> => {
         this.verdict = 'suite leg: materializing the corpus...';
         return this.materializeSuiteExtras(ctx, bundleRoot).then((): string => bundleRoot);
       })
