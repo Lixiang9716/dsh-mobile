@@ -1,0 +1,1326 @@
+{
+ "summary": {
+  "sweep": "post-gapfill (engine fork dsh-native-tostring + AbortController/structuredClone harness shims)",
+  "total": 252,
+  "green": 31,
+  "partial": 16,
+  "red": 6,
+  "no_summary": 199,
+  "pre_gapfill_reference": "cli-sweep-inventory-pre-gapfill.json (12 green / 17 partial / 223 red)"
+ },
+ "rows": [
+  {
+   "spec": "api__gateway__tests__gateway.host",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: invalid property name"
+  },
+  {
+   "spec": "attachment__attachment__tests__admission",
+   "outcome": "partial",
+   "passed": 9,
+   "failed": 1
+  },
+  {
+   "spec": "boot__plugin-manager__tests__install-spec",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-plugin-manager"
+  },
+  {
+   "spec": "bundle__acp-app__tests__acp-app",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 1
+  },
+  {
+   "spec": "bundle__base__tests__base",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 2
+  },
+  {
+   "spec": "bundle__sdk-app__tests__sdk-app",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 1
+  },
+  {
+   "spec": "bundle__sdk-minimal__tests__sdk-minimal",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 1
+  },
+  {
+   "spec": "compaction__command-compact__tests__command-compact",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands"
+  },
+  {
+   "spec": "compaction__command-compact__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands"
+  },
+  {
+   "spec": "compaction__compaction-basic__tests__compaction-basic",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction-basic"
+  },
+  {
+   "spec": "compaction__compaction-basic__tests__compaction-loop-repro",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction"
+  },
+  {
+   "spec": "compaction__compaction-basic__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-token-meter"
+  },
+  {
+   "spec": "compaction__compaction-tool-result-pruner__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-token-meter"
+  },
+  {
+   "spec": "compaction__compaction-tool-result-pruner__tests__tool-result-pruner",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction-image-offload/projection"
+  },
+  {
+   "spec": "compaction__compaction__tests__compaction",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction"
+  },
+  {
+   "spec": "compaction__compaction__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction"
+  },
+  {
+   "spec": "compaction__compaction__tests__tool-pairing",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction"
+  },
+  {
+   "spec": "context__session-reference__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'diff': not vendored and not shimmed (see runtim"
+  },
+  {
+   "spec": "context__time-context__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-time-context/invariant"
+  },
+  {
+   "spec": "core__agent-loop__tests__agent-initiator",
+   "outcome": "partial",
+   "passed": 1,
+   "failed": 5
+  },
+  {
+   "spec": "core__agent-loop__tests__agent",
+   "outcome": "partial",
+   "passed": 8,
+   "failed": 1
+  },
+  {
+   "spec": "core__agent-loop__tests__cancel",
+   "outcome": "partial",
+   "passed": 20,
+   "failed": 19
+  },
+  {
+   "spec": "core__agent-loop__tests__config-session-id",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "core__agent-loop__tests__contract-regressions",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session/invariant"
+  },
+  {
+   "spec": "core__agent-loop__tests__coverage-edges",
+   "outcome": "partial",
+   "passed": 18,
+   "failed": 1
+  },
+  {
+   "spec": "core__agent-loop__tests__interception",
+   "outcome": "partial",
+   "passed": 22,
+   "failed": 1
+  },
+  {
+   "spec": "core__agent-loop__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop/invariant"
+  },
+  {
+   "spec": "core__agent-loop__tests__loop",
+   "outcome": "partial",
+   "passed": 63,
+   "failed": 2
+  },
+  {
+   "spec": "core__agent-loop__tests__properties",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'fast-check': not vendored and not shimmed (see "
+  },
+  {
+   "spec": "core__agent-loop__tests__request-error",
+   "outcome": "green",
+   "passed": 4,
+   "failed": 0
+  },
+  {
+   "spec": "core__agent-loop__tests__request-reconstruction",
+   "outcome": "partial",
+   "passed": 28,
+   "failed": 2
+  },
+  {
+   "spec": "core__agent-loop__tests__scope-lifecycle",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'onTestFinished' in module 'scenario/upstream-test-harn"
+  },
+  {
+   "spec": "core__agent-loop__tests__serial-listener-review",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "core__agent-loop__tests__settings",
+   "outcome": "green",
+   "passed": 6,
+   "failed": 0
+  },
+  {
+   "spec": "core__agent-loop__tests__shutdown-drain",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "core__agent-loop__tests__system-prompt-admission",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-llm-pi-ai/src/context.ts"
+  },
+  {
+   "spec": "core__agent-loop__tests__tool-calls",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-ptc-runtime"
+  },
+  {
+   "spec": "core__agent-loop__tests__tool-order",
+   "outcome": "green",
+   "passed": 4,
+   "failed": 0
+  },
+  {
+   "spec": "core__agent-tool-presentation__tests__agent-tool-presentation",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-ptc-runtime"
+  },
+  {
+   "spec": "core__agent__tests__agent-initiator",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/READM"
+  },
+  {
+   "spec": "core__agent__tests__agent",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-typert-registry"
+  },
+  {
+   "spec": "core__agent__tests__consumed-work",
+   "outcome": "green",
+   "passed": 11,
+   "failed": 0
+  },
+  {
+   "spec": "core__agent__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent/invariant"
+  },
+  {
+   "spec": "core__scope__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-scope/invariant"
+  },
+  {
+   "spec": "core__scope__tests__scope",
+   "outcome": "green",
+   "passed": 11,
+   "failed": 0
+  },
+  {
+   "spec": "core__scope__tests__store",
+   "outcome": "green",
+   "passed": 10,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__canonical-envelopes",
+   "outcome": "partial",
+   "passed": 220,
+   "failed": 1
+  },
+  {
+   "spec": "core__session__tests__derived-cache",
+   "outcome": "green",
+   "passed": 6,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__fork",
+   "outcome": "green",
+   "passed": 14,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session/invariant"
+  },
+  {
+   "spec": "core__session__tests__json",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/READM"
+  },
+  {
+   "spec": "core__session__tests__properties",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'fast-check': not vendored and not shimmed (see "
+  },
+  {
+   "spec": "core__session__tests__request-header",
+   "outcome": "green",
+   "passed": 10,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__scoped",
+   "outcome": "green",
+   "passed": 12,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__seq-ranges",
+   "outcome": "green",
+   "passed": 9,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__sequence-types",
+   "outcome": "green",
+   "passed": 16,
+   "failed": 0
+  },
+  {
+   "spec": "core__session__tests__session",
+   "outcome": "partial",
+   "passed": 76,
+   "failed": 1
+  },
+  {
+   "spec": "core__session__tests__surface",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session/surface"
+  },
+  {
+   "spec": "core__session__tests__typert",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-typert-registry"
+  },
+  {
+   "spec": "core__system-prompt__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-system-prompt/invariant"
+  },
+  {
+   "spec": "core__system-prompt__tests__scoped",
+   "outcome": "green",
+   "passed": 13,
+   "failed": 0
+  },
+  {
+   "spec": "core__system-prompt__tests__system-prompt",
+   "outcome": "partial",
+   "passed": 51,
+   "failed": 1
+  },
+  {
+   "spec": "core__system-prompt__tests__tool-order",
+   "outcome": "green",
+   "passed": 15,
+   "failed": 0
+  },
+  {
+   "spec": "core__tools__tests__execution-mode",
+   "outcome": "green",
+   "passed": 10,
+   "failed": 0
+  },
+  {
+   "spec": "core__tools__tests__execution-signal-types",
+   "outcome": "green",
+   "passed": 1,
+   "failed": 0
+  },
+  {
+   "spec": "core__tools__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tools/invariant"
+  },
+  {
+   "spec": "core__tools__tests__properties",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'fast-check': not vendored and not shimmed (see "
+  },
+  {
+   "spec": "core__tools__tests__ptc",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-ptc-runtime"
+  },
+  {
+   "spec": "core__tools__tests__py-types",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tools/src/py-types.ts"
+  },
+  {
+   "spec": "core__tools__tests__scoped",
+   "outcome": "partial",
+   "passed": 26,
+   "failed": 1
+  },
+  {
+   "spec": "core__tools__tests__tools",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-approval"
+  },
+  {
+   "spec": "core__tools__tests__ts-types",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tools/src/ts-types.ts"
+  },
+  {
+   "spec": "credentials__authorization__tests__authorization",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-credentials"
+  },
+  {
+   "spec": "deliverables__workspace-changes__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subprocess-local"
+  },
+  {
+   "spec": "experimental__agent-team-profile__tests__profile",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 1
+  },
+  {
+   "spec": "experimental__agent-team-web-profile__tests__profile",
+   "outcome": "red",
+   "passed": 0,
+   "failed": 1
+  },
+  {
+   "spec": "experimental__auto-review__tests__auto-review",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-compaction"
+  },
+  {
+   "spec": "experimental__inspector__tests__layout.host",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: URL is not defined"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__compile__transform-corpus",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__node__fs",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/memory.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__node__path-diff",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/path.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__node__shim-diff",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/crypto.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__polyfill__als-shim",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__shell__injected-run",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/interpret.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__shell__shell",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/memory.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__transport__tunnel-client",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-experimental-webworker-runtime/src/client/client.ts"
+  },
+  {
+   "spec": "experimental__webworker-runtime__tests__vfs-example-fixture",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl/src/format.ts"
+  },
+  {
+   "spec": "extensions__tool-cordis__tests__cordis-lifecycle",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'FiberState' in module '@deepseek-ai/cordis'"
+  },
+  {
+   "spec": "feedback__command-feedback__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands"
+  },
+  {
+   "spec": "fs__fs-observation-policy__tests__policy",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-fs-observation-policy"
+  },
+  {
+   "spec": "fs__fs__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-fs/invariant"
+  },
+  {
+   "spec": "fs__fs__tests__service",
+   "outcome": "partial",
+   "passed": 10,
+   "failed": 2
+  },
+  {
+   "spec": "fs__tool-fs__tests__integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-fs-observation-policy"
+  },
+  {
+   "spec": "fs__tool-str-replace-editor__tests__tools",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-fs-observation-policy"
+  },
+  {
+   "spec": "goal__command-goal__tests__command-goal",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands"
+  },
+  {
+   "spec": "goal__goal-round-driver__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-goal"
+  },
+  {
+   "spec": "goal__goal__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-goal"
+  },
+  {
+   "spec": "goal__tool-goal__tests__tool-goal",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-goal"
+  },
+  {
+   "spec": "guard__repeat-tool-reminder__tests__repeat-tool-reminder",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop-testkit"
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__codec",
+   "outcome": "green",
+   "passed": 25,
+   "failed": 0
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__detached",
+   "outcome": "partial",
+   "passed": 3,
+   "failed": 2
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__events",
+   "outcome": "green",
+   "passed": 10,
+   "failed": 0
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-hook-protocol/invariant"
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__matcher",
+   "outcome": "green",
+   "passed": 10,
+   "failed": 0
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__merge",
+   "outcome": "green",
+   "passed": 12,
+   "failed": 0
+  },
+  {
+   "spec": "hooks__hook-protocol__tests__runner",
+   "outcome": "green",
+   "passed": 12,
+   "failed": 0
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__bridge",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop-testkit"
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-hooks-claude-code/src/config.ts"
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__coverage-config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__coverage-context",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__coverage-edge-paths",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-claude-code__tests__coverage-stop",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-codex__tests__bridge",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop-testkit"
+  },
+  {
+   "spec": "hooks__hooks-codex__tests__config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-hooks-codex/src/config.ts"
+  },
+  {
+   "spec": "hooks__hooks-codex__tests__coverage-post-tool",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-codex__tests__coverage-prompt",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "hooks__hooks-codex__tests__coverage-result-shape",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "interaction__commands__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands/invariant"
+  },
+  {
+   "spec": "interaction__permission-presets__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-permission-presets/invariant"
+  },
+  {
+   "spec": "interaction__permission-presets__tests__permission-presets",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-permission-presets"
+  },
+  {
+   "spec": "interaction__tool-ask-user__tests__tool-ask-user",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-questions"
+  },
+  {
+   "spec": "interaction__user-approval__tests__approval",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-approval"
+  },
+  {
+   "spec": "interaction__user-approval__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-approval"
+  },
+  {
+   "spec": "interaction__user-questions__tests__user-questions",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-questions"
+  },
+  {
+   "spec": "jobs__jobs-local__tests__jobs",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-jobs"
+  },
+  {
+   "spec": "jobs__jobs-local__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-jobs-local"
+  },
+  {
+   "spec": "jobs__jobs__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-jobs"
+  },
+  {
+   "spec": "jobs__jobs__tests__service",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-jobs"
+  },
+  {
+   "spec": "jobs__tool-jobs__tests__tool-jobs",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-jobs"
+  },
+  {
+   "spec": "llm__llm-deepseek__tests__dynamic-config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-credentials"
+  },
+  {
+   "spec": "llm__llm-pi-ai__tests__dynamic-config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-credentials"
+  },
+  {
+   "spec": "llm__llm-retry__tests__persistence",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "llm__llm__tests__api-key",
+   "outcome": "green",
+   "passed": 17,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__assembler",
+   "outcome": "green",
+   "passed": 22,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__assistant-stream",
+   "outcome": "green",
+   "passed": 37,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__attribution",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: require('../package.json') from upstream-tests/llm__llm__tests__attributio"
+  },
+  {
+   "spec": "llm__llm__tests__invariant",
+   "outcome": "green",
+   "passed": 15,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__message",
+   "outcome": "green",
+   "passed": 4,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__properties",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'fast-check': not vendored and not shimmed (see "
+  },
+  {
+   "spec": "llm__llm__tests__retry-policy",
+   "outcome": "green",
+   "passed": 20,
+   "failed": 0
+  },
+  {
+   "spec": "llm__llm__tests__service",
+   "outcome": "partial",
+   "passed": 85,
+   "failed": 2
+  },
+  {
+   "spec": "llm__llm__tests__topology",
+   "outcome": "partial",
+   "passed": 20,
+   "failed": 2
+  },
+  {
+   "spec": "llm__token-meter__tests__token-meter",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-token-meter"
+  },
+  {
+   "spec": "llm__token-meter__tests__token-usage-projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-token-meter"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__connection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp-stdio"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__framing",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp-stdio"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__host",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__instance",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp-stdio"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__provider",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subprocess-local"
+  },
+  {
+   "spec": "lsp__lsp-stdio__tests__translate",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp-stdio"
+  },
+  {
+   "spec": "lsp__lsp__tests__lsp",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp"
+  },
+  {
+   "spec": "lsp__tool-lsp__tests__integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subprocess-local"
+  },
+  {
+   "spec": "lsp__tool-lsp__tests__load-path",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tool-lsp"
+  },
+  {
+   "spec": "lsp__tool-lsp__tests__render",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tool-lsp"
+  },
+  {
+   "spec": "lsp__tool-lsp__tests__tool-lsp",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-lsp"
+  },
+  {
+   "spec": "mcp__mcp-client__tests__egress",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
+  },
+  {
+   "spec": "mcp__mcp-client__tests__load-path",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-mcp-client"
+  },
+  {
+   "spec": "mcp__mcp-client__tests__mcp-client",
+   "outcome": "no-summary",
+   "cause": "@modelcontextprotocol/client"
+  },
+  {
+   "spec": "plan__plan-mode__tests__integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-plan-mode"
+  },
+  {
+   "spec": "plan__plan-mode__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-plan-mode/invariant"
+  },
+  {
+   "spec": "plan__plan-mode__tests__projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-questions"
+  },
+  {
+   "spec": "preset__agent-presets__tests__authoring",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtemp' in module 'node:fs/promises'"
+  },
+  {
+   "spec": "preset__agent-presets__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-presets/invariant"
+  },
+  {
+   "spec": "preset__agent-presets__tests__mount",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/cordis-plugin-group"
+  },
+  {
+   "spec": "preset__agent-presets__tests__remote",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtemp' in module 'node:fs/promises'"
+  },
+  {
+   "spec": "preset__agent-presets__tests__settings",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-settings-file"
+  },
+  {
+   "spec": "preset__agent-presets__tests__shipped-root",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtemp' in module 'node:fs/promises'"
+  },
+  {
+   "spec": "preset__agent-presets__tests__user-root",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtemp' in module 'node:fs/promises'"
+  },
+  {
+   "spec": "preset__persona__tests__persona",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-persona"
+  },
+  {
+   "spec": "ptc-runtime__ptc-runtime__tests__reserved",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-ptc-runtime"
+  },
+  {
+   "spec": "ptc-runtime__ptc-runtime__tests__service",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-ptc-runtime"
+  },
+  {
+   "spec": "runtime-diagnostics__invariants__tests__service",
+   "outcome": "green",
+   "passed": 28,
+   "failed": 0
+  },
+  {
+   "spec": "sandbox__sandbox-policy__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-sandbox-policy/invariant"
+  },
+  {
+   "spec": "sandbox__sandbox-policy__tests__policy",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-sandbox-policy"
+  },
+  {
+   "spec": "sandbox__sandbox__tests__escalation",
+   "outcome": "green",
+   "passed": 13,
+   "failed": 0
+  },
+  {
+   "spec": "sandbox__sandbox__tests__roots",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtempSync' in module 'node:fs'"
+  },
+  {
+   "spec": "sandbox__sandbox__tests__vocabulary",
+   "outcome": "green",
+   "passed": 3,
+   "failed": 0
+  },
+  {
+   "spec": "session-query__session-log-export__tests__loader-composition.host",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-commands"
+  },
+  {
+   "spec": "session-query__session-query-sqlite__tests__sqlite",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:sqlite' (see runtime/spike/upstream/R"
+  },
+  {
+   "spec": "session-query__session-query__tests__search-helpers",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-query"
+  },
+  {
+   "spec": "session-query__session-query__tests__tracing",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-query"
+  },
+  {
+   "spec": "session-query__tool-session-query__tests__sqlite-integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "session__session-format-v1-to-v2__tests__codec",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-format"
+  },
+  {
+   "spec": "session__session-projection__tests__registry",
+   "outcome": "green",
+   "passed": 28,
+   "failed": 0
+  },
+  {
+   "spec": "session__session-stats__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-stats"
+  },
+  {
+   "spec": "session__session-stats__tests__projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-stats"
+  },
+  {
+   "spec": "session__session-title-all-prompts-llm__tests__provider",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title-first-prompt-llm__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title-first-prompt-llm__tests__provider",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title/invariant"
+  },
+  {
+   "spec": "session__session-title__tests__persistence",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "session__session-title__tests__projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title__tests__provider",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title__tests__rename",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title__tests__service-contracts",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-title__tests__session-title",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-title"
+  },
+  {
+   "spec": "session__session-turn-outline__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-turn-outline"
+  },
+  {
+   "spec": "session__session-turn-outline__tests__projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-turn-outline"
+  },
+  {
+   "spec": "shell__bash-local__tests__executor",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-bash-local"
+  },
+  {
+   "spec": "shell__bash-local__tests__settings",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subprocess-local"
+  },
+  {
+   "spec": "shell__bash-sandbox__tests__partial-landlock",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/node-addon-system/landlock-run"
+  },
+  {
+   "spec": "shell__pwsh-local__tests__executor",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "shell__pwsh-local__tests__settings",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-shell"
+  },
+  {
+   "spec": "shell__shell-env__tests__shell-env",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-shell-env"
+  },
+  {
+   "spec": "shell__shell__tests__service",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-shell"
+  },
+  {
+   "spec": "shell__tool-bash-persistent__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "shell__tool-bash-persistent__tests__tools",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "shell__tool-bash__tests__integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-session-persistence-jsonl"
+  },
+  {
+   "spec": "shell__tool-pwsh-persistent__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "shell__tool-pwsh-persistent__tests__tools",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "shell__tool-pwsh__tests__integration",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "shell__tool-pwsh__tests__loader",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "skill__skill-badge__tests__skill-badge",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-skill"
+  },
+  {
+   "spec": "skill__skill-office__tests__checkers",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "skill__skill-office__tests__skill-office",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-skill"
+  },
+  {
+   "spec": "skill__skill__tests__skill",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-skill"
+  },
+  {
+   "spec": "skill__tool-skill__tests__tool-skill",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-skill"
+  },
+  {
+   "spec": "spill__spill-local__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-spill-local"
+  },
+  {
+   "spec": "spill__spill__tests__service",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-spill"
+  },
+  {
+   "spec": "ssh__ssh__tests__inspector-signal",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "subagent__subagent-codex__tests__real-product-cleanup",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
+  },
+  {
+   "spec": "subagent__subagent__tests__control",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subagent"
+  },
+  {
+   "spec": "subagent__subagent__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subagent"
+  },
+  {
+   "spec": "subagent__subagent__tests__service",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subagent"
+  },
+  {
+   "spec": "subagent__tool-subagent__tests__scripted-provider",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subagent"
+  },
+  {
+   "spec": "subprocess__subprocess-local__tests__process-inspector",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-subprocess-local/src/process-inspector.ts"
+  },
+  {
+   "spec": "subprocess__subprocess__tests__service",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:stream' (see runtime/spike/upstream/R"
+  },
+  {
+   "spec": "terminal__terminal-bash__tests__config",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal-bash/src/config.ts"
+  },
+  {
+   "spec": "terminal__terminal-bash__tests__local",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
+  },
+  {
+   "spec": "terminal__terminal-bash__tests__sanitize",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal-bash/src/sanitize.ts"
+  },
+  {
+   "spec": "terminal__tool-terminal__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "terminal__tool-terminal__tests__render",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "terminal__tool-terminal__tests__tools",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-terminal"
+  },
+  {
+   "spec": "test-support__loader-smoke__tests__example-launch",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-loader-smoke"
+  },
+  {
+   "spec": "test-support__loader-smoke__tests__loader-smoke",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-loader-smoke"
+  },
+  {
+   "spec": "test-support__remote-mock__tests__proxy-types.client",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: unmapped module specifier 'typescript': not vendored and not shimmed (see "
+  },
+  {
+   "spec": "todo__tool-todo__tests__integration",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop-testkit"
+  },
+  {
+   "spec": "todo__tool-todo__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-tool-todo/invariant"
+  },
+  {
+   "spec": "todo__tool-todo__tests__loader-composition",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-agent-loop-testkit"
+  },
+  {
+   "spec": "todo__tool-todo__tests__projection",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-user-questions"
+  },
+  {
+   "spec": "typert__protocol__tests__protocol",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: invalid property name"
+  },
+  {
+   "spec": "util__deque__tests__deque",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-deque"
+  },
+  {
+   "spec": "util__home-paths__tests__home-paths",
+   "outcome": "no-summary",
+   "cause": "SyntaxError: Could not find export 'mkdtemp' in module 'node:fs/promises'"
+  },
+  {
+   "spec": "util__native-command__tests__native-command",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-native-command"
+  },
+  {
+   "spec": "util__output-retention__tests__output-retention",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-output-retention"
+  },
+  {
+   "spec": "util__time__tests__time",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-util-time"
+  },
+  {
+   "spec": "util__workspace-path__tests__index",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-util-workspace-path"
+  },
+  {
+   "spec": "web__tool-web__tests__load-path",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-web"
+  },
+  {
+   "spec": "web__web-search-deepseek__tests__redirect",
+   "outcome": "no-summary",
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
+  },
+  {
+   "spec": "web__web-search-deepseek__tests__settings",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-web"
+  },
+  {
+   "spec": "web__web__tests__web",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-web"
+  },
+  {
+   "spec": "workflow__workflow__tests__invariant",
+   "outcome": "no-summary",
+   "cause": "@deepseek-ai/dsh-workflow"
+  }
+ ]
+}

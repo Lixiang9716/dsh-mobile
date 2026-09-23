@@ -1,0 +1,13 @@
+{
+  "scenario": "upstream.suite",
+  "event": "suite/summary",
+  "spec": "upstream-tests/core__agent-loop__tests__loop.spec.mjs",
+  "passed": 63,
+  "failed": 2,
+  "skipped": 0,
+  "firstFailure": {
+    "name": "agent loop > cancel() mid-stream ends the turn with reason aborted",
+    "message": "setTimeout is not defined",
+    "stack": "    at Promise (native) |     at <anonymous> (upstream-tests/core__agent-loop__tests__loop.spec.mjs:1170:15) | "
+  }
+}

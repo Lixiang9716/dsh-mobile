@@ -38,10 +38,15 @@ enum SessionLaunchConfig {
     /// DSH_MOCK_LLM_KEY, injected by the runner via SIMCTL_CHILD_*; the
     /// simulator shares the host's loopback, so the node-side mock is
     /// reachable at 127.0.0.1).
+    ///
+    /// Upstream-suite drive: `-dsh-scenario upstream-suite` runs the
+    /// `upstream.suite` leg — ONE transpiled upstream DSH spec (loop.spec
+    /// & friends) through the quickjs-shaped harness; the spec path rides
+    /// the launch environment the same way (DSH_UPSTREAM_SPEC).
     static var scenarioName: String? {
         guard let name = arg(after: "-dsh-scenario") else { return nil }
         switch name {
-        case "llm-live-stream", "upstream-parity": return name
+        case "llm-live-stream", "upstream-parity", "upstream-suite": return name
         default: fatalError("unknown -dsh-scenario: \(name)")
         }
     }

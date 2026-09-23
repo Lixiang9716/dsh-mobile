@@ -1,0 +1,12 @@
+{
+  "exclude": [
+    {
+      "path": "test/upstream-suite/node_modules/**",
+      "reason": "the upstream-suite transpile pipeline's npm install (esbuild/vitest, 174 packages) — third-party tooling, not our syntax surface; gitignored for the same reason"
+    },
+    {
+      "path": "hosts/ios/App/Generated/**",
+      "reason": "machine-generated C (the embedded spike bundle, 23.5 MB) — byte-verified deterministically by the closures gate, which regenerates and diffs it; syntax-checking generated output only burns the check gate's entire timeout (measured: gov parse alone takes 62 s on this file)"
+    }
+  ]
+}

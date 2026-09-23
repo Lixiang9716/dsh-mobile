@@ -45,7 +45,27 @@ enum SpikeBundleStager {
                   under: root)
         try write("vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js",
                   data: resData(dsh_spike_res_pkg_crypto_js), under: root)
+        try writeStagedSpecs(root)
         return root
+    }
+
+    /// The upstream test-suite specs are TRANSPILED OUTSIDE the app (the
+    /// E2E runner stages them into Documents/upstream-tests/, which survives
+    /// relaunch); this bundle root is rebuilt from scratch on every launch,
+    /// so the staged specs are lifted in here — the `upstream.suite` drive
+    /// imports them by bundle-root-relative path.
+    private static func writeStagedSpecs(_ root: URL) throws {
+        let staged = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
+            .appendingPathComponent("Documents/upstream-tests", isDirectory: true)
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: staged, includingPropertiesForKeys: nil) else { return }
+        for file in files where file.pathExtension == "mjs" {
+            try? FileManager.default.createDirectory(
+                at: root.appendingPathComponent("upstream-tests", isDirectory: true),
+                withIntermediateDirectories: true)
+            try? FileManager.default.copyItem(
+                at: file, to: root.appendingPathComponent("upstream-tests/\(file.lastPathComponent)"))
+        }
     }
 
     /// Scenario entries (the m1/m2 E2E scenarios, plus the M3 on-device
@@ -62,6 +82,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_scenario_upstream_parity_js), under: root)
         try write("scenario/parity-projector.js",
                   data: resData(dsh_spike_res_scenario_parity_projector_js), under: root)
+        try write("scenario/upstream-suite-leg.js",
+                  data: resData(dsh_spike_res_scenario_upstream_suite_js), under: root)
+        try write("scenario/upstream-test-harness.js",
+                  data: resData(dsh_spike_res_scenario_upstream_harness_js), under: root)
         try write("llm.js", data: resData(dsh_spike_res_llm_js), under: root)
         try write("install-fetch.js",
                   data: resData(dsh_spike_res_install_fetch_js), under: root)

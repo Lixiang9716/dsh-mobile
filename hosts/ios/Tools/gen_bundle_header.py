@@ -43,6 +43,11 @@ RESOURCES = [
     # the TREES below — this is the drive that proves it matches Node).
     ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
     ("scenario_parity_projector_js", SPIKE / "scenario" / "parity-projector.js"),
+    # The upstream DSH test suite's on-device leg: the driver that imports
+    # ONE transpiled upstream spec (staged under upstream-tests/ by the E2E
+    # runner) + the quickjs-shaped vitest harness it redirects to.
+    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
+    ("scenario_upstream_harness_js", SPIKE / "scenario" / "upstream-test-harness.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
