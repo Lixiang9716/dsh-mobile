@@ -9,6 +9,7 @@ A **mobile host** for the DSH (DeepSeek Harness) ecosystem. Built on the communi
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md) — layered design, key technical decisions, milestones
+- [Sequence diagrams](docs/sequence-diagrams.md) — every flow end to end: boot, gateway calls, LLM streaming, install, the emulated userland, verification itself
 - [Build](BUILD.md) — one build facade: platform-selectable, compile + test, the closures gate
 - [Release packages](docs/release.md) — tag-triggered versioned releases and packaging for the three host apps
 
