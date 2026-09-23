@@ -14,7 +14,149 @@
     "[x] map every integration seam onto dsh-mobile (vendored closure, boot.js, gateway primitives, system plugins, web client)",
     "[x] write the bilingual research pair under docs/research/ with pairing record"
   ],
-  "status": "open",
-  "receipt": null,
+  "status": "done",
+  "receipt": {
+    "ts": "2026-09-23T01:26:37+00:00",
+    "mode": "governance",
+    "rules": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "green": true,
+    "gates": [
+      {
+        "gate": "self-test",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 2312,
+        "detail": "PASS test_verify_notes_rejects_unknown_argument\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_verify_notes_rejects_status_lying\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_gates_rejects_duplicate_id\nPASS test_gates_rejects_cycle\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_unknown_needs\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_run_base_scopes_gates_by_paths\nPASS test_passing_gate_output_stays_visible\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_run_failure_summary_and_gate_flag\nPASS test_gates_rejects_unknown_keys\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_custom_counterpart_convention\nPASS test_run_merge_rejects_text_conflict\nPASS test_pairing_explicit_registration_sticks\nPASS test_change_scope_suggests_from_paths\nPASS test_rubric_rejects_zero_items\nPASS test_rubric_rejects_broken_structure\nPASS test_verify_decisions_rejects_broken_table\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_verify_decisions_rejects_base_collision\nPASS test_conflict_markers_rejects_marked_file\nPASS test_cli_init_help_no_side_effect\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_registry_real_flags_are_not_drift\nPASS test_init_hooks_ci_roundtrip\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_check_engine_mechanisms_are_real\nPASS test_d57_hubs_and_aliases\nPASS test_preset_rejects_unknown_name\nPASS test_task_check_rejects_tampered_receipt\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_partial_run_as_full_evidence\nPASS test_receipt_rejects_forged_record\nPASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_unknown_argument\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_verify_notes_rejects_status_lying\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_duplicate_id\nPASS test_gates_rejects_cycle\nPASS test_gates_rejects_unknown_needs\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_run_base_scopes_gates_by_paths\nPASS test_run_failure_summary_and_gate_flag\nPASS test_passing_gate_output_stays_visible\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_gates_rejects_unknown_keys\nPASS test_run_merge_rejects_text_conflict\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_pairing_custom_counterpart_convention\nPASS test_pairing_explicit_registration_sticks\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_change_scope_suggests_from_paths\nPASS test_rubric_rejects_broken_structure\nPASS test_rubric_rejects_zero_items\nPASS test_verify_decisions_rejects_broken_table\nPASS test_verify_decisions_rejects_base_collision\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_rejects_marked_file\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_d57_hubs_and_aliases\nPASS test_cli_init_help_no_side_effect\nPASS test_init_hooks_ci_roundtrip\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_registry_real_flags_are_not_drift\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_check_engine_mechanisms_are_real\nPASS test_preset_rejects_unknown_name\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_check_rejects_tampered_receipt\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_forged_record\nPASS test_receipt_rejects_partial_run_as_full_evidence\nPASS .gov/rejections/case-code-size.sh\nPASS .gov/rejections/case-e2e-matrix.sh\nPASS .gov/rejections/case-logging-l4.sh\nPASS .gov/rejections/case-logging.sh\ncoverage (gate x project rejection cases): 3/15 gate(s) carry a project rejection case (the shipped proofs still run; `gov self-test --explain` lists the rest)\nself-test: tools 56 + project 4 \u2014 all pass",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "notes",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "pairing",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "note-presence",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "conflict-markers",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "check",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "code-size",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "logging",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "doc-crosslinks",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "archive",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "task",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "verify-decisions",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 102,
+        "detail": "note: referenced by no note: D4, D17 (informational)\nverify_decisions: 18 decision(s) ok, 2 orphan(s)",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "plane",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 58,
+        "detail": "verify_plane: 8 plane file(s) sealed and intact",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "e2e-matrix",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      },
+      {
+        "gate": "closures",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:governance",
+        "scoped_out": false
+      }
+    ]
+  },
   "id": "T-0038"
 }
