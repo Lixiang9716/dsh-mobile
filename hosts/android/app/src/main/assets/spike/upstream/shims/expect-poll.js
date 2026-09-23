@@ -17,7 +17,7 @@ export function attachExpectPoll(expect, makeExpect, failWith) {
     // at 1s on a loaded box, green at 5s) — 5s is our default.
     const timeout = options.timeout ?? 5000;
     const sleep = (ms) => new Promise((resolve) => { globalThis.setTimeout(resolve, ms); });
-    const run = async (matcherName, args) => {
+    const run = async (matcherName, ...args) => {
       const deadline = Date.now() + timeout;
       for (;;) {
         let value;
