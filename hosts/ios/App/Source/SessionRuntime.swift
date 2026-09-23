@@ -16,6 +16,9 @@ import UIKit
 final class SessionRuntime {
     private let profileMode: Bool
     private let llmMode: Bool
+    /// The upstream-parity drive (`-dsh-scenario upstream-parity`): the
+    /// vendored spine over scripted turns, diffed against the Node golden.
+    private let parityMode: Bool
     /// Config-layer resolution: the ACTIVE client id, its staged directory,
     /// and the toolbar slot allow-set the carrier enforces on projections.
     private var resolvedClient: String
@@ -37,12 +40,14 @@ final class SessionRuntime {
     /// other drive keeps the m2 session.
     private var entryModule: String {
         if llmMode { return "scenario/llm-live-stream.js" }
+        if parityMode { return "scenario/upstream-parity.js" }
         return profileMode ? "scenario/install-from-http.js" : "scenario/session-mock-llm.js"
     }
 
     init() {
         profileMode = SessionLaunchConfig.profileName != nil
         llmMode = SessionLaunchConfig.scenarioName == "llm-live-stream"
+        parityMode = SessionLaunchConfig.scenarioName == "upstream-parity"
         resolvedClient = SessionLaunchConfig.activeWebClient
         resolvedDir = SessionLaunchConfig.webClientDir(resolvedClient)
         // Base slot defaults; a profile patch's slots.allow REPLACES them.
@@ -194,6 +199,8 @@ final class SessionRuntime {
         switch entryModule {
         case "scenario/llm-live-stream.js":
             source = String(cString: dsh_spike_res_scenario_m2_llm_js(nil))
+        case "scenario/upstream-parity.js":
+            source = String(cString: dsh_spike_res_scenario_upstream_parity_js(nil))
         case "scenario/install-from-http.js":
             source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
         default:

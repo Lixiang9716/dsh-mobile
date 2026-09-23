@@ -51,36 +51,54 @@ sh ci/parity-node-modules.sh
 
 # 2. the mock LLM server (node-side) with the parity script: success,
 #    tool_call_success (todo_write), closing success, 401.
-MOCK_LOG="$(mktemp /tmp/dsh-mock-parity.XXXXXX)"
-DSH_MOCK_SEQUENCE='success tool_call_success success auth_error' \
-DSH_MOCK_TOOL_NAME='todo_write' \
-DSH_MOCK_TOOL_ARGS='{"todos":[{"content":"Track the parity check","status":"in_progress"}]}' \
-    node ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
-MOCK_PID=$!
-cleanup() {
+#
+#    ONE MOCK PER LEG. The script is a one-shot sequence consumed in order,
+#    so a single shared instance would let the reference leg eat the whole
+#    script and hand the port leg script_exhausted 500s — measured 2026-09-23:
+#    the parked "port-leg body pump" failure was exactly that (the port leg's
+#    two calls each got one http.body of 500-JSON then http.end, "no [DONE]"
+#    trivially true of an error body). Each leg gets an identical, fresh
+#    script — the same semantics the Android leg's on-device MockLlmRoute has.
+MOCK_URL=""
+MOCK_PID=""
+MOCK_LOG=""
+start_mock() {
+    MOCK_LOG="$(mktemp /tmp/dsh-mock-parity.XXXXXX)"
+    DSH_MOCK_SEQUENCE='success tool_call_success success auth_error' \
+    DSH_MOCK_TOOL_NAME='todo_write' \
+    DSH_MOCK_TOOL_ARGS='{"todos":[{"content":"Track the parity check","status":"in_progress"}]}' \
+        node ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
+    MOCK_PID=$!
+    local polled=0
+    until grep -s '^MOCK_BASE_URL=' "$MOCK_LOG" > /dev/null; do
+        if ! kill -0 "$MOCK_PID" 2>/dev/null; then
+            echo "mock llm server died before announcing its endpoint:" >&2
+            cat "$MOCK_LOG" >&2
+            exit 1
+        fi
+        polled=$((polled + 1))
+        if [ "$polled" -gt $((MOCK_WAIT_DEADLINE_SECONDS * 20)) ]; then
+            echo "mock llm server did not announce within ${MOCK_WAIT_DEADLINE_SECONDS}s" >&2
+            exit 1
+        fi
+        sleep 0.05
+    done
+    MOCK_URL="$(sed -n 's/^MOCK_BASE_URL=//p' "$MOCK_LOG" | head -1)"
+    echo "mock llm server: $MOCK_URL" >&2
+}
+stop_mock() {
+    [ -n "$MOCK_PID" ] || return 0
     kill "$MOCK_PID" 2>/dev/null || true
     wait "$MOCK_PID" 2>/dev/null || true
-    rm -f "$MOCK_LOG"
+    MOCK_PID=""
+}
+cleanup() {
+    stop_mock
+    [ -n "$MOCK_LOG" ] && rm -f "$MOCK_LOG"
 }
 trap cleanup EXIT INT TERM
 
-MOCK_URL=""
-polled=0
-until grep -s '^MOCK_BASE_URL=' "$MOCK_LOG" > /dev/null; do
-    if ! kill -0 "$MOCK_PID" 2>/dev/null; then
-        echo "mock llm server died before announcing its endpoint:" >&2
-        cat "$MOCK_LOG" >&2
-        exit 1
-    fi
-    polled=$((polled + 1))
-    if [ "$polled" -gt $((MOCK_WAIT_DEADLINE_SECONDS * 20)) ]; then
-        echo "mock llm server did not announce within ${MOCK_WAIT_DEADLINE_SECONDS}s" >&2
-        exit 1
-    fi
-    sleep 0.05
-done
-MOCK_URL="$(sed -n 's/^MOCK_BASE_URL=//p' "$MOCK_LOG" | head -1)"
-echo "mock llm server: $MOCK_URL" >&2
+start_mock
 
 mkdir -p "$ART_DIR"
 
@@ -114,8 +132,12 @@ fi
 
 # 5. the PORT leg: the same scripted turns inside quickjs (needs the CLI
 #    binary; built here on macOS, never on Linux — the vendored iSH-arm64
-#    engine does not assemble under x86-64).
+#    engine does not assemble under x86-64). A FRESH mock carries the same
+#    script (the reference leg consumed the first instance's sequence).
 [ -x build/dsh-spike-cli ] || sh host/build.sh
+stop_mock
+rm -f "$MOCK_LOG"
+start_mock
 set +e
 ./build/dsh-spike-cli . scenario/upstream-parity.js \
     --http \
@@ -132,6 +154,7 @@ if [ "$CLI_EXIT" -ne 0 ]; then
 fi
 cp logs-parity.txt "$ART_DIR/logs.txt"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
+grep '^dsh.spike.log:' logs-parity.txt > "$ART_DIR/scenario.jsonl" || true
 
 # 6. extract the port leg's projected records from the scenario stream.
 node - "$ART_DIR" logs-parity.txt <<'EXTRACT'
@@ -154,9 +177,12 @@ EXTRACT
 node ci/parity-compare.mjs "$ART_DIR/reference.jsonl" "$ART_DIR/port.jsonl" \
     | tee "$ART_DIR/parity-verdict.txt"
 
-# 8. the one-to-one scenario verdict (the port leg's own expected log).
+# 8. the one-to-one scenario verdict (the port leg's own expected log). The
+#    CLI manifest drops `client.selected` — the headless host mounts no Web
+#    Client (the two-manifests-per-scenario shape `llm.live-stream` set:
+#    upstream-parity.json is the client-mounting device shape).
 node "$ROOT/test/e2e/check.mjs" \
-    --manifest "$ROOT/test/e2e/scenarios/upstream-parity.json" \
+    --manifest "$ROOT/test/e2e/scenarios/upstream-parity-cli.json" \
     --log logs-parity.txt \
     --out "$ART_DIR/verdict.json"
 

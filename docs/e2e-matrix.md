@@ -61,10 +61,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 35 |
-| Verdicts committed (78 green, 2 quota-blocked red) | 80 |
-| Scenarios with at least one committed evidence dir | 30 of 30 distinct scenario ids (31 manifests) |
-| Screenshots verified PNG | 84 |
+| Evidence dirs | 37 |
+| Verdicts committed (80 green, 2 quota-blocked red) | 82 |
+| Scenarios with at least one committed evidence dir | 31 of 31 distinct scenario ids (32 manifests) |
+| Screenshots verified PNG | 86 |
 | Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -103,6 +103,7 @@ evidence on that platform.
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 (drift), 20/20 (drift), 20/20 (drift), 20/20 (drift), 27/27 | — |
+| `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
@@ -127,10 +128,11 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | Dir | Platform | Verdicts (`expected/logged`) | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
-| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg; the macOS CLI leg is parked for handoff) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg, on-device MockLlmRoute) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
+| `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -160,6 +162,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 

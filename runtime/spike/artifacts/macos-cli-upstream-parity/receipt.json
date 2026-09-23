@@ -1,0 +1,16 @@
+{
+  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng + node v24.14.0 (reference)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned; the SAME closure serves both legs)",
+  "scenario": "upstream.parity",
+  "proves": [
+    "the vendored upstream spine (session/agent/system-prompt/tools/session-projection/settings/tool-todo/agent-loop/llm) produces the SAME session log under plain Node and inside quickjs through the mobile profile boot — the SHARED projector (scenario/parity-projector.js) normalized both, the comparator demanded record-for-record identity",
+    "the tool round is real on both legs: the mock's scripted todo_write tool-call streams through the same gateway transport adapter code (upstream/llm-transport.js imported VERBATIM by the reference via ci/parity-node-hooks.mjs), the upstream ToolRuntime dispatches it, the result feeds the next step, and the todos projection lands identically",
+    "the 401 transport-error leg surfaces as the same upstream error-finish on both legs",
+    "the golden fixture (test/e2e/fixtures/upstream-parity-reference.jsonl) reproduced byte-for-byte by the live reference"
+  ],
+  "checker": "test/e2e/scenarios/upstream-parity.json + ci/parity-compare.mjs",
+  "events": 37,
+  "referenceRecords": 25,
+  "exitCode": 0
+}
