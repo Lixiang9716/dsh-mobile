@@ -37,7 +37,16 @@
 set -e
 cd "$(dirname "$0")"
 
-DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
+# The frozen ref is the COMMIT SHA, never a moving branch: upstream's beta
+# channel deleted vendor/dsh-runtime/0.1.6-alpha.2 from master on 2026-09-22
+# (surprise sig the-016-alpha2-dsh-runtime-tarballs) when it moved to
+# 0.1.7-alpha.2, and the npm registry re-cut the same version's tarballs
+# (digests differ from the pins below), so master and the registry are both
+# unusable as sources for THESE pins. a934d988… (2026-09-18, "beta 通道切到
+# dsh 0.1.6-alpha.2 内核") is the commit that introduced the tree; git
+# history is immutable and its bytes match every pin below (verified:
+# dsh-agent digest 1e4a587e… fetched from this exact ref, 2026-09-23).
+DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/a934d988610605078001d7c22bbaa2435cbeb385/vendor/dsh-runtime/0.1.6-alpha.2"
 NPM_BASE="https://registry.npmjs.org"
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.

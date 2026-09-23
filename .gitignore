@@ -4,6 +4,10 @@
 # Node
 node_modules/
 package-lock.json
+# …except test/upstream-suite: dev-harmonyos.yml installs it with `npm ci`,
+# which hard-fails without a committed lockfile (the founding-commit blanket
+# ignore predates that pipeline; a targeted negation is the remedy)
+!test/upstream-suite/package-lock.json
 
 # 构建产物
 dist/
@@ -154,3 +158,21 @@ hosts/android/app/src/main/assets/spike/vendor/dsh/dsh-session-format-v*/
 
 # harmony suite-extras rawfile staging (generated; the suite CI job only)
 hosts/harmony/entry/src/main/resources/rawfile/spike/upstream-tests/
+# …including the test-closure vendor trees --suite-extras stages beside the
+# tracked spine closure (the curated runtime-closure assets are tracked
+# files — ignore rules never affect those; same argument as the android twin)
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/agent@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/agent-loop@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/brand@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/llm@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/sandbox@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/scope@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/session@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/session-projection@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/settings@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/system-prompt@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/timeout@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/tools@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/typert-protocol@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/util-values@0.1.6-alpha.2/

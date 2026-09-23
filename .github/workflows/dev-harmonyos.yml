@@ -120,6 +120,17 @@ jobs:
         if: env.PROJECT_PRESENT == 'true'
         run: sh runtime/spike/vendor/ensure.sh
 
+      - name: Materialize the pinned DSH closure
+        # The suite-extras stager (vendor-official.sh --suite-extras) reads
+        # runtime/spike/vendor/dsh/*@<tag> — restored from the cache above on
+        # a hit, materialized + sha256-verified here on a miss/rotation.
+        # Without this, a cold cache stages ZERO vendor packages into the
+        # suite HAP's extras and the specs die at import on-device (the same
+        # step dev-android.yml runs; idempotent — a restored tree verifies,
+        # no re-download).
+        if: env.PROJECT_PRESENT == 'true'
+        run: runtime/spike/vendor/ensure-dsh.sh > /dev/null
+
       - name: Install dependencies (ohpm)
         if: env.PROJECT_PRESENT == 'true'
         working-directory: hosts/harmony
