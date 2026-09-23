@@ -1,0 +1,117 @@
+{
+  "scenario": "agent.flow",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "mock",
+        "model": "mock-1"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile"
+      }
+    },
+    {
+      "event": "upstream/services"
+    },
+    {
+      "event": "session/created",
+      "match": {
+        "sessionId": "s-agent-flow-0001"
+      }
+    },
+    {
+      "event": "agent/created",
+      "match": {
+        "id": "main",
+        "sessionId": "s-agent-flow-0001"
+      }
+    },
+    {
+      "event": "skill/plane/mounted",
+      "match": {
+        "service": "skills",
+        "tool": "skill",
+        "registry": "vendored @deepseek-ai/dsh-skill"
+      }
+    },
+    {
+      "event": "fixture/staged"
+    },
+    {
+      "event": "skills/listed",
+      "match": {
+        "names": ["greeter"],
+        "source": "custom",
+        "provider": "filesystem"
+      }
+    },
+    {
+      "event": "skill/loaded",
+      "match": {
+        "name": "greeter",
+        "provider": "filesystem"
+      }
+    },
+    {
+      "event": "prompt/override/asserted",
+      "match": {
+        "role": "system",
+        "override": "AGENT-FLOW OVERRIDE 7f3a91: greet in Latin.",
+        "toolsCarrySkill": true
+      }
+    },
+    {
+      "event": "turn/completed",
+      "match": {
+        "turn": 1,
+        "text": "Hello from upstream"
+      }
+    },
+    {
+      "event": "catalog/published",
+      "match": {
+        "entries": ["greeter"]
+      }
+    },
+    {
+      "event": "tool/called",
+      "match": {
+        "tool": "skill",
+        "arguments": "{\"name\":\"greeter\"}"
+      }
+    },
+    {
+      "event": "tool/result/asserted",
+      "match": {
+        "tool": "skill",
+        "hasInstructions": true
+      }
+    },
+    {
+      "event": "tool/result/fed/request",
+      "match": {
+        "role": "tool"
+      }
+    },
+    {
+      "event": "turn/completed",
+      "match": {
+        "turn": 2,
+        "toolRound": true
+      }
+    },
+    {
+      "event": "upstream/completed",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

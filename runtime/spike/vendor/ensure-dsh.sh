@@ -36,6 +36,21 @@
 # grep/glob on mobile waits for the PR-B subprocess/fs-service seam.
 # util-workspace-path stays out: nothing in this closure imports it. See
 # runtime/spike/upstream/README.md for the shim coverage table.
+# The SKILL row (2026-09-23, the agent-flow E2E) vendors the upstream skill
+# family: dsh-skill (the ctx.skills registry), dsh-skill-filesystem (project/
+# custom/user discovery) + dsh-tool-skill (the model-facing `skill` tool and
+# the durable session catalog). Their dsh peer deps (scope, llm, tools,
+# home-paths, fs, agent, cordis, schemastery, util-values) are already pinned
+# above; the npm additions are skill-filesystem's own deps: yaml@2.9.0
+# (SKILL.md frontmatter parsing — served verbatim behind the bare specifier
+# through the npm-bridges runtime seam) and chokidar@5.0.0 (the file watcher —
+# STAYS OUT the same way @vscode/ripgrep does: its engine is real OS fs events
+# plus the awaitWriteFinish wall-clock timers, and the runtime has neither
+# seam; skill-filesystem imports it at link time, so the npm-bridges seam
+# registers a LOUD linkage shim whose watch() throws naming the gap — the
+# mobile profile mounts skill-filesystem with watch:false and never reaches
+# it). The dsh skill tarballs ride the tracked mirror like the rest (upstream
+# deleted the vendor dir; the npm registry is the pin source).
 set -e
 cd "$(dirname "$0")"
 
@@ -106,6 +121,9 @@ fs-local|0.1.6-alpha.2|716dac273817e25133b0b600fefd1fa7556dcf904840d6468518e99ec
 tool-fs|0.1.6-alpha.2|3d649b28a3bd7719d02eeae600074890b12ef108dde19bf3188293c086e1c9be
 tool-str-replace-editor|0.1.6-alpha.2|a4ac3ac8f4fae0fec43a0400071964e4be64296550840534a5e2dd9e49bcf31c
 session-persistence|0.1.6-alpha.2|3bc8f2a2f8382b4985a059307dfbf7c689da4db5c66d26382f22b9bf0d785cad
+skill|0.1.6-alpha.2|d77b76cab60c18a6bfce07951b648f9a730aa29162a6add96ca0a4b48382bfc3
+skill-filesystem|0.1.6-alpha.2|3d0f30be04ef7362d1cf3fe7b83e4469efb9a593d8929c5c6e4568878b84cc5a
+tool-skill|0.1.6-alpha.2|7608d917b6196b5a92b4643203509c936e169e7fcfe89b7e2852c7b6d7e0d83b
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
@@ -120,6 +138,7 @@ zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a5168431
 @deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
 js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
+yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 "
 
 have_pkg() { [ -f "$1/package.json" ]; }

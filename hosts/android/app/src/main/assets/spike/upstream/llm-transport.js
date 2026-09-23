@@ -221,8 +221,11 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
 /** Build one adapter bound to one route. Observability rides hooks:
  * onWire(info) fires once per wire request (the scenario logs the request
  * evidence); onSse(info) once per decoded SSE data payload (the parse
- * evidence). Hooks receive plain deterministic fields only (no port, no
- * key material).
+ * evidence); onRequestBody(body) fires once per wire request with the
+ * serialized request body (the prompt-override evidence: the caller asserts
+ * on the assembled `messages`, e.g. that the system message carries an
+ * override — plain caller-side data, no endpoint or key material).
+ * Hooks receive plain deterministic fields only (no port, no key material).
  *
  * The LOOPBACK demand is the determinism boundary: an E2E drive may only
  * ever talk to the carrier's scripted endpoint, so a non-loopback baseURL
@@ -232,7 +235,7 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
  * so the exception is a named decision at the call site instead of a guard
  * quietly weakened for every caller. */
 export function createGatewayLlmAdapter(options) {
-  const { baseURL, apiKey, provider, name, onWire, onSse, userEndpoint = false } = options;
+  const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false } = options;
   if (userEndpoint === true) {
     if (typeof baseURL !== 'string' || !/^https?:\/\/[^\s]+$/.test(baseURL)) {
       throw new TypeError(`llm-transport: user endpoint baseURL is not an http(s) URL, got ${String(baseURL)}`);
@@ -270,6 +273,7 @@ export function createGatewayLlmAdapter(options) {
         agentLoopMarked: isAgentLoopRequest(requestOptions),
         stream: true,
       });
+      onRequestBody?.(wire);
       const response = await openWireStream(endpoint, apiKey, wire, requestOptions.signal);
       await demandStreamResponse(response);
       yield* translate(parseSse(response, requestOptions.signal), onSse);
