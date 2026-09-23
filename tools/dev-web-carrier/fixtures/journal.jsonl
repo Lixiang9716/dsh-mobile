@@ -1,0 +1,4 @@
+{"type":"turn/start","seq":1,"time":1,"data":{"role":"user","blocks":[{"type":"text","text":"Say hello (dev-carrier fixture journal)"}]}}
+{"type":"turn/end","seq":2,"time":1,"data":{}}
+{"type":"turn/start","seq":3,"time":2,"data":{"role":"assistant","blocks":[{"type":"text","text":"Hello from the local dev carrier — the official Web Client is booting against the composed boot wire, not an emulator."}]}}
+{"type":"turn/end","seq":4,"time":2,"data":{}}
