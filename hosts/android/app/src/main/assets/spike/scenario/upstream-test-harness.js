@@ -1,3 +1,4 @@
+import '../upstream/shims/globals.js';
 // dsh:logging-exempt (test harness: verdicts are the product)
 /**
  * upstream-test-harness — the quickjs-side test shell for the UPSTREAM DSH
