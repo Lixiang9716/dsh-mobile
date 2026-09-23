@@ -44,6 +44,19 @@ harness-level shims (`AbortController`, `structuredClone` — the WHATWG subset
 the spine's cancellation and state-clone paths need, installed in the shared
 `upstream-test-harness.js` so every host gets them from one file).
 
+The landing also hardened the whole vendoring seam, engine and closure alike:
+the quickjs tree gained the dsh closure's pin-stamp discipline (a restored
+CI cache is verified against the stamp, never trusted on file presence —
+measured on the harmony runner, where a presence-only check printed the new
+commit id over a tree cmake then could not build), and the 29 pinned dsh
+tarballs are MIRRORED under `vendor/dsh-tarballs/` (1.04 MB, sha256-checked
+against the pin table on every use) — a cold checkout needs no network for
+the closure at all, retiring the master-deletion/frozen-ref fragility that
+reddened CI twice on 2026-09-23. The vendor DIRECTORY stays
+`quickjs-ng/0.17.0` regardless of the pin's display suffix: every build file
+hardcodes that path, and a suffix-coupled rename broke the harmony build
+exactly once before the decoupling.
+
 ## Alternatives considered
 
 - **Shim `Function.prototype.toString` from JS** — rejected: it would lie

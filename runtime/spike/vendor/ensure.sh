@@ -61,7 +61,7 @@ fetch_retry() {
   return 1
 }
 
-DIR="quickjs-ng/$PIN"
+DIR="quickjs-ng/0.17.0"
 
 FILES="dtoa.c libregexp.c libunicode.c quickjs.c \
 cutils.h dtoa.h libregexp.h libregexp-opcode.h libunicode.h libunicode-table.h \
@@ -73,8 +73,13 @@ have_all() {
     for f in $FILES; do [ -f "$DIR/$f" ] || return 1; done
 }
 
-if have_all; then
-    echo "vendor: quickjs-ng $PIN present ($COMMIT)"
+# A pin-stamp carries the same discipline the dsh closure has: a restored
+# cache directory is VERIFIED, never trusted (a stale or partial tree must
+# not short-circuit the fetch with the new commit merely echoed — measured
+# 2026-09-23 on the harmony runner: "present (98395e3…)" over a cache whose
+# tree predated the fork, then cmake died on a missing source file).
+if [ -f "$DIR/.vendor-pin" ] && [ "$(cat "$DIR/.vendor-pin")" = "$COMMIT" ] && have_all; then
+    echo "vendor: quickjs-ng $PIN present (pin-stamped, $COMMIT)"
     exit 0
 fi
 
@@ -88,4 +93,5 @@ done
 rm -f "$TMP"
 
 have_all || { echo "vendor: fetch incomplete — refusing to continue" >&2; exit 1; }
+echo "$COMMIT" > "$DIR/.vendor-pin"
 echo "vendor: quickjs-ng $PIN fetched and verified ($COMMIT)"
