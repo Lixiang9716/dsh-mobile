@@ -11,8 +11,8 @@
   "checklist": [
     "[x] CI status of #164 checked: dev-harmonyos on 302bad0 inspected",
     "ArkTS compile errors in Index.ets fixed (harmonyos-build green on PR)",
-    "extras pipeline dry-validated locally (--closure-only + --suite-extras, manifest complete)",
-    "run-upstream-suite.sh reviewed vs run-host-e2e.sh/run-live-llm.sh conventions",
+    "[x] extras pipeline dry-validated locally (--closure-only + --suite-extras, manifest complete)",
+    "[x] run-upstream-suite.sh reviewed vs run-host-e2e.sh/run-live-llm.sh conventions",
     "emulator-vehicle verdict delivered with evidence",
     "agent note written, gov run green, PR landed per merge policy"
   ],
