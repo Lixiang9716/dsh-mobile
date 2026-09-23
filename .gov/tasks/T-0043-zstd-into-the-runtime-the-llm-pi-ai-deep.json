@@ -13,7 +13,7 @@
     "[x] Agent A: zstd compiled into the shared C host + __zstdCompressB64/__zstdDecompressB64 intrinsics + node:zlib loader mapping, C roundtrip + Node interop proven",
     "[x] Agent B: node:zlib shim serving the corpus's 6-symbol surface, unit-verified under Node against stubbed intrinsics",
     "[x] Agent C: llm-pi-ai src/context.ts deep import fixed transpiler-side, target spec runs past module load, controls 65/0+39/0",
-    "Integration: 3 zstd-blocked specs green (config-session-id / serial-listener-review / shutdown-drain), full group rerun, parity, closures synced, gates, push"
+    "[x] Integration: 3 zstd-blocked specs green (config-session-id / serial-listener-review / shutdown-drain), full group rerun, parity, closures synced, gates, push"
   ],
   "status": "open",
   "receipt": null,

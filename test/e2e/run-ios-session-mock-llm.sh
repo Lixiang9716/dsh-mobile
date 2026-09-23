@@ -155,3 +155,63 @@ if [ "$PASS" -ne 2 ]; then
   die "failing checker(s):$FAILED — see verdict JSONs under $ART"
 fi
 log "ALL CHECKERS PASS"
+
+# ---- receipt (reachable ONLY on a real green run) ---------------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md): every evidence dir carries
+# receipt.json; this dir carries verdict jsons, so the matrix sweep demands the
+# full deliverable set (measured 2026-09-24). Machine-authored HERE, after the
+# checkers above passed. Format mirrors run-ios.sh's.
+RECEIPT="$ART/receipt.json"
+TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
+ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
+python3 - "$ART" "$UDID" "$TREE_LINE" "$ENGINE_PIN" <<'PY'
+import json, os, subprocess, sys
+from datetime import datetime
+art, udid, tree, engine_pin = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
+                     capture_output=True, text=True, check=True).stdout
+devs = json.loads(out)["devices"]
+def pretty(rt):
+    parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
+    return parts[0] + " " + ".".join(parts[1:])
+host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
+            for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
+scenarios = []
+for sid in ["session-mock-llm", "webclient-mount"]:
+    p = os.path.join(art, f"verdict-{sid}.json")
+    if not os.path.exists(p):
+        continue
+    v = json.load(open(p))
+    scenarios.append({
+        "id": v["scenario"],
+        "checker": f"test/e2e/scenarios/{sid}.json",
+        "events": v["logged"],
+        "result": "pass" if v["pass"] else "fail",
+    })
+screens = sorted("screens/" + f
+                 for f in os.listdir(os.path.join(art, "screens"))
+                 if f.endswith(".png"))
+receipt = {
+    "host": "iOS " + host,
+    "engine": "quickjs-ng",
+    "engineVersion": engine_pin,
+    "phase": ("M2 first on-device session: registry boots and installs the "
+              "system plugins, the mock-LLM streams token deltas as an event "
+              "sequence, one tool call routes through the subprocess plugin, "
+              "and the session completes with the transcript — asserted "
+              "one-to-one against the session manifests"),
+    "launchConfiguration": ("-dsh-mode session" +
+                            (" -dsh-web-client dsh-web-client-mini"
+                             if os.environ.get("DSH_CLIENT") == "mini" else "")),
+    "tree": tree,
+    "scenarios": scenarios,
+    "runner": "test/e2e/run-ios-session-mock-llm.sh",
+    "screens": screens,
+    "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+    "exitCode": 0,
+}
+with open(os.path.join(art, "receipt.json"), "w") as f:
+    json.dump(receipt, f, indent=2)
+    f.write("\n")
+print("session-mock-llm receipt written")
+PY
