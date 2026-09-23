@@ -173,6 +173,14 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_node_module_js), under: root)
         try write("upstream/shims/path.js",
                   data: resData(dsh_spike_res_shims_path_js), under: root)
+
+        try writeWebBootNpmLibs(root)
+    }
+
+    /// The vendored npm libs the W-INTEG web-boot closure imports (the
+    /// cordis chain, client-modules faces) — split from
+    /// writeWebBootClosure for the function-shape budget.
+    private static func writeWebBootNpmLibs(_ root: URL) throws {
         try write("vendor/npm/cordis@4.0.2/lib/index.js",
                   data: resData(dsh_spike_res_npm_cordis_js), under: root)
         try write("vendor/npm/cosmokit@1.8.3/lib/index.js",
