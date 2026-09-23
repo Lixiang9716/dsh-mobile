@@ -139,7 +139,12 @@ fetch_dsh() {
     # committed 2026-09-23 after upstream deleted the dir from master and
     # CI runners proved unreachable-flaky against the frozen ref). Cold
     # checkouts need no network at all; the digest check below is unchanged.
-    MIRROR="$(dirname "$0")/dsh-tarballs/$tgz"
+    # Relative to the script's OWN directory (it cd'd at the top): $0 is
+    # caller-relative, which breaks when invoked as
+    # `runtime/spike/vendor/ensure-dsh.sh` from the repo root — exactly how
+    # CI calls it (measured: the mirror silently missed and every cold
+    # checkout fell to the deleted-on-master URL).
+    MIRROR="dsh-tarballs/$tgz"
     if [ -f "$MIRROR" ]; then
         echo "$sha  $MIRROR" | shasum -a 256 -c - >/dev/null \
             && cp "$MIRROR" "$tmp" \
