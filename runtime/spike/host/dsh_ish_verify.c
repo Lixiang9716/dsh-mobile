@@ -592,9 +592,12 @@ static int v_header_take(struct v_header *h, const char *line) {
 }
 
 /* Parse one sealed entry line. Paths are whitespace-free (enforced at seal),
- * so plain %s fields carry them. Anything else is a malformed manifest. */
+ * so plain %s fields carry them. Anything else is a malformed manifest.
+ * path[] is 4096 because the %4095s below is spelled for it — smaller (e.g.
+ * darwin's 1024 PATH_MAX) trips -Wfortify-source, and the manifest is
+ * machine-written by our own stager, never longer than a guest path. */
 static int v_parse_entry(const char *line, struct v_ent *e) {
-    char type[8], mode[16], size[32], flag[8], path[PATH_MAX];
+    char type[8], mode[16], size[32], flag[8], path[4096];
     if (sscanf(line, "%64s %7s %15s %31s %7s %4095s",
                e->hex, type, mode, size, flag, path) != 6)
         return -1;

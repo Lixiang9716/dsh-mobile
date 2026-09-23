@@ -73,6 +73,22 @@ command -v node >/dev/null 2>&1 || die "node not on PATH — checkers cannot run
 export IDB_UDID="$UDID"
 mkdir -p "$ART" "$ART/screens"
 
+# ---- per-device isolation (measured 2026-09-23, the zombie-driver day) ------
+# WDA's 8100 is HOST-GLOBAL: two runners on two simulators silently share (or
+# pkills each other's server) — every WDA call below therefore talks to a port
+# DERIVED from the udid, and the bootstrap passes it to the runner via the
+# TEST_RUNNER_USE_PORT env prefix (Xcode forwards TEST_RUNNER_* into the test
+# host; WDA reads USE_PORT). A cancelled invocation that survives as a zombie
+# is caught by the per-udid LOCK: it names the pid so the next run dies loud
+# instead of fighting an invisible driver for the same simulator.
+WDA_PORT=$((8100 + 16#${UDID: -4} % 500))
+LOCK="$HOME/dsh-e2e/run-ios-$UDID.lock"
+mkdir -p "$HOME/dsh-e2e"
+if [ -f "$LOCK" ] && kill -0 "$(cat "$LOCK" 2>/dev/null)" 2>/dev/null; then
+  die "another run-ios.sh drives $UDID (pid $(cat "$LOCK")) — kill it or remove $LOCK"
+fi
+echo $$ > "$LOCK"
+
 log() { echo "run-ios: $*"; }
 die() { echo "run-ios: FAIL: $*" >&2; exit 1; }
 
@@ -171,14 +187,14 @@ WDA_PID=""
 # `"state" : "success"` — matching only one spacing burns the 600s bootstrap
 # window against a healthy server, then step 5 pkills it mid-run (surprise
 # run-iosshs-wdaup-probe-matches, 2026-09-21).
-wda_up() { curl -s --max-time 3 localhost:8100/status 2>/dev/null | grep -Eq '"state"[[:space:]]*:[[:space:]]*"success"'; }
+wda_up() { curl -s --max-time 3 localhost:$WDA_PORT/status 2>/dev/null | grep -Eq '"state"[[:space:]]*:[[:space:]]*"success"'; }
 wda_bootstrap() {
   if wda_up; then return 0; fi
   log "bootstrapping WebDriverAgent (clone/build may take minutes on first run)"
   [ -d "$HOME/dsh-e2e/wda" ] ||     git clone --depth 1 https://github.com/appium/WebDriverAgent.git "$HOME/dsh-e2e/wda" >/dev/null 2>&1
   [ -d "$HOME/dsh-e2e/wda" ] || { echo "run-ios: WDA clone failed — system-UI legs will hang" >&2; return 9; }
   [ -d "$HOME/dsh-e2e/wda-dd/Build/Products" ] ||     xcodebuild build-for-testing -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1
-  ( cd "$HOME/dsh-e2e/wda" && xcodebuild test-without-building -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1 ) &
+  ( cd "$HOME/dsh-e2e/wda" && TEST_RUNNER_USE_PORT="$WDA_PORT" xcodebuild test-without-building -scheme WebDriverAgentRunner       -destination "platform=iOS Simulator,id=$UDID"       -derivedDataPath "$HOME/dsh-e2e/wda-dd" >/dev/null 2>&1 ) &
   WDA_PID=$!
   # True wall-clock window (SECONDS-based): a stalled probe must not eat the
   # budget, and the loop must end when the window closes, not after N hangs.
@@ -188,12 +204,12 @@ wda_bootstrap() {
     sleep 2
   done
 }
-wda_session() { curl -s -X POST localhost:8100/session -H 'Content-Type: application/json' -d '{"capabilities":{}}' | python3 -c "import json,sys; print(json.load(sys.stdin)['sessionId'])"; }
+wda_session() { curl -s -X POST localhost:$WDA_PORT/session -H 'Content-Type: application/json' -d '{"capabilities":{}}' | python3 -c "import json,sys; print(json.load(sys.stdin)['sessionId'])"; }
 # wda_tap X Y [DUR]: absolute coordinate press (points)
-wda_tap() { local x=$1 y=$2 d=${3:-0.1} sid; sid=$(wda_session);   curl -s -X POST "localhost:8100/session/$sid/wda/dragfromtoforduration" -H 'Content-Type: application/json'     -d "{\"fromX\":$x,\"fromY\":$y,\"toX\":$x,\"toY\":$y,\"duration\":$d}" >/dev/null; }
+wda_tap() { local x=$1 y=$2 d=${3:-0.1} sid; sid=$(wda_session);   curl -s -X POST "localhost:$WDA_PORT/session/$sid/wda/dragfromtoforduration" -H 'Content-Type: application/json'     -d "{\"fromX\":$x,\"fromY\":$y,\"toX\":$x,\"toY\":$y,\"duration\":$d}" >/dev/null; }
 # wda_click LABEL: find by accessibility label and click (works across app,
 # remote-view sheets AND system alerts — idb cannot reach any of those)
-wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json'     -d "{\"using\":\"xpath\",\"value\":\"//*[@label=\\\"$label\\\"]\"}"     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else (v[0]['ELEMENT'] if v else ''))" 2>/dev/null);   [ -n "$eid" ] && curl -s -X POST "localhost:8100/session/$sid/element/$eid/click" >/dev/null; }
+wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json'     -d "{\"using\":\"xpath\",\"value\":\"//*[@label=\\\"$label\\\"]\"}"     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else (v[0]['ELEMENT'] if v else ''))" 2>/dev/null);   [ -n "$eid" ] && curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/click" >/dev/null; }
 
 # wda_field_type TEXT: focus the Files sheet search field through WDA and type
 # into it. Verified live 2026-09-21 on the iOS 26.5 picker sheet: idb
@@ -206,13 +222,13 @@ wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POS
 wda_field_type() { # TEXT
   local sid eid text=$1
   sid=$(wda_session)
-  eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json' \
+  eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json' \
     -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
   [ -n "$eid" ] || return 1
-  curl -s -X POST "localhost:8100/session/$sid/element/$eid/click" >/dev/null
+  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/click" >/dev/null
   sleep 1    # focus animation before keys
-  curl -s -X POST "localhost:8100/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
+  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
     -d "{\"text\":\"$text\"}" >/dev/null
 }
 
@@ -226,11 +242,11 @@ wda_field_type() { # TEXT
 wda_submit_search() {
   local sid eid
   sid=$(wda_session)
-  eid=$(curl -s -X POST "localhost:8100/session/$sid/element" -H 'Content-Type: application/json' \
+  eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json' \
     -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
   [ -n "$eid" ] || return 1
-  curl -s -X POST "localhost:8100/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
+  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
     -d '{"text":"\n"}' >/dev/null
 }
 
@@ -249,7 +265,7 @@ drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually rende
       wda_tap 100 87 0.15
       wda_tap 133 100 0.15
       wda_tap 100 117 0.15
-      if wait_line "notify.response" 2; then log "banner tap accepted"; return 0; fi
+      if wait_line '"event":"notify.response"' 2; then log "banner tap accepted"; return 0; fi
     fi
     sleep 0.5  # paces the poll; the 5s trigger is real wall-clock physics
   done
@@ -261,7 +277,7 @@ drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually rende
   local row
   for row in 240 320 400 480; do
     idb ui tap --udid "$UDID" 150 "$row" --duration 0.15 >/dev/null 2>&1 || true
-    if wait_line "notify.response" 2; then log "NC row tap accepted"; return 0; fi
+    if wait_line '"event":"notify.response"' 2; then log "NC row tap accepted"; return 0; fi
   done
   fail_deadline "notification banner never produced notify.response"
 }
@@ -296,7 +312,7 @@ drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
   for i in 1 2 3; do
     idb ui tap --udid "$UDID" "${PT_FILES_TILE[@]}" --duration 0.15; rc=$?
     log "tile press $i rc=$rc"
-    if wait_line "ui-done picker" 6; then
+    if wait_line "spike: ui-done picker" 6; then
       shot 06-picker-selected
       return 0
     fi
@@ -370,8 +386,7 @@ log "3.5/6 WDA warm-up (pre-launch)"
 if wda_up; then
   log "WDA already up — keeping it"
 else
-  pkill -f "xcodebuild test-without-building" 2>/dev/null || true
-  pkill -f WebDriverAgentRunner-Runner 2>/dev/null || true
+  lsof -ti tcp:"$WDA_PORT" 2>/dev/null | xargs kill 2>/dev/null || true
   sleep 2
   wda_bootstrap || echo "run-ios: WARNING: WDA unavailable — system-UI legs degraded"
 fi
@@ -408,7 +423,9 @@ FIFO="$ART/.driver.fifo"
 rm -f "$FIFO"; mkfifo "$FIFO"
 tail -n +1 -F "$LOG" 2>/dev/null >"$FIFO" &
 TAIL_PID=$!
-trap 'kill $TAIL_PID 2>/dev/null || true; exec 3<&- 2>/dev/null || true; rm -f "$FIFO" "$ART/.ax.json"' EXIT
+# The trap also releases the per-udid lock and reaps OUR WDA server (a
+# SIGKILLed runner skips it — that is exactly what the lock catches next run).
+trap 'kill $TAIL_PID 2>/dev/null || true; [ -n "${WDA_PID:-}" ] && kill "$WDA_PID" 2>/dev/null; exec 3<&- 2>/dev/null || true; rm -f "$FIFO" "$ART/.ax.json" "$LOCK"' EXIT
 exec 3<"$FIFO"
 DONE=0
 while true; do

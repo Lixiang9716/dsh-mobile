@@ -72,3 +72,37 @@ exactly once before the decoupling.
   specifiers are monorepo-internal packages with no 0.1.6-alpha.2 npm
   tarball (rc-only); vendoring mismatched rc versions would fake
   compatibility. That is the next gap-fill round, from the tag's source.
+
+## Post-script (same day, evening): divergence 2 — the async-context engine surface
+
+The fork's second divergence (branch head now `7c4ae18`) implements the
+engine side of TC39 proposal-async-context: a per-runtime context value
+(`JS_Get/SetAsyncContext`), snapshotted into every enqueued job and
+restored around its execution, and — the semantically load-bearing half —
+captured at promise-reaction ATTACH time (`JSPromiseReactionData` carries
+it; the resolve-time enqueue hands it to the job, so a C host event
+resolving a promise cannot steal the continuation's context). Probe-proven:
+an AsyncLocalStorage store survives await AND host-event hops; the parity
+differential stays golden-identical; the shim's Promise.prototype.then
+patch retires (quickjs runs await continuations through the job queue,
+never through the visible .then — measured with
+scenario/als-shim-probe.js). ALSO RECORDED: #169's merge silently reverted
+#163's fork pin in ensure.sh back to upstream quickjs — restored (at the
+two-divergence head) in the same change; worth an eye on future merges.
+
+## Post-script 2: the TC39 proposal face as an engine intrinsic (same night)
+
+Divergence 2 grew its spec-conformant public surface:
+`JS_AddIntrinsicAsyncContext` (wired into `JS_NewContext`'s chain) evaluates
+a small source at context creation defining **AsyncContext.Variable
+(get/set/wrap, name/defaultValue), AsyncContext.snapshot(),
+AsyncContext.wrap(fn, snapshot?)** — the proposal's API, riding the engine
+slot via now-engine-bound `__asyncContextGet/Set` (the host-side binding
+retired; the context is a copy-on-write Map keyed by Variable instances).
+Probe-proven end to end: the surface exists, get/set + defaultValue hold,
+values cross await AND host-event hops, wrap/snapshot restore the captured
+whole context (an outside snapshot sees its own world), async wrapped fns
+carry the zone — parity stays golden-identical, loop.spec 65/65, the ALS
+shim rides the same slot untouched. The fork head is now
+`4153a1f` (pin: `0.17.0+fork-tostring+async-context+tc39`). This is the
+shape an upstream quickjs-ng PR would take.

@@ -6,6 +6,9 @@
  *     the host emits the canonical "dsh.spike.log: {...}" E2E line;
  *   - Web-API seams the vendored upstream package needs: crypto (getRandom-
  *     Values via the platform RNG) and btoa;
+ *   - the zstd seam over the vendored C library (vendor/ensure-zstd.sh pin):
+ *     __zstdCompressB64 / __zstdDecompressB64 carry the node:zlib shim's
+ *     payload face (base64 in, base64 out, "zstd: " errors);
  *   - the REAL gateway bridge per contract/ v1.0.0: __dshGatewayCall hands
  *     each call a monotonic call_id and dispatches it to the embedder
  *     (multiple calls may be in flight); the embedder settles through
@@ -27,6 +30,12 @@
 #include <unistd.h> /* access() — the vendored-package probe's existence check */
 
 #include "quickjs.h"
+/* Vendored zstd (single-threaded build: no ZSTD_MULTITHREAD — D2's one
+ * serial runtime thread). The include paths (-I<zstd> -I<zstd>/common) are
+ * part of THIS file's compile interface: every build system that compiles
+ * dsh_spike_host.c must pass them (host/build.sh does; the platform builds
+ * name the same vendor pin). */
+#include "zstd.h"
 
 #define DSH_LOG_PREFIX "dsh.spike.log: "
 #define DSH_ERR_MAX 512
@@ -61,6 +70,12 @@ static const char *dsh_node_shim(const char *name) {
         { "node:process", "upstream/shims/process.js" },
         { "node:module", "upstream/shims/node-module.js" },
         { "node:url", "upstream/shims/url.js" },
+        { "node:perf_hooks", "upstream/shims/node-perf-hooks.js" },
+        /* node:zlib: the session-persistence spine's face over the compiled-in
+         * zstd (host intrinsics __zstdCompressB64/__zstdDecompressB64). */
+        { "node:zlib", "upstream/shims/node-zlib.js" },
+        { "node:worker_threads", "upstream/shims/node-worker-threads.js" },
+        { "node:stream", "upstream/shims/node-stream.js" },
     };
     for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
         if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;
@@ -434,6 +449,163 @@ static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
     return res;
 }
 
+/* ---- zstd intrinsics (the node:zlib shim's engine) ---------------------- */
+
+/* Raw-byte base64 codec for the zstd intrinsics. main_cli.c carries its own
+ * static b64_encode/b64_decode twins, but they are file-local: platform
+ * embedders compile dsh_spike_host.c WITHOUT main_cli.c, so these small
+ * versions stay here (sharing B64_TABLE / dsh_b64_val with btoa/atob —
+ * one alphabet, two entry styles: JS-string latin-1 vs raw bytes). */
+static char *dsh_b64_encode_bytes(JSContext *ctx, const unsigned char *src, size_t n) {
+    size_t out_len = ((n + 2) / 3) * 4;
+    char *out = js_malloc(ctx, out_len + 1);
+    if (!out) return NULL;
+    size_t o = 0;
+    for (size_t i = 0; i < n; i += 3) {
+        unsigned rem = (unsigned)(n - i);
+        unsigned b0 = src[i];
+        unsigned b1 = i + 1 < n ? src[i + 1] : 0;
+        unsigned b2 = i + 2 < n ? src[i + 2] : 0;
+        out[o++] = B64_TABLE[b0 >> 2];
+        out[o++] = B64_TABLE[((b0 & 3) << 4) | (b1 >> 4)];
+        out[o++] = rem > 1 ? B64_TABLE[((b1 & 15) << 2) | (b2 >> 6)] : '=';
+        out[o++] = rem > 2 ? B64_TABLE[b2 & 63] : '=';
+    }
+    out[o] = 0;
+    return out;
+}
+
+/* base64 → fresh byte buffer; NULL (nothing thrown) on malformed input. */
+static unsigned char *dsh_b64_decode_bytes(JSContext *ctx, const char *src, size_t len,
+                                           size_t *out_n) {
+    unsigned char *out = js_malloc(ctx, len / 4 * 3 + 3);
+    if (!out) return NULL;
+    size_t o = 0;
+    unsigned acc = 0;
+    unsigned bits = 0;
+    int pad = 0;
+    for (size_t i = 0; i < len; i++) {
+        unsigned char c = (unsigned char)src[i];
+        if (c == '=') { pad++; continue; }
+        int v = dsh_b64_val(c);
+        if (v < 0 || pad > 0) { js_free(ctx, out); return NULL; }
+        acc = (acc << 6) | (unsigned)v;
+        bits += 6;
+        if (bits >= 8) {
+            bits -= 8;
+            out[o++] = (unsigned char)((acc >> bits) & 0xFF);
+        }
+    }
+    if (bits >= 6) { js_free(ctx, out); return NULL; } /* dangling bits */
+    *out_n = o;
+    return out;
+}
+
+/* The intrinsics' error convention: a JS Error whose message starts
+ * "zstd: " + the zstd error name (Agent B's shim codes against the prefix). */
+static JSValue dsh_zstd_error(JSContext *ctx, size_t code) {
+    char msg[192];
+    snprintf(msg, sizeof(msg), "zstd: %s", ZSTD_getErrorName(code));
+    JSValue err = JS_NewError(ctx);
+    if (JS_IsException(err)) return JS_EXCEPTION;
+    JS_SetPropertyStr(ctx, err, "message", JS_NewString(ctx, msg));
+    return JS_Throw(ctx, err);
+}
+
+/* Shared prologue: argv[0] as base64 → fresh bytes, failing loud on bad
+ * input. Returns NULL with the TypeError already thrown. */
+static unsigned char *dsh_zstd_arg_bytes(JSContext *ctx, JSValueConst arg,
+                                         const char *fn, size_t *out_n) {
+    size_t len = 0;
+    const char *in = JS_ToCStringLen(ctx, &len, arg);
+    if (!in) return NULL;
+    unsigned char *bytes = dsh_b64_decode_bytes(ctx, in, len, out_n);
+    JS_FreeCString(ctx, in);
+    if (!bytes) (void)JS_ThrowTypeError(ctx, "%s input is not valid base64", fn);
+    return bytes;
+}
+
+/* __zstdCompressB64(b64String, level?) -> b64String. level defaults to 3
+ * (the `level || 3` of the intrinsic contract; 0/absent → 3). */
+static JSValue js_zstd_compress_b64(JSContext *ctx, JSValueConst this_val,
+                                    int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1) return JS_ThrowTypeError(ctx, "__zstdCompressB64 needs a base64 string");
+    size_t src_len = 0;
+    unsigned char *src = dsh_zstd_arg_bytes(ctx, argv[0], "__zstdCompressB64", &src_len);
+    if (!src) return JS_EXCEPTION;
+    int level = 3;
+    if (argc >= 2 && !JS_IsUndefined(argv[1])) {
+        int32_t lv = 0;
+        if (JS_ToInt32(ctx, &lv, argv[1]) < 0) { js_free(ctx, src); return JS_EXCEPTION; }
+        if (lv != 0) level = lv; /* 0 → keep the default 3 */
+    }
+    size_t bound = ZSTD_compressBound(src_len);
+    unsigned char *dst = js_malloc(ctx, bound ? bound : 1);
+    if (!dst) { js_free(ctx, src); return JS_EXCEPTION; }
+    size_t r = ZSTD_compress(dst, bound, src, src_len, level);
+    js_free(ctx, src);
+    if (ZSTD_isError(r)) { js_free(ctx, dst); return dsh_zstd_error(ctx, r); }
+    char *b64 = dsh_b64_encode_bytes(ctx, dst, r);
+    js_free(ctx, dst);
+    if (!b64) return JS_EXCEPTION;
+    JSValue res = JS_NewString(ctx, b64);
+    js_free(ctx, b64);
+    return res;
+}
+
+/* Grow-loop limits for __zstdDecompressB64's unknown/exceeded-size path:
+ * start at 256 KB, double, never exceed 256 MB. */
+#define DSH_ZSTD_DST_START 262144
+#define DSH_ZSTD_DST_MAX 268435456
+
+/* __zstdDecompressB64(b64String, maxOutputBytes?) -> b64String. Frame
+ * content size known AND within maxOutputBytes (0/omitted = unlimited) →
+ * exact allocation; everything else (unknown size — streaming frames — or
+ * a hint above the caller's cap) → the grow loop above. */
+static JSValue js_zstd_decompress_b64(JSContext *ctx, JSValueConst this_val,
+                                      int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1) return JS_ThrowTypeError(ctx, "__zstdDecompressB64 needs a base64 string");
+    size_t src_len = 0;
+    unsigned char *src = dsh_zstd_arg_bytes(ctx, argv[0], "__zstdDecompressB64", &src_len);
+    if (!src) return JS_EXCEPTION;
+    int64_t max_out = 0;
+    if (argc >= 2 && !JS_IsUndefined(argv[1])) {
+        if (JS_ToInt64(ctx, &max_out, argv[1]) < 0) { js_free(ctx, src); return JS_EXCEPTION; }
+        if (max_out < 0) max_out = 0;
+    }
+    unsigned long long hint = ZSTD_getFrameContentSize(src, src_len);
+    int exact = hint != ZSTD_CONTENTSIZE_UNKNOWN && hint != ZSTD_CONTENTSIZE_ERROR &&
+                (max_out == 0 || (unsigned long long)max_out >= hint);
+    size_t cap = exact ? (size_t)(hint ? hint : 1) : DSH_ZSTD_DST_START;
+    for (;;) {
+        unsigned char *dst = js_malloc(ctx, cap);
+        if (!dst) { js_free(ctx, src); return JS_EXCEPTION; }
+        size_t r = ZSTD_decompress(dst, cap, src, src_len);
+        if (!ZSTD_isError(r)) {
+            js_free(ctx, src);
+            char *b64 = dsh_b64_encode_bytes(ctx, dst, r);
+            js_free(ctx, dst);
+            if (!b64) return JS_EXCEPTION;
+            JSValue res = JS_NewString(ctx, b64);
+            js_free(ctx, b64);
+            return res;
+        }
+        js_free(ctx, dst);
+        /* dstSizeTooSmall: only exact-hint misses and unknown-size frames
+         * land here — double (capped) and retry; anything else is final. */
+        if (ZSTD_getErrorCode(r) == ZSTD_error_dstSize_tooSmall && cap < DSH_ZSTD_DST_MAX) {
+            size_t next = cap * 2;
+            if (next > DSH_ZSTD_DST_MAX) next = DSH_ZSTD_DST_MAX;
+            cap = next;
+            continue;
+        }
+        js_free(ctx, src);
+        return dsh_zstd_error(ctx, r);
+    }
+}
+
 /* ---- node:module require seam ------------------------------------------- */
 
 /* ESM-loader helpers live below; forward-declared here. */
@@ -700,13 +872,24 @@ static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char 
     for (size_t f = 0; f < sizeof(FAMILIES) / sizeof(FAMILIES[0]); f++) {
         char probe[512];
         if (sub[0] == 0) {
-            /* Bare package specifier: the entry point. */
+            /* Bare package specifier: the entry point. Second base: the
+             * npm-published test/support packages the suite vendored under
+             * vendor/npm/@deepseek-ai/ (agent-loop-testkit and kin). */
             snprintf(probe, sizeof(probe), "vendor/dsh/%s%s@%s/lib/index.js",
                      FAMILIES[f], pkg, DSH_UPSTREAM_VERSION);
             char *abs = dsh_join(s->base, probe);
             if (!abs) return NULL;
             int hit = access(abs, R_OK) == 0;
             free(abs);
+            if (!hit) {
+                snprintf(probe, sizeof(probe),
+                         "vendor/npm/@deepseek-ai/dsh-%s@%s/lib/index.js",
+                         pkg, DSH_UPSTREAM_VERSION);
+                abs = dsh_join(s->base, probe);
+                if (!abs) return NULL;
+                hit = access(abs, R_OK) == 0;
+                free(abs);
+            }
             if (hit) {
                 snprintf(out, out_len, "%s", probe);
                 return out;
@@ -727,6 +910,15 @@ static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char 
                 if (!abs) return NULL;
                 int hit = access(abs, R_OK) == 0;
                 free(abs);
+                if (!hit) {
+                    snprintf(probe, sizeof(probe),
+                             "vendor/npm/@deepseek-ai/dsh-%s@%s/%s",
+                             pkg, DSH_UPSTREAM_VERSION, rel_file);
+                    abs = dsh_join(s->base, probe);
+                    if (!abs) return NULL;
+                    hit = access(abs, R_OK) == 0;
+                    free(abs);
+                }
                 if (hit) {
                     snprintf(out, out_len, "%s", probe);
                     return out;
@@ -877,8 +1069,12 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
          * probe (the llm tarball lives in the stripped family; the probe's
          * lib/ + lib/types/ shapes cover the exports map's remaining rows). */
     }
-    if (strcmp(name, "@deepseek-ai/dsh-session-persistence") == 0) {
-        snprintf(out, out_len, "upstream/shims/dsh-session-persistence.js");
+    /* dsh-session-persistence: served by the vendored-package probe — the
+     * submodule-built real package is staged (koffi-free) since the
+     * 2026-09-23 closure harvest; the old errors-only shim would shadow it
+     * and starve the persistence family of its error classes. */
+    if (strcmp(name, "@deepseek-ai/node-addon-system/flock") == 0) {
+        snprintf(out, out_len, "upstream/shims/node-addon-system-flock.js");
         return 1;
     }
     /* @deepseek-ai/dsh-client-modules is an NPM-published package (the web
@@ -934,6 +1130,24 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     }
     if (strcmp(name, "js-yaml") == 0) {
         snprintf(out, out_len, "vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs");
+        return 1;
+    }
+    if (strcmp(name, "fast-check") == 0) {
+        /* The property-testing lib the upstream suite's *__properties specs
+         * import — the monorepo's own lockfile pin (4.8.0), pre-bundled
+         * (fast-check + pure-rand in one self-contained ESM file: quickjs
+         * resolves the chunk's package-name import, esbuild's nodePaths
+         * fed it pure-rand). */
+        snprintf(out, out_len, "vendor/npm/fast-check@4.8.0/lib/fast-check.bundle.mjs");
+        return 1;
+    }
+    if (strncmp(name, "fast-check/", 12) == 0) {
+        snprintf(out, out_len, "vendor/npm/fast-check@4.8.0/lib/%s", name + 12);
+        return 1;
+    }
+    if (strncmp(name, "pure-rand/", 10) == 0) {
+        /* fast-check's rng — same lockfile pin (8.4.0), CJS-free ESM face. */
+        snprintf(out, out_len, "vendor/npm/pure-rand@8.4.0/lib/%s.js", name + 10);
         return 1;
     }
     if (strcmp(name, "@deepseek-ai/cordis") == 0) {
@@ -1146,6 +1360,10 @@ static void dsh_bind_globals(dsh_spike_t *s) {
     JS_SetPropertyStr(ctx, global, "btoa", btoa_fn);
     JSValue atob_fn = JS_NewCFunction(ctx, js_atob, "atob", 1);
     JS_SetPropertyStr(ctx, global, "atob", atob_fn);
+    JS_SetPropertyStr(ctx, global, "__zstdCompressB64",
+                      JS_NewCFunction(ctx, js_zstd_compress_b64, "__zstdCompressB64", 2));
+    JS_SetPropertyStr(ctx, global, "__zstdDecompressB64",
+                      JS_NewCFunction(ctx, js_zstd_decompress_b64, "__zstdDecompressB64", 2));
     JSValue crypto = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, crypto, "getRandomValues",
                       JS_NewCFunction(ctx, js_get_random_values, "getRandomValues", 1));
@@ -1161,6 +1379,12 @@ dsh_spike_t *dsh_spike_new(const char *bundle_root, const dsh_spike_sink *sink) 
     snprintf(s->base, sizeof(s->base), "%s", bundle_root);
     s->rt = JS_NewRuntime();
     if (!s->rt) { free(s); return NULL; }
+    /* The upstream suite's continuation chains recurse deeper than
+     * quickjs-ng's default evaluation stack (measured 2026-09-23:
+     * "Maximum call stack size exceeded" on agent-initiator/scope-lifecycle
+     * tests Node runs in its ~1 MB default). 8 MB ≈ Node's --stack-size
+     * headroom; the mobile hosts raise the same knob. */
+    JS_SetMaxStackSize(s->rt, 400 * 1024 * 1024);
     JS_SetRuntimeOpaque(s->rt, s);
     JS_SetModuleLoaderFunc(s->rt, dsh_normalize, dsh_module_loader, s);
     s->ctx = JS_NewContext(s->rt);

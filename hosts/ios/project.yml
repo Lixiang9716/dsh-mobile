@@ -23,7 +23,20 @@ settings:
       # The wasm3 interpreter's own headers (dsh_wasm.c includes them by
       # quoted name from a different directory than the vendored sources).
       - "$(SRCROOT)/../../runtime/spike/vendor/wasm3/0.9.0/source"
+      # zstd headers (dsh_spike_host.c intrinsics include them)
+      - "$(SRCROOT)/../../runtime/spike/vendor/zstd/1.5.7"
+      - "$(SRCROOT)/../../runtime/spike/vendor/zstd/1.5.7/common"
       - "$(SRCROOT)/App/Generated"
+    # zstd's x86_64 fast loop lives in huf_decompress_amd64.S, which the pin
+    # does not carry: an x86_64 slice (Intel-Mac simulator) would hit undefined
+    # HUF_*_fast_asm_loop symbols at link. ZSTD_DISABLE_ASM is zstd's own
+    # switch — same define the android/harmony CMake and the CLI build pass.
+    # Expressed per-config so the Debug default (DEBUG=1) survives intact.
+    configs:
+      Debug:
+        GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "DEBUG=1", "ZSTD_DISABLE_ASM=1"]
+      Release:
+        GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "ZSTD_DISABLE_ASM=1"]
 
 targets:
   DSHSpike:
@@ -42,6 +55,33 @@ targets:
       # linked; the WASI backends stay out (the app's boundary is our own
       # imported functions, not WASI's descriptor table).
       - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_core.c
+      # zstd 1.5.7 (BSD-3, single-thread) — the node:zlib zstd face, pinned by
+      # runtime/spike/vendor/ensure-zstd.sh
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/debug.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/entropy_common.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/error_private.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/fse_decompress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/pool.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/threading.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/xxhash.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/zstd_common.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/fse_compress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/hist.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/huf_compress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_literals.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_sequences.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_superblock.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_double_fast.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_fast.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_lazy.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_ldm.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_opt.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_preSplit.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/huf_decompress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_ddict.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_decompress.c
+      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_decompress_block.c
       - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_env.c
       - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_parse.c
       - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_compile.c

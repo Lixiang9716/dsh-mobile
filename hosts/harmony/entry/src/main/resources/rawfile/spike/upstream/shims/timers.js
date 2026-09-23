@@ -25,10 +25,31 @@
  *     ReferenceError it has always been on this runtime.
  */
 import { timerSchedule, timerCancel, onEvent } from 'gateway.js';
+import { captureContext, runWithCapturedContext } from './async-hooks.js';
 
 const pending = new Map(); // handle -> { timerId, cancelled, fn, args }
 const firing = new Map(); // timerId -> handle
 let nextHandle = 1;
+
+/** Arm one timer for a setTimeout entry — extracted to keep the sync face
+ * flat (the shape gate): the cancel-beat-arm race disarms the late arm, a
+ * suppressed fire finds the entry already deleted (idempotent one-way), and
+ * an arm failure fails loud (rule 5 — swallowing it would hang every await
+ * racing the fuse; a host without the seam names the primitive). */
+const armTimer = async (delayMs, handle, entry) => {
+  try {
+    const { timerId } = await timerSchedule(delayMs, { tag: 'shim:setTimeout' });
+    if (entry.cancelled) {
+      timerCancel(timerId).catch(() => {});
+      return;
+    }
+    entry.timerId = timerId;
+    firing.set(timerId, handle);
+  } catch (error) {
+    pending.delete(handle);
+    throw error;
+  }
+};
 
 onEvent((ev) => {
   if (ev?.event !== 'timer.fire') return;
@@ -38,7 +59,7 @@ onEvent((ev) => {
   const entry = pending.get(handle);
   pending.delete(handle);
   if (entry !== undefined && entry.cancelled !== true) {
-    entry.fn(...entry.args);
+    runWithCapturedContext(entry.captured, () => entry.fn(...entry.args));
   }
 });
 
@@ -51,26 +72,12 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
     throw new TypeError(`setTimeout: delay must be a non-negative integer (got ${String(delay)})`);
   }
   const handle = nextHandle++;
-  const entry = { timerId: null, cancelled: false, fn, args };
+  // Cross-timer ALS propagation (the async-hooks shim predates the seam):
+  // the context captured AT ARM TIME wraps the fire — Node's timer semantics.
+  const captured = captureContext();
+  const entry = { timerId: null, cancelled: false, fn, args, captured };
   pending.set(handle, entry);
-  timerSchedule(delayMs, { tag: 'shim:setTimeout' })
-    .then(({ timerId }) => {
-      if (entry.cancelled) {
-        // The cancel beat the arm: disarm the now-armed timer (idempotent
-        // one-way race — a suppressed fire may still race in and finds the
-        // entry already deleted).
-        timerCancel(timerId).catch(() => {});
-        return;
-      }
-      entry.timerId = timerId;
-      firing.set(timerId, handle);
-    })
-    .catch((error) => {
-      pending.delete(handle);
-      // Fail loud (rule 5): a host without the seam names the primitive;
-      // swallowing an arm failure would hang every await racing the fuse.
-      throw error;
-    });
+  armTimer(delayMs, handle, entry);
   return handle;
 };
 
@@ -84,3 +91,15 @@ globalThis.clearTimeout = (handle) => {
     timerCancel(entry.timerId).catch(() => {});
   }
 };
+
+// setImmediate — the other ambient timer idiom the upstream code uses
+// (tool-call scheduler's quiescence drain). A macrotask: the 0-delay timer
+// arm is the honest mapping (microtask-only would starve the drain loop's
+// interleaving with gateway events).
+globalThis.setImmediate = (fn, ...args) => {
+  if (typeof fn !== 'function') {
+    throw new TypeError(`setImmediate: callback must be a function (got ${typeof fn})`);
+  }
+  return globalThis.setTimeout(fn, 0, ...args);
+};
+globalThis.clearImmediate = globalThis.clearTimeout;

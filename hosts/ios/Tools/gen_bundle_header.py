@@ -95,6 +95,16 @@ RESOURCES = [
     ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"),
     ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
     ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
+    # the upstream-suite globals (AbortController/structuredClone — installed by
+    # the test harness before any spec imports; lives with the other shims)
+    ("shims_globals_js", SPIKE / "upstream" / "shims" / "globals.js"),
+    ("shims_node_perf_hooks_js", SPIKE / "upstream" / "shims" / "node-perf-hooks.js"),
+    ("shims_node_addon_flock_js", SPIKE / "upstream" / "shims" / "node-addon-system-flock.js"),
+    ("shims_expect_poll_js", SPIKE / "upstream" / "shims" / "expect-poll.js"),
+    ("shims_node_zlib_js", SPIKE / "upstream" / "shims" / "node-zlib.js"),
+    ("shims_node_worker_threads_js", SPIKE / "upstream" / "shims" / "node-worker-threads.js"),
+    ("shims_node_stream_js", SPIKE / "upstream" / "shims" / "node-stream.js"),
+    ("shims_describe_each_js", SPIKE / "upstream" / "shims" / "describe-each.js"),
     ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
     ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
     ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),

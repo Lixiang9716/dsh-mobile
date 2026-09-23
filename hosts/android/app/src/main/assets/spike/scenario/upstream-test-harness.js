@@ -1,82 +1,37 @@
+import '../upstream/shims/globals.js';
+import { attachExpectPoll } from '../upstream/shims/expect-poll.js';
 // dsh:logging-exempt (test harness: verdicts are the product)
 import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
+import { attachEachForms } from '../upstream/shims/describe-each.js';
 
 // upstream-test-harness — the quickjs test shell for the UPSTREAM suite in
 // OUR runtime (transpiled specs import it as `vitest`); unimplemented APIs
 // fail LOUD naming the API (rule 5). Fake timers live in
 // scenario/upstream-fake-timers.js.
 
-// AbortController/AbortSignal — the WHATWG subset the upstream agent-loop's
-// cancellation path needs (signal.aborted, addEventListener('abort'),
-// abort(reason), throwIfAborted). The suite's largest single gap before
-// this shim: every agent-loop cancel test failed on the missing global,
-// identically on the CLI host and the iOS simulator (the harness is the
-// shared injection point, so every host gets it from this one file).
-// Listeners fire synchronously; reason defaults to the standard abort
-// error; a second abort() is a no-op.
-if (typeof globalThis.AbortController === 'undefined') {
-  const fire = (signal) => {
-    if (signal.aborted) return;
-    signal._aborted = true;
-    signal._reason = signal._reason ?? Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
-    for (const fn of [...signal._listeners]) {
-      try { fn({ type: 'abort', target: signal }); } catch { /* one listener's throw must not break the rest */ }
-    }
-  };
-  class AbortSignalShim {
-    constructor() {
-      this._aborted = false;
-      this._reason = undefined;
-      this._listeners = [];
-      this.onabort = null;
-    }
-    get aborted() { return this._aborted; }
-    get reason() { return this._reason; }
-    addEventListener(type, fn) {
-      if (type === 'abort' && typeof fn === 'function' && !this._listeners.includes(fn)) {
-        this._listeners.push(fn);
-      }
-    }
-    removeEventListener(type, fn) {
-      if (type === 'abort') this._listeners = this._listeners.filter((f) => f !== fn);
-    }
-    throwIfAborted() {
-      if (this._aborted) throw this._reason;
-    }
+/** The scalar fast paths of deepEqual — extracted to keep the recursive
+ * comparator under the 50-line function budget. */
+const scalarsEqual = (a, b) => {
+  if (a === b) return true;
+  if (typeof a !== typeof b) return false;
+  if (a === null || b === null || typeof a !== 'object') {
+    return Number.isNaN(a) && Number.isNaN(b);
   }
-  class AbortControllerShim {
-    constructor() { this.signal = new AbortSignalShim(); }
-    abort(reason) {
-      this.signal._reason = reason;
-      fire(this.signal);
-      if (typeof this.signal.onabort === 'function') this.signal.onabort({ type: 'abort', target: this.signal });
-    }
-  }
-  globalThis.AbortController = AbortControllerShim;
-  globalThis.AbortSignal = AbortSignalShim;
-}
-
-// structuredClone — the spine clones JSON-safe session state (config-derived
-// agent records, headers). The honest subset: primitives pass through, JSON
-// data deep-clones through a stringify round trip (which itself throws on
-// cycles — never a silent shallow copy); functions and symbols fail loud.
-if (typeof globalThis.structuredClone === 'undefined') {
-  globalThis.structuredClone = (value) => {
-    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return value;
-    if (typeof value === 'function') throw new Error('structuredClone: functions cannot be cloned');
-    return JSON.parse(JSON.stringify(value));
-  };
-}
+  return undefined; // both non-null objects: continue in deepEqual
+};
 
 /** Deep structural equality (the expect().toEqual core), depth-guarded. */
 const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  if (a === null || b === null || typeof a !== 'object') return Number.isNaN(a) && Number.isNaN(b);
+  if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
+  if (scalarsEqual(a, b)) return true;
+  if (a === null || b === null || typeof a !== 'object') return false;
   if (seen.has(a)) return true; // cycle: compared by identity once already
   seen.add(a);
   if (Array.isArray(a) !== Array.isArray(b)) return false;
+  return containersEqual(a, b, seen, depth);
+};
+const containersEqual = (a, b, seen, depth) => {
   if (Array.isArray(a)) {
     return a.length === b.length && a.every((v, i) => deepEqual(v, b[i], seen, depth + 1));
   }
@@ -93,6 +48,30 @@ const deepEqual = (a, b, seen = new Set(), depth = 0) => {
     }
     return true;
   }
+  return keyedEqual(a, b, seen, depth);
+};
+const keyedEqual = (a, b, seen, depth) => {
+  if (a instanceof Set || b instanceof Set) {
+    /* Set equality is MEMBERSHIP, not insertion order (measured 2026-09-23:
+     * agent-initiator asserts new Set([...signals]).toEqual(new Set([s])) —
+     * the generic object compare failed it). Members compare by the same
+     * deep rules; identity-only when no deep twin exists. */
+    if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) return false;
+    const rest = new Set(b);
+    for (const item of a) {
+      let matched = false;
+      if (rest.delete(item)) continue;
+      for (const candidate of rest) {
+        if (deepEqual(item, candidate, seen, depth + 1)) {
+          rest.delete(candidate);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) return false;
+    }
+    return true;
+  }
   if (a instanceof Set || b instanceof Set) {
     if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) return false;
     for (const v of a) {
@@ -104,25 +83,35 @@ const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   const kb = Object.keys(b);
   if (ka.length !== kb.length) return false;
   return ka.every((k) => Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k], seen, depth + 1));
+  return true;
 };
 
 /** Subset-matching for toEqual/toMatchObject against asymmetric matchers. */
-const matchSubset = (actual, expected, strict) => {
+const matchSubset = (actual, expected, strict, seen = new Set(), depth = 0) => {
   if (expected && typeof expected === 'object' && expected.__matcher) {
     return expected.__matcher(actual);
   }
+  // Identity fast path + cycle guard (measured 2026-09-23: agent-initiator
+  // and scope-lifecycle compare LIVE cordis objects against themselves —
+  // expected === actual at the cycle point; and cordis getters return a NEW
+  // traceable proxy on every access, so a seen-SET never re-sees the same
+  // instance. Identity equality terminates those cycles exactly; a depth
+  // cap (deepEqual's own bound) is the backstop for distinct-but-cyclic
+  // structures, where the harness deems the walked prefix equal.)
+  if (actual === expected) return true;
+  if (depth > 64) return true;
   if (expected === null || typeof expected !== 'object' || actual === null || typeof actual !== 'object') {
     return deepEqual(actual, expected);
   }
   if (Array.isArray(expected)) {
     if (strict && actual.length !== expected.length) return false;
     if (!Array.isArray(actual) || actual.length < expected.length) return false;
-    return expected.every((v, i) => matchSubset(actual[i], v, strict));
+    return expected.every((v, i) => matchSubset(actual[i], v, strict, seen, depth + 1));
   }
   if (!strict && Array.isArray(actual)) return false;
   for (const key of Object.keys(expected)) {
     if (!Object.prototype.hasOwnProperty.call(actual, key)) return false;
-    if (!matchSubset(actual[key], expected[key], strict)) return false;
+    if (!matchSubset(actual[key], expected[key], strict, seen, depth + 1)) return false;
   }
   return strict ? Object.keys(actual).length === Object.keys(expected).length : true;
 };
@@ -417,6 +406,8 @@ it.each = (table) => (name, fn) => {
 export const test = it;
 export const beforeEach = (fn) => { suite.beforeEach.push(fn); };
 export const afterEach = (fn) => { suite.afterEach.push(fn); };
+attachEachForms(describe, it);
+
 export const beforeAll = (fn) => { suite.before.push(fn); };
 export const afterAll = (fn) => { suite.after.push(fn); };
 /** vitest's onTestFinished: register cleanup for the CURRENTLY-RUNNING test
@@ -447,6 +438,7 @@ export const expect = Object.assign(makeExpect, {
   closeTo: (n, precision = 2) => ({ __matcher: (v) => Math.abs(v - n) < 10 ** -precision / 2 }),
   hasProperty: (key) => ({ __matcher: (v) => v != null && Object.prototype.hasOwnProperty.call(v, key) }),
 });
+attachExpectPoll(expect, makeExpect, failWith);
 export const vi = viApi;
 
 const typeChain = new Proxy(function typeProbe() {}, {

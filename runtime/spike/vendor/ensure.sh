@@ -18,10 +18,29 @@ cd "$(dirname "$0")"
 # fetch-and-verify logic; a caller that wants only quickjs can run that script
 # on its own.
 sh ./ensure-wasm3.sh   # cwd is this script's directory (cd above)
+# The zstd C library (node:zlib's zstd face rides it through the host
+# intrinsics + the node:zlib shim) — same pin terms.
+sh ./ensure-zstd.sh
 
-PIN=0.17.0
-COMMIT=6d46d07d04041b40f4f49eaa7fdebe44c314c699
-TARBALL_SHA256=a62cf1ff7d6d2f82b90a2d247a57e9eb56b81c03feb1f372a53923426e358cb0
+# The ENGINE PIN lives at OUR fork (owner direction 2026-09-23: dsh-mobile
+# maintains its own quickjs; #163 pinned it first and #169's merge silently
+# reverted the pin to upstream — restored here at the TWO-divergence head).
+# The fork = upstream quickjs-ng 0.17.0 (6d46d07d) + (1) native
+# Function.prototype.toString renders the single-line V8/JSC form (the
+# dsh-util-values realm guard string-compares that spelling; on stock
+# quickjs-ng every plain object fails the realm check — anywhere-labs/
+# dsh-desktop#1157), and (2) the async-context engine surface (TC39
+# proposal-async-context shape): a per-runtime context value snapshotted
+# into every enqueued job and captured at promise-reaction ATTACH time —
+# the await-boundary propagation JS patches cannot reach — now exposed as
+# the TC39 proposal-async-context face itself: AsyncContext.Variable /
+# snapshot / wrap as an ENGINE INTRINSIC (JS_AddIntrinsicAsyncContext),
+# upstreamable to quickjs-ng as-is. Rebase the branch when tracking a
+# newer quickjs-ng.
+PIN=0.17.0+fork-tostring+async-context+tc39
+QJS_REPO=Lixiang9716/quickjs
+COMMIT=4153a1f0edef441e5dc71871eb071bc405a0bd04
+TARBALL_SHA256=c635c1e73629b6a69043b09ba181b69a679b4341f9cb6a012d47b83dce6a4f57
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
 #
@@ -50,7 +69,11 @@ fetch_retry() {
   return 1
 }
 
-DIR="quickjs-ng/$PIN"
+# The vendor DIRECTORY stays quickjs-ng/0.17.0 regardless of the pin's
+# display suffix (every build file — host/build.sh, the harmony CMakeLists,
+# the iOS project — hardcodes this path; a suffix-coupled rename broke the
+# harmony build exactly once before the decoupling).
+DIR="quickjs-ng/0.17.0"
 
 FILES="dtoa.c libregexp.c libunicode.c quickjs.c \
 cutils.h dtoa.h libregexp.h libregexp-opcode.h libunicode.h libunicode-table.h \
@@ -68,8 +91,8 @@ if have_all; then
 fi
 
 mkdir -p "$DIR"
-TMP=$(mktemp /tmp/dsh-qjs.XXXXXX.tar.gz)
-fetch_retry "https://github.com/quickjs-ng/quickjs/archive/$COMMIT.tar.gz" "$TMP"
+TMP=$(mktemp /tmp/dsh-qjs.XXXXXX)
+fetch_retry "https://github.com/$QJS_REPO/archive/$COMMIT.tar.gz" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 for f in $FILES; do
     tar xzf "$TMP" -C "$DIR" --strip-components=1 "quickjs-$COMMIT/$f"

@@ -288,9 +288,34 @@ export const open = async (path, flags = 'r', mode) => {
   throw new Error(`node:fs/promises: open flag '${flags}' — supported: r, x-flags (the closure's atomic write path)`);
 };
 
+/** mkdtemp(prefix) — Node's unique-suffix temp dir; the filesystem here is
+ * scope-relative and case-sensitive, so a monotonic counter suffix carries
+ * the uniqueness contract honestly (the corpus stages atomic writes in it). */
+let mkdtempCounter = 0;
+/** truncate(path, len) — the closure's write-claim trim path needs it. */
+export const truncate = async (path, len) => {
+  if (typeof path !== 'string' || !Number.isInteger(len) || len < 0) {
+    throw new TypeError('truncate: (path, len) with a non-negative integer len');
+  }
+  const { readFile, writeFile } = await import('./fs-promises.js');
+  const data = await readFile(path);
+  if (data.byteLength <= len) return undefined;
+  await writeFile(path, data.subarray(0, len));
+  return undefined;
+};
+
+export const mkdtemp = async (prefix) => {
+  if (typeof prefix !== 'string' || prefix.length === 0) {
+    throw new TypeError('mkdtemp: prefix must be a non-empty string');
+  }
+  const path = `${prefix}${Date.now().toString(36)}-${(mkdtempCounter += 1).toString(36)}`;
+  await mkdir(path, { recursive: true });
+  return path;
+};
+
 export default {
   mountWorkspace,
   readFile, readdir, stat, lstat, mkdir, rm, rename, link, chmod, writeFile, open,
   cp, appendFile, unlink, access,
-  constants, realpath, opendir,
+  constants, realpath, opendir, mkdtemp, truncate,
 };

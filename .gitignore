@@ -77,6 +77,12 @@ runtime/spike/vendor/npm/
 # same reason as the engines above: upstream's real-world C cannot survive an
 # editor-level parse gate, and the pin table is the provenance record.
 runtime/spike/vendor/wasm3/
+# The zstd compression library (1.5.7, single-threaded subset) — same terms:
+# pinned + sha256-verified by runtime/spike/vendor/ensure-zstd.sh, compiled
+# straight into the shared C host, untracked so the syntax-class checker never
+# judges upstream C. The pin table in the ensure script is the provenance
+# record.
+runtime/spike/vendor/zstd/
 
 # The emulated-Linux userland engine (iSH-arm64) is vendored on exactly those
 # terms — pinned + sha256-verified by runtime/spike/vendor/ensure-ish.sh, kept

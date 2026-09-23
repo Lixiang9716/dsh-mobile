@@ -37,7 +37,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define SMOKE_DEADLINE_SECONDS 10
+#define SMOKE_DEADLINE_SECONDS 120
 #define HTTP_RCV_TIMEOUT_SECONDS 5
 #define HTTP_HEADER_MAX 16384
 
@@ -84,10 +84,19 @@ typedef struct smoke_backend {
      * same files, one mount away: the guest command's cwd is
      * <ish_mount>/<scope-relative path>. */
     const char *ish_mount;
+    /* The timer seam (contract v1.4.0): armed wake-ups pending fire. The
+     * run loop sleeps to the earliest fire_at when otherwise quiescent —
+     * one arm fires at most once, cancel-or-fire resolves one way. */
+    struct smoke_timer {
+        int id;
+        long long fire_at_ms; /* CLOCK_MONOTONIC milliseconds */
+    } timers[256];
+    size_t n_timers;
+    int next_timer_id;
 } smoke_backend;
 
 static const char *SMOKE_DESCRIPTOR =
-    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\"],"
+    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"timerSchedule\",\"timerCancel\"],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
     "\"presentPicker\",\"keychainGet\",\"keychainSet\"]}";
 
@@ -940,6 +949,50 @@ static void smoke_serve(smoke_backend *b, int call_id, const char *name,
         snprintf(payload, sizeof(payload), "{\"scope\":\"app\",\"path\":\"%s\"}", b->tmpdir);
         return smoke_settle(b, call_id, 1, payload);
     }
+    if (strcmp(name, "timerSchedule") == 0) {
+        /* v1.4.0: settle on ARM; the fire arrives later as a timer.fire
+         * bridge event from the quiescent run loop's sleep-to-fire pass. */
+        if (!strstr(args, "\"delayMs\"")) {
+            return smoke_reject(b, call_id, "timerSchedule", "invalid",
+                                "delayMs missing");
+        }
+        int delay = json_int(args, "delayMs", -1);
+        if (delay < 0) {
+            return smoke_reject(b, call_id, "timerSchedule", "invalid",
+                                "delayMs must be an integer >= 0");
+        }
+        if (delay > 2147483647) delay = 2147483647; /* the host clamp */
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        long long at = (long long)now.tv_sec * 1000 + now.tv_nsec / 1000000 + delay;
+        if (b->n_timers >= sizeof(b->timers) / sizeof(b->timers[0])) {
+            return smoke_reject(b, call_id, "timerSchedule", "invalid",
+                                "timer table full (256 live)");
+        }
+        int id = ++b->next_timer_id;
+        b->timers[b->n_timers].id = id;
+        b->timers[b->n_timers].fire_at_ms = at;
+        b->n_timers++;
+        char payload[64];
+        snprintf(payload, sizeof(payload), "{\"timerId\":%d}", id);
+        return smoke_settle(b, call_id, 1, payload);
+    }
+    if (strcmp(name, "timerCancel") == 0) {
+        int want = json_int(args, "timerId", 0);
+        int cancelled = 0;
+        for (size_t i = 0; i < b->n_timers; i++) {
+            if (b->timers[i].id == want) {
+                b->timers[i] = b->timers[b->n_timers - 1];
+                b->n_timers--;
+                cancelled = 1;
+                break;
+            }
+        }
+        char payload[48];
+        snprintf(payload, sizeof(payload), "{\"cancelled\":%s}",
+                 cancelled ? "true" : "false");
+        return smoke_settle(b, call_id, 1, payload);
+    }
     smoke_reject(b, call_id, name, "unavailable",
                  "declared unavailable by the smoke backend");
 }
@@ -994,7 +1047,7 @@ static char *smoke_tmpdir(void) {
     return dir ? strdup(dir) : NULL; /* temp litter is left for /tmp cleanup */
 }
 
-int main(int argc, char **argv) {
+static int spike_run_main(int argc, char **argv) {
     const char *base = argc > 1 ? argv[1] : "..";
     const char *entry = argc > 2 ? argv[2] : "scenario/boot-verification.js";
     char entry_path[1024];
@@ -1122,7 +1175,37 @@ int main(int argc, char **argv) {
         int served = smoke_drain(&b);
         if (served < 0) { rc = -1; break; }
         if (dsh_spike_complete(b.spike)) break;
-        if (served == 0) break; /* quiescent with nothing outstanding */
+        if (served == 0) {
+            /* Quiescent with nothing outstanding — except armed timers: the
+             * one place this driver sleeps (wall-clock physics of a timer,
+             * rule 8). Sleep to the earliest fire_at (never past the run
+             * deadline), then deliver the timer.fire event and pump again. */
+            if (b.n_timers == 0) break;
+            size_t earliest = 0;
+            for (size_t i = 1; i < b.n_timers; i++) {
+                if (b.timers[i].fire_at_ms < b.timers[earliest].fire_at_ms) earliest = i;
+            }
+            struct timespec now;
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            long long now_ms = (long long)now.tv_sec * 1000 + now.tv_nsec / 1000000;
+            long long wait = b.timers[earliest].fire_at_ms - now_ms;
+            if (wait > 0) {
+                if (deadline.tv_sec - now.tv_sec < (wait + 999) / 1000) {
+                    fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
+                            SMOKE_DEADLINE_SECONDS);
+                    rc = -1;
+                    break;
+                }
+                struct timespec nap = { wait / 1000, (wait % 1000) * 1000000 };
+                nanosleep(&nap, NULL);
+            }
+            int fired_id = b.timers[earliest].id;
+            b.timers[earliest] = b.timers[b.n_timers - 1];
+            b.n_timers--;
+            char ev[80];
+            snprintf(ev, sizeof(ev), "{\"event\":\"timer.fire\",\"timerId\":%d}", fired_id);
+            if (dsh_spike_gateway_event(b.spike, ev) != 0) { rc = -1; break; }
+        }
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         if (now.tv_sec > deadline.tv_sec ||
@@ -1145,4 +1228,33 @@ int main(int argc, char **argv) {
     dsh_spike_free(b.spike);
     free(b.tmpdir);
     return exit_code;
+}
+
+/* main — the run happens on a dedicated big-stack thread: quickjs guards
+ * JS recursion against the C stack it actually consumes (the interpreter
+ * is not stackless), so the suite's deep continuation chains need BOTH a
+ * high JS limit and a C thread whose stack exceeds it (measured
+ * 2026-09-23: 8MB JS on the default 8MB main thread segfaulted; the
+ * upstream agent-initiator/scope-lifecycle chains want tens of MB).
+ * 512MB C / 64MB JS ≈ Node's --stack-size headroom with margin. */
+#include <pthread.h>
+struct spike_main_args { int argc; char **argv; int rc; };
+static void *spike_main_thread(void *ud) {
+    struct spike_main_args *a = (struct spike_main_args *)ud;
+    a->rc = spike_run_main(a->argc, a->argv);
+    return NULL;
+}
+int main(int argc, char **argv) {
+    struct spike_main_args a = { argc, argv, 2 };
+    pthread_attr_t attr;
+    pthread_t th;
+    pthread_attr_init(&attr);
+    pthread_attr_setstacksize(&attr, 512 * 1024 * 1024);
+    if (pthread_create(&th, &attr, spike_main_thread, &a) != 0) {
+        /* no big stack available — run inline (bounded by the main stack) */
+        return spike_run_main(argc, argv);
+    }
+    pthread_join(th, NULL);
+    pthread_attr_destroy(&attr);
+    return a.rc;
 }
