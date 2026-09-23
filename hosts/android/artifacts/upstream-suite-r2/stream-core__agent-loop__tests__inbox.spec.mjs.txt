@@ -1,0 +1,15 @@
+--------- beginning of main
+09-23 15:41:13.742 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 15:41:13.758 20931 20986 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 15:41:13.759 20931 20986 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 15:41:13.760 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__inbox.spec.mjs"}]}
+09-23 15:41:13.869 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > reads the shared projection without owning its registration"}]}
+09-23 15:41:13.886 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > rejects invalid durable coordinates and duplicate identities during reconstruction"}]}
+09-23 15:41:13.900 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > projects inherited inbox events in a forked session"}]}
+09-23 15:41:13.908 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > updates the projection cell before session observers run"}]}
+09-23 15:41:13.930 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > replaces a pending message by identity across both lists"}]}
+09-23 15:41:13.946 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > normalizes splice coordinates, rejects duplicate identities, and reports missing removals"}]}
+09-23 15:41:13.971 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"ReactLoopInbox > clears both pending lists as durable cancellations"}]}
+09-23 15:41:13.995 20931 20986 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-loop__tests__inbox.spec.mjs","passed":7,"failed":0,"skipped":0}]}
+09-23 15:41:13.996 20931 20986 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 15:41:13.996 20931 20986 I dsh.spike.result: ALL PASS

@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h> /* access() — the vendored-package probe's existence check */
 
 #include "quickjs.h"
 
@@ -439,6 +440,10 @@ static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
 static char *dsh_join(const char *a, const char *b);
 static char *dsh_read_file(const char *path, size_t *out_len);
 static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, size_t err_len);
+/* dsh_map_bare's vendored-dsh marker kind (the probe below owns resolution). */
+#define DSH_MAP_VENDORED_PROBE 2
+static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char *sub,
+                                    char *out, size_t out_len);
 
 /* Lexically resolve "." / ".." segments of a relative request against the
  * directory of `rel` (both bundle-root-relative, no trailing slash). Fills
@@ -509,6 +514,23 @@ static JSValue js_bundle_require(JSContext *ctx, JSValueConst this_val,
     if (kind < 0) {
         JS_ThrowReferenceError(ctx, "%s", maperr);
         goto fail;
+    }
+    if (kind == DSH_MAP_VENDORED_PROBE) {
+        /* "pkg|sub" marker — resolve through the same vendored probe the
+         * loader owns (one resolution site, no second map to drift). */
+        char pkg[256];
+        snprintf(pkg, sizeof(pkg), "%s", rel);
+        char *bar = strchr(pkg, '|');
+        if (bar == NULL) {
+            JS_ThrowReferenceError(ctx, "loader bug: vendored marker '%s' lacks '|'", rel);
+            goto fail;
+        }
+        *bar = 0;
+        if (dsh_vendored_rel(s, pkg, bar + 1, rel, sizeof(rel)) == NULL) {
+            JS_ThrowReferenceError(ctx,
+                "cannot load module '%s' (no vendored dsh package serves it)", base);
+            goto fail;
+        }
     }
     if (kind == 0) {
         if (base[0] == '/') snprintf(rel, sizeof(rel), "%s", base + 1);
@@ -656,6 +678,93 @@ static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path,
     return m;
 }
 
+/* Two vendored-directory families share vendor/dsh/: the spine closure
+ * stages packages under STRIPPED names (the @deepseek-ai/dsh-session
+ * tarball lands as session@<ver>/), while the test closure's npm tarballs
+ * keep their literal names (@deepseek-ai/dsh-ptc-runtime lands as
+ * dsh-ptc-runtime@<ver>/). Neither is derivable from the specifier alone —
+ * the loader PROBES both families and every exports-map file shape the
+ * dsh packages use (lib/<sub>.js, lib/types/<sub>.js), failing loud naming
+ * the specifier when nothing opens (rule 5). Returns the first existing
+ * bundle-relative path, or NULL when no candidate opens. */
+static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char *sub,
+                                    char *out, size_t out_len) {
+    static const char *FAMILIES[] = { "", "dsh-" };
+    /* Some imports carry their own .js suffix ('…/types.js'); the exports
+     * maps they mirror key the STEM ('…/types' → lib/types/types.js), so a
+     * trailing .js is stripped for the suffixed-shape probes. */
+    char stem[256];
+    size_t sub_len = strlen(sub);
+    int had_js = sub_len > 3 && strcmp(sub + sub_len - 3, ".js") == 0;
+    snprintf(stem, sizeof(stem), "%.*s", had_js ? (int)(sub_len - 3) : (int)sub_len, sub);
+    for (size_t f = 0; f < sizeof(FAMILIES) / sizeof(FAMILIES[0]); f++) {
+        char probe[512];
+        if (sub[0] == 0) {
+            /* Bare package specifier: the entry point. */
+            snprintf(probe, sizeof(probe), "vendor/dsh/%s%s@%s/lib/index.js",
+                     FAMILIES[f], pkg, DSH_UPSTREAM_VERSION);
+            char *abs = dsh_join(s->base, probe);
+            if (!abs) return NULL;
+            int hit = access(abs, R_OK) == 0;
+            free(abs);
+            if (hit) {
+                snprintf(out, out_len, "%s", probe);
+                return out;
+            }
+            continue;
+        }
+        static const char *SHAPES[] = { "lib/%s", "lib/%s.js", "lib/types/%s.js" };
+        char rel_file[384];
+        for (size_t sh = 0; sh < sizeof(SHAPES) / sizeof(SHAPES[0]); sh++) {
+            for (int pass = 0; pass < 2; pass++) {
+                const char *name = pass == 0 ? sub : stem;
+                if (pass == 1 && (!had_js || strcmp(name, sub) == 0)) continue;
+                snprintf(rel_file, sizeof(rel_file), SHAPES[sh], name);
+                char probe[512];
+                snprintf(probe, sizeof(probe), "vendor/dsh/%s%s@%s/%s",
+                         FAMILIES[f], pkg, DSH_UPSTREAM_VERSION, rel_file);
+                char *abs = dsh_join(s->base, probe);
+                if (!abs) return NULL;
+                int hit = access(abs, R_OK) == 0;
+                free(abs);
+                if (hit) {
+                    snprintf(out, out_len, "%s", probe);
+                    return out;
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
+/* Load a vendored dsh package module (the loader half of the probe above:
+ * compile the first existing candidate under the ORIGINAL specifier name). */
+static JSModuleDef *dsh_load_vendored_dsh(JSContext *ctx, dsh_spike_t *s,
+                                          const char *name,
+                                          const char *pkg, const char *sub) {
+    char rel[512];
+    if (dsh_vendored_rel(s, pkg, sub, rel, sizeof(rel)) == NULL) {
+        JS_ThrowReferenceError(ctx,
+            "cannot load module '%s' (no vendored dsh package serves it)", name);
+        return NULL;
+    }
+    char *abs = dsh_join(s->base, rel);
+    if (!abs) {
+        JS_ThrowOutOfMemory(ctx);
+        return NULL;
+    }
+    size_t len = 0;
+    char *buf = dsh_read_file(abs, &len);
+    free(abs);
+    if (!buf) {
+        JS_ThrowReferenceError(ctx, "cannot load module '%s'", name);
+        return NULL;
+    }
+    JSModuleDef *m = dsh_compile_module_url(ctx, name, rel, buf, len);
+    free(buf);
+    return m;
+}
+
 /* js global __dshModuleDefine(name, source): register a module SOURCE under
  * a specifier (M3 install pipeline — see the dsh_def_module note). A second
  * define for the same name replaces the source (install transactions may
@@ -704,23 +813,25 @@ oom:
 }
 
 /* Map one bare module specifier to a bundle-root-relative file path.
- * Returns NULL when the specifier is not bare (caller falls back to path
- * resolution) and fills `err` when it is bare but unmapped (fail loud).
+ * Returns 0 when the specifier is not bare (caller falls back to path
+ * resolution), 1 when mapped (out holds the bundle-relative path),
+ * DSH_MAP_VENDORED_PROBE (2) when the specifier names a vendored dsh
+ * package (out holds the "pkg|sub" marker — the loader probes the two
+ * staging families, see dsh_load_vendored_dsh), and fills `err` with -1
+ * when it is bare but unmapped (fail loud).
  *
  * Layers, in the system's dependency direction (D6/D9: upstream packages run
  * verbatim; platform differences live in the shim layer, never in vendored
  * copies):
  *   - "@deepseek-ai/dsh-llm[/sub]" — the VENDORED dsh-llm package (the W-LLM
- *     leg): bare falls through the generic dsh- map; subpaths follow the
- *     package's real exports map (lib/types JS re-exports), anything else
- *     fails loud naming the specifier.
+ *     leg): subpath aliases the exports map spells specially resolve here;
+ *     everything else falls through to the vendored-package probe.
  *   - "@deepseek-ai/dsh-session-persistence" — errors-only shim (agent-loop
  *     imports SessionPersistenceNotFoundError at module load).
  *   - node:<builtin> — the node shims (table above).
  *   - "@deepseek-ai/dsh-<pkg>[/sub]" — vendored upstream runtime packages
- *     (VERBATIM tarballs; sub "invariant" → lib/invariant.js, other lib-level
- *     subpaths resolve under lib/; the /types subpaths are type-only upstream
- *     and fail loud with a dedicated message).
+ *     (VERBATIM tarballs; the probe serves both staging families and the
+ *     exports-map subpath shapes, failing loud naming the specifier).
  *   - "@deepseek-ai/{cordis,cosmokit,schemastery}", "zod" — pinned npm deps
  *     of the closure.
  */
@@ -741,11 +852,15 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     if (strncmp(name, "@deepseek-ai/dsh-llm/", 21) == 0) {
         /* The vendored package's runtime exports map (package.json "exports"):
          * subpath → path under lib/. The /types subpath is a RUNTIME module
-         * here (unlike the other dsh-* packages where it is type-only). */
+         * here (unlike the other dsh-* packages where it is type-only).
+         * Subpaths the map spells specially (typert → typert.host.js) stay
+         * literal; every other subpath falls through to the generic vendored
+         * probe (it serves the lib/ and lib/types/ shapes). */
         static const struct { const char *sub; const char *lib; } LLM_SUBS[] = {
             { "invariant", "invariant.js" },
             { "message", "types/message.js" },
             { "assistant-stream", "types/assistant-stream.js" },
+            { "brand", "types/brand.js" },
             { "types", "types/types.js" },
             { "typert", "typert.host.js" },
             { "remote", "typert.remote-client.js" },
@@ -758,9 +873,9 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
                 return 1;
             }
         }
-        snprintf(err, err_len,
-                 "'%s' is not a runtime subpath of the vendored dsh-llm exports map", name);
-        return -1;
+        /* Unlisted dsh-llm subpath: fall through to the generic vendored
+         * probe (the llm tarball lives in the stripped family; the probe's
+         * lib/ + lib/types/ shapes cover the exports map's remaining rows). */
     }
     if (strcmp(name, "@deepseek-ai/dsh-session-persistence") == 0) {
         snprintf(out, out_len, "upstream/shims/dsh-session-persistence.js");
@@ -790,23 +905,15 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
         return 1;
     }
     if (strncmp(name, "@deepseek-ai/dsh-", 17) == 0) {
+        /* VENDORED dsh package (both staging families + the exports-map
+         * subpath shapes) — decompose to "pkg|sub" and let the loader probe
+         * (dsh_load_vendored_dsh above owns why). */
         const char *rest = name + 17;
         const char *slash = strchr(rest, '/');
         size_t pkg_len = slash ? (size_t)(slash - rest) : strlen(rest);
-        if (slash == NULL) {
-            snprintf(out, out_len, "vendor/dsh/%.*s@%s/lib/index.js",
-                     (int)pkg_len, rest, DSH_UPSTREAM_VERSION);
-            return 1;
-        }
-        const char *sub = slash + 1;
-        if (strncmp(sub, "types", 5) == 0 && (sub[5] == 0 || sub[5] == '/')) {
-            snprintf(err, err_len,
-                     "'%s' is a type-only subpath upstream; not mapped at runtime", name);
-            return -1;
-        }
-        snprintf(out, out_len, "vendor/dsh/%.*s@%s/lib/%s", (int)pkg_len, rest,
-                 DSH_UPSTREAM_VERSION, sub);
-        return 1;
+        snprintf(out, out_len, "%.*s|%s", (int)pkg_len, rest,
+                 slash ? slash + 1 : "");
+        return DSH_MAP_VENDORED_PROBE;
     }
     /* The agent-presets closure (the Agent 预设 panel's data source) — same
      * rule as dsh-client-modules: npm-published packages outside the
@@ -874,6 +981,19 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
         if (kind < 0) {
             JS_ThrowReferenceError(ctx, "%s", maperr);
             return NULL;
+        }
+        if (kind == DSH_MAP_VENDORED_PROBE) {
+            /* "pkg|sub" marker: the two-family probe owns resolution (and
+             * fails loud itself when nothing serves the specifier). */
+            char pkg[256];
+            snprintf(pkg, sizeof(pkg), "%s", mapped);
+            char *bar = strchr(pkg, '|');
+            if (bar == NULL) {
+                JS_ThrowReferenceError(ctx, "loader bug: vendored marker '%s' lacks '|'", mapped);
+                return NULL;
+            }
+            *bar = 0;
+            return dsh_load_vendored_dsh(ctx, s, name, pkg, bar + 1);
         }
         if (kind == 1) {
             rel = mapped;
@@ -971,7 +1091,7 @@ static char *dsh_normalize(JSContext *ctx, const char *base_name, const char *na
             char mapped[512];
             char maperr[256];
             int kind = dsh_map_bare(base_name, mapped, sizeof(mapped), maperr, sizeof(maperr));
-            dir_len = kind == 1 ? strlen(base_name) : 0;
+            dir_len = kind >= 1 ? strlen(base_name) : 0;
         }
         if (dir_len >= sizeof(dir)) return NULL;
         if (dir_len > 0) memcpy(dir, base_name, dir_len);

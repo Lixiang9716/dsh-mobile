@@ -1,0 +1,10 @@
+--------- beginning of main
+09-23 15:43:38.939 24659 24713 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 15:43:38.957 24659 24713 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 15:43:38.957 24659 24713 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 15:43:38.960 24659 24713 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/llm__llm__tests__attribution.spec.mjs"}]}
+09-23 15:43:38.980 24659 24713 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"ReferenceError: require('../package.json') from upstream-tests/llm__llm__tests__attribution.spec.mjs: cannot read 'package.json'"}]}
+09-23 15:43:38.980 24659 24713 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"require('../package.json') from upstream-tests/llm__llm__tests__attribution.spec.mjs: cannot read 'package.json' |     at <anonymous> (node:module:26:56) /     at <anonymous> (upstream-tests/llm__llm__tests__attribution.spec.mjs:5:42) / "}]}
+09-23 15:43:38.981 24659 24713 I dsh.spike: m4 FAIL scenario completed with pass=false
+09-23 15:43:38.981 24659 24713 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-23 15:43:38.981 24659 24713 I dsh.spike.result: ALL FAIL

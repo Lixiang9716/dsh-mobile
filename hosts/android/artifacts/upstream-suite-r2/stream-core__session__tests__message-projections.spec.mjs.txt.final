@@ -1,0 +1,13 @@
+--------- beginning of main
+09-23 15:42:23.469 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 15:42:23.486 22631 22687 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 15:42:23.486 22631 22687 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 15:42:23.488 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__session__tests__message-projections.spec.mjs"}]}
+09-23 15:42:23.518 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"plugin-owned message projections > refuses required events when no interpreter is supplied"}]}
+09-23 15:42:23.521 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"plugin-owned message projections > applies generic decisions atomically and replays them through detached folds"}]}
+09-23 15:42:23.534 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"plugin-owned message projections > registers by fiber and refuses cached or pending decisions after disposal"}]}
+09-23 15:42:23.541 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"plugin-owned message projections > applies a supplied interpreter to a loaded window with absolute sequences"}]}
+09-23 15:42:23.542 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"plugin-owned message projections > does not retain an interpreter for a candidate that never committed"}]}
+09-23 15:42:23.542 22631 22687 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__session__tests__message-projections.spec.mjs","passed":5,"failed":0,"skipped":0}]}
+09-23 15:42:23.545 22631 22687 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 15:42:23.545 22631 22687 I dsh.spike.result: ALL PASS

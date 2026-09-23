@@ -1,0 +1,8 @@
+--------- beginning of main
+09-23 16:02:28.160 25744 25801 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:02:28.190 25744 25801 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:02:28.190 25744 25801 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:02:28.192 25744 25801 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent__tests__agent.spec.mjs"}]}
+09-23 16:02:28.289 25744 25801 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentRegistry > contributes Agent lookup and scoped Context providers while Typert is live"}]}
+09-23 16:02:28.300 25744 25801 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentRegistry > contributes Agent lookup and scoped Context providers while Typert is live"}]}
+09-23 16:02:28.300 25744 25801 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentRegistry > registers exact entries, emits lifecycle events, and unregisters on owner disposal"}]}

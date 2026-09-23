@@ -1,0 +1,14 @@
+--------- beginning of main
+09-23 16:07:30.737 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:07:30.759 25965 26027 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:07:30.759 25965 26027 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:07:30.761 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent__tests__invariant.spec.mjs"}]}
+09-23 16:07:30.770 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"agent status invariants > accepts lifecycle transitions between idle and running"}]}
+09-23 16:07:30.775 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent status invariants > accepts lifecycle transitions between idle and running"}]}
+09-23 16:07:30.775 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"agent status invariants > rejects a no-op transition"}]}
+09-23 16:07:30.779 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent status invariants > rejects a no-op transition"}]}
+09-23 16:07:30.779 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"agent status invariants > tracks agents independently"}]}
+09-23 16:07:30.783 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent status invariants > tracks agents independently"}]}
+09-23 16:07:30.783 25965 26027 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent__tests__invariant.spec.mjs","passed":3,"failed":0,"skipped":0}]}
+09-23 16:07:30.785 25965 26027 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 16:07:30.786 25965 26027 I dsh.spike.result: ALL PASS

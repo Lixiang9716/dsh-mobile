@@ -1,8 +1,8 @@
 {
-  "files": 32,
-  "passed": 206,
-  "failed": 25,
+  "files": 1,
+  "passed": 63,
+  "failed": 2,
   "skipped": 0,
-  "errors": 18,
-  "fileFails": 5
+  "errors": 0,
+  "fileFails": 1
 }
