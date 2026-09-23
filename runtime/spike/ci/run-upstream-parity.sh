@@ -124,8 +124,10 @@ set +e
 CLI_EXIT=$?
 set -e
 if [ "$CLI_EXIT" -ne 0 ]; then
-    echo "::error::parity port leg (CLI) exited $CLI_EXIT — last 40 stream lines:" >&2
-    tail -40 logs-parity.txt >&2 || true
+    echo "::error::parity port leg (CLI) exited $CLI_EXIT — last 200 stream lines:" >&2
+    tail -200 logs-parity.txt >&2 || true
+    echo "::error::mock server telemetry:" >&2
+    tail -20 "$MOCK_LOG" >&2 || true
     exit 1
 fi
 cp logs-parity.txt "$ART_DIR/logs.txt"
