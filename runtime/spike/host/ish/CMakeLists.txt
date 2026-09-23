@@ -47,10 +47,16 @@ add_compile_definitions(GUEST_ARM64=1 ENGINE_ASBESTOS=1 LOG_HANDLER_DPRINTF=1)
 # -Wtautological-constant-in-range-compare is clang-only (upstream's meson
 # build assumes clang); gcc errors out on it, and this CMake project also
 # carries the Linux build (host/build.sh's "macOS/Linux proof run"), so the
-# flag rides only where the compiler knows it.
-add_compile_options(-Wno-switch -Wimplicit-fallthrough)
+# flag rides only where the compiler knows it. The value-range sibling covers
+# the vendored kernel sources' 31-bit compares (calls.c:1061) on newer Apple
+# clang, which renamed the diagnostic; -Wno-unused-result covers inotify.c's
+# ignored write(); -Wno-unknown-warning-option keeps older clangs quiet about
+# the two names they may not know yet.
+add_compile_options(-Wno-switch -Wimplicit-fallthrough -Wno-unused-result)
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wtautological-constant-in-range-compare)
+  add_compile_options(-Wno-tautological-constant-in-range-compare
+                      -Wno-tautological-value-range-compare
+                      -Wno-unknown-warning-option)
 endif()
 
 if(APPLE)
@@ -170,14 +176,34 @@ elseif(ISH_VDSO_FOUND)
     COMMENT "Building the guest vdso (aarch64 ELF) with ${ISH_VDSO_CLANG}"
     VERBATIM)
 else()
-  message(WARNING
-    "no clang with an aarch64-linux-gnu target found (ISH_VDSO_CLANG) — "
-    "building the placeholder vdso upstream falls back to; the guest gets no vdso")
-  add_custom_command(
-    OUTPUT "${ISH_VDSO_ELF}"
-    COMMAND "${CMAKE_COMMAND}" -E touch "${ISH_VDSO_ELF}"
-    COMMENT "Writing the placeholder vdso"
-    VERBATIM)
+  # No lld-equipped clang here (stock macOS, CI runners). The vdso is a GUEST
+  # aarch64 artifact — identical on every host — so one pinned build serves
+  # every machine: the tracked prebuilt (host/ish/prebuilt/, whose README
+  # carries the sha256 pin and the regenerate recipe). The upstream fallback
+  # is a ZEROED placeholder the kernel aborts on (comment above); never write
+  # it when a real elf is one commit away — this is what lets the iOS build's
+  # ISH_VDSO_ELF_DIR reuse a host configure that ran on an LLVM-less machine.
+  set(ISH_VDSO_PREBUILT "${CMAKE_CURRENT_SOURCE_DIR}/prebuilt/libvdso.so.elf")
+  if(EXISTS "${ISH_VDSO_PREBUILT}")
+    file(SHA256 "${ISH_VDSO_PREBUILT}" ISH_VDSO_PREBUILT_SHA)
+    if(NOT ISH_VDSO_PREBUILT_SHA STREQUAL
+       "fecafc2e93f23624cb2e8dc3dc57b1254d4c8bc115013d23985985ee936ae0b9")
+      message(FATAL_ERROR
+        "host/ish/prebuilt/libvdso.so.elf sha256 ${ISH_VDSO_PREBUILT_SHA} does "
+        "not match the pin in prebuilt/README.md — regenerate per that README "
+        "or repin it deliberately")
+    endif()
+    add_custom_command(
+      OUTPUT "${ISH_VDSO_ELF}"
+      COMMAND "${CMAKE_COMMAND}" -E copy "${ISH_VDSO_PREBUILT}" "${ISH_VDSO_ELF}"
+      COMMENT "Reusing the pinned prebuilt guest vdso (no aarch64-linux-gnu clang here)"
+      VERBATIM)
+  else()
+    message(FATAL_ERROR
+      "no clang with an aarch64-linux-gnu target (ISH_VDSO_CLANG) and no "
+      "tracked prebuilt (host/ish/prebuilt/libvdso.so.elf) — install LLVM "
+      "(brew install llvm) or restore the prebuilt")
+  endif()
 endif()
 
 # A name for the elf alone. The iOS pre-phase builds the guest vdso from a HOST

@@ -107,6 +107,12 @@ target_compile_options(spike PRIVATE
   -O1
   -Wno-unused-parameter
   -Wno-unused-function
+  # hvigor's toolchain passes --gcc-toolchain=<its own llvm dir> on every
+  # clang invocation; clang flags it [-Wunused-command-line-argument] on all
+  # ~32 of this target's TUs (measured: 32 warnings a build on CI). The
+  # argument IS harmless (the toolchain dir is the one in use), so silence
+  # the diagnostic rather than fight the SDK.
+  -Wno-unused-command-line-argument
 )
 
 # The OHOS musl declares getentropy in <unistd.h> (glibc/macOS: <stdlib.h>);
