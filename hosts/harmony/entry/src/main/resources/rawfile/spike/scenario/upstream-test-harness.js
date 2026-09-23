@@ -1,3 +1,4 @@
+import '../upstream/shims/globals.js';
 // dsh:logging-exempt (test harness: verdicts are the product)
 import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
 
