@@ -183,6 +183,7 @@ TREES = [
         "agent-presets", "atomic-write", "home-paths",
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
+        "session-persistence",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
     ]
 ] + [

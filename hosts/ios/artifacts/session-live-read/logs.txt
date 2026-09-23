@@ -1,7 +1,7 @@
 spike: app launched in session-live mode
-dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"source":"launch","client":"dsh-web-official","scenario":"session.live-read","event":"client.selected"}],"level":"info"}
-spike: session-live FAIL web-boot eval: ReferenceError: cannot load module 'upstream/shims/timers.js' | stack: 
+dsh.spike.log: {"message":"e2e","data":[{"scenario":"session.live-read","event":"client.selected","source":"launch","client":"dsh-web-official"}],"level":"info","module":"dsh.carrier"}
+spike: session-live FAIL web-boot eval: ReferenceError: cannot load module '@deepseek-ai/dsh-session-persistence' (no vendored dsh package serves it) | stack: 
 spike: session-live drive finished verdict=FAIL
-spike: error web-boot eval: ReferenceError: cannot load module 'upstream/shims/timers.js' | stack: 
+spike: error web-boot eval: ReferenceError: cannot load module '@deepseek-ai/dsh-session-persistence' (no vendored dsh package serves it) | stack: 
 spike: verdict FAIL (session.live-read, events logged: 1)
 spike: sequence session-live=FAIL
