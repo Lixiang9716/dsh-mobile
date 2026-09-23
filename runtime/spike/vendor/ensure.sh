@@ -69,7 +69,11 @@ fetch_retry() {
   return 1
 }
 
-DIR="quickjs-ng/$PIN"
+# The vendor DIRECTORY stays quickjs-ng/0.17.0 regardless of the pin's
+# display suffix (every build file — host/build.sh, the harmony CMakeLists,
+# the iOS project — hardcodes this path; a suffix-coupled rename broke the
+# harmony build exactly once before the decoupling).
+DIR="quickjs-ng/0.17.0"
 
 FILES="dtoa.c libregexp.c libunicode.c quickjs.c \
 cutils.h dtoa.h libregexp.h libregexp-opcode.h libunicode.h libunicode-table.h \
