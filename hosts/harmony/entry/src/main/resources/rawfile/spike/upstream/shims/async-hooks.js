@@ -67,6 +67,13 @@ export class AsyncLocalStorage {
     // with-frame view; continuations attached AFTER settle see it dropped.
     if (result !== null && typeof result === 'object'
         && typeof result.then === 'function') {
+      // Node restores the caller's context when the CALLBACK RETURNS — the
+      // operation's continuations keep the store through the ENGINE's
+      // attach-time capture, not by holding the sync slot dirty (measured
+      // 2026-09-23: the dirty slot leaked the driver's initiator run into
+      // the test's subsequent sync code, and restart's teardown then
+      // released the run early — the whole agent-initiator quartet).
+      setFrames(before);
       return result.then(
         (value) => { drop(); return value; },
         (error) => { drop(); throw error; },
