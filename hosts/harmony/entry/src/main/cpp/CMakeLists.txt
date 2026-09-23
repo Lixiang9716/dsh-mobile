@@ -74,6 +74,11 @@ target_include_directories(spike PRIVATE
   ${ZSTD_DIR}/common
 )
 
+# Same as the android/CLI builds: the vendored zstd subset carries no
+# huf_decompress_amd64.S, so the x86_64 BMI2 asm dispatch is compiled out —
+# ZSTD_DISABLE_ASM (zstd's own switch) keeps every arch on the C fast loop.
+target_compile_definitions(spike PRIVATE ZSTD_DISABLE_ASM=1)
+
 # Mirror the desktop proof-build flags (runtime/spike/host/build.sh):
 # C11, -O1, _GNU_SOURCE. Warnings from the upstream engine sources are not
 # this repo's to fix (D6) — silence only the noisy generic ones.

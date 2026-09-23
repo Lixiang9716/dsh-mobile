@@ -39,8 +39,13 @@ ZSTD_SRC="$ZSTD/common/*.c $ZSTD/compress/*.c $ZSTD/decompress/*.c"
 RELEASE=0
 [ "${1:-}" = "--release" ] && RELEASE=1
 mkdir -p build
+# -DZSTD_DISABLE_ASM: the vendored subset carries no huf_decompress_amd64.S,
+# and on an x86_64 build (Intel Mac / x86_64 Linux) the asm dispatch would
+# reference undefined HUF_*_fast_asm_loop symbols at link time — the same
+# define every platform build passes.
 if [ "$RELEASE" -eq 1 ]; then
-    cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
+    cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -DZSTD_DISABLE_ASM=1 \
+       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli-release \
        host/dsh_spike_host.c host/main_cli.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
@@ -48,7 +53,8 @@ if [ "$RELEASE" -eq 1 ]; then
        $ISH_LIBS -lm
     echo "built build/dsh-spike-cli-release (-DDSH_RELEASE)"
 else
-    cc -std=c11 -O1 -D_GNU_SOURCE -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
+    cc -std=c11 -O1 -D_GNU_SOURCE -DZSTD_DISABLE_ASM=1 \
+       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli \
        host/dsh_spike_host.c host/main_cli.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \

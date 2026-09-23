@@ -54,6 +54,14 @@ target_include_directories(dsh_spike PRIVATE
         ${DSH_ZSTD_DIR}
         ${DSH_ZSTD_DIR}/common)
 
+# zstd's x86_64 fast loop lives in huf_decompress_amd64.S, which the pin does
+# NOT carry (vendored subset is .c only): on an x86_64 ABI (the e2e emulator)
+# the asm dispatch references undefined HUF_*_fast_asm_loop symbols at link
+# time (measured: android-e2e ld.lld, run 35888734956). ZSTD_DISABLE_ASM is
+# zstd's own switch (common/portability_macros.h) — every arch stays on the
+# portable C fast loop.
+target_compile_definitions(dsh_spike PRIVATE ZSTD_DISABLE_ASM=1)
+
 # -include android_compat.h restores the arc4random_buf declaration for the
 # minSdk-26 bionic headers (see android_compat.h); it is a no-op elsewhere.
 target_compile_options(dsh_spike PRIVATE
