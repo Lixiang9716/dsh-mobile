@@ -177,7 +177,9 @@ upstream/shims/util.js
 upstream/shims/util-types.js
 upstream/shims/os.js
 upstream/shims/process.js
-upstream/shims/dsh-session-persistence.js"
+upstream/shims/dsh-session-persistence.js
+upstream/shims/expect-async-chain.js
+upstream/shims/vi-wait.js"
 SPINE_PKG_DSH="agent agent-loop brand llm sandbox scope session session-projection settings system-prompt timeout tools typert-protocol util-values"
 SPINE_OURS="$SPINE_OURS
 vendor/npm/cordis@4.0.2/package.json

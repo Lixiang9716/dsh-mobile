@@ -443,9 +443,32 @@ static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
         js_free(ctx, out);
         return JS_ThrowTypeError(ctx, "atob input is not valid base64");
     }
-    out[o] = 0;
-    JSValue res = JS_NewStringLen(ctx, out, o);
+    /* atob's contract is a LATIN-1 string: charCodeAt(i) == decoded byte i.
+     * JS_NewStringLen interprets its input as UTF-8, so feeding the raw
+     * bytes mangled every byte >= 0x80 (measured 2026-09-23: the zlib
+     * shim's b64ToBytes read a zstd frame's 0xB5 magic byte back as 0xFD —
+     * ASCII-only callers could never see it). Re-encode the bytes as UTF-8
+     * (each byte 0x80..0xFF becomes one 2-byte sequence) so the decoded JS
+     * string carries the byte values as code points. */
+    size_t utf8_cap = o * 2;
+    char *utf8 = js_malloc(ctx, utf8_cap ? utf8_cap : 1);
+    if (!utf8) {
+        js_free(ctx, out);
+        return JS_EXCEPTION;
+    }
+    size_t u = 0;
+    for (size_t i = 0; i < o; i++) {
+        unsigned char b = (unsigned char)out[i];
+        if (b < 0x80) {
+            utf8[u++] = (char)b;
+        } else {
+            utf8[u++] = (char)(0xC0 | (b >> 6));
+            utf8[u++] = (char)(0x80 | (b & 0x3F));
+        }
+    }
     js_free(ctx, out);
+    JSValue res = JS_NewStringLen(ctx, utf8, u);
+    js_free(ctx, utf8);
     return res;
 }
 
