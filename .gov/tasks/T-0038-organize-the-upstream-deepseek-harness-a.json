@@ -1,0 +1,20 @@
+{
+  "title": "organize the upstream deepseek-harness anatomy: package inventory, execution flow, and the dsh-mobile integration map",
+  "created": "2026-09-23T01:10:48+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "[x] survey the upstream clone in tmp/deepseek-harness and inventory its packages",
+    "[x] trace the upstream execution flow end to end (boot, context/plugin composition, session, agent loop, tools, LLM streaming)",
+    "[x] map every integration seam onto dsh-mobile (vendored closure, boot.js, gateway primitives, system plugins, web client)",
+    "[x] write the bilingual research pair under docs/research/ with pairing record"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0038"
+}

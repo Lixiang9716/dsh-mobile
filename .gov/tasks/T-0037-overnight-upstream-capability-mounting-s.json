@@ -1,0 +1,21 @@
+{
+  "title": "overnight: upstream capability-mounting study, three-platform architecture completion, android E2E with full evidence, human-friendly docs",
+  "created": "2026-09-22T18:03:21+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "clone dsh-ios, rish-app, deepseek-harness into ./tmp and study their platform capability mounting",
+    "apply the architecture changes across harmony/ios/android informed by the study",
+    "android end-to-end test with logs, screenshots, and deliverables",
+    "rewrite README + architecture docs with human-friendly naming (no M1/B-codes), contributor and builder guides",
+    "land via PRs with green gates"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0037"
+}
