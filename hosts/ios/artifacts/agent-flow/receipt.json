@@ -1,0 +1,14 @@
+{
+  "host": "ios-simulator",
+  "engine": "quickjs-ng (DSHSpike, gateway httpFetch → host loopback mock)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+  "scenario": "agent.flow",
+  "proves": [
+    "prompt 修改: the vendored SystemPrompt personaPrefix override reaches the captured wire request's system message",
+    "skills 载入: the fixture skill is discovered from the staged dir into ctx.skills, published in the durable session catalog, and returned by the skill tool",
+    "the full mock-LLM turn flow: a scripted skill tool-call dispatched through the REAL agent loop, its result feeding the closing request"
+  ],
+  "checker": "test/e2e/check.mjs vs test/e2e/scenarios/agent-flow.json",
+  "events": 17,
+  "exitCode": 0
+}
