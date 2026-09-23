@@ -40,6 +40,13 @@ ln -sfn "$VENDOR/npm/@deepseek-ai/cordis-plugin-include@1.0.7" "$SCOPE/cordis-pl
 ln -sfn "$VENDOR/npm/zod@4.4.3" "$NM/zod"
 ln -sfn "$VENDOR/npm/diff@9.0.0" "$NM/diff"
 
+# The upstream test-support vehicles (same version as the closure; the
+# full-suite run resolves them like any vendored package).
+ln -sfn "$VENDOR/npm/@deepseek-ai/dsh-agent-loop-testkit@0.1.6-alpha.2" "$SCOPE/agent-loop-testkit"
+ln -sfn "$VENDOR/npm/@deepseek-ai/dsh-llm-replay@0.1.6-alpha.2" "$SCOPE/llm-replay"
+ln -sfn "$VENDOR/npm/@deepseek-ai/dsh-session-snapshot@0.1.6-alpha.2" "$SCOPE/session-snapshot"
+ln -sfn "$VENDOR/npm/@deepseek-ai/dsh-loader-smoke@0.1.6-alpha.2" "$SCOPE/loader-smoke"
+
 # The errors-only persistence linkage shim as a real (tiny) package.
 SHIM="$NM/.parity-shim-session-persistence"
 mkdir -p "$SHIM/lib"
