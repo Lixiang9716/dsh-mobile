@@ -14,7 +14,8 @@
       "task",
       "plane",
       "e2e-matrix",
-      "closures"
+      "closures",
+      "vendoring-repro"
     ],
     "quick": [
       "notes"
@@ -199,6 +200,16 @@
         "build/check-closures.sh"
       ],
       "description": "committed host copies of the canonical runtime/spike closure are byte-identical (android assets, harmony rawfile, ios generated bundle)"
+    },
+    {
+      "id": "vendoring-repro",
+      "command": [
+        "sh",
+        "runtime/spike/vendor/reproducibility-proof.sh",
+        "--gate"
+      ],
+      "description": "fresh-clone proof: the vendor scripts materialize what they promise under CI's invocation shapes (mirror-first; engine tarballs + npm legs download)",
+      "timeoutMs": 480000
     }
   ]
 }

@@ -1,0 +1,26 @@
+name: vendor-repro
+# The FULL fresh-clone proof (reproducibility-proof.sh without --gate) adds
+# ensure-dsh-tests.sh: a ~25 MB codeload tarball plus its ~190-row sequential
+# npm leg — measured far too slow to ride every PR. The per-PR coverage is the
+# always-run `vendoring-repro` gate in gates.json (ensure.sh + ensure-dsh.sh:
+# the engines, the mirror-served DSH closure, the 9 npm rows); this workflow
+# proves the remaining leg — the exact one the double-prefixed-npm-name bug
+# broke — on a weekly schedule and on demand.
+on:
+  schedule:
+    - cron: "23 5 * * 1" # Mondays 05:23 UTC — off the hour, off the rush
+  workflow_dispatch:
+concurrency:
+  group: vendor-repro-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  full-cold-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - name: Full cold vendor proof (fresh clone, CI invocation shapes)
+        # The proof clones the checked-out commit itself (vendor trees are
+        # untracked by design, so its scratch clone is genuinely cold) and
+        # fails loud on any pin-table / invocation-shape drift.
+        run: sh runtime/spike/vendor/reproducibility-proof.sh

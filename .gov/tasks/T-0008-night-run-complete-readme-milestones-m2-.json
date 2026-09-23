@@ -16,7 +16,7 @@
     "All PRs landed via squash merge with gates green; README/ARCHITECTURE status docs flipped (rule 12)",
     "Final audit: every new scenario checker passes, e2e selftest green, artifacts (logs/verdict/receipt/screens) committed"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0008",
   "repins": [
@@ -34,5 +34,10 @@
       "to": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
       "reason": "stale pin surfaced by the 2026-09-23 gate run: the card's checklist (M2-M5 milestones) has long shipped on main; the pin predates the govrail 0.48.0 rules adoption"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-23T18:46:45+00:00",
+    "by": "ws-b",
+    "reason": "superseded: the M2/M3/M4/M5 milestones this night-run brief tracked were delivered and receipted by the per-milestone cards (T-0005/T-0006/T-0007/T-0009 family) and README/ARCHITECTURE status docs; the brief went stale across governance adoptions (rules pin dde1f6a98412 vs c6062b8cdc3b) and no longer describes open work \u2014 voided per the task gate's close-or-void guidance while landing T-0044, which is the first PR to touch .gov/tasks since the drift"
+  }
 }

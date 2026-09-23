@@ -22,13 +22,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+      "sha256": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-22T17:29:35+00:00",
-    "caller": "lx@DESKTOP-AOFQD6F",
+    "ts": "2026-09-23T18:41:56+00:00",
+    "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "path move tools/e2e -> test/e2e (D17): the e2e-matrix rejection case's fixture and script paths follow the moved checker; verified green by hand before sealing"
+    "reason": "task card T-0044 (CI vendoring-reproducibility: the fresh-clone proof for the vendor scripts): intentional gate-set change wiring the vendoring-repro gate into the default DAG; reviewed as part of the feat/ci-vendoring-reproducibility PR"
   }
 }

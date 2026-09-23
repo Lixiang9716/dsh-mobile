@@ -2,7 +2,7 @@
   "title": "overnight: upstream capability-mounting study, three-platform architecture completion, android E2E with full evidence, human-friendly docs",
   "created": "2026-09-22T18:03:21+00:00",
   "rules": {
-    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
@@ -17,5 +17,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0037"
+  "id": "T-0037",
+  "repins": [
+    {
+      "ts": "2026-09-23T18:47:53+00:00",
+      "by": "ws-b",
+      "from": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
+    }
+  ]
 }
