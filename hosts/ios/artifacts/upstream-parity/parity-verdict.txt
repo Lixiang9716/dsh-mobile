@@ -1,0 +1,1 @@
+parity: 25 record(s) identical (reference /Users/lixiang/workspace/dsh-mobile/test/e2e/fixtures/upstream-parity-reference.jsonl == port /Users/lixiang/workspace/dsh-e2e-art/20260923/parity-ios-r2/port.jsonl)

@@ -58,6 +58,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_scenario_m3_fetch_install_js), under: root)
         try write("scenario/llm-live-stream.js",
                   data: resData(dsh_spike_res_scenario_m2_llm_js), under: root)
+        try write("scenario/upstream-parity.js",
+                  data: resData(dsh_spike_res_scenario_upstream_parity_js), under: root)
+        try write("scenario/parity-projector.js",
+                  data: resData(dsh_spike_res_scenario_parity_projector_js), under: root)
         try write("llm.js", data: resData(dsh_spike_res_llm_js), under: root)
         try write("install-fetch.js",
                   data: resData(dsh_spike_res_install_fetch_js), under: root)

@@ -152,19 +152,15 @@ jobs:
           runtime/spike/vendor/ensure.sh
           runtime/spike/vendor/ensure-dsh.sh
 
-      # Real, unconditional build: compiles + links the app for the iOS
-      # simulator. Generic destination so it does not depend on which
-      # simulator devices the runner image ships.
-      # PARKED for handoff: the vendored engine now builds on macOS (the
-      # _np compile-time shim below in host/ish/CMakeLists.txt) and the
-      # reference leg is green, but the CLI port leg fails — both scripted
-      # turns' SSE bodies end after the first chunk (http.end with no
-      # [DONE] -> STREAM_CLOSED -> assistant/attempt). Suspect the CLI
-      # --http loopback backend's body pump on macOS. The android emulator
-      # leg is the green port leg; this one awaits its fixer.
-      - name: "PARKED (handoff): upstream parity differential on the macOS CLI — engine builds, port leg body-pump fails"
+      # The upstream parity differential on the macOS CLI: the reference leg
+      # under plain Node + the port leg inside quickjs, each against its OWN
+      # mock instance (the script is one-shot; a shared instance let the
+      # reference leg starve the port leg — the parked "body pump" failure
+      # was that starvation, not the pump). The iOS-simulator port leg runs
+      # LOCALLY via test/e2e/run-ios-upstream-parity.sh (CI runners cannot
+      # drive a simulator app capture the way the local runner does).
+      - name: "Upstream parity differential on the macOS CLI (reference + port legs)"
         run: sh runtime/spike/ci/run-upstream-parity.sh
-        continue-on-error: true
       - name: Build spike app
         run: |
           set -o pipefail

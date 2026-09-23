@@ -1,0 +1,8 @@
+{
+  "scenario": "upstream.parity",
+  "pass": true,
+  "expected": 12,
+  "logged": 37,
+  "failures": [],
+  "parseErrors": []
+}
