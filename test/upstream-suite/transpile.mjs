@@ -205,22 +205,11 @@ const hoistSubmoduleSrcSubpaths = (source) => {
 };
 
 /** Transpile one spec (or record its named exclusion). */
-const transpileOne = async (rel, manifest) => {
-  const source = readFileSync(join(TESTS, rel), 'utf8');
-  // Hoisting precedes the exclusion scan: a src/ subpath we can inline from
-  // the pinned submodule is no longer a bare monorepo specifier, while any
-  // specifier without a hoist target keeps its named exclusion below.
-  const hoisted = hoistSubmoduleSrcSubpaths(hoistCreateRequireJson(source, rel));
-  const unimplemented = unimplementedIn(hoisted, spyOnNamespaceRules(hoisted));
-  if (unimplemented.length > 0) {
-    const key = unimplemented.join(' + ');
-    manifest.excluded[key] = (manifest.excluded[key] ?? 0) + 1;
-    return;
-  }
-  const flat = rel.split('/').join('__').replace(/\.spec\.ts$/, '.spec.mjs');
-  // The hoisted package.json reads (see hoistCreateRequireJson) and the
-  // inlined monorepo limbs (see hoistSubmoduleSrcSubpaths) build through
-  // stdin; a spec untouched by either builds from its file as before.
+/** The esbuild option shape for one spec: entry file when nothing hoisted,
+ * stdin otherwise (the hoisted package.json reads and inlined monorepo
+ * limbs build through stdin — split from transpileOne for the function
+ * shape budget). */
+const buildOptionsFor = (rel, hoisted, source) => {
   const options = {
     bundle: true,
     format: 'esm',
@@ -239,9 +228,24 @@ const transpileOne = async (rel, manifest) => {
       sourcefile: join(TESTS, rel),
     };
   }
+  return options;
+};
+
+const transpileOne = async (rel, manifest) => {
+  const source = readFileSync(join(TESTS, rel), 'utf8');
+  // Hoisting precedes the exclusion scan: a src/ subpath we can inline from
+  // the pinned submodule is no longer a bare monorepo specifier, while any
+  // specifier without a hoist target keeps its named exclusion below.
+  const hoisted = hoistSubmoduleSrcSubpaths(hoistCreateRequireJson(source, rel));
+  const unimplemented = unimplementedIn(hoisted, spyOnNamespaceRules(hoisted));
+  if (unimplemented.length > 0) {
+    const key = unimplemented.join(' + ');
+    manifest.excluded[key] = (manifest.excluded[key] ?? 0) + 1;
+    return;
+  }
   let built;
   try {
-    built = await esbuild.build(options);
+    built = await esbuild.build(buildOptionsFor(rel, hoisted, source));
   } catch {
     manifest.excluded['esbuild transform failed'] = (manifest.excluded['esbuild transform failed'] ?? 0) + 1;
     return;
@@ -255,9 +259,11 @@ const transpileOne = async (rel, manifest) => {
     manifest.excluded[key] = (manifest.excluded[key] ?? 0) + 1;
     return;
   }
+  const flat = rel.split('/').join('__').replace(/\.spec\.ts$/, '.spec.mjs');
   writeFileSync(join(OUT, flat), text.replace(/from\s*"vitest"/g, `from "${HARNESS_SPECIFIER}"`));
   manifest.transpiled.push(flat);
 };
+
 
 mkdirSync(OUT, { recursive: true });
 const manifest = { transpiled: [], excluded: {} };

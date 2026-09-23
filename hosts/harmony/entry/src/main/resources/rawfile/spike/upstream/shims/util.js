@@ -55,6 +55,17 @@ export const inspect = (value) => {
   }
 };
 
+export const isDeepStrictEqual = (a, b) => {
+  // structural equality with prototype identity, per Node util semantics
+  if (Object.is(a, b)) return true;
+  if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') return false;
+  if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+  const ka = Object.keys(a), kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  return ka.every((k) => isDeepStrictEqual(a[k], b[k]));
+};
+
 export const promisify = (fn) => {
   if (typeof fn !== 'function') throw new TypeError('promisify requires a function');
   return (...args) => new Promise((resolve, reject) => {
