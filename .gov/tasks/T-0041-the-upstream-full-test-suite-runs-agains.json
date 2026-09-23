@@ -12,7 +12,7 @@
     "[x] materialize the upstream test assets at the same tag (codeload tarball + npm test closure, sha256-pinned)",
     "[x] pipeline proof: the flagship loop.spec passes 65/65 through the harness (verdicts identical to vitest)",
     "[x] fan out the full corpus landscape + the emulator leg (staging, launch selection, per-test verdicts)",
-    "CI wiring and the harness-iteration tail (known: two spot-smoke failures) closed, landed via PR"
+    "[x] CI wiring and the harness-iteration tail (known: two spot-smoke failures) closed, landed via PR"
   ],
   "status": "open",
   "receipt": null,

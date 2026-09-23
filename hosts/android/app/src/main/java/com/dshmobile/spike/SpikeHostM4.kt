@@ -160,6 +160,7 @@ class SpikeHostM4 private constructor(
     private val http = HttpPrimitive()
     private val keychain = KeychainPrimitives(activity)
     val notify = NotifyPrimitive(activity)
+    val timer = TimerPrimitive()
     private val ui = UiPrimitives(activity, fs)
 
     private var handle: Long = 0
@@ -266,6 +267,8 @@ class SpikeHostM4 private constructor(
         }
         http.eventFn = { json -> event(json) }
         notify.emitFn = { json -> event(json) }
+        timer.emitFn = { json -> event(json) }
+        timer.register(core)
     }
 
     private val bridge = object : SpikeRuntime.M4Bridge {

@@ -1,7 +1,8 @@
 /**
- * dsh-mobile capability gateway — primitive contract v1.2.0 (FROZEN at M0, D5;
+ * dsh-mobile capability gateway — primitive contract v1.4.0 (FROZEN at M0, D5;
  * v1.1.0 is the additive filesystem revision of 2026-09-22, v1.2.0 the
- * in-process WebAssembly addition).
+ * in-process WebAssembly addition, v1.3.0 the emulated-userland addition,
+ * v1.4.0 the timer wake-up seam).
  *
  * Spec of record: contract/primitives.md. Shapes here are immutable for the
  * life of major version 1; additions require a minor bump of the contract.
@@ -183,3 +184,29 @@ export declare function ishRun(
   timedOut: boolean;
   truncated: boolean;
 }>;
+
+// ---- 17 · timer (v1.4.0) ------------------------------------------------
+// One host-owned wake-up seam. timerSchedule arms ONE wake-up and resolves
+// when armed (not when it fires); the fire itself arrives on the timer.fire
+// event channel, delivered onto the caller's serial queue — a timer never
+// runs JS on a second thread (D2) and never blocks (D8). delayMs is
+// monotonic, integer >= 0; the host may clamp tighter and says so in the
+// rejection reason, never silently truncating. One arm fires at most once
+// (no intervals in v1.4.0 — a re-arm loop expresses repetition).
+// timerCancel is idempotent: cancelled=false for an unknown or already-fired
+// id; a fire/cancel race resolves one way, never both. The mapping from
+// setTimeout-shaped code lives in the shim layer (negotiates the `timer`
+// flag, fails loud when absent); there is deliberately no global setTimeout
+// in this contract.
+export declare function timerSchedule(
+  delayMs: number,
+  opts?: { tag?: string },
+): Promise<{ timerId: number }>;
+
+export declare function timerCancel(timerId: number): Promise<{ cancelled: boolean }>;
+
+/** Event channel payload (§5): a scheduled wake-up fired. */
+export type TimerFireEvent = {
+  timerId: number;
+  tag?: string;
+};

@@ -1,21 +1,10 @@
 // dsh:logging-exempt (test harness: verdicts are the product)
-/**
- * upstream-test-harness — the quickjs-side test shell for the UPSTREAM DSH
- * test suite on the emulator (the owner's direction: run DSH's full tests
- * in OUR runtime; every failure names what our environment must grow).
- *
- * The pipeline: Node-side esbuild transpiles each upstream spec to plain
- * ESM with package imports left bare (served by the host loader from the
- * vendored closure) and the `vitest` import rewritten to THIS module. The
- * spec registers tests at import time; the driver scenario then calls
- * runCollected() and streams one structured verdict per test.
- *
- * The implemented API is the subset the deterministic suites use (surveyed
- * across the corpus). Anything else fails LOUD, naming the missing API
- * (rule 5) — a silent skip would fake a green suite. vi.mock and the timer
- * APIs are the deliberate absentees (loader-level / no timer seam): specs
- * needing them are filtered at transpile time and counted, never dropped.
- */
+import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
+
+// upstream-test-harness — the quickjs test shell for the UPSTREAM suite in
+// OUR runtime (transpiled specs import it as `vitest`); unimplemented APIs
+// fail LOUD naming the API (rule 5). Fake timers live in
+// scenario/upstream-fake-timers.js.
 
 // AbortController/AbortSignal — the WHATWG subset the upstream agent-loop's
 // cancellation path needs (signal.aborted, addEventListener('abort'),
@@ -248,8 +237,7 @@ const identityMatchers = (actual, check) => ({
 
 /** The .resolves/.rejects chains: await the promise (or capture its
  * rejection), then forward to the plain matcher of the settled value. */
-/** One settled-value matcher invocation (the async-chain body, module
- * level to keep the nesting shallow). */
+/** One settled-value matcher invocation (module level for nesting). */
 const settleAndMatch = async (settle, negated, matcher, args) => {
   const value = await settle();
   // vitest's .rejects.toThrow family asserts against the THROWN error,
@@ -355,6 +343,8 @@ const makeMockFn = (impl) => {
   return f;
 };
 
+const fakeTimerState = {};
+
 /** vi subset; the mock and timer APIs fail loud (loader-level / no seam). */
 const viApi = {
   fn: makeMockFn,
@@ -395,7 +385,7 @@ const viApi = {
   mocked: (v) => v,
   hoisted: (factory) => factory(),
   mock: () => failWith('harness: vi.mock is not implemented (loader-level interception) — the transpiler excludes specs that need it'),
-  useFakeTimers: () => failWith('harness: vi.useFakeTimers is not implemented (the runtime has no timer seam — a gap to fill on demand)'),
+  ...fakeTimerApi(fakeTimerState),
 };
 
 // ---- collection -----------------------------------------------------------
@@ -459,10 +449,6 @@ export const expect = Object.assign(makeExpect, {
 });
 export const vi = viApi;
 
-/** expectTypeOf — type-level only; post-transpile it can never fail. A
- * permissive chain preserves the spec's runtime flow exactly; symbols and
- * protocol probes return undefined (a Proxy that answers THEM recurses
- * through introspection). */
 const typeChain = new Proxy(function typeProbe() {}, {
   get: (_t, key) => (typeof key === 'string' ? typeChain : undefined),
   apply: () => typeChain,

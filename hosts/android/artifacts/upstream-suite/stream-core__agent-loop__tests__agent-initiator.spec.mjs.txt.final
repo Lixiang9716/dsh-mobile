@@ -1,5 +1,25 @@
 --------- beginning of main
-09-23 14:14:48.706 17030 17085 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
-09-23 14:14:48.722 17030 17085 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
-09-23 14:14:48.723 17030 17085 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
-09-23 14:14:48.724 17030 17085 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__agent-initiator.spec.mjs"}]}
+09-23 16:37:43.440 29310 29364 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:37:43.459 29310 29364 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:37:43.459 29310 29364 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+09-23 16:37:43.459 29310 29364 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:37:43.461 29310 29364 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__agent-initiator.spec.mjs"}]}
+09-23 16:37:43.555 29310 29364 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentLoop initiator scope > keeps overlapping driver continuations bound to their exact Agents"}]}
+09-23 16:37:51.543 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:37:51.570 29448 29500 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:37:51.570 29448 29500 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+09-23 16:37:51.570 29448 29500 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:37:51.572 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-default-model__tests__agent-default-model.spec.mjs"}]}
+09-23 16:37:51.599 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentDefaultModelConfig > resolves the user layer over the composition entry"}]}
+09-23 16:37:51.609 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentDefaultModelConfig > resolves the user layer over the composition entry"}]}
+09-23 16:37:51.609 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentDefaultModelConfig > clears a stored effort when the saved selection has none"}]}
+09-23 16:37:51.621 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentDefaultModelConfig > clears a stored effort when the saved selection has none"}]}
+09-23 16:37:51.622 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentDefaultModelConfig > layers a hand-written partial section over the entry"}]}
+09-23 16:37:51.635 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentDefaultModelConfig > layers a hand-written partial section over the entry"}]}
+09-23 16:37:51.635 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentDefaultModelConfig > falls back to the composition entry when the settings provider detaches"}]}
+09-23 16:37:51.641 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentDefaultModelConfig > falls back to the composition entry when the settings provider detaches"}]}
+09-23 16:37:51.642 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"AgentDefaultModelConfig > keeps the composition entry when no settings provider is mounted"}]}
+09-23 16:37:51.648 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"AgentDefaultModelConfig > keeps the composition entry when no settings provider is mounted"}]}
+09-23 16:37:51.649 29448 29500 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-default-model__tests__agent-default-model.spec.mjs","passed":5,"failed":0,"skipped":0}]}
+09-23 16:37:51.654 29448 29500 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 16:37:51.654 29448 29500 I dsh.spike.result: ALL PASS

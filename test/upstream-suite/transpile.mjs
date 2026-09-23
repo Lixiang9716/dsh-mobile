@@ -31,9 +31,12 @@ const UNIMPLEMENTED = [
   [/from\s*['"]@deepseek-ai\/dsh-session-persistence-jsonl['"]/, 'session-persistence-jsonl (koffi native dep — deliberately outside every mobile closure)'],
   [/from\s*['"]fast-check['"]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
   [/vi\.mock\s*\(|vi\.doMock\s*\(|vi\.resetModules\s*\(/, 'vi.mock/doMock/resetModules (loader-level module interception)'],
-  [/vi\.useFakeTimers|vi\.advanceTimersByTime|vi\.setSystemTime/, 'fake timers (the runtime has no timer seam)'],
+  // NOTE: the fake-timers / vi.waitFor / expect.poll exclusions were
+  // REMOVED with the v1.4.0 timer seam (contract + host + harness fakes);
+  // specs demanding wall-clock semantics (vi.setSystemTime, Date mocking)
+  // stay excluded below.
+  [/vi\.setSystemTime|vi\.mockedDate|vi\.setSystemTime/, 'wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)'],
   [/expect\.extend\s*\(/, 'expect.extend (custom matchers)'],
-  [/vi\.waitFor|vi\.waitUntil/, 'vi.waitFor (timer-based polling)'],
   [/expect\.poll\s*\(/, 'expect.poll (timer-based polling — the runtime has no timer seam)'],
   // Decorators survive esbuild's TS transform verbatim (ES decorators, not
   // experimentalDecorators) and quickjs-ng 0.17 refuses to parse them.

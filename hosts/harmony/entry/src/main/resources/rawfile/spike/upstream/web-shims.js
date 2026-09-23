@@ -16,8 +16,9 @@
  *   - AbortController/Signal    — dsh-agent-loop phase/factory cancellation,
  *                                 dsh-agent lifecycle (addEventListener/remove-
  *                                 Listener/'abort', throwIfAborted, AbortSignal.any;
- *                                 AbortSignal.timeout needs wall-clock timers —
- *                                 NOT supported by the spike runtime, fails loud).
+ *                                 AbortSignal.timeout needs WALL-CLOCK time —
+ *                                 still unsupported (the v1.4.0 timer seam is
+ *                                 monotonic scheduling only), fails loud).
  *   - console                   — backstop only; boot.js routes cordis logger
  *                                 output into the unified sink. Forwards into
  *                                 __DSH_LOG_SINK__ (rule 5: no bare console
@@ -49,6 +50,9 @@
  *     host's runner, replaced here by boot.js) and unreached zod paths use them.
  */
 import { DshBuffer } from 'upstream/shims/buffer.js';
+// The timer globals (v1.4.0 seam): the ambient setTimeout/clearTimeout the
+// vendored closure calls, mapped onto gateway timerSchedule/timerCancel.
+import 'upstream/shims/timers.js';
 import { DshURL } from 'upstream/shims/url.js';
 import { releaseKeeps } from 'logger.js';
 

@@ -37,16 +37,7 @@
 set -e
 cd "$(dirname "$0")"
 
-# The frozen ref is the COMMIT SHA, never a moving branch: upstream's beta
-# channel deleted vendor/dsh-runtime/0.1.6-alpha.2 from master on 2026-09-22
-# (surprise sig the-016-alpha2-dsh-runtime-tarballs) when it moved to
-# 0.1.7-alpha.2, and the npm registry re-cut the same version's tarballs
-# (digests differ from the pins below), so master and the registry are both
-# unusable as sources for THESE pins. a934d988… (2026-09-18, "beta 通道切到
-# dsh 0.1.6-alpha.2 内核") is the commit that introduced the tree; git
-# history is immutable and its bytes match every pin below (verified:
-# dsh-agent digest 1e4a587e… fetched from this exact ref, 2026-09-23).
-DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/a934d988610605078001d7c22bbaa2435cbeb385/vendor/dsh-runtime/0.1.6-alpha.2"
+DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
 NPM_BASE="https://registry.npmjs.org"
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
@@ -144,21 +135,7 @@ fetch_dsh() {
     have_pkg "$dir" && stamped "$dir" "$sha" && { echo "vendor: $dir present (pin-stamped)"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    # Two fetch tiers, sha256 always the authority:
-    #   1. the TRACKED MIRROR (vendor/dsh-tarballs/ — the pinned bytes
-    #      committed 2026-09-23; a cold checkout needs NO network at all);
-    #   2. the frozen-commit upstream (DSH_BASE — master deleted the dir and
-    #      the npm registry re-cut the version, so that ref is THE source).
-    # Tier 2 only covers a tree whose mirror is somehow absent.
-    MIRROR="$(dirname "$0")/dsh-tarballs/$tgz"
-    if [ -f "$MIRROR" ]; then
-        echo "$sha  $MIRROR" | shasum -a 256 -c - >/dev/null \
-            && cp "$MIRROR" "$tmp" \
-            || echo "vendor: mirror digest mismatch for $tgz — falling through to network" >&2
-    fi
-    if [ ! -s "$tmp" ]; then
-        fetch_retry "$DSH_BASE/$tgz" "$tmp"
-    fi
+    fetch_retry "$DSH_BASE/$tgz" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "$dir"
     mkdir -p "$dir"
