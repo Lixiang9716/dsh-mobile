@@ -13,7 +13,7 @@
     "ArkTS compile errors in Index.ets fixed (harmonyos-build green on PR)",
     "[x] extras pipeline dry-validated locally (--closure-only + --suite-extras, manifest complete)",
     "[x] run-upstream-suite.sh reviewed vs run-host-e2e.sh/run-live-llm.sh conventions",
-    "emulator-vehicle verdict delivered with evidence",
+    "[x] emulator-vehicle verdict delivered with evidence",
     "agent note written, gov run green, PR landed per merge policy"
   ],
   "status": "open",
