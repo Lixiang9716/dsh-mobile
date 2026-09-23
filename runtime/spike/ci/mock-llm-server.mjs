@@ -27,6 +27,9 @@ import { startMockLlmServer } from '../vendor/dsh/llm-mock-server@0.1.6-alpha.2/
 // DSH_MOCK_SEQUENCE (space-separated) and DSH_MOCK_REPEAT_LAST=1 override the
 // script for drivers that need more successes (the W-INTEG web-boot drive
 // streams two turns through the journal): defaults keep the m2 script intact.
+// DSH_MOCK_TOOL_NAME / DSH_MOCK_TOOL_ARGS shape the `tool_call_success`
+// behavior's scripted tool call (the parity drive points it at todo_write
+// with schema-valid arguments); defaults keep the upstream mock's own.
 const sequence = (process.env.DSH_MOCK_SEQUENCE ?? 'success auth_error').split(/\s+/);
 const repeatLast = process.env.DSH_MOCK_REPEAT_LAST === '1';
 
@@ -40,6 +43,8 @@ const handle = await startMockLlmServer({
   chunkDelayMs: 0,
   apiKey: 'mock-key-0001',
   requestId: 'mock-req-1',
+  ...(process.env.DSH_MOCK_TOOL_NAME !== undefined ? { toolName: process.env.DSH_MOCK_TOOL_NAME } : {}),
+  ...(process.env.DSH_MOCK_TOOL_ARGS !== undefined ? { toolArguments: process.env.DSH_MOCK_TOOL_ARGS } : {}),
   onEvent: (event) => console.log(JSON.stringify(event)),
 });
 console.log(`MOCK_BASE_URL=${handle.baseURL}`);

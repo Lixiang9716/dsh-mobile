@@ -1,0 +1,20 @@
+{
+  "title": "upstream parity testing: the vendored spine differentially verified against the same packages under Node, plus simulator legs",
+  "created": "2026-09-23T03:24:33+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "[x] build the shared parity projector and the Node reference leg composing the same vendored spine under plain Node",
+    "[x] build the quickjs port leg scenario driving the same scripted turns incl. a tool-call round",
+    "wire the parity runner + comparator + scenario manifest, green on the CLI leg (macOS CI) and the emulator leg",
+    "land CI wiring + matrix rows + the note"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0040"
+}

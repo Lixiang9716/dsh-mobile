@@ -38,6 +38,8 @@ class SpikeHostM4 private constructor(
         const val ENTRY = "scenario/android-capability-binding.js"
         const val LLM_SCENARIO = "llm.live-stream.carrier"
         const val LLM_ENTRY = "scenario/llm-live-stream.js"
+        const val PARITY_SCENARIO = "upstream.parity"
+        const val PARITY_ENTRY = "scenario/upstream-parity.js"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -89,6 +91,31 @@ class SpikeHostM4 private constructor(
             return host
         }
 
+        /** The upstream-parity drive (scenario `upstream.parity`): the port leg
+         * of the differential consistency check — the same vendored upstream
+         * spine, the same scripted turns (success → todo_write tool round →
+         * closing success → 401) the Node reference leg runs, compared
+         * against the committed golden. The mock route is armed with the
+         * parity script and the endpoint facts ride the runtime.config bus
+         * delivery (the session-live handoff shape). */
+        fun startParity(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = PARITY_SCENARIO,
+                entryPath = PARITY_ENTRY,
+                captureLabel = "upstream-parity",
+            )
+            host.parityMode = true
+            host.webView = webView
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
         /** Lifecycle entry points (null until the session is live). */
         fun dispatchPause() = instance?.lifecycle("background")
         fun dispatchResume() = instance?.lifecycle("foreground")
@@ -109,6 +136,11 @@ class SpikeHostM4 private constructor(
     private val ui = UiPrimitives(activity, fs)
 
     private var handle: Long = 0
+
+    /** The upstream-parity drive: arms the mock route's parity script and
+     * hands the endpoint facts to the scenario over the runtime.config bus
+     * delivery (set by startParity before start). */
+    internal var parityMode = false
     private var finished = false
     private var busReady = false
     private var hostHelloDelivered = false
@@ -154,6 +186,12 @@ class SpikeHostM4 private constructor(
             }
         }
         val webRoot = File(bundle, "webclient/web")
+        if (parityMode) {
+            MockLlmRoute.enableParityScript()
+            carrier.register(CarrierRouteKind.EXACT, MockLlmRoute.PATH) { request, out ->
+                MockLlmRoute.serve(request, out)
+            }
+        }
         carrier.start(webRoot) { /* readiness consumed below */ }
         val entry = File(bundle, entryPath)
         handle = SpikeRuntime.m4Begin(
@@ -161,6 +199,17 @@ class SpikeHostM4 private constructor(
             captureLabel, bridge,
         )
         if (handle == 0L) fail("m4 begin: ${SpikeRuntime.m4LastError()}")
+        if (parityMode) {
+            // Same handoff shape as the session-live drives: the scenario's
+            // bus subscription is installed during eval, so the delivery
+            // lands whenever it is posted after m4Begin returns.
+            val config = JSONObject()
+                .put("type", "runtime.config")
+                .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
+                .put("apiKey", MockLlmRoute.KEY)
+                .put("containerRoot", bundle.absolutePath)
+            onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, config.toString()))
+        }
         deliverHostHello() // in case bus.ready arrived during eval
     }
 

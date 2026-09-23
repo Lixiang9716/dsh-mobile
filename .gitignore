@@ -137,3 +137,7 @@ hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/
 
 # graphify knowledge-graph analysis output (local tooling artifact, not product)
 graphify-out/
+
+# the parity reference driver resolves vendored packages through this link
+# (created by runtime/spike/ci/parity-node-modules.sh; the vendor tree itself is untracked)
+runtime/spike/node_modules
