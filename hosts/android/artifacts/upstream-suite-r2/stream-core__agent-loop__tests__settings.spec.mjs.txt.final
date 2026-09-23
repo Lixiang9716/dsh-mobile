@@ -1,0 +1,14 @@
+--------- beginning of main
+09-23 15:41:45.365 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 15:41:45.380 21618 21673 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 15:41:45.381 21618 21673 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 15:41:45.383 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__settings.spec.mjs"}]}
+09-23 15:41:45.519 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > layers the stored parallel cap over the composition entry"}]}
+09-23 15:41:45.556 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > refuses a non-positive cap at the write"}]}
+09-23 15:41:45.586 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > never offers the composed agents array to the settings document"}]}
+09-23 15:41:45.631 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > keeps serving the composed agents array to its own consumers"}]}
+09-23 15:41:45.669 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > falls back to the composition entry when the settings provider detaches"}]}
+09-23 15:41:45.691 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent-loop settings section > releases the namespace when the service unloads"}]}
+09-23 15:41:45.691 21618 21673 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-loop__tests__settings.spec.mjs","passed":6,"failed":0,"skipped":0}]}
+09-23 15:41:45.691 21618 21673 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 15:41:45.691 21618 21673 I dsh.spike.result: ALL PASS

@@ -112,6 +112,9 @@ hosts/android/app/src/main/assets/spike/vendor/dsh/timeout@*/
 hosts/android/app/src/main/assets/spike/vendor/dsh/tools@*/
 hosts/android/app/src/main/assets/spike/vendor/dsh/typert-protocol@*/
 hosts/android/app/src/main/assets/spike/vendor/dsh/util-values@*/
+# the test closure's literal-named tarballs (stage-spine-closure.sh
+# test-closure pass materializes them beside the stripped spine dirs)
+hosts/android/app/src/main/assets/spike/vendor/dsh/dsh-*@*/
 hosts/android/app/src/main/assets/spike/vendor/npm/zod@*/
 
 # Python

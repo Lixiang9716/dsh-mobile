@@ -55,7 +55,7 @@ const main = async () => {
   // the vitest collection model — exactly what the harness captures).
   await import(spec);
   const report = await runCollected((name, verdict, message) => {
-    emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : 'test/skip', {
+    emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : verdict === 'start' ? 'test/start' : 'test/skip', {
       name: name.slice(0, 300),
       ...(message !== undefined ? { message: String(message).slice(0, 500) } : {}),
     });

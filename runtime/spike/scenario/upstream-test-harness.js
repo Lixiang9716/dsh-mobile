@@ -177,7 +177,9 @@ const callMatchers = (actual, check) => ({
     check(ok, `to match ${fmt(pattern)} (got ${fmt(actual?.slice?.(0, 120))})`);
   },
   toContainEqual(expected) {
-    const ok = Array.isArray(actual) && actual.some((v) => deepEqual(v, expected));
+    // matchSubset (not deepEqual): the corpus passes asymmetric matchers
+    // (expect.objectContaining) nested inside toContainEqual rows.
+    const ok = Array.isArray(actual) && actual.some((v) => matchSubset(v, expected, false));
     check(ok, `to contain an equal of ${fmt(expected)}`);
   },
   toBeCloseTo(n, precision = 2) {
@@ -320,32 +322,46 @@ const makeExpect = (actual, negated = false) => {
   return api;
 };
 
+/** The vi.fn mock core: a calls/results ledger plus the implementation
+ * queue. The *Once family (mockImplementationOnce et al.) prepends a
+ * one-shot implementation consumed before the standing one — vitest's
+ * `vi.spyOn(x, 'y').mockImplementationOnce(...)` is the corpus's standard
+ * "make exactly the next call fail" idiom. */
+const makeMockFn = (impl) => {
+  const onceQueue = [];
+  const f = (...args) => {
+    f.mock.calls.push(args);
+    const next = onceQueue.length > 0 ? onceQueue.shift() : impl;
+    try {
+      const value = next ? next(...args) : undefined;
+      f.mock.results.push({ type: 'return', value });
+      return value;
+    } catch (error) {
+      f.mock.results.push({ type: 'throw', value: error });
+      throw error;
+    }
+  };
+  f.mock = { calls: [], results: [] };
+  f.mockImplementation = (next) => { impl = next; return f; };
+  f.mockImplementationOnce = (next) => { onceQueue.push(next); return f; };
+  f.mockReturnValue = (value) => { impl = () => value; return f; };
+  f.mockReturnValueOnce = (value) => { onceQueue.push(() => value); return f; };
+  f.mockResolvedValue = (value) => { impl = () => Promise.resolve(value); return f; };
+  f.mockResolvedValueOnce = (value) => { onceQueue.push(() => Promise.resolve(value)); return f; };
+  f.mockRejectedValue = (value) => { impl = () => Promise.reject(value); return f; };
+  f.mockRejectedValueOnce = (value) => { onceQueue.push(() => Promise.reject(value)); return f; };
+  f.mockClear = () => { f.mock.calls.length = 0; f.mock.results.length = 0; onceQueue.length = 0; return f; };
+  f.mockReset = f.mockClear;
+  return f;
+};
+
 /** vi subset; the mock and timer APIs fail loud (loader-level / no seam). */
 const viApi = {
-  fn(impl) {
-    const f = (...args) => {
-      f.mock.calls.push(args);
-      try {
-        const value = impl ? impl(...args) : undefined;
-        f.mock.results.push({ type: 'return', value });
-        return value;
-      } catch (error) {
-        f.mock.results.push({ type: 'throw', value: error });
-        throw error;
-      }
-    };
-    f.mock = { calls: [], results: [] };
-    f.mockImplementation = (next) => { impl = next; return f; };
-    f.mockReturnValue = (value) => { impl = () => value; return f; };
-    f.mockResolvedValue = (value) => { impl = () => Promise.resolve(value); return f; };
-    f.mockRejectedValue = (value) => { impl = () => Promise.reject(value); return f; };
-    f.mockClear = () => { f.mock.calls.length = 0; f.mock.results.length = 0; return f; };
-    f.mockReset = f.mockClear;
-    return f;
-  },
+  fn: makeMockFn,
+  isMockFunction: (v) => typeof v === 'function' && v.mock !== undefined,
   spyOn(object, key) {
     const original = object[key];
-    const spy = viApi.fn(typeof original === 'function' ? original : undefined);
+    const spy = makeMockFn(typeof original === 'function' ? original : undefined);
     spy.mockRestore = () => { object[key] = original; };
     object[key] = spy;
     return spy;
@@ -426,6 +442,12 @@ export const onTestFinished = (fn) => {
 };
 export const expect = Object.assign(makeExpect, {
   extend: () => failWith('harness: expect.extend is not implemented'),
+  /** expect.soft: vitest records and continues; the harness has no
+   * end-of-test collector, so soft asserts immediately — the test's verdict
+   * (fail) is identical, only later assertions in the same test don't run. */
+  soft: (value) => makeExpect(value),
+  fail: (message = 'expect.fail()') => failWith(String(message)),
+  unreachable: (message = 'expected unreachable path') => failWith(`unreachable: ${String(message)}`),
   anything: () => ({ __matcher: () => true }),
   any: (cls) => ({ __matcher: (v) => typeof v === cls?.name?.toLowerCase() || v instanceof cls }),
   objectContaining: (shape) => ({ __matcher: (v) => matchSubset(v, shape, false) }),
@@ -448,12 +470,16 @@ const typeChain = new Proxy(function typeProbe() {}, {
 export const expectTypeOf = () => typeChain;
 
 /** Run everything the imported specs collected; report per test to the
- * caller's sink. Returns {passed, failed, skipped, failures}. */
+ * caller's sink. Returns {passed, failed, skipped, failures}. A test that
+ * never settles is the suite's hang class (no timer seam to cut it short) —
+ * the sink sees its 'start' before it runs, so the stream names the exact
+ * test a hang froze on. */
 export const runCollected = async (sink) => {
   const report = { passed: 0, failed: 0, skipped: 0, failures: [] };
   for (const setup of suite.before) await setup();
   for (const t of suite.tests) {
     if (typeof t.fn !== 'function') { report.skipped += 1; sink(t.name, 'skipped'); continue; }
+    sink(t.name, 'start');
     try {
       for (const hook of t.hooks.beforeEach) await hook();
       await t.fn();

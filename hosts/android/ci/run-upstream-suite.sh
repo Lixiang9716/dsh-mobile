@@ -57,15 +57,25 @@ until adb install -r "$APK"; do
 done
 
 # Stage the whole corpus ONCE (per-file run-as cp would be 667 round trips;
-# one tar through /data/local/tmp is a single push + extract).
+# one tar through /data/local/tmp is a single push + extract). The corpus
+# dir is WIPED first: a regenerated corpus (fewer transpiled specs after a
+# transpiler change) must not leave stale specs behind — stale files would
+# run under a name no manifest counts.
 say "staging the corpus"
 CORPUS_TGZ="$(mktemp /tmp/dsh-suite-corpus.XXXXXX.tgz)"
 tar czf "$CORPUS_TGZ" -C "$CORPUS" .
 adb push "$CORPUS_TGZ" /data/local/tmp/dsh-suite-corpus.tgz >/dev/null
-adb shell "run-as $PKG sh -c 'mkdir -p files/spike/upstream-tests && tar xzf /data/local/tmp/dsh-suite-corpus.tgz -C files/spike/upstream-tests'"
+adb shell "run-as $PKG sh -c 'rm -rf files/spike/upstream-tests && mkdir -p files/spike/upstream-tests && tar xzf /data/local/tmp/dsh-suite-corpus.tgz -C files/spike/upstream-tests'"
 rm -f "$CORPUS_TGZ"
 adb shell "run-as $PKG ls files/spike/upstream-tests | wc -l" | tr -d '\r' | \
     { read -r staged; say "staged $staged corpus files"; }
+
+# The suite driver + harness ship as TRACKED APK assets (staged by
+# stage-spine-closure.sh from runtime/spike/scenario — the single source).
+# copyAssetDir re-merges assets over filesDir on every launch, so a
+# runner-pushed copy would be clobbered on first boot anyway; the APK is the
+# only source that sticks.
+say "corpus staged (driver + harness come from the APK assets)"
 
 # ---- one launch per spec ---------------------------------------------------
 : > "$OUT/aggregate.jsonl"
@@ -84,10 +94,12 @@ for spec in $SPECS; do
         || { cleanup_streamer; die "am start failed for $spec"; }
 
     deadline=$(( $(date +%s) + LAUNCH_DEADLINE_SECONDS ))
+    timed_out=0
     until grep -q "dsh.spike.result: ALL" "$STREAM" 2>/dev/null; do
         if [ "$(date +%s)" -ge "$deadline" ]; then
             echo "{\"spec\":\"$spec\",\"status\":\"timeout\"}" >> "$OUT/aggregate.jsonl"
             FILES_ERROR=$((FILES_ERROR + 1))
+            timed_out=1
             cleanup_streamer
             break
         fi
@@ -96,6 +108,12 @@ for spec in $SPECS; do
     sleep 0.3
     cleanup_streamer
     trap - EXIT
+    # A timed-out spec already has its aggregate line; extracting a summary
+    # from the truncated stream would DOUBLE-COUNT the file in totals.json.
+    if [ "$timed_out" = "1" ]; then
+        say "$spec: timeout (no summary in ${LAUNCH_DEADLINE_SECONDS}s)"
+        continue
+    fi
 
     sed '/dsh.spike.result: ALL/q' "$STREAM" > "$STREAM.final" 2>/dev/null || cp "$STREAM" "$STREAM.final"
     # the aggregate line: one JSON per spec from its suite/summary record

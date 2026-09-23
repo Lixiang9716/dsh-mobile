@@ -167,8 +167,12 @@ for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-subprocess-quickjs dsh-ui; do
 done
 
 # The scenarios ride the same copy (assets stay byte-identical to the
-# runtime bundle, like every other staged scenario).
-for s in android-session-live-read.js android-composer-live-write.js; do
+# runtime bundle, like every other staged scenario). The upstream-suite
+# driver + harness MUST be in this list: copyAssetDir re-merges assets over
+# filesDir on EVERY launch, so an APK-stale harness silently clobbers any
+# runner-pushed copy — the APK asset is the only source that sticks.
+for s in android-session-live-read.js android-composer-live-write.js \
+         upstream-suite-leg.js upstream-test-harness.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
         cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
     fi
@@ -234,6 +238,14 @@ done
     done
 for f in gateway.js logger.js registry.js; do
     cmp -s "$SPIKE/$f" "$ASSETS/$f" || note_drift "$f"
+done
+# The staged scenarios (tracked asset copies — the suite driver among them:
+# a stale APK copy would shadow every runtime-side fix, the exact defect the
+# 2026-09-23 round-two chase hit).
+for s in android-session-live-read.js android-composer-live-write.js \
+         upstream-suite-leg.js upstream-test-harness.js; do
+    if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
+    cmp -s "$SPIKE/scenario/$s" "$ASSETS/scenario/$s" || note_drift "scenario/$s"
 done
 if [ -s "$DRIFT" ]; then
     while IFS= read -r rel; do echo "::error::stage drift: $rel"; done < "$DRIFT"

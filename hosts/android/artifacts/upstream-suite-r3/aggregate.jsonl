@@ -1,0 +1,8 @@
+{"spec":"core__agent__tests__agent.spec.mjs","status":"timeout"}
+{"spec":"core__agent__tests__agent.spec.mjs","status":"timeout"}
+{"spec":"core__agent__tests__consumed-work.spec.mjs","status":"pass","passed":11,"failed":0,"skipped":0}
+{"spec":"core__agent__tests__invariant.spec.mjs","status":"pass","passed":3,"failed":0,"skipped":0}
+{"spec":"core__agent-default-model__tests__agent-default-model.spec.mjs","status":"pass","passed":5,"failed":0,"skipped":0}
+{"spec":"core__agent-loop__tests__agent-initiator.spec.mjs","status":"fail","passed":63,"failed":2,"skipped":0}
+{"spec":"core__agent-loop__tests__agent.spec.mjs","status":"pass","passed":9,"failed":0,"skipped":0}
+{"spec":"core__agent-loop__tests__contract-regressions.spec.mjs","status":"fail","passed":30,"failed":3,"skipped":5}
