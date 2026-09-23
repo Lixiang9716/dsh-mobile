@@ -24,6 +24,7 @@ const char *dsh_spike_res_scenario_upstream_parity_js(size_t *len);
 const char *dsh_spike_res_scenario_parity_projector_js(size_t *len);
 const char *dsh_spike_res_scenario_upstream_suite_js(size_t *len);
 const char *dsh_spike_res_scenario_upstream_harness_js(size_t *len);
+const char *dsh_spike_res_scenario_agent_flow_js(size_t *len);
 const char *dsh_spike_res_install_fetch_js(size_t *len);
 const char *dsh_spike_res_receipt_journal_js(size_t *len);
 const char *dsh_spike_res_profile_m3_patch_json(size_t *len);

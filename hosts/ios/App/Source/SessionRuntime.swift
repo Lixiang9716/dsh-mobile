@@ -22,6 +22,9 @@ final class SessionRuntime {
     /// The upstream DSH test-suite drive (`-dsh-scenario upstream-suite`):
     /// one transpiled upstream spec through the quickjs-shaped harness.
     private let suiteMode: Bool
+    /// The agent-flow drive (`-dsh-scenario agent-flow`): prompt override +
+    /// skill loading over the vendored skill family, in one session.
+    private let agentFlowMode: Bool
     /// Config-layer resolution: the ACTIVE client id, its staged directory,
     /// and the toolbar slot allow-set the carrier enforces on projections.
     private var resolvedClient: String
@@ -45,6 +48,7 @@ final class SessionRuntime {
         if llmMode { return "scenario/llm-live-stream.js" }
         if parityMode { return "scenario/upstream-parity.js" }
         if suiteMode { return "scenario/upstream-suite-leg.js" }
+        if agentFlowMode { return "scenario/agent-flow.js" }
         return profileMode ? "scenario/install-from-http.js" : "scenario/session-mock-llm.js"
     }
 
@@ -53,6 +57,7 @@ final class SessionRuntime {
         llmMode = SessionLaunchConfig.scenarioName == "llm-live-stream"
         parityMode = SessionLaunchConfig.scenarioName == "upstream-parity"
         suiteMode = SessionLaunchConfig.scenarioName == "upstream-suite"
+        agentFlowMode = SessionLaunchConfig.scenarioName == "agent-flow"
         resolvedClient = SessionLaunchConfig.activeWebClient
         resolvedDir = SessionLaunchConfig.webClientDir(resolvedClient)
         // Base slot defaults; a profile patch's slots.allow REPLACES them.
@@ -208,6 +213,8 @@ final class SessionRuntime {
             source = String(cString: dsh_spike_res_scenario_upstream_parity_js(nil))
         case "scenario/upstream-suite-leg.js":
             source = String(cString: dsh_spike_res_scenario_upstream_suite_js(nil))
+        case "scenario/agent-flow.js":
+            source = String(cString: dsh_spike_res_scenario_agent_flow_js(nil))
         case "scenario/install-from-http.js":
             source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
         default:

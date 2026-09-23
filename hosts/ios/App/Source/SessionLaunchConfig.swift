@@ -43,10 +43,17 @@ enum SessionLaunchConfig {
     /// `upstream.suite` leg — ONE transpiled upstream DSH spec (loop.spec
     /// & friends) through the quickjs-shaped harness; the spec path rides
     /// the launch environment the same way (DSH_UPSTREAM_SPEC).
+    ///
+    /// Agent-flow drive: `-dsh-scenario agent-flow` runs the `agent.flow`
+    /// leg — the prompt override reaching the captured LLM request, the
+    /// fixture skill discovered from the staged dir into the session
+    /// catalog, and the `skill` tool returning its instructions through a
+    /// real agent-loop tool round. The scripted wire is the same host-side
+    /// vendored mock server the parity drive uses (SIMCTL_CHILD_* env).
     static var scenarioName: String? {
         guard let name = arg(after: "-dsh-scenario") else { return nil }
         switch name {
-        case "llm-live-stream", "upstream-parity", "upstream-suite": return name
+        case "llm-live-stream", "upstream-parity", "upstream-suite", "agent-flow": return name
         default: fatalError("unknown -dsh-scenario: \(name)")
         }
     }

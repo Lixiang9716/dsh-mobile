@@ -49,7 +49,9 @@ dsh-sandbox, dsh-scope, dsh-brand, dsh-util-values, dsh-util-crypto,
 dsh-timeout, dsh-typert-protocol, dsh-agent-loop, dsh-llm — the LLM transport leg
 added the llm closure + its mock-server test vehicle; the file-tools row
 added the fs-local + tool-fs + tool-str-replace-editor + attachment closure
-and npm diff). The loader FAILS
+and npm diff; the SKILL row added the dsh-skill + skill-filesystem +
+tool-skill closure and npm yaml, with chokidar answered by a loud linkage
+shim). The loader FAILS
 LOUD naming any specifier not in this
 table (rule 5) — a new upstream import can never be silently mis-served.
 
@@ -57,10 +59,11 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | --- | --- | --- |
 | `node:path` (`isAbsolute`; boot: `join`/`resolve`/`dirname`/`basename`) | `shims/path.js` (POSIX) | supported |
 | `node:crypto` (`randomUUID`) | `shims/crypto.js` over the host `crypto.getRandomValues` seam | supported |
+| `node:crypto` (`createHash('sha1')`, `createHash('sha256')`) | `shims/crypto.js` — pure-JS digests; sha1 serves the web-boot revision scheme, sha256 (skill row, tool-skill's catalog digest) goes through the spike's own `sha256.js` — one implementation, no second hand-rolled copy | supported (those two digests; everything else loud) |
 | `node:async_hooks` (`AsyncLocalStorage`) | `shims/async-hooks.js` — frame stack + `Promise.prototype.then/catch/finally` capture (single-threaded serial runtime; context = what was current when the continuation attached) | supported (no timer contexts — timers unsupported) |
 | `node:util/types` (`isPromise`) | `shims/util-types.js` | supported |
 | `node:util` (`format`/`inspect`/`promisify`) | `shims/util.js` — JSON-form rendering, not node's depth/color machinery | partial |
-| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (follow-up wiring). Web-integration-leg exception: the STAGED WEB-PLUGIN VFS (`seedWebPlugins` replace / `mergeWebPlugins` chunked-add). File-tools-row exception: the WRITABLE WORKSPACE VFS (`mountWorkspace` — one pinned in-memory root with explicit dirs, per-file ino/mode/mtime/ctime version stamps, `createReadStream` as the async-iterable byte window, callback `realpath`/`.native`); writes serve the workspace only and the seeded views stay read-only | supported for the staged views only (else loud) |
+| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (follow-up wiring). Web-integration-leg exception: the STAGED WEB-PLUGIN VFS (`seedWebPlugins` replace / `mergeWebPlugins` chunked-add). File-tools-row exception: the WRITABLE WORKSPACE VFS (`mountWorkspace` — one pinned in-memory root with explicit dirs, per-file ino/mode/mtime/ctime version stamps, `createReadStream` as the async-iterable byte window, callback `realpath`/`.native`); writes serve the workspace only and the seeded views stay read-only. Skill-row exception: `watchFile`/`unwatchFile` — binding-only loud stubs (the skill-filesystem link needs the names; its watcher manager is never mounted — `watch:false`) | supported for the staged views only (else loud) |
 | `node:fs/promises` (`readFile`, `readdir`, `stat`, `opendir`, `realpath`, `access`) | `shims/fs-promises.js` — the async face of both staged views; the presets walk consumes the read side | supported |
 | `node:fs/promises` (`stat {bigint}`→`dev/ino/mode/mtimeNs/ctimeNs`, `lstat`, `mkdir`, `rm`, `rename`, `link`, `chmod`, `writeFile`, `open`→FileHandle `writeFile/stat/read(ch advancing cursor)/chmod/sync/close`) | `shims/fs-promises.js` over the workspace VFS — the exact face the vendored fs-local drives (exclusive-create open, no-replace link, sequential null-position reads); seed views refuse writes loudly | supported (workspace) |
 | `node:buffer` (`Buffer.from/alloc/allocUnsafe/concat/byteLength/isBuffer`, `buffer.constants`) | `shims/buffer.js` — the Uint8Array-backed DshBuffer (also installed as the global `Buffer` by web-shims.js); `alloc` zero-fills, `allocUnsafe` is its honest signature twin (nothing uninitialized to hand out) | supported |
@@ -69,6 +72,8 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `node:path` (`toNamespacedPath`) | `shims/path.js` — POSIX identity (namespacing is a win32 concern; fs-local only calls it in its win32 branch) | supported |
 | `node:process` (`pid`) | `shims/process.js` — constant 1: ONE runtime process by construction (§6 single serial thread); vendored temp-name builders use it for uniqueness only | supported |
 | `diff` (bare npm; `structuredPatch` for write/edit hunk diffs) | `shims/npm-bridges.js` — registers a one-line re-export through the host's `__dshModuleDefine` runtime-module seam pointing at the VERBATIM `vendor/npm/diff@9.0.0/libesm/` tree; the host bare-map (hosts/**) is not touched and no upstream byte is copied. Must be imported BEFORE the tool packages resolve (ESM links static graphs before any module body runs) | supported |
+| `yaml` (bare npm; `parse` for SKILL.md frontmatter) | `shims/npm-bridges.js` — the same runtime-module seam, pointing at the VERBATIM `vendor/npm/yaml@2.9.0/browser/` tree (the package's own ESM face; its "node" face is CJS, which the loader cannot serve) | supported (skill row) |
+| `chokidar` (bare npm; the skill-filesystem watcher engine) | `shims/npm-bridges.js` — a LOUD linkage shim (no vendored tree: the engine is real OS fs events plus awaitWriteFinish wall-clock timers, and the runtime has neither seam — the @vscode/ripgrep precedent); the mobile profile mounts skill-filesystem with `watch:false` and never reaches it | unsupported (loud) |
 | `node:os` (`tmpdir`) | `shims/os.js` — profile container pinned by `boot.js` | supported (after container pin) |
 | `node:process` (global `process`) | `shims/process.js` — env = launch snapshot, cwd = container, `nextTick` = microtask | supported (subset) |
 | `node:module` (`createRequire`) | `shims/node-module.js` over the host `__dshBundleRequire` seam — resolves `base` through the loader's own bare map, serves relative `.json` reads under the bundle root only | supported (subset) |
@@ -115,3 +120,7 @@ the honest gaps declared:
 4. Wall-clock timers: nothing in the mounted closure uses them; when a
    slice needs them, the host gains a timer primitive (contract proposal
    first — never a global hack).
+5. Skill-filesystem file watching: the vendored provider is mounted with
+   `watch:false` — discovery re-runs per request boundary, but live
+   fs-event invalidation has no runtime seam (same class as the timers;
+   chokidar is linked through a loud shim and never driven).

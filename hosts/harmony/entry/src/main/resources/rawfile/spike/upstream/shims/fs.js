@@ -353,6 +353,14 @@ export const realpathSync = Object.assign(refuse('realpathSync'), {
 export const writeFileSync = refuse('writeFileSync');
 export const mkdirSync = refuse('mkdirSync');
 export const rmSync = refuse('rmSync');
+// The file-watch surface, linked by @deepseek-ai/dsh-skill-filesystem
+// (`import { unwatchFile, watchFile } from "node:fs"`). Binding-only stubs:
+// they are reached only from its watcher manager, and the mobile profile
+// mounts that package with watch:false — the runtime has no fs-event seam
+// (the same staged gap as the timers). A call here means a watch:true mount
+// slipped through, so it fails loud naming the package's own remedy.
+export const watchFile = refuse('watchFile');
+export const unwatchFile = refuse('unwatchFile');
 export const realpath = realpathCallback;
 export {
   // The writable-workspace internals the node:fs/promises shim is built on.

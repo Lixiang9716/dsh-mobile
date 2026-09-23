@@ -219,6 +219,36 @@ const mountFileTools = async (ctx, cwd) => {
   await ctx.plugin(StrReplaceEditor, {});
 };
 
+/** The SKILL row (2026-09-23, the agent-flow E2E): the upstream skill family
+ * over the vendored packages — dsh-skill (the `ctx.skills` provider registry),
+ * dsh-skill-filesystem (project/custom/user discovery; on mobile mounted with
+ * `watch:false` — the runtime has no fs-event/timer seam for chokidar, which
+ * the npm-bridges seam answers with a loud linkage shim), and dsh-tool-skill
+ * (the model-facing `skill` tool + the durable session catalog). Mounted only
+ * when the caller configures `options.skills` (customSkillDirs), so the
+ * existing spine legs boot byte-identically. Dynamic imports here — same
+ * reason as the file-tools row: the bridges must register `yaml`/`chokidar`
+ * before these specifiers resolve (ESM links static graphs before any module
+ * body runs). `dshHome`/`agentsHome` are pinned to the profile container so
+ * discovery is deterministic; `includeDefaultRoots` stays on and simply finds
+ * nothing (the container has no project `.dsh/skills`/`.agents/skills` and
+ * no `$DSH_HOME/skills` unless staged). */
+const mountSkillPlane = async (ctx, skills) => {
+  const [Skills, SkillFs, ToolSkill] = await Promise.all([
+    import('@deepseek-ai/dsh-skill'),
+    import('@deepseek-ai/dsh-skill-filesystem'),
+    import('@deepseek-ai/dsh-tool-skill'),
+  ]);
+  await ctx.plugin(Skills.SkillRegistry, {});
+  await ctx.plugin(SkillFs, {
+    dshHome: skills.dshHome,
+    agentsHome: skills.agentsHome,
+    customSkillDirs: skills.customSkillDirs ?? [],
+    watch: false,
+  });
+  await ctx.plugin(ToolSkill, {});
+};
+
 /** Mount the dsh-base bundle's spine rows over the vendored packages, in
  * base-patch order (activation is service-availability driven upstream; here
  * the mount order mirrors the patch rows). */
@@ -254,7 +284,7 @@ const mountPresetPlane = async (ctx) => {
 const mountSpine = async (ctx, identity) => {
   await ctx.plugin(SessionStore);
   await ctx.plugin(AgentRegistry);
-  await ctx.plugin(SystemPrompt, { personaPrefix: '' });
+  await ctx.plugin(SystemPrompt, { personaPrefix: identity.personaPrefix ?? '' });
   await ctx.plugin(ToolRuntime);
   await ctx.plugin(SessionProjectionRegistry);
   await ctx.plugin(SettingsMemory);
@@ -272,6 +302,11 @@ const mountSpine = async (ctx, identity) => {
   // the pinned profile container. The world is in-memory by design for this
   // host: no durability, no symlinks, no permissions — the staged gap.
   await mountFileTools(ctx, identity.cwd);
+  // The SKILL row (the agent-flow E2E): mounted after the file tools (its
+  // discovery prefers the `fs` service) and before the agent loop (the
+  // tool-skill catalog registers its `agent/pre-step` listeners on the
+  // context, so every later step sees them). Only when configured.
+  if (identity.skills) await mountSkillPlane(ctx, identity.skills);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -297,6 +332,13 @@ const mountSpine = async (ctx, identity) => {
  * @param options.cwd - session cwd (mobile-honest: a gateway fs scope label).
  * @param options.llm - the llm route: {baseURL, apiKey, provider, model,
  *   onWire?, onSse?} — required; the profile has no transport-free fallback.
+ * @param options.systemPrompt - optional override seam: {personaPrefix} —
+ *   the vendored SystemPrompt's own config (the prompt's persona section),
+ *   mounted verbatim; default '' (the historical boot shape).
+ * @param options.skills - optional SKILL-row configuration: {dshHome,
+ *   agentsHome, customSkillDirs?} — mounting the vendored skill family
+ *   (registry + filesystem provider + the `skill` tool). Absent = the
+ *   historical spine (the parity/session manifests pin that shape).
  * @param options.onEvent - observability hook: (event, fields) => void; boot
  *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
  */
@@ -314,6 +356,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     userEndpoint: llm.userEndpoint === true,
     onWire: llm.onWire,
     onSse: llm.onSse,
+    onRequestBody: llm.onRequestBody,
   }));
   onEvent('llm/runtime', {
     provider: llm.provider,
@@ -354,7 +397,12 @@ export async function bootUpstream(options) {
     layers: MOBILE_LAYERS.map(([id]) => id),
   });
 
-  await mountSpine(ctx, { agentId, sessionId, cwd, provider: llm.provider, model: llm.model });
+  await mountSpine(ctx, {
+    agentId, sessionId, cwd,
+    provider: llm.provider, model: llm.model,
+    personaPrefix: options.systemPrompt?.personaPrefix,
+    skills: options.skills,
+  });
   await demandServices(ctx);
   demandPresetServices(ctx);
 

@@ -12,12 +12,18 @@
  *     content revisions, not security.
  *   - dsh-client-modules (`randomBytes(8)`) — the per-boot initial-row
  *     revision nonce; rendered through DshBuffer.toString('hex').
+ *   - dsh-tool-skill (`createHash('sha256')`) — the session skill-catalog
+ *     digest (agent-flow leg): content identity over the durable catalog
+ *     entries, hex digested. Pure-JS SHA-256 through the spike's own
+ *     sha256.js (the install pipeline's primitive — one implementation, no
+ *     second hand-rolled copy).
  *
  * Intentionally NOT supported: everything else (ciphers, HMAC, other digests —
  * content addressing elsewhere in the spike stays sha256.js). An import or
  * algorithm name outside this table is loud (rule 5).
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
+import { sha256Hex } from 'sha256.js';
 
 const randomUUID = () => {
   const bytes = new Uint8Array(16);
@@ -73,7 +79,16 @@ const sha1Digest = (bytes) => {
   return out;
 };
 
-const SUPPORTED_ALGOS = { sha1: sha1Digest };
+/** sha256.js digests to lowercase hex; the createHash face digests to bytes
+ * and lets digest() render. Hex → bytes keeps one SHA-256 implementation. */
+const sha256Digest = (bytes) => {
+  const hex = sha256Hex(bytes);
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  return out;
+};
+
+const SUPPORTED_ALGOS = { sha1: sha1Digest, sha256: sha256Digest };
 
 const createHash = (algorithm) => {
   const digestOf = SUPPORTED_ALGOS[algorithm];

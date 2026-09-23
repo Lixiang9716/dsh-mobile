@@ -69,12 +69,14 @@ stage_pkg() {
 
 # The iOS embedder's TREES list: the verbatim spine packages (D9), the
 # Agent 预设 closure (2026-09-22 settings-surfaces leg), and the FILE-TOOLS
-# row (vendored fs-local backend + upstream file tools).
+# row (vendored fs-local backend + upstream file tools), plus the SKILL row
+# (the agent-flow E2E's vendored skill family).
 for pkg in agent agent-loop brand llm sandbox scope session \
            session-projection settings system-prompt timeout tools \
            typert-protocol util-values agent-presets atomic-write \
            home-paths fs attachment fs-local tool-fs \
-           tool-str-replace-editor tool-todo; do
+           tool-str-replace-editor tool-todo \
+           skill skill-filesystem tool-skill; do
     say "staging vendor/dsh/$pkg@$VER"
     stage_pkg "$SPIKE/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"
 done
@@ -100,6 +102,16 @@ mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm"
     while IFS= read -r rel; do
         mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm/$(dirname "$rel")"
         cp "$SPIKE/vendor/npm/diff@9.0.0/libesm/$rel" "$ASSETS/vendor/npm/diff@9.0.0/libesm/$rel"
+    done
+
+# The SKILL row's npm face: upstream/shims/npm-bridges.js re-exports the
+# yaml browser/ ESM tree behind the bare specifier skill-filesystem imports
+# (the package's "node" face is CJS, which the loader cannot serve).
+say "staging vendor/npm/yaml@2.9.0 (browser ESM face)"
+(cd "$SPIKE/vendor/npm/yaml@2.9.0/browser" && find . -type f ! -name '*.d.ts') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/yaml@2.9.0/browser/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel"
     done
 
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
@@ -171,8 +183,10 @@ done
 # driver + harness MUST be in this list: copyAssetDir re-merges assets over
 # filesDir on EVERY launch, so an APK-stale harness silently clobbers any
 # runner-pushed copy — the APK asset is the only source that sticks.
+# The agent-flow scenario rides the same list (the vendored skill family it
+# drives is staged above).
 for s in android-session-live-read.js android-composer-live-write.js \
-         upstream-suite-leg.js upstream-test-harness.js; do
+         upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
         cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
     fi
@@ -208,7 +222,8 @@ for pkg in agent agent-loop brand llm sandbox scope session \
            session-projection settings system-prompt timeout tools \
            typert-protocol util-values agent-presets atomic-write \
            home-paths fs attachment fs-local tool-fs \
-           tool-str-replace-editor tool-todo; do
+           tool-str-replace-editor tool-todo \
+           skill skill-filesystem tool-skill; do
     (cd "$SPIKE/vendor/dsh/$pkg@$VER" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r rel; do
         [ -f "$SPIKE/vendor/dsh/$pkg@$VER/$rel" ] || continue
@@ -222,6 +237,12 @@ done
         if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/diff@9.0.0/libesm/$rel"; then note_skip; continue; fi
         cmp -s "$SPIKE/vendor/npm/diff@9.0.0/libesm/$rel" "$ASSETS/vendor/npm/diff@9.0.0/libesm/$rel" ||
             note_drift "npm/diff@9.0.0/libesm/$rel"
+    done
+(cd "$SPIKE/vendor/npm/yaml@2.9.0/browser" && find . -type f ! -name '*.d.ts') |
+    while IFS= read -r rel; do
+        if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/yaml@2.9.0/browser/$rel"; then note_skip; continue; fi
+        cmp -s "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel" ||
+            note_drift "npm/yaml@2.9.0/browser/$rel"
     done
 (cd "$ZOD_SRC" && find v4/classic v4/core v4/locales -name '*.js'; echo index.js) |
     while IFS= read -r rel; do
@@ -243,7 +264,7 @@ done
 # a stale APK copy would shadow every runtime-side fix, the exact defect the
 # 2026-09-23 round-two chase hit).
 for s in android-session-live-read.js android-composer-live-write.js \
-         upstream-suite-leg.js upstream-test-harness.js; do
+         upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
     cmp -s "$SPIKE/scenario/$s" "$ASSETS/scenario/$s" || note_drift "scenario/$s"
 done

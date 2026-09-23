@@ -48,6 +48,10 @@ RESOURCES = [
     # runner) + the quickjs-shaped vitest harness it redirects to.
     ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
     ("scenario_upstream_harness_js", SPIKE / "scenario" / "upstream-test-harness.js"),
+    # The agent-flow leg (the 打通流程 E2E): prompt override + skill loading
+    # over the vendored skill family (the spine itself rides the TREES below;
+    # the fixture skill is staged at runtime by the scenario itself).
+    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
@@ -185,6 +189,9 @@ TREES = [
         "session", "session-projection", "settings", "system-prompt",
         "session-persistence",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
+        # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
+        # filesystem discovery provider, and the model-facing `skill` tool.
+        "skill", "skill-filesystem", "tool-skill",
     ]
 ] + [
     # the npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports
@@ -192,6 +199,12 @@ TREES = [
     # vendored tool-fs imports for structuredPatch)
     ("vendor/npm/diff@9.0.0/libesm",
      SPIKE / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
+    # the npm `yaml` bridge target (the SKILL row): upstream/shims/
+    # npm-bridges.js re-exports the browser/ ESM face behind the bare
+    # specifier @deepseek-ai/dsh-skill-filesystem imports for frontmatter
+    # (the package's "node" face is CJS, which the loader cannot serve).
+    ("vendor/npm/yaml@2.9.0/browser",
+     SPIKE / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
