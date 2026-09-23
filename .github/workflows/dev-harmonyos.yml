@@ -143,6 +143,42 @@ jobs:
           name: dsh-spike-hap
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 
+      # ---- the upstream-suite HAP (extras build) --------------------------
+      # The transpiled corpus + test closure ride rawfile (--suite-extras,
+      # generated per tag, untracked); the second build produces the suite
+      # HAP any hdc-connected environment can drive with
+      # hosts/harmony/ci/run-upstream-suite.sh (the emulator E2E vehicle is
+      # the same one the standard harmony legs await — see the M5 note below).
+      - name: Materialize the upstream test assets (same-tag tarball + test closure)
+        if: env.PROJECT_PRESENT == 'true'
+        run: sh runtime/spike/vendor/ensure-dsh-tests.sh
+
+      - name: Transpile the upstream suite corpus
+        if: env.PROJECT_PRESENT == 'true'
+        run: |
+          npm ci --prefix test/upstream-suite --no-fund --no-audit
+          node test/upstream-suite/transpile.mjs
+
+      - name: Stage the suite extras into rawfile
+        if: env.PROJECT_PRESENT == 'true'
+        run: sh hosts/harmony/ci/vendor-official.sh --suite-extras
+
+      - name: Build the suite HAP (extras in rawfile)
+        if: env.PROJECT_PRESENT == 'true'
+        working-directory: hosts/harmony
+        run: |
+          "$GITHUB_WORKSPACE/clt/command-line-tools/bin/hvigorw" assembleHap \
+            --mode module -p product=default -p buildMode=debug --no-daemon
+          test -f entry/build/default/outputs/default/entry-default-unsigned.hap \
+            || { echo "::error::suite HAP not produced"; exit 1; }
+
+      - name: Upload the suite HAP artifact
+        if: env.PROJECT_PRESENT == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: dsh-spike-suite-hap
+          path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
+
       # M5 will add:
       #   signing (build-profile.json5 signingConfigs; release needs Huawei-
       #   issued certs — debug-only HAPs are enough for the E2E emulator flow)

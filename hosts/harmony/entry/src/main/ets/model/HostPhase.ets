@@ -68,6 +68,12 @@ const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';
 const SCENARIO_LLM: string = 'llm.live-stream';
 const SCENARIO_LLM_CARRIER: string = 'llm.live-stream.carrier';
 const ENTRY_LLM: string = 'scenario/llm-live-stream.js';
+/** The upstream-suite leg (upstream.suite): ONE transpiled upstream spec
+ * executed by the quickjs-shaped harness in THIS runtime — the spec name
+ * arrives via the dsh.e2e.spec launch parameter and rides the
+ * runtime.config bus delivery to the driver. */
+const SCENARIO_SUITE: string = 'upstream.suite';
+const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
 /** The credential-placeholder writer the llm leg evals first (harmony-only
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
@@ -191,6 +197,30 @@ export class HostPhase {
     if (status < 0) {
       hilog.error(0x0000, TAG, 'llm leg: staging eval failed');
     }
+  }
+
+  /** The upstream-suite leg: the driver scenario plus the runtime.config
+   * bus delivery carrying the spec selection (bundle-root-relative) and the
+   * container root. The delivery lands after hostEval returns — the driver
+   * installs its bus subscription during eval, so the ordering is safe (the
+   * same shape the Android host's startSuite uses). */
+  beginSuite(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string, spec: string): void {
+    this.scenario = SCENARIO_SUITE;
+    this.carrierScenario = SCENARIO_SUITE;
+    this.entry = ENTRY_SUITE;
+    this.llmLeg = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+    const status = hostEval(PHASE_ID, ENTRY_SUITE);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'suite leg: driver eval failed');
+      return;
+    }
+    hostBusDeliver(PHASE_ID, JSON.stringify({
+      'type': 'runtime.config',
+      'spec': `upstream-tests/${spec}`,
+      'containerRoot': bundleRoot,
+    }));
   }
 
   private start(ctx: common.UIAbilityContext, bundleRoot: string,

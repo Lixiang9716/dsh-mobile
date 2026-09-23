@@ -86,6 +86,10 @@ const BUNDLE_FILES: string[] = [
   'scenario/llm-live-stream.js',
   'scenario/session-mock-llm.js',
   'scenario/harmony-capability-binding.js',
+  'scenario/upstream-parity.js',
+  'scenario/parity-projector.js',
+  'scenario/upstream-suite-leg.js',
+  'scenario/upstream-test-harness.js',
   'system-plugins/dsh-fs/index.js',
   'system-plugins/dsh-fs/manifest.json',
   'system-plugins/dsh-subprocess-quickjs/index.js',
@@ -543,6 +547,45 @@ struct Index {
     return Promise.all(jobs).then((): string => root);
   }
 
+  /** The suite leg's EXTRA materialization: the transpiled corpus and the
+   * staged test closure ride the rawfile of the --suite-extras HAP but NOT
+   * BUNDLE_FILES (generated per tag, never tracked). The extras stager
+   * writes ONE fixed-name manifest — upstream-tests/__files.txt, one
+   * bundle-relative path per line — and this copies each listed file beside
+   * the pinned bundle through the same copyRawFile. A manifest that refuses
+   * to read means a standard HAP: nothing extra to serve (the driver fails
+   * loud naming the spec, which is the honest verdict for that build). */
+  private materializeSuiteExtras(ctx: common.Context, root: string): Promise<void> {
+    const manifestRel = 'upstream-tests/__files.txt';
+    let content: Promise<Uint8Array>;
+    try {
+      content = ctx.resourceManager.getRawFileContent('spike/' + manifestRel);
+    } catch (e) {
+      const be = e as BusinessError;
+      hilog.warn(0x0000, TAG, 'suite extras: no manifest (%{public}s)', be.message ?? '');
+      return Promise.resolve();
+    }
+    return content.then((data: Uint8Array): Promise<void> => {
+      // Chunked decode: a manifest of thousands of paths exceeds the
+      // spread-argument limit.
+      let text = '';
+      const CHUNK = 4096;
+      for (let i = 0; i < data.length; i += CHUNK) {
+        text += String.fromCharCode(...data.slice(i, i + CHUNK));
+      }
+      const jobs: Promise<void>[] = [];
+      for (const rel of text.split('\n')) {
+        const line = rel.trim();
+        if (line === '' || line === 'upstream-tests/__files.txt') {
+          continue;
+        }
+        jobs.push(this.copyRawFile(ctx, line, root + '/' + line));
+      }
+      hilog.info(0x0000, TAG, 'suite extras: %{public}d file(s)', jobs.length);
+      return Promise.all(jobs).then((): void => {});
+    });
+  }
+
   private runSpike(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const capturePath: string = ctx.cacheDir + '/dsh-spike-capture.log';
@@ -569,6 +612,36 @@ struct Index {
    * seeding and no D9 chain: this leg is the whole run, so the default chain
    * never spends serve quota. The verdict is the C `dsh.spike.verdict:
    * llm.live-stream` line, asserted record by record by the E2E checkers. */
+  /** The upstream-suite leg: materialize the bundle (the --suite-extras
+   * staged corpus + test closure ride the same copy), then hand the driver
+   * the spec selection. */
+  private runSuiteLeg(spec: string): void {
+    if (spec === '') {
+      this.verdict = 'FAIL (upstream.suite leg without dsh.e2e.spec)';
+      hilog.error(0x0000, TAG, 'suite leg: no dsh.e2e.spec parameter');
+      return;
+    }
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' upstream.suite (per-test verdicts in the capture)';
+    };
+    this.materializeBundle(ctx)
+      .then((bundleRoot: string): Promise<void> => {
+        this.verdict = 'suite leg: materializing the corpus...';
+        return this.materializeSuiteExtras(ctx, bundleRoot).then((): string => bundleRoot);
+      })
+      .then((bundleRoot: string): void => {
+        this.verdict = 'suite leg: running ' + spec + '...';
+        phase.beginSuite(ctx, bundleRoot, ctx.cacheDir + '/dsh-suite-capture.log', fsRoot, spec);
+      })
+      .catch((err: Error): void => {
+        this.verdict = 'FAIL (suite leg bundle materialization: ' + err.message + ')';
+        hilog.error(0x0000, TAG, 'suite leg materialize failed: %{public}s', err.message);
+      });
+  }
+
   private runLlmLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/spike-fs';

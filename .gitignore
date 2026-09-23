@@ -151,3 +151,6 @@ runtime/spike/vendor/dsh-tests@*/
 # by the stager's test-closure pass (the curated runtime-closure assets are
 # tracked files — ignore rules never affect those)
 hosts/android/app/src/main/assets/spike/vendor/dsh/dsh-session-format-v*/
+
+# harmony suite-extras rawfile staging (generated; the suite CI job only)
+hosts/harmony/entry/src/main/resources/rawfile/spike/upstream-tests/

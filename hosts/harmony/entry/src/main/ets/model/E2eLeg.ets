@@ -18,6 +18,7 @@
  */
 export class E2eLeg {
   private static leg: string = '';
+  private static spec: string = '';
 
   /** EntryAbility.onCreate: the raw want parameter ('' when absent). */
   static set(leg: string): void {
@@ -26,5 +27,15 @@ export class E2eLeg {
 
   static get(): string {
     return E2eLeg.leg;
+  }
+
+  /** The suite leg's spec selection (`--ps dsh.e2e.spec <file>`; '' when
+   * absent — the upstream.suite leg fails loud without one). */
+  static setSpec(spec: string): void {
+    E2eLeg.spec = spec;
+  }
+
+  static getSpec(): string {
+    return E2eLeg.spec;
   }
 }
