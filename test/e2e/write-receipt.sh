@@ -34,7 +34,13 @@ host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
             for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
 scenarios = []
 for sid in checker_ids:
-    v = json.load(open(os.path.join(art, f"verdict-{sid}.json")))
+    # Two verdict namings exist: the per-checker verdict-<stem>.json (run-ios
+    # and the four use-case runners) and the single verdict.json (agent-flow,
+    # whose manifest is one). Prefer the specific, fall back to the shared.
+    path = os.path.join(art, f"verdict-{sid}.json")
+    if not os.path.exists(path):
+        path = os.path.join(art, "verdict.json")
+    v = json.load(open(path))
     scenarios.append({
         "id": v["scenario"],
         "checker": f"test/e2e/scenarios/{sid}.json",
