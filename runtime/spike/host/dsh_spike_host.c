@@ -61,6 +61,7 @@ static const char *dsh_node_shim(const char *name) {
         { "node:process", "upstream/shims/process.js" },
         { "node:module", "upstream/shims/node-module.js" },
         { "node:url", "upstream/shims/url.js" },
+        { "node:perf_hooks", "upstream/shims/node-perf-hooks.js" },
     };
     for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
         if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;
@@ -881,6 +882,10 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
         snprintf(out, out_len, "upstream/shims/dsh-session-persistence.js");
         return 1;
     }
+    if (strcmp(name, "@deepseek-ai/node-addon-system/flock") == 0) {
+        snprintf(out, out_len, "upstream/shims/node-addon-system-flock.js");
+        return 1;
+    }
     /* @deepseek-ai/dsh-client-modules is an NPM-published package (the web
      * boot composer), not a dsh-desktop runtime tarball — mapped to the
      * vendor/npm tree (W-INTEG web-boot leg). The runtime exports map follows
@@ -934,6 +939,24 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     }
     if (strcmp(name, "js-yaml") == 0) {
         snprintf(out, out_len, "vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs");
+        return 1;
+    }
+    if (strcmp(name, "fast-check") == 0) {
+        /* The property-testing lib the upstream suite's *__properties specs
+         * import — the monorepo's own lockfile pin (4.8.0), pre-bundled
+         * (fast-check + pure-rand in one self-contained ESM file: quickjs
+         * resolves the chunk's package-name import, esbuild's nodePaths
+         * fed it pure-rand). */
+        snprintf(out, out_len, "vendor/npm/fast-check@4.8.0/lib/fast-check.bundle.mjs");
+        return 1;
+    }
+    if (strncmp(name, "fast-check/", 12) == 0) {
+        snprintf(out, out_len, "vendor/npm/fast-check@4.8.0/lib/%s", name + 12);
+        return 1;
+    }
+    if (strncmp(name, "pure-rand/", 10) == 0) {
+        /* fast-check's rng — same lockfile pin (8.4.0), CJS-free ESM face. */
+        snprintf(out, out_len, "vendor/npm/pure-rand@8.4.0/lib/%s.js", name + 10);
         return 1;
     }
     if (strcmp(name, "@deepseek-ai/cordis") == 0) {
@@ -1161,6 +1184,12 @@ dsh_spike_t *dsh_spike_new(const char *bundle_root, const dsh_spike_sink *sink) 
     snprintf(s->base, sizeof(s->base), "%s", bundle_root);
     s->rt = JS_NewRuntime();
     if (!s->rt) { free(s); return NULL; }
+    /* The upstream suite's continuation chains recurse deeper than
+     * quickjs-ng's default evaluation stack (measured 2026-09-23:
+     * "Maximum call stack size exceeded" on agent-initiator/scope-lifecycle
+     * tests Node runs in its ~1 MB default). 8 MB ≈ Node's --stack-size
+     * headroom; the mobile hosts raise the same knob. */
+    JS_SetMaxStackSize(s->rt, 400 * 1024 * 1024);
     JS_SetRuntimeOpaque(s->rt, s);
     JS_SetModuleLoaderFunc(s->rt, dsh_normalize, dsh_module_loader, s);
     s->ctx = JS_NewContext(s->rt);

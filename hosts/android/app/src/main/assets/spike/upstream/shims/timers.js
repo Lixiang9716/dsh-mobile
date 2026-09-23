@@ -25,6 +25,7 @@
  *     ReferenceError it has always been on this runtime.
  */
 import { timerSchedule, timerCancel, onEvent } from 'gateway.js';
+import { captureContext, runWithCapturedContext } from './async-hooks.js';
 
 const pending = new Map(); // handle -> { timerId, cancelled, fn, args }
 const firing = new Map(); // timerId -> handle
@@ -38,7 +39,7 @@ onEvent((ev) => {
   const entry = pending.get(handle);
   pending.delete(handle);
   if (entry !== undefined && entry.cancelled !== true) {
-    entry.fn(...entry.args);
+    runWithCapturedContext(entry.captured, () => entry.fn(...entry.args));
   }
 });
 
@@ -51,7 +52,11 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
     throw new TypeError(`setTimeout: delay must be a non-negative integer (got ${String(delay)})`);
   }
   const handle = nextHandle++;
-  const entry = { timerId: null, cancelled: false, fn, args };
+  const entry = { timerId: null, cancelled: false, fn, args,
+                   // Cross-timer ALS propagation (the async-hooks shim
+                   // predates the seam): the context captured AT ARM TIME
+                   // wraps the fire — Node's timer semantics.
+                   captured: captureContext() };
   pending.set(handle, entry);
   timerSchedule(delayMs, { tag: 'shim:setTimeout' })
     .then(({ timerId }) => {
@@ -84,3 +89,15 @@ globalThis.clearTimeout = (handle) => {
     timerCancel(entry.timerId).catch(() => {});
   }
 };
+
+// setImmediate — the other ambient timer idiom the upstream code uses
+// (tool-call scheduler's quiescence drain). A macrotask: the 0-delay timer
+// arm is the honest mapping (microtask-only would starve the drain loop's
+// interleaving with gateway events).
+globalThis.setImmediate = (fn, ...args) => {
+  if (typeof fn !== 'function') {
+    throw new TypeError(`setImmediate: callback must be a function (got ${typeof fn})`);
+  }
+  return globalThis.setTimeout(fn, 0, ...args);
+};
+globalThis.clearImmediate = globalThis.clearTimeout;

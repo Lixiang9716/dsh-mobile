@@ -33,6 +33,27 @@ const deepEqual = (a, b, seen = new Set(), depth = 0) => {
     return true;
   }
   if (a instanceof Set || b instanceof Set) {
+    /* Set equality is MEMBERSHIP, not insertion order (measured 2026-09-23:
+     * agent-initiator asserts new Set([...signals]).toEqual(new Set([s])) —
+     * the generic object compare failed it). Members compare by the same
+     * deep rules; identity-only when no deep twin exists. */
+    if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) return false;
+    const rest = new Set(b);
+    for (const item of a) {
+      let matched = false;
+      if (rest.delete(item)) continue;
+      for (const candidate of rest) {
+        if (deepEqual(item, candidate, seen, depth + 1)) {
+          rest.delete(candidate);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) return false;
+    }
+    return true;
+  }
+  if (a instanceof Set || b instanceof Set) {
     if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) return false;
     for (const v of a) {
       if (!b.has(v)) return false;
@@ -385,6 +406,49 @@ export const expect = Object.assign(makeExpect, {
   stringMatching: (r) => ({ __matcher: (v) => typeof v === 'string' && r.test(v) }),
   closeTo: (n, precision = 2) => ({ __matcher: (v) => Math.abs(v - n) < 10 ** -precision / 2 }),
   hasProperty: (key) => ({ __matcher: (v) => v != null && Object.prototype.hasOwnProperty.call(v, key) }),
+  /** expect.poll(fn, options?): vitest's condition poller — awaits the
+   * getter until its value satisfies the chained matcher. Interval/timeout
+   * ride the 0-delay timer arm (the host timer seam), so a poll paces the
+   * real event loop instead of spinning; timeout rejects with the last
+   * value rendered (vitest's element-ish message, best-effort text). */
+  poll: (getter, options = {}) => {
+    if (typeof getter !== 'function') {
+      failWith('expect.poll: getter must be a function');
+    }
+    const interval = options.interval ?? 50;
+    const timeout = options.timeout ?? 1000;
+    const sleep = (ms) => new Promise((resolve) => { globalThis.setTimeout(resolve, ms); });
+    const poller = {
+      async _run(matcherName, ...args) {
+        const deadline = Date.now() + timeout;
+        for (;;) {
+          let value;
+          try { value = getter(); } catch (error) { value = error; }
+          const assertion = makeExpect(value);
+          let outcome = true;
+          try {
+            if (typeof assertion[matcherName] === 'function') {
+              const maybe = assertion[matcherName](...args);
+              if (maybe && typeof maybe.then === 'function') await maybe;
+            } else {
+              outcome = false;
+            }
+          } catch { outcome = false; }
+          if (outcome) return;
+          if (Date.now() >= deadline) {
+            failWith(`expect.poll: timed out after ${timeout}ms waiting for ${matcherName} (last value: ${String(value)})`);
+          }
+          await sleep(interval);
+        }
+      },
+    };
+    return new Proxy({}, {
+      get: (_target, matcherName) => {
+        if (typeof matcherName !== 'string') return undefined;
+        return (...args) => poller._run(matcherName, ...args);
+      },
+    });
+  },
 });
 export const vi = viApi;
 

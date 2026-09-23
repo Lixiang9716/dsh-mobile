@@ -7,68 +7,6 @@ import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
 // fail LOUD naming the API (rule 5). Fake timers live in
 // scenario/upstream-fake-timers.js.
 
-// AbortController/AbortSignal — the WHATWG subset the upstream agent-loop's
-// cancellation path needs (signal.aborted, addEventListener('abort'),
-// abort(reason), throwIfAborted). The suite's largest single gap before
-// this shim: every agent-loop cancel test failed on the missing global,
-// identically on the CLI host and the iOS simulator (the harness is the
-// shared injection point, so every host gets it from this one file).
-// Listeners fire synchronously; reason defaults to the standard abort
-// error; a second abort() is a no-op.
-if (typeof globalThis.AbortController === 'undefined') {
-  const fire = (signal) => {
-    if (signal.aborted) return;
-    signal._aborted = true;
-    signal._reason = signal._reason ?? Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
-    for (const fn of [...signal._listeners]) {
-      try { fn({ type: 'abort', target: signal }); } catch { /* one listener's throw must not break the rest */ }
-    }
-  };
-  class AbortSignalShim {
-    constructor() {
-      this._aborted = false;
-      this._reason = undefined;
-      this._listeners = [];
-      this.onabort = null;
-    }
-    get aborted() { return this._aborted; }
-    get reason() { return this._reason; }
-    addEventListener(type, fn) {
-      if (type === 'abort' && typeof fn === 'function' && !this._listeners.includes(fn)) {
-        this._listeners.push(fn);
-      }
-    }
-    removeEventListener(type, fn) {
-      if (type === 'abort') this._listeners = this._listeners.filter((f) => f !== fn);
-    }
-    throwIfAborted() {
-      if (this._aborted) throw this._reason;
-    }
-  }
-  class AbortControllerShim {
-    constructor() { this.signal = new AbortSignalShim(); }
-    abort(reason) {
-      this.signal._reason = reason;
-      fire(this.signal);
-      if (typeof this.signal.onabort === 'function') this.signal.onabort({ type: 'abort', target: this.signal });
-    }
-  }
-  globalThis.AbortController = AbortControllerShim;
-  globalThis.AbortSignal = AbortSignalShim;
-}
-
-// structuredClone — the spine clones JSON-safe session state (config-derived
-// agent records, headers). The honest subset: primitives pass through, JSON
-// data deep-clones through a stringify round trip (which itself throws on
-// cycles — never a silent shallow copy); functions and symbols fail loud.
-if (typeof globalThis.structuredClone === 'undefined') {
-  globalThis.structuredClone = (value) => {
-    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return value;
-    if (typeof value === 'function') throw new Error('structuredClone: functions cannot be cloned');
-    return JSON.parse(JSON.stringify(value));
-  };
-}
-
 /** Deep structural equality (the expect().toEqual core), depth-guarded. */
 const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
@@ -91,6 +29,27 @@ const deepEqual = (a, b, seen = new Set(), depth = 0) => {
     if (!(a instanceof Map) || !(b instanceof Map) || a.size !== b.size) return false;
     for (const [k, v] of a) {
       if (!b.has(k) || !deepEqual(v, b.get(k), seen, depth + 1)) return false;
+    }
+    return true;
+  }
+  if (a instanceof Set || b instanceof Set) {
+    /* Set equality is MEMBERSHIP, not insertion order (measured 2026-09-23:
+     * agent-initiator asserts new Set([...signals]).toEqual(new Set([s])) —
+     * the generic object compare failed it). Members compare by the same
+     * deep rules; identity-only when no deep twin exists. */
+    if (!(a instanceof Set) || !(b instanceof Set) || a.size !== b.size) return false;
+    const rest = new Set(b);
+    for (const item of a) {
+      let matched = false;
+      if (rest.delete(item)) continue;
+      for (const candidate of rest) {
+        if (deepEqual(item, candidate, seen, depth + 1)) {
+          rest.delete(candidate);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) return false;
     }
     return true;
   }
@@ -447,6 +406,49 @@ export const expect = Object.assign(makeExpect, {
   stringMatching: (r) => ({ __matcher: (v) => typeof v === 'string' && r.test(v) }),
   closeTo: (n, precision = 2) => ({ __matcher: (v) => Math.abs(v - n) < 10 ** -precision / 2 }),
   hasProperty: (key) => ({ __matcher: (v) => v != null && Object.prototype.hasOwnProperty.call(v, key) }),
+  /** expect.poll(fn, options?): vitest's condition poller — awaits the
+   * getter until its value satisfies the chained matcher. Interval/timeout
+   * ride the 0-delay timer arm (the host timer seam), so a poll paces the
+   * real event loop instead of spinning; timeout rejects with the last
+   * value rendered (vitest's element-ish message, best-effort text). */
+  poll: (getter, options = {}) => {
+    if (typeof getter !== 'function') {
+      failWith('expect.poll: getter must be a function');
+    }
+    const interval = options.interval ?? 50;
+    const timeout = options.timeout ?? 1000;
+    const sleep = (ms) => new Promise((resolve) => { globalThis.setTimeout(resolve, ms); });
+    const poller = {
+      async _run(matcherName, ...args) {
+        const deadline = Date.now() + timeout;
+        for (;;) {
+          let value;
+          try { value = getter(); } catch (error) { value = error; }
+          const assertion = makeExpect(value);
+          let outcome = true;
+          try {
+            if (typeof assertion[matcherName] === 'function') {
+              const maybe = assertion[matcherName](...args);
+              if (maybe && typeof maybe.then === 'function') await maybe;
+            } else {
+              outcome = false;
+            }
+          } catch { outcome = false; }
+          if (outcome) return;
+          if (Date.now() >= deadline) {
+            failWith(`expect.poll: timed out after ${timeout}ms waiting for ${matcherName} (last value: ${String(value)})`);
+          }
+          await sleep(interval);
+        }
+      },
+    };
+    return new Proxy({}, {
+      get: (_target, matcherName) => {
+        if (typeof matcherName !== 'string') return undefined;
+        return (...args) => poller._run(matcherName, ...args);
+      },
+    });
+  },
 });
 export const vi = viApi;
 

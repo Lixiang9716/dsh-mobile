@@ -116,6 +116,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_crypto_js), under: root)
         try write("upstream/shims/globals.js",
                   data: resData(dsh_spike_res_shims_globals_js), under: root)
+        try write("upstream/shims/node-perf-hooks.js",
+                  data: resData(dsh_spike_res_shims_node_perf_hooks_js), under: root)
+        try write("upstream/shims/node-addon-system-flock.js",
+                  data: resData(dsh_spike_res_shims_node_addon_flock_js), under: root)
         try write("upstream/shims/node-module.js",
                   data: resData(dsh_spike_res_shims_node_module_js), under: root)
         try write("upstream/shims/path.js",
