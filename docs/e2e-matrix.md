@@ -10,7 +10,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > change (2026-09-22): the official client's 预设/插件 panels load real data on
 > device (b4 46/46 asserting the preset roster, the plugin inventory, the
 > read-only manager legs, and the settings shell's model-catalog/credential
-> loads; android-write 45/45 the same), the FILE-TOOLS row mounts in the
+> loads; android-write 45/45 the same), the file-tools row mounts in the
 > product boot (`tool.fs`), and the settings dialog is phone-adaptive
 > (human evidence: `hosts/ios/artifacts/settings-screens/`). On top of
 > `origin/main` as of commit `940ae02`
@@ -19,13 +19,13 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > `hosts/harmony/artifacts/m5-m2-llm/` is deliberately committed with
 > **FAIL** verdicts — the coding-plan quota was exhausted mid-session, so
 > the transport round trip is proven and the served turn is explicitly NOT
-> claimed (gaps 8/9); on top of the M5 v2 primitives #76 (`m5-primitives`,
+> claimed (gaps 8/9); on top of the HarmonyOS-host v2 primitives #76 (`m5-primitives`,
 > descriptor 9/0, `m5.host-binding` 27/27), the real-LLM streaming legs #74
 > (`macos-cli-m2-llm`, and `m2-llm` on iOS and Android), the android write
 > surface #72 (`android-write-live`), the harmony composer write path #70
 > (the sixth D9 dir `d9-write-live`, adding the `b-harmony.write.live`
 > scenario; the `m2-gateway` row refreshed and its receipt gap closed
-> 2026-09-21 by the W-GR bounded attempt, on top of the W-RECEIPT b3
+> 2026-09-21 by the bounded gateway-receipt attempt, on top of the b3 receipt-gap
 > closure); and the five earlier D9 dirs `android-upstream` /
 > `d9-official-web` / `b4-write-live` / `android-session-live` /
 > `d9-session-live`, which entered the inventory with #63/#64/#65/#66/#67;
@@ -294,7 +294,7 @@ cites, and the register's rows in order):
    full credential handshake this platform forces (runtime-written 0666
    placeholder → runner overwrite → app import + validation → honest seal
    report → removal after the run), with a key-leak audit clean over both
-   raw streams. The served turn is explicitly NOT claimed — README.md's M5
+   raw streams. The served turn is explicitly NOT claimed — README.md's HarmonyOS-host
    row says so in both languages. `receipt.json` records
    `status: blocked-on-quota` and `exitCode: 1`. **Closure (owned by the
    harmony work stream):** `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh`
@@ -405,8 +405,8 @@ cites, and the register's rows in order):
   `drift: true` and does not fail on it.
 - **The three dirs previously listed here as "in flight" have resolved.**
   `runtime/spike/artifacts/macos-cli-m2-llm/` landed with #74 and is a
-  green table row (the scripted-SSE CLI leg, `m2.llm` 19/19); the M5
-  close-out evidence landed instead as
+  green table row (the scripted-SSE CLI leg, `m2.llm` 19/19); the
+  HarmonyOS-host close-out evidence landed instead as
   `hosts/harmony/artifacts/m5-primitives/` (#76, descriptor 9/0) and
   `hosts/harmony/artifacts/m5-m2-llm/` (#79, quota-blocked — gaps 8/9).
   `hosts/android/artifacts/m3-android-install/` and

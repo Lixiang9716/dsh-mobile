@@ -13,7 +13,7 @@ Web Client from plugin configuration and hardcodes no UI:
   in their binding phases — each embeds a byte-identical copy of `web/`;
   the scenario replay keeps late-connecting pages consistent.
 - `web-client-mini/` — v0 config-selected variant (`dsh-web-client-mini`),
-  the M3 pluggability proof (same vocabulary, amber monospace transcript).
+  the plugin-system pluggability proof (same vocabulary, amber monospace transcript).
 - `official-web/` — v1 (D9): the OFFICIAL upstream web UI dist
   (`@deepseek-ai/dsh-web-frontend`), vendored verbatim from
   deepseek-ai/deepseek-harness at the dsh-desktop-recorded pin, with

@@ -1,6 +1,6 @@
 # Data Protocols — Bundle Layout, Manifest, Receipt (v1.0.0)
 
-> **Status: FROZEN at M0** (2026-09-19, decision D5). These are the three data protocols
+> **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). These are the three data protocols
 > every host and every plugin build must honor. Machine-readable schemas live in
 > [schemas/](schemas/). Companion to [primitives.md](primitives.md).
 > English | [简体中文](data-protocols.zh.md)

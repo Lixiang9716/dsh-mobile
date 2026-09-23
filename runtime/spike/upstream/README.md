@@ -28,7 +28,7 @@ the spike runtime + this layer.
   host → settle), with the dsh-base bundle's spine rows mounted over the
   vendor closure and `llm` = the VENDORED dsh-llm `LlmRuntime` (adapter
   registry) with the gateway transport adapter registered.
-- `llm-transport.js` — the GATEWAY TRANSPORT SEAM (the W-LLM leg): an
+- `llm-transport.js` — the GATEWAY TRANSPORT SEAM (the LLM transport leg): an
   upstream-SHAPE OpenAI-compatible chat-completions `LlmAdapter` whose
   entire transport is gateway `httpFetch` — wire request built from the
   harness request (attribution headers from the vendored package), SSE
@@ -38,7 +38,7 @@ the spike runtime + this layer.
   layer with the fetch seam swapped. Zero vendored edits.
 - `settings-memory.js` — in-memory `SettingsProvider` backend (the desktop
   profile mounts `dsh-settings-file`; a phone profile has no settings file
-  in PR-A).
+  in the first porting phase).
 
 ## Shim coverage (upstream import → system layer)
 
@@ -46,8 +46,8 @@ Every row was verified against the vendored `lib/*.js` import statements
 (closure: cordis, cosmokit, schemastery, zod + dsh-session, dsh-agent,
 dsh-tools, dsh-system-prompt, dsh-settings, dsh-session-projection,
 dsh-sandbox, dsh-scope, dsh-brand, dsh-util-values, dsh-util-crypto,
-dsh-timeout, dsh-typert-protocol, dsh-agent-loop, dsh-llm — the W-LLM leg
-added the llm closure + its mock-server test vehicle; the FILE-TOOLS row
+dsh-timeout, dsh-typert-protocol, dsh-agent-loop, dsh-llm — the LLM transport leg
+added the llm closure + its mock-server test vehicle; the file-tools row
 added the fs-local + tool-fs + tool-str-replace-editor + attachment closure
 and npm diff). The loader FAILS
 LOUD naming any specifier not in this
@@ -60,11 +60,11 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `node:async_hooks` (`AsyncLocalStorage`) | `shims/async-hooks.js` — frame stack + `Promise.prototype.then/catch/finally` capture (single-threaded serial runtime; context = what was current when the continuation attached) | supported (no timer contexts — timers unsupported) |
 | `node:util/types` (`isPromise`) | `shims/util-types.js` | supported |
 | `node:util` (`format`/`inspect`/`promisify`) | `shims/util.js` — JSON-form rendering, not node's depth/color machinery | partial |
-| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (PR-B wiring). W-INTEG exception: the STAGED WEB-PLUGIN VFS (`seedWebPlugins` replace / `mergeWebPlugins` chunked-add). FILE-TOOLS exception: the WRITABLE WORKSPACE VFS (`mountWorkspace` — one pinned in-memory root with explicit dirs, per-file ino/mode/mtime/ctime version stamps, `createReadStream` as the async-iterable byte window, callback `realpath`/`.native`); writes serve the workspace only and the seeded views stay read-only | supported for the staged views only (else loud) |
+| `node:fs` (`accessSync`, `realpathSync`, `statSync`, `constants`) | `shims/fs.js` — LOUD stubs; the sandbox's disk gate is the desktop capability; mobile boundary = gateway fs scope (follow-up wiring). Web-integration-leg exception: the STAGED WEB-PLUGIN VFS (`seedWebPlugins` replace / `mergeWebPlugins` chunked-add). File-tools-row exception: the WRITABLE WORKSPACE VFS (`mountWorkspace` — one pinned in-memory root with explicit dirs, per-file ino/mode/mtime/ctime version stamps, `createReadStream` as the async-iterable byte window, callback `realpath`/`.native`); writes serve the workspace only and the seeded views stay read-only | supported for the staged views only (else loud) |
 | `node:fs/promises` (`readFile`, `readdir`, `stat`, `opendir`, `realpath`, `access`) | `shims/fs-promises.js` — the async face of both staged views; the presets walk consumes the read side | supported |
 | `node:fs/promises` (`stat {bigint}`→`dev/ino/mode/mtimeNs/ctimeNs`, `lstat`, `mkdir`, `rm`, `rename`, `link`, `chmod`, `writeFile`, `open`→FileHandle `writeFile/stat/read(ch advancing cursor)/chmod/sync/close`) | `shims/fs-promises.js` over the workspace VFS — the exact face the vendored fs-local drives (exclusive-create open, no-replace link, sequential null-position reads); seed views refuse writes loudly | supported (workspace) |
 | `node:buffer` (`Buffer.from/alloc/allocUnsafe/concat/byteLength/isBuffer`, `buffer.constants`) | `shims/buffer.js` — the Uint8Array-backed DshBuffer (also installed as the global `Buffer` by web-shims.js); `alloc` zero-fills, `allocUnsafe` is its honest signature twin (nothing uninitialized to hand out) | supported |
-| `node:url` (`pathToFileURL`, `fileURLToPath`, `URL`) | `shims/url.js` (W-INTEG leg) — fs-local's `pathToFileURL` rides the same file: encoder | supported |
+| `node:url` (`pathToFileURL`, `fileURLToPath`, `URL`) | `shims/url.js` (web-integration leg) — fs-local's `pathToFileURL` rides the same file: encoder | supported |
 | `node:util` `TextDecoder` (`utf-8`; `fatal` strict walk, `{stream}` carry of split multi-byte sequences) | `shims/util.js` — the face fs-local decodes file text with (`FS_NOT_TEXT` on invalid bytes); only utf-8, any other label loud | supported |
 | `node:path` (`toNamespacedPath`) | `shims/path.js` — POSIX identity (namespacing is a win32 concern; fs-local only calls it in its win32 branch) | supported |
 | `node:process` (`pid`) | `shims/process.js` — constant 1: ONE runtime process by construction (§6 single serial thread); vendored temp-name builders use it for uniqueness only | supported |
@@ -77,8 +77,8 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `AbortSignal.timeout` | `web-shims.js` — throws (no wall-clock timers in the spike runtime) | unsupported (loud) |
 | `setTimeout`/`setInterval` | NOT PROVIDED — absent on purpose; an accidental call is a loud ReferenceError. Only `cordis-host-runner` (the Node host runner, replaced by `boot.js`) uses them; vendored `dsh-timeout` is pure arithmetic (constants + signal classification), no timers | unsupported (loud) |
 | `fetch`, `TextEncoder`, global `TextDecoder` | NOT PROVIDED as globals — closure-verified: only `cordis-host-runner` (not mounted) and unreached zod paths use them. `TextDecoder` IS served as a `node:util` import (fs-local's text decode — see the shim row above); `Buffer` is the DshBuffer global + `node:buffer`; the host binds `atob`/`btoa` natively | partial (globals), supported (imports) |
-| `@deepseek-ai/dsh-llm` (+ `/invariant`, `/message`, `/assistant-stream`, `/types`, `/typert`, `/remote` runtime subpaths) | `vendor/dsh/llm@0.1.6-alpha.2/lib/…` — the VERBATIM vendored package (W-LLM leg; the staged `shims/dsh-llm*.js` value-helper port retired by this row). `node:module` (`createRequire`, dsh-llm's `../package.json` attribution read) → `shims/node-module.js` over the host `__dshBundleRequire` seam — package-style RELATIVE `.json` reads only, everything else loud | supported (W-LLM) |
-| `@deepseek-ai/dsh-session-persistence` (`SessionPersistenceNotFoundError` + sibling error classes) | `shims/dsh-session-persistence.js` — errors-only linkage shim; resume stays unavailable (loud "persistence is not configured" upstream path) | staged (PR-B: real backend over the gateway fs) |
+| `@deepseek-ai/dsh-llm` (+ `/invariant`, `/message`, `/assistant-stream`, `/types`, `/typert`, `/remote` runtime subpaths) | `vendor/dsh/llm@0.1.6-alpha.2/lib/…` — the VERBATIM vendored package (LLM transport leg; the staged `shims/dsh-llm*.js` value-helper port retired by this row). `node:module` (`createRequire`, dsh-llm's `../package.json` attribution read) → `shims/node-module.js` over the host `__dshBundleRequire` seam — package-style RELATIVE `.json` reads only, everything else loud | supported (LLM transport leg) |
+| `@deepseek-ai/dsh-session-persistence` (`SessionPersistenceNotFoundError` + sibling error classes) | `shims/dsh-session-persistence.js` — errors-only linkage shim; resume stays unavailable (loud "persistence is not configured" upstream path) | staged (follow-up: real backend over the gateway fs) |
 | `@deepseek-ai/dsh-*` bare + `/invariant` subpaths | host loader → `vendor/dsh/<pkg>@0.1.6-alpha.2/lib/…` (verbatim tarballs) | supported |
 | `@deepseek-ai/cordis`, `@deepseek-ai/cosmokit`, `@deepseek-ai/schemastery`, `zod` (+ zod relative subpaths) | host loader → `vendor/npm/…` (pinned) | supported |
 | anything else bare | host loader fails loud naming the specifier | fail loud |
@@ -90,12 +90,12 @@ the honest gaps declared:
 
 | desktop (Node.js host) | mobile (this port) | state |
 | --- | --- | --- |
-| `node:fs` at absolute paths (`$DSH_HOME`, workspace) | gateway `fsRead`/`fsWrite`/`fsScope` — scope-relative POSIX under the granted scope; the scope root IS the profile container (`fsScope.resolve` returns its absolute path, which pins session `cwd`). The FILE-TOOLS row (dsh-fs-local + tool-fs + tool-str-replace-editor) runs over the in-memory workspace VFS (`shims/fs.js mountWorkspace`) — full read/write/list/edit semantics, no disk | live: the vendored `ctx.fs` backend + tool family (scenario/tool-fs-probe.js); product boot wiring is the coordinator's follow-up; a DISK-backed workspace over the gateway fs scopes is PR-B |
-| `child_process` (dsh-subprocess-local) | `subprocess` Service — in-process coroutine executor (`system-plugins/dsh-subprocess-quickjs`); no OS processes on the runtime thread (D2) | service shipped in the spike; upstream `dsh-shell`/`dsh-tool-bash` rows are PR-B |
-| `@vscode/ripgrep` binary (dsh-tool-fs-search's grep/glob engine) | none — a packaged OS binary driven through real subprocesses has no in-runtime equivalent | staged with the PR-B subprocess/fs-service seam (same class as the native rows) |
+| `node:fs` at absolute paths (`$DSH_HOME`, workspace) | gateway `fsRead`/`fsWrite`/`fsScope` — scope-relative POSIX under the granted scope; the scope root IS the profile container (`fsScope.resolve` returns its absolute path, which pins session `cwd`). The file-tools row (dsh-fs-local + tool-fs + tool-str-replace-editor) runs over the in-memory workspace VFS (`shims/fs.js mountWorkspace`) — full read/write/list/edit semantics, no disk | live: the vendored `ctx.fs` backend + tool family (scenario/tool-fs-probe.js); product boot wiring is the coordinator's follow-up; a DISK-backed workspace over the gateway fs scopes is the follow-up |
+| `child_process` (dsh-subprocess-local) | `subprocess` Service — in-process coroutine executor (`system-plugins/dsh-subprocess-quickjs`); no OS processes on the runtime thread (D2) | service shipped in the spike; upstream `dsh-shell`/`dsh-tool-bash` rows are the follow-up |
+| `@vscode/ripgrep` binary (dsh-tool-fs-search's grep/glob engine) | none — a packaged OS binary driven through real subprocesses has no in-runtime equivalent | staged with the follow-up subprocess/fs-service seam (same class as the native rows) |
 | `node:fetch` / undici (llm adapters, web tools) | gateway `httpFetch` — streaming AsyncIterable body, abortable, base64 byte bridge | live: `upstream/llm-transport.js` streams the vendored dsh-llm service over it (E2E against the vendored dsh-llm-mock-server, node-side loopback) |
 | `$DSH_HOME` (`~/.dsh`) | the host-granted profile container (one directory per install), pinned by `boot.js` for `process.cwd()`/`os.tmpdir()`/`os.homedir()` | live |
-| Electron window / WebContents | carrier loopback HTTP+WS + WebView mounting the Web Client (m1 carrier loopback; m5 host binding) | carrier proven separately; the upstream port runs headless |
+| Electron window / WebContents | carrier loopback HTTP+WS + WebView mounting the Web Client (the early carrier spike; the platform hosts since) | carrier proven separately; the upstream port runs headless |
 | cordis-host-runner + disk Loader (`cordis.yml` include tree) | `boot.js` composes the same layer order in memory over the pinned vendor closure (the gateway fs scopes are not the module filesystem; the host loader maps specifiers) | live; the disk Loader + `cordis.patch.yml` parsing is a deliberate staged gap |
 | timers (`setTimeout` etc.) | absent — the runtime has no timer seam; upstream packages that need wall-clock timeouts (dsh-timeout rows) are not mounted | staged: a timer seam is a host primitive decision, not a shim |
 | dsh-settings-file (`$DSH_HOME/settings.yaml` + watcher) | `SettingsMemory` (empty document, same base contract) | staged: persists over the fs scope when the profile container gains durable KV |
@@ -109,9 +109,9 @@ the honest gaps declared:
    real provider route plugs its credentials/endpoint into. Real-provider
    E2E (live endpoint policy, retries, usage metering) is later work.
 2. Tool-execution depth: the mock turn completes without tool calls;
-   PR-B drives a real tool through the subprocess Service + gateway fs.
+   The follow-up drives a real tool through the subprocess Service + gateway fs.
 3. Persistence/resume, webserver carrier rows (`ctx.webServer`,
-   frontend-static), shell/bash tools, settings file — PR-B+.
+   frontend-static), shell/bash tools, settings file — later follow-ups.
 4. Wall-clock timers: nothing in the mounted closure uses them; when a
    slice needs them, the host gains a timer primitive (contract proposal
    first — never a global hack).

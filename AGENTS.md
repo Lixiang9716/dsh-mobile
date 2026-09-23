@@ -52,7 +52,7 @@ this machine lands at `~/.local/bin/gov`. Govrail requires Python ≥3.10.
 ## Where things live
 
 See the repository layout in [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-repository-layout)
-and the milestone table in [README.md](README.md). M0 scope lives in `contract/`.
+and the milestone table in [README.md](README.md). The contract-freeze scope lives in `contract/`.
 The build entry is **`build/build.sh`** — `build|test|check|sync` ×
 `ios|android|harmony|core|all` (build = sync + compile + test); see
 [BUILD.md](BUILD.md). The committed host copies of the canonical closure are

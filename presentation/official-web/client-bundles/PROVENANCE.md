@@ -1,7 +1,7 @@
 # Provenance — application-tier client bundles (`dsh.client` roster)
 
 Vendored verbatim build output of the OFFICIAL upstream web client's
-application tier (decision D9, W-SHELL leg): the per-package browser bundles
+application tier (decision D9, application-shell leg): the per-package browser bundles
 of the roster the shipped `@deepseek-ai/dsh-web-app` composition mounts.
 No upstream file was modified; this directory carries BUILD ARTIFACTS only,
 produced by upstream's own build commands (see `build-client-bundles.sh`).

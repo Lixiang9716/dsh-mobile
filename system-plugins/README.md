@@ -22,7 +22,7 @@ that registers the service; logging through the unified logger only.
 They consume only `contract/` primitives and implement upstream DSH service
 contracts; the Harness core above runs unmodified.
 
-## Install pipeline (M3)
+## Install pipeline (the plugin system)
 
 Plugins reach users through the install transaction of
 contract/data-protocols.md §4, implemented platform-neutrally in

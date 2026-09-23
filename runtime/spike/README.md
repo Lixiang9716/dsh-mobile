@@ -1,8 +1,9 @@
 # runtime/spike/
 
-The M1/M2 core spike: quickjs-ng shim running a pinned upstream pure-logic
-package, with the E2E verdict emitted as structured logs. M2 replaces the
-M1 canned gateway responses with a REAL dispatch bridge to the platform
+The core spike (the runtime-and-host-spikes phase, then the first
+on-device session): quickjs-ng shim running a pinned upstream pure-logic
+package, with the E2E verdict emitted as structured logs. The first-session
+phase replaces the canned gateway responses with a REAL dispatch bridge to the platform
 embedder plus a typed JS shim (`gateway.js`).
 
 - `vendor/ensure.sh` — materializes the engine sources: pinned upstream
@@ -44,7 +45,7 @@ embedder plus a typed JS shim (`gateway.js`).
   test live in the tar layer, and the gzip transport coding lands with the
   fetch-based installer. Archives are deterministic (mtime 0) so digests
   reproduce; system `tar` reads what the writer produces.
-- `install-pipeline.js` — the M3 install transaction
+- `install-pipeline.js` — the plugin-system install transaction
   (data-protocols.md §4): sha256 → store at `cache/blobs/<sha256>` → verify
   against the caller's trust record → untar → STRICT manifest validation
   (unknown fields fail loud per manifest.schema.json) → INSTALL-TIME
@@ -119,8 +120,8 @@ embedder plus a typed JS shim (`gateway.js`).
   (`dsh.spike.scenario`); the embedder reads it from
   `bundle_root/manifest.json` and enforces the declared capabilities.
 - `scenario/boot-verification.js` — the `boot.verification` E2E scenario: ESM
-  package load, host Web-API shims, gateway negotiation. (The M1 canned
-  gateway-call blocks are GONE — real primitive dispatch lives in the m2
+  package load, host Web-API shims, gateway negotiation. (The canned
+  gateway-call blocks from the spike phase are GONE — real primitive dispatch lives in the first-session
   scenarios below.)
 - `scenario/gateway-bridge-smoke.js` — the `gateway.bridge-smoke` E2E scenario,
   runnable headless on the desktop CLI: deferred settlement (later-tick),
@@ -146,7 +147,7 @@ embedder plus a typed JS shim (`gateway.js`).
   Web Client and starts the scenario only when the page connects, so the
   deltas stream live into the rendered transcript (carrier-side evidence
   logged as scenario `webclient.mount`; runner
-  `test/e2e/run-ios-session-mock-llm.sh`). M3 extends the session: `dsh-notes`
+  `test/e2e/run-ios-session-mock-llm.sh`). The plugin system extends the session: `dsh-notes`
   arrives through the install pipeline BEFORE the host readiness signal and
   projects its toolbar slot into the active Web Client — carrier hosts gate
   host.info on the page's slot ack, so the deltas always stream into a fully
@@ -162,7 +163,7 @@ embedder plus a typed JS shim (`gateway.js`).
   with drifting bytes is rejected by the trust record before unpack
   (`install.integrity-rejected`), the installed tree stays byte-identical,
   and no receipt is written for the rejected transaction.
-- `scenario/install-full-cycle.js` — the `install.full-cycle` E2E scenario, the four M3
+- `scenario/install-full-cycle.js` — the `install.full-cycle` E2E scenario, the four plugin-system
   scope items in one platform-neutral stream: the CONFIG LAYER resolves the
   session stack's Web Client + toolbar slot set and the slot gate refuses a
   slot the profile override trimmed; the FETCH-BASED installer runs the
@@ -305,7 +306,7 @@ alive and shuttle one-JSON-line messages:
   check `dsh_spike_complete`/`dsh_spike_pass` after each deliver.
 
 The message vocabulary (`bus.ready`, `host.hello`, `ws.hello`, `ws.send`,
-`ws.message`) is spike-local; M2 replaces it with the real session
+`ws.message`) is spike-local; the first on-device session replaces it with the real session
 projection protocol — do not build on it.
 
 ## Desktop proof run
@@ -331,7 +332,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/session-mock-llm.json \
   --log logs-session-mock-llm.txt
 ```
 
-So does the M3 install pipeline (`install.verified-tarball`):
+So does the plugin-system install pipeline (`install.verified-tarball`):
 
 ```sh
 ./build/dsh-spike-cli . scenario/install-verified-tarball.js > logs-install-verified-tarball.txt
@@ -339,7 +340,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/install-verified-tarball.j
   --log logs-install-verified-tarball.txt
 ```
 
-And the M3 completion scenario (config layer + fetch-based install + pending-
+And the plugin-system completion scenario (config layer + fetch-based install + pending-
 receipt startup replay + install-time capability negotiation):
 
 ```sh

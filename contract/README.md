@@ -1,6 +1,6 @@
 # contract/
 
-**M0 deliverable — the first priority of the entire project. Status: FROZEN v1.0.0 (2026-09-19, D5).**
+**The contract-freeze deliverable — the first priority of the entire project. Status: FROZEN v1.0.0 (2026-09-19, D5).**
 
 No implementation code lands before this directory is frozen (D5: contract first). It is now.
 

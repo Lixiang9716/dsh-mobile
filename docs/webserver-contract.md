@@ -228,7 +228,7 @@ ping) carrying:
 - `gateway/internal` control outcomes.
 
 This is the "ws session attach" the E2E plan observes. The official
-page does NOT use our M2 plugin vocabulary on `/ws`; it expects this
+page does NOT use the first-session plugin vocabulary on `/ws`; it expects this
 endpoint.
 
 ### 2.5 Module bundles over `GET /plugins/**`
@@ -278,7 +278,7 @@ routes compose; the carrier needs the route table, not these handlers.
 
 Current carriers (`hosts/ios/App/Source/CarrierServer.swift`,
 `hosts/android/.../CarrierServer.kt`,
-`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`) are the M1
+`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`) are the runtime-spike
 spike shape: one loopback listener, GET-only, hard-coded `/ws` upgrade,
 directory static serving restricted to `.html`/`.js`, one-shot
 `Connection: close` responses, a hand-coded `gateway-e2e` switch, and a
@@ -318,7 +318,7 @@ natively:
   once; bad escapes → 400, never a crash).
 - Migrate the existing `gateway-e2e` switch and the `dsh-web-client`
   static/`/ws` wiring onto named routes: `exact /ws` upgrade, `prefix
-  /gateway-e2e` route, plugin `web/` dir on the fallback seat. The M2/M3
+  /gateway-e2e` route, plugin `web/` dir on the fallback seat. The first-session and plugin-system
   scenarios must stay byte-green — same paths, same order of served
   paths.
 
@@ -328,7 +328,7 @@ natively:
   destroy the socket (iOS: cancel the NWConnection; Android/Harmony:
   close the socket) — never fall through to static.
 - **Multiple concurrent WS seats**: the official page opens
-  `/api/remote.mux` while our M2 plugin vocabulary may still hold `/ws`
+  `/api/remote.mux` while the first-session plugin vocabulary may still hold `/ws`
   (and the official page may reconnect). Replace the single
   `wsConnection` with a set keyed by connection; broadcast APIs become
   per-path. The `send(_:)` host seam gains a path/route parameter (or a
@@ -421,7 +421,7 @@ order:
 | 6 | `rpc.observed` first `POST /api/<endpoint>` | request log (endpoint name pinned in the manifest) |
 | 7 | `session.attached` first mux journal/snapshot stream opened | mux frame log |
 | 8 | `token.delta.forwarded` | mux frame log (session journal change frame with content delta) |
-| 9 | `page.rendered` (probe: platform `evaluateJavaScript`/equivalent asserts the transcript DOM grew, log the boolean) | rendered-state evidence per the M3 precedent, without editing upstream code |
+| 9 | `page.rendered` (probe: platform `evaluateJavaScript`/equivalent asserts the transcript DOM grew, log the boolean) | rendered-state evidence per the plugin-system precedent, without editing upstream code |
 
 Manifest rules: each event carries the scenario id in the canonical
 envelope; subset field matchers; nothing missing, nothing extra. The
@@ -446,7 +446,7 @@ Enumerated from source at the pin (§2.3–§2.6):
 - later (not MVP): `/api/session/uploadFileBinary` (POST),
   `/api/file`, `/api/changes.summary`, `/api/present.host` (GET).
 
-A carrier that serves the dist unmodified with only the M2 `/ws`
+A carrier that serves the dist unmodified with only the first-session `/ws`
 upstream **cannot boot the official page**: no `__ModuleLoader__`, no
 `__DSH_BOOT__`, no `/api`, no mux. That failure mode is the upstream
 boot-failure screen — fail loud, by design.

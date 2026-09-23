@@ -1,9 +1,9 @@
 # hosts/harmony/
 
-The HarmonyOS NEXT host (M5): ArkTS shell + NAPI bridge to quickjs-ng + ArkWeb.
+The HarmonyOS NEXT host: ArkTS shell + NAPI bridge to quickjs-ng + ArkWeb.
 Subprocesses are designed as unavailable; store-review posture to be verified in practice.
 
-## M5 host (isomorphic: carrier + binding + regression trio, all green)
+## Host status (isomorphic: carrier + binding + regression trio, all green)
 
 ONE launch on the emulator now proves the host end to end in two phases:
 
@@ -146,9 +146,9 @@ the ArkTS main thread, the ONE serial JS runtime thread. The bus-seam
 callbacks that fire while JS runs only queue or send (never re-enter the
 runtime); settlement rides later UI-callback ticks.
 
-## M1 spike (landed)
+## The carrier spike (landed)
 
-The original carrier spike that embedded the merged M1 core spike
+The original carrier spike that embedded the merged runtime core spike
 ([runtime/spike/README.md](../../runtime/spike/README.md)) and verified scenario
 `boot.verification` on the local HarmonyOS emulator. Evidence:
 [artifacts/m1-spike/](artifacts/m1-spike/) (logs, sink capture, verdict, screenshot,
@@ -170,7 +170,7 @@ Layout:
   preserving layout, then calls `startSpike` ONCE and shows the returned verdict.
 - `entry/src/main/resources/rawfile/spike/` — the bundled spike JS (kept byte-identical
   to the `runtime/spike/` and `system-plugins/` originals; the boot-verification.js copy
-  was found stale after the M2 slimming landed upstream and is refreshed here — drift
+  was found stale after the first-session slimming landed upstream and is refreshed here — drift
   in these copies is silent otherwise, see the surprise ledger).
 
 Log capture: the C sink forwards each canonical `dsh.spike.log:` line unmodified to

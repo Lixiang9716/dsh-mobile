@@ -36,7 +36,7 @@ workspace 包**，共 298 个。
 `ishRun` 上的 shell/终端栈；会话质量层（compaction、persona、plan-mode、
 标题、permission-presets）；持久化/恢复（fs-scope jsonl 后端）；技能
 （fs 发现）；commands/goals/workflows；streamable-HTTP 上的 MCP；
-workspace-files 与文件侧栏；以 staged 树 + m3 回执日志为后端的
+workspace-files 与文件侧栏；以 staged 树 + 插件系统回执日志为后端的
 plugin-manager。每项都是一次 vendor 锚点 + shim 行 + 一次挂载——
 文件工具行（T-0035）是模板。
 

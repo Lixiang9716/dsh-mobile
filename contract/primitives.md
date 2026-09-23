@@ -1,6 +1,6 @@
 # Capability Gateway — Primitive Contract v1.3.0
 
-> **Status: FROZEN at M0** (2026-09-19, decision D5). Shapes in this document are immutable
+> **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
 > Machine-readable surface: [primitives.d.ts](primitives.d.ts).
 > English | [简体中文](primitives.zh.md)

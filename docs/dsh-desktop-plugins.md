@@ -23,7 +23,7 @@ ToolRuntime, a vendor pin (`vendor/ensure-dsh.sh`) + shim rows
 | --- | --- | --- |
 | Runtime spine | session, agent, system-prompt, tools, session-projection, settings, agent-loop, llm (+ sandbox, scope, brand, invariants, timeout, typert-protocol, util-crypto, util-values transitively) | `mountSpine` over verbatim vendored packages |
 | 预设 data source | agent-presets + cordis-plugin-loader (+ home-paths, atomic-write, js-yaml) | REAL upstream services; one Loader serves the presets inject AND the client composition (T-0035) |
-| FILE-TOOLS row | fs-local, tool-fs, tool-str-replace-editor, attachment (+ npm diff) | in-memory workspace world over the vendored fs-local backend; read/write/edit + str_replace_editor on the ToolRuntime (T-0035) |
+| The file-tools row | fs-local, tool-fs, tool-str-replace-editor, attachment (+ npm diff) | in-memory workspace world over the vendored fs-local backend; read/write/edit + str_replace_editor on the ToolRuntime (T-0035) |
 | Tool ports | tool-todo; in-house dsh-shell-wasm (`shell`), dsh-shell-ish (`ish`) | ToolRuntime; backed by contract `wasmRun`/`ishRun` |
 | Official web tier | the 58-package application tier + 5 shell-static modules + the built SPA | staged client bundles composed in-runtime; served by the carrier |
 | Mirrored API | api-session-controller, api-settings-controller behavior | the write surface (web-write.js) — the real controllers stay unmounted |
@@ -39,8 +39,8 @@ session-quality layer (compaction, persona, plan-mode, titles,
 permission-presets); persistence/resume (fs-scope jsonl backend); skills
 (fs-backed); commands/goals/workflows; MCP over streamable-HTTP;
 workspace-files + the Files sidebar; plugin-manager backed by the staged
-trees + the m3 receipt journal. Each is a vendor pin + shim rows + a mount
-— the FILE-TOOLS row (T-0035) is the template.
+trees + the plugin-system receipt journal. Each is a vendor pin + shim rows + a mount
+— the file-tools row (T-0035) is the template.
 
 ## Excluded, with reasons
 
