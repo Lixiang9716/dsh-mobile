@@ -23,7 +23,7 @@ Platforms capture their native log stream (stdout / os_log / logcat /
 hilog); the canonical `dsh.spike.log: {...}` lines are byte-identical
 everywhere, so one checker serves all hosts.
 
-## Scenario manifests (M2)
+## Scenario manifests (first on-device session)
 
 | Manifest | Scenario | Runs on | Contract |
 | --- | --- | --- | --- |
@@ -36,13 +36,13 @@ everywhere, so one checker serves all hosts.
 | `webclient-mount.json` | `webclient.mount` | iOS, carrier-side | 7 events — client.selected, Web Client mount, WS connect, the plugin toolbar slot rendered + acked (`slot.registered`), first/last streamed token delta, session complete |
 | `install-verified-tarball.json` | `install.verified-tarball` | macOS CLI (and any spike host) | 22 events — the install transaction end to end: deterministic fixture package, sha256 blob store, trust-record verify, strict manifest validation, install-time capability negotiation (`install.negotiated`), staged integrity read-back, promote, receipt commit, installed-plugin load + notes service roundtrip, and the tamper case (`install.integrity-rejected` before unpack, tree intact, no receipt) |
 | `ui-client-swap.json` | `ui.client-swap` | iOS, carrier-side (`run-ios-session-mock-llm.sh --client mini`) | 7 events — the config-selected client flip: `client.selected` = `dsh-web-client-mini`, mini-client mount, WS connect, `slot.registered`, first/last streamed delta, session complete |
-| `install-full-cycle.json` | `install.full-cycle` | macOS CLI (and any spike host) | 41 events — the four M3 scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
+| `install-full-cycle.json` | `install.full-cycle` | macOS CLI (and any spike host) | 41 events — the four plugin-system scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
 | `install-from-http.json` | `install.from-http` | iOS, profile mode (`run-ios-install-ui.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the session.mock-llm-shaped agent session |
 | `install-carrier-evidence.json` | `install.carrier-evidence` | iOS, carrier-side (`run-ios-install-ui.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
 | `llm-live-stream.json` | `llm.live-stream` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/spike/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
 | `llm-live-stream-device.json` | `llm.live-stream` | iOS + Android (`run-ios-live-llm.sh` / `hosts/android/ci/run-live-llm.sh`) | 14 expectations — the REAL-backend leg: `llm.leg` = `gateway.httpFetch`, config from fs scope `app`, then the nondeterministic delta runs are asserted with the checker's `repeat` expectations (`llm.reasoning.delta` ≥1, `llm.delta` ≥1), `llm.stream.completed`, `llm.served-model` (logged verbatim — the server may substitute a model name), `llm.content.asserted` (non-empty aggregate), `llm.key.audit` `leaked: false` |
 | `llm-live-stream-carrier.json` | `llm.live-stream.carrier` | iOS + Android, carrier-side | 7 events — `client.selected`, Web Client mount, WS connect, the `llm` toolbar slot registered, first/last streamed LLM delta, session complete |
-| `officialweb-mount.json` | `officialweb.mount` | iOS, carrier-side + runtime (`run-ios-official-web-mount.sh`) | 14 events — the contract carrier mounting the OFFICIAL upstream web app with the RUNTIME LIVE and the APPLICATION TIER booting (W-INTEG + W-SHELL; `docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `web.boot.applied` (the runtime's composed rows replace the carrier defaults) + `runtime.booted` (the vendored client-modules composer over the full 58-package `dsh.client` roster), `index.rendered` (5 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the runtime graph's bootstrap combo — the REAL vendored browser bundle, 36040 bytes), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (the page's own first POST envelope answered structured `gateway/unimplemented`), `session.attached` (the page's first mux stream open) + `session.services.pending` (no agent spine embedded — the session API is the next named gap), `module.system.live` (the official facade materialized the vendored bundle; mode flipped queue→live), `app.shell.rendered` (the boot page DISPOSED — the UI renderer mounted the real shell: the W-SHELL milestone past "Loading plugins…") + `page.rendered` (probe: final DOM state, no failure text; no upstream code edited) |
+| `officialweb-mount.json` | `officialweb.mount` | iOS, carrier-side + runtime (`run-ios-official-web-mount.sh`) | 14 events — the contract carrier mounting the OFFICIAL upstream web app with the RUNTIME LIVE and the APPLICATION TIER booting (the web integration and application-shell legs; `docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `web.boot.applied` (the runtime's composed rows replace the carrier defaults) + `runtime.booted` (the vendored client-modules composer over the full 58-package `dsh.client` roster), `index.rendered` (5 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the runtime graph's bootstrap combo — the REAL vendored browser bundle, 36040 bytes), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (the page's own first POST envelope answered structured `gateway/unimplemented`), `session.attached` (the page's first mux stream open) + `session.services.pending` (no agent spine embedded — the session API is the next named gap), `module.system.live` (the official facade materialized the vendored bundle; mode flipped queue→live), `app.shell.rendered` (the boot page DISPOSED — the UI renderer mounted the real shell: the application-shell leg past "Loading plugins…") + `page.rendered` (probe: final DOM state, no failure text; no upstream code edited) |
 | `upstream-web-boot.json` | `upstream.web-boot` | macOS CLI (`run-upstream-boot-e2e.sh`) | 12 events — the CLI proof of the OFFICIAL web-boot wire over the full application tier: the mobile profile boots with one real agent turn, the vendored `ClientModuleRegistry` composes `__DSH_BOOT__` from the staged `web.plugins` delivery (58 entries, bootstrap batch exact, application combo over the other 57, externals ordered — `web/boot/composed` + `web/boot/rows`), and the claimed surface self-probes `session.list` + the journal stream (baseline, live frames, cancel) |
 | `composer-live-write.json` | `composer.live-write` | iOS, UI-driven (`run-ios-live-write.sh`) | 43 events — the D9 write path: the upstream spine answers the OFFICIAL app's write surface (real `session/create`, `session/prompt` admission, `settings/describe` + `mutate` with the in-memory `ui-onboarding` namespace, the `session/follow` / `workspace/follow` / `session/control` / `$events` mux streams), the same-origin probe picks the seeded workspace and types into the REAL composer, the send drives a REAL upstream agent-loop turn (scripted-llm transport), and the assistant reply renders in the official DOM (`write.reply.rendered`); structured-unavailable endpoints (dynamicCordisRunner, credentials, model catalog, presets, listings) stay pinned as such |
 | `session-live-read.json` | `session.live-read` | iOS, probe-driven (`run-ios-live-session.sh`) | 46 events — the read-surface predecessor: the spine claims `session.list` + the mux `session/journal` streams and answers the official envelope with REAL data (one scripted-llm turn before the page loads, one streamed live into the attached page) |
@@ -72,10 +72,10 @@ opt in with `"extract": { "prefix": "dsh.gateway.audit:", "envelope":
 `match` fields applied at the top level. Behavior for existing (logger
 envelope) manifests is unchanged.
 
-## Simulator runner (local M2 E2E)
+## Simulator runner (local first-session E2E)
 
 `run-ios.sh` is the full local driver for `gateway.binding` — CI cannot
-run it (hosted runners have no idb/UI driver), so the real M2 E2E happens
+run it (hosted runners have no idb/UI driver), so the real first-session E2E happens
 here:
 
 ```sh
@@ -102,7 +102,7 @@ known to error on some iOS 26.5 runtimes) and only falls back to the
 constants. Recalibrate them against the saved screenshots for your
 simulator after the first live run.
 
-### Session runner (local M2/M3 on-device session E2E)
+### Session runner (local on-device session E2E)
 
 `run-ios-session-mock-llm.sh` is the auto-run session driver — NO UI interaction:
 the scenario starts once the mounted Web Client connects AND acks the
@@ -113,7 +113,7 @@ plugin's toolbar slot (host.info readiness signal) and uses only scope
 test/e2e/run-ios-session-mock-llm.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]
 ```
 
-`--client mini` proves UI pluggability (M3): the app launches with
+`--client mini` proves UI pluggability (the plugin system): the app launches with
 `-dsh-web-client dsh-web-client-mini`, the carrier serves the SECOND Web
 Client variant (the visually distinct "DSH mini client"), and the
 carrier-side checker becomes `ui-client-swap.json` with evidence under
@@ -121,16 +121,16 @@ carrier-side checker becomes `ui-client-swap.json` with evidence under
 `webclient-mount.json` contract. The JS session stream
 (`session-mock-llm.json`) is client-independent and always verified.
 
-### M3 fetch-install runner (on-device, loopback-carrier self-hosted)
+### Plugin-system fetch-install runner (on-device, loopback-carrier self-hosted)
 
-`run-ios-install-ui.sh` drives the on-device M3 completion E2E — NO UI interaction:
+`run-ios-install-ui.sh` drives the on-device plugin-system completion E2E — NO UI interaction:
 
 ```sh
 test/e2e/run-ios-install-ui.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
 It launches the app in session mode with the install-full-cycle PROFILE
-(`-dsh-profile install-full-cycle`): the staged `cordis.patch.json` (the M3 config
+(`-dsh-profile install-full-cycle`): the staged `cordis.patch.json` (the plugin-system config
 layer) selects the ACTIVE Web Client and the toolbar slot allow-set; the
 scenario hands the deterministic dsh-notes package to the carrier over the
 bus seam, and the carrier serves it over real loopback TCP — the install
@@ -142,7 +142,7 @@ container), then verifies BOTH `install-from-http.json` and
 `install-carrier-evidence.json`; evidence lands under
 `hosts/ios/artifacts/m3-complete/`.
 
-### M2 real-LLM runner (on-device, real backend)
+### First-session real-LLM runner (on-device, real backend)
 
 `run-ios-live-llm.sh` drives the REAL-backend LLM E2E (scenario `llm.live-stream`,
 real leg) on the iOS simulator — NO UI interaction:
@@ -180,7 +180,7 @@ test/e2e/run-ios-official-web-mount.sh [--udid U] [--art-dir D] [--skip-build]
 
 It first materializes the vendored official dist (`ensure-official-dist.sh`:
 verify against the committed sha256 MANIFEST, rebuild reproducibly from the
-pinned upstream if absent) and the W-SHELL application-tier client bundles
+pinned upstream if absent) and the application-shell client bundles
 (`presentation/official-web/client-bundles/`, MANIFEST-verified), builds
 DSHSpike, stages the dist (`Documents/official-web/dist`) plus the full
 web-plugins tree (`Documents/web-plugins` — 58 `dsh.client` packages, the

@@ -1,12 +1,12 @@
 # hosts/android/
 
-The Android host (M4). v1 is isomorphic with iOS (quickjs-ng + Kotlin gateway); v2 may add a
+The Android host. v1 is isomorphic with iOS (quickjs-ng + Kotlin gateway); v2 may add a
 nodejs-mobile high-fidelity mode (V8 JIT + Termux-pattern subprocesses), with the difference
 expressed via RuntimeDescriptor capabilities.
 
-## M4 status: completion — carrier + WebView mount + the real nine-primitive binding
+## Host status: completion — carrier + WebView mount + the real nine-primitive binding
 
-On top of the three-scenario regression (below), the M4 completion session
+On top of the three-scenario regression (below), the host completion session
 (`android.capability-binding`, launch with `--ez dsh.m4 true`) proves the host behaves like the iOS host:
 
 - **Local carrier** (`CarrierServer.kt`) — a raw `ServerSocket` on 127.0.0.1 (the Kotlin sibling
@@ -42,10 +42,10 @@ Evidence (one run, final code state): `artifacts/m4-complete/` — `logs.txt` + 
 PASS), the regression verdicts, `screens/` (mount, picker, approval, notification shade,
 final — human evidence only), `receipt.json`.
 
-## M3-M4 regression status: gateway bridge + first session green on emulator
+## Regression status: gateway bridge + first session green on emulator
 
-The app embeds the shared M2 spike host (`runtime/spike/host/dsh_spike_host.c`) with its REAL
-gateway dispatch bridge (no canned responses — the M1 single-call slot is gone) and runs ALL
+The app embeds the shared spike host (`runtime/spike/host/dsh_spike_host.c`) with its REAL
+gateway dispatch bridge (no canned responses — the canned single-call slot is gone) and runs ALL
 THREE scenarios in one launch, judged by the shared checker:
 
 - `boot.verification` — boot regression, 7/7 canonical events.
@@ -112,9 +112,9 @@ CI (`.github/workflows/dev-android.yml`) runs the three-scenario regression scri
 API 35 x86_64 emulator.
 
 
-## M2 real-LLM session (scenario `llm.live-stream`, real leg)
+## Real-LLM session (scenario `llm.live-stream`, real leg)
 
-Launch with `--ez dsh.llm true` (`hosts/android/ci/run-live-llm.sh`): the M4
+Launch with `--ez dsh.llm true` (`hosts/android/ci/run-live-llm.sh`): the Android host
 completion flow (loopback carrier + WebView + real nine-primitive gateway)
 drives `scenario/llm-live-stream.js` — ONE streamed chat completion against an
 OpenAI-compatible backend through the REAL gateway `httpFetch`. Credentials

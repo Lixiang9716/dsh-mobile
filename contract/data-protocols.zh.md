@@ -1,6 +1,6 @@
 # 数据协议 — Bundle 布局、Manifest、Receipt(v1.0.0)
 
-> **状态:M0 冻结**(2026-09-19,决策 D5)。这是每个宿主、每个插件构建都必须遵守的三份数据协议。
+> **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。这是每个宿主、每个插件构建都必须遵守的三份数据协议。
 > 机器可读 schema 见 [schemas/](schemas/)。配套文档:[primitives.md](primitives.zh.md)。
 > [English](data-protocols.md) | 简体中文
 

@@ -202,7 +202,7 @@ ping），承载：
 - `gateway/internal` 控制结果。
 
 这就是 E2E 方案观察的 "ws session attach"。官方页面**不**在 `/ws`
-上使用我们的 M2 插件词汇表；它期待此端点。
+上使用我们的首会话插件词汇表；它期待此端点。
 
 ### 2.5 `GET /plugins/**` 上的模块 bundle
 
@@ -247,7 +247,7 @@ open-in-app 路由（POST open / GET apps / GET icon prefix）、仅开发态
 
 现有载体（`hosts/ios/App/Source/CarrierServer.swift`、
 `hosts/android/.../CarrierServer.kt`、
-`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`）是 M1
+`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`）是运行时 spike
 spike 形态：单回环监听、仅 GET、硬编码 `/ws` 升级、限定
 `.html`/`.js` 的目录静态服务、一次性 `Connection: close` 响应、手工
 `gateway-e2e` switch、单个 WebSocket 席位。已满足项与各平台为实现 §2
@@ -283,7 +283,7 @@ spike 形态：单回环监听、仅 GET、硬编码 `/ws` 升级、限定
   转义 → 400，绝不崩溃）。
 - 把现有 `gateway-e2e` switch 与 `dsh-web-client` 静态/`/ws` 布线
   迁到命名路由上：`exact /ws` 升级、`prefix /gateway-e2e` 路由、插件
-  `web/` 目录挂 fallback 席位。M2/M3 场景必须保持逐字节绿 —— 同
+  `web/` 目录挂 fallback 席位。首会话与插件系统场景必须保持逐字节绿 —— 同
   路径、同 served 顺序。
 
 ### 3.3 升级分发
@@ -291,7 +291,7 @@ spike 形态：单回环监听、仅 GET、硬编码 `/ws` 升级、限定
 - 升级仅按**精确路径名**匹配；未知升级目标 → 销毁 socket（iOS：
   cancel 对应 NWConnection；Android/Harmony：close socket）—— 绝不
   落回静态。
-- **多个并发 WS 席位**：官方页面开 `/api/remote.mux`，而我们的 M2
+- **多个并发 WS 席位**：官方页面开 `/api/remote.mux`，而我们的首会话
   插件词汇表可能仍占着 `/ws`（官方页面也可能重连）。把单一
   `wsConnection` 换成按连接为键的集合；广播 API 变为按路径。宿主面
   的 `send(_:)` 接缝增加路径/路由参数（或句柄对象）—— 这是宿主面
@@ -368,7 +368,7 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 | 6 | `rpc.observed` 首个 `POST /api/<endpoint>` | 请求日志（端点名在清单中钉死） |
 | 7 | `session.attached` 首条 mux journal/snapshot 流打开 | mux 帧日志 |
 | 8 | `token.delta.forwarded` | mux 帧日志（含内容 delta 的 session journal change 帧） |
-| 9 | `page.rendered`（探针：平台 `evaluateJavaScript` 等价物断言 transcript DOM 增长，记录布尔值） | 按 M3 先例的渲染态证据，且不改上游代码 |
+| 9 | `page.rendered`（探针：平台 `evaluateJavaScript` 等价物断言 transcript DOM 增长，记录布尔值） | 按插件系统先例的渲染态证据，且不改上游代码 |
 
 清单规则：每事件在规范信封中带 scenario id；子集字段匹配器；不缺、
 不多。`rpc.observed` 的端点名按清单钉死 —— 首批候选调用在
@@ -391,7 +391,7 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 - 后续（非 MVP）：`/api/session/uploadFileBinary`（POST）、
   `/api/file`、`/api/changes.summary`、`/api/present.host`（GET）。
 
-只直出 dist、只保留 M2 `/ws` 升级的载体**启动不了官方页面**：没有
+只直出 dist、只保留首会话 `/ws` 升级的载体**启动不了官方页面**：没有
 `__ModuleLoader__`、没有 `__DSH_BOOT__`、没有 `/api`、没有 mux。该
 失败模式即上游启动失败屏 —— 按设计响亮失败。
 

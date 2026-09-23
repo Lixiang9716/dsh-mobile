@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: fabcdf733a81fda59b9a96e4dc39648efa4ddae2
-  zh: 713b19081b4638a6240d50b80c8152fe71e73110
+  en: df71524e2172179228363dd4bddd12ceb97bdfa2
+  zh: 3b0301bc7bab1e206834489488f890c867200556
 counterpart: dsh-desktop-plugins.zh.md
-last_confirmed: 2026-09-22T18:24:25+00:00
+last_confirmed: 2026-09-23T02:16:15+00:00
 en_commit: ec4c147
 zh_commit: ec4c147

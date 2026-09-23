@@ -2,7 +2,7 @@
 
 [English](ARCHITECTURE.md) | 简体中文
 
-> 版本：v0.1（奠基版） · 状态：已评审，进入 M0
+> 版本：v0.1（奠基版） · 状态：已评审，进入契约冻结阶段
 > 基于对上游 [anywhere-labs/dsh-desktop](https://github.com/anywhere-labs/dsh-desktop) vendored 运行时（285 包）的静态分析，以及 DSH Community Fabric RFC 0001–0004 草案。
 
 ## 1. 定位
@@ -81,14 +81,14 @@ CI 的端到端测试只对**结构化日志**做断言，绝不用截图（截�
 | 能力网关 | 宿主固定部分 | 窄原语表（fsRead/fsWrite/httpFetch/notify/presentApproval/presentPicker/keychain…），每原语带类型签名 + 权限标记 + 审计；拒绝万能接口 |
 | 系统实现插件 | 插件形态（JS） | 组装原语实现上游契约：`dsh-fs-ios` 实现 `ctx.fs`，`dsh-subprocess-quickjs` 实现 `ctx.subprocess`，`dsh-credentials-ios` 映射钥匙串 |
 
-网关原语契约是**四端公共地基**（iOS/Android/鸿蒙/桌面互操作），版本化，M0 冻结。
+网关原语契约是**四端公共地基**（iOS/Android/鸿蒙/桌面互操作），版本化，于契约冻结阶段冻结。
 
 ## 5. 插件系统
 
 - **契约**：对齐 Fabric RFC 0001——静态 manifest（JSON Schema）、带版本 capability、required/optional 协商、确定性生命周期 hook。
 - **隔离**：一插件一 QuickJS runtime，零共享；所有系统访问过网关。这是全生态首个"技术强制"权限模型（Fabric 安全章节：只有隔离执行 + 受控加载 + 受管 IPC 的宿主可声称强制）。
 - **安装 = 数据操作**：tgz → `cache/blobs/<sha256>`（内容寻址）→ 校验 → 原子解包 `plugins/<pkg>@<semver>/` → 写 receipt（对齐上游 `desktopPnpm.installPlugin` 的 recovery receipt 事务语义）。
-- **安全待决项**（M2 设计）：网络出口管控（防插件外泄会话数据）与 UI 插件信任级别（UI 插件同样进 capability 模型）。
+- **安全待决项**（首个真机会话阶段设计）：网络出口管控（防插件外泄会话数据）与 UI 插件信任级别（UI 插件同样进 capability 模型）。
 
 ## 6. UI 架构
 
@@ -127,7 +127,7 @@ CI 的端到端测试只对**结构化日志**做断言，绝不用截图（截�
 
 ## 8. 多平台策略
 
-| | iOS (v1) | Android (M4) | 鸿蒙 NEXT (M5) |
+| | iOS (v1) | Android（Android 宿主） | 鸿蒙 NEXT（鸿蒙宿主） |
 | --- | --- | --- | --- |
 | 引擎 | quickjs-ng | quickjs-ng（v2 可选 nodejs-mobile 高保真形态） | quickjs-ng (NAPI) |
 | 子进程 | ❌ 协程实现 | ✅ Termux 模式(jniLibs) | ⚠️ 按 ❌ 设计 |
@@ -151,14 +151,14 @@ dsh-mobile/
 ├── docs/                # 架构文档、决策记录
 ├── packages/            # 发布打包(版本提升、tag 守卫)
 ├── tools/               # govrail 门禁检查脚本(治理工具)
-├── contract/            # M0: 原语契约 + 数据协议(bundle/manifest/receipt) — 先冻结
+├── contract/            # 契约冻结：原语契约 + 数据协议(bundle/manifest/receipt) — 先冻结
 ├── runtime/             # quickjs-ng 集成 + ESM 加载器 + 垫层(平台无关, 规范闭包)
 ├── system-plugins/      # 系统实现插件·契约适配层(JS, 三端共用)
 ├── presentation/        # mobile-ui Web Client(三端共用)
 └── hosts/
     ├── ios/             # Swift 特权层 + 网关 + carrier + SwiftUI 壳
-    ├── android/         # (M4)
-    └── harmony/         # (M5)
+    ├── android/         # (Android 宿主)
+    └── harmony/         # (鸿蒙宿主)
 ```
 
 每个宿主内嵌规范 `runtime/spike` 闭包的一份**已提交副本**;`closures`
@@ -167,12 +167,12 @@ dsh-mobile/
 
 ## 10. 里程碑
 
-- **M0 契约冻结**：原语契约 v0（≤10 原语）+ bundle 布局 + manifest schema + receipt 格式。
-- **M1 双 Spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
-- **M2 真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`session.mock-llm` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话；真实 LLM API 仍开放。
-- **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`install.verified-tarball` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `ui.client-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
-- **M4/M5**：Android、鸿蒙宿主，均完成——各自同构宿主一次启动跑通无头回归三连（`boot.verification` 7/7、`gateway.bridge-smoke` 6/6、`session.mock-llm` 23/23）与事件驱动的绑定阶段。M4：回环载体 + WebView 挂载 + 真实九原语绑定（Keystore 封装的 keychain、SAF 目录选择器 + fsScope persist/resolve、通知 + `notify.response`、`app.state` 边沿）——`android.capability-binding` 35/35（证据 `hosts/android/artifacts/m4-complete/`）7/7、`gateway.bridge-smoke` 6/6、`session.mock-llm` 23/23）与事件驱动的绑定阶段。M4：回环载体 + WebView 挂载 + 真实九原语绑定（Keystore 封装的 keychain、SAF 目录选择器 + fsScope persist/resolve、通知 + `notify.response`、`app.state` 边沿）——`android.capability-binding` 35/35（证据 `hosts/android/artifacts/m4-complete/`）；同一真实 httpFetch 绑定亦在模拟器上驱动真实 LLM 会话（`llm.live-stream` 设备腿，证据 `hosts/android/artifacts/m2-llm/`）。M5 **完成，九原语齐备**：同构鸿蒙宿主一次启动跑通无头回归三连（`boot.verification` 7/7、`gateway.bridge-smoke` 6/6、`session.mock-llm` 23/23）与事件驱动的绑定阶段——回环载体（向 Web Client 提供静态文件服务 + 经共享总线接缝的 RFC 6455 WS 泵）将 Web Client 挂载进 ArkWeb 并实时流出 token 增量；RuntimeDescriptor 为 9 可用 / 0 不可用，且每项原语均在设备端得到证明：notify + 通知点击 `notify.response`、presentApproval 对话框、fsScope、HUKS 封装的 keychain（AES-256-GCM set/get/delete 往返）、基于 DocumentViewPicker 的 presentPicker（取消 → null；授权 → 用户作用域并完成 fsScope persist/resolve 与内容一致读回）、对宿主自身回环载体的流式 httpFetch（响应头即 settle，随后分块事件流出；体中 abort → `cancelled`）——`harmony.capability-binding` 27/27 逐条日志比对（证据 `hosts/harmony/artifacts/m5-host/` 与 `hosts/harmony/artifacts/m5-primitives/`）。本宿主的 `llm.live-stream` 真实 LLM 腿同样已接通（由启动参数 `aa start … --ps dsh.e2e.leg llm.live-stream` 选中、该腿单独运行，默认链路因此不消耗推理配额；运行未改动的 `runtime/spike/scenario/llm-live-stream.js`，经同一条 httpFetch 绑定协商出真实腿；凭据交接由平台强制塑形——沙箱拒绝 shell 侧创建、本 SDK 的 chmod 是静默空操作，因此由运行时写入 0666 占位文件、运行脚本覆盖、应用导入后如实报告封存状态并在腿结束时删除）。其传输往返已在模拟器上端到端证实（请求经本宿主 httpFetch 离开设备并得到后端响应——真实的 HTTP 429 代码 1310：账户编程套餐配额耗尽，2026-09-22 14:43:53 重置），因此这里不宣称已完成一次真实推理：配额恢复后重跑 `hosts/harmony/ci/run-llm-live-stream.sh` 即可落地该证据（证据 `hosts/harmony/artifacts/m5-m2-llm/`）。
-- **M3 插件化**：进行中 —— 安装链路已作为 receipt 事务完成验证（`install.verified-tarball` 在 macOS CLI 21/21：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树读回校验 → receipt 提交；被篡改的包在解包前即被拒绝 —— 证据 `runtime/spike/artifacts/macos-cli-m3-install/`），UI 插件前两层已在设备端验证（按配置切换 Web Client 的 `ui.client-swap` 7/7 mini 变体 + 插件工具栏 slot 的注册、渲染与回执实时完成 —— 证据 `hosts/ios/artifacts/m3-pluginization/`）。仍开放：基于 fetch 的安装器与 pending-receipt 启动重放、安装期 capability 协商、其余 UI 插件层级；真实 LLM API 仍开放。
+- **契约冻结**：原语契约 v0（≤10 原语）+ bundle 布局 + manifest schema + receipt 格式。
+- **运行时与宿主 spike**：A) quickjs-ng 垫层跑通上游纯逻辑包（util-crypto / session-persistence）；B) iOS 宿主骨架（QuickJS 线程 + carrier + WKWebView 官方 UI 点亮）。
+- **首个真机会话**：完成 —— 系统实现插件（`dsh-fs` / `dsh-subprocess-quickjs` / `dsh-ui`）、`session.mock-llm` 假 LLM 会话端到端（CLI + 真机）、首个 Web Client 挂载并实时渲染会话，以及真实 LLM 流式会话：`llm.live-stream` 经网关 `httpFetch` 流式完成一次 OpenAI 兼容对话补全（CLI 脚本化 SSE 腿 19/19 —— `runtime/spike/artifacts/macos-cli-m2-llm/`；iOS 模拟器与 Android 模拟器上的真实 z.ai 后端腿，含服务端模型名逐字记录与密钥泄漏审计断言 —— `hosts/ios/artifacts/m2-llm/`、`hosts/android/artifacts/m2-llm/`）。
+- **插件系统**：完成 —— 安装链路已作为 receipt 事务完成验证（`install.verified-tarball` 在 macOS CLI 22/22：内容寻址 blob → 信任记录校验 → 严格 manifest 校验 → 暂存树完整性读回 → receipt 提交；被篡改的包在解包前即被拒绝），基于 FETCH 的安装器把流式 httpFetch body 送入同一条流水线并在设备端完成 pending-receipt 启动重放（`install.from-http` 46/46 + carrier 证据 `install.carrier-evidence` 11/11 —— `hosts/ios/artifacts/m3-complete/`；CLI 腿 `install.full-cycle` 41/41），安装期能力协商在解包前拒绝权限不足的包，三级 UI 插件均在设备端验证（配置层选择的 Web Client 整体切换 `ui.client-swap` 7/7 + 插件工具栏 slot 的注册、渲染与实时回执 —— `hosts/ios/artifacts/m3-pluginization/`）。
+- **Android 与鸿蒙宿主**：均完成 —— 各自同构宿主一次启动跑通无头回归三连（`boot.verification` 7/7、`gateway.bridge-smoke` 6/6、`session.mock-llm` 23/23）与事件驱动的绑定阶段。Android 宿主：回环载体 + WebView 挂载 + 真实九原语绑定（Keystore 封装的 keychain、SAF 目录选择器 + fsScope persist/resolve、通知 + `notify.response`、`app.state` 边沿）—— `android.capability-binding` 35/35（证据 `hosts/android/artifacts/m4-complete/`）；同一真实 httpFetch 绑定亦在模拟器上驱动真实 LLM 会话（`llm.live-stream` 设备腿，证据 `hosts/android/artifacts/m2-llm/`）。鸿蒙宿主**完成，九原语齐备**：同构鸿蒙宿主一次启动跑通无头回归三连与事件驱动的绑定阶段 —— 回环载体（向 Web Client 提供静态文件服务 + 经共享总线接缝的 RFC 6455 WS 泵）将 Web Client 挂载进 ArkWeb 并实时流出 token 增量；RuntimeDescriptor 为 9 可用 / 0 不可用，且每项原语均在设备端得到证明：notify + 通知点击 `notify.response`、presentApproval 对话框、fsScope、HUKS 封装的 keychain（AES-256-GCM set/get/delete 往返）、基于 DocumentViewPicker 的 presentPicker（取消 → null；授权 → 用户作用域并完成 fsScope persist/resolve 与内容一致读回）、对宿主自身回环载体的流式 httpFetch（响应头即 settle，随后分块事件流出；体中 abort → `cancelled`）—— `harmony.capability-binding` 27/27 逐条日志比对（证据 `hosts/harmony/artifacts/m5-host/` 与 `hosts/harmony/artifacts/m5-primitives/`）。本宿主的 `llm.live-stream` 真实 LLM 腿同样已接通（由启动参数 `aa start … --ps dsh.e2e.leg llm.live-stream` 选中、该腿单独运行，默认链路因此不消耗推理配额；运行未改动的 `runtime/spike/scenario/llm-live-stream.js`，经同一条 httpFetch 绑定协商出真实腿；凭据交接由平台强制塑形 —— 沙箱拒绝 shell 侧创建、本 SDK 的 chmod 是静默空操作，因此由运行时写入 0666 占位文件、运行脚本覆盖、应用导入后如实报告封存状态并在腿结束时删除）。其传输往返已在模拟器上端到端证实（请求经本宿主 httpFetch 离开设备并得到后端响应 —— 真实的 HTTP 429 代码 1310：账户编程套餐配额耗尽，2026-09-22 14:43:53 重置），因此这里不宣称已完成一次真实推理：配额恢复后重跑 `hosts/harmony/ci/run-llm-live-stream.sh` 即可落地该证据（证据 `hosts/harmony/artifacts/m5-m2-llm/`）。
+- **D9 上游移植**：作为一次纠偏完成（[D9](decisions.md)）—— 首版自研 Harness 实现被替换为在 quickjs 上逐字运行的上游 DSH 运行时：26 个包由 `runtime/spike/vendor/ensure-dsh.sh` 钉住并 sha256 校验（21 个上游 DSH 包 0.1.6-alpha.2 + 5 个钉住的 npm 依赖），零供应商化改动，自研代码缩减为胶水。逐字运行的部分：移动 profile boot 中的 cordis 宿主组合（`runtime/spike/upstream/boot.js`，与桌面 profile boot 相同的层序）、经网关 `httpFetch` 传输缝的供应商化 dsh-llm `LlmRuntime`（`upstream.session` 在 CLI 31/31）、载体 `ctx.webServer` 契约上的官方 client-modules web boot（官方 dist 已供应商化）、由真实上游 UI 渲染器挂载的官方应用外壳 —— 58 包应用层、真实 `session.list`/journal、以及 composer 写路径。实测 shim 面远小于 §3 的 285 包静态预测：产品闭包只 import [runtime/spike/upstream/README.md](../runtime/spike/upstream/README.md) 表列的内容（9 个 `node:` 内建 + web-shims；timers/Buffer/fetch 刻意缺席并响亮失败）。设备证据（一对一日志比对，汇总于 [docs/e2e-matrix.md](e2e-matrix.md)）：iOS 上的官方启动 + 会话 + 写入（`officialweb.mount` 14/14、`session.live-read` 46/46、`composer.live-write` 43/43）、Android（`android.officialweb.mount` 14/14、`android.session.live-read` 46/46）、鸿蒙（`harmony.officialweb.mount` 17/17、`harmony.session.live-read` 43/43、`harmony.composer.live-write` 33/33）。
 
 ## 11. 关键技术决策
 
