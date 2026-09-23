@@ -24,6 +24,9 @@ const OUT = join(ROOT, 'runtime/spike/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
 
 const UNIMPLEMENTED = [
+  [/from\s*['"]node:vm['"]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
+  [/from\s*['"]@deepseek-ai\/dsh-session-persistence-jsonl['"]/, 'session-persistence-jsonl (koffi native dep — deliberately outside every mobile closure)'],
+  [/from\s*['"]fast-check['"]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
   [/vi\.mock\s*\(|vi\.doMock\s*\(|vi\.resetModules\s*\(/, 'vi.mock/doMock/resetModules (loader-level module interception)'],
   [/vi\.useFakeTimers|vi\.advanceTimersByTime|vi\.setSystemTime/, 'fake timers (the runtime has no timer seam)'],
   [/expect\.extend\s*\(/, 'expect.extend (custom matchers)'],
@@ -37,6 +40,16 @@ const BARE_EXTERNAL_PLUGIN = {
   setup(build) {
     build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
       if (args.path.startsWith('.') || args.path.startsWith('/')) return null;
+      // dsh SUBPATH imports (e.g. '@deepseek-ai/dsh-session/invariant')
+      // become bundle-relative file paths: the host loader's bare map
+      // whitelists specific subpaths only, while its generic path route
+      // serves anything under the bundle root — and the vendored packages
+      // live there verbatim.
+      const sub = /^@deepseek-ai\/(dsh-[a-z0-9-]+)\/(.+)$/.exec(args.path);
+      if (sub !== null) {
+        const file = sub[2].endsWith('.js') ? sub[2] : `${sub[2]}.js`;
+        return { path: `vendor/dsh/${sub[1]}@0.1.6-alpha.2/lib/${file}`, external: true };
+      }
       return { path: args.path, external: true };
     });
   },

@@ -40,6 +40,8 @@ class SpikeHostM4 private constructor(
         const val LLM_ENTRY = "scenario/llm-live-stream.js"
         const val PARITY_SCENARIO = "upstream.parity"
         const val PARITY_ENTRY = "scenario/upstream-parity.js"
+        const val SUITE_SCENARIO = "upstream.suite"
+        const val SUITE_ENTRY = "scenario/upstream-suite-leg.js"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -85,6 +87,31 @@ class SpikeHostM4 private constructor(
                 entryPath = LLM_ENTRY,
                 captureLabel = "llm-live-stream",
             )
+            host.webView = webView
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
+         * upstream spec (the runner stages the corpus under
+         * filesDir/spike/upstream-tests/) executed by the quickjs-shaped
+         * harness inside our runtime — per-test verdicts stream as
+         * scenario records. The spec name rides the launch extras into the
+         * runtime.config bus delivery. */
+        fun startSuite(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+            spec: String,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = SUITE_SCENARIO,
+                entryPath = SUITE_ENTRY,
+                captureLabel = "upstream-suite",
+            )
+            host.suiteSpec = spec
             host.webView = webView
             instance = host
             host.start(onFinished)
@@ -141,6 +168,10 @@ class SpikeHostM4 private constructor(
      * hands the endpoint facts to the scenario over the runtime.config bus
      * delivery (set by startParity before start). */
     internal var parityMode = false
+
+    /** The upstream-suite drive: the spec module path delivered in
+     * runtime.config (set by startSuite before start). */
+    internal var suiteSpec: String? = null
     private var finished = false
     private var busReady = false
     private var hostHelloDelivered = false
@@ -207,6 +238,13 @@ class SpikeHostM4 private constructor(
                 .put("type", "runtime.config")
                 .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
                 .put("apiKey", MockLlmRoute.KEY)
+                .put("containerRoot", bundle.absolutePath)
+            onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, config.toString()))
+        }
+        suiteSpec?.let { spec ->
+            val config = JSONObject()
+                .put("type", "runtime.config")
+                .put("spec", "upstream-tests/$spec")
                 .put("containerRoot", bundle.absolutePath)
             onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, config.toString()))
         }

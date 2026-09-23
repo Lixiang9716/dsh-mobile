@@ -1,0 +1,10 @@
+--------- beginning of main
+09-23 14:20:03.889 17446 17501 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:20:03.905 17446 17501 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:20:03.906 17446 17501 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:20:03.906 17446 17501 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__contract-regressions.spec.mjs"}]}
+09-23 14:20:03.996 17446 17501 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"ReferenceError: cannot load module 'vendor/dsh/dsh-session@0.1.6-alpha.2/lib/invariant.js'"}]}
+09-23 14:20:03.997 17446 17501 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"cannot load module 'vendor/dsh/dsh-session@0.1.6-alpha.2/lib/invariant.js' | "}]}
+09-23 14:20:03.998 17446 17501 I dsh.spike: m4 FAIL scenario completed with pass=false
+09-23 14:20:03.999 17446 17501 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-23 14:20:03.999 17446 17501 I dsh.spike.result: ALL FAIL

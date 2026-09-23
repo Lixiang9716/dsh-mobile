@@ -1,0 +1,17 @@
+--------- beginning of main
+09-23 14:19:49.125 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:19:49.142 17133 17225 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:19:49.142 17133 17225 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:19:49.143 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__agent.spec.mjs"}]}
+09-23 14:19:49.263 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > idle inject() durably stages context without opening a turn"}]}
+09-23 14:19:49.287 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > inject() preserves an explicitly empty plugin source"}]}
+09-23 14:19:49.319 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > emits exact inserted, claimed, and discarded inbox messages"}]}
+09-23 14:19:49.332 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > idle inject() rejects invalid input before enqueue"}]}
+09-23 14:19:49.357 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > steer() while idle becomes a woken prompt turn"}]}
+09-23 14:19:49.402 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > emits one running and idle transition for one completed turn"}]}
+09-23 14:19:49.416 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > whenIdle() resolves immediately without active work"}]}
+09-23 14:19:49.442 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > whenIdle() waits for active work until explicit cancellation"}]}
+09-23 14:19:49.470 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"Agent > contains a throwing status listener on both transitions"}]}
+09-23 14:19:49.470 17133 17225 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-loop__tests__agent.spec.mjs","passed":9,"failed":0,"skipped":0}]}
+09-23 14:19:49.471 17133 17225 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 14:19:49.471 17133 17225 I dsh.spike.result: ALL PASS

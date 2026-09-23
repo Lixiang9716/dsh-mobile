@@ -1,0 +1,5 @@
+--------- beginning of main
+09-23 14:14:48.706 17030 17085 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:14:48.722 17030 17085 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:14:48.723 17030 17085 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:14:48.724 17030 17085 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__agent-initiator.spec.mjs"}]}

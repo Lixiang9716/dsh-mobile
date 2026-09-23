@@ -137,6 +137,26 @@ done
 # The system-plugins the boot's static graph imports (the two shell tools;
 # the three older plugins are committed in assets directly and refreshed
 # here too — byte-identical to runtime/spike, the single source).
+# The TEST closure: every additional vendored package the upstream suites
+# import (same tag; materialized by vendor/ensure-dsh-tests.sh). Untracked
+# in assets by the same accepted pattern as the Gradle-materialized staged
+# files — the check mode judges tracked files only.
+for pkg_dir in "$SPIKE"/vendor/dsh/*@0.1.6-alpha.2; do
+    pkg="$(basename "$pkg_dir")"
+    [ -d "$pkg_dir/lib" ] || continue
+    if [ ! -d "$ASSETS/vendor/dsh/$pkg/lib" ]; then
+        mkdir -p "$ASSETS/vendor/dsh/$pkg"
+        # .d.ts deliberately stays out (the curated runtime staging's own
+        # convention — the lite grammars do not judge vendored typings).
+        (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
+            mkdir -p "$ASSETS/vendor/dsh/$pkg/$(dirname "$f")"
+            cp "$pkg_dir/$f" "$ASSETS/vendor/dsh/$pkg/$f"
+        done
+        cp "$pkg_dir/package.json" "$ASSETS/vendor/dsh/$pkg/package.json" 2>/dev/null || true
+    fi
+done
+say "staged the test closure ($(ls "$ASSETS/vendor/dsh" | wc -l | tr -d ' ') packages total)"
+
 say "staging system-plugins"
 for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-subprocess-quickjs dsh-ui; do
     mkdir -p "$ASSETS/system-plugins/$p"
