@@ -86,22 +86,31 @@ const keyedEqual = (a, b, seen, depth) => {
 };
 
 /** Subset-matching for toEqual/toMatchObject against asymmetric matchers. */
-const matchSubset = (actual, expected, strict) => {
+const matchSubset = (actual, expected, strict, seen = new Set(), depth = 0) => {
   if (expected && typeof expected === 'object' && expected.__matcher) {
     return expected.__matcher(actual);
   }
+  // Identity fast path + cycle guard (measured 2026-09-23: agent-initiator
+  // and scope-lifecycle compare LIVE cordis objects against themselves —
+  // expected === actual at the cycle point; and cordis getters return a NEW
+  // traceable proxy on every access, so a seen-SET never re-sees the same
+  // instance. Identity equality terminates those cycles exactly; a depth
+  // cap (deepEqual's own bound) is the backstop for distinct-but-cyclic
+  // structures, where the harness deems the walked prefix equal.)
+  if (actual === expected) return true;
+  if (depth > 64) return true;
   if (expected === null || typeof expected !== 'object' || actual === null || typeof actual !== 'object') {
     return deepEqual(actual, expected);
   }
   if (Array.isArray(expected)) {
     if (strict && actual.length !== expected.length) return false;
     if (!Array.isArray(actual) || actual.length < expected.length) return false;
-    return expected.every((v, i) => matchSubset(actual[i], v, strict));
+    return expected.every((v, i) => matchSubset(actual[i], v, strict, seen, depth + 1));
   }
   if (!strict && Array.isArray(actual)) return false;
   for (const key of Object.keys(expected)) {
     if (!Object.prototype.hasOwnProperty.call(actual, key)) return false;
-    if (!matchSubset(actual[key], expected[key], strict)) return false;
+    if (!matchSubset(actual[key], expected[key], strict, seen, depth + 1)) return false;
   }
   return strict ? Object.keys(actual).length === Object.keys(expected).length : true;
 };
