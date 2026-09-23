@@ -39,7 +39,7 @@ sh ./ensure-zstd.sh
 # newer quickjs-ng.
 PIN=0.17.0+fork-tostring+async-context+tc39
 QJS_REPO=Lixiang9716/quickjs
-COMMIT=$(cd /tmp/qjs-fork && git rev-parse HEAD)
+COMMIT=4153a1f0edef441e5dc71871eb071bc405a0bd04
 TARBALL_SHA256=c635c1e73629b6a69043b09ba181b69a679b4341f9cb6a012d47b83dce6a4f57
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
