@@ -1,5 +1,7 @@
 import '../upstream/shims/globals.js';
 import { attachExpectPoll } from '../upstream/shims/expect-poll.js';
+import { attachViWaits } from '../upstream/shims/vi-wait.js';
+import { attachAsyncChain } from '../upstream/shims/expect-async-chain.js';
 // dsh:logging-exempt (test harness: verdicts are the product)
 import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
 import { attachEachForms } from '../upstream/shims/describe-each.js';
@@ -102,6 +104,19 @@ const matchSubset = (actual, expected, strict, seen = new Set(), depth = 0) => {
   if (depth > 64) return true;
   if (expected === null || typeof expected !== 'object' || actual === null || typeof actual !== 'object') {
     return deepEqual(actual, expected);
+  }
+  // BOTH-sides-Errors compare by name + message (vitest's error equality):
+  // quickjs owns `stack` as an ENUMERABLE own property where V8 hides it, so
+  // the generic own-key walk failed `toEqual(new Error(m))` on key count
+  // alone. A plain-shape expected (expect.objectContaining) against an Error
+  // actual still walks the subset below, exactly like vitest.
+  if (actual instanceof Error && expected instanceof Error) {
+    if (actual.message !== expected.message) return false;
+    if ((actual.name ?? 'Error') !== (expected.name ?? 'Error')) return false;
+    const extraA = Object.keys(actual).filter((k) => k !== 'stack');
+    const extraB = Object.keys(expected).filter((k) => k !== 'stack');
+    return extraA.length === extraB.length
+      && extraA.every((k) => matchSubset(actual[k], expected[k], strict, seen, depth + 1));
   }
   if (Array.isArray(expected)) {
     if (strict && actual.length !== expected.length) return false;
@@ -224,37 +239,7 @@ const identityMatchers = (actual, check) => ({
   toBeNaN() { check(Number.isNaN(actual), 'NaN'); },
 });
 
-/** The .resolves/.rejects chains: await the promise (or capture its
- * rejection), then forward to the plain matcher of the settled value. */
-/** One settled-value matcher invocation (module level for nesting). */
-const settleAndMatch = async (settle, negated, matcher, args) => {
-  const value = await settle();
-  // vitest's .rejects.toThrow family asserts against the THROWN error,
-  // not a throwing function.
-  if (matcher.startsWith('toThrow')) {
-    const chain = makeExpect(() => { throw value; }, negated);
-    return chain[matcher](...args);
-  }
-  const settled = makeExpect(value, negated);
-  const fn = settled[matcher];
-  if (typeof fn !== 'function') failWith(`harness: matcher "${matcher}" is not implemented`);
-  return fn.apply(settled, args);
-};
-
-const makeAsyncChain = (settle, negated) => {
-  const cache = {};
-  return new Proxy(cache, {
-    get(target, matcher) {
-      if (typeof matcher !== 'string' || matcher === 'then' || matcher === 'not') {
-        return undefined; // symbols/protocol probes never start a chain
-      }
-      if (!(matcher in target)) {
-        target[matcher] = (...args) => settleAndMatch(settle, negated, matcher, args);
-      }
-      return target[matcher];
-    },
-  });
-};
+/** The .resolves/.rejects chains live in shims/expect-async-chain.js. */
 
 /** The expect() chain. */
 const makeExpect = (actual, negated = false) => {
@@ -298,19 +283,21 @@ const makeExpect = (actual, negated = false) => {
   });
   return api;
 };
+const makeAsyncChain = attachAsyncChain(makeExpect, failWith);
 
 /** The vi.fn mock core: a calls/results ledger plus the implementation
- * queue. The *Once family (mockImplementationOnce et al.) prepends a
- * one-shot implementation consumed before the standing one — vitest's
- * `vi.spyOn(x, 'y').mockImplementationOnce(...)` is the corpus's standard
- * "make exactly the next call fail" idiom. */
+ * queue; the *Once family prepends a one-shot implementation consumed
+ * before the standing one. A REGULAR function so spyOn-wrapped originals
+ * see the call-site receiver — vitest's spy forwards `this`
+ * (measured 2026-09-23: system-prompt-admission spies adapter.resolveModel,
+ * whose body reads this.reasoning; an arrow spy broke every request). */
 const makeMockFn = (impl) => {
   const onceQueue = [];
-  const f = (...args) => {
+  const f = function (...args) {
     f.mock.calls.push(args);
     const next = onceQueue.length > 0 ? onceQueue.shift() : impl;
     try {
-      const value = next ? next(...args) : undefined;
+      const value = next ? next.apply(this, args) : undefined;
       f.mock.results.push({ type: 'return', value });
       return value;
     } catch (error) {
@@ -376,6 +363,7 @@ const viApi = {
   mock: () => failWith('harness: vi.mock is not implemented (loader-level interception) — the transpiler excludes specs that need it'),
   ...fakeTimerApi(fakeTimerState),
 };
+attachViWaits(viApi, failWith);
 
 // ---- collection -----------------------------------------------------------
 

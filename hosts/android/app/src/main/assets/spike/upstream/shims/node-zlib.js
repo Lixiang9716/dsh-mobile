@@ -43,7 +43,7 @@
  *   - Callback forms defer via microtask (Node defers to its threadpool);
  *     argument/option validation stays synchronous, as in Node.
  */
-import { DshBuffer } from 'upstream/shims/buffer.js';
+import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
 
 /** Node 24 zlib.constants, Zstandard + flush faces (values verbatim). */
 export const constants = {
@@ -92,10 +92,13 @@ const intrinsic = (name) => {
 
 const describe = (value) => (value === null ? 'null' : typeof value);
 
-/** The corpus only ever hands Buffers/typed arrays to zlib; anything else is loud. */
+/** Node's zlib convenience face accepts Buffer/typed arrays AND strings
+ * (utf8-encoded). The corpus hands the jsonl spine's event-line strings to
+ * zstdCompress; anything else non-bytes stays loud. */
 const asBytes = (input, caller) => {
+  if (typeof input === 'string') return encodeUtf8(input);
   if (!(input instanceof Uint8Array)) {
-    throw new TypeError(`zlib shim: ${caller} expects a Uint8Array/Buffer, got ${describe(input)}`);
+    throw new TypeError(`zlib shim: ${caller} expects a Uint8Array/Buffer/string, got ${describe(input)}`);
   }
   return input;
 };

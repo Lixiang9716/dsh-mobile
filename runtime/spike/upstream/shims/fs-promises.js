@@ -88,8 +88,27 @@ const direntFor = (name, path) => {
   };
 };
 
-/** readdir(path[, {withFileTypes}]) — one level, sorted. */
+/** readdir(path[, options]) — one level, or a RECURSIVE walk when
+ * `options.recursive` is true (node's shape: relative paths of every file
+ * AND directory below the root, children after their parent; measured
+ * 2026-09-23 against node 24 — resume.spec's torn-tail scan walks the
+ * session tree this way). */
 export const readdir = async (path, options) => {
+  if (options?.recursive === true) {
+    const out = [];
+    const walk = (dir, rel) => {
+      for (const name of readdirSync(dir)) {
+        const child = rel === undefined ? name : `${rel}/${name}`;
+        const full = `${dir.endsWith('/') ? dir : `${dir}/`}${name}`;
+        let isDir = false;
+        try { isDir = statSync(full)?.isDirectory() === true; } catch { /* file-like */ }
+        out.push(child);
+        if (isDir) walk(full, child);
+      }
+    };
+    walk(path, undefined);
+    return out;
+  }
   const names = readdirSync(path);
   if (options?.withFileTypes !== true) return names;
   const prefix = path.endsWith('/') ? path : `${path}/`;
@@ -136,16 +155,38 @@ export const writeFile = async (path, data, options) => {
 
 /** The write-side names below are EXPORTED because the vendored closure's
  * imports link against them (a missing ESM export is a link error, not a
- * lazy one) — and they REFUSE at call time: seed data is read-only, and the
- * honest error names the boundary instead of corrupting the staged view. */
+ * lazy one). appendFile is a real workspace append (read + concat + write):
+ * the resume-torn-tail recovery appends closers to a persisted log in its
+ * own tmpdir; the workspace root's own boundary still refuses anything
+ * outside it (seeded views are not writable there, so the honest refusal
+ * survives for them). cp stays a refusal — no recursive-copy consumer. */
 const refuseAsync = (name) => async () => {
   throw new Error(
     `node:fs/promises.${name}: the staged fs view is read-only — `
     + 'seed data cannot be mutated inside the spike runtime');
 };
 export const cp = refuseAsync('cp');
-export const appendFile = refuseAsync('appendFile');
-export const unlink = refuseAsync('unlink');
+export const appendFile = async (path, data, options) => {
+  const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
+  if (!(bytes instanceof Uint8Array)) {
+    throw new TypeError(`node:fs/promises.appendFile: data must be a string or Uint8Array, got ${typeof data}`);
+  }
+  const encoding = typeof options === 'string' ? options : options?.encoding;
+  if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
+    throw new Error(`node:fs/promises: appendFile encoding '${encoding}' — supported: utf8, buffer`);
+  }
+  let current = new Uint8Array(0);
+  try {
+    current = await readFile(path);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+  const merged = new Uint8Array(current.length + bytes.length);
+  merged.set(current, 0);
+  merged.set(bytes, current.length);
+  return _wsWriteFile(path, merged, options?.mode);
+};
+export const unlink = async (path) => _wsRm(path, { force: false });
 
 /** access() succeeds for existence checks on readable staged paths — the one
  * write-side name whose SEMANTICS are read-shaped. Mode bits are ignored: the
@@ -190,21 +231,30 @@ export const opendir = async (path) => {
   };
 };
 
-/** The FileHandle face fs-local's atomic write path drives: open a staging
- * file `wx` (must NOT exist), writeFile + chmod + sync + close it; open `r`
- * for the diff-basis read (stat + read + close). */
+/** The FileHandle face the closure's write paths drive: fs-local's atomic
+ * write (staging `wx` + diff-basis `r`) and the session-persistence-jsonl
+ * spine (lease `w` + append `a` + repair `r+` + dir fsync `r`). */
+/** Handle-descriptor identity: the VFS has no real fds, but node-shaped
+ * callers read `handle.fd` (the jsonl lease hands it to the flock shim) —
+ * a monotonic counter is honest identity in a single-process store. */
+let nextFd = 16;
 class FileHandle {
   #path;
   #flags;
+  #append;
   #position = 0; // advancing read cursor (node's null-position semantics)
 
-  constructor(path, flags) {
+  constructor(path, flags, append = false) {
+    this.fd = nextFd++;
     this.#path = path;
     this.#flags = flags;
+    this.#append = append;
   }
 
-  /** writeFile(data[, options]) — replace the whole file (the only use the
-   * closure makes of a handle write). */
+  /** writeFile(data[, options]) — replace the whole file, EXCEPT on an
+   * append-mode handle ('a'/'ax'), where node appends at EOF (the jsonl
+   * spine's appendLines relies on it: it stats `before`, writes, and rolls
+   * back to `before` on failure). */
   async writeFile(data, options) {
     const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
     if (!(bytes instanceof Uint8Array)) {
@@ -213,6 +263,18 @@ class FileHandle {
     const encoding = typeof options === 'string' ? options : options?.encoding;
     if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
       throw new Error(`FileHandle.writeFile: encoding '${encoding}' — supported: utf8, buffer`);
+    }
+    if (this.#append) {
+      let current = new Uint8Array(0);
+      try {
+        current = await readFile(this.#path);
+      } catch (error) {
+        if (error?.code !== 'ENOENT') throw error;
+      }
+      const merged = new Uint8Array(current.length + bytes.length);
+      merged.set(current, 0);
+      merged.set(bytes, current.length);
+      return _wsWriteFile(this.#path, merged, undefined);
     }
     return _wsWriteFile(this.#path, bytes, undefined);
   }
@@ -239,10 +301,20 @@ class FileHandle {
     return { bytesRead: readable, buffer };
   }
 
-  /** stat() — the non-bigint shape (isFile + size is what the diff-basis
-   * reader consumes). */
-  async stat() {
-    return statSync(this.#path);
+  /** stat([options]) — options pass through (`{bigint: true}` is what the
+   * jsonl lease's inode-identity check compares across handle and path). */
+  async stat(options) {
+    return statSync(this.#path, options);
+  }
+
+  /** truncate(len) — the jsonl repair/rollback path ('r+' handles). */
+  async truncate(len) {
+    if (!Number.isInteger(len) || len < 0) {
+      throw new TypeError(`FileHandle.truncate: non-negative integer len, got ${String(len)}`);
+    }
+    const data = await readFile(this.#path);
+    if (data.byteLength <= len) return undefined;
+    return _wsWriteFile(this.#path, data.subarray(0, len), undefined);
   }
 
   async chmod(mode) {
@@ -257,19 +329,35 @@ class FileHandle {
   async close() { /* no descriptor held */ }
 }
 
-/** open(path, flags[, mode]) — 'r' requires an existing regular file; the
- * exclusive-create flags ('wx'/'xw'/'ax') require absence (EEXIST otherwise),
- * which is exactly the staging-file contract fs-local's atomic publication
- * relies on. */
+/** open(path, flags[, mode]) — node's common flag set over the two VFS
+ * views. 'r' requires an existing file OR a directory (POSIX lets you open
+ * a directory read-only — the jsonl spine fsyncs session dirs that way;
+ * the dir handle reads back EISDIR). The exclusive-create flags
+ * ('wx'/'xw'/'ax') require absence (EEXIST otherwise) — fs-local's atomic
+ * staging contract. 'w' truncates-or-creates (the jsonl write-lease lock
+ * file), 'a' appends-or-creates (the jsonl durable append), 'r+' requires
+ * existence and rewrites in place (repair/rollback). */
 export const open = async (path, flags = 'r', mode) => {
   if (flags === 'r') {
     if (!existsSync(path)) throw enoent('open', path);
-    if (!statSync(path).isFile()) {
-      const error = new Error(`EISDIR: illegal operation on a directory, open '${path}'`);
-      error.code = 'EISDIR';
-      throw error;
-    }
     return new FileHandle(path, flags);
+  }
+  if (flags === 'r+') {
+    if (!existsSync(path)) throw enoent('open', path);
+    return new FileHandle(path, flags);
+  }
+  if (flags === 'w') {
+    // node's 'w': create-or-TRUNCATE at open time; the identity check the
+    // jsonl lease runs right after (stat the handle vs the path) needs the
+    // file to exist from this point on.
+    await writeFile(path, new Uint8Array(0), { mode });
+    return new FileHandle(path, flags);
+  }
+  if (flags === 'a') {
+    if (!existsSync(path)) {
+      await writeFile(path, new Uint8Array(0), { mode });
+    }
+    return new FileHandle(path, flags, true);
   }
   if (flags.includes('x')) {
     if (existsSync(path)) {
@@ -283,21 +371,24 @@ export const open = async (path, flags = 'r', mode) => {
     // node's exclusive open CREATES the (empty) file; the handle's writes
     // then fill it. The staging-file contract fs-local relies on.
     await writeFile(path, new Uint8Array(0), { mode });
-    return new FileHandle(path, flags);
+    return new FileHandle(path, flags, flags.includes('a'));
   }
-  throw new Error(`node:fs/promises: open flag '${flags}' — supported: r, x-flags (the closure's atomic write path)`);
+  throw new Error(`node:fs/promises: open flag '${flags}' — supported: r, w, a, r+, x-flags (the closure's write paths)`);
 };
 
 /** mkdtemp(prefix) — Node's unique-suffix temp dir; the filesystem here is
  * scope-relative and case-sensitive, so a monotonic counter suffix carries
  * the uniqueness contract honestly (the corpus stages atomic writes in it). */
 let mkdtempCounter = 0;
-/** truncate(path, len) — the closure's write-claim trim path needs it. */
+/** truncate(path, len) — the closure's write-claim trim path needs it. The
+ * old body did a lazy self-import, which under the loader's NAME-based
+ * relative resolution resolved 'node:fs/promises' + '/fs-promises.js' to a
+ * nonexistent builtin (measured 2026-09-23: the torn-tail repair is the
+ * first runtime caller); the module-local names are the same bindings. */
 export const truncate = async (path, len) => {
   if (typeof path !== 'string' || !Number.isInteger(len) || len < 0) {
     throw new TypeError('truncate: (path, len) with a non-negative integer len');
   }
-  const { readFile, writeFile } = await import('./fs-promises.js');
   const data = await readFile(path);
   if (data.byteLength <= len) return undefined;
   await writeFile(path, data.subarray(0, len));

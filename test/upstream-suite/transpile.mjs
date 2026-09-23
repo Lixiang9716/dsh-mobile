@@ -28,16 +28,22 @@ const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
 
 const UNIMPLEMENTED = [
   [/from\s*['"]node:vm['"]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
-  [/from\s*['"]@deepseek-ai\/dsh-session-persistence-jsonl['"]/, 'session-persistence-jsonl (koffi native dep — deliberately outside every mobile closure)'],
+  // NOTE: the session-persistence-jsonl exclusion was REMOVED when the
+  // closure harvest staged the koffi-free submodule-built package
+  // (vendor/dsh/session-persistence-jsonl@0.1.6-alpha.2, 2026-09-23): its
+  // worker-backed lease degrades to the in-process path through the
+  // node:worker_threads errors shim, exactly like the vendored session
+  // package, and the flock addon maps to a shim.
   [/from\s*['"]fast-check['"]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
   [/vi\.mock\s*\(|vi\.doMock\s*\(|vi\.resetModules\s*\(/, 'vi.mock/doMock/resetModules (loader-level module interception)'],
   // NOTE: the fake-timers / vi.waitFor / expect.poll exclusions were
   // REMOVED with the v1.4.0 timer seam (contract + host + harness fakes);
   // specs demanding wall-clock semantics (vi.setSystemTime, Date mocking)
-  // stay excluded below.
+  // stay excluded below. expect.poll rides the harness's own poller
+  // (upstream/shims/expect-poll.js) on the 0-delay timer arm — its
+  // "no timer seam" exclusion is gone with the same seam.
   [/vi\.setSystemTime|vi\.mockedDate|vi\.setSystemTime/, 'wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)'],
   [/expect\.extend\s*\(/, 'expect.extend (custom matchers)'],
-  [/expect\.poll\s*\(/, 'expect.poll (timer-based polling — the runtime has no timer seam)'],
   // Decorators survive esbuild's TS transform verbatim (ES decorators, not
   // experimentalDecorators) and quickjs-ng 0.17 refuses to parse them.
   // Stripping them would silently drop the @Remote registration semantics

@@ -264,6 +264,86 @@ export class DshBuffer extends Uint8Array {
   }
 
   get byteLength() { return this.length; }
+
+  // ---- node Buffer's numeric byte accessors -----------------------------
+  // The vendored session-persistence family binary-parses its Zstandard
+  // container with these (scanZstdFrames: readUInt32LE/readUInt8/readUIntLE;
+  // the tarball/webworker faces: the wider read*/write* set below). Each is
+  // little/big-endian fixed-width with node's bounds semantics (RangeError
+  // past the end), implemented over DataView views of the same bytes.
+
+  /** Shared bounds check (node throws RangeError beyond the buffer). */
+  #viewAt(offset, bytes, op) {
+    if (!Number.isInteger(offset) || offset < 0 || offset + bytes > this.length) {
+      throw new RangeError(`buffer.${op}: offset ${offset} (+${bytes} bytes) is outside the buffer (length ${this.length})`);
+    }
+    return new DataView(this.buffer, this.byteOffset, this.byteLength);
+  }
+
+  readUInt8(offset) { return this.#viewAt(offset, 1, 'readUInt8').getUint8(offset); }
+  readInt8(offset) { return this.#viewAt(offset, 1, 'readInt8').getInt8(offset); }
+  readUInt16LE(offset) { return this.#viewAt(offset, 2, 'readUInt16LE').getUint16(offset, true); }
+  readUInt16BE(offset) { return this.#viewAt(offset, 2, 'readUInt16BE').getUint16(offset, false); }
+  readInt16LE(offset) { return this.#viewAt(offset, 2, 'readInt16LE').getInt16(offset, true); }
+  readInt16BE(offset) { return this.#viewAt(offset, 2, 'readInt16BE').getInt16(offset, false); }
+  readUInt32LE(offset) { return this.#viewAt(offset, 4, 'readUInt32LE').getUint32(offset, true); }
+  readUInt32BE(offset) { return this.#viewAt(offset, 4, 'readUInt32BE').getUint32(offset, false); }
+  readInt32LE(offset) { return this.#viewAt(offset, 4, 'readInt32LE').getInt32(offset, true); }
+  readInt32BE(offset) { return this.#viewAt(offset, 4, 'readInt32BE').getInt32(offset, false); }
+  readBigUInt64LE(offset) { return this.#viewAt(offset, 8, 'readBigUInt64LE').getBigUint64(offset, true); }
+  readBigUInt64BE(offset) { return this.#viewAt(offset, 8, 'readBigUInt64BE').getBigUint64(offset, false); }
+  readBigInt64LE(offset) { return this.#viewAt(offset, 8, 'readBigInt64LE').getBigInt64(offset, true); }
+  readBigInt64BE(offset) { return this.#viewAt(offset, 8, 'readBigInt64BE').getBigInt64(offset, false); }
+
+  /** readUIntLE/readIntLE(offset, byteLength) — node's variable-width forms
+   * (the zstd frame scanner reads 3-byte block headers with readUIntLE). */
+  readUIntLE(offset, byteLength) {
+    if (!Number.isInteger(byteLength) || byteLength < 1 || byteLength > 6) {
+      throw new TypeError(`buffer.readUIntLE: byteLength must be an integer in [1, 6], got ${String(byteLength)}`);
+    }
+    this.#viewAt(offset, byteLength, 'readUIntLE');
+    let value = 0;
+    for (let at = byteLength - 1; at >= 0; at--) value = value * 256 + this[offset + at];
+    return value;
+  }
+
+  readIntLE(offset, byteLength) {
+    const value = this.readUIntLE(offset, byteLength);
+    const signBit = 2 ** (byteLength * 8 - 1);
+    return value >= signBit ? value - signBit * 2 : value;
+  }
+
+  writeUInt8(value, offset) { this.#viewAt(offset, 1, 'writeUInt8').setUint8(offset, value); return offset + 1; }
+  writeInt8(value, offset) { this.#viewAt(offset, 1, 'writeInt8').setInt8(offset, value); return offset + 1; }
+  writeUInt16LE(value, offset) { this.#viewAt(offset, 2, 'writeUInt16LE').setUint16(offset, value, true); return offset + 2; }
+  writeUInt16BE(value, offset) { this.#viewAt(offset, 2, 'writeUInt16BE').setUint16(offset, value, false); return offset + 2; }
+  writeInt16LE(value, offset) { this.#viewAt(offset, 2, 'writeInt16LE').setInt16(offset, value, true); return offset + 2; }
+  writeInt16BE(value, offset) { this.#viewAt(offset, 2, 'writeInt16BE').setInt16(offset, value, false); return offset + 2; }
+  writeUInt32LE(value, offset) { this.#viewAt(offset, 4, 'writeUInt32LE').setUint32(offset, value, true); return offset + 4; }
+  writeUInt32BE(value, offset) { this.#viewAt(offset, 4, 'writeUInt32BE').setUint32(offset, value, false); return offset + 4; }
+  writeInt32LE(value, offset) { this.#viewAt(offset, 4, 'writeInt32LE').setInt32(offset, value, true); return offset + 4; }
+  writeInt32BE(value, offset) { this.#viewAt(offset, 4, 'writeInt32BE').setInt32(offset, value, false); return offset + 4; }
+  writeBigUInt64LE(value, offset) { this.#viewAt(offset, 8, 'writeBigUInt64LE').setBigUint64(offset, value, true); return offset + 8; }
+  writeBigUInt64BE(value, offset) { this.#viewAt(offset, 8, 'writeBigUInt64BE').setBigUint64(offset, value, false); return offset + 8; }
+  writeBigInt64LE(value, offset) { this.#viewAt(offset, 8, 'writeBigInt64LE').setBigInt64(offset, value, true); return offset + 8; }
+  writeBigInt64BE(value, offset) { this.#viewAt(offset, 8, 'writeBigInt64BE').setBigInt64(offset, value, false); return offset + 8; }
+
+  writeUIntLE(value, offset, byteLength) {
+    if (!Number.isInteger(byteLength) || byteLength < 1 || byteLength > 6) {
+      throw new TypeError(`buffer.writeUIntLE: byteLength must be an integer in [1, 6], got ${String(byteLength)}`);
+    }
+    this.#viewAt(offset, byteLength, 'writeUIntLE');
+    let v = typeof value === 'bigint' ? value : BigInt(Math.floor(value));
+    for (let at = 0; at < byteLength; at++) {
+      this[offset + at] = Number(v & 0xffn);
+      v >>= 8n;
+    }
+    return offset + byteLength;
+  }
+
+  writeIntLE(value, offset, byteLength) {
+    return this.writeUIntLE(value < 0 ? value + 2 ** (byteLength * 8) : value, offset, byteLength);
+  }
 }
 
 /** The module face: node:buffer exports the Buffer binding itself (the
