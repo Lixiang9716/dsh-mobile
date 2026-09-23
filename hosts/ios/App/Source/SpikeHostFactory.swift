@@ -17,13 +17,22 @@ func dsh_spike_new_declaring(
     note: ((String) -> Void)? = nil
 ) -> OpaquePointer? {
     guard let host = dsh_spike_new(bundleRoot, &sink) else { return nil }
+    // The launch-env snapshot is the host's declaration channel to the JS
+    // spine. Two kinds of fact ride it: the guest userland (DSH_ISH_ROOTFS,
+    // below) and the E2E runner's DSH_-prefixed process environment — the
+    // parity drive's mock endpoint (DSH_MOCK_LLM_URL/KEY) arrives that way,
+    // injected through simctl's SIMCTL_CHILD_* inheritance (the simulator
+    // shares the host's loopback, so the node-side mock is reachable).
+    var env: [String: String] = ProcessInfo.processInfo.environment
+        .filter { $0.key.hasPrefix("DSH_") }
     if let guestRoot = IshPrimitive.declaredGuestRoot() {
-        let env = ["DSH_ISH_ROOTFS": guestRoot]
-        if let data = try? JSONSerialization.data(withJSONObject: env),
-           let json = String(data: data, encoding: .utf8) {
-            dsh_spike_set_launch_env(host, json)
-            note?(launchEnvRecord(guestRoot))
-        }
+        env["DSH_ISH_ROOTFS"] = guestRoot
+        note?(launchEnvRecord(guestRoot))
+    }
+    if !env.isEmpty,
+       let data = try? JSONSerialization.data(withJSONObject: env),
+       let json = String(data: data, encoding: .utf8) {
+        dsh_spike_set_launch_env(host, json)
     }
     return host
 }

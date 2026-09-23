@@ -1,0 +1,9 @@
+MOCK_BASE_URL=http://127.0.0.1:52074
+{"type":"request","attempt":1,"scriptBehavior":"success","behavior":"success","path":"/chat/completions"}
+{"type":"result","attempt":1,"scriptBehavior":"success","behavior":"success","outcome":"completed","chunksSent":6}
+{"type":"request","attempt":2,"scriptBehavior":"tool_call_success","behavior":"tool_call_success","path":"/chat/completions"}
+{"type":"result","attempt":2,"scriptBehavior":"tool_call_success","behavior":"tool_call_success","outcome":"completed","chunksSent":4}
+{"type":"request","attempt":3,"scriptBehavior":"success","behavior":"success","path":"/chat/completions"}
+{"type":"result","attempt":3,"scriptBehavior":"success","behavior":"success","outcome":"completed","chunksSent":6}
+{"type":"request","attempt":4,"scriptBehavior":"auth_error","behavior":"auth_error","path":"/chat/completions"}
+{"type":"result","attempt":4,"scriptBehavior":"auth_error","behavior":"auth_error","outcome":"completed","chunksSent":0}

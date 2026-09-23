@@ -144,6 +144,17 @@ final class FSPrimitives {
 
     /// fsScope.resolve — restores a persisted ref into a fresh user handle.
     private func resolveRef(_ call: GatewayCall, _ done: @escaping GatewayDone) {
+        // Reserved-scope URIs (`scope://app/`) resolve to the scope's root
+        // the same way the CLI host answers them — the profile container IS
+        // the scope root, and the parity drive (scenario upstream.parity,
+        // the launch-env host-facts branch) pins the session cwd there. A
+        // user-granted scope still resolves through its bookmark below.
+        if let ref = call.string("ref"), ref.hasPrefix("scope://"), ref.hasSuffix("/") {
+            let name = String(ref.dropFirst("scope://".count).dropLast())
+            if let (root, _) = rootURL(for: name) {
+                return done(.success(["scope": name, "path": root.path]))
+            }
+        }
         guard let ref = call.string("ref"), ref.hasPrefix(Self.bookmarkPrefix),
               let data = Data(base64Encoded: String(ref.dropFirst(Self.bookmarkPrefix.count)))
         else {

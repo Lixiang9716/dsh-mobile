@@ -1,0 +1,59 @@
+{
+  "scenario": "upstream.parity",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "llm/runtime"
+    },
+    {
+      "event": "upstream/profile"
+    },
+    {
+      "event": "upstream/services"
+    },
+    {
+      "event": "session/created"
+    },
+    {
+      "event": "agent/created"
+    },
+    {
+      "event": "turn/completed",
+      "repeat": true
+    },
+    {
+      "event": "parity/event",
+      "repeat": true
+    },
+    {
+      "event": "parity/projected",
+      "match": {
+        "count": 25
+      }
+    },
+    {
+      "event": "projection/turn-boundary",
+      "match": {
+        "lastTurn": 2
+      }
+    },
+    {
+      "event": "projection/todos"
+    },
+    {
+      "event": "llm/transport/error",
+      "match": {
+        "kind": "error",
+        "code": "AUTH"
+      }
+    },
+    {
+      "event": "upstream/completed",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

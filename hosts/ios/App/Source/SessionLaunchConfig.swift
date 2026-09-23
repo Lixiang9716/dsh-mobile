@@ -30,10 +30,18 @@ enum SessionLaunchConfig {
     /// OpenAI-compatible backend; credentials ride fs scope "app", staged by
     /// the E2E runner before launch). Carrier-side evidence flips to scenario
     /// `llm.live-stream.carrier`.
+    ///
+    /// Upstream-parity drive: `-dsh-scenario upstream-parity` runs the
+    /// `upstream.parity` port leg — the vendored upstream spine over scripted
+    /// turns, projected record-for-record against the committed Node golden.
+    /// The mock endpoint rides the launch environment (DSH_MOCK_LLM_URL /
+    /// DSH_MOCK_LLM_KEY, injected by the runner via SIMCTL_CHILD_*; the
+    /// simulator shares the host's loopback, so the node-side mock is
+    /// reachable at 127.0.0.1).
     static var scenarioName: String? {
         guard let name = arg(after: "-dsh-scenario") else { return nil }
         switch name {
-        case "llm-live-stream": return name
+        case "llm-live-stream", "upstream-parity": return name
         default: fatalError("unknown -dsh-scenario: \(name)")
         }
     }

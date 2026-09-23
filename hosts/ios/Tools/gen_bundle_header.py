@@ -38,6 +38,11 @@ RESOURCES = [
     ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
     # M3 completion: on-device fetch-install scenario + its new modules
     ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
+    # The upstream-parity differential's port leg (scenario + the SHARED
+    # projector both legs normalize through; the spine itself is embedded by
+    # the TREES below — this is the drive that proves it matches Node).
+    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
+    ("scenario_parity_projector_js", SPIKE / "scenario" / "parity-projector.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
