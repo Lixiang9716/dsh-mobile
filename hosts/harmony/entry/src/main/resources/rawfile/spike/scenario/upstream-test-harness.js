@@ -22,11 +22,15 @@ const scalarsEqual = (a, b) => {
 /** Deep structural equality (the expect().toEqual core), depth-guarded. */
 const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
+  if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
   if (scalarsEqual(a, b)) return true;
   if (a === null || b === null || typeof a !== 'object') return false;
   if (seen.has(a)) return true; // cycle: compared by identity once already
   seen.add(a);
   if (Array.isArray(a) !== Array.isArray(b)) return false;
+  return containersEqual(a, b, seen, depth);
+};
+const containersEqual = (a, b, seen, depth) => {
   if (Array.isArray(a)) {
     return a.length === b.length && a.every((v, i) => deepEqual(v, b[i], seen, depth + 1));
   }
@@ -75,6 +79,7 @@ const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   const kb = Object.keys(b);
   if (ka.length !== kb.length) return false;
   return ka.every((k) => Object.prototype.hasOwnProperty.call(b, k) && deepEqual(a[k], b[k], seen, depth + 1));
+  return true;
 };
 
 /** Subset-matching for toEqual/toMatchObject against asymmetric matchers. */

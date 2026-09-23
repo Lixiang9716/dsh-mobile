@@ -72,11 +72,10 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
     throw new TypeError(`setTimeout: delay must be a non-negative integer (got ${String(delay)})`);
   }
   const handle = nextHandle++;
-  const entry = { timerId: null, cancelled: false, fn, args,
-                   // Cross-timer ALS propagation (the async-hooks shim
-                   // predates the seam): the context captured AT ARM TIME
-                   // wraps the fire — Node's timer semantics.
-                   captured: captureContext() };
+  // Cross-timer ALS propagation (the async-hooks shim predates the seam):
+  // the context captured AT ARM TIME wraps the fire — Node's timer semantics.
+  const captured = captureContext();
+  const entry = { timerId: null, cancelled: false, fn, args, captured };
   pending.set(handle, entry);
   armTimer(delayMs, handle, entry);
   return handle;
