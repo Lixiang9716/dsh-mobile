@@ -1,0 +1,24 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "W-LIVE composer live-write: the official web app's composer drives a real scripted write against the workspace through the full upstream spine, one-to-one against the composer-live-write manifest",
+  "launchConfiguration": "-dsh-mode session-live; vendored official dist + web-boot plugin files staged",
+  "tree": "origin/main 4dd14f23690c (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "composer.live-write",
+      "checker": "test/e2e/scenarios/composer-live-write.json",
+      "events": 46,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-live-write.sh",
+  "screens": [
+    "screens/01-write-boot-screen.png",
+    "screens/02-composer-typed.png",
+    "screens/03-reply-rendered.png"
+  ],
+  "timestamp": "2026-09-24T04:46:27+08:00",
+  "exitCode": 0
+}

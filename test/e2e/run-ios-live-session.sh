@@ -129,57 +129,8 @@ else
 fi
 
 # ---- receipt (reachable ONLY on a real green run) ---------------------------
-# Acceptance-bar clause 3 (docs/e2e-matrix.md): every evidence dir carries
-# receipt.json — and this dir carries a verdict*.json, so the matrix sweep
-# demands the full deliverable set (measured 2026-09-24: the refreshed dir
-# failed the pre-push e2e-matrix gate on the missing receipt). Machine-authored
-# HERE, after the checker above passed, so a receipt can never exist without
-# this real green run. Format mirrors run-ios.sh's.
-RECEIPT="$ART/receipt.json"
-TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
-ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
-python3 - "$ART" "$UDID" "$TREE_LINE" "$ENGINE_PIN" <<'PY'
-import json, os, subprocess, sys
-from datetime import datetime
-art, udid, tree, engine_pin = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
-out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
-                     capture_output=True, text=True, check=True).stdout
-devs = json.loads(out)["devices"]
-def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
-    parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
-    return parts[0] + " " + ".".join(parts[1:])
-host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
-            for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
-v = json.load(open(os.path.join(art, "verdict-session-live-read.json")))
-screens = sorted("screens/" + f
-                 for f in os.listdir(os.path.join(art, "screens"))
-                 if f.endswith(".png"))
-receipt = {
-    "host": "iOS " + host,
-    "engine": "quickjs-ng",
-    "engineVersion": engine_pin,
-    "phase": ("W-SESS session-live: the FULL upstream agent spine boots "
-              "on-device, claims /api/session.list + the mux session/journal "
-              "streams, and answers the official web app with real data — one "
-              "scripted-llm turn before the page loads and one streamed live "
-              "into the attached page, one-to-one against the "
-              "session-live-read manifest"),
-    "launchConfiguration": ("-dsh-mode session-live; vendored official dist + "
-                            "web-boot plugin files staged"),
-    "tree": tree,
-    "scenarios": [{
-        "id": v["scenario"],
-        "checker": "test/e2e/scenarios/session-live-read.json",
-        "events": v["logged"],
-        "result": "pass" if v["pass"] else "fail",
-    }],
-    "runner": "test/e2e/run-ios-live-session.sh",
-    "screens": screens,
-    "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
-    "exitCode": 0,
-}
-with open(os.path.join(art, "receipt.json"), "w") as f:
-    json.dump(receipt, f, indent=2)
-    f.write("\n")
-print("session-live receipt written")
-PY
+# Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
+sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-live-session.sh" \
+  "W-SESS session-live: the FULL upstream agent spine boots on-device, claims /api/session.list + the mux session/journal streams, and answers the official web app with real data — one scripted-llm turn before the page loads and one streamed live into the attached page, one-to-one against the session-live-read manifest" \
+  "-dsh-mode session-live; vendored official dist + web-boot plugin files staged" \
+  session-live-read
