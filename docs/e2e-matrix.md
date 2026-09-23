@@ -127,7 +127,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | Dir | Platform | Verdicts (`expected/logged`) | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
-| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (#157) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg; the macOS CLI leg is parked for handoff) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |

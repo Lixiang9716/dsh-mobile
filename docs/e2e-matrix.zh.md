@@ -114,7 +114,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | 目录 | 平台 | Verdict（`expected/logged`） | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 3） | 4 |
-| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（#157） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（模拟器腿；macOS CLI 腿停靠待接手） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |

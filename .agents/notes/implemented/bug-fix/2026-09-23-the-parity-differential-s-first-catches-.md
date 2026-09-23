@@ -28,9 +28,14 @@ adapter's 401 diagnosis degraded from `AUTH` to `UNKNOWN` (a contract §4
 dent: the body must be readable on any settled response). With the three
 fixed, the emulator leg is green end to end: the manifest 13/13 in order,
 the differential 25/25 records identical to the committed Node golden, and
-the scenario verdict ALL PASS. CI carries the legs (the Android emulator
-step and the macOS CLI step in the dev workflows), and the e2e-matrix gains
-the `upstream-parity` evidence row.
+the scenario verdict ALL PASS. CI carries the Android emulator step in
+dev-android; the macOS CLI step is wired but PARKED (continue-on-error)
+for a handoff — the vendored engine builds there now (an `_np`
+compile-time shim in our host/ish/CMakeLists.txt; the vendored source
+stays verbatim) but the CLI port leg's SSE bodies end after the first
+chunk (http.end with no [DONE] → STREAM_CLOSED), suspected in the CLI
+--http loopback backend's body pump. The e2e-matrix gains the
+`upstream-parity` evidence row for the green emulator leg.
 
 ## Alternatives considered
 
