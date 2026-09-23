@@ -47,6 +47,9 @@ const containersEqual = (a, b, seen, depth) => {
     }
     return true;
   }
+  return keyedEqual(a, b, seen, depth);
+};
+const keyedEqual = (a, b, seen, depth) => {
   if (a instanceof Set || b instanceof Set) {
     /* Set equality is MEMBERSHIP, not insertion order (measured 2026-09-23:
      * agent-initiator asserts new Set([...signals]).toEqual(new Set([s])) —
