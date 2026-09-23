@@ -24,6 +24,24 @@ object MockLlmRoute {
     private const val SUCCESS_TEXT = "Hello from upstream"
     private const val CHUNK_SIZE = 5
 
+    /** The parity script mirrors the node-side drive exactly
+     * (ci/run-upstream-parity.sh): success, tool_call_success (todo_write
+     * with schema-valid arguments, split mid-arguments like the vendored
+     * mock), closing success, then auth_error forever. */
+    private const val PARITY_TOOL_NAME = "todo_write"
+    private const val PARITY_TOOL_ARGUMENTS =
+        """{"todos":[{"content":"Track the parity check","status":"in_progress"}]}"""
+
+    @Volatile private var parity = false
+    private val parityCounter = java.util.concurrent.atomic.AtomicInteger()
+
+    /** Arm the parity script (the upstream-parity drive does; every other
+     * drive keeps the unconditional success stream). */
+    fun enableParityScript() {
+        parity = true
+        parityCounter.set(0)
+    }
+
     /** Carrier thread: one scripted chat-completions response, then close. */
     fun serve(request: CarrierRequest, out: OutputStream) {
         if (request.method != "POST") {
@@ -34,66 +52,62 @@ object MockLlmRoute {
             mockAuthError(out)
             return
         }
+        val body = if (parity) {
+            when (parityCounter.incrementAndGet()) {
+                1, 3 -> successStream()
+                2 -> toolCallStream()
+                else -> return mockAuthError(out)
+            }
+        } else {
+            successStream()
+        }
         // One Content-Length response: the transport consumes the SSE bytes
         // from the plain body (no chunked framing needed on loopback).
         CarrierHTTP.respond(
             out, 200, "text/event-stream; charset=utf-8",
-            successStream().toByteArray(Charsets.UTF_8),
+            body.toByteArray(Charsets.UTF_8),
         )
     }
 
-    /** The vendored mock's fixed 401 leg: JSON error body, provider shape. */
-    private fun mockAuthError(out: OutputStream) {
-        val body = JSONObject().put(
-            "error",
-            JSONObject()
-                .put("message", "mock authentication failed")
-                .put("type", "mock_error")
-                .put("code", "invalid_api_key"),
-        )
-        CarrierHTTP.respond(
-            out, 401, "application/json",
-            body.toString().toByteArray(Charsets.UTF_8),
-        )
+    /** The vendored mock's `tool_call_success` behavior, wire-for-wire: the
+     * tool-call identity on the first delta, the arguments split at the
+     * midpoint across two deltas, terminal chunk finish_reason=tool_calls
+     * with usage, then [DONE]. */
+    private fun toolCallStream(): String {
+        val midpoint = maxOf(1, PARITY_TOOL_ARGUMENTS.length / 2)
+        val firstFunction = callFunction(PARITY_TOOL_NAME, PARITY_TOOL_ARGUMENTS.substring(0, midpoint))
+        val firstCall = toolCall(id = "mock-call-1", function = firstFunction)
+        val first = choice(deltaToolCalls(firstCall), JSONObject.NULL)
+        val secondFunction = callFunction(null, PARITY_TOOL_ARGUMENTS.substring(midpoint))
+        val secondCall = toolCall(id = null, function = secondFunction)
+        val second = choice(deltaToolCalls(secondCall), JSONObject.NULL)
+        val terminal = choice(JSONObject().put("content", ""), "tool_calls")
+            .put("usage", JSONObject().put("prompt_tokens", 3).put("completion_tokens", 2))
+        return sse(first) + sse(second) + sse(terminal) + "data: [DONE]\n\n"
     }
 
-    /** The success script: 5-char content deltas, then the terminal chunk
-     * with finish_reason + usage, then [DONE]. */
-    private fun successStream(): String {
-        val body = StringBuilder()
-        var at = 0
-        while (at < SUCCESS_TEXT.length) {
-            val end = minOf(at + CHUNK_SIZE, SUCCESS_TEXT.length)
-            body.append(sse(deltaChunk(SUCCESS_TEXT.substring(at, end))))
-            at = end
+    /** One wire `function` object; the name rides only the first delta. */
+    private fun callFunction(name: String?, arguments: String): JSONObject {
+        val function = JSONObject().put("arguments", arguments)
+        if (name != null) function.put("name", name)
+        return function
+    }
+
+    /** One wire `tool_calls[0]` entry; the identity rides only the first delta. */
+    private fun toolCall(id: String?, function: JSONObject): JSONObject {
+        val call = JSONObject().put("index", 0)
+        if (id != null) {
+            call.put("id", id)
+            call.put("type", "function")
         }
-        body.append(sse(terminalChunk()))
-        body.append("data: [DONE]\n\n")
-        return body.toString()
+        return call.put("function", function)
     }
 
-    /** One streaming choice: `delta.content` = [text], no finish reason. */
-    private fun deltaChunk(text: String): JSONObject = JSONObject().put(
-        "choices",
-        JSONArray().put(
-            JSONObject()
-                .put("index", 0)
-                .put("delta", JSONObject().put("content", text))
-                .put("finish_reason", JSONObject.NULL),
-        ),
-    )
+    private fun deltaToolCalls(call: JSONObject): JSONObject =
+        JSONObject().put("tool_calls", JSONArray().put(call))
 
-    /** The terminal choice: empty delta, finish_reason stop, fixed usage. */
-    private fun terminalChunk(): JSONObject {
-        val choice = JSONObject()
-            .put("index", 0)
-            .put("delta", JSONObject().put("content", ""))
-            .put("finish_reason", "stop")
-        val usage = JSONObject()
-            .put("prompt_tokens", 3)
-            .put("completion_tokens", SUCCESS_TEXT.length)
-        return JSONObject().put("choices", JSONArray().put(choice)).put("usage", usage)
-    }
+    private fun choice(delta: JSONObject, finishReason: Any): JSONObject =
+        JSONObject().put("index", 0).put("delta", delta).put("finish_reason", finishReason)
 
     /** One `data: <json>\n\n` SSE record (compact, provider shape). */
     private fun sse(payload: JSONObject): String = "data: $payload\n\n"

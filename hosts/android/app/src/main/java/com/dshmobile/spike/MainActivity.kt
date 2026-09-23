@@ -45,7 +45,9 @@ class MainActivity : Activity() {
             textSize = 16f
             text = "dsh spike host: booting quickjs-ng..."
         }
-        if (intent.getBooleanExtra(EXTRA_LLM, false)) {
+        if (intent.getBooleanExtra(EXTRA_PARITY, false)) {
+            startM4(savedInstanceState, parity = true)
+        } else if (intent.getBooleanExtra(EXTRA_LLM, false)) {
             startM4(savedInstanceState, llm = true)
         } else if (intent.getBooleanExtra(EXTRA_M4, false)) {
             startM4(savedInstanceState, llm = false)
@@ -86,7 +88,7 @@ class MainActivity : Activity() {
         spikeHost?.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun startM4(savedInstanceState: Bundle?, llm: Boolean) {
+    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -116,7 +118,7 @@ class MainActivity : Activity() {
         SpikeRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = startHost(llm, view)
+                spikeHost = startHost(llm, view, parity)
             }
         }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
@@ -124,12 +126,12 @@ class MainActivity : Activity() {
 
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream) or
      * the M4 binding — with the same carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView): SpikeHostM4 {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false): SpikeHostM4 {
         val onVerdict = { verdict: String -> verdictView.text = verdict }
-        return if (llm) {
-            SpikeHostM4.startLlm(this, view, onVerdict)
-        } else {
-            SpikeHostM4.start(this, view, onVerdict)
+        return when {
+            parity -> SpikeHostM4.startParity(this, view, onVerdict)
+            llm -> SpikeHostM4.startLlm(this, view, onVerdict)
+            else -> SpikeHostM4.start(this, view, onVerdict)
         }
     }
 
@@ -139,6 +141,7 @@ class MainActivity : Activity() {
         const val EXTRA_WEB = "dsh.web"
         const val EXTRA_SESSION = "dsh.session"
         const val EXTRA_WRITE = "dsh.write"
+        const val EXTRA_PARITY = "dsh.parity"
     }
 
     /**
@@ -206,7 +209,7 @@ class MainActivity : Activity() {
      * E2E drive is refused LOUD (rule 5): this binary has no drives.
      */
     private fun bootRelease() {
-        val requested = listOf(EXTRA_M4, EXTRA_LLM, EXTRA_WEB, EXTRA_SESSION, EXTRA_WRITE)
+        val requested = listOf(EXTRA_M4, EXTRA_LLM, EXTRA_WEB, EXTRA_SESSION, EXTRA_WRITE, EXTRA_PARITY)
             .firstOrNull { intent.getBooleanExtra(it, false) }
         if (requested != null) {
             error(
