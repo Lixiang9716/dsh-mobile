@@ -1,0 +1,8 @@
+{
+  "scenario": "gateway.audit",
+  "pass": true,
+  "expected": 16,
+  "logged": 16,
+  "failures": [],
+  "parseErrors": []
+}
