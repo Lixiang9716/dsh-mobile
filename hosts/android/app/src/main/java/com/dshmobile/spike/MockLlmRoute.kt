@@ -77,14 +77,19 @@ object MockLlmRoute {
         val midpoint = maxOf(1, PARITY_TOOL_ARGUMENTS.length / 2)
         val firstFunction = callFunction(PARITY_TOOL_NAME, PARITY_TOOL_ARGUMENTS.substring(0, midpoint))
         val firstCall = toolCall(id = "mock-call-1", function = firstFunction)
-        val first = choice(deltaToolCalls(firstCall), JSONObject.NULL)
+        val first = choices(choice(deltaToolCalls(firstCall), JSONObject.NULL))
         val secondFunction = callFunction(null, PARITY_TOOL_ARGUMENTS.substring(midpoint))
         val secondCall = toolCall(id = null, function = secondFunction)
-        val second = choice(deltaToolCalls(secondCall), JSONObject.NULL)
-        val terminal = choice(JSONObject().put("content", ""), "tool_calls")
+        val second = choices(choice(deltaToolCalls(secondCall), JSONObject.NULL))
+        val terminalChoice = choice(JSONObject().put("content", ""), "tool_calls")
+        val terminal = choices(terminalChoice)
             .put("usage", JSONObject().put("prompt_tokens", 3).put("completion_tokens", 2))
         return sse(first) + sse(second) + sse(terminal) + "data: [DONE]\n\n"
     }
+
+    /** The `choices` array wrapper every wire chunk carries (one entry). */
+    private fun choices(choice: JSONObject): JSONObject =
+        JSONObject().put("choices", JSONArray().put(choice))
 
     /** One wire `function` object; the name rides only the first delta. */
     private fun callFunction(name: String?, arguments: String): JSONObject {

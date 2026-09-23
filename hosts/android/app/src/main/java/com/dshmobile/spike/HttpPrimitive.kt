@@ -128,10 +128,16 @@ class HttpPrimitive {
         return headers
     }
 
-    /** Streams the body as http.body/http.end events (post-settle). */
+    /** Streams the body as http.body/http.end events (post-settle). Error
+     * statuses carry their body on the ERROR stream — HttpURLConnection
+     * throws on `inputStream` for >=400, which would drop provider error
+     * bodies entirely (the upstream LLM adapter diagnoses from them:
+     * contract §4, the body is readable on any settled response). */
     private fun streamBody(callId: Int, conn: HttpURLConnection) {
         try {
-            pumpChunks(callId, conn.inputStream)
+            val status = conn.responseCode
+            val source = if (status >= 400) conn.errorStream else conn.inputStream
+            if (source != null) pumpChunks(callId, source)
             emit(JSONObject().put("event", "http.end").put("callId", callId))
         } catch (e: Exception) {
             emit(streamError(callId, e))

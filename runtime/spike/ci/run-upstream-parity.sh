@@ -116,10 +116,20 @@ fi
 #    binary; built here on macOS, never on Linux — the vendored iSH-arm64
 #    engine does not assemble under x86-64).
 [ -x build/dsh-spike-cli ] || sh host/build.sh
+set +e
 ./build/dsh-spike-cli . scenario/upstream-parity.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
-    --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-parity.txt
+    --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-parity.txt 2>&1
+CLI_EXIT=$?
+set -e
+if [ "$CLI_EXIT" -ne 0 ]; then
+    echo "::error::parity port leg (CLI) exited $CLI_EXIT — last 200 stream lines:" >&2
+    tail -200 logs-parity.txt >&2 || true
+    echo "::error::mock server telemetry:" >&2
+    tail -20 "$MOCK_LOG" >&2 || true
+    exit 1
+fi
 cp logs-parity.txt "$ART_DIR/logs.txt"
 cp "$MOCK_LOG" "$ART_DIR/mock-server-stdout.txt"
 
