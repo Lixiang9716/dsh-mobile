@@ -205,6 +205,9 @@ jobs:
       - name: Run boot.verification + gateway.bridge-smoke + session.mock-llm on the emulator and verify (logs only)
         run: bash hosts/android/ci/run-spike-e2e.sh
 
+      - name: Run the upstream parity differential on the emulator (vendored spine vs the committed Node golden)
+        run: sh hosts/android/ci/run-upstream-parity.sh
+
       - name: Upload E2E evidence
         if: always()
         uses: actions/upload-artifact@v6

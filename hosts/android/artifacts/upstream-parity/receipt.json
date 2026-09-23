@@ -1,0 +1,12 @@
+{
+  "host": "android-emulator (15)",
+  "engine": "quickjs-ng (the on-device C host)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim; the SAME closure the Node reference ran)",
+  "scenario": "upstream.parity",
+  "proves": [
+    "the vendored upstream spine produces the SAME projected session log on the Android emulator as under plain Node: the carrier's scripted mock route (MockLlmRoute, parity script) replayed the same wire, the real ToolRuntime dispatched the todo_write round, and the comparator demanded record-for-record identity against the committed golden"
+  ],
+  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "events": 38,
+  "exitCode": 0
+}

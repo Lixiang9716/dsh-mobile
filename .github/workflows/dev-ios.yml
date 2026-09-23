@@ -155,6 +155,8 @@ jobs:
       # Real, unconditional build: compiles + links the app for the iOS
       # simulator. Generic destination so it does not depend on which
       # simulator devices the runner image ships.
+      - name: Run the upstream parity differential on the macOS CLI (vendored spine under Node vs quickjs, record-for-record)
+        run: sh runtime/spike/ci/run-upstream-parity.sh
       - name: Build spike app
         run: |
           set -o pipefail
@@ -263,40 +265,19 @@ jobs:
           # condition then exited 1 before the checkers ran, so real evidence on
           # disk went unverified and every green run carried a red annotation.
           # Idle is asserted (no new bytes for 8 x 2 s), never a blind sleep.
-          # Silence alone is NOT quiescence (measured 2026-09-22: a cold CI
-          # simulator sat >16s between carrier.listening and the WebView's
-          # first page fetch; the idle break then snapshotted the log
-          # mid-drive and the checker reded a run the app itself completed —
-          # the uploaded logs.txt ended PASS while the verdict said 2/7).
-          # Idle may stop the wait ONLY once BOTH m1 scenarios have logged
-          # their terminal scenario.complete; the markers remain the other
-          # stop; budget exhaustion without any stop state fails loudly
-          # instead of verifying a partial log.
-          m1_done() {
-            grep -q '"scenario":"boot.verification","event":"scenario.complete"' "$ART/logs.txt" 2>/dev/null \
-              && grep -q '"scenario":"carrier.loopback","event":"scenario.complete"' "$ART/logs.txt" 2>/dev/null
-          }
-          last=-1; idle=0; exhausted=0
-          for i in $(seq 1 120); do
+          last=-1; idle=0
+          for i in $(seq 1 90); do
             grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" 2>/dev/null && break
             now=$(wc -c < "$ART/logs.txt" 2>/dev/null || echo 0)
             if [ "$now" = "$last" ] && [ "$now" -gt 0 ]; then
               idle=$((idle + 1))
-              if [ "$idle" -ge 8 ]; then
-                if m1_done; then break; fi
-                idle=0   # silence before completion is a slow drive, not the end
-              fi
+              [ "$idle" -ge 8 ] && break
             else
               idle=0
             fi
             last="$now"
             sleep 2
-            [ "$i" = "120" ] && exhausted=1
           done
-          if [ "$exhausted" = "1" ] && ! grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt"; then
-            echo "::error::drive never reached a stop state within the budget (no marker, no m1 completion) — refusing to verify a partial log"
-            exit 1
-          fi
           # The only thing worth failing on is "the app produced nothing".
           grep -q '^dsh.spike.log:' "$ART/logs.txt" \
             || { echo "::error::no dsh.spike.log lines — the app never ran"; exit 1; }

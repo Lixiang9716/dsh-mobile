@@ -63,7 +63,7 @@ const PROJECTORS = {
     provider: d.message?.source?.provider ?? null,
     model: d.message?.source?.model ?? null,
   }),
-  'assistant/attempt': (d) => ({ code: d.failure?.code ?? d.code ?? null }),
+  'assistant/attempt': (d) => ({ kind: d.stream?.finish?.kind ?? null, code: d.stream?.finish?.failure?.code ?? d.failure?.code ?? d.code ?? null }),
   'tool/call': (d) => ({ tool: d.tool ?? d.name ?? null, arguments: d.arguments ?? null }),
   'tool/result': (d) => messageFields(d.message ?? {}),
   'todo/write': (d) => ({ todos: d.todos ?? null }),

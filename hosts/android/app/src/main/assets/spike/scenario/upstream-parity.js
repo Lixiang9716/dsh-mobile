@@ -159,18 +159,25 @@ const parityPhase = (ctx, session) => {
   emit('parity/projected', { count: projected.length });
 
   const types = projected.map((record) => record.type);
+  const failedAttempt = session.snapshotEvents().find((record) => record.type === 'assistant/attempt');
+  if (failedAttempt !== undefined) {
+    emit('parity/attempt/debug', { data: failedAttempt.data ?? null });
+  }
   demand(types.includes('tool/call'), 'no tool/call in the session log — the tool round did not run');
   const toolCall = projected.find((record) => record.type === 'tool/call');
   demand(toolCall.tool === 'todo_write', `tool/call names "${toolCall.tool}", expected todo_write`);
   demand(types.includes('tool/result'), 'no tool/result in the session log');
 
+  // Three assistant messages: turn 1's answer, turn 2's tool-call message
+  // (text-less by construction — its content is the tool-call block), and
+  // turn 2's closing answer after the tool result fed the next step.
   const assistantTexts = projected
     .filter((record) => record.type === 'assistant/message')
     .map((record) => record.blocks.filter((b) => b.type === 'text').map((b) => b.text).join(''));
-  demand(assistantTexts.length === 2, `expected 2 assistant messages, got ${assistantTexts.length}`);
-  for (const [i, text] of assistantTexts.entries()) {
-    demand(text === EXPECTED_TEXT, `assistant message ${i + 1} text is "${text}"`);
-  }
+  demand(assistantTexts.length === 3, `expected 3 assistant messages, got ${assistantTexts.length}`);
+  demand(assistantTexts[0] === EXPECTED_TEXT, `assistant message 1 text is "${assistantTexts[0]}"`);
+  demand(assistantTexts[1] === '', `assistant message 2 (the tool-call message) carries text "${assistantTexts[1]}"`);
+  demand(assistantTexts[2] === EXPECTED_TEXT, `assistant message 3 text is "${assistantTexts[2]}"`);
 
   const turnBoundary = ctx.sessionProjections.stateOf(session, 'turnBoundary');
   demand(turnBoundary !== undefined && turnBoundary.lastTurn === 2, `turnBoundary.lastTurn is ${turnBoundary?.lastTurn}`);

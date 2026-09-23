@@ -11,13 +11,13 @@
 > 叠加上鸿蒙 `m2.llm` 真实 LLM 分支 #79——其目录
 > `hosts/harmony/artifacts/m5-m2-llm/` 被**有意**以
 > **FAIL** verdict 提交：会话中途 coding-plan 配额耗尽，故传输往返已证明、
-> 而被服务的轮次明确不予声明（缺口 8/9）；再叠加鸿蒙宿主 v2 原语 #76
+> 而被服务的轮次明确不予声明（缺口 8/9）；再叠加 M5 v2 原语 #76
 > （`m5-primitives`，descriptor 9/0，`m5.host-binding` 27/27）、
 > 真实 LLM 流式分支 #74（`macos-cli-m2-llm`，以及 iOS 与 Android 的
 > `m2-llm`）、android 写入表面 #72（`android-write-live`）、
 > 鸿蒙 composer 写入路径 #70（第六个 D9 目录 `d9-write-live`，并新增
 > `b-harmony.write.live` scenario；`m2-gateway` 行由 2026-09-21 的
-> 有界的 gateway-receipt 尝试刷新并闭合其 receipt 缺口，再叠加 b3 的 receipt 缺口收口）；
+> W-GR 有界尝试刷新并闭合其 receipt 缺口，再叠加 W-RECEIPT 的 b3 收口）；
 > 以及更早的五个 D9 目录 `android-upstream` / `d9-official-web` /
 > `b4-write-live` / `android-session-live` / `d9-session-live`，
 > 它们随 #63/#64/#65/#66/#67 进入清单；总量按本树重算）
@@ -114,6 +114,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | 目录 | 平台 | Verdict（`expected/logged`） | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
 | `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 3） | 4 |
+| `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（#157） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
@@ -269,7 +270,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
    设备网络栈并由真实服务器应答——后端回 429 本身就是证据），以及该平台
    强制的完整凭据握手（运行时写入 0666 占位 → runner 覆写 → 应用导入并
    校验 → 如实上报封印结果 → 运行结束后删除），且对两条原始流做 key 泄漏
-   审计均为干净。被服务的轮次明确不予声明——README.md 的鸿蒙宿主行在两种语言
+   审计均为干净。被服务的轮次明确不予声明——README.md 的 M5 行在两种语言
    里都这么写。`receipt.json` 记录 `status: blocked-on-quota` 与
    `exitCode: 1`。**收口（归 harmony 工作流所有）：** 配额恢复后执行
    `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh`——无需改代码；它必须
@@ -364,7 +365,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
   manifest 重新校验。检查器报告 `drift: true`，但不因此失败。
 - **此前列为「进行中」的三个目录均已尘埃落定。**
   `runtime/spike/artifacts/macos-cli-m2-llm/` 随 #74 落地，现为绿色表行
-  （scripted-SSE CLI 分支，`m2.llm` 19/19）；鸿蒙宿主的收尾证据则以
+  （scripted-SSE CLI 分支，`m2.llm` 19/19）；M5 的收尾证据则以
   `hosts/harmony/artifacts/m5-primitives/`（#76，descriptor 9/0）与
   `hosts/harmony/artifacts/m5-m2-llm/`（#79，配额阻塞——缺口 8/9）落地。
   `hosts/android/artifacts/m3-android-install/` 与

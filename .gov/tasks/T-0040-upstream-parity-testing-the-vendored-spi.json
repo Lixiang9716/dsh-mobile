@@ -11,8 +11,8 @@
   "checklist": [
     "[x] build the shared parity projector and the Node reference leg composing the same vendored spine under plain Node",
     "[x] build the quickjs port leg scenario driving the same scripted turns incl. a tool-call round",
-    "wire the parity runner + comparator + scenario manifest, green on the CLI leg (macOS CI) and the emulator leg",
-    "land CI wiring + matrix rows + the note"
+    "[x] wire the parity runner + comparator + scenario manifest, green on the CLI leg (macOS CI) and the emulator leg",
+    "[x] land CI wiring + matrix rows + the note"
   ],
   "status": "open",
   "receipt": null,
