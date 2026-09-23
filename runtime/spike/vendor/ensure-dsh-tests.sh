@@ -21,7 +21,7 @@ if [ -f "$STAMP" ] && grep -q "$TARBALL_SHA256" "$STAMP" 2>/dev/null; then
     echo "vendor: $TESTS_DIR present (pin-stamped)"
 else
     echo "vendor: fetching upstream tests at $TAG (one codeload tarball)"
-    TMP_TGZ="$(mktemp /tmp/dsh-tests.XXXXXX.tgz)"
+    TMP_TGZ="$(mktemp /tmp/dsh-tests.XXXXXX)"
     fetch() {
         curl -sSL --retry 3 --max-time 300 \
             "https://github.com/deepseek-ai/deepseek-harness/archive/refs/tags/$TAG.tar.gz" \
@@ -60,24 +60,37 @@ ensure_npm() {
     fi
     echo "vendor: fetching npm/$name@$ver"
     rm -rf "$dir"; mkdir -p "$dir"
-    tgz="$(mktemp /tmp/dsh-npm.XXXXXX.tgz)"
-    curl -sSL --retry 3 --max-time 300 \
-        "https://registry.npmjs.org/@deepseek-ai/dsh-$name/-/dsh-$name-$ver.tgz" -o "$tgz"
-    echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null
+    tgz="$(mktemp /tmp/dsh-npm.XXXXXX)"
+    # $name IS the full package name in the @deepseek-ai scope: every entry
+    # carries its dsh-… name (seven were short until 2026-09-24; the old
+    # dsh- prepender existed for exactly those and double-prefixed the other
+    # ~180 entries into 404 bodies). Never prepend here.
+    curl -fsSL --retry 3 --max-time 300 \
+        "https://registry.npmjs.org/@deepseek-ai/$name/-/$name-$ver.tgz" -o "$tgz"
+    # -f makes an HTTP error fail curl; a 200-with-truncated body still
+    # passes it, so the digest check retries the whole fetch (bounded).
+    _n=0
+    until echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null 2>&1; do
+        _n=$((_n + 1))
+        [ "$_n" -ge 3 ] && { echo "vendor: sha256 MISMATCH after 3 attempts: @deepseek-ai/$name@$ver" >&2; rm -f "$tgz"; exit 1; }
+        echo "vendor: digest mismatch (attempt $_n) — refetching @deepseek-ai/$name@$ver" >&2
+        curl -fsSL --retry 3 --max-time 300 \
+            "https://registry.npmjs.org/@deepseek-ai/$name/-/$name-$ver.tgz" -o "$tgz"
+    done
     tar xzf "$tgz" -C "$dir" --strip-components=1
     rm -f "$tgz"
-    printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/dsh-$name@$ver" "sha256=$sha" > "$dir/.vendor-pin"
+    printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/$name@$ver" "sha256=$sha" > "$dir/.vendor-pin"
 }
 
 # Pins (see the closure table in upstream/README.md for the discipline).
-ensure_npm "agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
-ensure_npm "llm-replay" "0.1.6-alpha.2" "85850f414d26bbdac00ebcc05a81212943b92864f386e37c5c2d5818e7b0d04b"
-ensure_npm "session-snapshot" "0.1.6-alpha.2" "94f6e24d390271bb917242f628d898d0ab076b0d6e8385d35033f457e1860d81"
-ensure_npm "loader-smoke" "0.1.6-alpha.2" "6090e12c50b9ff1d7104ea17ea8c0216644504664ea5698693387857f77c349c"
+ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
+ensure_npm "dsh-llm-replay" "0.1.6-alpha.2" "85850f414d26bbdac00ebcc05a81212943b92864f386e37c5c2d5818e7b0d04b"
+ensure_npm "dsh-session-snapshot" "0.1.6-alpha.2" "94f6e24d390271bb917242f628d898d0ab076b0d6e8385d35033f457e1860d81"
+ensure_npm "dsh-loader-smoke" "0.1.6-alpha.2" "6090e12c50b9ff1d7104ea17ea8c0216644504664ea5698693387857f77c349c"
 
 # The test closure: every additional package the suites import (same tag
 # discipline; generated from the materialized pins — reproducible verbatim).
-ensure_npm "chunked-list" "0.1.6-alpha.2" "e466f08af99c1ad8f155aac1c1e2e7672be6940ac2e87b0fb322aec6602efe6f"
+ensure_npm "dsh-chunked-list" "0.1.6-alpha.2" "e466f08af99c1ad8f155aac1c1e2e7672be6940ac2e87b0fb322aec6602efe6f"
 ensure_npm "dsh-agent-default-model" "0.1.6-alpha.2" "649a1353fdbb65f87c9ac9d7e6ccc60948a88ead8cfbb8def94a8a91f6ee1fe6"
 ensure_npm "dsh-agent-instructions" "0.1.6-alpha.2" "17f1eec2cbbe9571320b8ad15a00d3ae7f063df4111b7bc18b13e4045e45eff3"
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
@@ -263,7 +276,7 @@ ensure_npm "dsh-workflow" "0.1.6-alpha.2" "67f06a3509b1b1ec1c87674e46090a8839759
 ensure_npm "dsh-workflow-ptc" "0.1.6-alpha.2" "fd7f2e5c8ab0ee2d99c45508cc2d2ecd60f53ec2693aee27d079f07e90229f8e"
 ensure_npm "dsh-workspace" "0.1.6-alpha.2" "16a10eea33ff09551cecdb039e56ed12cd37ac7bf4cad175048f2add2b5c0f83"
 ensure_npm "dsh-workspace-changes" "0.1.6-alpha.2" "187830ec4f96e7f024263668729bd82427026c4e8dd60345bed380d804b3cbd5"
-ensure_npm "lazy-require" "0.1.6-alpha.2" "2c77249d5b51df9453b0c2a9665a639d89f062fee4cec7c3b228531b8b3d36a1"
-ensure_npm "session-format-v2-to-v3" "0.1.6-alpha.2" "b488cb16ecae0128f023f985bdc66423f17e6de285d15c60b44ce370d2ef83b6"
+ensure_npm "dsh-lazy-require" "0.1.6-alpha.2" "2c77249d5b51df9453b0c2a9665a639d89f062fee4cec7c3b228531b8b3d36a1"
+ensure_npm "dsh-session-format-v2-to-v3" "0.1.6-alpha.2" "b488cb16ecae0128f023f985bdc66423f17e6de285d15c60b44ce370d2ef83b6"
 
 echo "vendor: upstream test assets ready"

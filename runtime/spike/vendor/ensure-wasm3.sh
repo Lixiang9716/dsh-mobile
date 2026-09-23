@@ -64,7 +64,7 @@ if have_all; then
 fi
 
 mkdir -p "$DIR"
-TMP=$(mktemp /tmp/dsh-wasm3.XXXXXX.tar.gz)
+TMP=$(mktemp /tmp/dsh-wasm3.XXXXXX)
 fetch_retry "$URL" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 for f in $FILES; do

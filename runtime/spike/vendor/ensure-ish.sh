@@ -73,7 +73,7 @@ if have_all; then
 fi
 
 mkdir -p "$DIR"
-TMP=$(mktemp /tmp/dsh-ish.XXXXXX.tar.gz)
+TMP=$(mktemp /tmp/dsh-ish.XXXXXX)
 fetch_retry "$URL" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 # Strip the archive's top-level directory and unpack verbatim, then drop the

@@ -91,7 +91,7 @@ if have_all; then
 fi
 
 mkdir -p "$DIR"
-TMP=$(mktemp /tmp/dsh-qjs.XXXXXX.tar.gz)
+TMP=$(mktemp /tmp/dsh-qjs.XXXXXX)
 fetch_retry "https://github.com/$QJS_REPO/archive/$COMMIT.tar.gz" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 for f in $FILES; do
