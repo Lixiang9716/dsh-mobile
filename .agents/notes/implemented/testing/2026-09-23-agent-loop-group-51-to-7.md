@@ -45,7 +45,14 @@ CLI now runs its driver on a 512 MB-stack pthread with a 400 MB JS limit
 (8 MB on the default main thread SEGFAULTED; plain recursion then measured
 past 100k frames — the knob works, the C thread was the binding constraint).
 
-Result: **298 → the remaining failures are 7 tests + 4 spec-blocks**:
+Result: **298 → the remaining failures are 11 tests + 4 spec-blocks**
+(post-session correction: the count and the classification below said 7 /
+"one async-context root" — the ENGINE async-context work has since LANDED
+(probe-proven: a store survives await AND host-event hops, parity
+golden-identical) and the failures DID NOT MOVE, so the single-root claim is
+DISPROVEN; they are per-test semantic/stack issues needing Node-diffing.
+The engine work stands on its own merit — see
+architecture/2026-09-23-dsh-mobile-maintains-its-own-quickjs.md):
 loop.spec **65/65**, cancel 39/39, tool-calls 21/21,
 contract-regressions 33/33, coverage-edges/interception/properties/request-*
 all green. The seven: agent-initiator ×5 + scope-lifecycle ×2 — all the

@@ -1,4 +1,4 @@
-MOCK_BASE_URL=http://127.0.0.1:52074
+MOCK_BASE_URL=http://127.0.0.1:57937
 {"type":"request","attempt":1,"scriptBehavior":"success","behavior":"success","path":"/chat/completions"}
 {"type":"result","attempt":1,"scriptBehavior":"success","behavior":"success","outcome":"completed","chunksSent":6}
 {"type":"request","attempt":2,"scriptBehavior":"tool_call_success","behavior":"tool_call_success","path":"/chat/completions"}

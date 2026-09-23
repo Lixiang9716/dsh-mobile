@@ -19,9 +19,22 @@ cd "$(dirname "$0")"
 # on its own.
 sh ./ensure-wasm3.sh   # cwd is this script's directory (cd above)
 
-PIN=0.17.0
-COMMIT=6d46d07d04041b40f4f49eaa7fdebe44c314c699
-TARBALL_SHA256=a62cf1ff7d6d2f82b90a2d247a57e9eb56b81c03feb1f372a53923426e358cb0
+# The ENGINE PIN lives at OUR fork (owner direction 2026-09-23: dsh-mobile
+# maintains its own quickjs; #163 pinned it first and #169's merge silently
+# reverted the pin to upstream — restored here at the TWO-divergence head).
+# The fork = upstream quickjs-ng 0.17.0 (6d46d07d) + (1) native
+# Function.prototype.toString renders the single-line V8/JSC form (the
+# dsh-util-values realm guard string-compares that spelling; on stock
+# quickjs-ng every plain object fails the realm check — anywhere-labs/
+# dsh-desktop#1157), and (2) the async-context engine surface (TC39
+# proposal-async-context shape): a per-runtime context value snapshotted
+# into every enqueued job and captured at promise-reaction ATTACH time —
+# the await-boundary propagation JS patches cannot reach. Rebase the
+# branch when tracking a newer quickjs-ng.
+PIN=0.17.0+fork-tostring+async-context
+QJS_REPO=Lixiang9716/quickjs
+COMMIT=7c4ae18c34476bb8f0ab6703b19802649513dc38
+TARBALL_SHA256=a6443e58f94ba26d2d2eb73396a0777b5de056f47952be9b588d5a4a28278127
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
 #
@@ -69,7 +82,7 @@ fi
 
 mkdir -p "$DIR"
 TMP=$(mktemp /tmp/dsh-qjs.XXXXXX.tar.gz)
-fetch_retry "https://github.com/quickjs-ng/quickjs/archive/$COMMIT.tar.gz" "$TMP"
+fetch_retry "https://github.com/$QJS_REPO/archive/$COMMIT.tar.gz" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 for f in $FILES; do
     tar xzf "$TMP" -C "$DIR" --strip-components=1 "quickjs-$COMMIT/$f"

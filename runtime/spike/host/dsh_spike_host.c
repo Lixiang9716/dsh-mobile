@@ -331,6 +331,24 @@ static JSValue js_get_random_values(JSContext *ctx, JSValueConst this_val,
 static const char B64_TABLE[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
+/* __asyncContextGet/Set — the JS-visible face of the engine's async-context
+ * slot (the engine snapshots it into every job and restores it around the
+ * job's execution — the await-boundary propagation JS cannot see). The
+ * async-hooks shim is the only intended consumer. */
+static JSValue js_async_context_get(JSContext *ctx, JSValueConst this_val,
+                                    int argc, JSValueConst *argv) {
+    (void)this_val; (void)argc; (void)argv;
+    return JS_GetAsyncContext(JS_GetRuntime(ctx));
+}
+
+static JSValue js_async_context_set(JSContext *ctx, JSValueConst this_val,
+                                    int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1) return JS_ThrowTypeError(ctx, "__asyncContextSet needs a value");
+    JS_SetAsyncContext(JS_GetRuntime(ctx), (JSValue)argv[0]);
+    return JS_UNDEFINED;
+}
+
 static JSValue js_btoa(JSContext *ctx, JSValueConst this_val,
                        int argc, JSValueConst *argv) {
     (void)this_val;
@@ -1165,6 +1183,10 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_module_define, "__dshModuleDefine", 2));
     JS_SetPropertyStr(ctx, global, "__dshComplete",
                       JS_NewCFunction(ctx, js_complete, "__dshComplete", 2));
+    JSValue actx_get = JS_NewCFunction(ctx, js_async_context_get, "__asyncContextGet", 0);
+    JS_SetPropertyStr(ctx, global, "__asyncContextGet", actx_get);
+    JSValue actx_set = JS_NewCFunction(ctx, js_async_context_set, "__asyncContextSet", 1);
+    JS_SetPropertyStr(ctx, global, "__asyncContextSet", actx_set);
     JSValue btoa_fn = JS_NewCFunction(ctx, js_btoa, "btoa", 1);
     JS_SetPropertyStr(ctx, global, "btoa", btoa_fn);
     JSValue atob_fn = JS_NewCFunction(ctx, js_atob, "atob", 1);
