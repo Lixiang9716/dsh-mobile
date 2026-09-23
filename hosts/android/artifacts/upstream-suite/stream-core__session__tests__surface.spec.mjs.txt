@@ -1,0 +1,11 @@
+--------- beginning of main
+09-23 16:55:39.415  1192  1342 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:55:39.434  1192  1342 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:55:39.436  1192  1342 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+09-23 16:55:39.436  1192  1342 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:55:39.437  1192  1342 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__session__tests__surface.spec.mjs"}]}
+09-23 16:55:39.464  1192  1342 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"SyntaxError: Could not find export 'SessionLogOffset' in module '@deepseek-ai/dsh-session/types.js'"}]}
+09-23 16:55:39.464  1192  1342 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"Could not find export 'SessionLogOffset' in module '@deepseek-ai/dsh-session/types.js' | "}]}
+09-23 16:55:39.465  1192  1342 I dsh.spike: m4 FAIL scenario completed with pass=false
+09-23 16:55:39.465  1192  1342 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-23 16:55:39.465  1192  1342 I dsh.spike.result: ALL FAIL

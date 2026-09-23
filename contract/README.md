@@ -14,7 +14,7 @@ No implementation code lands before this directory is frozen (D5: contract first
 | [schemas/manifest.schema.json](schemas/manifest.schema.json) | Plugin manifest, `schemaVersion: 1` (JSON Schema 2020-12) |
 | [schemas/integrity.schema.json](schemas/integrity.schema.json) | Installed-tree digest ledger, `ledgerVersion: 1` |
 | [schemas/receipt.schema.json](schemas/receipt.schema.json) | Install/remove transaction receipt, `receiptVersion: 1` |
-| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented) · current: [timer primitives](proposals/timer-primitive.md) · [简体中文](proposals/timer-primitive.zh.md) |
+| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented) · current: none (the timer primitives proposal was folded into v1.4.0) |
 
 ## Reading order
 

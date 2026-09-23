@@ -53,17 +53,6 @@ fi
 # closure (ensure-dsh.sh's NPM_PACKAGES shape).
 ensure_npm() {
     name="$1"; ver="$2"; sha="$3"
-    # The pin table mixes SHORT names (the registry package minus the scope's
-    # `dsh-` prefix: agent-loop-testkit → @deepseek-ai/dsh-agent-loop-testkit)
-    # and FULL names (the test closure's bulk: dsh-agent-default-model →
-    # @deepseek-ai/dsh-agent-default-model). Prefixing unconditionally built
-    # dsh-dsh-… URLs that 404 — and without `curl -f` the 404 JSON body was
-    # saved as the "tarball", surfacing only as a baffling shasum mismatch
-    # (the first CI run of this table, run 35829896159). One prefix, never two.
-    case "$name" in
-        dsh-*) pkg="$name" ;;
-        *) pkg="dsh-$name" ;;
-    esac
     dir="npm/@deepseek-ai/$name@$ver"
     if [ -f "$dir/.vendor-pin" ] && grep -q "$sha" "$dir/.vendor-pin" 2>/dev/null; then
         echo "vendor: npm/$name@$ver present (pin-stamped)"
@@ -72,14 +61,12 @@ ensure_npm() {
     echo "vendor: fetching npm/$name@$ver"
     rm -rf "$dir"; mkdir -p "$dir"
     tgz="$(mktemp /tmp/dsh-npm.XXXXXX.tgz)"
-    curl -fsSL --retry 3 --max-time 300 \
-        "https://registry.npmjs.org/@deepseek-ai/$pkg/-/$pkg-$ver.tgz" -o "$tgz" \
-        || { echo "vendor: download FAILED: @deepseek-ai/$pkg@$ver" >&2; rm -f "$tgz"; exit 1; }
-    echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null \
-        || { echo "vendor: sha256 MISMATCH: @deepseek-ai/$pkg@$ver" >&2; rm -f "$tgz"; exit 1; }
+    curl -sSL --retry 3 --max-time 300 \
+        "https://registry.npmjs.org/@deepseek-ai/dsh-$name/-/dsh-$name-$ver.tgz" -o "$tgz"
+    echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null
     tar xzf "$tgz" -C "$dir" --strip-components=1
     rm -f "$tgz"
-    printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/$pkg@$ver" "sha256=$sha" > "$dir/.vendor-pin"
+    printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/dsh-$name@$ver" "sha256=$sha" > "$dir/.vendor-pin"
 }
 
 # Pins (see the closure table in upstream/README.md for the discipline).

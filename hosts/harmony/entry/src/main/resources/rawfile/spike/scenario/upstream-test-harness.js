@@ -1,21 +1,72 @@
 // dsh:logging-exempt (test harness: verdicts are the product)
-/**
- * upstream-test-harness — the quickjs-side test shell for the UPSTREAM DSH
- * test suite on the emulator (the owner's direction: run DSH's full tests
- * in OUR runtime; every failure names what our environment must grow).
- *
- * The pipeline: Node-side esbuild transpiles each upstream spec to plain
- * ESM with package imports left bare (served by the host loader from the
- * vendored closure) and the `vitest` import rewritten to THIS module. The
- * spec registers tests at import time; the driver scenario then calls
- * runCollected() and streams one structured verdict per test.
- *
- * The implemented API is the subset the deterministic suites use (surveyed
- * across the corpus). Anything else fails LOUD, naming the missing API
- * (rule 5) — a silent skip would fake a green suite. vi.mock and the timer
- * APIs are the deliberate absentees (loader-level / no timer seam): specs
- * needing them are filtered at transpile time and counted, never dropped.
- */
+import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
+
+// upstream-test-harness — the quickjs test shell for the UPSTREAM suite in
+// OUR runtime (transpiled specs import it as `vitest`); unimplemented APIs
+// fail LOUD naming the API (rule 5). Fake timers live in
+// scenario/upstream-fake-timers.js.
+
+// AbortController/AbortSignal — the WHATWG subset the upstream agent-loop's
+// cancellation path needs (signal.aborted, addEventListener('abort'),
+// abort(reason), throwIfAborted). The suite's largest single gap before
+// this shim: every agent-loop cancel test failed on the missing global,
+// identically on the CLI host and the iOS simulator (the harness is the
+// shared injection point, so every host gets it from this one file).
+// Listeners fire synchronously; reason defaults to the standard abort
+// error; a second abort() is a no-op.
+if (typeof globalThis.AbortController === 'undefined') {
+  const fire = (signal) => {
+    if (signal.aborted) return;
+    signal._aborted = true;
+    signal._reason = signal._reason ?? Object.assign(new Error('This operation was aborted'), { name: 'AbortError' });
+    for (const fn of [...signal._listeners]) {
+      try { fn({ type: 'abort', target: signal }); } catch { /* one listener's throw must not break the rest */ }
+    }
+  };
+  class AbortSignalShim {
+    constructor() {
+      this._aborted = false;
+      this._reason = undefined;
+      this._listeners = [];
+      this.onabort = null;
+    }
+    get aborted() { return this._aborted; }
+    get reason() { return this._reason; }
+    addEventListener(type, fn) {
+      if (type === 'abort' && typeof fn === 'function' && !this._listeners.includes(fn)) {
+        this._listeners.push(fn);
+      }
+    }
+    removeEventListener(type, fn) {
+      if (type === 'abort') this._listeners = this._listeners.filter((f) => f !== fn);
+    }
+    throwIfAborted() {
+      if (this._aborted) throw this._reason;
+    }
+  }
+  class AbortControllerShim {
+    constructor() { this.signal = new AbortSignalShim(); }
+    abort(reason) {
+      this.signal._reason = reason;
+      fire(this.signal);
+      if (typeof this.signal.onabort === 'function') this.signal.onabort({ type: 'abort', target: this.signal });
+    }
+  }
+  globalThis.AbortController = AbortControllerShim;
+  globalThis.AbortSignal = AbortSignalShim;
+}
+
+// structuredClone — the spine clones JSON-safe session state (config-derived
+// agent records, headers). The honest subset: primitives pass through, JSON
+// data deep-clones through a stringify round trip (which itself throws on
+// cycles — never a silent shallow copy); functions and symbols fail loud.
+if (typeof globalThis.structuredClone === 'undefined') {
+  globalThis.structuredClone = (value) => {
+    if (value === null || (typeof value !== 'object' && typeof value !== 'function')) return value;
+    if (typeof value === 'function') throw new Error('structuredClone: functions cannot be cloned');
+    return JSON.parse(JSON.stringify(value));
+  };
+}
 
 /** Deep structural equality (the expect().toEqual core), depth-guarded. */
 const deepEqual = (a, b, seen = new Set(), depth = 0) => {
@@ -115,7 +166,9 @@ const callMatchers = (actual, check) => ({
     check(ok, `to match ${fmt(pattern)} (got ${fmt(actual?.slice?.(0, 120))})`);
   },
   toContainEqual(expected) {
-    const ok = Array.isArray(actual) && actual.some((v) => deepEqual(v, expected));
+    // matchSubset (not deepEqual): the corpus passes asymmetric matchers
+    // (expect.objectContaining) nested inside toContainEqual rows.
+    const ok = Array.isArray(actual) && actual.some((v) => matchSubset(v, expected, false));
     check(ok, `to contain an equal of ${fmt(expected)}`);
   },
   toBeCloseTo(n, precision = 2) {
@@ -184,8 +237,7 @@ const identityMatchers = (actual, check) => ({
 
 /** The .resolves/.rejects chains: await the promise (or capture its
  * rejection), then forward to the plain matcher of the settled value. */
-/** One settled-value matcher invocation (the async-chain body, module
- * level to keep the nesting shallow). */
+/** One settled-value matcher invocation (module level for nesting). */
 const settleAndMatch = async (settle, negated, matcher, args) => {
   const value = await settle();
   // vitest's .rejects.toThrow family asserts against the THROWN error,
@@ -258,32 +310,48 @@ const makeExpect = (actual, negated = false) => {
   return api;
 };
 
+/** The vi.fn mock core: a calls/results ledger plus the implementation
+ * queue. The *Once family (mockImplementationOnce et al.) prepends a
+ * one-shot implementation consumed before the standing one — vitest's
+ * `vi.spyOn(x, 'y').mockImplementationOnce(...)` is the corpus's standard
+ * "make exactly the next call fail" idiom. */
+const makeMockFn = (impl) => {
+  const onceQueue = [];
+  const f = (...args) => {
+    f.mock.calls.push(args);
+    const next = onceQueue.length > 0 ? onceQueue.shift() : impl;
+    try {
+      const value = next ? next(...args) : undefined;
+      f.mock.results.push({ type: 'return', value });
+      return value;
+    } catch (error) {
+      f.mock.results.push({ type: 'throw', value: error });
+      throw error;
+    }
+  };
+  f.mock = { calls: [], results: [] };
+  f.mockImplementation = (next) => { impl = next; return f; };
+  f.mockImplementationOnce = (next) => { onceQueue.push(next); return f; };
+  f.mockReturnValue = (value) => { impl = () => value; return f; };
+  f.mockReturnValueOnce = (value) => { onceQueue.push(() => value); return f; };
+  f.mockResolvedValue = (value) => { impl = () => Promise.resolve(value); return f; };
+  f.mockResolvedValueOnce = (value) => { onceQueue.push(() => Promise.resolve(value)); return f; };
+  f.mockRejectedValue = (value) => { impl = () => Promise.reject(value); return f; };
+  f.mockRejectedValueOnce = (value) => { onceQueue.push(() => Promise.reject(value)); return f; };
+  f.mockClear = () => { f.mock.calls.length = 0; f.mock.results.length = 0; onceQueue.length = 0; return f; };
+  f.mockReset = f.mockClear;
+  return f;
+};
+
+const fakeTimerState = {};
+
 /** vi subset; the mock and timer APIs fail loud (loader-level / no seam). */
 const viApi = {
-  fn(impl) {
-    const f = (...args) => {
-      f.mock.calls.push(args);
-      try {
-        const value = impl ? impl(...args) : undefined;
-        f.mock.results.push({ type: 'return', value });
-        return value;
-      } catch (error) {
-        f.mock.results.push({ type: 'throw', value: error });
-        throw error;
-      }
-    };
-    f.mock = { calls: [], results: [] };
-    f.mockImplementation = (next) => { impl = next; return f; };
-    f.mockReturnValue = (value) => { impl = () => value; return f; };
-    f.mockResolvedValue = (value) => { impl = () => Promise.resolve(value); return f; };
-    f.mockRejectedValue = (value) => { impl = () => Promise.reject(value); return f; };
-    f.mockClear = () => { f.mock.calls.length = 0; f.mock.results.length = 0; return f; };
-    f.mockReset = f.mockClear;
-    return f;
-  },
+  fn: makeMockFn,
+  isMockFunction: (v) => typeof v === 'function' && v.mock !== undefined,
   spyOn(object, key) {
     const original = object[key];
-    const spy = viApi.fn(typeof original === 'function' ? original : undefined);
+    const spy = makeMockFn(typeof original === 'function' ? original : undefined);
     spy.mockRestore = () => { object[key] = original; };
     object[key] = spy;
     return spy;
@@ -317,7 +385,7 @@ const viApi = {
   mocked: (v) => v,
   hoisted: (factory) => factory(),
   mock: () => failWith('harness: vi.mock is not implemented (loader-level interception) — the transpiler excludes specs that need it'),
-  useFakeTimers: () => failWith('harness: vi.useFakeTimers is not implemented (the runtime has no timer seam — a gap to fill on demand)'),
+  ...fakeTimerApi(fakeTimerState),
 };
 
 // ---- collection -----------------------------------------------------------
@@ -364,6 +432,12 @@ export const onTestFinished = (fn) => {
 };
 export const expect = Object.assign(makeExpect, {
   extend: () => failWith('harness: expect.extend is not implemented'),
+  /** expect.soft: vitest records and continues; the harness has no
+   * end-of-test collector, so soft asserts immediately — the test's verdict
+   * (fail) is identical, only later assertions in the same test don't run. */
+  soft: (value) => makeExpect(value),
+  fail: (message = 'expect.fail()') => failWith(String(message)),
+  unreachable: (message = 'expected unreachable path') => failWith(`unreachable: ${String(message)}`),
   anything: () => ({ __matcher: () => true }),
   any: (cls) => ({ __matcher: (v) => typeof v === cls?.name?.toLowerCase() || v instanceof cls }),
   objectContaining: (shape) => ({ __matcher: (v) => matchSubset(v, shape, false) }),
@@ -375,10 +449,6 @@ export const expect = Object.assign(makeExpect, {
 });
 export const vi = viApi;
 
-/** expectTypeOf — type-level only; post-transpile it can never fail. A
- * permissive chain preserves the spec's runtime flow exactly; symbols and
- * protocol probes return undefined (a Proxy that answers THEM recurses
- * through introspection). */
 const typeChain = new Proxy(function typeProbe() {}, {
   get: (_t, key) => (typeof key === 'string' ? typeChain : undefined),
   apply: () => typeChain,
@@ -386,12 +456,16 @@ const typeChain = new Proxy(function typeProbe() {}, {
 export const expectTypeOf = () => typeChain;
 
 /** Run everything the imported specs collected; report per test to the
- * caller's sink. Returns {passed, failed, skipped, failures}. */
+ * caller's sink. Returns {passed, failed, skipped, failures}. A test that
+ * never settles is the suite's hang class (no timer seam to cut it short) —
+ * the sink sees its 'start' before it runs, so the stream names the exact
+ * test a hang froze on. */
 export const runCollected = async (sink) => {
   const report = { passed: 0, failed: 0, skipped: 0, failures: [] };
   for (const setup of suite.before) await setup();
   for (const t of suite.tests) {
     if (typeof t.fn !== 'function') { report.skipped += 1; sink(t.name, 'skipped'); continue; }
+    sink(t.name, 'start');
     try {
       for (const hook of t.hooks.beforeEach) await hook();
       await t.fn();

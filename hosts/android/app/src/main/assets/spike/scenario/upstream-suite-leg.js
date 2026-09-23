@@ -44,9 +44,27 @@ const takeRuntimeConfig = async () => {
   }
 };
 
+// The launch-env branch (the same host-facts shape the parity drive uses):
+// a host that declares DSH_UPSTREAM_SPEC in its launch snapshot — the iOS
+// simulator drive, injected via SIMCTL_CHILD_* — runs the spec named there
+// without waiting on the bus delivery (device carriers keep the
+// runtime.config handoff; an empty snapshot, like Android's, ignores this).
+const launchSpecFacts = () => {
+  log.debug('launch spec facts', {});
+  const raw = globalThis.__dshLaunchEnv?.();
+  let env = null;
+  if (typeof raw === 'string') {
+    try { env = JSON.parse(raw); } catch { env = null; }
+  }
+  if (env !== null && typeof env.DSH_UPSTREAM_SPEC === 'string' && env.DSH_UPSTREAM_SPEC.length > 0) {
+    return { spec: env.DSH_UPSTREAM_SPEC };
+  }
+  return null;
+};
+
 const main = async () => {
   log.debug('main begin', {});
-  const cfg = await takeRuntimeConfig();
+  const cfg = launchSpecFacts() ?? await takeRuntimeConfig();
   const spec = cfg.spec;
   if (typeof spec !== 'string' || spec.length === 0) fail('runtime.config carries no spec path');
   emit('suite/spec', { spec });

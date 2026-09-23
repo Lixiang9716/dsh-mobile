@@ -20,10 +20,13 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         /** The caller identity of the spike bundle (manifest.json id). */
         const val CALLER = "dsh.spike.scenario"
 
-        /** The nine frozen primitives (contract/primitives.md §2). */
+        /** The frozen primitive table (contract v1.4.0: nine + fs additions
+         * + wasmRun + ishRun-unavailable-on-android + the timer seam). */
         val PRIMITIVES = listOf(
             "fsRead", "fsWrite", "fsScope", "httpFetch", "notify",
             "presentApproval", "presentPicker", "keychainGet", "keychainSet",
+            "fsStat", "fsList", "fsMkdir", "fsRemove", "fsRename",
+            "wasmRun", "timerSchedule", "timerCancel",
         )
         const val AUDIT_PREFIX = "dsh.gateway.audit: "
         private const val AUDIT_TAG = "dsh.spike.audit"

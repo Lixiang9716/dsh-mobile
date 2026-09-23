@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.3.0
+# Capability Gateway — Primitive Contract v1.4.0
 
 > **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -25,6 +25,20 @@
 > `unavailable` — iOS implements it today (the iSH-arm64 engine, vendored and sha256-pinned
 > as an engine, never modified); the Android and HarmonyOS hosts answer `unavailable` and
 > keep the WebAssembly shell, which is capability negotiation, not a platform branch.
+
+> **v1.4.0 (additive, 2026-09-23)**: `timerSchedule` / `timerCancel` + the `timer.fire`
+> event channel — one host-owned wake-up seam under one `timer` permission flag (§4,
+> "timer"). The vendored upstream runtime calls timers as an ambient global
+> (`dsh-timeout`'s deadline fuses arm a bare `setTimeout`), and nothing in this
+> architecture can schedule a future callback without the host re-entering the serial
+> queue — which is exactly the shape the gateway exists to govern. The mapping from
+> `setTimeout`-shaped code to these primitives lives in the shim layer, which negotiates
+> the flag and fails loud when it is absent; there is deliberately **no global
+> `setTimeout`** in this contract (a global would be a second, un-governed surface for
+> the same capability). Folded from the proposal in `contract/proposals/` (its evidence
+> base: 22 suite failures + 2 hangs + 100+ excluded specs on the upstream-suite
+> emulator run). Same additive rule as v1.1.0–v1.3.0: a host without the seam keeps
+> negotiating `gateway@1` and answers `unavailable`.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -264,6 +278,30 @@ RuntimeDescriptor prose rather than let this document imply otherwise.
 - `keychainSet(ref, secret)` stores; `keychainSet(ref, null)` deletes. Secrets are bytes;
   string encoding is the caller's business.
 
+### timer (v1.4.0)
+
+`timerSchedule(delayMs, opts?) → { timerId }` — arms **one** wake-up; `timerCancel(timerId)
+→ { cancelled }` — disarms it. The wake-up itself is not a response: it arrives on the
+`timer.fire` event channel (§5), delivered onto the caller's serial queue like every host
+event — a timer never runs JS on a second thread (D2) and never blocks (D8).
+
+- `delayMs` is an integer ≥ 0 in **monotonic** time; the host fires no earlier than asked
+  and promises no upper bound. The host may clamp to a tighter maximum and says so in the
+  rejection `reason` — it never silently truncates (rule 5). Wall-clock needs are not timer
+  fuses and stay out of this primitive.
+- `opts.tag` (optional) is the caller-chosen audit tag: the audit trail must be able to
+  answer *which plugin armed which timers* after a runaway.
+- `timerSchedule` resolves when the timer is **armed**, not when it fires. `timerId` is an
+  opaque integer, unique among *live* timers only (reuse after cancel-or-fire is legal and
+  auditable). One arm fires **at most once** — no intervals in this version; a re-arm loop
+  in the caller expresses repetition, and a stateless re-arm keeps the primitive minimal.
+- `timerCancel` is idempotent: `{ cancelled: false }` for an unknown or already-fired id.
+  A race between fire and cancel resolves one way or the other, never both; the host picks
+  and the audit records which.
+- Rejections in §3's vocabulary: `denied` without the `timer` grant; `invalid` for a
+  non-integer or negative `delayMs`; `unavailable` on a host without the seam (a capability
+  gap negotiation should have caught).
+
 ## 5. Event channels
 
 Delivered by the bridge onto the runtime queue — not per-call primitives, part of this
@@ -273,6 +311,7 @@ contract and versioned with it:
 | --- | --- | --- |
 | `app.state` | `{ state: "foreground" \| "background" }` | drives checkpoint / resume (D7) |
 | `notify.response` | `{ id, action? }` | user interacted with a notification |
+| `timer.fire` | `{ timerId, tag? }` | a `timerSchedule`d wake-up fired (v1.4.0; one arm ⇒ at most one fire) |
 
 Streaming progress of a specific `httpFetch` call is delivered through that call's response
 body, not a global channel.

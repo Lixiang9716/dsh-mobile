@@ -1,4 +1,4 @@
-# 能力网关 — 原语契约 v1.3.0
+# 能力网关 — 原语契约 v1.4.0
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
@@ -21,6 +21,16 @@
 > 永不修改);Android 与 HarmonyOS 宿主答 `unavailable` 并继续使用 WebAssembly shell,
 > 这是**能力协商**,不是平台分支。
 > 与 v1.1.0 同样的增量规则:未实现的宿主报 `unavailable`。
+
+> **v1.4.0(增量,2026-09-23)**:`timerSchedule` / `timerCancel` + `timer.fire` 事件通道——
+> 一个宿主持有的唤醒接缝,同受单一 `timer` 权限位管辖(§4「定时器」)。供应商化的上游运行时
+> 以环境全局的方式调用定时器(`dsh-timeout` 的截止保险丝直接 arm 裸的 `setTimeout`),而本架构
+> 中没有任何东西能在不经宿主重入串行队列的情况下调度未来回调——这正是网关存在的意义。从
+> `setTimeout` 形态代码到这两个原语的映射属于垫层:垫层协商该权限位,缺席时响亮失败;本契约
+> **刻意不设全局 `setTimeout`**(全局量会为同一能力开出第二个不受治理的表面)。自
+> `contract/proposals/` 的提案折叠而来(证据基础:上游套件模拟器运行的 22 个失败 + 2 个挂起
+> + 100+ 个排除)。与 v1.1.0–v1.3.0 同一增量规则:无该接缝的宿主继续协商 `gateway@1` 并如实
+> 回答 `unavailable`。
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -227,6 +237,25 @@
 - `keychainSet(ref, secret)` 写入;`keychainSet(ref, null)` 删除。机密是字节;字符串编码
   是调用者的事。
 
+### 定时器(v1.4.0)
+
+`timerSchedule(delayMs, opts?) → { timerId }` —— arm **一次**唤醒;`timerCancel(timerId)
+→ { cancelled }` —— 解除。唤醒本身不是响应:它经 `timer.fire` 事件通道(§5)送达调用方的串行
+队列,与所有宿主事件一样——定时器绝不在第二条线程上运行 JS(D2),也绝不阻塞(D8)。
+
+- `delayMs` 为整数 ≥ 0,**单调**时间;宿主不早于所请求的时刻触发,且不对上界作承诺。宿主可
+  clamp 到更紧的上限并在拒绝的 `reason` 里说明——绝不静默截断(规则 5)。时钟需求不是定时
+  保险丝,不属于本原语。
+- `opts.tag`(可选)为调用方选定的审计标签:审计流必须能在失控之后回答「哪个插件 arm 了哪些
+  定时器」。
+- `timerSchedule` 在定时器 **已 arm** 时即解决,而非触发时。`timerId` 为不透明整数,仅在**存活**
+  定时器间唯一(cancel 或 fire 之后复用是合法且可审计的)。一次 arm **至多**触发一次——本版本
+  无 interval;重复由调用方的 re-arm 循环表达,无状态的 re-arm 使原语保持最小。
+- `timerCancel` 幂等:对未知或已触发的 id 返回 `{ cancelled: false }`。fire 与 cancel 的竞态
+  二选一解决,绝不两者都发生;宿主裁决,审计记录裁决结果。
+- §3 词汇的拒绝:无 `timer` 授权 → `denied`;`delayMs` 非整数或为负 → `invalid`;宿主无该接缝
+  → `unavailable`(协商本应发现的 capability 缺口)。
+
 ## 5. 事件通道
 
 由桥接派发到运行时队列——不是按调用计的原语,但属于本契约、随其一起版本化:
@@ -235,6 +264,7 @@
 | --- | --- | --- |
 | `app.state` | `{ state: "foreground" \| "background" }` | 驱动检查点 / 恢复(D7) |
 | `notify.response` | `{ id, action? }` | 用户与通知发生了交互 |
+| `timer.fire` | `{ timerId, tag? }` | `timerSchedule` 的唤醒已触发(v1.4.0;一次 arm ⇒ 至多一次触发) |
 
 某次 `httpFetch` 调用的流式进度经该调用的响应体送达,不走全局通道。
 

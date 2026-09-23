@@ -1,10 +1,23 @@
 --------- beginning of main
-09-23 14:26:22.330 19132 19185 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
-09-23 14:26:22.351 19132 19185 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
-09-23 14:26:22.352 19132 19185 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
-09-23 14:26:22.353 19132 19185 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-tool-presentation__tests__agent-tool-presentation.spec.mjs"}]}
-09-23 14:26:22.362 19132 19185 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"ReferenceError: cannot load module '@deepseek-ai/dsh-ptc-runtime'"}]}
-09-23 14:26:22.362 19132 19185 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"cannot load module '@deepseek-ai/dsh-ptc-runtime' | "}]}
-09-23 14:26:22.362 19132 19185 I dsh.spike: m4 FAIL scenario completed with pass=false
-09-23 14:26:22.363 19132 19185 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
-09-23 14:26:22.363 19132 19185 I dsh.spike.result: ALL FAIL
+09-23 16:49:41.786 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 16:49:41.806 31033 31094 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 16:49:41.807 31033 31094 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"launch spec facts","data":[{}]}
+09-23 16:49:41.807 31033 31094 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 16:49:41.809 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-tool-presentation__tests__agent-tool-presentation.spec.mjs"}]}
+09-23 16:49:41.861 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > declares the services it uses without holding a PTC runtime hostage"}]}
+09-23 16:49:41.861 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > declares the services it uses without holding a PTC runtime hostage"}]}
+09-23 16:49:41.861 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > gives its own agent PTC mode and leaves the rest native"}]}
+09-23 16:49:41.879 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > gives its own agent PTC mode and leaves the rest native"}]}
+09-23 16:49:41.880 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > presents both forms when asked for both"}]}
+09-23 16:49:41.895 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > presents both forms when asked for both"}]}
+09-23 16:49:41.897 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > restores the deployment default when the agent unloads"}]}
+09-23 16:49:41.909 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > restores the deployment default when the agent unloads"}]}
+09-23 16:49:41.909 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > waits for a PTC runtime the deployment does not compose"}]}
+09-23 16:49:41.918 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > waits for a PTC runtime the deployment does not compose"}]}
+09-23 16:49:41.918 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > applies once the runtime arrives"}]}
+09-23 16:49:41.938 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > applies once the runtime arrives"}]}
+09-23 16:49:41.938 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/start","name":"the tool-presentation row > requires a mode rather than defaulting one"}]}
+09-23 16:49:41.939 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"the tool-presentation row > requires a mode rather than defaulting one"}]}
+09-23 16:49:41.940 31033 31094 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-tool-presentation__tests__agent-tool-presentation.spec.mjs","passed":7,"failed":0,"skipped":0}]}
+09-23 16:49:41.940 31033 31094 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 16:49:41.941 31033 31094 I dsh.spike.result: ALL PASS

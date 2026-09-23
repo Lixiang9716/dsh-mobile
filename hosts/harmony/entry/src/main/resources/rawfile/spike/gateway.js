@@ -214,6 +214,12 @@ export const keychainGet = async (ref) => {
   return res ? { secret: base64ToBytes(res.secretB64) } : null;
 };
 
+export const timerSchedule = async (delayMs, opts = {}) =>
+  await call('timerSchedule', { delayMs, ...opts });
+
+export const timerCancel = async (timerId) =>
+  await call('timerCancel', { timerId });
+
 export const keychainSet = async (ref, secret) => await call('keychainSet', {
   ref,
   secretB64: secret ? bytesToBase64(secret) : null,
