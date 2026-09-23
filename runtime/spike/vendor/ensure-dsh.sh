@@ -135,7 +135,19 @@ fetch_dsh() {
     have_pkg "$dir" && stamped "$dir" "$sha" && { echo "vendor: $dir present (pin-stamped)"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    fetch_retry "$DSH_BASE/$tgz" "$tmp"
+    # Tier 1: the TRACKED MIRROR (vendor/dsh-tarballs/ — the pinned bytes,
+    # committed 2026-09-23 after upstream deleted the dir from master and
+    # CI runners proved unreachable-flaky against the frozen ref). Cold
+    # checkouts need no network at all; the digest check below is unchanged.
+    MIRROR="$(dirname "$0")/dsh-tarballs/$tgz"
+    if [ -f "$MIRROR" ]; then
+        echo "$sha  $MIRROR" | shasum -a 256 -c - >/dev/null \
+            && cp "$MIRROR" "$tmp" \
+            || echo "vendor: mirror digest mismatch for $tgz — falling through to network" >&2
+    fi
+    if [ ! -s "$tmp" ]; then
+        fetch_retry "$DSH_BASE/$tgz" "$tmp"
+    fi
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "$dir"
     mkdir -p "$dir"
