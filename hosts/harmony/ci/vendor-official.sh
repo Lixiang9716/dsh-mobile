@@ -52,12 +52,59 @@ MODE=full
 for arg in "$@"; do
     case "$arg" in
         --closure-only) MODE=closure ;;
+        --suite-extras) MODE=suite ;;
         --check) MODE=check ;;
         *) echo "vendor-official: unknown argument '$arg'" >&2
-           echo "usage: vendor-official.sh [--closure-only|--check]" >&2
+           echo "usage: vendor-official.sh [--closure-only|--suite-extras|--check]" >&2
            exit 2 ;;
     esac
 done
+
+
+if [ "$MODE" = "suite" ]; then
+    # The upstream-suite HAP extras: the transpiled corpus + the test
+    # closure packages (untracked, generated per tag) staged into rawfile so
+    # the suite leg's materializer serves them beside the pinned bundle.
+    # NOT part of the standard flow — the BUNDLE_FILES drift check judges
+    # the tracked tree only, and this mode runs only in the suite CI job.
+    CORPUS="runtime/spike/upstream-tests"
+    [ -f "$CORPUS/manifest.json" ] || {
+        echo "::error::vendor-official: transpiled corpus missing — run test/upstream-suite/transpile.mjs first" >&2
+        exit 1
+    }
+    mkdir -p "$RAW/upstream-tests" "$RAW/vendor/dsh"
+    : > "$RAW/upstream-tests/__files.txt"
+    (cd "$CORPUS" && find . -name '*.spec.mjs' -o -name 'manifest.json') | sed 's|^\./||' | while IFS= read -r f; do
+        cp "$CORPUS/$f" "$RAW/upstream-tests/$f"
+        echo "upstream-tests/$f" >> "$RAW/upstream-tests/__files.txt"
+    done
+    for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
+        pkg="$(basename "$pkg_dir")"
+        [ -d "$pkg_dir/lib" ] || continue
+        if [ ! -d "$RAW/vendor/dsh/$pkg/lib" ]; then
+            mkdir -p "$RAW/vendor/dsh/$pkg"
+            (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
+                mkdir -p "$RAW/vendor/dsh/$pkg/$(dirname "$f")"
+                cp "$pkg_dir/$f" "$RAW/vendor/dsh/$pkg/$f"
+                echo "vendor/dsh/$pkg/$f" >> "$RAW/upstream-tests/__files.txt"
+                cp "$pkg_dir/package.json" "$RAW/vendor/dsh/$pkg/package.json" 2>/dev/null || true
+            done
+        else
+            (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
+                [ -f "$RAW/vendor/dsh/$pkg/$f" ] || { cp "$pkg_dir/$f" "$RAW/vendor/dsh/$pkg/$f"; echo "vendor/dsh/$pkg/$f" >> "$RAW/upstream-tests/__files.txt"; }
+            done
+        fi
+    done
+    # package.json rows for freshly staged packages (the loader may read them)
+    for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
+        pkg="$(basename "$pkg_dir")"
+        if [ -f "$RAW/vendor/dsh/$pkg/package.json" ] && ! grep -q "^vendor/dsh/$pkg/package.json$" "$RAW/upstream-tests/__files.txt"; then
+            echo "vendor/dsh/$pkg/package.json" >> "$RAW/upstream-tests/__files.txt"
+        fi
+    done
+    echo "vendor-official: suite extras staged ($(wc -l < "$RAW/upstream-tests/__files.txt" | tr -d ' ') files listed)"
+    exit 0
+fi
 
 if [ "$MODE" != "full" ]; then
     # The closure's vendor sources are the local materialized pin trees —

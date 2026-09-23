@@ -24,6 +24,10 @@ export default class EntryAbility extends UIAbility {
     // The page reads this before its first render (onCreate precedes
     // onWindowStageCreate → loadContent). A leg name, never a secret.
     const leg = want.parameters?.['dsh.e2e.leg'];
+    const spec = want.parameters?.['dsh.e2e.spec'];
+    if (typeof spec === 'string' && spec !== '') {
+      E2eLeg.setSpec(spec);
+    }
     if (typeof leg === 'string' && leg.length > 0) {
       E2eLeg.set(leg);
       hilog.info(DOMAIN, TAG, 'leg %{public}s selected at launch', leg);
