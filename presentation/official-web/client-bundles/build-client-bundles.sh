@@ -52,7 +52,16 @@ WORK_REAL="$(cd "$WORK" && pwd -P)"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> clone $UPSTREAM_URL @ $PIN into $WORK"
-git clone "$UPSTREAM_URL" "$WORK"
+# Local-submodule-first, same as build-upstream.sh: the pinned submodule is
+# the SAME commit, and a full GitHub clone is the transfer that dies
+# mid-sideband on a flaky link (curl 92/18 early EOF, measured 2026-09-24).
+SUBMODULE="$HERE/../../../third-party/deepseek-harness"
+if git -C "$SUBMODULE" cat-file -e "$PIN" 2>/dev/null; then
+  echo "==> local submodule carries the pin — cloning from it (no network)"
+  git clone "$SUBMODULE" "$WORK"
+else
+  git clone "$UPSTREAM_URL" "$WORK"
+fi
 git -C "$WORK" checkout --quiet "$PIN"
 
 cd "$WORK"

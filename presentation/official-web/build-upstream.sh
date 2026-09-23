@@ -20,7 +20,18 @@ WORK="$(mktemp -d /tmp/dsh-official-web-build.XXXXXX)"
 trap 'rm -rf "$WORK"' EXIT
 
 echo "==> clone $UPSTREAM_URL @ $PIN into $WORK"
-git clone "$UPSTREAM_URL" "$WORK/deepseek-harness"
+# The pinned submodule is the SAME commit: clone from it when it carries the
+# pin — zero network, and a full GitHub clone is the transfer that dies
+# mid-sideband on a flaky link (measured twice 2026-09-24: curl 18 early EOF
+# at ~2.6 KB remaining). Fall back to the network for fresh checkouts that
+# have not initialized the submodule yet.
+SUBMODULE="$HERE/../../third-party/deepseek-harness"
+if git -C "$SUBMODULE" cat-file -e "$PIN" 2>/dev/null; then
+  echo "==> local submodule carries the pin — cloning from it (no network)"
+  git clone "$SUBMODULE" "$WORK/deepseek-harness"
+else
+  git clone "$UPSTREAM_URL" "$WORK/deepseek-harness"
+fi
 git -C "$WORK/deepseek-harness" checkout --quiet "$PIN"
 
 cd "$WORK/deepseek-harness"
