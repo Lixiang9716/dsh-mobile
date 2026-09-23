@@ -1,4 +1,6 @@
-# The install manifests re-pin the fixture digests and byte count #145's rename moved
+# Agent Note: The install manifests re-pin the fixture digests and byte count #145's rename moved
+
+Status: implemented
 
 ## Problem
 
