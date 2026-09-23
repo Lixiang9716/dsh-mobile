@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "sessionId": "s-dev-carrier-0001",
+      "updatedAt": 2,
+      "running": false,
+      "blank": false,
+      "cwd": "/workspace"
+    }
+  ]
+}
