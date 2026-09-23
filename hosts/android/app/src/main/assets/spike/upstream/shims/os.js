@@ -16,13 +16,16 @@
  */
 export const tmpdir = () => {
   const pinned = globalThis.__dshProfileTmpdir;
-  if (typeof pinned !== 'string' || pinned.length === 0) {
-    throw new Error(
-      'node:os.tmpdir(): profile container not pinned — boot.js must set '
-      + 'globalThis.__dshProfileTmpdir from the host-granted container before '
-      + 'sandbox paths resolve');
+  if (typeof pinned === 'string' && pinned.length > 0) return pinned;
+  // Un-pinned callers (the suite's direct imports, which skip the boot
+  // prelude) fall back to the cwd-relative tmp the fs shim serves — the
+  // profile-container default, kept honest instead of throwing at callers
+  // that never see the prelude.
+  const cwd = globalThis.__dshProfileCwd;
+  if (typeof cwd === 'string' && cwd.length > 0) {
+    return cwd.replace(/\/$/, '') + '/tmp';
   }
-  return pinned;
+  throw new Error('node:os.tmpdir(): no profile container pinned');
 };
 
 export const homedir = () => {

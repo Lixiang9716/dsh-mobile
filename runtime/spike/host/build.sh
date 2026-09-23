@@ -28,21 +28,31 @@ fi
 # not part of the engine's link interface, so it has to be named here.
 ISH_LIBS="-L$ISH_BUILD -ldsh_ish -lishcore -lsqlite3 -lz -lresolv"
 VENDOR=vendor/quickjs-ng/0.17.0
+# Vendored zstd (vendor/ensure-zstd.sh is the pin record): compiled straight
+# into the shared host — SINGLE-THREADED (no ZSTD_MULTITHREAD: one serial
+# runtime thread is the constitution, D2). The globs track the vendored
+# subset exactly; zstd.h/zstd_errors.h sit at the pin root, the rest of the
+# headers in common/ (hence the two -I flags, the same include set every
+# platform build must pass when it compiles these same host sources).
+ZSTD=vendor/zstd/1.5.7
+ZSTD_SRC="$ZSTD/common/*.c $ZSTD/compress/*.c $ZSTD/decompress/*.c"
 RELEASE=0
 [ "${1:-}" = "--release" ] && RELEASE=1
 mkdir -p build
 if [ "$RELEASE" -eq 1 ]; then
-    cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -I"$VENDOR" \
+    cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli-release \
        host/dsh_spike_host.c host/main_cli.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
+       $ZSTD_SRC \
        $ISH_LIBS -lm
     echo "built build/dsh-spike-cli-release (-DDSH_RELEASE)"
 else
-    cc -std=c11 -O1 -D_GNU_SOURCE -I"$VENDOR" \
+    cc -std=c11 -O1 -D_GNU_SOURCE -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli \
        host/dsh_spike_host.c host/main_cli.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
+       $ZSTD_SRC \
        $ISH_LIBS -lm
     echo "built build/dsh-spike-cli"
 fi

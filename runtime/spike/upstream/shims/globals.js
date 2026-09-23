@@ -69,3 +69,58 @@ if (typeof globalThis.structuredClone === 'undefined') {
   };
 }
 
+
+// The ambient `process` global — the vendored jsonl backend reads bare
+// `process.platform` at module top level WITHOUT importing node:process,
+// so the facade must exist before that module evaluates; the harness's own
+// import chain (this file) runs first. posix platform: the win32 limbs
+// stay dead code.
+if (globalThis.process === undefined) {
+  globalThis.process = {
+    env: {},
+    argv: [],
+    platform: 'darwin',
+    version: 'v24.0.0-dsh',
+    nextTick: (fn, ...args) => Promise.resolve().then(() => fn(...args)),
+    cwd: () => globalThis.__dshProfileCwd ?? '/',
+  };
+}
+
+// TextEncoder/TextDecoder — the jsonl backend's UTF-8 faces. quickjs ships
+// no Web encoders; btoa/atob handle binary strings, and the UTF-8 bridge
+// below rides them (code-point by code-point for encode; decode walks the
+// byte string). Covers the corpus's ASCII-and-UTF8 log payloads honestly.
+if (globalThis.TextEncoder === undefined) {
+  globalThis.TextEncoder = class TextEncoder {
+    encode(input = '') {
+      const text = String(input);
+      const out = [];
+      for (let i = 0; i < text.length; i++) {
+        let code = text.codePointAt(i);
+        if (code > 0xffff) i++;
+        if (code < 0x80) out.push(code);
+        else if (code < 0x800) out.push(0xc0 | (code >> 6), 0x80 | (code & 63));
+        else if (code < 0x10000) out.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 63), 0x80 | (code & 63));
+        else out.push(0xf0 | (code >> 18), 0x80 | ((code >> 12) & 63), 0x80 | ((code >> 6) & 63), 0x80 | (code & 63));
+      }
+      return new Uint8Array(out);
+    }
+  };
+}
+if (globalThis.TextDecoder === undefined) {
+  globalThis.TextDecoder = class TextDecoder {
+    decode(bytes = new Uint8Array(0)) {
+      let out = '';
+      let i = 0;
+      const push = (cp) => { out += String.fromCodePoint(cp); };
+      while (i < bytes.length) {
+        const b = bytes[i];
+        if (b < 0x80) { push(b); i += 1; }
+        else if (b < 0xe0) { push(((b & 31) << 6) | (bytes[i + 1] & 63)); i += 2; }
+        else if (b < 0xf0) { push(((b & 15) << 12) | ((bytes[i + 1] & 63) << 6) | (bytes[i + 2] & 63)); i += 3; }
+        else { push(((b & 7) << 18) | ((bytes[i + 1] & 63) << 12) | ((bytes[i + 2] & 63) << 6) | (bytes[i + 3] & 63)); i += 4; }
+      }
+      return out;
+    }
+  };
+}

@@ -18,6 +18,9 @@ cd "$(dirname "$0")"
 # fetch-and-verify logic; a caller that wants only quickjs can run that script
 # on its own.
 sh ./ensure-wasm3.sh   # cwd is this script's directory (cd above)
+# The zstd C library (node:zlib's zstd face rides it through the host
+# intrinsics + the node:zlib shim) — same pin terms.
+sh ./ensure-zstd.sh
 
 # The ENGINE PIN lives at OUR fork (owner direction 2026-09-23: dsh-mobile
 # maintains its own quickjs; #163 pinned it first and #169's merge silently

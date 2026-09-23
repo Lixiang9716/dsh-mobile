@@ -18,7 +18,7 @@
  * usage: node transpile.mjs   (writes runtime/spike/upstream-tests/ + manifest.json)
  */
 import esbuild from 'esbuild';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 const ROOT = new URL('../..', import.meta.url).pathname;
@@ -71,13 +71,59 @@ const spyOnNamespaceRules = (source) => {
 // loader's vendored-package probe owns subpath resolution (both vendored
 // directory families + the exports-map file shapes) — one resolution site,
 // no second map to drift against the C host.
+//
+// EXCEPT imports made from inside an INLINED monorepo limb (see
+// SUBMODULE_SRC_HOISTS below) that name packages the mobile closure does
+// not vendor: llm-pi-ai's config/provider schemas reach '@earendil-works/
+// pi-ai' (not vendored anywhere — the adapter speaks to it only through
+// bundled desktop builds) and '@deepseek-ai/dsh-credentials' (not staged
+// under vendor/dsh/). Leaving them bare would only relocate the on-device
+// load failure from src/context.ts to pi-ai. They resolve instead to a CJS
+// stub whose every property read yields a function that throws when CALLED:
+// linking is satisfied (esbuild interops named imports through property
+// access), module init stays safe (the only top-level dereference in the
+// inlined graph is provider.ts's PROTOCOLS table, which binds the throwers
+// as inert values), and any future live path that executes one fails loud
+// and named — the limbs toPiContext actually serves never touch them. The
+// scope guard is the importer: only the pinned submodule's files get the
+// stub; a SPEC's own pi-ai import stays bare external and keeps failing
+// loud on-device (the llm group's open work, unchanged).
+const UNVENDORED_INLINED = [
+  /^@earendil-works\/pi-ai(?:\/|$)/,
+  /^@deepseek-ai\/dsh-credentials$/,
+];
+// esbuild resolves symlinks by default, so importers arrive as REAL paths —
+// a worktree/symlinked checkout must scope the stub against the resolved
+// submodule location or the guard silently misses (observed: the pi-ai
+// imports leaked back to bare-external). Falls back to the plain path when
+// the submodule is absent; the hoists then no-op through existsSync below.
+let SUBMODULE_ROOT = join(ROOT, 'third-party/deepseek-harness');
+try {
+  SUBMODULE_ROOT = realpathSync(SUBMODULE_ROOT);
+} catch {
+  /* absent submodule: SUBMODULE_SRC_HOISTS targets fail existsSync and the
+   * generic monorepo-src exclusion names the specifier instead */
+}
 const BARE_EXTERNAL_PLUGIN = {
   name: 'bare-external',
   setup(build) {
     build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
       if (args.path.startsWith('.') || args.path.startsWith('/')) return null;
+      if (args.importer.startsWith(SUBMODULE_ROOT)
+          && UNVENDORED_INLINED.some((re) => re.test(args.path))) {
+        return { path: `${args.path}.cjs`, namespace: 'unvendored-stub' };
+      }
       return { path: args.path, external: true };
     });
+    build.onLoad({ filter: /.*/, namespace: 'unvendored-stub' }, () => ({
+      // The .cjs suffix makes esbuild treat the stub as CommonJS, which is
+      // what lets named imports of arbitrary symbols link through property
+      // access instead of failing "No matching export" at build time.
+      contents: 'module.exports = new Proxy({}, { get(_t, key) {'
+        + ' return () => { throw new Error("unvendored limb executed at runtime: " + String(key)); };'
+        + ' } });',
+      loader: 'js',
+    }));
   },
 };
 
@@ -130,20 +176,51 @@ const hoistCreateRequireJson = (source, rel) => {
   return `${imports.join('\n')}\n${rewritten}`;
 };
 
+/** Monorepo src/ subpaths a spec needs at RUNTIME for symbols no vendored
+ * tarball carries. '@deepseek-ai/dsh-llm-pi-ai/src/context.ts' (toPiContext —
+ * the system-prompt-admission spec's admission oracle) is a deliberate
+ * TS-source export of the upstream package, but the npm tarball this closure
+ * vendors ships a SINGLE-FILE lib/index.js bundle whose export list (Config,
+ * PiAiAdapter, apply, inject, name, recordKeyFor, supportedProtocols) omits
+ * it — no bare rewrite can reach the symbol, and the loader's probe families
+ * cannot serve the tarball's shapes for a src/ subpath. The rewrite points
+ * the import at the PINNED SUBMODULE's source (D6: verbatim upstream, never
+ * a modified copy) so esbuild inlines the limb exactly like a local fixture;
+ * the two packages that limb's dead schemas reach but the closure does not
+ * vendor become throwing stubs (see UNVENDORED_INLINED). A missing hoist
+ * target leaves the specifier untouched, so the generic monorepo-src
+ * exclusion still names it — fail loud, never a silent drop (rule 5). */
+const SUBMODULE_SRC_HOISTS = new Map([
+  ['@deepseek-ai/dsh-llm-pi-ai/src/context.ts', 'packages/llm/llm-pi-ai/src/context.ts'],
+]);
+const hoistSubmoduleSrcSubpaths = (source) => {
+  let out = source;
+  for (const [specifier, rel] of SUBMODULE_SRC_HOISTS) {
+    const target = join(SUBMODULE_ROOT, rel);
+    if (!existsSync(target)) continue;
+    out = out.replaceAll(`'${specifier}'`, JSON.stringify(target))
+              .replaceAll(`"${specifier}"`, JSON.stringify(target));
+  }
+  return out;
+};
+
 /** Transpile one spec (or record its named exclusion). */
 const transpileOne = async (rel, manifest) => {
   const source = readFileSync(join(TESTS, rel), 'utf8');
-  const unimplemented = unimplementedIn(source, spyOnNamespaceRules(source));
+  // Hoisting precedes the exclusion scan: a src/ subpath we can inline from
+  // the pinned submodule is no longer a bare monorepo specifier, while any
+  // specifier without a hoist target keeps its named exclusion below.
+  const hoisted = hoistSubmoduleSrcSubpaths(hoistCreateRequireJson(source, rel));
+  const unimplemented = unimplementedIn(hoisted, spyOnNamespaceRules(hoisted));
   if (unimplemented.length > 0) {
     const key = unimplemented.join(' + ');
     manifest.excluded[key] = (manifest.excluded[key] ?? 0) + 1;
     return;
   }
   const flat = rel.split('/').join('__').replace(/\.spec\.ts$/, '.spec.mjs');
-  // The hoisted package.json reads (see hoistCreateRequireJson) inline
-  // verbatim through esbuild's json loader; a spec without them builds from
-  // its file as before.
-  const hoisted = hoistCreateRequireJson(source, rel);
+  // The hoisted package.json reads (see hoistCreateRequireJson) and the
+  // inlined monorepo limbs (see hoistSubmoduleSrcSubpaths) build through
+  // stdin; a spec untouched by either builds from its file as before.
   const options = {
     bundle: true,
     format: 'esm',

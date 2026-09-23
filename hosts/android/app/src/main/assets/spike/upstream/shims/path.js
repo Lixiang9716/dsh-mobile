@@ -74,7 +74,25 @@ export const delimiter = ':';
  * BEFORE the `posix` object, which folds it in. */
 export const toNamespacedPath = (path) => path;
 export const posix = {
+  parse,
   basename, delimiter, dirname, extname, isAbsolute, join, normalize, relative, resolve, sep, toNamespacedPath,
 };
 export const win32 = undefined; // loud: `import { win32 }` yields undefined, property use throws
+/** parse(path) — the POSIX PathObject split (root/dir/base/name/ext).
+ * A function declaration (hoisted): the posix face below references it. */
+export function parse(path) {
+  if (typeof path !== 'string') throw new TypeError(`path.parse: string required (got ${typeof path})`);
+  const abs = path.startsWith('/');
+  // strip trailing slashes (except root itself)
+  let rest = path.replace(/\/+$/, '') || (abs ? '/' : '');
+  if (rest === '/') return { root: '/', dir: '/', base: '', name: '', ext: '' };
+  const slash = rest.lastIndexOf('/');
+  const dir = slash <= 0 ? (abs ? '/' : '.') : rest.slice(0, slash);
+  const base = slash === -1 ? rest : rest.slice(slash + 1);
+  const dot = base.lastIndexOf('.');
+  const name = dot <= 0 ? base : base.slice(0, dot);
+  const ext = dot <= 0 ? '' : base.slice(dot);
+  return { root: abs ? '/' : '', dir, base, name, ext };
+};
+
 export { basename, dirname, extname, isAbsolute, join, normalize, relative, resolve };

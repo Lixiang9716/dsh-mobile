@@ -169,6 +169,12 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_node_addon_flock_js), under: root)
         try write("upstream/shims/expect-poll.js",
                   data: resData(dsh_spike_res_shims_expect_poll_js), under: root)
+        try write("upstream/shims/node-zlib.js",
+                  data: resData(dsh_spike_res_shims_node_zlib_js), under: root)
+        try write("upstream/shims/node-worker-threads.js",
+                  data: resData(dsh_spike_res_shims_node_worker_threads_js), under: root)
+        try write("upstream/shims/node-stream.js",
+                  data: resData(dsh_spike_res_shims_node_stream_js), under: root)
         try write("upstream/shims/node-module.js",
                   data: resData(dsh_spike_res_shims_node_module_js), under: root)
         try write("upstream/shims/path.js",

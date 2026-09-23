@@ -15,6 +15,7 @@
 import 'upstream/web-shims.js'; // MUST be first: the specs compose contexts directly, so the Web-API globals the vendored packages expect (AbortController et al.) must exist before any of them loads
 import { createLogger } from 'logger.js';
 import { resetCollection, runCollected } from 'scenario/upstream-test-harness.js';
+import { fsScope } from 'gateway.js';
 
 const SCENARIO = 'upstream.suite';
 
@@ -65,6 +66,22 @@ const launchSpecFacts = () => {
 const main = async () => {
   log.debug('main begin', {});
   const cfg = launchSpecFacts() ?? await takeRuntimeConfig();
+  // Pin the profile container for the os/fs shims BEFORE the spec imports
+  // evaluate (specs import node:fs/promises + node:os at top level; their
+  // mkdtemp/tmpdir calls need a container the boot prelude would normally
+  // pin — this driver IS that prelude for the suite).
+  {
+    const resolved = await fsScope.resolve('scope://app/');
+    if (typeof resolved?.path === 'string') {
+      globalThis.__dshProfileCwd = resolved.path;
+      globalThis.__dshProfileTmpdir = resolved.path.replace(/\/$/, '') + '/tmp';
+      // The writable workspace VFS serves writes under ONE root (mountWorkspace,
+      // boot.js's move); specs that mkdtemp under tmpdir need that world pinned
+      // too — this driver is the prelude for them.
+      const { mountWorkspace } = await import('upstream/shims/fs.js');
+      mountWorkspace(globalThis.__dshProfileTmpdir);
+    }
+  }
   const spec = cfg.spec;
   if (typeof spec !== 'string' || spec.length === 0) fail('runtime.config carries no spec path');
   emit('suite/spec', { spec });
@@ -73,7 +90,7 @@ const main = async () => {
   // the vitest collection model — exactly what the harness captures).
   await import(spec);
   const report = await runCollected((name, verdict, message) => {
-    emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : 'test/skip', {
+    emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : verdict === 'start' ? 'test/start' : 'test/skip', {
       name: name.slice(0, 300),
       ...(message !== undefined ? { message: String(message).slice(0, 500) } : {}),
     });

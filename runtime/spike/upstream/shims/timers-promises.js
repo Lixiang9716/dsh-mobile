@@ -18,4 +18,14 @@ export const setTimeout = refuse('setTimeout');
 export const setImmediate = refuse('setImmediate');
 export const setInterval = refuse('setInterval');
 
-export default { setTimeout, setImmediate, setInterval };
+/** scheduler.yield() — Node's cooperative scheduler hint; on this serial
+ * runtime a zero-delay timer arm IS the event-loop yield the caller wants
+ * (the spine's atomic-write chain uses it between file steps). wait/timer
+ * helpers ride the same seam. */
+const arm = (delay) => new Promise((resolve) => { globalThis.setTimeout(resolve, delay); });
+export const scheduler = {
+  yield: () => arm(0),
+  wait: (delay = 1) => arm(Math.max(1, delay)),
+};
+
+export default { setTimeout, setImmediate, setInterval, scheduler };

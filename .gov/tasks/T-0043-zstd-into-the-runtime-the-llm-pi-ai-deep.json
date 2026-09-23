@@ -1,0 +1,21 @@
+{
+  "title": "zstd into the runtime + the llm-pi-ai deep-import fix \u2014 the last four spec-blocks",
+  "created": "2026-09-23T14:43:06+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "vendor zstd 1.5.7 (pin+sha256, single-thread) \u2014 DONE",
+    "Agent A: zstd compiled into the shared C host + __zstdCompressB64/__zstdDecompressB64 intrinsics + node:zlib loader mapping, C roundtrip + Node interop proven",
+    "Agent B: node:zlib shim serving the corpus's 6-symbol surface, unit-verified under Node against stubbed intrinsics",
+    "Agent C: llm-pi-ai src/context.ts deep import fixed transpiler-side, target spec runs past module load, controls 65/0+39/0",
+    "Integration: 3 zstd-blocked specs green (config-session-id / serial-listener-review / shutdown-drain), full group rerun, parity, closures synced, gates, push"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0043"
+}
