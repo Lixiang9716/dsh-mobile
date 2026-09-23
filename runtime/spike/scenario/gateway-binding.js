@@ -63,6 +63,26 @@ const nextEvent = async (name) => {
     buffered.push(ev);
   }
 };
+/* Wait for a lifecycle event of a SPECIFIC state, skipping same-name events
+ * in other states. The app.state mapping is a race otherwise: the permission
+ * alert's dismissal activation (foreground) can land in the buffer BEFORE the
+ * runner's HOME press produces the background transition, and "next app.state"
+ * then consumes the stale foreground — measured 2026-09-24 (usecase 1 red:
+ * background/foreground swapped). The states themselves are the drive
+ * contract (run-ios.sh: HOME after notify.scheduled → background; the banner
+ * tap → foreground), so matching on the state is deterministic while
+ * matching on arrival order is not. */
+const nextAppState = async (state) => {
+  log.debug('wait for app.state', { state });
+  for (;;) {
+    const at = buffered.findIndex(
+      (ev) => ev.event === 'app.state' && ev.state === state,
+    );
+    if (at >= 0) return buffered.splice(at, 1)[0];
+    const ev = await new Promise((resolve) => waiters.push(resolve));
+    buffered.push(ev);
+  }
+};
 
 if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   fail('gateway negotiation failed');
@@ -153,13 +173,13 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   const notification = await notify({ title: 'DSH E2E', body: 'gateway binding' });
   emit('notify.scheduled', { idOpaque: notification.id.startsWith('n:') });
 
-  const background = await nextEvent('app.state');
+  const background = await nextAppState('background');
   emit('app.state', { state: background.state });
 
   const response = await nextEvent('notify.response');
   emit('notify.response', { idMatches: response.id === notification.id });
 
-  const foreground = await nextEvent('app.state');
+  const foreground = await nextAppState('foreground');
   emit('app.state', { state: foreground.state });
 
   emit('scenario.complete', { status: 'pass' });

@@ -9,7 +9,7 @@
     }
   },
   "checklist": [
-    "usecase 1: run-ios.sh \u2014 boot/carrier/binding/audit green",
+    "[x] usecase 1: run-ios.sh \u2014 boot/carrier/binding/audit green",
     "[x] usecase 2: run-ios-session-mock-llm.sh green",
     "[x] usecase 3: run-ios-official-web-mount.sh green",
     "[x] usecase 4: run-ios-install-ui.sh green",
