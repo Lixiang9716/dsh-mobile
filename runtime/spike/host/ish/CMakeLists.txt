@@ -292,6 +292,14 @@ find_library(SQLITE3_LIB sqlite3 REQUIRED)
 target_link_libraries(ishcore PUBLIC ${SQLITE3_LIB})
 find_package(Threads REQUIRED)
 target_link_libraries(ishcore PUBLIC Threads::Threads)
+# Apple SDKs spell the chdir file-action with the legacy _np suffix (the
+# 2019 POSIX name landed as posix_spawn_file_actions_addchdir_np there).
+# A compile-time macro equivalence in OUR build file — the vendored source
+# stays verbatim (D6); without this the engine does not compile on macOS.
+if(APPLE)
+  target_compile_definitions(ishcore PRIVATE
+    posix_spawn_file_actions_addchdir=posix_spawn_file_actions_addchdir_np)
+endif()
 # kernel/vdso.c embeds the elf with `.incbin "libvdso.so.elf"`, so the assembler
 # needs the file's own directory on its search path.
 set_source_files_properties("${ISH_SRC}/kernel/vdso.c" PROPERTIES
