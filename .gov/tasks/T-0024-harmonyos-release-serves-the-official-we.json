@@ -2,7 +2,7 @@
   "title": "HarmonyOS release serves the official Web UI (serving/evidence split)",
   "created": "2026-09-21T06:42:42+00:00",
   "rules": {
-    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -35,6 +35,13 @@
       "from": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
       "to": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
       "reason": "stale pin sweep 2026-09-23: the brief predates the govrail 0.48.0 rules adoption; the work state is unchanged"
+    },
+    {
+      "ts": "2026-09-23T18:47:53+00:00",
+      "by": "ws-b",
+      "from": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
   ]
 }

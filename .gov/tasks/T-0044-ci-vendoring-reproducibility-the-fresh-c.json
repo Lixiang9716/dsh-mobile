@@ -1,0 +1,32 @@
+{
+  "title": "CI vendoring-reproducibility: the fresh-clone proof for the vendor scripts",
+  "created": "2026-09-23T17:58:16+00:00",
+  "rules": {
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "[x] Map who materializes what with which invocation shape across gov.yml + dev-* workflows (recorded in the PR body)",
+    "[x] Write runtime/spike/vendor/reproducibility-proof.sh: scratch clone of HEAD, run ensure.sh + ensure-dsh.sh + ensure-dsh-tests.sh with CI's shapes, assert exit 0 + every pin stamp matches its pin table + idempotent second run",
+    "[x] Wire the vendoring-reproducibility gate via gov gate add (always-run in the default DAG) and accept the plane re-baseline ritual",
+    "[x] Green evidence: the proof exits 0 from a fresh clone (command + exit captured in the PR)",
+    "[x] Negative control once: corrupt a pin in the scratch clone, the proof fails loud; restore",
+    "[x] gov run 14/14 green in the worktree",
+    "[x] Record the surprise class once in the ledger; commit the card; open the PR (no merge)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0044",
+  "repins": [
+    {
+      "ts": "2026-09-23T18:47:54+00:00",
+      "by": "ws-b",
+      "from": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
+    }
+  ]
+}
