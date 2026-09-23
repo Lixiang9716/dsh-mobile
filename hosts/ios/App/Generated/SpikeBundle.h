@@ -61,6 +61,7 @@ const char *dsh_spike_res_shims_expect_poll_js(size_t *len);
 const char *dsh_spike_res_shims_node_zlib_js(size_t *len);
 const char *dsh_spike_res_shims_node_worker_threads_js(size_t *len);
 const char *dsh_spike_res_shims_node_stream_js(size_t *len);
+const char *dsh_spike_res_shims_describe_each_js(size_t *len);
 const char *dsh_spike_res_shims_node_module_js(size_t *len);
 const char *dsh_spike_res_shims_path_js(size_t *len);
 const char *dsh_spike_res_shims_npm_bridges_js(size_t *len);

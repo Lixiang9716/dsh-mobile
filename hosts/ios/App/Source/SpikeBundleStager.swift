@@ -175,6 +175,8 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_node_worker_threads_js), under: root)
         try write("upstream/shims/node-stream.js",
                   data: resData(dsh_spike_res_shims_node_stream_js), under: root)
+        try write("upstream/shims/describe-each.js",
+                  data: resData(dsh_spike_res_shims_describe_each_js), under: root)
         try write("upstream/shims/node-module.js",
                   data: resData(dsh_spike_res_shims_node_module_js), under: root)
         try write("upstream/shims/path.js",

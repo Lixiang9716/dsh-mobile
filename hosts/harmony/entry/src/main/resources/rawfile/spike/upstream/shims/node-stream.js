@@ -76,8 +76,29 @@ export class Readable extends MiniStream {
     return stream;
   }
 }
+const pumpThrough = async (value, transforms) => {
+  let current = value;
+  for (const transform of transforms) {
+    if (typeof transform.write !== 'function') {
+      if (typeof transform === 'function') current = transform(current);
+      continue;
+    }
+    transform.write(current);
+    current = await new Promise((resolve) => {
+      const tick = () => {
+        const out = transform.read();
+        if (out !== null) resolve(out);
+        else globalThis.setTimeout(tick, 0);
+      };
+      tick();
+    });
+  }
+  return current;
+};
+
 export async function pipeline(...parts) {
   const callback = typeof parts[parts.length - 1] === 'function' ? parts.pop() : undefined;
+  const transforms = parts.slice(1);
   const pumped = [];
   try {
     let source = parts[0];
@@ -85,25 +106,9 @@ export async function pipeline(...parts) {
       source = Readable.from(source);
     }
     for await (const chunk of source) {
-      let value = chunk;
-      for (const transform of parts.slice(1)) {
-        if (typeof transform.write === 'function') {
-          transform.write(value);
-          value = await new Promise((resolve) => {
-            const tick = () => {
-              const out = transform.read();
-              if (out !== null) resolve(out);
-              else globalThis.setTimeout(tick, 0);
-            };
-            tick();
-          });
-        } else if (typeof transform === 'function') {
-          value = transform(value);
-        }
-      }
-      pumped.push(value);
+      pumped.push(await pumpThrough(chunk, transforms));
     }
-    for (const transform of parts.slice(1)) {
+    for (const transform of transforms) {
       if (typeof transform.end === 'function') transform.end();
     }
   } catch (error) {

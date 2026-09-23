@@ -2,6 +2,7 @@ import '../upstream/shims/globals.js';
 import { attachExpectPoll } from '../upstream/shims/expect-poll.js';
 // dsh:logging-exempt (test harness: verdicts are the product)
 import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
+import { attachEachForms } from '../upstream/shims/describe-each.js';
 
 // upstream-test-harness — the quickjs test shell for the UPSTREAM suite in
 // OUR runtime (transpiled specs import it as `vitest`); unimplemented APIs
@@ -405,21 +406,7 @@ it.each = (table) => (name, fn) => {
 export const test = it;
 export const beforeEach = (fn) => { suite.beforeEach.push(fn); };
 export const afterEach = (fn) => { suite.afterEach.push(fn); };
-/** describe.each / it.each — the table-driven vitest forms the corpus uses
- * (shutdown-drain's mount-order parameterization). Rows become suffixed
- * titles; the row value is prepended to the test's arguments. */
-const titledRows = (name, row) => (
-  typeof row === 'object' && row !== null ? JSON.stringify(row) : String(row)
-);
-const describeBase = describe;
-describe.each = (rows) => (name, fn) => {
-  for (const row of rows) {
-    describeBase(`${name} (%${rows.length > 1 ? 's' : 's'})`.replace('%s', titledRows(name, row)), () => fn(row));
-  }
-};
-it.each = (rows) => (name, fn) => {
-  for (const row of rows) it(`${name} (${titledRows(name, row)})`, () => fn(row));
-};
+attachEachForms(describe, it);
 
 export const beforeAll = (fn) => { suite.before.push(fn); };
 export const afterAll = (fn) => { suite.after.push(fn); };
