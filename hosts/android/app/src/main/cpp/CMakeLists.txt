@@ -7,6 +7,7 @@ project(dsh_spike_android C)
 
 set(DSH_SPIKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/spike)
 set(DSH_ENGINE_DIR ${DSH_SPIKE_DIR}/vendor/quickjs-ng/0.17.0)
+set(DSH_ZSTD_DIR ${DSH_SPIKE_DIR}/vendor/zstd/1.5.7)
 
 add_library(dsh_spike SHARED
         dsh_spike_jni.c
@@ -17,11 +18,41 @@ add_library(dsh_spike SHARED
         ${DSH_ENGINE_DIR}/dtoa.c
         ${DSH_ENGINE_DIR}/libregexp.c
         ${DSH_ENGINE_DIR}/libunicode.c
-        ${DSH_ENGINE_DIR}/quickjs.c)
+        ${DSH_ENGINE_DIR}/quickjs.c
+        # zstd 1.5.7 (BSD-3, single-thread) — the host's node:zlib intrinsics
+        # link against it; pinned by runtime/spike/vendor/ensure-zstd.sh
+        # (materialized by the same ensureSpikeVendor Gradle task).
+        ${DSH_ZSTD_DIR}/common/debug.c
+        ${DSH_ZSTD_DIR}/common/entropy_common.c
+        ${DSH_ZSTD_DIR}/common/error_private.c
+        ${DSH_ZSTD_DIR}/common/fse_decompress.c
+        ${DSH_ZSTD_DIR}/common/pool.c
+        ${DSH_ZSTD_DIR}/common/threading.c
+        ${DSH_ZSTD_DIR}/common/xxhash.c
+        ${DSH_ZSTD_DIR}/common/zstd_common.c
+        ${DSH_ZSTD_DIR}/compress/fse_compress.c
+        ${DSH_ZSTD_DIR}/compress/hist.c
+        ${DSH_ZSTD_DIR}/compress/huf_compress.c
+        ${DSH_ZSTD_DIR}/compress/zstd_compress.c
+        ${DSH_ZSTD_DIR}/compress/zstd_compress_literals.c
+        ${DSH_ZSTD_DIR}/compress/zstd_compress_sequences.c
+        ${DSH_ZSTD_DIR}/compress/zstd_compress_superblock.c
+        ${DSH_ZSTD_DIR}/compress/zstd_double_fast.c
+        ${DSH_ZSTD_DIR}/compress/zstd_fast.c
+        ${DSH_ZSTD_DIR}/compress/zstd_lazy.c
+        ${DSH_ZSTD_DIR}/compress/zstd_ldm.c
+        ${DSH_ZSTD_DIR}/compress/zstd_opt.c
+        ${DSH_ZSTD_DIR}/compress/zstd_preSplit.c
+        ${DSH_ZSTD_DIR}/decompress/huf_decompress.c
+        ${DSH_ZSTD_DIR}/decompress/zstd_ddict.c
+        ${DSH_ZSTD_DIR}/decompress/zstd_decompress.c
+        ${DSH_ZSTD_DIR}/decompress/zstd_decompress_block.c)
 
 target_include_directories(dsh_spike PRIVATE
         ${DSH_SPIKE_DIR}/host
-        ${DSH_ENGINE_DIR})
+        ${DSH_ENGINE_DIR}
+        ${DSH_ZSTD_DIR}
+        ${DSH_ZSTD_DIR}/common)
 
 # -include android_compat.h restores the arc4random_buf declaration for the
 # minSdk-26 bionic headers (see android_compat.h); it is a no-op elsewhere.

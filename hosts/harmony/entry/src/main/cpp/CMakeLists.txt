@@ -11,6 +11,7 @@ project(dsh_spike)
 
 set(SPIKE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/spike)
 set(QJS_DIR ${SPIKE_ROOT}/vendor/quickjs-ng/0.17.0)
+set(ZSTD_DIR ${SPIKE_ROOT}/vendor/zstd/1.5.7)
 
 # Materialize the pinned, sha256-verified engine sources before compiling.
 # Idempotent: exits 0 in place when the tree is already present; network is
@@ -38,11 +39,39 @@ add_library(spike SHARED
   ${QJS_DIR}/libregexp.c
   ${QJS_DIR}/libunicode.c
   ${QJS_DIR}/quickjs.c
+  # zstd 1.5.7 — the host node:zlib intrinsics; pinned by vendor/ensure-zstd.sh
+  ${ZSTD_DIR}/common/debug.c
+  ${ZSTD_DIR}/common/entropy_common.c
+  ${ZSTD_DIR}/common/error_private.c
+  ${ZSTD_DIR}/common/fse_decompress.c
+  ${ZSTD_DIR}/common/pool.c
+  ${ZSTD_DIR}/common/threading.c
+  ${ZSTD_DIR}/common/xxhash.c
+  ${ZSTD_DIR}/common/zstd_common.c
+  ${ZSTD_DIR}/compress/fse_compress.c
+  ${ZSTD_DIR}/compress/hist.c
+  ${ZSTD_DIR}/compress/huf_compress.c
+  ${ZSTD_DIR}/compress/zstd_compress.c
+  ${ZSTD_DIR}/compress/zstd_compress_literals.c
+  ${ZSTD_DIR}/compress/zstd_compress_sequences.c
+  ${ZSTD_DIR}/compress/zstd_compress_superblock.c
+  ${ZSTD_DIR}/compress/zstd_double_fast.c
+  ${ZSTD_DIR}/compress/zstd_fast.c
+  ${ZSTD_DIR}/compress/zstd_lazy.c
+  ${ZSTD_DIR}/compress/zstd_ldm.c
+  ${ZSTD_DIR}/compress/zstd_opt.c
+  ${ZSTD_DIR}/compress/zstd_preSplit.c
+  ${ZSTD_DIR}/decompress/huf_decompress.c
+  ${ZSTD_DIR}/decompress/zstd_ddict.c
+  ${ZSTD_DIR}/decompress/zstd_decompress.c
+  ${ZSTD_DIR}/decompress/zstd_decompress_block.c
 )
 
 target_include_directories(spike PRIVATE
   ${SPIKE_ROOT}/host
   ${QJS_DIR}
+  ${ZSTD_DIR}
+  ${ZSTD_DIR}/common
 )
 
 # Mirror the desktop proof-build flags (runtime/spike/host/build.sh):
