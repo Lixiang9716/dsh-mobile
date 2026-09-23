@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: 7f9cc43e3fde4be8a0091bafd8f1bb326a45ecae
+  en: 897be4ca0db61e1c951848f52effc5e065082d11
   zh: d0ba3a9e64c7e1f2f1d3f5df039dfff28edd4d81
 counterpart: upstream-capability-mounting.zh.md
-last_confirmed: 2026-09-22T18:14:12+00:00
-en_commit: untracked
-zh_commit: untracked
+last_confirmed: 2026-09-23T01:22:29+00:00
+en_commit: 5ed7972
+zh_commit: 5ed7972

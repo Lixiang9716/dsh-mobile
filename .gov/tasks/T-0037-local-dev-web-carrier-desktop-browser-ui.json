@@ -1,0 +1,21 @@
+{
+  "title": "Local dev web carrier \u2014 desktop-browser UI iteration loop",
+  "created": "2026-09-23T01:21:36+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "[x] reference protocol extracted (webserver-contract.md + CarrierServer/CarrierWebDist/CarrierPlugins/CarrierBootConfig + mux client frames)",
+    "[x] dev carrier serves the vendored official dist with runtime-composed boot rows (vendored ClientModuleRegistry composed in Node)",
+    "[x] /plugins combo route + /api session.list + WS /api/remote.mux session/journal replay, unimplemented endpoints answer the structured mobile-runtime envelopes",
+    "[x] official page boots and renders in a desktop browser (browser-use driven), iteration loop demonstrated",
+    "[x] landed per rules: Agent Note, gates green, PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0037"
+}
