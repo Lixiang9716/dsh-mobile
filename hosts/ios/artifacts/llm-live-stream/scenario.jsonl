@@ -1,0 +1,292 @@
+dsh.spike.log: {"data":[{"client":"dsh-web-client","event":"client.selected","scenario":"llm.live-stream.carrier","source":"launch"}],"message":"e2e","level":"info","module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"main begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","level":"info","data":[{"client":"dsh-web-client","scenario":"llm.live-stream.carrier","path":"\/index.html","event":"webclient.mounted"}]}
+dsh.spike.log: {"message":"e2e","data":[{"protocol":"session-projection@0","scenario":"llm.live-stream.carrier","event":"ws.connected"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","label":"llm","id":"notes.toolbar","event":"slot.registered","by":"llm-live-stream"}],"module":"dsh.carrier"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"host.ready","signalled":true}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"descriptor leg probe","data":[]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.leg","leg":"real","transport":"gateway.httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"real config load begin","data":[{"path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":172}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.config.loaded","source":"app-scope","model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"session.created","sessionId":"s-llm-live-stream-0001","scope":"app"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"session"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"agent.started","model":"glm-4.6","tools":0}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"agent"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"turn begin","data":[{"model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.stream.started","turn":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"glm-4.6","messages":1,"maxTokens":256}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","bytes":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse drain begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse splitter created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":15474}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":15428}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":11570}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":11570}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":202}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":0,"text":"The"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":1,"text":" user"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":205}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":2,"text":" wants"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":201}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":3,"text":" a"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":203}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":4,"text":" two"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":201}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":5,"text":"-s"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":206}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":6,"text":"entence"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":208}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":7,"text":" greeting"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":203}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":8,"text":" and"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":207}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":9,"text":" nothing"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":10,"text":" else"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":11,"text":"."}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":206}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":12,"text":" Simple"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":207}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":13,"text":" request"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":14,"text":"."}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":201}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":15,"text":" I"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":206}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":16,"text":" should"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":17,"text":" just"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":207}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":18,"text":" provide"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":207}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":19,"text":" exactly"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":20,"text":" that"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":201}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":21,"text":" -"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":203}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":22,"text":" two"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":209}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":23,"text":" sentences"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":24,"text":" that"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":210}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":25,"text":" constitute"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":201}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":26,"text":" a"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":208}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":27,"text":" greeting"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":28,"text":","}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":29,"text":" with"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":202}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":30,"text":" no"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":210}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":31,"text":" additional"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":204}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":32,"text":" text"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":33,"text":","}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":202}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":34,"text":" no"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":208}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":35,"text":" preamble"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":36,"text":","}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":207}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":37,"text":" nothing"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":205}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":38,"text":" extra"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.reasoning.delta","index":39,"text":"."}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":194}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":0,"text":"Hello"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","first":true,"index":0,"event":"ws.token-delta"}],"level":"info"}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":195}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":1,"text":" there"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":190}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":2,"text":","}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":193}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":3,"text":" and"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":197}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":4,"text":" welcome"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":190}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":5,"text":"!"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":192}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":6,"text":" It"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":191}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":7,"text":"'s"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":199}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":8,"text":" wonderful"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":192}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":9,"text":" to"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":197}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":10,"text":" connect"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":194}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":11,"text":" with"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":193}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":12,"text":" you"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":195}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":13,"text":" today"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":190}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.delta","index":14,"text":"."}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":378}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":12}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat done","data":[{"deltas":15,"chars":67}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.stream.completed","turn":1,"deltas":15,"reasoningDeltas":40,"chars":67,"finishReason":"stop"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.served-model","requested":"glm-4.6","served":"glm-5.3-flash"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.content.asserted","text":"Hello there, and welcome! It's wonderful to connect with you today.","chars":67}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.key.audit","lines":282,"leaked":false}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"session.completed","sessionId":"s-llm-live-stream-0001","status":"pass","deltas":15,"chars":67}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"complete"}]}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","first":false,"index":14,"last":true,"event":"ws.token-delta"}],"level":"info"}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","data":[{"event":"ws.session-complete","scenario":"llm.live-stream.carrier","status":"pass"}],"message":"e2e"}

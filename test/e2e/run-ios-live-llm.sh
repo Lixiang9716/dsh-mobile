@@ -159,3 +159,10 @@ if [ "$PASS" -ne 2 ]; then
   die "failing checker(s):$FAILED — see verdict JSONs under $ART"
 fi
 log "ALL CHECKERS PASS (key-leak re-check clean)"
+
+# ---- receipt (reachable ONLY on a real green run) ---------------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
+sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-live-llm.sh" \
+  "W-LLM live stream: a REAL DeepSeek model streams a token-delta turn through the gateway httpFetch seam on-device, one-to-one against the llm-live-stream manifest; the captured log is re-checked for key material" \
+  "-dsh-mode llm-live; the staged keychain credential serves the real model" \
+  llm-live-stream-device llm-live-stream-carrier

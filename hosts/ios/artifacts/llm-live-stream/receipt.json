@@ -1,0 +1,30 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "W-LLM live stream: a REAL DeepSeek model streams a token-delta turn through the gateway httpFetch seam on-device, one-to-one against the llm-live-stream manifests; the captured log is re-checked for key material",
+  "launchConfiguration": "-dsh-mode llm-live; the staged keychain credential serves the real model",
+  "tree": "origin/main 4dd14f23690c (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "llm.live-stream",
+      "checker": "test/e2e/scenarios/llm-live-stream-device.json",
+      "events": 67,
+      "result": "pass"
+    },
+    {
+      "id": "llm.live-stream.carrier",
+      "checker": "test/e2e/scenarios/llm-live-stream-carrier.json",
+      "events": 7,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-live-llm.sh",
+  "screens": [
+    "screens/01-webclient-loaded.png",
+    "screens/02-mid-stream.png",
+    "screens/03-final-transcript.png"
+  ],
+  "timestamp": "2026-09-24T04:46:47+08:00",
+  "exitCode": 0
+}

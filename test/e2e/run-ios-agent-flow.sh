@@ -178,3 +178,10 @@ cat > "$ART/receipt.json" <<EOF
 EOF
 
 log "ALL AGENT-FLOW CHECKS PASS (manifest $MANIFEST, events $EVENTS)"
+
+# ---- receipt (reachable ONLY on a real green run) ---------------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
+sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-agent-flow.sh" \
+  "Agent-flow E2E: prompt override asserted on the wire + skills discovered from the staged dir and loaded through the real skill tool over the vendored skill family, one-to-one against the agent-flow manifest" \
+  "-dsh-mode session -dsh-scenario agent-flow; host-side mock self-started" \
+  agent-flow

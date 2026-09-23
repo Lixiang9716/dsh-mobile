@@ -147,3 +147,10 @@ else
   echo "  logs: $LOG  screens: $ART/screens/" >&2
   die "composer-live-write checker failed — see $ART/verdict-composer-live-write.json"
 fi
+
+# ---- receipt (reachable ONLY on a real green run) ---------------------------
+# Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
+sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-live-write.sh" \
+  "W-LIVE composer live-write: the official web app's composer drives a real scripted write against the workspace through the full upstream spine, one-to-one against the composer-live-write manifest" \
+  "-dsh-mode session-live; vendored official dist + web-boot plugin files staged" \
+  composer-live-write

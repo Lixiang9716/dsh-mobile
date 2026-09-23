@@ -1,0 +1,8 @@
+{
+  "scenario": "llm.live-stream.carrier",
+  "pass": true,
+  "expected": 7,
+  "logged": 7,
+  "failures": [],
+  "parseErrors": []
+}
