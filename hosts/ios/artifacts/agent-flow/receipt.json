@@ -1,14 +1,25 @@
 {
-  "host": "ios-simulator",
-  "engine": "quickjs-ng (DSHSpike, gateway httpFetch → host loopback mock)",
-  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
-  "scenario": "agent.flow",
-  "proves": [
-    "prompt 修改: the vendored SystemPrompt personaPrefix override reaches the captured wire request's system message",
-    "skills 载入: the fixture skill is discovered from the staged dir into ctx.skills, published in the durable session catalog, and returned by the skill tool",
-    "the full mock-LLM turn flow: a scripted skill tool-call dispatched through the REAL agent loop, its result feeding the closing request"
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "Agent-flow E2E: prompt override asserted on the wire + skills discovered from the staged dir and loaded through the real skill tool over the vendored skill family, one-to-one against the agent-flow manifest",
+  "launchConfiguration": "-dsh-mode session -dsh-scenario agent-flow; host-side mock self-started",
+  "tree": "origin/main 4679176427cc (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "agent.flow",
+      "checker": "test/e2e/scenarios/agent-flow.json",
+      "events": 17,
+      "result": "pass"
+    }
   ],
-  "checker": "test/e2e/check.mjs vs test/e2e/scenarios/agent-flow.json",
-  "events": 17,
+  "runner": "test/e2e/run-ios-agent-flow.sh",
+  "screens": [
+    "screens/01-spine-booted.png",
+    "screens/02-override-asserted.png",
+    "screens/03-tool-round.png",
+    "screens/04-final-state.png"
+  ],
+  "timestamp": "2026-09-24T05:15:04+08:00",
   "exitCode": 0
 }
