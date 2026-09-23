@@ -100,6 +100,7 @@ RESOURCES = [
     ("shims_globals_js", SPIKE / "upstream" / "shims" / "globals.js"),
     ("shims_node_perf_hooks_js", SPIKE / "upstream" / "shims" / "node-perf-hooks.js"),
     ("shims_node_addon_flock_js", SPIKE / "upstream" / "shims" / "node-addon-system-flock.js"),
+    ("shims_expect_poll_js", SPIKE / "upstream" / "shims" / "expect-poll.js"),
     ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
     ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
     ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),

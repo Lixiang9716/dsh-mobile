@@ -57,6 +57,7 @@ const char *dsh_spike_res_shims_crypto_js(size_t *len);
 const char *dsh_spike_res_shims_globals_js(size_t *len);
 const char *dsh_spike_res_shims_node_perf_hooks_js(size_t *len);
 const char *dsh_spike_res_shims_node_addon_flock_js(size_t *len);
+const char *dsh_spike_res_shims_expect_poll_js(size_t *len);
 const char *dsh_spike_res_shims_node_module_js(size_t *len);
 const char *dsh_spike_res_shims_path_js(size_t *len);
 const char *dsh_spike_res_shims_npm_bridges_js(size_t *len);
