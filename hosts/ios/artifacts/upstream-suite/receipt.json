@@ -1,0 +1,14 @@
+{
+ "host": "ios-simulator dsh-iphone A4AE41BF-026A-441E-85DF-F53522996073 (iOS 26.5) + macOS CLI (same counts)",
+ "engine": "quickjs-ng 0.17.0 + fork dsh-native-tostring (98395e3)",
+ "upstream": "deepseek-harness dsh-v0.1.6-alpha.2 test suite; spec: core__agent-loop__tests__loop.spec",
+ "scenario": "upstream.suite",
+ "proves": [
+  "the upstream DSH test suite EXECUTES on the iOS simulator through the quickjs-shaped harness: 63 passed / 2 failed, counts identical to the macOS CLI host",
+  "the two failures are the named timer-seam gap (real setTimeout; the runtime has no timer seam by design)",
+  "the plain-Node reference (same harness) passes 65/65 \u2014 reference-smoke.txt",
+  "suite-wide post-gapfill sweep: 31 green / 16 partial / 6 red / 199 blocked on missing vendored modules (83 unique specifiers classified in cli-sweep-inventory.json)"
+ ],
+ "status": "partial-63-of-65",
+ "exitCode": 1
+}

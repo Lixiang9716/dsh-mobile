@@ -1,0 +1,26 @@
+{
+  "title": "All iOS-side dsh tests on latest main: the 8 E2E runners + bring the upstream DSH test suite to iOS",
+  "created": "2026-09-23T05:03:40+00:00",
+  "rules": {
+    "hash": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "usecase 1: run-ios.sh \u2014 boot/carrier/binding/audit green",
+    "[x] usecase 2: run-ios-session-mock-llm.sh green",
+    "[x] usecase 3: run-ios-official-web-mount.sh green",
+    "[x] usecase 4: run-ios-install-ui.sh green",
+    "[x] usecase 5: run-ios-live-session.sh green",
+    "[x] usecase 6: run-ios-live-write.sh green",
+    "[x] usecase 7: run-ios-live-llm.sh green (key-leak clean)",
+    "[x] usecase 8: run-ios-upstream-parity.sh green (golden-identical)",
+    "[x] upstream DSH test suite runs on the iOS simulator (spec staged, runtime.config carries it, verdicts vs vitest)",
+    "[x] report + field feedback"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0042"
+}

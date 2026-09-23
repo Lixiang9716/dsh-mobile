@@ -26,7 +26,18 @@ CC="$1"; OUT="$2"; SRC="$3"; GEN="${4:-}"
 mkdir -p "$(dirname "$OUT")"
 TMP="${OUT}.tmp"
 
-"$CC" -I"$SRC" ${GEN:+-I"$GEN"} \
+# Apple: cmake may hand us the RESOLVED toolchain binary (not the xcrun
+# shim), which carries no implicit SDK — libc headers then vanish with
+# "'assert.h' file not found" (measured 2026-09-23: a bare /Applications/
+# Xcode.app/.../usr/bin/cc cannot find <assert.h>; the /usr/bin/cc shim can).
+# An explicit -isysroot makes the generator independent of which spelling
+# arrived; on non-Darwin the flag is omitted entirely.
+SYSROOT=""
+if [ "$(uname)" = "Darwin" ] && command -v xcrun >/dev/null 2>&1; then
+    SYSROOT="-isysroot $(xcrun --show-sdk-path)"
+fi
+
+"$CC" $SYSROOT -I"$SRC" ${GEN:+-I"$GEN"} \
     -DGUEST_ARM64=1 -DENGINE_ASBESTOS=1 -DLOG_HANDLER_DPRINTF=1 \
     -include "$SRC/tools/staticdefine.h" \
     -S -o - "$SRC/asbestos/offsets.c" | \

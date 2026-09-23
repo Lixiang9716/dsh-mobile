@@ -144,7 +144,21 @@ fetch_dsh() {
     have_pkg "$dir" && stamped "$dir" "$sha" && { echo "vendor: $dir present (pin-stamped)"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    fetch_retry "$DSH_BASE/$tgz" "$tmp"
+    # Two fetch tiers, sha256 always the authority:
+    #   1. the TRACKED MIRROR (vendor/dsh-tarballs/ — the pinned bytes
+    #      committed 2026-09-23; a cold checkout needs NO network at all);
+    #   2. the frozen-commit upstream (DSH_BASE — master deleted the dir and
+    #      the npm registry re-cut the version, so that ref is THE source).
+    # Tier 2 only covers a tree whose mirror is somehow absent.
+    MIRROR="$(dirname "$0")/dsh-tarballs/$tgz"
+    if [ -f "$MIRROR" ]; then
+        echo "$sha  $MIRROR" | shasum -a 256 -c - >/dev/null \
+            && cp "$MIRROR" "$tmp" \
+            || echo "vendor: mirror digest mismatch for $tgz — falling through to network" >&2
+    fi
+    if [ ! -s "$tmp" ]; then
+        fetch_retry "$DSH_BASE/$tgz" "$tmp"
+    fi
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "$dir"
     mkdir -p "$dir"

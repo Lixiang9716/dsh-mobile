@@ -19,6 +19,9 @@ final class SessionRuntime {
     /// The upstream-parity drive (`-dsh-scenario upstream-parity`): the
     /// vendored spine over scripted turns, diffed against the Node golden.
     private let parityMode: Bool
+    /// The upstream DSH test-suite drive (`-dsh-scenario upstream-suite`):
+    /// one transpiled upstream spec through the quickjs-shaped harness.
+    private let suiteMode: Bool
     /// Config-layer resolution: the ACTIVE client id, its staged directory,
     /// and the toolbar slot allow-set the carrier enforces on projections.
     private var resolvedClient: String
@@ -41,6 +44,7 @@ final class SessionRuntime {
     private var entryModule: String {
         if llmMode { return "scenario/llm-live-stream.js" }
         if parityMode { return "scenario/upstream-parity.js" }
+        if suiteMode { return "scenario/upstream-suite-leg.js" }
         return profileMode ? "scenario/install-from-http.js" : "scenario/session-mock-llm.js"
     }
 
@@ -48,6 +52,7 @@ final class SessionRuntime {
         profileMode = SessionLaunchConfig.profileName != nil
         llmMode = SessionLaunchConfig.scenarioName == "llm-live-stream"
         parityMode = SessionLaunchConfig.scenarioName == "upstream-parity"
+        suiteMode = SessionLaunchConfig.scenarioName == "upstream-suite"
         resolvedClient = SessionLaunchConfig.activeWebClient
         resolvedDir = SessionLaunchConfig.webClientDir(resolvedClient)
         // Base slot defaults; a profile patch's slots.allow REPLACES them.
@@ -201,6 +206,8 @@ final class SessionRuntime {
             source = String(cString: dsh_spike_res_scenario_m2_llm_js(nil))
         case "scenario/upstream-parity.js":
             source = String(cString: dsh_spike_res_scenario_upstream_parity_js(nil))
+        case "scenario/upstream-suite-leg.js":
+            source = String(cString: dsh_spike_res_scenario_upstream_suite_js(nil))
         case "scenario/install-from-http.js":
             source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
         default:
