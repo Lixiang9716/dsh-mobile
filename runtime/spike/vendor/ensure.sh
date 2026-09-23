@@ -29,12 +29,15 @@ sh ./ensure-wasm3.sh   # cwd is this script's directory (cd above)
 # dsh-desktop#1157), and (2) the async-context engine surface (TC39
 # proposal-async-context shape): a per-runtime context value snapshotted
 # into every enqueued job and captured at promise-reaction ATTACH time —
-# the await-boundary propagation JS patches cannot reach. Rebase the
-# branch when tracking a newer quickjs-ng.
-PIN=0.17.0+fork-tostring+async-context
+# the await-boundary propagation JS patches cannot reach — now exposed as
+# the TC39 proposal-async-context face itself: AsyncContext.Variable /
+# snapshot / wrap as an ENGINE INTRINSIC (JS_AddIntrinsicAsyncContext),
+# upstreamable to quickjs-ng as-is. Rebase the branch when tracking a
+# newer quickjs-ng.
+PIN=0.17.0+fork-tostring+async-context+tc39
 QJS_REPO=Lixiang9716/quickjs
-COMMIT=7c4ae18c34476bb8f0ab6703b19802649513dc38
-TARBALL_SHA256=a6443e58f94ba26d2d2eb73396a0777b5de056f47952be9b588d5a4a28278127
+COMMIT=$(cd /tmp/qjs-fork && git rev-parse HEAD)
+TARBALL_SHA256=c635c1e73629b6a69043b09ba181b69a679b4341f9cb6a012d47b83dce6a4f57
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
 #

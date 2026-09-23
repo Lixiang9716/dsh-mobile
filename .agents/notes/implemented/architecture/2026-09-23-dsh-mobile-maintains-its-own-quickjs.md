@@ -89,3 +89,20 @@ never through the visible .then — measured with
 scenario/als-shim-probe.js). ALSO RECORDED: #169's merge silently reverted
 #163's fork pin in ensure.sh back to upstream quickjs — restored (at the
 two-divergence head) in the same change; worth an eye on future merges.
+
+## Post-script 2: the TC39 proposal face as an engine intrinsic (same night)
+
+Divergence 2 grew its spec-conformant public surface:
+`JS_AddIntrinsicAsyncContext` (wired into `JS_NewContext`'s chain) evaluates
+a small source at context creation defining **AsyncContext.Variable
+(get/set/wrap, name/defaultValue), AsyncContext.snapshot(),
+AsyncContext.wrap(fn, snapshot?)** — the proposal's API, riding the engine
+slot via now-engine-bound `__asyncContextGet/Set` (the host-side binding
+retired; the context is a copy-on-write Map keyed by Variable instances).
+Probe-proven end to end: the surface exists, get/set + defaultValue hold,
+values cross await AND host-event hops, wrap/snapshot restore the captured
+whole context (an outside snapshot sees its own world), async wrapped fns
+carry the zone — parity stays golden-identical, loop.spec 65/65, the ALS
+shim rides the same slot untouched. The fork head is now
+`4153a1f` (pin: `0.17.0+fork-tostring+async-context+tc39`). This is the
+shape an upstream quickjs-ng PR would take.
