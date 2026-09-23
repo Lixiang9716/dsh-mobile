@@ -18,7 +18,9 @@
 # is vendored since the W-INTEG web-boot leg: the OFFICIAL web boot composer
 # (its node half) plus the browser bootstrap bundle the injected facade queue
 # expects (lib/client.js). Still staged OUT of the
-# closure: session-persistence-jsonl (native koffi dep), subagent, base, and
+# closure: session-persistence (agent-loop hard-imports its error type at
+# module top — the 2026-09-23 ios parity leg died loading it), subagent, base,
+# and
 # the transport adapters (llm-deepseek / llm-pi-ai — their direct-fetch
 # transport is the desktop's; the mobile seam is the gateway adapter in
 # runtime/spike/upstream/llm-transport.js). dsh-llm is vendored since the
@@ -103,6 +105,7 @@ home-paths|0.1.6-alpha.2|1f08b24e43ec0418f1fcea84cf079bb010597c732de08ec89d59f63
 fs-local|0.1.6-alpha.2|716dac273817e25133b0b600fefd1fa7556dcf904840d6468518e99ec81255d8
 tool-fs|0.1.6-alpha.2|3d649b28a3bd7719d02eeae600074890b12ef108dde19bf3188293c086e1c9be
 tool-str-replace-editor|0.1.6-alpha.2|a4ac3ac8f4fae0fec43a0400071964e4be64296550840534a5e2dd9e49bcf31c
+session-persistence|0.1.6-alpha.2|3bc8f2a2f8382b4985a059307dfbf7c689da4db5c66d26382f22b9bf0d785cad
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
