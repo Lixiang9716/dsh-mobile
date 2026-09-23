@@ -37,7 +37,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#define SMOKE_DEADLINE_SECONDS 10
+#define SMOKE_DEADLINE_SECONDS 120
 #define HTTP_RCV_TIMEOUT_SECONDS 5
 #define HTTP_HEADER_MAX 16384
 

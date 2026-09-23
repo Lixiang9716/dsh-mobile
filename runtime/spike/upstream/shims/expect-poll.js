@@ -12,7 +12,10 @@ export function attachExpectPoll(expect, makeExpect, failWith) {
       failWith('expect.poll: getter must be a function');
     }
     const interval = options.interval ?? 50;
-    const timeout = options.timeout ?? 1000;
+    // vitest's default is 1000ms; quickjs runs the polled work slower
+    // than V8 (measured: the cancel replacement-turn tests time out
+    // at 1s on a loaded box, green at 5s) — 5s is our default.
+    const timeout = options.timeout ?? 5000;
     const sleep = (ms) => new Promise((resolve) => { globalThis.setTimeout(resolve, ms); });
     const run = async (matcherName, args) => {
       const deadline = Date.now() + timeout;

@@ -31,6 +31,26 @@ const pending = new Map(); // handle -> { timerId, cancelled, fn, args }
 const firing = new Map(); // timerId -> handle
 let nextHandle = 1;
 
+/** Arm one timer for a setTimeout entry — extracted to keep the sync face
+ * flat (the shape gate): the cancel-beat-arm race disarms the late arm, a
+ * suppressed fire finds the entry already deleted (idempotent one-way), and
+ * an arm failure fails loud (rule 5 — swallowing it would hang every await
+ * racing the fuse; a host without the seam names the primitive). */
+const armTimer = async (delayMs, handle, entry) => {
+  try {
+    const { timerId } = await timerSchedule(delayMs, { tag: 'shim:setTimeout' });
+    if (entry.cancelled) {
+      timerCancel(timerId).catch(() => {});
+      return;
+    }
+    entry.timerId = timerId;
+    firing.set(timerId, handle);
+  } catch (error) {
+    pending.delete(handle);
+    throw error;
+  }
+};
+
 onEvent((ev) => {
   if (ev?.event !== 'timer.fire') return;
   const handle = firing.get(ev.timerId);
@@ -58,24 +78,7 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
                    // wraps the fire — Node's timer semantics.
                    captured: captureContext() };
   pending.set(handle, entry);
-  timerSchedule(delayMs, { tag: 'shim:setTimeout' })
-    .then(({ timerId }) => {
-      if (entry.cancelled) {
-        // The cancel beat the arm: disarm the now-armed timer (idempotent
-        // one-way race — a suppressed fire may still race in and finds the
-        // entry already deleted).
-        timerCancel(timerId).catch(() => {});
-        return;
-      }
-      entry.timerId = timerId;
-      firing.set(timerId, handle);
-    })
-    .catch((error) => {
-      pending.delete(handle);
-      // Fail loud (rule 5): a host without the seam names the primitive;
-      // swallowing an arm failure would hang every await racing the fuse.
-      throw error;
-    });
+  armTimer(delayMs, handle, entry);
   return handle;
 };
 

@@ -8,12 +8,22 @@ import { fakeTimerApi } from 'scenario/upstream-fake-timers.js';
 // fail LOUD naming the API (rule 5). Fake timers live in
 // scenario/upstream-fake-timers.js.
 
+/** The scalar fast paths of deepEqual — extracted to keep the recursive
+ * comparator under the 50-line function budget. */
+const scalarsEqual = (a, b) => {
+  if (a === b) return true;
+  if (typeof a !== typeof b) return false;
+  if (a === null || b === null || typeof a !== 'object') {
+    return Number.isNaN(a) && Number.isNaN(b);
+  }
+  return undefined; // both non-null objects: continue in deepEqual
+};
+
 /** Deep structural equality (the expect().toEqual core), depth-guarded. */
 const deepEqual = (a, b, seen = new Set(), depth = 0) => {
   if (depth > 64) failWith('harness: deepEqual depth exceeded (64) — cyclic or pathological structure');
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
-  if (a === null || b === null || typeof a !== 'object') return Number.isNaN(a) && Number.isNaN(b);
+  if (scalarsEqual(a, b)) return true;
+  if (a === null || b === null || typeof a !== 'object') return false;
   if (seen.has(a)) return true; // cycle: compared by identity once already
   seen.add(a);
   if (Array.isArray(a) !== Array.isArray(b)) return false;
