@@ -1,4 +1,3 @@
-spike: app launched in session-live mode
 dsh.spike.log: {"data":[{"event":"client.selected","scenario":"session.live-read","client":"dsh-web-official","source":"launch"}],"module":"dsh.carrier","level":"info","message":"e2e"}
 dsh.spike.log: {"level":"debug","module":"b3.web","message":"main begin","data":[{}]}
 dsh.spike.log: {"level":"info","module":"b3.web","message":"e2e","data":[{"scenario":"session.live-read","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
@@ -13,7 +12,6 @@ dsh.spike.log: {"level":"info","module":"b3.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"info","module":"b3.web","message":"e2e","data":[{"scenario":"session.live-read","event":"llm/request/built","provider":"mock","model":"mock-1","messages":2,"tools":7,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:52819/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","ts":"2026-09-23T19:20:33Z","primitive":"httpFetch","verdict":"granted"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":674}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
@@ -53,7 +51,6 @@ dsh.spike.log: {"level":"info","module":"b3.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"info","module":"b3.web","message":"e2e","data":[{"scenario":"session.live-read","event":"llm/request/built","provider":"mock","model":"mock-1","messages":4,"tools":7,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:52819/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.gateway.audit: {"outcome":"ok","caller":"dsh.spike.scenario","ts":"2026-09-23T19:20:43Z","primitive":"httpFetch","verdict":"granted"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":674}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
@@ -73,6 +70,3 @@ dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"
 dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"frames":19,"scenario":"session.live-read","event":"session.journal.real","lastType":"turn\/end","baseline":11,"live":8}]}
 dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"scenario":"session.live-read","event":"module.system.live","mode":"live","bootstrap":"@deepseek-ai\/dsh-client-modules (vendored)"}]}
 dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"bodyText":" 探索未至之境 预览版 选择工作区 选择一个工作区开始 ","scenario":"session.live-read","event":"page.rendered","boot":false,"rootHasChild":true,"moduleMode":"live"}]}
-spike: session-live drive finished verdict=PASS
-spike: verdict PASS (session.live-read, events logged: 21)
-spike: sequence session-live=PASS

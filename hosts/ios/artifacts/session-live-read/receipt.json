@@ -1,0 +1,23 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "W-SESS session-live: the FULL upstream agent spine boots on-device, claims /api/session.list + the mux session/journal streams, and answers the official web app with real data \u2014 one scripted-llm turn before the page loads and one streamed live into the attached page, one-to-one against the session-live-read manifest",
+  "launchConfiguration": "-dsh-mode session-live; vendored official dist + web-boot plugin files staged",
+  "tree": "origin/main 0ad11431a6d8 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "session.live-read",
+      "checker": "test/e2e/scenarios/session-live-read.json",
+      "events": 46,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-live-session.sh",
+  "screens": [
+    "screens/01-session-live-boot-screen.png",
+    "screens/02-final-state.png"
+  ],
+  "timestamp": "2026-09-24T03:31:21+08:00",
+  "exitCode": 0
+}
