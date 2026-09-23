@@ -100,6 +100,8 @@ enum SpikeBundleStager {
                       data: resData(dsh_spike_res_shims_fs_promises_js), under: root)
             try write("upstream/shims/timers-promises.js",
                       data: resData(dsh_spike_res_shims_timers_promises_js), under: root)
+            try write("upstream/shims/timers.js",
+                      data: resData(dsh_spike_res_shims_timers_js), under: root)
             try write("upstream/shims/npm-bridges.js",
                       data: resData(dsh_spike_res_shims_npm_bridges_js), under: root)
             try write("upstream/shims/fs-workspace.js",
@@ -206,6 +208,8 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_fs_promises_js), under: root)
         try write("upstream/shims/timers-promises.js",
                   data: resData(dsh_spike_res_shims_timers_promises_js), under: root)
+        try write("upstream/shims/timers.js",
+                  data: resData(dsh_spike_res_shims_timers_js), under: root)
         try write("vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js",
                   data: resData(dsh_spike_res_npm_agent_presets_index_js), under: root)
         try write("vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js",

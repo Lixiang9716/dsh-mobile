@@ -94,6 +94,7 @@ RESOURCES = [
     ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
     ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"),
     ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
+    ("shims_timers_js", SPIKE / "upstream" / "shims" / "timers.js"),
     ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
     # the upstream-suite globals (AbortController/structuredClone — installed by
     # the test harness before any spec imports; lives with the other shims)
@@ -182,6 +183,7 @@ TREES = [
         "agent-presets", "atomic-write", "home-paths",
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
+        "session-persistence",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
     ]
 ] + [

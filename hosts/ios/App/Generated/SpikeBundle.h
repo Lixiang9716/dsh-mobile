@@ -53,6 +53,7 @@ const char *dsh_spike_res_shims_fs_js(size_t *len);
 const char *dsh_spike_res_shims_fs_workspace_js(size_t *len);
 const char *dsh_spike_res_shims_fs_promises_js(size_t *len);
 const char *dsh_spike_res_shims_timers_promises_js(size_t *len);
+const char *dsh_spike_res_shims_timers_js(size_t *len);
 const char *dsh_spike_res_shims_crypto_js(size_t *len);
 const char *dsh_spike_res_shims_globals_js(size_t *len);
 const char *dsh_spike_res_shims_node_perf_hooks_js(size_t *len);
