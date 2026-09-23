@@ -1,0 +1,12 @@
+--------- beginning of main
+09-23 14:20:35.128 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:20:35.143 18050 18104 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:20:35.144 18050 18104 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:20:35.145 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__request-error.spec.mjs"}]}
+09-23 14:20:35.246 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent/request-error > does not offer middleware failures to request recovery"}]}
+09-23 14:20:35.281 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent/request-error > lets each failed request return a retry action before its turn closes"}]}
+09-23 14:20:35.302 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent/request-error > lets cancellation win over a retry action"}]}
+09-23 14:20:35.324 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"test/pass","name":"agent/request-error > does not retry when the recovery listener fails before returning its action"}]}
+09-23 14:20:35.325 18050 18104 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/summary","spec":"upstream-tests/core__agent-loop__tests__request-error.spec.mjs","passed":4,"failed":0,"skipped":0}]}
+09-23 14:20:35.325 18050 18104 I dsh.spike.result: upstream.suite PASS | quickjs-ng 0.17.0
+09-23 14:20:35.325 18050 18104 I dsh.spike.result: ALL PASS

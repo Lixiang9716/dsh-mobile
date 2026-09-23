@@ -1,0 +1,10 @@
+--------- beginning of main
+09-23 14:19:59.474 17359 17414 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:19:59.489 17359 17414 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:19:59.489 17359 17414 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:19:59.490 17359 17414 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent-loop__tests__config-session-id.spec.mjs"}]}
+09-23 14:19:59.526 17359 17414 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"ReferenceError: cannot load module '@deepseek-ai/dsh-session-persistence-jsonl'"}]}
+09-23 14:19:59.526 17359 17414 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"cannot load module '@deepseek-ai/dsh-session-persistence-jsonl' | "}]}
+09-23 14:19:59.527 17359 17414 I dsh.spike: m4 FAIL scenario completed with pass=false
+09-23 14:19:59.527 17359 17414 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-23 14:19:59.527 17359 17414 I dsh.spike.result: ALL FAIL

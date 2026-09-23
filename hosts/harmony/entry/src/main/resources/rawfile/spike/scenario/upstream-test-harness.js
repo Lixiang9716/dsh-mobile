@@ -351,6 +351,17 @@ export const beforeEach = (fn) => { suite.beforeEach.push(fn); };
 export const afterEach = (fn) => { suite.afterEach.push(fn); };
 export const beforeAll = (fn) => { suite.before.push(fn); };
 export const afterAll = (fn) => { suite.after.push(fn); };
+/** vitest's onTestFinished: register cleanup for the CURRENTLY-RUNNING test
+ * (or the collection tail when called at module scope — the spec's intent
+ * is teardown-after-test either way). */
+export const onTestFinished = (fn) => {
+  const last = suite.tests[suite.tests.length - 1];
+  if (last !== undefined) {
+    last.hooks.afterEach.push(fn);
+  } else {
+    suite.afterEach.push(fn);
+  }
+};
 export const expect = Object.assign(makeExpect, {
   extend: () => failWith('harness: expect.extend is not implemented'),
   anything: () => ({ __matcher: () => true }),

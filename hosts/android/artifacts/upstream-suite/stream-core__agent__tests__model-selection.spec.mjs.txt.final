@@ -1,0 +1,10 @@
+--------- beginning of main
+09-23 14:26:44.666 19568 19622 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"upstream.suite","event":"client.selected","client":"dsh-web-client"}]}
+09-23 14:26:44.685 19568 19622 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"main begin","data":[{}]}
+09-23 14:26:44.685 19568 19622 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"take runtime config","data":[{}]}
+09-23 14:26:44.687 19568 19622 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"suite/spec","spec":"upstream-tests/core__agent__tests__model-selection.spec.mjs"}]}
+09-23 14:26:44.715 19568 19622 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"scenario failed","data":[{"reason":"SyntaxError: Could not find export 'FiberState' in module '@deepseek-ai/cordis'"}]}
+09-23 14:26:44.716 19568 19622 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"upstream.suite","event":"scenario.failed","reason":"Could not find export 'FiberState' in module '@deepseek-ai/cordis' | "}]}
+09-23 14:26:44.717 19568 19622 I dsh.spike: m4 FAIL scenario completed with pass=false
+09-23 14:26:44.717 19568 19622 I dsh.spike.result: upstream.suite FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-23 14:26:44.717 19568 19622 I dsh.spike.result: ALL FAIL

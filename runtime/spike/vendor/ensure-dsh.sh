@@ -38,10 +38,6 @@ set -e
 cd "$(dirname "$0")"
 
 DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
-# The last upstream commit that still carried the 0.1.6-alpha.2 vendor dir
-# (a934d9886106, 2026-09-18 "beta 通道切到 dsh 0.1.6-alpha.2 内核"); see the
-# fallback note inside fetch_dsh.
-DSH_BASE_FROZEN="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/a934d9886106/vendor/dsh-runtime/0.1.6-alpha.2"
 NPM_BASE="https://registry.npmjs.org"
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
@@ -139,15 +135,7 @@ fetch_dsh() {
     have_pkg "$dir" && stamped "$dir" "$sha" && { echo "vendor: $dir present (pin-stamped)"; return; }
     tgz="deepseek-ai-dsh-$name-$ver.tgz"
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    # Upstream DELETED vendor/dsh-runtime/0.1.6-alpha.2 from master on
-    # 2026-09-22 (the beta channel moved to 0.1.7-alpha.2, commit 69982afb),
-    # so a cold fetch of these pins 404s on master. The pinned bytes still
-    # live at the last commit that carried the dir — verified 2026-09-23:
-    # every tarball fetched at DSH_FROZEN_REF reproduces its pin's sha256.
-    # The integrity check below is unchanged, so the fallback can never
-    # deliver wrong bytes; it only makes a dead-on-master pin fetchable.
-    fetch_retry "$DSH_BASE/$tgz" "$tmp" \
-        || fetch_retry "$DSH_BASE_FROZEN/$tgz" "$tmp"
+    fetch_retry "$DSH_BASE/$tgz" "$tmp"
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "$dir"
     mkdir -p "$dir"
