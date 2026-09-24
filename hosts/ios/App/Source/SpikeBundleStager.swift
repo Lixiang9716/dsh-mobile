@@ -286,6 +286,16 @@ enum SpikeBundleStager {
         // The W-RPC write surface (b4): the composer-send adapter + scenario.
         try write("upstream/web-write.js",
                   data: resData(dsh_spike_res_upstream_web_write_js), under: root)
+        try write("upstream/web-write-catalog.js",
+                  data: resData(dsh_spike_res_upstream_web_write_catalog_js), under: root)
+        try write("upstream/web-write-coverage.js",
+                  data: resData(dsh_spike_res_upstream_web_write_coverage_js), under: root)
+        try write("upstream/web-write-files.js",
+                  data: resData(dsh_spike_res_upstream_web_write_files_js), under: root)
+        try write("upstream/web-write-picker.js",
+                  data: resData(dsh_spike_res_upstream_web_write_picker_js), under: root)
+        try write("upstream/web-write-workspace.js",
+                  data: resData(dsh_spike_res_upstream_web_write_workspace_js), under: root)
         try write("upstream/web-write-inventory.js",
                   data: resData(dsh_spike_res_upstream_web_write_inventory_js), under: root)
         try write("upstream/web-write-streams.js",
