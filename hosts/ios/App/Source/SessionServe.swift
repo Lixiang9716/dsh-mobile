@@ -253,14 +253,16 @@ final class SessionServe {
         if interactive {
             // The "/" surfaces (client-ui-commands + client-ui-skill read
             // these): the commands registry + the skill plane under the
-            // profile container. The container skills dir is user-staged
-            // (Files.app exposes Documents); customSkillDirs points there so
-            // a dropped SKILL.md shows up without a rebuild.
+            // profile container. The custom skills dir must live INSIDE the
+            // pinned workspace (the fs backends refuse anything outside it —
+            // measured: Documents/skills was skipped by the discovery
+            // provider), so the user stages skills at workspace/skills via
+            // Files.app.
             config["commands"] = true
             config["skills"] = [
                 "dshHome": "\(Self.workspaceRoot.path)/home",
                 "agentsHome": "\(Self.workspaceRoot.path)/home/agents",
-                "customSkillDirs": ["\(Self.appScopeRoot.path)/skills"],
+                "customSkillDirs": ["\(Self.workspaceRoot.path)/skills"],
             ]
         }
         return config
