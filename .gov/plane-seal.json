@@ -6,6 +6,9 @@
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
+    ".gov/rejections/case-bundle-files.sh": {
+      "sha256": "966a77ec7df077781dc7391f26eecbf39bf4a92c8d7fb9a44ca5571681fa89c2"
+    },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
@@ -22,13 +25,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
+      "sha256": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-23T18:41:56+00:00",
-    "caller": "lixiang@lixiangdeMacBook-Air.local",
+    "ts": "2026-09-24T10:41:10+00:00",
+    "caller": "lx@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "task card T-0044 (CI vendoring-reproducibility: the fresh-clone proof for the vendor scripts): intentional gate-set change wiring the vendoring-repro gate into the default DAG; reviewed as part of the feat/ci-vendoring-reproducibility PR"
+    "reason": "the #57 round added .gov/rejections/case-bundle-files.sh (the bundle-files gate's rule-6 rejection proof) after the last seal write \u2014 re-sealing to include it; the case runs green (reject + restore verified) and gov self-test adopts it"
   }
 }

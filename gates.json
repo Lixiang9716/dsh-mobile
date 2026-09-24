@@ -15,7 +15,8 @@
       "plane",
       "e2e-matrix",
       "closures",
-      "vendoring-repro"
+      "vendoring-repro",
+      "bundle-files"
     ],
     "quick": [
       "notes"
@@ -210,6 +211,15 @@
       ],
       "description": "fresh-clone proof: the vendor scripts materialize what they promise under CI's invocation shapes (mirror-first; engine tarballs + npm legs download)",
       "timeoutMs": 480000
+    },
+    {
+      "id": "bundle-files",
+      "command": [
+        "node",
+        "hosts/harmony/ci/check-bundle-files.mjs"
+      ],
+      "description": "harmony BUNDLE_FILES vs rawfile/spike cross-check, both directions (#57)",
+      "timeoutMs": 120000
     }
   ]
 }
