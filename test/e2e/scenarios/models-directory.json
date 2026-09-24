@@ -1,0 +1,64 @@
+{
+  "scenario": "models.directory",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "models.directory",
+      "match": {
+        "providers": 1,
+        "provider": "mock",
+        "settingsNs": "llm-mock",
+        "settingsPath": [
+          "providers",
+          "default"
+        ],
+        "canOpenPresetDirectory": false
+      }
+    },
+    {
+      "event": "models.mirror",
+      "match": {
+        "ns": "llm-mock",
+        "writable": true,
+        "hasDocument": false,
+        "baseModel": "probe-1",
+        "baseKeyEnv": "MOCK_API_KEY",
+        "userLayer": false
+      }
+    },
+    {
+      "event": "models.mirror.write",
+      "match": {
+        "ns": "llm-mock",
+        "op": "set providers/default/model",
+        "userWins": true,
+        "baseIntact": true
+      }
+    },
+    {
+      "event": "models.credentials",
+      "match": {
+        "route": "configured",
+        "roundtrip": "set→describe→unset→describe",
+        "leaked": false
+      }
+    },
+    {
+      "event": "models.catalog",
+      "match": {
+        "default": "mock/probe-1",
+        "groups": 1
+      }
+    },
+    {
+      "event": "models.directory/completed",
+      "match": {
+        "status": "pass",
+        "upstream": "0.1.6-alpha.2",
+        "surface": "the official models 设置页: directory row + settings mirror + page write + credential roundtrip"
+      }
+    }
+  ]
+}

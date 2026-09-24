@@ -6,6 +6,13 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 models 页 e2e 变更（2026-09-25）：官方客户端的
+> models 设置页有了独立 CLI 证明 —— scenario `models.directory` 6/6，目录
+> `runtime/spike/artifacts/macos-cli-models-directory/` —— 且总量对本树重跑
+> （44 个目录 / 92 条 verdict / 43 个 scenario id 全部有绿证 / 35 个
+> manifest）。下面的 `49fce4f` 注记是上一次的时效记录；其加入的行保留
+> 当时的展示名拼写，verdict id 现已细化。
+>
 > **时效性**：本矩阵反映提交 `49fce4f`
 > （发布手册 #80 与打包流水线 #77 未落地任何证据目录；
 > 叠加上鸿蒙 `m2.llm` 真实 LLM 分支 #79——其目录
@@ -49,10 +56,10 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 37 |
-| 已提交 verdict（80 绿，2 条配额阻塞红） | 82 |
-| 至少有一份已提交证据的 scenario | 31 / 31 个不同的 scenario id（32 个 manifest） |
-| 已验证 PNG 的截图 | 86 |
+| 证据目录 | 44 |
+| 已提交 verdict（90 绿，2 条配额阻塞红） | 92 |
+| 至少有一份已提交证据的 scenario | 43 / 43 个不同的 scenario id（35 个 manifest） |
+| 已验证 PNG 的截图 | 108 |
 | 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
@@ -90,14 +97,17 @@
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 27/27 | — |
+| `models.directory` | — | — | — | 6/6 |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
 
-28 个不同的 scenario id（29 个 manifest——`m2.llm` 有两个：19 事件的
+43 个不同的 scenario id（35 个 manifest——`m2.llm` 有两个：19 事件的
 scripted-SSE CLI 分支与 14 事件的设备分支）全部至少有一份绿色已提交证据；
-`m2.session` 在全部四个主机上绿色。main 上的每一条 verdict 都是绿的，
+`m2.session` 在全部四个主机上绿色，models 设置页的 `models.directory` 由
+macOS CLI 列承载（api-coverage-probe 所带的 coverage 面断言，现已一对一
+声明并机器校验）。main 上的每一条 verdict 都是绿的，
 只有 `hosts/harmony/artifacts/m5-m2-llm/` 的两条配额阻塞 verdict 例外
 （缺口 8/9，属有意提交）。
 
@@ -148,6 +158,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |

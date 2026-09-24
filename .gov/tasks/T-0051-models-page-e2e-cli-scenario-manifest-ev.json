@@ -1,0 +1,21 @@
+{
+  "title": "models-page e2e: CLI scenario + manifest + evidence + matrix row",
+  "created": "2026-09-24T22:10:21+00:00",
+  "rules": {
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+    }
+  },
+  "checklist": [
+    "[x] models-directory.js CLI scenario (directory row + settings mirror + page write + credential roundtrip)",
+    "[x] manifest test/e2e/scenarios/models-directory.json one-to-one",
+    "[x] runner runtime/spike/ci/run-models-directory-e2e.sh green with evidence dir",
+    "[x] docs/e2e-matrix.md row + Agent Note",
+    "gov gates green, PR landed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0051"
+}

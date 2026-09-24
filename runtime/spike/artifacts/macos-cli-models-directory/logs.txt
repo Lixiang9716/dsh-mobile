@@ -1,0 +1,30 @@
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"shell"}]}
+dsh.spike.log: {"level":"warn","module":"dsh.shell.wasm","message":"starter program not written","data":[{"reason":"the host granted no scoped workspace (no __dshProfileScopeRoot)"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"","offered":false}]}
+dsh.spike.log: {"level":"info","module":"dsh.shell.ish","message":"no Linux guest staged by this host; the ish tool is not offered","data":[]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.directory","providers":1,"provider":"mock","settingsNs":"llm-mock","settingsPath":["providers","default"],"canOpenPresetDirectory":false}]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.mirror","ns":"llm-mock","writable":true,"hasDocument":false,"baseModel":"probe-1","baseKeyEnv":"MOCK_API_KEY","userLayer":false,"revision":0}]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.mirror.write","ns":"llm-mock","op":"set providers/default/model","userWins":true,"baseIntact":true,"revision":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":56}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":56}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"credentials.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.credentials","route":"configured","roundtrip":"set→describe→unset→describe","leaked":false}]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.catalog","default":"mock/probe-1","groups":1}]}
+dsh.spike.log: {"level":"info","module":"models.directory","message":"e2e","data":[{"scenario":"models.directory","event":"models.directory/completed","status":"pass","upstream":"0.1.6-alpha.2","surface":"the official models 设置页: directory row + settings mirror + page write + credential roundtrip"}]}
