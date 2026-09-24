@@ -158,7 +158,6 @@ ensure_npm "dsh-experimental-webworker-runtime" "0.1.6-alpha.2" "d81e877ac81f41b
 ensure_npm "dsh-fs-observation-policy" "0.1.6-alpha.2" "0255ed745d392b20c086cc55745c5ee74f012b29f34a8342a2fd0809524a7112"
 ensure_npm "dsh-fs-sandbox" "0.1.6-alpha.2" "c4ef917c21fdd04191bccade73e5bb4778bd6bfddee751c850277ac5a87297b2"
 ensure_npm "dsh-fs-ssh" "0.1.6-alpha.2" "1b44b1319574093038ad59f5e120b4e7142d2f2234304f766f1b713a21ac3dc0"
-ensure_npm "dsh-goal" "0.1.6-alpha.2" "fad5689d46a8798dcef9cb3eda948fba461ce0c8f81d484d6ec1ef1c8403ef41"
 ensure_npm "dsh-goal-round-driver" "0.1.6-alpha.2" "82b33394a15622aa2842d6052f22cd56c7999a682b1a688130c6dec706446bd2"
 ensure_npm "dsh-hmr" "0.1.6-alpha.2" "b6d61a6a961c750734d31aad951fb0ede80b554b041311a4616116729e17d39b"
 ensure_npm "dsh-hooks-claude-code" "0.1.6-alpha.2" "0d3bad2d8d6a3d4489dea935adb2e7dcca632cd64ca0787d2fdd9520eb9ba7a0"
