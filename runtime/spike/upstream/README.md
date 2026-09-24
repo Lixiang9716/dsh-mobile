@@ -11,7 +11,8 @@ the spike runtime + this layer.
 - `web-shims.js` — Web-API globals the vendored closure expects
   (`structuredClone`, `AbortController`/`AbortSignal`, `console` backstop,
   `queueMicrotask` context wrapper, native `Function.prototype.toString`
-  formatting). MUST stay the first import of `boot.js`.
+  formatting; the INTERACTIVE CIRCLE row adds `TextEncoder`/`TextDecoder`).
+  MUST stay the first import of `boot.js`.
 - `web-boot.js` — the WEB BOOT PRODUCER: mounts the vendored
   `ClientModuleRegistry` on a ctx over the staged web-plugin VFS and hands
   the composed wire plus the claimed `/api` + mux journal surface to the
@@ -51,7 +52,23 @@ added the llm closure + its mock-server test vehicle; the file-tools row
 added the fs-local + tool-fs + tool-str-replace-editor + attachment closure
 and npm diff; the SKILL row added the dsh-skill + skill-filesystem +
 tool-skill closure and npm yaml, with chokidar answered by a loud linkage
-shim). The loader FAILS
+shim; the INTERACTIVE CIRCLE row (2026-09-23, the official UI's
+unresolved-plugin report) added the "/"-surface plugin closure — persona,
+agent-instructions, plan-mode, goal + command-goal + tool-goal, jobs +
+output-retention + tool-jobs, user-questions + tool-ask-user, chunked-list +
+util-time + subagent + tool-subagent + tool-subagent-control, workflow +
+tool-workflow, compaction + token-meter + compaction-tool-result-pruner +
+compaction-basic + command-compact, credentials, terminal — with
+TextEncoder/TextDecoder answered by web-shims globals (rows below), and
+SKIPPED: tool-fs-search (the ripgrep binary, unchanged), tool-web (the
+turndown require seam, below), workflow-ptc (the node:vm confined realm,
+below), plus the peers nothing in the closure link-imports: dsh-web
+(tool-web's own peer), dsh-ptc-runtime (the abstract PtcRuntime contract; its
+only concrete implementation is the desktop's sandboxed Node process),
+dsh-permission-presets / dsh-sandbox-policy / dsh-session-projection-cache /
+dsh-session-query / dsh-user-approval (subagent's ctx.get()-soft peers, each
+loud at use naming the package), dsh-compaction-image-offload /
+dsh-llm-retry (token-meter peers its lib never references). The loader FAILS
 LOUD naming any specifier not in this
 table (rule 5) — a new upstream import can never be silently mis-served.
 
@@ -74,6 +91,8 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `diff` (bare npm; `structuredPatch` for write/edit hunk diffs) | `shims/npm-bridges.js` — registers a one-line re-export through the host's `__dshModuleDefine` runtime-module seam pointing at the VERBATIM `vendor/npm/diff@9.0.0/libesm/` tree; the host bare-map (hosts/**) is not touched and no upstream byte is copied. Must be imported BEFORE the tool packages resolve (ESM links static graphs before any module body runs) | supported |
 | `yaml` (bare npm; `parse` for SKILL.md frontmatter) | `shims/npm-bridges.js` — the same runtime-module seam, pointing at the VERBATIM `vendor/npm/yaml@2.9.0/browser/` tree (the package's own ESM face; its "node" face is CJS, which the loader cannot serve) | supported (skill row) |
 | `chokidar` (bare npm; the skill-filesystem watcher engine) | `shims/npm-bridges.js` — a LOUD linkage shim (no vendored tree: the engine is real OS fs events plus awaitWriteFinish wall-clock timers, and the runtime has neither seam — the @vscode/ripgrep precedent); the mobile profile mounts skill-filesystem with `watch:false` and never reaches it | unsupported (loud) |
+| `turndown`, `@joplin/turndown-plugin-gfm` (bare npm; tool-web's HTML→markdown) | NOT PROVIDED — tool-web stays OUT of the closure: its link-time dep turndown's ESM face (`lib/turndown.es.js`) executes a bare `require('@mixmark-io/domino')` at MODULE TOP (the runtime has no native DOMParser, so the native-parser branch never applies) and domino is CJS-only; the ESM-only loader has no require seam and none can be intercepted from the module system (the chokidar precedent's harder sibling — a global `require` would be a new seam, not a row) | unsupported (package skipped) |
+| `node:vm` (workflow-ptc's confined guest realm: `createContext`/`runInContext` host-side over an embedded guest source) | NOT PROVIDED — workflow-ptc stays OUT of the closure: the VM realm IS the PTC execution model ("process isolation and cancellation belong to PTC", its own guest source says) and has no in-runtime equivalent (the subprocess-class seam) | unsupported (package skipped) |
 | `node:os` (`tmpdir`) | `shims/os.js` — profile container pinned by `boot.js` | supported (after container pin) |
 | `node:process` (global `process`) | `shims/process.js` — env = launch snapshot, cwd = container, `nextTick` = microtask | supported (subset) |
 | `node:module` (`createRequire`) | `shims/node-module.js` over the host `__dshBundleRequire` seam — resolves `base` through the loader's own bare map, serves relative `.json` reads under the bundle root only | supported (subset) |
@@ -81,7 +100,8 @@ table (rule 5) — a new upstream import can never be silently mis-served.
 | `AbortController`/`AbortSignal` (`addEventListener`, `throwIfAborted`, `AbortSignal.any`) | `web-shims.js` | supported |
 | `AbortSignal.timeout` | `web-shims.js` — throws (no wall-clock timers in the spike runtime) | unsupported (loud) |
 | `setTimeout`/`setInterval` | NOT PROVIDED — absent on purpose; an accidental call is a loud ReferenceError. Only `cordis-host-runner` (the Node host runner, replaced by `boot.js`) uses them; vendored `dsh-timeout` is pure arithmetic (constants + signal classification), no timers | unsupported (loud) |
-| `fetch`, `TextEncoder`, global `TextDecoder` | NOT PROVIDED as globals — closure-verified: only `cordis-host-runner` (not mounted) and unreached zod paths use them. `TextDecoder` IS served as a `node:util` import (fs-local's text decode — see the shim row above); `Buffer` is the DshBuffer global + `node:buffer`; the host binds `atob`/`btoa` natively | partial (globals), supported (imports) |
+| `fetch` | NOT PROVIDED as a global — closure-verified: only `cordis-host-runner` (not mounted) and unreached zod paths use it. `Buffer` is the DshBuffer global + `node:buffer`; the host binds `atob`/`btoa` natively | partial (globals), supported (imports) |
+| `TextEncoder`/`TextDecoder` globals (INTERACTIVE CIRCLE row: `dsh-output-retention` builds both at module top — UTF-8 byte-boundary truncation — and `dsh-tool-jobs` imports it at link time; the old "only cordis-host-runner + unreached zod paths" verification no longer holds) | `web-shims.js` globals, installed only when the host has not bound its own. The decoder IS the class `node:util` serves (one UTF-8 implementation — fs-local's same face, fatal/stream/non-fatal included); the encoder is the encode-only twin (surrogate-pair aware, lone surrogates → U+FFFD, `encodeInto` never splits a code point). utf-8 only — any other label stays loud | supported |
 | `@deepseek-ai/dsh-llm` (+ `/invariant`, `/message`, `/assistant-stream`, `/types`, `/typert`, `/remote` runtime subpaths) | `vendor/dsh/llm@0.1.6-alpha.2/lib/…` — the VERBATIM vendored package (LLM transport leg; the staged `shims/dsh-llm*.js` value-helper port retired by this row). `node:module` (`createRequire`, dsh-llm's `../package.json` attribution read) → `shims/node-module.js` over the host `__dshBundleRequire` seam — package-style RELATIVE `.json` reads only, everything else loud | supported (LLM transport leg) |
 | `@deepseek-ai/dsh-session-persistence` (`SessionPersistenceNotFoundError` + sibling error classes) | `shims/dsh-session-persistence.js` — errors-only linkage shim; resume stays unavailable (loud "persistence is not configured" upstream path) | staged (follow-up: real backend over the gateway fs) |
 | `@deepseek-ai/dsh-*` bare + `/invariant` subpaths | host loader → `vendor/dsh/<pkg>@0.1.6-alpha.2/lib/…` (verbatim tarballs) | supported |

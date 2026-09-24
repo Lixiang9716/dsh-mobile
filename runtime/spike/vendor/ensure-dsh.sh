@@ -34,7 +34,37 @@
 # its engine is the @vscode/ripgrep packaged BINARY (a postinstall platform
 # download) driven through real OS subprocesses — no in-runtime equivalent;
 # grep/glob on mobile waits for the PR-B subprocess/fs-service seam.
-# util-workspace-path stays out: nothing in this closure imports it. See
+# util-workspace-path stays out: nothing in this closure imports it.
+# The INTERACTIVE CIRCLE (2026-09-23, the official UI's unresolved-plugin
+# report) vendors the plugins behind the "/" menu and the standard preset:
+# persona + agent-instructions (the prompt planes), plan-mode, the goal pair
+# (command-goal + tool-goal over dsh-goal), the jobs pair (tool-jobs over
+# dsh-jobs + output-retention), the subagent family (tool-subagent +
+# tool-subagent-control over dsh-subagent + chunked-list + util-time),
+# tool-ask-user (over dsh-user-questions), the workflow pair (tool-workflow
+# over dsh-workflow — its WorkflowEngine contract), the credentials + terminal
+# server faces,
+# and the compaction story (compaction-basic + command-compact over
+# dsh-compaction + token-meter + compaction-tool-result-pruner — the report's
+# "tool-result-pruner" is the npm name dsh-compaction-tool-result-pruner;
+# the bare name is not published). Closure rule: every lib/ link-time
+# @deepseek-ai import plus every hard cordis `inject` a plugin declares
+# (compaction-basic needs the tokenMeter service) is vendored; peers that are
+# only ctx.get()-soft stay out and are listed in upstream/README.md. Skips:
+# tool-fs-search stays out (the @vscode/ripgrep binary — unchanged); tool-web
+# stays out because its link-time dep turndown's ESM face executes a bare
+# `require('@mixmark-io/domino')` at module top (no DOMParser exists in this
+# runtime, so the native branch never applies) and domino is CJS-only — the
+# ESM-only loader has no require seam, the chokidar precedent's harder
+# sibling; dsh-web is tool-web's peer and joins that leg; workflow-ptc stays
+# out because it imports node:vm at link time and drives createContext/
+# runInContext host-side — the confined guest realm IS the PTC execution
+# model, the subprocess-class seam; tool-workflow stays IN (it loads clean)
+# with dsh-workflow as the engine contract its `workflowEngine` inject
+# demands, mount-staged until an engine implementation exists on this side;
+# dsh-ptc-runtime is
+# the abstract PtcRuntime contract whose only concrete implementation is the
+# desktop's sandboxed Node process (subprocess class). See
 # runtime/spike/upstream/README.md for the shim coverage table.
 # The SKILL row (2026-09-23, the agent-flow E2E) vendors the upstream skill
 # family: dsh-skill (the ctx.skills registry), dsh-skill-filesystem (project/
@@ -126,6 +156,31 @@ skill-filesystem|0.1.6-alpha.2|3d0f30be04ef7362d1cf3fe7b83e4469efb9a593d8929c5c6
 tool-skill|0.1.6-alpha.2|7608d917b6196b5a92b4643203509c936e169e7fcfe89b7e2852c7b6d7e0d83b
 commands|0.1.6-alpha.2|cb0d940ad58ec13f5226f610523161deb0d85f36ab113047326dbb18f5c2e560
 command-feedback|0.1.6-alpha.2|5ba012cda008469de1825040a7d2879626704c9d2de5ddbbec5eba73428fb724
+persona|0.1.6-alpha.2|48be2c580c9aa989d790afa422029eb8f40cfc64fde4a4cc1f540b8bca507c0f
+agent-instructions|0.1.6-alpha.2|17f1eec2cbbe9571320b8ad15a00d3ae7f063df4111b7bc18b13e4045e45eff3
+plan-mode|0.1.6-alpha.2|2c43489e2b479782a72e08ce07c6b5bb4eba62e82a43732e1ee8b6fbfab35daa
+goal|0.1.6-alpha.2|fad5689d46a8798dcef9cb3eda948fba461ce0c8f81d484d6ec1ef1c8403ef41
+command-goal|0.1.6-alpha.2|693444996937916595dfd6ddf44785a17a2250141dcbb0a1f63034144a809408
+tool-goal|0.1.6-alpha.2|a3d550065eccc273aabfb480951773f4c46d46ad1f8921f097b61668b3a28b80
+jobs|0.1.6-alpha.2|4b4a1a4c4cd1e2aa992253dbb385de78c38c6e7d851dcbb8ee6e139d9b70dea7
+output-retention|0.1.6-alpha.2|3b17f0a403e952d4860a3ca7f1c43fd7f76fbb07c0fde30f250ac6a9a0afd19a
+tool-jobs|0.1.6-alpha.2|fc5726a83114c64232226bd3bf6c2de939019e18bf8e0fc1ef851a21f9553208
+user-questions|0.1.6-alpha.2|0ba8afcc04dcd37b1ccb48f263190280e9139e3e11aa01b6da81a1d831dc6a56
+tool-ask-user|0.1.6-alpha.2|891d48b5534c8e9f22d03ca524d3d29adabedeacac73bfd841e510f7febc2e13
+chunked-list|0.1.6-alpha.2|e466f08af99c1ad8f155aac1c1e2e7672be6940ac2e87b0fb322aec6602efe6f
+util-time|0.1.6-alpha.2|29a25568d19db1475153a65d0600aadc523186ee4eb63bf5641a8e4980d82ff4
+subagent|0.1.6-alpha.2|d290a8dcc0a3b1407b469c43d1fc80d5ddac02692a662847a304f75ac04b512a
+tool-subagent|0.1.6-alpha.2|009326aae20a7fa7d8bc2a1d8644e4ae285e38f10bc1ec503508a9f5c49ffb76
+tool-subagent-control|0.1.6-alpha.2|66bdf77b1bb13f457a87e53fc173497fdf9585c461908d041839d0cd9025d552
+workflow|0.1.6-alpha.2|67f06a3509b1b1ec1c87674e46090a883975965108d8f6271c97468f3815b452
+tool-workflow|0.1.6-alpha.2|fe9e535111b8abef1b2412dac00b7207cae89b4f0cafa27c6066f7684fd77167
+compaction|0.1.6-alpha.2|533f62737409e4f7a4336bc8665ec61fe7d968e4860d8815ae0f137e46bca1a4
+token-meter|0.1.6-alpha.2|4a5d72a2fd904155c1b623bc2bad247b28e057e37507784b22a9786a049abc6f
+compaction-tool-result-pruner|0.1.6-alpha.2|b1164d27ac6ff2ffa30da7fe7c16bfa57276dc09c32062e91ca062627c5f6b01
+compaction-basic|0.1.6-alpha.2|5a46540df08aa0749b9ad08afe8ca00e20a7c6c288220e6ac524f29359e5b216
+command-compact|0.1.6-alpha.2|e3fe6b0f2962253b4a0b459bbe3d162c8b879ba3d71916b74231705edb1955a5
+credentials|0.1.6-alpha.2|b067f3fcdf5b4616afdfd9e73b89c58848a7ae3421433284f10a03d157fb982b
+terminal|0.1.6-alpha.2|cb9b07571654bcfe6877f8ff860a3ebd17564fe17994a9e905aea0ef41b476a0
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages

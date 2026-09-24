@@ -46,14 +46,24 @@
  * loud ReferenceError, never a silent no-op):
  *   - setTimeout/clearTimeout/setInterval — wall-clock timers; the spike
  *     runtime has no timer seam (a turn-based scenario never needs one).
- *   - fetch/TextEncoder/TextDecoder — only cordis-host-runner (the Node
- *     host's runner, replaced here by boot.js) and unreached zod paths use them.
+ *     (v1.4.0: the ambient timer faces now ride upstream/shims/timers.js
+ *     over the gateway timer seam — the row below is historical.)
+ *   - fetch — only cordis-host-runner (the Node host's runner, replaced here
+ *     by boot.js) and unreached zod paths use it.
+ *   TextEncoder/TextDecoder left this list with the INTERACTIVE CIRCLE row
+ * (the row below): the closure verification behind it named cordis-host-runner
+ * and unreached zod paths, and @deepseek-ai/dsh-output-retention (link-time
+ * import of dsh-tool-jobs) now builds both at module top.
  */
 import { DshBuffer } from 'upstream/shims/buffer.js';
 // The timer globals (v1.4.0 seam): the ambient setTimeout/clearTimeout the
 // vendored closure calls, mapped onto gateway timerSchedule/timerCancel.
 import 'upstream/shims/timers.js';
 import { DshURL } from 'upstream/shims/url.js';
+// The global TextDecoder IS the class node:util serves — one UTF-8
+// implementation (fs-local decodes file text with the same face), never a
+// second hand-rolled walk (the sha256.js rule).
+import { TextDecoder as DshTextDecoder } from 'upstream/shims/util.js';
 import { releaseKeeps } from 'logger.js';
 
 /** The forwarder every console method rides. The release strip is applied
@@ -245,6 +255,79 @@ if (typeof globalThis.Buffer === 'undefined') {
 /* ---- URL (combo route resolution for client-modules) --------------------- */
 if (typeof globalThis.URL === 'undefined') {
   globalThis.URL = DshURL;
+}
+
+/* ---- TextEncoder / TextDecoder (the interactive circle's byte seams) -----
+ * The INTERACTIVE CIRCLE row (2026-09-23, the vendored-plugin closure for the
+ * "/" surface): @deepseek-ai/dsh-output-retention builds module-level
+ * `new TextEncoder()` / `new TextDecoder()` (UTF-8 byte-boundary truncation
+ * for tool output) and @deepseek-ai/dsh-tool-jobs imports it at link time, so
+ * the globals the old closure verification declared absent are now load-time
+ * requirements. The decoder is the node:util shim's class verbatim (utf-8
+ * only; any other label stays loud); the encoder is its encode-only twin —
+ * surrogate-pair aware, lone surrogates encode as U+FFFD (the Web face's
+ * substitution), `encodeInto` never splits a code point and reports the
+ * {read, written} split both faces promise. Installed only when absent, so a
+ * host that binds them natively keeps its own. */
+if (typeof globalThis.TextDecoder === 'undefined') {
+  globalThis.TextDecoder = DshTextDecoder;
+}
+if (typeof globalThis.TextEncoder === 'undefined') {
+  globalThis.TextEncoder = class TextEncoder {
+    get encoding() { return 'utf-8'; }
+    static #bytesOf(code, out) {
+      if (code <= 0x7f) out.push(code);
+      else if (code <= 0x7ff) out.push(0xc0 | (code >> 6), 0x80 | (code & 0x3f));
+      else if (code <= 0xffff) {
+        out.push(0xe0 | (code >> 12), 0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
+      } else {
+        out.push(0xf0 | (code >> 18), 0x80 | ((code >> 12) & 0x3f),
+          0x80 | ((code >> 6) & 0x3f), 0x80 | (code & 0x3f));
+      }
+    }
+    static #codePointAt(text, i) {
+      // Returns [codePoint, nextIndex]; a lone surrogate yields U+FFFD (the
+      // Web face's substitution) and steps past one unit.
+      const hi = text.charCodeAt(i);
+      if (hi >= 0xd800 && hi <= 0xdbff && i + 1 < text.length) {
+        const lo = text.charCodeAt(i + 1);
+        if (lo >= 0xdc00 && lo <= 0xdfff) {
+          return [0x10000 + ((hi - 0xd800) << 10) + (lo - 0xdc00), i + 2];
+        }
+      }
+      if (hi >= 0xd800 && hi <= 0xdfff) return [0xfffd, i + 1];
+      return [hi, i + 1];
+    }
+    encode(source = '') {
+      const text = String(source);
+      const out = [];
+      for (let i = 0; i < text.length;) {
+        const [code, next] = TextEncoder.#codePointAt(text, i);
+        TextEncoder.#bytesOf(code, out);
+        i = next;
+      }
+      return Uint8Array.from(out);
+    }
+    encodeInto(source, destination) {
+      if (!(destination instanceof Uint8Array)) {
+        throw new TypeError('TextEncoder.encodeInto: destination must be a Uint8Array');
+      }
+      const text = String(source ?? '');
+      let read = 0;
+      let written = 0;
+      for (let i = 0; i < text.length;) {
+        const [code, next] = TextEncoder.#codePointAt(text, i);
+        const size = code <= 0x7f ? 1 : code <= 0x7ff ? 2 : code <= 0xffff ? 3 : 4;
+        if (written + size > destination.length) break; // never split a code point
+        const bytes = [];
+        TextEncoder.#bytesOf(code, bytes);
+        for (const b of bytes) destination[written++] = b;
+        read = next;
+        i = next;
+      }
+      return { read, written };
+    }
+  };
 }
 
 /* ---- window + the registration queue facade ------------------------------
