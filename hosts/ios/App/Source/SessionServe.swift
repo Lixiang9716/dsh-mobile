@@ -85,6 +85,12 @@ final class SessionServe {
     /// not an ambient fact.
     private let credential: LlmCredential?
 
+    /// The user-facing boot composes the INTERACTIVE surfaces (the commands
+    /// registry + the skill plane the composer's "/" menu reads). The
+    /// `composer.live-write` drive keeps the default (false) so its boot stays
+    /// byte-identical to what the manifest pins.
+    private let interactive: Bool
+
     private let server = CarrierServer()
     private var bridge: CarrierAPIBridge?
     private var dist: CarrierWebDist?
@@ -94,8 +100,9 @@ final class SessionServe {
     private var origin: URL?
     private var stopped = false
 
-    init(credential: LlmCredential? = nil) {
+    init(credential: LlmCredential? = nil, interactive: Bool = false) {
         self.credential = credential
+        self.interactive = interactive
     }
 
     /// Boot rows received from the runtime (`web.boot`), nil until then.
@@ -242,6 +249,21 @@ final class SessionServe {
             config["llmApiKey"] = credential.apiKey
             config["llmModel"] = credential.model
             config["llmProvider"] = credential.provider
+        }
+        if interactive {
+            // The "/" surfaces (client-ui-commands + client-ui-skill read
+            // these): the commands registry + the skill plane under the
+            // profile container. The custom skills dir must live INSIDE the
+            // pinned workspace (the fs backends refuse anything outside it —
+            // measured: Documents/skills was skipped by the discovery
+            // provider), so the user stages skills at workspace/skills via
+            // Files.app.
+            config["commands"] = true
+            config["skills"] = [
+                "dshHome": "\(Self.workspaceRoot.path)/home",
+                "agentsHome": "\(Self.workspaceRoot.path)/home/agents",
+                "customSkillDirs": ["\(Self.workspaceRoot.path)/skills"],
+            ]
         }
         return config
     }

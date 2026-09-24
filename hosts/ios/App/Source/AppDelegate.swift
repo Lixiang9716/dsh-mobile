@@ -39,7 +39,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         let root = UIViewController()
-        if BuildFlavor.isRelease {
+        // The serving seat is the Release launch, and `-dsh-serve` opts a
+        // DEBUG build into the same path with full logging — the only way to
+        // see the interactive boot's runtime half at info/debug bandwidth
+        // (the Release log regime keeps warn/error).
+        if BuildFlavor.isRelease || ProcessInfo.processInfo.arguments.contains("-dsh-serve") {
             return bootRelease(window: window, root: root)
         }
         let console = makeConsole(in: window)
@@ -276,7 +280,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The seat is the same one `composer.live-write` verifies, so the path the
     /// manifest proves and the path a user runs cannot drift apart.
     private func runServingBoot() {
-        let serve = SessionServe(credential: SessionServe.loadCredential())
+        let serve = SessionServe(
+            credential: SessionServe.loadCredential(),
+            interactive: true)
         self.serve = serve
         serve.onOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))

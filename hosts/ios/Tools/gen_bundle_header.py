@@ -125,6 +125,12 @@ RESOURCES = [
     ("npm_client_modules_client_js",
      SPIKE / "vendor" / "npm"
      / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "client.js"),
+    # The commands plane's per-user receipt key: dsh-command-feedback imports
+    # the anonymous user id at module load, so the bare specifier must have a
+    # staged file (the npm-face base of the vendored probe serves it).
+    ("npm_anonymous_user_id_js",
+     SPIKE / "vendor" / "npm"
+     / "@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2" / "lib" / "index.js"),
     # The agent-presets closure (the Agent 预设 panel's data source): the
     # presets service package plus the five dependency libs its import chain
     # resolves through the spike's bare map. js-yaml ships an ESM dist face.
@@ -188,6 +194,7 @@ TREES = [
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
         "session-persistence",
+        "commands", "command-feedback",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
         # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
         # filesystem discovery provider, and the model-facing `skill` tool.

@@ -151,6 +151,11 @@ const bootPhase = async (cfg, route) => {
     sessionId: SESSION_ID,
     cwd: root,
     onEvent: emit,
+    // The interactive surfaces ("/" menu): rows delivered only by the
+    // user-facing seat (SessionServe's interactive flag). The evidence drive
+    // delivers neither row, so its boot stays byte-identical to the manifest.
+    commands: cfg.commands === true,
+    skills: cfg.skills,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,

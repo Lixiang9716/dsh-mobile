@@ -249,6 +249,23 @@ const mountSkillPlane = async (ctx, skills) => {
   await ctx.plugin(ToolSkill, {});
 };
 
+/** The COMMAND row (2026-09-24, the owner's "/" report): the upstream
+ * interactive-command registry (dsh-commands) plus the command-defining
+ * plugins the desktop composition mounts (command-feedback first — its deps
+ * are already vendored). Commands are plugin-owned: the registry carries no
+ * built-ins, so the surface is only as rich as the plugins mounted after it.
+ * Mounted only when the caller configures `options.commands` (the user-facing
+ * seat), so every existing spine leg boots byte-identically. The registry
+ * must precede the command-defining plugins (they register into it). */
+const mountCommandPlane = async (ctx) => {
+  const [Commands, CommandFeedback] = await Promise.all([
+    import('@deepseek-ai/dsh-commands'),
+    import('@deepseek-ai/dsh-command-feedback'),
+  ]);
+  await ctx.plugin(Commands.default ?? Commands, {});
+  await ctx.plugin(CommandFeedback.default ?? CommandFeedback, {});
+};
+
 /** Mount the dsh-base bundle's spine rows over the vendored packages, in
  * base-patch order (activation is service-availability driven upstream; here
  * the mount order mirrors the patch rows). */
@@ -307,6 +324,7 @@ const mountSpine = async (ctx, identity) => {
   // tool-skill catalog registers its `agent/pre-step` listeners on the
   // context, so every later step sees them). Only when configured.
   if (identity.skills) await mountSkillPlane(ctx, identity.skills);
+  if (identity.commands) await mountCommandPlane(ctx);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -335,6 +353,8 @@ const mountSpine = async (ctx, identity) => {
  * @param options.systemPrompt - optional override seam: {personaPrefix} —
  *   the vendored SystemPrompt's own config (the prompt's persona section),
  *   mounted verbatim; default '' (the historical boot shape).
+ * @param options.commands - optional COMMAND-row flag (true mounts the
+ * upstream commands registry + the command-defining plugins vendored so far).
  * @param options.skills - optional SKILL-row configuration: {dshHome,
  *   agentsHome, customSkillDirs?} — mounting the vendored skill family
  *   (registry + filesystem provider + the `skill` tool). Absent = the
@@ -402,6 +422,7 @@ export async function bootUpstream(options) {
     provider: llm.provider, model: llm.model,
     personaPrefix: options.systemPrompt?.personaPrefix,
     skills: options.skills,
+    commands: options.commands,
   });
   await demandServices(ctx);
   demandPresetServices(ctx);

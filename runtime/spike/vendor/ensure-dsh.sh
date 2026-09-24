@@ -124,6 +124,8 @@ session-persistence|0.1.6-alpha.2|3bc8f2a2f8382b4985a059307dfbf7c689da4db5c66d26
 skill|0.1.6-alpha.2|d77b76cab60c18a6bfce07951b648f9a730aa29162a6add96ca0a4b48382bfc3
 skill-filesystem|0.1.6-alpha.2|3d0f30be04ef7362d1cf3fe7b83e4469efb9a593d8929c5c6e4568878b84cc5a
 tool-skill|0.1.6-alpha.2|7608d917b6196b5a92b4643203509c936e169e7fcfe89b7e2852c7b6d7e0d83b
+commands|0.1.6-alpha.2|cb0d940ad58ec13f5226f610523161deb0d85f36ab113047326dbb18f5c2e560
+command-feedback|0.1.6-alpha.2|5ba012cda008469de1825040a7d2879626704c9d2de5ddbbec5eba73428fb724
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
@@ -137,6 +139,7 @@ zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a5168431
 @deepseek-ai/cordis-plugin-loader@1.0.3|@deepseek-ai/cordis-plugin-loader/-/cordis-plugin-loader-1.0.3.tgz|86df86a31f58f306a4bb71c7b9bfe5d47dba8afaacf550ddc3bb654b57821e2f
 @deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
 js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
+@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2|@deepseek-ai/dsh-anonymous-user-id/-/dsh-anonymous-user-id-0.1.6-alpha.2.tgz|2030491f97388ac6dfa5df01811c118354fe9a6b78d3b96dda0ce429d6da5ba3
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 "
