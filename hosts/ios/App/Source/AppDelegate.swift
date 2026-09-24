@@ -39,7 +39,11 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     ) -> Bool {
         let window = UIWindow(frame: UIScreen.main.bounds)
         let root = UIViewController()
-        if BuildFlavor.isRelease {
+        // The serving seat is the Release launch, and `-dsh-serve` opts a
+        // DEBUG build into the same path with full logging — the only way to
+        // see the interactive boot's runtime half at info/debug bandwidth
+        // (the Release log regime keeps warn/error).
+        if BuildFlavor.isRelease || ProcessInfo.processInfo.arguments.contains("-dsh-serve") {
             return bootRelease(window: window, root: root)
         }
         let console = makeConsole(in: window)

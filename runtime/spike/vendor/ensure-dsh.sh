@@ -139,6 +139,7 @@ zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a5168431
 @deepseek-ai/cordis-plugin-loader@1.0.3|@deepseek-ai/cordis-plugin-loader/-/cordis-plugin-loader-1.0.3.tgz|86df86a31f58f306a4bb71c7b9bfe5d47dba8afaacf550ddc3bb654b57821e2f
 @deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
 js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
+@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2|@deepseek-ai/dsh-anonymous-user-id/-/dsh-anonymous-user-id-0.1.6-alpha.2.tgz|2030491f97388ac6dfa5df01811c118354fe9a6b78d3b96dda0ce429d6da5ba3
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 "
