@@ -188,6 +188,7 @@ TREES = [
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
         "session-persistence",
+        "commands", "command-feedback",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
         # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
         # filesystem discovery provider, and the model-facing `skill` tool.
