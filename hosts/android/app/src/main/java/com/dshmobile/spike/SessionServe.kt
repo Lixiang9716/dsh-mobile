@@ -231,16 +231,18 @@ class SessionServe private constructor(
         if (interactive) {
             config
                 .put("commands", true)
-                .put(
-                    "skills",
-                    JSONObject()
-                        .put("dshHome", "${workspace.absolutePath}/home")
-                        .put("agentsHome", "${workspace.absolutePath}/home/agents")
-                        .put("customSkillDirs", JSONArray().put("${workspace.absolutePath}/skills")),
-                )
+                .put("skills", skillsConfig(workspace))
         }
         return config
     }
+
+    /** The skill-plane rows (boot.js `mountSkillPlane` reads them): the
+     * dsh home, the agents home, and the user's custom skills dir — all
+     * INSIDE the pinned workspace (the fs views refuse anything outside). */
+    private fun skillsConfig(workspace: File): JSONObject = JSONObject()
+        .put("dshHome", "${workspace.absolutePath}/home")
+        .put("agentsHome", "${workspace.absolutePath}/home/agents")
+        .put("customSkillDirs", JSONArray().put("${workspace.absolutePath}/skills"))
 
     /** The full primitive table — the spine and its tools use the real
      * gateway (fs scopes, httpFetch for the llm transport, timers). */

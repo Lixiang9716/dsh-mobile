@@ -2,7 +2,6 @@ package com.dshmobile.spike
 
 import android.content.Context
 import android.net.Uri
-import android.provider.DocumentsContract
 import org.json.JSONObject
 import java.io.File
 import java.util.UUID
@@ -25,7 +24,6 @@ class FsPrimitives(private val context: Context) {
     companion object {
         const val MAX_READ_BYTES = 8 * 1024 * 1024
         const val BOOKMARK_PREFIX = "bkm:"
-        private val DIRECTORY_MIME = DocumentsContract.Document.MIME_TYPE_DIR
 
         private fun invalid(primitive: String, message: String) =
             GatewayCore.GatewayError("invalid", primitive, message)
@@ -43,20 +41,13 @@ class FsPrimitives(private val context: Context) {
             if (comps.isEmpty() || comps.any { it == ".." || it == "." }) return null
             return comps.joinToString("/")
         }
-
-        private fun mimeFor(name: String): String = when {
-            name.endsWith(".txt") -> "text/plain"
-            name.endsWith(".html") -> "text/html"
-            name.endsWith(".js") -> "text/javascript"
-            name.endsWith(".json") -> "application/json"
-            else -> "application/octet-stream"
-        }
     }
 
     private val appRoot: File = File(context.filesDir, "profiles/default").apply { mkdirs() }
     private val registryFile = File(context.filesDir, "scope-registry.json")
     private val userScopes = HashMap<String, Uri>()
     private val lock = Object()
+    private val tree = TreeScopeFs(context)
 
     fun register(on: GatewayCore) {
         on.register("fsRead") { call, done -> read(call, done) }
@@ -89,8 +80,8 @@ class FsPrimitives(private val context: Context) {
                 if (bytes.size > MAX_READ_BYTES) throw invalid("fsRead", "file too large")
                 settleRead(done, bytes, isoMillis(file.lastModified()))
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsRead", scope))
-                val bytes = readTreeFile(tree, rel)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsRead", scope))
+                val bytes = tree.readTreeFile(treeUri, rel)
                     ?: throw io("fsRead", "cannot read $rel in tree scope")
                 done.settle(
                     JSONObject().put("bytesB64", b64(bytes)).put("mtime", ""),
@@ -124,8 +115,8 @@ class FsPrimitives(private val context: Context) {
                     file.writeBytes(bytes)
                 }
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsWrite", scope))
-                writeTreeFile(tree, rel, bytes, append, create)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsWrite", scope))
+                tree.writeTreeFile(treeUri, rel, bytes, append, create)
             }
             done.settle(JSONObject().put("written", bytes.size), null)
         } catch (e: GatewayCore.GatewayError) {
@@ -198,10 +189,10 @@ class FsPrimitives(private val context: Context) {
                 if (!file.exists()) throw io("fsStat", "cannot stat $rel")
                 done.settle(statPayload(file), null)
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsStat", scope))
-                val docUri = resolveInTree(tree, rel)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsStat", scope))
+                val docUri = tree.resolveInTree(treeUri, rel)
                     ?: throw io("fsStat", "cannot stat $rel")
-                done.settle(treeStat(docUri, rel), null)
+                done.settle(tree.stat(docUri, rel), null)
             }
         } catch (e: GatewayCore.GatewayError) {
             done.settle(null, e)
@@ -222,13 +213,10 @@ class FsPrimitives(private val context: Context) {
                     null,
                 )
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsList", scope))
-                val docUri = resolveInTree(tree, rel)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsList", scope))
+                val docUri = tree.resolveInTree(treeUri, rel)
                     ?: throw io("fsList", "cannot list $rel")
-                done.settle(
-                    JSONObject().put("entries", treeList(docUri)),
-                    null,
-                )
+                done.settle(tree.list(docUri), null)
             }
         } catch (e: GatewayCore.GatewayError) {
             done.settle(null, e)
@@ -249,8 +237,8 @@ class FsPrimitives(private val context: Context) {
                     throw io("fsMkdir", "cannot create $rel")
                 }
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsMkdir", scope))
-                treeMkdir(tree, rel, existing)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsMkdir", scope))
+                tree.mkdir(treeUri, rel, existing)
             }
             done.settle(JSONObject(), null)
         } catch (e: GatewayCore.GatewayError) {
@@ -267,17 +255,16 @@ class FsPrimitives(private val context: Context) {
         try {
             if (scope == "app") {
                 val file = File(appRoot, rel)
-                if (!file.exists()) {
-                    if (missing == "error") throw io("fsRemove", "$rel is absent")
-                } else {
-                    if (file.isDirectory && !recursive) {
-                        throw invalid("fsRemove", "$rel is a directory (pass recursive: true)")
-                    }
-                    if (!file.deleteRecursively()) throw io("fsRemove", "cannot remove $rel")
+                val absent = !file.exists()
+                val dirWithoutRecursive = file.isDirectory && !recursive
+                if (absent && missing == "error") throw io("fsRemove", "$rel is absent")
+                if (!absent && dirWithoutRecursive) {
+                    throw invalid("fsRemove", "$rel is a directory (pass recursive: true)")
                 }
+                if (!absent && !file.deleteRecursively()) throw io("fsRemove", "cannot remove $rel")
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsRemove", scope))
-                treeRemove(tree, rel, missing)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsRemove", scope))
+                tree.remove(treeUri, rel, missing)
             }
             done.settle(JSONObject(), null)
         } catch (e: GatewayCore.GatewayError) {
@@ -303,8 +290,8 @@ class FsPrimitives(private val context: Context) {
                 if (dest.exists() && !dest.delete()) throw io("fsRename", "cannot replace $relTo")
                 if (!source.renameTo(dest)) throw io("fsRename", "cannot rename $relFrom")
             } else {
-                val tree = scopeTree(scope) ?: return done.settle(null, denied("fsRename", scope))
-                treeRename(tree, relFrom, relTo)
+                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsRename", scope))
+                tree.rename(treeUri, relFrom, relTo)
             }
             done.settle(JSONObject(), null)
         } catch (e: GatewayCore.GatewayError) {
@@ -340,108 +327,6 @@ class FsPrimitives(private val context: Context) {
         }
         return entries
     }
-
-    // ---- the five v1.1.0 legs over a SAF tree (DocumentsContract) -----------
-
-    /** Queries one document's stat row; a missing doc is `io`. */
-    private fun treeStat(docUri: Uri, rel: String): JSONObject {
-        val projection = arrayOf(
-            DocumentsContract.Document.COLUMN_MIME_TYPE,
-            DocumentsContract.Document.COLUMN_SIZE,
-            DocumentsContract.Document.COLUMN_LAST_MODIFIED,
-        )
-        resolver().query(docUri, projection, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val mime = cursor.getString(0) ?: ""
-                return JSONObject()
-                    .put("kind", if (mime == DIRECTORY_MIME) "dir" else if (mime.isEmpty()) "other" else "file")
-                    .put("size", cursor.getLong(1))
-                    .put("mtime", if (cursor.getLong(2) > 0) isoMillis(cursor.getLong(2)) else "")
-            }
-        }
-        throw io("fsStat", "cannot stat $rel")
-    }
-
-    /** One-level children of a tree directory: name + kind, byte-order sorted. */
-    private fun treeList(dirUri: Uri): org.json.JSONArray {
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            dirUri, DocumentsContract.getDocumentId(dirUri),
-        )
-        val projection = arrayOf(
-            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-            DocumentsContract.Document.COLUMN_MIME_TYPE,
-        )
-        val rows = ArrayList<Pair<String, String>>()
-        resolver().query(childrenUri, projection, null, null, null)?.use { cursor ->
-            while (cursor.moveToNext()) rows.add(cursor.getString(0) to (cursor.getString(1) ?: ""))
-        }
-        val entries = org.json.JSONArray()
-        rows.sortedWith { (a, _), (b, _) ->
-            java.util.Arrays.compare(
-                a.toByteArray(Charsets.UTF_8),
-                b.toByteArray(Charsets.UTF_8),
-            )
-        }.forEach { (name, mime) ->
-            entries.put(
-                JSONObject()
-                    .put("name", name)
-                    .put("kind", if (mime == DIRECTORY_MIME) "dir" else if (mime.isEmpty()) "other" else "file"),
-            )
-        }
-        return entries
-    }
-
-    /** Recursive mkdir through the tree: walks/creates each component. */
-    private fun treeMkdir(tree: Uri, rel: String, existing: String) {
-        var parent = DocumentsContract.buildDocumentUriUsingTree(
-            tree, DocumentsContract.getTreeDocumentId(tree),
-        )
-        for (dir in rel.split('/').filter { it.isNotEmpty() }) {
-            parent = childByName(parent, dir)
-                ?: DocumentsContract.createDocument(
-                    resolver(), parent, DIRECTORY_MIME, dir,
-                ) ?: throw io("fsMkdir", "cannot create $dir")
-        }
-        if (existing == "error") throw io("fsMkdir", "$rel exists")
-    }
-
-    /** Removes the resolved document; a dir doc deletes its subtree. Absence
-     * is a value unless `missing:"error"`. */
-    private fun treeRemove(tree: Uri, rel: String, missing: String) {
-        val docUri = resolveInTree(tree, rel)
-        if (docUri == null) {
-            if (missing == "error") throw io("fsRemove", "$rel is absent")
-            return
-        }
-        if (!DocumentsContract.deleteDocument(resolver(), docUri)) {
-            throw io("fsRemove", "cannot remove $rel")
-        }
-    }
-
-    /** POSIX rename semantics over the tree: an existing destination is
-     * replaced (the atomic-write dependency). */
-    private fun treeRename(tree: Uri, relFrom: String, relTo: String) {
-        val source = resolveInTree(tree, relFrom) ?: throw io("fsRename", "$relFrom is absent")
-        val comps = relTo.split('/').filter { it.isNotEmpty() }
-        var parent = DocumentsContract.buildDocumentUriUsingTree(
-            tree, DocumentsContract.getTreeDocumentId(tree),
-        )
-        for (dir in comps.dropLast(1)) {
-            parent = childByName(parent, dir)
-                ?: DocumentsContract.createDocument(
-                    resolver(), parent, DIRECTORY_MIME, dir,
-                ) ?: throw io("fsRename", "cannot create $dir")
-        }
-        childByName(parent, comps.last())?.let { existing ->
-            if (!DocumentsContract.deleteDocument(resolver(), existing)) {
-                throw io("fsRename", "cannot replace ${comps.last()}")
-            }
-        }
-        DocumentsContract.renameDocument(resolver(), source, comps.last())
-            ?: throw io("fsRename", "cannot rename $relFrom")
-    }
-
-    // ---- scope plumbing -------------------------------------------------------
 
     /** Validates (scope, path) args; settles `invalid` and returns null. */
     private fun target(
@@ -480,80 +365,4 @@ class FsPrimitives(private val context: Context) {
     private fun isoMillis(millis: Long): String =
         java.time.Instant.ofEpochMilli(millis).toString()
 
-    // ---- SAF tree file access (DocumentsContract child resolution) -----------
-
-    private fun resolver() = context.contentResolver
-
-    /** Resolves a POSIX-relative path inside a tree by display name. */
-    fun resolveInTree(tree: Uri, rel: String): Uri? {
-        val rootId = DocumentsContract.getTreeDocumentId(tree)
-        var docUri = DocumentsContract.buildDocumentUriUsingTree(tree, rootId)
-        for (component in rel.split('/').filter { it.isNotEmpty() }) {
-            val child = childByName(docUri, component) ?: return null
-            docUri = child
-        }
-        return docUri
-    }
-
-    private fun childByName(parentDocUri: Uri, name: String): Uri? {
-        val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(
-            parentDocUri, DocumentsContract.getDocumentId(parentDocUri),
-        )
-        val projection = arrayOf(
-            DocumentsContract.Document.COLUMN_DOCUMENT_ID,
-            DocumentsContract.Document.COLUMN_DISPLAY_NAME,
-        )
-        val docId = queryChild(resolver().query(childrenUri, projection, null, null, null), name)
-            ?: return null
-        return DocumentsContract.buildDocumentUriUsingTree(parentDocUri, docId)
-    }
-
-    private fun queryChild(cursor: android.database.Cursor?, name: String): String? {
-        cursor?.use {
-            while (it.moveToNext()) {
-                if (it.getString(1) == name) return it.getString(0)
-            }
-        }
-        return null
-    }
-
-    private fun readTreeFile(tree: Uri, rel: String): ByteArray? {
-        val docUri = resolveInTree(tree, rel) ?: return null
-        return try {
-            resolver().openInputStream(docUri)?.use { it.readBytes() }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    private fun writeTreeFile(
-        tree: Uri,
-        rel: String,
-        bytes: ByteArray,
-        append: Boolean,
-        create: Boolean,
-    ) {
-        val comps = rel.split('/').filter { it.isNotEmpty() }
-        val name = comps.last()
-        var parent = DocumentsContract.buildDocumentUriUsingTree(
-            tree, DocumentsContract.getDocumentId(tree),
-        )
-        for (dir in comps.dropLast(1)) {
-            val existing = childByName(parent, dir)
-            parent = existing ?: DocumentsContract.createDocument(
-                resolver(), parent, DIRECTORY_MIME, dir,
-            ) ?: throw io("fsWrite", "cannot create directory $dir")
-        }
-        val existing = childByName(parent, name)
-        val docUri = when {
-            existing != null -> existing
-            !create -> throw io("fsWrite", "$rel does not exist")
-            else -> DocumentsContract.createDocument(
-                resolver(), parent, mimeFor(name), name,
-            ) ?: throw io("fsWrite", "cannot create $name")
-        }
-        val mode = if (append) "wa" else "w"
-        resolver().openOutputStream(docUri, mode)?.use { it.write(bytes) }
-            ?: throw io("fsWrite", "cannot open $rel for write")
-    }
 }
