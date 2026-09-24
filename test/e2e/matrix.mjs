@@ -222,7 +222,13 @@ const checkPngs = (root, files) => {
 /** Audit one repo tree; `root` and `scenariosDir` are split so --self-test
  *  can point both at synthetic fixtures. */
 export const audit = (root, scenariosDir) => {
-  const files = walkFiles(root);
+  // #158: every audited evidence dir lives under an `artifacts` segment
+  // (hosts/<host>/artifacts/<dir>, runtime/spike/artifacts/<dir>) — scoping
+  // the walk there means a stray verdict capture in any other corner of the
+  // tree (a gitignored tmp dir, a screenshot-primary spike) cannot fail the
+  // gate demanding deliverables it never claimed. Known-gaps semantics are
+  // unchanged: the register's paths all carry the segment too.
+  const files = walkFiles(root).filter((f) => f.split('/').includes('artifacts'));
   const verdictDirs = [...new Set(files.filter((f) => VERDICT_RE.test(baseName(f)))
     .map((f) => dirname(f)))].sort();
   const entries = [];
@@ -379,30 +385,38 @@ const report = (inv, reg, args) => {
 
 const FIX_VERDICT = { scenario: 't.ok', pass: true, expected: 1, logged: 1 };
 
+const EV_REL = 'hosts/ios/artifacts/ev';
+
 const buildFixture = (base, mutate) => {
   const root = join(base, 'tree');
+  // Fixture isolation: mutators ADD files (the #158 stray-verdict cases do),
+  // so every build starts from a wiped tree — a previous fixture's extras
+  // must not leak into later assertions.
+  rmSync(root, { recursive: true, force: true });
   const scen = join(base, 'scenarios');
-  mkdirSync(join(root, 'ev'), { recursive: true });
+  // The fixture models the real layout: evidence lives under an `artifacts`
+  // segment (the audit's walk scope, #158).
+  mkdirSync(join(root, EV_REL), { recursive: true });
   mkdirSync(scen, { recursive: true });
   writeFileSync(join(scen, 't-ok.json'), JSON.stringify({ scenario: 't.ok', expect: [{}] }));
-  writeFileSync(join(root, 'ev', 'logs.txt'), 'log\n');
-  writeFileSync(join(root, 'ev', 'scenario.jsonl'), 'entry\n');
-  writeFileSync(join(root, 'ev', 'receipt.json'), '{}');
-  writeFileSync(join(root, 'ev', 'shot.png'), Buffer.from(PNG_MAGIC, 'hex'));
-  writeFileSync(join(root, 'ev', 'verdict.json'), JSON.stringify(FIX_VERDICT));
+  writeFileSync(join(root, EV_REL, 'logs.txt'), 'log\n');
+  writeFileSync(join(root, EV_REL, 'scenario.jsonl'), 'entry\n');
+  writeFileSync(join(root, EV_REL, 'receipt.json'), '{}');
+  writeFileSync(join(root, EV_REL, 'shot.png'), Buffer.from(PNG_MAGIC, 'hex'));
+  writeFileSync(join(root, EV_REL, 'verdict.json'), JSON.stringify(FIX_VERDICT));
   mutate(root);
   return { root, scen };
 };
 
 /** Fixture mutators: one artifact of the tree above, rewritten or removed. */
-const at = (name, text) => (root) => writeFileSync(join(root, 'ev', name), text);
-const noReceipt = (root) => rmSync(join(root, 'ev', 'receipt.json'));
+const at = (name, text) => (root) => writeFileSync(join(root, EV_REL, name), text);
+const noReceipt = (root) => rmSync(join(root, EV_REL, 'receipt.json'));
 const verdict = (patch) => at('verdict.json', JSON.stringify({ ...FIX_VERDICT, ...patch }));
 
 const REG_FIXTURE = [
   '| code | file | owner | closes with |',
   '| --- | --- | --- | --- |',
-  '| MISSING_DELIVERABLE | ev/receipt.json | android work stream (#66) | run-android-full.sh |',
+  '| MISSING_DELIVERABLE | hosts/ios/artifacts/ev/receipt.json | ios work stream (#65) | run-ios-b4.sh |',
 ].join('\n');
 
 const harness = () => {
@@ -449,6 +463,21 @@ const selfTestAudit = (t) => {
     t.fixture(verdict({ pass: false, logged: 0 })), ['VERDICT_FAIL'], ['VERDICT_MALFORMED']);
   t.assertOne('passing verdict with differing counts', t.fixture(verdict({ logged: 2 })),
     ['VERDICT_MALFORMED']);
+  // #158: the walk scope. A stray verdict OUTSIDE the artifacts roots is
+  // ignored (it never claimed to be a log capture); the same verdict INSIDE
+  // one still fails loud.
+  t.assertOne('stray verdict outside the artifacts roots is ignored',
+    t.fixture((root) => {
+      mkdirSync(join(root, 'scratch'), { recursive: true });
+      writeFileSync(join(root, 'scratch', 'verdict.json'),
+        JSON.stringify({ ...FIX_VERDICT, pass: false }));
+    }), []);
+  t.assertOne('stray verdict inside an artifacts dir still fails',
+    t.fixture((root) => {
+      mkdirSync(join(root, 'hosts/ios/artifacts/scratch'), { recursive: true });
+      writeFileSync(join(root, 'hosts/ios/artifacts/scratch', 'verdict.json'),
+        JSON.stringify({ ...FIX_VERDICT, pass: false }));
+    }), ['VERDICT_FAIL']);
 };
 
 const selfTestRegister = (t) => {
@@ -459,16 +488,16 @@ const selfTestRegister = (t) => {
   const whole = () => audit(t.fixture(() => {}).root, join(t.base, 'scenarios'));
   t.assertEqual('register reads its row', [reg.rows.length, reg.rows[0].code, reg.rows[0].file,
     reg.rows[0].owner, reg.rows[0].closesWith],
-  [1, 'MISSING_DELIVERABLE', 'ev/receipt.json', 'android work stream (#66)', 'run-android-full.sh']);
+  [1, 'MISSING_DELIVERABLE', 'hosts/ios/artifacts/ev/receipt.json', 'ios work stream (#65)', 'run-ios-b4.sh']);
   t.assertEqual('register without its table', [parseRegister('# nothing').missing,
     parseRegister('# nothing').rows.length], [true, 0]);
   t.assertEqual('register row that is not four cells',
-    !!parseRegister(`${REG_FIXTURE}\n| MISSING_DELIVERABLE | ev/receipt.json | owner |`).malformed,
+    !!parseRegister(`${REG_FIXTURE}\n| MISSING_DELIVERABLE | hosts/ios/artifacts/ev/other.json | owner |`).malformed,
     true);
   t.assertEqual('a listed gap is accepted, not blocking',
     [evaluate(gap(), reg).blocking.length, evaluate(gap(), reg).accepted.length], [0, 1]);
   t.assertEqual('a finding no row names blocks',
-    evaluate(gap(), parseRegister(REG_FIXTURE.replace('ev/receipt.json', 'ev/other.json')))
+    evaluate(gap(), parseRegister(REG_FIXTURE.replace('hosts/ios/artifacts/ev/receipt.json', 'hosts/ios/artifacts/ev/other.json')))
       .blocking.map((f) => f.code), ['STALE_KNOWN_GAP', 'MISSING_DELIVERABLE']);
   t.assertEqual('a row whose finding is gone blocks',
     evaluate(whole(), reg).blocking.map((f) => f.code), ['STALE_KNOWN_GAP']);
