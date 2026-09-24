@@ -61,7 +61,11 @@ jobs:
         # bytes; see check-bundle-files.mjs's header), so a fresh checkout
         # must stage them before the DAG runs or the gate reads a tree that
         # can never agree with BUNDLE_FILES.
-        run: sh hosts/harmony/ci/vendor-official.sh
+        # --closure-only: the gate needs rawfile/spike (the CLOSURE list,
+        # incl. the gitignored zod/js-yaml bytes), not the officialweb
+        # re-sync — the full mode needs the pnpm shim + the upstream
+        # monorepo build, machinery the DAG itself does not require.
+        run: sh hosts/harmony/ci/vendor-official.sh --closure-only
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an
