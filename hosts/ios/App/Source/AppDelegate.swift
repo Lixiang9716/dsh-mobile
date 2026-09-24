@@ -276,7 +276,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The seat is the same one `composer.live-write` verifies, so the path the
     /// manifest proves and the path a user runs cannot drift apart.
     private func runServingBoot() {
-        let serve = SessionServe(credential: SessionServe.loadCredential())
+        let serve = SessionServe(
+            credential: SessionServe.loadCredential(),
+            interactive: true)
         self.serve = serve
         serve.onOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))

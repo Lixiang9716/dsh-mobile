@@ -124,6 +124,8 @@ session-persistence|0.1.6-alpha.2|3bc8f2a2f8382b4985a059307dfbf7c689da4db5c66d26
 skill|0.1.6-alpha.2|d77b76cab60c18a6bfce07951b648f9a730aa29162a6add96ca0a4b48382bfc3
 skill-filesystem|0.1.6-alpha.2|3d0f30be04ef7362d1cf3fe7b83e4469efb9a593d8929c5c6e4568878b84cc5a
 tool-skill|0.1.6-alpha.2|7608d917b6196b5a92b4643203509c936e169e7fcfe89b7e2852c7b6d7e0d83b
+commands|0.1.6-alpha.2|cb0d940ad58ec13f5226f610523161deb0d85f36ab113047326dbb18f5c2e560
+command-feedback|0.1.6-alpha.2|5ba012cda008469de1825040a7d2879626704c9d2de5ddbbec5eba73428fb724
 "
 
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
