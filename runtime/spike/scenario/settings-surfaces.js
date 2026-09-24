@@ -40,7 +40,7 @@ import seedManifest from './agent-presets-probe-seed.js';
 const SCENARIO = 'settings.surfaces';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-settings-surfaces-1';
-const DEFAULT_PRESET = 'standard';
+const DEFAULT_PRESET = 'mobile';
 
 const log = createLogger('settings.surfaces');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
