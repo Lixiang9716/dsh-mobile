@@ -117,6 +117,7 @@ class MainActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         spikeHost?.onActivityResult(requestCode, resultCode, data)
+        serve?.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null) {
@@ -230,17 +231,23 @@ class MainActivity : Activity() {
     }
 
     private var session: OfficialWebSession? = null
+    private var serve: SessionServe? = null
     private var sessionLive: SessionLiveSession? = null
     private var sessionWrite: SessionWriteSession? = null
 
     /**
-     * The user-facing boot: the official DSH Web Client, full screen, no
-     * extras required. The vendored dist + client bundles are already in the
-     * APK's assets (the Gradle staging), so a plain launch needs nothing
-     * pushed from outside. No verification drive runs, no verdict panel
-     * exists, and no per-event E2E record is produced — the "release" half of
-     * AGENTS.md constraint 5 / rules.md rule L4. A launch that asks for an
-     * E2E drive is refused LOUD (rule 5): this binary has no drives.
+     * The user-facing boot: the official DSH Web Client over the FULL DSH
+     * runtime — the SessionServe seat (the sibling of hosts/ios
+     * SessionServe.swift). The spine (scenario/composer-web-live.js) boots
+     * the vendored DSH packages with the INTERACTIVE surfaces (the commands
+     * registry + the skill plane), claims the write/settings surfaces and
+     * the mux streams over the bus seam, and goes resident: the page's own
+     * composer drives real agent turns. The model route is the staged
+     * credential file when present, else the carrier's scripted endpoint
+     * (the whole UI works either way). No verification drive, no verdict
+     * panel, no per-event E2E record — the "release" half of AGENTS.md
+     * constraint 5 / rules.md rule L4. A launch that asks for an E2E drive
+     * is refused LOUD (rule 5): this binary has no drives.
      */
     private fun bootRelease() {
         val requested = listOf(EXTRA_M4, EXTRA_LLM, EXTRA_WEB, EXTRA_SESSION, EXTRA_WRITE, EXTRA_PARITY, EXTRA_SUITE, EXTRA_SPEC)
@@ -267,15 +274,15 @@ class MainActivity : Activity() {
         setContentView(view)
         webView = view
         // The carrier + runtime read filesDir trees: materialize FIRST, then
-        // serve. No verdict callback — nothing asserts on a user-facing boot.
+        // serve. No verdict callback — a user-facing boot has nothing to assert.
         SpikeRuntime.post {
             materializeBundle()
             copyAssetDir("official-web", File(filesDir, "official-web"))
             copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
-                // No verdict callback: a user-facing boot has nothing to assert.
-                session = OfficialWebSession.start(
-                    this, view, onFinished = { _ -> }, evidence = false,
+                serve = SessionServe.start(
+                    this, view,
+                    credential = SessionServe.loadCredential(this),
                 )
             }
         }

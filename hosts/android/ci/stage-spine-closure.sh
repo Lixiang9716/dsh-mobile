@@ -186,6 +186,7 @@ done
 # The agent-flow scenario rides the same list (the vendored skill family it
 # drives is staged above).
 for s in android-session-live-read.js android-composer-live-write.js \
+         composer-web-live.js \
          upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
         cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
@@ -264,6 +265,7 @@ done
 # a stale APK copy would shadow every runtime-side fix, the exact defect the
 # 2026-09-23 round-two chase hit).
 for s in android-session-live-read.js android-composer-live-write.js \
+         composer-web-live.js \
          upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
     cmp -s "$SPIKE/scenario/$s" "$ASSETS/scenario/$s" || note_drift "scenario/$s"
