@@ -640,3 +640,65 @@ dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"settings probes done","data":[{}]}
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"b4 runtime resident (write surface live; awaiting the page)","data":[{}]}
 dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-3c48af11-9c6e-44ad-804f-7da5de40e229\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"main begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/runtime","provider":"openai-compatible","model":"deepseek-flash","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → api.deepseek.com (user-supplied endpoint)","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"spike/echo.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/39D25779-AFA1-480E-B8C0-9DA6222C57BB/Documents/profiles/default/ish-rootfs","offered":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"registering the ish tool","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/39D25779-AFA1-480E-B8C0-9DA6222C57BB/Documents/profiles/default/ish-rootfs"}]}
+dsh.gateway.audit: {"primitive":"fsRead","verdict":"granted","outcome":"ok","ts":"2026-09-24T07:54:32Z","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"openai-compatible\")"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsMkdir"}]}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-24T07:54:32Z","primitive":"fsMkdir","outcome":"ok","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":104}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe/sub/hello.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.gateway.audit: {"primitive":"fsWrite","ts":"2026-09-24T07:54:32Z","verdict":"granted","caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe/sub/hello.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-24T07:54:32Z","primitive":"fsRead","outcome":"ok","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-24T07:54:32Z","primitive":"fsStat","outcome":"ok","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsList"}]}
+dsh.gateway.audit: {"outcome":"ok","caller":"dsh.spike.scenario","ts":"2026-09-24T07:54:32Z","primitive":"fsList","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRename"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-24T07:54:32Z","primitive":"fsRename","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsList"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-24T07:54:32Z","primitive":"fsList","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","ts":"2026-09-24T07:54:32Z","primitive":"fsStat","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRemove"}]}
+dsh.gateway.audit: {"primitive":"fsRemove","verdict":"granted","ts":"2026-09-24T07:54:32Z","caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"io","ts":"2026-09-24T07:54:32Z","primitive":"fsStat","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsStat"}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"fs primitives probe","data":[{"stage":"done","mkdir":"ok","write":"written=16","read":"hello primitives","stat":"file size=16","list":"hello.txt:file","rename":"moved.txt","statDir":"dir","remove":"removed","statAfterRemove":"ERR io: cannot stat probe/sub"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsMkdir"}]}
+dsh.gateway.audit: {"primitive":"fsMkdir","verdict":"granted","ts":"2026-09-24T07:54:32Z","caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe/wasm/echo.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.gateway.audit: {"primitive":"fsWrite","ts":"2026-09-24T07:54:32Z","outcome":"ok","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"wasmRun"}]}
+dsh.gateway.audit: {"primitive":"wasmRun","ts":"2026-09-24T07:54:32Z","outcome":"ok","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"wasmRun"}]}
+dsh.gateway.audit: {"primitive":"wasmRun","ts":"2026-09-24T07:54:32Z","outcome":"io","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"wasmRun"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"wasmRun"}]}
+dsh.gateway.audit: {"primitive":"wasmRun","ts":"2026-09-24T07:54:32Z","outcome":"io","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"wasmRun"}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"wasm probe","data":[{"stage":"done","module":"written 77 bytes","run":"result=15 output=\"hello from wasm\"","missingExport":"io: wasmRun: no export \"nope\": function lookup failed","noModule":"io: cannot read probe/wasm/absent.wasm"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"runtime.booted","entries":58,"source":"vendored @deepseek-ai/dsh-client-modules composed in-runtime"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"write.surface.claimed","endpoints":["session.list","session/list","session/create","session/prompt","settings/describe","settings/update","settings/mutate","agentPresets/list","agentPresets/read","agentPresets/copy","agentPresets/deletePreset","agentPresets/select","pluginInventory/list","pluginManager/listBundles","pluginManager/listPlugins","credentials/describe","session/modelCatalog"],"streams":["session/follow","workspace/follow","session/control","$events"],"source":"the on-device spine (ctx.sessions/agents/settings)"}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"settings probes begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"settings.preset.roster","presets":["standard","mobile","ptc","minimal","cordis"],"default":"mobile","authorable":false,"modeSelectionEnabled":true,"healthy":0}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"settings.plugin.inventory","managementAvailable":false,"entries":74,"clientEntries":49,"presets":5,"presetRows":0,"spineSample":[{"id":"agent-loop","enabled":true,"fiberPhase":"active"},{"id":"llm","enabled":true,"fiberPhase":"active"},{"id":"shell-wasm","enabled":true,"fiberPhase":"active"},{"id":"shell-ish","enabled":true,"fiberPhase":"active"}]}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"settings.pluginManager.readonly","bundles":2,"bundleRows":74,"readOnlyReason":"management-required"}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"settings probes done","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"b4 runtime resident (write surface live; awaiting the page)","data":[{}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-27e86e9c-b5d3-4156-96a2-c52bfc0a09e7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"scenario failed","data":[{"reason":"claimed endpoint settings/mutate failed: gateway/unavailable: settings namespace \"ui-theme\" is not registered"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"scenario.failed","reason":"claimed endpoint settings/mutate failed: gateway/unavailable: settings namespace \"ui-theme\" is not registered"}]}
+dsh.spike.log: {"level":"debug","module":"b4.web","message":"scenario failed","data":[{"reason":"claimed endpoint settings/mutate failed: gateway/unavailable: settings namespace \"locale\" is not registered"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"scenario.failed","reason":"claimed endpoint settings/mutate failed: gateway/unavailable: settings namespace \"locale\" is not registered"}]}

@@ -212,6 +212,17 @@ TREES = [
         "session-persistence",
         "commands", "command-feedback",
         "timeout", "tool-todo", "tools", "typert-protocol", "util-values",
+        # The interactive circle (the "/" surface's session plugins): these
+        # ride the preset health check — every row of the mobile preset
+        # resolves against the seeded markers, so the packages must be
+        # embedded, not merely present in a dev tree.
+        "persona", "agent-instructions", "plan-mode", "command-goal",
+        "tool-goal", "tool-jobs", "tool-ask-user", "tool-subagent",
+        "tool-subagent-control", "tool-workflow", "compaction-basic",
+        "command-compact", "compaction-tool-result-pruner", "credentials",
+        "terminal", "goal", "jobs", "output-retention", "user-questions",
+        "chunked-list", "util-time", "subagent", "workflow", "compaction",
+        "token-meter",
         # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
         # filesystem discovery provider, and the model-facing `skill` tool.
         "skill", "skill-filesystem", "tool-skill",

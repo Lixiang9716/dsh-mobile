@@ -122,7 +122,7 @@ export const AGENT_PRESETS_VENDOR_ROOT = '/vendor/dsh/agent-presets@0.1.6-alpha.
 export const AGENT_PRESETS_BASE_URL = `file://${AGENT_PRESETS_VENDOR_ROOT}/`;
 /** The deployment default preset (the shipped roster: cordis/minimal/ptc/
  * standard; the package README's own deployment example pins `standard`). */
-export const AGENT_PRESETS_DEFAULT = 'standard';
+export const AGENT_PRESETS_DEFAULT = 'mobile';
 
 /** The dsh-base rows the mobile profile mounts, in base-patch order. */
 const MOBILE_LAYERS = [
