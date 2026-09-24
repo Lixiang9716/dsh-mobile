@@ -245,6 +245,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       fullCoverage: cfg.fullCoverage === true,
       provider: route.provider,
       model: route.model,
+      baseURL: route.baseURL,
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
     },

@@ -95,6 +95,7 @@ const surface = (ctx) => {
   const post = (frame) => frames.push(frame);
   const write = createWriteSurface(ctx, post, {
     root: ROOT, provider: 'mock', model: 'probe-1',
+    baseURL: 'http://127.0.0.1:1/v1',
     spine: () => [], stagedPlugins: () => [], fullCoverage: true,
   });
   // The workspace/follow feed opens BEFORE the mutation phase, so the
@@ -335,7 +336,9 @@ const llmCredentialsPhase = async (ctx, s) => {
     && providers[0].name.length > 0,
     `listProviders: ${JSON.stringify(providers)}`);
   const directory = await s.api['llm/listConfigurableProviders']({});
-  demand(Array.isArray(directory) && directory.length === 0,
+  demand(Array.isArray(directory) && directory.length === 1
+    && directory[0].provider === 'mock' && directory[0].settingsNs === 'llm-mock'
+    && JSON.stringify(directory[0].settingsPath) === '["providers","default"]',
     `listConfigurableProviders: ${JSON.stringify(directory)}`);
   const canOpen = await s.api['settings/canOpenAgentPresetDirectory']({});
   demand(canOpen === false, `canOpenAgentPresetDirectory: ${JSON.stringify(canOpen)}`);

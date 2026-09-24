@@ -423,7 +423,7 @@ export const createWriteSurface = (ctx, post, options) => {
   const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
   const deps = {
     streams, root, workspaces, seeded, archived,
-    llmRoute: { provider: options.provider, model: options.model },
+    llmRoute: { provider: options.provider, model: options.model, baseURL: options.baseURL },
     mintId: mintUUID,
     publish: streams.publish,
   };
@@ -432,7 +432,7 @@ export const createWriteSurface = (ctx, post, options) => {
   }
   return {
     api: {
-      ...buildApiMap(ctx, deps, options, makeNamespaceGuard(ctx)),
+      ...buildApiMap(ctx, deps, options, makeNamespaceGuard(ctx, deps.llmRoute)),
       ...(coverage === undefined ? {} : buildCoverageApi(ctx, deps)),
     },
     openStream: streams.openStream,
