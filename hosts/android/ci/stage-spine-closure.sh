@@ -209,7 +209,9 @@ if [ "$MODE" = "check" ]; then
     TRACKED=$(git ls-files "$ASSETS" | sed "s|^|$ROOT/|")
     SKIPS_FILE=$(mktemp)
 fi
-is_tracked() { printf '%s\n' "$TRACKED" | grep -qxF "$ASSETS/$1"; }
+# grep -c reads the whole pipe (grep -q's early exit SIGPIPEs the printf
+# mid-write — 'write error: Broken pipe' spewed on every check run, #192).
+is_tracked() { printf '%s\n' "$TRACKED" | grep -cxF "$ASSETS/$1" >/dev/null; }
 note_skip() { [ -n "$SKIPS_FILE" ] && echo x >> "$SKIPS_FILE"; return 0; }
 
 # Byte-identity proof over everything this script stages (rule 6: the
