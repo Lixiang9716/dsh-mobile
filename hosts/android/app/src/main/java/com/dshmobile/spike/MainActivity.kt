@@ -69,6 +69,40 @@ class MainActivity : Activity() {
         }
     }
 
+    /**
+     * The theme is NoActionBar (issue #179): the window is edge-to-edge on the
+     * enforced-API-35 look, so the WEBVIEW owns the top of the screen — and
+     * the system status-bar / cutout region swallowed touches to whatever the
+     * page put there (the settings dialog's whole tab strip, its Close
+     * button, the sidebar's New-session icon). Inset the content by the
+     * system bars so every page element lands at a touchable coordinate; the
+     * page viewport simply starts below them. Registered here — after the
+     * content view exists — and re-dispatched, because an insets listener
+     * attached before setContentView() never sees the first dispatch.
+     */
+    override fun onResume() {
+        super.onResume()
+        val content = findViewById<android.view.ViewGroup>(android.R.id.content) ?: return
+        content.setOnApplyWindowInsetsListener { view, insets ->
+            view.setPadding(0, statusBarInsetTop(insets), 0, 0)
+            insets
+        }
+        content.requestApplyInsets()
+        SpikeHostM4.dispatchResume()
+    }
+
+    /** Top inset of the system bars + display cutout, in pixels (issue #179). */
+    private fun statusBarInsetTop(insets: android.view.WindowInsets): Int =
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            insets.getInsets(
+                android.view.WindowInsets.Type.statusBars()
+                    or android.view.WindowInsets.Type.displayCutout(),
+            ).top
+        } else {
+            @Suppress("DEPRECATION")
+            insets.systemWindowInsetTop
+        }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -78,11 +112,6 @@ class MainActivity : Activity() {
     override fun onPause() {
         super.onPause()
         SpikeHostM4.dispatchPause()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        SpikeHostM4.dispatchResume()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

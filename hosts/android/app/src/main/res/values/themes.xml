@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launch theme: the WebView owns the whole window. The default
+     unthemed Activity look draws a label action bar OVER the fullscreen
+     WebView (targetSdk 35 edge-to-edge), which occluded the official
+     client's own top chrome — the settings dialog's tab strip, its Close
+     button and the sidebar's top icons were invisible and touch-dead
+     (issue #179). NoActionBar lets the page's real header render; the
+     light status-bar icons match the client's light surface. -->
+<resources>
+    <style name="DshSpikeTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowBackground">@android:color/white</item>
+    </style>
+</resources>
