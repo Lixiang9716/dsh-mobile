@@ -49,7 +49,7 @@ if command -v python3 >/dev/null 2>&1 && [ -d "$IOS_GEN" ]; then
     if git diff --quiet -- "$IOS_GEN"; then
         echo "closures: ios bundle header fresh (regenerated, no diff)"
     else
-        echo "::error::closures: ios generated bundle drifted from runtime/spike — re-run hosts/ios/gen.sh" >&2
+        echo "::error::closures: ios generated bundle drifted from runtime/spike — re-run hosts/ios/gen.sh and commit the regenerated bundle" >&2
         git checkout -- "$IOS_GEN" 2>/dev/null || true
         FAIL=1
     fi
