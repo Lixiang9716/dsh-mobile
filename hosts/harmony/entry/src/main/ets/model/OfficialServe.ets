@@ -661,7 +661,8 @@ export class OfficialServe {
       this.port + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
       '","containerRoot":' + JSON.stringify(workspace) +
       ',"fsScopeRoot":' + JSON.stringify(this.fsRoot) +
-      ',"commands":true,"skills":{"dshHome":' +
+      ',"commands":true,"fullCoverage":true,"goals":true,' +
+      '"fileReferences":true,"skills":{"dshHome":' +
       JSON.stringify(workspace + '/home') + ',"agentsHome":' +
       JSON.stringify(workspace + '/home/agents') + ',"customSkillDirs":[' +
       JSON.stringify(workspace + '/skills') + ']}';

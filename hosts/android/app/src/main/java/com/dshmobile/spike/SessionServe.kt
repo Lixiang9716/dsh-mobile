@@ -231,6 +231,9 @@ class SessionServe private constructor(
         if (interactive) {
             config
                 .put("commands", true)
+                .put("fullCoverage", true)
+                .put("goals", true)
+                .put("fileReferences", true)
                 .put("skills", skillsConfig(workspace))
         }
         return config
