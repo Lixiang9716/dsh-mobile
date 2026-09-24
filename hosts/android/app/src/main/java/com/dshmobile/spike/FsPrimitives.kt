@@ -149,7 +149,22 @@ class FsPrimitives(private val context: Context) {
 
     /** fsScope.resolve — restores a persisted ref into a fresh user handle. */
     private fun resolveRef(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
+        // Reserved-scope URIs (`scope://app/`) resolve to the scope's root
+        // the same way the iOS and CLI hosts answer them — the profile
+        // container IS the scope root, and the upstream suite driver (plus
+        // the session scenarios' launch-env branch) pins the profile cwd
+        // there. A user-granted scope still resolves through its bookmark
+        // below.
         val ref = call.string("ref")
+        if (ref != null && ref.startsWith("scope://") && ref.endsWith("/")) {
+            val name = ref.removePrefix("scope://").removeSuffix("/")
+            if (name == "app") {
+                return done.settle(
+                    JSONObject().put("scope", name).put("path", appRoot.absolutePath),
+                    null,
+                )
+            }
+        }
         if (ref == null || !ref.startsWith(BOOKMARK_PREFIX)) {
             return done.settle(null, invalid("fsScope.resolve", "malformed ref"))
         }
