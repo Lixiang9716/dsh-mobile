@@ -52,6 +52,7 @@ import {
   bootInjections,
 } from '@deepseek-ai/dsh-client-modules';
 import { createWriteSurface, WRITE_ENDPOINTS, COVERAGE_ENDPOINTS } from 'upstream/web-write.js';
+import { patchPresetSeedFiles } from 'upstream/preset-mobile-rows.js';
 
 if (typeof globalThis.process === 'undefined') globalThis.process = process;
 
@@ -436,13 +437,15 @@ export const createWebBootRuntime = ({ ctx, post, write }) => {
         return cancelled ?? mux.cancel(msg);
       }
       case 'agentPresets.seed': {
-        // The host delivers the vendored presets tree it staged (base64, the
-        // web.plugins shape's file map) — the fs/promises shim's VFS is the
-        // only filesystem the presets walk sees. Seed BEFORE the panel asks.
+        // The host delivers the vendored presets tree (base64, the
+        // web.plugins shape); the fs VFS is the only fs the walk sees. The
+        // mobile composition disables its absent tool rows first — unpatched,
+        // the health check marks them broken and 内置插件 answers 加载失败.
         const files = {};
         for (const [path, file] of Object.entries(msg.files ?? {})) {
           files[path] = { bytes: decodeB64(file.b64), mtimeMs: file.mtimeMs ?? 0 };
         }
+        patchPresetSeedFiles(files);
         mergeWebPlugins(files);
         return { kind: 'seeded' };
       }

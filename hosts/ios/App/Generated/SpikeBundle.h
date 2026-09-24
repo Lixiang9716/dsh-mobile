@@ -92,6 +92,7 @@ const char *dsh_spike_res_upstream_web_write_picker_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_workspace_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_coverage_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_llm_js(size_t *len);
+const char *dsh_spike_res_upstream_preset_mobile_rows_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_catalog_js(size_t *len);
 const char *dsh_spike_res_scenario_b4_web_live_js(size_t *len);
 const char *dsh_spike_res_shims_async_hooks_js(size_t *len);
