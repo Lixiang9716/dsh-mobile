@@ -395,21 +395,23 @@ const deliverApiRequest = (post, apiHandlers, write, mounted, msg) => {
  * workspace and the llm route new sessions select. Without it the runtime
  * claims exactly the b3 read surface (session.list + session/journal).
  */
+/** The write surface from the write options (null on a bare compose boot).
+ * The 插件 inventory's client-bundle plane reads the staged descriptors this
+ * runtime composed (the delivery store; populated at composition). */
+const mountWriteSurface = (ctx, post, write) => (write === undefined ? null
+  : createWriteSurface(ctx, post, {
+    ...write,
+    stagedPlugins: () => stagedDescriptorStore(),
+  }));
+
 export const createWebBootRuntime = ({ ctx, post, write }) => {
   const apiHandlers = createApiHandlers(ctx);
   const mux = createMuxHandlers(ctx, post);
-  // The coverage flag rides the WRITE OPTIONS; the surface object built from
-  // them does not carry it (a surface is {api, openStream, dispose}) — read
-  // the flag HERE, before the options are consumed (the served claims were
-  // silently coverage-free until measured on device 2026-09-24).
+  // The coverage flag rides the write OPTIONS — the built surface does not
+  // carry it, so read it here (the served claims were silently
+  // coverage-free until measured on device 2026-09-24).
   const fullCoverage = write?.fullCoverage === true;
-  const writeSurface = write === undefined
-    ? null : createWriteSurface(ctx, post, {
-      ...write,
-      // The 插件 inventory's client-bundle plane: the staged descriptors this
-      // runtime composed (the delivery store; populated at composition).
-      stagedPlugins: () => stagedDescriptorStore(),
-    });
+  const writeSurface = mountWriteSurface(ctx, post, write);
   let mounted = false;
   const deliver = (msg) => {
     switch (msg.type) {
