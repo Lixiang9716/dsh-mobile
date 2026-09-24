@@ -344,7 +344,7 @@ export const createMuxHandlers = (ctx, post) => {
  * surface's endpoints when composed with one). A non-final chunk of a
  * CHUNKED delivery only stages (the drive keeps delivering); the final
  * chunk — or a legacy single delivery — composes. */
-const deliverWebPlugins = (ctx, post, msg, write) => {
+const deliverWebPlugins = (ctx, post, msg, write, fullCoverage) => {
   const plugins = stageWebPlugins(msg);
   if (plugins.staged === false) {
     return { kind: 'staged', packages: plugins.plugins.length };
@@ -354,7 +354,7 @@ const deliverWebPlugins = (ctx, post, msg, write) => {
   const endpoints = write === null
     ? CLAIMED_ENDPOINTS
     : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS,
-       ...(write.fullCoverage === true ? COVERAGE_ENDPOINTS : [])];
+       ...(fullCoverage === true ? COVERAGE_ENDPOINTS : [])];
   post({ type: 'api.claim', endpoints });
   post({ type: 'mux.claim' });
   return { kind: 'booted', entries: graph.entries.map((e) => e.id) };
@@ -398,6 +398,11 @@ const deliverApiRequest = (post, apiHandlers, write, mounted, msg) => {
 export const createWebBootRuntime = ({ ctx, post, write }) => {
   const apiHandlers = createApiHandlers(ctx);
   const mux = createMuxHandlers(ctx, post);
+  // The coverage flag rides the WRITE OPTIONS; the surface object built from
+  // them does not carry it (a surface is {api, openStream, dispose}) — read
+  // the flag HERE, before the options are consumed (the served claims were
+  // silently coverage-free until measured on device 2026-09-24).
+  const fullCoverage = write?.fullCoverage === true;
   const writeSurface = write === undefined
     ? null : createWriteSurface(ctx, post, {
       ...write,
@@ -409,7 +414,7 @@ export const createWebBootRuntime = ({ ctx, post, write }) => {
   const deliver = (msg) => {
     switch (msg.type) {
       case 'web.plugins': {
-        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface);
+        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface, fullCoverage);
         mounted = true;
         return outcome;
       }
