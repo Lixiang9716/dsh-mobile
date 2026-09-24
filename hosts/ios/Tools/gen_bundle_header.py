@@ -402,31 +402,37 @@ def tree_c_source(tree: list) -> str:
             f"/* {path.relative_to(REPO)} ({len(raw)} bytes) */\n{c_array(symbol, raw, raw)}")
         tree_paths.append(f'  "{rel}",')
         tree_lens.append(f"  sizeof({symbol}) - 1,")
-    return (
-        "/* ---- the staged tree (vendored spine packages + zod closure) ---- */\n"
-        + "\n".join(tree_arrays)
-        + "\nstatic const char *const DSH_TREE_PATHS[] = {\n"
-        + "\n".join(tree_paths)
-        + "\n};\n\nstatic const unsigned char *const DSH_TREE_DATA[] = {\n"
-        + "\n".join(f"  DSH_TREE_{i:03d}," for i in range(len(tree)))
-        + "\n};\n\nstatic const size_t DSH_TREE_LENS[] = {\n"
-        + "\n".join(tree_lens)
-        + "\n};\n\n"
-        + "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
-        + "                               const char **data, size_t *len) {\n"
-        + f"  if (index >= {len(tree)}) return 0;\n"
-        + "  if (path) *path = DSH_TREE_PATHS[index];\n"
-        + "  if (data) *data = (const char *)DSH_TREE_DATA[index];\n"
-        + "  if (len) *len = DSH_TREE_LENS[index];\n"
-        + "  return 1;\n"
-        + "}\n")
+    data_idx_rows = "\n".join(
+        "  DSH_TREE_%03d," % i for i in range(len(tree)))
+    parts_head = [
+        "/* ---- the staged tree (vendored spine packages + zod closure) ---- */\n",
+        "\n".join(tree_arrays),
+        "\nstatic const char *const DSH_TREE_PATHS[] = {\n",
+        "\n".join(tree_paths),
+        "\n};\n\nstatic const unsigned char *const DSH_TREE_DATA[] = {\n",
+        data_idx_rows,
+        "\n};\n\nstatic const size_t DSH_TREE_LENS[] = {\n",
+        "\n".join(tree_lens),
+        "\n};\n\n",
+    ]
+    walker = [
+        "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n",
+        "  const char **data, size_t *len) {\n",
+        "  if (index >= %d) return 0;\n" % len(tree),
+        "  if (path) *path = DSH_TREE_PATHS[index];\n",
+        "  if (data) *data = DSH_TREE_DATA[index];\n",
+        "  if (len) *len = DSH_TREE_LENS[index];\n",
+        "  return 1;\n",
+        "}\n",
+    ]
+    return "".join(parts_head) + "".join(walker)
 
 
 TREE_WALKER_DECL = (
     "/* The staged tree walker (vendored spine packages + zod closure):\n"
     " * fills path/data/len for `index`, returns 0 past the end. */\n"
     "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
-    "                               const char **data, size_t *len);")
+    " const char **data, size_t *len);")
 
 
 def emit() -> None:
