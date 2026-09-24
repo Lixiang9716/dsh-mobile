@@ -222,12 +222,19 @@ TREES = [
         "command-compact", "compaction-tool-result-pruner", "credentials",
         "terminal", "goal", "jobs", "output-retention", "user-questions",
         "chunked-list", "util-time", "subagent", "workflow", "compaction",
-        "token-meter", "tool-present", "tool-ralph", "tool-bash",
-        "tool-pwsh",
+        "token-meter",
         # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
         # filesystem discovery provider, and the model-facing `skill` tool.
         "skill", "skill-filesystem", "tool-skill",
     ]
+] + [
+    # present/ralph/bash/pwsh (the mobile preset's shell surface): pinned on
+    # the NPM face (ensure-dsh.sh fetches the published tarballs; the mirror
+    # serves no vendor/dsh tree for them) but STAGED at the vendor/dsh/<pkg>
+    # @ver rel path — the dir the preset-health marker seeder walks.
+    *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
+       SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
+      for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh")),
 ] + [
     # api-full-coverage (D9): the vendored services the coverage rows mount —
     # the event-sourced goal service (goals/*) and the local file-reference
@@ -362,6 +369,11 @@ def collect_tree_files():
         if src_dir.is_file():
             out.append((rel_dir, src_dir))
             continue
+        if not src_dir.is_dir():
+            # absent tree = silent-empty rglob = the row vanishes (2026-09-24 drift)
+            raise SystemExit(
+                f"gen_bundle_header: TREES row {rel_dir!r} source missing: "
+                f"{src_dir} — fix the row or run ensure-dsh.sh")
         for path in sorted(src_dir.rglob("*")):
             if path.is_file() and path.suffix in (".js", ".mjs", ".json", ".yaml", ".yml", ".md"):
                 out.append((f"{rel_dir}/{path.relative_to(src_dir)}", path))
