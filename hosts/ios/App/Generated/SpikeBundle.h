@@ -73,6 +73,8 @@ const char *dsh_spike_res_npm_schemastery_mjs(size_t *len);
 const char *dsh_spike_res_npm_client_modules_index_js(size_t *len);
 const char *dsh_spike_res_npm_client_modules_client_js(size_t *len);
 const char *dsh_spike_res_npm_anonymous_user_id_js(size_t *len);
+const char *dsh_spike_res_presets_mobile_preset_yml(size_t *len);
+const char *dsh_spike_res_presets_mobile_agent_cordis_yml(size_t *len);
 const char *dsh_spike_res_npm_agent_presets_index_js(size_t *len);
 const char *dsh_spike_res_npm_plugin_loader_js(size_t *len);
 const char *dsh_spike_res_npm_plugin_include_js(size_t *len);
@@ -85,6 +87,10 @@ const char *dsh_spike_res_upstream_web_write_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_inventory_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_streams_js(size_t *len);
 const char *dsh_spike_res_upstream_web_write_settings_js(size_t *len);
+const char *dsh_spike_res_upstream_web_write_files_js(size_t *len);
+const char *dsh_spike_res_upstream_web_write_picker_js(size_t *len);
+const char *dsh_spike_res_upstream_web_write_workspace_js(size_t *len);
+const char *dsh_spike_res_upstream_web_write_catalog_js(size_t *len);
 const char *dsh_spike_res_scenario_b4_web_live_js(size_t *len);
 const char *dsh_spike_res_shims_async_hooks_js(size_t *len);
 const char *dsh_spike_res_shims_util_js(size_t *len);
@@ -99,6 +105,6 @@ const char *dsh_spike_res_plugin_shell_ish_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,
-                               const char **data, size_t *len);
+ const char **data, size_t *len);
 
 #endif /* DSH_IOS_SPIKE_BUNDLE_H */

@@ -29,6 +29,16 @@ import {
   makeSettingsWrite,
 } from 'upstream/web-write-settings.js';
 import { makePluginInventoryHandler, makePluginManagerHandlers } from 'upstream/web-write-inventory.js';
+// The COVERAGE plane (api-full-coverage): its endpoint lists, api-map
+// assembly, and stream-open leg live in web-write-coverage.js (split at the
+// code-size gate); the lists are re-exported here so the surface's public
+// face stays one module.
+import {
+  COVERAGE_ENDPOINTS, COVERAGE_STREAMS,
+  buildCoverageApi, openCoverageStream, createChangeFeed,
+} from 'upstream/web-write-coverage.js';
+
+export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
 
 /** The /api endpoints this surface claims (the generated TypertRemoteMap
  * spellings; `session.list` is the b3 probe's dot alias). The settings
@@ -315,6 +325,13 @@ const makePromptSession = (ctx) => async (args) => {
  * @param options.root - the profile container root: the seeded workspace's
  *   REAL directory and the default cwd for workspace-less creates.
  * @param options.provider, options.model - the llm route new agents select.
+ * @param options.fullCoverage - optional COVERAGE flag (the api-full-
+ *   coverage work stream): when true the surface also answers the full
+ *   namespace surface (COVERAGE_ENDPOINTS / COVERAGE_STREAMS) from the
+ *   vendored services boot.js mounted for it (options.goals /
+ *   options.fileReferences / options.skills / options.commands). Without it
+ *   the claim set and handlers are byte-identical to the pre-coverage
+ *   surface (the delivered manifests pin that shape).
  * @param options.spine - () => the mounted runtime spine as plugin-inventory
  *   rows (boot.js `spineInventory`; the caller wires it so this adapter never
  *   imports boot.js — the bare compose-only embed does not carry the spine).
@@ -397,15 +414,27 @@ export const createWriteSurface = (ctx, post, options) => {
   }
   const seeded = seedWorkspace(root);
   const workspaces = new Map([[seeded.workspaceId, seeded]]);
-  const streams = createFollowStreams(ctx, post, root, workspaces);
-  const ensureNamespaces = makeNamespaceGuard(ctx);
+  // The coverage plane is late-bound: coverage.open reads deps (built after
+  // the streams), and deps.publish fans out through the streams' registry.
+  const archived = [];
+  const coverage = options.fullCoverage === true ? { archived: () => archived } : undefined;
+  const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
   const deps = {
-    streams, root, workspaces, seeded,
+    streams, root, workspaces, seeded, archived,
     llmRoute: { provider: options.provider, model: options.model },
+    mintId: mintUUID,
+    publish: streams.publish,
   };
+  if (coverage !== undefined) {
+    coverage.open = (msg) => openCoverageStream(ctx, deps, createChangeFeed(ctx), post, msg);
+  }
   return {
-    api: buildApiMap(ctx, deps, options, ensureNamespaces),
+    api: {
+      ...buildApiMap(ctx, deps, options, makeNamespaceGuard(ctx)),
+      ...(coverage === undefined ? {} : buildCoverageApi(ctx, deps)),
+    },
     openStream: streams.openStream,
+    cancel: streams.cancel,
     dispose: streams.dispose,
   };
 };

@@ -1,0 +1,3 @@
+name: 移动模式
+description: 面向移动端的编码 Agent：文件编辑、Shell（wasm/ish）、Skills、计划、目标与工作流。与桌面标准模式的差异：不含网页检索、PTC 工作流与 ripgrep 文件检索（宿主能力墙）。
+order: 2

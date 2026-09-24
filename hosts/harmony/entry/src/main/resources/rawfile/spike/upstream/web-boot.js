@@ -51,7 +51,7 @@ import {
   ClientModuleRegistry,
   bootInjections,
 } from '@deepseek-ai/dsh-client-modules';
-import { createWriteSurface, WRITE_ENDPOINTS } from 'upstream/web-write.js';
+import { createWriteSurface, WRITE_ENDPOINTS, COVERAGE_ENDPOINTS } from 'upstream/web-write.js';
 
 if (typeof globalThis.process === 'undefined') globalThis.process = process;
 
@@ -352,7 +352,9 @@ const deliverWebPlugins = (ctx, post, msg, write) => {
   const { graph, rows } = mountClientModules(ctx, plugins);
   post(webBootMessage(rows, graph));
   const endpoints = write === null
-    ? CLAIMED_ENDPOINTS : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS];
+    ? CLAIMED_ENDPOINTS
+    : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS,
+       ...(write.fullCoverage === true ? COVERAGE_ENDPOINTS : [])];
   post({ type: 'api.claim', endpoints });
   post({ type: 'mux.claim' });
   return { kind: 'booted', entries: graph.entries.map((e) => e.id) };
@@ -418,8 +420,14 @@ export const createWebBootRuntime = ({ ctx, post, write }) => {
         const claimed = writeSurface?.openStream(msg);
         return claimed ?? mux.open(msg);
       }
-      case 'mux.cancel':
-        return mounted ? mux.cancel(msg) : { kind: 'not-mounted' };
+      case 'mux.cancel': {
+        if (!mounted) return { kind: 'not-mounted' };
+        // Coverage streams (workspaceFiles/changes) cancel through the write
+        // surface's registry; unknown ids fall through to the base journal
+        // map — the pre-coverage behavior, unchanged.
+        const cancelled = writeSurface?.cancel?.(msg);
+        return cancelled ?? mux.cancel(msg);
+      }
       case 'agentPresets.seed': {
         // The host delivers the vendored presets tree it staged (base64, the
         // web.plugins shape's file map) — the fs/promises shim's VFS is the

@@ -131,6 +131,14 @@ RESOURCES = [
     ("npm_anonymous_user_id_js",
      SPIKE / "vendor" / "npm"
      / "@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2" / "lib" / "index.js"),
+    # The MOBILE preset (the interactive seat's roster row): the standard
+    # composition minus the three physically-walled rows (tool-fs-search,
+    # workflow-ptc, tool-web). Staged into the vendored presets COPY (never
+    # the tracked vendor tree) so the seed enumerator picks it up.
+    ("presets_mobile_preset_yml",
+     SPIKE / "presets-mobile" / "mobile" / "preset.yml"),
+    ("presets_mobile_agent_cordis_yml",
+     SPIKE / "presets-mobile" / "mobile" / "agent.cordis.yml"),
     # The agent-presets closure (the Agent 预设 panel's data source): the
     # presets service package plus the five dependency libs its import chain
     # resolves through the spike's bare map. js-yaml ships an ESM dist face.
@@ -158,6 +166,13 @@ RESOURCES = [
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
+    # api-full-coverage (D9): the workspaceFiles / workspace / directoryPicker
+    # / catalog coverage adapters of the write surface (claimed only under
+    # the fullCoverage write option — the base claims stay byte-identical).
+    ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
+    ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
+    ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
+    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
@@ -200,6 +215,18 @@ TREES = [
         # filesystem discovery provider, and the model-facing `skill` tool.
         "skill", "skill-filesystem", "tool-skill",
     ]
+] + [
+    # api-full-coverage (D9): the vendored services the coverage rows mount —
+    # the event-sourced goal service (goals/*) and the local file-reference
+    # discovery (fileReferences/list, with its base package). Dynamic imports
+    # of boot.js's gated GOAL/FILE-REFERENCE rows; absent trees would refuse
+    # the coverage boot loud, so they ride the embed with the adapters.
+    ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
 ] + [
     # the npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports
     # vendor/npm/diff@9.0.0/libesm/index.js behind the bare specifier the
@@ -375,31 +402,37 @@ def tree_c_source(tree: list) -> str:
             f"/* {path.relative_to(REPO)} ({len(raw)} bytes) */\n{c_array(symbol, raw, raw)}")
         tree_paths.append(f'  "{rel}",')
         tree_lens.append(f"  sizeof({symbol}) - 1,")
-    return (
-        "/* ---- the staged tree (vendored spine packages + zod closure) ---- */\n"
-        + "\n".join(tree_arrays)
-        + "\nstatic const char *const DSH_TREE_PATHS[] = {\n"
-        + "\n".join(tree_paths)
-        + "\n};\n\nstatic const unsigned char *const DSH_TREE_DATA[] = {\n"
-        + "\n".join(f"  DSH_TREE_{i:03d}," for i in range(len(tree)))
-        + "\n};\n\nstatic const size_t DSH_TREE_LENS[] = {\n"
-        + "\n".join(tree_lens)
-        + "\n};\n\n"
-        + "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
-        + "                               const char **data, size_t *len) {\n"
-        + f"  if (index >= {len(tree)}) return 0;\n"
-        + "  if (path) *path = DSH_TREE_PATHS[index];\n"
-        + "  if (data) *data = (const char *)DSH_TREE_DATA[index];\n"
-        + "  if (len) *len = DSH_TREE_LENS[index];\n"
-        + "  return 1;\n"
-        + "}\n")
+    data_idx_rows = "\n".join(
+        "  DSH_TREE_%03d," % i for i in range(len(tree)))
+    parts_head = [
+        "/* ---- the staged tree (vendored spine packages + zod closure) ---- */\n",
+        "\n".join(tree_arrays),
+        "\nstatic const char *const DSH_TREE_PATHS[] = {\n",
+        "\n".join(tree_paths),
+        "\n};\n\nstatic const unsigned char *const DSH_TREE_DATA[] = {\n",
+        data_idx_rows,
+        "\n};\n\nstatic const size_t DSH_TREE_LENS[] = {\n",
+        "\n".join(tree_lens),
+        "\n};\n\n",
+    ]
+    walker = [
+        "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n",
+        "  const char **data, size_t *len) {\n",
+        "  if (index >= %d) return 0;\n" % len(tree),
+        "  if (path) *path = DSH_TREE_PATHS[index];\n",
+        "  if (data) *data = DSH_TREE_DATA[index];\n",
+        "  if (len) *len = DSH_TREE_LENS[index];\n",
+        "  return 1;\n",
+        "}\n",
+    ]
+    return "".join(parts_head) + "".join(walker)
 
 
 TREE_WALKER_DECL = (
     "/* The staged tree walker (vendored spine packages + zod closure):\n"
     " * fills path/data/len for `index`, returns 0 past the end. */\n"
     "int dsh_spike_bundle_tree_file(size_t index, const char **path,\n"
-    "                               const char **data, size_t *len);")
+    " const char **data, size_t *len);")
 
 
 def emit() -> None:
