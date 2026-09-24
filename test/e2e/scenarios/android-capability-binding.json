@@ -4,7 +4,7 @@
   "expect": [
     { "event": "client.selected", "match": { "client": "dsh-web-client" } },
     { "event": "gateway.negotiated", "match": { "version": "gateway@1" } },
-    { "event": "descriptor.declared", "match": { "available": 9, "unavailable": 0 } },
+    { "event": "descriptor.declared", "match": { "available": 17, "unavailable": 0 } },
     { "event": "carrier.listening", "match": { "transport": "tcp", "loopback": true } },
     { "event": "webclient.mounted", "match": { "client": "dsh-web-client", "path": "/index.html" } },
     { "event": "ws.connected", "match": { "protocol": "session-projection@0" } },
