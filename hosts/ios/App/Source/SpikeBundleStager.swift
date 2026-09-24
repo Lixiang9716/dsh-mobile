@@ -284,20 +284,7 @@ enum SpikeBundleStager {
         try write("upstream/llm-transport.js",
                   data: resData(dsh_spike_res_upstream_llm_transport_js), under: root)
         // The W-RPC write surface (b4): the composer-send adapter + scenario.
-        try write("upstream/web-write.js",
-                  data: resData(dsh_spike_res_upstream_web_write_js), under: root)
-        try write("upstream/web-write-catalog.js",
-                  data: resData(dsh_spike_res_upstream_web_write_catalog_js), under: root)
-        try write("upstream/web-write-coverage.js",
-                  data: resData(dsh_spike_res_upstream_web_write_coverage_js), under: root)
-        try write("upstream/web-write-files.js",
-                  data: resData(dsh_spike_res_upstream_web_write_files_js), under: root)
-        try write("upstream/web-write-picker.js",
-                  data: resData(dsh_spike_res_upstream_web_write_picker_js), under: root)
-        try write("upstream/web-write-workspace.js",
-                  data: resData(dsh_spike_res_upstream_web_write_workspace_js), under: root)
-        try write("upstream/web-write-inventory.js",
-                  data: resData(dsh_spike_res_upstream_web_write_inventory_js), under: root)
+        try writeWriteSurface(root)
         try write("upstream/web-write-streams.js",
                   data: resData(dsh_spike_res_upstream_web_write_streams_js), under: root)
         try write("upstream/web-write-settings.js",
@@ -402,5 +389,28 @@ extension SpikeBundleStager {
             if !dirs.isEmpty { return scope }
         }
         return nil
+    }
+}
+
+
+extension SpikeBundleStager {
+    /// The W-RPC write surface's five coverage splits + the composer adapter
+    /// and its catalog: staged beside web-write.js (the api-full-coverage
+    /// round split the surface across files; each needs its own embed row).
+    static func writeWriteSurface(_ root: URL) throws {
+        try write("upstream/web-write.js",
+                  data: resData(dsh_spike_res_upstream_web_write_js), under: root)
+        try write("upstream/web-write-catalog.js",
+                  data: resData(dsh_spike_res_upstream_web_write_catalog_js), under: root)
+        try write("upstream/web-write-coverage.js",
+                  data: resData(dsh_spike_res_upstream_web_write_coverage_js), under: root)
+        try write("upstream/web-write-files.js",
+                  data: resData(dsh_spike_res_upstream_web_write_files_js), under: root)
+        try write("upstream/web-write-picker.js",
+                  data: resData(dsh_spike_res_upstream_web_write_picker_js), under: root)
+        try write("upstream/web-write-workspace.js",
+                  data: resData(dsh_spike_res_upstream_web_write_workspace_js), under: root)
+        try write("upstream/web-write-inventory.js",
+                  data: resData(dsh_spike_res_upstream_web_write_inventory_js), under: root)
     }
 }
