@@ -1,0 +1,21 @@
+{
+  "title": "Android user-facing boot fully integrates the DSH packages (the SessionServe seat)",
+  "created": "2026-09-24T04:38:37+00:00",
+  "rules": {
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
+    }
+  },
+  "checklist": [
+    "[x] SessionServe.kt: carrier+dist+plugins+bridge+scripted-llm+spine entry composer-web-live with claims seam",
+    "[x] runtime.config delivers workspace/fsScope/credential/commands/skills rows (interactive)",
+    "[x] bootRelease constructs the seat (credential file loader, interactive=true)",
+    "[x] release build verified on emulator: workspace picker live, Models catalog loads, a real agent turn streams",
+    "[x] E2E drives unaffected (composer.live-write manifest still green)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0046"
+}

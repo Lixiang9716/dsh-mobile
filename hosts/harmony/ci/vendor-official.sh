@@ -145,6 +145,7 @@ fi
 # vendored npm libs the client-modules composition imports — the exact
 # bundle-root relative paths the C loader's bare map resolves.
 CLOSURE="scenario/officialweb-web-live.js
+scenario/composer-web-live.js
 upstream/web-boot.js
 upstream/web-shims.js
 upstream/shims/buffer.js

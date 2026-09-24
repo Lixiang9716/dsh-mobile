@@ -78,6 +78,7 @@ const BUNDLE_FILES: string[] = [
   'fixtures/dsh-notes-source.js',
   'fixtures/dsh-notes.js',
   'scenario/officialweb-web-live.js',
+  'scenario/composer-web-live.js',
   'scenario/harmony-httpfetch-streaming.js',
   'scenario/harmony-session-live-read.js',
   'scenario/harmony-composer-live-write.js',
@@ -512,10 +513,13 @@ struct Index {
   }
 
   /** The user-facing boot (release only): materialize the bundled web-boot
-   * closure, then run the serving seat — carrier up, the web-boot runtime
-   * composes the official boot wire from the vendored dist + client bundles
-   * in rawfile, and the origin opens in ArkWeb. No leg, no probe, no record:
-   * the serving seat's evidence hooks are left at their no-op defaults. */
+   * closure, then run the serving seat — INTERACTIVE (the full vendored DSH
+   * spine: the commands registry + the skill plane mount, the write surface
+   * and the mux streams are claimed, and the page's own composer admits real
+   * upstream agent-loop turns; the model route is the staged credential file
+   * when present, else the carrier's scripted endpoint). No leg, no probe,
+   * no record: the serving seat's evidence hooks are left at their no-op
+   * defaults. */
   private startReleaseServe(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const serve = new OfficialServe();
@@ -526,9 +530,11 @@ struct Index {
       this.webUrl = url;
     };
     const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const credential: string | null = OfficialServe.loadCredential(ctx);
     this.materializeBundle(ctx)
       .then((root: string): void => {
-        serve.begin(ctx, root, ctx.cacheDir + '/dsh-official-serve.log', fsRoot);
+        serve.beginInteractive(ctx, root, ctx.cacheDir + '/dsh-official-serve.log',
+          fsRoot, credential);
       })
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';

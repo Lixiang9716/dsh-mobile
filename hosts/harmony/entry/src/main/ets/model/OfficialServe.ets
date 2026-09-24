@@ -42,6 +42,7 @@ import { common } from '@kit.AbilityKit';
 import { socket } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { util } from '@kit.ArkTS';
+import { fileIo as fs } from '@kit.CoreFileKit';
 import { CarrierRequest, CarrierServer, HttpHandler } from './CarrierServer';
 import { WebDist, BootRow } from './WebDist';
 import { WebPlugins } from './WebPlugins';
@@ -57,8 +58,21 @@ const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
 const ENTRY_MOUNT = 'scenario/officialweb-web-live.js';
+/** The INTERACTIVE mount entry (the user-facing seat): the FULL vendored DSH
+ * spine boots — llm/session/agent/tools/system-prompt/settings/agent-loop
+ * plus the commands registry and the skill plane — claims the write surface,
+ * the settings describe and the mux streams, and goes RESIDENT: the page's
+ * own composer admits real upstream agent-loop turns. Kotlin/Swift sibling:
+ * hosts/android SessionServe.kt, hosts/ios SessionServe.swift. */
+const ENTRY_INTERACTIVE = 'scenario/composer-web-live.js';
 /** The mount entry's scenario label (the C host logs its verdict under it). */
 const SCENARIO_MOUNT = 'harmony.officialweb.mount';
+/** The scripted model boundary of the INTERACTIVE seat (the same byte-for-
+ * byte success stream the harness's dsh-llm-mock mirror serves): without a
+ * staged credential this route answers every turn, so the whole UI works
+ * with no model configured. */
+const MOCK_LLM_PATH = '/mock-llm/chat/completions';
+const MOCK_LLM_KEY = 'mock-key-0001';
 /** The recovery defaults row the carrier injects beside the runtime's rows
  * (upstream `__DSH_CONNECTION_RECOVERY__`). */
 const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
@@ -150,6 +164,58 @@ export class OfficialServe {
   private webRoot: string = '';
   private fsRoot: string = '';
   private capturePath: string = '';
+  /** The INTERACTIVE seat (the user-facing boot): the mount entry is the
+   * resident spine scenario, the runtime.config carries the workspace / the
+   * interactive rows (commands + skills) / the staged credential, and the
+   * carrier serves the scripted model route as the no-credential fallback. */
+  private interactive: boolean = false;
+  private credentialJson: string | null = null;
+
+  /** The staged credential file (`<filesDir>/profiles/default/llm/
+   * config.json` — the same shape and location the `llm.live-stream` runner
+   * stages at): baseUrl/apiKey/model (+ optional provider). Absent or
+     malformed yields null — the seat then serves the scripted route. Nothing
+     here logs the key: a credential that never reaches a record cannot leak
+     into one. */
+  static loadCredential(ctx: common.UIAbilityContext): string | null {
+    const path: string = ctx.filesDir + '/profiles/default/llm/config.json';
+    let text: string = '';
+    try {
+      text = fs.readTextSync(path);
+    } catch (e) {
+      return null;
+    }
+    try {
+      const obj: Record<string, Object> = JSON.parse(text) as Record<string, Object>;
+      const baseUrl = obj['baseUrl'] as string ?? '';
+      const apiKey = obj['apiKey'] as string ?? '';
+      const model = obj['model'] as string ?? '';
+      if (baseUrl.length === 0 || apiKey.length === 0 || model.length === 0) {
+        return null;
+      }
+      return text;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /** The user-facing boot (the INTERACTIVE seat): the full spine through
+   * composer-web-live.js — the commands registry + the skill plane mount,
+   * the write surface / settings describe / mux streams are claimed, and a
+   * staged credential (or the scripted route) backs every turn. */
+  beginInteractive(ctx: common.UIAbilityContext, webRoot: string,
+    capturePath: string, fsRoot: string, credentialJson: string | null): void {
+    this.interactive = true;
+    this.credentialJson = credentialJson;
+    const workspace: string = fsRoot + '/workspace';
+    try {
+      fs.mkdirSync(workspace + '/home/agents', true);
+      fs.mkdirSync(workspace + '/skills', true);
+    } catch (e) {
+      hilog.error(0x0000, TAG, 'interactive: workspace mkdir failed');
+    }
+    this.begin(ctx, webRoot, capturePath, fsRoot);
+  }
 
   /** Boots the mount leg: routes → listen → runtime → web.boot → origin. The
    * served output is the official app; who consumes it is the caller's. */
@@ -204,6 +270,14 @@ export class OfficialServe {
     this.server.registerFallback(this.dist.handler);
     this.server.register('prefix', '/plugins', this.plugins.handler);
     this.bridge.install();
+    if (this.interactive) {
+      // The scripted model boundary of the interactive seat (the no-
+      // credential fallback): the same bytes the harness's mock serves.
+      this.server.register('exact', MOCK_LLM_PATH,
+        (req: CarrierRequest, conn: socket.TCPSocketConnection): void => {
+          this.serveScriptedLlm(req, conn);
+        });
+    }
     this.wireSeats();
     // Carrier → runtime seam: claimed /api requests and mux.open/cancel
     // deliveries ride the bus (the runtime's answers come back as
@@ -218,9 +292,15 @@ export class OfficialServe {
       this.port = port;
       // hostStart FIRST: the drive's canonical lines route through the phase
       // sink (hostCarrierLine), which is only live once the runtime exists.
-      this.startRuntime(ctx, SCENARIO_MOUNT);
+      const entry = this.interactive ? ENTRY_INTERACTIVE : SCENARIO_MOUNT;
+      this.startRuntime(ctx, entry);
       this.onCarrierUp(port);
-      this.evalEntry(ENTRY_MOUNT);
+      this.evalEntry(entry);
+      if (this.interactive) {
+        // The spine's take('runtime.config') consumes this (workspace, the
+        // interactive rows, the model route) before any surface mounts.
+        this.deliverBus(this.interactiveConfig());
+      }
       this.deliverWebPlugins(ctx);
     }).catch((err: Error): void => {
       hilog.error(0x0000, TAG, 'official: carrier failed: %{public}s',
@@ -568,6 +648,65 @@ export class OfficialServe {
   }
 
   // ---- gateway dispatch (httpFetch v2) ---------------------------------------------
+
+  /** The INTERACTIVE seat's runtime.config: the workspace (a real directory
+   * inside the granted scope — what the agent writes survives relaunches),
+   * the scope root, the interactive rows (commands registry + skill plane,
+   * all INSIDE the workspace — the fs views refuse anything outside it), and
+   * the model route (the staged credential, else the scripted loopback
+   * endpoint). The key rides apiKey only; it never reaches a record. */
+  private interactiveConfig(): string {
+    const workspace: string = this.fsRoot + '/workspace';
+    let line = '{"type":"runtime.config","mockLlmUrl":"http://127.0.0.1:' +
+      this.port + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
+      '","containerRoot":' + JSON.stringify(workspace) +
+      ',"fsScopeRoot":' + JSON.stringify(this.fsRoot) +
+      ',"commands":true,"skills":{"dshHome":' +
+      JSON.stringify(workspace + '/home') + ',"agentsHome":' +
+      JSON.stringify(workspace + '/home/agents') + ',"customSkillDirs":[' +
+      JSON.stringify(workspace + '/skills') + ']}';
+    if (this.credentialJson !== null) {
+      const cred = JSON.parse(this.credentialJson) as Record<string, Object>;
+      line += ',"llmBaseUrl":' + JSON.stringify(cred['baseUrl'] ?? '') +
+        ',"llmApiKey":' + JSON.stringify(cred['apiKey'] ?? '') +
+        ',"llmModel":' + JSON.stringify(cred['model'] ?? '') +
+        ',"llmProvider":' + JSON.stringify(cred['provider'] ?? 'openai-compatible');
+    }
+    line += '}';
+    return line;
+  }
+
+  /** The SCRIPTED model boundary of the interactive seat: POST
+   * /mock-llm/chat/completions — the same byte-for-byte success stream the
+   * harness's dsh-llm-mock mirror serves ('Hello from upstream', 5-char
+   * deltas, terminal chunk with finish_reason + usage, [DONE]) and its fixed
+   * bearer check (401 JSON on a bad key). */
+  private serveScriptedLlm(req: CarrierRequest,
+    conn: socket.TCPSocketConnection): void {
+    if (req.method !== 'POST') {
+      this.server.respondText(conn, 405, 'text/plain', 'method not allowed');
+      return;
+    }
+    if (req.headers['authorization'] !== 'Bearer ' + MOCK_LLM_KEY) {
+      const body = '{"error":{"message":"mock authentication failed",' +
+        '"type":"mock_error","code":"invalid_api_key"}}';
+      this.server.respondText(conn, 401, 'application/json', body);
+      return;
+    }
+    const successText = 'Hello from upstream';
+    let sse = '';
+    for (let at = 0; at < successText.length; at += 5) {
+      const chunk = successText.substring(at, Math.min(at + 5, successText.length));
+      sse += 'data: {"choices":[{"index":0,"delta":{"content":"' + chunk +
+        '"},"finish_reason":null}]}\n\n';
+    }
+    sse += 'data: {"choices":[{"index":0,"delta":{"content":""},' +
+      '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
+      '"completion_tokens":' + successText.length + '}}\n\n';
+    sse += 'data: [DONE]\n\n';
+    this.server.respondText(conn, 200,
+      'text/event-stream; charset=utf-8', sse);
+  }
 
   private onDispatch(callId: number, name: string, args: string): void {
     hilog.info(0x0000, TAG, 'official: dispatch %{public}s call=%{public}d',
