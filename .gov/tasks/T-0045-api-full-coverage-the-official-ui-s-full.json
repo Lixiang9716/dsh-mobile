@@ -1,0 +1,22 @@
+{
+  "title": "api-full-coverage: the official UI's full endpoint surface answered from the vendored spine",
+  "created": "2026-09-24T04:13:49+00:00",
+  "rules": {
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
+    }
+  },
+  "checklist": [
+    "Enumerate the wire surface from the staged client bundles + vendored typert descriptors",
+    "Gate the new claims so the delivered manifests stay byte-identical (fullCoverage write option)",
+    "Mount the goal + file-reference planes behind boot options; write the coverage adapters",
+    "Probe drives every new handler + the honest gaps on the spike CLI (PASS)",
+    "Parity EXIT 0, code-size clean, gov 15/15",
+    "Embed regenerated + synced copies committed; PR opened (no merge)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0045"
+}

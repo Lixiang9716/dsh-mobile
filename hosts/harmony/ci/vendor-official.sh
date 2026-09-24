@@ -172,6 +172,11 @@ upstream/llm-transport.js
 upstream/web-write.js
 upstream/web-write-settings.js
 upstream/web-write-streams.js
+upstream/web-write-coverage.js
+upstream/web-write-files.js
+upstream/web-write-picker.js
+upstream/web-write-workspace.js
+upstream/web-write-catalog.js
 upstream/shims/async-hooks.js
 upstream/shims/util.js
 upstream/shims/util-types.js

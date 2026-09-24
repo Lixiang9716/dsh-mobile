@@ -249,6 +249,32 @@ const mountSkillPlane = async (ctx, skills) => {
   await ctx.plugin(ToolSkill, {});
 };
 
+/** The GOAL row (2026-09-24, the api-full-coverage work stream): the vendored
+ * event-sourced GoalService (`ctx.goals`, dsh-goal) — the service the official
+ * UI's goals/* Remote namespace reads and the `goal` command family drives.
+ * Its injects (`agents`, `sessionProjections`) are both mounted above, so the
+ * mount is a plain plugin application; it registers its projection and arms
+ * its `agent/created` listener at apply time. Mounted only when the caller
+ * configures `options.goals` — the coverage work stream's flag — so every
+ * existing spine leg boots byte-identically (the parity/session manifests pin
+ * that shape). Dynamic import: same reason as the file-tools row. */
+const mountGoalPlane = async (ctx) => {
+  const Goal = await import('@deepseek-ai/dsh-goal');
+  await ctx.plugin(Goal.default ?? Goal.GoalService, {});
+};
+
+/** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
+ * file-reference discovery service (`ctx.fileReferences`, dsh-file-reference-local)
+ * — the @-mention lexicon the official composer reads (`fileReferences/list`).
+ * Injects `agents` only; its search walks the node:fs/promises shim, i.e. the
+ * SAME pinned workspace world the `fs` service serves. Mounted only when the
+ * caller configures `options.fileReferences` (the coverage flag; see the goal
+ * row above for the byte-identical reasoning). */
+const mountFileReferencePlane = async (ctx) => {
+  const FileRefs = await import('@deepseek-ai/dsh-file-reference-local');
+  await ctx.plugin(FileRefs.default ?? FileRefs.LocalFileReferenceService, {});
+};
+
 /** The COMMAND row (2026-09-24, the owner's "/" report): the upstream
  * interactive-command registry (dsh-commands) plus the command-defining
  * plugins the desktop composition mounts (command-feedback first — its deps
@@ -325,6 +351,11 @@ const mountSpine = async (ctx, identity) => {
   // context, so every later step sees them). Only when configured.
   if (identity.skills) await mountSkillPlane(ctx, identity.skills);
   if (identity.commands) await mountCommandPlane(ctx);
+  // The COVERAGE rows (api-full-coverage work stream): gated mounts of the
+  // vendored goal service and file-reference discovery service, each AFTER
+  // agent-loop (both inject `agents`; goals also reads `sessionProjections`).
+  if (identity.goals) await mountGoalPlane(ctx);
+  if (identity.fileReferences) await mountFileReferencePlane(ctx);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -355,6 +386,13 @@ const mountSpine = async (ctx, identity) => {
  *   mounted verbatim; default '' (the historical boot shape).
  * @param options.commands - optional COMMAND-row flag (true mounts the
  * upstream commands registry + the command-defining plugins vendored so far).
+ * @param options.goals - optional GOAL-row flag (true mounts the vendored
+ * dsh-goal GoalService under `goals`; the api-full-coverage work stream's
+ * wire claims ride it). Absent = the historical spine.
+ * @param options.fileReferences - optional FILE-REFERENCE-row flag (true
+ * mounts the vendored dsh-file-reference-local service under
+ * `fileReferences`, the composer's @-mention lexicon). Absent = the
+ * historical spine.
  * @param options.skills - optional SKILL-row configuration: {dshHome,
  *   agentsHome, customSkillDirs?} — mounting the vendored skill family
  *   (registry + filesystem provider + the `skill` tool). Absent = the
@@ -423,6 +461,8 @@ export async function bootUpstream(options) {
     personaPrefix: options.systemPrompt?.personaPrefix,
     skills: options.skills,
     commands: options.commands,
+    goals: options.goals,
+    fileReferences: options.fileReferences,
   });
   await demandServices(ctx);
   demandPresetServices(ctx);

@@ -172,14 +172,51 @@ const rejectFollow = (post, msg, sessionId) => {
   return { kind: 'error' };
 };
 
+/** The coverage stream open leg: one extra endpoint's open through the
+ * coverage plane. The wrapped msg lets the leg attach its unsubscribe into
+ * the registry entry and poll whether the stream was cancelled already.
+ * Unknown endpoints answer null (the caller's unimplemented leg). */
+const openCoverage = (post, followStreams, coverage, msg) => {
+  if (coverage?.open === undefined) return null;
+  let unsubscribe = () => {};
+  const outcome = coverage.open({
+    ...msg,
+    cancelled: () => followStreams.get(msg.streamId) === undefined,
+    attachUnsubscribe: (fn) => { unsubscribe = fn; },
+  });
+  if (outcome !== undefined && outcome.kind === 'attached') {
+    followStreams.set(msg.streamId, {
+      kind: 'coverage',
+      unsubscribe: () => unsubscribe(),
+    });
+  }
+  return outcome ?? null;
+};
+
+/** Cancel one coverage-registered stream by id; unknown ids answer
+ * undefined so the caller's base journal map handles them (the
+ * pre-coverage behavior). */
+const cancelCoverage = (post, followStreams, msg) => {
+  const stream = followStreams.get(msg.streamId);
+  if (stream === undefined || stream.kind !== 'coverage') return undefined;
+  followStreams.delete(msg.streamId);
+  stream.unsubscribe();
+  post({ type: 'mux.end', streamId: msg.streamId });
+  return { kind: 'cancelled' };
+};
+
 /**
  * The mux feeds for one write surface. `workspaces` is the surface's
  * workspace registry (Map workspaceId → workspace): the workspace feed's
  * baseline reads it and `attachWorkspace` publishes upserts to every open
- * feed.
- * @returns {openStream, attachWorkspace, dispose}
+ * feed. `coverage` (optional, the api-full-coverage plane) carries:
+ *   - archived() — the archive set the workspace baseline reports;
+ *   - open(msg) — one extra stream endpoint's open leg (workspaceFiles/
+ *     changes); it may attach its unsubscribe through the wrapped msg and
+ *     poll msg.cancelled().
+ * @returns {openStream, cancel, attachWorkspace, publish, dispose}
  */
-export const createFollowStreams = (ctx, post, root, workspaces) => {
+export const createFollowStreams = (ctx, post, root, workspaces, coverage) => {
   const followStreams = new Map();
   const assistantState = new Map();
 
@@ -196,12 +233,14 @@ export const createFollowStreams = (ctx, post, root, workspaces) => {
     if (msg.endpoint === 'session/follow') {
       return openFollow(ctx, post, followStreams, assistantState, msg);
     }
-    const opening = openingFor(workspaces, root, msg.endpoint);
+    const opening = openingFor(workspaces, root, msg.endpoint, coverage);
     if (opening !== undefined) {
       return openFeed(post, followStreams, msg, opening.kind, opening.value);
     }
-    return null;
+    return openCoverage(post, followStreams, coverage, msg);
   };
+
+  const cancel = (msg) => cancelCoverage(post, followStreams, msg);
 
   const dispose = () => {
     for (const [, stream] of followStreams) {
@@ -212,8 +251,17 @@ export const createFollowStreams = (ctx, post, root, workspaces) => {
 
   return {
     openStream,
+    cancel,
     attachWorkspace: (workspace, sessionId) => {
       publishUpsert(post, followStreams, workspace, sessionId);
+    },
+    /** One workspace/follow increment (upsert/remove/order/archived) fanned
+     * to every open workspace feed — the workspace mutations' channel. */
+    publish: (increment) => {
+      for (const [streamId, stream] of followStreams) {
+        if (stream.kind !== 'workspace') continue;
+        post({ type: 'mux.item', streamId, value: increment });
+      }
     },
     dispose,
   };
@@ -224,18 +272,18 @@ export const createFollowStreams = (ctx, post, root, workspaces) => {
  * jobs + projections — the UI folds state from the REAL journal streams),
  * and the `$events` ready handshake (the mobile profile forwards no
  * gateway-internal Cordis events). */
-const workspaceBaseline = (workspaces) => ({
+const workspaceBaseline = (workspaces, coverage) => ({
   type: 'baseline',
   value: {
     items: [...workspaces.values()].map((ws) => (
       { ...ws, sessionIds: [...ws.sessionIds] })),
-    archivedSessionIds: [],
+    archivedSessionIds: [...(coverage?.archived?.() ?? [])],
   },
 });
 
-const openingFor = (workspaces, root, endpoint) => {
+const openingFor = (workspaces, root, endpoint, coverage) => {
   if (endpoint === 'workspace/follow') {
-    return { kind: 'workspace', value: workspaceBaseline(workspaces) };
+    return { kind: 'workspace', value: workspaceBaseline(workspaces, coverage) };
   }
   if (endpoint === 'session/control') {
     return {

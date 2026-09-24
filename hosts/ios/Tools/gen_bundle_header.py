@@ -158,6 +158,13 @@ RESOURCES = [
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
+    # api-full-coverage (D9): the workspaceFiles / workspace / directoryPicker
+    # / catalog coverage adapters of the write surface (claimed only under
+    # the fullCoverage write option — the base claims stay byte-identical).
+    ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
+    ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
+    ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
+    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
@@ -200,6 +207,18 @@ TREES = [
         # filesystem discovery provider, and the model-facing `skill` tool.
         "skill", "skill-filesystem", "tool-skill",
     ]
+] + [
+    # api-full-coverage (D9): the vendored services the coverage rows mount —
+    # the event-sourced goal service (goals/*) and the local file-reference
+    # discovery (fileReferences/list, with its base package). Dynamic imports
+    # of boot.js's gated GOAL/FILE-REFERENCE rows; absent trees would refuse
+    # the coverage boot loud, so they ride the embed with the adapters.
+    ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
+    ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
 ] + [
     # the npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports
     # vendor/npm/diff@9.0.0/libesm/index.js behind the bare specifier the
