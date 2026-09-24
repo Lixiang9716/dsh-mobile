@@ -222,7 +222,8 @@ TREES = [
         "command-compact", "compaction-tool-result-pruner", "credentials",
         "terminal", "goal", "jobs", "output-retention", "user-questions",
         "chunked-list", "util-time", "subagent", "workflow", "compaction",
-        "token-meter",
+        "token-meter", "tool-present", "tool-ralph", "tool-bash",
+        "tool-pwsh",
         # the SKILL row (the agent-flow E2E): the ctx.skills registry, the
         # filesystem discovery provider, and the model-facing `skill` tool.
         "skill", "skill-filesystem", "tool-skill",

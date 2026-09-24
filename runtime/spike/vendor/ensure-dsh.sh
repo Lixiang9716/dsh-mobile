@@ -198,6 +198,10 @@ js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff9
 @deepseek-ai/dsh-file-reference@0.1.6-alpha.2|@deepseek-ai/dsh-file-reference/-/dsh-file-reference-0.1.6-alpha.2.tgz|a26f311c6002f65c7aae9a40b32287d7d87352ea64a21405f1e9c070620fba5d
 @deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2|@deepseek-ai/dsh-file-reference-local/-/dsh-file-reference-local-0.1.6-alpha.2.tgz|05a17ee9e586514793078a7301c64c6c0bbcb40b48576988a9518846fe55412b
 @deepseek-ai/dsh-goal@0.1.6-alpha.2|@deepseek-ai/dsh-goal/-/dsh-goal-0.1.6-alpha.2.tgz|fad5689d46a8798dcef9cb3eda948fba461ce0c8f81d484d6ec1ef1c8403ef41
+@deepseek-ai/dsh-tool-present@0.1.6-alpha.2|@deepseek-ai/dsh-tool-present/-/dsh-tool-present-0.1.6-alpha.2.tgz|ec7b417bcc013c345ee98b3d71195c11f0e9a3f181ab2a02d5da3d3e954ac431
+@deepseek-ai/dsh-tool-ralph@0.1.6-alpha.2|@deepseek-ai/dsh-tool-ralph/-/dsh-tool-ralph-0.1.6-alpha.2.tgz|e1b7a6f937411936c0a1ee16933e741e3197c0de835b0894365d9055ac6829c2
+@deepseek-ai/dsh-tool-bash@0.1.6-alpha.2|@deepseek-ai/dsh-tool-bash/-/dsh-tool-bash-0.1.6-alpha.2.tgz|6f170629f3762b895a079511aad1931953e3c1fd8c3e03ef6dc677ed9f2ac249
+@deepseek-ai/dsh-tool-pwsh@0.1.6-alpha.2|@deepseek-ai/dsh-tool-pwsh/-/dsh-tool-pwsh-0.1.6-alpha.2.tgz|6647a1a0c8a7fdaa4d836e6dd9aca638df02c8434c8a03be0ddf73b9c5bc71df
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 "
