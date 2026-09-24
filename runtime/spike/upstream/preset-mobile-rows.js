@@ -31,6 +31,7 @@ const MOBILE_ABSENT_ROW_IDS = new Set([
   'tool-fs-search', // @vscode/ripgrep packaged binary over OS subprocesses
   'tool-web', // the web search provider is a host-plane network service
   'workflow-ptc', // the PTC workflow engine needs the desktop host runner
+  'tool-presentation', // the registry presenter rides the PTC host runner
   'tool-cordis', // runtime inspection for composition authoring (desktop)
   'tool-plugin-manager', // persistent profile-wide plugin management
 ]);
