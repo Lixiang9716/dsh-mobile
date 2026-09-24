@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "Enumerate the wire surface from the staged client bundles + vendored typert descriptors",
-    "Gate the new claims so the delivered manifests stay byte-identical (fullCoverage write option)",
-    "Mount the goal + file-reference planes behind boot options; write the coverage adapters",
-    "Probe drives every new handler + the honest gaps on the spike CLI (PASS)",
-    "Parity EXIT 0, code-size clean, gov 15/15",
-    "Embed regenerated + synced copies committed; PR opened (no merge)"
+    "[x] Enumerate the wire surface from the staged client bundles + vendored typert descriptors",
+    "[x] Gate the new claims so the delivered manifests stay byte-identical (fullCoverage write option)",
+    "[x] Mount the goal + file-reference planes behind boot options; write the coverage adapters",
+    "[x] Probe drives every new handler + the honest gaps on the spike CLI (PASS)",
+    "[x] Parity EXIT 0, code-size clean, gov 15/15",
+    "[x] Embed regenerated + synced copies committed; PR opened (no merge)"
   ],
   "status": "open",
   "receipt": null,
