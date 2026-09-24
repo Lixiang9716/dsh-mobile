@@ -9,11 +9,11 @@
     }
   },
   "checklist": [
-    "llm/listProviders + llm/listConfigurableProviders (+discoverModels) answered from the real vendored LlmRuntime",
-    "credentials/set|unset honest host-backed answer or documented residue",
+    "[x] llm/listProviders + llm/listConfigurableProviders (+discoverModels) answered from the real vendored LlmRuntime",
+    "[x] credentials/set|unset honest host-backed answer or documented residue",
     "session legs + reference resolver + feedback + permissionPresets answered from the spine where real",
-    "desktop-only legs stay structured-unavailable with the askers gated (canOpen* false)",
-    "rebuild debug, relaunch serve seat, verify by logs no unimplemented toast remains"
+    "[x] desktop-only legs stay structured-unavailable with the askers gated (canOpen* false)",
+    "[x] rebuild debug, relaunch serve seat, verify by logs no unimplemented toast remains"
   ],
   "status": "open",
   "receipt": null,
