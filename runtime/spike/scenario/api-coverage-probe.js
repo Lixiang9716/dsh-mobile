@@ -299,8 +299,13 @@ const changesPhase = async (ctx, s) => {
  * declared-unimplemented endpoints carry no handler. */
 const gapsPhase = async (ctx, s) => {
   for (const endpoint of ['terminal/create', 'terminal/list', 'terminal/write',
-    'terminal/shells', 'credentials/set', 'credentials/unset',
-    'directoryPicker/pick', 'settings/replace', 'session/page', 'session/fork']) {
+    'terminal/shells', 'directoryPicker/pick', 'settings/replace',
+    'settings/openSettingsDocument', 'settings/openAgentPresetDirectory',
+    'llm/discoverModels', 'subagents/list', 'subagents/prompt',
+    'sessionFeedback/record', 'permissionPresets/catalog',
+    'fileUploads/upload', 'officeToPdf/render',
+    'session/page', 'session/fork', 'session/search', 'session/rename',
+    'session/cancel', 'session/updateQueue', 'session/attachment']) {
     demand(s.api[endpoint] === undefined, `${endpoint} must stay unclaimed`);
   }
   demand(new Set(COVERAGE_ENDPOINTS.filter((e) => WRITE_ENDPOINTS.includes(e))).size === 0,
@@ -319,6 +324,43 @@ const gapsPhase = async (ctx, s) => {
     historical: WRITE_ENDPOINTS.length });
 };
 
+/** The models-page legs: the provider directory off the MOUNTED LlmRuntime
+ * (the boot registered exactly the route provider), the opener gate, and
+ * the credential store round-trip (set → describe → unset → describe), the
+ * values never coming back over the wire. */
+const llmCredentialsPhase = async (ctx, s) => {
+  const providers = await s.api['llm/listProviders']({});
+  demand(Array.isArray(providers) && providers.length === 1
+    && providers[0].id === 'mock' && typeof providers[0].name === 'string'
+    && providers[0].name.length > 0,
+    `listProviders: ${JSON.stringify(providers)}`);
+  const directory = await s.api['llm/listConfigurableProviders']({});
+  demand(Array.isArray(directory) && directory.length === 0,
+    `listConfigurableProviders: ${JSON.stringify(directory)}`);
+  const canOpen = await s.api['settings/canOpenAgentPresetDirectory']({});
+  demand(canOpen === false, `canOpenAgentPresetDirectory: ${JSON.stringify(canOpen)}`);
+  const describeRefs = ['MOCK_API_KEY', 'OTHER_API_KEY'];
+  const before = await s.api['credentials/describe']({ refs: describeRefs });
+  demand(before.MOCK_API_KEY.configured === true
+    && before.MOCK_API_KEY.writable === true
+    && before.OTHER_API_KEY.configured === false,
+    `describe before set: ${JSON.stringify(before)}`);
+  await s.api['credentials/set']({ ref: 'OTHER_API_KEY', value: 'sekrit' });
+  const after = await s.api['credentials/describe']({ refs: describeRefs });
+  demand(after.OTHER_API_KEY.configured === true
+    && after.OTHER_API_KEY.source === undefined
+    && after.MOCK_API_KEY.configured === true,
+    `describe after set: ${JSON.stringify(after)}`);
+  await s.api['credentials/unset']({ ref: 'OTHER_API_KEY' });
+  const removed = await s.api['credentials/describe']({ refs: describeRefs });
+  demand(removed.OTHER_API_KEY.configured === false,
+    `describe after unset: ${JSON.stringify(removed)}`);
+  log.info('llm credentials ok', {
+    providers: providers.length, directory: directory.length,
+    routeConfigured: before.MOCK_API_KEY.configured,
+  });
+};
+
 /** Main: boot → surface → phases → complete. */
 try {
   const ctx = await boot();
@@ -328,6 +370,7 @@ try {
   await pickerPhase(s);
   await catalogPhase(ctx, s);
   await changesPhase(ctx, s);
+  await llmCredentialsPhase(ctx, s);
   await gapsPhase(ctx, s);
   log.info('probe ok', { coverageEndpoints: COVERAGE_ENDPOINTS.length });
   if (!verdict) { verdict = true; globalThis.__dshComplete(true, 'api coverage verified'); }

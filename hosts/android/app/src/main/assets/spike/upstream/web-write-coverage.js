@@ -18,24 +18,27 @@ import {
 } from 'upstream/web-write-files.js';
 import { makeDirectoryPickerList, makeDirectoryPickerCreate } from 'upstream/web-write-picker.js';
 import { makeWorkspaceHandlers } from 'upstream/web-write-workspace.js';
-import {
-  makeSkillsHandlers,
+import { makeSkillsHandlers,
   makeFileReferenceHandlers,
   makeGoalHandlers,
   makeCommandHandlers,
 } from 'upstream/web-write-catalog.js';
+import { buildLlmCoverageApi } from 'upstream/web-write-llm.js';
 import { errorOf } from 'upstream/web-write.js';
 
 /**
  * The COVERAGE endpoints, per backing service. Still honestly unimplemented
  * (no handler; the carrier answers gateway/unimplemented): terminal/* (a
  * persistent PTY needs a process seam the gateway primitives do not offer),
- * credentials/set|unset (the staged profile credential is not writable
- * through the wire), directoryPicker/pick (the native OS chooser),
- * settings/replace|openSettingsDocument|openAgentPresetDirectory|
- * canOpenAgentPresetDirectory (desktop OS/document surfaces), and the
- * session/* legs this profile does not serve (page/search/fork/attachment/
- * cancel/updateQueue/rename/selectModel/openWorkspacePath).
+ * directoryPicker/pick (the native OS chooser), settings/replace|
+ * openSettingsDocument|openAgentPresetDirectory (desktop OS/document
+ * surfaces; canOpenAgentPresetDirectory answers `false` so the page hides
+ * the opener), and the session/* legs this profile does not serve
+ * (page/search/fork/attachment/cancel/updateQueue/rename/selectModel/
+ * openWorkspacePath). The LLM + credential rows live in web-write-llm.js:
+ * the provider directory off the mounted LlmRuntime, the credential store
+ * in the profile container (the superseded not-writable stance), and the
+ * opener gate.
  */
 export const COVERAGE_ENDPOINTS = [
   // The file sidebar + preview (over the vendored fs service).
@@ -55,6 +58,12 @@ export const COVERAGE_ENDPOINTS = [
   'goals/complete', 'goals/clear',
   // The "/" command palette (vendored dsh-commands registry).
   'commands/list', 'commands/execute',
+  // The 设置 → 模型 page's provider join (mounted LlmRuntime) + the
+  // credential store write half (web-write-llm.js; supersedes the earlier
+  // not-writable-through-the-wire stance) + the desktop-opener gate.
+  'llm/listProviders', 'llm/listConfigurableProviders',
+  'credentials/set', 'credentials/unset',
+  'settings/canOpenAgentPresetDirectory',
 ];
 
 /** The COVERAGE streams: the workspace file change feed. */
@@ -74,6 +83,7 @@ export const buildCoverageApi = (ctx, deps) => ({
   ...makeFileReferenceHandlers(ctx),
   ...makeGoalHandlers(ctx),
   ...makeCommandHandlers(ctx),
+  ...buildLlmCoverageApi(ctx, deps),
 });
 
 /**
