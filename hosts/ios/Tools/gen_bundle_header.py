@@ -173,6 +173,7 @@ RESOURCES = [
     ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
     ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
     ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
+    ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
