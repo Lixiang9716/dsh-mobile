@@ -58,7 +58,12 @@ have_all() {
     for f in $FILES; do [ -f "$DIR/$f" ] || return 1; done
 }
 
-if have_all; then
+# PIN-STAMPED present-check (the ensure-zstd.sh pattern, issue #180): right
+# file NAMES are not right CONTENT — a tree fetched under an older pin keeps
+# every name while carrying stale bytes, and tar preserves upstream mtimes so
+# the compilers see nothing to rebuild. Stamp = tarball sha256, written only
+# after a verified fetch; absence or mismatch forces a re-fetch.
+if [ -f "$DIR/.vendor-pin" ] && [ "$(cat "$DIR/.vendor-pin")" = "$TARBALL_SHA256" ] && have_all; then
     echo "vendor: wasm3 $PIN present"
     exit 0
 fi
@@ -67,10 +72,13 @@ mkdir -p "$DIR"
 TMP=$(mktemp /tmp/dsh-wasm3.XXXXXX)
 fetch_retry "$URL" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
+rm -rf "$DIR"
+mkdir -p "$DIR"
 for f in $FILES; do
     tar xzf "$TMP" -C "$DIR" --strip-components=1 "wasm3-$PIN/$f"
 done
 rm -f "$TMP"
+echo "$TARBALL_SHA256" > "$DIR/.vendor-pin"
 
 have_all || { echo "vendor: fetch incomplete — refusing to continue" >&2; exit 1; }
 echo "vendor: wasm3 $PIN fetched and verified"

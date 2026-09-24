@@ -85,7 +85,15 @@ have_all() {
     for f in $FILES; do [ -f "$DIR/$f" ] || return 1; done
 }
 
-if have_all; then
+# The present-check is PIN-STAMPED (the ensure-zstd.sh pattern): a tree that
+# merely has the right FILE NAMES is not proof of the right CONTENT — a
+# tree fetched under an older pin keeps every name while carrying stale
+# bytes, and tar restores upstream mtimes so the platform compilers see
+# nothing to rebuild. That exact failure shipped a pre-async-context
+# quickjs into local builds while every agent turn died at the shim
+# (issue #180). The stamp is the tarball sha256, written only after a
+# verified fetch; its absence or mismatch forces a re-fetch.
+if [ -f "$DIR/.vendor-pin" ] && [ "$(cat "$DIR/.vendor-pin")" = "$TARBALL_SHA256" ] && have_all; then
     echo "vendor: quickjs-ng $PIN present ($COMMIT)"
     exit 0
 fi
@@ -94,10 +102,13 @@ mkdir -p "$DIR"
 TMP=$(mktemp /tmp/dsh-qjs.XXXXXX)
 fetch_retry "https://github.com/$QJS_REPO/archive/$COMMIT.tar.gz" "$TMP"
 echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
+rm -rf "$DIR"
+mkdir -p "$DIR"
 for f in $FILES; do
     tar xzf "$TMP" -C "$DIR" --strip-components=1 "quickjs-$COMMIT/$f"
 done
 rm -f "$TMP"
+echo "$TARBALL_SHA256" > "$DIR/.vendor-pin"
 
 have_all || { echo "vendor: fetch incomplete — refusing to continue" >&2; exit 1; }
 echo "vendor: quickjs-ng $PIN fetched and verified ($COMMIT)"
