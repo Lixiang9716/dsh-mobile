@@ -18,7 +18,7 @@
     "docs/release.md + release.zh.md tell the truth about the harmony release; gov verify pairing --write release",
     "Agent Note (class feature) all three sections; gov run green (12 gates); PR -> gh pr checks --watch -> squash merge"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0024",
   "repins": [
@@ -43,5 +43,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:26+00:00",
+    "by": "ci-fix-206",
+    "reason": "The harmony user-facing boot serves the official web interactively \u2014 closed done as T-0047 (#203); the serving/evidence split this brief asked for is the shipped shape."
+  }
 }

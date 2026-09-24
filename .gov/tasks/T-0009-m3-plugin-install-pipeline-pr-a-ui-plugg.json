@@ -17,7 +17,7 @@
     "PR-B: m3.ui-swap on-device green + regression run-ios.sh 4/4 + run-ios-session.sh green",
     "PR-B: status docs (README/zh/ARCHITECTURE) + agent note + green gov run + PR open"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0009",
   "repins": [
@@ -42,5 +42,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:25+00:00",
+    "by": "ci-fix-206",
+    "reason": "M3 shipped long ago (fetch-based installer + pending-receipt replay + UI pluggability; README milestones M0-M5 all done) \u2014 the brief predates the close-out discipline and its checklist is fully ticked; retire instead of fabricating a receipt."
+  }
 }

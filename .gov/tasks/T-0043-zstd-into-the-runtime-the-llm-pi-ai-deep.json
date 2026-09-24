@@ -15,7 +15,7 @@
     "[x] Agent C: llm-pi-ai src/context.ts deep import fixed transpiler-side, target spec runs past module load, controls 65/0+39/0",
     "[x] Integration: 3 zstd-blocked specs green (config-session-id / serial-listener-review / shutdown-drain), full group rerun, parity, closures synced, gates, push"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0043",
   "repins": [
@@ -26,5 +26,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:41+00:00",
+    "by": "ci-fix-206",
+    "reason": "Every checklist item ticked and shipped (#171-#183 rounds: zstd 1.5.7 intrinsics + node:zlib shim + the llm-pi-ai deep-import fix; config-session-id/serial-listener/shutdown-drain all green). The close-out ceremony never ran \u2014 retire rather than re-run gates for a receipt."
+  }
 }

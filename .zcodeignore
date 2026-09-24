@@ -1,0 +1,222 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+package-lock.json
+# …except test/upstream-suite: dev-harmonyos.yml installs it with `npm ci`,
+# which hard-fails without a committed lockfile (the founding-commit blanket
+# ignore predates that pipeline; a targeted negation is the remedy)
+!test/upstream-suite/package-lock.json
+
+# 构建产物
+dist/
+/runtime/spike/build/
+out/
+
+# W-SHELL application-tier client bundles — built output of the pinned
+# upstream client face (presentation/official-web/client-bundles/
+# build-client-bundles.sh), untracked like the official dist so the content
+# gates never judge verbatim upstream JS; the tracked provenance record is
+# the directory's MANIFEST.sha256 + ROSTER.json + PROVENANCE.md, and
+# tools/e2e/ensure-client-bundles.sh materializes + verifies the tree.
+presentation/official-web/client-bundles/npm/
+# …and the record of the tree THIS environment built, which is what a cache
+# restore is verified against: the upstream build embeds its absolute work
+# path, so the committed record above is satisfiable only where that path
+# matches (D15). It travels with the tree, never with the repository.
+presentation/official-web/client-bundles/MANIFEST.sha256.computed
+
+# D9 W-HARMONY official-web mount assets, copied VERBATIM into the app
+# rawfile by hosts/harmony/ci/vendor-official.sh (dist + staged client
+# bundles; the web-boot closure it also copies IS committed — those files
+# are ours or gate-excluded /vendor/). Untracked for the same reason as the
+# client-bundles above: the content gates must never judge bundled upstream
+# JS (the iOS surprise ledger: 5087 violations); the vendor script is the
+# materialize + cmp-verify step and runs inside run-host-e2e.sh's build.
+hosts/harmony/entry/src/main/resources/rawfile/spike/officialweb/
+
+# iOS / Xcode
+hosts/ios/**/*.xcuserstate
+hosts/ios/**/xcuserdata/
+hosts/ios/Pods/
+hosts/ios/DerivedData/
+
+# Android / 鸿蒙（预留）
+hosts/android/.gradle/
+hosts/android/app/build/
+hosts/harmony/.preview/
+hosts/harmony/build/
+
+# 环境 / 密钥 —— 任何 token、密钥不入库
+.env
+.env.*
+*.local
+*.pem
+*.mobileprovision
+
+# 日志 / 临时
+*.log
+tmp/
+.cache/
+
+# govrail 运行账本（本地趋势数据，不入库）
+.gov/history/
+
+# vendored engine sources + vendored upstream DSH runtime packages — pinned
+# + sha256-verified by runtime/spike/vendor/ensure.sh and ensure-dsh.sh;
+# untracked so the syntax-class checker never judges upstream C or the
+# verbatim upstream JS bundles (adaptation lives in our shims, never in the
+# vendored copies — D6/D9; the pin tables in the ensure scripts are the
+# tracked provenance record)
+runtime/spike/vendor/quickjs-ng/
+runtime/spike/vendor/dsh/
+runtime/spike/vendor/npm/
+# The WebAssembly interpreter (wasm3) is vendored on the same terms — pinned +
+# sha256-verified by runtime/spike/vendor/ensure-wasm3.sh, untracked for the
+# same reason as the engines above: upstream's real-world C cannot survive an
+# editor-level parse gate, and the pin table is the provenance record.
+runtime/spike/vendor/wasm3/
+# The zstd compression library (1.5.7, single-threaded subset) — same terms:
+# pinned + sha256-verified by runtime/spike/vendor/ensure-zstd.sh, compiled
+# straight into the shared C host, untracked so the syntax-class checker never
+# judges upstream C. The pin table in the ensure script is the provenance
+# record.
+runtime/spike/vendor/zstd/
+
+# The emulated-Linux userland engine (iSH-arm64) is vendored on exactly those
+# terms — pinned + sha256-verified by runtime/spike/vendor/ensure-ish.sh, kept
+# VERBATIM (D6: adaptation lives in our own host layer, never in the engine), and
+# untracked so the content gates never judge ~1,000 files of upstream C/asm that
+# no editor-level parse gate can survive. The pin table in the ensure script is
+# the tracked provenance record; the fork's GPL text travels with the sources.
+runtime/spike/vendor/ish/
+# …and the guest USERLAND that app rides in the iOS bundle: the pinned Alpine
+# minirootfs, fetched + sha256-verified by
+# runtime/spike/vendor/ensure-ish-rootfs.sh, which is the tracked provenance
+# record. Untracked for the usual two reasons — a 3.8 MB binary in git, and the
+# content gates have no business parsing a tarball.
+hosts/ios/App/Generated/ish-rootfs.tar.gz
+
+# The Android asset stage of the D9 spine closure is the SAME vendored
+# upstream code, untracked for the same reason (the stage script is the
+# reproducible materializer; the web-boot closure below stayed tracked at
+# #63 and is frozen as-is):
+#   hosts/android/ci/stage-spine-closure.sh — byte-identity-verified copy
+#   from the ensure-dsh.sh pin, wired into the Gradle build (stageSpineClosure)
+hosts/android/app/src/main/assets/spike/vendor/dsh/agent@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/agent-loop@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/brand@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/llm@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/sandbox@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/scope@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/session@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/session-projection@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/settings@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/system-prompt@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/timeout@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/tools@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/typert-protocol@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/util-values@*/
+# the SKILL row (the agent-flow E2E's vendored skill family — same D9 spine
+# staging, untracked for the same reason)
+hosts/android/app/src/main/assets/spike/vendor/dsh/skill@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/skill-filesystem@*/
+hosts/android/app/src/main/assets/spike/vendor/dsh/tool-skill@*/
+# the test closure's literal-named tarballs (stage-spine-closure.sh
+# test-closure pass materializes them beside the stripped spine dirs)
+hosts/android/app/src/main/assets/spike/vendor/dsh/dsh-*@*/
+hosts/android/app/src/main/assets/spike/vendor/npm/zod@*/
+
+# Python
+__pycache__/
+.gov/tasks/.new.lock
+# `gov decision add` takes this lock and by design NEVER unlinks it (the
+# close-and-unlink form is a classic lockfile race — gov/decision.py:_locked
+# keeps the path stable so a second writer cannot slip into a fresh inode).
+# The sibling .gov/tasks/.new.lock above is ignored for the same reason; this
+# one lands under docs/, so without this line it is permanent `git status`
+# noise in an otherwise clean tree.
+docs/.decision.lock
+runtime/spike/logs-upstream.txt
+runtime/spike/logs-upstream-boot.txt
+runtime/spike/logs-settings-surfaces.txt
+
+# D9 W-HARMONY3: the pinned zod classic closure inside the harmony rawfile
+# spine closure. VERBATIM upstream bytes (sha256-pinned by
+# runtime/spike/vendor/ensure-dsh.sh, copied + cmp-verified by
+# hosts/harmony/ci/vendor-official.sh) that the syntax-class checker cannot
+# parse (`export { _instanceof as instanceof }` — a tree-sitter-javascript
+# false positive on valid ES module syntax), and upstream discipline (D6)
+# forbids editing the bytes to satisfy a checker. Untracked for the same
+# reason as officialweb/ above: the content gates never judge vendored
+# upstream JS; the vendor script is the materialize + verify step.
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/
+
+# graphify knowledge-graph analysis output (local tooling artifact, not product)
+graphify-out/
+
+# the parity reference driver resolves vendored packages through this link
+# (created by runtime/spike/ci/parity-node-modules.sh; the vendor tree itself is untracked)
+runtime/spike/node_modules
+
+# the transpiled upstream test corpus (generated by test/upstream-suite/transpile.mjs)
+runtime/spike/upstream-tests/
+
+runtime/spike/vendor/dsh-tests@*/
+
+# the staged TEST closure in android assets: untracked extras materialized
+# by the stager's test-closure pass (the curated runtime-closure assets are
+# tracked files — ignore rules never affect those)
+hosts/android/app/src/main/assets/spike/vendor/dsh/dsh-session-format-v*/
+
+# harmony suite-extras rawfile staging (generated; the suite CI job only)
+hosts/harmony/entry/src/main/resources/rawfile/spike/upstream-tests/
+# …including the test-closure vendor trees --suite-extras stages beside the
+# tracked spine closure (the curated runtime-closure assets are tracked
+# files — ignore rules never affect those; same argument as the android twin)
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/agent@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/agent-loop@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/brand@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/llm@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/sandbox@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/scope@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/session@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/session-projection@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/settings@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/system-prompt@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/timeout@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/tools@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/typert-protocol@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/util-values@0.1.6-alpha.2/
+
+# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+.git/
+.hg/
+.svn/
+bower_components/
+jspm_packages/
+site-packages/
+venv/
+coverage/
+htmlcov/
+lcov-report/
+cmakefiles/
+cmake-build-*/
+bazel-*/
+pods/
+deriveddata/
+storybook-static/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+cdk.out/
+*.egg-info/
+*.dist-info/
+eggs/
+pip-wheel-metadata/
+wheels/
+# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
+# 自定义规则写在下方（本行提示可删除）

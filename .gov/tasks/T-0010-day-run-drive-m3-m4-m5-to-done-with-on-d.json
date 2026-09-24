@@ -14,7 +14,7 @@
     "M5 Done: HarmonyOS carrier + ArkWeb mount + binding scenario \u2014 on-emulator E2E green + screenshots + artifacts",
     "All PRs landed (squash, gates green); README/ARCHITECTURE rows flipped with rule 12; final audit: all verdicts pass, tables consistent"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0010",
   "repins": [
@@ -39,5 +39,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:25+00:00",
+    "by": "ci-fix-206",
+    "reason": "Superseded by reality: M3/M4/M5 are all Done with on-device E2E (README milestone table); the day-run framing expired weeks ago."
+  }
 }

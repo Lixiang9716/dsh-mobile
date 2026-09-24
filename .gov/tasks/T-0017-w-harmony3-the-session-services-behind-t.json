@@ -15,7 +15,7 @@
     "E2E b-harmony.session.live one-to-one green with REAL PNG screenshots; full regression green (m1 7/7 + bridge-smoke 6/6 + m2.session 23/23 + m5 20/20 + official-web-mount 17/17 + httpfetch-v2 6/6)",
     "agent note (architecture, ref D9), gov run green, rebase, push, PR open"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0017",
   "repins": [
@@ -40,5 +40,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:26+00:00",
+    "by": "ci-fix-206",
+    "reason": "session.list and the mux journal serve real data on harmony (harmony.session.live green in the matrix); the user-facing harmony boot closed done as T-0047 in #203."
+  }
 }

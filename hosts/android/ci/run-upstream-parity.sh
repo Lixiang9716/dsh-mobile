@@ -55,12 +55,26 @@ done
 adb logcat -c
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 : > "$STREAM"
-adb logcat -s dsh.spike dsh.spike.result > "$STREAM" 2>/dev/null &
+# The logcat clear races a reader's initial snapshot: lines buffered BEFORE
+# the clear (the previous step's scenarios leave `dsh.spike.result: ALL`
+# tags behind) can still reach this stream and instantly satisfy the
+# completion wait, truncating the capture before this run logged anything
+# ("no parity/event records", seen 2026-09-24). Pin the capture point: a
+# canary line this streamer can only see once attached, then judge and
+# truncate from the canary onward.
+CANARY="parity-begin-$$"
+adb logcat -s dsh.spike dsh.spike.result dsh.canary > "$STREAM" 2>/dev/null &
 streamer=$!
 cleanup() {
     kill "$streamer" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
+adb shell log -t dsh.canary "$CANARY" >/dev/null
+deadline=$(( $(date +%s) + 60 ))
+until grep -q "$CANARY" "$STREAM"; do
+    [ "$(date +%s)" -ge "$deadline" ] && die "logcat streamer never attached (canary unseen within 60s)"
+    sleep 0.2
+done
 
 deadline=$(( $(date +%s) + 60 ))
 until adb shell am start -n $PKG/.MainActivity --ez dsh.parity true >/dev/null 2>&1; do
@@ -68,8 +82,10 @@ until adb shell am start -n $PKG/.MainActivity --ez dsh.parity true >/dev/null 2
     sleep 2
 done
 
+# Both conditions: the scenario's own evidence (stale completion tags cannot
+# fake it) and the completion tag itself.
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "dsh.spike.result: ALL" "$STREAM"; do
+until grep -q "upstream.parity" "$STREAM" && grep -q "dsh.spike.result: ALL" "$STREAM"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::upstream.parity scenario did not complete within 300s" >&2
         tail -80 "$STREAM" >&2
@@ -81,7 +97,7 @@ sleep 0.3          # let the completion-tag line itself flush
 trap - EXIT
 cleanup
 
-sed '/dsh.spike.result: ALL/q' "$STREAM" > "$OUT/logs.txt"
+awk '/parity-begin-/{seen=1} seen' "$STREAM" | sed '/dsh.spike.result: ALL/q' > "$OUT/logs.txt"
 grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
 # ---- extract the projected records and diff against the golden -------------

@@ -55,6 +55,21 @@ jobs:
         run: |
           runtime/spike/vendor/ensure.sh
           runtime/spike/vendor/ensure-dsh.sh
+      - name: Materialize the harmony spike closure
+        # The bundle-files gate (#57) walks hosts/harmony's rawfile/spike ON
+        # DISK — its documented contract is "the vendor script materializes it
+        # before any check runs" — and the pinned zod closure there is
+        # deliberately gitignored (verbatim upstream bytes; see .gitignore),
+        # so a fresh checkout fails the walk until the closure is staged.
+        # --closure-only stages from the local canonical trees: no network,
+        # no officialweb re-sync. The git diff guard keeps the closures gate's
+        # semantics honest — the staging must be a no-op on every TRACKED
+        # rawfile file (the closures gate byte-verifies those against the same
+        # pins); a diff here means the committed rawfile itself drifted.
+        run: |
+          hosts/harmony/ci/vendor-official.sh --closure-only
+          git diff --exit-code -- hosts/harmony/entry/src/main/resources/rawfile \
+            || { echo "::error::the committed harmony rawfile drifted from runtime/spike — run build/build.sh sync harmony and commit" >&2; exit 1; }
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an
