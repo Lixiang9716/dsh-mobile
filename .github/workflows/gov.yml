@@ -55,6 +55,13 @@ jobs:
         run: |
           runtime/spike/vendor/ensure.sh
           runtime/spike/vendor/ensure-dsh.sh
+      - name: Materialize the harmony rawfile closure
+        # The bundle-files gate (#57) disk-walks rawfile/spike — and the zod/
+        # js-yaml copies there are deliberately gitignored (verbatim upstream
+        # bytes; see check-bundle-files.mjs's header), so a fresh checkout
+        # must stage them before the DAG runs or the gate reads a tree that
+        # can never agree with BUNDLE_FILES.
+        run: sh hosts/harmony/ci/vendor-official.sh
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an
