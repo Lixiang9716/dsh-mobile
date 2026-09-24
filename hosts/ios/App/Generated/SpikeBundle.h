@@ -73,6 +73,8 @@ const char *dsh_spike_res_npm_schemastery_mjs(size_t *len);
 const char *dsh_spike_res_npm_client_modules_index_js(size_t *len);
 const char *dsh_spike_res_npm_client_modules_client_js(size_t *len);
 const char *dsh_spike_res_npm_anonymous_user_id_js(size_t *len);
+const char *dsh_spike_res_presets_mobile_preset_yml(size_t *len);
+const char *dsh_spike_res_presets_mobile_agent_cordis_yml(size_t *len);
 const char *dsh_spike_res_npm_agent_presets_index_js(size_t *len);
 const char *dsh_spike_res_npm_plugin_loader_js(size_t *len);
 const char *dsh_spike_res_npm_plugin_include_js(size_t *len);
