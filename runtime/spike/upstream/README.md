@@ -64,7 +64,11 @@ SKIPPED: tool-fs-search (the ripgrep binary, unchanged), tool-web (the
 turndown require seam, below), workflow-ptc (the node:vm confined realm,
 below), plus the peers nothing in the closure link-imports: dsh-web
 (tool-web's own peer), dsh-ptc-runtime (the abstract PtcRuntime contract; its
-only concrete implementation is the desktop's sandboxed Node process),
+only concrete implementation is the desktop's sandboxed Node process —
+published upstream as dsh-ptc-runtime-node, but only on the 0.1.7 stream
+(0.1.7-alpha.1+, never 0.1.6-alpha.2) and over the dsh-subprocess
+real-OS-process peer, so outside this pinned stream and behind the
+subprocess seam twice over),
 dsh-permission-presets / dsh-sandbox-policy / dsh-session-projection-cache /
 dsh-session-query / dsh-user-approval (subagent's ctx.get()-soft peers, each
 loud at use naming the package), dsh-compaction-image-offload /
