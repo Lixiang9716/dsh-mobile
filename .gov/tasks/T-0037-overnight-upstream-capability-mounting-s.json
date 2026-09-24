@@ -15,7 +15,7 @@
     "rewrite README + architecture docs with human-friendly naming (no M1/B-codes), contributor and builder guides",
     "land via PRs with green gates"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0037",
   "repins": [
@@ -26,5 +26,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:40+00:00",
+    "by": "ci-fix-206",
+    "reason": "The time-boxed overnight study completed and its outputs shipped (the capability-mounting findings live in the decisions/docs record); nothing is left to execute here."
+  }
 }

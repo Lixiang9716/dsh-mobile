@@ -14,7 +14,7 @@
     "[x] wire the parity runner + comparator + scenario manifest, green on the CLI leg (macOS CI) and the emulator leg",
     "[x] land CI wiring + matrix rows + the note"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0040",
   "repins": [
@@ -25,5 +25,10 @@
       "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:40+00:00",
+    "by": "ci-fix-206",
+    "reason": "Parity landed: the vendored spine passes the upstream suite differentially (agent-loop residuals 389/0, #173), and the successor iOS-side card T-0042 closed done in the same round."
+  }
 }

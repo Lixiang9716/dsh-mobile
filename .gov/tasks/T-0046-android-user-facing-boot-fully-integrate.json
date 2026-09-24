@@ -2,7 +2,7 @@
   "title": "Android user-facing boot fully integrates the DSH packages (the SessionServe seat)",
   "created": "2026-09-24T04:38:37+00:00",
   "rules": {
-    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
@@ -17,5 +17,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0046"
+  "id": "T-0046",
+  "repins": [
+    {
+      "ts": "2026-09-24T12:04:41+00:00",
+      "by": "ci-fix-206",
+      "from": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "to": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+      "reason": "Rules moved (the bundle-files gate + its seal rounds, #202-#204); the brief still describes open work \u2014 the android user-facing SessionServe seat still owes its on-device verification pass (the harmony sibling T-0047 closed, android lags it)."
+    }
+  ]
 }
