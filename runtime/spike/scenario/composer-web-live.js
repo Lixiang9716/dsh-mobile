@@ -156,6 +156,8 @@ const bootPhase = async (cfg, route) => {
     // delivers neither row, so its boot stays byte-identical to the manifest.
     commands: cfg.commands === true,
     skills: cfg.skills,
+    goals: cfg.goals === true,
+    fileReferences: cfg.fileReferences === true,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,
@@ -240,6 +242,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
     ctx, post,
     write: {
       root: cfg.containerRoot,
+      fullCoverage: cfg.fullCoverage === true,
       provider: route.provider,
       model: route.model,
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.

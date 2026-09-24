@@ -214,6 +214,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_timers_js), under: root)
         try write("vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js",
                   data: resData(dsh_spike_res_npm_agent_presets_index_js), under: root)
+        try write("vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/preset.yml",
+                  data: resData(dsh_spike_res_presets_mobile_preset_yml), under: root)
+        try write("vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/agent.cordis.yml",
+                  data: resData(dsh_spike_res_presets_mobile_agent_cordis_yml), under: root)
         try write("vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js",
                   data: resData(dsh_spike_res_npm_plugin_loader_js), under: root)
         try write("vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js",

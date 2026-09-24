@@ -259,6 +259,9 @@ final class SessionServe {
             // provider), so the user stages skills at workspace/skills via
             // Files.app.
             config["commands"] = true
+            config["fullCoverage"] = true
+            config["goals"] = true
+            config["fileReferences"] = true
             config["skills"] = [
                 "dshHome": "\(Self.workspaceRoot.path)/home",
                 "agentsHome": "\(Self.workspaceRoot.path)/home/agents",

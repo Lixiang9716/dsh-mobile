@@ -131,6 +131,14 @@ RESOURCES = [
     ("npm_anonymous_user_id_js",
      SPIKE / "vendor" / "npm"
      / "@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2" / "lib" / "index.js"),
+    # The MOBILE preset (the interactive seat's roster row): the standard
+    # composition minus the three physically-walled rows (tool-fs-search,
+    # workflow-ptc, tool-web). Staged into the vendored presets COPY (never
+    # the tracked vendor tree) so the seed enumerator picks it up.
+    ("presets_mobile_preset_yml",
+     SPIKE / "presets-mobile" / "mobile" / "preset.yml"),
+    ("presets_mobile_agent_cordis_yml",
+     SPIKE / "presets-mobile" / "mobile" / "agent.cordis.yml"),
     # The agent-presets closure (the Agent 预设 panel's data source): the
     # presets service package plus the five dependency libs its import chain
     # resolves through the spike's bare map. js-yaml ships an ESM dist face.
