@@ -155,8 +155,6 @@ ensure_npm "dsh-experimental-auto-review" "0.1.6-alpha.2" "bdf728e053137775610a2
 ensure_npm "dsh-experimental-browser-use-runtime" "0.1.6-alpha.2" "147eadb719bae5558de658a2d8a5c9f7448072252258d297cf26c1d3c1f9898c"
 ensure_npm "dsh-experimental-webworker-packer" "0.1.6-alpha.2" "f723e60bd6f1067de86fa95c4c056509ee46bde5cc0f482789dc567e377bfadd"
 ensure_npm "dsh-experimental-webworker-runtime" "0.1.6-alpha.2" "d81e877ac81f41b19148d865512385051eeed13f611060673e5b1858e7851a07"
-ensure_npm "dsh-file-reference" "0.1.6-alpha.2" "a26f311c6002f65c7aae9a40b32287d7d87352ea64a21405f1e9c070620fba5d"
-ensure_npm "dsh-file-reference-local" "0.1.6-alpha.2" "05a17ee9e586514793078a7301c64c6c0bbcb40b48576988a9518846fe55412b"
 ensure_npm "dsh-fs-observation-policy" "0.1.6-alpha.2" "0255ed745d392b20c086cc55745c5ee74f012b29f34a8342a2fd0809524a7112"
 ensure_npm "dsh-fs-sandbox" "0.1.6-alpha.2" "c4ef917c21fdd04191bccade73e5bb4778bd6bfddee751c850277ac5a87297b2"
 ensure_npm "dsh-fs-ssh" "0.1.6-alpha.2" "1b44b1319574093038ad59f5e120b4e7142d2f2234304f766f1b713a21ac3dc0"
