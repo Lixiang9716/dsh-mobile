@@ -11,6 +11,7 @@
  * (ignored silently is NOT ok — options are rejected), util.types re-export
  * (import node:util/types directly), callbackify/promisify.custom.
  */
+import { decodeUtf8 } from 'upstream/shims/buffer.js';
 const formatValue = (value) => {
   if (typeof value === 'string') return value;
   try {

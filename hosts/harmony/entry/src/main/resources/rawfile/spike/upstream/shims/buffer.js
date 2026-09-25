@@ -190,7 +190,14 @@ export class DshBuffer extends Uint8Array {
       if (encoding === 'base64') {
         return DshBuffer.fromBytes(fromBase64(input));
       }
-      throw new Error(`buffer: Buffer.from(string, '${encoding}') — only utf8 and base64 are supported`);
+      if (encoding === 'ascii' || encoding === 'latin1' || encoding === 'binary') {
+        // latin1-family: one byte per code unit, truncated to 8 bits — the
+        // single-byte encodings node maps onto the same lossy copy.
+        const out = new DshBuffer(input.length);
+        for (let i = 0; i < input.length; i++) out[i] = input.charCodeAt(i) & 0xff;
+        return out;
+      }
+      throw new Error(`buffer: Buffer.from(string, '${encoding}') — only utf8, base64, and the single-byte family (ascii/latin1/binary) are supported`);
     }
     if (input instanceof Uint8Array || Array.isArray(input)) {
       const out = new DshBuffer(input.length);

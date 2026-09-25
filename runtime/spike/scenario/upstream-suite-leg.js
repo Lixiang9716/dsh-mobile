@@ -75,6 +75,9 @@ const main = async () => {
     if (typeof resolved?.path === 'string') {
       globalThis.__dshProfileCwd = resolved.path;
       globalThis.__dshProfileTmpdir = resolved.path.replace(/\/$/, '') + '/tmp';
+      // The os.shims homedir() refuses unless the profile home is pinned
+      // (boot.js's job in a real boot — this driver is the prelude here).
+      globalThis.__dshProfileHome = resolved.path.replace(/\/$/, '') + '/home';
       // The writable workspace VFS serves writes under ONE root (mountWorkspace,
       // boot.js's move); specs that mkdtemp under tmpdir need that world pinned
       // too — this driver is the prelude for them.

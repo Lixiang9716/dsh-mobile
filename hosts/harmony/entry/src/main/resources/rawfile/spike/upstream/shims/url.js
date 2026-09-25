@@ -222,6 +222,12 @@ export const fileURLToPath = (input) => {
     // API — the empty-scheme serialization. Strip the marker, keep the path.
     if (href.startsWith(':///')) return href.slice(3);
     if (href.startsWith('/')) return href;
+    // A scheme-less RELATIVE path is the loader's import.meta.url spelling for
+    // bundle-root-relative modules (the transpiled upstream specs): resolve it
+    // against the bundle root the same lexical walk absolute path-URLs get.
+    if (!/^[A-Za-z][A-Za-z0-9+.\-]*:/.test(href)) {
+      return resolvePath(`/${href}`);
+    }
     throw new Error(`node:url: fileURLToPath needs a file: URL, got ${JSON.stringify(href)}`);
   }
   const parsed = parseAbsolute(href);

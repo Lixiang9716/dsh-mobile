@@ -1,0 +1,26 @@
+{
+  "title": "fix the upstream-suite sweep failures to the physics floor",
+  "created": "2026-09-24T22:44:02+00:00",
+  "rules": {
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+    }
+  },
+  "checklist": [
+    "failure clustering: 145 non-green specs into fix classes",
+    "shim gaps fixed (node:url/mkdtempSync/etc)",
+    "vendorable pure-JS packages vendored + pinned",
+    "three-host sync if shims changed; gates green",
+    "after-sweep report + runner promoted + PR"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0052",
+  "void": {
+    "ts": "2026-09-24T22:50:00+00:00",
+    "by": "lixiang@lixiangdeMacBook-Air.local",
+    "reason": "scope rescoped: ~130 specs are structurally out (desktop-bundler chunks, native seams, .ts-source imports); actionable set is the product-surface shim subset, now tracked by the new card"
+  }
+}
