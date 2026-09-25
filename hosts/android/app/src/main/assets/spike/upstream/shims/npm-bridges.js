@@ -35,6 +35,16 @@
 const BRIDGES = [
   ['diff', "export * from '/vendor/npm/diff@9.0.0/libesm/index.js';"],
   ['yaml', "export * from '/vendor/npm/yaml@2.9.0/browser/index.js';"],
+  // The upstream-suite growth round 3 (2026-09-25): test faces the suite's
+  // own source packages import, pinned at the dsh-v0.1.6-alpha.2 lockfile's
+  // exact resolutions and NEVER mounted by the product boot. Subpath rows
+  // point at each package's own ESM face (the loader resolves concrete
+  // files, not exports maps).
+  ['zustand/vanilla', "export * from '/vendor/npm/zustand@4.4.7/esm/vanilla.js';"],
+  ['zustand/shallow', "export * from '/vendor/npm/zustand@4.4.7/esm/shallow.js';"],
+  ['zustand/middleware', "export * from '/vendor/npm/zustand@4.4.7/esm/middleware.js';"],
+  ['eventsource-parser/stream', "export * from '/vendor/npm/eventsource-parser@3.1.0/dist/stream.js';"],
+  ['eventsource-parser', "export * from '/vendor/npm/eventsource-parser@3.1.0/dist/index.js';"],
   // The chokidar linkage shim (no vendored tree — see the row note above).
   // The importing vendored package binds only the default export and calls
   // `chokidar.watch(...)`, so the shim is exactly that face; it fails loud

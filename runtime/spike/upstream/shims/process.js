@@ -60,9 +60,11 @@ export const pid = 1;
 // pretense, no crash.
 const versions = { node: '20.0.0' };
 
+const execArgv = []; // no node CLI flags exist here (loader probes read it)
 const proc = {
   get env() { return env; },
   get argv() { return argv(); },
+  get execArgv() { return execArgv; },
   get platform() { return platform(); },
   get pid() { return pid; },
   get version() { return version(); },
