@@ -269,7 +269,12 @@ def fallback_functions(path, lines):
 def check(path, facts):
     """Return (violations, backend) where backend is 'gov-parse' or 'fallback'."""
     violations = []
-    text = Path(path).read_text(encoding="utf-8", errors="replace")
+    try:
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
+    except FileNotFoundError as error:
+        raise SystemExit(
+            f"code-size: checked file vanished mid-run: {path!r} "
+            f"(facts entry: {'yes' if facts is not None else 'no'})") from error
     lines = text.splitlines()
     is_python = path.endswith(".py")
     if facts is not None:
