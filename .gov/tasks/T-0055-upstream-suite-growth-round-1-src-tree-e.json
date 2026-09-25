@@ -1,0 +1,21 @@
+{
+  "title": "upstream-suite growth round 1: src-tree extraction + CI shim self-test",
+  "created": "2026-09-25T00:32:53+00:00",
+  "rules": {
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+    }
+  },
+  "checklist": [
+    "[x] ensure-dsh-tests: portable extraction (gtar/python3) + packages/*/src + loud empty-tree failure",
+    "[x] transpile.mjs: transform failures record the missing-dependency reason (rule 5)",
+    "[x] boot-verification shims.selftest phase + manifest expectation, CLI 8/8 green",
+    "[x] 671-spec sweep re-run: green 261 / 5730 tests passed; gap map recorded",
+    "[x] three-host sync + manifest.json + note + gates + PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0055"
+}

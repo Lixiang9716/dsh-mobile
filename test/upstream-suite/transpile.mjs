@@ -252,8 +252,15 @@ const transpileOne = async (rel, manifest) => {
   let built;
   try {
     built = await esbuild.build(buildOptionsFor(rel, hoisted, source));
-  } catch {
-    manifest.excluded['esbuild transform failed'] = (manifest.excluded['esbuild transform failed'] ?? 0) + 1;
+  } catch (error) {
+    // Fail loud naming the specifier (rule 5): a swallowed bundle failure
+    // turns the missing-dependency map — the whole actionable surface of
+    // this bucket — into an opaque count.
+    const detail = error?.errors?.[0]?.text ?? error?.message ?? String(error);
+    const firstLine = String(detail).split('\n')[0]
+      .replace(/^.\s*/, '').slice(0, 160);
+    manifest.excluded[`esbuild transform failed: ${firstLine}`] =
+      (manifest.excluded[`esbuild transform failed: ${firstLine}`] ?? 0) + 1;
     return;
   }
   const text = built.outputFiles[0].text;
