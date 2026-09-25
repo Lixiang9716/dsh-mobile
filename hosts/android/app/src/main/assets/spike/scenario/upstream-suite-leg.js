@@ -13,6 +13,7 @@
  * whatever breaks").
  */
 import 'upstream/web-shims.js'; // MUST be first: the specs compose contexts directly, so the Web-API globals the vendored packages expect (AbortController et al.) must exist before any of them loads
+import 'upstream/shims/npm-bridges.js'; // the bare-npm bridges (diff/yaml/chokidar) register at import time — the product boot imports this, so the suite driver must too, or `diff` reads as unvendored (7+ specs, measured)
 import { createLogger } from 'logger.js';
 import { resetCollection, runCollected } from 'scenario/upstream-test-harness.js';
 import { fsScope } from 'gateway.js';
