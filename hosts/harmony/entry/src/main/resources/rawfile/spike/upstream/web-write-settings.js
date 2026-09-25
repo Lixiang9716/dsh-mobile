@@ -11,6 +11,7 @@
  * is a RemoteError, not a silent empty answer.
  */
 import Schema from '@deepseek-ai/schemastery';
+import { deriveKeyRef } from 'upstream/web-write-llm.js';
 
 /** One registered namespace → the wire namespaceView (the controller's
  * own descriptor shape: ns/schema/value/base?/user?/applies/secrets/
@@ -26,17 +27,49 @@ export const wireNamespaceView = (d) => ({
   revision: d.revision,
 });
 
+/** The settings namespace one provider route's configuration lives under
+ * (upstream convention: provider `deepseek-official` → `llm-deepseek`). */
+export const providerSettingsNs = (provider) => `llm-${String(provider)}`;
+
+/** The models 设置页 renders a provider row only when its settingsNs
+ * resolves in the settings mirror; an unregistered route is invisible. The
+ * MOBILE COMPOSITION therefore registers the configured route's namespace
+ * with the STAGED ROUTE as its base layer — the truthful topology (one
+ * profile `default`, backed by the staged credential, base-owned so the
+ * page cannot offer 移除 on a route the host staged). The user layer stays
+ * free for the page's writes. */
+const registerProviderNamespace = (settings, llmRoute) => {
+  settings.register(providerSettingsNs(llmRoute.provider), Schema.object({
+    providers: Schema.object({
+      default: Schema.object({
+        baseURL: Schema.string(),
+        model: Schema.string(),
+        apiKeyEnv: Schema.string(),
+      }),
+    }),
+  }), {
+    base: { providers: { default: {
+      baseURL: llmRoute.baseURL,
+      model: llmRoute.model,
+      apiKeyEnv: deriveKeyRef(llmRoute.provider),
+    } } },
+  });
+};
+
 /** Memoized registration of the namespaces the OFFICIAL web composition
  * registers host side. The acknowledgement write lands only after this
  * resolves, so every settings call awaits it first. */
-export const makeNamespaceGuard = (ctx) => {
+export const makeNamespaceGuard = (ctx, llmRoute) => {
   let ready = null;
   const register = () => ctx.plugin({
-    name: 'mobile web composition settings namespaces (ui-onboarding)',
+    name: 'mobile web composition settings namespaces (ui-onboarding + provider route)',
     async apply(fiberCtx) {
       const settings = fiberCtx.get('settings');
       settings?.register('ui-onboarding',
         Schema.object({ welcomeNoticeVersion: Schema.string() }));
+      if (settings !== undefined && llmRoute !== undefined) {
+        registerProviderNamespace(settings, llmRoute);
+      }
     },
   }).then(() => undefined);
   return () => {

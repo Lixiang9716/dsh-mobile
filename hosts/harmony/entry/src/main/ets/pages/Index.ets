@@ -124,6 +124,8 @@ const BUNDLE_FILES: string[] = [
   'upstream/web-write-streams.js',
   'upstream/web-write.js',
   'upstream/web-write-coverage.js',
+  'upstream/web-write-llm.js',
+  'upstream/preset-mobile-rows.js',
   'upstream/web-write-files.js',
   'upstream/web-write-picker.js',
   'upstream/web-write-workspace.js',

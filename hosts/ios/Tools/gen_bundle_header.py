@@ -159,20 +159,20 @@ RESOURCES = [
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
-    # W-RPC write surface (D9): the official app's composer send
-    # (`POST /api/session/prompt`) answered from the REAL spine — the write
-    # adapter plus the scenario that boots the runtime composed with it.
+    # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
+    # the REAL spine — the write adapter + its booting scenario.
     ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
-    # api-full-coverage (D9): the workspaceFiles / workspace / directoryPicker
-    # / catalog coverage adapters of the write surface (claimed only under
-    # the fullCoverage write option — the base claims stay byte-identical).
+    # api-full-coverage (D9): coverage adapters + llm/credential legs + the
+    # preset mobile-row transform (claimed under fullCoverage — byte-identical base).
     ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
     ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
     ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
     ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
+    ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
+    ("upstream_preset_mobile_rows_js", SPIKE / "upstream" / "preset-mobile-rows.js"),
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),

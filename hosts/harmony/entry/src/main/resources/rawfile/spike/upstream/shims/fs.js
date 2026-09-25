@@ -353,6 +353,14 @@ export const realpathSync = Object.assign(refuse('realpathSync'), {
 export const writeFileSync = refuse('writeFileSync');
 export const mkdirSync = refuse('mkdirSync');
 export const rmSync = refuse('rmSync');
+// mkdtempSync is a WRITE (it creates a directory): the same wall as
+// mkdirSync. Demanded at link time by the sandbox/home-paths spec faces —
+// an ESM named import from a missing export is a link error even when the
+// call site is never reached.
+export const mkdtempSync = refuse('mkdtempSync');
+// Same wall as mkdtempSync — a WRITE the staged views cannot express (the
+// workspace link seam is a hard link, not a path alias).
+export const symlinkSync = refuse('symlinkSync');
 // The file-watch surface, linked by @deepseek-ai/dsh-skill-filesystem
 // (`import { unwatchFile, watchFile } from "node:fs"`). Binding-only stubs:
 // they are reached only from its watcher manager, and the mobile profile

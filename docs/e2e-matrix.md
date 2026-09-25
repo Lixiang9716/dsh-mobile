@@ -6,6 +6,15 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the models-page e2e change
+> (2026-09-25): the official client's models 设置页 has its own CLI proof —
+> scenario `models.directory` 6/6, dir
+> `runtime/spike/artifacts/macos-cli-models-directory/` — and the totals are
+> re-run against this tree (44 dirs / 92 verdicts / 43 of 43 scenario ids
+> green-covered / 35 manifests). The T-0035 note below is the previous
+> currency record; rows it added keep their display-name spellings, which
+> the verdict ids now refine.
+>
 > **Currency**: this matrix reflects the T-0035 settings-surfaces + file-tools
 > change (2026-09-22): the official client's 预设/插件 panels load real data on
 > device (b4 46/46 asserting the preset roster, the plugin inventory, the
@@ -61,10 +70,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 37 |
-| Verdicts committed (80 green, 2 quota-blocked red) | 82 |
-| Scenarios with at least one committed evidence dir | 31 of 31 distinct scenario ids (32 manifests) |
-| Screenshots verified PNG | 86 |
+| Evidence dirs | 44 |
+| Verdicts committed (90 green, 2 quota-blocked red) | 92 |
+| Scenarios with at least one committed evidence dir | 43 of 43 distinct scenario ids (35 manifests) |
+| Screenshots verified PNG | 108 |
 | Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -103,15 +112,18 @@ evidence on that platform.
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 (drift), 20/20 (drift), 20/20 (drift), 20/20 (drift), 27/27 | — |
+| `models.directory` | — | — | — | 6/6 |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
 
-All 28 distinct scenario ids (29 manifests — `m2.llm` has two: the
+All 43 distinct scenario ids (35 manifests — `m2.llm` has two: the
 19-event scripted-SSE CLI leg and the 14-event device leg) have at least
 one green committed evidence dir; `m2.session` runs green on all four
-hosts. Every verdict on main is green except the two quota-blocked
+hosts, and the models 设置页's `models.directory` rides the macOS CLI
+column (the coverage-plane assertions the api-coverage-probe carries, now
+declared one-to-one and machine-checked). Every verdict on main is green except the two quota-blocked
 `hosts/harmony/artifacts/m5-m2-llm/` verdicts (gaps 8/9, deliberate).
 
 The `m2.llm` device legs are **repeat-aware**: their manifests match the
@@ -163,6 +175,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 

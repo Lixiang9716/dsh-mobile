@@ -1,0 +1,181 @@
+{
+  "title": "models-page e2e: CLI scenario + manifest + evidence + matrix row",
+  "created": "2026-09-24T22:10:21+00:00",
+  "rules": {
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+    }
+  },
+  "checklist": [
+    "[x] models-directory.js CLI scenario (directory row + settings mirror + page write + credential roundtrip)",
+    "[x] manifest test/e2e/scenarios/models-directory.json one-to-one",
+    "[x] runner runtime/spike/ci/run-models-directory-e2e.sh green with evidence dir",
+    "[x] docs/e2e-matrix.md row + Agent Note",
+    "[x] gov gates green, PR landed"
+  ],
+  "status": "done",
+  "receipt": {
+    "ts": "2026-09-24T22:23:57+00:00",
+    "mode": "all",
+    "rules": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "green": true,
+    "gates": [
+      {
+        "gate": "self-test",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 4709,
+        "detail": "PASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_unknown_argument\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_verify_notes_rejects_status_lying\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_gates_rejects_duplicate_id\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_cycle\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_gates_rejects_unknown_needs\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_passing_gate_output_stays_visible\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_run_base_scopes_gates_by_paths\nPASS test_run_failure_summary_and_gate_flag\nPASS test_gates_rejects_unknown_keys\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_custom_counterpart_convention\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_pairing_explicit_registration_sticks\nPASS test_change_scope_suggests_from_paths\nPASS test_run_merge_rejects_text_conflict\nPASS test_rubric_rejects_broken_structure\nPASS test_rubric_rejects_zero_items\nPASS test_verify_decisions_rejects_broken_table\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_verify_decisions_rejects_base_collision\nPASS test_conflict_markers_rejects_marked_file\nPASS test_cli_init_help_no_side_effect\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_init_hooks_ci_roundtrip\nPASS test_d57_hubs_and_aliases\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_registry_real_flags_are_not_drift\nPASS test_preset_rejects_unknown_name\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_check_engine_mechanisms_are_real\nPASS test_task_check_rejects_tampered_receipt\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_forged_record\nPASS test_receipt_rejects_partial_run_as_full_evidence\nPASS test_verify_notes_rejects_missing_section\nPASS test_verify_notes_rejects_hollow_skeleton\nPASS test_verify_notes_rejects_unknown_argument\nPASS test_note_presence_warns_then_strict_blocks\nPASS test_verify_notes_rejects_wrong_section_order\nPASS test_verify_notes_rejects_unknown_lifecycle\nPASS test_note_presence_auto_base_catches_committed_work\nPASS test_note_presence_task_receipts_and_manifest_exemptions\nPASS test_note_presence_rejects_ill_shaped_manifest\nPASS test_verify_notes_rejects_status_lying\nPASS test_archive_seal_detects_tampering_and_refuses_laundering\nPASS test_gates_rejects_duplicate_id\nPASS test_gates_rejects_cycle\nPASS test_gates_rejects_unknown_needs\nPASS test_gates_skips_transitively\nPASS test_gates_rejects_non_object_gate\nPASS test_gates_default_mode_scopes_run\nPASS test_gates_rejects_unknown_default_mode\nPASS test_gates_disabled_gate_never_runs\nPASS test_gates_advisory_failure_reports_without_blocking\nPASS test_run_base_scopes_gates_by_paths\nPASS test_run_failure_summary_and_gate_flag\nPASS test_passing_gate_output_stays_visible\nPASS test_gates_rejects_gate_in_no_mode\nPASS test_gates_rejects_unknown_keys\nPASS test_run_merge_rejects_text_conflict\nPASS test_failure_classifier_labels_tool_vs_environment\nPASS test_pairing_rejects_missing_record\nPASS test_pairing_write_resolves_bare_stem_and_zh_side\nPASS test_pairing_custom_counterpart_convention\nPASS test_pairing_explicit_registration_sticks\nPASS test_pairing_staged_rejects_stale_sidecar\nPASS test_change_scope_suggests_from_paths\nPASS test_rubric_rejects_broken_structure\nPASS test_rubric_rejects_zero_items\nPASS test_verify_decisions_rejects_broken_table\nPASS test_verify_decisions_rejects_base_collision\nPASS test_doc_sync_rejects_changelog_without_highlights\nPASS test_conflict_markers_rejects_marked_file\nPASS test_conflict_markers_bare_separator_needs_sibling\nPASS test_d57_hubs_and_aliases\nPASS test_cli_init_help_no_side_effect\nPASS test_init_hooks_ci_roundtrip\nPASS test_self_test_adopts_project_rejection_cases\nPASS test_coverage_warning_names_the_marker_fix\nPASS test_skills_text_command_drift_is_named\nPASS test_registry_real_flags_are_not_drift\nPASS test_parse_layer_metrics_mean_what_they_claim\nPASS test_check_engine_mechanisms_are_real\nPASS test_preset_rejects_unknown_name\nPASS test_text_subprocess_decodes_are_pinned\nPASS test_task_check_rejects_stale_rules_pin\nPASS test_task_check_rejects_tampered_receipt\nPASS test_task_survives_pre37_argparse_shadow\nPASS test_receipt_rejects_forged_record\nPASS test_receipt_rejects_partial_run_as_full_evidence\nPASS .gov/rejections/case-bundle-files.sh\nPASS .gov/rejections/case-code-size.sh\nPASS .gov/rejections/case-e2e-matrix.sh\nPASS .gov/rejections/case-logging-l4.sh\nPASS .gov/rejections/case-logging.sh\ncoverage (gate x project rejection cases): 4/17 gate(s) carry a project rejection case (the shipped proofs still run; `gov self-test --explain` lists the rest)\nself-test: tools 56 + project 5 \u2014 all pass",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "notes",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 126,
+        "detail": "note: .agents/notes/implemented/process/2026-09-21-the-release-token-probe-tests-the-write-.md is superseded by 2026-09-21-the-release-pr-gets-its-required-check-b.md \u2014 the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.\nverify_notes: 137 note(s) ok",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "pairing",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 291,
+        "detail": "verify_translation_pairing: 9 pair(s) ok",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "note-presence",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 510,
+        "detail": "verify_note_presence: base=HEAD (dirty worktree \u2014 reviewing the working tree)\nverify_note_presence: 0 non-trivial file(s) and 1 data/artifact file(s) () changed with no note under .agents/notes/implemented/\n  the change is data/evidence only \u2014 if that is the whole story, exempt the surface with note_presence_exempt in .gov/manifest.json instead of writing a note about it\n  no note file appears anywhere in this diff (not merely 'none for these paths' \u2014 any note file in the diff passes this gate)\n  if the change is non-trivial, add or update a note (see .gov/rules.md rule 2 (every non-trivial change carries an Agent Note))\n  if it is truly trivial (typo, format, local rename), ignore this warning\nverify_note_presence: warning (advisory; --strict to enforce)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "conflict-markers",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 542,
+        "detail": "verify_conflict_markers: base=HEAD (dirty worktree \u2014 reviewing the working tree)\nverify_conflict_markers: 2 changed file(s) scanned, no conflict markers",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "check",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 10046,
+        "detail": "gov check: clean\ngov check: base=HEAD (dirty worktree \u2014 reviewing the working tree) \u2014 2 changed file(s) in scope\ngov check: SKIP(excluded: test/upstream-suite/node_modules/** \u2014 0 file(s) \u2014 the upstream-suite transpile pipeline's npm install (esbuild/vitest, 174 packages) \u2014 third-party tooling, not our syntax surface; gitignored for the same reason)\ngov check: SKIP(excluded: hosts/ios/App/Generated/** \u2014 0 file(s) \u2014 machine-generated C (the embedded spike bundle, 23.5 MB) \u2014 byte-verified deterministically by the closures gate, which regenerates and diffs it; syntax-checking generated output only burns the check gate's entire timeout (measured: gov parse alone takes 62 s on this file))",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "code-size",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 3933,
+        "detail": "code-size: note \u2014 skipped hosts/ios/App/Source/CarrierAPIBridge.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/FSPrimitives.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/Gateway/GatewayCore.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/OfficialWebProbe.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/SessionLiveProbe.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/SessionLiveRuntime.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/SessionServe.swift: parse errors \u2014 falling back\ncode-size: note \u2014 skipped hosts/ios/App/Source/SessionWriteRuntime.swift: parse errors \u2014 falling back\ncode-size: 359 source file(s) checked (351 via gov parse, 8 fallback; file<=500, func<=50, indent<=5); 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "logging",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 551,
+        "detail": "logging: 287 file(s) checked (L1 console / L2 module logger / L3 function logs / L4 release silence); 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "doc-crosslinks",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 69,
+        "detail": "doc-crosslinks: each bilingual pair must link both ways; 0 violation(s)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "archive",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 123,
+        "detail": "verify_archive: nothing archived \u2014 nothing to seal",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "task",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 144,
+        "detail": "voided T-0001 M0 contract freeze: primitive contract v0 + data protocols\nvoided T-0002 Land the govrail 0.45.0 upgrade (re-brief of T-0001)\nvoided T-0003 Android spike: embed M1 core (quickjs host via NDK) and verify scenario m1.spike.boot on emulator-5554\nvoided T-0004 M1 local carrier spike: loopback static+WS carrier pumping WS<->QuickJS, verified on the iOS simulator\nvoided T-0005 M2 gateway bridge: C dispatch/settle/event + JS shim + scenarios\nvoided T-0006 M2 iOS privileged layer: real 9-primitive gateway binding\nvoided T-0007 M2 E2E: manifests, simulator runner, CI wiring\nvoided T-0008 M2 PR-B: Web Client mount + first on-device session\nvoided T-0008 M4 Android host: gateway bridge scenario green on emulator\nvoided T-0008 M5 HarmonyOS isomorphic host: gateway bridge scenario green on emulator\nvoided T-0008 Night run: complete README milestones (M2 remainder, M3, M4, M5) with E2E by 09:00\nvoided T-0009 M3: plugin install pipeline (PR-A) + UI pluggability (PR-B)\nvoided T-0009 M4 PR-B: m2.session green on Android emulator\nvoided T-0009 M5-B HarmonyOS: m2.session green on the emulator (stacked on PR #28)\nvoided T-0010 Day run: drive M3/M4/M5 to Done with on-device E2E by tomorrow 09:00\nvoided T-0010 M3 complete: fetch-based installer + pending-receipt replay + install-time negotiation + config layer (W-M3B)\nvoided T-0010 M4 completion: Android carrier + WebView mount + 9-primitive gateway binding (W-M4B)\nvoided T-0010 M5 HarmonyOS host to Done: carrier + binding + status flip\nvoided T-0011 Cross-host E2E evidence matrix + regenerable inventory checker\nvoided T-0012 Phase B: official web app dist + ctx.webServer contract doc\nvoided T-0012 Port upstream DSH harness closure to the spike runtime (PR-A)\nvoided T-0013 HarmonyOS v2 primitives: real httpFetch streaming, HUKS keychain, user-scope picker\nvoided T-0013 Phase B carrier: implement the ctx.webServer contract subset so the official web app mounts\nvoided T-0013 Real LLM streaming session over gateway httpFetch (z.ai backend)\nvoided T-0013 Vendor upstream dsh-llm + gateway transport seam (D9 W-LLM leg)\nvoided T-0013 W-INTEG: official upstream web boot \u2014 runtime graph + claims + iOS mount\nvoided T-0014 Close the audit's e2e evidence gaps (harmony capture, CLI bridge-smoke, matrix refresh)\nvoided T-0014 W-INTEG PR-B: b1 official-web mount with the runtime live\nvoided T-0015 D9 W-SHELL: application-tier client bundles boot the official app shell\nvoided T-0015 W-SESS: bring the upstream agent spine on-device; claim the session /api endpoints + mux journal with real data\nvoided T-0016 W-DROID: the official upstream web boot mounts in the Android carrier's WebView (D9)\nvoided T-0016 W-HARMONY2: ArkTS carrier ctx.webServer subset + httpFetch v2 + official web boot on-device\nvoided T-0017 Close the two iOS receipt.json evidence-matrix findings (b3-session-live, m2-gateway)\nvoided T-0017 D9 W-DROID4: the Android session /api claims go live (spine on-device, session.list + mux journal real)\nvoided T-0017 W-HARMONY3: the session services behind the mux \u2014 real session.list + the real journal stream from the embedded spine (b-harmony.session.live)\nvoided T-0018 Android session write path: the official composer writes through the on-device spine (D9 W-DROID5)\nvoided T-0018 W-GR: close the m2-gateway receipt finding (bounded attempt)\nvoided T-0018 W-HARMONY4: the harmony session write surface (b-harmony.write.live)\nvoided T-0019 W-DOCS: consolidate the D9 upstream-port status across the bilingual status docs\nvoided T-0020 issue batch: gate tools see ArkTS, label the fallback ruler (#340 #342 #343)\nvoided T-0021 Release pipeline: manual dispatch packages all three host apps (iOS/Android/HarmonyOS)\nvoided T-0021 W-HARMONY5: the m2.llm real-LLM leg on the HarmonyOS host (M5's last open item)\nvoided T-0022 Refresh the cross-host E2E evidence matrix to the current tree (quota-blocked m2.llm entry included)\nvoided T-0023 Make the release log-strip real end to end (flag plumbing, emitter gating, gate L4, both release variants)\nvoided T-0024 Android release build: emulator verification of the user-facing build\nvoided T-0024 HarmonyOS release serves the official Web UI (serving/evidence split)\nvoided T-0025 W-H: the release sink strip covers every emitter (console shim + cordis exporter)\nvoided T-0026 Introduce release-please: a version stream, changelog and tagged releases for the three host packages\nvoided T-0027 Cut the first release: align the version stream to 0.0.1 and publish v0.0.1 on the Releases page\nvoided T-0028 Fix the HarmonyOS release build: it was shipping a debuggable HAP, and add a re-attach path\nvoided T-0029 CI: an always-running aggregator check so the platform E2E legs can become required\nvoided T-0029 E2E verdicts emit JUnit XML (checker + iOS dev pipeline)\nvoided T-0029 Make the cross-host E2E evidence matrix gate-able (known-gaps register, no gates.json edit)\ndone  T-0030 Migrate the ArkTS deprecations in the HarmonyOS host\ndone  T-0031 Make the client-bundles build reproducible, or stop renewing its manifest\ndone  T-0032 Wire the e2e-matrix gate, once the card ledger can be cleaned\nopen  T-0033 Close the HarmonyOS m5-m2-llm leg and the platform check gates (obey rules@974f3cdb03e3)\ndone  T-0034 Fix the four code-shape violations govrail 0.48.0's Swift/Kotlin grammars make visible\ndone  T-0035 Full dsh-desktop plugin integration (excl. Electron) + settings screens load plugins/presets + settings mobile-responsive\ndone  T-0036 CI green + architecture analysis + build system restructure\ndone  T-0037 Local dev web carrier \u2014 desktop-browser UI iteration loop\nvoided T-0037 overnight: upstream capability-mounting study, three-platform architecture completion, android E2E with full evidence, human-friendly docs\ndone  T-0038 organize the upstream deepseek-harness anatomy: package inventory, execution flow, and the dsh-mobile integration map\ndone  T-0039 iOS E2E usecase sweep per user instruction (\u62c9\u6700\u65b0\u4ee3\u7801\u2192graphify\u2192\u9010\u6b65\u8dd1 iOS \u7aef\u5230\u7aef usecase \u5e76\u68c0\u67e5)\ndone  T-0039 retire milestone and workstream codes from the human-facing documentation\nvoided T-0040 upstream parity testing: the vendored spine differentially verified against the same packages under Node, plus simulator legs\ndone  T-0041 harmony suite leg: fix #164 ArkTS break, dry-validate extras, emulator verdict\nvoided T-0041 the upstream full test suite runs against our vendored closure \u2014 the quickjs harness and transpile pipeline\ndone  T-0041 Upstream parity on our architecture: fix the parked macOS leg, add the iOS simulator leg (PR #159)\ndone  T-0042 All iOS-side dsh tests on latest main: the 8 E2E runners + bring the upstream DSH test suite to iOS\nvoided T-0043 zstd into the runtime + the llm-pi-ai deep-import fix \u2014 the last four spec-blocks\ndone  T-0044 CI vendoring-reproducibility: the fresh-clone proof for the vendor scripts\ndone  T-0044 Overnight release E2E: all harmony+android DSH features, human-behavior UI pass\ndone  T-0045 api-full-coverage: the official UI's full endpoint surface answered from the vendored spine\ndone  T-0045 Fix the overnight E2E findings: issues #175 #176 #179 #180 (+assess #177)\nopen  T-0046 Android user-facing boot fully integrates the DSH packages (the SessionServe seat) (obey rules@974f3cdb03e3)\ndone  T-0047 HarmonyOS user-facing boot fully integrates the DSH runtime (interactive OfficialServe)\nopen  T-0048 the present/ralph/bash/pwsh tool rows join the harmony closure \u2014 vendor-official.sh's BUNDLE_FILES list + the preset markers on-device (obey rules@974f3cdb03e3)\nopen  T-0049 Clear the not-implemented API surface for the official page (obey rules@974f3cdb03e3)\nopen  T-0050 The API residue: session deep-page legs, subagents, feedback, permissionPresets, uploads (obey rules@974f3cdb03e3)\nopen  T-0051 models-page e2e: CLI scenario + manifest + evidence + matrix row (obey rules@974f3cdb03e3)\ntask: 81 card(s) \u2014 6 open (11 unticked item(s); --strict blocks on them), 0 stale, 18 done, 57 voided",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "verify-decisions",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "plane",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 113,
+        "detail": "verify_plane: 9 plane file(s) sealed and intact",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "e2e-matrix",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 822,
+        "detail": "e2e: PASS matrix (44 dirs, 92 verdicts, 108 pngs; 9 findings under --accept-known-gaps: 9 accepted (owned) gaps, 0 unregistered, 0 register defects)\ne2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-session-live/receipt.json \u2014 receipt.json\ne2e:          owner: android work stream (#66) | closes with: DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step\ne2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-upstream/receipt.json \u2014 receipt.json\ne2e:          owner: android work stream (#63) | closes with: DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh + receipt step\ne2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-write-live/receipt.json \u2014 receipt.json\ne2e:          owner: android work stream (#72) | closes with: DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step\ne2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-official-web/receipt.json \u2014 receipt.json\ne2e:          owner: harmony work stream (#64) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web + receipt step\ne2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-session-live/receipt.json \u2014 receipt.json\ne2e:          owner: harmony work stream (#67) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step\ne2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-write-live/receipt.json \u2014 receipt.json\ne2e:          owner: harmony work stream (#70) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step\ne2e: accepted VERDICT_FAIL hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json \u2014 m2.llm.carrier\ne2e:          owner: harmony work stream (#79) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53)\ne2e: accepted VERDICT_FAIL hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json \u2014 m2.llm\ne2e:          owner: harmony work stream (#79) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53)\ne2e: accepted MISSING_DELIVERABLE hosts/ios/artifacts/b4-write-live/receipt.json \u2014 receipt.json\ne2e:          owner: iOS b4 work stream (#65) | closes with: run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "closures",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 6256,
+        "detail": "closures: android (assets vs runtime/spike pins)\nstage-spine-closure: assets verified in place (check mode, no writes, 311 untracked-but-staged file(s) skipped \u2014 materialized by the Gradle build)\n\nclosures: harmony (rawfile vs runtime/spike pins)\nvendor-official: byte-verifying the closure copies\nvendor-official: closure verified in place (check mode, no writes, 80 untracked-but-closure file(s) skipped \u2014 materialized at build time)\n\nclosures: ios (regenerate the bundle header, expect no diff)\nclosures: ios bundle header fresh (regenerated, no diff)\n\nclosures: all committed copies byte-identical to the canonical closure",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "vendoring-repro",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 26959,
+        "detail": "vend-repro: scope=gate \u2014 fresh clone of b56df8a7b52e8c781fd6ebe717979ceef058b3f0 -> /tmp/dsh-vend-repro.9xU3lW/clone\nvend-repro: materializing from cold (clone root, CI shapes)\nvendor: wasm3 0.9.0 fetched and verified\nvendor: zstd 1.5.7 fetched and verified (BSD-3-Clause, single-thread)\nvendor: quickjs-ng 0.17.0+fork-tostring+async-context+tc39 fetched and verified (4153a1f0edef441e5dc71871eb071bc405a0bd04)\nvendor: fetched dsh/agent@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/agent-loop@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/brand@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/cordis-host-runner@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/fs@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/hook-protocol@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/invariants@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/llm@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/llm-mock-server@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/sandbox@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/scope@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/sdk-protocol@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/session@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/session-projection@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/settings@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/system-prompt@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/timeout@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-todo@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tools@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/typert-protocol@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/util-crypto@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/util-values@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/agent-presets@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/attachment@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/atomic-write@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/home-paths@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/fs-local@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-fs@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-str-replace-editor@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/session-persistence@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/skill@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/skill-filesystem@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-skill@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/commands@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/command-feedback@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/persona@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/agent-instructions@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/plan-mode@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/goal@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/command-goal@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-goal@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/jobs@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/output-retention@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-jobs@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/user-questions@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-ask-user@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/chunked-list@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/util-time@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/subagent@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-subagent@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-subagent-control@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/workflow@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/tool-workflow@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/compaction@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/token-meter@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/compaction-tool-result-pruner@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/compaction-basic@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/command-compact@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/credentials@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched dsh/terminal@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/cordis@4.0.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/cosmokit@1.8.3 (sha256 verified, pin-stamped)\nvendor: fetched npm/schemastery@3.18.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/zod@4.4.3 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/cordis-plugin-loader@1.0.3 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/cordis-plugin-include@1.0.7 (sha256 verified, pin-stamped)\nvendor: fetched npm/js-yaml@4.1.0 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-tool-present@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-tool-ralph@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-tool-bash@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/@deepseek-ai/dsh-tool-pwsh@0.1.6-alpha.2 (sha256 verified, pin-stamped)\nvendor: fetched npm/diff@9.0.0 (sha256 verified, pin-stamped)\nvendor: fetched npm/yaml@2.9.0 (sha256 verified, pin-stamped)\nvendor: upstream DSH closure ready\nvend-repro: re-running (idempotency)\nvendor: wasm3 0.9.0 present\nvendor: zstd 1.5.7 present (pin-stamped)\nvendor: quickjs-ng 0.17.0+fork-tostring+async-context+tc39 present (4153a1f0edef441e5dc71871eb071bc405a0bd04)\nvend-repro: dsh closure: 60 pin rows verified (mirror-served, sha-stamped)\nvend-repro: npm closure: 18 pin rows verified\nvend-repro: engines: quickjs-ng quickjs-ng/0.17.0 + wasm3 0.9.0 + zstd 1.5.7 verified\nvend-repro: PASS (gate scope) \u2014 the vendor scripts materialize what they promise, from a fresh clone, under CI's invocation shapes",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      },
+      {
+        "gate": "bundle-files",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 60,
+        "detail": "check-bundle-files: OK (342 listed = 342 rawfile files on disk, both directions)",
+        "selected_by": "mode:all",
+        "scoped_out": false
+      }
+    ]
+  },
+  "id": "T-0051"
+}

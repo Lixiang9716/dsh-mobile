@@ -404,6 +404,10 @@ extension SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_web_write_catalog_js), under: root)
         try write("upstream/web-write-coverage.js",
                   data: resData(dsh_spike_res_upstream_web_write_coverage_js), under: root)
+        try write("upstream/web-write-llm.js",
+                  data: resData(dsh_spike_res_upstream_web_write_llm_js), under: root)
+        try write("upstream/preset-mobile-rows.js",
+                  data: resData(dsh_spike_res_upstream_preset_mobile_rows_js), under: root)
         try write("upstream/web-write-files.js",
                   data: resData(dsh_spike_res_upstream_web_write_files_js), under: root)
         try write("upstream/web-write-picker.js",
