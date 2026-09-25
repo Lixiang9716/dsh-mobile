@@ -32,6 +32,24 @@ Web Client from plugin configuration and hardcodes no UI:
   14/14 (Android), `harmony.officialweb.mount` 17/17 (HarmonyOS) in
   [docs/e2e-matrix.md](../docs/e2e-matrix.md).
 
+- `web-client-next/` — v2 (2026-09-25): the SELF-HOSTED full client
+  (`dsh-web-client-next`), our own UI in the clarklevis deep-ocean glass
+  design language — home (session list + new session), a chat transcript
+  with a dedicated streaming tail, collapsible reasoning/tool groups,
+  cached-subset markdown, and a send/stop composer. It speaks the OFFICIAL
+  plane (`POST /api` envelope + `WS /api/remote.mux` journal streams with
+  `assistantStream: true`), not the v0 `/ws` projection — that is what
+  makes it two-way (session/create, session/prompt) and live (baseline +
+  change frames). Vanilla ES modules, no build step, every file under the
+  code-size gate. Served by the SAME SessionServe seat as the official
+  dist — the launch configuration selects it
+  (`-dsh-web-client dsh-web-client-next` on iOS) and the seat swaps the
+  dist root and drops the injection rows (the page owns its whole boot);
+  the vendored official dist stays byte-verbatim (D6). Iteration loop:
+  `node tools/dev-web-carrier/dev-carrier.mjs --client next` (fixture
+  dev-echo turn, desktop speed). Evidence: `nextweb.mount` on iOS
+  ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
+
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
 launch argument on the iOS spike; default `dsh-web-client`) — the device
 evidence behind the swappable-UI claim being the config-selected client
