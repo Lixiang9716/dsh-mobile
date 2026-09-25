@@ -38,12 +38,53 @@ else
     mkdir -p "$TESTS_DIR"
     # Extract ONLY the test trees + the shared test scripts the suites
     # import (vitest setup files) — verbatim, paths preserved.
-    tar xzf "$TMP_TGZ" -C "$TESTS_DIR" --strip-components=1 \
-        --wildcards \
-        "*/packages/*/tests" \
-        "*/scripts/test-invariants.ts" \
-        "*/scripts/test-proxy-environment.ts" \
-        "*/vitest.shared.ts" 2>/dev/null || true
+    # The packages' src/ trees ride along since the 2026-09-25 spec-growth
+    # round: most upstream specs import their package UNDER TEST through the
+    # RELATIVE monorepo spelling (../src/index.ts — upstream runs its suite
+    # from source), so a tests-only extraction left the whole relative-src
+    # class unresolvable at esbuild bundle time (468 specs, the largest
+    # single exclusion bucket). Same tarball, same sha256 — only the
+    # extraction filter widens; D6 unchanged (verbatim upstream bytes).
+    # BSD tar (macOS) has no --wildcards and the `|| true` used to mask that —
+    # local extractions silently produced an EMPTY tree while CI's GNU tar
+    # worked (measured 2026-09-25). GNU tar when present; otherwise a python3
+    # tarfile pass applying the same patterns — identical filter, both hosts.
+    if command -v gtar >/dev/null 2>&1; then
+        gtar xzf "$TMP_TGZ" -C "$TESTS_DIR" --strip-components=1 \
+            --wildcards \
+            "*/packages/*/tests" \
+            "*/packages/*/src" \
+            "*/scripts/test-invariants.ts" \
+            "*/scripts/test-proxy-environment.ts" \
+            "*/vitest.shared.ts"
+    else
+        TMP_TGZ="$TMP_TGZ" TESTS_DIR="$TESTS_DIR" python3 - <<'PYTAR'
+import os, tarfile
+
+tgz = os.environ['TMP_TGZ']
+out = os.environ['TESTS_DIR']
+patterns = [
+    'packages/*/tests', 'packages/*/tests/*',
+    'packages/*/src', 'packages/*/src/*',
+    'scripts/test-invariants.ts', 'scripts/test-proxy-environment.ts',
+    'vitest.shared.ts',
+]
+from fnmatch import fnmatch
+with tarfile.open(tgz, 'r:gz') as tar:
+    root = tar.getmembers()[0].name.split('/')[0] + '/'
+    picked = []
+    for m in tar.getmembers():
+        rel = m.name[len(root):] if m.name.startswith(root) else m.name
+        if any(fnmatch(rel, p) for p in patterns):
+            m.name = rel
+            picked.append(m)
+    tar.extractall(out, members=picked, filter='data')
+PYTAR
+    fi
+    [ -d "$TESTS_DIR/packages" ] || {
+        echo "vendor: extraction produced no packages/ tree — failing loud" >&2
+        rm -f "$TMP_TGZ"; exit 1
+    }
     rm -f "$TMP_TGZ"
     printf '%s\n' "tag=$TAG" "tarball-sha256=$TARBALL_SHA256" > "$STAMP"
     echo "vendor: $TESTS_DIR refreshed"
