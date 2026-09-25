@@ -187,6 +187,14 @@ export const appendFile = async (path, data, options) => {
   return _wsWriteFile(path, merged, options?.mode);
 };
 export const unlink = async (path) => _wsRm(path, { force: false });
+// rmdir delegates to the same workspace removal unlink uses — the workspace
+// view has no empty-dir bookkeeping, so the POSIX empty-dir restriction is
+// not expressible here; demanded at link time by the upstream specs.
+export const rmdir = async (path, options) => _wsRm(path, options);
+// symlink: the workspace link seam is a HARD link (wsLink) — the symlink
+// semantic (a path alias resolved at read time) has no backing in either
+// staged view, so it fails loud naming the boundary.
+export const symlink = refuseAsync('symlink');
 
 /** access() succeeds for existence checks on readable staged paths — the one
  * write-side name whose SEMANTICS are read-shaped. Mode bits are ignored: the

@@ -185,7 +185,8 @@ done
 # runner-pushed copy — the APK asset is the only source that sticks.
 # The agent-flow scenario rides the same list (the vendored skill family it
 # drives is staged above).
-for s in android-session-live-read.js android-composer-live-write.js \
+for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
+         android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js \
          upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
@@ -266,7 +267,8 @@ done
 # The staged scenarios (tracked asset copies — the suite driver among them:
 # a stale APK copy would shadow every runtime-side fix, the exact defect the
 # 2026-09-23 round-two chase hit).
-for s in android-session-live-read.js android-composer-live-write.js \
+for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
+         android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js \
          upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
