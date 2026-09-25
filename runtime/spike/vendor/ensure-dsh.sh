@@ -183,6 +183,10 @@ credentials|0.1.6-alpha.2|b067f3fcdf5b4616afdfd9e73b89c58848a7ae3421433284f10a03
 terminal|0.1.6-alpha.2|cb9b07571654bcfe6877f8ff860a3ebd17564fe17994a9e905aea0ef41b476a0
 "
 
+# The upstream-suite growth round 3 (2026-09-25): the test faces the suite's
+# own packages import — pinned at the dsh-v0.1.6-alpha.2 lockfile's exact
+# resolutions. Served to specs through the npm-bridges shim (subpath rows);
+# NEVER mounted by the product boot (test faces, not closure).
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
 # (vendor/npm/<dir>/); versions are exactly what the dsh closure requires.
 NPM_PACKAGES="
@@ -204,6 +208,9 @@ js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff9
 @deepseek-ai/dsh-tool-pwsh@0.1.6-alpha.2|@deepseek-ai/dsh-tool-pwsh/-/dsh-tool-pwsh-0.1.6-alpha.2.tgz|6647a1a0c8a7fdaa4d836e6dd9aca638df02c8434c8a03be0ddf73b9c5bc71df
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
+zustand@4.4.7|zustand/-/zustand-4.4.7.tgz|c22d32f791abba72fc246ef1d3ca964d01da204bc73727318a5be61daa2ad66b
+eventsource-parser@3.1.0|eventsource-parser/-/eventsource-parser-3.1.0.tgz|eca84ce0e9314076ea17bcc8bbdfed0316cc5b4a291565b347a275ffdac5053a
+
 "
 
 have_pkg() { [ -f "$1/package.json" ]; }

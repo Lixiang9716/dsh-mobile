@@ -64,28 +64,51 @@ const launchSpecFacts = () => {
   return null;
 };
 
+
+/** Seed one spec's fixtures module (emitted by transpile.mjs) into the
+ * staged fs view BEFORE the tests run — `../fixtures` joins resolve at
+ * /upstream-tests/fixtures, one spec per runtime, so the flat namespace
+ * never collides. Seeding failures fail LOUD (rule 5): a bad fixture
+ * manifest is a pipeline defect, not a skippable absence. A spec without a
+ * fixtures module simply fails the dynamic import and is skipped. */
+const seedSpecFixtures = async (spec, emit) => {
+  log.debug('fixtures seed begin', { spec: spec.slice(0, 120) });
+  let fx;
+  try {
+    fx = await import(spec.replace(/\.spec\.mjs$/, '.fixtures.js'));
+  } catch {
+    return;
+  }
+  if (!fx || !Array.isArray(fx.fixtures) || fx.fixtures.length === 0) return;
+  const { fromBase64 } = await import('upstream/shims/buffer.js');
+  const { seedStagedFiles } = await import('upstream/shims/fs.js');
+  seedStagedFiles(Object.fromEntries(fx.fixtures.map(
+    (f) => [f.path, { bytes: fromBase64(f.b64), mtimeMs: 0 }])));
+  emit('suite/fixtures', { seeded: fx.fixtures.length });
+};
+
+/** Pin the profile container for the os/fs shims (cwd/tmpdir/home) and mount
+ * the writable workspace VFS — specs import node:fs/promises + node:os at
+ * top level, and their mkdtemp/tmpdir calls need a container the boot
+ * prelude would normally pin; this driver IS that prelude for the suite. */
+const pinProfileContainer = async () => {
+  const resolved = await fsScope.resolve('scope://app/');
+  if (typeof resolved?.path !== 'string') return;
+  globalThis.__dshProfileCwd = resolved.path;
+  globalThis.__dshProfileTmpdir = resolved.path.replace(/\/$/, '') + '/tmp';
+  // os.shims homedir() refuses until the profile home is pinned.
+  globalThis.__dshProfileHome = resolved.path.replace(/\/$/, '') + '/home';
+  const { mountWorkspace } = await import('upstream/shims/fs.js');
+  mountWorkspace(globalThis.__dshProfileTmpdir);
+  log.debug('profile container pinned', { cwd: globalThis.__dshProfileCwd });
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = launchSpecFacts() ?? await takeRuntimeConfig();
   // Pin the profile container for the os/fs shims BEFORE the spec imports
-  // evaluate (specs import node:fs/promises + node:os at top level; their
-  // mkdtemp/tmpdir calls need a container the boot prelude would normally
-  // pin — this driver IS that prelude for the suite).
-  {
-    const resolved = await fsScope.resolve('scope://app/');
-    if (typeof resolved?.path === 'string') {
-      globalThis.__dshProfileCwd = resolved.path;
-      globalThis.__dshProfileTmpdir = resolved.path.replace(/\/$/, '') + '/tmp';
-      // The os.shims homedir() refuses unless the profile home is pinned
-      // (boot.js's job in a real boot — this driver is the prelude here).
-      globalThis.__dshProfileHome = resolved.path.replace(/\/$/, '') + '/home';
-      // The writable workspace VFS serves writes under ONE root (mountWorkspace,
-      // boot.js's move); specs that mkdtemp under tmpdir need that world pinned
-      // too — this driver is the prelude for them.
-      const { mountWorkspace } = await import('upstream/shims/fs.js');
-      mountWorkspace(globalThis.__dshProfileTmpdir);
-    }
-  }
+  // evaluate (this driver IS the suite's boot prelude).
+  await pinProfileContainer();
   const spec = cfg.spec;
   if (typeof spec !== 'string' || spec.length === 0) fail('runtime.config carries no spec path');
   emit('suite/spec', { spec });
@@ -93,6 +116,12 @@ const main = async () => {
   // The spec registers its tests at import time (module side effects are
   // the vitest collection model — exactly what the harness captures).
   await import(spec);
+  // The spec's fixtures module (emitted by transpile.mjs when the spec ships
+  // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the
+  // tests run — `../fixtures` joins resolve at /upstream-tests/fixtures, one
+  // spec per runtime, so the flat namespace never collides. A spec without a
+  // fixtures module simply fails this dynamic import and is skipped.
+  await seedSpecFixtures(spec, emit);
   const report = await runCollected((name, verdict, message) => {
     emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : verdict === 'start' ? 'test/start' : 'test/skip', {
       name: name.slice(0, 300),

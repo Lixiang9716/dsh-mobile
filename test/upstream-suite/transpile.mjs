@@ -274,7 +274,33 @@ const transpileOne = async (rel, manifest) => {
   }
   const flat = rel.split('/').join('__').replace(/\.spec\.ts$/, '.spec.mjs');
   writeFileSync(join(OUT, flat), text.replace(/from\s*"vitest"/g, `from "${HARNESS_SPECIFIER}"`));
+  emitFixturesModule(rel, flat);
   manifest.transpiled.push(flat);
+};
+
+// The spec's own tests/fixtures tree rides along as a data module: the
+// suite driver seeds it into the staged fs view (node:fs's seedStagedFiles)
+// before running the tests, so `join(dirname(fileURLToPath(import.meta.url)),
+// "fixtures")` resolves to REAL seeded files at /upstream-tests/fixtures.
+// Base64-wrapped; one module per spec — one spec per runtime, so the flat
+// /upstream-tests/fixtures namespace never collides.
+const emitFixturesModule = (rel, flat) => {
+  const fixturesDir = join(TESTS, dirname(rel), 'fixtures');
+  if (!existsSync(fixturesDir)) return;
+  const files = [];
+  const walkFx = (dir, base) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) walkFx(full, `${base}/${name}`);
+      else files.push({ path: `/upstream-tests/fixtures${base}/${name}`,
+        b64: readFileSync(full).toString('base64') });
+    }
+  };
+  walkFx(fixturesDir, '');
+  const stem = flat.replace(/\.spec\.mjs$/, '');
+  writeFileSync(join(OUT, `${stem}.fixtures.js`),
+    `// emitted by transpile.mjs: the spec's tests/fixtures tree, seeded by the driver\n`
+    + `export const fixtures = ${JSON.stringify(files)};\n`);
 };
 
 

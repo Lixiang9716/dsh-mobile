@@ -115,11 +115,37 @@ export const mergeWebPlugins = (files) => {
   globalThis.__DSH_WEB_PLUGINS_VFS__ = mounted;
 };
 
+/**
+ * MERGE spec-fixture files into the seeded view (the upstream-suite driver's
+ * seeding of one spec's fixtures under /upstream-tests/ — same validation and
+ * store as the web-plugins view, additive so several seed deliveries compose).
+ * @param files - absolute POSIX path → { bytes: Uint8Array, mtimeMs: number }.
+ */
+export const seedStagedFiles = (files) => {
+  const mounted = vfs() ?? new Map();
+  for (const [path, file] of Object.entries(files)) {
+    if (typeof path !== 'string' || !VFS_ROOTS.some((root) => path.startsWith(root))) {
+      throw new Error(`node:fs: staged seed path outside the VFS roots: ${path}`);
+    }
+    if (!(file.bytes instanceof Uint8Array) || typeof file.mtimeMs !== 'number') {
+      throw new Error(`node:fs: staged file ${path} needs {bytes, mtimeMs}`);
+    }
+    mounted.set(path, file);
+  }
+  globalThis.__DSH_WEB_PLUGINS_VFS__ = mounted;
+};
+
 /** The staged read-only roots the VFS serves. Besides the web-plugins scan
  * view, vendored packages delivered as seed data (the agent-presets presets
  * tree, under the package's own bundle-relative directory) are readable —
  * that is what the fs/promises shim walks for the presets service. */
-const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alpha.2/'];
+const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alpha.2/',
+  // The upstream-suite spec fixtures (growth round 3): transpiled specs sit
+  // flat at /upstream-tests/<stem>.spec.mjs, so their `../fixtures` joins
+  // resolve to /upstream-tests/fixtures — the suite driver seeds the bytes
+  // there before running the spec's tests (one spec per runtime, so last-
+  // write-wins across specs is not a hazard).
+  '/upstream-tests/'];
 const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
 const refuse = (name) => () => {

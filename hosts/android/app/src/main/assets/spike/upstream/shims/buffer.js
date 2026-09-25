@@ -135,7 +135,7 @@ const toStringHex = (bytes) => {
 
 const B64_INDEX = new Map([...B64].map((ch, i) => [ch, i]));
 
-const fromBase64 = (text) => {
+export const fromBase64 = (text) => {
   const clean = text.replace(/[^A-Za-z0-9+/]/g, '');
   const pad = clean.endsWith('==') ? 2 : clean.endsWith('=') ? 1 : 0;
   const out = new Uint8Array(Math.floor((clean.length * 3) / 4) - pad);
