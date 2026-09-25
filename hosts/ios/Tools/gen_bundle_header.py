@@ -443,7 +443,7 @@ def emit() -> None:
     parts, decls, funcs = [], [], []
     emit_resources(parts, decls, funcs)
     tree = collect_tree_files()
-    parts.append(trees.tree_c_source(tree, "DSH", "dsh_spike_bundle_tree_file"))
+    parts.append(trees.tree_c_source(tree, "DSH", "dsh_spike_bundle_tree_file", REPO))
     decls.append(trees.SPINE_TREE_WALKER_DECL)
     total = sum(p.stat().st_size for _, p in tree)
     print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
@@ -451,7 +451,7 @@ def emit() -> None:
     webclient_tree = collect_webclient_files()
     parts.append(
         trees.tree_c_source(webclient_tree, "DSH_WEBCLIENT",
-                            "dsh_spike_webclient_tree_file"))
+                            "dsh_spike_webclient_tree_file", REPO))
     decls.append(trees.WEBCLIENT_TREE_WALKER_DECL)
     wtotal = sum(p.stat().st_size for _, p in webclient_tree)
     print(f"gen_bundle_header: webclient tree = {len(webclient_tree)} files, "
