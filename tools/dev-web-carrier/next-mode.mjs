@@ -330,6 +330,8 @@ export const startNextCarrier = ({ repoRoot, port, sessionsFixture, journalPath 
   server.on('upgrade', (req, socket) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     if (url.pathname !== '/api/remote.mux' || !isAuthed(req)) return socket.destroy();
+    console.log('[dev-web-carrier:next] mux upgrade accepted');
+    socket.on('close', () => console.log('[dev-web-carrier:next] mux socket closed'));
     const ws = acceptUpgrade(req, socket);
     if (ws !== null) ws.onText((text) => handleMux(machine, ws, text));
   });

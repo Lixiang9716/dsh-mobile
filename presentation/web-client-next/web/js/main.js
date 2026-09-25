@@ -2,12 +2,13 @@
 /**
  * main.js — wiring: the mux connection, the two views (home ↔ chat), the
  * timeline subscription (structure renders rebuild the list; tail renders
- * coalesce to one per animation frame), and the composer. The page knows
- * only the loopback HTTP + WS protocol — zero host awareness.
+ * coalesce to one per animation frame, with a timer fallback for throttled
+ * webviews), and the composer. The page knows only the loopback HTTP + WS
+ * protocol — zero host awareness.
  */
 
 import { rpc, isRemoteError } from './api.js';
-import { Mux } from './mux.js';
+import { Mux, muxDiag } from './mux.js';
 import { createTimeline } from './timeline.js';
 import { createChatRenderer } from './render-chat.js';
 import { renderConnection, renderSessionList } from './render-home.js';
@@ -36,7 +37,6 @@ let activeSessionId = null;
 let timeline = null;
 let renderer = null;
 let followStream = null;
-let tailScheduled = false;
 
 // ---- chrome --------------------------------------------------------------
 
@@ -45,22 +45,12 @@ const refreshChrome = () => {
   const title = typeof timeline.meta.title === 'string'
     && timeline.meta.title !== '' ? timeline.meta.title : shortId(activeSessionId);
   $('chat-title').textContent = title;
-  const running = timeline?.running === true;
+  const running = timeline.running;
   composer.setRunning(running);
   if (running) $('chat-status').textContent = '生成中';
   else if (connState === 'closed') $('chat-status').textContent = '连接断开';
   else if (connState !== 'open') $('chat-status').textContent = '重连中…';
   else $('chat-status').textContent = '';
-};
-
-const scheduleTailRender = () => {
-  if (tailScheduled) return;
-  tailScheduled = true;
-  requestAnimationFrame(() => {
-    tailScheduled = false;
-    renderer?.renderTail(timeline);
-    refreshChrome();
-  });
 };
 
 // ---- home ----------------------------------------------------------------
@@ -128,12 +118,13 @@ const openSession = (sessionId) => {
   timeline = createTimeline();
   timeline.subscribe((kind) => {
     if (renderer === null) return;
-    if (kind === 'structure') {
-      renderer.renderStructure(timeline);
-      refreshChrome();
-    } else {
-      scheduleTailRender();
-    }
+    // Both kinds render SYNCHRONOUSLY from the network event — the
+    // official page's model. A rAF/timer-coalesced tail never fires in a
+    // throttled or occluded WKWebView (the drive's WebView is exactly
+    // that), and the frame cadence here is human-paced anyway.
+    if (kind === 'structure') renderer.renderStructure(timeline);
+    else renderer.renderTail(timeline);
+    refreshChrome();
   });
   renderer = createChatRenderer($('transcript'), $('jump-latest'));
   renderer.renderStructure(timeline);
@@ -159,6 +150,20 @@ composer.onSent(() => {
 });
 
 // ---- boot ----------------------------------------------------------------
+
+// The diagnostic face the on-device probe reads in failure forensics.
+window.__dshTimelineDebug = () => ({
+  sessionId: activeSessionId,
+  rendererAlive: renderer !== null,
+  items: timeline?.items.length ?? -1,
+  tail: !!timeline?.tail,
+  kind: timeline?.items.at(-1)?.kind ?? 'none',
+  kinds: timeline?.items.map((item) => item.kind).join(',') ?? '',
+  mux: { frames: muxDiag.frames, routed: muxDiag.routed,
+    dropped: muxDiag.dropped, throws: muxDiag.throws, closes: muxDiag.closes },
+  notify: timeline?.notifyDebug ?? null,
+});
+window.__dshForceRender = () => renderer?.renderStructure(timeline);
 
 showView('home');
 mux.connect();

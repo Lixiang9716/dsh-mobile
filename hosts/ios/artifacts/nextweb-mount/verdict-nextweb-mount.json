@@ -1,8 +1,8 @@
 {
   "scenario": "nextweb.mount",
   "pass": true,
-  "expected": 13,
-  "logged": 13,
+  "expected": 16,
+  "logged": 16,
   "failures": [],
   "parseErrors": []
 }

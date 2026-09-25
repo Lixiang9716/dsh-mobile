@@ -89,6 +89,26 @@
         "reply": "Hello from upstream",
         "userText": "Say hello from the next client"
       }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/cancel",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "cancel.stop.pressed",
+      "match": {
+        "stopShown": true,
+        "stopPressed": true
+      }
+    },
+    {
+      "event": "cancel.settled",
+      "match": {
+        "accepted": true
+      }
     }
   ]
 }

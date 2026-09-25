@@ -145,6 +145,10 @@ const applyStatusEvent = (state, type, data) => {
   if (type === 'turn/end') {
     const kind = data?.reason?.kind ?? data?.reason;
     if (NORMAL_TURN_REASONS.has(kind)) return;
+    if (kind === 'aborted') {
+      add(state, { kind: 'status', text: '已停止', tone: 'info' });
+      return;
+    }
     add(state, { kind: 'status', text: `回合结束（${kind ?? '未知'}）`, tone: 'warn' });
   } else if (type === 'llm/retry' || type === 'llm/retry-started') {
     add(state, { kind: 'status', text: '模型请求重试中', tone: 'info' });
@@ -279,13 +283,19 @@ export function createTimeline() {
   const fold = createFold();
   let version = 0;
   let structure = true; // next notify is a full re-render
+  let notifies = 0;
+  let fired = 0;
   const listeners = new Set();
 
   const notify = () => {
     version += 1;
+    notifies += 1;
     const kind = structure ? 'structure' : 'tail';
     structure = false;
-    for (const listener of listeners) listener(kind, version);
+    for (const listener of listeners) {
+      fired += 1;
+      listener(kind, version);
+    }
   };
 
   return {
@@ -312,5 +322,6 @@ export function createTimeline() {
     get tail() { return fold.state.tail; },
     get meta() { return { title: fold.state.title }; },
     get running() { return fold.state.tail !== null; },
+    get notifyDebug() { return { notifies, fired, listeners: listeners.size }; },
   };
 }
