@@ -181,32 +181,30 @@ final class NextWebRuntime {
     // ---- the drive phases ----------------------------------------------------
 
     private func installProbeAndOpen() {
+        SessionWriteProbe.evaluate(webView!, "window.__next.clickNewSession()") { _, _ in }
         pollPage("window.__next.chatVisible()",
             until: { $0["chatVisible"] as? Bool == true },
             collect: { [weak self] _ in
                 self?.eventLog.emit("client.opened", ["chatVisible": true])
                 self?.typePhase()
         })
-        SessionWriteProbe.evaluate(webView!, "window.__next.clickNewSession()") { _, _ in }
     }
 
     private func typePhase() {
-        pollPage("window.__next.chatVisible()",
-            until: { $0["chatVisible"] as? Bool == true },
-            collect: { [weak self] _ in
-                let message = NextWebProbe.messageText
-                self?.pollPage(
-                    "window.__next.typeComposer('\(message)')",
-                    until: { $0["sendEnabled"] as? Bool == true },
-                    collect: { [weak self] probe in
-                        self?.eventLog.emit("composer.typed", [
-                            "found": probe["found"] ?? false,
-                            "sendEnabled": probe["sendEnabled"] ?? false,
-                            "text": message,
-                        ])
-                        self?.pressSend()
-                })
+        pollPage("window.__next.typeComposer('\(NextWebProbe.messageText)')",
+            until: { $0["sendEnabled"] as? Bool == true },
+            collect: { [weak self] probe in
+                self?.emitTyped(probe)
         })
+    }
+
+    private func emitTyped(_ probe: [String: Any]) {
+        eventLog.emit("composer.typed", [
+            "found": probe["found"] ?? false,
+            "sendEnabled": probe["sendEnabled"] ?? false,
+            "text": NextWebProbe.messageText,
+        ])
+        pressSend()
     }
 
     /// Press send, then wait for the rendered reply: the DOM must show the
@@ -223,10 +221,10 @@ final class NextWebRuntime {
     private func awaitFirstTurn() {
         pollPage("window.__next.readTranscript()",
             until: { probe in
-                probe["userShown"] as? Bool == true
-                    && probe["tailPresent"] as? Bool == false
-                    && (probe["assistant"] as? String ?? "")
-                        .contains(NextWebProbe.expectedReply)
+                let replied = (probe["assistant"] as? String ?? "")
+                    .contains(NextWebProbe.expectedReply)
+                return probe["userShown"] as? Bool == true
+                    && probe["tailPresent"] as? Bool == false && replied
             },
             collect: { [weak self] probe in
                 self?.eventLog.emit("page.rendered", [
@@ -260,11 +258,15 @@ final class NextWebRuntime {
         pollPage("window.__next.pressSend()",
             until: { $0["pressed"] as? Bool == true },
             collect: { [weak self] _ in
-                self?.pollPage("window.__next.stopState()",
-                    until: { $0["stop"] as? Bool == true },
-                    collect: { [weak self] _ in
-                        self?.pressStop()
-                })
+                self?.awaitStopShape()
+        })
+    }
+
+    private func awaitStopShape() {
+        pollPage("window.__next.stopState()",
+            until: { $0["stop"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.pressStop()
         })
     }
 

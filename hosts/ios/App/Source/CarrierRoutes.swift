@@ -164,12 +164,12 @@ extension CarrierServer {
         // One Content-Length response: the transport consumes the SSE bytes
         // from the plain body (no chunked framing needed on loopback).
         if slow {
-            Self.respondSlowDrip(body: body,
-                                 contentType: "text/event-stream; charset=utf-8",
-                                 interval: Self.slowDripInterval, conn: conn)
+            Self.respondSlowDrip(
+                body: body, contentType: "text/event-stream; charset=utf-8",
+                interval: Self.slowDripInterval, conn: conn)
         } else {
             respond(status: 200, body: body,
-                    contentType: "text/event-stream; charset=utf-8", conn: conn)
+                contentType: "text/event-stream; charset=utf-8", conn: conn)
         }
     }
 
@@ -182,27 +182,35 @@ extension CarrierServer {
     /// HTTP-legal (Content-Length announces the full body; slices are plain
     /// sends; the connection closes with the final slice).
     static func respondSlowDrip(body: Data, contentType: String,
-                                interval: Int, conn: NWConnection) {
+        interval: Int, conn: NWConnection) {
         var head = "HTTP/1.1 200 OK\r\n"
         head += "Content-Type: \(contentType)\r\nContent-Length: \(body.count)\r\n"
         head += "Connection: close\r\n\r\n"
         conn.send(content: Data(head.utf8), completion: .contentProcessed { _ in })
         let slice = max(1, body.count / 8)
-        func drip(_ offset: Data.Index) {
-            if offset >= body.endIndex {
-                conn.cancel()
-                return
-            }
+        var slices: [Data] = []
+        var offset = body.startIndex
+        while offset < body.endIndex {
             let end = body.index(offset, offsetBy: slice, limitedBy: body.endIndex)
                 ?? body.endIndex
-            let chunk = body[offset..<end]
-            conn.send(content: chunk, completion: .contentProcessed { _ in
-                DispatchQueue.global().asyncAfter(
-                    deadline: .now() + .milliseconds(interval)) {
-                    drip(end)
-                }
-            })
+            slices.append(body[offset..<end])
+            offset = end
         }
-        drip(body.startIndex)
+        sendDrip(slices, at: 0, interval: interval, conn: conn)
+    }
+
+    /// One drip link: send slice `index`, schedule the next.
+    private static func sendDrip(_ slices: [Data], at index: Int,
+        interval: Int, conn: NWConnection) {
+        guard index < slices.count else {
+            conn.cancel()
+            return
+        }
+        conn.send(content: slices[index], completion: .contentProcessed { _ in
+            DispatchQueue.global().asyncAfter(
+                deadline: .now() + .milliseconds(interval)) {
+                sendDrip(slices, at: index + 1, interval: interval, conn: conn)
+            }
+        })
     }
 }
