@@ -94,14 +94,12 @@ RESOURCES = [
     ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
-    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"),
-    ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
-    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"),
-    ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
-    ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"),
-    ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
-    ("shims_timers_js", SPIKE / "upstream" / "shims" / "timers.js"),
-    ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
+    # (mechanical entries packed two-per-line: the file lives under the
+    # code-size ceiling and this block grows with every shim row)
+    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"), ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
+    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"), ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
+    ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"), ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
+    ("shims_timers_js", SPIKE / "upstream" / "shims" / "timers.js"), ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
     # the upstream-suite globals (AbortController/structuredClone — installed by
     # the test harness before any spec imports; lives with the other shims)
     ("shims_globals_js", SPIKE / "upstream" / "shims" / "globals.js"),
@@ -109,11 +107,9 @@ RESOURCES = [
     ("shims_node_addon_flock_js", SPIKE / "upstream" / "shims" / "node-addon-system-flock.js"),
     ("shims_expect_poll_js", SPIKE / "upstream" / "shims" / "expect-poll.js"),
     ("shims_node_zlib_js", SPIKE / "upstream" / "shims" / "node-zlib.js"),
-    ("shims_node_worker_threads_js", SPIKE / "upstream" / "shims" / "node-worker-threads.js"),
-    ("shims_node_stream_js", SPIKE / "upstream" / "shims" / "node-stream.js"),
-    ("shims_describe_each_js", SPIKE / "upstream" / "shims" / "describe-each.js"),
-    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"),
-    ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
+    ("shims_node_worker_threads_js", SPIKE / "upstream" / "shims" / "node-worker-threads.js"), ("shims_node_stream_js", SPIKE / "upstream" / "shims" / "node-stream.js"),
+    ("shims_events_js", SPIKE / "upstream" / "shims" / "events.js"), ("shims_describe_each_js", SPIKE / "upstream" / "shims" / "describe-each.js"),
+    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"), ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
     ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),
     ("npm_cordis_js",
      SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
@@ -161,20 +157,20 @@ RESOURCES = [
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
-    # W-RPC write surface (D9): the official app's composer send
-    # (`POST /api/session/prompt`) answered from the REAL spine — the write
-    # adapter plus the scenario that boots the runtime composed with it.
+    # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
+    # the REAL spine — the write adapter + its booting scenario.
     ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
-    # api-full-coverage (D9): the workspaceFiles / workspace / directoryPicker
-    # / catalog coverage adapters of the write surface (claimed only under
-    # the fullCoverage write option — the base claims stay byte-identical).
+    # api-full-coverage (D9): coverage adapters + llm/credential legs + the
+    # preset mobile-row transform (claimed under fullCoverage — byte-identical base).
     ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
     ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
     ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
     ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
+    ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
+    ("upstream_preset_mobile_rows_js", SPIKE / "upstream" / "preset-mobile-rows.js"),
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),

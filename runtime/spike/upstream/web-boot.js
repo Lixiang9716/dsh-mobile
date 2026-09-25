@@ -52,6 +52,7 @@ import {
   bootInjections,
 } from '@deepseek-ai/dsh-client-modules';
 import { createWriteSurface, WRITE_ENDPOINTS, COVERAGE_ENDPOINTS } from 'upstream/web-write.js';
+import { patchPresetSeedFiles } from 'upstream/preset-mobile-rows.js';
 
 if (typeof globalThis.process === 'undefined') globalThis.process = process;
 
@@ -344,7 +345,7 @@ export const createMuxHandlers = (ctx, post) => {
  * surface's endpoints when composed with one). A non-final chunk of a
  * CHUNKED delivery only stages (the drive keeps delivering); the final
  * chunk — or a legacy single delivery — composes. */
-const deliverWebPlugins = (ctx, post, msg, write) => {
+const deliverWebPlugins = (ctx, post, msg, write, fullCoverage) => {
   const plugins = stageWebPlugins(msg);
   if (plugins.staged === false) {
     return { kind: 'staged', packages: plugins.plugins.length };
@@ -354,7 +355,7 @@ const deliverWebPlugins = (ctx, post, msg, write) => {
   const endpoints = write === null
     ? CLAIMED_ENDPOINTS
     : [...CLAIMED_ENDPOINTS, ...WRITE_ENDPOINTS,
-       ...(write.fullCoverage === true ? COVERAGE_ENDPOINTS : [])];
+       ...(fullCoverage === true ? COVERAGE_ENDPOINTS : [])];
   post({ type: 'api.claim', endpoints });
   post({ type: 'mux.claim' });
   return { kind: 'booted', entries: graph.entries.map((e) => e.id) };
@@ -395,21 +396,28 @@ const deliverApiRequest = (post, apiHandlers, write, mounted, msg) => {
  * workspace and the llm route new sessions select. Without it the runtime
  * claims exactly the b3 read surface (session.list + session/journal).
  */
+/** The write surface from the write options (null on a bare compose boot).
+ * The 插件 inventory's client-bundle plane reads the staged descriptors this
+ * runtime composed (the delivery store; populated at composition). */
+const mountWriteSurface = (ctx, post, write) => (write === undefined ? null
+  : createWriteSurface(ctx, post, {
+    ...write,
+    stagedPlugins: () => stagedDescriptorStore(),
+  }));
+
 export const createWebBootRuntime = ({ ctx, post, write }) => {
   const apiHandlers = createApiHandlers(ctx);
   const mux = createMuxHandlers(ctx, post);
-  const writeSurface = write === undefined
-    ? null : createWriteSurface(ctx, post, {
-      ...write,
-      // The 插件 inventory's client-bundle plane: the staged descriptors this
-      // runtime composed (the delivery store; populated at composition).
-      stagedPlugins: () => stagedDescriptorStore(),
-    });
+  // The coverage flag rides the write OPTIONS — the built surface does not
+  // carry it, so read it here (the served claims were silently
+  // coverage-free until measured on device 2026-09-24).
+  const fullCoverage = write?.fullCoverage === true;
+  const writeSurface = mountWriteSurface(ctx, post, write);
   let mounted = false;
   const deliver = (msg) => {
     switch (msg.type) {
       case 'web.plugins': {
-        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface);
+        const outcome = deliverWebPlugins(ctx, post, msg, writeSurface, fullCoverage);
         mounted = true;
         return outcome;
       }
@@ -429,13 +437,15 @@ export const createWebBootRuntime = ({ ctx, post, write }) => {
         return cancelled ?? mux.cancel(msg);
       }
       case 'agentPresets.seed': {
-        // The host delivers the vendored presets tree it staged (base64, the
-        // web.plugins shape's file map) — the fs/promises shim's VFS is the
-        // only filesystem the presets walk sees. Seed BEFORE the panel asks.
+        // The host delivers the vendored presets tree (base64, the
+        // web.plugins shape); the fs VFS is the only fs the walk sees. The
+        // mobile composition disables its absent tool rows first — unpatched,
+        // the health check marks them broken and 内置插件 answers 加载失败.
         const files = {};
         for (const [path, file] of Object.entries(msg.files ?? {})) {
           files[path] = { bytes: decodeB64(file.b64), mtimeMs: file.mtimeMs ?? 0 };
         }
+        patchPresetSeedFiles(files);
         mergeWebPlugins(files);
         return { kind: 'seeded' };
       }

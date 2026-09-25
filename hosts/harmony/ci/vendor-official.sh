@@ -165,7 +165,8 @@ vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
 # files first, then the vendored upstream trees — generated from the
 # materialized vendor checkout (suffix filter .js/.mjs/.json, sorted, the
 # same rule as hosts/ios/Tools/gen_bundle_header.py collect_tree_files).
-SPINE_OURS="scenario/harmony-session-live-read.js
+SPINE_OURS="scenario/boot-verification.js
+scenario/harmony-session-live-read.js
 scenario/harmony-composer-live-write.js
 upstream/boot.js
 upstream/settings-memory.js
@@ -174,12 +175,16 @@ upstream/web-write.js
 upstream/web-write-settings.js
 upstream/web-write-streams.js
 upstream/web-write-coverage.js
+upstream/web-write-llm.js
+upstream/preset-mobile-rows.js
 upstream/web-write-files.js
 upstream/web-write-picker.js
 upstream/web-write-workspace.js
 upstream/web-write-catalog.js
 upstream/shims/async-hooks.js
 upstream/shims/util.js
+upstream/shims/fs-promises.js
+upstream/shims/events.js
 upstream/shims/util-types.js
 upstream/shims/os.js
 upstream/shims/process.js

@@ -33,6 +33,7 @@ import { SystemPrompt } from '@deepseek-ai/dsh-system-prompt';
 import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
+import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
@@ -401,7 +402,11 @@ const mountSpine = async (ctx, identity) => {
  *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
  */
 /** Mount the dsh-base row `llm`: the VENDORED LlmRuntime with the gateway
- * transport adapter registered for the caller's provider route. */
+ * transport adapter registered for the caller's provider route, DECLARED in
+ * the configurable-provider directory under the route's settings namespace
+ * (upstream/preset — the models 设置页 renders a provider only when the
+ * directory names it; the namespace itself is registered by the settings
+ * legs, web-write-settings.js). */
 const mountLlm = async (ctx, llm, onEvent) => {
   await ctx.plugin(LlmRuntime);
   const runtime = ctx.get('llm');
@@ -416,6 +421,12 @@ const mountLlm = async (ctx, llm, onEvent) => {
     onSse: llm.onSse,
     onRequestBody: llm.onRequestBody,
   }));
+  runtime.registerConfigurableProviders([{
+    provider: llm.provider,
+    displayName: llm.displayName ?? 'OpenAI 兼容',
+    settingsNs: providerSettingsNs(llm.provider),
+    settingsPath: ['providers', 'default'],
+  }]);
   onEvent('llm/runtime', {
     provider: llm.provider,
     model: llm.model,

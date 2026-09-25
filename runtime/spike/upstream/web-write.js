@@ -341,8 +341,10 @@ const makePromptSession = (ctx) => async (args) => {
 /** The settings 内置插件 SHELL's loads, from the boot's llm route: ONE
  * provider with ONE configured model (the staged credential). The catalog's
  * `default` IS the route the agent loop uses; nothing is invented.
- * credentials/set stays unclaimed (the credential file is the user's staged
- * profile, not writable through the wire). */
+ * `credentials/describe` here answers the staged route only — the coverage
+ * plane (web-write-llm.js) OVERRIDES it with the ref-keyed store-backed
+ * answer and claims the set/unset write half; this historical row stays for
+ * the non-coverage boots whose delivered manifests pin it byte-identical. */
 const shellLoadHandlers = (llmRoute) => ({
   'credentials/describe': async () => ({
     [llmRoute.provider]: {
@@ -421,7 +423,7 @@ export const createWriteSurface = (ctx, post, options) => {
   const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
   const deps = {
     streams, root, workspaces, seeded, archived,
-    llmRoute: { provider: options.provider, model: options.model },
+    llmRoute: { provider: options.provider, model: options.model, baseURL: options.baseURL },
     mintId: mintUUID,
     publish: streams.publish,
   };
@@ -430,7 +432,7 @@ export const createWriteSurface = (ctx, post, options) => {
   }
   return {
     api: {
-      ...buildApiMap(ctx, deps, options, makeNamespaceGuard(ctx)),
+      ...buildApiMap(ctx, deps, options, makeNamespaceGuard(ctx, deps.llmRoute)),
       ...(coverage === undefined ? {} : buildCoverageApi(ctx, deps)),
     },
     openStream: streams.openStream,
