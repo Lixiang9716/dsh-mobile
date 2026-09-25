@@ -76,6 +76,9 @@ static const char *dsh_node_shim(const char *name) {
         { "node:zlib", "upstream/shims/node-zlib.js" },
         { "node:worker_threads", "upstream/shims/node-worker-threads.js" },
         { "node:stream", "upstream/shims/node-stream.js" },
+        /* node:events: the EventEmitter face the ssh/subprocess/session/sdk
+         * source families link against (upstream-suite growth round 2). */
+        { "node:events", "upstream/shims/events.js" },
     };
     for (size_t i = 0; i < sizeof(SHIMS) / sizeof(SHIMS[0]); i++) {
         if (strcmp(name, SHIMS[i].spec) == 0) return SHIMS[i].path;

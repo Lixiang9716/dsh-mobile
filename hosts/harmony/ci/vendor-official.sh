@@ -184,6 +184,7 @@ upstream/web-write-catalog.js
 upstream/shims/async-hooks.js
 upstream/shims/util.js
 upstream/shims/fs-promises.js
+upstream/shims/events.js
 upstream/shims/util-types.js
 upstream/shims/os.js
 upstream/shims/process.js
