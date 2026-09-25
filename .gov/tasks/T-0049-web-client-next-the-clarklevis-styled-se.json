@@ -15,7 +15,7 @@
     "[x] iOS: stager rows + SessionServe client-id flavor + launch-arg selection",
     "[x] E2E: nextweb-mount scenario manifest + simulator run green + artifacts + matrix row",
     "[x] docs: presentation/README entry + Agent Note",
-    "PR merged with green gates"
+    "[x] PR merged with green gates"
   ],
   "status": "open",
   "receipt": null,
