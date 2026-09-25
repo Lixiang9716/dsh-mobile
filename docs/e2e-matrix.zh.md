@@ -56,10 +56,10 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 45 |
+| 证据目录 | 46 |
 | 已提交 verdict（91 绿，2 条配额阻塞红） | 93 |
-| 至少有一份已提交证据的 scenario | 44 / 44 个不同的 scenario id（36 个 manifest） |
-| 已验证 PNG 的截图 | 110 |
+| 至少有一份已提交证据的 scenario | 45 / 45 个不同的 scenario id（37 个 manifest） |
+| 已验证 PNG 的截图 | 113 |
 | 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
@@ -99,6 +99,7 @@
 | `m5.host-binding` | — | — | 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 27/27 | — |
 | `models.directory` | — | — | — | 6/6 |
 | `nextweb.mount` | 16/16 | — | — | — |
+| `whale.mount` | 16/16 | — | — | — |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
@@ -152,6 +153,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + 与已提交金标的差分 25/25 条记录一致（模拟器腿；gateway httpFetch → 宿主机侧 mock） | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 16/16 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 16/16, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19（scripted-SSE 分支） | ✓ | ✓ | ✓ | 0 |

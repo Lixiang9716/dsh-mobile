@@ -50,6 +50,16 @@ Web Client from plugin configuration and hardcodes no UI:
   dev-echo turn, desktop speed). Evidence: `nextweb.mount` on iOS
   ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
+- `web-client-whale/` — the CREATION-MODE plugin (2026-09-26): a third
+  self-hosted client (`dsh-web-client-whale`) whose page IS the product —
+  a blue whale cruising a deep-ocean scene (pure CSS/SVG animation, zero
+  dependencies) — while still speaking the full v0 contract
+  (session-projection@0 over `/ws` + the toolbar slot ACK). The whale
+  reacts to the session: token deltas spout bubbles, completion releases
+  a pod. Selected by `-dsh-web-client dsh-web-client-whale` on iOS.
+  Evidence: `whale.mount` 16/16
+  ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
+
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
 launch argument on the iOS spike; default `dsh-web-client`) — the device
 evidence behind the swappable-UI claim being the config-selected client

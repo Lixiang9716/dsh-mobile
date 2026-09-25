@@ -41,11 +41,11 @@ while [ $# -gt 0 ]; do
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
     --client) CLIENT="$2"; shift 2 ;;
-    *) echo "usage: run-ios-session-mock-llm.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|default]" >&2; exit 2 ;;
+    *) echo "usage: run-ios-session-mock-llm.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|whale|default]" >&2; exit 2 ;;
   esac
 done
-[ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] \
-  || { echo "run-ios-session-mock-llm: unknown --client '$CLIENT' (mini|default)" >&2; exit 2; }
+[ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] || [ "$CLIENT" = "whale" ] \
+  || { echo "run-ios-session-mock-llm: unknown --client '$CLIENT' (mini|whale|default)" >&2; exit 2; }
 CARRIER_MANIFEST=test/e2e/scenarios/webclient-mount.json
 CARRIER_STEM=webclient-mount
 LAUNCH_ARGS=()
@@ -54,6 +54,12 @@ if [ "$CLIENT" = "mini" ]; then
   CARRIER_STEM=ui-client-swap
   LAUNCH_ARGS=(-dsh-web-client dsh-web-client-mini)
   [ -n "$ART" ] || ART="hosts/ios/artifacts/ui-pluggability"
+fi
+if [ "$CLIENT" = "whale" ]; then
+  CARRIER_MANIFEST=test/e2e/scenarios/whale-mount.json
+  CARRIER_STEM=whale-mount
+  LAUNCH_ARGS=(-dsh-web-client dsh-web-client-whale)
+  [ -n "$ART" ] || ART="hosts/ios/artifacts/whale-mount"
 fi
 [ -n "$ART" ] || ART="hosts/ios/artifacts/session-mock-llm"
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
@@ -158,7 +164,10 @@ log "ALL CHECKERS PASS"
 
 # ---- receipt (reachable ONLY on a real green run) ---------------------------
 # Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
+RECEIPT_STEMS="session-mock-llm webclient-mount"
+[ "$CLIENT" = "mini" ] && RECEIPT_STEMS="$RECEIPT_STEMS ui-client-swap"
+[ "$CLIENT" = "whale" ] && RECEIPT_STEMS="$RECEIPT_STEMS whale-mount"
 sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-session-mock-llm.sh" \
   "M2 first on-device session: registry boots and installs the system plugins, the mock-LLM streams token deltas as an event sequence, one tool call routes through the subprocess plugin, and the session completes with the transcript — asserted one-to-one against the session manifests" \
   "-dsh-mode session${DSH_CLIENT:+ (client variant: $DSH_CLIENT)}" \
-  session-mock-llm webclient-mount
+  $RECEIPT_STEMS
