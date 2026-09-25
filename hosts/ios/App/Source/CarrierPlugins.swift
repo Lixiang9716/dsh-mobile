@@ -324,6 +324,7 @@ final class CarrierPlugins {
         var bundles: [(String, URL)] = [
             ("dsh-web-client", spikeRoot.appendingPathComponent("webclient/web/main.js")),
             ("dsh-web-client-mini", spikeRoot.appendingPathComponent("webclient-mini/web/main.js")),
+            ("dsh-web-client-whale", spikeRoot.appendingPathComponent("webclient-whale/web/main.js")),
         ]
         var chunks: [(String, String, URL)] = []
         for pkg in stagedPackageDirs() {

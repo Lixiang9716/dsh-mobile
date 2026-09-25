@@ -1,0 +1,30 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "whale.mount",
+  "launchConfiguration": "-dsh-web-client dsh-web-client-whale",
+  "tree": "origin/main c438f057dcb8 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "session.mock-llm",
+      "checker": "test/e2e/scenarios/session-mock-llm.json",
+      "events": 23,
+      "result": "pass"
+    },
+    {
+      "id": "whale.mount",
+      "checker": "test/e2e/scenarios/whale-mount.json",
+      "events": 7,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-session-mock-llm.sh",
+  "screens": [
+    "screens/01-webclient-loaded.png",
+    "screens/02-mid-stream.png",
+    "screens/03-final-transcript.png"
+  ],
+  "timestamp": "2026-09-26T07:21:59+08:00",
+  "exitCode": 0
+}

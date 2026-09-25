@@ -387,6 +387,7 @@ def collect_tree_files():
 # drift class this repo refuses. Staged under webclient-next/ (SpikeBundleStager).
 WEBCLIENT_TREES = [
     ("webclient-next", REPO / "presentation" / "web-client-next"),
+    ("webclient-whale", REPO / "presentation" / "web-client-whale"),
 ]
 WEBCLIENT_SUFFIXES = (".html", ".css", ".js", ".json")
 

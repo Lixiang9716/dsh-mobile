@@ -64,6 +64,7 @@ enum SessionLaunchConfig {
         switch id {
         case "dsh-web-client": return "webclient"
         case "dsh-web-client-mini": return "webclient-mini"
+        case "dsh-web-client-whale": return "webclient-whale"
         default: fatalError("unknown Web Client plugin id: \(id)")
         }
     }

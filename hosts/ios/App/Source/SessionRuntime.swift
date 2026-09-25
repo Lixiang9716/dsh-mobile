@@ -38,7 +38,9 @@ final class SessionRuntime {
     private var scenario: String {
         if llmMode { return "llm.live-stream.carrier" }
         if profileMode { return "install.carrier-evidence" }
-        return resolvedClient == "dsh-web-client-mini" ? "ui.client-swap" : "webclient.mount"
+        if resolvedClient == "dsh-web-client-mini" { return "ui.client-swap" }
+        if resolvedClient == "dsh-web-client-whale" { return "whale.mount" }
+        return "webclient.mount"
     }
 
     /// The JS entry: the real-LLM drive runs the llm.live-stream scenario; the
