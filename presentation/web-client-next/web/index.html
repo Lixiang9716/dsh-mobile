@@ -1,0 +1,69 @@
+<!doctype html>
+<!-- dsh:logging-exempt (static page: no logging surface of its own) -->
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>DSH</title>
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Home: workspace status + session list -->
+    <section id="view-home" class="view" hidden>
+      <div class="ocean-backdrop" aria-hidden="true"></div>
+      <header class="home-header">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">◆</span>
+          <span class="brand-name">DSH</span>
+        </div>
+        <div id="conn-capsule" class="capsule conn-capsule" role="status">
+          <span class="dot dot-amber"></span><span class="capsule-text">连接中</span>
+        </div>
+      </header>
+      <h1 class="home-hero">你的移动<br>Agent 工作台</h1>
+      <button id="new-session" class="glass new-session-btn" type="button">
+        <span class="new-session-plus" aria-hidden="true">＋</span>
+        新建会话
+      </button>
+      <div id="session-list" class="session-list" role="list"></div>
+      <p id="session-list-empty" class="session-list-empty" hidden>
+        还没有会话 — 从上面开始
+      </p>
+    </section>
+
+    <!-- Chat: one session's transcript -->
+    <section id="view-chat" class="view" hidden>
+      <header class="chat-header">
+        <button id="back-home" class="icon-btn" type="button"
+          aria-label="返回会话列表">‹</button>
+        <div class="chat-title-wrap">
+          <span id="chat-title" class="chat-title">会话</span>
+          <span id="chat-status" class="chat-status"></span>
+        </div>
+        <span class="header-spacer"></span>
+      </header>
+      <div id="transcript-wrap" class="transcript-wrap">
+        <main id="transcript" class="transcript" aria-live="polite"></main>
+        <button id="jump-latest" class="glass jump-latest" type="button"
+          aria-label="跳到最新" hidden>↓</button>
+      </div>
+      <footer id="composer" class="composer">
+        <div class="glass composer-card">
+          <textarea id="composer-input" rows="1"
+            placeholder="描述你想要构建的内容" enterkeyhint="send"></textarea>
+          <button id="composer-send" class="send-btn" type="button"
+            aria-label="发送" disabled>↑</button>
+        </div>
+      </footer>
+    </section>
+
+  </div>
+  <div id="toast" role="status"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
