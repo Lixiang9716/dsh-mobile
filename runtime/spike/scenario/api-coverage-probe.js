@@ -306,9 +306,14 @@ const gapsPhase = async (ctx, s) => {
     'sessionFeedback/record', 'permissionPresets/catalog',
     'fileUploads/upload', 'officeToPdf/render',
     'session/page', 'session/fork', 'session/search', 'session/rename',
-    'session/cancel', 'session/updateQueue', 'session/attachment']) {
+    'session/updateQueue', 'session/attachment']) {
     demand(s.api[endpoint] === undefined, `${endpoint} must stay unclaimed`);
   }
+  // session/cancel LEFT the gap list (the stop-button claim, 2026-09-25):
+  // the shape demand moves to the claimed side; its live semantics are
+  // proven on-device by nextweb.mount's cancel leg.
+  demand(typeof s.api['session/cancel'] === 'function',
+    'session/cancel is claimed (the stop button)');
   demand(new Set(COVERAGE_ENDPOINTS.filter((e) => WRITE_ENDPOINTS.includes(e))).size === 0,
     'coverage endpoints overlap the historical claim set');
   const bare = createWriteSurface(ctx, () => {}, {

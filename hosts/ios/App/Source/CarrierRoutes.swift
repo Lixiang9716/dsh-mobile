@@ -138,6 +138,13 @@ extension CarrierServer {
             return
         }
         let successText = "Hello from upstream"
+        // The nextweb drive's CANCEL leg needs the model boundary to still be
+        // mid-stream while the probe presses stop: a prompt carrying the
+        // SLOW_TURN marker selects a drip script (body slices sent
+        // serveScriptedLlmInterval ms apart) over the usual one-shot response.
+        // Every existing drive's prompts never carry the marker, so their
+        // wire stays byte-identical to before.
+        let slow = request.body.contains(Data("SLOW_TURN".utf8))
         var body = Data()
         func sse(_ payload: @autoclosure () -> Any) {
             guard let data = try? JSONSerialization.data(withJSONObject: payload()),
@@ -156,7 +163,54 @@ extension CarrierServer {
         body.append(Data("data: [DONE]\n\n".utf8))
         // One Content-Length response: the transport consumes the SSE bytes
         // from the plain body (no chunked framing needed on loopback).
-        respond(status: 200, body: body,
+        if slow {
+            Self.respondSlowDrip(
+                body: body, contentType: "text/event-stream; charset=utf-8",
+                interval: Self.slowDripInterval, conn: conn)
+        } else {
+            respond(status: 200, body: body,
                 contentType: "text/event-stream; charset=utf-8", conn: conn)
+        }
+    }
+
+    /// The drip pacing for the slow script (the cancel leg's race window).
+    static let slowDripInterval = 220
+}
+
+extension CarrierServer {
+    /// Sends the head + body in `interval` ms-spaced slices on ONE connection:
+    /// HTTP-legal (Content-Length announces the full body; slices are plain
+    /// sends; the connection closes with the final slice).
+    static func respondSlowDrip(body: Data, contentType: String,
+        interval: Int, conn: NWConnection) {
+        var head = "HTTP/1.1 200 OK\r\n"
+        head += "Content-Type: \(contentType)\r\nContent-Length: \(body.count)\r\n"
+        head += "Connection: close\r\n\r\n"
+        conn.send(content: Data(head.utf8), completion: .contentProcessed { _ in })
+        let slice = max(1, body.count / 8)
+        var slices: [Data] = []
+        var offset = body.startIndex
+        while offset < body.endIndex {
+            let end = body.index(offset, offsetBy: slice, limitedBy: body.endIndex)
+                ?? body.endIndex
+            slices.append(body[offset..<end])
+            offset = end
+        }
+        sendDrip(slices, at: 0, interval: interval, conn: conn)
+    }
+
+    /// One drip link: send slice `index`, schedule the next.
+    private static func sendDrip(_ slices: [Data], at index: Int,
+        interval: Int, conn: NWConnection) {
+        guard index < slices.count else {
+            conn.cancel()
+            return
+        }
+        conn.send(content: slices[index], completion: .contentProcessed { _ in
+            DispatchQueue.global().asyncAfter(
+                deadline: .now() + .milliseconds(interval)) {
+                sendDrip(slices, at: index + 1, interval: interval, conn: conn)
+            }
+        })
     }
 }

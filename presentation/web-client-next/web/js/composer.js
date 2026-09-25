@@ -3,9 +3,12 @@
  * composer.js — the input deck: auto-growing textarea, send button that
  * morphs into a stop square while the session is generating. Send admits
  * the prompt (session/prompt, mode steer) and returns; the turn streams
- * back over the journal. Stop asks for session/cancel — the mobile
- * runtime does not claim that endpoint yet, so a refusal surfaces as an
- * honest toast, never a faked success.
+ * back over the journal. The stop affordance is OPTIMISTIC — the button
+ * morphs the moment a prompt is admitted, because journal frames can
+ * arrive as one burst and the button must not wait for them; the
+ * optimistic state retires on the fold's live signal or a 12s watchdog.
+ * Stop asks for session/cancel (claimed 2026-09-25, upstream commands.
+ * cancel semantics); failures surface as an honest toast, never faked.
  */
 
 import { rpc, isRemoteError } from './api.js';
@@ -28,18 +31,20 @@ const admitPrompt = (sessionId, text) => rpc('session/prompt', {
 const requestCancel = (sessionId) =>
   rpc('session/cancel', { args: { request: { sessionId } } });
 
-/** The state + DOM of one composer; `submit`/`cancelTurn`/`onSent` ride in
- * from createComposer's closures over this object. */
+/** The state + DOM of one composer. `generating` = the fold reports a live
+ * turn OR a prompt of ours was admitted and has not settled yet. */
 const makeUi = (root) => {
   const input = root.querySelector('#composer-input');
   const send = root.querySelector('#composer-send');
   const ui = {
-    input, send, sessionId: null, running: false, onSent: () => {},
+    input, send, sessionId: null, running: false, optimistic: false,
+    onSent: () => {},
+    get generating() { return ui.running || ui.optimistic; },
     refresh() {
-      send.disabled = ui.running ? false : input.value.trim() === '';
-      send.classList.toggle('stop', ui.running);
-      send.setAttribute('aria-label', ui.running ? '停止' : '发送');
-      send.textContent = ui.running ? '' : '↑';
+      send.disabled = ui.generating ? false : input.value.trim() === '';
+      send.classList.toggle('stop', ui.generating);
+      send.setAttribute('aria-label', ui.generating ? '停止' : '发送');
+      send.textContent = ui.generating ? '' : '↑';
     },
     autosize() {
       input.style.height = 'auto';
@@ -50,16 +55,21 @@ const makeUi = (root) => {
 };
 
 const submit = async (ui, toast) => {
-  if (ui.running) return cancelTurn(ui, toast);
+  if (ui.generating) return cancelTurn(ui, toast);
   const text = ui.input.value.trim();
   if (text === '' || ui.sessionId === null) return;
   ui.input.value = '';
   ui.autosize();
+  ui.optimistic = true;
   ui.refresh();
   try {
     await admitPrompt(ui.sessionId, text);
+    // The optimistic state retires on the fold's live running signal; the
+    // watchdog covers burst-delivered turns that skip it entirely.
+    setTimeout(() => { ui.optimistic = false; ui.refresh(); }, 12000);
     ui.onSent(text);
   } catch (error) {
+    ui.optimistic = false;
     toast(isRemoteError(error) ? `发送失败（${error.code}）` : '发送失败');
   }
 };
@@ -97,6 +107,7 @@ export function createComposer(root, toast) {
     },
     setRunning(value) {
       ui.running = value;
+      if (value) ui.optimistic = false; // the live signal retires optimism
       ui.refresh();
     },
     onSent(callback) { ui.onSent = callback; },

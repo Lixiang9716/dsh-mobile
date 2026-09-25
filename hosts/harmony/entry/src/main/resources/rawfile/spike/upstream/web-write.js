@@ -46,6 +46,7 @@ export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
  * snapshot (pluginInventory/list), and the settings namespaces. */
 export const WRITE_ENDPOINTS = [
   'session.list', 'session/list', 'session/create', 'session/prompt',
+  'session/cancel',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -317,6 +318,28 @@ const makePromptSession = (ctx) => async (args) => {
   return { accepted: true };
 };
 
+/** The REAL cancel path (upstream session-controller commands.cancel at
+ * the pin): abort the session's live turn with the user cause KEEPING the
+ * inbox (queued messages are not dropped), idempotent on an idle agent.
+ * The desktop leg's subagent-ownership guard is deliberately absent — the
+ * mobile profile attaches no subagent-owned sessions. */
+const makeCancelSession = (ctx) => async (args) => {
+  const request = args?.request ?? args;
+  if (request === null || typeof request !== 'object'
+    || typeof request.sessionId !== 'string') {
+    throw remoteError('gateway/bad-request',
+      'cancel request needs sessionId', {});
+  }
+  const agent = ctx.agents.get(request.sessionId);
+  if (agent === undefined) {
+    throw remoteError('session/not-found',
+      `session "${request.sessionId}" not found (not attached)`,
+      { sessionId: request.sessionId });
+  }
+  agent.cancel({ kind: 'user' }, { keepInbox: true });
+  return { accepted: true };
+};
+
 /**
  * The write surface over one booted spine ctx.
  * @param ctx - the spine context (ctx.sessions / agents / settings /
@@ -371,6 +394,7 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       'session/list': makeListSessions(ctx),
       'session/create': makeCreateSession(ctx, deps),
       'session/prompt': makePromptSession(ctx),
+      'session/cancel': makeCancelSession(ctx),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(

@@ -15,6 +15,13 @@
 const RECONNECT_BASE_MS = 600;
 const RECONNECT_MAX_MS = 8000;
 
+/** The diagnostic face the on-device probe reads in failure forensics
+ * (frames seen / sockets opened / closes / reconnect generations). */
+const diag = { frames: 0, routed: 0, dropped: 0, throws: 0,
+  lastKinds: [], opens: 0, closes: 0, generation: 0 };
+export const muxDiag = diag;
+if (typeof window !== 'undefined') window.__dshMuxDiag = diag;
+
 export class Mux {
   constructor() {
     this.ws = null;
@@ -37,6 +44,7 @@ export class Mux {
 
   connect() {
     this.closedByUser = false;
+    diag.generation += 1;
     const scheme = location.protocol === 'https:' ? 'wss' : 'ws';
     const ws = new WebSocket(`${scheme}://${location.host}/api/remote.mux`);
     this.ws = ws;
@@ -44,6 +52,7 @@ export class Mux {
     this.emit('connecting');
     ws.onopen = () => {
       if (generation !== this.generation) return;
+      diag.opens += 1;
       this.backoff = RECONNECT_BASE_MS;
       this.emit('open');
       for (const [streamId, stream] of this.streams) {
@@ -55,6 +64,7 @@ export class Mux {
       this.dispatch(message.data);
     };
     ws.onclose = () => {
+      diag.closes += 1;
       if (generation !== this.generation || this.closedByUser) return;
       this.emit('closed');
       const delay = this.backoff;
@@ -103,6 +113,7 @@ export class Mux {
   }
 
   dispatch(text) {
+    diag.frames += 1;
     let frame;
     try {
       frame = JSON.parse(text);
@@ -110,14 +121,28 @@ export class Mux {
       return; // A malformed frame is dropped; the feed's gap detection is the feed owner's.
     }
     const stream = this.streams.get(frame.streamId);
-    if (stream === undefined) return;
-    if (frame.type === 'item') {
-      stream.handlers.onItem?.(frame.value);
-    } else if (frame.type === 'error') {
-      stream.handlers.onError?.(frame.error);
-    } else if (frame.type === 'end') {
-      this.streams.delete(frame.streamId);
-      stream.handlers.onEnd?.();
+    if (stream === undefined) {
+      diag.dropped += 1;
+      diag.lastKinds.push('drop:' + (frame.type ?? '?'));
+      if (diag.lastKinds.length > 4) diag.lastKinds.shift();
+      return;
+    }
+    diag.routed += 1;
+    diag.lastKinds.push(frame.type + ':' + (frame.value?.type ?? frame.error?.code ?? ''));
+    if (diag.lastKinds.length > 4) diag.lastKinds.shift();
+    try {
+      if (frame.type === 'item') {
+        stream.handlers.onItem?.(frame.value);
+      } else if (frame.type === 'error') {
+        stream.handlers.onError?.(frame.error);
+      } else if (frame.type === 'end') {
+        this.streams.delete(frame.streamId);
+        stream.handlers.onEnd?.();
+      }
+    } catch (error) {
+      diag.throws += 1;
+      diag.lastKinds.push('throw: ' + String(error?.message ?? error).slice(0, 80));
+      if (diag.lastKinds.length > 4) diag.lastKinds.shift();
     }
   }
 }

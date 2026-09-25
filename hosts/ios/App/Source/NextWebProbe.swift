@@ -3,15 +3,18 @@ import WebKit
 
 /// The nextweb.mount same-origin probe (the b4 precedent): the page stays
 /// untouched self-hosted code — the probe defines `__next` legs that drive
-/// OUR UI like a user: open a session from the home view, type into the
-/// real composer, send, and then read the TRUE rendered state (the user
-/// bubble + the streamed assistant markdown). Split from NextWebRuntime to
-/// keep both under the file-size gate.
+/// OUR UI like a user. Every leg is a STATELESS one-shot evaluate that
+/// returns immediately: the DRIVE owns all waiting (its own Swift timers —
+/// a driven WKWebView throttles the page's timers to near-zero, so page-
+/// side polling loops are unusable). Split from NextWebRuntime to keep both
+/// under the file-size gate.
 enum NextWebProbe {
-    /// The typed message and the reply fragment the drive waits for — the
+    /// The typed messages and the reply fragment the drive waits for — the
     /// carrier's scripted-loopback pair (CarrierRoutes scripted SSE, success
-    /// text "Hello from upstream").
+    /// text "Hello from upstream"). The second message carries SLOW_TURN,
+    /// the drip-script marker the cancel leg streams against.
     static let messageText = "Say hello from the next client"
+    static let cancelMessageText = "SLOW_TURN keep going"
     static let expectedReply = "Hello from upstream"
 
     /// Installs the `__next` legs; every leg is its own constant so each
@@ -19,70 +22,84 @@ enum NextWebProbe {
     static func probeScript() -> String {
         """
         window.__next = {};
-        \(openLeg)
+        \(clickNewSessionLeg)
+        \(chatVisibleLeg)
         \(typeLeg)
-        \(settleLeg);
+        \(pressSendLeg)
+        \(stopStateLeg)
+        \(readTranscriptLeg);
         'defined';
         """
     }
 
-    /// Home → chat: tap the new-session card and wait for the chat view.
-    static let openLeg = """
-        window.__next.open = () => new Promise((resolve, reject) => {
+    /// Home → the new-session card (one tap; the drive re-taps if needed).
+    static let clickNewSessionLeg = """
+        window.__next.clickNewSession = () => {
           const button = document.getElementById('new-session');
-          if (!button) return reject(new Error('no #new-session'));
+          if (!button) return JSON.stringify({clicked: false});
           button.click();
-          const deadline = Date.now() + 10000;
-          const poll = () => {
-            const chat = document.getElementById('view-chat');
-            if (chat && !chat.hidden) return resolve(JSON.stringify({chatVisible: true}));
-            if (Date.now() > deadline) return reject(new Error('chat view never shown'));
-            setTimeout(poll, 100);
-          };
-          poll();
-        });
+          return JSON.stringify({clicked: true});
+        };
+        """
+
+    static let chatVisibleLeg = """
+        window.__next.chatVisible = () => {
+          const chat = document.getElementById('view-chat');
+          return JSON.stringify({chatVisible: !!chat && !chat.hidden});
+        };
         """
 
     /// Type into the real composer (value + input event — the composer's
     /// own listener owns the send-button enablement).
     static let typeLeg = """
-        window.__next.type = (text) => {
+        window.__next.typeComposer = (text) => {
           const input = document.getElementById('composer-input');
           if (!input) return JSON.stringify({found: false});
           input.value = text;
           input.dispatchEvent(new Event('input', {bubbles: true}));
+          const send = document.getElementById('composer-send');
           return JSON.stringify({found: true, value: input.value,
-            sendEnabled: !document.getElementById('composer-send').disabled});
+            sendEnabled: !!send && !send.disabled});
         };
         """
 
-    /// Send, then settle: resolve when the assistant's final markdown row is
-    /// rendered AND the streaming tail is gone (the durable message promoted
-    /// the text), reading the true DOM facts the manifest pins.
-    static let settleLeg = """
-        window.__next.sendAndSettle = () => new Promise((resolve, reject) => {
+    /// One press of the send/stop button (which shape it is, the drive
+    /// reads from stopState).
+    static let pressSendLeg = """
+        window.__next.pressSend = () => {
           const send = document.getElementById('composer-send');
-          if (!send || send.disabled) return reject(new Error('send button not ready'));
+          if (!send) return JSON.stringify({pressed: false});
           send.click();
-          const deadline = Date.now() + 30000;
-          const poll = () => {
-            const items = document.querySelectorAll('#transcript .item').length;
-            const userShown = document.querySelector('#transcript .user-bubble') !== null;
-            const assistant = document.querySelector('#transcript .item-assistant .md');
-            const tailGone = document.querySelector('.tail-state') === null;
-            if (items > 0 && userShown && assistant !== null && tailGone
-              && assistant.textContent.includes('Hello from upstream')) {
-              return resolve(JSON.stringify({items, userShown,
-                assistant: assistant.textContent.slice(0, 200), tailGone,
-                title: document.getElementById('chat-title').textContent}));
-            }
-            if (Date.now() > deadline) {
-              return reject(new Error('reply never rendered; items=' + items
-                + ' user=' + userShown + ' tailGone=' + tailGone));
-            }
-            setTimeout(poll, 120);
-          };
-          poll();
-        });
+          return JSON.stringify({pressed: true});
+        };
+        """
+
+    /// The send button's current shape + the toast text (the composer's
+    /// cancel path toasts 已请求停止 only on an accepted cancel).
+    static let stopStateLeg = """
+        window.__next.stopState = () => {
+          const send = document.getElementById('composer-send');
+          const toast = document.getElementById('toast');
+          return JSON.stringify({
+            stop: !!send && send.classList.contains('stop'),
+            disabled: !!send && send.disabled,
+            toast: toast ? toast.textContent : ''});
+        };
+        """
+
+    /// The TRUE rendered transcript state: user bubble, streamed assistant
+    /// markdown, streaming-tail presence, and the nav title.
+    static let readTranscriptLeg = """
+        window.__next.readTranscript = () => {
+          const host = document.getElementById('transcript');
+          const assistant = host.querySelector('.item-assistant .md');
+          return JSON.stringify({
+            items: host.querySelectorAll('.item').length,
+            userShown: host.querySelector('.user-bubble') !== null,
+            tailPresent: host.querySelector('.tail-state') !== null,
+            assistant: assistant ? assistant.textContent.slice(0, 200) : '',
+            title: document.getElementById('chat-title').textContent,
+            status: document.getElementById('chat-status').textContent});
+        };
         """
 }

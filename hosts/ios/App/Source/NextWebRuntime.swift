@@ -6,15 +6,20 @@ import WebKit
 /// runs — selected by the launch configuration (`-dsh-web-client
 /// dsh-web-client-next`), served with zero injection rows, speaking the
 /// same /api + remote.mux surface. The probe drives OUR page like a user
-/// (new session → type → send) through a REAL agent-loop turn whose model
-/// boundary is the carrier's scripted SSE endpoint; the journal streams
-/// live and the page's own timeline fold renders it. One implementation of
-/// the serving path, verified by this manifest and run by users — the
-/// SessionWriteRuntime shape, mirrored.
+/// (new session → type → send → stop) through REAL agent-loop turns whose
+/// model boundary is the carrier's scripted SSE endpoint; the journal
+/// streams live and the page's own timeline fold renders it. One
+/// implementation of the serving path, verified by this manifest and run
+/// by users — the SessionWriteRuntime shape, mirrored.
+///
+/// ALL waiting lives on the DRIVE (Swift timers): a driven WKWebView
+/// throttles the page's timers to near-zero, so every probe leg is a
+/// stateless one-shot evaluate and this type polls the page.
 final class NextWebRuntime {
     static let scenario = "nextweb.mount"
     static let clientID = SessionServe.nextClientID
     static let watchdogSeconds = 180
+    static let pollSeconds = 60
 
     private let serve = SessionServe()
     private let eventLog = CarrierEventLog(scenario: NextWebRuntime.scenario)
@@ -109,7 +114,7 @@ final class NextWebRuntime {
     private var rpcLogged: Set<String> = []
 
     /// The document finished loading: wait for the entry-module evidence,
-    /// then run the probe legs in order (open → type → send+settle).
+    /// then run the drive phases.
     func pageDidFinish() {
         guard !finished else { return }
         DispatchQueue.global().async { [weak self] in
@@ -122,90 +127,172 @@ final class NextWebRuntime {
                 return self.finish(self.failOutcome(
                     "nextweb: the entry module never arrived"))
             }
-            self.runProbe()
-        }
-    }
-
-    private func runProbe() {
-        guard let webView else {
-            return finish(failOutcome("nextweb: no WebView attached"))
-        }
-        SessionWriteProbe.evaluate(webView, NextWebProbe.probeScript()) { [weak self] _, error in
-            guard let self else { return }
-            if let error {
-                return self.finish(self.failOutcome("probe setup: \(error)"))
+            SessionWriteProbe.evaluate(self.webView!, NextWebProbe.probeScript()) { [weak self] _, error in
+                guard let self else { return }
+                if let error {
+                    return self.finish(self.failOutcome("probe setup: \(error)"))
+                }
+                self.installProbeAndOpen()
             }
-            self.runSteps(Self.probeSteps(self))
         }
     }
 
-    private static func probeSteps(_ owner: NextWebRuntime)
-        -> [(expr: String, collect: ([String: Any]) -> Void)] {
-        let message = NextWebProbe.messageText
-        return [
-            ("window.__next.open()", { probe in
-                owner.eventLog.emit("client.opened", [
-                    "chatVisible": probe["chatVisible"] ?? false,
-                ])
-            }),
-            ("window.__next.type('\(message)')", { probe in
-                owner.eventLog.emit("composer.typed", [
-                    "found": probe["found"] ?? false,
-                    "sendEnabled": probe["sendEnabled"] ?? false,
-                    "text": message,
-                ])
-            }),
-            ("window.__next.sendAndSettle()", { probe in
-                owner.consumeSettled(probe)
-            }),
-        ]
-    }
+    // ---- the drive-side poller ---------------------------------------------
 
-    /// Await one leg's page function, parse its JSON, emit its evidence,
-    /// advance — fail loud on any unparseable leg (never a silent skip).
-    private func runSteps(_ steps: [(expr: String, collect: ([String: Any]) -> Void)]) {
-        guard let step = steps.first else {
-            return finish(failOutcome("probe steps ran out without a verdict"))
-        }
-        guard let webView else {
-            return finish(failOutcome("nextweb: no WebView attached"))
-        }
-        SessionWriteProbe.awaitPromise(webView, step.expr) { [weak self] result, error in
-            guard let self else { return }
-            if let error {
-                return self.finish(self.failOutcome("probe \(step.expr): \(error)"))
+    /// Evaluates `expression` every `intervalSeconds` until its parsed JSON
+    /// satisfies `until`, then hands the last parse to `collect`. All timing
+    /// is Swift-side; the page only answers stateless one-shot legs.
+    private func pollPage(
+        _ expression: String,
+        intervalSeconds: Double = 0.4,
+        until: @escaping ([String: Any]) -> Bool,
+        collect: @escaping ([String: Any]) -> Void
+    ) {
+        guard !finished else { return }
+        let deadline = Date().addingTimeInterval(TimeInterval(Self.pollSeconds))
+        func tick() {
+            guard !finished, let webView else { return }
+            if Date() > deadline {
+                return finish(failOutcome("page poll timed out: \(expression)"))
             }
-            guard let probe = SessionWriteProbe.parse(result) else {
-                let raw = result as? String ?? "nil"
-                return self.finish(self.failOutcome(
-                    "probe \(step.expr) returned no parseable result: \(raw)"))
+            SessionWriteProbe.evaluate(webView, expression) { [weak self] result, error in
+                guard let self, !self.finished else { return }
+                if let error {
+                    return self.finish(self.failOutcome("poll \(expression): \(error)"))
+                }
+                guard let probe = SessionWriteProbe.parse(result) else {
+                    return self.schedule(tick)
+                }
+                if until(probe) {
+                    collect(probe)
+                } else {
+                    self.schedule(tick)
+                }
             }
-            step.collect(probe)
-            guard steps.count > 1 else { return }
-            self.runSteps(Array(steps.dropFirst()))
         }
+        schedule(tick)
     }
 
-    /// The settle leg's verdict: the DOM must show the user bubble AND the
-    /// scripted assistant reply, with the streaming tail gone.
-    private func consumeSettled(_ probe: [String: Any]) {
-        guard (probe["userShown"] as? Bool) == true,
-              (probe["tailGone"] as? Bool) == true else {
-            return finish(failOutcome("the transcript never settled: \(probe)"))
-        }
-        eventLog.emit("page.rendered", [
-            "items": probe["items"] ?? 0,
-            "reply": NextWebProbe.expectedReply,
-            "userText": NextWebProbe.messageText,
-            "title": probe["title"] ?? "",
+    private func schedule(_ body: @escaping () -> Void) {
+        DispatchQueue.global().asyncAfter(
+            deadline: .now() + .milliseconds(400), execute: body)
+    }
+
+    // ---- the drive phases ----------------------------------------------------
+
+    private func installProbeAndOpen() {
+        SessionWriteProbe.evaluate(webView!, "window.__next.clickNewSession()") { _, _ in }
+        pollPage("window.__next.chatVisible()",
+            until: { $0["chatVisible"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.eventLog.emit("client.opened", ["chatVisible": true])
+                self?.typePhase()
+        })
+    }
+
+    private func typePhase() {
+        pollPage("window.__next.typeComposer('\(NextWebProbe.messageText)')",
+            until: { $0["sendEnabled"] as? Bool == true },
+            collect: { [weak self] probe in
+                self?.emitTyped(probe)
+        })
+    }
+
+    private func emitTyped(_ probe: [String: Any]) {
+        eventLog.emit("composer.typed", [
+            "found": probe["found"] ?? false,
+            "sendEnabled": probe["sendEnabled"] ?? false,
+            "text": NextWebProbe.messageText,
         ])
-        finish(SpikeOutcome(
-            completed: true, passed: true, error: "",
-            canonicalLines: eventLog.lines
-        ))
+        pressSend()
     }
 
-    // ---- settling ----------------------------------------------------------
+    /// Press send, then wait for the rendered reply: the DOM must show the
+    /// user bubble AND the scripted assistant reply with the streaming tail
+    /// gone (the durable message promoted the text).
+    private func pressSend() {
+        pollPage("window.__next.pressSend()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.awaitFirstTurn()
+        })
+    }
+
+    private func awaitFirstTurn() {
+        pollPage("window.__next.readTranscript()",
+            until: { probe in
+                let replied = (probe["assistant"] as? String ?? "")
+                    .contains(NextWebProbe.expectedReply)
+                return probe["userShown"] as? Bool == true
+                    && probe["tailPresent"] as? Bool == false && replied
+            },
+            collect: { [weak self] probe in
+                self?.eventLog.emit("page.rendered", [
+                    "items": probe["items"] ?? 0,
+                    "reply": NextWebProbe.expectedReply,
+                    "userText": NextWebProbe.messageText,
+                    "title": probe["title"] ?? "",
+                ])
+                self?.beginCancel()
+        })
+    }
+
+    /// The cancel leg: the stop affordance is OPTIMISTIC (the button morphs
+    /// the moment a prompt is admitted — journal frames can arrive as one
+    /// burst), so the drive types + sends the slow-marker prompt, polls
+    /// until the button is a stop, presses it, and settles on the honest
+    /// facts: session/cancel forwarded (bridge evidence) + accepted (the
+    /// 已请求停止 toast shows only on ok:true — never a faked success).
+    /// Whether the abort raced the turn's last chunk is the vendored
+    /// agent-loop's business and is deliberately not pinned here.
+    private func beginCancel() {
+        pollPage(
+            "window.__next.typeComposer('\(NextWebProbe.cancelMessageText)')",
+            until: { $0["sendEnabled"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.pressSendThenStop()
+        })
+    }
+
+    private func pressSendThenStop() {
+        pollPage("window.__next.pressSend()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.awaitStopShape()
+        })
+    }
+
+    private func awaitStopShape() {
+        pollPage("window.__next.stopState()",
+            until: { $0["stop"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.pressStop()
+        })
+    }
+
+    private func pressStop() {
+        pollPage("window.__next.pressSend()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.eventLog.emit("cancel.stop.pressed", [
+                    "stopShown": true, "stopPressed": true,
+                ])
+                self?.awaitCancelAccepted()
+        })
+    }
+
+    private func awaitCancelAccepted() {
+        pollPage("window.__next.stopState()",
+            until: { $0["toast"] as? String == "已请求停止" },
+            collect: { [weak self] _ in
+                self?.eventLog.emit("cancel.settled", ["accepted": true])
+                self?.finish(SpikeOutcome(
+                    completed: true, passed: true, error: "",
+                    canonicalLines: self?.eventLog.lines ?? []))
+        })
+    }
+
+    // ---- settling ---------------------------------------------------------------
 
     private func armWatchdog() {
         let item = DispatchWorkItem { [weak self] in
