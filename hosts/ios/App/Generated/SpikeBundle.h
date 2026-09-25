@@ -110,5 +110,9 @@ const char *dsh_spike_res_plugin_shell_ish_js(size_t *len);
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,
  const char **data, size_t *len);
+/* The self-hosted web client tree walker (presentation/web-client-next):
+ * fills path/data/len for `index`, returns 0 past the end. */
+int dsh_spike_webclient_tree_file(size_t index, const char **path,
+ const char **data, size_t *len);
 
 #endif /* DSH_IOS_SPIKE_BUNDLE_H */

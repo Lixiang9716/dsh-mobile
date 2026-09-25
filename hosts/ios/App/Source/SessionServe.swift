@@ -33,6 +33,11 @@ final class SessionServe {
     /// drive both serve this one.
     static let clientID = "dsh-web-official"
 
+    /// The self-hosted client (presentation/web-client-next) this seat can
+    /// serve when the launch configuration selects it — same /api + mux
+    /// surface, our page instead of the vendored dist.
+    static let nextClientID = "dsh-web-client-next"
+
     // ---- the hook block (a drive assigns these; defaults are no-ops) -------
 
     /// The port is bound and the runtime half is about to start.
@@ -126,14 +131,26 @@ final class SessionServe {
     /// once the port is bound (its runtime.config needs the port).
     func start() throws {
         let root = try SpikeBundleStager.stage()
-        let distRoot = try OfficialWebRuntime.locateDist()
+        // The client flavor: when the launch configuration selects OUR client
+        // (dsh-web-client-next) the seat serves the staged plugin's web dir
+        // with NO injection rows — the page owns its whole boot, and the
+        // facade/boot-graph/phone-CSS rows are the official page's. Every
+        // other selection serves the vendored official dist exactly as
+        // before, so every existing scenario's boot bytes stay untouched.
+        let servesNext = SessionLaunchConfig.activeWebClient == Self.nextClientID
+        let distRoot = try servesNext
+            ? root.appendingPathComponent("webclient-next/web", isDirectory: true)
+            : OfficialWebRuntime.locateDist()
         token = OfficialWebRuntime.randomToken()
         let plugins = CarrierPlugins.staged(spikeRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         comboURL = OfficialWebRuntime.batchURL(graphJSON: config.bootGraphJSON)
         let dist = CarrierWebDist(
             distRoot: distRoot, sessionToken: token,
-            indexRows: { [weak self] in self?.runtimeRows() ?? config.rows() }
+            indexRows: { [weak self] in
+                if servesNext { return [] }
+                return self?.runtimeRows() ?? config.rows()
+            }
         )
         let bridge = CarrierAPIBridge(sessionToken: token)
         wireHooks(dist: dist, plugins: plugins, bridge: bridge)

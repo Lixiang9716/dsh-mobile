@@ -1,0 +1,94 @@
+{
+  "scenario": "nextweb.mount",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-client-next",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "rows": 0
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/js/main.js"
+      }
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/create",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "session.attached",
+      "match": {
+        "stream": "session/follow"
+      }
+    },
+    {
+      "event": "client.opened",
+      "match": {
+        "chatVisible": true
+      }
+    },
+    {
+      "event": "composer.typed",
+      "match": {
+        "found": true,
+        "sendEnabled": true
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/prompt",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "journal.frame.forwarded",
+      "match": {
+        "direction": "tx",
+        "first": true
+      }
+    },
+    {
+      "event": "page.rendered",
+      "match": {
+        "reply": "Hello from upstream",
+        "userText": "Say hello from the next client"
+      }
+    }
+  ]
+}

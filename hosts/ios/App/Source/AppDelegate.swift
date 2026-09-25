@@ -32,6 +32,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The W-RPC session-write drive (`-dsh-mode session-write`).
     private var sessionWrite: SessionWriteRuntime?
     private var sessionWriteVerdict = "PENDING"
+    private var nextWeb: NextWebRuntime?
+    private var nextWebVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -107,6 +109,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
                      line: "spike: app launched in session-write mode", web: true)
             runSessionWrite()
+        case "next-web":
+            announce("DSH next web — nextweb.mount, the self-hosted client on the serving seat…",
+                     line: "spike: app launched in next-web mode", web: true)
+            runNextWeb()
         case "serve":
             // The USER-FACING serving seat with the harness's logging intact:
             // no probe, no watchdog, no evidence hooks — a human drives the
@@ -380,6 +386,23 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
+    /// The nextweb.mount drive: the self-hosted client on the serving seat.
+    private func runNextWeb() {
+        let next = NextWebRuntime()
+        self.nextWeb = next
+        next.attach(webView: webView!)
+        next.onOpenOrigin = { [weak self] origin in
+            self?.webView?.load(URLRequest(url: origin))
+        }
+        next.run { [weak self] outcome in
+            guard let self else { return }
+            self.show(outcome, phase: "nextweb.mount") { self.nextWebVerdict = $0 }
+            self.nextWeb = nil
+            print("spike: sequence next-web=\(self.nextWebVerdict)")
+            fflush(stdout)
+        }
+    }
+
     private func runCarrier() {
         let carrier = CarrierRuntime()
         self.carrier = carrier
@@ -439,6 +462,7 @@ extension AppDelegate: WKNavigationDelegate {
         official?.pageDidFinish()
         sessionLive?.pageDidFinish()
         sessionWrite?.pageDidFinish()
+        nextWeb?.pageDidFinish()
         hideBootOverlay()
     }
 

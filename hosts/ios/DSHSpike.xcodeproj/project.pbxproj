@@ -52,6 +52,8 @@
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
 		90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */; };
 		9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */; };
+		D4E5F6A7B8C9D0E1F2A3B4C5 /* NextWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* NextWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */; };
 		9A79E46043F2C71B973B8995 /* CarrierWebDist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */; };
 		9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */; };
 		9D35980B133786B11600B115 /* m3_compile.c in Sources */ = {isa = PBXBuildFile; fileRef = 71939D55828A56CBA1F3085D /* m3_compile.c */; };
@@ -132,6 +134,8 @@
 		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
+		E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebProbe.swift; sourceTree = "<group>"; };
+		BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebRuntime.swift; sourceTree = "<group>"; };
 		A4FAE7AF4720C0B410ED7F06 /* zstd_ddict.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zstd_ddict.c; sourceTree = "<group>"; };
 		AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeHostFactory.swift; sourceTree = "<group>"; };
 		AE2C804755A0EA5F7CF5B366 /* m3_validate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_validate.c; sourceTree = "<group>"; };
@@ -207,6 +211,8 @@
 				1279CFC8FB988D80AD896E16 /* SessionServe.swift */,
 				EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */,
 				9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */,
+				E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */,
+				BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
 				AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */,
 				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
@@ -623,6 +629,8 @@
 				61EEC98694105A362CEC3707 /* SessionServe.swift in Sources */,
 				A4D64D8E5942951A64D738C2 /* SessionWriteProbe.swift in Sources */,
 				9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */,
+				D4E5F6A7B8C9D0E1F2A3B4C5 /* NextWebProbe.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* NextWebRuntime.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
 				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
 				D9680FC8B9E74933627DB174 /* SpikeHostFactory.swift in Sources */,

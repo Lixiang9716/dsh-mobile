@@ -70,10 +70,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 44 |
-| Verdicts committed (90 green, 2 quota-blocked red) | 92 |
-| Scenarios with at least one committed evidence dir | 43 of 43 distinct scenario ids (35 manifests) |
-| Screenshots verified PNG | 108 |
+| Evidence dirs | 45 |
+| Verdicts committed (91 green, 2 quota-blocked red) | 93 |
+| Scenarios with at least one committed evidence dir | 44 of 44 distinct scenario ids (36 manifests) |
+| Screenshots verified PNG | 110 |
 | Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -113,6 +113,7 @@ evidence on that platform.
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 (drift), 20/20 (drift), 20/20 (drift), 20/20 (drift), 27/27 | — |
 | `models.directory` | — | — | — | 6/6 |
+| `nextweb.mount` | 13/13 | — | — | — |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
@@ -166,6 +167,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 13/13 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |

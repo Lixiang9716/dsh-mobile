@@ -29,6 +29,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { composeBootWire, serializeRows } from './compose-boot.mjs';
+import { startNextCarrier } from './next-mode.mjs';
 import { PluginsRoute } from './plugins-route.mjs';
 import { acceptUpgrade } from './ws-lite.mjs';
 
@@ -131,10 +132,15 @@ const readJsonIfExists = (file, fallback) => {
 };
 
 const parseArgs = (argv) => {
-  const args = { port: 0 };
+  const args = { port: 0, client: 'official' };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--port') args.port = Number(argv[++i]);
-    else throw new Error(`dev-web-carrier: unknown argument '${argv[i]}'`);
+    else if (argv[i] === '--client') {
+      args.client = argv[++i];
+      if (args.client !== 'official' && args.client !== 'next') {
+        throw new Error(`dev-web-carrier: unknown --client '${args.client}'`);
+      }
+    } else throw new Error(`dev-web-carrier: unknown argument '${argv[i]}'`);
   }
   if (!Number.isInteger(args.port) || args.port < 0 || args.port > 65535) {
     throw new Error('dev-web-carrier: --port must be an integer 0..65535');
@@ -142,11 +148,26 @@ const parseArgs = (argv) => {
   return args;
 };
 
+
+/** `--client next`: our client against the fixture carrier's live echo turn. */
+const runNextClient = async (args, sessionsFixture) => {
+  const carried = await startNextCarrier({
+    repoRoot: REPO_ROOT, port: args.port, sessionsFixture,
+    journalPath: join(HERE, 'fixtures/journal.jsonl'),
+  });
+  const { port } = carried.server.address();
+  console.log(`[dev-web-carrier:next] listening on http://127.0.0.1:${port}/`);
+  console.log(`[dev-web-carrier:next] open http://127.0.0.1:${port}/?token=${carried.token}`);
+  console.log('[dev-web-carrier:next] our client, static-served; /api + mux carry the LIVE dev-echo turn (session/create, session/prompt, session/cancel)');
+};
+
 const main = async () => {
   const args = parseArgs(process.argv.slice(2));
   const sessionsFixture = readJsonIfExists(join(HERE, 'fixtures/sessions.json'), { items: [] });
   const journalFixture = readFileSync(join(HERE, 'fixtures/journal.jsonl'), 'utf8')
     .split('\n').filter((l) => l.trim().length > 0).map((l) => JSON.parse(l));
+
+  if (args.client === 'next') return runNextClient(args, sessionsFixture);
 
   console.log('[dev-web-carrier] composing the boot wire (vendored ClientModuleRegistry, Node host)…');
   const boot = await composeBootWire({ repoRoot: REPO_ROOT, stageDir: STAGE_DIR });

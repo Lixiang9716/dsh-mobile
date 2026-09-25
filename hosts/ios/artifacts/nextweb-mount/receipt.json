@@ -1,0 +1,23 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "nextweb.mount",
+  "launchConfiguration": "-dsh-mode next-web -dsh-web-client dsh-web-client-next",
+  "tree": "origin/main 875bc7fe56f7 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "nextweb.mount",
+      "checker": "test/e2e/scenarios/nextweb-mount.json",
+      "events": 13,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-next-web-mount.sh",
+  "screens": [
+    "screens/01-next-boot-screen.png",
+    "screens/02-final-state.png"
+  ],
+  "timestamp": "2026-09-25T18:29:13+08:00",
+  "exitCode": 0
+}

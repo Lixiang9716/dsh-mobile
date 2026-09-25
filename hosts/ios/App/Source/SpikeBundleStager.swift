@@ -37,6 +37,7 @@ enum SpikeBundleStager {
         try writeScenarioEntries(root)
         try writeWebBootClosure(root)
         try writePluginsAndClients(root)
+        try writeWebClientNext(root)
         try writeSpineClosure(root)
         try writeSpineTree(root)
         try write("web/index.html", data: resData(dsh_spike_res_web_index_html),
@@ -311,6 +312,31 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_shims_process_js), under: root)
         try write("upstream/shims/dsh-session-persistence.js",
                   data: resData(dsh_spike_res_shims_dsh_session_persistence_js), under: root)
+    }
+
+    /// The self-hosted Web Client (presentation/web-client-next), embedded
+    /// whole by gen_bundle_header.py's own tree (html/css ride along — the
+    /// spine tree's suffix filter would drop them) and staged back at the
+    /// bundle-relative path the carrier serves. Fails loud when empty.
+    private static func writeWebClientNext(_ root: URL) throws {
+        var staged = 0
+        var index = 0
+        while true {
+            var path: UnsafePointer<CChar>?
+            var data: UnsafePointer<CChar>?
+            var len = 0
+            guard dsh_spike_webclient_tree_file(index, &path, &data, &len) != 0 else { break }
+            guard let path, let data, len > 0 else {
+                throw SpikeBundleError.emptyResource("webclient tree entry \(index)")
+            }
+            try write(String(cString: path), data: Data(bytes: data, count: len),
+                      under: root)
+            staged += 1
+            index += 1
+        }
+        guard staged > 0 else {
+            throw SpikeBundleError.emptyResource("embedded webclient tree (0 files)")
+        }
     }
 
     /// The W-SESS spine tree: the vendored upstream spine packages (verbatim
