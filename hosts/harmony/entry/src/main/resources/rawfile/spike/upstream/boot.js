@@ -52,6 +52,10 @@ import * as ShellWasm from 'system-plugins/dsh-shell-wasm/index.js';
 // emulates inside its own process. A host that staged no guest root answers
 // nothing here — the plugin declines to register a tool it cannot honour.
 import * as ShellIsh from 'system-plugins/dsh-shell-ish/index.js';
+// The Open Design client (the design daemon's REST surface over gateway
+// httpFetch): projects, BYOK generate, artifact save/lint. A host with no
+// configured daemon mounts nothing — the same decline shape as shell-ish.
+import * as OpenDesign from 'system-plugins/dsh-open-design/index.js';
 // The FILE-TOOLS row (the dsh-desktop plugin surface): upstream's fs tool
 // family over the vendored fs-local backend, working in ONE in-memory
 // workspace world (upstream/shims/fs.js mountWorkspace). The npm bridge that
@@ -197,6 +201,7 @@ export const spineInventory = (ctx) => {
     tool('tool-todo', '@deepseek-ai/dsh-tool-todo', 'todo_write'),
     tool('shell-wasm', 'system-plugins/dsh-shell-wasm', 'shell'),
     tool('shell-ish', 'system-plugins/dsh-shell-ish', 'ish'),
+    tool('open-design', 'system-plugins/dsh-open-design', 'open_design_projects'),
     service('fs', '@deepseek-ai/dsh-fs-local', 'fs'),
     tool('tool-fs', '@deepseek-ai/dsh-tool-fs', 'read'),
     tool('tool-str-replace-editor', '@deepseek-ai/dsh-tool-str-replace-editor', 'str_replace_editor'),
@@ -335,9 +340,10 @@ const mountSpine = async (ctx, identity) => {
   // The ported tool packages (D9): mounted AFTER `tools`, because a tool
   // registers into that service at apply time. `allowParallelInProgress:
   // false` is the mobile profile's shape — one agent, sequential work.
-  await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
-  await ctx.plugin(ShellWasm);
-  await ctx.plugin(ShellIsh);
+    await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
+    await ctx.plugin(ShellWasm);
+    await ctx.plugin(ShellIsh);
+    await ctx.plugin(OpenDesign);
   await mountFileTools(ctx, identity.cwd);
   // The SKILL row (the agent-flow E2E): mounted after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the

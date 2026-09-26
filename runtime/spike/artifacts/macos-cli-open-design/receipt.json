@@ -1,0 +1,17 @@
+{
+  "host": "darwin-cli (Darwin Darwin 25.5.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "open.design",
+  "proves": [
+    "the dsh-open-design system plugin mounts with the spine and offers its three tools when the launch env configures a daemon (od/offered)",
+    "the project legs round-trip the daemon's REST surface through gateway httpFetch: create/list/get/save_file (od.project/*)",
+    "the BYOK generate leg streams the artifact through the daemon's SSE proxy and reassembles it intact — the OD-MOCK-77f3 marker and the byte count come back (od.generate/completed)",
+    "artifact save returns the shareable url/path and lint returns the daemon's findings (od.artifact/*); an unknown verb refuses naming the valid verbs (od.verb/refused)"
+  ],
+  "checker": "test/e2e/scenarios/open-design.json",
+  "events": 169,
+  "exitCode": 0
+}

@@ -107,6 +107,8 @@ const char *dsh_spike_res_plugin_shell_wasm_manifest(size_t *len);
 const char *dsh_spike_res_plugin_shell_wasm_js(size_t *len);
 const char *dsh_spike_res_plugin_shell_ish_manifest(size_t *len);
 const char *dsh_spike_res_plugin_shell_ish_js(size_t *len);
+const char *dsh_spike_res_plugin_open_design_manifest(size_t *len);
+const char *dsh_spike_res_plugin_open_design_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,
