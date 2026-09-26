@@ -9,7 +9,7 @@
     }
   },
   "checklist": [
-    "contract proposal for the new primitives (contract-first D5)",
+    "[x] contract proposal for the new primitives (contract-first D5)",
     "privileged layer implementations + system-plugin mount",
     "E2E evidence + note + landing"
   ],

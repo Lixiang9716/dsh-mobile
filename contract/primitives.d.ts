@@ -1,8 +1,9 @@
 /**
- * dsh-mobile capability gateway — primitive contract v1.4.0 (FROZEN at M0, D5;
+ * dsh-mobile capability gateway — primitive contract v1.5.0 (FROZEN at M0, D5;
  * v1.1.0 is the additive filesystem revision of 2026-09-22, v1.2.0 the
  * in-process WebAssembly addition, v1.3.0 the emulated-userland addition,
- * v1.4.0 the timer wake-up seam).
+ * v1.4.0 the timer wake-up seam, v1.5.0 the device plane: the host's own
+ * platform-SDK surface, plus presentPicker's media mode).
  *
  * Spec of record: contract/primitives.md. Shapes here are immutable for the
  * life of major version 1; additions require a minor bump of the contract.
@@ -129,7 +130,7 @@ export declare function presentApproval(req: {
   allowRemember?: boolean;
 }): Promise<{ approved: boolean; remember?: boolean }>;
 
-export type PickerRequest = { mode: "file" | "directory"; suggestedName?: string };
+export type PickerRequest = { mode: "file" | "directory" | "media"; suggestedName?: string };
 export type PickerResult = { scope: ScopeHandle; path: string | null };
 
 /** Resolves null on user dismissal — a value, not an error. */
@@ -210,3 +211,71 @@ export type TimerFireEvent = {
   timerId: number;
   tag?: string;
 };
+
+// ---- 18 · device plane (v1.5.0) ------------------------------------------
+// The host's own device surface, six named/refusable/auditable primitives —
+// deliberately NOT a generic system.callService grab-bag (a second, un-governed
+// surface). clipboardRead is approval-gated by default (the read direction is
+// the exfiltration direction) and its audit record carries the call, never the
+// text; presentShare learns only that the sheet completed, never the
+// destination; keepAwake is a boolean latch, not a lease. Location, camera,
+// microphone, sensors and full Photos-library access are deliberately absent —
+// each demands an OS permission lifecycle of its own.
+
+export type DevicePlatform =
+  | "ios"
+  | "android"
+  | "harmonyos"
+  | "macos"
+  | "linux"
+  | "windows";
+
+export type DeviceInfo = {
+  platform: DevicePlatform;
+  /** Host-reported marketing or hardware name. */
+  model: string;
+  /** e.g. "26.5". */
+  osVersion: string;
+  /** The host app's own version. */
+  appVersion: string;
+  screen: { width: number; height: number; scale: number };
+  /** Omitted where the OS hides it (matching the host's own policy). */
+  battery?: { level: number; state: "charging" | "unplugged" | "full" | "unknown" };
+  lowPowerMode?: boolean;
+  /** BCP-47. */
+  locale: string;
+  /** IANA. */
+  timezone: string;
+};
+
+export declare function deviceInfo(): Promise<DeviceInfo>;
+
+export type HapticPattern =
+  | "light"
+  | "medium"
+  | "heavy"
+  | "rigid"
+  | "soft"
+  | "selection"
+  | "success"
+  | "warning"
+  | "error";
+
+/** One user-facing tactile cue per call. An unexpressible pattern is
+ * `unavailable`, never a silent substitute. */
+export declare function haptic(pattern: HapticPattern): Promise<void>;
+
+export declare function clipboardRead(): Promise<{ kind: "text"; text: string } | null>;
+
+export declare function clipboardWrite(text: string): Promise<void>;
+
+export type SharePayload =
+  | { kind: "text"; text: string }
+  | { kind: "url"; url: string }
+  | { kind: "files"; paths: string[] }; // paths inside granted scopes
+
+/** Resolves `{ shared: false }` when the user walks away — a value, not an error. */
+export declare function presentShare(payload: SharePayload): Promise<{ shared: boolean }>;
+
+/** Boolean latch, not a lease: hold while showing, release when done. */
+export declare function keepAwake(hold: boolean): Promise<void>;
