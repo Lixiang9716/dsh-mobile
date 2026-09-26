@@ -1,4 +1,4 @@
-# 能力网关 — 原语契约 v1.4.0
+# 能力网关 — 原语契约 v1.5.0
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
@@ -31,6 +31,15 @@
 > `contract/proposals/` 的提案折叠而来(证据基础:上游套件模拟器运行的 22 个失败 + 2 个挂起
 > + 100+ 个排除)。与 v1.1.0–v1.3.0 同一增量规则:无该接缝的宿主继续协商 `gateway@1` 并如实
 > 回答 `unavailable`。
+
+> **v1.5.0(增量,2026-09-26)**:设备面——宿主平台 SDK 表面的六条原语(§4「设备面」):
+> `deviceInfo`、`haptic`、`clipboardRead` / `clipboardWrite`、`presentShare`、`keepAwake`,
+> 外加一个扩展形状:`presentPicker` 新增 `mode: "media"`。`clipboardRead` 默认带审批闸——
+> 经由与 `presentApproval` 相同的审批面呈现,用户选择记住时尊重其常设授权——因为读取方向
+> 就是外泄方向,且其审计记录只承载调用本身,绝不承载文本。`presentShare` 只知道分享面板
+> 完成,不知道目的地。自 `contract/proposals/` 的提案折叠而来(证据基础:创作模式客户端
+> 的屏幕常亮需求,以及 composer 无法把交付物递给另一个 app)。与 v1.1.0–v1.4.0 同一增量
+> 规则:没有某条原语的宿主继续协商 `gateway@1` 并如实回答 `unavailable`。
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -85,6 +94,18 @@
 | # | 原语 | 用途 | 权限旗标 | 流 |
 | --- | --- | --- | --- | --- |
 | 16 | `ishRun` | 在宿主的进程内模拟 Linux 用户态中运行一个程序 | `ishRun` | 否 |
+
+**v1.5.0 新增(6 个)**——宿主自己的设备表面,每行一个能力族;`deviceInfo` 无需权限位
+(与任何网页 UA 字符串携带的事实相同):
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 17 | `deviceInfo` | 只读设备事实(平台、型号、OS、屏幕、电池、locale、时区) | — | 否 |
+| 18 | `haptic` | 一次用户可感的触觉反馈 | `haptic` | 否 |
+| 19 | `clipboardRead` | 读取系统剪贴板(默认带审批闸) | `clipboard` | 否 |
+| 20 | `clipboardWrite` | 写入系统剪贴板文本 | `clipboard` | 否 |
+| 21 | `presentShare` | 把负载递给系统分享面板 | `share` | 否 |
+| 22 | `keepAwake` | 调用方展示值得观看的内容时保持屏幕常亮 | `screen` | 否 |
 
 保留标识符:范围句柄 `"app"` 表示宿主自己的 profile 容器(存储布局见
 [data-protocols.md](data-protocols.md));能力名 `gateway` 指本契约自身。
@@ -227,8 +248,38 @@
 
 - `presentApproval(req) → { approved, remember? }` —— 原生审批面。审批挂起期间宿主**可以
   对运行时做检查点**:审批挂起中发生后台挂起,必须退化为本地通知后恢复,而不是数据丢失(D7)。
-- `presentPicker(req) → { scope, path } | null` —— `mode: "file" | "directory"`。成功时宿主
-  授予一个可配合 fs 原语使用的 `ScopeHandle`;用户取消 resolve `null`,不授予任何东西。
+- `presentPicker(req) → { scope, path } | null` —— `mode: "file" | "directory"`,外加
+  `mode: "media"`(v1.5.0,见下)。成功时宿主授予一个可配合 fs 原语使用的 `ScopeHandle`;
+  用户取消 resolve `null`,不授予任何东西。
+
+### 设备面(v1.5.0)
+
+- `deviceInfo() → DeviceInfo` —— 只读设备事实,一次调用一份快照:`platform` 取
+  `ios | android | harmonyos | macos | linux | windows` 之一;`model` 为宿主的市场名或
+  硬件名;`osVersion` 与 `appVersion` 为版本字符串;`screen` 携带点单位宽高与缩放因子;
+  `locale` 为 BCP-47,`timezone` 为 IANA。`battery`(`level`、`state`)与 `lowPowerMode`
+  是宿主唯一可省略的字段——OS 藏起它们时它们就缺席。无权限位;调用仍被审计(含平台,
+  不含其他——§6)。
+- `haptic(pattern) → void` —— 一次调用**恰好一条**用户可感的触觉反馈。`pattern` 为封闭
+  词表 `light | medium | heavy | rigid | soft | selection | success | warning | error`;
+  各宿主映射到自家的发生器(iOS impact/notification generator、Android `VibrationEffect`、
+  HarmonyOS `@ohos.vibrator`)。平台无法表达的 pattern 以 `unavailable` 拒绝——绝不静默
+  替代。
+- `clipboardRead() → { kind: "text", text } | null` —— 剪贴板为空或非文本时 `null`。读取
+  方向就是外泄方向,因此宿主默认把这次调用经与 `presentApproval` 相同的审批面呈现,用户
+  选择记住时尊重其常设授权。审计记录只承载调用——绝不承载文本(§6)。
+- `clipboardWrite(text) → void` —— 一次调用,一次剪贴板写入。审计记录承载类型与文本
+  长度,绝不承载文本。
+- `presentShare(payload) → { shared }` —— 把负载(`text` | `url` | `files`,路径已按范围
+  解析)递给**系统分享面板**——OS 自己的信任边界:宿主只知道面板完成了,不知道目的地。
+  `files` 路径按与 `fsRead` 相同的范围纪律解析——授权范围之外即 `denied`。面板本身即是
+  每次调用的同意(除 `share` 外无需单独审批);用户走开 resolve `{ shared: false }`
+  (放弃是值,§3)。
+- `keepAwake(hold) → void` —— 布尔**闩锁,而非租约**:调用方在展示用户正在看的内容时
+  保持屏幕常亮,结束时释放(`keepAwake(false)`)。没有空闲计时器的宿主答 `unavailable`。
+- `presentPicker` `mode: "media"` —— 呈现平台的多媒体选择器(iOS `PHPickerViewController`、
+  Android PhotoPicker、HarmonyOS PhotoViewPicker),并以与文件选择器相同的方式返回范围
+  句柄:对**用户选中的内容**的读穿透范围授权,绝不是图库访问。放弃照旧 resolve `null`。
 
 ### keychainGet / keychainSet
 
@@ -296,5 +347,6 @@
 - **次版本**(`1.x`):新增原语或事件通道、新增可选请求字段。已冻结的调用点继续工作;
   新接口面通过协商按需启用。
 - **主版本**(`2.0.0`):对既有形状的任何修改、移除或重编号。需要新的契约文档与迁移说明。
-- 留给未来次版本的候选(明确**不在** v0):剪贴板、分享面板、生物识别、地理位置、流式
-  fs 读取、fs 监视。克制正是窄表的意义;每一项增补都必须拿协商数据论证其必要性。
+- 留给未来次版本的候选(明确**不在** v0):生物识别、地理位置、流式 fs 读取、fs 监视
+  (剪贴板与分享面板已于 v1.5.0 到达;定位/相机/传感器与 `deviceEvents` 订阅流推迟到
+  各自的 OS 权限生命周期轮次)。克制正是窄表的意义;每一项增补都必须拿协商数据论证其必要性。
