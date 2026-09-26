@@ -12,7 +12,7 @@
     "[x] primitives.md + zh mirror + d.ts carry the six primitives, the media mode, the v1.4.0 table-row correction",
     "[x] proposal trio folded out; README rows updated",
     "[x] gateway.js exports + manifest flags; three host closures re-synced",
-    "pairing re-confirmed; note; gates green + receipt; PR opened"
+    "[x] pairing re-confirmed; note; gates green + receipt; PR opened"
   ],
   "status": "open",
   "receipt": null,
