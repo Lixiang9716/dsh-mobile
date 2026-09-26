@@ -193,6 +193,12 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-shell-ish" / "manifest.json"),
     ("plugin_shell_ish_js",
      SPIKE / "system-plugins" / "dsh-shell-ish" / "index.js"),
+    # The Open Design client plugin: the design daemon's REST surface over
+    # gateway httpFetch (projects / BYOK generate / artifact save+lint).
+    ("plugin_open_design_manifest",
+     SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
+    ("plugin_open_design_js",
+     SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same

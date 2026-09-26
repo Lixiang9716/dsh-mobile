@@ -165,7 +165,8 @@ stage_test() {
             echo "build: test core (the CLI proof legs over the vendored upstream spine)"
             runtime/spike/ci/run-upstream-e2e.sh
             runtime/spike/ci/run-upstream-boot-e2e.sh
-            runtime/spike/ci/run-settings-surfaces-e2e.sh ;;
+            runtime/spike/ci/run-settings-surfaces-e2e.sh
+            runtime/spike/ci/run-open-design-e2e.sh ;;
     esac
 }
 

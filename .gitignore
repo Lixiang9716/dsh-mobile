@@ -235,3 +235,4 @@ hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
 !hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/util-time@0.1.6-alpha.2/
 !hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/util-values@0.1.6-alpha.2/
 !hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/workflow@0.1.6-alpha.2/
+runtime/spike/logs-open-design.txt
