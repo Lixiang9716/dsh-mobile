@@ -63,7 +63,6 @@ interface LegOut {
   srcdocCleared?: boolean;
   canaryAt?: number;
   srcdocHead?: string;
-  toast?: string;
   cardTitles?: string[];
   gameCard?: boolean;
   advancing?: boolean;
