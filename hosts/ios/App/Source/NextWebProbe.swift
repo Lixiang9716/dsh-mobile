@@ -124,7 +124,7 @@ enum NextWebProbe {
               .map((c) => c.textContent.slice(0, 40)),
             dump: [...host.querySelectorAll('.item, .group')].map((n) =>
               (n.className.split(' ')[0] || 'div') + ':' +
-              n.textContent.slice(0, 24)).join(' | ').slice(0, 420),
+              n.textContent.slice(0, 24)).join(' | ').slice(0, 900),
             assistant: assistant ? assistant.textContent.slice(0, 200) : '',
             title: document.getElementById('chat-title').textContent,
             status: document.getElementById('chat-status').textContent,

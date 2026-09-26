@@ -180,7 +180,7 @@ final class NextWebRuntime {
                 guard let probe = SessionWriteProbe.parse(result) else {
                     return self.schedule(tick)
                 }
-                lastAnswer = String(describing: probe).prefix(400).description
+                lastAnswer = String(describing: probe).prefix(900).description
                 if until(probe) {
                     collect(probe)
                 } else {
