@@ -74,6 +74,16 @@ const ENTRY_LLM: string = 'scenario/llm-live-stream.js';
  * runtime.config bus delivery to the driver. */
 const SCENARIO_SUITE: string = 'upstream.suite';
 const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
+/** The whale creation-client mount (the iOS session-mock-llm drive's
+ * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
+ * web-client-whale page — the session-mock scenario (notes slot, two
+ * streamed turns) with the whale client id in the mount records. */
+const SCENARIO_WHALE: string = 'harmony.whale.mount';
+const ENTRY_WHALE: string = 'scenario/session-mock-llm.js';
+const WHALE_CLIENT_ID: string = 'dsh-web-client-whale';
+/** The staged whale client's web dir (bundle-root relative) — Index's whale
+ * leg wires the legacy static seat to it. */
+export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-whale/web';
 /** The credential-placeholder writer the llm leg evals first (harmony-only
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
@@ -137,6 +147,11 @@ export class HostPhase {
   private carrierScenario: string = SCENARIO;
   private entry: string = ENTRY_BINDING;
   private llmLeg: boolean = false;
+  /** The whale creation-client leg: session-mock-llm over the whale page —
+   * the client id in the mount records, host.info on page connect (the
+   * scenario never reads host.seed), and the slot.ack record this leg
+   * shares with the llm leg. */
+  private whaleLeg: boolean = false;
 
   /** Fired once when the phase scenario reaches a terminal verdict (mutator
    * status >= 1) — Index chains the D9 official-web phase off it. */
@@ -172,6 +187,10 @@ export class HostPhase {
     this.carrierScenario = SCENARIO;
     this.entry = ENTRY_BINDING;
     this.llmLeg = false;
+    this.whaleLeg = false;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
@@ -223,6 +242,20 @@ export class HostPhase {
     }));
   }
 
+  /** The whale creation-client mount (ONE launch, its own scenario id): the
+   * same carrier + page shuttle + dispatch seam as the llm leg, but the
+   * session-mock scenario (deterministic scripted turns, no credentials, no
+   * quota) and the staged whale page as the carrier web root. */
+  beginWhale(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_WHALE;
+    this.carrierScenario = SCENARIO_WHALE;
+    this.entry = ENTRY_WHALE;
+    this.llmLeg = false;
+    this.whaleLeg = true;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   private start(ctx: common.UIAbilityContext, bundleRoot: string,
     capturePath: string, fsRoot: string): void {
     this.capturePath = capturePath;
@@ -256,6 +289,12 @@ export class HostPhase {
       });
       return;
     }
+    if (this.whaleLeg) {
+      this.carrierLine('client.selected', {
+        'client': WHALE_CLIENT_ID, 'source': 'launch',
+      });
+      return;
+    }
     this.carrierLine('carrier.listening', {
       'transport': 'tcp', 'loopback': true, 'port': port,
     });
@@ -266,24 +305,49 @@ export class HostPhase {
       return;
     }
     this.carrierLine('webclient.mounted', {
-      'client': 'dsh-web-client', 'path': '/index.html',
+      'client': this.whaleLeg ? WHALE_CLIENT_ID : 'dsh-web-client',
+      'path': '/index.html',
     });
   }
 
-  /** The page hello: mark connected, greet, then eval the entry and deliver
-   * host.info (+ host.seed on the binding leg) — the order that pins the
-   * manifest (carrier events before the scenario's first line). The llm.live-stream
-   * scenario awaits host.info before its first turn and never reads
-   * host.seed, so the leg delivers only what its contract uses. */
+  /** The page hello: mark connected, greet, then eval the entry — the
+   * readiness events (host.info + host.seed on the binding leg) fire only
+   * once the page ALSO acked the projected slot (deliverHostInfo's gate),
+   * the iOS/Android hosts' semantic ("the deltas always stream into a fully
+   * rendered client" — the whale leg measured an ungated delivery racing
+   * the page's own render, its slot.ack landing after the whole session).
+   * The llm.live-stream scenario awaits host.info before its first turn and
+   * never reads host.seed, so the leg delivers only what its contract
+   * uses. */
   onPageHello(protocol: string): void {
     this.carrierLine('ws.connected', { 'protocol': protocol });
+    this.connectedLogged = true;
     const status = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed');
       return;
     }
+    this.deliverHostInfo();
+  }
+
+  /** Runtime thread: the whale leg fires host.info only once the page ALSO
+   * acked the projected slot (the iOS/Android hosts' semantic — the whale
+   * page renders the replay before acking, and an ungated delivery raced
+   * that render, its slot.registered landing after the whole session). The
+   * m5 and llm legs keep the hello-time delivery: their scenarios gate
+   * their OWN slot projection on host.seed/host.info, so an ack-gated
+   * delivery would deadlock them (measured: the m5 drive starved past its
+   * 300s verdict deadline). */
+  private deliverHostInfo(): void {
+    if (this.hostInfoDelivered || this.carrierPort === 0) {
+      return;
+    }
+    if (this.whaleLeg && (!this.connectedLogged || !this.slotAcked)) {
+      return;
+    }
+    this.hostInfoDelivered = true;
     this.deliverEvent('{"event":"host.info","port":' + this.carrierPort + '}');
-    if (!this.llmLeg) {
+    if (!this.llmLeg && !this.whaleLeg) {
       this.deliverEvent('{"event":"host.seed","path":"' + this.seedPath + '"}');
     }
   }
@@ -307,7 +371,7 @@ export class HostPhase {
       this.onPageHello('session-projection@0');
       return;
     }
-    if (this.llmLeg && msg.type === 'slot.ack') {
+    if ((this.llmLeg || this.whaleLeg) && msg.type === 'slot.ack') {
       this.onSlotAck(msg);
       return;
     }
@@ -319,12 +383,24 @@ export class HostPhase {
   }
 
   /** The page rendered the projected slot and acked it (main.js
-   * slot.ack) — the carrier-side `slot.registered` record. */
+   * slot.ack) — the carrier-side `slot.registered` record, ONCE: the page
+   * re-acks on re-renders (the whale leg measured a second ack after the
+   * live deltas), and the manifests allow exactly one such record (the
+   * Android/iOS hosts' slotAcked guard, mirrored). */
+  private slotAcked: boolean = false;
+  private connectedLogged: boolean = false;
+  private hostInfoDelivered: boolean = false;
+
   private onSlotAck(msg: BusMessage): void {
     hilog.info(0x0000, TAG, 'phase: slot ack %{public}s', msg.id ?? '');
+    if (this.slotAcked) {
+      return;
+    }
+    this.slotAcked = true;
     this.carrierLine('slot.registered', {
       'id': msg.id ?? '', 'label': msg.label ?? '', 'by': msg.by ?? '',
     });
+    this.deliverHostInfo();
   }
 
   /** Ability lifecycle edge (EntryAbility) → app.state channel. */
@@ -432,13 +508,14 @@ export class HostPhase {
       }
       this.lastDeltaIndex = payload.index;
     } else if (payload.kind === 'complete') {
-      // The closing delta record: the llm-live-stream carrier manifest pins
-      // `{first:false, last:true}` (the Android/iOS host's shape), the m5
-      // manifest pins `{last:true, index}` — each leg emits its own.
+      // The closing delta record: the llm-live-stream carrier and whale-mount
+      // manifests pin `{first:false, last:true}` (the Android/iOS host's
+      // shape), the m5 manifest pins `{last:true, index}` — each leg emits
+      // its own.
       const lastDelta: Record<string, Object> = {
         'last': true, 'index': this.lastDeltaIndex,
       };
-      if (this.llmLeg) {
+      if (this.llmLeg || this.whaleLeg) {
         lastDelta['first'] = false;
       }
       this.carrierLine('ws.token-delta', lastDelta);

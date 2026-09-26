@@ -71,7 +71,7 @@
     {
       "event": "web.boot.applied",
       "match": {
-        "rows": 5,
+        "rows": 6,
         "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
       }
     },
@@ -90,6 +90,7 @@
           "session/list",
           "session/create",
           "session/prompt",
+          "session/cancel",
           "settings/describe",
           "settings/update",
           "settings/mutate",
@@ -154,10 +155,32 @@
       }
     },
     {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "credentials/describe",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/modelCatalog",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "agentPresets/list",
+        "answered": "forwarded"
+      }
+    },
+    {
       "event": "session.attached",
       "match": {
         "stream": "workspace/follow"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "journal.frame.forwarded",
@@ -165,7 +188,8 @@
         "direction": "tx",
         "first": true,
         "source": "REAL follow feeds (snapshot/baseline + live turn frames)"
-      }
+      },
+      "order": "any"
     },
     {
       "event": "rpc.observed",
@@ -202,7 +226,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,

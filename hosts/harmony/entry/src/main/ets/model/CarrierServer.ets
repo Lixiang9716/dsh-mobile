@@ -274,6 +274,40 @@ export class CarrierServer {
       {}, false);
   }
 
+  /** The DRIP response: HTTP-legal Content-Length announces the whole body,
+   * then it goes out in ~[slices] pieces ~[intervalMs] apart on the same
+   * connection (ArkTS timers pace the writes; the close lands after the
+   * last slice) — the scripted model boundary's mid-stream shape (the
+   * cancel leg's race window). */
+  respondDrip(conn: socket.TCPSocketConnection, type: string, text: string,
+    intervalMs: number, slices: number): void {
+    const bytes = utf8Encode(text);
+    const head = utf8Encode('HTTP/1.1 200 OK\r\nContent-Type: ' + type +
+      '\r\nContent-Length: ' + bytes.length + '\r\nConnection: close\r\n\r\n');
+    conn.send({ data: head.buffer.slice(head.byteOffset,
+      head.byteOffset + head.byteLength) as ArrayBuffer }).catch((): void => {});
+    const slice = Math.max(1, Math.floor(bytes.length / slices));
+    const sendAt = (at: number): void => {
+      if (at >= bytes.length) {
+        conn.close();
+        return;
+      }
+      const end = Math.min(at + slice, bytes.length);
+      conn.send({ data: bytes.slice(at, end).buffer as ArrayBuffer })
+        .then((): void => {
+          if (end >= bytes.length) {
+            conn.close();
+            return;
+          }
+          setTimeout((): void => sendAt(end), intervalMs);
+        })
+        .catch((): void => {
+          conn.close();
+        });
+    };
+    sendAt(0);
+  }
+
   private static headerBlock(extra: Record<string, string>): string {
     let out = '';
     const keys: string[] = Object.keys(extra);
@@ -363,7 +397,14 @@ export class CarrierServer {
       this.respondText(conn.client, 400, 'text/plain', 'bad request');
       return;
     }
-    if (text.length - (end + 4) < request.declaredLength) {
+    // Content-Length counts BYTES; the decoded text counts CHARACTERS — a
+    // multibyte body (the bilingual system prompt carries CJK) decodes to
+    // FEWER characters than its byte length, and the old char-based check
+    // waited forever for padding bytes that never arrive (measured: every
+    // scripted turn's chat-completions POST hung to the transport's 30s
+    // timeout). Judge the buffered BYTES against the declared bytes.
+    const headByteLength: number = utf8Encode(head).length;
+    if (conn.buffer.length - (headByteLength + 4) < request.declaredLength) {
       return; // body still arriving; keep buffering
     }
     if (request.declaredLength > MAX_BODY_BYTES) {

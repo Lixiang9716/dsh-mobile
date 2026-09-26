@@ -1,4 +1,5 @@
 // dsh:logging-exempt (test-harness globals: installed for side effects)
+import proc from './process.js';
 /**
  * upstream/shims/globals — the WHATWG/engine globals the upstream suite's
  * code paths need and quickjs does not define (AbortController for the
@@ -76,14 +77,11 @@ if (typeof globalThis.structuredClone === 'undefined') {
 // import chain (this file) runs first. posix platform: the win32 limbs
 // stay dead code.
 if (globalThis.process === undefined) {
-  globalThis.process = {
-    env: {},
-    argv: [],
-    platform: 'darwin',
-    version: 'v24.0.0-dsh',
-    nextTick: (fn, ...args) => Promise.resolve().then(() => fn(...args)),
-    cwd: () => globalThis.__dshProfileCwd ?? '/',
-  };
+  // The FULL process face (the node:process shim's default), not a
+  // hand-rolled subset: cordis-plugin-loader probes process.versions.node
+  // and process.execArgv on import, and a partial global crashed those
+  // specs (growth round 3).
+  globalThis.process = proc;
 }
 
 // TextEncoder/TextDecoder — the jsonl backend's UTF-8 faces. quickjs ships

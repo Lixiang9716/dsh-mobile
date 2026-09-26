@@ -25,8 +25,13 @@ export default class EntryAbility extends UIAbility {
     // onWindowStageCreate → loadContent). A leg name, never a secret.
     const leg = want.parameters?.['dsh.e2e.leg'];
     const spec = want.parameters?.['dsh.e2e.spec'];
+    const webClient = want.parameters?.['dsh.web.client'];
     if (typeof spec === 'string' && spec !== '') {
       E2eLeg.setSpec(spec);
+    }
+    if (typeof webClient === 'string' && webClient !== '') {
+      E2eLeg.setWebClient(webClient);
+      hilog.info(DOMAIN, TAG, 'web client %{public}s selected at launch', webClient);
     }
     if (typeof leg === 'string' && leg.length > 0) {
       E2eLeg.set(leg);

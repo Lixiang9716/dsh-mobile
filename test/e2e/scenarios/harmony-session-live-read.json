@@ -74,7 +74,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 2,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,
@@ -151,7 +151,7 @@
       "event": "web.boot.applied",
       "match": {
         "source": "runtime (spine + vendored @deepseek-ai/dsh-client-modules)",
-        "rows": 5
+        "rows": 6
       }
     },
     {
@@ -317,7 +317,7 @@
         "provider": "mock",
         "model": "mock-1",
         "messages": 4,
-        "tools": 0,
+        "tools": 6,
         "path": "/chat/completions",
         "method": "POST",
         "agentLoopMarked": true,

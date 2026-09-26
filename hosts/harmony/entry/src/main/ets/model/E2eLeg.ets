@@ -19,6 +19,7 @@
 export class E2eLeg {
   private static leg: string = '';
   private static spec: string = '';
+  private static webClient: string = '';
 
   /** EntryAbility.onCreate: the raw want parameter ('' when absent). */
   static set(leg: string): void {
@@ -37,5 +38,17 @@ export class E2eLeg {
 
   static getSpec(): string {
     return E2eLeg.spec;
+  }
+
+  /** The Web Client the release boot serves (`--ps dsh.web.client <id>`;
+   * '' when absent = the official dist). A client SELECTION, not a drive —
+   * the release build accepts it (the iOS -dsh-web-client launch argument's
+   * twin); an unknown id fails loud at the consumer. */
+  static setWebClient(webClient: string): void {
+    E2eLeg.webClient = webClient;
+  }
+
+  static getWebClient(): string {
+    return E2eLeg.webClient;
   }
 }

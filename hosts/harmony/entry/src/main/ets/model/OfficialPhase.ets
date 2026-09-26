@@ -755,6 +755,11 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
    * seam — `__dshBusOnMessage`, the scenario's take('runtime.config') —,
    * never the gateway event seam) and the staged web-plugins. */
   private openLegWithRuntimeConfig(ctx: common.UIAbilityContext): void {
+    // The presets seed FIRST (order-independent data staging): the write
+    // leg's settings evidence probes agentPresets/list, and the service
+    // reads the staged tree (measured: without the seed the claimed-
+    // endpoint probe fails 'cannot read preset root').
+    this.serve.deliverAgentPresetsSeed();
     this.serve.deliverBus('{"type":"runtime.config","mockLlmUrl":"http://127.0.0.1:' +
       this.serve.loopbackPort() + '/mock-llm","apiKey":"' + MOCK_LLM_KEY +
       '","containerRoot":' + JSON.stringify(this.webRoot) + '}');

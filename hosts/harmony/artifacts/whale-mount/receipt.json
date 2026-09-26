@@ -1,0 +1,24 @@
+{
+  "host": "HarmonyOS dsh_phone emulator (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0, CLT 26.0.0.821)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "package": "com.dshmobile.spike",
+  "phase": "harmony.whale.mount (the whale creation client on the v0 /ws seat)",
+  "launchMode": "--ps dsh.e2e.leg whale.mount (HostPhase whale leg: session-mock-llm over the whale web root; the iOS session-mock-llm --client whale and Android --ez dsh.whale legs' sibling)",
+  "tree": "feat/harmony-next-whale-mount (working tree at receipt time)",
+  "runner": "hosts/harmony/ci/run-whale-mount.sh",
+  "scenarios": [
+    {
+      "id": "harmony.whale.mount",
+      "checker": "test/e2e/scenarios/harmony-whale-mount.json",
+      "events": 7,
+      "result": "pass"
+    }
+  ],
+  "exitStatus": 0,
+  "exitStatusNote": "run-whale-mount.sh exit 0: build + install + verified launch (PID-waited) + the capture-file pull + the checker. The C host's verdict line rides hilog (drive-binding's channel), not the capture — the checker over the capture is this runner's verdict",
+  "screens": [
+    "01-whale-mounted.png (the whale v0 client rendered the projection transcript)"
+  ],
+  "notes": "two harmony-side fixes the leg forced: (1) HostPhase.onSlotAck gained the once-guard (the page re-acks on re-renders — a second slot.registered after the live deltas would be an extra record the manifests allow exactly one of; the Android/iOS hosts' slotAcked guard, mirrored); (2) the whale leg's host.info delivery gates on the slot ack (deliverHostInfo's whaleLeg branch — the iOS/Android hosts' 'deltas stream into a fully rendered client' semantic; the m5/llm legs keep the hello-time delivery because their scenarios gate their OWN slot projection on host.seed, and an ack-gated delivery deadlocks them — measured)"
+}

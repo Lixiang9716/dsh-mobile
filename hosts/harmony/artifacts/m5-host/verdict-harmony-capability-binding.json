@@ -1,0 +1,8 @@
+{
+  "scenario": "harmony.capability-binding",
+  "pass": true,
+  "expected": 27,
+  "logged": 27,
+  "failures": [],
+  "parseErrors": []
+}
