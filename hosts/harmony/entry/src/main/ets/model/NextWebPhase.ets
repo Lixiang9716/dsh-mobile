@@ -312,7 +312,7 @@ export class NextWebPhase {
         'title': CARD_TITLE, 'items': out.items ?? 0,
       });
       return this.runLeg(runJs, 'window.__next.viewer()', 'viewer', 45000);
-    }).then((out): void => {
+    }).then((out): Promise<LegOut | null> => {
       if (out === null || out.open !== true ||
         !(out.srcdoc ?? '').includes(CANARY)) {
         throw new Error('the creation viewer never carried the file');
