@@ -1,8 +1,49 @@
 {
   "scenario": "nextweb.mount",
-  "pass": true,
-  "expected": 19,
-  "logged": 19,
-  "failures": [],
+  "pass": false,
+  "expected": 24,
+  "logged": 20,
+  "failures": [
+    {
+      "index": 20,
+      "expected": {
+        "event": "game.card.rendered",
+        "match": {
+          "title": "弹球小游戏 — 点按全屏查看"
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 21,
+      "expected": {
+        "event": "game.opened",
+        "match": {
+          "srcdocContains": "DSH-GAME-CANARY"
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 22,
+      "expected": {
+        "event": "game.frames",
+        "match": {
+          "advancing": true
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 23,
+      "expected": {
+        "event": "game.closed",
+        "match": {
+          "srcdocCleared": true
+        }
+      },
+      "logged": null
+    }
+  ],
   "parseErrors": []
 }

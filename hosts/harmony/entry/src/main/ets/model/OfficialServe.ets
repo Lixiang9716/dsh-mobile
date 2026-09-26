@@ -887,6 +887,17 @@ export class OfficialServe {
       this.server.respondText(conn, 401, 'application/json', body);
       return;
     }
+    if (req.body.includes('GAME_TURN')) {
+      // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
+      // the post-tool continuation call gets the plain success body.
+      if (this.gameScriptDone) {
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+        return;
+      }
+      this.gameScriptDone = true;
+      this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
+      return;
+    }
     if (req.body.includes('CREATE_TURN')) {
       // ONE create round per launch: a follow-up model call (the agent
       // loop's post-tool continuation) gets the plain success body, or the
@@ -898,17 +909,6 @@ export class OfficialServe {
       }
       this.createScriptDone = true;
       this.server.respondText(conn, 200, SSE_TYPE, this.createStream());
-      return;
-    }
-    if (req.body.includes('GAME_TURN')) {
-      // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
-      // the post-tool continuation call gets the plain success body.
-      if (this.gameScriptDone) {
-        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
-        return;
-      }
-      this.gameScriptDone = true;
-      this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
       return;
     }
     if (req.body.includes('SLOW_TURN')) {

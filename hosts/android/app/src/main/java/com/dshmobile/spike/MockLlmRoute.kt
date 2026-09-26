@@ -77,17 +77,6 @@ object MockLlmRoute {
             return
         }
         val bodyText = String(request.body, Charsets.UTF_8)
-        if (bodyText.contains("CREATE_TURN")) {
-            if (createScriptDone) {
-                CarrierHTTP.respond(
-                    out, 200, SSE_TYPE, successStream().toByteArray(Charsets.UTF_8))
-                return
-            }
-            createScriptDone = true
-            CarrierHTTP.respond(
-                out, 200, SSE_TYPE, createStream().toByteArray(Charsets.UTF_8))
-            return
-        }
         if (bodyText.contains("GAME_TURN")) {
             if (gameScriptDone) {
                 CarrierHTTP.respond(
@@ -97,6 +86,17 @@ object MockLlmRoute {
             gameScriptDone = true
             CarrierHTTP.respond(
                 out, 200, SSE_TYPE, gameStream().toByteArray(Charsets.UTF_8))
+            return
+        }
+        if (bodyText.contains("CREATE_TURN")) {
+            if (createScriptDone) {
+                CarrierHTTP.respond(
+                    out, 200, SSE_TYPE, successStream().toByteArray(Charsets.UTF_8))
+                return
+            }
+            createScriptDone = true
+            CarrierHTTP.respond(
+                out, 200, SSE_TYPE, createStream().toByteArray(Charsets.UTF_8))
             return
         }
         val body = if (parity) {

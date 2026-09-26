@@ -152,6 +152,17 @@ extension CarrierServer {
             respond(status: 401, body: data, contentType: "application/json", conn: conn)
             return
         }
+        if request.body.contains(Data("GAME_TURN".utf8)) {
+            // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
+            // the post-tool continuation call gets the plain success body.
+            if serveGameScriptDone {
+                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                    conn: conn)
+            }
+            serveGameScriptDone = true
+            return serveGameScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                conn: conn)
+        }
         if request.body.contains(Data("CREATE_TURN".utf8)) {
             // ONE create round per launch: a follow-up model call (the agent
             // loop's post-tool continuation) gets the plain success body, or
@@ -162,17 +173,6 @@ extension CarrierServer {
             }
             serveCreateScriptDone = true
             return serveCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                conn: conn)
-        }
-        if request.body.contains(Data("GAME_TURN".utf8)) {
-            // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
-            // the post-tool continuation call gets the plain success body.
-            if serveGameScriptDone {
-                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
-                    conn: conn)
-            }
-            serveGameScriptDone = true
-            return serveGameScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
                 conn: conn)
         }
         let body = scriptedSuccessBody()
