@@ -4,12 +4,12 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
   "phase": "nextweb.mount",
   "launchConfiguration": "-dsh-mode next-web -dsh-web-client dsh-web-client-next",
-  "tree": "origin/main 771f2dbd1eb9 (dirty working tree at receipt time)",
+  "tree": "origin/main 7e75204cf739 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "nextweb.mount",
       "checker": "test/e2e/scenarios/nextweb-mount.json",
-      "events": 16,
+      "events": 19,
       "result": "pass"
     }
   ],
@@ -18,6 +18,6 @@
     "screens/01-next-boot-screen.png",
     "screens/02-final-state.png"
   ],
-  "timestamp": "2026-09-26T06:51:36+08:00",
+  "timestamp": "2026-09-26T12:40:50+08:00",
   "exitCode": 0
 }

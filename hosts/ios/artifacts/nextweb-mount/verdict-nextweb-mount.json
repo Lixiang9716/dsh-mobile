@@ -1,29 +1,8 @@
 {
   "scenario": "nextweb.mount",
-  "pass": false,
-  "expected": 18,
-  "logged": 16,
-  "failures": [
-    {
-      "index": 16,
-      "expected": {
-        "event": "creation.card.rendered",
-        "match": {
-          "title": "游动的蓝色鲸鱼 — 点按全屏查看"
-        }
-      },
-      "logged": null
-    },
-    {
-      "index": 17,
-      "expected": {
-        "event": "creation.opened",
-        "match": {
-          "srcdocContains": "BLUE-WHALE-CANARY"
-        }
-      },
-      "logged": null
-    }
-  ],
+  "pass": true,
+  "expected": 19,
+  "logged": 19,
+  "failures": [],
   "parseErrors": []
 }

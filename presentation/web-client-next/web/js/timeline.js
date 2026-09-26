@@ -172,6 +172,12 @@ const applyEvent = (state, event) => {
     case 'assistant/message': applyAssistantMessage(state, data); break;
     case 'tool/call': applyToolCall(state, data); break;
     case 'tool/result': applyToolResult(state, data); break;
+    case 'deliverables/presented':
+      add(state, {
+        kind: 'creation',
+        files: Array.isArray(data?.files) ? data.files : [],
+      });
+      break;
     case 'session/title': applyTitle(state, data); break;
     case 'system/message': case 'todo/write': case 'approval/asked':
     case 'approval/decided': case 'goal/change': case 'plan/mode': {

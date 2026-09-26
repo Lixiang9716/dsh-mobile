@@ -1,11 +1,11 @@
-dsh.spike.log: {"module":"dsh.carrier","data":[{"client":"dsh-web-client-next","source":"launch","scenario":"nextweb.mount","event":"client.selected"}],"level":"info","message":"e2e"}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"nextweb.mount","client":"dsh-web-client-next","source":"launch","event":"client.selected"}]}
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"main begin","data":[{}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"spike/echo.wasm"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/E803F4F6-9201-4F4B-92EC-18D3BF39E8A3/Documents/profiles/default/ish-rootfs","offered":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"registering the ish tool","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/E803F4F6-9201-4F4B-92EC-18D3BF39E8A3/Documents/profiles/default/ish-rootfs"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"guest root from the host declaration","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/E3112B46-EB7A-452A-B6DF-AA2B23B1389B/Documents/profiles/default/ish-rootfs","offered":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.shell.ish","message":"registering the ish tool","data":[{"rootfs":"/Users/lixiang/Library/Developer/CoreSimulator/Devices/A4AE41BF-026A-441E-85DF-F53522996073/data/Containers/Data/Application/E3112B46-EB7A-452A-B6DF-AA2B23B1389B/Documents/profiles/default/ish-rootfs"}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsMkdir"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":104}]}
@@ -40,21 +40,21 @@ dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"settings.pluginManager.readonly","bundles":2,"bundleRows":74,"readOnlyReason":"management-required"}]}
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"settings probes done","data":[{}]}
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"b4 runtime resident (write surface live; awaiting the page)","data":[{}]}
-dsh.spike.log: {"message":"e2e","data":[{"scenario":"nextweb.mount","rows":0,"bytes":3160,"event":"index.rendered"}],"module":"dsh.carrier","level":"info"}
-dsh.spike.log: {"message":"e2e","data":[{"status":200,"scenario":"nextweb.mount","path":"\/","event":"index.served"}],"module":"dsh.carrier","level":"info"}
-dsh.spike.log: {"module":"dsh.carrier","level":"info","data":[{"event":"asset.served","scenario":"nextweb.mount","path":"\/js\/main.js"}],"message":"e2e"}
-dsh.spike.log: {"data":[{"event":"upgrade.accepted","scenario":"nextweb.mount","path":"\/api\/remote.mux"}],"message":"e2e","module":"dsh.carrier","level":"info"}
-dsh.spike.log: {"data":[{"answered":"forwarded","endpoint":"session\/list","event":"rpc.observed","scenario":"nextweb.mount"}],"module":"dsh.carrier","message":"e2e","level":"info"}
-dsh.spike.log: {"level":"info","data":[{"answered":"forwarded","event":"rpc.observed","scenario":"nextweb.mount","endpoint":"session\/create"}],"module":"dsh.carrier","message":"e2e"}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-341e26f9-7dd7-4a9b-9c19-f4a53e564d96\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"data":[{"stream":"session\/follow","event":"session.attached","scenario":"nextweb.mount"}],"message":"e2e","module":"dsh.carrier","level":"info"}
-dsh.spike.log: {"module":"dsh.carrier","message":"e2e","level":"info","data":[{"chatVisible":true,"scenario":"nextweb.mount","event":"client.opened"}]}
-dsh.spike.log: {"data":[{"scenario":"nextweb.mount","text":"Say hello from the next client","found":true,"sendEnabled":true,"event":"composer.typed"}],"level":"info","message":"e2e","module":"dsh.carrier"}
-dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"scenario":"nextweb.mount","endpoint":"session\/prompt","event":"rpc.observed","answered":"forwarded"}],"level":"info"}
-dsh.spike.log: {"level":"info","data":[{"source":"REAL session log records + assistant-stream frames","event":"journal.frame.forwarded","first":true,"scenario":"nextweb.mount","direction":"tx"}],"module":"dsh.carrier","message":"e2e"}
-dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"write.prompt.observed","sessionId":"session-341e26f9-7dd7-4a9b-9c19-f4a53e564d96","seq":5}]}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"scenario":"nextweb.mount","rows":0,"event":"index.rendered","bytes":3160}],"module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"scenario":"nextweb.mount","status":200,"event":"index.served","path":"\/"}],"module":"dsh.carrier"}
+dsh.spike.log: {"message":"e2e","data":[{"event":"asset.served","path":"\/js\/main.js","scenario":"nextweb.mount"}],"module":"dsh.carrier","level":"info"}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"event":"upgrade.accepted","path":"\/api\/remote.mux","scenario":"nextweb.mount"}],"module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","answered":"forwarded","event":"rpc.observed","endpoint":"session\/list"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","event":"rpc.observed","endpoint":"session\/create","answered":"forwarded"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-92dc3f32-2e69-4585-86e0-9e8ff54951ee\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"scenario":"nextweb.mount","event":"session.attached","stream":"session\/follow"}],"module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","event":"client.opened","chatVisible":true}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"scenario":"nextweb.mount","found":true,"text":"Say hello from the next client","event":"composer.typed","sendEnabled":true}],"module":"dsh.carrier"}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"scenario":"nextweb.mount","event":"rpc.observed","endpoint":"session\/prompt","answered":"forwarded"}],"level":"info"}
+dsh.spike.log: {"module":"dsh.carrier","data":[{"source":"REAL session log records + assistant-stream frames","first":true,"scenario":"nextweb.mount","event":"journal.frame.forwarded","direction":"tx"}],"message":"e2e","level":"info"}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"write.prompt.observed","sessionId":"session-92dc3f32-2e69-4585-86e0-9e8ff54951ee","seq":5}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/request/built","provider":"mock","model":"mock-1","messages":2,"tools":9,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:63791/mock-llm/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:60720/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:17","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":675}]}
@@ -67,15 +67,15 @@ dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","delta":"ream"}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","finish":"stop","usage":{"inputTokens":3,"outputTokens":19,"totalTokens":22}}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","done":true}]}
-dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"write.turn.settled","sessionId":"session-341e26f9-7dd7-4a9b-9c19-f4a53e564d96","events":11,"text":"Hello from upstream"}]}
+dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"write.turn.settled","sessionId":"session-92dc3f32-2e69-4585-86e0-9e8ff54951ee","events":11,"text":"Hello from upstream"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":17}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"message":"e2e","level":"info","module":"dsh.carrier","data":[{"userText":"Say hello from the next client","items":5,"scenario":"nextweb.mount","reply":"Hello from upstream","title":"session-","event":"page.rendered"}]}
-dsh.spike.log: {"message":"e2e","module":"dsh.carrier","level":"info","data":[{"event":"rpc.observed","answered":"forwarded","scenario":"nextweb.mount","endpoint":"session\/cancel"}]}
-dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","stopShown":true,"stopPressed":true,"event":"cancel.stop.pressed"}],"module":"dsh.carrier","message":"e2e"}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"scenario":"nextweb.mount","reply":"Hello from upstream","items":5,"title":"session-","userText":"Say hello from the next client","event":"page.rendered"}],"level":"info"}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"endpoint":"session\/cancel","scenario":"nextweb.mount","answered":"forwarded","event":"rpc.observed"}],"level":"info"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","stopShown":true,"stopPressed":true,"event":"cancel.stop.pressed"}],"message":"e2e","module":"dsh.carrier"}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/request/built","provider":"mock","model":"mock-1","messages":4,"tools":9,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:63791/mock-llm/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:60720/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:18","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":127}]}
@@ -89,7 +89,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","delta":"Hello"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:18","buffered":0}]}
-dsh.spike.log: {"message":"e2e","module":"dsh.carrier","level":"info","data":[{"event":"cancel.settled","accepted":true,"scenario":"nextweb.mount"}]}
+dsh.spike.log: {"level":"info","message":"e2e","data":[{"accepted":true,"event":"cancel.settled","scenario":"nextweb.mount"}],"module":"dsh.carrier"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":127}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":18}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":80}]}
@@ -133,18 +133,18 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":18}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/request/built","provider":"mock","model":"mock-1","messages":6,"tools":9,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:63791/mock-llm/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:60720/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:19","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":1231}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":1471}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":19}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1184}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1424}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","fields":["choices"]}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","finish":"stop","usage":{"inputTokens":3,"outputTokens":12,"totalTokens":15}}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/sse","done":true}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"composer.live-write","event":"llm/request/built","provider":"mock","model":"mock-1","messages":9,"tools":9,"path":"/chat/completions","method":"POST","agentLoopMarked":true,"stream":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:63791/mock-llm/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:60720/mock-llm/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":19}]}
@@ -163,3 +163,6 @@ dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scena
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":20}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","items":15,"title":"游动的蓝色鲸鱼 — 点按全屏查看","event":"creation.card.rendered"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"level":"info","data":[{"scenario":"nextweb.mount","event":"rpc.observed","endpoint":"workspaceFiles\/readAll","answered":"forwarded"}],"message":"e2e","module":"dsh.carrier"}
+dsh.spike.log: {"module":"dsh.carrier","message":"e2e","data":[{"event":"creation.opened","scenario":"nextweb.mount","srcdocContains":"BLUE-WHALE-CANARY"}],"level":"info"}

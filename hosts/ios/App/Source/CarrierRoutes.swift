@@ -117,7 +117,7 @@ extension CarrierServer {
     ///                  ~220 ms apart, so the turn is provably mid-stream
     ///                  when the probe presses stop.
     ///   CREATE_TURN  — the creation leg: the assistant message carries TWO
-    ///                  tool calls — str_replace_editor creates
+    ///                  tool calls — write creates
     ///                  creations/blue-whale.html, present declares it a
     ///                  deliverable (journaled deliverables/presented).
     static let mockLlmPath = "/mock-llm/chat/completions"
@@ -198,7 +198,7 @@ extension CarrierServer {
     }
 
     /// The CREATE script's assistant message: TWO tool calls in one turn —
-    /// str_replace_editor creates the deliverable, present declares it (the
+    /// `write` creates the deliverable, present declares it (the
     /// runtime journals deliverables/presented; the client renders the card).
     private func serveCreateScript(
         respond: @escaping (Int, Data, String, NWConnection) -> Void,
@@ -209,15 +209,18 @@ extension CarrierServer {
                   let text = String(data: data, encoding: .utf8) else { return }
             body.append(Data("data: \(text)\n\n".utf8))
         }
-        // The editor demands ABSOLUTE paths (vendored str_replace_editor
-        // rejects relative ones), so the scripted "model" writes where the
-        // real one would: the seat's workspace root. `present` keeps the
-        // relative form — its contract resolves against the session cwd,
-        // which this leg deliberately also covers.
+        // The scripted "model" writes the way the real one does: the `write`
+        // tool over the fs service (the system prompt's own guidance), which
+        // lands the file on DISK inside the app scope so the card's
+        // workspaceFiles/read fetch can serve it. (str_replace_editor's
+        // world is in-memory only — its files are invisible to the gateway,
+        // which is exactly the gap this leg caught.) `write` demands an
+        // absolute path; `present` keeps the relative form — its contract
+        // resolves against the session cwd, which this leg also covers.
         let whalePath = SessionServe.workspaceRoot
             .appendingPathComponent("creations/blue-whale.html").path
-        let createArgs = "{\"command\":\"create\",\"path\":\"\(whalePath)\","
-            + "\"file_text\":\"<!doctype html><title>蓝色鲸鱼</title>"
+        let writeArgs = "{\"file_path\":\"\(whalePath)\","
+            + "\"content\":\"<!doctype html><title>蓝色鲸鱼</title>"
             + "<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}"
             + "#w{font-size:120px;position:absolute;top:38%;left:-140px;"
             + "animation:swim 8s linear infinite}"
@@ -226,7 +229,7 @@ extension CarrierServer {
             + "\"description\":\"游动的蓝色鲸鱼 — 点按全屏查看\"}]}"
         sse(["choices": [["index": 0, "delta": ["tool_calls": [
             ["index": 0, "id": "call-create-1", "type": "function",
-             "function": ["name": "str_replace_editor", "arguments": createArgs]],
+             "function": ["name": "write", "arguments": writeArgs]],
             ["index": 1, "id": "call-present-1", "type": "function",
              "function": ["name": "present", "arguments": presentArgs]],
         ]], "finish_reason": NSNull()]]])

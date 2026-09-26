@@ -117,6 +117,13 @@
       }
     },
     {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "workspaceFiles/readAll",
+        "answered": "forwarded"
+      }
+    },
+    {
       "event": "creation.opened",
       "match": {
         "srcdocContains": "BLUE-WHALE-CANARY"

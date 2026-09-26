@@ -1,0 +1,17 @@
+{
+  "scenario": "creation.live (serve seat, REAL glm-4.6 via api.z.ai)",
+  "boot": "dsh.session.serve: interactive boot, creation row mounted (pid 36274, 12:59:38)",
+  "prompt_observed": "write.prompt.observed 13:00:29",
+  "llm_rounds": 0,
+  "turn_settled": "write.turn.settled 13:01:52",
+  "deliverables": [
+    "aurora-plugin/web/index.html (4711B)",
+    "aurora-plugin/README.md (984B)"
+  ],
+  "creation_card": "Aurora & Fireflies — tap for fullscreen",
+  "screens": [
+    "01-home.png",
+    "02-keyboard.png",
+    "03-typed.png"
+  ]
+}

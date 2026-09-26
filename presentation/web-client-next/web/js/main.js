@@ -152,11 +152,22 @@ const openCreation = async (path, title) => {
   $('creation-title-text').textContent = title || path;
   creationView.hidden = false;
   try {
-    const value = await rpc('workspaceFiles/read', {
-      args: { request: { path } },
+    // readAll: one complete-file read (the paginated read's streamText
+    // waits on a data event an in-memory just-created file never sends).
+    // The files family takes its parameters at args level directly (only
+    // the session family wraps them in args.request); its result carries
+    // base64 bytes, decoded here as UTF-8 (the deliverables are text).
+    const value = await rpc('workspaceFiles/readAll', {
+      args: { path },
     });
-    document.getElementById('creation-frame').srcdoc =
-      typeof value?.text === 'string' ? value.text : '';
+    let text = '';
+    if (typeof value === 'string') text = value;
+    else if (typeof value?.text === 'string') text = value.text;
+    else if (typeof value?.data === 'string') {
+      const bytes = Uint8Array.from(atob(value.data), (ch) => ch.charCodeAt(0));
+      text = new TextDecoder().decode(bytes);
+    }
+    document.getElementById('creation-frame').srcdoc = text;
   } catch (error) {
     creationView.hidden = true;
     toast(isRemoteError(error) ? `创作不可读（${error.code}）` : '创作不可读');

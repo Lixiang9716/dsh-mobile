@@ -85,6 +85,7 @@ const echoScript = (turn, promptText) => {
       { type: 'step/end', data: { turn, step } },
       { type: 'turn/end', data: { turn, reason: { kind: 'stop' } } },
       { type: 'session/title', data: { title: promptText.slice(0, 12) || 'dev 会话' } },
+      { type: 'deliverables/presented', data: { turn, callId, files: [{ path: 'creations/blue-whale.html', description: '桌面回声鲸鱼' }] } },
     ],
   };
 };

@@ -1,0 +1,20 @@
+{
+  "title": "creation leg: the present tool + the on-screen creation card",
+  "created": "2026-09-26T04:41:32+00:00",
+  "rules": {
+    "hash": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+    }
+  },
+  "checklist": [
+    "[x] runtime: tool-present.js (defineTool, upstream semantics) mounted under creation flag",
+    "[x] carrier: CREATE_TURN script (editor create + present)",
+    "[x] client: creation card + fullscreen viewer (workspaceFiles/readAll base64)",
+    "[x] drive creation leg + manifest rows + E2E green + artifacts"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0062"
+}
