@@ -433,7 +433,9 @@ final class NextWebRuntime {
         pollPage("window.__next.readTranscript()",
             until: { probe in
                 let titles = probe["creationTitles"] as? [String] ?? []
-                return titles.contains(Self.gameCardTitle)
+                // SUBSTRING match: the card's textContent also carries the
+                // emoji + path ("🎨弹球小游戏 — 点按全屏查看creations/dsh-game.html").
+                return titles.contains { $0.contains(Self.gameCardTitle) }
             },
             collect: { [weak self] probe in
                 guard let self else { return }
