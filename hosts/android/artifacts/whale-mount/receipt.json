@@ -1,0 +1,27 @@
+{
+  "host": "android emulator-5554 (API 35 AVD pixel, Android 15 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "package": "com.dshmobile.spike",
+  "phase": "android.whale.mount (the whale creation client on the v0 /ws seat)",
+  "launchMode": "--ez dsh.whale true (SpikeHostM4 whale leg: session-mock-llm over the whale web root; the iOS session-mock-llm drive's --client whale leg, mirrored)",
+  "tree": "feat/android-next-whale-mount (working tree at receipt time)",
+  "runner": "test/e2e/run-android-next-web-mount.sh",
+  "scenarios": [
+    {
+      "id": "android.whale.mount",
+      "checker": "test/e2e/scenarios/android-whale-mount.json",
+      "events": 7,
+      "result": "pass"
+    }
+  ],
+  "exitStatus": 0,
+  "exitStatusNote": "run-android-next-web-mount.sh exit 0 in ONE invocation (both legs; this dir carries the whale leg's capture). Checker exit: android.whale.mount 7/7. The whale leg's readiness seam differs from the m4 default: session-mock-llm never posts bus.ready — it parks on the host.info EVENT until the page connects — so the origin opens on handle+port alone (see SpikeHostM4.deliverHostHello)",
+  "verdictLines": [
+    "android.whale.mount PASS | quickjs-ng 0.17.0",
+    "ALL PASS"
+  ],
+  "screens": [
+    "01-whale-mounted.png (the whale v0 client rendered the full projection transcript)"
+  ]
+}

@@ -1,0 +1,121 @@
+/* dsh:logging-exempt (stylesheet) */
+/* theme.css — design tokens (the clarklevis deep-ocean palette), glass
+ * surfaces, light/dark adaptation, and safe-area handling. The WebView owns
+ * the window, so the page pads itself with env(safe-area-inset-*). */
+
+:root {
+  /* brand */
+  --navy: #06172B;
+  --navy-raised: #0B2440;
+  --ocean: #2E6BE6;
+  --mist: #BFD6FF;
+  --ink: #0E131A;
+  --paper: #F9FAFC;
+  /* semantics */
+  --purple: #7A54C7;
+  --orange: #F07D14;
+  --amber: #FFAD1F;
+  --green: #2EB85C;
+  --red: #E5484D;
+  /* radius scale */
+  --r-composer: 24px;
+  --r-menu: 22px;
+  --r-card: 18px;
+  --r-bubble: 15px;
+  --r-output: 10px;
+  /* adaptive conversation chrome (system-adaptive like the native app) */
+  --bg: var(--paper);
+  --bg-raised: #FFFFFF;
+  --text: var(--ink);
+  --text-2: #5B6472;
+  --text-3: #8A93A3;
+  --line: rgba(14, 19, 26, 0.10);
+  --fill: rgba(14, 19, 26, 0.055);
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-stroke: rgba(255, 255, 255, 0.65);
+  --user-bubble: rgba(46, 107, 230, 0.11);
+  --user-bubble-line: rgba(46, 107, 230, 0.24);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0B0F14;
+    --bg-raised: #11161D;
+    --text: #E8ECF2;
+    --text-2: #9AA4B2;
+    --text-3: #6B7686;
+    --line: rgba(191, 214, 255, 0.12);
+    --fill: rgba(191, 214, 255, 0.08);
+    --glass-bg: rgba(11, 36, 64, 0.55);
+    --glass-stroke: rgba(191, 214, 255, 0.22);
+    --user-bubble: rgba(46, 107, 230, 0.24);
+    --user-bubble-line: rgba(46, 107, 230, 0.42);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overscroll-behavior-y: none;
+}
+
+body {
+  font: 16px/1.55 -apple-system, "SF Pro Text", "PingFang SC",
+    "Helvetica Neue", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app { height: 100%; }
+.view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.view[hidden] { display: none; }
+
+/* ---- glass primitive ------------------------------------------------- */
+
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  backdrop-filter: blur(20px) saturate(1.5);
+  border: 0.7px solid var(--glass-stroke);
+  box-shadow: 0 8px 30px rgba(6, 23, 43, 0.18);
+}
+
+/* ---- status dots ------------------------------------------------------ */
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: none;
+}
+.dot-green { background: var(--green); }
+.dot-blue { background: var(--ocean); }
+.dot-amber { background: var(--amber); }
+.dot-red { background: var(--red); }
+.dot-idle { background: var(--text-3); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.dot-pulse { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* ---- safe areas -------------------------------------------------------- */
+
+.home-header { padding-top: calc(env(safe-area-inset-top) + 14px); }
+.chat-header { padding-top: env(safe-area-inset-top); }
+.composer { padding-bottom: calc(env(safe-area-inset-bottom) + 10px); }
+.session-list { padding-bottom: calc(env(safe-area-inset-bottom) + 24px); }

@@ -85,6 +85,12 @@ done
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
 # The Agent presets closure's npm faces (boot.js imports them statically:
 # the cordis Loader service + the include walker + js-yaml's ESM dist).
+# The INTERACTIVE rows' npm-scope packages (commands/goals/fileReferences):
+# command-feedback imports dsh-anonymous-user-id at module load, and the
+# coverage rows mount dsh-goal + the file-reference pair — the same four
+# the iOS embedder carries (gen_bundle_header.py's coverage block); without
+# them every commands:true boot fails on the first import (caught by the
+# nextweb drive 2026-09-26: "no vendored dsh package serves it").
 say "staging presets-closure npm packages"
 mkdir -p "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib"
 cp "$SPIKE/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js" \
@@ -95,6 +101,15 @@ cp "$SPIKE/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js" \
 mkdir -p "$ASSETS/vendor/npm/js-yaml@4.1.0/dist"
 cp "$SPIKE/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs" \
    "$ASSETS/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local; do
+    say "staging vendor/npm/@deepseek-ai/$pkg@$VER (lib)"
+    (cd "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
+        while IFS= read -r rel; do
+            mkdir -p "$ASSETS/vendor/npm/@deepseek-ai/$pkg@$VER/$(dirname "$rel")"
+            cp "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER/$rel" \
+               "$ASSETS/vendor/npm/@deepseek-ai/$pkg@$VER/$rel"
+        done
+done
 
 say "staging vendor/npm/diff@9.0.0 (libesm)"
 mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm"
@@ -178,6 +193,22 @@ for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-subprocess-quickjs dsh-ui; do
     done
 done
 
+# The self-hosted web clients (presentation/web-client-next on the official
+# /api+mux plane, presentation/web-client-whale on the v0 /ws plane):
+# whole-tree mirrors into assets/spike/webclient-{next,whale}, the same
+# sync+check discipline as the upstream layer — the iOS embedder stages the
+# same two trees through gen_bundle_header.py WEBCLIENT_TREES, and the v0
+# webclient's older hand-committed copy (assets/spike/webclient) predates
+# this discipline and stays as-is.
+for client in next whale; do
+    say "staging presentation/web-client-$client → assets/spike/webclient-$client"
+    (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
+        while IFS= read -r rel; do
+            mkdir -p "$ASSETS/webclient-$client/$(dirname "$rel")"
+            cp "$ROOT/presentation/web-client-$client/$rel" "$ASSETS/webclient-$client/$rel"
+        done
+done
+
 # The scenarios ride the same copy (assets stay byte-identical to the
 # runtime bundle, like every other staged scenario). The upstream-suite
 # driver + harness MUST be in this list: copyAssetDir re-merges assets over
@@ -248,6 +279,14 @@ done
         cmp -s "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel" ||
             note_drift "npm/yaml@2.9.0/browser/$rel"
     done
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local; do
+    (cd "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
+        while IFS= read -r rel; do
+            path="vendor/npm/@deepseek-ai/$pkg@$VER/$rel"
+            if [ "$MODE" = "check" ] && ! is_tracked "$path"; then note_skip; continue; fi
+            cmp -s "$SPIKE/$path" "$ASSETS/$path" || note_drift "$path"
+        done
+done
 (cd "$ZOD_SRC" && find v4/classic v4/core v4/locales -name '*.js'; echo index.js) |
     while IFS= read -r rel; do
         if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/zod@4.4.3/$rel"; then note_skip; continue; fi
@@ -263,6 +302,16 @@ done
     done
 for f in gateway.js logger.js registry.js; do
     cmp -s "$SPIKE/$f" "$ASSETS/$f" || note_drift "$f"
+done
+# The staged web-client trees (tracked asset copies, judged both ways the
+# script already covers: present files must match the presentation/ source).
+for client in next whale; do
+    (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
+        while IFS= read -r rel; do
+            if [ "$MODE" = "check" ] && ! is_tracked "webclient-$client/$rel"; then note_skip; continue; fi
+            cmp -s "$ROOT/presentation/web-client-$client/$rel" "$ASSETS/webclient-$client/$rel" ||
+                note_drift "webclient-$client/$rel"
+        done
 done
 # The staged scenarios (tracked asset copies — the suite driver among them:
 # a stale APK copy would shadow every runtime-side fix, the exact defect the

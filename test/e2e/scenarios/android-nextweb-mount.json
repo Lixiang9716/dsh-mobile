@@ -1,0 +1,135 @@
+{
+  "scenario": "android.nextweb.mount",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "client.selected",
+      "match": {
+        "client": "dsh-web-client-next",
+        "source": "launch"
+      }
+    },
+    {
+      "event": "index.rendered",
+      "match": {
+        "rows": 0
+      }
+    },
+    {
+      "event": "index.served",
+      "match": {
+        "path": "/",
+        "status": 200
+      }
+    },
+    {
+      "event": "asset.served",
+      "match": {
+        "path": "/js/main.js"
+      }
+    },
+    {
+      "event": "upgrade.accepted",
+      "match": {
+        "path": "/api/remote.mux"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/list",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/create",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "session.attached",
+      "match": {
+        "stream": "session/follow"
+      },
+      "order": "any"
+    },
+    {
+      "event": "client.opened",
+      "match": {
+        "chatVisible": true
+      }
+    },
+    {
+      "event": "composer.typed",
+      "match": {
+        "found": true,
+        "sendEnabled": true
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/prompt",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "journal.frame.forwarded",
+      "match": {
+        "direction": "tx",
+        "first": true
+      },
+      "order": "any"
+    },
+    {
+      "event": "page.rendered",
+      "match": {
+        "reply": "Hello from upstream",
+        "userText": "Say hello from the next client"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "session/cancel",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "cancel.stop.pressed",
+      "match": {
+        "stopShown": true,
+        "stopPressed": true
+      }
+    },
+    {
+      "event": "cancel.settled",
+      "match": {
+        "accepted": true
+      }
+    },
+    {
+      "event": "creation.card.rendered",
+      "match": {
+        "title": "游动的蓝色鲸鱼 — 点按全屏查看"
+      }
+    },
+    {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "workspaceFiles/readAll",
+        "answered": "forwarded"
+      }
+    },
+    {
+      "event": "creation.opened",
+      "match": {
+        "srcdocContains": "BLUE-WHALE-CANARY"
+      }
+    }
+  ]
+}

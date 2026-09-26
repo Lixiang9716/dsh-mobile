@@ -1,0 +1,193 @@
+/* dsh:logging-exempt (stylesheet) */
+/* whale.css — the deep-ocean scene and the swimming animation. The whale
+ * crosses the screen on a long ease-in-out cruise with a gentle vertical
+ * bob; the flukes oscillate around their pivot; bubbles rise on loop. */
+
+:root { color-scheme: dark; }
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 15px/1.5 -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
+  color: #e8f2ff;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg,
+      #0a2a52 0%, #0d3a6e 30%, #0a2f5c 60%, #061c38 100%);
+}
+
+/* light shafts from the surface */
+.rays {
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(115deg, transparent 42%, rgba(191, 214, 255, 0.05) 50%,
+      transparent 58%),
+    linear-gradient(105deg, transparent 60%, rgba(191, 214, 255, 0.04) 68%,
+      transparent 76%);
+  animation: rays-drift 9s ease-in-out infinite alternate;
+}
+@keyframes rays-drift {
+  from { transform: translateX(-2%); opacity: 0.7; }
+  to { transform: translateX(2%); opacity: 1; }
+}
+
+#ocean {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/* the FLIP wrapper cruises the screen; the whale inside mirrors itself on
+ * the return leg so it always faces its direction of travel */
+#whale-flip {
+  position: absolute;
+  width: min(52vw, 340px);
+  top: 34%;
+  animation:
+    cruise 26s linear infinite alternate,
+    bob 5.5s ease-in-out infinite;
+  filter: drop-shadow(0 10px 22px rgba(2, 10, 24, 0.55));
+}
+#whale {
+  width: 100%;
+  display: block;
+  animation: face-mirror 52s linear infinite;
+}
+/* outbound cruises left→right so the head (drawn at the svg's left)
+ * mirrors to the right; the return leg restores the drawing as-is */
+@keyframes face-mirror {
+  0%, 49.9% { transform: scaleX(-1); }
+  50%, 100% { transform: scaleX(1); }
+}
+@keyframes cruise {
+  from { left: -46%; }
+  to { left: 100%; }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0.6deg); }
+  50% { transform: translateY(-26px) rotate(-1.4deg); }
+}
+
+/* whale palette: blues over a pale belly */
+#whale-body path {
+  fill: #2e6be6;
+  stroke: #1b4aa8;
+  stroke-width: 2;
+}
+#whale #belly { fill: #9cc2ff; stroke: #6f9be0; }
+#whale #flukes { fill: #2456bd; stroke: #1b4aa8; }
+#whale #fin { fill: #2456bd; stroke: #1b4aa8; }
+#whale #eye { fill: #06121f; stroke: none; }
+#whale #spout {
+  fill: none;
+  stroke: #cfe4ff;
+  stroke-width: 3;
+  stroke-linecap: round;
+  opacity: 0;
+  animation: spout 5.5s ease-out infinite;
+}
+@keyframes spout {
+  0%, 62% { opacity: 0; }
+  70% { opacity: 0.85; }
+  86% { opacity: 0.2; }
+  100% { opacity: 0; }
+}
+
+/* flukes oscillate around the tail joint */
+#flukes {
+  transform-origin: 352px 98px;
+  animation: flukes 1.6s ease-in-out infinite;
+}
+@keyframes flukes {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(9deg); }
+}
+
+/* the cruise direction flips with the alternate leg — mirror the body so
+ * the whale always faces its direction of travel */
+#whale { animation-name: cruise, bob; }
+
+/* rising bubbles */
+.bubble {
+  position: absolute;
+  bottom: -30px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%,
+    rgba(230, 242, 255, 0.9), rgba(160, 200, 255, 0.25) 65%);
+  animation: rise linear infinite;
+  pointer-events: none;
+}
+@keyframes rise {
+  to { transform: translateY(-110dvh) translateX(24px); opacity: 0; }
+}
+
+/* the surface line, for depth */
+.surface {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46px;
+  background: linear-gradient(180deg,
+    rgba(191, 228, 255, 0.30), transparent);
+  pointer-events: none;
+}
+
+/* ---- the projection chrome (same contract as the v0 clients) ---------- */
+
+header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #bfd6ff;
+  background: rgba(6, 23, 43, 0.55);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+#dot { width: 9px; height: 9px; border-radius: 50%; background: #b3413c; }
+#dot.on { background: #3f9d63; }
+#whale-label { text-transform: none; letter-spacing: 0.02em; }
+#toolbar { display: flex; gap: 6px; margin-left: auto; }
+#toolbar button {
+  font: inherit;
+  font-size: 11px;
+  text-transform: none;
+  letter-spacing: 0;
+  background: rgba(46, 107, 230, 0.35);
+  color: #e8f2ff;
+  border: 1px solid #6f9be0;
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+main#stream {
+  position: relative;
+  z-index: 2;
+  margin: auto 12px calc(env(safe-area-inset-bottom) + 12px);
+  max-width: 520px;
+  max-height: 34dvh;
+  overflow-y: auto;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(6, 23, 43, 0.58);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 0.7px solid rgba(191, 214, 255, 0.25);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.sys { color: #9db8dd; font-size: 12px; margin: 2px 0; }
+.assistant { color: #e8f2ff; }

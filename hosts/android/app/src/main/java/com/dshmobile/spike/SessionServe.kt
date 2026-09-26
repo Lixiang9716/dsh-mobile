@@ -36,12 +36,19 @@ class SessionServe private constructor(
     private val activity: Activity,
     private val credential: Credential?,
     private val interactive: Boolean,
+    /** The Web Client this seat serves: the official dist (default) or the
+     * self-hosted `dsh-web-client-next` — same /api + mux surface, the staged
+     * plugin's web dir instead of the vendored dist, ZERO injection rows
+     * (the page owns its whole boot; the facade/boot-graph/phone-CSS rows
+     * are the official page's). Mirrors hosts/ios SessionServe.start. */
+    private val clientID: String = CLIENT_ID,
 ) {
 
     companion object {
         private const val TAG = "SessionServe"
         private const val ENTRY = "scenario/composer-web-live.js"
-        private const val CLIENT_ID = "dsh-web-official"
+        const val CLIENT_ID = "dsh-web-official"
+        const val NEXT_CLIENT_ID = "dsh-web-client-next"
 
         /** The reserved app scope's root (`FsPrimitives`: what scope "app"
          * means). The credential file and the workspace live inside it. */
@@ -65,8 +72,9 @@ class SessionServe private constructor(
             webView: WebView?,
             credential: Credential?,
             interactive: Boolean = true,
+            clientID: String = CLIENT_ID,
         ): SessionServe {
-            val seat = SessionServe(activity, credential, interactive)
+            val seat = SessionServe(activity, credential, interactive, clientID)
             seat.webView = webView
             instance = seat
             SpikeRuntime.post {
@@ -117,6 +125,35 @@ class SessionServe private constructor(
     private lateinit var seam: SessionWriteSeam
     private lateinit var ui: UiPrimitives
 
+    // ---- the hook block (a drive assigns these; defaults are no-ops —
+    // the seat reports serving FACTS as Log lines, and which record a fact
+    // becomes is the drive's business; the iOS sibling holds the same seam) —
+
+    /** The index rendered (injection-row count, body bytes). */
+    var onIndexRendered: ((Int, Int) -> Unit)? = null
+    /** The index served (200 on "/"). */
+    var onIndexServed: (() -> Unit)? = null
+    /** One static asset served. */
+    var onAssetServed: ((String) -> Unit)? = null
+    /** One WebSocket upgrade accepted (path). */
+    var onUpgradeAccepted: ((String) -> Unit)? = null
+    /** One /api call observed (endpoint, how it was answered). */
+    var onAPICall: ((String, String) -> Unit)? = null
+    /** One mux frame crossed the bridge (direction, frame kind). */
+    var onMuxFrame: ((String, String) -> Unit)? = null
+    /** The runtime half failed (the page still opens — its own honest state). */
+    var onRuntimeFailure: ((String) -> Unit)? = null
+
+    /** Stops serving and ends the runtime half (a drive's terminal step; a
+     * user-facing launch stops only when the app leaves the screen). */
+    fun stop() {
+        if (handle != 0L) {
+            SpikeRuntime.m4End(handle)
+            handle = 0
+        }
+        carrier.stop()
+    }
+
     /** The picker's activity result (MainActivity routes it here — the
      * composer's attachment flow presents the SAF picker). */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
@@ -135,25 +172,37 @@ class SessionServe private constructor(
     private var originOpened = false
 
     /** Runtime thread: the route table (official dist fallback + /plugins +
-     * /api + the scripted llm endpoint), then the spine. */
+     * /api + the scripted llm endpoint), then the spine. The client flavor
+     * selects the dist root: the self-hosted next client serves the staged
+     * plugin's web dir with NO injection rows, so every existing scenario's
+     * boot bytes stay untouched. */
     private fun begin() {
         val files = activity.filesDir
         val staged = WebPluginsDelivery.build(File(files, "web-plugins"))
             ?: throw IllegalStateException(
                 "web-plugins is not staged (bootRelease copies it from assets)",
             )
+        MockLlmRoute.workspaceRoot = workspaceRoot(activity).absolutePath
         token = randomToken()
         plugins = CarrierPlugins.staged(File(files, "web-plugins"))
         val config = CarrierBootConfig.default(plugins)
         comboURL = batchURL(config.bootGraphJSON) ?: ""
+        val servesNext = clientID == NEXT_CLIENT_ID
         dist = CarrierWebDist(
-            distRoot = File(files, "official-web/dist"),
+            distRoot = if (servesNext) {
+                File(files, "spike/webclient-next/web")
+            } else {
+                File(files, "official-web/dist")
+            },
             sessionToken = token,
-            indexRows = { CarrierIndexRows.runtimeRows(webBootRows) },
+            indexRows = {
+                if (servesNext) emptyList() else CarrierIndexRows.runtimeRows(webBootRows)
+            },
         )
         bridge = CarrierAPIBridge(token)
         bridge.deliverToRuntime = { msg -> deliverRuntime(msg) }
         seam = SessionWriteSeam(bridge)
+        wireEvidence()
         carrier.registerFallback(dist.handler)
         carrier.register(CarrierRouteKind.PREFIX, "/plugins") { req, out ->
             plugins.handler(req, out)
@@ -164,8 +213,20 @@ class SessionServe private constructor(
             MockLlmRoute.serve(request, out)
         }
         carrier.start(File(files, "spike/webclient/web")) { /* readiness below */ }
-        Log.i(TAG, "serving $CLIENT_ID on 127.0.0.1:${carrier.port}")
+        Log.i(TAG, "serving $clientID on 127.0.0.1:${carrier.port}")
         startSpine(staged)
+    }
+
+    /** Wires the seat's serving facts onto the hook block (carrier conn
+     * threads; the defaults are no-ops so a hook-free launch — every
+     * user-facing boot — passes each fact through untouched). */
+    private fun wireEvidence() {
+        dist.onIndexRendered = { rows, bytes -> onIndexRendered?.invoke(rows, bytes) }
+        dist.onIndexServed = { onIndexServed?.invoke() }
+        dist.onAssetServed = { path -> onAssetServed?.invoke(path) }
+        bridge.onUpgradeAccepted = { path -> onUpgradeAccepted?.invoke(path) }
+        bridge.onAPICall = { endpoint, answered -> onAPICall?.invoke(endpoint, answered) }
+        bridge.onMuxFrame = { direction, kind -> onMuxFrame?.invoke(direction, kind) }
     }
 
     /** Evals the resident spine scenario through the frozen bridge, wires the
@@ -234,6 +295,10 @@ class SessionServe private constructor(
                 .put("fullCoverage", true)
                 .put("goals", true)
                 .put("fileReferences", true)
+                // The CREATION row: the present tool — the model declares
+                // workspace files as deliverables, journaled as
+                // deliverables/presented for the clients to render on screen.
+                .put("creation", true)
                 .put("skills", skillsConfig(workspace))
         }
         return config
@@ -329,6 +394,7 @@ class SessionServe private constructor(
     private fun fail(message: String) {
         runtimeFailed = true
         Log.i(TAG, "FAIL $message")
+        onRuntimeFailure?.invoke(message)
         maybeOpenOrigin()
     }
 

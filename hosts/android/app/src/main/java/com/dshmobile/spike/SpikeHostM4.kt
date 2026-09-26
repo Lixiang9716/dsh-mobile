@@ -31,6 +31,15 @@ class SpikeHostM4 private constructor(
     private val scenarioId: String = SCENARIO,
     private val entryPath: String = ENTRY,
     private val captureLabel: String = "android-capability-binding",
+    /** The v0-plane Web Client this drive serves (client id + staged dir):
+     * the default v0 client, or the whale creation client whose web dir
+     * rides the same assets staging (the iOS drive selects it through
+     * -dsh-web-client; the Android launch extras select the drive). The
+     * whale flag switches the readiness seam: its entry (session-mock-llm)
+     * never posts bus.ready — see deliverHostHello. */
+    private val clientId: String = "dsh-web-client",
+    private val webRootDir: String = "webclient/web",
+    private val whaleLeg: Boolean = false,
 ) {
 
     companion object {
@@ -42,6 +51,9 @@ class SpikeHostM4 private constructor(
         const val PARITY_ENTRY = "scenario/upstream-parity.js"
         const val SUITE_SCENARIO = "upstream.suite"
         const val SUITE_ENTRY = "scenario/upstream-suite-leg.js"
+        const val WHALE_SCENARIO = "android.whale.mount"
+        const val WHALE_ENTRY = "scenario/session-mock-llm.js"
+        const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -65,7 +77,7 @@ class SpikeHostM4 private constructor(
             onFinished: (String) -> Unit,
         ): SpikeHostM4 {
             val host = SpikeHostM4(activity)
-            host.webView = webView
+            host.pump.attach(webView)
             instance = host
             host.start(onFinished)
             return host
@@ -87,7 +99,7 @@ class SpikeHostM4 private constructor(
                 entryPath = LLM_ENTRY,
                 captureLabel = "llm-live-stream",
             )
-            host.webView = webView
+            host.pump.attach(webView)
             instance = host
             host.start(onFinished)
             return host
@@ -112,7 +124,7 @@ class SpikeHostM4 private constructor(
                 captureLabel = "upstream-suite",
             )
             host.suiteSpec = spec
-            host.webView = webView
+            host.pump.attach(webView)
             instance = host
             host.start(onFinished)
             return host
@@ -137,7 +149,32 @@ class SpikeHostM4 private constructor(
                 captureLabel = "upstream-parity",
             )
             host.parityMode = true
-            host.webView = webView
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The whale creation-client drive (scenario `android.whale.mount`):
+         * the same v0 /ws session flow as the M4 binding, but the staged
+         * web-client-whale page rides the carrier — the creation-mode client
+         * mount evidence (the iOS session-mock-llm drive's `--client whale`
+         * leg, mirrored). */
+        fun startWhale(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = WHALE_SCENARIO,
+                entryPath = WHALE_ENTRY,
+                captureLabel = "android-whale-mount",
+                clientId = WHALE_CLIENT_ID,
+                webRootDir = "webclient-whale/web",
+                whaleLeg = true,
+            )
+            host.pump.attach(webView)
             instance = host
             host.start(onFinished)
             return host
@@ -177,11 +214,17 @@ class SpikeHostM4 private constructor(
     private var busReady = false
     private var hostHelloDelivered = false
     private var mountedLogged = false
-    private var connectedLogged = false
-    private var slotAcked = false
-    private var hostInfoDelivered = false
-    private var firstDeltaSeen = false
-    private val projection = ArrayList<String>()
+
+    /** The /ws page pump (projection replay + the hello/slot.ack protocol +
+     * the ws.* records + the host.info gate + the origin load) — extracted
+     * to keep this file under the size gate; the records still ride this
+     * drive's scenario id through carrierLog. */
+    private val pump = M4PagePump(
+        activity, carrier,
+        log = { event, fields -> carrierLog(event, fields) },
+        onEvent = { json -> event(json) },
+        runtimeReady = { handle != 0L && carrier.port != 0 },
+    )
 
     private fun start(onFinished: (String) -> Unit) {
         this.onFinished = onFinished
@@ -204,20 +247,20 @@ class SpikeHostM4 private constructor(
 
     /** Runtime thread. */
     private fun begin() {
-        carrierLog("client.selected", JSONObject().put("client", "dsh-web-client"))
+        carrierLog("client.selected", JSONObject().put("client", clientId))
         val bundle = File(activity.filesDir, "spike")
         wireCore()
-        carrier.onWSMessage = { text -> ingest(text) }
+        carrier.onWSMessage = { text -> pump.ingest(text) }
         carrier.onStaticServed = { path ->
             if (!mountedLogged && (path == "/" || path.endsWith("index.html"))) {
                 mountedLogged = true
                 carrierLog(
                     "webclient.mounted",
-                    JSONObject().put("client", "dsh-web-client").put("path", "/index.html"),
+                    JSONObject().put("client", clientId).put("path", "/index.html"),
                 )
             }
         }
-        val webRoot = File(bundle, "webclient/web")
+        val webRoot = File(bundle, webRootDir)
         if (parityMode) {
             MockLlmRoute.enableParityScript()
             carrier.register(CarrierRouteKind.EXACT, MockLlmRoute.PATH) { request, out ->
@@ -298,10 +341,8 @@ class SpikeHostM4 private constructor(
             }
             "ws.send" -> {
                 val payload = msg.optJSONObject("payload") ?: return
-                val text = payload.toString()
-                synchronized(projection) { projection.add(text) }
-                observeProjection(payload)
-                carrier.send(text) // CarrierServer.send is thread-safe
+                pump.record(payload.toString())
+                carrier.send(payload.toString()) // CarrierServer.send is thread-safe
             }
         }
     }
@@ -310,115 +351,19 @@ class SpikeHostM4 private constructor(
      * scenario announces the bus subscription DURING eval (inside m4Begin,
      * before the handle field is assigned) and after the carrier is up —
      * so delivery happens at the later of: begin() returning, bus.ready,
-     * carrier listening. Never reentrant into eval. */
+     * carrier listening. Never reentrant into eval. The whale leg's entry
+     * (scenario/session-mock-llm.js, the iOS drive's shape) never posts
+     * bus.ready — it parks on the host.info EVENT until the page connects —
+     * so that leg opens the origin on handle + port alone. */
     private fun deliverHostHello() {
-        if (hostHelloDelivered || !busReady || handle == 0L || carrier.port == 0) return
+        if (hostHelloDelivered || handle == 0L || carrier.port == 0) return
+        if (!whaleLeg && !busReady) return
         hostHelloDelivered = true
         val hello = JSONObject().put("type", "host.hello").put("port", carrier.port)
         onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, hello.toString()))
         val port = carrier.port
-        activity.runOnUiThread { loadOrigin(port) }
+        activity.runOnUiThread { pump.loadOrigin(port) }
     }
-
-    private fun observeProjection(payload: JSONObject) {
-        when (payload.optString("kind")) {
-            "token-delta" -> if (!firstDeltaSeen) {
-                firstDeltaSeen = true
-                carrierLog(
-                    "ws.token-delta",
-                    JSONObject().put("first", true).put("index", payload.optInt("index")),
-                )
-            }
-            "complete" -> {
-                carrierLog("ws.token-delta", lastDeltaFields(payload))
-                carrierLog("ws.session-complete", JSONObject().put("status", "pass"))
-            }
-        }
-    }
-
-    private fun lastDeltaFields(payload: JSONObject): JSONObject = JSONObject()
-        .put("first", false)
-        .put("last", true)
-        .put("index", payload.optInt("deltas", 1) - 1)
-
-    // ---- WS page pump ---------------------------------------------------------
-
-    /** Carrier thread; hops onto the runtime thread. */
-    private fun ingest(text: String) {
-        val payload = try {
-            JSONObject(text)
-        } catch (_: Exception) {
-            return
-        }
-        SpikeRuntime.post {
-            if (finished) return@post
-            when (payload.optString("type")) {
-                "hello" -> pageHello(payload.optString("protocol"))
-                "slot.ack" -> slotAck(payload)
-            }
-        }
-    }
-
-    /** Runtime thread. */
-    private fun pageHello(protocol: String) {
-        carrier.send(
-            JSONObject()
-                .put("type", "ws.hello")
-                .put("protocol", protocol)
-                .put("served", JSONArray(carrier.servedList()))
-                .toString(),
-        )
-        carrier.send(replayLine())
-        if (connectedLogged) return
-        connectedLogged = true
-        carrierLog("ws.connected", JSONObject().put("protocol", protocol))
-        deliverHostInfo()
-    }
-
-    /** The replay payload for a (re)connecting page: every projection line
-     * pushed so far, parsed back as JSON values. */
-    private fun replayLine(): String = JSONObject()
-        .put("type", "replay")
-        .put("events", JSONArray(replayEvents()))
-        .toString()
-
-    private fun replayEvents(): List<JSONObject> = synchronized(projection) {
-        projection.mapNotNull { runCatching { JSONObject(it) }.getOrNull() }
-    }
-
-    /** Runtime thread: rendered-state evidence + host.info half-gate. */
-    private fun slotAck(payload: JSONObject) {
-        if (slotAcked) return
-        slotAcked = true
-        carrierLog(
-            "slot.registered",
-            JSONObject()
-                .put("id", payload.optString("id"))
-                .put("label", payload.optString("label"))
-                .put("by", payload.optString("by")),
-        )
-        deliverHostInfo()
-    }
-
-    /** Runtime thread: fires once the page is connected AND acked the slot. */
-    private fun deliverHostInfo() {
-        if (hostInfoDelivered || handle == 0L || carrier.port == 0 ||
-            !connectedLogged || !slotAcked
-        ) {
-            return
-        }
-        hostInfoDelivered = true
-        event(
-            JSONObject().put("event", "host.info").put("port", carrier.port).toString(),
-        )
-    }
-
-    /** UI thread: mount the Web Client (Presentation surface). */
-    private fun loadOrigin(port: Int) {
-        webView?.loadUrl("http://127.0.0.1:$port/")
-    }
-
-    private var webView: WebView? = null
 
     // ---- runtime-queue settle/event + settling --------------------------------
 
