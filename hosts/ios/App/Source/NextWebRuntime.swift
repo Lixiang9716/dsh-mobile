@@ -20,8 +20,11 @@ final class NextWebRuntime {
     static let clientID = SessionServe.nextClientID
     static let watchdogSeconds = 180
     static let pollSeconds = 60
+    static let createMessageText = "CREATE_TURN 请创建一只游动的蓝色鲸鱼"
 
-    private let serve = SessionServe()
+    /// interactive: the CREATION row (the present tool) rides the same
+    /// user-facing flag — this drive IS the creation-mode seat.
+    private let serve = SessionServe(interactive: true)
     private let eventLog = CarrierEventLog(scenario: NextWebRuntime.scenario)
     private weak var webView: WKWebView?
     private var completion: ((SpikeOutcome) -> Void)?
@@ -115,8 +118,16 @@ final class NextWebRuntime {
 
     /// The document finished loading: wait for the entry-module evidence,
     /// then run the drive phases.
+    private var probeStarted = false
+
     func pageDidFinish() {
-        guard !finished else { return }
+        // ONE drive chain per launch: the navigation delegate fires
+        // pageDidFinish per document (the ?token= 303 redirect alone counts),
+        // and two interleaved chains would drive the page against each
+        // other. The FIRST call wins; the asset-wait inside re-syncs it to
+        // the real document.
+        guard !probeStarted else { return }
+        probeStarted = true
         DispatchQueue.global().async { [weak self] in
             guard let self else { return }
             let deadline = Date().addingTimeInterval(30)
@@ -150,10 +161,12 @@ final class NextWebRuntime {
     ) {
         guard !finished else { return }
         let deadline = Date().addingTimeInterval(TimeInterval(Self.pollSeconds))
+        var lastAnswer: String = "(none)"
         func tick() {
             guard !finished, let webView else { return }
             if Date() > deadline {
-                return finish(failOutcome("page poll timed out: \(expression)"))
+                return finish(failOutcome(
+                    "page poll timed out: \(expression) — last: \(lastAnswer)"))
             }
             SessionWriteProbe.evaluate(webView, expression) { [weak self] result, error in
                 guard let self, !self.finished else { return }
@@ -163,6 +176,7 @@ final class NextWebRuntime {
                 guard let probe = SessionWriteProbe.parse(result) else {
                     return self.schedule(tick)
                 }
+                lastAnswer = String(describing: probe).prefix(400).description
                 if until(probe) {
                     collect(probe)
                 } else {
@@ -254,18 +268,18 @@ final class NextWebRuntime {
         })
     }
 
+    private var cancelStopShown = false
+
     private func pressSendThenStop() {
         pollPage("window.__next.pressSend()",
-            until: { $0["pressed"] as? Bool == true },
-            collect: { [weak self] _ in
-                self?.awaitStopShape()
-        })
-    }
-
-    private func awaitStopShape() {
-        pollPage("window.__next.stopState()",
-            until: { $0["stop"] as? Bool == true },
-            collect: { [weak self] _ in
+            until: { $0["pressed"] as? Bool == true
+                && $0["stopShown"] as? Bool == true },
+            collect: { [weak self] probe in
+                // The submit's optimistic flip is synchronous with the
+                // click, so stopShown arrives in the same answer. The stop
+                // press follows IMMEDIATELY (the optimistic state cannot be
+                // retired inside one evaluate round trip).
+                self?.cancelStopShown = probe["stopShown"] as? Bool == true
                 self?.pressStop()
         })
     }
@@ -273,11 +287,14 @@ final class NextWebRuntime {
     private func pressStop() {
         pollPage("window.__next.pressSend()",
             until: { $0["pressed"] as? Bool == true },
-            collect: { [weak self] _ in
-                self?.eventLog.emit("cancel.stop.pressed", [
-                    "stopShown": true, "stopPressed": true,
+            collect: { [weak self] probe in
+                guard let self else { return }
+                let shown = probe["stopShown"] as? Bool == true
+                    || self.cancelStopShown
+                self.eventLog.emit("cancel.stop.pressed", [
+                    "stopShown": shown, "stopPressed": true,
                 ])
-                self?.awaitCancelAccepted()
+                self.awaitCancelAccepted()
         })
     }
 
@@ -286,9 +303,76 @@ final class NextWebRuntime {
             until: { $0["toast"] as? String == "已请求停止" },
             collect: { [weak self] _ in
                 self?.eventLog.emit("cancel.settled", ["accepted": true])
-                self?.finish(SpikeOutcome(
+                self?.beginCreate()
+        })
+    }
+
+    /// The CREATION leg: prompt the model (the scripted CREATE_TURN turn
+    /// creates the file with the editor tool, then present declares it) and
+    /// wait for the rendered creation card; tapping it must open the
+    /// fullscreen viewer with the file's own content.
+    private func beginCreate() {
+        // WAIT for quiescence first: the previous leg's stop press leaves the
+        // composer in its optimistic stop state until the aborted turn's
+        // events land; sending during that window would read as ANOTHER
+        // cancel (a human simply cannot click this fast).
+        pollPage("window.__next.stopState()",
+            until: { $0["stop"] as? Bool == false
+                && $0["optimistic"] as? Bool == false },
+            collect: { [weak self] _ in
+                self?.typeCreatePrompt()
+        })
+    }
+
+    private func typeCreatePrompt() {
+        pollPage(
+            "window.__next.typeComposer('\(Self.createMessageText)')",
+            until: { $0["sendEnabled"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.pressSendThenAwaitCard()
+        })
+    }
+
+    private func pressSendThenAwaitCard() {
+        pollPage("window.__next.pressSend()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.awaitCreationCard()
+        })
+    }
+
+    private func awaitCreationCard() {
+        pollPage("window.__next.readTranscript()",
+            until: { $0["creationCard"] as? Bool == true },
+            collect: { [weak self] probe in
+                self?.eventLog.emit("creation.card.rendered", [
+                    "title": "游动的蓝色鲸鱼 — 点按全屏查看",
+                    "items": probe["items"] ?? 0,
+                ])
+                self?.openCreation()
+        })
+    }
+
+    private func openCreation() {
+        pollPage("window.__next.pressCreationCard()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.awaitCreationViewer()
+        })
+    }
+
+    private func awaitCreationViewer() {
+        pollPage("window.__next.readCreation()",
+            until: { ($0["open"] as? Bool) == true
+                && ($0["srcdoc"] as? String ?? "").contains("BLUE-WHALE-CANARY") },
+            collect: { [weak self] probe in
+                guard let self else { return }
+                self.eventLog.emit("creation.opened", [
+                    "srcdocContains": "BLUE-WHALE-CANARY",
+                ])
+                self.finish(SpikeOutcome(
                     completed: true, passed: true, error: "",
-                    canonicalLines: self?.eventLog.lines ?? []))
+                    canonicalLines: self.eventLog.lines))
         })
     }
 

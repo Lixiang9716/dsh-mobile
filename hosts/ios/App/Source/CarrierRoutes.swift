@@ -106,15 +106,30 @@ extension CarrierServer {
 
     /// POST /mock-llm/chat/completions — the SCRIPTED model boundary of the
     /// on-device session-live drive: a real loopback HTTP + SSE endpoint on
-    /// the carrier whose script mirrors the vendored dsh-llm-mock-server's
-    /// success stream byte-for-byte (successText 'Hello from upstream',
-    /// chunkSize 5, terminal chunk with finish_reason + usage, [DONE]) and
-    /// its fixed bearer check (401 JSON on a bad key). Real transport,
-    /// scripted model — logged as such by the scenario's llm/runtime record.
-    /// The drive chooses the success script unconditionally; script
-    /// sequences (auth_error et al.) stay the CLI mock's territory.
+    /// the carrier whose scripts mirror the vendored dsh-llm-mock-server's
+    /// success stream byte-for-byte and use its fixed bearer check (401 JSON
+    /// on a bad key). Real transport, scripted model. The nextweb drive's
+    /// legs select scripts by prompt marker (every existing drive's prompts
+    /// never carry these, so their wire stays byte-identical to before):
+    ///   (none)       — the success script: "Hello from upstream" in
+    ///                  5-char chunks + finish + usage + [DONE].
+    ///   SLOW_TURN    — the cancel leg: the same reply body drips in slices
+    ///                  ~220 ms apart, so the turn is provably mid-stream
+    ///                  when the probe presses stop.
+    ///   CREATE_TURN  — the creation leg: the assistant message carries TWO
+    ///                  tool calls — str_replace_editor creates
+    ///                  creations/blue-whale.html, present declares it a
+    ///                  deliverable (journaled deliverables/presented).
     static let mockLlmPath = "/mock-llm/chat/completions"
     static let mockLlmKey = "mock-key-0001"
+
+    /// The drip pacing for the slow script (the cancel leg's race window).
+    static let slowDripInterval = 220
+
+    func serveSuccess(_ respond: @escaping (Int, Data, String, NWConnection) -> Void,
+        conn: NWConnection) {
+        respond(200, scriptedSuccessBody(), "text/event-stream; charset=utf-8", conn)
+    }
 
     func registerScriptedLlm() throws {
         try register(kind: .exact, path: Self.mockLlmPath) { [weak self] request, conn in
@@ -137,14 +152,32 @@ extension CarrierServer {
             respond(status: 401, body: data, contentType: "application/json", conn: conn)
             return
         }
+        if request.body.contains(Data("CREATE_TURN".utf8)) {
+            // ONE create round per launch: a follow-up model call (the agent
+            // loop's post-tool continuation) gets the plain success body, or
+            // the scripted tool calls would loop forever.
+            if serveCreateScriptDone {
+                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                    conn: conn)
+            }
+            serveCreateScriptDone = true
+            return serveCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                conn: conn)
+        }
+        let body = scriptedSuccessBody()
+        if request.body.contains(Data("SLOW_TURN".utf8)) {
+            Self.respondSlowDrip(
+                body: body, contentType: "text/event-stream; charset=utf-8",
+                interval: Self.slowDripInterval, conn: conn)
+        } else {
+            respond(status: 200, body: body,
+                contentType: "text/event-stream; charset=utf-8", conn: conn)
+        }
+    }
+
+    /// The success script's canned SSE body.
+    private func scriptedSuccessBody() -> Data {
         let successText = "Hello from upstream"
-        // The nextweb drive's CANCEL leg needs the model boundary to still be
-        // mid-stream while the probe presses stop: a prompt carrying the
-        // SLOW_TURN marker selects a drip script (body slices sent
-        // serveScriptedLlmInterval ms apart) over the usual one-shot response.
-        // Every existing drive's prompts never carry the marker, so their
-        // wire stays byte-identical to before.
-        let slow = request.body.contains(Data("SLOW_TURN".utf8))
         var body = Data()
         func sse(_ payload: @autoclosure () -> Any) {
             guard let data = try? JSONSerialization.data(withJSONObject: payload()),
@@ -161,20 +194,42 @@ extension CarrierServer {
             "finish_reason": "stop"]],
             "usage": ["prompt_tokens": 3, "completion_tokens": successText.count]])
         body.append(Data("data: [DONE]\n\n".utf8))
-        // One Content-Length response: the transport consumes the SSE bytes
-        // from the plain body (no chunked framing needed on loopback).
-        if slow {
-            Self.respondSlowDrip(
-                body: body, contentType: "text/event-stream; charset=utf-8",
-                interval: Self.slowDripInterval, conn: conn)
-        } else {
-            respond(status: 200, body: body,
-                contentType: "text/event-stream; charset=utf-8", conn: conn)
-        }
+        return body
     }
 
-    /// The drip pacing for the slow script (the cancel leg's race window).
-    static let slowDripInterval = 220
+    /// The CREATE script's assistant message: TWO tool calls in one turn —
+    /// str_replace_editor creates the deliverable, present declares it (the
+    /// runtime journals deliverables/presented; the client renders the card).
+    private func serveCreateScript(
+        respond: @escaping (Int, Data, String, NWConnection) -> Void,
+        conn: NWConnection) {
+        var body = Data()
+        func sse(_ payload: @autoclosure () -> Any) {
+            guard let data = try? JSONSerialization.data(withJSONObject: payload()),
+                  let text = String(data: data, encoding: .utf8) else { return }
+            body.append(Data("data: \(text)\n\n".utf8))
+        }
+        let createArgs = "{\"command\":\"create\",\"path\":\"creations/blue-whale.html\","
+            + "\"file_text\":\"<!doctype html><title>蓝色鲸鱼</title>"
+            + "<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}"
+            + "#w{font-size:120px;position:absolute;top:38%;left:-140px;"
+            + "animation:swim 8s linear infinite}"
+            + "</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>\"}"
+        let presentArgs = "{\"files\":[{\"path\":\"creations/blue-whale.html\","
+            + "\"description\":\"游动的蓝色鲸鱼 — 点按全屏查看\"}]}"
+        sse(["choices": [["index": 0, "delta": ["tool_calls": [
+            ["index": 0, "id": "call-create-1", "type": "function",
+             "function": ["name": "str_replace_editor", "arguments": createArgs]],
+            ["index": 1, "id": "call-present-1", "type": "function",
+             "function": ["name": "present", "arguments": presentArgs]],
+        ]], "finish_reason": NSNull()]]])
+        sse(["choices": [["index": 0, "delta": ["content": ""],
+            "finish_reason": "stop"]],
+            "usage": ["prompt_tokens": 3, "completion_tokens": 12]])
+        body.append(Data("data: [DONE]\n\n".utf8))
+        respond(200, body, "text/event-stream; charset=utf-8", conn)
+    }
+
 }
 
 extension CarrierServer {

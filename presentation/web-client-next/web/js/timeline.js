@@ -145,7 +145,10 @@ const applyStatusEvent = (state, type, data) => {
   if (type === 'turn/end') {
     const kind = data?.reason?.kind ?? data?.reason;
     if (NORMAL_TURN_REASONS.has(kind)) return;
-    if (kind === 'aborted') {
+    // A cancelled/aborted turn gets NO promoting assistant/message — drop
+    // the streaming tail here or it hangs (and pins the stop button on).
+    if (kind === 'aborted' || kind === 'cancelled') {
+      state.tail = null;
       add(state, { kind: 'status', text: '已停止', tone: 'info' });
       return;
     }

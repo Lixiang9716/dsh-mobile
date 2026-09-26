@@ -126,6 +126,27 @@ const renderAssistantItem = (item) => {
   return wrap;
 };
 
+const renderCreation = (item) => {
+  const wrap = el('div', 'item item-creation');
+  for (const file of item.files) {
+    const row = el('button', 'creation-card');
+    row.type = 'button';
+    row.appendChild(el('span', 'creation-glyph', '🎨'));
+    const main = el('span', 'creation-main');
+    main.appendChild(el('span', 'creation-title',
+      file.description || file.path));
+    main.appendChild(el('span', 'creation-path', file.path));
+    row.appendChild(main);
+    row.appendChild(el('span', 'creation-open', '查看'));
+    row.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('dsh-open-creation',
+        { detail: { path: file.path, title: file.description || file.path } }));
+    });
+    wrap.appendChild(row);
+  }
+  return wrap;
+};
+
 const renderSimple = (item) => {
   if (item.kind === 'notice') {
     const wrap = el('div', 'item item-notice');
@@ -145,6 +166,7 @@ const renderSimple = (item) => {
 const renderItem = (item) => {
   if (item.kind === 'user') return renderUserItem(item);
   if (item.kind === 'assistant') return renderAssistantItem(item);
+  if (item.kind === 'creation') return renderCreation(item);
   return renderSimple(item);
 };
 

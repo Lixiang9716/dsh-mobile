@@ -67,9 +67,12 @@ const submit = async (ui, toast) => {
     // The optimistic state retires on the fold's live running signal; the
     // watchdog covers burst-delivered turns that skip it entirely.
     setTimeout(() => { ui.optimistic = false; ui.refresh(); }, 12000);
+    window.__dshSentCount = (window.__dshSentCount ?? 0) + 1;
     ui.onSent(text);
   } catch (error) {
     ui.optimistic = false;
+    window.__dshSendError = (isRemoteError(error)
+      ? `${error.code}` : 'transport');
     toast(isRemoteError(error) ? `发送失败（${error.code}）` : '发送失败');
   }
 };
@@ -77,6 +80,11 @@ const submit = async (ui, toast) => {
 const cancelTurn = async (ui, toast) => {
   try {
     await requestCancel(ui.sessionId);
+    // A confirmed cancel retires the optimistic state: the affordance's job
+    // is done, and a cancelled/never-started turn may never deliver the
+    // fold's live running signal that would otherwise retire it.
+    ui.optimistic = false;
+    ui.refresh();
     toast('已请求停止');
   } catch (error) {
     toast(isRemoteError(error)
@@ -98,6 +106,13 @@ const wireComposer = (ui, toast) => {
 export function createComposer(root, toast) {
   const ui = makeUi(root);
   wireComposer(ui, toast);
+  // The diagnostic face the on-device probe reads in failure forensics.
+  if (typeof window !== 'undefined') {
+    window.__dshComposerDebug = () => ({
+      running: ui.running, optimistic: ui.optimistic,
+      sessionId: ui.sessionId, disabled: ui.send.disabled,
+      text: ui.input.value});
+  }
   return {
     bind(id) {
       ui.sessionId = id;

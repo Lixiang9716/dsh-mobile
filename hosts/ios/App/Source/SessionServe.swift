@@ -279,6 +279,10 @@ final class SessionServe {
             config["fullCoverage"] = true
             config["goals"] = true
             config["fileReferences"] = true
+            // The CREATION row: the present tool — the model declares
+            // workspace files as deliverables, journaled as
+            // deliverables/presented for the clients to render on screen.
+            config["creation"] = true
             config["skills"] = [
                 "dshHome": "\(Self.workspaceRoot.path)/home",
                 "agentsHome": "\(Self.workspaceRoot.path)/home/agents",

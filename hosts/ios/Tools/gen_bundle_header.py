@@ -92,6 +92,7 @@ RESOURCES = [
     # client-modules node + browser faces). NOT the full agent spine — the
     # officialweb-web-live drive composes the boot wire without runtime services.
     ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
+    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
     # (mechanical entries packed two-per-line: the file lives under the

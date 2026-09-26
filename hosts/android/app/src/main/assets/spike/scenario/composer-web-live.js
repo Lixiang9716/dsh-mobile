@@ -158,6 +158,9 @@ const bootPhase = async (cfg, route) => {
     skills: cfg.skills,
     goals: cfg.goals === true,
     fileReferences: cfg.fileReferences === true,
+    // The CREATION row (the creation-mode plugin): the present tool, under
+    // the user-facing seat's interactive flag like the rows above.
+    creation: cfg.creation === true,
     container: {
       cwd: root,
       tmpdir: `${root}/tmp`,
@@ -195,7 +198,7 @@ const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
  * ONLY on the scripted route: a real endpoint's turn is nondeterministic, so
  * it is reported verbatim and never predicted (asserting it would turn every
  * honest answer into a drive failure). */
-const installTurnEvidence = (ctx, route) => {
+const installTurnEvidence = (ctx, route, cfg) => {
   const turns = new Map(); // sessionId → {prompt, events, text, settled}
   ctx.on('session/event', (session, event) => {
     if (session?.id === undefined || event === undefined) return;
@@ -212,7 +215,11 @@ const installTurnEvidence = (ctx, route) => {
     if (event.type === 'assistant/message') turn.text = assistantTextOf(event);
     if (event.type === 'turn/end' && !turn.settled) {
       turn.settled = true;
-      if (route.scripted) {
+      // CREATION mode (the creation-mode plugin's drive) runs extra turns —
+      // a cancelled drip turn and a tool-call-only create turn — whose text
+      // is deliberately not the scripted reply; the strict text demand is
+      // for the single-turn composer.live-write leg only.
+      if (route.scripted && cfg.creation !== true) {
         demand(turn.text === EXPECTED_TEXT,
           `page session "${session.id}" assistant text is "${turn.text}"`);
       }
@@ -480,7 +487,7 @@ const main = async () => {
   await probeFsPrimitives();
   await probeWasmRun();
   await awaitAgent(ctx);
-  installTurnEvidence(ctx, route);
+  installTurnEvidence(ctx, route, cfg);
   installRuntimeHalf(ctx, cfg, route);
   await probeSettingsSurfaces();
   log.debug('b4 runtime resident (write surface live; awaiting the page)', {});

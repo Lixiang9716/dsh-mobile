@@ -520,3 +520,58 @@
   text-align: center;
 }
 #toast.show { opacity: 1; }
+
+/* creation cards: the agent's presented deliverables */
+.item-creation { display: flex; flex-direction: column; gap: 8px; }
+.creation-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--r-card);
+  background: var(--user-bubble);
+  border: 0.7px solid var(--user-bubble-line);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.creation-card:active { transform: scale(0.99); }
+.creation-glyph { font-size: 20px; }
+.creation-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.creation-title { font-weight: 650; font-size: 14.5px; }
+.creation-path {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.creation-open { color: var(--ocean); font-weight: 650; font-size: 13px; }
+
+/* fullscreen creation viewer */
+#creation-view {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+#creation-view[hidden] { display: none; }
+.creation-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top) + 8px) 10px 8px;
+  border-bottom: 1px solid var(--line);
+}
+.creation-title-text {
+  flex: 1;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#creation-frame { flex: 1; border: none; background: #fff; }

@@ -109,6 +109,18 @@
       "match": {
         "accepted": true
       }
+    },
+    {
+      "event": "creation.card.rendered",
+      "match": {
+        "title": "游动的蓝色鲸鱼 — 点按全屏查看"
+      }
+    },
+    {
+      "event": "creation.opened",
+      "match": {
+        "srcdocContains": "BLUE-WHALE-CANARY"
+      }
     }
   ]
 }

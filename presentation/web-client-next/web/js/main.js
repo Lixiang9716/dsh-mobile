@@ -144,6 +144,32 @@ const openSession = (sessionId) => {
   });
 };
 
+// The creation viewer: a presented workspace file, fetched over the
+// claimed workspaceFiles/read leg and shown fullscreen in a sandboxed
+// frame — the on-screen half of the creation-mode loop.
+const creationView = $('creation-view');
+const openCreation = async (path, title) => {
+  $('creation-title-text').textContent = title || path;
+  creationView.hidden = false;
+  try {
+    const value = await rpc('workspaceFiles/read', {
+      args: { request: { path } },
+    });
+    document.getElementById('creation-frame').srcdoc =
+      typeof value?.text === 'string' ? value.text : '';
+  } catch (error) {
+    creationView.hidden = true;
+    toast(isRemoteError(error) ? `创作不可读（${error.code}）` : '创作不可读');
+  }
+};
+document.addEventListener('dsh-open-creation', (event) => {
+  openCreation(event.detail.path, event.detail.title);
+});
+$('creation-close').addEventListener('click', () => {
+  creationView.hidden = true;
+  document.getElementById('creation-frame').srcdoc = '';
+});
+
 composer.onSent(() => {
   // The durable user/message echoes over the journal; nothing optimistic
   // to add — the send clears the input and the turn streams live.

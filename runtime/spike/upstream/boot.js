@@ -338,13 +338,6 @@ const mountSpine = async (ctx, identity) => {
   await ctx.plugin(ToolTodo, { allowParallelInProgress: false });
   await ctx.plugin(ShellWasm);
   await ctx.plugin(ShellIsh);
-  // The FILE-TOOLS row (dsh-desktop plugin surface): the vendored fs-local
-  // backend service (`fs`) plus upstream's file tools, over one in-memory
-  // workspace world pinned to the container cwd. Dynamic imports here — the
-  // npm bridge must register `diff` before these specifiers resolve (see the
-  // import note at the top of this file), and fs-local's Config static reads
-  // the pinned profile container. The world is in-memory by design for this
-  // host: no durability, no symlinks, no permissions — the staged gap.
   await mountFileTools(ctx, identity.cwd);
   // The SKILL row (the agent-flow E2E): mounted after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the
@@ -357,6 +350,13 @@ const mountSpine = async (ctx, identity) => {
   // agent-loop (both inject `agents`; goals also reads `sessionProjections`).
   if (identity.goals) await mountGoalPlane(ctx);
   if (identity.fileReferences) await mountFileReferencePlane(ctx);
+  // The CREATION row (the creation-mode plugin, 2026-09-26): the present
+  // tool registers into `tools` at apply time, so it mounts with the other
+  // tools — before the agent loop. Only when configured.
+  if (identity.creation) {
+    const Present = await import('upstream/tool-present.js');
+    await ctx.plugin(Present, { maxFiles: 8 });
+  }
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -393,6 +393,10 @@ const mountSpine = async (ctx, identity) => {
  * @param options.fileReferences - optional FILE-REFERENCE-row flag (true
  * mounts the vendored dsh-file-reference-local service under
  * `fileReferences`, the composer's @-mention lexicon). Absent = the
+ * historical spine.
+ * @param options.creation - optional CREATION-row flag (true mounts the
+ * present tool — the model declares workspace files as on-screen
+ * deliverables, journaled as deliverables/presented). Absent = the
  * historical spine.
  * @param options.skills - optional SKILL-row configuration: {dshHome,
  *   agentsHome, customSkillDirs?} — mounting the vendored skill family
@@ -474,6 +478,7 @@ export async function bootUpstream(options) {
     commands: options.commands,
     goals: options.goals,
     fileReferences: options.fileReferences,
+    creation: options.creation,
   });
   await demandServices(ctx);
   demandPresetServices(ctx);

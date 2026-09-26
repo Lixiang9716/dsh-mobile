@@ -280,6 +280,8 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_scenario_b3_web_live_js), under: root)
         try write("upstream/boot.js",
                   data: resData(dsh_spike_res_upstream_boot_js), under: root)
+        try write("upstream/tool-present.js",
+                  data: resData(dsh_spike_res_upstream_tool_present_js), under: root)
         try write("upstream/settings-memory.js",
                   data: resData(dsh_spike_res_upstream_settings_memory_js), under: root)
         try write("upstream/llm-transport.js",

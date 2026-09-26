@@ -41,6 +41,10 @@ final class CarrierServer {
     private var fallbackHandler: CarrierHTTPHandler?
     /// Per-connection reassembly buffers for HTTP requests (heads + bodies).
     private var httpRx: [ObjectIdentifier: Data] = [:]
+    /// The CREATE script's one-shot latch (see CarrierRoutes serveCreateScript):
+    /// a follow-up model call in the same turn gets the plain success body, or
+    /// the scripted tool calls would loop forever.
+    var serveCreateScriptDone = false
     /// Open WebSocket seats keyed by connection; multiple seats compose (§3.3).
     private var wsSeats: [ObjectIdentifier: WSSeat] = [:]
     private var servedPaths: [String] = []

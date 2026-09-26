@@ -27,7 +27,9 @@ enum NextWebProbe {
         \(typeLeg)
         \(pressSendLeg)
         \(stopStateLeg)
-        \(readTranscriptLeg);
+        \(readTranscriptLeg)
+        \(pressCreationCardLeg)
+        \(readCreationLeg);
         'defined';
         """
     }
@@ -45,6 +47,12 @@ enum NextWebProbe {
     static let chatVisibleLeg = """
         window.__next.chatVisible = () => {
           const chat = document.getElementById('view-chat');
+          if (!chat || chat.hidden) {
+            // served ≠ executed: the page's module may not have registered
+            // the click listener yet — RE-TAP until the view flips (the
+            // runtime's createOrAdopt absorbs the extra taps).
+            document.getElementById('new-session')?.click();
+          }
           return JSON.stringify({chatVisible: !!chat && !chat.hidden});
         };
         """
@@ -70,7 +78,8 @@ enum NextWebProbe {
           const send = document.getElementById('composer-send');
           if (!send) return JSON.stringify({pressed: false});
           send.click();
-          return JSON.stringify({pressed: true});
+          return JSON.stringify({pressed: true,
+            stopShown: send.classList.contains('stop')});
         };
         """
 
@@ -80,10 +89,14 @@ enum NextWebProbe {
         window.__next.stopState = () => {
           const send = document.getElementById('composer-send');
           const toast = document.getElementById('toast');
+          const dbg = window.__dshComposerDebug ? window.__dshComposerDebug() : {};
           return JSON.stringify({
             stop: !!send && send.classList.contains('stop'),
             disabled: !!send && send.disabled,
-            toast: toast ? toast.textContent : ''});
+            toast: (toast ? toast.textContent : '').slice(0, 40),
+            running: dbg.running === true,
+            optimistic: dbg.optimistic === true,
+            session: String(dbg.sessionId ?? '').slice(0, 10)});
         };
         """
 
@@ -93,13 +106,45 @@ enum NextWebProbe {
         window.__next.readTranscript = () => {
           const host = document.getElementById('transcript');
           const assistant = host.querySelector('.item-assistant .md');
+          const dbg = window.__dshComposerDebug ? window.__dshComposerDebug() : {};
           return JSON.stringify({
+            toast: (document.getElementById('toast')?.textContent ?? '').slice(0, 50),
+            sent: window.__dshSentCount ?? 0,
+            sendError: window.__dshSendError ?? '',
+            muxFrames: window.__dshMuxDiag ? window.__dshMuxDiag.frames : -1,
             items: host.querySelectorAll('.item').length,
             userShown: host.querySelector('.user-bubble') !== null,
             tailPresent: host.querySelector('.tail-state') !== null,
+            creationCard: host.querySelector('.creation-card') !== null,
+            dump: [...host.querySelectorAll('.item, .group')].map((n) =>
+              (n.className.split(' ')[0] || 'div') + ':' +
+              n.textContent.slice(0, 24)).join(' | ').slice(0, 420),
             assistant: assistant ? assistant.textContent.slice(0, 200) : '',
             title: document.getElementById('chat-title').textContent,
-            status: document.getElementById('chat-status').textContent});
+            status: document.getElementById('chat-status').textContent,
+            toast: (document.getElementById('toast')?.textContent ?? '').slice(0, 60)});
+        };
+        """
+
+    /// Tap the first creation card (opens the fullscreen viewer).
+    static let pressCreationCardLeg = """
+        window.__next.pressCreationCard = () => {
+          const card = document.querySelector('.creation-card');
+          if (!card) return JSON.stringify({pressed: false});
+          card.click();
+          return JSON.stringify({pressed: true});
+        };
+        """
+
+    /// The creation viewer's state: open + the frame's srcdoc (the drive
+    /// waits for its staged canary to prove the file's CONTENT rendered).
+    static let readCreationLeg = """
+        window.__next.readCreation = () => {
+          const frame = document.getElementById('creation-frame');
+          const view = document.getElementById('creation-view');
+          return JSON.stringify({
+            open: !!view && !view.hidden,
+            srcdoc: frame ? frame.srcdoc.slice(0, 400) : ''});
         };
         """
 }
