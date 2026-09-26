@@ -611,16 +611,24 @@ window.__next.gameViewer = async () => {
     window.__nextOut = JSON.stringify(out);
     return;
   }
-  cards[cards.length - 1].click();
   const read = () => {
     const frame = document.getElementById('creation-frame');
     const view = document.getElementById('creation-view');
     return {open: !!view && !view.hidden, srcdoc: frame ? frame.srcdoc : ''};
   };
-  await window.__next.wait(
-    () => { const s = read(); return s.open && s.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
-    40000);
-  const s = read();
+  // The turn may still be streaming while the card is clicked, and the
+  // timeline's re-render can swallow a click (the clicked node is rebuilt
+  // under the pointer) — RETRY the click until the viewer carries the game.
+  let s = read();
+  for (let attempt = 0; attempt < 4 && !(s.open && s.srcdoc.indexOf('DSH-GAME-CANARY') !== -1); attempt++) {
+    const cards2 = document.querySelectorAll('.creation-card');
+    if (!cards2.length) { await window.__next.wait(() => false, 3000); continue; }
+    cards2[cards2.length - 1].click();
+    await window.__next.wait(
+      () => { const s2 = read(); return s2.open && s2.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
+      20000);
+    s = read();
+  }
   out.open = s.open; out.srcdoc = s.srcdoc.slice(0, 200);
   if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
     window.__nextOut = JSON.stringify(out);
