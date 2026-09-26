@@ -1,0 +1,32 @@
+{
+  "host": "android emulator-5554 (API 35 AVD pixel, Android 15 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "package": "com.dshmobile.spike",
+  "phase": "android.nextweb.mount + android.whale.mount (the self-hosted web clients on Android)",
+  "launchModes": "--ez dsh.whale true (SpikeHostM4 whale leg: session-mock-llm over the v0 /ws seat, webclient-whale web root); --ez dsh.next true (NextWebSession drive: SessionServe with clientID dsh-web-client-next, interactive creation row, zero index injection rows)",
+  "tree": "feat/android-next-whale-mount (working tree at receipt time)",
+  "runner": "test/e2e/run-android-next-web-mount.sh",
+  "scenarios": [
+    {
+      "id": "android.nextweb.mount",
+      "checker": "test/e2e/scenarios/android-nextweb-mount.json",
+      "events": 19,
+      "result": "pass"
+    }
+  ],
+  "exitStatus": 0,
+  "exitStatusNote": "run-android-next-web-mount.sh exit 0 in ONE invocation (both legs; this dir carries the next leg's capture), canary-pinned logcat bounded at the first dsh.spike.result: ALL line. Checker exit: android.nextweb.mount 19/19 (session.attached + journal.frame.forwarded pinned order:any — the journal baseline races the probe's DOM phases by construction, the composer-live-write manifests' own convention)",
+  "verdictLines": [
+    "android.whale.mount PASS | quickjs-ng 0.17.0",
+    "ALL PASS",
+    "android.nextweb.mount PASS | quickjs-ng 0.17.0",
+    "ALL PASS"
+  ],
+  "creationLeg": "the scripted CREATE_TURN round: MockLlmRoute answers ONE request per launch with a write+present tool-call pair (write lands creations/blue-whale.html INSIDE the workspace via the ABSOLUTE path, present declares it relative; the follow-up continuation gets the plain success stream — the one-shot latch). The page renders the creation card; the probe taps it and the fullscreen viewer's iframe srcdoc carries BLUE-WHALE-CANARY (the workspaceFiles/readAll fetch served the created file's own content)",
+  "cancelLeg": "SLOW_TURN drips the success body in ~8 slices ~220ms apart on the carrier's per-connection thread; the probe presses stop the moment the send button morphs (the optimistic flip), session/cancel forwards and the 已请求停止 toast settles it",
+  "screens": [
+    "creation-viewer.png (the creation card in the transcript + the fullscreen whale viewer open)"
+  ],
+  "notes": "the drive caught TWO product gaps on its way green: (1) the interactive closure was missing the four npm-scope packages (dsh-anonymous-user-id, dsh-goal, dsh-file-reference, dsh-file-reference-local) — every commands:true boot failed on the first import, on Android AND Harmony alike; (2) the scripted tool_calls pair must carry DISTINCT wire indices (index 0 + 1) — two zero-indexed calls merge into one misnamed call (present executed with write's arguments)"
+}

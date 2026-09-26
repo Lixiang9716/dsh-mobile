@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-web-client-next",
+  "version": "0.1.0",
+  "type": "web-client",
+  "web": "web",
+  "capabilities": { "required": [], "optional": [] }
+}

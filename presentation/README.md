@@ -42,12 +42,14 @@ Web Client from plugin configuration and hardcodes no UI:
   makes it two-way (session/create, session/prompt) and live (baseline +
   change frames). Vanilla ES modules, no build step, every file under the
   code-size gate. Served by the SAME SessionServe seat as the official
-  dist — the launch configuration selects it
-  (`-dsh-web-client dsh-web-client-next` on iOS) and the seat swaps the
-  dist root and drops the injection rows (the page owns its whole boot);
-  the vendored official dist stays byte-verbatim (D6). Iteration loop:
-  `node tools/dev-web-carrier/dev-carrier.mjs --client next` (fixture
-  dev-echo turn, desktop speed). Evidence: `nextweb.mount` on iOS
+  dist — the launch configuration selects it (`-dsh-web-client
+  dsh-web-client-next` on iOS, `--es dsh.web.client dsh-web-client-next`
+  on Android's release boot, `--ez dsh.next true` for Android's E2E drive)
+  and the seat swaps the dist root and drops the injection rows (the page
+  owns its whole boot); the vendored official dist stays byte-verbatim
+  (D6). Iteration loop: `node tools/dev-web-carrier/dev-carrier.mjs
+  --client next` (fixture dev-echo turn, desktop speed). Evidence:
+  `nextweb.mount` on iOS and `android.nextweb.mount` 19/19 on Android
   ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
 - `web-client-whale/` — the CREATION-MODE plugin (2026-09-26): a third
@@ -56,9 +58,10 @@ Web Client from plugin configuration and hardcodes no UI:
   dependencies) — while still speaking the full v0 contract
   (session-projection@0 over `/ws` + the toolbar slot ACK). The whale
   reacts to the session: token deltas spout bubbles, completion releases
-  a pod. Selected by `-dsh-web-client dsh-web-client-whale` on iOS.
-  Evidence: `whale.mount` 16/16
-  ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
+  a pod. Selected by `-dsh-web-client dsh-web-client-whale` on iOS and
+  `--ez dsh.whale true` on Android (both ride the hosts' session-mock-llm
+  drive). Evidence: `whale.mount` 16/16 on iOS, `android.whale.mount` 7/7
+  on Android ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
 launch argument on the iOS spike; default `dsh-web-client`) — the device

@@ -53,6 +53,10 @@ class MainActivity : Activity() {
             startM4(savedInstanceState, llm = true)
         } else if (intent.getBooleanExtra(EXTRA_M4, false)) {
             startM4(savedInstanceState, llm = false)
+        } else if (intent.getBooleanExtra(EXTRA_WHALE, false)) {
+            startM4(savedInstanceState, whale = true)
+        } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
+            startNextWeb()
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
             startOfficialWeb()
         } else if (intent.getBooleanExtra(EXTRA_SESSION, false)) {
@@ -120,7 +124,7 @@ class MainActivity : Activity() {
         serve?.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null) {
+    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -150,19 +154,21 @@ class MainActivity : Activity() {
         SpikeRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = startHost(llm, view, parity, suite)
+                spikeHost = startHost(llm, view, parity, suite, whale)
             }
         }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
     }
 
-    /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream) or
-     * the M4 binding — with the same carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null): SpikeHostM4 {
+    /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
+     * the whale creation-client mount, or the M4 binding — with the same
+     * carrier + WebView flow. */
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false): SpikeHostM4 {
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
             suite != null -> SpikeHostM4.startSuite(this, view, onVerdict, suite)
             parity -> SpikeHostM4.startParity(this, view, onVerdict)
+            whale -> SpikeHostM4.startWhale(this, view, onVerdict)
             llm -> SpikeHostM4.startLlm(this, view, onVerdict)
             else -> SpikeHostM4.start(this, view, onVerdict)
         }
@@ -177,6 +183,12 @@ class MainActivity : Activity() {
         const val EXTRA_PARITY = "dsh.parity"
         const val EXTRA_SUITE = "dsh.suite"
         const val EXTRA_SPEC = "dsh.spec"
+        const val EXTRA_WHALE = "dsh.whale"
+        const val EXTRA_NEXT = "dsh.next"
+        /** The Web Client the release boot serves (string extra; the iOS
+         * launch arg -dsh-web-client's sibling — a client selection, not a
+         * drive, so the release build accepts it). */
+        const val EXTRA_WEB_CLIENT = "dsh.web.client"
     }
 
     /**
@@ -186,35 +198,7 @@ class MainActivity : Activity() {
      * official boot graph over the bus seam (OfficialWebSession).
      */
     private fun startOfficialWeb() {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-        layout.addView(
-            verdictView,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        val view = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    OfficialWebSession.dispatchPageFinished()
-                }
-            }
-        }
-        layout.addView(
-            view,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
-            ),
-        )
-        setContentView(layout)
+        val view = drivenWebView { OfficialWebSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
         // thread: spike bundle + official dist + web-plugins), then start.
@@ -234,6 +218,69 @@ class MainActivity : Activity() {
     private var serve: SessionServe? = null
     private var sessionLive: SessionLiveSession? = null
     private var sessionWrite: SessionWriteSession? = null
+    private var nextWeb: NextWebSession? = null
+
+    /**
+     * The nextweb.mount drive (`android.nextweb.mount`): the SELF-HOSTED web
+     * client on the SessionServe seat the user-facing launch runs — selected
+     * by client id (dsh-web-client-next), zero injection rows, the same
+     * /api + remote.mux surface. The probe drives OUR page like a user
+     * (new session → type → send → stop → create) through real agent-loop
+     * turns over the carrier's scripted SSE endpoint; the creation row (the
+     * present tool) rides the interactive config. Kotlin sibling of hosts/ios
+     * NextWebRuntime (the drive class holds the probe chain).
+     */
+    private fun startNextWeb() {
+        val view = drivenWebView { NextWebSession.dispatchPageFinished() }
+        webView = view
+        // The seat reads filesDir trees: materialize FIRST (runtime thread:
+        // spike bundle incl. webclient-next + web-plugins), then drive.
+        SpikeRuntime.post {
+            materializeBundle()
+            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            runOnUiThread {
+                nextWeb = NextWebSession.start(this, view) { verdict ->
+                    verdictView.text = verdict
+                }
+            }
+        }
+    }
+
+    /** The driven-mode chrome: the verdict strip over a full-bleed WebView
+     * wired to the shared `dshProbe` bridge and the given page-finished
+     * dispatcher (the four page-driving modes' identical construction). */
+    private fun drivenWebView(onPageFinished: () -> Unit): WebView {
+        val layout = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+        }
+        layout.addView(
+            verdictView,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        val view = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
+            webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    onPageFinished()
+                }
+            }
+        }
+        layout.addView(
+            view,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                0,
+                1f,
+            ),
+        )
+        setContentView(layout)
+        return view
+    }
 
     /**
      * The user-facing boot: the official DSH Web Client over the FULL DSH
@@ -280,9 +327,12 @@ class MainActivity : Activity() {
             copyAssetDir("official-web", File(filesDir, "official-web"))
             copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
+                val client = intent.getStringExtra(EXTRA_WEB_CLIENT)
+                    ?: SessionServe.CLIENT_ID
                 serve = SessionServe.start(
                     this, view,
                     credential = SessionServe.loadCredential(this),
+                    clientID = client,
                 )
             }
         }
@@ -297,6 +347,7 @@ class MainActivity : Activity() {
             OfficialWebSession.dispatchProbeResult(json)
             SessionLiveSession.dispatchProbeResult(json)
             SessionWriteSession.dispatchProbeResult(json)
+            NextWebSession.dispatchProbeResult(json)
         }
     }
 
@@ -314,35 +365,7 @@ class MainActivity : Activity() {
      * boundary (E2E determinism, logged as such).
      */
     private fun startSessionLive() {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-        layout.addView(
-            verdictView,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        val view = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    SessionLiveSession.dispatchPageFinished()
-                }
-            }
-        }
-        layout.addView(
-            view,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
-            ),
-        )
-        setContentView(layout)
+        val view = drivenWebView { SessionLiveSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
         // thread: spike bundle + official dist + web-plugins), then start.
@@ -367,35 +390,7 @@ class MainActivity : Activity() {
      * session-live mode.
      */
     private fun startWriteLive() {
-        val layout = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-        layout.addView(
-            verdictView,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-            ),
-        )
-        val view = WebView(this).apply {
-            settings.javaScriptEnabled = true
-            settings.domStorageEnabled = true
-            addJavascriptInterface(PROBE_BRIDGE, "dshProbe")
-            webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    SessionWriteSession.dispatchPageFinished()
-                }
-            }
-        }
-        layout.addView(
-            view,
-            LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                0,
-                1f,
-            ),
-        )
-        setContentView(layout)
+        val view = drivenWebView { SessionWriteSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
         // thread: spike bundle + official dist + web-plugins), then start.

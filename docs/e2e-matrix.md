@@ -115,6 +115,8 @@ evidence on that platform.
 | `models.directory` | — | — | — | 6/6 |
 | `nextweb.mount` | 16/16 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
+| `android.whale.mount` | — | 7/7 | — | — |
+| `android.nextweb.mount` | — | 19/19 | — | — |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
@@ -145,6 +147,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg, on-device MockLlmRoute) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
+| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 19/19 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
