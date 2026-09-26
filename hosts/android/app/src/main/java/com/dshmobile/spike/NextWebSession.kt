@@ -367,9 +367,12 @@ class NextWebSession private constructor(private val activity: Activity) {
      * parent across the sandbox boundary). */
     private fun onGameViewer(probe: JSONObject) {
         val srcdoc = probe.optString("srcdoc")
-        if (probe.optBoolean("open") != true || !srcdoc.contains(NextWebProbe.GAME_CANARY)) {
+        if (probe.optBoolean("open") != true ||
+            probe.optInt("canaryAt", -1) === -1) {
             fail("the game viewer never carried the game (open: " +
-                "${probe.optBoolean("open")}, srcdoc: ${srcdoc.take(60)})")
+                "${probe.optBoolean("open")}, canaryAt: ${probe.optInt("canaryAt", -1)}, " +
+                "srcdocLen: ${probe.optInt("srcdocLen", -1)}, " +
+                "head: ${probe.optString("srcdocHead").take(400)})")
             return
         }
         eventLog.emit("game.opened", JSONObject().put("srcdocContains", NextWebProbe.GAME_CANARY))
