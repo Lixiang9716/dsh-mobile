@@ -61,6 +61,10 @@ interface LegOut {
   creationCard?: boolean;
   closed?: boolean;
   srcdocCleared?: boolean;
+  canaryAt?: number;
+  srcdocHead?: string;
+  toast?: string;
+  cardTitles?: string[];
   gameCard?: boolean;
   advancing?: boolean;
   frames?: number;
@@ -342,8 +346,12 @@ export class NextWebPhase {
       return this.runLeg(runJs, 'window.__next.gameViewer()', 'gameViewer', 60000);
     }).then((out): Promise<LegOut | null> => {
       if (out === null || out.open !== true ||
-        !(out.srcdoc ?? '').includes(GAME_CANARY)) {
-        throw new Error('the game viewer never carried the game');
+        (out.canaryAt ?? -1) === -1) {
+        throw new Error('the game viewer never carried the game (open: ' +
+          (out !== null ? out.open : 'null') + ', canaryAt: ' +
+          (out !== null ? (out.canaryAt ?? -1) : -1) + ', toast: ' +
+          (out !== null ? (out.toast ?? '') : '') + ', head: ' +
+          (out !== null ? (out.srcdocHead ?? '').slice(0, 220) : '') + ')');
       }
       this.carrierLine('game.opened', { 'srcdocContains': GAME_CANARY });
       if (out.advancing !== true) {
@@ -631,6 +639,12 @@ window.__next.gameViewer = async () => {
   }
   out.open = s.open; out.srcdoc = s.srcdoc.slice(0, 200);
   if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
+    // Diagnostics: what the viewer actually carried and what the page says.
+    out.srcdocHead = s.srcdoc.slice(0, 700);
+    out.canaryAt = s.srcdoc.indexOf('DSH-GAME-CANARY');
+    out.toast = (document.getElementById('toast')?.textContent || '').slice(0, 80);
+    out.cardTitles = [...document.querySelectorAll('.creation-card')]
+      .map((c) => c.textContent.slice(0, 50));
     window.__nextOut = JSON.stringify(out);
     return;
   }
