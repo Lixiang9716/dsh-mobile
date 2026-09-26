@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.4.0
+# Capability Gateway — Primitive Contract v1.5.0
 
 > **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -39,6 +39,19 @@
 > base: 22 suite failures + 2 hangs + 100+ excluded specs on the upstream-suite
 > emulator run). Same additive rule as v1.1.0–v1.3.0: a host without the seam keeps
 > negotiating `gateway@1` and answers `unavailable`.
+
+> **v1.5.0 (additive, 2026-09-26)**: the device plane — six primitives for the host's
+> platform-SDK surface (§4, "device plane"): `deviceInfo`, `haptic`, `clipboardRead` /
+> `clipboardWrite`, `presentShare`, `keepAwake`, plus one extended shape: `presentPicker`
+> gains `mode: "media"`. `clipboardRead` is approval-gated by default — surfaced through
+> the same approval surface as `presentApproval`, honoring a standing grant when the user
+> chose to remember one — because the read direction is the exfiltration direction, and
+> its audit record carries the call, never the text. `presentShare` learns only that the
+> sheet completed, never the destination. Folded from the proposal in
+> `contract/proposals/` (its evidence base: the creation-mode clients' keep-awake need
+> and the composer's inability to hand a deliverable to another app). Same additive rule
+> as v1.1.0–v1.4.0: a host without a primitive keeps negotiating `gateway@1` and answers
+> `unavailable`.
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -100,6 +113,18 @@ permission flags, so no new capability has to be negotiated:
 | # | Primitive | Purpose | Permission flag | Streams |
 | --- | --- | --- | --- | --- |
 | 16 | `ishRun` | run one program in the host's in-process emulated Linux userland | `ishRun` | no |
+
+**v1.5.0 additions (6)** — the host's own device surface, one capability family per
+row; `deviceInfo` needs no flag (the same facts any web page's UA string carries):
+
+| # | Primitive | Purpose | Permission flag | Streams |
+| --- | --- | --- | --- | --- |
+| 17 | `deviceInfo` | read-only device facts (platform, model, OS, screen, battery, locale, timezone) | — | no |
+| 18 | `haptic` | one user-facing tactile cue | `haptic` | no |
+| 19 | `clipboardRead` | read the system clipboard (approval-gated by default) | `clipboard` | no |
+| 20 | `clipboardWrite` | write text to the system clipboard | `clipboard` | no |
+| 21 | `presentShare` | hand a payload to the system share sheet | `share` | no |
+| 22 | `keepAwake` | hold the screen on while the caller is showing something worth watching | `screen` | no |
 
 Reserved identifiers: the scope handle `"app"` denotes the host's own profile container
 (the storage layout of [data-protocols.md](data-protocols.md)); the capability name
@@ -267,9 +292,46 @@ RuntimeDescriptor prose rather than let this document imply otherwise.
 - `presentApproval(req) → { approved, remember? }` — the native approval surface. While an
   approval is pending the host **may checkpoint** the runtime: background suspension during
   a pending approval must degrade to local-notification-then-resume, not data loss (D7).
-- `presentPicker(req) → { scope, path } | null` — `mode: "file" | "directory"`. On success
-  the host grants a `ScopeHandle` usable with the fs primitives; user cancellation resolves
-  `null` and grants nothing.
+- `presentPicker(req) → { scope, path } | null` — `mode: "file" | "directory"`, plus
+  `mode: "media"` (v1.5.0, below). On success the host grants a `ScopeHandle` usable with
+  the fs primitives; user cancellation resolves `null` and grants nothing.
+
+### device plane (v1.5.0)
+
+- `deviceInfo() → DeviceInfo` — the read-only device facts, one snapshot per call: `platform`
+  is one of `ios | android | harmonyos | macos | linux | windows`; `model` is the host's
+  marketing or hardware name; `osVersion` and `appVersion` are version strings; `screen`
+  carries width/height in points plus the scale factor; `locale` is BCP-47 and `timezone`
+  IANA. `battery` (`level`, `state`) and `lowPowerMode` are the one field a host may omit —
+  they stay absent where the OS hides them. No permission flag; the call is still audited
+  (platform included, nothing else — §6).
+- `haptic(pattern) → void` — exactly **one** user-facing tactile cue per call. `pattern` is
+  the closed vocabulary `light | medium | heavy | rigid | soft | selection | success |
+  warning | error`; each host maps it onto its own generator (iOS impact/notification
+  generators, Android `VibrationEffect`, HarmonyOS `@ohos.vibrator`). A pattern the platform
+  cannot express rejects `unavailable` — never a silent substitute.
+- `clipboardRead() → { kind: "text", text } | null` — `null` for an empty or non-text
+  clipboard. The read direction is the exfiltration direction, so hosts surface the call
+  through the same approval surface as `presentApproval` **by default**, honoring a standing
+  grant where the user chose to remember one. The audit record carries the call only — never
+  the text (§6).
+- `clipboardWrite(text) → void` — one call, one clipboard write. The audit record carries
+  the kind and the text's length, never the text.
+- `presentShare(payload) → { shared }` — hands a payload (`text` | `url` | `files` with
+  scope-resolved paths) to the **system share sheet**, the OS's own trust boundary: the
+  host learns only that the sheet completed, never the destination. `files` paths resolve
+  through the same scope discipline as `fsRead` — outside a granted scope is `denied`. The
+  sheet is its own per-call consent (no separate approval flag beyond `share`); the user
+  walking away resolves `{ shared: false }` (dismissal is a value, §3).
+- `keepAwake(hold) → void` — a boolean **latch, not a lease**: the caller holds the screen
+  on while it is showing something the user is watching and releases when done (`keepAwake(false)`).
+  A host without an idle timer answers `unavailable`.
+- `presentPicker` `mode: "media"` — presents the platform's media picker (iOS
+  `PHPickerViewController`, Android PhotoPicker, HarmonyOS PhotoViewPicker) and returns a
+  scope handle the same way the file picker does: read-through-scope over **what the user
+  picked**, never library access. Dismissal resolves `null` as before.
+
+### keychainGet / keychainSet
 
 ### keychainGet / keychainSet
 
@@ -350,6 +412,8 @@ Platform mapping notes belong to each host (`hosts/<platform>/`), not to this co
   Frozen call sites keep working; new surface is opt-in via negotiation.
 - **Major** (`2.0.0`): any change to an existing shape, removal, or renumbering. Requires a
   new contract document and a migration note.
-- Deferred candidates for future minors (explicitly **not** in v0): clipboard, share sheet,
-  biometric prompt, geolocation, streamed fs read, fs watch. Restraint is the point of a
+- Deferred candidates for future minors (explicitly **not** in v0): biometric prompt,
+  geolocation, streamed fs read, fs watch (clipboard and the share sheet arrived in
+  v1.5.0; location/camera/sensors and a `deviceEvents` subscription stream are deferred
+  to their own OS-permission lifecycle round). Restraint is the point of a
   narrow table; each addition must argue its necessity against negotiation data.
