@@ -209,7 +209,14 @@ extension CarrierServer {
                   let text = String(data: data, encoding: .utf8) else { return }
             body.append(Data("data: \(text)\n\n".utf8))
         }
-        let createArgs = "{\"command\":\"create\",\"path\":\"creations/blue-whale.html\","
+        // The editor demands ABSOLUTE paths (vendored str_replace_editor
+        // rejects relative ones), so the scripted "model" writes where the
+        // real one would: the seat's workspace root. `present` keeps the
+        // relative form — its contract resolves against the session cwd,
+        // which this leg deliberately also covers.
+        let whalePath = SessionServe.workspaceRoot
+            .appendingPathComponent("creations/blue-whale.html").path
+        let createArgs = "{\"command\":\"create\",\"path\":\"\(whalePath)\","
             + "\"file_text\":\"<!doctype html><title>蓝色鲸鱼</title>"
             + "<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}"
             + "#w{font-size:120px;position:absolute;top:38%;left:-140px;"

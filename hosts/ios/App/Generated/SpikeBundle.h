@@ -46,6 +46,7 @@ const char *dsh_spike_res_webclient_mini_manifest(size_t *len);
 const char *dsh_spike_res_webclient_mini_index_html(size_t *len);
 const char *dsh_spike_res_webclient_mini_main_js(size_t *len);
 const char *dsh_spike_res_scenario_b1_web_live_js(size_t *len);
+const char *dsh_spike_res_upstream_tool_present_js(size_t *len);
 const char *dsh_spike_res_upstream_web_boot_js(size_t *len);
 const char *dsh_spike_res_upstream_web_shims_js(size_t *len);
 const char *dsh_spike_res_shims_buffer_js(size_t *len);

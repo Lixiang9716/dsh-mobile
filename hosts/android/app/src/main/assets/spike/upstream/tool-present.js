@@ -13,8 +13,14 @@
  *
  * Mounted only under the creation flag (boot options.creation → the
  * interactive/user-facing seat), so every existing spine leg boots
- * byte-identically.
+ * byte-identically. Registration goes through the vendored defineTool, whose
+ * schema compiler takes a flat property map for `parameters` and a value
+ * schema for `output.schema` — requiredness is property-level `required:
+ * true` everywhere (the DSL has no array form), and every nested object
+ * declares `additionalProperties` explicitly (upstream's run_code is the
+ * reference shape).
  */
+import { defineTool } from '@deepseek-ai/dsh-tools';
 
 /** Stable identity (upstream tool-present's). */
 export const name = 'tool-present';
@@ -24,6 +30,51 @@ export const inject = ['tools', 'fs', 'sessionProjections'];
 
 /** Validated per-call delivery limit. */
 const DEFAULT_MAX_FILES = 8;
+
+/** One presented-file item schema (shared by the parameter and the
+ * output). */
+const presentedFileItem = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    path: { type: 'string' },
+    description: { type: 'string' },
+  },
+};
+
+/** One string file-field property; `required` only on the must-have fields. */
+const fileProp = (description, required) => ({
+  type: 'string', ...(required === true ? { required: true } : {}), description,
+});
+
+/** The `files` parameter: an array of {path, description?}. */
+const filesParameter = {
+  type: 'array', required: true,
+  items: presentedFileItem,
+};
+
+/** The tool result schema + renderer (the output goes through the VALUE
+ * schema compiler: required is an ARRAY there; the parameters root uses the
+ * property-map compiler where required is per-property). */
+const presentOutput = {
+  schema: {
+    // The output VALUE schema DSL accepts no `required` anywhere — the
+    // result's shape is declared, its requiredness is not.
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      turn: { type: 'integer' },
+      files: {
+        type: 'array',
+        items: presentedFileItem,
+      },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: (value?.files ?? []).map((file) => `Presented ${file.path}`).join('\n'),
+  }],
+};
 
 const validateFiles = async (ctx, files, exec, cwd) => {
   for (const file of files) {
@@ -69,73 +120,24 @@ const makeExecute = (ctx, maxFiles, pending) => async (args, exec) => {
   };
 };
 
-/** The tool result schema + renderer — reuses the flat files-schema piece
- * with the output-dialect object (required as an array). */
-const fileProp = (description) => ({
-  type: 'string', required: true, description,
-});
-
-const presentedFilesSchema = (withDescription = true) => ({
-  type: 'array',
-  items: {
-    type: 'object', additionalProperties: false,
-    properties: {
-      path: fileProp('Path of an existing regular file. Relative paths use the Session working directory.'),
-      ...(withDescription
-        ? { description: fileProp('Brief description for the user.') }
-        : {}),
-    },
-  },
-});
-
-/** The output schema (the output dialect takes required as an array). */
-const presentOutput = (() => {
-  const output = filesSchema();
-  output.required = ['turn'];
-  output.properties.turn = { type: 'integer' };
-  return output;
-})();
-
-/** The files parameter schema, assembled from one-level pieces. */
-
-/** The presented-files schema piece (shared by input and output). */
-const filesSchema = () => ({
-  type: 'object',
-  properties: {
-    files: {
-      type: 'array', required: true,
-      items: {
-        type: 'object', additionalProperties: false,
-        properties: {
-          path: fileProp('Path of an existing regular file. Relative paths use the Session working directory.'),
-          description: fileProp('Brief description for the user.'),
-        },
-      },
-    },
-  },
-});
-
-/** One string file-field property, schema-flattened. */
 export function apply(ctx, config) {
   const maxFiles = config?.maxFiles ?? DEFAULT_MAX_FILES;
   if (!Number.isSafeInteger(maxFiles) || maxFiles < 1) {
     throw new Error('present requires a positive integer maxFiles');
   }
   const pending = new Map(); // exec → { session, turn, files }
-  ctx.tools.register({
+  ctx.tools.register(defineTool({
     name: 'present',
     description: 'Declare existing files accessible through the Session filesystem as final deliverables. '
       + 'When a file you create or update is an output the user asked to receive, you must call present after writing it and before your final response, including files created through Bash or code execution. '
       + 'Mentioning its path in your reply does not replace this call. The files must already exist. '
       + 'The user opens the current source files; their contents are not copied or preserved.',
-    // The parameter schema (upstream's verbatim shape, flattened for the
-    // indent gate — same object, fewer lines).
-    // files: [{path, description?}] — built shallow so the schema literal
-    // stays inside the indent gate.
-    parameters: filesSchema(),
+    parameters: {
+      files: filesParameter,
+    },
     output: presentOutput,
     execute: makeExecute(ctx, maxFiles, pending),
-  });
+  }));
 
   ctx.on('tools/result', (exec, result) => {
     const delivery = pending.get(exec);

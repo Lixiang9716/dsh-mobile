@@ -118,6 +118,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/boot.js',
   'upstream/llm-transport.js',
   'upstream/settings-memory.js',
+  'upstream/tool-present.js',
   'upstream/web-boot.js',
   'upstream/web-shims.js',
   'upstream/web-write-settings.js',
