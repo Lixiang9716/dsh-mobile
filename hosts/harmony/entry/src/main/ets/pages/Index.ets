@@ -419,6 +419,8 @@ const BUNDLE_FILES: string[] = [
     'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/invariant.js',
     'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/types.js',
     'vendor/dsh/tool-todo@0.1.6-alpha.2/package.json',
+    'system-plugins/dsh-open-design/index.js',
+    'system-plugins/dsh-open-design/manifest.json',
     'system-plugins/dsh-shell-ish/index.js',
     'system-plugins/dsh-shell-ish/manifest.json',
     'system-plugins/dsh-shell-wasm/index.js',

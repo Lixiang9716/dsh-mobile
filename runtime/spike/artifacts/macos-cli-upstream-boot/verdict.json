@@ -1,5 +1,5 @@
 {
-  "scenario": "m2.upstream-boot",
+  "scenario": "upstream.web-boot",
   "pass": true,
   "expected": 12,
   "logged": 12,

@@ -1,0 +1,9 @@
+OD_MOCK_BASE_URL=http://127.0.0.1:64088
+{"kind":"request","method":"POST","path":"/api/projects","bytes":85}
+{"kind":"request","method":"GET","path":"/api/projects","bytes":88}
+{"kind":"request","method":"GET","path":"/api/projects/od-proj-001","bytes":96}
+{"kind":"request","method":"POST","path":"/api/projects/od-proj-001/files","bytes":40}
+{"kind":"request","method":"GET","path":"/api/projects/od-proj-001","bytes":197}
+{"kind":"proxy-stream","provider":"openai","model":"mock-designer-1","maxTokens":64000,"systemPromptChars":534,"messages":1,"bytes":246}
+{"kind":"request","method":"POST","path":"/api/artifacts/save","bytes":83}
+{"kind":"request","method":"POST","path":"/api/artifacts/lint","bytes":132}

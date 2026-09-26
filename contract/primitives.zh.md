@@ -1,4 +1,4 @@
-# 能力网关 — 原语契约 v1.4.0
+# 能力网关 — 原语契约 v1.5.0
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
@@ -20,7 +20,6 @@
 > `unavailable`——iOS 今天已实现(iSH-arm64 引擎,按引擎方式 vendor 并 sha256 固定,
 > 永不修改);Android 与 HarmonyOS 宿主答 `unavailable` 并继续使用 WebAssembly shell,
 > 这是**能力协商**,不是平台分支。
-> 与 v1.1.0 同样的增量规则:未实现的宿主报 `unavailable`。
 
 > **v1.4.0(增量,2026-09-23)**:`timerSchedule` / `timerCancel` + `timer.fire` 事件通道——
 > 一个宿主持有的唤醒接缝,同受单一 `timer` 权限位管辖(§4「定时器」)。供应商化的上游运行时
@@ -31,6 +30,15 @@
 > `contract/proposals/` 的提案折叠而来(证据基础:上游套件模拟器运行的 22 个失败 + 2 个挂起
 > + 100+ 个排除)。与 v1.1.0–v1.3.0 同一增量规则:无该接缝的宿主继续协商 `gateway@1` 并如实
 > 回答 `unavailable`。
+>
+> **v1.5.0(增量,2026-09-26)**:设备面——六个平台 SDK 原语(`deviceInfo`、`haptic`、
+> `clipboardRead`、`clipboardWrite`、`presentShare`、`keepAwake`)外加一处扩展
+> (`presentPicker` 新增 `mode: "media"`)(§4「设备面」)。自 `contract/proposals/` 的提案
+> 折叠而来(证据基础:三宿主上的 creation-mode 客户端——#214/#218/#220/#221——其全屏查看器
+> 需要屏幕常亮,其 composer 无法分享成品文件,上游 agent 一再索要它拿不到的设备信息、并主动
+> 提供它给不了的触觉反馈)。与 v1.1.0–v1.4.0 同一增量规则:无该接缝的宿主继续协商
+> `gateway@1` 并如实回答 `unavailable`。位置、相机、麦克风、传感器、通讯录与完整相册访问
+> 仍然不在其中——每一项都需要一轮自己的 OS 权限弹窗生命周期设计(§8)。
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -85,6 +93,29 @@
 | # | 原语 | 用途 | 权限旗标 | 流 |
 | --- | --- | --- | --- | --- |
 | 16 | `ishRun` | 在宿主的进程内模拟 Linux 用户态中运行一个程序 | `ishRun` | 否 |
+
+**v1.4.0 新增(2 个)**——在 v1.5.0 折叠时补记:v1.4.0 折叠给出了定时器的语义
+(§4「定时器」)与通道,但漏掉了表行:
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 17 | `timerSchedule` | arm 一次宿主持有的唤醒 | `timer` | 否 |
+| 18 | `timerCancel` | 解除已 arm 的唤醒 | `timer` | 否 |
+
+**v1.5.0 新增(6 个 + 1 处扩展)**——设备面;权限旗标按能力族命名(一个旗标可管辖两条
+原语——`clipboard` 即是):
+
+| # | 原语 | 用途 | 权限旗标 | 流 |
+| --- | --- | --- | --- | --- |
+| 19 | `deviceInfo` | 只读设备信息(机型、系统、屏幕、电量、locale) | — | 否 |
+| 20 | `haptic` | 一次触觉反馈(冲击 / 选择 / 通知模式) | `haptic` | 否 |
+| 21 | `clipboardRead` | 读取系统剪贴板(文本) | `clipboard` | 否 |
+| 22 | `clipboardWrite` | 向系统剪贴板写入文本 | `clipboard` | 否 |
+| 23 | `presentShare` | 把负载交给系统分享面板 | `share` | 否 |
+| 24 | `keepAwake` | 调用方持有期间保持屏幕常亮 | `screen` | 否 |
+
+`presentPicker`(v0 #7)新增 `mode: "media"`——平台媒体选择器,以与 `mode: "file"`
+完全相同的方式返回授予范围的句柄(§4)。
 
 保留标识符:范围句柄 `"app"` 表示宿主自己的 profile 容器(存储布局见
 [data-protocols.md](data-protocols.md));能力名 `gateway` 指本契约自身。
@@ -256,6 +287,38 @@
 - §3 词汇的拒绝:无 `timer` 授权 → `denied`;`delayMs` 非整数或为负 → `invalid`;宿主无该接缝
   → `unavailable`(协商本应发现的 capability 缺口)。
 
+### 设备面(v1.5.0)
+
+六条面向宿主自身设备表面的原语,每条都通过设备面的遴选规则:(a) agent 确实需要,
+(b) 用既有表无法伪造或伪造不安全,(c) 可以命名为一项用户能够拒绝的能力。
+
+- `deviceInfo() → DeviceInfo` —— 任何网页 UA 字符串都携带的只读信息(platform、model、
+  OS 与 app 版本、screen、locale、timezone)外加 battery——宿主可以省略的那一个字段
+  (OS 隐藏电量时 `battery` 保持 `undefined`,如低电量模式)。**无权限位**:它暴露的
+  任何状态,OS 本就向任意网页公布。
+- `haptic(pattern) → void` —— 一次触觉反馈;`pattern` 是封闭词表(`"light" | "medium" |
+  "heavy" | "rigid" | "soft" | "selection" | "success" | "warning" | "error"`)。
+  一次调用即一次反馈——没有时长,没有循环。
+- `clipboardRead() → { kind: "text", text } | null` —— **默认经审批门**:除非用户已授予
+  常驻权限,宿主在 resolve 之前呈现与 `presentApproval` 相同的审批面。读取的审计记录
+  只记调用,绝不记文本——这正是「agent 能读你复制的东西」与「agent 能读一次、且你知情」
+  的差别。
+- `clipboardWrite(text) → void` —— 审计记录记 kind 与长度,不记文本。
+- `presentShare(payload) → { shared }` —— 把负载(文本、URL,或授权范围内的文件)交给
+  系统分享面板,并且只知道面板完成了,不知道去向:面板是 OS 自己的信任边界,也是它自己
+  的同意。`files` 路径按与 `fsRead` 相同的范围纪律解析——不在任何已授予范围内即
+  `denied`。
+- `keepAwake(hold) → void` —— 布尔闩,不是租约:调用方持有闩期间屏幕常亮;
+  `keepAwake(false)` 释放。没有空闲计时器的宿主答 `unavailable`。
+
+`presentPicker` 新增 `mode: "media"`:平台媒体选择器(iOS `PHPickerViewController`、
+Android PhotoPicker、HarmonyOS PhotoViewPicker)以与 `mode: "file"` 完全相同的方式
+resolve 出范围句柄——读经范围,无相册访问。既有原语上的字段扩展,按 §8 规则增量。
+
+§3 词汇的拒绝:缺少能力族的授权 → `denied`——对 `clipboardRead` 而言,用户在默认审批
+中拒绝亦是;未知的 haptic 模式、畸形的分享负载、不在任何已授予范围内的分享文件路径 →
+`invalid`;宿主没有该原语 → `unavailable`(协商本应发现的 capability 缺口)。
+
 ## 5. 事件通道
 
 由桥接派发到运行时队列——不是按调用计的原语,但属于本契约、随其一起版本化:
@@ -296,5 +359,7 @@
 - **次版本**(`1.x`):新增原语或事件通道、新增可选请求字段。已冻结的调用点继续工作;
   新接口面通过协商按需启用。
 - **主版本**(`2.0.0`):对既有形状的任何修改、移除或重编号。需要新的契约文档与迁移说明。
-- 留给未来次版本的候选(明确**不在** v0):剪贴板、分享面板、生物识别、地理位置、流式
-  fs 读取、fs 监视。克制正是窄表的意义;每一项增补都必须拿协商数据论证其必要性。
+- 留给未来次版本的候选(明确**不在** v0):生物识别、地理位置、流式 fs 读取、fs 监视——
+  以及各自需要一轮 OS 权限设计的:位置、相机、麦克风、传感器、通讯录、完整相册访问
+  (设备面自己的遴选规则,v1.5.0)。v1.5.0 交付了本清单曾载的两个名字(剪贴板、分享面板)。
+  克制正是窄表的意义;每一项增补都必须拿协商数据论证其必要性。

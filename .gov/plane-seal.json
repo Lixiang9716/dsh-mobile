@@ -25,13 +25,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
+      "sha256": "aeb6a65fd4f504fd674c15a56645118a70016450c646166b9dff6bcc9bf42eb0"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-24T10:41:10+00:00",
-    "caller": "lx@DESKTOP-AOFQD6F",
+    "ts": "2026-09-26T13:26:57+00:00",
+    "caller": "lixiang@lixiangdeMacBook-Air.local",
     "unattended": true,
-    "reason": "the #57 round added .gov/rejections/case-bundle-files.sh (the bundle-files gate's rule-6 rejection proof) after the last seal write \u2014 re-sealing to include it; the case runs green (reject + restore verified) and gov self-test adopts it"
+    "reason": "Agent Note .agents/notes/implemented/process/2026-09-26-serialize-the-tree-mutating-rejection-case-ahead.md: closures+bundle-files declare needs=[self-test] \u2014 serializes the tree-reading gates after the tree-mutating rejection case (the closures flake root-caused on main@433a97b and PR #223)"
   }
 }

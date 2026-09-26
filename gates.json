@@ -200,7 +200,8 @@
         "sh",
         "build/check-closures.sh"
       ],
-      "description": "committed host copies of the canonical runtime/spike closure are byte-identical (android assets, harmony rawfile, ios generated bundle)"
+      "description": "committed host copies of the canonical runtime/spike closure are byte-identical (android assets, harmony rawfile, ios generated bundle)",
+      "needs": ["self-test"]
     },
     {
       "id": "vendoring-repro",
@@ -219,6 +220,7 @@
         "hosts/harmony/ci/check-bundle-files.mjs"
       ],
       "description": "harmony BUNDLE_FILES vs rawfile/spike cross-check, both directions (#57)",
+      "needs": ["self-test"],
       "timeoutMs": 120000
     }
   ]
