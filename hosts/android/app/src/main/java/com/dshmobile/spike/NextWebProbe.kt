@@ -347,7 +347,12 @@ object NextWebProbe {
           const s = read();
           out.open = s.open;
           out.srcdoc = s.srcdoc.slice(0, 200);
-          if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
+          // Diagnostics for the canary assertion: where the marker sits in
+          // the served string (post the head verbatim if it is missing).
+          out.canaryAt = s.srcdoc.indexOf('DSH-GAME-CANARY');
+          out.srcdocLen = s.srcdoc.length;
+          if (!s.open || out.canaryAt === -1) {
+            out.srcdocHead = s.srcdoc.slice(0, 1200);
             dshProbe.post(JSON.stringify(out));
             return;
           }

@@ -1,8 +1,39 @@
 {
   "scenario": "android.nextweb.mount",
-  "pass": true,
-  "expected": 19,
-  "logged": 19,
-  "failures": [],
+  "pass": false,
+  "expected": 24,
+  "logged": 21,
+  "failures": [
+    {
+      "index": 19,
+      "expected": {
+        "event": "game.opened",
+        "match": {
+          "srcdocContains": "DSH-GAME-CANARY"
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 20,
+      "expected": {
+        "event": "game.frames",
+        "match": {
+          "advancing": true
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 21,
+      "expected": {
+        "event": "game.closed",
+        "match": {
+          "srcdocCleared": true
+        }
+      },
+      "logged": null
+    }
+  ],
   "parseErrors": []
 }
