@@ -212,6 +212,23 @@ export class NextWebPhase {
   }
 
   /** Runs one leg and polls its parked result until the leg tag matches. */
+  private gameViewerWithRetries(runJs: (script: string) => Promise<string>,
+    attemptsLeft: number, last: Promise<LegOut | null> | null):
+    Promise<LegOut | null> {
+    const attempt: Promise<LegOut | null> = (last !== null) ? last :
+      this.runLeg(runJs, 'window.__next.gameViewer()', 'gameViewer', 60000);
+    return attempt.then((out): Promise<LegOut | null> => {
+      if (out !== null && out.open === true && (out.canaryAt ?? -1) !== -1) {
+        return Promise.resolve(out);
+      }
+      if (attemptsLeft <= 1) {
+        return Promise.resolve(out);
+      }
+      return this.gameViewerWithRetries(runJs, attemptsLeft - 1,
+        this.runLeg(runJs, 'window.__next.gameViewer()', 'gameViewer', 60000));
+    });
+  }
+
   private runLeg(runJs: (script: string) => Promise<string>, call: string,
     leg: string, timeoutMs: number): Promise<LegOut | null> {
     return runJs(call).then((): Promise<LegOut | null> => {
@@ -342,7 +359,9 @@ export class NextWebPhase {
       this.carrierLine('game.card.rendered', {
         'title': GAME_CARD_TITLE, 'items': out.items ?? 0,
       });
-      return this.runLeg(runJs, 'window.__next.gameViewer()', 'gameViewer', 60000);
+      // RETRY the whole leg: the streaming turn's re-render can swallow a
+      // click; each invocation is short so the drive's polling stays alive.
+      return this.gameViewerWithRetries(runJs, 4, null);
     }).then((out): Promise<LegOut | null> => {
       if (out === null || out.open !== true ||
         (out.canaryAt ?? -1) === -1) {
@@ -604,6 +623,14 @@ window.__next.gameCard = async (text, title) => {
 };
 window.__next.gameViewer = async () => {
   const out = {leg: 'gameViewer'};
+  // WAIT for the game turn to settle first: clicking (and fetching the
+  // deliverable) mid-stream races the timeline's own re-renders.
+  await window.__next.wait(() => {
+    const send = document.getElementById('composer-send');
+    const dbg = window.__dshComposerDebug ? window.__dshComposerDebug() : {};
+    return !(send && send.classList.contains('stop')) &&
+      dbg.optimistic !== true && dbg.running !== true;
+  }, 20000);
   window.__gameFrames = 0; window.__gameBeats = 0;
   window.addEventListener('message', (e) => {
     const d = e.data;
@@ -623,19 +650,13 @@ window.__next.gameViewer = async () => {
     const view = document.getElementById('creation-view');
     return {open: !!view && !view.hidden, srcdoc: frame ? frame.srcdoc : ''};
   };
-  // The turn may still be streaming while the card is clicked, and the
-  // timeline's re-render can swallow a click (the clicked node is rebuilt
-  // under the pointer) — RETRY the click until the viewer carries the game.
+  // ONE short attempt per invocation — the ARKTS chain retries the whole
+  // leg (a long in-page loop starves the drive's own polling; measured).
+  cards[cards.length - 1].click();
+  await window.__next.wait(
+    () => { const s2 = read(); return s2.open && s2.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
+    15000);
   let s = read();
-  for (let attempt = 0; attempt < 4 && !(s.open && s.srcdoc.indexOf('DSH-GAME-CANARY') !== -1); attempt++) {
-    const cards2 = document.querySelectorAll('.creation-card');
-    if (!cards2.length) { await window.__next.wait(() => false, 3000); continue; }
-    cards2[cards2.length - 1].click();
-    await window.__next.wait(
-      () => { const s2 = read(); return s2.open && s2.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
-      20000);
-    s = read();
-  }
   out.open = s.open; out.srcdoc = s.srcdoc.slice(0, 200);
   if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
     // Diagnostics: what the viewer actually carried and what the page says.

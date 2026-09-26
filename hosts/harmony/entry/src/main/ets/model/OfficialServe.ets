@@ -85,8 +85,11 @@ addEventListener('pointermove', move); addEventListener('pointerdown', move);
 const beat = () => { window.__game.beats++;
   try { parent.postMessage({ __dshGame: 1, frames: window.__game.frames,
     beats: window.__game.beats }, '*'); } catch (e) {} };
-setInterval(beat, 50);
+setInterval(beat, 200);
+let skip = 0;
 const step = () => {
+  skip++;
+  if (skip % 3 !== 0) { requestAnimationFrame(step); return; }
   window.__game.frames++;
   ball.x += ball.vx; ball.y += ball.vy;
   if (ball.x < ball.r || ball.x > W - ball.r) { ball.vx = -ball.vx;
