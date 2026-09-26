@@ -220,6 +220,20 @@ export const timerSchedule = async (delayMs, opts = {}) =>
 export const timerCancel = async (timerId) =>
   await call('timerCancel', { timerId });
 
+// ---- the device plane (v1.5.0) --------------------------------------------
+
+export const deviceInfo = async () => await call('deviceInfo', {});
+
+export const haptic = async (pattern) => await call('haptic', { pattern });
+
+export const clipboardRead = async () => await call('clipboardRead', {});
+
+export const clipboardWrite = async (text) => await call('clipboardWrite', { text });
+
+export const presentShare = async (payload) => await call('presentShare', payload);
+
+export const keepAwake = async (hold) => await call('keepAwake', { hold });
+
 export const keychainSet = async (ref, secret) => await call('keychainSet', {
   ref,
   secretB64: secret ? bytesToBase64(secret) : null,
