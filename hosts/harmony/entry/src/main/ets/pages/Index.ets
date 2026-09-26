@@ -43,10 +43,11 @@ import { webview } from '@kit.ArkWeb';
 import { CarrierServer } from '../model/CarrierServer';
 import { installE2EStreams, installLegacyRoutes } from '../model/CarrierRoutes';
 import { E2eLeg } from '../model/E2eLeg';
-import { HostPhase } from '../model/HostPhase';
+import { HostPhase, WHALE_WEB_DIR } from '../model/HostPhase';
 import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
-import { OfficialServe } from '../model/OfficialServe';
+import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
+import { NextWebPhase } from '../model/NextWebPhase';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
 
@@ -54,6 +55,8 @@ const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
 /** The launch parameter EntryAbility parks in E2eLeg — `--ps dsh.e2e.leg`. */
 const LEG_LLM: string = 'llm.live-stream';
+const LEG_WHALE: string = 'whale.mount';
+const LEG_NEXTWEB: string = 'nextweb.mount';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -423,6 +426,560 @@ const BUNDLE_FILES: string[] = [
     'vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js',
     'vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js',
     'vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs',
+    'vendor/dsh/agent-instructions@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/agent-instructions@0.1.6-alpha.2/package.json',
+    'vendor/dsh/agent-loop@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/agent-loop@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/agent-loop@0.1.6-alpha.2/package.json',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/authoring.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/composition-inventory.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/discovery.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/display.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/metadata.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/mount.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/preset.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/session.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/specifier.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/package.json',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/consumed-work.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/dispatch.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/model-selection.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/projection.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/runtime-types.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/agent@0.1.6-alpha.2/package.json',
+    'vendor/dsh/atomic-write@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/atomic-write@0.1.6-alpha.2/package.json',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/admission.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/brand.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/error.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/request-projection.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/attachment@0.1.6-alpha.2/package.json',
+    'vendor/dsh/brand@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/brand@0.1.6-alpha.2/package.json',
+    'vendor/dsh/chunked-list@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/chunked-list@0.1.6-alpha.2/package.json',
+    'vendor/dsh/command-compact@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/command-compact@0.1.6-alpha.2/package.json',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/command-feedback@0.1.6-alpha.2/package.json',
+    'vendor/dsh/command-goal@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/command-goal@0.1.6-alpha.2/package.json',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/types/brand.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/commands@0.1.6-alpha.2/package.json',
+    'vendor/dsh/compaction-basic@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/compaction-basic@0.1.6-alpha.2/package.json',
+    'vendor/dsh/compaction-tool-result-pruner@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/compaction-tool-result-pruner@0.1.6-alpha.2/package.json',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/brand.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/checkpoint.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/tool-pairing.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/compaction@0.1.6-alpha.2/package.json',
+    'vendor/dsh/credentials@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/credentials@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/credentials@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/credentials@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/credentials@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/credentials@0.1.6-alpha.2/package.json',
+    'vendor/dsh/fs-local@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/fs-local@0.1.6-alpha.2/package.json',
+    'vendor/dsh/fs@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/fs@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/fs@0.1.6-alpha.2/package.json',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/domain.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/fold.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/runtime.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/goal@0.1.6-alpha.2/package.json',
+    'vendor/dsh/home-paths@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/home-paths@0.1.6-alpha.2/package.json',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/types/brand.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/jobs@0.1.6-alpha.2/package.json',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/adapter-failure.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/api-key.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/assembler.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/assistant-stream.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/attribution.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/brand.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/call-config.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/content.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/error.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/message.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/retry-policy.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/llm@0.1.6-alpha.2/package.json',
+    'vendor/dsh/output-retention@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/output-retention@0.1.6-alpha.2/package.json',
+    'vendor/dsh/persona@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/persona@0.1.6-alpha.2/package.json',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/plan-mode@0.1.6-alpha.2/package.json',
+    'vendor/dsh/sandbox@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/sandbox@0.1.6-alpha.2/package.json',
+    'vendor/dsh/scope@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/scope@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/scope@0.1.6-alpha.2/package.json',
+    'vendor/npm/diff@9.0.0/libesm/convert/dmp.js',
+    'vendor/npm/diff@9.0.0/libesm/convert/xml.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/array.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/base.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/character.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/css.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/json.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/line.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/sentence.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/word.js',
+    'vendor/npm/diff@9.0.0/libesm/index.js',
+    'vendor/npm/diff@9.0.0/libesm/package.json',
+    'vendor/npm/diff@9.0.0/libesm/patch/apply.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/create.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/line-endings.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/parse.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/reverse.js',
+    'vendor/npm/diff@9.0.0/libesm/types.js',
+    'vendor/npm/diff@9.0.0/libesm/util/array.js',
+    'vendor/npm/diff@9.0.0/libesm/util/distance-iterator.js',
+    'vendor/npm/diff@9.0.0/libesm/util/params.js',
+    'vendor/npm/diff@9.0.0/libesm/util/string.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-doc.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-node.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/composer.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-map.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-seq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-end.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-props.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-contains-newline.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-empty-scalar-position.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-flow-indent-check.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-map-includes.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/Document.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/anchors.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/applyReviver.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/createNode.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/directives.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/errors.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/index.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/log.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Alias.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Node.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Pair.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLMap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLSeq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/addPairToJSMap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/identity.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/toJS.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-stringify.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-visit.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/lexer.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/line-counter.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/parser.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/public-api.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/Schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/map.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/null.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/seq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/string.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/bool.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/float.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/int.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/json/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/tags.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/binary.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/bool.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/float.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/int.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/merge.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/omap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/pairs.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/set.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/timestamp.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/foldFlowLines.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringify.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyCollection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyComment.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyDocument.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyNumber.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyPair.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyString.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/util.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/visit.js',
+    'vendor/npm/yaml@2.9.0/browser/index.js',
+    'vendor/npm/yaml@2.9.0/browser/package.json',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/cordis-plugin-development/SKILL.md',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/editing-cordis-compositions/SKILL.md',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/preset.yml',
+    'vendor/dsh/session-persistence@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/session-persistence@0.1.6-alpha.2/package.json',
+    'vendor/dsh/session-projection@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/session-projection@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/session-projection@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/session-projection@0.1.6-alpha.2/package.json',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/known-event-types.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/preparation.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/repair.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/request-header.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/seq-ranges.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/surface.js',
+    'vendor/dsh/session@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/session@0.1.6-alpha.2/package.json',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/types/redact.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/settings@0.1.6-alpha.2/package.json',
+    'vendor/dsh/skill-filesystem@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/skill-filesystem@0.1.6-alpha.2/package.json',
+    'vendor/dsh/skill@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/skill@0.1.6-alpha.2/package.json',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/assistant-output.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/catalog.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/child-agent.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/continuation-activation.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/continuation-messages.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/continuation.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/control-types.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/control.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/depth.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/descriptor.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/error.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/inbox.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/internal.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/lifecycle.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/list-children.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/out-of-process.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/projection-types.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/projection.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/run-settlement.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/subagent@0.1.6-alpha.2/package.json',
+    'vendor/dsh/system-prompt@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/system-prompt@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/system-prompt@0.1.6-alpha.2/package.json',
+    'vendor/dsh/terminal@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/terminal@0.1.6-alpha.2/package.json',
+    'vendor/dsh/timeout@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/timeout@0.1.6-alpha.2/package.json',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/breakdown-projection.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/estimate.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/projection.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/route-pricing.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/surface-fold.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/surface-projection.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/turn-usage.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/lib/types/usage-projection.js',
+    'vendor/dsh/token-meter@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-ask-user@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-ask-user@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-bash@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-bash@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-fs@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-fs@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-goal@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-goal@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-jobs@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-jobs@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-present@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-present@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/tool-present@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/tool-present@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-pwsh@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-pwsh@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-ralph@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-ralph@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-skill@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-skill@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-str-replace-editor@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-str-replace-editor@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-subagent-control@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-subagent-control@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/tool-subagent-control@0.1.6-alpha.2/lib/types/list-agents.js',
+    'vendor/dsh/tool-subagent-control@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-subagent@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-subagent@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/tool-subagent@0.1.6-alpha.2/lib/model-selection-settings.js',
+    'vendor/dsh/tool-subagent@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/tool-todo@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/tool-workflow@0.1.6-alpha.2/package.json',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/json-schema.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/presentation.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/ptc.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/py-types.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/schema.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/testing.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/ts-types.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/tools@0.1.6-alpha.2/package.json',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/owned-value.js',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/remote-error.js',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/typert-protocol@0.1.6-alpha.2/package.json',
+    'vendor/dsh/user-questions@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/user-questions@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/user-questions@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/user-questions@0.1.6-alpha.2/package.json',
+    'vendor/dsh/util-time@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/util-time@0.1.6-alpha.2/package.json',
+    'vendor/dsh/util-values@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/util-values@0.1.6-alpha.2/package.json',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/types/runtime-types.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/dsh/workflow@0.1.6-alpha.2/package.json',
+    'vendor/npm/diff@9.0.0/libesm/convert/dmp.js',
+    'vendor/npm/diff@9.0.0/libesm/convert/xml.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/array.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/base.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/character.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/css.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/json.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/line.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/sentence.js',
+    'vendor/npm/diff@9.0.0/libesm/diff/word.js',
+    'vendor/npm/diff@9.0.0/libesm/index.js',
+    'vendor/npm/diff@9.0.0/libesm/package.json',
+    'vendor/npm/diff@9.0.0/libesm/patch/apply.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/create.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/line-endings.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/parse.js',
+    'vendor/npm/diff@9.0.0/libesm/patch/reverse.js',
+    'vendor/npm/diff@9.0.0/libesm/types.js',
+    'vendor/npm/diff@9.0.0/libesm/util/array.js',
+    'vendor/npm/diff@9.0.0/libesm/util/distance-iterator.js',
+    'vendor/npm/diff@9.0.0/libesm/util/params.js',
+    'vendor/npm/diff@9.0.0/libesm/util/string.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-doc.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-node.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/compose-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/composer.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-map.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-seq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-end.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-props.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-contains-newline.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-empty-scalar-position.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-flow-indent-check.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/compose/util-map-includes.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/Document.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/anchors.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/applyReviver.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/createNode.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/doc/directives.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/errors.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/index.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/log.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Alias.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Collection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Node.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Pair.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/Scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLMap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLSeq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/addPairToJSMap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/identity.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/nodes/toJS.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-scalar.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-stringify.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst-visit.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/cst.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/lexer.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/line-counter.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/parse/parser.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/public-api.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/Schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/map.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/null.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/seq.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/common/string.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/bool.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/float.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/int.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/core/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/json/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/tags.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/binary.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/bool.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/float.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/int.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/merge.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/omap.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/pairs.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/schema.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/set.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/timestamp.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/foldFlowLines.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringify.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyCollection.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyComment.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyDocument.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyNumber.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyPair.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyString.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/util.js',
+    'vendor/npm/yaml@2.9.0/browser/dist/visit.js',
+    'vendor/npm/yaml@2.9.0/browser/index.js',
+    'vendor/npm/yaml@2.9.0/browser/package.json',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/cordis-plugin-development/SKILL.md',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/editing-cordis-compositions/SKILL.md',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/preset.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/agent.cordis.yml',
+    'vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/preset.yml',
+    'vendor/dsh/session-persistence@0.1.6-alpha.2/lib/index.js',
+    'vendor/dsh/session-persistence@0.1.6-alpha.2/package.json',
+    'vendor/npm/@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2/lib/index.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2/lib/index.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2/lib/types/search.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2/package.json',
+    'vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2/lib/index.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2/lib/types/grammar.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2/package.json',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/index.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/invariant.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/typert.host.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/typert.remote-client.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/client.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/domain.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/fold.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/index.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/invariant.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/runtime.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/lib/types/types.js',
+    'vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2/package.json',
+    'webclient/dsh-web-client-whale/manifest.json',
+    'webclient/dsh-web-client-whale/web/index.html',
+    'webclient/dsh-web-client-whale/web/main.js',
+    'webclient/dsh-web-client-whale/web/whale.css',
+    'webclient/dsh-web-client-next/manifest.json',
+    'webclient/dsh-web-client-next/web/index.html',
+    'webclient/dsh-web-client-next/web/css/app.css',
+    'webclient/dsh-web-client-next/web/css/theme.css',
+    'webclient/dsh-web-client-next/web/js/api.js',
+    'webclient/dsh-web-client-next/web/js/composer.js',
+    'webclient/dsh-web-client-next/web/js/main.js',
+    'webclient/dsh-web-client-next/web/js/markdown.js',
+    'webclient/dsh-web-client-next/web/js/mux.js',
+    'webclient/dsh-web-client-next/web/js/render-chat.js',
+    'webclient/dsh-web-client-next/web/js/render-home.js',
+    'webclient/dsh-web-client-next/web/js/timeline.js',
 ];
 
 // Custom approval dialog — presentApproval's native surface (contract §4:
@@ -498,6 +1055,12 @@ struct Index {
     } else if (leg === LEG_LLM) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runLlmLeg();
+    } else if (leg === LEG_WHALE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runWhaleLeg();
+    } else if (leg === LEG_NEXTWEB) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runNextWebLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -513,6 +1076,7 @@ struct Index {
     }
     HostPhase.getInstance().destroy();
     OfficialPhase.getInstance().destroy();
+    NextWebPhase.destroyIfLive();
     this.carrier.stop();
   }
 
@@ -535,10 +1099,23 @@ struct Index {
     };
     const fsRoot: string = ctx.filesDir + '/spike-fs';
     const credential: string | null = OfficialServe.loadCredential(ctx);
+    // The served client: the launch selection (`--ps dsh.web.client <id>`)
+    // maps to its staged web dir; the default serves the official dist.
+    // An UNKNOWN id fails loud (rule 5) — a mistyped selection must never
+    // silently fall back to the official page.
+    const selected: string = E2eLeg.getWebClient();
+    let distRoot: string = 'officialweb/www';
+    if (selected === 'dsh-web-client-next') {
+      distRoot = NEXT_CLIENT_ROOT;
+    } else if (selected !== '') {
+      this.verdict = 'FAIL (unknown dsh.web.client: ' + selected + ')';
+      hilog.error(0x0000, TAG, 'unknown dsh.web.client: %{public}s', selected);
+      return;
+    }
     this.materializeBundle(ctx)
       .then((root: string): void => {
         serve.beginInteractive(ctx, root, ctx.cacheDir + '/dsh-official-serve.log',
-          fsRoot, credential);
+          fsRoot, credential, distRoot);
       })
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
@@ -729,6 +1306,78 @@ struct Index {
       });
   }
 
+  /** The whale creation-client mount leg (`harmony.whale.mount`, the iOS
+   * session-mock-llm drive's --client whale leg mirrored): the llm leg's
+   * carrier + page shuttle + dispatch wiring, but the session-mock scenario
+   * (deterministic scripted turns — no credentials, no quota) and the staged
+   * whale page as the carrier web root. */
+  private runWhaleLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.whale.mount (logs are the verdict)';
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        this.verdict = 'whale leg: running the session-mock mount...';
+        phase.beginWhale(ctx, root, ctx.cacheDir + '/dsh-whale-mount-capture.log', fsRoot);
+        installLegacyRoutes(this.carrier, root + WHALE_WEB_DIR);
+        installE2EStreams(this.carrier);
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          this.webUrl = 'http://127.0.0.1:' + port + '/';
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'whale leg: running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'whale leg failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
+  /** The nextweb.mount drive (`harmony.nextweb.mount`): the SELF-HOSTED web
+   * client on the OfficialServe seat the release boot runs — dist root
+   * swapped, zero injection rows, the interactive config with the CREATION
+   * row; the probe drives OUR page like a user through real scripted turns
+   * (NextWebPhase holds the chain). */
+  private runNextWebLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = NextWebPhase.getInstance();
+    phase.openOrigin = (url: string): void => {
+      // The fresh-Web remount trick (startOfficialPhase's): exactly one
+      // navigation onto the next client's origin.
+      this.webUrl = '';
+      setTimeout((): void => {
+        this.webUrl = url;
+      }, 50);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): void => {
+        this.verdict = 'nextweb leg: serving the self-hosted client...';
+        phase.begin(ctx, root, ctx.cacheDir + '/dsh-nextweb-capture.log', fsRoot);
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'nextweb leg failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
   /** Phase 2: seed the user store (E2E bootstrap, see PickerPrimitives.
    * seedUserFile) → carrier up → page mounts → scenario runs (see HostPhase).
    * The seeding gates the phase start so the save dialog is done before the
@@ -867,9 +1516,15 @@ struct Index {
             if (BuildFlavor.isRelease()) {
               return; // a user-facing build runs no probe (no drives at all)
             }
-            OfficialPhase.getInstance().onPageFinished(event?.url ?? '',
-              (script: string): Promise<string> =>
-                this.webController.runJavaScript(script));
+            if (E2eLeg.get() === LEG_NEXTWEB) {
+              NextWebPhase.getInstance().onPageFinished(
+                (script: string): Promise<string> =>
+                  this.webController.runJavaScript(script));
+            } else {
+              OfficialPhase.getInstance().onPageFinished(event?.url ?? '',
+                (script: string): Promise<string> =>
+                  this.webController.runJavaScript(script));
+            }
           })
       } else if (!BuildFlavor.isRelease()) {
         Text('carrier: starting...').fontSize(12).fontColor('#666666')

@@ -55,11 +55,18 @@ export class WebDist {
   private rawfile: (rel: string) => Uint8Array | null;
   private sessionToken: string;
 
+  private distRoot: string;
+
+  /** [distRoot] is the rawfile rel root this seat serves — the official
+   * dist ('officialweb/www', the default) or a self-hosted client's staged
+   * web dir ('webclient/dsh-web-client-next/web' — the same seat, our page,
+   * and the caller keeps the injection rows empty: the page owns its boot). */
   constructor(server: CarrierServer, rawfile: (rel: string) => Uint8Array | null,
-    sessionToken: string) {
+    sessionToken: string, distRoot: string = 'officialweb/www') {
     this.server = server;
     this.rawfile = rawfile;
     this.sessionToken = sessionToken;
+    this.distRoot = distRoot;
   }
 
   handler = (req: CarrierRequest, conn: socket.TCPSocketConnection): void => {
@@ -79,7 +86,7 @@ export class WebDist {
       this.empty(conn, 403);
       return;
     }
-    const indexBytes = this.rawfile('officialweb/www/index.html');
+    const indexBytes = this.rawfile(this.distRoot + '/index.html');
     if (req.path === '/' || (req.path === '/index.html' && indexBytes !== null)) {
       this.serveIndex(req, conn);
       return;
@@ -105,7 +112,7 @@ export class WebDist {
       this.empty(conn, 401);
       return;
     }
-    const raw = this.rawfile('officialweb/www/index.html');
+    const raw = this.rawfile(this.distRoot + '/index.html');
     if (raw === null) {
       this.empty(conn, 404);
       return;
@@ -278,7 +285,7 @@ export class WebDist {
     const dot = path.lastIndexOf('.');
     const ext = dot >= 0 ? path.substring(dot + 1).toLowerCase() : '';
     const contentType = MIME.get(ext) ?? 'application/octet-stream';
-    const raw = this.rawfile('officialweb/www' + path);
+    const raw = this.rawfile(this.distRoot + path);
     if (raw === null) {
       this.empty(conn, 404); // absent or non-file: empty 404
       return;

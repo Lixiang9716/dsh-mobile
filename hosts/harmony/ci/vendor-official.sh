@@ -159,7 +159,109 @@ vendor/npm/cosmokit@1.8.3/lib/index.js
 vendor/npm/schemastery@3.18.2/lib/index.mjs
 vendor/npm/@deepseek-ai/$PIN/lib/index.js
 vendor/npm/@deepseek-ai/$PIN/lib/client.js
-vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
+vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs
+vendor/npm/@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2/lib/index.js
+vendor/npm/diff@9.0.0/libesm/convert/dmp.js
+vendor/npm/diff@9.0.0/libesm/convert/xml.js
+vendor/npm/diff@9.0.0/libesm/diff/array.js
+vendor/npm/diff@9.0.0/libesm/diff/base.js
+vendor/npm/diff@9.0.0/libesm/diff/character.js
+vendor/npm/diff@9.0.0/libesm/diff/css.js
+vendor/npm/diff@9.0.0/libesm/diff/json.js
+vendor/npm/diff@9.0.0/libesm/diff/line.js
+vendor/npm/diff@9.0.0/libesm/diff/sentence.js
+vendor/npm/diff@9.0.0/libesm/diff/word.js
+vendor/npm/diff@9.0.0/libesm/index.js
+vendor/npm/diff@9.0.0/libesm/package.json
+vendor/npm/diff@9.0.0/libesm/patch/apply.js
+vendor/npm/diff@9.0.0/libesm/patch/create.js
+vendor/npm/diff@9.0.0/libesm/patch/line-endings.js
+vendor/npm/diff@9.0.0/libesm/patch/parse.js
+vendor/npm/diff@9.0.0/libesm/patch/reverse.js
+vendor/npm/diff@9.0.0/libesm/types.js
+vendor/npm/diff@9.0.0/libesm/util/array.js
+vendor/npm/diff@9.0.0/libesm/util/distance-iterator.js
+vendor/npm/diff@9.0.0/libesm/util/params.js
+vendor/npm/diff@9.0.0/libesm/util/string.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/compose-collection.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/compose-doc.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/compose-node.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/compose-scalar.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/composer.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-map.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-scalar.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-block-seq.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-end.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-collection.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-flow-scalar.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/resolve-props.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/util-contains-newline.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/util-empty-scalar-position.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/util-flow-indent-check.js
+vendor/npm/yaml@2.9.0/browser/dist/compose/util-map-includes.js
+vendor/npm/yaml@2.9.0/browser/dist/doc/Document.js
+vendor/npm/yaml@2.9.0/browser/dist/doc/anchors.js
+vendor/npm/yaml@2.9.0/browser/dist/doc/applyReviver.js
+vendor/npm/yaml@2.9.0/browser/dist/doc/createNode.js
+vendor/npm/yaml@2.9.0/browser/dist/doc/directives.js
+vendor/npm/yaml@2.9.0/browser/dist/errors.js
+vendor/npm/yaml@2.9.0/browser/dist/index.js
+vendor/npm/yaml@2.9.0/browser/dist/log.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/Alias.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/Collection.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/Node.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/Pair.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/Scalar.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLMap.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/YAMLSeq.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/addPairToJSMap.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/identity.js
+vendor/npm/yaml@2.9.0/browser/dist/nodes/toJS.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/cst-scalar.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/cst-stringify.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/cst-visit.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/cst.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/lexer.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/line-counter.js
+vendor/npm/yaml@2.9.0/browser/dist/parse/parser.js
+vendor/npm/yaml@2.9.0/browser/dist/public-api.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/Schema.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/common/map.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/common/null.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/common/seq.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/common/string.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/core/bool.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/core/float.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/core/int.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/core/schema.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/json/schema.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/tags.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/binary.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/bool.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/float.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/int.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/merge.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/omap.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/pairs.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/schema.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/set.js
+vendor/npm/yaml@2.9.0/browser/dist/schema/yaml-1.1/timestamp.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/foldFlowLines.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringify.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyCollection.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyComment.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyDocument.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyNumber.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyPair.js
+vendor/npm/yaml@2.9.0/browser/dist/stringify/stringifyString.js
+vendor/npm/yaml@2.9.0/browser/dist/util.js
+vendor/npm/yaml@2.9.0/browser/dist/visit.js
+vendor/npm/yaml@2.9.0/browser/index.js
+vendor/npm/yaml@2.9.0/browser/package.json
+$(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
+    vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2 \
+    vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2 \
+    \( -name '*.js' -o -name '*.json' \) -type f | LC_ALL=C sort)"
 
 # The W-SESS spine closure (harmony.session.live-read): OUR authored spine
 # files first, then the vendored upstream trees — generated from the
@@ -190,8 +292,23 @@ upstream/shims/os.js
 upstream/shims/process.js
 upstream/shims/dsh-session-persistence.js
 upstream/shims/expect-async-chain.js
-upstream/shims/vi-wait.js"
-SPINE_PKG_DSH="agent agent-loop brand llm sandbox scope session session-projection settings system-prompt timeout tools typert-protocol util-values"
+upstream/shims/vi-wait.js
+upstream/shims/globals.js
+upstream/shims/npm-bridges.js
+scenario/upstream-suite-leg.js
+vendor/dsh/session-persistence@0.1.6-alpha.2/lib/index.js
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/agent.cordis.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/preset.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/cordis-plugin-development/SKILL.md
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/skills/editing-cordis-compositions/SKILL.md
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/agent.cordis.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/minimal/preset.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/agent.cordis.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/preset.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/agent.cordis.yml
+vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/preset.yml
+vendor/dsh/session-persistence@0.1.6-alpha.2/package.json"
+SPINE_PKG_DSH="agent agent-instructions agent-loop agent-presets atomic-write attachment brand chunked-list command-compact command-feedback command-goal commands compaction compaction-basic compaction-tool-result-pruner credentials fs fs-local goal home-paths jobs llm output-retention persona plan-mode sandbox scope session session-persistence session-projection settings skill skill-filesystem subagent system-prompt terminal timeout token-meter tool-ask-user tool-bash tool-fs tool-goal tool-jobs tool-present tool-pwsh tool-ralph tool-skill tool-str-replace-editor tool-subagent tool-subagent-control tool-todo tool-workflow tools typert-protocol user-questions util-time util-values workflow"
 SPINE_OURS="$SPINE_OURS
 vendor/npm/cordis@4.0.2/package.json
 vendor/npm/cosmokit@1.8.3/package.json
@@ -302,15 +419,35 @@ if [ "$MODE" != "check" ]; then
     done
 fi
 
+# The self-hosted web clients (presentation/web-client-{next,whale}):
+# whole-tree copies into rawfile/spike/webclient/dsh-web-client-*, the same
+# sync+check discipline as the closure — the older v0 webclient/
+# dsh-web-client hand-commit predates this script's coverage and stays as-is.
+WEBCLIENT_DIRS="next whale"
+webclient_files() {
+    (cd "presentation/web-client-$1" && find . -type f) |
+        while IFS= read -r rel; do echo "webclient/dsh-web-client-$1/${rel#./}"; done
+}
+if [ "$MODE" != "check" ]; then
+    for dir in $WEBCLIENT_DIRS; do
+        webclient_files "$dir" | while IFS= read -r rel; do
+            mkdir -p "$RAW/$(dirname "$rel")"
+            cp "presentation/web-client-$dir/${rel#webclient/dsh-web-client-$dir/}" "$RAW/$rel"
+        done
+    done
+fi
+
 echo "vendor-official: byte-verifying the closure copies"
 DRIFT=$(mktemp)
-trap 'rm -f "$DRIFT"' EXIT
+SKIPS_FILE=$(mktemp)
+trap 'rm -f "$DRIFT" "$SKIPS_FILE"' EXIT
 # In --check mode the comparison judges only the files the repo TRACKS: parts
 # of the vendored closure (the zod runtime files, .gitignore) are deliberately
 # untracked and materialized by THIS script at build time — a fresh checkout
-# legitimately lacks them. Untracked-but-closure files surface as one counted
-# SKIP, never as drift and never invisibly.
-SKIPS=0
+# legitimately lacks them. Untracked-but-closure files surface as a counted
+# SKIP, never as drift and never invisibly. The skip marker lands in a file
+# because the verify loops run in subshell pipes — a counter there never
+# reaches this shell (the android twin's own lesson).
 TRACKED=""
 if [ "$MODE" = "check" ]; then
     # git prints repo-relative paths and $RAW is repo-relative — same base,
@@ -321,10 +458,23 @@ fi
 for rel in $CLOSURE; do
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
        ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
-        SKIPS=$((SKIPS + 1))
+        echo skip >> "$SKIPS_FILE"
         continue
     fi
     cmp -s "runtime/spike/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
+done
+# The web-client trees byte-verify against their presentation/ source (the
+# tracked-check rule above applies: untracked staged files SKIP, never drift).
+for dir in $WEBCLIENT_DIRS; do
+    webclient_files "$dir" | while IFS= read -r rel; do
+        if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+           ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+            echo skip >> "$SKIPS_FILE"
+            continue
+        fi
+        src="presentation/web-client-$dir/${rel#webclient/dsh-web-client-$dir/}"
+        cmp -s "$src" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
+    done
 done
 if [ -s "$DRIFT" ]; then
     while IFS= read -r rel; do echo "::error::rawfile closure drift: $rel"; done < "$DRIFT"
@@ -333,6 +483,7 @@ if [ -s "$DRIFT" ]; then
 fi
 
 if [ "$MODE" = "check" ]; then
+    SKIPS=$(wc -l < "$SKIPS_FILE" | tr -d ' ')
     echo "vendor-official: closure verified in place (check mode, no writes, $SKIPS untracked-but-closure file(s) skipped — materialized at build time)"
     exit 0
 fi

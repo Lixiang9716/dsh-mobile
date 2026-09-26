@@ -1,0 +1,25 @@
+{
+  "host": "HarmonyOS dsh_phone emulator (127.0.0.1:5557, HarmonyOS 7.0.0/26.0.0, CLT 26.0.0.821)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "package": "com.dshmobile.spike",
+  "phase": "harmony.nextweb.mount (the self-hosted next client on the official seat, creation leg included)",
+  "launchMode": "--ps dsh.e2e.leg nextweb.mount (NextWebPhase drive: OfficialServe beginInteractive over the webclient-next dist root, zero injection rows, the creation row; the probe drives the page through ArkWeb runJavaScript with parked leg results)",
+  "tree": "feat/harmony-next-whale-mount (working tree at receipt time)",
+  "runner": "hosts/harmony/ci/run-next-web-mount.sh",
+  "scenarios": [
+    {
+      "id": "harmony.nextweb.mount",
+      "checker": "test/e2e/scenarios/harmony-nextweb-mount.json",
+      "events": 19,
+      "result": "pass"
+    }
+  ],
+  "exitStatus": 0,
+  "exitStatusNote": "run-next-web-mount.sh exit 0: build + install + verified launch (PID-waited) + the capture-file pull (verified to carry the terminal records — the C host's buffered writes raced one earlier pull) + the checker. session.attached + journal.frame.forwarded pinned order:any (the journal baseline races the probe's DOM phases — the android sibling's convention)",
+  "creationLeg": "the scripted CREATE_TURN round rides the seat's interactive mock route (write lands creations/blue-whale.html inside the workspace via the absolute path, present declares it; the SLOW_TURN cancel leg rides CarrierServer.respondDrip — ~8 slices ~220ms apart on one connection)",
+  "screens": [
+    "creation-viewer.png (the creation card in the transcript + the fullscreen whale viewer open)"
+  ],
+  "notes": "the seat's interactive boot composes in a strict order: web.plugins chunks (the main-thread watchdog pacing), then on the FINAL chunk the presets seed (order-independent data staging) and the runtime.config (the config delivery re-drives the spine through its settings probes — they must meet an already-composed, already-seeded boot). The chunk chain must propagate the on-final hook through its setTimeout continuations (measured: dropping it left the config undelivered and the page unmounted)."
+}

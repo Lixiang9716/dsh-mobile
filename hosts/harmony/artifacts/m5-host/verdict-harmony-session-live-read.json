@@ -1,0 +1,8 @@
+{
+  "scenario": "harmony.session.live-read",
+  "pass": true,
+  "expected": 43,
+  "logged": 43,
+  "failures": [],
+  "parseErrors": []
+}

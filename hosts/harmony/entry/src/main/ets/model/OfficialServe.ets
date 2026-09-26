@@ -55,6 +55,17 @@ export const OFFICIAL_BASE_PORT: number = 17890;
 /** The rawfile prefix the staged web-plugins packages live under (the same
  * tree the build's vendor-official.sh stages, one dir per published package). */
 const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-ai/';
+/** The official dist's rawfile rel root (the WebDist default). */
+const OFFICIAL_DIST_ROOT: string = 'officialweb/www';
+/** The self-hosted next client's staged web dir (rawfile rel root). */
+export const NEXT_CLIENT_ROOT: string = 'webclient/dsh-web-client-next/web';
+/** The CREATE script's deliverable content (the staged canary proves the
+ * viewer served the file, not a placeholder). */
+const WHALE_HTML: string = '<!doctype html><title>蓝色鲸鱼</title>' +
+  '<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}' +
+  '#w{font-size:120px;position:absolute;top:38%;left:-140px;' +
+  'animation:swim 8s linear infinite}' +
+  '</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>';
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
 const ENTRY_MOUNT = 'scenario/officialweb-web-live.js';
@@ -73,6 +84,8 @@ const SCENARIO_MOUNT = 'harmony.officialweb.mount';
  * with no model configured. */
 const MOCK_LLM_PATH = '/mock-llm/chat/completions';
 const MOCK_LLM_KEY = 'mock-key-0001';
+/** The scripted route's SSE content type (module const — the seat's own). */
+const SSE_TYPE: string = 'text/event-stream; charset=utf-8';
 /** The recovery defaults row the carrier injects beside the runtime's rows
  * (upstream `__DSH_CONNECTION_RECOVERY__`). */
 const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
@@ -170,6 +183,10 @@ export class OfficialServe {
    * carrier serves the scripted model route as the no-credential fallback. */
   private interactive: boolean = false;
   private credentialJson: string | null = null;
+  /** The self-hosted next client is the served page: the runtime's boot
+   * rows never swap in (the page owns its boot — zero injection rows), the
+   * mounts still report them for composition evidence. */
+  private servesNext: boolean = false;
 
   /** The staged credential file (`<filesDir>/profiles/default/llm/
    * config.json` — the same shape and location the `llm.live-stream` runner
@@ -202,11 +219,17 @@ export class OfficialServe {
   /** The user-facing boot (the INTERACTIVE seat): the full spine through
    * composer-web-live.js — the commands registry + the skill plane mount,
    * the write surface / settings describe / mux streams are claimed, and a
-   * staged credential (or the scripted route) backs every turn. */
+   * staged credential (or the scripted route) backs every turn.
+   * [distRoot] selects the served client: the official dist (default) or
+   * the self-hosted next client's staged web dir — same /api + mux surface,
+   * our page, and the seat keeps the injection rows empty for it (the page
+   * owns its whole boot; the rows are the official page's). */
   beginInteractive(ctx: common.UIAbilityContext, webRoot: string,
-    capturePath: string, fsRoot: string, credentialJson: string | null): void {
+    capturePath: string, fsRoot: string, credentialJson: string | null,
+    distRoot: string = OFFICIAL_DIST_ROOT): void {
     this.interactive = true;
     this.credentialJson = credentialJson;
+    this.servesNext = distRoot !== OFFICIAL_DIST_ROOT;
     const workspace: string = fsRoot + '/workspace';
     try {
       fs.mkdirSync(workspace + '/home/agents', true);
@@ -214,18 +237,18 @@ export class OfficialServe {
     } catch (e) {
       hilog.error(0x0000, TAG, 'interactive: workspace mkdir failed');
     }
-    this.begin(ctx, webRoot, capturePath, fsRoot);
+    this.begin(ctx, webRoot, capturePath, fsRoot, distRoot);
   }
 
   /** Boots the mount leg: routes → listen → runtime → web.boot → origin. The
    * served output is the official app; who consumes it is the caller's. */
   begin(ctx: common.UIAbilityContext, webRoot: string, capturePath: string,
-    fsRoot: string): void {
+    fsRoot: string, distRoot: string = OFFICIAL_DIST_ROOT): void {
     this.webRoot = webRoot;
     this.capturePath = capturePath;
     this.fsRoot = fsRoot;
     this.token = OfficialServe.randomToken();
-    this.startCarrier(ctx);
+    this.startCarrier(ctx, distRoot);
   }
 
   /** The carrier seat, for a drive that registers its own verification
@@ -260,10 +283,11 @@ export class OfficialServe {
     }
   }
 
-  private startCarrier(ctx: common.UIAbilityContext): void {
+  private startCarrier(ctx: common.UIAbilityContext, distRoot: string): void {
     const dirs = this.pluginPackageDirs(ctx);
     this.dist = new WebDist(this.server,
-      (rel: string): Uint8Array | null => this.rawFile(ctx, rel), this.token);
+      (rel: string): Uint8Array | null => this.rawFile(ctx, rel), this.token,
+      distRoot);
     this.plugins = new WebPlugins(this.server,
       (rel: string): Uint8Array | null => this.rawFile(ctx, rel), dirs);
     this.bridge = new ApiBridge(this.server, this.token);
@@ -292,16 +316,30 @@ export class OfficialServe {
       this.port = port;
       // hostStart FIRST: the drive's canonical lines route through the phase
       // sink (hostCarrierLine), which is only live once the runtime exists.
-      const entry = this.interactive ? ENTRY_INTERACTIVE : SCENARIO_MOUNT;
-      this.startRuntime(ctx, entry);
+      // The ENTRY the runtime evals (the mount scenario's file vs the
+      // interactive spine's) and the LABEL the verdict line names — never
+      // the same value: #194 conflated them (evalEntry(SCENARIO_MOUNT) —
+      // a scenario label, not a path — threw 'cannot read entry' and killed
+      // the boot chain for every non-interactive mount leg; the label still
+      // rides startRuntime's verdict naming).
+      const entry = this.interactive ? ENTRY_INTERACTIVE : ENTRY_MOUNT;
+      const label = this.interactive ? ENTRY_INTERACTIVE : SCENARIO_MOUNT;
+      this.startRuntime(ctx, label);
       this.onCarrierUp(port);
       this.evalEntry(entry);
-      if (this.interactive) {
-        // The spine's take('runtime.config') consumes this (workspace, the
-        // interactive rows, the model route) before any surface mounts.
+      // The interactive boot's config + presets seed ride the FINAL plugins
+      // chunk (see deliverPluginChunks: an earlier config delivery re-drives
+      // the spine into probes that pre-composition answers fail).
+      const afterCompose: () => void = (): void => {
+        // The SEED first (order-independent data staging — the web-boot's
+        // handler is installed during eval), THEN the config: the config
+        // delivery re-drives the spine through its settings probes, and the
+        // presets service must already see the staged tree (the iOS seat's
+        // seed-before-probe ordering, arrived at from the other side).
+        this.deliverAgentPresetsSeed();
         this.deliverBus(this.interactiveConfig());
-      }
-      this.deliverWebPlugins(ctx);
+      };
+      this.deliverWebPlugins(ctx, this.interactive ? afterCompose : undefined);
     }).catch((err: Error): void => {
       hilog.error(0x0000, TAG, 'official: carrier failed: %{public}s',
         err.message ?? 'unknown');
@@ -425,7 +463,8 @@ export class OfficialServe {
    * 6s watchdog (THREAD_BLOCK_6S appfreeze under load). The runtime stages
    * each chunk (web-boot.js `chunked`/`final` flags) and composes on the
    * last; the iOS drive's single-delivery shape is unchanged. */
-  deliverWebPlugins(ctx: common.UIAbilityContext): void {
+  deliverWebPlugins(ctx: common.UIAbilityContext,
+    onFinal?: () => void): void {
     const base64 = new util.Base64Helper();
     const dirs = this.pluginPackageDirs(ctx).slice().sort();
     const packages: string[] = [];
@@ -457,14 +496,18 @@ export class OfficialServe {
       };
       packages.push(JSON.stringify(plugin));
     }
-    this.deliverPluginChunks(packages, 0, Date.now() + 60000);
+    this.deliverPluginChunks(packages, 0, Date.now() + 60000, onFinal);
   }
 
   /** Delivers one 4-package chunk per event-loop turn (the yield keeps the
    * main thread under the watchdog); the last chunk carries `final: true`
-   * and composes the boot wire in the runtime. */
+   * and composes the boot wire in the runtime. [onFinal] rides the final
+   * chunk's landing (the interactive seat delivers its runtime.config +
+   * presets seed there: an earlier config delivery would re-drive the spine
+   * into its settings probes while the composition is still chunking — the
+   * probes would meet "the web boot is not composed yet" and fail loud). */
   private deliverPluginChunks(packages: string[], at: number,
-    deadline: number): void {
+    deadline: number, onFinal?: () => void): void {
     if (!this.started) {
       return;
     }
@@ -492,12 +535,109 @@ export class OfficialServe {
       return;
     }
     if (final) {
-      hilog.info(0x0000, TAG, 'official: web.plugins delivered (final chunk)');
+      hilog.info(0x0000, TAG,
+'official: web.plugins delivered (final chunk)');
+      if (onFinal !== undefined) {
+        onFinal();
+      }
       return;
     }
     setTimeout((): void => {
-      this.deliverPluginChunks(packages, end, deadline);
+      this.deliverPluginChunks(packages, end, deadline, onFinal);
     }, 1);
+  }
+
+  /** The INTERACTIVE seat's presets seed (the same rule the iOS/Android
+   * seats deliver and runtime/spike/ci/gen-presets-seed.py generates for
+   * the CLI): the staged agent-presets presets/** tree plus one node_modules
+   * resolution marker per staged dsh package, base64 under VFS paths — a
+   * preset row naming a staged package resolves through its marker onto the
+   * bare map's vendored tree; without the seed agentPresets/list answers
+   * unavailable and the interactive spine fails loud. */
+  /** Public: the phase's spine legs (the write leg's settings evidence
+   * probes agentPresets/list) deliver the same seed the interactive boot
+   * does. */
+  deliverAgentPresetsSeed(): void {
+    const base64 = new util.Base64Helper();
+    const vendorRoot: string = this.webRoot + '/vendor/dsh';
+    const presetsRoot: string = vendorRoot + '/agent-presets@0.1.6-alpha.2/presets';
+    const files: Record<string, Object> = {};
+    const walk = (dir: string, rel: string): void => {
+      let names: string[] = [];
+      try {
+        names = fs.listFileSync(dir);
+      } catch (e) {
+        return;
+      }
+      for (let i = 0; i < names.length; i++) {
+        const child: string = dir + '/' + names[i];
+        let isDir = false;
+        try {
+          isDir = fs.statSync(child).isDirectory();
+        } catch (e) {
+          continue;
+        }
+        if (isDir) {
+          walk(child, rel + '/' + names[i]);
+          continue;
+        }
+        try {
+          const stat = fs.statSync(child);
+          const file = fs.openSync(child, fs.OpenMode.READ_ONLY);
+          const buffer = new ArrayBuffer(stat.size);
+          fs.readSync(file.fd, buffer);
+          fs.closeSync(file);
+          files['/vendor/dsh/agent-presets@0.1.6-alpha.2/presets' + rel + '/' +
+            names[i]] = {
+            'b64': base64.encodeToStringSync(new Uint8Array(buffer)),
+            'mtimeMs': 0,
+          } as Record<string, Object>;
+        } catch (e) {
+          hilog.error(0x0000, TAG, 'presets seed: read failed %{public}s', child);
+        }
+      }
+    };
+    walk(presetsRoot, '');
+    // Resolution markers: one per staged dsh package, name+version from the
+    // package's own package.json (sorted directory order).
+    let dirs: string[] = [];
+    try {
+      dirs = fs.listFileSync(vendorRoot).sort();
+    } catch (e) {
+      dirs = [];
+    }
+    for (let i = 0; i < dirs.length; i++) {
+      if (!dirs[i].includes('@')) {
+        continue;
+      }
+      try {
+        const raw: string = fs.readTextSync(vendorRoot + '/' + dirs[i] +
+          '/package.json');
+        const manifest: Record<string, Object> = JSON.parse(raw) as Record<string, Object>;
+        const marker: Record<string, Object> = {
+          'name': manifest['name'] ?? '',
+          'version': manifest['version'] ?? '',
+          '_spike': 'resolution marker (the bare map vendors this package)',
+        };
+        const markerBytes: Uint8Array =
+          new util.TextEncoder().encodeInto(JSON.stringify(marker));
+        files['/vendor/dsh/agent-presets@0.1.6-alpha.2/node_modules/' +
+          String(manifest['name'] ?? '') + '/package.json'] = {
+          'b64': base64.encodeToStringSync(markerBytes),
+          'mtimeMs': 0,
+        } as Record<string, Object>;
+      } catch (e) {
+        hilog.error(0x0000, TAG, 'presets seed: marker failed %{public}s', dirs[i]);
+      }
+    }
+    if (Object.keys(files).length === 0) {
+      hilog.warn(0x0000, TAG, 'presets seed: nothing staged under %{public}s',
+        presetsRoot);
+      return;
+    }
+    this.deliverBus(JSON.stringify({ 'type': 'agentPresets.seed', 'files': files }));
+    hilog.info(0x0000, TAG, 'presets seed delivered (%{public}d entries)',
+      Object.keys(files).length);
   }
 
   private fileEntry(ctx: common.UIAbilityContext, base64: util.Base64Helper,
@@ -623,7 +763,7 @@ export class OfficialServe {
     // `style` row WebDist.settingsPhoneAdaptation carries; see its doc for
     // why the page needs it).
     rows.push(WebDist.settingsPhoneAdaptation);
-    if (this.dist !== null) {
+    if (this.dist !== null && !this.servesNext) {
       this.dist.indexRows = (): BootRow[] => rows;
     }
     if (this.plugins !== null) {
@@ -662,7 +802,7 @@ export class OfficialServe {
       '","containerRoot":' + JSON.stringify(workspace) +
       ',"fsScopeRoot":' + JSON.stringify(this.fsRoot) +
       ',"commands":true,"fullCoverage":true,"goals":true,' +
-      '"fileReferences":true,"skills":{"dshHome":' +
+      '"fileReferences":true,"creation":true,"skills":{"dshHome":' +
       JSON.stringify(workspace + '/home') + ',"agentsHome":' +
       JSON.stringify(workspace + '/home/agents') + ',"customSkillDirs":[' +
       JSON.stringify(workspace + '/skills') + ']}';
@@ -681,7 +821,11 @@ export class OfficialServe {
    * /mock-llm/chat/completions — the same byte-for-byte success stream the
    * harness's dsh-llm-mock mirror serves ('Hello from upstream', 5-char
    * deltas, terminal chunk with finish_reason + usage, [DONE]) and its fixed
-   * bearer check (401 JSON on a bad key). */
+   * bearer check (401 JSON on a bad key). The nextweb drive's legs select
+   * scripts by prompt marker (every other prompt never carries them, so its
+   * wire stays byte-identical): CREATE_TURN answers one round per launch
+   * with a write+present tool-call pair; SLOW_TURN drips the success body
+   * ~220ms per slice (CarrierServer.respondDrip). */
   private serveScriptedLlm(req: CarrierRequest,
     conn: socket.TCPSocketConnection): void {
     if (req.method !== 'POST') {
@@ -694,6 +838,29 @@ export class OfficialServe {
       this.server.respondText(conn, 401, 'application/json', body);
       return;
     }
+    if (req.body.includes('CREATE_TURN')) {
+      // ONE create round per launch: a follow-up model call (the agent
+      // loop's post-tool continuation) gets the plain success body, or the
+      // scripted tool calls would loop forever (the iOS/Android seats'
+      // one-shot latch).
+      if (this.createScriptDone) {
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+        return;
+      }
+      this.createScriptDone = true;
+      this.server.respondText(conn, 200, SSE_TYPE, this.createStream());
+      return;
+    }
+    if (req.body.includes('SLOW_TURN')) {
+      this.server.respondDrip(conn, SSE_TYPE, this.successStream(), 220, 8);
+      return;
+    }
+    this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+  }
+
+  private createScriptDone: boolean = false;
+
+  private successStream(): string {
     const successText = 'Hello from upstream';
     let sse = '';
     for (let at = 0; at < successText.length; at += 5) {
@@ -705,8 +872,35 @@ export class OfficialServe {
       '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
       '"completion_tokens":' + successText.length + '}}\n\n';
     sse += 'data: [DONE]\n\n';
-    this.server.respondText(conn, 200,
-      'text/event-stream; charset=utf-8', sse);
+    return sse;
+  }
+
+  /** The CREATE script's assistant message: TWO tool calls in one turn —
+   * `write` creates the deliverable on DISK inside the workspace (absolute
+   * path), present declares it (the runtime journals deliverables/presented;
+   * the client renders the card). The wire indices are LOAD-BEARING: two
+   * zero-indexed calls merge into one misnamed call (measured on Android:
+   * present executed with write's arguments). */
+  private createStream(): string {
+    const workspace: string = this.fsRoot + '/workspace';
+    const writeArgs = '{"file_path":' +
+      JSON.stringify(workspace + '/creations/blue-whale.html') +
+      ',"content":' + JSON.stringify(WHALE_HTML) + '}';
+    const presentArgs = '{"files":[{"path":"creations/blue-whale.html",' +
+      '"description":"游动的蓝色鲸鱼 — 点按全屏查看"}]}';
+    const sse = 'data: {"choices":[{"index":0,"delta":{"tool_calls":[' +
+      '{"index":0,"id":"call-create-1","type":"function",' +
+      '"function":{"name":"write","arguments":' +
+      JSON.stringify(writeArgs) + '}},' +
+      '{"index":1,"id":"call-present-1","type":"function",' +
+      '"function":{"name":"present","arguments":' +
+      JSON.stringify(presentArgs) + '}}]},' +
+      '"finish_reason":null}]}\n\n';
+    return sse +
+      'data: {"choices":[{"index":0,"delta":{"content":""},' +
+      '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
+      '"completion_tokens":12}}\n\n' +
+      'data: [DONE]\n\n';
   }
 
   private onDispatch(callId: number, name: string, args: string): void {

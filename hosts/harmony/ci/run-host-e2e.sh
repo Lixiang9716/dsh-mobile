@@ -132,8 +132,11 @@ node hosts/harmony/ci/drive-binding.mjs --hdc "$HDC" \
 
 # The m5 verdict chains into the D9 phases on-device; this drive only takes
 # the evidence screenshots and waits for the terminal markers.
+# 900s: the four D9 legs each re-materialize the bundle and boot the full
+# spine on the CLT emulator — the measured wall time grew past the old 600s
+# budget (the legs themselves pass; the deadline was the only failure).
 node hosts/harmony/ci/drive-official.mjs --hdc "$HDC" \
-    --overall-deadline 600 \
+    --overall-deadline 900 \
     --shot-boot "$OUT/officialweb-boot-screen.png" \
     --shot-final "$OUT/officialweb-final-state.png" \
     --shot-session-boot "$OUT/session-live-boot-screen.png" \
@@ -196,7 +199,7 @@ check test/e2e/scenarios/session-mock-llm.json "$OUT/sink-capture.txt"
 check test/e2e/scenarios/harmony-capability-binding.json "$OUT/binding-capture.txt"
 check test/e2e/scenarios/harmony-officialweb-mount.json "$OUT/official-capture.txt"
 check test/e2e/scenarios/harmony-httpfetch-streaming.json "$OUT/httpfetch-capture.txt"
-check test/e2e/scenarios/harmony-session-live-read-read.json "$OUT/session-capture.txt"
+check test/e2e/scenarios/harmony-session-live-read.json "$OUT/session-capture.txt"
 check test/e2e/scenarios/harmony-composer-live-write.json "$OUT/write-capture.txt"
 
 if [ "$fail" != "0" ]; then
