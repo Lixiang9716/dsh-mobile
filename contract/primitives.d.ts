@@ -1,8 +1,8 @@
 /**
- * dsh-mobile capability gateway — primitive contract v1.4.0 (FROZEN at M0, D5;
+ * dsh-mobile capability gateway — primitive contract v1.5.0 (FROZEN at M0, D5;
  * v1.1.0 is the additive filesystem revision of 2026-09-22, v1.2.0 the
  * in-process WebAssembly addition, v1.3.0 the emulated-userland addition,
- * v1.4.0 the timer wake-up seam).
+ * v1.4.0 the timer wake-up seam, v1.5.0 the device plane).
  *
  * Spec of record: contract/primitives.md. Shapes here are immutable for the
  * life of major version 1; additions require a minor bump of the contract.
@@ -129,7 +129,7 @@ export declare function presentApproval(req: {
   allowRemember?: boolean;
 }): Promise<{ approved: boolean; remember?: boolean }>;
 
-export type PickerRequest = { mode: "file" | "directory"; suggestedName?: string };
+export type PickerRequest = { mode: "file" | "directory" | "media"; suggestedName?: string };
 export type PickerResult = { scope: ScopeHandle; path: string | null };
 
 /** Resolves null on user dismissal — a value, not an error. */
@@ -210,3 +210,47 @@ export type TimerFireEvent = {
   timerId: number;
   tag?: string;
 };
+
+// ---- 19-24 · the device plane (v1.5.0) ----------------------------------
+// Six platform-SDK primitives: the device facts, feedback and hand-off an
+// agent needs and cannot fake with the rest of the table. deviceInfo is
+// flagless (the facts any webpage's UA string carries, plus battery where
+// the OS publishes it); each other primitive is gated by its capability
+// family flag (haptic / clipboard / share / screen). clipboardRead is
+// approval-gated by default: the host surfaces the presentApproval surface
+// unless the user granted a standing permission, and its audit record never
+// carries the text. presentShare learns only that the sheet completed, never
+// the destination; files paths resolve through the same scope discipline as
+// fsRead. keepAwake is a boolean latch the caller holds and releases. A host
+// without a primitive answers unavailable — negotiation, not a branch.
+export type DeviceInfo = {
+  platform: "ios" | "android" | "harmonyos" | "macos" | "linux" | "windows";
+  model: string;
+  osVersion: string;
+  appVersion: string;
+  screen: { width: number; height: number; scale: number };
+  battery?: { level: number; state: "charging" | "unplugged" | "full" | "unknown" };
+  lowPowerMode?: boolean;
+  locale: string;
+  timezone: string;
+};
+export declare function deviceInfo(): Promise<DeviceInfo>;
+
+export type HapticPattern =
+  | "light" | "medium" | "heavy" | "rigid" | "soft"
+  | "selection"
+  | "success" | "warning" | "error";
+export declare function haptic(pattern: HapticPattern): Promise<void>;
+
+export declare function clipboardRead(): Promise<
+  { kind: "text"; text: string } | null>;
+
+export declare function clipboardWrite(text: string): Promise<void>;
+
+export type SharePayload =
+  | { kind: "text"; text: string }
+  | { kind: "url"; url: string }
+  | { kind: "files"; paths: string[] };
+export declare function presentShare(payload: SharePayload): Promise<{ shared: boolean }>;
+
+export declare function keepAwake(hold: boolean): Promise<void>;

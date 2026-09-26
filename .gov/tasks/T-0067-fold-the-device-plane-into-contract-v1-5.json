@@ -1,0 +1,20 @@
+{
+  "title": "Fold the device plane into contract v1.5.0",
+  "created": "2026-09-26T13:50:38+00:00",
+  "rules": {
+    "hash": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "aeb6a65fd4f504fd674c15a56645118a70016450c646166b9dff6bcc9bf42eb0"
+    }
+  },
+  "checklist": [
+    "[x] primitives.md + zh mirror + d.ts carry the six primitives, the media mode, the v1.4.0 table-row correction",
+    "[x] proposal trio folded out; README rows updated",
+    "[x] gateway.js exports + manifest flags; three host closures re-synced",
+    "pairing re-confirmed; note; gates green + receipt; PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0067"
+}
