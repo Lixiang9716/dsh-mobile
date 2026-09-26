@@ -164,6 +164,17 @@ extension CarrierServer {
             return serveCreateScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
                 conn: conn)
         }
+        if request.body.contains(Data("GAME_TURN".utf8)) {
+            // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
+            // the post-tool continuation call gets the plain success body.
+            if serveGameScriptDone {
+                return serveSuccess({ self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                    conn: conn)
+            }
+            serveGameScriptDone = true
+            return serveGameScript(respond: { self.respond(status: $0, body: $1, contentType: $2, conn: $3) },
+                conn: conn)
+        }
         let body = scriptedSuccessBody()
         if request.body.contains(Data("SLOW_TURN".utf8)) {
             Self.respondSlowDrip(
@@ -239,6 +250,93 @@ extension CarrierServer {
         body.append(Data("data: [DONE]\n\n".utf8))
         respond(200, body, "text/event-stream; charset=utf-8", conn)
     }
+
+    /// The GAME script: the same TWO tool-call shape as the whale (distinct
+    /// wire indices), creating the canvas-game deliverable the game leg
+    /// drives. The write arguments are JSON-serialized rather than
+    /// hand-escaped — the game HTML carries quotes and newlines, and hand
+    /// escaping that is exactly how broken fixtures happen.
+    private func serveGameScript(
+        respond: @escaping (Int, Data, String, NWConnection) -> Void,
+        conn: NWConnection) {
+        var body = Data()
+        func sse(_ payload: @autoclosure () -> Any) {
+            guard let data = try? JSONSerialization.data(withJSONObject: payload()),
+                  let text = String(data: data, encoding: .utf8) else { return }
+            body.append(Data("data: \(text)\n\n".utf8))
+        }
+        let gamePath = SessionServe.workspaceRoot
+            .appendingPathComponent("creations/dsh-game.html").path
+        let writeArgs = String(data: try! JSONSerialization.data(
+            withJSONObject: ["file_path": gamePath, "content": Self.gameHtml]),
+            encoding: .utf8) ?? "{}"
+        let presentArgs = "{\"files\":[{\"path\":\"creations/dsh-game.html\","
+            + "\"description\":\"弹球小游戏 — 点按全屏查看\"}]}"
+        sse(["choices": [["index": 0, "delta": ["tool_calls": [
+            ["index": 0, "id": "call-write-game", "type": "function",
+             "function": ["name": "write", "arguments": writeArgs]],
+            ["index": 1, "id": "call-present-game", "type": "function",
+             "function": ["name": "present", "arguments": presentArgs]],
+        ]], "finish_reason": NSNull()]]])
+        sse(["choices": [["index": 0, "delta": ["content": ""],
+            "finish_reason": "stop"]],
+            "usage": ["prompt_tokens": 3, "completion_tokens": 12]])
+        body.append(Data("data: [DONE]\n\n".utf8))
+        respond(200, body, "text/event-stream; charset=utf-8", conn)
+    }
+
+    /// The game fixture the scripted model "writes": a dependency-free canvas
+    /// game. The heartbeat line posts frame/beat counters to the PARENT — the
+    /// viewer's iframe is sandbox="allow-scripts" with no allow-same-origin,
+    /// so the drive cannot read inside it; the heartbeat is the game leg's
+    /// canary twin (fixture evidence, not product code), counted by the
+    /// probe-side listener (NextWebProbe.installGameListenerLeg).
+    static let gameHtml = #"""
+<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弹球小游戏</title>
+<style>html,body{margin:0;height:100%;background:#0b1020;overflow:hidden}
+canvas{display:block;width:100vw;height:98vh;touch-action:none}</style>
+</head><body>
+<canvas id="g"></canvas>
+<script>
+/* DSH-GAME-CANARY */
+window.__game = { frames: 0, beats: 0 };
+const cv = document.getElementById('g'), cx = cv.getContext('2d');
+let W, H; const fit = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+fit(); addEventListener('resize', fit);
+const ball = { x: 80, y: 80, vx: 2.6, vy: 2.0, r: 10 };
+const pad = { w: 92, h: 10, x: 20, y: 0 };
+const move = (e) => { const px = (e.touches ? e.touches[0].clientX : e.clientX);
+  pad.x = Math.max(0, Math.min(W - pad.w, px - pad.w / 2)); };
+addEventListener('pointermove', move); addEventListener('pointerdown', move);
+const beat = () => { window.__game.beats++;
+  try { parent.postMessage({ __dshGame: 1, frames: window.__game.frames,
+    beats: window.__game.beats }, '*'); } catch (e) {} };
+setInterval(beat, 50);
+const step = () => {
+  window.__game.frames++;
+  ball.x += ball.vx; ball.y += ball.vy;
+  if (ball.x < ball.r || ball.x > W - ball.r) { ball.vx = -ball.vx;
+    ball.x = Math.max(ball.r, Math.min(W - ball.r, ball.x)); }
+  if (ball.y < ball.r) ball.vy = Math.abs(ball.vy);
+  pad.y = H - 26;
+  if (ball.y > pad.y - ball.r && ball.y < pad.y + pad.h &&
+      ball.x > pad.x - ball.r && ball.x < pad.x + pad.w + ball.r) {
+    ball.vy = -Math.abs(ball.vy); }
+  if (ball.y > H + ball.r) { ball.y = H / 3; ball.x = W / 3;
+    ball.vy = -Math.abs(ball.vy); }
+  cx.fillStyle = '#0b1020'; cx.fillRect(0, 0, W, H);
+  cx.fillStyle = '#7fd1ff'; cx.beginPath();
+  cx.arc(ball.x, ball.y, ball.r, 0, 6.3); cx.fill();
+  cx.fillStyle = '#e8f1ff'; cx.fillRect(pad.x, pad.y, pad.w, pad.h);
+  cx.fillStyle = '#5a6b8c'; cx.font = '14px sans-serif';
+  cx.fillText('弹球 — 拖动挡板', 12, 22);
+  requestAnimationFrame(step);
+};
+requestAnimationFrame(step);
+</script></body></html>
+"""#
 
 }
 

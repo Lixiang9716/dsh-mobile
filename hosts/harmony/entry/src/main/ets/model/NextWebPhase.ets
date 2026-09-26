@@ -33,12 +33,19 @@ const CREATE_TEXT: string = 'CREATE_TURN 请创建一只游动的蓝色鲸鱼';
 const EXPECTED_REPLY: string = 'Hello from upstream';
 const CARD_TITLE: string = '游动的蓝色鲸鱼 — 点按全屏查看';
 const CANARY: string = 'BLUE-WHALE-CANARY';
+/** The GAME leg (the creation loop's second deliverable — the canvas game
+ * the scripted model writes and presents in the same launch). */
+const GAME_TEXT: string = 'GAME_TURN 请做一个Canvas弹球小游戏';
+const GAME_CARD_TITLE: string = '弹球小游戏 — 点按全屏查看';
+const GAME_CANARY: string = 'DSH-GAME-CANARY';
 /** The leg calls (template-literal-free — the texts ride quoted strings). */
 const TYPE_CALL: string = "window.__next.type('Say hello from the next client')";
 const CANCEL_CALL: string = "window.__next.cancel('SLOW_TURN keep going')";
 const CARD_CALL: string =
   "window.__next.card('CREATE_TURN 请创建一只游动的蓝色鲸鱼')";
 const REPLY_CALL: string = "window.__next.reply('Hello from upstream')";
+const GAME_CARD_CALL: string =
+  "window.__next.gameCard('GAME_TURN 请做一个Canvas弹球小游戏', '弹球小游戏 — 点按全屏查看')";
 
 /** One parked leg result (the probe's JSON, parsed). */
 interface LegOut {
@@ -52,6 +59,12 @@ interface LegOut {
   stopPressed?: boolean;
   toast?: string;
   creationCard?: boolean;
+  closed?: boolean;
+  srcdocCleared?: boolean;
+  gameCard?: boolean;
+  advancing?: boolean;
+  frames?: number;
+  beats?: number;
   open?: boolean;
   srcdoc?: string;
   title?: string;
@@ -305,6 +318,47 @@ export class NextWebPhase {
         throw new Error('the creation viewer never carried the file');
       }
       this.carrierLine('creation.opened', { 'srcdocContains': CANARY });
+      // The whale viewer closes and the GAME leg starts — the creation
+      // loop's second deliverable in the same launch.
+      return this.runLeg(runJs, 'window.__next.gameClose()', 'gameClose', 30000);
+    }).then((out): Promise<LegOut | null> => {
+      if (out === null || out.closed !== true || out.srcdocCleared !== true) {
+        throw new Error('the whale viewer never closed cleanly');
+      }
+      this.carrierLine('creation.closed', { 'srcdocCleared': true });
+      return this.runLeg(runJs, GAME_CARD_CALL, 'gameCard', 90000);
+    }).then((out): Promise<LegOut | null> => {
+      if (out === null || (out.fail ?? '') !== '') {
+        throw new Error('the game creation leg failed: ' +
+          (out !== null ? (out.fail ?? 'no result') : 'no result') +
+          ' (dump: ' + (out !== null ? (out.dump ?? '') : '') + ')');
+      }
+      if (out.gameCard !== true) {
+        throw new Error('the game card never rendered');
+      }
+      this.carrierLine('game.card.rendered', {
+        'title': GAME_CARD_TITLE, 'items': out.items ?? 0,
+      });
+      return this.runLeg(runJs, 'window.__next.gameViewer()', 'gameViewer', 60000);
+    }).then((out): Promise<LegOut | null> => {
+      if (out === null || out.open !== true ||
+        !(out.srcdoc ?? '').includes(GAME_CANARY)) {
+        throw new Error('the game viewer never carried the game');
+      }
+      this.carrierLine('game.opened', { 'srcdocContains': GAME_CANARY });
+      if (out.advancing !== true) {
+        throw new Error('the game never ran (frames: ' + (out.frames ?? 0) +
+          ', beats: ' + (out.beats ?? 0) + ')');
+      }
+      this.carrierLine('game.frames', {
+        'advancing': true, 'frames': out.frames ?? 0, 'beats': out.beats ?? 0,
+      });
+      return this.runLeg(runJs, 'window.__next.gameClose()', 'gameClose', 30000);
+    }).then((out): void => {
+      if (out === null || out.closed !== true || out.srcdocCleared !== true) {
+        throw new Error('the game viewer never closed cleanly');
+      }
+      this.carrierLine('game.closed', { 'srcdocCleared': true });
       this.finish(true, '');
     }).catch((err: Error): void => {
       this.finish(false, err.message ?? 'unknown');
@@ -485,6 +539,99 @@ window.__next.viewer = async () => {
     () => { const s = read(); return s.open && s.srcdoc.length > 0; }, 40000);
   const state = read();
   Object.assign(out, state);
+  window.__nextOut = JSON.stringify(out);
+};
+window.__next.gameClose = async () => {
+  const out = {leg: 'gameClose'};
+  const close = document.getElementById('creation-close');
+  if (close) close.click();
+  const open = () => {
+    const view = document.getElementById('creation-view');
+    return !!view && !view.hidden;
+  };
+  await window.__next.wait(() => !open(), 20000);
+  out.closed = !open();
+  const frame = document.getElementById('creation-frame');
+  out.srcdocCleared = !frame || frame.srcdoc.length === 0;
+  window.__nextOut = JSON.stringify(out);
+};
+window.__next.gameCard = async (text, title) => {
+  const out = {leg: 'gameCard'};
+  const send = document.getElementById('composer-send');
+  const input = document.getElementById('composer-input');
+  const quiet = await window.__next.wait(() => {
+    const s = window.__next.cancelState();
+    return !s.stop && !s.optimistic;
+  }, 40000);
+  if (!quiet) {
+    out.fail = 'the composer never left its stop state';
+    window.__nextOut = JSON.stringify(out);
+    return;
+  }
+  const typed = await window.__next.wait(() => {
+    input.value = text;
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+    return !!send && !send.disabled;
+  }, 15000);
+  if (!typed) {
+    out.fail = 'the composer never took the game prompt';
+    window.__nextOut = JSON.stringify(out);
+    return;
+  }
+  send.click();
+  out.gameCard = await window.__next.wait(() => {
+    const cards = document.querySelectorAll('.creation-card');
+    for (let i = 0; i < cards.length; i++) {
+      if (cards[i].textContent.indexOf(title) !== -1) return true;
+    }
+    return false;
+  }, 75000);
+  out.items = document.querySelectorAll('#transcript .item').length;
+  if (!out.gameCard) {
+    const host = document.getElementById('transcript');
+    out.dump = [...host.querySelectorAll('.item, .group')]
+      .map((n) => (n.className.split(' ')[0] || 'div') + ':' +
+        n.textContent.replace(/\\s+/g, ' ').slice(0, 60)).join(' | ').slice(0, 600);
+  }
+  window.__nextOut = JSON.stringify(out);
+};
+window.__next.gameViewer = async () => {
+  const out = {leg: 'gameViewer'};
+  window.__gameFrames = 0; window.__gameBeats = 0;
+  window.addEventListener('message', (e) => {
+    const d = e.data;
+    if (d && d.__dshGame) {
+      window.__gameFrames = d.frames || window.__gameFrames;
+      window.__gameBeats = d.beats || window.__gameBeats;
+    }
+  });
+  const cards = document.querySelectorAll('.creation-card');
+  if (!cards.length) {
+    out.fail = 'no creation card';
+    window.__nextOut = JSON.stringify(out);
+    return;
+  }
+  cards[cards.length - 1].click();
+  const read = () => {
+    const frame = document.getElementById('creation-frame');
+    const view = document.getElementById('creation-view');
+    return {open: !!view && !view.hidden, srcdoc: frame ? frame.srcdoc : ''};
+  };
+  await window.__next.wait(
+    () => { const s = read(); return s.open && s.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
+    40000);
+  const s = read();
+  out.open = s.open; out.srcdoc = s.srcdoc.slice(0, 200);
+  if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
+    window.__nextOut = JSON.stringify(out);
+    return;
+  }
+  const total = () => (window.__gameFrames || 0) + (window.__gameBeats || 0);
+  await window.__next.wait(() => total() >= 1, 20000);
+  const first = total();
+  out.advancing = await window.__next.wait(() => total() > first, 20000);
+  out.frames = window.__gameFrames || 0;
+  out.beats = window.__gameBeats || 0;
   window.__nextOut = JSON.stringify(out);
 };
 'defined';

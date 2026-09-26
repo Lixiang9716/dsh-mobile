@@ -59,6 +59,55 @@ const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-
 const OFFICIAL_DIST_ROOT: string = 'officialweb/www';
 /** The self-hosted next client's staged web dir (rawfile rel root). */
 export const NEXT_CLIENT_ROOT: string = 'webclient/dsh-web-client-next/web';
+/** The GAME script's deliverable content: a dependency-free canvas game.
+ * The heartbeat line posts frame/beat counters to the PARENT — the viewer's
+ * iframe is sandbox="allow-scripts" with no allow-same-origin, so the drive
+ * cannot read inside it; the heartbeat is the game leg's canary twin
+ * (fixture evidence, not product code). */
+const GAME_HTML: string = `<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>弹球小游戏</title>
+<style>html,body{margin:0;height:100%;background:#0b1020;overflow:hidden}
+canvas{display:block;width:100vw;height:98vh;touch-action:none}</style>
+</head><body>
+<canvas id="g"></canvas>
+<script>
+/* DSH-GAME-CANARY */
+window.__game = { frames: 0, beats: 0 };
+const cv = document.getElementById('g'), cx = cv.getContext('2d');
+let W, H; const fit = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+fit(); addEventListener('resize', fit);
+const ball = { x: 80, y: 80, vx: 2.6, vy: 2.0, r: 10 };
+const pad = { w: 92, h: 10, x: 20, y: 0 };
+const move = (e) => { const px = (e.touches ? e.touches[0].clientX : e.clientX);
+  pad.x = Math.max(0, Math.min(W - pad.w, px - pad.w / 2)); };
+addEventListener('pointermove', move); addEventListener('pointerdown', move);
+const beat = () => { window.__game.beats++;
+  try { parent.postMessage({ __dshGame: 1, frames: window.__game.frames,
+    beats: window.__game.beats }, '*'); } catch (e) {} };
+setInterval(beat, 50);
+const step = () => {
+  window.__game.frames++;
+  ball.x += ball.vx; ball.y += ball.vy;
+  if (ball.x < ball.r || ball.x > W - ball.r) { ball.vx = -ball.vx;
+    ball.x = Math.max(ball.r, Math.min(W - ball.r, ball.x)); }
+  if (ball.y < ball.r) ball.vy = Math.abs(ball.vy);
+  pad.y = H - 26;
+  if (ball.y > pad.y - ball.r && ball.y < pad.y + pad.h &&
+      ball.x > pad.x - ball.r && ball.x < pad.x + pad.w + ball.r) {
+    ball.vy = -Math.abs(ball.vy); }
+  if (ball.y > H + ball.r) { ball.y = H / 3; ball.x = W / 3;
+    ball.vy = -Math.abs(ball.vy); }
+  cx.fillStyle = '#0b1020'; cx.fillRect(0, 0, W, H);
+  cx.fillStyle = '#7fd1ff'; cx.beginPath();
+  cx.arc(ball.x, ball.y, ball.r, 0, 6.3); cx.fill();
+  cx.fillStyle = '#e8f1ff'; cx.fillRect(pad.x, pad.y, pad.w, pad.h);
+  cx.fillStyle = '#5a6b8c'; cx.font = '14px sans-serif';
+  cx.fillText('弹球 — 拖动挡板', 12, 22);
+  requestAnimationFrame(step);
+};
+requestAnimationFrame(step);
+</script></body></html>`;
 /** The CREATE script's deliverable content (the staged canary proves the
  * viewer served the file, not a placeholder). */
 const WHALE_HTML: string = '<!doctype html><title>蓝色鲸鱼</title>' +
@@ -851,6 +900,17 @@ export class OfficialServe {
       this.server.respondText(conn, 200, SSE_TYPE, this.createStream());
       return;
     }
+    if (req.body.includes('GAME_TURN')) {
+      // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
+      // the post-tool continuation call gets the plain success body.
+      if (this.gameScriptDone) {
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+        return;
+      }
+      this.gameScriptDone = true;
+      this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
+      return;
+    }
     if (req.body.includes('SLOW_TURN')) {
       this.server.respondDrip(conn, SSE_TYPE, this.successStream(), 220, 8);
       return;
@@ -859,6 +919,10 @@ export class OfficialServe {
   }
 
   private createScriptDone: boolean = false;
+
+  /** The GAME leg's one-shot latch (gameStream) — one per scripted create
+   * turn, so the whale and game legs compose in one launch. */
+  private gameScriptDone: boolean = false;
 
   private successStream(): string {
     const successText = 'Hello from upstream';
@@ -893,6 +957,32 @@ export class OfficialServe {
       '"function":{"name":"write","arguments":' +
       JSON.stringify(writeArgs) + '}},' +
       '{"index":1,"id":"call-present-1","type":"function",' +
+      '"function":{"name":"present","arguments":' +
+      JSON.stringify(presentArgs) + '}}]},' +
+      '"finish_reason":null}]}\n\n';
+    return sse +
+      'data: {"choices":[{"index":0,"delta":{"content":""},' +
+      '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
+      '"completion_tokens":12}}\n\n' +
+      'data: [DONE]\n\n';
+  }
+
+  /** The GAME script's assistant message: the same TWO tool-call shape as
+   * the whale (distinct wire indices), creating the canvas-game deliverable
+   * the game leg drives. The write arguments ride JSON.stringify (the game
+   * HTML carries quotes and newlines). */
+  private gameStream(): string {
+    const workspace: string = this.fsRoot + '/workspace';
+    const writeArgs = '{"file_path":' +
+      JSON.stringify(workspace + '/creations/dsh-game.html') +
+      ',"content":' + JSON.stringify(GAME_HTML) + '}';
+    const presentArgs = '{"files":[{"path":"creations/dsh-game.html",' +
+      '"description":"弹球小游戏 — 点按全屏查看"}]}';
+    const sse = 'data: {"choices":[{"index":0,"delta":{"tool_calls":[' +
+      '{"index":0,"id":"call-write-game","type":"function",' +
+      '"function":{"name":"write","arguments":' +
+      JSON.stringify(writeArgs) + '}},' +
+      '{"index":1,"id":"call-present-game","type":"function",' +
       '"function":{"name":"present","arguments":' +
       JSON.stringify(presentArgs) + '}}]},' +
       '"finish_reason":null}]}\n\n';

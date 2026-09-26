@@ -29,7 +29,11 @@ enum NextWebProbe {
         \(stopStateLeg)
         \(readTranscriptLeg)
         \(pressCreationCardLeg)
-        \(readCreationLeg);
+        \(pressLastCreationCardLeg)
+        \(pressCreationCloseLeg)
+        \(readCreationLeg)
+        \(installGameListenerLeg)
+        \(readGameLeg);
         'defined';
         """
     }
@@ -116,6 +120,8 @@ enum NextWebProbe {
             userShown: host.querySelector('.user-bubble') !== null,
             tailPresent: host.querySelector('.tail-state') !== null,
             creationCard: host.querySelector('.creation-card') !== null,
+            creationTitles: [...host.querySelectorAll('.creation-card')]
+              .map((c) => c.textContent.slice(0, 40)),
             dump: [...host.querySelectorAll('.item, .group')].map((n) =>
               (n.className.split(' ')[0] || 'div') + ':' +
               n.textContent.slice(0, 24)).join(' | ').slice(0, 420),
@@ -133,6 +139,62 @@ enum NextWebProbe {
           if (!card) return JSON.stringify({pressed: false});
           card.click();
           return JSON.stringify({pressed: true});
+        };
+        """
+
+    /// Tap the LAST creation card — the game leg runs after the whale's, so
+    /// its card is the second one; the drive must open THAT deliverable.
+    static let pressLastCreationCardLeg = """
+        window.__next.pressLastCreationCard = () => {
+          const cards = document.querySelectorAll('.creation-card');
+          if (!cards.length) return JSON.stringify({pressed: false});
+          cards[cards.length - 1].click();
+          return JSON.stringify({pressed: true});
+        };
+        """
+
+    /// Close the fullscreen viewer (the product page's own close control —
+    /// it hides the overlay and clears the frame's srcdoc).
+    static let pressCreationCloseLeg = """
+        window.__next.pressCreationClose = () => {
+          const close = document.getElementById('creation-close');
+          if (!close) return JSON.stringify({pressed: false});
+          close.click();
+          return JSON.stringify({pressed: true});
+        };
+        """
+
+    /// The game-heartbeat listener: the game fixture posts its frame/beat
+    /// counters to the parent (the sandboxed iframe is otherwise opaque to
+    /// us). The probe owns the listener — E2E infrastructure, not product
+    /// code; the product page never counts game frames.
+    static let installGameListenerLeg = """
+        window.__next.installGameListener = () => {
+          if (window.__dshGameHook) return JSON.stringify({installed: true});
+          window.__dshGameHook = 1;
+          window.__gameFrames = 0;
+          window.__gameBeats = 0;
+          window.addEventListener('message', (e) => {
+            const d = e.data;
+            if (d && d.__dshGame) {
+              window.__gameFrames = d.frames || window.__gameFrames;
+              window.__gameBeats = d.beats || window.__gameBeats;
+            }
+          });
+          return JSON.stringify({installed: true});
+        };
+        """
+
+    /// The game's aliveness, as seen from the parent: rAF frames and timer
+    /// beats posted by the fixture's heartbeat. Both counters read through
+    /// installGameListener's message hook.
+    static let readGameLeg = """
+        window.__next.readGame = () => {
+          const view = document.getElementById('creation-view');
+          return JSON.stringify({
+            open: !!view && !view.hidden,
+            frames: window.__gameFrames || 0,
+            beats: window.__gameBeats || 0});
         };
         """
 

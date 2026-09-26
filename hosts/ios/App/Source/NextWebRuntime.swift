@@ -21,6 +21,10 @@ final class NextWebRuntime {
     static let watchdogSeconds = 180
     static let pollSeconds = 60
     static let createMessageText = "CREATE_TURN 请创建一只游动的蓝色鲸鱼"
+    /// The GAME leg's prompt — the scripted model's second create turn (the
+    /// mock LLM scripts it as write + present of the canvas game).
+    static let gameMessageText = "GAME_TURN 请做一个Canvas弹球小游戏"
+    static let gameCardTitle = "弹球小游戏 — 点按全屏查看"
 
     /// interactive: the CREATION row (the present tool) rides the same
     /// user-facing flag — this drive IS the creation-mode seat.
@@ -369,6 +373,144 @@ final class NextWebRuntime {
                 guard let self else { return }
                 self.eventLog.emit("creation.opened", [
                     "srcdocContains": "BLUE-WHALE-CANARY",
+                ])
+                self.closeCreation()
+        })
+    }
+
+    // ---- the GAME leg (the creation loop's second deliverable) -------------
+
+    /// Close the whale viewer — the overlay hides the composer, and the game
+    /// turn cannot send until the page is back. The close settles on the
+    /// honest facts: open flips false AND the srcdoc is cleared.
+    private func closeCreation() {
+        pollPage("window.__next.pressCreationClose()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in self?.awaitCreationClosed() })
+    }
+
+    private func awaitCreationClosed() {
+        pollPage("window.__next.readCreation()",
+            until: { ($0["open"] as? Bool) == false },
+            collect: { [weak self] probe in
+                guard let self else { return }
+                let srcdoc = probe["srcdoc"] as? String ?? "-"
+                self.eventLog.emit("creation.closed", [
+                    "srcdocCleared": srcdoc.isEmpty,
+                ])
+                self.beginGameTurn()
+        })
+    }
+
+    private func beginGameTurn() {
+        pollPage("window.__next.stopState()",
+            until: { $0["stop"] as? Bool == false
+                && $0["optimistic"] as? Bool == false },
+            collect: { [weak self] _ in self?.typeGamePrompt() })
+    }
+
+    private func typeGamePrompt() {
+        pollPage(
+            "window.__next.typeComposer('\(Self.gameMessageText)')",
+            until: { $0["sendEnabled"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.pressSendThenAwaitGameCard()
+        })
+    }
+
+    private func pressSendThenAwaitGameCard() {
+        pollPage("window.__next.pressSend()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in
+                self?.awaitGameCard()
+        })
+    }
+
+    /// The whale's card is still in the transcript — the game's card is
+    /// identified BY TITLE (the second .creation-card), never by position
+    /// alone.
+    private func awaitGameCard() {
+        pollPage("window.__next.readTranscript()",
+            until: { probe in
+                let titles = probe["creationTitles"] as? [String] ?? []
+                return titles.contains(Self.gameCardTitle)
+            },
+            collect: { [weak self] probe in
+                guard let self else { return }
+                self.eventLog.emit("game.card.rendered", [
+                    "title": Self.gameCardTitle,
+                    "items": probe["items"] ?? 0,
+                ])
+                self.openGameViewer()
+        })
+    }
+
+    private func openGameViewer() {
+        pollPage("window.__next.installGameListener()",
+            until: { $0["installed"] as? Bool == true },
+            collect: { [weak self] _ in self?.pressLastCard() })
+    }
+
+    private func pressLastCard() {
+        pollPage("window.__next.pressLastCreationCard()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in self?.awaitGameViewer() })
+    }
+
+    private func awaitGameViewer() {
+        pollPage("window.__next.readCreation()",
+            until: { ($0["open"] as? Bool) == true
+                && ($0["srcdoc"] as? String ?? "").contains("DSH-GAME-CANARY") },
+            collect: { [weak self] _ in
+                guard let self else { return }
+                self.eventLog.emit("game.opened", [
+                    "srcdocContains": "DSH-GAME-CANARY",
+                ])
+                self.awaitGameAlive(0)
+        })
+    }
+
+    /// The game RUNS: two heartbeat samples, the second strictly larger.
+    /// A host whose driven WebView throttles the page's frames AND timers
+    /// to zero fails here honestly — a real capability fact, not a race to
+    /// paper over (the manifest pins `advancing: true`; the counters ride
+    /// along unpinned).
+    private func awaitGameAlive(_ firstTotal: Int) {
+        pollPage("window.__next.readGame()",
+            until: { probe in
+                let total = (probe["frames"] as? Int ?? 0)
+                    + (probe["beats"] as? Int ?? 0)
+                return firstTotal == 0 ? total >= 1 : total > firstTotal
+            },
+            collect: { [weak self] probe in
+                guard let self else { return }
+                let frames = probe["frames"] as? Int ?? 0
+                let beats = probe["beats"] as? Int ?? 0
+                if firstTotal == 0 {
+                    self.awaitGameAlive(frames + beats)
+                } else {
+                    self.eventLog.emit("game.frames", [
+                        "advancing": true, "frames": frames, "beats": beats,
+                    ])
+                    self.closeGameViewer()
+                }
+        })
+    }
+
+    private func closeGameViewer() {
+        pollPage("window.__next.pressCreationClose()",
+            until: { $0["pressed"] as? Bool == true },
+            collect: { [weak self] _ in self?.awaitGameClosed() })
+    }
+
+    private func awaitGameClosed() {
+        pollPage("window.__next.readCreation()",
+            until: { ($0["open"] as? Bool) == false },
+            collect: { [weak self] probe in
+                guard let self else { return }
+                let srcdoc = probe["srcdoc"] as? String ?? "-"
+                self.eventLog.emit("game.closed", [
+                    "srcdocCleared": srcdoc.isEmpty,
                 ])
                 self.finish(SpikeOutcome(
                     completed: true, passed: true, error: "",

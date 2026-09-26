@@ -24,6 +24,11 @@ object NextWebProbe {
     const val EXPECTED_REPLY = "Hello from upstream"
     const val CARD_TITLE = "游动的蓝色鲸鱼 — 点按全屏查看"
     const val CANARY = "BLUE-WHALE-CANARY"
+    /** The GAME leg's prompt + card title + canary (the scripted model's
+     * second create turn — the canvas game). */
+    const val GAME_MESSAGE_TEXT = "GAME_TURN 请做一个Canvas弹球小游戏"
+    const val GAME_CARD_TITLE = "弹球小游戏 — 点按全屏查看"
+    const val GAME_CANARY = "DSH-GAME-CANARY"
 
     /** Installs the `__next` legs (each leg its own constant so every
      * function stays small). */
@@ -35,7 +40,10 @@ object NextWebProbe {
         $replyLeg
         $cancelLeg
         $cardLeg
-        $viewerLeg;
+        $viewerLeg
+        $gameCloseLeg
+        $gameCardLeg
+        $gameViewerLeg;
         'defined';
     """.trimIndent()
 
@@ -231,6 +239,124 @@ object NextWebProbe {
             () => { const s = read(); return s.open && s.srcdoc.length > 0; }, 30000);
           const state = read();
           Object.assign(out, state);
+          dshProbe.post(JSON.stringify(out));
+        };
+    """.trimIndent()
+
+    /** Game leg A: close the fullscreen viewer (the product page's own
+     * close control — it hides the overlay and clears the frame's srcdoc).
+     * Posts once per call: the drive invokes it twice (after the whale
+     * viewer and after the game viewer) and counts. */
+    private val gameCloseLeg = """
+        window.__next.gameClose = async () => {
+          const out = {leg: 'gameClose'};
+          const close = document.getElementById('creation-close');
+          if (close) close.click();
+          const open = () => {
+            const view = document.getElementById('creation-view');
+            return !!view && !view.hidden;
+          };
+          await window.__next.wait(() => !open(), 15000);
+          out.closed = !open();
+          const frame = document.getElementById('creation-frame');
+          out.srcdocCleared = !frame || frame.srcdoc.length === 0;
+          dshProbe.post(JSON.stringify(out));
+        };
+    """.trimIndent()
+
+    /** Game leg B: the game creation round — wait quiescence, type the
+     * game-marker prompt, send, and wait for a creation card whose title is
+     * the GAME's (the whale's card is already in the transcript — the game
+     * card is identified BY TITLE, never by position alone). */
+    private val gameCardLeg = """
+        window.__next.gameCard = async (text, title) => {
+          const out = {leg: 'gameCard'};
+          const send = document.getElementById('composer-send');
+          const input = document.getElementById('composer-input');
+          const quiet = await window.__next.wait(() => {
+            const s = window.__next.cancelState
+              ? window.__next.cancelState() : {stop: false, optimistic: false};
+            return !s.stop && !s.optimistic;
+          }, 30000);
+          if (!quiet) {
+            out.fail = 'the composer never left its stop state';
+            dshProbe.post(JSON.stringify(out));
+            return;
+          }
+          const typed = await window.__next.wait(() => {
+            input.value = text;
+            input.dispatchEvent(new Event('input', {bubbles: true}));
+            return !!send && !send.disabled;
+          }, 10000);
+          if (!typed) {
+            out.fail = 'the composer never took the game prompt';
+            dshProbe.post(JSON.stringify(out));
+            return;
+          }
+          send.click();
+          out.creationCard = await window.__next.wait(() => {
+            const cards = document.querySelectorAll('.creation-card');
+            for (let i = 0; i < cards.length; i++) {
+              if (cards[i].textContent.indexOf(title) !== -1) return true;
+            }
+            return false;
+          }, 60000);
+          out.title = title;
+          out.items = document.querySelectorAll('#transcript .item').length;
+          if (!out.creationCard) {
+            out.dump = [...document.querySelectorAll('#transcript .item, #transcript .group')]
+              .map((n) => (n.className.split(' ')[0] || 'div') + ':' +
+                n.textContent.replace(/\s+/g, ' ').slice(0, 60)).join(' | ').slice(0, 600);
+          }
+          dshProbe.post(JSON.stringify(out));
+        };
+    """.trimIndent()
+
+    /** Game leg C: install the heartbeat listener, tap the LAST creation
+     * card (the game's), wait for the viewer to carry the game canary, then
+     * take TWO heartbeat samples and require the second strictly larger —
+     * the game RUNS. The fixture posts its counters to the parent (the
+     * sandbox="allow-scripts" iframe is otherwise opaque to us); the
+     * listener is probe infrastructure, not product code. */
+    private val gameViewerLeg = """
+        window.__next.gameViewer = async () => {
+          const out = {leg: 'gameViewer'};
+          window.__gameFrames = 0; window.__gameBeats = 0;
+          window.addEventListener('message', (e) => {
+            const d = e.data;
+            if (d && d.__dshGame) {
+              window.__gameFrames = d.frames || window.__gameFrames;
+              window.__gameBeats = d.beats || window.__gameBeats;
+            }
+          });
+          const cards = document.querySelectorAll('.creation-card');
+          if (!cards.length) {
+            out.fail = 'no creation card';
+            dshProbe.post(JSON.stringify(out));
+            return;
+          }
+          cards[cards.length - 1].click();
+          const read = () => {
+            const frame = document.getElementById('creation-frame');
+            const view = document.getElementById('creation-view');
+            return {open: !!view && !view.hidden, srcdoc: frame ? frame.srcdoc : ''};
+          };
+          await window.__next.wait(
+            () => { const s = read(); return s.open && s.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
+            30000);
+          const s = read();
+          out.open = s.open;
+          out.srcdoc = s.srcdoc.slice(0, 200);
+          if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
+            dshProbe.post(JSON.stringify(out));
+            return;
+          }
+          const total = () => (window.__gameFrames || 0) + (window.__gameBeats || 0);
+          await window.__next.wait(() => total() >= 1, 15000);
+          const first = total();
+          out.advancing = await window.__next.wait(() => total() > first, 15000);
+          out.frames = window.__gameFrames || 0;
+          out.beats = window.__gameBeats || 0;
           dshProbe.post(JSON.stringify(out));
         };
     """.trimIndent()

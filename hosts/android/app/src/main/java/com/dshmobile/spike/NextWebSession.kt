@@ -194,6 +194,9 @@ class NextWebSession private constructor(private val activity: Activity) {
             "cancel" -> onCancel(probe)
             "card" -> onCard(probe)
             "viewer" -> onViewer(probe)
+            "gameClose" -> onGameClose(probe)
+            "gameCard" -> onGameCard(probe)
+            "gameViewer" -> onGameViewer(probe)
             else -> fail("nextweb probe: unknown leg '$leg'")
         }
     }
@@ -308,7 +311,81 @@ class NextWebSession private constructor(private val activity: Activity) {
             return
         }
         eventLog.emit("creation.opened", JSONObject().put("srcdocContains", NextWebProbe.CANARY))
-        finish(true, "")
+        // The whale viewer closes and the GAME leg starts — the creation
+        // loop's second deliverable in the same launch.
+        evaluate("window.__next.gameClose()")
+    }
+
+    /** The game close leg's verdict — posted TWICE: first for the whale
+     * viewer's close (the game turn starts), then for the game viewer's
+     * close (the drive finishes). Both must be clean: open flipped false
+     * AND the frame's srcdoc cleared. */
+    private var gameCloses = 0
+
+    private fun onGameClose(probe: JSONObject) {
+        if (probe.optBoolean("closed") != true || probe.optBoolean("srcdocCleared") != true) {
+            fail("the creation viewer never closed cleanly (closed: " +
+                "${probe.optBoolean("closed")}, srcdocCleared: " +
+                "${probe.optBoolean("srcdocCleared")})")
+            return
+        }
+        gameCloses += 1
+        if (gameCloses == 1) {
+            eventLog.emit("creation.closed", JSONObject().put("srcdocCleared", true))
+            evaluate("window.__next.gameCard(" +
+                "'${NextWebProbe.GAME_MESSAGE_TEXT}', '${NextWebProbe.GAME_CARD_TITLE}')")
+        } else {
+            eventLog.emit("game.closed", JSONObject().put("srcdocCleared", true))
+            finish(true, "")
+        }
+    }
+
+    /** The game card leg's verdict: a creation card whose title is the
+     * GAME's description rendered (the whale's card is still there — the
+     * match is by title). */
+    private fun onGameCard(probe: JSONObject) {
+        if (probe.optString("fail").isNotEmpty()) {
+            fail("${probe.optString("fail")} (dump: ${probe.optString("dump").take(400)})")
+            return
+        }
+        if (probe.optBoolean("creationCard") != true) {
+            fail("the game card never rendered (dump: ${probe.optString("dump").take(500)})")
+            return
+        }
+        eventLog.emit(
+            "game.card.rendered",
+            JSONObject()
+                .put("title", NextWebProbe.GAME_CARD_TITLE)
+                .put("items", probe.optInt("items", 0)),
+        )
+        evaluate("window.__next.gameViewer()")
+    }
+
+    /** The game viewer leg's verdict: the viewer carried the game's content
+     * AND the game RAN — the heartbeat's second sample strictly larger than
+     * the first (rAF frames + timer beats, posted by the fixture to the
+     * parent across the sandbox boundary). */
+    private fun onGameViewer(probe: JSONObject) {
+        val srcdoc = probe.optString("srcdoc")
+        if (probe.optBoolean("open") != true || !srcdoc.contains(NextWebProbe.GAME_CANARY)) {
+            fail("the game viewer never carried the game (open: " +
+                "${probe.optBoolean("open")}, srcdoc: ${srcdoc.take(60)})")
+            return
+        }
+        eventLog.emit("game.opened", JSONObject().put("srcdocContains", NextWebProbe.GAME_CANARY))
+        if (probe.optBoolean("advancing") != true) {
+            fail("the game never ran (frames: ${probe.optInt("frames")}, " +
+                "beats: ${probe.optInt("beats")})")
+            return
+        }
+        eventLog.emit(
+            "game.frames",
+            JSONObject()
+                .put("advancing", true)
+                .put("frames", probe.optInt("frames"))
+                .put("beats", probe.optInt("beats")),
+        )
+        evaluate("window.__next.gameClose()")
     }
 
     /** Evaluates one probe call on the page (UI thread hop inside). */
