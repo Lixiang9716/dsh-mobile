@@ -1,0 +1,132 @@
+{
+ "scenario": "open.design",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  {
+   "event": "llm/runtime",
+   "match": {
+    "provider": "mock",
+    "model": "mock-1",
+    "service": "vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)",
+    "transport": "gateway httpFetch → loopback chat-completions mock server",
+    "userAgent": "deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"
+   }
+  },
+  {
+   "event": "upstream/profile",
+   "match": {
+    "profile": "mobile",
+    "root": "empty (patch layers compose over it)",
+    "upstream": "0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
+    "layers": [
+     "session",
+     "agent",
+     "system-prompt",
+     "tools",
+     "session-projection",
+     "settings",
+     "agent-loop"
+    ]
+   }
+  },
+  {
+   "event": "upstream/services",
+   "match": {
+    "kernel": "@deepseek-ai/cordis@4.0.2",
+    "services": [
+     "sessions",
+     "agents",
+     "systemPrompt",
+     "tools",
+     "sessionProjections",
+     "settings",
+     "agentLoop",
+     "llm"
+    ],
+    "llm": "vendored LlmRuntime + gateway adapter (provider \"mock\")"
+   }
+  },
+  {
+   "event": "session/created",
+   "match": {
+    "sessionId": "s-open-design-0001"
+   }
+  },
+  {
+   "event": "agent/created",
+   "match": {
+    "id": "main",
+    "sessionId": "s-open-design-0001"
+   }
+  },
+  {
+   "event": "od/offered",
+   "match": {
+    "tools": 3
+   }
+  },
+  {
+   "event": "od.project/created",
+   "match": {
+    "id": "od-proj-001",
+    "name": "Aurora Deck"
+   }
+  },
+  {
+   "event": "od.project/listed",
+   "match": {
+    "count": 1
+   }
+  },
+  {
+   "event": "od.project/fetched",
+   "match": {
+    "files": 0
+   }
+  },
+  {
+   "event": "od.project/fileSaved",
+   "match": {
+    "name": "index.html",
+    "size": 34
+   }
+  },
+  {
+   "event": "od.generate/completed",
+   "match": {
+    "model": "mock-designer-1",
+    "chars": 246
+   }
+  },
+  {
+   "event": "od.artifact/saved",
+   "match": {
+    "url": "http://127.0.0.1/artifact/od-proj-001",
+    "path": "artifacts/od-proj-001.html"
+   }
+  },
+  {
+   "event": "od.artifact/linted",
+   "match": {
+    "findings": 1,
+    "severity": "info"
+   }
+  },
+  {
+   "event": "od.verb/refused",
+   "match": {
+    "named": true
+   }
+  },
+  {
+   "event": "upstream/completed",
+   "match": {
+    "status": "pass",
+    "upstream": "0.1.6-alpha.2",
+    "openDesign": "system-plugins/dsh-open-design over gateway httpFetch"
+   }
+  }
+ ]
+}

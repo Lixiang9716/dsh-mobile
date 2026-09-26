@@ -1,5 +1,5 @@
 {
-  "scenario": "m2.upstream-session",
+  "scenario": "upstream.session",
   "pass": true,
   "expected": 31,
   "logged": 31,

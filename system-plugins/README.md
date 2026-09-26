@@ -11,6 +11,14 @@ System implementation plugins · contract adaptation (JS, shared across platform
   whole-result API
 - `dsh-ui` → composes presentApproval / presentPicker / notify into the `ui`
   service; notify settles from the notify.response bridge event
+- `dsh-shell-wasm` → the `shell` capability over contract `wasmRun`: the
+  workspace is the PATH, a program `foo` is `foo.wasm`, interpreted in-process
+- `dsh-shell-ish` → the same shell seam over contract `ishRun`: a real Linux
+  userland the host emulates inside its own process
+- `dsh-open-design` → the Open Design daemon's REST surface (projects, BYOK
+  generate, artifact save/lint) over contract `httpFetch`; offers its three
+  tools only when a daemon is configured, the same decline shape the ish
+  executor uses without a guest root
 - platform-specific adaptations (`dsh-fs-ios`, `dsh-notify-ios`,
   `dsh-credentials-ios` …) land here as they are needed
 

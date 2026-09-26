@@ -185,7 +185,7 @@ done
 say "staged the test closure ($(ls "$ASSETS/vendor/dsh" | wc -l | tr -d ' ') packages total)"
 
 say "staging system-plugins"
-for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-subprocess-quickjs dsh-ui; do
+for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-open-design dsh-subprocess-quickjs dsh-ui; do
     mkdir -p "$ASSETS/system-plugins/$p"
     for f in manifest.json index.js; do
         cmp -s "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f" ||
