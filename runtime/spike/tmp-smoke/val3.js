@@ -1,0 +1,18 @@
+import { createLogger } from 'logger.js';
+import { fsScope } from 'gateway.js';
+import 'upstream/shims/npm-bridges.js';
+const log = createLogger('v3');
+const root = await fsScope.resolve();
+globalThis.__dshProfileScopeRoot = root.path;
+globalThis.__dshProfileCwd = root.path;
+const { registerWordTools } = await import('system-plugins/dsh-office/word.js');
+const { registerExcelTools } = await import('system-plugins/dsh-office/excel.js');
+const { registerPptCreate } = await import('system-plugins/dsh-office/ppt-create.js');
+log.info('v3', { step: 'imports' });
+registerWordTools();
+log.info('v3', { step: 'word' });
+registerExcelTools();
+log.info('v3', { step: 'excel' });
+registerPptCreate();
+log.info('v3', { step: 'ppt' });
+log.info('v3', { step: 'end', root: root.path });

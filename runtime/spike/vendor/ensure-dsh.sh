@@ -189,6 +189,13 @@ terminal|0.1.6-alpha.2|cb9b07571654bcfe6877f8ff860a3ebd17564fe17994a9e905aea0ef4
 # NEVER mounted by the product boot (test faces, not closure).
 # dir|tarball-url-suffix|sha256 — pinned third-party npm packages
 # (vendor/npm/<dir>/); versions are exactly what the dsh closure requires.
+# The office plane's zip engine (2026-09-27): fflate is the pure-JS
+# zip read/write face the dsh-office system plugin mounts the OOXML
+# container on (docx/xlsx/pptx are zip+xml; the frozen gateway has no
+# inflate primitive — the tar-mini.js note). Mounted by the product
+# boot through the npm-bridges seam (the bare name "fflate").
+# NOTE: rows below are pipe-delimited dir|suffix|sha — the reader loop
+# cannot skip comment lines, so prose stays HERE, never inside the string.
 NPM_PACKAGES="
 cordis@4.0.2|@deepseek-ai/cordis/-/cordis-4.0.2.tgz|686ca44fc6e8d217804de9062b716b7c72755dde09c2a433dd07045eea3c6a97
 cosmokit@1.8.3|@deepseek-ai/cosmokit/-/cosmokit-1.8.3.tgz|552f10313ddfdc2b92cce1867b9bf30b2a4c9de55543ad222fe67c22015e4400
@@ -210,6 +217,7 @@ diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf07
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 zustand@4.4.7|zustand/-/zustand-4.4.7.tgz|c22d32f791abba72fc246ef1d3ca964d01da204bc73727318a5be61daa2ad66b
 eventsource-parser@3.1.0|eventsource-parser/-/eventsource-parser-3.1.0.tgz|eca84ce0e9314076ea17bcc8bbdfed0316cc5b4a291565b347a275ffdac5053a
+fflate@0.8.2|fflate/-/fflate-0.8.2.tgz|61fd5061e2fc8e5e3e3129f7f2fec7bd78a313e1bf4becbf1cc1cc9998d141dc
 
 "
 

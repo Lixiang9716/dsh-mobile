@@ -1,0 +1,13 @@
+import { createLogger } from 'logger.js';
+import { fsStat, fsWrite, fsRead } from 'gateway.js';
+const log = createLogger('probe');
+const bytes = new Uint8Array([1,2,3,4,5]);
+await fsWrite('app', 'probe.bin', bytes, { create: true });
+log.info('probe', { step: 'written' });
+const back = await fsRead('app', 'probe.bin');
+log.info('probe', { step: 'read', n: back.bytes.length });
+const st = await fsStat('app', 'probe.bin');
+log.info('probe', { step: 'stat', kind: st.kind, size: st.size });
+const missing = await fsStat('app', 'nope.bin');
+log.info('probe', { step: 'stat-missing', kind: missing.kind });
+log.info('probe', { step: 'done' });

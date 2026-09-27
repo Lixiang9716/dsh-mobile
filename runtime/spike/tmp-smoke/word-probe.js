@@ -1,0 +1,15 @@
+import { createLogger } from 'logger.js';
+import { fsScope } from 'gateway.js';
+import 'upstream/shims/npm-bridges.js';
+const log = createLogger('probew');
+const root = await fsScope.resolve();
+globalThis.__dshProfileScopeRoot = root.path;
+globalThis.__dshProfileCwd = root.path;
+const { registerWordTools } = await import('system-plugins/dsh-office/word.js');
+const [create, read] = registerWordTools();
+log.info('probew', { step: 'create-begin' });
+const out = await create.execute({ path: 'docs/demo.docx', title: 'T', paragraphs: ['a'] });
+log.info('probew', { step: 'created', sizeBytes: out.sizeBytes });
+const text = await read.execute({ path: 'docs/demo.docx' });
+log.info('probew', { step: 'read', chars: text.totalChars });
+log.info('probew', { step: 'done' });
