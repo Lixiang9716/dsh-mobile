@@ -98,7 +98,7 @@
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 27/27 | — |
 | `models.directory` | — | — | — | 6/6 |
-| `nextweb.mount` | 16/16 | — | — | — |
+| `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
@@ -152,7 +152,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + 与已提交金标的差分 25/25 条记录一致（模拟器腿；gateway httpFetch → 宿主机侧 mock） | ✓ | ✓ | ✓ | 2 |
-| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 16/16 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 16/16, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |

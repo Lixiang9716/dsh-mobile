@@ -124,12 +124,12 @@ evidence on that platform.
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 (drift), 20/20 (drift), 20/20 (drift), 20/20 (drift), 27/27 | — |
 | `models.directory` | — | — | — | 6/6 |
-| `nextweb.mount` | 16/16 | — | — | — |
+| `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
 | `android.whale.mount` | — | 7/7 | — | — |
-| `android.nextweb.mount` | — | 19/19 | — | — |
+| `android.nextweb.mount` | — | 24/24 | — | — |
 | `harmony.whale.mount` | — | — | 7/7 | — |
-| `harmony.nextweb.mount` | — | — | 19/19 | — |
+| `harmony.nextweb.mount` | — | — | 19/19 (the game leg pends on #230) | — |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
@@ -161,7 +161,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
 | `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 19/19 | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
 | `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 19/19 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
@@ -187,7 +187,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
-| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 16/16 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 16/16, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |

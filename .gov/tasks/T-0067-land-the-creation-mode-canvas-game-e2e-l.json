@@ -10,8 +10,8 @@
   },
   "checklist": [
     "[x] iOS reference: mock LLM game script + drive phases + probe legs + manifest 24",
-    "Android + Harmony variants + manifests 24",
-    "three host batteries green with committed artifacts (24/24)",
+    "[x] Android + Harmony variants + manifests 24",
+    "[x] three host batteries green with committed artifacts (24/24)",
     "e2e-matrix docs updated (both languages) + note + PR opened"
   ],
   "status": "open",
