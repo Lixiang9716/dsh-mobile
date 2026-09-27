@@ -239,6 +239,12 @@ TREES = [
     # a scenario joins the embed by existing in the directory).
     ("scenario",
      SPIKE / "scenario"),
+    # THREE scenario files additionally keep named accessors: Swift code
+    # reads them directly (GatewaySession / WebBootRuntimeDrive /
+    # SpikeRuntime), beyond the JS loader's file view the tree serves.
+    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
+    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
