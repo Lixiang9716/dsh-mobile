@@ -1,7 +1,7 @@
 spike: app launched in session mode (scenario upstream-suite (real-LLM drive))
-dsh.spike.log: {"module":"dsh.carrier","data":[{"event":"client.selected","source":"launch","client":"dsh-web-client","scenario":"webclient.mount"}],"level":"info","message":"e2e"}
-spike: session FAIL eval: ReferenceError: cannot load module 'upstream/shims/vi-wait.js' | stack: 
+dsh.spike.log: {"data":[{"client":"dsh-web-client","source":"launch","event":"client.selected","scenario":"webclient.mount"}],"level":"info","message":"e2e","module":"dsh.carrier"}
+spike: session FAIL eval: ReferenceError: cannot load module 'scenario/upstream-fake-timers.js' | stack: 
 spike: session drive finished verdict=FAIL
-spike: error eval: ReferenceError: cannot load module 'upstream/shims/vi-wait.js' | stack: 
+spike: error eval: ReferenceError: cannot load module 'scenario/upstream-fake-timers.js' | stack: 
 spike: verdict FAIL (session.mock-llm, events logged: 0)
 spike: sequence session=FAIL

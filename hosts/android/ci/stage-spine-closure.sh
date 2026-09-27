@@ -199,23 +199,16 @@ for pkg_dir in "$SPIKE"/vendor/dsh/*@0.1.6-alpha.2; do
 done
 say "staged the test closure ($(ls "$ASSETS/vendor/dsh" | wc -l | tr -d ' ') packages total)"
 
-say "staging system-plugins"
-for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-open-design dsh-subprocess-quickjs dsh-ui dsh-device-plane; do
+say "staging system-plugins (whole directories — a plugin joins by existing)"
+for src in "$SPIKE"/system-plugins/*/; do
+    p=$(basename "$src")
     mkdir -p "$ASSETS/system-plugins/$p"
-    for f in manifest.json index.js; do
-        cmp -s "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f" ||
-            cp "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f"
-    done
-done
-# The OFFICE row (2026-09-27): a multi-file plugin — the OOXML engine rides
-# beside the entry, so its whole directory stages (the loop above copies the
-# two-file plugin convention).
-say "staging system-plugins/dsh-office (multi-file)"
-mkdir -p "$ASSETS/system-plugins/dsh-office"
-for f in manifest.json index.js shared.js zip.js fschannel.js word.js \
-         excel-core.js excel.js ppt-write.js ppt-create.js ppt-read.js; do
-    cmp -s "$SPIKE/system-plugins/dsh-office/$f" "$ASSETS/system-plugins/dsh-office/$f" ||
-        cp "$SPIKE/system-plugins/dsh-office/$f" "$ASSETS/system-plugins/dsh-office/$f"
+    (cd "$src" && find . -type f) |
+        while IFS= read -r rel; do
+            mkdir -p "$ASSETS/system-plugins/$p/$(dirname "$rel")"
+            cmp -s "$src$rel" "$ASSETS/system-plugins/$p/$rel" ||
+                cp "$src$rel" "$ASSETS/system-plugins/$p/$rel"
+        done
 done
 
 # The self-hosted web clients (presentation/web-client-next on the official

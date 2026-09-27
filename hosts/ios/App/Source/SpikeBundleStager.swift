@@ -21,16 +21,6 @@ enum SpikeBundleStager {
                   under: root)
         try write("manifest.json", data: resData(dsh_spike_res_manifest_json),
                   under: root)
-        try write("scenario/boot-verification.js", data: resData(dsh_spike_res_scenario_js),
-                  under: root)
-        try write("scenario/gateway-binding.js",
-                  data: resData(dsh_spike_res_scenario_m2_js), under: root)
-        try write("scenario/device-plane.js",
-                  data: resData(dsh_spike_res_scenario_device_plane_js), under: root)
-        try write("scenario/gateway-bridge-smoke.js",
-                  data: resData(dsh_spike_res_scenario_m2_smoke_js), under: root)
-        try write("scenario/carrier-loopback.js",
-                  data: resData(dsh_spike_res_scenario_carrier_js), under: root)
         try write("registry.js", data: resData(dsh_spike_res_registry_js), under: root)
         try write("install-pipeline.js",
                   data: resData(dsh_spike_res_install_pipeline_js), under: root)
@@ -82,20 +72,6 @@ enum SpikeBundleStager {
     }
 
     private static func writeScenarioEntries(_ root: URL) throws {
-        try write("scenario/session-mock-llm.js",
-                  data: resData(dsh_spike_res_scenario_m2_session_js), under: root)
-        try write("scenario/install-from-http.js",
-                  data: resData(dsh_spike_res_scenario_m3_fetch_install_js), under: root)
-        try write("scenario/llm-live-stream.js",
-                  data: resData(dsh_spike_res_scenario_m2_llm_js), under: root)
-        try write("scenario/upstream-parity.js",
-                  data: resData(dsh_spike_res_scenario_upstream_parity_js), under: root)
-        try write("scenario/parity-projector.js",
-                  data: resData(dsh_spike_res_scenario_parity_projector_js), under: root)
-        try write("scenario/upstream-suite-leg.js",
-                  data: resData(dsh_spike_res_scenario_upstream_suite_js), under: root)
-        try write("scenario/upstream-test-harness.js",
-                  data: resData(dsh_spike_res_scenario_upstream_harness_js), under: root)
         try write("llm.js", data: resData(dsh_spike_res_llm_js), under: root)
         try write("install-fetch.js",
                   data: resData(dsh_spike_res_install_fetch_js), under: root)
@@ -110,8 +86,6 @@ enum SpikeBundleStager {
     /// client-modules composition imports — staged at the exact bundle-root
     /// relative paths the C loader's bare map resolves.
     private static func writeWebBootClosure(_ root: URL) throws {
-        try write("scenario/officialweb-web-live.js",
-                  data: resData(dsh_spike_res_scenario_b1_web_live_js), under: root)
         try write("upstream/web-boot.js",
                   data: resData(dsh_spike_res_upstream_web_boot_js), under: root)
         try write("upstream/web-shims.js",
@@ -206,8 +180,6 @@ enum SpikeBundleStager {
     /// bundle-relative paths the C loader resolves (imports fail loud
     /// otherwise).
     private static func writeSpineClosure(_ root: URL) throws {
-        try write("scenario/session-web-live.js",
-                  data: resData(dsh_spike_res_scenario_b3_web_live_js), under: root)
         try write("upstream/boot.js",
                   data: resData(dsh_spike_res_upstream_boot_js), under: root)
         try write("upstream/tool-present.js",
@@ -226,8 +198,6 @@ enum SpikeBundleStager {
         // resolve it (upstream/boot.js's FILE-TOOLS row).
         // The writable workspace VFS half of the fs shim (the FILE-TOOLS
         // row's world; split from fs.js at the file-size gate).
-        try write("scenario/composer-web-live.js",
-                  data: resData(dsh_spike_res_scenario_b4_web_live_js), under: root)
     }
 
     /// The self-hosted Web Client (presentation/web-client-next), embedded

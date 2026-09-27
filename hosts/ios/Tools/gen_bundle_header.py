@@ -23,39 +23,18 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 # (accessor suffix, source file) -> dsh_spike_res_<suffix>()
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
-    ("gateway_js", SPIKE / "gateway.js"),
-    ("registry_js", SPIKE / "registry.js"),
-    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
-    ("sha256_js", SPIKE / "sha256.js"),
-    ("tar_mini_js", SPIKE / "tar-mini.js"),
-    ("manifest_json", SPIKE / "manifest.json"),
-    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
-    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
-    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
-    ("scenario_m2_smoke_js", SPIKE / "scenario" / "gateway-bridge-smoke.js"),
-    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
-    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
     # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
     # leg drives the real gateway httpFetch against the configured backend)
-    ("llm_js", SPIKE / "llm.js"),
-    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
     # M3 completion: on-device fetch-install scenario + its new modules
-    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
     # The upstream-parity differential's port leg (scenario + the SHARED
     # projector both legs normalize through; the spine itself is embedded by
     # the TREES below — this is the drive that proves it matches Node).
-    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
-    ("scenario_parity_projector_js", SPIKE / "scenario" / "parity-projector.js"),
     # The upstream DSH test suite's on-device leg: the driver that imports
     # ONE transpiled upstream spec (staged under upstream-tests/ by the E2E
     # runner) + the quickjs-shaped vitest harness it redirects to.
-    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
-    ("scenario_upstream_harness_js", SPIKE / "scenario" / "upstream-test-harness.js"),
     # The agent-flow leg (the 打通流程 E2E): prompt override + skill loading
     # over the vendored skill family (the spine itself rides the TREES below;
     # the fixture skill is staged at runtime by the scenario itself).
-    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
-    ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
     ("profile_m3_patch_json", SPIKE / "profiles" / "install-full-cycle" / "cordis.patch.json"),
@@ -96,8 +75,6 @@ RESOURCES = [
     # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
     # client-modules node + browser faces). NOT the full agent spine — the
     # officialweb-web-live drive composes the boot wire without runtime services.
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
-    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
     ("npm_cordis_js",
@@ -144,8 +121,6 @@ RESOURCES = [
     # session-persistence errors shim).
     ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
-    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
-    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
     # the REAL spine — the write adapter + its booting scenario.
     ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
@@ -160,9 +135,6 @@ RESOURCES = [
     ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
     ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
     ("upstream_preset_mobile_rows_js", SPIKE / "upstream" / "preset-mobile-rows.js"),
-    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
-    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
-    ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
     ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),
     ("shims_os_js", SPIKE / "upstream" / "shims" / "os.js"),
@@ -263,6 +235,10 @@ TREES = [
     # not by hand-editing this list — the vi-wait.js drift class, retired.
     ("upstream/shims",
      SPIKE / "upstream" / "shims"),
+    # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims:
+    # a scenario joins the embed by existing in the directory).
+    ("scenario",
+     SPIKE / "scenario"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
