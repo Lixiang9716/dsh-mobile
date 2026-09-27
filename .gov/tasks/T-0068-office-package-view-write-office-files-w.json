@@ -10,7 +10,7 @@
   },
   "checklist": [
     "[x] Recon: dsh-open-design template, vendor pipeline, contract fs primitives",
-    "Design: format scope (docx/xlsx/pptx view+write) + dep choices + Agent Note",
+    "[x] Design: format scope (docx/xlsx/pptx view+write) + dep choices + Agent Note",
     "[x] Vendor deps (pins + per-host embed lists)",
     "[x] Implement system-plugins/dsh-office (office.view / office.write tools)",
     "[x] E2E office scenario wired into build.sh test, green",
