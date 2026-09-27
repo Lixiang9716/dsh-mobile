@@ -1,10 +1,10 @@
 {
-  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "host": "iOS iPhone 17 Pro simulator (A3ACF715-974C-4B6D-8523-2D498C8E5E3F, iOS 26.5)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
   "phase": "Agent-flow E2E: prompt override asserted on the wire + skills discovered from the staged dir and loaded through the real skill tool over the vendored skill family, one-to-one against the agent-flow manifest",
   "launchConfiguration": "-dsh-mode session -dsh-scenario agent-flow; host-side mock self-started",
-  "tree": "origin/main 4679176427cc (dirty working tree at receipt time)",
+  "tree": "origin/main 4ce060906607 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "agent.flow",
@@ -20,6 +20,6 @@
     "screens/03-tool-round.png",
     "screens/04-final-state.png"
   ],
-  "timestamp": "2026-09-24T05:15:04+08:00",
+  "timestamp": "2026-09-27T23:15:31+08:00",
   "exitCode": 0
 }

@@ -79,48 +79,6 @@ enum SpikeBundleStager {
     /// needs staged bundle-relative — extracted from stage() for the
     /// function-shape budget.
     private static func writeHostShims(_ root: URL) throws {
-            try write("upstream/shims/buffer.js",
-                      data: resData(dsh_spike_res_shims_buffer_js), under: root)
-            try write("upstream/shims/url.js",
-                      data: resData(dsh_spike_res_shims_url_js), under: root)
-            try write("upstream/shims/fs.js",
-                      data: resData(dsh_spike_res_shims_fs_js), under: root)
-            try write("upstream/shims/crypto.js",
-                      data: resData(dsh_spike_res_shims_crypto_js), under: root)
-            try write("upstream/shims/globals.js",
-                      data: resData(dsh_spike_res_shims_globals_js), under: root)
-            try write("upstream/shims/node-perf-hooks.js",
-                      data: resData(dsh_spike_res_shims_node_perf_hooks_js), under: root)
-            try write("upstream/shims/node-addon-system-flock.js",
-                      data: resData(dsh_spike_res_shims_node_addon_flock_js), under: root)
-            try write("upstream/shims/expect-poll.js",
-                      data: resData(dsh_spike_res_shims_expect_poll_js), under: root)
-            try write("upstream/shims/node-module.js",
-                      data: resData(dsh_spike_res_shims_node_module_js), under: root)
-            try write("upstream/shims/path.js",
-                      data: resData(dsh_spike_res_shims_path_js), under: root)
-            try write("upstream/shims/fs-promises.js",
-                      data: resData(dsh_spike_res_shims_fs_promises_js), under: root)
-            try write("upstream/shims/timers-promises.js",
-                      data: resData(dsh_spike_res_shims_timers_promises_js), under: root)
-            try write("upstream/shims/timers.js",
-                      data: resData(dsh_spike_res_shims_timers_js), under: root)
-            try write("upstream/shims/npm-bridges.js",
-                      data: resData(dsh_spike_res_shims_npm_bridges_js), under: root)
-            try write("upstream/shims/fs-workspace.js",
-                      data: resData(dsh_spike_res_shims_fs_workspace_js), under: root)
-            try write("upstream/shims/async-hooks.js",
-                      data: resData(dsh_spike_res_shims_async_hooks_js), under: root)
-            try write("upstream/shims/util.js",
-                      data: resData(dsh_spike_res_shims_util_js), under: root)
-            try write("upstream/shims/util-types.js",
-                      data: resData(dsh_spike_res_shims_util_types_js), under: root)
-            try write("upstream/shims/os.js",
-                      data: resData(dsh_spike_res_shims_os_js), under: root)
-            try write("upstream/shims/process.js",
-                      data: resData(dsh_spike_res_shims_process_js), under: root)
-            try write("upstream/shims/dsh-session-persistence.js",
-                      data: resData(dsh_spike_res_shims_dsh_session_persistence_js), under: root)
     }
 
     private static func writeScenarioEntries(_ root: URL) throws {
@@ -158,34 +116,6 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_web_boot_js), under: root)
         try write("upstream/web-shims.js",
                   data: resData(dsh_spike_res_upstream_web_shims_js), under: root)
-        try write("upstream/shims/buffer.js",
-                  data: resData(dsh_spike_res_shims_buffer_js), under: root)
-        try write("upstream/shims/url.js",
-                  data: resData(dsh_spike_res_shims_url_js), under: root)
-        try write("upstream/shims/fs.js",
-                  data: resData(dsh_spike_res_shims_fs_js), under: root)
-        try write("upstream/shims/crypto.js",
-                  data: resData(dsh_spike_res_shims_crypto_js), under: root)
-        try write("upstream/shims/globals.js",
-                  data: resData(dsh_spike_res_shims_globals_js), under: root)
-        try write("upstream/shims/node-perf-hooks.js",
-                  data: resData(dsh_spike_res_shims_node_perf_hooks_js), under: root)
-        try write("upstream/shims/node-addon-system-flock.js",
-                  data: resData(dsh_spike_res_shims_node_addon_flock_js), under: root)
-        try write("upstream/shims/expect-poll.js",
-                  data: resData(dsh_spike_res_shims_expect_poll_js), under: root)
-        try write("upstream/shims/node-zlib.js",
-                  data: resData(dsh_spike_res_shims_node_zlib_js), under: root)
-        try write("upstream/shims/node-worker-threads.js",
-                  data: resData(dsh_spike_res_shims_node_worker_threads_js), under: root)
-        try write("upstream/shims/node-stream.js",
-                  data: resData(dsh_spike_res_shims_node_stream_js), under: root)
-        try write("upstream/shims/describe-each.js",
-                  data: resData(dsh_spike_res_shims_describe_each_js), under: root)
-        try write("upstream/shims/node-module.js",
-                  data: resData(dsh_spike_res_shims_node_module_js), under: root)
-        try write("upstream/shims/path.js",
-                  data: resData(dsh_spike_res_shims_path_js), under: root)
 
         try writeWebBootNpmLibs(root)
     }
@@ -209,12 +139,6 @@ enum SpikeBundleStager {
         // The agent-presets closure (the Agent 预设 panel's data source): the
         // import chain the C-host bare map resolves — every mapped specifier
         // needs its staged file, or boot fails with `cannot load module`.
-        try write("upstream/shims/fs-promises.js",
-                  data: resData(dsh_spike_res_shims_fs_promises_js), under: root)
-        try write("upstream/shims/timers-promises.js",
-                  data: resData(dsh_spike_res_shims_timers_promises_js), under: root)
-        try write("upstream/shims/timers.js",
-                  data: resData(dsh_spike_res_shims_timers_js), under: root)
         try write("vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js",
                   data: resData(dsh_spike_res_npm_agent_presets_index_js), under: root)
         try write("vendor/dsh/agent-presets@0.1.6-alpha.2/presets/mobile/preset.yml",
@@ -300,26 +224,10 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_web_write_settings_js), under: root)
         // The npm bridge shim registers bare `diff` before the file tools
         // resolve it (upstream/boot.js's FILE-TOOLS row).
-        try write("upstream/shims/npm-bridges.js",
-                  data: resData(dsh_spike_res_shims_npm_bridges_js), under: root)
         // The writable workspace VFS half of the fs shim (the FILE-TOOLS
         // row's world; split from fs.js at the file-size gate).
-        try write("upstream/shims/fs-workspace.js",
-                  data: resData(dsh_spike_res_shims_fs_workspace_js), under: root)
         try write("scenario/composer-web-live.js",
                   data: resData(dsh_spike_res_scenario_b4_web_live_js), under: root)
-        try write("upstream/shims/async-hooks.js",
-                  data: resData(dsh_spike_res_shims_async_hooks_js), under: root)
-        try write("upstream/shims/util.js",
-                  data: resData(dsh_spike_res_shims_util_js), under: root)
-        try write("upstream/shims/util-types.js",
-                  data: resData(dsh_spike_res_shims_util_types_js), under: root)
-        try write("upstream/shims/os.js",
-                  data: resData(dsh_spike_res_shims_os_js), under: root)
-        try write("upstream/shims/process.js",
-                  data: resData(dsh_spike_res_shims_process_js), under: root)
-        try write("upstream/shims/dsh-session-persistence.js",
-                  data: resData(dsh_spike_res_shims_dsh_session_persistence_js), under: root)
     }
 
     /// The self-hosted Web Client (presentation/web-client-next), embedded

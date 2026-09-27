@@ -100,23 +100,6 @@ RESOURCES = [
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
-    # (mechanical entries packed two-per-line: the file lives under the
-    # code-size ceiling and this block grows with every shim row)
-    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"), ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
-    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"), ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
-    ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"), ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
-    ("shims_timers_js", SPIKE / "upstream" / "shims" / "timers.js"), ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
-    # the upstream-suite globals (AbortController/structuredClone — installed by
-    # the test harness before any spec imports; lives with the other shims)
-    ("shims_globals_js", SPIKE / "upstream" / "shims" / "globals.js"),
-    ("shims_node_perf_hooks_js", SPIKE / "upstream" / "shims" / "node-perf-hooks.js"),
-    ("shims_node_addon_flock_js", SPIKE / "upstream" / "shims" / "node-addon-system-flock.js"),
-    ("shims_expect_poll_js", SPIKE / "upstream" / "shims" / "expect-poll.js"),
-    ("shims_node_zlib_js", SPIKE / "upstream" / "shims" / "node-zlib.js"),
-    ("shims_node_worker_threads_js", SPIKE / "upstream" / "shims" / "node-worker-threads.js"), ("shims_node_stream_js", SPIKE / "upstream" / "shims" / "node-stream.js"),
-    ("shims_events_js", SPIKE / "upstream" / "shims" / "events.js"), ("shims_describe_each_js", SPIKE / "upstream" / "shims" / "describe-each.js"),
-    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"), ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
-    ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),
     ("npm_cordis_js",
      SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
     ("npm_cosmokit_js",
@@ -275,6 +258,11 @@ TREES = [
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
      SPIKE / "system-plugins" / "dsh-office"),
+    # The upstream shims ride the WHOLE DIRECTORY (the android stager's
+    # convention): a new shim joins the embed by existing in the directory,
+    # not by hand-editing this list — the vi-wait.js drift class, retired.
+    ("upstream/shims",
+     SPIKE / "upstream" / "shims"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
