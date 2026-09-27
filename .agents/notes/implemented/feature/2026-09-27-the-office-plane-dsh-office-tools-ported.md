@@ -71,3 +71,19 @@ python-library output.
   (the bare-metal bring-up checklist's priority list).
 - community dsh-univer-office: a UI-plane spreadsheet viewer, not a
   model-facing tool surface — wrong layer for the ask.
+
+## Consequences
+
+- boot.js sits at exactly its 500-line cap: the office mount is ONE
+  dynamic-import line and takes NO spineInventory row (the office scenario's
+  offered phase pins the eight-tool visibility instead, and the
+  settings-surfaces/composer count pins stayed untouched). The next plugin
+  mount hits the same wall — the spine file wants a row-data split before
+  the following feature.
+- code-size counts the STAGED MIRRORS (android assets, harmony rawfile) as
+  source, so every engine fix re-lands through the three stagers; the
+  mirrors are byte-identical by construction, which is what the closures
+  gate proves.
+- The office fixtures (office-fixtures.js) are committed base64 from
+  python-docx/openpyxl/python-pptx; regenerating them means re-running the
+  generator and re-pinning the emitted event counts in office.json.
