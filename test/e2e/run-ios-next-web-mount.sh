@@ -76,6 +76,25 @@ log "3/4 boot + install"
 xcrun simctl bootstatus "$UDID" -b   # already booted is fine
 xcrun simctl install "$UDID" "$APP"
 
+# ---- stage the web boot inputs (the official-web runner's 4a/4b steps) ------
+# The web-boot drive refuses to launch without them and a REINSTALL can start
+# from a container without them — stage here so this battery is self-contained
+# (the same trees the official-web mount battery stages, byte-identical).
+APP_DATA=$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)
+mkdir -p "$APP_DATA/Documents/official-web"
+rm -rf "$APP_DATA/Documents/official-web/dist"
+cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
+runtime/spike/vendor/ensure-dsh.sh > /dev/null
+test/e2e/ensure-client-bundles.sh
+PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+[ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
+rm -rf "$APP_DATA/Documents/web-plugins"
+mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"
+cp -R presentation/official-web/client-bundles/npm/@deepseek-ai/. \
+    "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/"
+rm -rf "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+cp -R "$PKG_SRC" "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai/"
+
 # ---- launch + watch the log markers ------------------------------------------
 log "4/4 launch (next-web mode; log capture truncated — checker sees only this run)"
 rm -f "$LOG" "$ART/nslog-stderr.txt"
