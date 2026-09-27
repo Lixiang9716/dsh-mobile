@@ -1,0 +1,20 @@
+{
+  "title": "Fix the ArkWeb second-open blank and land the harmony game leg (24/24)",
+  "created": "2026-09-27T03:49:09+00:00",
+  "rules": {
+    "hash": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "aeb6a65fd4f504fd674c15a56645118a70016450c646166b9dff6bcc9bf42eb0"
+    }
+  },
+  "checklist": [
+    "[x] fresh-frame fix in openCreation + three host syncs",
+    "[x] harmony leg asserts heartbeat; runner waits game.closed; manifest 24",
+    "[x] three host batteries green (24/24) with committed evidence",
+    "docs rows + bug-fix note + gates green + PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0068"
+}

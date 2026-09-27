@@ -130,6 +130,36 @@
       "match": {
         "srcdocContains": "BLUE-WHALE-CANARY"
       }
+    },
+    {
+      "event": "creation.closed",
+      "match": {
+        "srcdocCleared": true
+      }
+    },
+    {
+      "event": "game.card.rendered",
+      "match": {
+        "title": "弹球小游戏 — 点按全屏查看"
+      }
+    },
+    {
+      "event": "game.opened",
+      "match": {
+        "heartbeatAdvancing": true
+      }
+    },
+    {
+      "event": "game.frames",
+      "match": {
+        "advancing": true
+      }
+    },
+    {
+      "event": "game.closed",
+      "match": {
+        "srcdocCleared": true
+      }
     }
   ]
 }

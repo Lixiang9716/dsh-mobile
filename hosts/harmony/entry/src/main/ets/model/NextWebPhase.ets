@@ -62,8 +62,7 @@ interface LegOut {
   closed?: boolean;
   srcdocCleared?: boolean;
   canaryAt?: number;
-  srcdocHead?: string;
-  cardTitles?: string[];
+  srcdocLen?: number;
   gameCard?: boolean;
   advancing?: boolean;
   frames?: number;
@@ -361,21 +360,21 @@ export class NextWebPhase {
       });
       // RETRY the whole leg: the streaming turn's re-render can swallow a
       // click; each invocation is short so the drive's polling stays alive.
-      return this.gameViewerWithRetries(runJs, 4, null);
+      return this.gameViewerWithRetries(runJs, 3, null);
     }).then((out): Promise<LegOut | null> => {
-      if (out === null || out.open !== true ||
-        (out.canaryAt ?? -1) === -1) {
+      if (out === null || out.open !== true || out.advancing !== true) {
         throw new Error('the game viewer never carried the game (open: ' +
-          (out !== null ? out.open : 'null') + ', canaryAt: ' +
-          (out !== null ? (out.canaryAt ?? -1) : -1) + ', toast: ' +
-          (out !== null ? (out.toast ?? '') : '') + ', head: ' +
-          (out !== null ? (out.srcdocHead ?? '').slice(0, 220) : '') + ')');
+          (out !== null ? out.open : 'null') + ', advancing: ' +
+          (out !== null ? out.advancing : 'null') + ', frames: ' +
+          (out !== null ? (out.frames ?? 0) : 0) + ', beats: ' +
+          (out !== null ? (out.beats ?? 0) : 0) + ', srcdocLen: ' +
+          (out !== null ? (out.srcdocLen ?? -1) : -1) + ')');
       }
-      this.carrierLine('game.opened', { 'srcdocContains': GAME_CANARY });
-      if (out.advancing !== true) {
-        throw new Error('the game never ran (frames: ' + (out.frames ?? 0) +
-          ', beats: ' + (out.beats ?? 0) + ')');
-      }
+      // game.opened asserts the viewer is open AND the deliverable's script
+      // RUNS (the heartbeat counters advanced) — the ArkWeb srcdoc
+      // read-back is unreliable after a clear (#230), so the canary stays a
+      // diagnostic, not the assertion.
+      this.carrierLine('game.opened', { 'heartbeatAdvancing': true });
       this.carrierLine('game.frames', {
         'advancing': true, 'frames': out.frames ?? 0, 'beats': out.beats ?? 0,
       });
@@ -650,30 +649,23 @@ window.__next.gameViewer = async () => {
     const view = document.getElementById('creation-view');
     return {open: !!view && !view.hidden, srcdoc: frame ? frame.srcdoc : ''};
   };
-  // ONE short attempt per invocation — the ARKTS chain retries the whole
-  // leg (a long in-page loop starves the drive's own polling; measured).
   cards[cards.length - 1].click();
-  await window.__next.wait(
-    () => { const s2 = read(); return s2.open && s2.srcdoc.indexOf('DSH-GAME-CANARY') !== -1; },
-    15000);
-  let s = read();
-  out.open = s.open; out.srcdoc = s.srcdoc.slice(0, 200);
-  if (!s.open || s.srcdoc.indexOf('DSH-GAME-CANARY') === -1) {
-    // Diagnostics: what the viewer actually carried and what the page says.
-    out.srcdocHead = s.srcdoc.slice(0, 700);
-    out.canaryAt = s.srcdoc.indexOf('DSH-GAME-CANARY');
-    out.toast = (document.getElementById('toast')?.textContent || '').slice(0, 80);
-    out.cardTitles = [...document.querySelectorAll('.creation-card')]
-      .map((c) => c.textContent.slice(0, 50));
-    window.__nextOut = JSON.stringify(out);
-    return;
-  }
+  // The heartbeat IS the runs-proof: the game fixture posts frame/beat
+  // counters to the parent, so a counter implies the deliverable's script
+  // EXECUTES in the viewer. (ArkWeb's iframe.srcdoc read-back is
+  // unreliable after a clear - #230 - so the canary stays diagnostic.)
   const total = () => (window.__gameFrames || 0) + (window.__gameBeats || 0);
-  await window.__next.wait(() => total() >= 1, 20000);
+  const heartbeating = await window.__next.wait(() => total() >= 1, 20000);
   const first = total();
-  out.advancing = await window.__next.wait(() => total() > first, 20000);
+  const advancing = heartbeating
+    ? await window.__next.wait(() => total() > first, 20000) : false;
+  const s = read();
+  out.open = s.open;
+  out.advancing = advancing;
   out.frames = window.__gameFrames || 0;
   out.beats = window.__gameBeats || 0;
+  out.srcdocLen = s.srcdoc.length;
+  out.canaryAt = s.srcdoc.indexOf('DSH-GAME-CANARY');
   window.__nextOut = JSON.stringify(out);
 };
 'defined';
