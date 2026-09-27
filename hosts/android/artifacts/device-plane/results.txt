@@ -1,0 +1,2 @@
+09-27 08:04:14.836  3190  3251 I dsh.spike.result: android.device-plane PASS | quickjs-ng 0.17.0
+09-27 08:04:14.836  3190  3251 I dsh.spike.result: ALL PASS

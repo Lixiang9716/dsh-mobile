@@ -98,7 +98,9 @@ typedef struct smoke_backend {
 static const char *SMOKE_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"timerSchedule\",\"timerCancel\"],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
-    "\"presentPicker\",\"keychainGet\",\"keychainSet\"]}";
+    "\"presentPicker\",\"keychainGet\",\"keychainSet\","
+    "\"deviceInfo\",\"haptic\",\"clipboardRead\",\"clipboardWrite\","
+    "\"presentShare\",\"keepAwake\"]}";
 
 static const char B64[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -1130,7 +1132,8 @@ static int spike_run_main(int argc, char **argv) {
     dsh_spike_set_descriptor(b.spike, http
         ? "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\"],"
           "\"unavailable\":[\"notify\",\"presentApproval\",\"presentPicker\","
-          "\"keychainGet\",\"keychainSet\"]}"
+          "\"keychainGet\",\"keychainSet\",\"deviceInfo\",\"haptic\","
+          "\"clipboardRead\",\"clipboardWrite\",\"presentShare\",\"keepAwake\"]}"
         : SMOKE_DESCRIPTOR);
     dsh_spike_set_launch_env(b.spike, env_json);
 

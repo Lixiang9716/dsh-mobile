@@ -69,10 +69,20 @@ struct GatewayManifest {
     }
 
     /// Permission-flag grammar: `<name>` or `<name>@<major>` — the caller
-    /// holds the flag when any required entry names the primitive exactly or
-    /// with a major suffix.
+    /// holds the flag when any required entry names the primitive exactly,
+    /// with a major suffix, or through the primitive's capability FAMILY
+    /// flag (v1.5.0: one flag may gate two primitives — `clipboard` gates
+    /// both clipboard rows).
+    private static let familyFlags: [String: String] = [
+        "clipboardRead": "clipboard",
+        "clipboardWrite": "clipboard",
+    ]
+
     func grants(primitive: String) -> Bool {
-        required.contains { $0 == primitive || $0.hasPrefix(primitive + "@") }
+        let names = [primitive, Self.familyFlags[primitive]].compactMap { $0 }
+        return required.contains { grant in
+            names.contains { $0 == grant || grant.hasPrefix($0 + "@") }
+        }
     }
 }
 
@@ -82,12 +92,34 @@ struct GatewayManifest {
 /// lines use their own stdout prefix ("dsh.gateway.audit: ") so the
 /// canonical "dsh.spike.log: " E2E stream stays one-to-one.
 final class GatewayCore {
-    /// The nine frozen primitives (contract/primitives.md §2).
+    /// The full serving table (contract/primitives.md §2 through v1.5.0):
+    /// the name list IS the RuntimeDescriptor's available array, so it must
+    /// stay identical to what `registerStandardPrimitives` actually wires —
+    /// an honestly-declared descriptor (conformance §7).
     static let primitives = [
-        "fsRead", "fsWrite", "fsScope", "httpFetch", "notify",
-        "presentApproval", "presentPicker", "keychainGet", "keychainSet",
+        "fsRead", "fsWrite", "fsScope", "fsStat", "fsList", "fsMkdir",
+        "fsRemove", "fsRename", "wasmRun", "ishRun",
+        "httpFetch", "notify", "presentApproval", "presentPicker",
+        "keychainGet", "keychainSet",
+        "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
+        "presentShare", "keepAwake",
     ]
     static let auditPrefix = "dsh.gateway.audit: "
+
+    /// Registers the full serving table on this core — the one list every
+    /// full seat keeps identical to `primitives`. Returns the notify
+    /// primitive so a session can keep a strong ref for its app.state
+    /// forwarding (the center's delegate is weak).
+    func registerStandardPrimitives() -> NotifyPrimitive {
+        let fs = FSPrimitives()
+        fs.register(on: self)
+        _ = HTTPPrimitive(core: self)
+        _ = KeychainPrimitives(core: self)
+        _ = UIPrimitives(core: self, fs: fs)
+        _ = DevicePlanePrimitives(core: self, fs: fs)
+        _ = ClipboardPrimitives(core: self)
+        return NotifyPrimitive(core: self)
+    }
 
     let manifest: GatewayManifest
     private let workQueue = DispatchQueue(label: "org.dsh.gateway.work")
@@ -105,6 +137,28 @@ final class GatewayCore {
 
     func register(name: String, _ handler: @escaping GatewayHandler) {
         handlers[name] = handler
+    }
+
+    private let detailLock = NSLock()
+    private var pendingDetail: [String: Any]?
+
+    /// The v1.5.0 audit-detail seam: a handler stages the closed-vocabulary
+    /// facts §6 names for the device plane (pattern / hold / share kind) and
+    /// the Done wrapper folds them into the call's ONE audit line. Stage
+    /// before settling; the runtime's serial dispatch keeps slots from
+    /// interleaving in practice.
+    func stageAuditDetail(_ detail: [String: Any]?) {
+        detailLock.lock()
+        pendingDetail = detail
+        detailLock.unlock()
+    }
+
+    private func takeAuditDetail() -> [String: Any]? {
+        detailLock.lock()
+        defer { detailLock.unlock() }
+        let detail = pendingDetail
+        pendingDetail = nil
+        return detail
     }
 
     /// Entry point of the frozen bridge's on_call — invoked ON THE RUNTIME
@@ -141,16 +195,25 @@ final class GatewayCore {
     ) {
         let done: GatewayDone = { [weak self] result in
             guard let self else { return }
-            switch result {
-            case .success(let payload):
-                self.audit(primitive: name, verdict: "granted", outcome: "ok")
-                self.settle?(callId, true, Self.encode(payload))
-            case .failure(let error):
-                self.audit(primitive: name, verdict: "granted", outcome: error.code)
-                self.settle?(callId, false, Self.errorJSON(error))
-            }
+            self.settleResult(callId, name: name, result: result)
         }
         workQueue.async { handler(args, done) }
+    }
+
+    /// The wrapper's one audit line + settle hop (extracted so the closure
+    /// stays inside the indent budget).
+    private func settleResult(
+        _ callId: Int, name: String, result: Result<Any, GatewayError>
+    ) {
+        switch result {
+        case .success(let payload):
+            audit(primitive: name, verdict: "granted", outcome: "ok",
+                  detail: takeAuditDetail())
+            settle?(callId, true, Self.encode(payload))
+        case .failure(let error):
+            audit(primitive: name, verdict: "granted", outcome: error.code)
+            settle?(callId, false, Self.errorJSON(error))
+        }
     }
 
     /// Control-plane call of the frozen bridge: JS global __dshGatewayAbort
@@ -167,14 +230,18 @@ final class GatewayCore {
 
     // ---- audit (mandatory, host-fixed, never payload contents) -------------
 
-    func audit(primitive: String, verdict: String, outcome: String) {
-        let record: [String: Any] = [
+    func audit(
+        primitive: String, verdict: String, outcome: String,
+        detail: [String: Any]? = nil
+    ) {
+        var record: [String: Any] = [
             "ts": Self.isoNow(),
             "primitive": primitive,
             "caller": manifest.id,
             "verdict": verdict,
             "outcome": outcome,
         ]
+        if let detail { record["detail"] = detail }
         guard let line = Self.jsonLine(record) else { return }
         auditLock.lock()
         print(Self.auditPrefix + line)

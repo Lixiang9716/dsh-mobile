@@ -107,7 +107,7 @@ async function main() {
   emit('gateway.negotiated', { version: 'gateway@1' });
 
   const descriptor = JSON.parse(globalThis.__dshGatewayDescriptor());
-  demand(descriptor.available.length === 9, 'expected 9 available primitives');
+  demand(descriptor.available.length === 15, 'expected 9 available primitives');
   demand(descriptor.unavailable.length === 0, 'expected 0 unavailable primitives');
   emit('descriptor.declared', {
     available: descriptor.available.length,

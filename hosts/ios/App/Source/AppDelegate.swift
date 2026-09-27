@@ -86,12 +86,14 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         return webView
     }
 
-    /// Dispatch on `-dsh-mode`, each drive announcing itself on the console
-    /// and in stdout first (the stdout lines are asserted on — they are spelled
-    /// out here rather than assembled from `mode`); the default keeps the
-    /// historical boot → carrier → gateway sequence.
+    /// Dispatch on `-dsh-mode`; the stdout lines are asserted on and spelled
+    /// out rather than assembled from `mode`. Default: boot → carrier → gateway.
     private func startLaunchedMode() {
         switch launchMode {
+        case "device-plane":
+            announce("DSH device plane — device.plane, the v1.5.0 SDK surface live…",
+                     line: "spike: app launched in device-plane mode", web: false)
+            runDevicePlane()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -133,7 +135,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    /// Console banner + stdout line for one drive; `web` marks the drives that
+    /// Console banner + stdout line for one drive; `web` marks drives that
     /// own the web view's navigation delegate.
     private func announce(_ banner: String, line: String, web: Bool) {
         console?.text = banner
@@ -414,6 +416,20 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.show(outcome, phase: "carrier.loopback") { self.carrierVerdict = $0 }
             self.carrier = nil
             self.runGateway()
+        }
+    }
+
+    /// The v1.5.0 device-plane drive over the device.plane scenario.
+    private func runDevicePlane() {
+        let session = GatewaySession(
+            entryModule: "scenario/device-plane.js",
+            sourceProvider: { String(cString: dsh_spike_res_scenario_device_plane_js(nil)) })
+        self.gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("spike: device-plane drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
         }
     }
 

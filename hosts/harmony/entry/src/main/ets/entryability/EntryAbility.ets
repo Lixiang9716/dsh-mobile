@@ -14,6 +14,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 import { E2eLeg } from '../model/E2eLeg';
 import { HostPhase } from '../model/HostPhase';
+import { WindowRef } from '../model/DevicePlanePrimitives';
 
 const DOMAIN: number = 0x0000;
 const TAG: string = 'dsh.app';
@@ -43,8 +44,13 @@ export default class EntryAbility extends UIAbility {
     hilog.info(DOMAIN, TAG, '%{public}s', 'EntryAbility onDestroy');
   }
 
+/** @throws { BusinessError } the main-window query can refuse */
   onWindowStageCreate(windowStage: window.WindowStage): void {
     hilog.info(DOMAIN, TAG, '%{public}s', 'EntryAbility onWindowStageCreate');
+    // keepAwake's latch target: the main window, parked once (the
+    // DevicePlanePrimitives module owns the reference).
+    // @SuppressWarnings syscap
+    WindowRef.win = windowStage.getMainWindowSync();
     windowStage.loadContent('pages/Index', (err) => {
       if (err.code) {
         hilog.error(DOMAIN, TAG, 'loadContent failed: %{public}s', JSON.stringify(err) ?? '');

@@ -1,0 +1,81 @@
+{
+  "scenario": "device.plane.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "deviceInfo",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "haptic",
+      "verdict": "granted",
+      "outcome": "ok",
+      "repeat": true
+    },
+    {
+      "primitive": "clipboardWrite",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "clipboardRead",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "clipboardWrite",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "clipboardRead",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "clipboardRead",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "fsWrite",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "presentShare",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "presentShare",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "presentShare",
+      "verdict": "granted",
+      "outcome": "denied"
+    },
+    {
+      "primitive": "keepAwake",
+      "verdict": "granted",
+      "outcome": "ok",
+      "repeat": true
+    },
+    {
+      "primitive": "presentPicker",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "fsRead",
+      "verdict": "granted",
+      "outcome": "ok"
+    }
+  ]
+}

@@ -175,13 +175,7 @@ final class SessionRuntime {
     /// because the scenario never calls the ui service.
     private func wireCore() {
         guard let core else { return }
-        let fs = FSPrimitives()
-        fs.register(on: core)
-        _ = HTTPPrimitive(core: core)
-        _ = KeychainPrimitives(core: core)
-        UIPrimitives(core: core, fs: fs)
-        let notify = NotifyPrimitive(core: core)
-        _ = notify
+        _ = core.registerStandardPrimitives()
         core.settle = { [weak self] callId, ok, json in
             self?.runtimeThread.async { self?.settle(callId: callId, ok: ok, json: json) }
         }

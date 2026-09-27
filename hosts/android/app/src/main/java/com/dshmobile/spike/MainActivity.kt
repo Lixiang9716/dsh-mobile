@@ -55,6 +55,8 @@ class MainActivity : Activity() {
             startM4(savedInstanceState, llm = false)
         } else if (intent.getBooleanExtra(EXTRA_WHALE, false)) {
             startM4(savedInstanceState, whale = true)
+        } else if (intent.getBooleanExtra(EXTRA_DEVICE_PLANE, false)) {
+            startM4(savedInstanceState, devicePlane = true)
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
             startNextWeb()
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
@@ -124,7 +126,7 @@ class MainActivity : Activity() {
         serve?.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false) {
+    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -154,7 +156,7 @@ class MainActivity : Activity() {
         SpikeRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = startHost(llm, view, parity, suite, whale)
+                spikeHost = startHost(llm, view, parity, suite, whale, devicePlane)
             }
         }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
@@ -163,12 +165,13 @@ class MainActivity : Activity() {
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
      * the whale creation-client mount, or the M4 binding — with the same
      * carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false): SpikeHostM4 {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false): SpikeHostM4 {
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
             suite != null -> SpikeHostM4.startSuite(this, view, onVerdict, suite)
             parity -> SpikeHostM4.startParity(this, view, onVerdict)
             whale -> SpikeHostM4.startWhale(this, view, onVerdict)
+            devicePlane -> SpikeHostM4.startDevicePlane(this, view, onVerdict)
             llm -> SpikeHostM4.startLlm(this, view, onVerdict)
             else -> SpikeHostM4.start(this, view, onVerdict)
         }
@@ -184,6 +187,7 @@ class MainActivity : Activity() {
         const val EXTRA_SUITE = "dsh.suite"
         const val EXTRA_SPEC = "dsh.spec"
         const val EXTRA_WHALE = "dsh.whale"
+        const val EXTRA_DEVICE_PLANE = "dsh.deviceplane"
         const val EXTRA_NEXT = "dsh.next"
         /** The Web Client the release boot serves (string extra; the iOS
          * launch arg -dsh-web-client's sibling — a client selection, not a

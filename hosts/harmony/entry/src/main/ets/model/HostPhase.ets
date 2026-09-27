@@ -57,6 +57,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HttpPrimitive } from './HttpPrimitive';
 import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
+import { DevicePlanePrimitives } from './DevicePlanePrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
@@ -74,6 +75,9 @@ const ENTRY_LLM: string = 'scenario/llm-live-stream.js';
  * runtime.config bus delivery to the driver. */
 const SCENARIO_SUITE: string = 'upstream.suite';
 const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
+
+const SCENARIO_DEVICE_PLANE: string = 'harmony.device-plane';
+const ENTRY_DEVICE_PLANE: string = 'scenario/device-plane.js';
 /** The whale creation-client mount (the iOS session-mock-llm drive's
  * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
  * web-client-whale page — the session-mock scenario (notes slot, two
@@ -88,12 +92,14 @@ export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-whale/web';
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
 
-/** Binding RuntimeDescriptor: all nine contract primitives available, none
- * unavailable (conformance §7 — proven on the emulator; keep in sync with
- * the agent note's decision record and the C fallback in gateway_smoke.cpp). */
+/** Binding RuntimeDescriptor: the full serving table (nine v0 primitives
+ * plus the six v1.5.0 device-plane rows), none unavailable (conformance §7 —
+ * keep in sync with the C fallback in gateway_smoke.cpp). */
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
-  '"presentApproval","presentPicker","keychainGet","keychainSet"],' +
+  '"presentApproval","presentPicker","keychainGet","keychainSet",' +
+  '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
+  '"keepAwake"],' +
   '"unavailable":[]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
@@ -147,6 +153,7 @@ export class HostPhase {
   private carrierScenario: string = SCENARIO;
   private entry: string = ENTRY_BINDING;
   private llmLeg: boolean = false;
+  private devicePlaneLeg: boolean = false;
   /** The whale creation-client leg: session-mock-llm over the whale page —
    * the client id in the mount records, host.info on page connect (the
    * scenario never reads host.seed), and the slot.ack record this leg
@@ -160,6 +167,7 @@ export class HostPhase {
   private http: HttpPrimitive = new HttpPrimitive();
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
+  private device: DevicePlanePrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -170,6 +178,7 @@ export class HostPhase {
 
   setApprovalPresenter(presenter: ApprovalPresenter): void {
     this.approvalPresenter = presenter;
+    this.device?.setApprovalPresenter(presenter);
   }
 
   /** The staged user-store seed file (PickerPrimitives.seedUserFile), '');
@@ -218,6 +227,36 @@ export class HostPhase {
     }
   }
 
+  /** The device-plane leg's entry eval: NO page mounts on this leg (the
+   * scenario drives primitives only), so the hello-gated eval never fires —
+   * the runner calls this directly once the carrier is up. */
+  evalEntryDirect(): void {
+    const status = hostEval(PHASE_ID, this.entry);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'phase: eval failed (device-plane leg)');
+    }
+  }
+
+  /** The v1.5.0 device-plane leg (ONE launch, its own scenario id): the
+   * binding machinery with the device.plane scenario as the entry — no web
+   * client is mounted (the drive uses no page), so the carrier-side
+   * selection records are suppressed. The approval presenter is the page's
+   * custom dialog (the same one presentApproval uses), set by the page
+   * before the carrier starts. */
+  beginDevicePlane(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_DEVICE_PLANE;
+    this.carrierScenario = SCENARIO_DEVICE_PLANE;
+    this.entry = ENTRY_DEVICE_PLANE;
+    this.llmLeg = false;
+    this.whaleLeg = false;
+    this.devicePlaneLeg = true;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   /** The upstream-suite leg: the driver scenario plus the runtime.config
    * bus delivery carrying the spec selection (bundle-root-relative) and the
    * container root. The delivery lands after hostEval returns — the driver
@@ -261,6 +300,13 @@ export class HostPhase {
     this.capturePath = capturePath;
     this.keychain = new KeychainPrimitives(ctx.filesDir);
     this.picker = new PickerPrimitives(ctx);
+    this.device = new DevicePlanePrimitives(ctx,
+      (scope: string, rel: string): string | null => {
+        return this.resolveShareUri(ctx, scope, rel);
+      });
+    if (this.approvalPresenter !== null) {
+      this.device.setApprovalPresenter(this.approvalPresenter);
+    }
     hostStart(bundleRoot, capturePath, fsRoot, BINDING_DESCRIPTOR,
       (line: string): void => {
         this.onBusLine(line);
@@ -279,6 +325,12 @@ export class HostPhase {
 
   onCarrierListening(port: number): void {
     this.carrierPort = port;
+    if (this.devicePlaneLeg) {
+      // No web client mounts on this leg (the scenario drives primitives
+      // only) — carrier-side selection records would pin records no page
+      // produces; the manifest carries the scenario's own records alone.
+      return;
+    }
     if (this.llmLeg) {
       // The carrier-side selection record (the llm-live-stream carrier manifest); the
       // m5 manifest has no such record, so it stays a leg-only emission.
@@ -564,10 +616,39 @@ export class HostPhase {
       this.picker?.persist(callId, args, this.settleFn());
     } else if (name === 'fsScope.resolve') {
       this.picker?.resolve(callId, args, this.settleFn());
+    } else if (name === 'deviceInfo') {
+      this.device?.deviceInfo(callId, args, this.settleFn());
+    } else if (name === 'haptic') {
+      this.device?.haptic(callId, args, this.settleFn());
+    } else if (name === 'keepAwake') {
+      this.device?.keepAwake(callId, args, this.settleFn());
+    } else if (name === 'presentShare') {
+      this.device?.share(callId, args, this.settleFn());
+    } else if (name === 'clipboardRead') {
+      this.device?.clipboardRead(callId, args, this.settleFn());
+    } else if (name === 'clipboardWrite') {
+      this.device?.clipboardWrite(callId, args, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);
     }
+  }
+
+  /** presentShare's file resolver: the app scope is the C backend's own
+   * profile container (filesDir/spike-fs, a plain path the share want can
+   * carry); user scopes resolve through the picker's registry. null = the
+   * path is outside every granted scope (the share primitive settles
+   * denied). */
+  private resolveShareUri(ctx: common.UIAbilityContext, scope: string,
+    rel: string): string | null {
+    if (scope === 'app') {
+      const comps = rel.split('/').filter((c: string): boolean => c.length > 0);
+      if (comps.length === 0 || comps.includes('..') || comps.includes('.')) {
+        return null;
+      }
+      return ctx.filesDir + '/spike-fs/' + comps.join('/');
+    }
+    return this.picker?.resolveForShare(scope, rel) ?? null;
   }
 
   /** settleCall with its receiver bound — handed to the primitive modules so

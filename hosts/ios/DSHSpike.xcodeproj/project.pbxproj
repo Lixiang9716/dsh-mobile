@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		02873EDD4BE0C22CF04594E2 /* zstd_fast.c in Sources */ = {isa = PBXBuildFile; fileRef = 16BC17E9DAC78D05C5A92E77 /* zstd_fast.c */; };
+		070ADF372073B536C978A67A /* NextWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53EC36B29179B891303F77A8 /* NextWebProbe.swift */; };
 		08C5C54937B34CFAAF6CC1C3 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = FAC7FDB05020C2366FB7DE1F /* debug.c */; };
 		0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */; };
 		13A8B251A2D5A29FDC9CBC51 /* m3_module.c in Sources */ = {isa = PBXBuildFile; fileRef = 7B3935A60D3190F43EB378EB /* m3_module.c */; };
@@ -24,6 +25,7 @@
 		3918A75AC2DB237651582CCF /* zstd_compress_superblock.c in Sources */ = {isa = PBXBuildFile; fileRef = 12837A840ED148F6161FBB1A /* zstd_compress_superblock.c */; };
 		3968E99707B8EE09B8BF21DC /* m3_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 348E19DFC4C7450AC2F83CF9 /* m3_core.c */; };
 		3DA7229FEF7035585AAC0A85 /* ish-rootfs.tar.gz in Resources */ = {isa = PBXBuildFile; fileRef = 44860052D2DC42B3DF47D91D /* ish-rootfs.tar.gz */; };
+		40F4B967DC28C3D9475D08E1 /* DevicePlanePrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AE1B6387C29A4748148BDD4 /* DevicePlanePrimitives.swift */; };
 		4750B1D5E5D2B7E42D802575 /* SessionLiveRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D7207C678D6F6873F0CDD0 /* SessionLiveRuntime.swift */; };
 		47B1DB0AB4554772EA362CA2 /* m3_exec.c in Sources */ = {isa = PBXBuildFile; fileRef = 70E06553B3925E2F3AD91392 /* m3_exec.c */; };
 		493EA6E4657656CB0A5233AF /* m3_info.c in Sources */ = {isa = PBXBuildFile; fileRef = 38A515451007C09B17F3FEE5 /* m3_info.c */; };
@@ -44,6 +46,7 @@
 		6EB89F7D39B1EFD17C3408A7 /* pool.c in Sources */ = {isa = PBXBuildFile; fileRef = CAF73903ADAC8B800DC316F0 /* pool.c */; };
 		7137721E1CD8809EAC1499B5 /* CarrierRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7421A65358AB8B696FE09F5 /* CarrierRequest.swift */; };
 		756A056B137E2D96A8F8C637 /* m3_code.c in Sources */ = {isa = PBXBuildFile; fileRef = C1AB00E24EB2C6C477B0DDF8 /* m3_code.c */; };
+		782259A795E0B1C68BA529B3 /* ClipboardPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87F652C90931F6235B2C0FA2 /* ClipboardPrimitives.swift */; };
 		7BEFA9CB7F409E767A7ECF56 /* m3_validate.c in Sources */ = {isa = PBXBuildFile; fileRef = AE2C804755A0EA5F7CF5B366 /* m3_validate.c */; };
 		7EED5085F19287EE5EA05EE0 /* dsh_spike_host.c in Sources */ = {isa = PBXBuildFile; fileRef = 6C867B5F76D077DD9CAC06F2 /* dsh_spike_host.c */; };
 		836949EFC4785527B44F0A4D /* m3_parse.c in Sources */ = {isa = PBXBuildFile; fileRef = 8A5C6985445CEF30C1D7D980 /* m3_parse.c */; };
@@ -52,8 +55,6 @@
 		8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */; };
 		90C7300A2CDECC073382C343 /* SessionLaunchConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */; };
 		9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */; };
-		D4E5F6A7B8C9D0E1F2A3B4C5 /* NextWebProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */; };
-		A1B2C3D4E5F60718293A4B5C /* NextWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */; };
 		9A79E46043F2C71B973B8995 /* CarrierWebDist.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */; };
 		9C70CB8C221E9338552394C3 /* UIPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7FFE83DAAFCE65B43AB4ED4 /* UIPrimitives.swift */; };
 		9D35980B133786B11600B115 /* m3_compile.c in Sources */ = {isa = PBXBuildFile; fileRef = 71939D55828A56CBA1F3085D /* m3_compile.c */; };
@@ -83,6 +84,7 @@
 		FA326E9F713A90CBE48760FA /* zstd_double_fast.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB38803D6B86775A0D00881 /* zstd_double_fast.c */; };
 		FA9C1908DC4F1C6E6F621E31 /* zstd_lazy.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7934DF4D9C5F8B24A978FB /* zstd_lazy.c */; };
 		FDEDE6EFCB24D8D4017346F3 /* error_private.c in Sources */ = {isa = PBXBuildFile; fileRef = D50BF99658C3C30A623599E7 /* error_private.c */; };
+		FE515DF71FD6F16F817C0437 /* NextWebRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = A09682C4AD0DC0FDC4E9EAE3 /* NextWebRuntime.swift */; };
 		FF9897C6A3D771EB76D13432 /* zstd_decompress_block.c in Sources */ = {isa = PBXBuildFile; fileRef = B78708CF620B082F55FF434F /* zstd_decompress_block.c */; };
 /* End PBXBuildFile section */
 
@@ -113,8 +115,10 @@
 		43589E4BAF7A73600C5B0567 /* CarrierAPIBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierAPIBridge.swift; sourceTree = "<group>"; };
 		44860052D2DC42B3DF47D91D /* ish-rootfs.tar.gz */ = {isa = PBXFileReference; lastKnownFileType = archive.gzip; path = "ish-rootfs.tar.gz"; sourceTree = "<group>"; };
 		4F489B98DABD6891A3BDDB71 /* NotifyPrimitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotifyPrimitive.swift; sourceTree = "<group>"; };
+		53EC36B29179B891303F77A8 /* NextWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebProbe.swift; sourceTree = "<group>"; };
 		5731EA74DCC357235A532782 /* xxhash.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = xxhash.c; sourceTree = "<group>"; };
 		5A23156072E07F33C5E489FE /* m3_bind.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_bind.c; sourceTree = "<group>"; };
+		5AE1B6387C29A4748148BDD4 /* DevicePlanePrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePlanePrimitives.swift; sourceTree = "<group>"; };
 		6552EFB8DC2C5B31ADA78A5D /* entropy_common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = entropy_common.c; sourceTree = "<group>"; };
 		6A1382ABE6EDFB24119B9EEE /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
 		6A71CD05409D23039DD9A2A4 /* zstd_ldm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zstd_ldm.c; sourceTree = "<group>"; };
@@ -126,6 +130,7 @@
 		79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarrierRuntime.swift; sourceTree = "<group>"; };
 		7B3935A60D3190F43EB378EB /* m3_module.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_module.c; sourceTree = "<group>"; };
 		7EC9F5F6929C9D36E65D032D /* dtoa.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dtoa.c; sourceTree = "<group>"; };
+		87F652C90931F6235B2C0FA2 /* ClipboardPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardPrimitives.swift; sourceTree = "<group>"; };
 		8A5C6985445CEF30C1D7D980 /* m3_parse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_parse.c; sourceTree = "<group>"; };
 		8D0099AAC070F4DE9DD15D1B /* m3_function.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_function.c; sourceTree = "<group>"; };
 		8E8AEA704FF77DC9764D8E5D /* DSHSpike.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = DSHSpike.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -134,8 +139,7 @@
 		988D76F2BD8AF6FD11811708 /* SessionLaunchConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLaunchConfig.swift; sourceTree = "<group>"; };
 		9AAA0B16F1D064F20E961EAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionWriteRuntime.swift; sourceTree = "<group>"; };
-		E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebProbe.swift; sourceTree = "<group>"; };
-		BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebRuntime.swift; sourceTree = "<group>"; };
+		A09682C4AD0DC0FDC4E9EAE3 /* NextWebRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NextWebRuntime.swift; sourceTree = "<group>"; };
 		A4FAE7AF4720C0B410ED7F06 /* zstd_ddict.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = zstd_ddict.c; sourceTree = "<group>"; };
 		AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpikeHostFactory.swift; sourceTree = "<group>"; };
 		AE2C804755A0EA5F7CF5B366 /* m3_validate.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = m3_validate.c; sourceTree = "<group>"; };
@@ -201,6 +205,8 @@
 				79A2B7CB03F27DBD397AFB73 /* CarrierRuntime.swift */,
 				E099B0D4BFA4C2C2195F1DD1 /* CarrierServer.swift */,
 				CB1E3A9C76B76B7955AFB7E2 /* CarrierWebDist.swift */,
+				53EC36B29179B891303F77A8 /* NextWebProbe.swift */,
+				A09682C4AD0DC0FDC4E9EAE3 /* NextWebRuntime.swift */,
 				95AB5D5BFDB578685994F7A8 /* OfficialWebProbe.swift */,
 				3A4A8D5A40DEE38DFCB1C59B /* OfficialWebRuntime.swift */,
 				D699FF5BB908578B359B9B14 /* RuntimeThread.swift */,
@@ -211,8 +217,6 @@
 				1279CFC8FB988D80AD896E16 /* SessionServe.swift */,
 				EFE3EBF4B3E0C1278F496455 /* SessionWriteProbe.swift */,
 				9BD5A2CA21E798B05B3DAB11 /* SessionWriteRuntime.swift */,
-				E6F7A8B9C0D1E2F3A4B5C6D7 /* NextWebProbe.swift */,
-				BCDEF0123456789ABCDEF012 /* NextWebRuntime.swift */,
 				19A12298B41F3DCDE6937D19 /* SpikeBundleStager.swift */,
 				AA962E7AD5C8CDA2BBED5AF0 /* SpikeHostFactory.swift */,
 				CE017668D774E7EE7A94A825 /* SpikeRuntime.swift */,
@@ -343,6 +347,8 @@
 		AEA110DACF229E48D1B6EFFC /* Gateway */ = {
 			isa = PBXGroup;
 			children = (
+				87F652C90931F6235B2C0FA2 /* ClipboardPrimitives.swift */,
+				5AE1B6387C29A4748148BDD4 /* DevicePlanePrimitives.swift */,
 				2B4F4DD23787891B6862FFDB /* FSPrimitives.swift */,
 				05F03F3FEC8D68BA0F158DBD /* GatewayCore.swift */,
 				0CF3FD663D82764D3F2A56C6 /* GatewaySession.swift */,
@@ -501,6 +507,7 @@
 				../../runtime/spike/manifest.json,
 				"../../runtime/spike/scenario/boot-verification.js",
 				"../../runtime/spike/scenario/gateway-binding.js",
+				"../../runtime/spike/scenario/device-plane.js",
 				"../../runtime/spike/scenario/gateway-bridge-smoke.js",
 				"../../runtime/spike/scenario/session-mock-llm.js",
 				"../../runtime/spike/scenario/carrier-loopback.js",
@@ -612,12 +619,16 @@
 				8E53A7BB75251DCAA363D40D /* CarrierRuntime.swift in Sources */,
 				0EC9D13AF2732363D383739A /* CarrierServer.swift in Sources */,
 				9A79E46043F2C71B973B8995 /* CarrierWebDist.swift in Sources */,
+				782259A795E0B1C68BA529B3 /* ClipboardPrimitives.swift in Sources */,
+				40F4B967DC28C3D9475D08E1 /* DevicePlanePrimitives.swift in Sources */,
 				5F28F055C273C1633A3C960B /* FSPrimitives.swift in Sources */,
 				54A05AA96A5A5BA9E23EB196 /* GatewayCore.swift in Sources */,
 				B48D9DE3EE86E724C5BD381D /* GatewaySession.swift in Sources */,
 				534C3BC3B96752B7DFC1889D /* HTTPPrimitive.swift in Sources */,
 				B8533465AAD53C871400EEA6 /* IshPrimitive.swift in Sources */,
 				F7BC7DC779736A3DA29734D0 /* KeychainPrimitives.swift in Sources */,
+				070ADF372073B536C978A67A /* NextWebProbe.swift in Sources */,
+				FE515DF71FD6F16F817C0437 /* NextWebRuntime.swift in Sources */,
 				61B1FE69BBFC1C5588C7B81B /* NotifyPrimitive.swift in Sources */,
 				4DF99E89C22618D71698CD6E /* OfficialWebProbe.swift in Sources */,
 				1B385B3BBC82C30A9C4BFAA8 /* OfficialWebRuntime.swift in Sources */,
@@ -629,8 +640,6 @@
 				61EEC98694105A362CEC3707 /* SessionServe.swift in Sources */,
 				A4D64D8E5942951A64D738C2 /* SessionWriteProbe.swift in Sources */,
 				9460C24BC28428B70418DE80 /* SessionWriteRuntime.swift in Sources */,
-				D4E5F6A7B8C9D0E1F2A3B4C5 /* NextWebProbe.swift in Sources */,
-				A1B2C3D4E5F60718293A4B5C /* NextWebRuntime.swift in Sources */,
 				13D20406BECDDA3EEDBBB35F /* SpikeBundle.c in Sources */,
 				2273BB6FBCB3CCD131594599 /* SpikeBundleStager.swift in Sources */,
 				D9680FC8B9E74933627DB174 /* SpikeHostFactory.swift in Sources */,
@@ -746,7 +755,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				configs = "[\"Release\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"ZSTD_DISABLE_ASM=1\"]], \"Debug\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"DEBUG=1\", \"ZSTD_DISABLE_ASM=1\"]]]";
+				configs = "[\"Debug\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"DEBUG=1\", \"ZSTD_DISABLE_ASM=1\"]], \"Release\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"ZSTD_DISABLE_ASM=1\"]]]";
 			};
 			name = Release;
 		};
@@ -879,7 +888,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				configs = "[\"Release\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"ZSTD_DISABLE_ASM=1\"]], \"Debug\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"DEBUG=1\", \"ZSTD_DISABLE_ASM=1\"]]]";
+				configs = "[\"Debug\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"DEBUG=1\", \"ZSTD_DISABLE_ASM=1\"]], \"Release\": [\"GCC_PREPROCESSOR_DEFINITIONS\": [\"$(inherited)\", \"ZSTD_DISABLE_ASM=1\"]]]";
 			};
 			name = Debug;
 		};

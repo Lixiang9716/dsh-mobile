@@ -1,0 +1,49 @@
+09-27 07:35:34.276  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+09-27 07:35:34.282  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":15,"unavailable":0,"devicePlane":6}]}
+09-27 07:35:34.283  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+09-27 07:35:34.286  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"harmonyos","screen":true,"locale":true,"timezone":true,"battery":true}]}
+09-27 07:35:34.286  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.289  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.289  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.291  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.291  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.293  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.293  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.304  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.304  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.307  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.307  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.308  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.308  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.309  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.309  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.311  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.311  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-27 07:35:34.312  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+09-27 07:35:34.312  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9,"unavailable":9}]}
+09-27 07:35:34.312  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+09-27 07:35:37.273  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"clipboardWrite"}]}
+09-27 07:35:37.273  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-27 07:35:37.523  8374  8374 E A0D5E0/com.dshmobile.spike/dsh.spike: phase: settle failed: gateway settle: no in-flight call 11
+09-27 07:35:38.293  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-27 07:35:39.839  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-27 07:35:42.071  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":0,"unavailable":true}]}
+09-27 07:35:42.071  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.ladder","approvals":3}]}
+09-27 07:35:42.072  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+09-27 07:35:42.072  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-27 07:35:42.072  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-27 07:35:42.077  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":false}]}
+09-27 07:35:42.077  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-27 07:35:42.083  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":false}]}
+09-27 07:35:42.083  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-27 07:35:42.083  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+09-27 07:35:42.083  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+09-27 07:35:42.083  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+09-27 07:35:42.089  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+09-27 07:35:42.089  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+09-27 07:35:42.090  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+09-27 07:35:42.090  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+09-27 07:35:50.108  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.cancelled","mode":"media"}]}
+09-27 07:35:50.108  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}
+09-27 07:35:50.109  8374  8374 I A0D5E0/com.dshmobile.spike/dsh.spike: dsh.spike.verdict: harmony.device-plane PASS engine=quickjs-ng version=0.17.0 complete=1 pass=1 logLines=46
+09-27 07:35:51.943  8374  8374 E A0D5E0/com.dshmobile.spike/dsh.spike: phase: settle failed: gateway settle: no in-flight call 21

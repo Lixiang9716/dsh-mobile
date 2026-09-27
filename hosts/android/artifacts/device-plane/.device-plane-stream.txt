@@ -1,0 +1,99 @@
+09-26 23:04:28.443 19597 19597 I dsh.canary: device-plane-begin-59422
+--------- beginning of main
+09-26 23:07:04.762 19730 19730 I dsh.canary: device-plane-begin-61652
+09-26 23:07:07.674 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.device-plane","event":"client.selected","client":"dsh-web-client"}]}
+09-26 23:07:07.689 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+09-26 23:07:07.689 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":23,"unavailable":0,"devicePlane":6}]}
+09-26 23:07:07.689 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+09-26 23:07:07.703 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.703110Z","primitive":"deviceInfo","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"platform":"android"}}
+09-26 23:07:07.705 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"android","screen":true,"locale":true,"timezone":true,"battery":true}]}
+09-26 23:07:07.705 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.715 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.713887Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"light"}}
+09-26 23:07:07.716 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.717 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.717783Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"medium"}}
+09-26 23:07:07.718 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.718 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.718679Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"heavy"}}
+09-26 23:07:07.718 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.719 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.719450Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"rigid"}}
+09-26 23:07:07.719 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.720 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.720069Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"soft"}}
+09-26 23:07:07.720 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.720 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.720397Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"selection"}}
+09-26 23:07:07.720 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.720 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.720743Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"success"}}
+09-26 23:07:07.720 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.721 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.721190Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"warning"}}
+09-26 23:07:07.721 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+09-26 23:07:07.721 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.721491Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"pattern":"error"}}
+09-26 23:07:07.721 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9}]}
+09-26 23:07:07.721 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+09-26 23:07:07.733 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.733168Z","primitive":"clipboardWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"kind":"text","length":19}}
+09-26 23:07:07.733 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":19}]}
+09-26 23:07:07.733 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-26 23:07:07.734 19738 19793 I dsh.spike.ui: ui-done clipboard-read
+09-26 23:07:07.736 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.736451Z","primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-26 23:07:07.736 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.read","match":true}]}
+09-26 23:07:07.736 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+09-26 23:07:07.739 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.739188Z","primitive":"clipboardWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"kind":"text","length":9}}
+09-26 23:07:07.739 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-26 23:07:07.739 19738 19793 I dsh.spike.ui: ui-done clipboard-read
+09-26 23:07:07.740 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.740765Z","primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-26 23:07:07.742 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.remember","match":true}]}
+09-26 23:07:07.743 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+09-26 23:07:07.744 19738 19793 I dsh.spike.ui: ui-done clipboard-read
+09-26 23:07:07.747 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.747089Z","primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-26 23:07:07.747 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.standing","match":true}]}
+09-26 23:07:07.749 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+09-26 23:07:07.750 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-26 23:07:07.835 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:07.834988Z","primitive":"fsWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-26 23:07:07.835 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-26 23:07:07.838 19738 19793 I dsh.spike.ui: ui-wait share
+09-26 23:07:07.964 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-26 23:07:12.308 19738 19738 I dsh.spike.ui: ui-done share
+09-26 23:07:12.322 19738 19738 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:12.309325Z","primitive":"presentShare","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"kind":"files"}}
+09-26 23:07:12.335 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":false}]}
+09-26 23:07:12.336 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-26 23:07:12.337 19738 19793 I dsh.spike.ui: ui-wait share
+09-26 23:07:12.389 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-26 23:07:12.394 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-26 23:07:16.796 19738 19738 I dsh.spike.ui: ui-done share
+09-26 23:07:16.796 19738 19738 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:16.796561Z","primitive":"presentShare","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"kind":"text"}}
+09-26 23:07:16.828 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":false}]}
+09-26 23:07:16.834 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+09-26 23:07:16.837 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:16.837124Z","primitive":"presentShare","caller":"dsh.spike.scenario","verdict":"granted","outcome":"denied"}
+09-26 23:07:16.837 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-26 23:07:16.837 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+09-26 23:07:16.837 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+09-26 23:07:16.837 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+09-26 23:07:16.838 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:16.838729Z","primitive":"keepAwake","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"hold":true}}
+09-26 23:07:16.839 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+09-26 23:07:16.839 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+09-26 23:07:16.840 19738 19793 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:16.840115Z","primitive":"keepAwake","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"hold":false}}
+09-26 23:07:16.840 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+09-26 23:07:16.840 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+09-26 23:07:16.845 19738 19738 I dsh.spike.ui: ui-wait picker
+09-26 23:07:16.916 19738 19793 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":42}]}
+09-26 23:07:21.872 19738 19738 I dsh.spike.ui: ui-done picker
+09-26 23:07:21.873 19738 19738 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-26T15:07:21.872529Z","primitive":"presentPicker","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-26 23:07:21.877 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.cancelled","mode":"media"}]}
+09-26 23:07:21.877 19738 19793 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}
+09-26 23:07:21.888 19738 19793 I dsh.spike.result: android.device-plane PASS | quickjs-ng 0.17.0
+09-26 23:07:21.888 19738 19793 I dsh.spike.result: ALL PASS
+--------- beginning of main
+09-26 23:08:47.118 19937 19937 I dsh.canary: device-plane-begin-62912
+--------- beginning of main
+09-27 07:54:30.569  1816  1816 I dsh.canary: device-plane-begin-57473
+--------- beginning of main
+09-27 07:54:52.430  2185  2185 I dsh.canary: device-plane-begin-69618
+--------- beginning of main
+09-27 07:55:31.985  2315  2315 I dsh.canary: device-plane-begin-69973
+--------- beginning of main
+09-27 07:57:37.242  2465  2465 I dsh.canary: device-plane-begin-73054
+--------- beginning of main
+09-27 07:58:24.894  2601  2601 I dsh.canary: device-plane-begin-75424
+--------- beginning of main
+09-27 07:59:16.953  2738  2738 I dsh.canary: device-plane-begin-75933
+--------- beginning of main
+09-27 08:00:10.889  2877  2877 I dsh.canary: device-plane-begin-76462
+--------- beginning of main
+09-27 08:00:35.753  3015  3015 I dsh.canary: device-plane-begin-76727

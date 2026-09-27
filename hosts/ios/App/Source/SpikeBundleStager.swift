@@ -25,6 +25,8 @@ enum SpikeBundleStager {
                   under: root)
         try write("scenario/gateway-binding.js",
                   data: resData(dsh_spike_res_scenario_m2_js), under: root)
+        try write("scenario/device-plane.js",
+                  data: resData(dsh_spike_res_scenario_device_plane_js), under: root)
         try write("scenario/gateway-bridge-smoke.js",
                   data: resData(dsh_spike_res_scenario_m2_smoke_js), under: root)
         try write("scenario/carrier-loopback.js",

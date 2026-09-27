@@ -1,0 +1,46 @@
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":15,"unavailable":0,"devicePlane":6}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"harmonyos","screen":true,"locale":true,"timezone":true,"battery":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"haptic"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9,"unavailable":9}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"clipboardWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":0,"unavailable":true}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.ladder","approvals":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.cancelled","mode":"media"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}

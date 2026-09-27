@@ -1,0 +1,82 @@
+spike: app launched in device-plane mode
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":22,"unavailable":0,"devicePlane":6}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.gateway.audit: {"primitive":"deviceInfo","outcome":"ok","detail":{"platform":"ios"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"ios","screen":true,"locale":true,"timezone":true,"battery":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"light"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"medium"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"heavy"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"rigid"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"soft"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"primitive":"haptic","outcome":"ok","detail":{"pattern":"selection"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"ts":"2026-09-27T00:09:15Z","outcome":"ok","verdict":"granted","detail":{"pattern":"success"},"primitive":"haptic","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"haptic","outcome":"ok","detail":{"pattern":"warning"},"ts":"2026-09-27T00:09:15Z","verdict":"granted"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"haptic","outcome":"ok","detail":{"pattern":"error"},"ts":"2026-09-27T00:09:15Z","verdict":"granted"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9,"unavailable":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+dsh.gateway.audit: {"primitive":"clipboardWrite","verdict":"granted","outcome":"ok","detail":{"length":19,"kind":"text"},"ts":"2026-09-27T00:09:15Z","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":19,"unavailable":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+spike: ui-wait clipboard-read
+spike: ui-done clipboard-read
+dsh.gateway.audit: {"ts":"2026-09-27T00:09:19Z","primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.read","match":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+dsh.gateway.audit: {"primitive":"clipboardWrite","outcome":"ok","verdict":"granted","ts":"2026-09-27T00:09:19Z","caller":"dsh.spike.scenario","detail":{"kind":"text","length":9}}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+spike: ui-wait clipboard-read
+spike: ui-done clipboard-read
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario","primitive":"clipboardRead","ts":"2026-09-27T00:09:22Z"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.remember","match":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+spike: ui-done clipboard-read
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario","primitive":"clipboardRead","ts":"2026-09-27T00:09:22Z"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.standing","match":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.gateway.audit: {"ts":"2026-09-27T00:09:22Z","primitive":"fsWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+spike: ui-wait share
+spike: ui-done share
+dsh.gateway.audit: {"primitive":"presentShare","verdict":"granted","outcome":"ok","ts":"2026-09-27T00:09:24Z","caller":"dsh.spike.scenario","detail":{"kind":"files"}}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+spike: ui-wait share
+spike: ui-done share
+dsh.gateway.audit: {"primitive":"presentShare","verdict":"granted","outcome":"ok","ts":"2026-09-27T00:09:27Z","caller":"dsh.spike.scenario","detail":{"kind":"text"}}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+dsh.gateway.audit: {"primitive":"presentShare","verdict":"granted","outcome":"denied","ts":"2026-09-27T00:09:27Z","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","detail":{"hold":true},"ts":"2026-09-27T00:09:27Z","primitive":"keepAwake","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","detail":{"hold":false},"ts":"2026-09-27T00:09:27Z","primitive":"keepAwake","outcome":"ok"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+spike: ui-wait picker
+spike: ui-done picker
+dsh.gateway.audit: {"ts":"2026-09-27T00:10:02Z","primitive":"presentPicker","outcome":"ok","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.granted","mode":"media","scopeOpaque":true,"pathOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:EF2ACBC9-425A-474F-8A88-D8F01D8131C0","path":"media-71C4A144.jpeg"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.gateway.audit: {"ts":"2026-09-27T00:10:02Z","primitive":"fsRead","outcome":"ok","verdict":"granted","caller":"dsh.spike.scenario"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3672}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.read","bytes":2752,"reads":true}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}
+spike: gateway drive finished verdict=PASS
+spike: verdict PASS (device.plane, events logged: 44)
+spike: device-plane drive finished verdict=PASS
