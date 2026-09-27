@@ -64,6 +64,19 @@ const char *dsh_spike_res_plugin_shell_ish_manifest(size_t *len);
 const char *dsh_spike_res_plugin_shell_ish_js(size_t *len);
 const char *dsh_spike_res_plugin_open_design_manifest(size_t *len);
 const char *dsh_spike_res_plugin_open_design_js(size_t *len);
+const char *dsh_spike_res_scenario_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_js(size_t *len);
+const char *dsh_spike_res_scenario_device_plane_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_session_js(size_t *len);
+const char *dsh_spike_res_scenario_carrier_js(size_t *len);
+const char *dsh_spike_res_scenario_m2_llm_js(size_t *len);
+const char *dsh_spike_res_scenario_m3_fetch_install_js(size_t *len);
+const char *dsh_spike_res_scenario_upstream_parity_js(size_t *len);
+const char *dsh_spike_res_scenario_upstream_suite_js(size_t *len);
+const char *dsh_spike_res_scenario_agent_flow_js(size_t *len);
+const char *dsh_spike_res_scenario_b1_web_live_js(size_t *len);
+const char *dsh_spike_res_scenario_b3_web_live_js(size_t *len);
+const char *dsh_spike_res_scenario_b4_web_live_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,

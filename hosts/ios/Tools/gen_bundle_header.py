@@ -159,17 +159,29 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
-    # THREE scenario files additionally keep NAMED accessors: Swift code
-    # reads them directly (GatewaySession / WebBootRuntimeDrive /
-    # SpikeRuntime), beyond the JS loader's file view the whole-dir
-    # scenario tree row already serves. These are RESOURCES rows — the
-    # dsh_spike_res_<suffix> accessors are what Swift links against; a
-    # TREES row emits only the generic tree table (the 664c557 lesson:
-    # the rows first landed in the wrong list and the symbols never
-    # existed, so a clean checkout could not build the app).
+    # THIRTEEN scenario files keep NAMED accessors: Swift code reads them
+    # directly (SpikeRuntime / GatewaySession / SessionRuntime / SessionServe
+    # / SessionLiveRuntime / WebBootRuntimeDrive / CarrierRuntime /
+    # AppDelegate), beyond the JS loader's file view the whole-dir scenario
+    # tree row already serves. RESOURCES rows are what emit the
+    # dsh_spike_res_<suffix> symbols Swift links against — the 926c6a7
+    # whole-dir refactor dropped this block while every Swift read site
+    # stayed, so a clean checkout could not build the app (the rows first
+    # re-landed in TREES, whose generic table emits no per-file symbols).
+    # Mapping = the pre-refactor RESOURCES rows, restored verbatim.
     ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
+    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
+    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
+    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
+    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
+    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
+    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
+    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
     ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
+    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
+    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same
