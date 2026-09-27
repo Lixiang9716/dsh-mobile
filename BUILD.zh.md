@@ -50,6 +50,37 @@ bundle 都是规范 `runtime/spike` 闭包的**已提交副本**——这是刻�
 iOS 走确定性重生成 + `git diff --quiet`）。如果它红了：
 `build/build.sh sync <platform>`。
 
+## CMake 层（同一张图，多一张面孔）
+
+顶层 `CMakeLists.txt` + `CMakePresets.json` 把构建表达成一张带统一入口的
+依赖图（cmake ≥ 3.21，Ninja）：
+
+```
+cmake --preset macos-dev                                # 配置（Ninja）
+cmake --build --preset macos-dev --target dsh-core      # 编译 C 核心
+cmake --build --preset macos-dev --target dsh-android   # 同步 + 构建一个宿主（包装 build.sh）
+ctest --preset macos-dev                                # 门禁（dsh-gate-closures、dsh-gate-gov）
+```
+
+范围由构造决定（phase 1——加层不动路径）：
+
+- **CMake 只编译 C 核心**：`dsh-core` 静态库，源文件来自
+  `runtime/spike/host` 加固定的引擎——与 android、harmony 的
+  `cpp/CMakeLists.txt` 编译的是同一组文件。配置期先物化 vendored pin
+  （`include(Vendor)` 跑 ensure 脚本，响亮失败；`DSH_SKIP_VENDOR=ON`
+  可跳过但会点名风险）。
+- **三个宿主仍归平台工具链所有。** `dsh-ios` / `dsh-android` /
+  `dsh-harmony` 是委托给 `build/build.sh build <platform>` 的包装目标，
+  带 `dsh-sync-<platform>` 依赖边——签名、HAP/AAB 打包、e2e 腿仍归
+  xcodebuild / Gradle / hvigor。`build.sh` 仍是文档化的门面；这些目标是
+  统一入口，不是替代品。
+- **门禁挂上 CTest**（`dsh-gate-closures`、`dsh-gate-gov`）——同一批
+  检查的另一张面孔；门的 DAG、任务卡、pre-push 钩子仍归 govrail 所有。
+
+构建树位于 `build/cmake-<preset>/`（被跟踪的 `build/` 目录放的是
+`build.sh` 本身）。更深的整合——sync/stage 步骤成为一等 custom command、
+一份 vendor manifest 驱动所有宿主的嵌入清单——是下一阶段，不是本阶段。
+
 ## 布局：环绕项目的周边环
 
 ```

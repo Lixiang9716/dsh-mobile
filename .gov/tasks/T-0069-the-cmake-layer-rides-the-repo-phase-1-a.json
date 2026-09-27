@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "root CMakeLists.txt skeleton with the include contract (integrator-owned)",
-    "cmake/Vendor.cmake + runtime/spike/host/CMakeLists.txt \u2014 dsh-core static lib compiles on macOS via Ninja",
-    "CMakePresets.json + cmake/Apps.cmake \u2014 macos-dev preset + dsh-ios/android/harmony wrapper targets",
-    "cmake/Gates.cmake \u2014 ctest lists the closures + gov gate tests",
-    "union verified on the integrated tree (configure + dsh-core + ctest -N)",
-    "BUILD.md bilingual CMake section + Agent Note + pairing confirmed",
+    "[x] root CMakeLists.txt skeleton with the include contract (integrator-owned)",
+    "[x] cmake/Vendor.cmake + runtime/spike/host/CMakeLists.txt \u2014 dsh-core static lib compiles on macOS via Ninja",
+    "[x] CMakePresets.json + cmake/Apps.cmake \u2014 macos-dev preset + dsh-ios/android/harmony wrapper targets",
+    "[x] cmake/Gates.cmake \u2014 ctest lists the closures + gov gate tests",
+    "[x] union verified on the integrated tree (configure + dsh-core + ctest -N)",
+    "[x] BUILD.md bilingual CMake section + Agent Note + pairing confirmed",
     "targeted gates green, branch pushed, PR open"
   ],
   "status": "open",
