@@ -254,7 +254,6 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_plugin_open_design_manifest), under: root)
         try write("system-plugins/dsh-open-design/index.js",
                   data: resData(dsh_spike_res_plugin_open_design_js), under: root)
-                  data: resData(dsh_spike_res_plugin_office_ppt_read_js), under: root)
         try write("system-plugins/dsh-ui/manifest.json",
                   data: resData(dsh_spike_res_plugin_ui_manifest), under: root)
         try write("system-plugins/dsh-ui/index.js",
