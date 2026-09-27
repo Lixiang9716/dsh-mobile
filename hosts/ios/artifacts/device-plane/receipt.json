@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
   "phase": "device.plane",
   "launchConfiguration": "ios device-plane drive (Debug, -dsh-mode device-plane)",
-  "tree": "origin/main 5e7faf5000f5 (dirty working tree at receipt time)",
+  "tree": "origin/main 3b58d95a500f (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "device.plane",
@@ -28,6 +28,6 @@
     "screens/share-1.png",
     "screens/share-2.png"
   ],
-  "timestamp": "2026-09-27T08:10:02+08:00",
+  "timestamp": "2026-09-27T09:14:26+08:00",
   "exitCode": 0
 }

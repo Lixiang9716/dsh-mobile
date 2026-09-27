@@ -1,44 +1,8 @@
 {
   "scenario": "device.plane.audit",
-  "pass": false,
+  "pass": true,
   "expected": 14,
-  "logged": 17,
-  "failures": [
-    {
-      "index": 9,
-      "expected": {
-        "primitive": "presentShare"
-      },
-      "logged": null
-    },
-    {
-      "index": 10,
-      "expected": {
-        "primitive": "presentShare"
-      },
-      "logged": null
-    },
-    {
-      "index": 11,
-      "expected": {
-        "primitive": "keepAwake"
-      },
-      "logged": null
-    },
-    {
-      "index": 12,
-      "expected": {
-        "primitive": "presentPicker"
-      },
-      "logged": null
-    },
-    {
-      "index": 13,
-      "expected": {
-        "primitive": "fsRead"
-      },
-      "logged": null
-    }
-  ],
+  "logged": 23,
+  "failures": [],
   "parseErrors": []
 }

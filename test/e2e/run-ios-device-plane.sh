@@ -170,9 +170,17 @@ while true; do
         xcrun simctl io "$UDID" screenshot "$ART/screens/share-$SHARES.png" >/dev/null 2>&1 || true
         sleep 1.5
         # Copy is offered for BOTH payloads (file + text, live-probed
-        # 2026-09-26): the completion proves the sheet accepted the payload.
-        log "share #$SHARES -> Copy"
-        wda_click "Copy" || idb ui tap --udid "$UDID" 152 700 --duration 0.15 || true ;;
+        # 2026-09-26); the sheet renders LATE on a cold UI process — poll the
+        # AX tree for the button (bounded) instead of one fixed sleep.
+        log "share #$SHARES -> Copy (polling)"
+        copy_deadline=$((SECONDS + 25))
+        copied=0
+        while [ "$SECONDS" -lt "$copy_deadline" ]; do
+            if wda_click "Copy"; then copied=1; break; fi
+            sleep 1.5
+        done
+        [ "$copied" = "1" ] || idb ui tap --udid "$UDID" 152 700 --duration 0.15 >/dev/null 2>&1 || true ;;
+
       *"spike: ui-wait picker"*)
         xcrun simctl io "$UDID" screenshot "$ART/screens/picker-media.png" >/dev/null 2>&1 || true
         sleep 1.5
