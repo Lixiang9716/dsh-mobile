@@ -39,6 +39,105 @@ const IMAGE_PARAM = {
   },
 };
 
+
+
+
+
+
+const PPT_SLIDE_PARAM = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    title: { type: 'string', description: 'Slide title.' },
+    paragraphs: {
+      type: 'array', items: { type: 'string' },
+      description: 'Body paragraphs rendered as plain text boxes.',
+    },
+    bullets: {
+      type: 'array', items: { type: 'string' },
+      description: 'Bullet list items rendered after the paragraphs.',
+    },
+    notes: { type: 'string', description: 'Speaker notes for this slide.' },
+    images: {
+      type: 'array', items: IMAGE_PARAM,
+      description: 'Images linked on this slide, drawn after the text content.',
+    },
+  },
+};
+
+const PPT_LAYOUT_ELEMENT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    type: { type: 'string', required: true },
+    xIn: { type: 'number', required: true },
+    yIn: { type: 'number', required: true },
+    wIn: { type: 'number', required: true },
+    hIn: { type: 'number', required: true },
+    text: { type: 'string' },
+    items: { type: 'array', items: { type: 'string' } },
+    alt: { type: 'string' },
+    sizing: { type: 'string', enum: ['contain', 'cover'] },
+  },
+};
+
+const PPT_LAYOUT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    index: { type: 'integer', required: true },
+    elements: {
+      type: 'array',
+      required: true,
+      items: PPT_LAYOUT_ELEMENT_SCHEMA,
+      description: 'Per-slide element layout echo: where every text box, bullet list, '
+        + 'and linked image landed, in inches.',
+    },
+  },
+};
+
+const PPT_CREATE_PARAMS = {
+  path: {
+    type: 'string', required: true,
+    description: 'Output path. Relative paths resolve against the session workspace; the extension must be .pptx.',
+  },
+  title: {
+    type: 'string',
+    description: 'Deck title. When provided, a title slide is inserted before the explicit slides.',
+  },
+  slides: {
+    type: 'array',
+    items: PPT_SLIDE_PARAM,
+    description: 'Slides in presentation order. Optional when a title is provided.',
+  },
+  overwrite: {
+    type: 'boolean',
+    description: 'Replace the file when it already exists. Defaults to false.',
+  },
+};
+
+const PPT_CREATE_OUTPUT = {
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      ...FILE_RESULT_SCHEMA.properties,
+      title: { type: 'string' },
+      slideCount: { type: 'integer', required: true },
+      slideWidthInches: { type: 'number', required: true, description: 'Canvas width (13.33 in widescreen).' },
+      slideHeightInches: { type: 'number', required: true, description: 'Canvas height (7.5 in widescreen).' },
+      slides: { type: 'array', required: true, items: PPT_LAYOUT_SCHEMA },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: `Created PowerPoint ${value.path} (${value.sizeBytes} bytes; ${value.slideCount} slide(s), `
+      + `canvas ${value.slideWidthInches}x${value.slideHeightInches} in).\n`
+      + value.slides.map((slide) => `Slide ${slide.index} layout:\n`
+        + `${sketchSlide(value.slideWidthInches, value.slideHeightInches, slide.elements)}`).join('\n\n'),
+  }],
+};
+
 export const registerPptCreate = () => {
   return defineTool({
     name: 'ppt_create',
@@ -50,96 +149,8 @@ export const registerPptCreate = () => {
       + 'them for automatic placement below the text at natural size. The result echoes every '
       + 'element\'s landing position (inches) and a text wireframe sketch of each slide, so '
       + 'you can verify the composition you authored.',
-    parameters: {
-      path: {
-        type: 'string', required: true,
-        description: 'Output path. Relative paths resolve against the session workspace; the extension must be .pptx.',
-      },
-      title: {
-        type: 'string',
-        description: 'Deck title. When provided, a title slide is inserted before the explicit slides.',
-      },
-      slides: {
-        type: 'array',
-        items: {
-          type: 'object',
-          additionalProperties: false,
-          properties: {
-            title: { type: 'string', description: 'Slide title.' },
-            paragraphs: {
-              type: 'array', items: { type: 'string' },
-              description: 'Body paragraphs rendered as plain text boxes.',
-            },
-            bullets: {
-              type: 'array', items: { type: 'string' },
-              description: 'Bullet list items rendered after the paragraphs.',
-            },
-            notes: { type: 'string', description: 'Speaker notes for this slide.' },
-            images: {
-              type: 'array', items: IMAGE_PARAM,
-              description: 'Images linked on this slide, drawn after the text content.',
-            },
-          },
-        },
-        description: 'Slides in presentation order. Optional when a title is provided.',
-      },
-      overwrite: {
-        type: 'boolean',
-        description: 'Replace the file when it already exists. Defaults to false.',
-      },
-    },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          ...FILE_RESULT_SCHEMA.properties,
-          title: { type: 'string' },
-          slideCount: { type: 'integer', required: true },
-          slideWidthInches: { type: 'number', required: true, description: 'Canvas width (13.33 in widescreen).' },
-          slideHeightInches: { type: 'number', required: true, description: 'Canvas height (7.5 in widescreen).' },
-          slides: {
-            type: 'array',
-            required: true,
-            items: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                index: { type: 'integer', required: true },
-                elements: {
-                  type: 'array',
-                  required: true,
-                  items: {
-                    type: 'object',
-                    additionalProperties: false,
-                    properties: {
-                      type: { type: 'string', required: true },
-                      xIn: { type: 'number', required: true },
-                      yIn: { type: 'number', required: true },
-                      wIn: { type: 'number', required: true },
-                      hIn: { type: 'number', required: true },
-                      text: { type: 'string' },
-                      items: { type: 'array', items: { type: 'string' } },
-                      alt: { type: 'string' },
-                      sizing: { type: 'string', enum: ['contain', 'cover'] },
-                    },
-                  },
-                },
-              },
-            },
-            description: 'Per-slide element layout echo: where every text box, bullet list, '
-              + 'and linked image landed, in inches.',
-          },
-        },
-      },
-      render: (_args, value) => [{
-        type: 'text',
-        text: `Created PowerPoint ${value.path} (${value.sizeBytes} bytes; ${value.slideCount} slide(s), `
-          + `canvas ${value.slideWidthInches}x${value.slideHeightInches} in).\n`
-          + value.slides.map((slide) => `Slide ${slide.index} layout:\n`
-            + `${sketchSlide(value.slideWidthInches, value.slideHeightInches, slide.elements)}`).join('\n\n'),
-      }],
-    },
+    parameters: PPT_CREATE_PARAMS,
+    output: PPT_CREATE_OUTPUT,
     presentCall: (args) => ({
       card: 'generic',
       title: `Create ${args.path}`,

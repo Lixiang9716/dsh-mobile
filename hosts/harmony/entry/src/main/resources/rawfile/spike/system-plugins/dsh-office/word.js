@@ -216,6 +216,99 @@ const WORD_TABLE_PARAM = {
   description: 'One optional table appended after the text content.',
 };
 
+const WORD_CREATE_PARAMS = {
+  path: {
+    type: 'string', required: true,
+    description: 'Output path. Relative paths resolve against the session workspace; the extension must be .docx.',
+  },
+  title: { type: 'string', description: 'Document title rendered as the title heading. Optional.' },
+  paragraphs: {
+    type: 'array', items: { type: 'string' },
+    description: 'Body paragraphs in document order. Empty strings create blank paragraphs. Optional.',
+  },
+  bullets: {
+    type: 'array', items: { type: 'string' },
+    description: 'Bullet list items rendered after the paragraphs. Optional.',
+  },
+  table: WORD_TABLE_PARAM,
+  overwrite: {
+    type: 'boolean',
+    description: 'Replace the file when it already exists. Defaults to false (existing files are refused).',
+  },
+};
+
+const WORD_UPDATE_PARAMS = {
+  path: {
+    type: 'string', required: true,
+    description: 'Path to the existing .docx file, relative to the session workspace or absolute inside it.',
+  },
+  paragraphs: {
+    type: 'array', items: { type: 'string' },
+    description: 'Paragraphs to append in document order. Optional.',
+  },
+  bullets: {
+    type: 'array', items: { type: 'string' },
+    description: 'Bullet list items appended after the paragraphs. Optional.',
+  },
+  table: WORD_TABLE_PARAM,
+};
+
+const WORD_CREATE_OUTPUT = {
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      ...FILE_RESULT_SCHEMA.properties,
+      title: { type: 'string' },
+      paragraphCount: { type: 'integer', required: true },
+      bulletCount: { type: 'integer', required: true },
+      tableRows: { type: 'integer', required: true },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: `Created Word document ${value.path} (${value.sizeBytes} bytes; `
+      + `${value.paragraphCount} paragraphs, ${value.bulletCount} bullets, ${value.tableRows} table body rows).`,
+  }],
+};
+
+const WORD_READ_OUTPUT = {
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      path: { type: 'string', required: true },
+      text: { type: 'string', required: true },
+      totalChars: { type: 'integer', required: true },
+      truncated: { type: 'boolean', required: true },
+      sizeBytes: { type: 'integer', required: true },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: value.text + (value.truncated ? `\n[text truncated; total ${value.totalChars} characters]` : ''),
+  }],
+};
+
+const WORD_UPDATE_OUTPUT = {
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      ...FILE_RESULT_SCHEMA.properties,
+      appendedParagraphs: { type: 'integer', required: true },
+      appendedBullets: { type: 'integer', required: true },
+      appendedTableRows: { type: 'integer', required: true },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: `Appended to Word document ${value.path} (${value.sizeBytes} bytes; `
+      + `${value.appendedParagraphs} paragraph(s), ${value.appendedBullets} bullet(s), `
+      + `${value.appendedTableRows} table body row(s) appended).`,
+  }],
+};
+
 const presentCallFor = (verb) => (args) => ({
   card: 'generic',
   title: `${verb} ${args.path}`,
@@ -230,44 +323,8 @@ const registerWordCreate = () => {
       + 'structured content. Supply paragraphs as plain text, optional bullet points, and one '
       + 'optional table (headers + string rows). Pass overwrite: true to replace an existing '
       + 'file. Use word_read afterwards to verify the extracted text.',
-    parameters: {
-      path: {
-        type: 'string', required: true,
-        description: 'Output path. Relative paths resolve against the session workspace; the extension must be .docx.',
-      },
-      title: { type: 'string', description: 'Document title rendered as the title heading. Optional.' },
-      paragraphs: {
-        type: 'array', items: { type: 'string' },
-        description: 'Body paragraphs in document order. Empty strings create blank paragraphs. Optional.',
-      },
-      bullets: {
-        type: 'array', items: { type: 'string' },
-        description: 'Bullet list items rendered after the paragraphs. Optional.',
-      },
-      table: WORD_TABLE_PARAM,
-      overwrite: {
-        type: 'boolean',
-        description: 'Replace the file when it already exists. Defaults to false (existing files are refused).',
-      },
-    },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          ...FILE_RESULT_SCHEMA.properties,
-          title: { type: 'string' },
-          paragraphCount: { type: 'integer', required: true },
-          bulletCount: { type: 'integer', required: true },
-          tableRows: { type: 'integer', required: true },
-        },
-      },
-      render: (_args, value) => [{
-        type: 'text',
-        text: `Created Word document ${value.path} (${value.sizeBytes} bytes; `
-          + `${value.paragraphCount} paragraphs, ${value.bulletCount} bullets, ${value.tableRows} table body rows).`,
-      }],
-    },
+    parameters: WORD_CREATE_PARAMS,
+    output: WORD_CREATE_OUTPUT,
     presentCall: presentCallFor('Create'),
     async execute(args) {
       log.debug('word_create', { path: args.path });
@@ -318,23 +375,7 @@ const registerWordRead = () => {
         description: 'Output mode: plain text (default) or structured markdown.',
       },
     },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          path: { type: 'string', required: true },
-          text: { type: 'string', required: true },
-          totalChars: { type: 'integer', required: true },
-          truncated: { type: 'boolean', required: true },
-          sizeBytes: { type: 'integer', required: true },
-        },
-      },
-      render: (_args, value) => [{
-        type: 'text',
-        text: value.text + (value.truncated ? `\n[text truncated; total ${value.totalChars} characters]` : ''),
-      }],
-    },
+    output: WORD_READ_OUTPUT,
     presentCall: presentCallFor('Read'),
     async execute(args) {
       log.debug('word_read', { path: args.path, format: args.format ?? 'text' });
@@ -359,39 +400,8 @@ const registerWordUpdate = () => {
       + 'numbering the document already defines, so they render as bullets in files that have '
       + 'them (files created by word_create always do); documents without list numbering show '
       + 'appended bullets as plain paragraphs. Use word_read afterwards to verify.',
-    parameters: {
-      path: {
-        type: 'string', required: true,
-        description: 'Path to the existing .docx file, relative to the session workspace or absolute inside it.',
-      },
-      paragraphs: {
-        type: 'array', items: { type: 'string' },
-        description: 'Paragraphs to append in document order. Optional.',
-      },
-      bullets: {
-        type: 'array', items: { type: 'string' },
-        description: 'Bullet list items appended after the paragraphs. Optional.',
-      },
-      table: WORD_TABLE_PARAM,
-    },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          ...FILE_RESULT_SCHEMA.properties,
-          appendedParagraphs: { type: 'integer', required: true },
-          appendedBullets: { type: 'integer', required: true },
-          appendedTableRows: { type: 'integer', required: true },
-        },
-      },
-      render: (_args, value) => [{
-        type: 'text',
-        text: `Appended to Word document ${value.path} (${value.sizeBytes} bytes; `
-          + `${value.appendedParagraphs} paragraph(s), ${value.appendedBullets} bullet(s), `
-          + `${value.appendedTableRows} table body row(s) appended).`,
-      }],
-    },
+    parameters: WORD_UPDATE_PARAMS,
+    output: WORD_UPDATE_OUTPUT,
     presentCall: presentCallFor('Update'),
     async execute(args) {
       log.debug('word_update', { path: args.path });

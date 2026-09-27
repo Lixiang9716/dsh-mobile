@@ -204,30 +204,6 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
-    # The OFFICE row (2026-09-27): the word/excel/ppt document plane — a
-    # multi-file plugin, the OOXML engine rides beside the entry.
-    ("plugin_office_manifest",
-     SPIKE / "system-plugins" / "dsh-office" / "manifest.json"),
-    ("plugin_office_index_js",
-     SPIKE / "system-plugins" / "dsh-office" / "index.js"),
-    ("plugin_office_shared_js",
-     SPIKE / "system-plugins" / "dsh-office" / "shared.js"),
-    ("plugin_office_zip_js",
-     SPIKE / "system-plugins" / "dsh-office" / "zip.js"),
-    ("plugin_office_fschannel_js",
-     SPIKE / "system-plugins" / "dsh-office" / "fschannel.js"),
-    ("plugin_office_word_js",
-     SPIKE / "system-plugins" / "dsh-office" / "word.js"),
-    ("plugin_office_excel_core_js",
-     SPIKE / "system-plugins" / "dsh-office" / "excel-core.js"),
-    ("plugin_office_excel_js",
-     SPIKE / "system-plugins" / "dsh-office" / "excel.js"),
-    ("plugin_office_ppt_write_js",
-     SPIKE / "system-plugins" / "dsh-office" / "ppt-write.js"),
-    ("plugin_office_ppt_create_js",
-     SPIKE / "system-plugins" / "dsh-office" / "ppt-create.js"),
-    ("plugin_office_ppt_read_js",
-     SPIKE / "system-plugins" / "dsh-office" / "ppt-read.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same
@@ -293,10 +269,12 @@ TREES = [
     # (the package's "node" face is CJS, which the loader cannot serve).
     ("vendor/npm/yaml@2.9.0/browser",
      SPIKE / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
-    # the npm `fflate` bridge target (the OFFICE row): npm-bridges.js
-    # re-exports the ESM face behind bare `fflate` — the office zip engine.
+    # the npm `fflate` bridge target (the OFFICE row's zip engine).
     ("vendor/npm/fflate@0.8.2/esm",
      SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+    # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
+    ("system-plugins/dsh-office",
+     SPIKE / "system-plugins" / "dsh-office"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
@@ -486,9 +464,8 @@ def emit() -> None:
     print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
           f"({total / 1024:.0f} KiB)")
     webclient_tree = collect_webclient_files()
-    parts.append(
-        trees.tree_c_source(webclient_tree, "DSH_WEBCLIENT",
-                            "dsh_spike_webclient_tree_file", REPO))
+    parts.append(trees.tree_c_source(
+        webclient_tree, "DSH_WEBCLIENT", "dsh_spike_webclient_tree_file", REPO))
     decls.append(trees.WEBCLIENT_TREE_WALKER_DECL)
     wtotal = sum(p.stat().st_size for _, p in webclient_tree)
     print(f"gen_bundle_header: webclient tree = {len(webclient_tree)} files, "

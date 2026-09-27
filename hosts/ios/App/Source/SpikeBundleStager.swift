@@ -254,27 +254,6 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_plugin_open_design_manifest), under: root)
         try write("system-plugins/dsh-open-design/index.js",
                   data: resData(dsh_spike_res_plugin_open_design_js), under: root)
-        try write("system-plugins/dsh-office/manifest.json",
-                  data: resData(dsh_spike_res_plugin_office_manifest), under: root)
-        try write("system-plugins/dsh-office/index.js",
-                  data: resData(dsh_spike_res_plugin_office_index_js), under: root)
-        try write("system-plugins/dsh-office/shared.js",
-                  data: resData(dsh_spike_res_plugin_office_shared_js), under: root)
-        try write("system-plugins/dsh-office/zip.js",
-                  data: resData(dsh_spike_res_plugin_office_zip_js), under: root)
-        try write("system-plugins/dsh-office/fschannel.js",
-                  data: resData(dsh_spike_res_plugin_office_fschannel_js), under: root)
-        try write("system-plugins/dsh-office/word.js",
-                  data: resData(dsh_spike_res_plugin_office_word_js), under: root)
-        try write("system-plugins/dsh-office/excel-core.js",
-                  data: resData(dsh_spike_res_plugin_office_excel_core_js), under: root)
-        try write("system-plugins/dsh-office/excel.js",
-                  data: resData(dsh_spike_res_plugin_office_excel_js), under: root)
-        try write("system-plugins/dsh-office/ppt-write.js",
-                  data: resData(dsh_spike_res_plugin_office_ppt_write_js), under: root)
-        try write("system-plugins/dsh-office/ppt-create.js",
-                  data: resData(dsh_spike_res_plugin_office_ppt_create_js), under: root)
-        try write("system-plugins/dsh-office/ppt-read.js",
                   data: resData(dsh_spike_res_plugin_office_ppt_read_js), under: root)
         try write("system-plugins/dsh-ui/manifest.json",
                   data: resData(dsh_spike_res_plugin_ui_manifest), under: root)

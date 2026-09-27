@@ -112,17 +112,6 @@ const char *dsh_spike_res_plugin_shell_ish_manifest(size_t *len);
 const char *dsh_spike_res_plugin_shell_ish_js(size_t *len);
 const char *dsh_spike_res_plugin_open_design_manifest(size_t *len);
 const char *dsh_spike_res_plugin_open_design_js(size_t *len);
-const char *dsh_spike_res_plugin_office_manifest(size_t *len);
-const char *dsh_spike_res_plugin_office_index_js(size_t *len);
-const char *dsh_spike_res_plugin_office_shared_js(size_t *len);
-const char *dsh_spike_res_plugin_office_zip_js(size_t *len);
-const char *dsh_spike_res_plugin_office_fschannel_js(size_t *len);
-const char *dsh_spike_res_plugin_office_word_js(size_t *len);
-const char *dsh_spike_res_plugin_office_excel_core_js(size_t *len);
-const char *dsh_spike_res_plugin_office_excel_js(size_t *len);
-const char *dsh_spike_res_plugin_office_ppt_write_js(size_t *len);
-const char *dsh_spike_res_plugin_office_ppt_create_js(size_t *len);
-const char *dsh_spike_res_plugin_office_ppt_read_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,

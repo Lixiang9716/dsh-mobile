@@ -237,18 +237,10 @@ const sniffImageSize = (bytes) => pngSize(bytes) ?? jpegSize(bytes) ?? gifSize(b
 
 /** Resolve, size, and place one image spec: intrinsic size sniffed from the
  * file head (PNG/JPEG/GIF), aspect-preserving scaling, contain/cover crop. */
-const placeImage = async (deckPath, image, slideIndex, imageIndex) => {
-  log.debug('place image', { slideIndex, imageIndex, path: image.path });
-  const resolved = await resolveOfficePath(image.path, IMAGE_EXTENSIONS, true);
-  const info = await fsStat(resolved.scope, resolved.path);
-  if ((info.size ?? 0) > MAX_IMAGE_BYTES) {
-    throw new Error(`slide ${slideIndex + 1} image ${imageIndex + 1} "${image.path}" is ${info.size} bytes; maximum linked image size is ${MAX_IMAGE_BYTES} bytes`);
-  }
-  const head = await fsRead(resolved.scope, resolved.path);
-  const intrinsic = sniffImageSize(head.bytes.subarray(0, Math.min(head.bytes.byteLength, 1024)));
-  const target = imageLinkTarget(deckPath, resolved.path);
-  const naturalW = intrinsic === undefined ? undefined : intrinsic.width * EMU_PER_PIXEL / EMU_PER_INCH;
-  const naturalH = intrinsic === undefined ? undefined : intrinsic.height * EMU_PER_PIXEL / EMU_PER_INCH;
+/** The display size for one image spec: explicit w/h, or scaled from the
+ * sniffed intrinsic size (one dimension scales by aspect), or an error
+ * demanding explicit inches. `label` names the placement in errors. */
+const resolveDisplaySize = (image, naturalW, naturalH, label) => {
   let w = image.w;
   let h = image.h;
   if ((w === undefined || h === undefined) && naturalW !== undefined && naturalH !== undefined) {
@@ -262,11 +254,28 @@ const placeImage = async (deckPath, image, slideIndex, imageIndex) => {
     }
   }
   if (w === undefined || h === undefined) {
-    throw new Error(`slide ${slideIndex + 1} image ${imageIndex + 1} "${image.path}" is not a recognizable PNG/JPEG/GIF (no intrinsic size); provide explicit w and h in inches`);
+    throw new Error(`${label} is not a recognizable PNG/JPEG/GIF (no intrinsic size); provide explicit w and h in inches`);
   }
   if (w <= 0 || h <= 0) {
-    throw new Error(`slide ${slideIndex + 1} image ${imageIndex + 1} resolves to a non-positive size`);
+    throw new Error(`${label} resolves to a non-positive size`);
   }
+  return { w, h };
+};
+
+const placeImage = async (deckPath, image, slideIndex, imageIndex) => {
+  log.debug('place image', { slideIndex, imageIndex, path: image.path });
+  const resolved = await resolveOfficePath(image.path, IMAGE_EXTENSIONS, true);
+  const info = await fsStat(resolved.scope, resolved.path);
+  const label = `slide ${slideIndex + 1} image ${imageIndex + 1} "${image.path}"`;
+  if ((info.size ?? 0) > MAX_IMAGE_BYTES) {
+    throw new Error(`${label} is ${info.size} bytes; maximum linked image size is ${MAX_IMAGE_BYTES} bytes`);
+  }
+  const head = await fsRead(resolved.scope, resolved.path);
+  const intrinsic = sniffImageSize(head.bytes.subarray(0, Math.min(head.bytes.byteLength, 1024)));
+  const target = imageLinkTarget(deckPath, resolved.path);
+  const naturalW = intrinsic === undefined ? undefined : intrinsic.width * EMU_PER_PIXEL / EMU_PER_INCH;
+  const naturalH = intrinsic === undefined ? undefined : intrinsic.height * EMU_PER_PIXEL / EMU_PER_INCH;
+  const { w, h } = resolveDisplaySize(image, naturalW, naturalH, label);
   const placed = {
     type: 'image',
     xIn: 0,
@@ -296,29 +305,24 @@ const placeImage = async (deckPath, image, slideIndex, imageIndex) => {
   return placed;
 };
 
-/** One slide's shape XML + the layout echo (every placed box, in inches).
- * Shape ids share one counter across the whole slide, z-order = add order. */
-const slideParts = (build) => {
-  const { spec, first } = build;
-  const shapes = [];
-  const elements = [];
-  let id = 2;
+/** The slide's text boxes (title + paragraphs + bullets), drawn with the
+ * shared shape-id counter; returns the y the content ran to. */
+const slideTextParts = (spec, first, shapes, elements, nextId) => {
   const hasTitle = spec.title !== undefined && spec.title.trim() !== '';
   if (first && hasTitle) {
-    const part = textBoxPart(id++, 0.9, 1.2, 11.53, 1.2, 32, [spec.title], true, true);
+    const part = textBoxPart(nextId(), 0.9, 1.2, 11.53, 1.2, 32, [spec.title], true, true);
     shapes.push(part.xml);
     elements.push(part.box);
   } else if (hasTitle) {
-    const part = textBoxPart(id++, 0.9, 0.35, 11.53, 0.9, 26, [spec.title], true, false);
+    const part = textBoxPart(nextId(), 0.9, 0.35, 11.53, 0.9, 26, [spec.title], true, false);
     shapes.push(part.xml);
     elements.push(part.box);
   }
-  const top = first && hasTitle ? 2.7 : hasTitle ? 1.5 : 0.8;
-  let y = top;
+  let y = first && hasTitle ? 2.7 : hasTitle ? 1.5 : 0.8;
   if ((spec.paragraphs?.length ?? 0) > 0) {
     for (const paragraph of spec.paragraphs) {
       if (y > 6.4) break;
-      const part = textBoxPart(id++, 0.9, y, 11.53, 0.7, 18, [paragraph], false, false);
+      const part = textBoxPart(nextId(), 0.9, y, 11.53, 0.7, 18, [paragraph], false, false);
       shapes.push(part.xml);
       elements.push(part.box);
       y += 0.8;
@@ -327,10 +331,20 @@ const slideParts = (build) => {
   }
   if ((spec.bullets?.length ?? 0) > 0) {
     const height = Math.min(4.5, Math.max(1, spec.bullets.length * 0.6));
-    const part = bulletBoxPart(id++, 0.9, y, 11.53, height, spec.bullets);
+    const part = bulletBoxPart(nextId(), 0.9, y, 11.53, height, spec.bullets);
     shapes.push(part.xml);
     elements.push(part.box);
   }
+  return y;
+};
+
+/** One slide's shape XML + the layout echo (every placed box, in inches).
+ * Shape ids share one counter across the whole slide, z-order = add order. */
+const slideParts = (build) => {
+  const shapes = [];
+  const elements = [];
+  let id = 2;
+  const y = slideTextParts(build.spec, build.first, shapes, elements, () => id++);
   placePlacedImages(build, shapes, elements, y, () => id++);
   return { xml: shapes.join(''), elements };
 };
@@ -365,6 +379,27 @@ const placePlacedImages = (build, shapes, elements, y, nextId) => {
   });
 };
 
+/** The deck's fixed skeleton (masters, layouts, notes master, themes,
+ * docProps) ahead of the per-slide parts. */
+const skeletonEntries = (slideCount, notesNumbers, title) => {
+  return [
+    { name: '[Content_Types].xml', text: contentTypesXml(slideCount, notesNumbers) },
+    { name: '_rels/.rels', text: ROOT_RELS_XML },
+    { name: 'ppt/presentation.xml', text: presentationXml(slideCount) },
+    { name: 'ppt/_rels/presentation.xml.rels', text: presentationRelsXml(slideCount) },
+    { name: 'ppt/slideMasters/slideMaster1.xml', text: SLIDE_MASTER_XML },
+    { name: 'ppt/slideMasters/_rels/slideMaster1.xml.rels', text: MASTER_RELS_XML },
+    { name: 'ppt/slideLayouts/slideLayout1.xml', text: SLIDE_LAYOUT_XML },
+    { name: 'ppt/slideLayouts/_rels/slideLayout1.xml.rels', text: LAYOUT_RELS_XML },
+    { name: 'ppt/notesMasters/notesMaster1.xml', text: NOTES_MASTER_XML },
+    { name: 'ppt/notesMasters/_rels/notesMaster1.xml.rels', text: NOTES_MASTER_RELS_XML },
+    { name: 'ppt/theme/theme1.xml', text: THEME_XML },
+    { name: 'ppt/theme/theme2.xml', text: THEME_XML },
+    { name: 'docProps/core.xml', text: corePropsXml(title) },
+    { name: 'docProps/app.xml', text: APP_PROPS_XML },
+  ];
+};
+
 /** The deck package: standard parts + per-slide/notes parts + layout echo. */
 export const buildPptx = async (args, deckPath) => {
   const builds = [];
@@ -386,22 +421,7 @@ export const buildPptx = async (args, deckPath) => {
     .map((build, index) => build.spec.notes !== undefined && build.spec.notes.trim() !== '' ? index + 1 : 0)
     .filter((number) => number > 0);
   const layout = [];
-  const entries = [
-    { name: '[Content_Types].xml', text: contentTypesXml(builds.length, notesNumbers) },
-    { name: '_rels/.rels', text: ROOT_RELS_XML },
-    { name: 'ppt/presentation.xml', text: presentationXml(builds.length) },
-    { name: 'ppt/_rels/presentation.xml.rels', text: presentationRelsXml(builds.length) },
-    { name: 'ppt/slideMasters/slideMaster1.xml', text: SLIDE_MASTER_XML },
-    { name: 'ppt/slideMasters/_rels/slideMaster1.xml.rels', text: MASTER_RELS_XML },
-    { name: 'ppt/slideLayouts/slideLayout1.xml', text: SLIDE_LAYOUT_XML },
-    { name: 'ppt/slideLayouts/_rels/slideLayout1.xml.rels', text: LAYOUT_RELS_XML },
-    { name: 'ppt/notesMasters/notesMaster1.xml', text: NOTES_MASTER_XML },
-    { name: 'ppt/notesMasters/_rels/notesMaster1.xml.rels', text: NOTES_MASTER_RELS_XML },
-    { name: 'ppt/theme/theme1.xml', text: THEME_XML },
-    { name: 'ppt/theme/theme2.xml', text: THEME_XML },
-    { name: 'docProps/core.xml', text: corePropsXml(args.title) },
-    { name: 'docProps/app.xml', text: APP_PROPS_XML },
-  ];
+  const entries = skeletonEntries(builds.length, notesNumbers, args.title);
   builds.forEach((build, index) => {
     const number = index + 1;
     const { xml, elements } = slideParts(build);

@@ -14,7 +14,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word tools
 dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel tools registering","data":[{}]}
 dsh.spike.log: {"level":"info","module":"dsh.office","message":"office tools registered","data":[{"count":8}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
-dsh.spike.log: {"level":"debug","module":"m2.spike","message":"boot phase done","data":[{"root":"/tmp/dsh-spike-smoke.uEaKGl"}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"boot phase done","data":[{"root":"/tmp/dsh-spike-smoke.Hg1C9k"}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"session/created","sessionId":"s-office-0001"}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"agent/created","id":"main","sessionId":"s-office-0001"}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"offered phase begin","data":[{}]}
@@ -177,6 +177,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"office bytes
 dsh.spike.log: {"level":"debug","module":"dsh.office.zip","message":"office zip open","data":[{"bytes":29109}]}
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"office","event":"office.fixture/pptx","slides":2,"width":13.33}]}
 dsh.spike.log: {"level":"debug","module":"m2.spike","message":"negative phase begin","data":[{}]}
+dsh.spike.log: {"level":"debug","module":"m2.spike","message":"raw dispatch (outcome unshaped)","data":[{"name":"word_create"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word_create","data":[{"path":"docs/demo.docx"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.office.fs","message":"resolve office path","data":[{"rawPath":"docs/demo.docx","mustExist":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsStat"}]}

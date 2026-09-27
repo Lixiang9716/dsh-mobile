@@ -104,7 +104,7 @@
       "event": "settings.plugin.inventory",
       "match": {
         "managementAvailable": false,
-        "spineEntries": 17,
+        "spineEntries": 16,
         "clientEntries": 58,
         "presets": 4,
         "presetRows": 0,

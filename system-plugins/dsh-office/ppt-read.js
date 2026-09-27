@@ -154,6 +154,71 @@ const ELEMENT_SCHEMA = {
   },
 };
 
+const PPT_READ_PARAMS = {
+  path: {
+    type: 'string', required: true,
+    description: 'Path to the .pptx file, relative to the session workspace or absolute inside it.',
+  },
+  max_chars: {
+    type: 'integer',
+    description: 'Maximum characters returned across the deck. Defaults to 200000.',
+  },
+};
+
+const PPT_READ_SLIDE_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    index: { type: 'integer', required: true },
+    title: { type: 'string' },
+    paragraphs: { type: 'array', required: true, items: { type: 'string' } },
+    notes: { type: 'array', items: { type: 'string' } },
+    tables: {
+      type: 'array',
+      items: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
+      description: 'Tables as rows of cell texts; present only when the slide has tables.',
+    },
+    imageAlts: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Alt text (descr) of the slide\'s pictures in order; present only when at least one is non-empty.',
+    },
+    imageCount: { type: 'integer', required: true },
+    elements: {
+      type: 'array',
+      items: ELEMENT_SCHEMA,
+      description: 'Every placed shape with its bounding box in inches, in z-order.',
+    },
+  },
+};
+
+const PPT_READ_OUTPUT = {
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      ...FILE_RESULT_SCHEMA.properties,
+      slideCount: { type: 'integer', required: true },
+      slideWidthInches: { type: 'number', required: true },
+      slideHeightInches: { type: 'number', required: true },
+      slides: { type: 'array', required: true, items: PPT_READ_SLIDE_SCHEMA },
+      truncated: { type: 'boolean', required: true },
+    },
+  },
+  render: (_args, value) => [{
+    type: 'text',
+    text: `Canvas ${value.slideWidthInches}x${value.slideHeightInches} in.\n`
+      + value.slides.map((slide) => `Slide ${slide.index}${slide.title !== undefined ? ` — ${slide.title}` : ''} `
+        + `(images: ${slide.imageCount}${slide.imageAlts !== undefined ? `; alts: ${slide.imageAlts.join(' | ')}` : ''}):\n`
+        + slide.paragraphs.map((paragraph) => `- ${paragraph}`).join('\n')
+        + (slide.tables !== undefined ? `\nTables:\n${slide.tables.map((table) => table.map((row) => row.join(' | ')).join('\n')).join('\n\n')}` : '')
+        + (slide.notes !== undefined ? `\nNotes: ${slide.notes.join(' | ')}` : '')
+        + (slide.elements !== undefined && slide.elements.length > 0
+          ? `\n${sketchSlide(value.slideWidthInches, value.slideHeightInches, slide.elements)}` : '')).join('\n\n')
+      + (value.truncated ? '\n[text truncated]' : ''),
+  }],
+};
+
 export const registerPptRead = () => {
   return defineTool({
     name: 'ppt_read',
@@ -164,71 +229,8 @@ export const registerPptRead = () => {
       + 'wireframe sketch of each slide. Table cell text is reported under `tables`, not '
       + 'duplicated into `paragraphs`. Use it to understand, summarize, or re-layout a deck: '
       + 'the element boxes tell you exactly where everything sits on the canvas.',
-    parameters: {
-      path: {
-        type: 'string', required: true,
-        description: 'Path to the .pptx file, relative to the session workspace or absolute inside it.',
-      },
-      max_chars: {
-        type: 'integer',
-        description: 'Maximum characters returned across the deck. Defaults to 200000.',
-      },
-    },
-    output: {
-      schema: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          ...FILE_RESULT_SCHEMA.properties,
-          slideCount: { type: 'integer', required: true },
-          slideWidthInches: { type: 'number', required: true },
-          slideHeightInches: { type: 'number', required: true },
-          slides: {
-            type: 'array',
-            required: true,
-            items: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                index: { type: 'integer', required: true },
-                title: { type: 'string' },
-                paragraphs: { type: 'array', required: true, items: { type: 'string' } },
-                notes: { type: 'array', items: { type: 'string' } },
-                tables: {
-                  type: 'array',
-                  items: { type: 'array', items: { type: 'array', items: { type: 'string' } } },
-                  description: 'Tables as rows of cell texts; present only when the slide has tables.',
-                },
-                imageAlts: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'Alt text (descr) of the slide\'s pictures in order; present only when at least one is non-empty.',
-                },
-                imageCount: { type: 'integer', required: true },
-                elements: {
-                  type: 'array',
-                  items: ELEMENT_SCHEMA,
-                  description: 'Every placed shape with its bounding box in inches, in z-order.',
-                },
-              },
-            },
-          },
-          truncated: { type: 'boolean', required: true },
-        },
-      },
-      render: (_args, value) => [{
-        type: 'text',
-        text: `Canvas ${value.slideWidthInches}x${value.slideHeightInches} in.\n`
-          + value.slides.map((slide) => `Slide ${slide.index}${slide.title !== undefined ? ` — ${slide.title}` : ''} `
-            + `(images: ${slide.imageCount}${slide.imageAlts !== undefined ? `; alts: ${slide.imageAlts.join(' | ')}` : ''}):\n`
-            + slide.paragraphs.map((paragraph) => `- ${paragraph}`).join('\n')
-            + (slide.tables !== undefined ? `\nTables:\n${slide.tables.map((table) => table.map((row) => row.join(' | ')).join('\n')).join('\n\n')}` : '')
-            + (slide.notes !== undefined ? `\nNotes: ${slide.notes.join(' | ')}` : '')
-            + (slide.elements !== undefined && slide.elements.length > 0
-              ? `\n${sketchSlide(value.slideWidthInches, value.slideHeightInches, slide.elements)}` : '')).join('\n\n')
-          + (value.truncated ? '\n[text truncated]' : ''),
-      }],
-    },
+    parameters: PPT_READ_PARAMS,
+    output: PPT_READ_OUTPUT,
     presentCall: (args) => ({
       card: 'generic',
       title: `Read ${args.path}`,
@@ -247,22 +249,10 @@ export const registerPptRead = () => {
       let totalChars = 0;
       let truncated = false;
       for (let index = 0; index < xmls.length; index += 1) {
-        const bounded = readSlideBudget(xmls[index], notes[index], maxChars - totalChars);
-        totalChars += bounded.chars;
-        if (bounded.truncated) truncated = true;
-        const slideXmlText = xmls[index];
-        const slide = {
-          index: index + 1,
-          paragraphs: bounded.paragraphs.filter((paragraph) => paragraph !== ''),
-          imageCount: imageCounts[index] ?? 0,
-          elements: extractElements(slideXmlText),
-        };
-        if (bounded.notes !== undefined) slide.notes = bounded.notes;
-        if (bounded.tablesFit && bounded.tables.length > 0) slide.tables = bounded.tables;
-        if (bounded.tables.length > 0 && !bounded.tablesFit) truncated = true;
-        const alts = extractImageAlts(slideXmlText);
-        if (alts.length > 0) slide.imageAlts = alts;
-        slides.push(slide);
+        const summary = readSlideSummary(xmls[index], notes[index], maxChars - totalChars, imageCounts[index] ?? 0, index);
+        totalChars += summary.chars;
+        truncated = truncated || summary.truncated;
+        slides.push(summary.slide);
       }
       return {
         path: args.path,
@@ -275,6 +265,23 @@ export const registerPptRead = () => {
       };
     },
   });
+};
+
+/** One slide's read: the char-budgeted text plus its content/alt tables,
+ * folded into the result shape (ppt_read's per-slide leg). */
+const readSlideSummary = (slideXmlText, noteText, remainingChars, imageCount, index) => {
+  const bounded = readSlideBudget(slideXmlText, noteText, remainingChars);
+  const slide = {
+    index: index + 1,
+    paragraphs: bounded.paragraphs.filter((paragraph) => paragraph !== ''),
+    imageCount,
+    elements: extractElements(slideXmlText),
+  };
+  if (bounded.notes !== undefined) slide.notes = bounded.notes;
+  if (bounded.tablesFit && bounded.tables.length > 0) slide.tables = bounded.tables;
+  const alts = extractImageAlts(slideXmlText);
+  if (alts.length > 0) slide.imageAlts = alts;
+  return { slide, chars: bounded.chars, truncated: bounded.truncated || (bounded.tables.length > 0 && !bounded.tablesFit) };
 };
 
 /** One slide's text through the character budget: bounded paragraphs, the
