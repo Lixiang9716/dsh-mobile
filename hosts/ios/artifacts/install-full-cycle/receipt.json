@@ -1,0 +1,30 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39",
+  "phase": "M3 on-device fetch-install \u2014 the self-hosted dsh-notes package installs through the REAL gateway httpFetch into the live session, startup-replays two crash-simulated pending receipts, and the session.mock-llm-shaped agent session answers, one-to-one against both manifests (install-from-http + install-carrier-evidence)",
+  "launchConfiguration": "session-mode drive with the install-full-cycle profile (-dsh-mode session -dsh-profile install-full-cycle); NO UI interaction \u2014 the scenario auto-runs once the config-selected page connects and the admitted slot is acked",
+  "tree": "origin/main f41861a249a7 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "install.from-http",
+      "checker": "test/e2e/scenarios/install-from-http.json",
+      "events": 46,
+      "result": "pass"
+    },
+    {
+      "id": "install.carrier-evidence",
+      "checker": "test/e2e/scenarios/install-carrier-evidence.json",
+      "events": 11,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-install-ui.sh",
+  "screens": [
+    "screens/01-config-selected-client.png",
+    "screens/02-fetch-install.png",
+    "screens/03-final-transcript.png"
+  ],
+  "timestamp": "2026-09-28T01:09:08+08:00",
+  "exitCode": 0
+}

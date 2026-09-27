@@ -162,4 +162,4 @@ log "ALL CHECKERS PASS"
 sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-install-ui.sh" \
   "M3 on-device fetch-install — the self-hosted dsh-notes package installs through the REAL gateway httpFetch into the live session, startup-replays two crash-simulated pending receipts, and the session.mock-llm-shaped agent session answers, one-to-one against both manifests (install-from-http + install-carrier-evidence)" \
   "session-mode drive with the install-full-cycle profile (-dsh-mode session -dsh-profile install-full-cycle); NO UI interaction — the scenario auto-runs once the config-selected page connects and the admitted slot is acked" \
-  test/e2e/scenarios/install-from-http.json test/e2e/scenarios/install-carrier-evidence.json
+  install-from-http install-carrier-evidence
