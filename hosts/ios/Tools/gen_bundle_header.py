@@ -159,16 +159,13 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
-    # THIRTEEN scenario files keep NAMED accessors: Swift code reads them
-    # directly (SpikeRuntime / GatewaySession / SessionRuntime / SessionServe
-    # / SessionLiveRuntime / WebBootRuntimeDrive / CarrierRuntime /
-    # AppDelegate), beyond the JS loader's file view the whole-dir scenario
-    # tree row already serves. RESOURCES rows are what emit the
-    # dsh_spike_res_<suffix> symbols Swift links against — the 926c6a7
-    # whole-dir refactor dropped this block while every Swift read site
-    # stayed, so a clean checkout could not build the app (the rows first
-    # re-landed in TREES, whose generic table emits no per-file symbols).
-    # Mapping = the pre-refactor RESOURCES rows, restored verbatim.
+    # THIRTEEN scenario files keep NAMED accessors — RESOURCES rows are what
+    # emit the dsh_spike_res_<suffix> symbols Swift links against (readers:
+    # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
+    # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
+    # the whole-dir scenario tree row already serves the loader's file view.
+    # 926c6a7 dropped this block while every read site stayed, so a clean
+    # checkout could not build; mapping = the pre-refactor rows, restored.
     ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
     ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
