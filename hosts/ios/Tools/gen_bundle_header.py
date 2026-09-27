@@ -182,6 +182,20 @@ RESOURCES = [
     ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
     ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
+    # The spike-root runtime files + upstream adapters Swift stages by name
+    # (SpikeBundleStager / SessionServe / SessionRuntime) — same provenance
+    # as the scenario block above: pre-refactor RESOURCES rows, restored.
+    ("gateway_js", SPIKE / "gateway.js"),
+    ("registry_js", SPIKE / "registry.js"),
+    ("manifest_json", SPIKE / "manifest.json"),
+    ("llm_js", SPIKE / "llm.js"),
+    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
+    ("install_fetch_js", SPIKE / "install-fetch.js"),
+    ("sha256_js", SPIKE / "sha256.js"),
+    ("tar_mini_js", SPIKE / "tar-mini.js"),
+    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
+    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
+    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same

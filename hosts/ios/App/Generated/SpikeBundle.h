@@ -77,6 +77,17 @@ const char *dsh_spike_res_scenario_agent_flow_js(size_t *len);
 const char *dsh_spike_res_scenario_b1_web_live_js(size_t *len);
 const char *dsh_spike_res_scenario_b3_web_live_js(size_t *len);
 const char *dsh_spike_res_scenario_b4_web_live_js(size_t *len);
+const char *dsh_spike_res_gateway_js(size_t *len);
+const char *dsh_spike_res_registry_js(size_t *len);
+const char *dsh_spike_res_manifest_json(size_t *len);
+const char *dsh_spike_res_llm_js(size_t *len);
+const char *dsh_spike_res_install_pipeline_js(size_t *len);
+const char *dsh_spike_res_install_fetch_js(size_t *len);
+const char *dsh_spike_res_sha256_js(size_t *len);
+const char *dsh_spike_res_tar_mini_js(size_t *len);
+const char *dsh_spike_res_upstream_llm_transport_js(size_t *len);
+const char *dsh_spike_res_upstream_tool_present_js(size_t *len);
+const char *dsh_spike_res_upstream_web_write_catalog_js(size_t *len);
 /* The staged tree walker (vendored spine packages + zod closure):
  * fills path/data/len for `index`, returns 0 past the end. */
 int dsh_spike_bundle_tree_file(size_t index, const char **path,
