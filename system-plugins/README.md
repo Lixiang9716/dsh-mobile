@@ -19,6 +19,9 @@ System implementation plugins · contract adaptation (JS, shared across platform
   generate, artifact save/lint) over contract `httpFetch`; offers its three
   tools only when a daemon is configured, the same decline shape the ish
   executor uses without a guest root
+- `dsh-office` → the word/excel/ppt document plane (the dsh-office-tools
+  surface ported onto vendored fflate and the gateway fs primitives):
+  word/excel create/read/update, ppt create/read, always offered
 - platform-specific adaptations (`dsh-fs-ios`, `dsh-notify-ios`,
   `dsh-credentials-ios` …) land here as they are needed
 

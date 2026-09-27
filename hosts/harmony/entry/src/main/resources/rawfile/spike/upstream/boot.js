@@ -202,6 +202,7 @@ export const spineInventory = (ctx) => {
     tool('shell-wasm', 'system-plugins/dsh-shell-wasm', 'shell'),
     tool('shell-ish', 'system-plugins/dsh-shell-ish', 'ish'),
     tool('open-design', 'system-plugins/dsh-open-design', 'open_design_projects'),
+    tool('office', 'system-plugins/dsh-office', 'word_create'),
     service('fs', '@deepseek-ai/dsh-fs-local', 'fs'),
     tool('tool-fs', '@deepseek-ai/dsh-tool-fs', 'read'),
     tool('tool-str-replace-editor', '@deepseek-ai/dsh-tool-str-replace-editor', 'str_replace_editor'),
@@ -344,6 +345,14 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(ShellWasm);
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
+    // The OFFICE row (2026-09-27): the document plane — word/excel/ppt view
+    // + authoring, the dsh-office-tools surface ported onto vendored fflate
+    // and the gateway fs primitives. Dynamic import, not a static one: the
+    // plugin's static graph reaches bare `fflate`, which resolves only once
+    // the bridges shim's BODY has registered it (ESM links static import
+    // graphs before any module body runs — the file-tools-row reason).
+    const Office = await import('system-plugins/dsh-office/index.js');
+    await ctx.plugin(Office);
   await mountFileTools(ctx, identity.cwd);
   // The SKILL row (the agent-flow E2E): mounted after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the

@@ -111,6 +111,16 @@ for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-
         done
 done
 
+# The OFFICE row's zip engine (2026-09-27): npm-bridges re-exports the
+# fflate ESM face behind bare 'fflate' for the dsh-office plugin.
+say "staging vendor/npm/fflate@0.8.2 (esm)"
+mkdir -p "$ASSETS/vendor/npm/fflate@0.8.2/esm"
+(cd "$SPIKE/vendor/npm/fflate@0.8.2/esm" && find . -type f ! -name '*.d.ts') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/fflate@0.8.2/esm/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/fflate@0.8.2/esm/$rel" "$ASSETS/vendor/npm/fflate@0.8.2/esm/$rel"
+    done
+
 say "staging vendor/npm/diff@9.0.0 (libesm)"
 mkdir -p "$ASSETS/vendor/npm/diff@9.0.0/libesm"
 (cd "$SPIKE/vendor/npm/diff@9.0.0/libesm" && find . -type f ! -name '*.d.ts') |
@@ -196,6 +206,16 @@ for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-open-design dsh-subprocess-quic
         cmp -s "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f" ||
             cp "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f"
     done
+done
+# The OFFICE row (2026-09-27): a multi-file plugin — the OOXML engine rides
+# beside the entry, so its whole directory stages (the loop above copies the
+# two-file plugin convention).
+say "staging system-plugins/dsh-office (multi-file)"
+mkdir -p "$ASSETS/system-plugins/dsh-office"
+for f in manifest.json index.js shared.js zip.js fschannel.js word.js \
+         excel-core.js excel.js ppt-write.js ppt-create.js ppt-read.js; do
+    cmp -s "$SPIKE/system-plugins/dsh-office/$f" "$ASSETS/system-plugins/dsh-office/$f" ||
+        cp "$SPIKE/system-plugins/dsh-office/$f" "$ASSETS/system-plugins/dsh-office/$f"
 done
 
 # The self-hosted web clients (presentation/web-client-next on the official
