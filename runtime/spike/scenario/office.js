@@ -72,6 +72,7 @@ const call = async (ctx, name, args) => {
 };
 
 const callRaw = async (ctx, name, args) => {
+  log.debug('raw dispatch (outcome unshaped)', { name });
   const outcome = await ctx.tools.execute({
     name,
     arguments: args,
