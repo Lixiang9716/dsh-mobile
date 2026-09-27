@@ -12,7 +12,7 @@
     "[x] fresh-frame fix in openCreation + three host syncs",
     "[x] harmony leg asserts heartbeat; runner waits game.closed; manifest 24",
     "[x] three host batteries green (24/24) with committed evidence",
-    "docs rows + bug-fix note + gates green + PR"
+    "[x] docs rows + bug-fix note + gates green + PR"
   ],
   "status": "open",
   "receipt": null,
