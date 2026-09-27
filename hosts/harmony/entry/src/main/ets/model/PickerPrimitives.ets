@@ -22,6 +22,8 @@
  */
 import { picker } from '@kit.CoreFileKit';
 import { fileIo as fs } from '@kit.CoreFileKit';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
+import { settleGuarded } from './DevicePlanePrimitives';
 import { common } from '@kit.AbilityKit';
 import { util } from '@kit.ArkTS';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -150,8 +152,13 @@ export class PickerPrimitives {
       return;
     }
     const directory = args.mode === 'directory';
-    if (args.mode !== undefined && !directory && args.mode !== 'file') {
-      reject(callId, settle, 'invalid', 'presentPicker', 'mode must be file|directory');
+    const media = args.mode === 'media';
+    if (args.mode !== undefined && !directory && !media && args.mode !== 'file') {
+      reject(callId, settle, 'invalid', 'presentPicker', 'mode must be file|directory|media');
+      return;
+    }
+    if (media) {
+      this.presentMedia(callId, settle);
       return;
     }
     hilog.info(0x0000, TAG, 'ui-wait picker %{public}s', directory ? 'directory' : 'file');
@@ -178,6 +185,44 @@ export class PickerPrimitives {
       reject(callId, settle, 'unavailable', 'presentPicker',
         err.message ?? 'picker failed');
     });
+  }
+
+  /** presentPicker mode "media" (v1.5.0): the platform media picker. The
+   * grant binds the ONE picked URI (read-through-scope over what the user
+   * picked, never library access) — the same grant shape a file pick
+   * produces, so fsRead works over it unchanged. Dismissal is a value. */
+  private presentMedia(callId: number, settle: SettleFn): void {
+    hilog.info(0x0000, TAG, 'ui-wait picker media');
+    const photoPicker = new photoAccessHelper.PhotoViewPicker();
+    const options: photoAccessHelper.PhotoSelectOptions = {
+      MIMEType: photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE,
+      maxSelectNumber: 1,
+    };
+    // The select promise is guarded like the device-plane primitives: this
+    // image's picker can hang (no gallery service) and a dead promise must
+    // not dead-end the scenario — dismissal (null) is the timeout value.
+    let select: Promise<void>;
+    try {
+      select = photoPicker.select(options).then(
+        (result: photoAccessHelper.PhotoSelectResult): void => {
+        hilog.info(0x0000, TAG, 'ui-done picker media result %{public}d',
+          result.photoUris.length);
+        if (result.photoUris.length === 0) {
+          settle(callId, 'null', true); // user dismissal is a value
+          return;
+        }
+          const uri = result.photoUris[0];
+          const handle = this.grant(uri, 'file');
+          const name = decodeURIComponent(uri.substring(uri.lastIndexOf('/') + 1));
+          settle(callId, '{"scope":"' + handle + '","path":"' + name + '"}', true);
+        });
+    } catch (e) {
+      const be = e as BusinessError;
+      reject(callId, settle, 'unavailable', 'presentPicker',
+        be.message ?? 'media picker failed');
+      return;
+    }
+    settleGuarded(callId, select, settle, 'presentPicker', 'null', 'null', 8000);
   }
 
   // ---- scope registry (grant / persist / resolve) ---------------------------
@@ -235,6 +280,23 @@ export class PickerPrimitives {
     }
     const handle = this.grant(entry.uri, entry.kind);
     settle(callId, '{"scope":"' + handle + '"}', true);
+  }
+
+  // ---- presentShare's scope resolver (v1.5.0) --------------------------------
+
+  /** The shareable URI for a granted user scope + relative path; null when
+   * the handle is ungranted or the path escapes (the scope discipline the
+   * share primitive reuses — outside a granted scope is denied). */
+  resolveForShare(scope: string, rel: string): string | null {
+    const safe = safeRelative(rel);
+    if (safe === null) {
+      return null;
+    }
+    const entry = this.scopes.get(scope);
+    if (entry === undefined) {
+      return null;
+    }
+    return this.targetUri(entry, safe);
   }
 
   // ---- user-scope fs (fsRead / fsWrite on granted scopes) -------------------

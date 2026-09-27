@@ -78,9 +78,7 @@ final class WebBootRuntimeDrive {
             onFailure?("web-boot gateway: manifest.json missing or unparseable")
             return false
         }
-        let fs = FSPrimitives()
-        fs.register(on: core)
-        _ = HTTPPrimitive(core: core)
+        _ = core.registerStandardPrimitives()
         core.settle = { [weak self] callId, ok, json in
             self?.thread.async { self?.settle(callId: Int(callId), ok: ok, json: json) }
         }

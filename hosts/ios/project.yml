@@ -105,6 +105,7 @@ targets:
           - ../../runtime/spike/manifest.json
           - ../../runtime/spike/scenario/boot-verification.js
           - ../../runtime/spike/scenario/gateway-binding.js
+          - ../../runtime/spike/scenario/device-plane.js
           - ../../runtime/spike/scenario/gateway-bridge-smoke.js
           - ../../runtime/spike/scenario/session-mock-llm.js
           - ../../runtime/spike/scenario/carrier-loopback.js

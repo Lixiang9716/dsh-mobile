@@ -3,6 +3,7 @@ package com.dshmobile.spike
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import org.json.JSONObject
@@ -28,9 +29,12 @@ class UiPrimitives(
     companion object {
         const val REQUEST_APPROVAL = 4001
         const val REQUEST_PICKER = 4002
+        const val REQUEST_MEDIA = 4003
     }
 
     private val main = Handler(Looper.getMainLooper())
+
+    private val PICKER_MODES = setOf("file", "directory", "media")
     private val stateLock = Object()
     private var pendingPicker: GatewayCore.Done? = null
 
@@ -81,12 +85,28 @@ class UiPrimitives(
     // ---- presentPicker ----------------------------------------------------------
 
     private fun picker(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
-        val directory = call.string("mode") == "directory"
+        val mode = call.string("mode") ?: "file"
+        if (mode !in PICKER_MODES) {
+            return done.settle(
+                null,
+                GatewayCore.GatewayError(
+                    "invalid", "presentPicker", "mode must be file | directory | media: $mode",
+                ),
+            )
+        }
         main.post {
             GatewayCore.uiMarker("picker", "wait")
-            if (claimPicker(done)) launchPicker(directory)
+            if (claimPicker(done)) launchPicker(mode)
         }
     }
+
+    private fun mediaIntent(): Intent =
+        if (Build.VERSION.SDK_INT >= 33) {
+            Intent(android.provider.MediaStore.ACTION_PICK_IMAGES)
+        } else {
+            // pre-33 fallback: the document browser over images (labeled rows)
+            Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
+        }
 
     /** Claims the single pending-picker slot; settles `invalid` when one is
      * already in flight. */
@@ -105,15 +125,51 @@ class UiPrimitives(
         }
     }
 
-    private fun launchPicker(directory: Boolean) {
+    private fun launchPicker(mode: String) {
+        if (mode == "media") {
+            activity.startActivityForResult(mediaIntent(), REQUEST_MEDIA)
+            return
+        }
         val intent = Intent(
-            if (directory) Intent.ACTION_OPEN_DOCUMENT_TREE
+            if (mode == "directory") Intent.ACTION_OPEN_DOCUMENT_TREE
             else Intent.ACTION_OPEN_DOCUMENT,
         ).addFlags(
             Intent.FLAG_GRANT_READ_URI_PERMISSION or
                 Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
         )
         activity.startActivityForResult(intent, REQUEST_PICKER)
+    }
+
+    /** The v1.5.0 media pick: the picked image is COPIED into the app scope
+     * (profiles/default/media-picks) and granted read-through the app scope
+     * — read-through-scope over WHAT THE USER PICKED, never library access. */
+    fun onMediaResult(resultCode: Int, data: Intent?) {
+        val done = synchronized(stateLock) {
+            val d = pendingPicker
+            pendingPicker = null
+            d
+        } ?: return
+        GatewayCore.uiMarker("picker", "done")
+        val uri = data?.data
+        if (resultCode != Activity.RESULT_OK || uri == null) {
+            return done.settle(null, null) // user dismissal is a value
+        }
+        try {
+            val dir = java.io.File(activity.filesDir, "profiles/default/media-picks").apply { mkdirs() }
+            val name = "media-%s.jpg".format(java.util.UUID.randomUUID().toString().substring(0, 8))
+            activity.contentResolver.openInputStream(uri)?.use { input ->
+                input.copyTo(java.io.File(dir, name).outputStream())
+            } ?: throw IllegalStateException("empty media stream")
+            done.settle(
+                JSONObject().put("scope", "app").put("path", "media-picks/$name"),
+                null,
+            )
+        } catch (e: Exception) {
+            done.settle(
+                null,
+                GatewayCore.GatewayError("io", "presentPicker", "picked media could not be staged: ${e.message}"),
+            )
+        }
     }
 
     /** Activity callback (UI thread): grant or dismiss. */

@@ -1,0 +1,14 @@
+{
+  "host": "harmony",
+  "udid": "127.0.0.1:5555 (dsh_phone emulator)",
+  "runner": "hosts/harmony/ci/run-device-plane.sh",
+  "phase": "harmony.device-plane",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg device.plane (Debug)",
+  "tree": "origin/main 3b58d95a500f (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39",
+  "scenarios": [
+    { "manifest": "harmony-device-plane", "verdict": "verdict-harmony-device-plane.json", "pass": true }
+  ],
+  "screens": ["screens/device-plane-complete.png"],
+  "producedAt": "2026-09-27T01:07:38Z"
+}

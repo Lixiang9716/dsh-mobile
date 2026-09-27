@@ -53,6 +53,8 @@ class SpikeHostM4 private constructor(
         const val SUITE_ENTRY = "scenario/upstream-suite-leg.js"
         const val WHALE_SCENARIO = "android.whale.mount"
         const val WHALE_ENTRY = "scenario/session-mock-llm.js"
+        const val DEVICE_PLANE_SCENARIO = "android.device-plane"
+        const val DEVICE_PLANE_ENTRY = "scenario/device-plane.js"
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -98,6 +100,26 @@ class SpikeHostM4 private constructor(
                 scenarioId = LLM_SCENARIO,
                 entryPath = LLM_ENTRY,
                 captureLabel = "llm-live-stream",
+            )
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The v1.5.0 device-plane drive (scenario `android.device-plane`):
+         * the six SDK primitives + the media picker, driven marker-by-marker
+         * from the runner. */
+        fun startDevicePlane(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = DEVICE_PLANE_SCENARIO,
+                entryPath = DEVICE_PLANE_ENTRY,
+                captureLabel = "device-plane",
             )
             host.pump.attach(webView)
             instance = host
@@ -199,6 +221,8 @@ class SpikeHostM4 private constructor(
     val notify = NotifyPrimitive(activity)
     val timer = TimerPrimitive()
     private val ui = UiPrimitives(activity, fs)
+    private val device = DevicePlanePrimitives(activity, fs)
+    private val clipboard = ClipboardPrimitives(activity)
 
     private var handle: Long = 0
 
@@ -302,6 +326,8 @@ class SpikeHostM4 private constructor(
         keychain.register(core)
         notify.register(core)
         ui.register(core)
+        device.register(core)
+        clipboard.register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -393,6 +419,8 @@ class SpikeHostM4 private constructor(
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == UiPrimitives.REQUEST_PICKER) ui.onPickerResult(resultCode, data)
+        if (requestCode == UiPrimitives.REQUEST_MEDIA) ui.onMediaResult(resultCode, data)
+        if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
     }
 
     // ---- settling ---------------------------------------------------------------

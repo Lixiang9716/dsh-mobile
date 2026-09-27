@@ -58,7 +58,8 @@ const char *DSH_SMOKE_DESCRIPTOR =
 const char *DSH_BINDING_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
     "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
-    "\"keychainSet\"],\"unavailable\":[]}";
+    "\"keychainSet\",\"deviceInfo\",\"haptic\",\"clipboardRead\","
+    "\"clipboardWrite\",\"presentShare\",\"keepAwake\"],\"unavailable\":[]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
 
@@ -336,7 +337,10 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
          * app-scope fs stays C-served below. */
         if (strcmp(name, "notify") == 0 || strcmp(name, "presentApproval") == 0 ||
             strcmp(name, "presentPicker") == 0 || strcmp(name, "keychainGet") == 0 ||
-            strcmp(name, "keychainSet") == 0 || strcmp(name, "httpFetch") == 0) {
+            strcmp(name, "keychainSet") == 0 || strcmp(name, "httpFetch") == 0 ||
+            strcmp(name, "deviceInfo") == 0 || strcmp(name, "haptic") == 0 ||
+            strcmp(name, "clipboardRead") == 0 || strcmp(name, "clipboardWrite") == 0 ||
+            strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0) {
             b->forward_fn(b->forward_ud, call_id, name, args);
             return;
         }

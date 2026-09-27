@@ -1,0 +1,15 @@
+{
+  "host": "android",
+  "udid": "emulator-5554",
+  "runner": "hosts/android/ci/run-device-plane.sh",
+  "phase": "android.device-plane",
+  "launch": "emulator, --ez dsh.deviceplane true (Debug)",
+  "tree": "origin/main 3b58d95a500f (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39",
+  "scenarios": [
+    { "manifest": "android-device-plane", "verdict": "verdict-android-device-plane.json", "pass": true },
+    { "manifest": "android-device-plane-audit", "verdict": "verdict-android-device-plane-audit.json", "pass": true }
+  ],
+  "screens": ["screens/01-clipboard-approve.png", "screens/02-share.png", "screens/03-picker-media.png", "screens/04-final.png"],
+  "producedAt": "2026-09-27T01:01:46Z"
+}

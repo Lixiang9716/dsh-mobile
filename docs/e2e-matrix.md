@@ -6,6 +6,17 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the device-plane change (2026-09-27):
+> the v1.5.0 platform-SDK surface is live on all three mobile hosts — one
+> platform-neutral scenario `device.plane` driven per host (descriptor 22
+> iOS / 23 Android / 15 HarmonyOS, clipboard approval ladder, share sheets,
+> keepAwake latch, media picker), with receipts in
+> `hosts/{ios,android,harmony}/artifacts/device-plane/` and the Android
+> capture rewritten to a deterministic logcat-snapshot design after the
+> streamer+canary design lost to three separate race classes (see the
+> implemented note). Totals below re-run against this tree (54 dirs / 113
+> verdicts).
+>
 > **Currency**: this matrix reflects the models-page e2e change
 > (2026-09-25): the official client's models 设置页 has its own CLI proof —
 > scenario `models.directory` 6/6, dir

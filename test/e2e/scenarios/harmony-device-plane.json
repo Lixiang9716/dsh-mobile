@@ -1,0 +1,92 @@
+{
+  "scenario": "device.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 15,
+        "unavailable": 0,
+        "devicePlane": 6
+      }
+    },
+    {
+      "event": "device.info",
+      "match": {
+        "platform": "harmonyos",
+        "screen": true,
+        "locale": true,
+        "timezone": true
+      }
+    },
+    {
+      "event": "haptic.series",
+      "match": {
+        "patterns": 9
+      }
+    },
+    {
+      "event": "clipboard.written",
+      "match": {
+        "length": 0,
+        "unavailable": true
+      }
+    },
+    {
+      "event": "clipboard.ladder",
+      "match": {
+        "approvals": 3
+      }
+    },
+    {
+      "event": "share.files.completed",
+      "match": {
+        "shared": false
+      }
+    },
+    {
+      "event": "share.text.completed",
+      "match": {
+        "shared": false
+      }
+    },
+    {
+      "event": "share.denied",
+      "match": {
+        "code": "denied"
+      }
+    },
+    {
+      "event": "keepawake.hold",
+      "match": {
+        "hold": true
+      }
+    },
+    {
+      "event": "keepawake.release",
+      "match": {
+        "hold": false
+      }
+    },
+    {
+      "event": "picker.media.cancelled",
+      "match": {
+        "mode": "media"
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

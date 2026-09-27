@@ -31,6 +31,7 @@ RESOURCES = [
     ("manifest_json", SPIKE / "manifest.json"),
     ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
     ("scenario_m2_smoke_js", SPIKE / "scenario" / "gateway-bridge-smoke.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
@@ -72,6 +73,10 @@ RESOURCES = [
      REPO / "system-plugins" / "dsh-subprocess-quickjs" / "index.js"),
     ("plugin_ui_manifest", REPO / "system-plugins" / "dsh-ui" / "manifest.json"),
     ("plugin_ui_js", REPO / "system-plugins" / "dsh-ui" / "index.js"),
+    ("plugin_device_plane_manifest",
+     REPO / "system-plugins" / "dsh-device-plane" / "manifest.json"),
+    ("plugin_device_plane_js",
+     REPO / "system-plugins" / "dsh-device-plane" / "index.js"),
     # the dsh-notes fixture (M3 install pipeline: builder + plugin source data)
     ("fixture_notes_js", SPIKE / "fixtures" / "dsh-notes.js"),
     ("fixture_notes_source_js", SPIKE / "fixtures" / "dsh-notes-source.js"),

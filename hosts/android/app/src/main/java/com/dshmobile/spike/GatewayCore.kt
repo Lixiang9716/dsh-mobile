@@ -27,6 +27,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "presentApproval", "presentPicker", "keychainGet", "keychainSet",
             "fsStat", "fsList", "fsMkdir", "fsRemove", "fsRename",
             "wasmRun", "timerSchedule", "timerCancel",
+            "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
+            "presentShare", "keepAwake",
         )
         const val AUDIT_PREFIX = "dsh.gateway.audit: "
         private const val AUDIT_TAG = "dsh.spike.audit"
@@ -67,8 +69,21 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
     /** The caller identity + its required capability strings. */
     class GatewayManifest(val id: String, val required: List<String>) {
         /** `<name>` or `<name>@<major>` grammar (contract §6). */
-        fun grants(primitive: String): Boolean =
-            required.any { it == primitive || it.startsWith("$primitive@") }
+        /** v1.5.0: one flag may gate two primitives — `clipboard` gates both
+         * clipboard rows (contract/primitives.md §2, v1.5.0 additions). */
+        private val familyFlags = mapOf(
+            "clipboardRead" to "clipboard",
+            "clipboardWrite" to "clipboard",
+            "presentShare" to "share",
+            "keepAwake" to "screen",
+        )
+
+        fun grants(primitive: String): Boolean {
+            val names = listOfNotNull(primitive, familyFlags[primitive])
+            return required.any { grant ->
+                names.any { it == grant || grant.startsWith("$it@") }
+            }
+        }
     }
 
     /** One settled primitive call; args is the bridge's parsed JSON object. */
@@ -157,6 +172,10 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
      * The audit line rides the `dsh.gateway.audit:` E2E stream — debug-only
      * by construction, so a release build emits none. */
     private fun audit(primitive: String, verdict: String, outcome: String) {
+        audit(primitive, verdict, outcome, pendingDetail.getAndSet(null))
+    }
+
+    private fun audit(primitive: String, verdict: String, outcome: String, detail: JSONObject?) {
         if (BuildFlavor.isRelease) return
         val record = JSONObject()
             .put("ts", java.time.Instant.now().toString())
@@ -164,6 +183,19 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             .put("caller", manifest.id)
             .put("verdict", verdict)
             .put("outcome", outcome)
+        if (detail != null) record.put("detail", detail)
         Log.i(AUDIT_TAG, AUDIT_PREFIX + record)
     }
+
+    /** The v1.5.0 audit-detail seam: a handler stages the closed-vocabulary
+     * facts the §6 table names for the device plane (pattern / hold / share
+     * kind / clipboard kind + length — still never payload contents) and the
+     * Done wrapper folds them into the call's ONE audit line. Handlers must
+     * stage before settling; the runtime's serial dispatch keeps slots from
+     * interleaving in practice. */
+    fun stageAuditDetail(detail: JSONObject?) {
+        pendingDetail.set(detail)
+    }
+
+    private val pendingDetail = java.util.concurrent.atomic.AtomicReference<JSONObject?>(null)
 }

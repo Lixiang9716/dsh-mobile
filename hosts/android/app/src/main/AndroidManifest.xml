@@ -6,6 +6,8 @@
          (the spike's transport never leaves the device). -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- The v1.5.0 haptic primitive maps onto the platform vibrator. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:label="DSH Spike Host"
@@ -22,6 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- presentShare's content:// staging: serves ONLY the files the
+             share primitive already resolved through the fs scope
+             discipline, read-only, per-call (ShareFilesProvider.clear on
+             completion). grantUriPermissions lets the share target read it. -->
+        <provider
+            android:name=".ShareFilesProvider"
+            android:authorities="com.dshmobile.spike.share"
+            android:exported="false"
+            android:grantUriPermissions="true" />
     </application>
 
 </manifest>

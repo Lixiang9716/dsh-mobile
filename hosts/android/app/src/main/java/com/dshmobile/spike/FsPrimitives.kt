@@ -68,6 +68,11 @@ class FsPrimitives(private val context: Context) {
         return handle
     }
 
+    /** The SAF tree behind a user scope handle — for primitives that hand
+     * the GRANTED SUBTREE to a host subsystem (presentShare's content://
+     * staging). null when the handle is unknown/ungranted. */
+    fun userScopeTree(scope: String): Uri? = synchronized(lock) { userScopes[scope] }
+
     // ---- handlers ------------------------------------------------------------
 
     private fun read(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {

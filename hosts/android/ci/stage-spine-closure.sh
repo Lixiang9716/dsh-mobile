@@ -161,6 +161,11 @@ for f in gateway.js logger.js registry.js; do
     cmp -s "$SPIKE/$f" "$ASSETS/$f" || cp "$SPIKE/$f" "$ASSETS/$f"
 done
 
+# The caller manifest (id dsh.spike.scenario) is the gateway's permission
+# record: a stale copy silently denies primitives the canonical manifest
+# grants, so it rides the same byte-identity sync as the runtime files.
+cmp -s "$SPIKE/manifest.json" "$ASSETS/manifest.json" || cp "$SPIKE/manifest.json" "$ASSETS/manifest.json"
+
 # The system-plugins the boot's static graph imports (the two shell tools;
 # the three older plugins are committed in assets directly and refreshed
 # here too — byte-identical to runtime/spike, the single source).
@@ -185,7 +190,7 @@ done
 say "staged the test closure ($(ls "$ASSETS/vendor/dsh" | wc -l | tr -d ' ') packages total)"
 
 say "staging system-plugins"
-for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-open-design dsh-subprocess-quickjs dsh-ui; do
+for p in dsh-fs dsh-shell-wasm dsh-shell-ish dsh-open-design dsh-subprocess-quickjs dsh-ui dsh-device-plane; do
     mkdir -p "$ASSETS/system-plugins/$p"
     for f in manifest.json index.js; do
         cmp -s "$SPIKE/system-plugins/$p/$f" "$ASSETS/system-plugins/$p/$f" ||

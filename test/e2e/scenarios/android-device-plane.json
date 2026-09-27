@@ -1,0 +1,105 @@
+{
+  "scenario": "device.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 23,
+        "unavailable": 0,
+        "devicePlane": 6
+      }
+    },
+    {
+      "event": "device.info",
+      "match": {
+        "platform": "android",
+        "screen": true,
+        "locale": true,
+        "timezone": true
+      }
+    },
+    {
+      "event": "haptic.series",
+      "match": {
+        "patterns": 9,
+        "unavailable": 0
+      }
+    },
+    {
+      "event": "clipboard.written",
+      "match": {
+        "length": 19,
+        "unavailable": false
+      }
+    },
+    {
+      "event": "clipboard.read",
+      "match": {
+        "match": true
+      }
+    },
+    {
+      "event": "clipboard.remember",
+      "match": {
+        "match": true
+      }
+    },
+    {
+      "event": "clipboard.standing",
+      "match": {
+        "match": true
+      }
+    },
+    {
+      "event": "share.files.completed",
+      "match": {
+        "shared": false
+      }
+    },
+    {
+      "event": "share.text.completed",
+      "match": {
+        "shared": false
+      }
+    },
+    {
+      "event": "share.denied",
+      "match": {
+        "code": "denied"
+      }
+    },
+    {
+      "event": "keepawake.hold",
+      "match": {
+        "hold": true
+      }
+    },
+    {
+      "event": "keepawake.release",
+      "match": {
+        "hold": false
+      }
+    },
+    {
+      "event": "picker.media.cancelled",
+      "match": {
+        "mode": "media"
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

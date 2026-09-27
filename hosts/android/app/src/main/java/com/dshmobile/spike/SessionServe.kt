@@ -158,8 +158,11 @@ class SessionServe private constructor(
      * composer's attachment flow presents the SAF picker). */
     fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
         if (requestCode == UiPrimitives.REQUEST_PICKER) ui.onPickerResult(resultCode, data)
+        if (requestCode == UiPrimitives.REQUEST_MEDIA) ui.onMediaResult(resultCode, data)
+        if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
     }
 
+    private lateinit var device: DevicePlanePrimitives
     private var handle: Long = 0
     private var token = ""
     private var webView: WebView? = null
@@ -244,6 +247,8 @@ class SessionServe private constructor(
         NotifyPrimitive(activity).register(core)
         ui = UiPrimitives(activity, fs)
         ui.register(core)
+        DevicePlanePrimitives(activity, fs).register(core)
+        ClipboardPrimitives(activity).register(core)
         TimerPrimitive().register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {

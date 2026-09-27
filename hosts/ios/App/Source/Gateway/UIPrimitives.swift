@@ -1,4 +1,5 @@
 import UIKit
+import PhotosUI
 import UniformTypeIdentifiers
 
 /// The native UI primitives (contract/primitives.md §4). presentApproval is
@@ -7,14 +8,19 @@ import UniformTypeIdentifiers
 /// FILE pick grants a scope over the parent directory with path =
 /// lastPathComponent, a DIRECTORY pick grants the directory itself with
 /// path null, and dismissal resolves null granting nothing (user dismissal
-/// is a value, never an error). Every automatable surface prints the
-/// frozen ui-wait/ui-done stdout markers for the E2E driver.
-final class UIPrimitives: NSObject, UIDocumentPickerDelegate {
+/// is a value, never an error). v1.5.0 adds mode "media": a
+/// PHPickerViewController whose pick is copied into the app's own media
+/// directory and granted the same way a file pick is (read-through-scope
+/// over WHAT THE USER PICKED, never library access). Every automatable
+/// surface prints the frozen ui-wait/ui-done stdout markers for the E2E
+/// driver.
+final class UIPrimitives: NSObject, UIDocumentPickerDelegate, PHPickerViewControllerDelegate {
     private weak var core: GatewayCore?
     private let fs: FSPrimitives
     private let stateLock = NSLock()
     private var pendingPicker: GatewayDone?
     private var pickerMode = "file"
+    private var mediaDir: URL?
 
     init(core: GatewayCore, fs: FSPrimitives) {
         self.core = core
@@ -73,7 +79,12 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate {
     // ---- presentPicker ---------------------------------------------------------
 
     private func picker(_ call: GatewayCall, _ done: @escaping GatewayDone) {
-        let mode = call.string("mode") == "directory" ? "directory" : "file"
+        let raw = call.string("mode") ?? "file"
+        guard ["file", "directory", "media"].contains(raw) else {
+            return done(.failure(GatewayError(
+                code: "invalid", primitive: "presentPicker",
+                message: "mode must be file | directory | media: \(raw)")))
+        }
         DispatchQueue.main.async { [weak self] in
             GatewayCore.uiMarker("picker", "wait")
             guard let self, let root = self.rootViewController() else {
@@ -86,8 +97,12 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate {
                     code: "invalid", primitive: "presentPicker",
                     message: "picker already pending")))
             }
-            self.putPendingPicker(done, mode: mode)
-            self.presentDocumentPicker(root: root, directory: mode == "directory")
+            self.putPendingPicker(done, mode: raw)
+            if raw == "media" {
+                self.presentMediaPicker(root: root)
+            } else {
+                self.presentDocumentPicker(root: root, directory: raw == "directory")
+            }
         }
     }
 
@@ -118,6 +133,69 @@ final class UIPrimitives: NSObject, UIDocumentPickerDelegate {
         guard let done = popPendingPicker() else { return }
         GatewayCore.uiMarker("picker", "done")
         done(.success(NSNull())) // user dismissal is a value, not an error
+    }
+
+    // ---- presentPicker mode "media" (v1.5.0) ---------------------------------
+
+    private func presentMediaPicker(root: UIViewController) {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        root.present(picker, animated: true)
+    }
+
+    /// The picked image is COPIED into the app's own media directory and
+    /// granted exactly like a file pick: scope over the parent directory,
+    /// path = the copy's name. The system library is never reachable.
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        guard let done = popPendingPicker() else { return }
+        GatewayCore.uiMarker("picker", "done")
+        guard let provider = results.first?.itemProvider,
+              provider.hasItemConformingToTypeIdentifier(UTType.image.identifier)
+        else {
+            done(.success(NSNull())) // dismissal or a non-image pick is a value
+            return
+        }
+        let dir = mediaDirectory()
+        provider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) {
+            url, _ in
+            guard let url, let data = try? Data(contentsOf: url), let dir else {
+                return done(.failure(GatewayError(
+                    code: "io", primitive: "presentPicker",
+                    message: "picked media could not be read")))
+            }
+            let ext = url.pathExtension.isEmpty ? "jpg" : url.pathExtension
+            let name = "media-\(UUID().uuidString.prefix(8)).\(ext)"
+            let target = dir.appendingPathComponent(name)
+            do {
+                try data.write(to: target)
+            } catch {
+                return done(.failure(GatewayError(
+                    code: "io", primitive: "presentPicker",
+                    message: "picked media could not be staged: \(error)")))
+            }
+            self.grantAndSettle(done, dir: dir, name: name)
+        }
+    }
+
+    /// Runs on the file-representation callback queue: grant the parent-dir
+    /// scope (the file-picker convention) and settle {scope, path}.
+    private func grantAndSettle(_ done: @escaping GatewayDone, dir: URL, name: String) {
+        let result = ["scope": fs.grantUserScope(dir), "path": name]
+        done(.success(result))
+    }
+
+    /// The staging directory for picked media: <Documents>/media.
+    private func mediaDirectory() -> URL? {
+        if let mediaDir { return mediaDir }
+        let documents = FileManager.default.urls(
+            for: .documentDirectory, in: .userDomainMask)[0]
+        let dir = documents.appendingPathComponent("media", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        mediaDir = dir
+        return dir
     }
 
     // ---- plumbing --------------------------------------------------------------

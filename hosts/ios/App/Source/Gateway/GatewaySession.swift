@@ -10,8 +10,23 @@ import UIKit
 /// the UI choreography takes time). JS runs ONLY on the runtime thread;
 /// primitive handlers run off it; nothing blocks (ARCHITECTURE.md §6).
 final class GatewaySession {
-    static let entryModule = "scenario/gateway-binding.js"
+    static let defaultEntry = "scenario/gateway-binding.js"
     static let watchdogSeconds = 180
+
+    /// The entry module + its embedded source (a generated
+    /// dsh_spike_res_* accessor). Defaults keep the m2 gateway-binding drive.
+    private let entryModule: String
+    private let sourceProvider: () -> String
+
+    init(
+        entryModule: String = GatewaySession.defaultEntry,
+        sourceProvider: @escaping () -> String = {
+            String(cString: dsh_spike_res_scenario_m2_js(nil))
+        }
+    ) {
+        self.entryModule = entryModule
+        self.sourceProvider = sourceProvider
+    }
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.gateway")
     private let server = CarrierServer()
@@ -78,8 +93,7 @@ final class GatewaySession {
                 callId: Int(callId), name: String(cString: name),
                 argsJSON: String(cString: argsJSON))
         }, Unmanaged.passUnretained(self).toOpaque())
-        let source = String(cString: dsh_spike_res_scenario_m2_js(nil))
-        if dsh_spike_eval(host, Self.entryModule, source) != 0 {
+        if dsh_spike_eval(host, entryModule, sourceProvider()) != 0 {
             return finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
         }
         if dsh_spike_pump(host) != 0 {
@@ -90,19 +104,12 @@ final class GatewaySession {
         armWatchdog()
     }
 
-    /// Wires the nine handlers and the runtime-queue hops. All primitive
-    /// instances stay alive through the registered closures; only the notify
-    /// primitive needs a stored strong ref (the center's delegate is weak).
+    /// Wires the full serving table and the runtime-queue hops. All primitive
+    /// instances stay alive through the registered closures; the notify
+    /// primitive needs a stored ref (the center's delegate is weak).
     private func wireCore() {
         guard let core else { return }
-        let fs = FSPrimitives()
-        fs.register(on: core)
-        // Kept alive through the registered closures; only the notify
-        // primitive needs a stored ref (the center's delegate is weak).
-        _ = HTTPPrimitive(core: core)
-        _ = KeychainPrimitives(core: core)
-        UIPrimitives(core: core, fs: fs)
-        notifyPrimitive = NotifyPrimitive(core: core)
+        notifyPrimitive = core.registerStandardPrimitives()
         core.settle = { [weak self] callId, ok, json in
             self?.runtimeThread.async { self?.settle(callId: callId, ok: ok, json: json) }
         }
@@ -272,8 +279,8 @@ final class GatewaySession {
         try notes.write(to: dir.appendingPathComponent("notes.txt"))
     }
 
-    /// RuntimeDescriptor pre-eval: all nine available, zero unavailable —
-    /// the iOS Keychain IS available (conformance §7, contract §1).
+    /// RuntimeDescriptor pre-eval: the full serving table available, zero
+    /// unavailable — the honest declaration (conformance §7, contract §1).
     private static let descriptorJSON: String = {
         GatewayCore.jsonLine([
             "available": GatewayCore.primitives,

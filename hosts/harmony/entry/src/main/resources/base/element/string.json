@@ -15,6 +15,14 @@
     {
       "name": "internet_reason",
       "value": "Loopback carrier serves the Web Client and pumps the session channel."
+    },
+    {
+      "name": "vibrate_reason",
+      "value": "The haptic primitive maps one tactile cue per call onto the vibrator."
+    },
+    {
+      "name": "pasteboard_reason",
+      "value": "The approval-gated clipboard read needs the pasteboard permission."
     }
   ]
 }
