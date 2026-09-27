@@ -50,6 +50,11 @@ object MockLlmRoute {
      * tool calls would loop forever (the iOS seat's one-shot latch). */
     @Volatile private var createScriptDone = false
 
+    /** The GAME leg's one-shot latch (gameStream) — same posture, one per
+     * scripted create turn, so the whale and game legs compose in one
+     * launch. */
+    @Volatile private var gameScriptDone = false
+
     /** Arm the parity script (the upstream-parity drive does; every other
      * drive keeps the unconditional success stream). */
     fun enableParityScript() {
@@ -72,6 +77,17 @@ object MockLlmRoute {
             return
         }
         val bodyText = String(request.body, Charsets.UTF_8)
+        if (bodyText.contains("GAME_TURN")) {
+            if (gameScriptDone) {
+                CarrierHTTP.respond(
+                    out, 200, SSE_TYPE, successStream().toByteArray(Charsets.UTF_8))
+                return
+            }
+            gameScriptDone = true
+            CarrierHTTP.respond(
+                out, 200, SSE_TYPE, gameStream().toByteArray(Charsets.UTF_8))
+            return
+        }
         if (bodyText.contains("CREATE_TURN")) {
             if (createScriptDone) {
                 CarrierHTTP.respond(
@@ -166,6 +182,87 @@ object MockLlmRoute {
             "#w{font-size:120px;position:absolute;top:38%;left:-140px;" +
             "animation:swim 8s linear infinite}" +
             "</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>"
+
+    /** The GAME script's assistant message: the same TWO tool-call shape as
+     * the whale (distinct wire indices), creating the canvas-game
+     * deliverable the game leg drives. The write arguments are
+     * JSON-serialized rather than hand-escaped — the game HTML carries
+     * quotes and newlines. */
+    private fun gameStream(): String {
+        val gamePath = "$workspaceRoot/creations/dsh-game.html"
+        val writeArgs = JSONObject()
+            .put("file_path", gamePath)
+            .put("content", gameHtml())
+            .toString()
+        val file = JSONObject().put("path", "creations/dsh-game.html")
+            .put("description", "弹球小游戏 — 点按全屏查看")
+        val presentArgs = JSONObject()
+            .put("files", JSONArray().put(file))
+            .toString()
+        val write = toolCallAt(0, "call-write-game",
+            callFunction("write", writeArgs))
+        val present = toolCallAt(1, "call-present-game",
+            callFunction("present", presentArgs))
+        val delta = JSONObject()
+            .put("tool_calls", JSONArray().put(write).put(present))
+        val both = choices(choice(delta, JSONObject.NULL))
+        val terminal = choices(choice(JSONObject().put("content", ""), "stop"))
+            .put("usage", JSONObject().put("prompt_tokens", 3).put("completion_tokens", 12))
+        return sse(both) + sse(terminal) + "data: [DONE]\n\n"
+    }
+
+    /** The game fixture the scripted model "writes": a dependency-free
+     * canvas game. The heartbeat line posts frame/beat counters to the
+     * PARENT — the viewer's iframe is sandbox="allow-scripts" with no
+     * allow-same-origin, so the drive cannot read inside it; the heartbeat
+     * is the game leg's canary twin (fixture evidence, not product code),
+     * counted by the probe-side listener (NextWebProbe installGameListener). */
+    private fun gameHtml(): String = """
+        <!doctype html><html><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>弹球小游戏</title>
+        <style>html,body{margin:0;height:100%;background:#0b1020;overflow:hidden}
+        canvas{display:block;width:100vw;height:98vh;touch-action:none}</style>
+        </head><body>
+        <canvas id="g"></canvas>
+        <script>
+        /* DSH-GAME-CANARY */
+        window.__game = { frames: 0, beats: 0 };
+        const cv = document.getElementById('g'), cx = cv.getContext('2d');
+        let W, H; const fit = () => { W = cv.width = innerWidth; H = cv.height = innerHeight; };
+        fit(); addEventListener('resize', fit);
+        const ball = { x: 80, y: 80, vx: 2.6, vy: 2.0, r: 10 };
+        const pad = { w: 92, h: 10, x: 20, y: 0 };
+        const move = (e) => { const px = (e.touches ? e.touches[0].clientX : e.clientX);
+          pad.x = Math.max(0, Math.min(W - pad.w, px - pad.w / 2)); };
+        addEventListener('pointermove', move); addEventListener('pointerdown', move);
+        const beat = () => { window.__game.beats++;
+          try { parent.postMessage({ __dshGame: 1, frames: window.__game.frames,
+            beats: window.__game.beats }, '*'); } catch (e) {} };
+        setInterval(beat, 50);
+        const step = () => {
+          window.__game.frames++;
+          ball.x += ball.vx; ball.y += ball.vy;
+          if (ball.x < ball.r || ball.x > W - ball.r) { ball.vx = -ball.vx;
+            ball.x = Math.max(ball.r, Math.min(W - ball.r, ball.x)); }
+          if (ball.y < ball.r) ball.vy = Math.abs(ball.vy);
+          pad.y = H - 26;
+          if (ball.y > pad.y - ball.r && ball.y < pad.y + pad.h &&
+              ball.x > pad.x - ball.r && ball.x < pad.x + pad.w + ball.r) {
+            ball.vy = -Math.abs(ball.vy); }
+          if (ball.y > H + ball.r) { ball.y = H / 3; ball.x = W / 3;
+            ball.vy = -Math.abs(ball.vy); }
+          cx.fillStyle = '#0b1020'; cx.fillRect(0, 0, W, H);
+          cx.fillStyle = '#7fd1ff'; cx.beginPath();
+          cx.arc(ball.x, ball.y, ball.r, 0, 6.3); cx.fill();
+          cx.fillStyle = '#e8f1ff'; cx.fillRect(pad.x, pad.y, pad.w, pad.h);
+          cx.fillStyle = '#5a6b8c'; cx.font = '14px sans-serif';
+          cx.fillText('弹球 — 拖动挡板', 12, 22);
+          requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+        </script></body></html>
+        """.trimIndent()
 
     /** The vendored mock's `tool_call_success` behavior, wire-for-wire: the
      * tool-call identity on the first delta, the arguments split at the

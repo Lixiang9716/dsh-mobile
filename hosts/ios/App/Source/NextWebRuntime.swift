@@ -21,11 +21,15 @@ final class NextWebRuntime {
     static let watchdogSeconds = 180
     static let pollSeconds = 60
     static let createMessageText = "CREATE_TURN 请创建一只游动的蓝色鲸鱼"
+    /// The GAME leg's prompt — the scripted model's second create turn (the
+    /// mock LLM scripts it as write + present of the canvas game).
+    static let gameMessageText = "GAME_TURN 请做一个Canvas弹球小游戏"
+    static let gameCardTitle = "弹球小游戏 — 点按全屏查看"
 
     /// interactive: the CREATION row (the present tool) rides the same
     /// user-facing flag — this drive IS the creation-mode seat.
     private let serve = SessionServe(interactive: true)
-    private let eventLog = CarrierEventLog(scenario: NextWebRuntime.scenario)
+    let eventLog = CarrierEventLog(scenario: NextWebRuntime.scenario)
     private weak var webView: WKWebView?
     private var completion: ((SpikeOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
@@ -153,7 +157,7 @@ final class NextWebRuntime {
     /// Evaluates `expression` every `intervalSeconds` until its parsed JSON
     /// satisfies `until`, then hands the last parse to `collect`. All timing
     /// is Swift-side; the page only answers stateless one-shot legs.
-    private func pollPage(
+    func pollPage(
         _ expression: String,
         intervalSeconds: Double = 0.4,
         until: @escaping ([String: Any]) -> Bool,
@@ -176,7 +180,7 @@ final class NextWebRuntime {
                 guard let probe = SessionWriteProbe.parse(result) else {
                     return self.schedule(tick)
                 }
-                lastAnswer = String(describing: probe).prefix(400).description
+                lastAnswer = String(describing: probe).prefix(900).description
                 if until(probe) {
                     collect(probe)
                 } else {
@@ -370,9 +374,7 @@ final class NextWebRuntime {
                 self.eventLog.emit("creation.opened", [
                     "srcdocContains": "BLUE-WHALE-CANARY",
                 ])
-                self.finish(SpikeOutcome(
-                    completed: true, passed: true, error: "",
-                    canonicalLines: self.eventLog.lines))
+                self.closeCreation()
         })
     }
 
@@ -399,7 +401,7 @@ final class NextWebRuntime {
         )
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    func finish(_ outcome: SpikeOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()

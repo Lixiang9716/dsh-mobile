@@ -59,6 +59,13 @@ const PLUGIN_PACKAGES_PREFIX: string = 'spike/officialweb/plugins/npm/@deepseek-
 const OFFICIAL_DIST_ROOT: string = 'officialweb/www';
 /** The self-hosted next client's staged web dir (rawfile rel root). */
 export const NEXT_CLIENT_ROOT: string = 'webclient/dsh-web-client-next/web';
+/** The GAME script's deliverable content: a dependency-free canvas game.
+ * The heartbeat line posts frame/beat counters to the PARENT — the viewer's
+ * iframe is sandbox="allow-scripts" with no allow-same-origin, so the drive
+ * cannot read inside it; the heartbeat is the game leg's canary twin
+ * (fixture evidence, not product code). */
+const GAME_HTML: string = `<!doctype html><meta charset=utf-8><title>弹球</title><style>html,body{margin:0;height:100%;background:#0b1020;overflow:hidden}canvas{display:block;width:100vw;height:100vh}</style><canvas id=g></canvas><script>/* DSH-GAME-CANARY */
+window.__game={frames:0,beats:0};const c=document.getElementById('g'),x=c.getContext('2d');let W,H;const F=()=>{W=c.width=innerWidth;H=c.height=innerHeight};F();onresize=F;const b={x:90,y:90,vx:2.4,vy:2.1,r:10};addEventListener('pointerdown',()=>{b.vy=-b.vy});setInterval(()=>{window.__game.beats++;try{parent.postMessage({__dshGame:1,frames:window.__game.frames,beats:window.__game.beats},'*')}catch(e){}},200);(function S(){window.__game.frames++;b.x+=b.vx;b.y+=b.vy;if(b.x<b.r||b.x>W-b.r)b.vx=-b.vx;if(b.y<b.r||b.y>H-b.r)b.vy=-b.vy;x.fillStyle='#0b1020';x.fillRect(0,0,W,H);x.fillStyle='#7fd1ff';x.beginPath();x.arc(b.x,b.y,b.r,0,6.3);x.fill();requestAnimationFrame(S)})();</script>`;
 /** The CREATE script's deliverable content (the staged canary proves the
  * viewer served the file, not a placeholder). */
 const WHALE_HTML: string = '<!doctype html><title>蓝色鲸鱼</title>' +
@@ -838,6 +845,17 @@ export class OfficialServe {
       this.server.respondText(conn, 401, 'application/json', body);
       return;
     }
+    if (req.body.includes('GAME_TURN')) {
+      // The GAME leg's one-shot latch — the same posture as CREATE_TURN:
+      // the post-tool continuation call gets the plain success body.
+      if (this.gameScriptDone) {
+        this.server.respondText(conn, 200, SSE_TYPE, this.successStream());
+        return;
+      }
+      this.gameScriptDone = true;
+      this.server.respondText(conn, 200, SSE_TYPE, this.gameStream());
+      return;
+    }
     if (req.body.includes('CREATE_TURN')) {
       // ONE create round per launch: a follow-up model call (the agent
       // loop's post-tool continuation) gets the plain success body, or the
@@ -859,6 +877,10 @@ export class OfficialServe {
   }
 
   private createScriptDone: boolean = false;
+
+  /** The GAME leg's one-shot latch (gameStream) — one per scripted create
+   * turn, so the whale and game legs compose in one launch. */
+  private gameScriptDone: boolean = false;
 
   private successStream(): string {
     const successText = 'Hello from upstream';
@@ -893,6 +915,32 @@ export class OfficialServe {
       '"function":{"name":"write","arguments":' +
       JSON.stringify(writeArgs) + '}},' +
       '{"index":1,"id":"call-present-1","type":"function",' +
+      '"function":{"name":"present","arguments":' +
+      JSON.stringify(presentArgs) + '}}]},' +
+      '"finish_reason":null}]}\n\n';
+    return sse +
+      'data: {"choices":[{"index":0,"delta":{"content":""},' +
+      '"finish_reason":"stop"}],"usage":{"prompt_tokens":3,' +
+      '"completion_tokens":12}}\n\n' +
+      'data: [DONE]\n\n';
+  }
+
+  /** The GAME script's assistant message: the same TWO tool-call shape as
+   * the whale (distinct wire indices), creating the canvas-game deliverable
+   * the game leg drives. The write arguments ride JSON.stringify (the game
+   * HTML carries quotes and newlines). */
+  private gameStream(): string {
+    const workspace: string = this.fsRoot + '/workspace';
+    const writeArgs = '{"file_path":' +
+      JSON.stringify(workspace + '/creations/dsh-game.html') +
+      ',"content":' + JSON.stringify(GAME_HTML) + '}';
+    const presentArgs = '{"files":[{"path":"creations/dsh-game.html",' +
+      '"description":"弹球小游戏 — 点按全屏查看"}]}';
+    const sse = 'data: {"choices":[{"index":0,"delta":{"tool_calls":[' +
+      '{"index":0,"id":"call-write-game","type":"function",' +
+      '"function":{"name":"write","arguments":' +
+      JSON.stringify(writeArgs) + '}},' +
+      '{"index":1,"id":"call-present-game","type":"function",' +
       '"function":{"name":"present","arguments":' +
       JSON.stringify(presentArgs) + '}}]},' +
       '"finish_reason":null}]}\n\n';

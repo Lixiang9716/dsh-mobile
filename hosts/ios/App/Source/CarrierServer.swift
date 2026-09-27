@@ -45,6 +45,10 @@ final class CarrierServer {
     /// a follow-up model call in the same turn gets the plain success body, or
     /// the scripted tool calls would loop forever.
     var serveCreateScriptDone = false
+    /// The GAME script's one-shot latch (CarrierRoutes serveGameScript) — the
+    /// same shape, one per scripted create turn, so the whale and game legs
+    /// compose in one launch.
+    var serveGameScriptDone = false
     /// Open WebSocket seats keyed by connection; multiple seats compose (§3.3).
     private var wsSeats: [ObjectIdentifier: WSSeat] = [:]
     private var servedPaths: [String] = []
