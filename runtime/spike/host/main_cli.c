@@ -877,6 +877,43 @@ static void smoke_fs_read(smoke_backend *b, int call_id, const char *args) {
     smoke_fs_args_free(&a);
 }
 
+/* `fsStat` — the contract v1.1.0 shape: {kind, size, mtime}. The office
+ * tools stat before they read (the whole-file size cap); a missing path is
+ * kind "other" rather than an io rejection, which is the gateway's own
+ * answer on the device hosts. */
+static void smoke_fs_stat(smoke_backend *b, int call_id, const char *args) {
+    smoke_fs_args a = { json_str_dup(args, "scope"), json_str_dup(args, "path"),
+                        NULL, 0, 1 };
+    if (!a.scope || !a.path) {
+        smoke_reject(b, call_id, "fsStat", "invalid", "missing scope/path");
+    } else if (strcmp(a.scope, "app") != 0) {
+        smoke_reject(b, call_id, "fsStat", "denied", "scope not granted");
+    } else if (!smoke_path_ok(a.path)) {
+        smoke_reject(b, call_id, "fsStat", "invalid", "path escapes its scope");
+    } else {
+        char *full = smoke_path(b, a.path);
+        struct stat st;
+        int exists = full && stat(full, &st) == 0;
+        const char *kind = !exists ? "other"
+            : S_ISDIR(st.st_mode) ? "dir" : S_ISREG(st.st_mode) ? "file" : "other";
+        long long size = exists ? (long long)st.st_size : 0;
+        char mtime[32];
+        mtime[0] = 0;
+        if (exists) smoke_mtime(full, mtime, sizeof(mtime));
+        size_t pn = strlen(kind) + strlen(mtime) + 80;
+        char *payload = malloc(pn);
+        if (payload) {
+            snprintf(payload, pn,
+                     "{\"kind\":\"%s\",\"size\":%lld,\"mtime\":\"%s\"}",
+                     kind, size, mtime);
+            smoke_settle(b, call_id, 1, payload);
+            free(payload);
+        }
+        free(full);
+    }
+    smoke_fs_args_free(&a);
+}
+
 /* `ishRun` — one program in the host's in-process Linux userland (contract
  * v1.3.0). The scope root this backend already owns is what gets mounted inside
  * the guest, so the command runs against the same files the fs primitives serve;
@@ -931,6 +968,7 @@ static void smoke_ish_run(smoke_backend *b, int call_id, const char *args) {
 static void smoke_serve(smoke_backend *b, int call_id, const char *name,
                         const char *args) {
     if (strcmp(name, "fsWrite") == 0) return smoke_fs_write(b, call_id, args);
+    if (strcmp(name, "fsStat") == 0) return smoke_fs_stat(b, call_id, args);
     if (strcmp(name, "ishRun") == 0) return smoke_ish_run(b, call_id, args);
     if (strcmp(name, "fsRead") == 0) return smoke_fs_read(b, call_id, args);
     if (strcmp(name, "httpFetch") == 0 && b->http) return smoke_http_fetch(b, call_id, args);

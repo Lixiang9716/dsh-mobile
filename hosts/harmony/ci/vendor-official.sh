@@ -160,6 +160,7 @@ vendor/npm/schemastery@3.18.2/lib/index.mjs
 vendor/npm/@deepseek-ai/$PIN/lib/index.js
 vendor/npm/@deepseek-ai/$PIN/lib/client.js
 vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs
+vendor/npm/fflate@0.8.2/esm/browser.js
 vendor/npm/@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2/lib/index.js
 vendor/npm/diff@9.0.0/libesm/convert/dmp.js
 vendor/npm/diff@9.0.0/libesm/convert/xml.js

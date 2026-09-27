@@ -269,6 +269,12 @@ TREES = [
     # (the package's "node" face is CJS, which the loader cannot serve).
     ("vendor/npm/yaml@2.9.0/browser",
      SPIKE / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
+    # the npm `fflate` bridge target (the OFFICE row's zip engine).
+    ("vendor/npm/fflate@0.8.2/esm",
+     SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+    # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
+    ("system-plugins/dsh-office",
+     SPIKE / "system-plugins" / "dsh-office"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
@@ -458,9 +464,8 @@ def emit() -> None:
     print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
           f"({total / 1024:.0f} KiB)")
     webclient_tree = collect_webclient_files()
-    parts.append(
-        trees.tree_c_source(webclient_tree, "DSH_WEBCLIENT",
-                            "dsh_spike_webclient_tree_file", REPO))
+    parts.append(trees.tree_c_source(
+        webclient_tree, "DSH_WEBCLIENT", "dsh_spike_webclient_tree_file", REPO))
     decls.append(trees.WEBCLIENT_TREE_WALKER_DECL)
     wtotal = sum(p.stat().st_size for _, p in webclient_tree)
     print(f"gen_bundle_header: webclient tree = {len(webclient_tree)} files, "

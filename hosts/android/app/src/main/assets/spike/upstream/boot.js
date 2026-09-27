@@ -344,6 +344,7 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(ShellWasm);
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
+    await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
   await mountFileTools(ctx, identity.cwd);
   // The SKILL row (the agent-flow E2E): mounted after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the

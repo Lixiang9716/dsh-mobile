@@ -45,6 +45,14 @@ const BRIDGES = [
   ['zustand/middleware', "export * from '/vendor/npm/zustand@4.4.7/esm/middleware.js';"],
   ['eventsource-parser/stream', "export * from '/vendor/npm/eventsource-parser@3.1.0/dist/stream.js';"],
   ['eventsource-parser', "export * from '/vendor/npm/eventsource-parser@3.1.0/dist/index.js';"],
+  // The office plane's zip engine (2026-09-27): fflate 0.8.2 — the pure-JS
+  // zip read/write face (89KB ESM, zero imports) the dsh-office system
+  // plugin mounts the OOXML container on (docx/xlsx/pptx are zip+xml, and
+  // the frozen gateway has no inflate primitive — the tar-mini.js note).
+  // A bare npm name without a dot, so the host bare map cannot serve it;
+  // this bridge seam does. Mounted by the product boot through the
+  // dsh-office plugin (imported after this module registers).
+  ['fflate', "export * from '/vendor/npm/fflate@0.8.2/esm/browser.js';"],
   // The chokidar linkage shim (no vendored tree — see the row note above).
   // The importing vendored package binds only the default export and calls
   // `chokidar.watch(...)`, so the shim is exactly that face; it fails loud
