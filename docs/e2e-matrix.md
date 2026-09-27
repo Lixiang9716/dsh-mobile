@@ -129,7 +129,7 @@ evidence on that platform.
 | `android.whale.mount` | — | 7/7 | — | — |
 | `android.nextweb.mount` | — | 24/24 | — | — |
 | `harmony.whale.mount` | — | — | 7/7 | — |
-| `harmony.nextweb.mount` | — | — | 19/19 (the game leg pends on #230) | — |
+| `harmony.nextweb.mount` | — | — | 24/24 | — |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 
 `(drift)` = the verdict was captured against an older manifest revision
@@ -163,7 +163,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
-| `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 19/19 | ✓ | ✓ | ✓ | 0 |
+| `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |

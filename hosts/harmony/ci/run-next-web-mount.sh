@@ -62,11 +62,11 @@ mkdir -p "$OUT"
 # manifest record is ws.session-complete. (The C host's verdict line rides
 # hilog, not the capture — drive-binding's channel; the checker over the
 # capture is this runner's verdict.)
-deadline=$(( $(date +%s) + 420 ))
-until "$HDC" shell "cat $CAPTURE 2>/dev/null" | grep -q "creation.opened"; do
+deadline=$(( $(date +%s) + 660 ))
+until "$HDC" shell "cat $CAPTURE 2>/dev/null" | grep -q "game.closed"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         "$HDC" shell "cat $CAPTURE 2>/dev/null" | tail -40 >&2 || true
-        die "harmony.nextweb.mount did not complete within 420s"
+        die "harmony.nextweb.mount did not complete within 660s"
     fi
     sleep 2
 done

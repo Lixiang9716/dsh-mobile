@@ -167,7 +167,16 @@ const openCreation = async (path, title) => {
       const bytes = Uint8Array.from(atob(value.data), (ch) => ch.charCodeAt(0));
       text = new TextDecoder().decode(bytes);
     }
-    document.getElementById('creation-frame').srcdoc = text;
+    // ArkWeb (HarmonyOS) stops reflecting iframe.srcdoc after the frame's
+    // first clear — writes succeed but the engine neither navigates nor
+    // reflects, so a SECOND opened deliverable renders blank (measured,
+    // issue #230). Swap in a FRESH frame node per open: a first write on a
+    // new node is the path every engine handles.
+    const frame = document.getElementById('creation-frame');
+    const fresh = frame.cloneNode(false);
+    fresh.removeAttribute('srcdoc');
+    frame.parentNode.replaceChild(fresh, frame);
+    fresh.srcdoc = text;
   } catch (error) {
     creationView.hidden = true;
     toast(isRemoteError(error) ? `创作不可读（${error.code}）` : '创作不可读');
