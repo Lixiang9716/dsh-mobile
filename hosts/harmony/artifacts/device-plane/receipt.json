@@ -4,11 +4,11 @@
   "runner": "hosts/harmony/ci/run-device-plane.sh",
   "phase": "harmony.device-plane",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg device.plane (Debug)",
-  "tree": "origin/main 5e7faf5000f5 (dirty working tree at receipt time)",
+  "tree": "origin/main b26eac415af6 (dirty working tree at receipt time)",
   "engine": "0.17.0+fork-tostring+async-context+tc39",
   "scenarios": [
     { "manifest": "harmony-device-plane", "verdict": "verdict-harmony-device-plane.json", "pass": true }
   ],
   "screens": ["screens/device-plane-complete.png"],
-  "producedAt": "2026-09-26T23:35:55Z"
+  "producedAt": "2026-09-27T00:54:48Z"
 }

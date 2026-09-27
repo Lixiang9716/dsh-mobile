@@ -76,6 +76,8 @@ struct GatewayManifest {
     private static let familyFlags: [String: String] = [
         "clipboardRead": "clipboard",
         "clipboardWrite": "clipboard",
+        "presentShare": "share",
+        "keepAwake": "screen",
     ]
 
     func grants(primitive: String) -> Bool {

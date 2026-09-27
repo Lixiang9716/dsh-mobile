@@ -44,6 +44,13 @@ const demand = (cond, reason) => {
   fail(reason);
   throw new Error(reason);
 };
+/* Any unexpected primitive rejection ends the scenario LOUD (an unhandled
+ * await rejection would hang the drive with no evidence — measured when a
+ * grants gap denied presentShare and the watchdog was the only symptom). */
+const loud = (p, what) => p.catch((err) => {
+  fail(`${what} rejected: ${err.code} ${err.message ?? ''}`);
+  throw err;
+});
 
 const PROBE = 'dsh-clipboard-probe';
 const HAPTIC_PATTERNS = [
@@ -131,13 +138,13 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   // ---- presentShare: the sheet is its own consent ----------------------------
   const shareBytes = Uint8Array.from([...PROBE].map((c) => c.charCodeAt(0)));
   await fsWrite('app', 'share-e2e.txt', shareBytes);
-  const share = await presentShare({ kind: 'files', paths: ['app:share-e2e.txt'] });
+  const share = await loud(presentShare({ kind: 'files', paths: ['app:share-e2e.txt'] }), 'presentShare files');
   // The sheet PRESENTED means the granted path resolved (a failed scope
   // resolution rejects denied before any UI); whether the driver completes
   // the sheet or walks away, the value is the point.
   emit('share.files.completed', { shared: share.shared });
 
-  const textShare = await presentShare({ kind: 'text', text: PROBE });
+  const textShare = await loud(presentShare({ kind: 'text', text: PROBE }), 'presentShare text');
   emit('share.text.completed', { shared: textShare.shared });
 
   try {
@@ -148,9 +155,9 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   }
 
   // ---- keepAwake: the boolean latch ------------------------------------------
-  await keepAwake(true);
+  await loud(keepAwake(true), 'keepAwake hold');
   emit('keepawake.hold', { hold: true });
-  await keepAwake(false);
+  await loud(keepAwake(false), 'keepAwake release');
   emit('keepawake.release', { hold: false });
 
   // ---- the media picker leg (last: the audit tail stays deterministic) --------

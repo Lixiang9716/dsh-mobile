@@ -74,6 +74,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         private val familyFlags = mapOf(
             "clipboardRead" to "clipboard",
             "clipboardWrite" to "clipboard",
+            "presentShare" to "share",
+            "keepAwake" to "screen",
         )
 
         fun grants(primitive: String): Boolean {

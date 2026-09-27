@@ -1,2 +1,2 @@
-09-27 08:04:14.836  3190  3251 I dsh.spike.result: android.device-plane PASS | quickjs-ng 0.17.0
-09-27 08:04:14.836  3190  3251 I dsh.spike.result: ALL PASS
+09-27 08:56:31.965  3473  3473 I dsh.spike.result: android.device-plane FAIL | quickjs-ng 0.17.0 | error: m4 watchdog: scenario did not complete in 180 s
+09-27 08:56:31.966  3473  3473 I dsh.spike.result: ALL FAIL
