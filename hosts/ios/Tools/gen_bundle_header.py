@@ -159,6 +159,17 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
+    # THREE scenario files additionally keep NAMED accessors: Swift code
+    # reads them directly (GatewaySession / WebBootRuntimeDrive /
+    # SpikeRuntime), beyond the JS loader's file view the whole-dir
+    # scenario tree row already serves. These are RESOURCES rows — the
+    # dsh_spike_res_<suffix> accessors are what Swift links against; a
+    # TREES row emits only the generic tree table (the 664c557 lesson:
+    # the rows first landed in the wrong list and the symbols never
+    # existed, so a clean checkout could not build the app).
+    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
+    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same
@@ -239,12 +250,6 @@ TREES = [
     # a scenario joins the embed by existing in the directory).
     ("scenario",
      SPIKE / "scenario"),
-    # THREE scenario files additionally keep named accessors: Swift code
-    # reads them directly (GatewaySession / WebBootRuntimeDrive /
-    # SpikeRuntime), beyond the JS loader's file view the tree serves.
-    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
-    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
