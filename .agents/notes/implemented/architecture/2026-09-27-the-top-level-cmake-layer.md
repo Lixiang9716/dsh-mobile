@@ -1,4 +1,7 @@
-# The top-level CMake layer — phase 1 (add-the-layer, move-no-paths)
+# Agent Note: The top-level CMake layer — phase 1 (add-the-layer, move-no-paths)
+
+Status: implemented
+Related: T-0069; the 2026-09-27 vendor-closure drift audit; D6 (upstream discipline)
 
 Date: 2026-09-27 · Class: architecture · Task: T-0069
 
