@@ -115,6 +115,12 @@ const REGISTRATIONS = [
   // failure — this row pins the real file under that spelling too.
   ['@deepseek-ai/dsh-session/types', "export * from '/vendor/dsh/session@0.1.6-alpha.2/lib/types/types.js';"],
   ['@deepseek-ai/dsh-workflow/types', "export * from '/vendor/dsh/workflow@0.1.6-alpha.2/lib/types/types.js';"],
+  // The client-web exports map spells the apply-injections face under a
+  // DIFFERENT subpath than the file name ('./injections' →
+  // ./lib/apply-injections.js): the vendored-package probe's lib/ + lib/types/
+  // shapes can never hit an aliased name, so the row pins the real file (the
+  // dsh-session/types precedent).
+  ['@deepseek-ai/dsh-client-web/injections', "export * from '/vendor/npm/@deepseek-ai/dsh-client-web@0.1.6-alpha.2/lib/apply-injections.js';"],
   ['@deepseek-ai/cordis', [
     "export * from '/vendor/npm/cordis@4.0.2/lib/index.js';",
     FIBER_STATE,
@@ -240,38 +246,16 @@ const REGISTRATIONS = [
 
   // node:http — folded from npm-bridges.js (C's linkage stub) with the real
   // faces kept: validateHeaderName/validateHeaderValue are pure validation
-  // and now match node's contract exactly; the server/request faces fail
-  // loud (no socket seam — the egress specs build loopback servers the
-  // runtime cannot host).
+  // and match node's contract exactly. The SERVER face grew an in-process
+  // implementation (round 6, 2026-09-28): createServer/Server register an
+  // http-loopback handler (upstream/shims/node-http-loopback.js — no socket
+  // is ever bound; a matching fetch dispatches through the handler), which
+  // is the only face the upstream suite's in-test servers use. The CLIENT
+  // faces (request/get/Agent) still fail loud: nothing dials a real
+  // interface.
   ['node:http', [
-    "const refuse = (name) => () => {",
-    "  throw new Error('node:http: ' + name + ' is not served in this runtime — no socket seam');",
-    "};",
-    "const validateHeaderName = (name) => {",
-    "  if (typeof name !== 'string' || !name || /[\\r\\n\\0]/.test(name)) {",
-    "    throw new TypeError('node:http: validateHeaderName: invalid header name');",
-    "  }",
-    "};",
-    "const validateHeaderValue = (name, value) => {",
-    "  if (typeof value !== 'string' || /[\\r\\n\\0]/.test(value)) {",
-    "    throw new TypeError('node:http: validateHeaderValue: invalid header value');",
-    "  }",
-    "};",
-    "const http = {",
-    "  createServer: refuse('createServer'),",
-    "  request: refuse('request'),",
-    "  get: refuse('get'),",
-    "  Server: class { constructor() { refuse('Server')(); } },",
-    "  ServerResponse: class { constructor() { refuse('ServerResponse')(); } },",
-    "  IncomingMessage: class { constructor() { refuse('IncomingMessage')(); } },",
-    "  Agent: class { constructor() { refuse('Agent')(); } },",
-    "  validateHeaderName,",
-    "  validateHeaderValue,",
-    "  MAX_HEADER_COUNT: 2000,",
-    "  maxHeaderSize: 16384,",
-    "  setMaxIdleHTTP1Connections: () => {},",
-    "  globalAgent: { maxSockets: Infinity, options: {} },",
-    "};",
+    "import { createHttpFace } from 'upstream/shims/node-http-loopback.js';",
+    "const http = createHttpFace();",
     "export default http;",
     "export const createServer = http.createServer;",
     "export const request = http.request;",
@@ -280,7 +264,12 @@ const REGISTRATIONS = [
     "export const ServerResponse = http.ServerResponse;",
     "export const IncomingMessage = http.IncomingMessage;",
     "export const Agent = http.Agent;",
-    "export { validateHeaderName, validateHeaderValue };",
+    "export const validateHeaderName = http.validateHeaderName;",
+    "export const validateHeaderValue = http.validateHeaderValue;",
+    "export const MAX_HEADER_COUNT = http.MAX_HEADER_COUNT;",
+    "export const maxHeaderSize = http.maxHeaderSize;",
+    "export const setMaxIdleHTTP1Connections = http.setMaxIdleHTTP1Connections;",
+    "export const globalAgent = http.globalAgent;",
   ].join('\n')],
 
   // node:net — folded from npm-bridges.js: isIP/isIPv4/isIPv6 are real
@@ -313,16 +302,32 @@ const REGISTRATIONS = [
   ].join('\n')],
 
   // node:child_process — folded from npm-bridges.js. D2 forbids the
-  // subprocess seam, so every member fails loud when CALLED (the lsp-stdio
+  // subprocess seam, so the async members fail loud when CALLED (the lsp-stdio
   // and ssh families link it; the real-process paths are unrunnable by
-  // design and excluded at the ledger level).
+  // design and excluded at the ledger level). spawnSync carries NODE'S OWN
+  // unspawnable-command contract instead of throwing: real node returns a
+  // result object with status:null + .error for a file it cannot execute
+  // (ENOENT), it does not raise — and specs probe executability at MODULE
+  // scope through it (`hasPwsh = spawnSync(...).status === 0` in the pwsh
+  // loader/executor specs), where a throw would kill the load instead of
+  // producing the honest "no such capability here" answer the check exists
+  // to receive. The seam stays named: it rides in the result's .error.
   ['node:child_process', [
     "const refuse = (name) => () => {",
     "  throw new Error('node:child_process: ' + name + ' is not served in this runtime — no subprocess seam (rule D2)');",
     "};",
+    "const spawnSyncRefused = (command) => ({",
+    "  status: null,",
+    "  signal: null,",
+    "  output: [null, null],",
+    "  pid: 0,",
+    "  stdout: '',",
+    "  stderr: '',",
+    "  error: new Error('node:child_process: spawnSync(' + String(command) + ') is not served in this runtime — no subprocess seam (rule D2)'),",
+    "});",
     "const childProcess = {",
     "  spawn: refuse('spawn'),",
-    "  spawnSync: refuse('spawnSync'),",
+    "  spawnSync: spawnSyncRefused,",
     "  exec: refuse('exec'),",
     "  execFile: refuse('execFile'),",
     "  execFileSync: refuse('execFileSync'),",

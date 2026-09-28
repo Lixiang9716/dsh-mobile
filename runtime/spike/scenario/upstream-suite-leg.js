@@ -112,6 +112,15 @@ const pinProfileContainer = async () => {
       if (error?.code !== 'EEXIST') log.debug('profile root mkdir failed', { dir: String(dir).slice(0, 120), code: error?.code });
     }
   }
+  // The transpiled specs' module directory (import.meta.dirname is
+  // 'upstream-tests' — bundle-relative) is a REAL directory in node's
+  // layout; specs that join it for scratch dirs (typert generator's
+  // .generated-schema-*) need it under the pinned cwd too (W3-K, 2026-09-28).
+  try {
+    mkdirSync(`${globalThis.__dshProfileCwd.replace(/\/$/, '')}/upstream-tests`, { recursive: true });
+  } catch (error) {
+    if (error?.code !== 'EEXIST') log.debug('spec module dir mkdir failed', { code: error?.code });
+  }
   log.debug('profile container pinned', { cwd: globalThis.__dshProfileCwd });
 };
 

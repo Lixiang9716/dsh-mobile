@@ -350,8 +350,16 @@ export class Writable extends SinkEvents {
           this.writableNeedDrain = false;
           this.emit('drain');
         }
+        // A write-callback error destroys the stream and emits 'error'
+        // (node's write-callback contract — measured 2026-09-28: the
+        // sdk-jsonrpc-server flush-failure spec watches output.on('error')).
+        if (error !== undefined && error !== null) {
+          this.#destroyed = true;
+          this.destroyed = true;
+          this.emit('error', error);
+        }
         if (typeof callback === 'function') callback(error);
-        if (this.#writeQueue.length > 0) this.#pump();
+        if (this.#writeQueue.length > 0 && !this.#destroyed) this.#pump();
         else this.#settleEnded();
       };
       this.#inFlight = true;

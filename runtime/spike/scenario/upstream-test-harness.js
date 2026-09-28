@@ -330,7 +330,10 @@ const throwMatchers = (actual, check) => ({
       ? threw.message
       : String(threw);
     if (typeof expected === 'string') return check(thrownMessage.includes(expected), `throw message containing "${expected}" (got "${thrownMessage}")`);
-    if (expected instanceof RegExp) return check(expected.test(thrownMessage), `throw message matching ${expected}`);
+    // The got-message echo stays in the regex arm too: a bare "matching /…/"
+    // verdict hides which arm of an it.each table drifted (acp bridge's
+    // mcpServers validation table, W3-J 2026-09-27).
+    if (expected instanceof RegExp) return check(expected.test(thrownMessage), `throw message matching ${expected} (got "${thrownMessage}")`);
     // A thrown-in ERROR INSTANCE (jest/vitest contract): compared by MESSAGE
     // (and identity), not by instanceof — the product may re-wrap an equal
     // message across a catch boundary, and jest explicitly specifies message

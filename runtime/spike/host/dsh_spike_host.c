@@ -642,6 +642,10 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
 #define DSH_MAP_VENDORED_PROBE 2
 static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char *sub,
                                     char *out, size_t out_len);
+static char *dsh_resolve_relative(JSContext *ctx, const char *dir, const char *name);
+static JSValue js_import_meta_resolve(JSContext *ctx, JSValueConst this_val,
+                                      int argc, JSValueConst *argv, int magic,
+                                      JSValueConst *func_data);
 
 /* Lexically resolve "." / ".." segments of a relative request against the
  * directory of `rel` (both bundle-root-relative, no trailing slash). Fills
@@ -844,7 +848,15 @@ static char *dsh_read_file(const char *path, size_t *out_len) {
  * the bundle-relative staged path for mapped modules — the path is what lets
  * a vendored package locate ITS OWN files (agent-presets resolves presets/
  * beside lib/ through new URL('../presets/', import.meta.url); the url shim's
- * path URLs and the bundle-require seam both speak bundle-relative paths). */
+ * path URLs and the bundle-require seam both speak bundle-relative paths).
+ *
+ * import.meta.dirname rides the same specifier space: the url up to its last
+ * '/' (empty for a slash-less module name — dirname of a bundle-root file IS
+ * the root). import.meta.resolve resolves a request the way the LOADER would
+ * from this module (relative requests lexically in specifier space; bare
+ * requests through the same bare map / vendored probe), so its answer
+ * re-imports — the upstream suite's loader/launch faces call it at runtime
+ * and need the real resolution, not a stub. */
 static JSModuleDef *dsh_compile_module_url(JSContext *ctx, const char *name,
                                            const char *url,
                                            const char *buf, size_t len) {
@@ -857,6 +869,16 @@ static JSModuleDef *dsh_compile_module_url(JSContext *ctx, const char *name,
     JSValue meta = JS_GetImportMeta(ctx, m);
     if (!JS_IsException(meta)) {
         JS_SetPropertyStr(ctx, meta, "url", JS_NewString(ctx, url));
+        const char *slash = strrchr(url, '/');
+        size_t dir_len = slash ? (size_t)(slash - url) : 0;
+        JS_SetPropertyStr(ctx, meta, "dirname", JS_NewStringLen(ctx, url, dir_len));
+        /* The resolve closure carries the module's directory as its data
+         * value (JS_NewCFunctionData dup's it); one C function serves every
+         * module — no per-module state beyond that string. */
+        JSValue data[1] = { JS_NewStringLen(ctx, url, dir_len) };
+        JSValue resolve_fn = JS_NewCFunctionData(ctx, js_import_meta_resolve, 1, 0, 1, data);
+        JS_FreeValue(ctx, data[0]);
+        JS_SetPropertyStr(ctx, meta, "resolve", resolve_fn);
         JS_FreeValue(ctx, meta);
     }
     JS_FreeValue(ctx, res);
@@ -1308,6 +1330,83 @@ static char *dsh_resolve_relative(JSContext *ctx, const char *dir, const char *n
     }
     out[o] = 0;
     return out;
+}
+
+/* import.meta.resolve(specifier) — the same resolution the module loader
+ * would perform for an import issued FROM this module (its directory rides
+ * in func_data[0], set at compile time). Relative requests resolve lexically
+ * in specifier space (dsh_resolve_relative); bundle-absolute names pass
+ * through; bare names go through dsh_map_bare / the vendored probe, so the
+ * returned bundle-relative path RE-IMPORTS to the same module the loader
+ * would serve. Unresolvable names fail loud naming the specifier (rule 5). */
+static JSValue js_import_meta_resolve(JSContext *ctx, JSValueConst this_val,
+                                      int argc, JSValueConst *argv, int magic,
+                                      JSValueConst *func_data) {
+    (void)this_val; (void)magic;
+    if (argc < 1) {
+        return JS_ThrowTypeError(ctx, "import.meta.resolve needs a specifier");
+    }
+    const char *spec = JS_ToCString(ctx, argv[0]);
+    if (!spec) return JS_EXCEPTION;
+    JSValue ret = JS_UNDEFINED;
+    if (spec[0] == '.') {
+        const char *dir = JS_ToCString(ctx, func_data[0]);
+        if (!dir) { JS_FreeCString(ctx, spec); return JS_EXCEPTION; }
+        char *resolved = dsh_resolve_relative(ctx, dir, spec);
+        JS_FreeCString(ctx, dir);
+        if (!resolved) {
+            JS_ThrowReferenceError(ctx, "relative import '%s' escaped its module root", spec);
+            JS_FreeCString(ctx, spec);
+            return JS_EXCEPTION;
+        }
+        ret = JS_NewString(ctx, resolved);
+        js_free(ctx, resolved);
+    } else if (spec[0] == '/') {
+        /* bundle-absolute name: the loader serves it from the bundle root */
+        ret = JS_NewString(ctx, spec);
+    } else {
+        dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+        char mapped[512];
+        char maperr[256];
+        int kind = dsh_map_bare(spec, mapped, sizeof(mapped), maperr, sizeof(maperr));
+        if (kind < 0) {
+            JS_ThrowReferenceError(ctx, "%s", maperr);
+            JS_FreeCString(ctx, spec);
+            return JS_EXCEPTION;
+        }
+        if (kind == DSH_MAP_VENDORED_PROBE) {
+            char pkg[256];
+            snprintf(pkg, sizeof(pkg), "%s", mapped);
+            char *bar = strchr(pkg, '|');
+            if (bar == NULL) {
+                JS_ThrowReferenceError(ctx, "loader bug: vendored marker '%s' lacks '|'", mapped);
+                JS_FreeCString(ctx, spec);
+                return JS_EXCEPTION;
+            }
+            *bar = 0;
+            char rel[512];
+            if (dsh_vendored_rel(s, pkg, bar + 1, rel, sizeof(rel)) == NULL) {
+                JS_ThrowReferenceError(ctx,
+                    "cannot resolve '%s' (no vendored dsh package serves it)", spec);
+                JS_FreeCString(ctx, spec);
+                return JS_EXCEPTION;
+            }
+            ret = JS_NewString(ctx, rel);
+        } else if (kind == 1) {
+            ret = JS_NewString(ctx, mapped);
+        } else if (strchr(spec, '.') != NULL || strchr(spec, '/') != NULL) {
+            /* legacy bundle-root-relative module path */
+            ret = JS_NewString(ctx, spec);
+        } else {
+            JS_ThrowReferenceError(ctx,
+                "unmapped module specifier '%s': not vendored and not shimmed (see runtime/spike/upstream/README.md)",
+                spec);
+            JS_FreeCString(ctx, spec);
+            return JS_EXCEPTION;
+        }
+    }
+    JS_FreeCString(ctx, spec);
+    return ret;
 }
 
 static char *dsh_normalize(JSContext *ctx, const char *base_name, const char *name,

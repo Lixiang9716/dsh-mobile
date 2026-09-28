@@ -65,9 +65,16 @@ if (typeof globalThis.URL === 'undefined') globalThis.URL = DshURL;
 // chooser/script-injection paths, and nothing upstream of the suite defines
 // these on a headless host (R3-G1, 2026-09-28). Installed at the top of this
 // file's import chain so the faces precede the first spec import (the
-// source-chooser spec touches document in beforeEach).
+// source-chooser spec touches document in beforeEach). The fetch-values
+// install must run AFTER it (W3-K, 2026-09-28): web-dom's FormData is a
+// marked fallback and the full W3C face supersedes it — in the suite leg's
+// import order (web-shims first, globals second) the fallback otherwise
+// outlives the full install and file-store's form.set regressed to "not a
+// function".
 import { installWebDom } from './web-dom.js';
+import { installWebFetchValues } from './web-fetch-values.js';
 installWebDom();
+installWebFetchValues();
 // cancellation path needs (signal.aborted, addEventListener('abort'),
 // abort(reason), throwIfAborted). The suite's largest single gap before
 // this shim: every agent-loop cancel test failed on the missing global,
@@ -105,6 +112,30 @@ if (typeof globalThis.AbortController === 'undefined') {
       if (this._aborted) throw this._reason;
     }
   }
+  // AbortSignal.any — the composite face the vendored adapters build their
+  // caller+internal cancellation on (measured 2026-09-28: llm-deepseek's
+  // generate() combines the caller signal with its consumer-stop controller
+  // through AbortSignal.any; its absence hung the adapter's abort test).
+  // The first source to abort wins with ITS reason (node's contract); a
+  // source already aborted at composition time aborts the composite
+  // immediately.
+  AbortSignalShim.any = function (signals) {
+    const compositeController = new AbortControllerShim();
+    for (const signal of signals ?? []) {
+      if (signal.aborted) {
+        compositeController.abort(signal.reason);
+        break;
+      }
+      signal.addEventListener('abort', () => compositeController.abort(signal.reason));
+    }
+    return compositeController.signal;
+  };
+  // AbortSignal.abort — an already-aborted signal (node 17.2+).
+  AbortSignalShim.abort = function (reason) {
+    const controller = new AbortControllerShim();
+    controller.abort(reason);
+    return controller.signal;
+  };
   class AbortControllerShim {
     constructor() { this.signal = new AbortSignalShim(); }
     abort(reason) {

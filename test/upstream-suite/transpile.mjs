@@ -53,10 +53,13 @@ const UNIMPLEMENTED = [
   // can never resolve from the vendored closure (upstream's own suite runs
   // from source). A named exclusion, not an on-device noise failure.
   [/from\s*['"]@deepseek-ai\/dsh-[a-z0-9-]+\/src\//, 'monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)'],
-  // cordis@4.0.2 (the closure's pinned npm dep, D6) predates the FiberState
-  // export upstream's newer lockfile carries. A vendoring decision, not a
-  // silent drop; revisit when the cordis pin moves.
-  [/import\s*\{[^}]*FiberState[^}]*\}\s*from\s*['"]@deepseek-ai\/cordis['"]/, 'FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)'],
+  // NOTE: the FiberState exclusion was REMOVED (2026-09-27, wave 3): the
+  // runtime no longer needs the npm cordis@4.0.2 face to carry the export —
+  // upstream/shims/runtime-modules.js registers `@deepseek-ai/cordis` as the
+  // vendored lib PLUS FiberState (enum values read off the same package's
+  // src/fiber.ts) and LoggerLevel. The tool-cordis lifecycle spec staged
+  // again through the same rule's removal; its probe passed 2/0 on the
+  // registered face (tmp/r3-ledger-H.json).
 ];
 
 /** vi.spyOn on an `import * as` namespace can never land: ESM bindings are
@@ -179,6 +182,15 @@ const BARE_EXTERNAL_PLUGIN = {
         }
         return { path: resolveRow.inline }; // absolute: esbuild loads + inlines
       }
+      // src/ hoist rows also resolve NESTED importers (a vendored package's
+      // inlined src limb imports the same monorepo specifier its spec does):
+      // returning the submodule file inlines it, so the bare specifier never
+      // survives to the bundled-output scan. The spec-source rewrite (above)
+      // hits the same absolute path, so esbuild keeps ONE instance.
+      const srcRow = SUBMODULE_SRC_HOISTS.get(args.path);
+      if (srcRow !== undefined && existsSync(join(SUBMODULE_ROOT, srcRow))) {
+        return { path: join(SUBMODULE_ROOT, srcRow) };
+      }
       return { path: args.path, external: true };
     });
     build.onLoad({ filter: /.*/, namespace: 'unvendored-stub' }, () => ({
@@ -286,6 +298,29 @@ const SUBMODULE_SRC_HOISTS = new Map([
   ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts'],
   ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/globals/timers.ts', 'packages/experimental/webworker-runtime/src/node/globals/timers.ts'],
   ['@deepseek-ai/dsh-experimental-webworker-runtime/src/polyfill/async-context/async-context-hooks.ts', 'packages/experimental/webworker-runtime/src/polyfill/async-context/async-context-hooks.ts'],
+  // Wave-3 batch (2026-09-27, worker L): the monorepo-src specs whose src
+  // limbs close over SERVED externals only — every bare import below is a
+  // vendored vendor/dsh/ tarball, a shimmed node: builtin, a bare-map npm pin
+  // (zod@4.4.3), or a registered runtime-module/npm-bridge face
+  // (@modelcontextprotocol/client + /stdio — npm-bridges rows). Each row was
+  // checked limb-by-limb (the files' import lines): pure config/sanitize/
+  // render/projection units, no unvendored npm package reachable.
+  ['@deepseek-ai/dsh-tools/src/py-types.ts', 'packages/core/tools/src/py-types.ts'],
+  ['@deepseek-ai/dsh-tools/src/ts-types.ts', 'packages/core/tools/src/ts-types.ts'],
+  ['@deepseek-ai/dsh-tools/src/json-schema.ts', 'packages/core/tools/src/json-schema.ts'],
+  ['@deepseek-ai/dsh-hooks-claude-code/src/config.ts', 'packages/hooks/hooks-claude-code/src/config.ts'],
+  ['@deepseek-ai/dsh-hooks-codex/src/config.ts', 'packages/hooks/hooks-codex/src/config.ts'],
+  ['@deepseek-ai/dsh-mcp-client/src/transport.ts', 'packages/mcp/mcp-client/src/transport.ts'],
+  ['@deepseek-ai/dsh-mcp-client/src/tools.ts', 'packages/mcp/mcp-client/src/tools.ts'],
+  ['@deepseek-ai/dsh-session-stats/src/projection.ts', 'packages/session/session-stats/src/projection.ts'],
+  ['@deepseek-ai/dsh-session-turn-outline/src/projection.ts', 'packages/session/session-turn-outline/src/projection.ts'],
+  ['@deepseek-ai/dsh-terminal-bash/src/config.ts', 'packages/terminal/terminal-bash/src/config.ts'],
+  ['@deepseek-ai/dsh-terminal-bash/src/sanitize.ts', 'packages/terminal/terminal-bash/src/sanitize.ts'],
+  ['@deepseek-ai/dsh-tool-terminal/src/render.ts', 'packages/terminal/tool-terminal/src/render.ts'],
+  ['@deepseek-ai/dsh-compaction-basic/src/config.ts', 'packages/compaction/compaction-basic/src/config.ts'],
+  ['@deepseek-ai/dsh-compaction-basic/src/summarizer.ts', 'packages/compaction/compaction-basic/src/summarizer.ts'],
+  ['@deepseek-ai/dsh-compaction-basic/src/region.ts', 'packages/compaction/compaction-basic/src/region.ts'],
+  ['@deepseek-ai/dsh-session-persistence-jsonl/src/format.ts', 'packages/session/session-persistence-jsonl/src/format.ts'],
 ]);
 const hoistSubmoduleSrcSubpaths = (source) => {
   let out = source;

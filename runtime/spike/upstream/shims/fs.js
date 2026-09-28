@@ -67,6 +67,16 @@ export const constants = {
 /** The VFS root (a POSIX path prefix; nothing below it hits a real disk). */
 export const WEB_PLUGINS_ROOT = '/web-plugins';
 
+/** Normalize a path argument that node's fs accepts but our string-keyed
+ * views cannot: a URL object (what `new URL('fixtures/x', import.meta.url)`
+ * produces in the transpiled specs — measured 2026-09-28, the cordis.yml
+ * fixture reads) stringifies to its plain in-world path. Strings pass
+ * through untouched. */
+export const asFsPath = (path) => {
+  if (path !== null && typeof path === 'object' && typeof path.href === 'string') return String(path);
+  return path;
+};
+
 /**
  * The seeded view lives on the global, NOT in module state: the vendored
  * closure imports `node:fs` while our adapters may import the shim by its
@@ -404,7 +414,8 @@ const nodeModulesProbe = (path) => {
   }
 };
 
-export const existsSync = (path) => {
+export const existsSync = (rawPath) => {
+  const path = asFsPath(rawPath);
   const files = vfs();
   if (files !== null && underVFS(path)) return files.has(path);
   if (workspaceSymlinkTarget(path) !== undefined) return true;
@@ -414,7 +425,8 @@ export const existsSync = (path) => {
   return false;
 };
 
-export const readFileSync = (path, encoding) => {
+export const readFileSync = (rawPath, encoding) => {
+  const path = asFsPath(rawPath);
   const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
   // Reads follow one symlink hop (stat/read resolve links, node's shape).
   const workspacePath = resolveWorkspaceSymlink(canonical);

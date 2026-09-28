@@ -419,7 +419,11 @@ export const installWebDom = () => {
     globalThis.document = doc;
     globalThis.HTMLElement = DOMElement;
     globalThis.Node = DOMElement;
-    globalThis.FormData = class FormData {
+    // Marked as a FALLBACK face (W3-K, 2026-09-28): the fetch-values
+    // FormData is the full W3C surface (Blob/File values, set/delete) and
+    // replaces this one when it installs — a bare-string face here regressed
+    // the llm-deepseek upload path to "not a function" on form.set.
+    const DshWebDomFormData = class FormData {
       constructor(form) {
         this._entries = [];
         if (form !== undefined) {
@@ -438,6 +442,8 @@ export const installWebDom = () => {
       getAll(name) { return this._entries.filter(([n]) => n === name).map(([, v]) => v); }
       has(name) { return this._entries.some(([n]) => n === name); }
     };
+    DshWebDomFormData.__dshWebDomFallback = true;
+    globalThis.FormData = DshWebDomFormData;
   }
   // navigator — the identity face browser code reads (the inspector client's
   // realm labels itself through navigator; node 21+ also defines userAgent).

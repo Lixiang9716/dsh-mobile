@@ -133,8 +133,21 @@ const wsAt = (path) => {
     throw error;
   }
   const state = workspace();
-  if (state === null || typeof path !== 'string' || !path.startsWith('/')) return null;
-  const canonical = lexical(systemTmp(path));
+  // Relative paths resolve against the pinned profile cwd, exactly like
+  // node resolves them against process.cwd() (W3-K, 2026-09-28: the typert
+  // generator joins `import.meta.dirname` — 'upstream-tests', the
+  // bundle-relative module directory — with its scratch dir and the join
+  // stays relative; refusing relative paths there killed the whole spec).
+  let absolute = path;
+  if (typeof absolute === 'string' && !absolute.startsWith('/') && !absolute.startsWith('\\')
+    && !/^[A-Za-z][A-Za-z0-9+.\-]*:/.test(absolute)) {
+    const cwd = globalThis.__dshProfileCwd;
+    if (typeof cwd === 'string' && cwd.startsWith('/')) {
+      absolute = `${cwd.replace(/\/$/, '')}/${absolute}`;
+    }
+  }
+  if (state === null || typeof absolute !== 'string' || !absolute.startsWith('/')) return null;
+  const canonical = lexical(systemTmp(absolute));
   if (canonical !== state.root && !canonical.startsWith(`${state.root}/`)) return null;
   return { state, path: canonical };
 };
@@ -457,11 +470,28 @@ const wsRm = (path, options = {}) => {
   }
   if (state.dirs.has(canonical)) {
     if (options.recursive !== true) {
-      const error = new Error(`ENOTEMPTY: directory not empty, rm '${canonical}'`);
-      error.code = 'ENOTEMPTY';
-      error.syscall = 'rm';
-      error.path = canonical;
-      throw error;
+      // Plain rmdir (node): succeeds ONLY on an empty directory — any
+      // tracked file or subdir below it is ENOTEMPTY (W3-K, 2026-09-28: the
+      // spill-local sweep rmdirs emptied session dirs; demanding recursive
+      // here made every plain rmdir throw and left the dir entry alive, so
+      // the prune assertions saw existsSync true).
+      const prefix = `${canonical}/`;
+      const hasChildren = [...state.files.keys()].some((k) => k.startsWith(prefix))
+        || [...state.dirs].some((k) => k.startsWith(prefix));
+      if (hasChildren) {
+        const error = new Error(`ENOTEMPTY: directory not empty, rmdir '${canonical}'`);
+        error.code = 'ENOTEMPTY';
+        error.syscall = 'rmdir';
+        error.path = canonical;
+        throw error;
+      }
+      if (canonical !== state.root) {
+        state.dirs.delete(canonical);
+        state.dirIno.delete(canonical);
+        state.dirModes?.delete(canonical);
+        notifyWatches(canonical);
+      }
+      return;
     }
     const prefix = `${canonical}/`;
     for (const key of [...state.files.keys()]) {
@@ -479,6 +509,12 @@ const wsRm = (path, options = {}) => {
       state.dirIno.delete(canonical);
       state.dirModes?.delete(canonical);
     }
+    notifyWatches(canonical);
+    return;
+  }
+  if (wsIsDirAt(canonical) && options.force === true) {
+    // An implicit directory (children-only existence) can only vanish by
+    // removing its children; force swallows that impossibility (node rm -f).
     return;
   }
   if (options.force !== true) throw wsEnoent('rm', canonical);

@@ -25,6 +25,7 @@
  * (no bodyUsed policing — the corpus never double-consumes without clone).
  */
 import { ReadableStream } from '/upstream/shims/web-streams.js';
+import { dispatchLoopback } from 'upstream/shims/node-http-loopback.js';
 
 const encoder = () => new globalThis.TextEncoder();
 const decoder = () => new globalThis.TextDecoder();
@@ -423,11 +424,19 @@ const encodeComponent = (text) => encodeURIComponent(text).replace(/[!'()*]/g, (
  * FAIL-LOUD value (rule 5): the global must EXIST (the closure probes it,
  * observers install over it, Node — the differential reference — has it),
  * but the spike runtime owns no network surface; the gateway's httpFetch is
- * the only network seam, so a real call rejects instead of dialing. */
+ * the only network seam, so a real call rejects instead of dialing. The ONE
+ * served branch is the in-process loopback (node-http-loopback.js): an
+ * in-test `http.createServer` registered on 127.0.0.1 is dispatched through
+ * its handler with no socket involved — unmatched targets keep the loud
+ * rejection below, byte for byte. */
 export const installWebFetchValues = () => {
-  const failLoudFetch = (_input, _init) => Promise.reject(
-    new TypeError('fetch: the spike runtime has no network surface — the gateway owns the network seam (httpFetch)'),
-  );
+  const failLoudFetch = (input, init) => {
+    const loopback = dispatchLoopback(input, init);
+    if (loopback !== undefined) return loopback;
+    return Promise.reject(
+      new TypeError('fetch: the spike runtime has no network surface — the gateway owns the network seam (httpFetch)'),
+    );
+  };
   const installs = [
     ['DOMException', DOMException],
     ['Headers', Headers],
@@ -441,7 +450,13 @@ export const installWebFetchValues = () => {
   ];
   const installed = [];
   for (const [name, value] of installs) {
-    if (globalThis[name] === undefined) {
+    // A web-dom FALLBACK face (marked __dshWebDomFallback — its minimal
+    // FormData exists for the DOM form-parsing path) does not count as a
+    // host-provided face: the full W3C surface here supersedes it (W3-K,
+    // 2026-09-28 — the fallback shadowed FormData.set and regressed the
+    // file-store suite).
+    const existing = globalThis[name];
+    if (existing === undefined || existing?.__dshWebDomFallback === true) {
       globalThis[name] = value;
       installed.push(name);
     }

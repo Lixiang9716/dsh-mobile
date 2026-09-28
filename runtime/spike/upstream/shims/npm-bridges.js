@@ -33,36 +33,113 @@
  * loader's own resolution error naming the path.
  */
 
-// The pi-ai built-in model CATALOG, composed through the sanctioned JSON
-// seam (round 4, 2026-09-27). Neither dist/providers/all.js nor the model
-// catalog can be served verbatim: the barrel and every
-// dist/providers/*.models.js carry JSON import ATTRIBUTES
-// (`import values from "./data/x.json" with { type: "json" }`), and
-// quickjs-ng 0.17 cannot parse attribute syntax ('SyntaxError: expecting
-// ;'). But every byte of the catalog DATA is a plain JSON file, and the
-// flatten is a plain module (dist/model-catalog.js) — so this face reads
-// the pinned JSON files through the loader's sanctioned JSON seam
-// (__dshBundleRequire) and flattens with the vendored function: the MODELS
-// map is byte-equivalent to the generated one. What is NOT derivable is
-// provider CONSTRUCTION (api/auth wiring lives in the unparseable
-// provider files), so builtinProviders()/builtinModels() & co fail loud
-// naming the gap (the chokidar pattern). Revisit when the pin moves or the
-// runtime grows import attributes; this row must not outlive that gap
-// silently.
+// The pi-ai faces, composed through the sanctioned JSON seam + the loader
+// shadow seam (round 5, 2026-09-28; catalog-only face was round 4,
+// 2026-09-27). The blocker round 4 named — dist/providers/*.models.js and
+// providers/all.js carry JSON import ATTRIBUTES (`import values from
+// "./data/x.json" with { type: "json" }`) that quickjs-ng 0.17 cannot parse
+// ('SyntaxError: expecting ;') — is now routed AROUND without touching a
+// vendored byte (D6): the host loader checks RUNTIME-DEFINED modules before
+// disk loads for absolute /vendor names, and dsh_normalize resolves a
+// relative import of an on-disk-loaded module against its directory in
+// SPECIFIER space. So a runtime module registered under the ABSOLUTE vendor
+// path of a generated `providers/<id>.models.js` replaces that file for
+// every importer (its sibling provider constructor files and
+// models.generated.js) while all other files keep loading VERBATIM. Each
+// shadow source is the generated file's own 3-line shape with the attribute
+// rewritten to the __dshBundleRequire JSON seam; the composed
+// providers/all barrel keeps the real all.js body (39 provider constructors,
+// createModels/createImagesModels wiring) with only its two attribute
+// imports rewritten the same way. Provider ids ride the generated catalog
+// manifest (39 ids, each a 1:1 data/<id>.json ↔ providers/<id>.models.js
+// pair — measured 2026-09-28); id → export-name shapes measured against the
+// vendored dist (`google-vertex` → GOOGLE_VERTEX_MODELS /
+// googleVertexProvider).
+const PI_AI_DIST = '/vendor/npm/@earendil-works/pi-ai@0.85.1/dist';
+// id → provider-file export name, MEASURED verbatim against the vendored
+// all.js import block (2026-09-28) — the generated names are NOT a uniform
+// camelCase of the id (azure-openai-responses → azureOpenAIResponsesProvider
+// but openai-codex → openaiCodexProvider; cloudflare-ai-gateway →
+// cloudflareAIGatewayProvider), so no derivation rule survives the pin; a
+// pin move fails LOUD here (a missing export names itself).
+const PI_AI_PROVIDER_EXPORTS = {
+  'amazon-bedrock': 'amazonBedrockProvider',
+  'ant-ling': 'antLingProvider',
+  'anthropic': 'anthropicProvider',
+  'azure-openai-responses': 'azureOpenAIResponsesProvider',
+  'baseten': 'basetenProvider',
+  'cerebras': 'cerebrasProvider',
+  'cloudflare-ai-gateway': 'cloudflareAIGatewayProvider',
+  'cloudflare-workers-ai': 'cloudflareWorkersAIProvider',
+  'deepseek': 'deepseekProvider',
+  'fireworks': 'fireworksProvider',
+  'github-copilot': 'githubCopilotProvider',
+  'google': 'googleProvider',
+  'google-vertex': 'googleVertexProvider',
+  'groq': 'groqProvider',
+  'huggingface': 'huggingfaceProvider',
+  'kimi-coding': 'kimiCodingProvider',
+  'minimax': 'minimaxProvider',
+  'minimax-cn': 'minimaxCnProvider',
+  'mistral': 'mistralProvider',
+  'moonshotai': 'moonshotaiProvider',
+  'moonshotai-cn': 'moonshotaiCnProvider',
+  'nvidia': 'nvidiaProvider',
+  'openai': 'openaiProvider',
+  'openai-codex': 'openaiCodexProvider',
+  'opencode': 'opencodeProvider',
+  'opencode-go': 'opencodeGoProvider',
+  'openrouter': 'openrouterProvider',
+  'openrouter-images': 'openrouterImagesProvider',
+  'qwen-token-plan': 'qwenTokenPlanProvider',
+  'qwen-token-plan-cn': 'qwenTokenPlanCnProvider',
+  'qwen-token-plan-individual': 'qwenTokenPlanIndividualProvider',
+  'radius': 'radiusProvider',
+  'together': 'togetherProvider',
+  'vercel-ai-gateway': 'vercelAIGatewayProvider',
+  'xai': 'xaiProvider',
+  'xiaomi': 'xiaomiProvider',
+  'xiaomi-token-plan-ams': 'xiaomiTokenPlanAmsProvider',
+  'xiaomi-token-plan-cn': 'xiaomiTokenPlanCnProvider',
+  'xiaomi-token-plan-sgp': 'xiaomiTokenPlanSgpProvider',
+  'zai': 'zaiProvider',
+  'zai-coding-cn': 'zaiCodingCnProvider',
+};
+const piAiUpperSnake = (id) => `${id.toUpperCase().replace(/-/g, '_')}_MODELS`;
+const PI_AI_PROVIDER_IDS = Object.keys(JSON.parse(globalThis.__dshBundleRequire(
+  `${PI_AI_DIST}/providers/all.js`, './data/.manifest.json',
+)).files).map((file) => file.replace(/\.json$/, ''));
+
+/** Loader-shadow modules for the 39 unparseable generated .models.js files.
+ * TWO names per file: the absolute vendor path (direct imports) AND the
+ * bundle-relative path — dsh_resolve_relative tokenizes a slash-prefixed
+ * importer directory into a leading EMPTY segment, so its join produces the
+ * NO-slash spelling ('vendor/npm/…') and relative re-entry (from the sibling
+ * provider files and models.generated.js) never carries the slash. */
+const PI_AI_MODEL_SHADOWS = PI_AI_PROVIDER_IDS.flatMap((id) => {
+  const source = [
+    `import { flattenModelCatalog } from '${PI_AI_DIST}/model-catalog.js';`,
+    `const values = JSON.parse(globalThis.__dshBundleRequire(`,
+    `    '${PI_AI_DIST}/providers/models.js', './data/${id}.json'));`,
+    `export const ${piAiUpperSnake(id)} = flattenModelCatalog('${id}', values);`,
+  ].join('\n');
+  return [
+    [`${PI_AI_DIST}/providers/${id}.models.js`, source],
+    [`${PI_AI_DIST.slice(1)}/providers/${id}.models.js`, source],
+  ];
+});
+
+/** The composed providers/all barrel: the real all.js body with its two
+ * attribute imports rewritten to the JSON seam. The catalog face
+ * (getBuiltinModel(s) et al) is byte-equivalent to round 4's; the round-4
+ * refuseProviders stubs grow the REAL construction bodies. */
 const PI_AI_PROVIDERS_ALL = [
-  "import { flattenModelCatalog } from '/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/model-catalog.js';",
-  "const manifest = JSON.parse(globalThis.__dshBundleRequire(",
-  "  '/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/all.js', './data/.manifest.json'));",
-  "const MODELS = {};",
-  "for (const file of Object.keys(manifest.files)) {",
-  "  const id = file.replace(/\\.json$/, '');",
-  "  const values = JSON.parse(globalThis.__dshBundleRequire(",
-  "    '/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/models.js', './data/' + file));",
-  "  MODELS[id] = flattenModelCatalog(id, values);",
-  "}",
-  "const refuseProviders = () => {",
-  "  throw new Error('pi-ai: provider construction is not served — dist/providers/*.models.js use JSON import attributes (with type json) which quickjs-ng 0.17 cannot parse; the model catalog (getBuiltinModels et al) is served');",
-  "};",
+  `import { createModels } from '${PI_AI_DIST}/models.js';`,
+  `import { createImagesModels } from '${PI_AI_DIST}/images-models.js';`,
+  `import { MODELS } from '${PI_AI_DIST}/models.generated.js';`,
+  `const manifest = JSON.parse(globalThis.__dshBundleRequire(`,
+  `  '${PI_AI_DIST}/providers/all.js', './data/.manifest.json'));`,
+  ...PI_AI_PROVIDER_IDS.map((id) => `import { ${PI_AI_PROVIDER_EXPORTS[id]} } from '${PI_AI_DIST}/providers/${id}.js';`),
   "/** Typed read of the generated built-in catalog. */",
   "export function getBuiltinModel(provider, modelId) {",
   "    const models = MODELS[provider];",
@@ -82,17 +159,37 @@ const PI_AI_PROVIDERS_ALL = [
   "        ? Object.values(models)",
   "        : [];",
   "}",
-  "/** All built-in providers — NOT served (see refuseProviders). */",
-  "export function builtinProviders() { refuseProviders(); }",
-  "/** A `Models` collection with every built-in provider registered — NOT served. */",
-  "export function builtinModels(options) { refuseProviders(); }",
-  "/** All built-in image-generation providers — NOT served. */",
-  "export function builtinImagesProviders() { refuseProviders(); }",
-  "/** An `ImagesModels` collection — NOT served. */",
-  "export function builtinImagesModels(options) { refuseProviders(); }",
+  "/** All built-in providers, freshly constructed (the real all.js body). */",
+  "export function builtinProviders() {",
+  `    return [${PI_AI_PROVIDER_IDS.map((id) => `${PI_AI_PROVIDER_EXPORTS[id]}()`).join(', ')}];`,
+  "}",
+  "/** A `Models` collection with every built-in provider registered. */",
+  "export function builtinModels(options) {",
+  "    const models = createModels(options);",
+  "    for (const provider of builtinProviders()) {",
+  "        models.setProvider(provider);",
+  "    }",
+  "    return models;",
+  "}",
+  "/** All built-in image-generation providers, freshly constructed. */",
+  "export function builtinImagesProviders() {",
+  `    return [${PI_AI_PROVIDER_EXPORTS['openrouter-images']}()];`,
+  "}",
+  "/** An `ImagesModels` collection with every built-in image provider. */",
+  "export function builtinImagesModels(options) {",
+  "    const models = createImagesModels(options);",
+  "    for (const provider of builtinImagesProviders()) {",
+  "        models.setProvider(provider);",
+  "    }",
+  "    return models;",
+  "}",
 ].join('\n');
 
 const BRIDGES = [
+  // The pi-ai loader shadows FIRST (definition order is irrelevant to
+  // resolution — every row lands in the same registry before any spec
+  // loads — but keeping the family together reads top-down).
+  ...PI_AI_MODEL_SHADOWS,
   ['diff', "export * from '/vendor/npm/diff@9.0.0/libesm/index.js';"],
   ['yaml', "export * from '/vendor/npm/yaml@2.9.0/browser/index.js';"],
   // The upstream-suite growth round 3 (2026-09-25): test faces the suite's
@@ -325,6 +422,21 @@ const BRIDGES = [
     "};",
     "export default refuse;",
   ].join(' ')],
+
+  // execa: NO vendored tree (the cross-spawn precedent, same D2 wall). The
+  // vendored dsh-plugin-manager and dsh-loader-smoke libs import { execa } at
+  // MODULE scope for their pnpm/loader-subprocess faces; the linkage row
+  // resolves the bare name and the member fails loud when CALLED. The specs
+  // that load these libs only exercise pure config/render logic (or
+  // self-skip on spawnSync's no-process result), never reach the call.
+  ['execa', [
+    "const refuse = (name) => () => {",
+    "  throw new Error('execa: ' + name + ' is not served in this runtime — no subprocess seam (rule D2)');",
+    "};",
+    "export const execa = refuse('execa');",
+    "export const $ = refuse('$');",
+    "export default { execa, $ };",
+  ].join('\n')],
 
   // @earendil-works/pi-ai 0.85.1 (llm-pi-ai family): the subpaths the specs
   // import, at their dist faces. The .lazy api modules dynamic-import their

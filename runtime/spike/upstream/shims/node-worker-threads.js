@@ -95,6 +95,10 @@ export class MessagePort {
   removeListener(event, fn) { return this.off(event, fn); }
   removeEventListener(event, fn) { return this.off(event, fn); }
   listenerCount(event) { return this.#listeners.get(event)?.length ?? 0; }
+  /** node's inspectors read a port's listeners like any emitter's
+   * (events.getEventListeners dispatches on the listenerCount+listeners
+   * pair), so the raw list face is part of the port contract. */
+  listeners(event) { return [...(this.#listeners.get(event) ?? [])]; }
   emit(event, ...args) {
     for (const fn of [...(this.#listeners.get(event) ?? [])]) fn(...args);
     return this.#listeners.has(event);
@@ -140,10 +144,15 @@ export class MessagePort {
     this.emit('close');
   }
 
-  /** The peer closed: same observable state — no further messages, 'close'
-   * fires on this end too. */
+  /** The peer closed: messages the peer posted BEFORE closing still deliver
+   * (node's discipline — 'close' fires only after the queued incoming
+   * messages drain; worker-rpc's answer() posts the response then closes,
+   * and the requester must observe that response, never the close), then
+   * this end closes too. */
   #peerClosed() {
     if (this.#closed) return;
+    this.#started = true; // allow the final drain without a start() gate
+    this.#drain();
     this.#closed = true;
     this.#queue.length = 0;
     this.emit('close');

@@ -116,7 +116,11 @@ const parseAbsolute = (input) => {
   // otherwise-brackety host must FAIL construction, not become a URL whose
   // authority silently round-trips into paths (lsp renderUri keeps-malformed
   // test: 'file://[' stayed verbatim only if URL construction rejects it).
-  if (/[[\]]/.test(hostPart) && !/^\[[0-9a-fA-F:.]+\]$/.test(hostPart)) {
+  // A trailing numeric port belongs to the authority, not the literal
+  // (W3-K 2026-09-28: `http://[::1]:3000/a` threw here because the regex
+  // anchored before the port — the http-proxy policy's IPv6 bypass rows all
+  // build bracketed-with-port URLs).
+  if (/[[\]]/.test(hostPart) && !/^\[[0-9a-fA-F:.]+\](?::\d*)?$/.test(hostPart)) {
     throw new TypeError('Invalid URL');
   }
   return { scheme, authority: authorityFinal, pathname, search, fragment };
@@ -404,17 +408,38 @@ export class DshURL {
   }
 }
 
-/** POSIX `pathToFileURL`: absolute path → file: URL (percent-encoded). */
+/** POSIX `pathToFileURL`: absolute path → file: URL (percent-encoded). The
+ * input is a RAW FILESYSTEM path, not URL-space: a literal '%' is data and
+ * must become %25 (measured 2026-09-28: fs-ssh's remote paths carry literal
+ * '%20' names and node's pathToFileURL answers 'literal%2520…'). This is why
+ * the raw-path encoder below does NOT reuse pathEncode's keep-%XX rule —
+ * that rule is correct only for pathname values already in URL-space. */
+const rawFilePathEncode = (path) => path.replace(/[^A-Za-z0-9\-._~/!$&'()*+,;=:@]/g, (ch) => {
+  const bytes = encodeUtf8(ch);
+  return [...bytes].map((b) => `%${b.toString(16).toUpperCase().padStart(2, '0')}`).join('');
+});
 export const pathToFileURL = (path) => {
-  if (typeof path !== 'string' || !path.startsWith('/')) {
+  // node resolves a relative input against process.cwd() (pathToFileURL
+  // shares path.resolve's semantics); the pinned profile cwd plays that
+  // role here (W3-K, 2026-09-28 — the typert generator re-URLs its
+  // cwd-relative scratch dir).
+  let resolved = path;
+  if (typeof resolved === 'string' && !resolved.startsWith('/')) {
+    const cwd = globalThis.__dshProfileCwd;
+    if (typeof cwd !== 'string' || !cwd.startsWith('/')) {
+      throw new Error(`node:url: pathToFileURL needs an absolute POSIX path (no profile cwd pinned), got ${JSON.stringify(path)}`);
+    }
+    resolved = `${cwd.replace(/\/$/, '')}/${resolved}`;
+  }
+  if (typeof resolved !== 'string' || !resolved.startsWith('/')) {
     throw new Error(`node:url: pathToFileURL needs an absolute POSIX path, got ${JSON.stringify(path)}`);
   }
   const url = new DshURL('file:///');
-  url.pathname = path;
+  url.pathname = resolved;
   return {
-    href: `file://${pathEncode(path)}`,
+    href: `file://${rawFilePathEncode(resolved)}`,
     protocol: 'file:',
-    pathname: pathEncode(path),
+    pathname: rawFilePathEncode(resolved),
     toString() { return this.href; },
   };
 };

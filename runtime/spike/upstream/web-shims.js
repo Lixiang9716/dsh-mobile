@@ -172,10 +172,18 @@ if (typeof globalThis.AbortController !== 'function') {
     // The listener registry is an OWN property (not a module WeakMap) so
     // node:events.getEventListeners can inspect targets the way node does —
     // the stagehand worker-rpc spec asserts an AbortSignal's abort listener
-    // list through that face (R3-G1, 2026-09-28).
+    // list through that face (R3-G1, 2026-09-28). The registry exists from
+    // CONSTRUCTION, not lazily on first addEventListener: a signal aborted
+    // before anyone listened never runs addEventListener, and node still
+    // reports an EMPTY listener list for it (worker-rpc "does not dispatch
+    // an already canceled request" inspects exactly that shape, W3-J
+    // 2026-09-27).
+    constructor() {
+      this.__dshEventListeners = new Map();
+    }
     addEventListener(type, listener, options = {}) {
       if (typeof listener !== 'function') return;
-      const map = this.__dshEventListeners ??= new Map();
+      const map = this.__dshEventListeners;
       const list = map.get(type) ?? [];
       map.set(type, [...list, { listener, once: options.once === true }]);
     }
