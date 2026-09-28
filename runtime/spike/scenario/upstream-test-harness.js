@@ -392,7 +392,36 @@ const throwMatchers = (actual, check) => ({
 
 /** Identity/truthiness matchers. */
 const identityMatchers = (actual, check) => ({
-  toBeInstanceOf(cls) { check(actual instanceof cls, `instance of ${cls?.name}`); },
+  toBeInstanceOf(cls) {
+    // Vendoring parity (W6-V, session-persistence-jsonl zstd contract): the
+    // staged spec bundle INLINES the vendored package's src/ (esbuild bundle
+    // mode over the test-tree relative imports) while the runtime serves the
+    // published lib build for the same bare specifier — the same nominal
+    // class exists as two distinct constructor objects across that boundary,
+    // so a strict instanceof can never hold for an error thrown by the lib
+    // and asserted against the bundle's copy (10 lifecycle-refusal tests
+    // failed on identity alone). Upstream's observable contract here is the
+    // error TYPE, so accept a same-named Error pair across the copy
+    // boundary. Narrow on purpose: fires only when instanceof already
+    // failed (real subclass assertions keep their semantics — a subclass
+    // instance passes instanceof up front, a wrong class fails the name
+    // match), and requires BOTH sides to be Error instances whose
+    // constructor names agree, modulo esbuild's `_` dedupe prefix on the
+    // bundle side.
+    let ok = actual instanceof cls;
+    if (!ok && typeof cls === 'function' && actual !== null && typeof actual === 'object') {
+      // esbuild renames colliding bundle-local bindings (SessionFormatUnsupportedError2)
+      // and prefixes re-used top-level names (_NodePrivateZstdFrameDecoder); strip both
+      // staging artifacts before comparing.
+      const nominal = (s) => String(s ?? '').replace(/^_+/, '').replace(/\d+$/, '');
+      const expectedName = typeof cls.name === 'string' ? nominal(cls.name) : '';
+      const actualName = actual.constructor?.name;
+      if (expectedName.length > 0
+        && (nominal(actualName) === expectedName || nominal(actual.name) === expectedName)
+        && cls.prototype instanceof Error && actual instanceof Error) ok = true;
+    }
+    check(ok, `instance of ${cls?.name}`);
+  },
   toBeNull() { check(actual === null, `null (got ${fmt(actual)})`); },
   toBeUndefined() { check(actual === undefined, `undefined (got ${fmt(actual)})`); },
   toBeDefined() { check(actual !== undefined, 'defined'); },
@@ -570,6 +599,14 @@ const viApi = {
     const spy = makeMockFn(typeof original === 'function' ? original : undefined);
     spy.mockRestore = () => { object[key] = original; };
     object[key] = spy;
+    // Registry for vi.restoreAllMocks (W6-V: session-persistence zstd — the
+    // "falls back to the public decoder" test mocks the PRIVATE create
+    // static to undefined and relies on afterEach's restoreAllMocks to undo
+    // it; the old no-op left the static mocked, so every later create() in
+    // the file returned undefined). Vitest restores spies created with
+    // spyOn; plain vi.fn mocks have no original property to put back.
+    if (!viApi._spies) viApi._spies = [];
+    if (!viApi._spies.includes(spy)) viApi._spies.push(spy);
     return spy;
   },
   stubGlobal(name, value) {
@@ -611,7 +648,15 @@ const viApi = {
     for (const restore of viApi._globalStubs ?? []) restore.mockRestore?.();
     viApi._globalStubs = [];
   },
-  restoreAllMocks() { /* spies restore on their own handles */ },
+  // Vitest: restore original implementations of every vi.spyOn spy (the
+  // registry above). Plain vi.fn mocks stay as created — they have no
+  // original property to restore (matches vitest's restore semantics for
+  // bare mocks, whose mockReset goes to the CREATION implementation, not
+  // the pre-spy property).
+  restoreAllMocks() {
+    for (const spy of viApi._spies ?? []) spy.mockRestore?.();
+    viApi._spies = [];
+  },
   clearAllMocks() { /* spies clear on their own handles */ },
   mocked: (v) => v,
   hoisted: (factory) => factory(),
@@ -642,8 +687,13 @@ describe.only = (name, factory) => describe(name, factory);
 // acp-snapshot suite selects describe.concurrent for replay mode (W5-T).
 describe.concurrent = (name, optionsOrFactory, maybeFactory) => describe(name, optionsOrFactory, maybeFactory);
 
-export const it = (name, fn) => {
-  suite.tests.push({ name: fullName(name), fn, hooks: { beforeEach: [...suite.beforeEach], afterEach: [...suite.afterEach] } });
+export const it = (name, optionsOrFn, maybeFn) => {
+  // vitest's (name, { timeout }, fn) spelling — the process-exit spec's
+  // it.each rows pass a per-test budget that the runner reads as
+  // t.timeoutMs (its deadline default stays 5000 when absent).
+  const fn = typeof optionsOrFn === 'function' ? optionsOrFn : maybeFn;
+  const options = typeof optionsOrFn === 'function' ? undefined : optionsOrFn;
+  suite.tests.push({ name: fullName(name), fn, timeoutMs: options?.timeout, hooks: { beforeEach: [...suite.beforeEach], afterEach: [...suite.afterEach] } });
 };
 it.skip = () => {};
 it.only = it;

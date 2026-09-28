@@ -75,15 +75,17 @@ export const readFile = async (path, options) => {
     // VFS models; when the VFS face misses and the real disk has the file,
     // read it through the host (base64 bridge, same channel the spawn
     // pumps). VFS-first precedence is preserved — staged bytes win.
+    // Read-as-existence (W6-V): __dshProcStatReal declines INTERMEDIATE-
+    // symlink paths ('<skills>/linked-dir/SKILL.md' through a real dir
+    // symlink: stat null, read serves the bytes — measured), so the read
+    // intrinsic itself is the existence check; the ENOENT below stays the
+    // answer for genuinely absent paths.
     if (typeof path === 'string' && path.startsWith('/')) {
-      const real = globalThis.__dshProcStatReal?.(path);
-      if (real?.isFile) {
+      const b64 = globalThis.__dshProcReadReal?.(path);
+      if (b64 !== undefined && b64 !== null) {
         const encoding2 = typeof options === 'string' ? options : options?.encoding;
-        const b64 = globalThis.__dshProcReadReal?.(path);
-        if (b64 !== undefined && b64 !== null) {
-          const bytes = Buffer.from(fromBase64Shim(b64));
-          return encoding2 && encoding2 !== 'buffer' ? bytes.toString(encoding2) : bytes;
-        }
+        const bytes = Buffer.from(fromBase64Shim(b64));
+        return encoding2 && encoding2 !== 'buffer' ? bytes.toString(encoding2) : bytes;
       }
     }
     throw enoent('open', path);
@@ -229,7 +231,7 @@ export const writeFile = async (path, data, options) => {
   }
   if (flag.includes('x')) {
     let exists = false;
-    try { exists = existsSync(path); } catch { exists = false; }
+    try { exists = existsSync(path) || realFileExists(path); } catch { exists = false; }
     if (exists) {
       const error = new Error(`EEXIST: file already exists, open '${path}'`);
       error.code = 'EEXIST';
@@ -242,6 +244,8 @@ export const writeFile = async (path, data, options) => {
     return _wsWriteFile(path, bytes, options?.mode);
   }
   if (flag.startsWith('a')) return appendFile(path, bytes);
+  // The real-disk write-through lives inside _wsWriteFile (fs-workspace.js)
+  // so this face and the sync/copy/append/fd faces mirror identically.
   return _wsWriteFile(path, bytes, options?.mode);
 };
 
@@ -339,6 +343,24 @@ export const appendFile = async (path, data, options) => {
   return _wsWriteFile(path, merged, options?.mode);
 };
 export const unlink = async (path) => _wsRm(path, { force: false });
+
+/** realFileExists(path) — the real-disk existence face the exclusivity checks
+ * ('wx'/O_EXCL) must consult BEFORE creating: node's O_EXCL fails when the
+ * file exists for ANY reason, including files created behind the VFS by real
+ * children (the subprocess seam's sqlite databases — W6-V, 2026-09-28: the
+ * 'wx' create in storage-sqlite's createDatabaseFile truncated a live
+ * database the VFS could not see, silently resetting PRAGMA user_version).
+ * VFS-first semantics are preserved: existsSync answers first, this only
+ * decides the exclusive-create refusal. */
+const realFileExists = (path) => {
+  if (typeof path !== 'string' || !path.startsWith('/')) return false;
+  try {
+    return globalThis.__dshProcStatReal?.(path)?.isFile === true;
+  } catch {
+    return false;
+  }
+};
+
 // rmdir delegates to the same workspace removal unlink uses — the workspace
 // view has no empty-dir bookkeeping, so the POSIX empty-dir restriction is
 // not expressible here; demanded at link time by the upstream specs.
@@ -570,7 +592,7 @@ export const open = async (path, flags = 'r', mode) => {
     return new FileHandle(path, flags, true);
   }
   if (flags.includes('x')) {
-    if (existsSync(path)) {
+    if (existsSync(path) || realFileExists(path)) {
       const error = new Error(`EEXIST: file already exists, open '${path}'`);
       error.code = 'EEXIST';
       error.errno = -17;

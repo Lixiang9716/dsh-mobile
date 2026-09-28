@@ -156,6 +156,9 @@ const REAL_SIBLING_FILES = [
   ['packages/host/directory-picker-native/src/win32-dialog-worker.ts', 'win32-dialog-worker.ts'],
   // the sdk-client fake runtime server (spawned as `execPath fake-runtime.ts`)
   ['packages/sdk/client/tests/fake-runtime.ts', 'fake-runtime.ts'],
+  // skill-office's checkers spec spawns `python3 check_office_test.py` — the
+  // script is a REAL sibling of the vendored spec (W6-V, 2026-09-28)
+  ['packages/skill/skill-office/tests/check_office_test.py', 'check_office_test.py'],
 ];
 const VENDOR_TESTS_TAG = 'dsh-v0.1.6-alpha.2'; // the ensure-dsh-tests.sh pin
 const stageRealSiblingFiles = async () => {
@@ -176,6 +179,151 @@ const stageRealSiblingFiles = async () => {
   }
 };
 
+/** Stage the running spec's PACKAGE SOURCE tree into the seeded read-only
+ * view at the bundle-root paths the transpiled spec's source-introspection
+ * joins resolve to (W6-V, 2026-09-28). The source-audit tests read their own
+ * production sources — `readFileSync(new URL('../src/brand.ts',
+ * import.meta.url), 'utf8')` — which on the monorepo layout resolves beside
+ * the spec; under flat staging (spec at /upstream-tests/<stem>.spec.mjs) the
+ * same join lands at /src/<file>. The vendored tree holds those bytes
+ * verbatim (D6: read-only, staged not edited), so the leg seeds them. The
+ * stem → package mapping is the transpiler's own flat name (path segments
+ * joined by '__'), so only specs whose third segment is `tests` with a
+ * shipped src/ tree stage anything. Listing rides the subprocess seam's find
+ * (desktop only; elsewhere this is inert, like the sibling staging). */
+const stageSourceIntrospectionTree = async (spec, emit) => {
+  log.debug('source-introspection staging begin', { spec: spec.slice(0, 120) });
+  const stem = spec.replace(/^upstream-tests\//, '').replace(/\.spec\.mjs$/, '');
+  const parts = stem.split('__');
+  if (parts.length < 3 || parts[2] !== 'tests') return;
+  const vendorSrc = `vendor/dsh-tests@${VENDOR_TESTS_TAG}/packages/${parts[0]}/${parts[1]}/src`;
+  const { spawnSync } = await import('node:child_process');
+  const list = spawnSync('find', [vendorSrc, '-type', 'f']);
+  if (list.status !== 0 || typeof list.stdout !== 'string') {
+    log.debug('source-introspection list failed', { code: list.status, err: String(list.error?.code ?? '') });
+    return;
+  }
+  const realFiles = list.stdout.split('\n').filter((line) => line.length > 0);
+  if (realFiles.length === 0) return;
+  const { fromBase64 } = await import('upstream/shims/buffer.js');
+  const { seedStagedFiles } = await import('upstream/shims/fs.js');
+  const seeds = {};
+  for (const realPath of realFiles) {
+    const b64 = globalThis.__dshProcReadReal?.(realPath);
+    if (typeof b64 !== 'string') continue;
+    seeds[`/src${realPath.slice(vendorSrc.length)}`] = { bytes: fromBase64(b64), mtimeMs: 0 };
+  }
+  const staged = Object.keys(seeds).length;
+  if (staged === 0) return;
+  seedStagedFiles(seeds);
+  emit('suite/source-stage', { staged });
+};
+
+/** Install the flat-path map (W6-V): the transpiled specs' bundle-relative
+ * joins (/vendor/..., /upstream-tests/...) are REAL directories of the
+ * desktop checkout — the fs faces' real-disk fallbacks re-root through this
+ * map so reads/stats of vendored assets answer from the pinned tree (D6: the
+ * same read-only bytes the loader serves). Relative re-rootings resolve
+ * against the CLI's real working directory, exactly like the sibling
+ * staging's /bin/cp. Undefined for paths with no real-world twin. */
+const installFlatPathMap = () => {
+  globalThis.__dshFlatPathMap = (path) => {
+    if (typeof path !== 'string') return undefined;
+    if (path.startsWith('/vendor/') || path.startsWith('/upstream-tests/')) {
+      return path.slice(1);
+    }
+    return undefined;
+  };
+};
+
+/** Preload the child-process namespace for the fs faces' real-disk readdir
+ * (fs.js lazy-imports it, but specs walk fixtures at MODULE scope — no job
+ * drain between fs.js's eval and the walk — so the leg pins it here, ahead
+ * of the spec import, where async context exists). */
+const preloadRealFs = async () => {
+  try {
+    const ns = await import('node:child_process');
+    globalThis.__dshChildProcessNs = ns;
+  } catch (error) {
+    log.debug('child-process preload failed', { reason: String(error).slice(0, 120) });
+  }
+};
+
+/** Stage the spec's tests/fixtures tree as REAL files under
+ * upstream-tests/fixtures (W6-V, 2026-09-28). The transpiler already seeds
+ * those bytes into the VFS at /upstream-tests/fixtures (the bundle-root
+ * join), but specs that resolve fixtures against process.cwd() produce the
+ * WORKSPACE-absolute <cwd>/upstream-tests/fixtures path — outside every
+ * seeded view. The copy is verbatim (D6: read-only staging) and desktop-only
+ * like the sibling staging. */
+const stageRealFixturesTree = async (spec) => {
+  const stem = spec.replace(/^upstream-tests\//, '').replace(/\.spec\.mjs$/, '');
+  const parts = stem.split('__');
+  if (parts.length < 3 || parts[2] !== 'tests') return;
+  const vendorFixtures = `vendor/dsh-tests@${VENDOR_TESTS_TAG}/packages/${parts[0]}/${parts[1]}/tests/fixtures`;
+  // The cwd-joined path is the RUN'S OWN real scope root (the per-run
+  // mkdtemp), not the CLI checkout — materialize there (absolute real paths;
+  // the /bin tools see exactly what the real fallback will stat).
+  const target = `${globalThis.__dshProfileCwd?.replace(/\/$/, '') ?? ''}/upstream-tests`;
+  if (!target.startsWith('/tmp/')) return;
+  const { spawnSync } = await import('node:child_process');
+  spawnSync('/bin/mkdir', ['-p', target]);
+  const res = spawnSync('/bin/cp', ['-R', vendorFixtures, `${target}/`]);
+  if (res.status !== 0) {
+    log.debug('fixtures tree stage skipped', { vendorFixtures, code: res.status });
+  }
+  // Fixture tsconfigs compile REAL TypeScript against the staged tree; bare
+  // imports the tsconfig `paths` map does not cover resolve through
+  // node_modules walk-up, which ends at <profile>/node_modules (nothing
+  // above the per-run container exists). The vendored zod (the one bare
+  // specifier the typert type-model fixture uses) mirrors there as a real
+  // copy — cp -R follows the vendor symlink, so the run container is
+  // self-contained (D6: read-only staging of the pinned vendored bytes).
+  // Extend SPECIFIC packages here when a fixture names one; never mirror
+  // the whole vendor tree (host cost, and @deepseek-ai/* types are served
+  // by the fixture tsconfig's own paths map).
+  for (const pkg of ['zod']) {
+    const probe = spawnSync('/bin/test', ['-d', `vendor/node_modules/${pkg}`]);
+    if (probe.status !== 0) continue;
+    // cp -R src dest/ needs dest to exist (no implicit mkdir in /bin/cp).
+    spawnSync('/bin/mkdir', ['-p', `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules`]);
+    const mirror = spawnSync('/bin/cp', ['-R', `vendor/node_modules/${pkg}`, `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules/`]);
+    if (mirror.status !== 0) {
+      log.debug('fixture node_modules mirror skipped', { pkg, code: mirror.status });
+    }
+  }
+  // @types/node is NOT vendored (a vendoring decision — only the fixture
+  // compiles want it), but the type-model fixture's models reference the
+  // NodeJS namespace (NodeJS.Process). Stage a MINIMAL test-support
+  // declaration authored in OUR layer (the .parity-shim precedent): just
+  // enough ambient vocabulary for the namespace lookups to resolve — the
+  // analyzer under test observes the fixture's OWN declarations, and the
+  // vendored fixture tree must stay verbatim (D6).
+  const nm = `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules/@types/node`;
+  spawnSync('/bin/mkdir', ['-p', nm]);
+  const decl = [
+    '// Test-support minimum staged by upstream-suite-leg (W6-V): the vendored',
+    '// fixture closure names the NodeJS namespace; @types/node itself is not',
+    '// vendored. Ambient vocabulary only — no member shapes are asserted.',
+    'declare namespace NodeJS {',
+    '  interface Process {}',
+    '  interface ProcessEnv { [key: string]: string | undefined }',
+    '  interface Timeout {}',
+    '  interface Immediate {}',
+    '}',
+    'declare namespace NodeJS { interface Process { env: ProcessEnv } }',
+    '',
+  ].join('\n');
+  // The python3 writer (a staged real child) owns the bytes; spawnSync has
+  // no stdin-input face worth leaning on here.
+  const writer = spawnSync('/usr/bin/python3', ['-c', `import pathlib; pathlib.Path('${nm}/index.d.ts').write_text(${JSON.stringify(decl)})`]);
+  if (writer.status !== 0) {
+    log.debug('fixture @types/node stub skipped', { code: writer.status });
+  } else {
+    spawnSync('/usr/bin/python3', ['-c', `import json, pathlib; p = pathlib.Path('${nm}/package.json'); p.write_text(json.dumps({'name': '@types/node', 'version': '0.0.0-test-support', 'types': './index.d.ts'}))`]);
+  }
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = launchSpecFacts() ?? await takeRuntimeConfig();
@@ -184,9 +332,16 @@ const main = async () => {
   await pinProfileContainer();
   // Stage the spawned sibling files (real children read the real disk).
   await stageRealSiblingFiles();
+  // Bundle-relative paths re-root at the real checkout (see above).
+  installFlatPathMap();
+  // The fs faces' real readdir needs the namespace before the spec's
+  // module-scope walks run.
+  await preloadRealFs();
   const spec = cfg.spec;
   if (typeof spec !== 'string' || spec.length === 0) fail('runtime.config carries no spec path');
   emit('suite/spec', { spec });
+  // Stage the package source tree for the source-audit tests (see above).
+  await stageSourceIntrospectionTree(spec, emit);
 
   // The spec's fixtures module (emitted by transpile.mjs when the spec ships
   // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the
@@ -197,6 +352,8 @@ const main = async () => {
   // /upstream-tests/fixtures, one spec per runtime, so the flat namespace
   // never collides. A spec without a fixtures module simply skips.
   await seedSpecFixtures(spec, emit);
+  // cwd-joined fixture joins need the REAL tree (see stageRealFixturesTree).
+  await stageRealFixturesTree(spec);
   // The spec registers its tests at import time (module side effects are
   // the vitest collection model — exactly what the harness captures).
   await import(spec);

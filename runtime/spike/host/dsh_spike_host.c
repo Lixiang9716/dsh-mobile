@@ -120,12 +120,20 @@ typedef struct dsh_def_module {
  * ordinary timer seam. Portable POSIX only (fork/execvp/poll/waitpid): it
  * compiles on the mobile hosts but only the spike JS ever calls it. */
 #define DSH_PROC_MAX_SLOTS 64
+/* Extra stdio fds (node's stdio array may run past fd 2 — the ptc control
+ * channel rides fd 7; IPC-style protocols claim 3+). Each piped extra gets
+ * a tracked parent read end. (W6-U, 2026-09-28) */
+#define DSH_PROC_EXTRA 5
 typedef struct dsh_proc {
     int used;
     int pid;
     int stdin_w;      /* parent's write end of the child's stdin; -1 closed */
     int stdout_r;     /* parent's read end; -1 once EOF-closed */
     int stderr_r;
+    int extra_r[DSH_PROC_EXTRA];   /* parent read ends for fds 3..7; -1 closed */
+    int extra_eof[DSH_PROC_EXTRA];
+    unsigned char *xpending[DSH_PROC_EXTRA]; /* per-extra write backpressure */
+    size_t xpending_n[DSH_PROC_EXTRA], xpending_cap[DSH_PROC_EXTRA];
     int out_eof, err_eof;
     int reaped;
     int exit_code;    /* valid when reaped (WEXITSTATUS form) */
@@ -1511,8 +1519,10 @@ static char *dsh_normalize(JSContext *ctx, const char *base_name, const char *na
 #include <fcntl.h>
 #include <signal.h>
 #include <poll.h>
+#include <dirent.h> /* the __dshProcRmReal mirror's directory walk */
 #include <sys/wait.h>
 #include <sys/stat.h>
+#include <sys/socket.h> /* socketpair — the duplex extra-stdio channels */
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
 #endif
@@ -1749,42 +1759,55 @@ static void dsh_proc_remap_argv(dsh_spike_t *s, JSRuntime *rt, char **argv) {
 
 /* Shared fork+exec body for spawn/spawnSync. On success returns the pid and
  * leaves the parent ends in pin/pout/perr (-1 for non-pipe dispositions).
+ * extras[] receives the BIDIRECTIONAL parent ends for piped fds 3..7
+ * (socketpairs, libuv's own shape for node's extra stdio entries — the
+ * parent reads and writes the same descriptor); non-piped extras are -1.
  * On exec failure returns -1 with *exec_errno set (pipes already closed). */
 static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv,
                                 const char *cwd, char **envp,
-                                const int modes[3], int detached,
-                                int *pin, int *pout, int *perr, int *exec_errno) {
+                                const int modes[3 + DSH_PROC_EXTRA], int detached,
+                                int *pin, int *pout, int *perr,
+                                int extras[DSH_PROC_EXTRA], int *exec_errno) {
     int in[2] = { -1, -1 }, out[2] = { -1, -1 }, err[2] = { -1, -1 }, status[2] = { -1, -1 };
+    int x[DSH_PROC_EXTRA][2];
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) { x[i][0] = x[i][1] = -1; extras[i] = -1; }
     *pin = *pout = *perr = -1;
     if (modes[0] == 0 && pipe(in) < 0) return -1;
     if (modes[1] == 0 && pipe(out) < 0) { dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8); return -1; }
     if (modes[2] == 0 && pipe(err) < 0) { dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8); return -1; }
-    if (pipe(status) < 0) { dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8); return -1; }
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        /* mode 0 = pipe (and 'overlapped' — Windows spelling we pipe):
+         * a socketpair so the parent's stream is duplex, like node's
+         * extra-stdio channels; ignore/inherit extras stay -1. */
+        if (modes[3 + i] == 0 && socketpair(AF_UNIX, SOCK_STREAM, 0, x[i]) < 0) {
+            for (int j = 0; j < i; j++) { dsh_close_all((int[]){x[j][0], x[j][1]}, 2); }
+            dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8);
+            return -1;
+        }
+    }
+    if (pipe(status) < 0) {
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) dsh_close_all((int[]){x[i][0], x[i][1]}, 2);
+        dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8);
+        return -1;
+    }
     fcntl(status[1], F_SETFD, FD_CLOEXEC); /* the exec-success probe */
     pid_t pid = fork();
-    if (pid < 0) { dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8); return -1; }
+    if (pid < 0) {
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) dsh_close_all((int[]){x[i][0], x[i][1]}, 2);
+        dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0], status[1]}, 8);
+        return -1;
+    }
     if (pid == 0) {
         /* child: wire stdio, then exec (errno rides the status pipe) */
         if (detached) setsid();
-        if (cwd) {
-            /* The runtime's node:fs face keeps its writable workspace in an
-             * in-memory VFS, so directories the parent mkdtemp'd/mkdir'd may
-             * never have reached THIS disk. The child needs the directory
-             * the parent believes exists: materialize it (mkdir -p) before
-             * chdir — creation is idempotent (EEXIST fine), genuine
-             * failures still surface as spawn errors. (W5-R, 2026-09-28) */
-            char stage[4096];
-            snprintf(stage, sizeof(stage), "%s", cwd);
-            for (char *at = stage + 1; *at; at++) {
-                if (*at == '/') {
-                    *at = 0;
-                    (void)!mkdir(stage, 0755);
-                    *at = '/';
-                }
-            }
-            (void)!mkdir(stage, 0755);
-        }
         if (cwd && chdir(cwd) != 0) {
+            /* node's contract: a spawn with a missing workdir FAILS with
+             * ENOENT (no child runs). The W5-R child-side mkdir -p that
+             * stood here materialized every missing workdir and broke that
+             * contract (bash-sandbox's invalid-workdir tests measured it
+             * 2026-09-27: `true` ran, exit 0, instead of ENOENT). VFS dirs
+             * reach this disk through the parent-side mirrors instead
+             * (wsMkdir/wsWriteFile -> __dshProcMkdirReal/WriteFileReal). */
             int e = errno;
             (void)!write(status[1], &e, sizeof(e));
             _exit(126);
@@ -1800,7 +1823,17 @@ static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv
                 dup2(devnull >= 0 ? devnull : target[fd], target[fd]);
             } /* inherit: leave the spike's fd in place */
         }
-        dsh_close_all((int[]){in[0], in[1], out[0], out[1], err[0], err[1], status[0]}, 7);
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+            if (modes[3 + i] == 0) dup2(x[i][1], 3 + i); /* child's end of the pair */
+        }
+        int close_fds[7 + 2 * DSH_PROC_EXTRA];
+        int n = 0;
+        close_fds[n++] = in[0]; close_fds[n++] = in[1];
+        close_fds[n++] = out[0]; close_fds[n++] = out[1];
+        close_fds[n++] = err[0]; close_fds[n++] = err[1];
+        close_fds[n++] = status[0];
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) { close_fds[n++] = x[i][0]; close_fds[n++] = x[i][1]; }
+        dsh_close_all(close_fds, n);
         if (devnull > 2) close(devnull);
         dsh_execvpe(command, argv, envp);
         int e = errno;
@@ -1818,6 +1851,7 @@ static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv
     if (got == (ssize_t)sizeof(e)) {
         /* exec (or chdir) failed: node-shaped failure, no child to track */
         dsh_close_all((int[]){in[1], out[0], err[0]}, 3);
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) dsh_close_all((int[]){x[i][0], x[i][1]}, 2);
         int st = 0;
         waitpid(pid, &st, 0);
         *exec_errno = e;
@@ -1826,6 +1860,13 @@ static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv
     if (modes[0] == 0) { *pin = in[1]; fcntl(in[1], F_SETFL, fcntl(in[1], F_GETFL) | O_NONBLOCK); } /* non-blocking stdin: a paused reader must not deadlock the runtime (the 2MB didOpen abort test) */
     if (modes[1] == 0) { *pout = out[0]; fcntl(out[0], F_SETFL, fcntl(out[0], F_GETFL) | O_NONBLOCK); }
     if (modes[2] == 0) { *perr = err[0]; fcntl(err[0], F_SETFL, fcntl(err[0], F_GETFL) | O_NONBLOCK); }
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        if (modes[3 + i] == 0) {
+            close(x[i][1]); /* the child holds its duplicated end now */
+            extras[i] = x[i][0];
+            fcntl(x[i][0], F_SETFL, fcntl(x[i][0], F_GETFL) | O_NONBLOCK);
+        }
+    }
     return pid;
 }
 
@@ -1888,6 +1929,19 @@ static JSValue js_proc_poll(JSContext *ctx, JSValueConst this_val, int argc, JSV
         break;
     }
     if (p->pending_n == 0 && p->flush_err == 0) p->flush_err = flush_err;
+    /* Same flush pass for the extra channels' write buffers (W6-U). */
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        while (p->xpending_n[i] > 0 && p->extra_r[i] >= 0) {
+            ssize_t w = write(p->extra_r[i], p->xpending[i], p->xpending_n[i]);
+            if (w > 0) {
+                memmove(p->xpending[i], p->xpending[i] + w, p->xpending_n[i] - (size_t)w);
+                p->xpending_n[i] -= (size_t)w;
+                continue;
+            }
+            if (w < 0 && errno == EINTR) continue;
+            break; /* EAGAIN or gone — retried next tick */
+        }
+    }
     unsigned char *outb = NULL, *errb = NULL;
     size_t on = 0, ocap = 0, en = 0, ecap = 0;
     int out_eof = 0, err_eof = 0;
@@ -1901,6 +1955,16 @@ static JSValue js_proc_poll(JSContext *ctx, JSValueConst this_val, int argc, JSV
     } else err_eof = p->err_eof;
     if (out_eof && p->stdout_r >= 0) { close(p->stdout_r); p->stdout_r = -1; p->out_eof = 1; }
     if (err_eof && p->stderr_r >= 0) { close(p->stderr_r); p->stderr_r = -1; p->err_eof = 1; }
+    /* Drain the extra duplex channels the same way (W6-U): bytes surface as
+     * extraOut[i], EOF as extraEof[i]. */
+    unsigned char *xbuf[DSH_PROC_EXTRA] = { 0 };
+    size_t xn[DSH_PROC_EXTRA] = { 0 }, xcap[DSH_PROC_EXTRA] = { 0 };
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        if (p->extra_r[i] >= 0) {
+            int xe = dsh_drain_fd(rt, p->extra_r[i], &xbuf[i], &xn[i], &xcap[i]);
+            if (xe) { close(p->extra_r[i]); p->extra_r[i] = -1; p->extra_eof[i] = 1; }
+        }
+    }
 
     int exited = 0, exit_code = 0, exit_sig = 0;
     if (!p->reaped) {
@@ -1934,10 +1998,41 @@ static JSValue js_proc_poll(JSContext *ctx, JSValueConst this_val, int argc, JSV
     JS_SetPropertyStr(ctx, res, "signal", exited && exit_sig != 0 ? JS_NewInt32(ctx, exit_sig) : JS_NULL);
     JS_SetPropertyStr(ctx, res, "pendingStdin", JS_NewInt32(ctx, (int32_t)p->pending_n));
     JS_SetPropertyStr(ctx, res, "flushError", p->flush_err != 0 ? JS_NewInt32(ctx, p->flush_err) : JS_NULL);
+    /* Extra-channel reads ride parallel arrays (b64-or-null per slot 0..4 →
+     * child fds 3..7) plus pending-byte counts so the JS write callbacks
+     * resolve on drain, exactly like the stdin face. */
+    JSValue xout = JS_NewArray(ctx);
+    JSValue xeof = JS_NewArray(ctx);
+    JSValue xpend = JS_NewArray(ctx);
+    char idx[8];
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        snprintf(idx, sizeof(idx), "%d", i);
+        if (xn[i] > 0) {
+            char *xb64 = dsh_b64_encode_bytes(ctx, xbuf[i], xn[i]);
+            JS_SetPropertyStr(ctx, xout, idx, xb64 ? JS_NewString(ctx, xb64) : JS_NULL);
+            js_free(ctx, xb64);
+        } else {
+            JS_SetPropertyStr(ctx, xout, idx, JS_NULL);
+        }
+        JS_SetPropertyStr(ctx, xeof, idx, JS_NewBool(ctx, p->extra_eof[i]));
+        JS_SetPropertyStr(ctx, xpend, idx, JS_NewInt32(ctx, (int32_t)p->xpending_n[i]));
+        if (xbuf[i]) js_free_rt(rt, xbuf[i]);
+    }
+    JS_SetPropertyStr(ctx, res, "extraOut", xout);
+    JS_SetPropertyStr(ctx, res, "extraEof", xeof);
+    JS_SetPropertyStr(ctx, res, "extraPending", xpend);
     /* Fully settled and drained: release the slot (pid no longer needed). */
-    if (exited && p->stdin_w < 0 && p->stdout_r < 0 && p->stderr_r < 0 && p->pending_n == 0) {
+    int extras_done = 1;
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+        if (p->extra_r[i] >= 0 || p->xpending_n[i] > 0) extras_done = 0;
+    }
+    if (exited && p->stdin_w < 0 && p->stdout_r < 0 && p->stderr_r < 0 && p->pending_n == 0 && extras_done) {
         js_free_rt(rt, p->pending);
         p->pending = NULL; p->pending_n = 0; p->pending_cap = 0;
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+            if (p->xpending[i]) { js_free_rt(rt, p->xpending[i]); p->xpending[i] = NULL; }
+            p->xpending_n[i] = 0; p->xpending_cap[i] = 0;
+        }
         p->used = 0;
     }
     return res;
@@ -1992,6 +2087,112 @@ static JSValue js_proc_mkdir_real(JSContext *ctx, JSValueConst this_val, int arg
     int r = mkdir(stage, 0755);
     JS_FreeCString(ctx, path);
     return JS_NewBool(ctx, r == 0 || errno == EEXIST);
+}
+
+/* __dshProcWriteFileReal(path, b64) → {written} | {error:{code,errno}}:
+ * a REAL file write for the parent side of the seam (W6-U, 2026-09-28).
+ * The workspace VFS is in-memory; a SPAWNED child reads the real disk, so
+ * files the parent writes under the real-mirrored profile container must
+ * materialize there — this is the write-through twin of __dshProcMkdirReal
+ * (parents are mkdir -p'd first, same idempotent rule). 8 MB cap: suite
+ * payloads are tiny; a runaway mirror should fail loudly, not eat memory. */
+static JSValue js_proc_write_file_real(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 2 || !JS_IsString(argv[0]) || !JS_IsString(argv[1]))
+        return JS_ThrowTypeError(ctx, "__dshProcWriteFileReal needs (path, base64)");
+    const char *path = JS_ToCString(ctx, argv[0]);
+    if (!path) return JS_EXCEPTION;
+    char stage[4096];
+    snprintf(stage, sizeof(stage), "%s", path);
+    for (char *at = stage + 1; *at; at++) {
+        if (*at == '/') { *at = 0; (void)!mkdir(stage, 0755); *at = '/'; }
+    }
+    FILE *f = fopen(stage, "wb");
+    if (!f) {
+        int e = errno;
+        const char *name = dsh_errno_name(e);
+        JSValue r = JS_NewObject(ctx), eo = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, eo, "code", JS_NewString(ctx, name ? name : "EIO"));
+        JS_SetPropertyStr(ctx, eo, "errno", JS_NewInt32(ctx, e));
+        JS_SetPropertyStr(ctx, r, "error", eo);
+        JS_FreeCString(ctx, path);
+        return r;
+    }
+    size_t bn = 0;
+    const char *b64 = JS_ToCStringLen(ctx, &bn, argv[1]);
+    size_t bytes_n = 0;
+    unsigned char *bytes = b64 ? dsh_b64_decode_bytes(ctx, b64, bn, &bytes_n) : NULL;
+    if (b64) JS_FreeCString(ctx, b64);
+    if (!bytes) { fclose(f); JS_FreeCString(ctx, path); return JS_ThrowTypeError(ctx, "__dshProcWriteFileReal input is not valid base64"); }
+    size_t wrote = bytes_n > 0 ? fwrite(bytes, 1, bytes_n, f) : 0;
+    int ferr = ferror(f);
+    fclose(f);
+    js_free(ctx, bytes);
+    JS_FreeCString(ctx, path);
+    JSValue r = JS_NewObject(ctx);
+    if (ferr || wrote != bytes_n) {
+        JSValue eo = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, eo, "code", JS_NewString(ctx, "EIO"));
+        JS_SetPropertyStr(ctx, eo, "errno", JS_NewInt32(ctx, EIO));
+        JS_SetPropertyStr(ctx, r, "error", eo);
+    } else {
+        JS_SetPropertyStr(ctx, r, "written", JS_NewInt32(ctx, (int32_t)wrote));
+    }
+    return r;
+}
+
+/* __dshProcRmReal(path, recursive) → bool: a REAL unlink for the mirror
+ * (W6-U): when the runtime's VFS rm removes a file the children could read,
+ * the real copy must go too or a subsequent child sees a zombie file. Files
+ * unlink directly; directories walk their children depth-first (rm -rf for
+ * the recursive flag, rmdir-only otherwise — mirroring node's rm faces). */
+static int dsh_rm_real_recursive(const char *path) {
+    struct stat st;
+    if (lstat(path, &st) != 0) return errno == ENOENT ? 1 : 0;
+    if (S_ISDIR(st.st_mode)) {
+        DIR *d = opendir(path);
+        if (!d) return 0;
+        struct dirent *ent;
+        int ok = 1;
+        while ((ent = readdir(d)) != NULL) {
+            if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) continue;
+            char child[4096];
+            if (snprintf(child, sizeof(child), "%s/%s", path, ent->d_name) >= (int)sizeof(child)) { ok = 0; break; }
+            if (!dsh_rm_real_recursive(child)) { ok = 0; break; }
+        }
+        closedir(d);
+        if (ok && rmdir(path) != 0 && errno != ENOENT) ok = 0;
+        return ok;
+    }
+    return unlink(path) == 0 || errno == ENOENT;
+}
+static JSValue js_proc_rm_real(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1 || !JS_IsString(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcRmReal needs a path");
+    const char *path = JS_ToCString(ctx, argv[0]);
+    if (!path) return JS_EXCEPTION;
+    int recursive = argc >= 2 && JS_ToBool(ctx, argv[1]) > 0;
+    int ok = dsh_rm_real_recursive(path);
+    JS_FreeCString(ctx, path);
+    return JS_NewBool(ctx, ok);
+}
+
+/* __dshProcChmodReal(path, mode) → bool over chmod(2): the real-mode mirror
+ * of the W6-U write/rm mirrors — a hook script the runtime chmods +x in the
+ * VFS must land executable on the disk the seam's children read, or bash
+ * refuses it ("Permission denied", measured 2026-09-27 on the hooks
+ * bridge spec). Best-effort mirrors stay boolean: the VFS is the world of
+ * record; this only feeds the seam's children. */
+static JSValue js_proc_chmod_real(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 2 || !JS_IsString(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcChmodReal needs (path, mode)");
+    const char *path = JS_ToCString(ctx, argv[0]);
+    if (!path) return JS_EXCEPTION;
+    int32_t mode = 0;
+    JS_ToInt32(ctx, &mode, argv[1]);
+    int r = chmod(path, (mode_t)mode);
+    JS_FreeCString(ctx, path);
+    return JS_NewBool(ctx, r == 0);
 }
 
 /* __dshProcStatReal(path) → {mode,size,mtimeMs,isFile,isDirectory} | null:
@@ -2089,6 +2290,86 @@ static JSValue js_proc_end_stdin(JSContext *ctx, JSValueConst this_val, int argc
     return r;
 }
 
+/* __dshProcWriteFd(pid, slot, b64) → {written, buffered} | {error} — the
+ * extra-channel write face (W6-U): slot 0..4 maps to child fd 3..7. The
+ * socketpair is non-blocking; refused bytes buffer C-side (flushed by the
+ * poll tick) and `buffered` tells the JS shim to hold its write callback,
+ * the exact contract the stdin face honors. */
+static JSValue js_proc_write_fd(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    int32_t pid = 0, slot = 0;
+    if (argc < 3 || JS_ToInt32(ctx, &pid, argv[0]) < 0 || JS_ToInt32(ctx, &slot, argv[1]) < 0)
+        return JS_ThrowTypeError(ctx, "__dshProcWriteFd needs (pid, slot, base64)");
+    if (slot < 0 || slot >= DSH_PROC_EXTRA) return JS_ThrowTypeError(ctx, "__dshProcWriteFd: slot out of range");
+    dsh_proc *p = dsh_proc_slot(s, (int)pid);
+    if (!p || p->extra_r[slot] < 0) {
+        JSValue r = JS_NewObject(ctx), e = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, e, "code", JS_NewString(ctx, "EPIPE"));
+        JS_SetPropertyStr(ctx, e, "errno", JS_NewInt32(ctx, EPIPE));
+        JS_SetPropertyStr(ctx, r, "error", e);
+        return r;
+    }
+    size_t n = 0;
+    const char *b64 = JS_ToCStringLen(ctx, &n, argv[2]);
+    if (!b64) return JS_EXCEPTION;
+    size_t bytes_n = 0;
+    unsigned char *bytes = dsh_b64_decode_bytes(ctx, b64, n, &bytes_n);
+    JS_FreeCString(ctx, b64);
+    if (!bytes) return JS_ThrowTypeError(ctx, "__dshProcWriteFd input is not valid base64");
+    size_t written = 0;
+    int werr = 0;
+    while (written < bytes_n) {
+        ssize_t w = write(p->extra_r[slot], bytes + written, bytes_n - written);
+        if (w > 0) { written += (size_t)w; continue; }
+        if (w < 0 && errno == EINTR) continue;
+        if (w < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) break; /* buffered below */
+        werr = errno;
+        break;
+    }
+    /* The refused tail rides the slot's backpressure buffer. */
+    size_t rest = bytes_n - written;
+    if (!werr && rest > 0) {
+        unsigned char *grown = js_realloc_rt(s->rt, p->xpending[slot], p->xpending_n[slot] + rest);
+        if (grown) {
+            memcpy(grown + p->xpending_n[slot], bytes + written, rest);
+            p->xpending[slot] = grown;
+            p->xpending_n[slot] += rest;
+            if (p->xpending_cap[slot] < p->xpending_n[slot]) p->xpending_cap[slot] = p->xpending_n[slot];
+        } else werr = ENOMEM;
+    }
+    js_free(ctx, bytes);
+    JSValue r = JS_NewObject(ctx);
+    if (werr) {
+        close(p->extra_r[slot]); p->extra_r[slot] = -1;
+        JSValue e = JS_NewObject(ctx);
+        const char *name = dsh_errno_name(werr);
+        JS_SetPropertyStr(ctx, e, "code", JS_NewString(ctx, name ? name : "EIO"));
+        JS_SetPropertyStr(ctx, e, "errno", JS_NewInt32(ctx, werr));
+        JS_SetPropertyStr(ctx, r, "error", e);
+    } else {
+        JS_SetPropertyStr(ctx, r, "written", JS_NewInt32(ctx, (int32_t)written));
+        JS_SetPropertyStr(ctx, r, "buffered", JS_NewInt32(ctx, (int32_t)(p->xpending_n[slot])));
+    }
+    return r;
+}
+
+/* __dshProcEndFd(pid, slot): half-close the extra channel — the child reads
+ * EOF on its fd while our read side stays live (shutdown, not close). */
+static JSValue js_proc_end_fd(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    int32_t pid = 0, slot = 0;
+    if (argc < 2 || JS_ToInt32(ctx, &pid, argv[0]) < 0 || JS_ToInt32(ctx, &slot, argv[1]) < 0)
+        return JS_ThrowTypeError(ctx, "__dshProcEndFd needs (pid, slot)");
+    if (slot < 0 || slot >= DSH_PROC_EXTRA) return JS_ThrowTypeError(ctx, "__dshProcEndFd: slot out of range");
+    dsh_proc *p = dsh_proc_slot(s, (int)pid);
+    if (p && p->extra_r[slot] >= 0) shutdown(p->extra_r[slot], SHUT_WR);
+    JSValue r = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, r, "ok", JS_TRUE);
+    return r;
+}
+
 /* __dshProcKill(pid, signalNameOrNumber) → {ok} | throws (ESRCH contract of
  * process.kill). Signal 0 probes existence without signalling. */
 static JSValue js_proc_kill(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
@@ -2110,12 +2391,14 @@ static JSValue js_proc_kill(JSContext *ctx, JSValueConst this_val, int argc, JSV
 }
 
 /* Shared spawn/spawnSync option parsing: command, args, cwd, env, stdio,
- * detached. Returns 0 on shape failure with *err set. */
+ * detached. modes[] holds DSH_PROC_EXTRA+3 dispositions (0 pipe / 1 ignore /
+ * 2 inherit) — node's stdio array may name fds beyond 2 (the ptc control
+ * channel rides fd 7). Returns 0 on shape failure with *err set. */
 static int dsh_parse_spawn_opts(JSContext *ctx, JSValueConst opts, const char **command,
                                 char ***argv, const char **cwd, char ***envp,
-                                int modes[3], int *detached, char **err) {
+                                int modes[3 + DSH_PROC_EXTRA], int *detached, char **err) {
     *cwd = NULL; *detached = 0;
-    modes[0] = modes[1] = modes[2] = 0;
+    for (int i = 0; i < 3 + DSH_PROC_EXTRA; i++) modes[i] = 0;
     JSValue cv = JS_GetPropertyStr(ctx, opts, "command");
     const char *c = JS_IsException(cv) ? NULL : JS_ToCString(ctx, cv);
     JS_FreeValue(ctx, cv);
@@ -2136,8 +2419,12 @@ static int dsh_parse_spawn_opts(JSContext *ctx, JSValueConst opts, const char **
     JS_FreeValue(ctx, envv);
     JSValue sv = JS_GetPropertyStr(ctx, opts, "stdio");
     if (JS_IsArray(sv)) {
-        for (int i = 0; i < 3; i++) {
-            JSValue e = JS_GetPropertyUint32(ctx, sv, (uint32_t)i);
+        uint32_t slen = 3;
+        JSValue lenv = JS_GetPropertyStr(ctx, sv, "length");
+        if (!JS_IsException(lenv)) { JS_ToUint32(ctx, &slen, lenv); JS_FreeValue(ctx, lenv); }
+        if (slen > 3 + DSH_PROC_EXTRA) slen = 3 + DSH_PROC_EXTRA; /* fds 3..7 max */
+        for (uint32_t i = 0; i < slen; i++) {
+            JSValue e = JS_GetPropertyUint32(ctx, sv, i);
             if (JS_IsString(e)) {
                 const char *sm = JS_ToCString(ctx, e);
                 modes[i] = dsh_stdio_mode(sm);
@@ -2165,7 +2452,7 @@ static JSValue js_proc_spawn(JSContext *ctx, JSValueConst this_val, int argc, JS
     dsh_spike_t *s = JS_GetContextOpaque(ctx);
     if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcSpawn needs an options object");
     const char *command = NULL; char **cargv = NULL, **envp = NULL;
-    const char *cwd = NULL; int modes[3]; int detached = 0; char *err = NULL;
+    const char *cwd = NULL; int modes[3 + DSH_PROC_EXTRA]; int detached = 0; char *err = NULL;
     if (!dsh_parse_spawn_opts(ctx, argv[0], &command, &cargv, &cwd, &envp, modes, &detached, &err)) {
         return JS_ThrowTypeError(ctx, "__dshProcSpawn: %s", err ? err : "bad options");
     }
@@ -2180,8 +2467,9 @@ static JSValue js_proc_spawn(JSContext *ctx, JSValueConst this_val, int argc, JS
     }
     dsh_proc_remap_argv(s, s->rt, full_argv);
     int pin = -1, pout = -1, perr = -1, exec_errno = 0;
+    int extras[DSH_PROC_EXTRA];
     pid_t pid = dsh_proc_fork_exec(ctx, command, full_argv, cwd, envp, modes, detached,
-                                   &pin, &pout, &perr, &exec_errno);
+                                   &pin, &pout, &perr, extras, &exec_errno);
     JSValue res = JS_NewObject(ctx);
     if (pid < 0) {
         JSValue e = JS_NewObject(ctx);
@@ -2199,11 +2487,16 @@ static JSValue js_proc_spawn(JSContext *ctx, JSValueConst this_val, int argc, JS
             kill(pid, SIGKILL);
             waitpid(pid, NULL, 0);
             dsh_close_all((int[]){pin, pout, perr}, 3);
+            for (int i = 0; i < DSH_PROC_EXTRA; i++) if (extras[i] >= 0) close(extras[i]);
             dsh_free_vec(ctx, full_argv); dsh_free_vec(ctx, envp);
             return JS_ThrowTypeError(ctx, "__dshProcSpawn: process table full (%d)", DSH_PROC_MAX_SLOTS);
         }
         p->used = 1; p->pid = (int)pid;
         p->stdin_w = pin; p->stdout_r = pout; p->stderr_r = perr;
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+            p->extra_r[i] = extras[i];
+            p->extra_eof[i] = extras[i] < 0;
+        }
         p->out_eof = pout < 0; p->err_eof = perr < 0;
         p->reaped = 0; p->exit_code = 0; p->exit_sig = 0; p->detached = detached;
         JS_SetPropertyStr(ctx, res, "pid", JS_NewInt32(ctx, (int32_t)pid));
@@ -2222,7 +2515,7 @@ static JSValue js_proc_spawn_sync(JSContext *ctx, JSValueConst this_val, int arg
     dsh_spike_t *s = JS_GetContextOpaque(ctx);
     if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcSpawnSync needs an options object");
     const char *command = NULL; char **cargv = NULL, **envp = NULL;
-    const char *cwd = NULL; int modes[3]; int detached = 0; char *err = NULL;
+    const char *cwd = NULL; int modes[3 + DSH_PROC_EXTRA]; int detached = 0; char *err = NULL;
     if (!dsh_parse_spawn_opts(ctx, argv[0], &command, &cargv, &cwd, &envp, modes, &detached, &err)) {
         return JS_ThrowTypeError(ctx, "__dshProcSpawnSync: %s", err ? err : "bad options");
     }
@@ -2252,8 +2545,11 @@ static JSValue js_proc_spawn_sync(JSContext *ctx, JSValueConst this_val, int arg
 
     dsh_proc_remap_argv(s, s->rt, full_argv);
     int pin = -1, pout = -1, perr = -1, exec_errno = 0;
+    int extras[DSH_PROC_EXTRA];
     pid_t pid = dsh_proc_fork_exec(ctx, command, full_argv, cwd, envp, modes, detached,
-                                   &pin, &pout, &perr, &exec_errno);
+                                   &pin, &pout, &perr, extras, &exec_errno);
+    /* The sync face has no JS-visible extra channels: close them here. */
+    for (int i = 0; i < DSH_PROC_EXTRA; i++) if (extras[i] >= 0) close(extras[i]);
     JSValue res = JS_NewObject(ctx);
     if (pid < 0) {
         JSValue e = JS_NewObject(ctx);
@@ -2351,6 +2647,7 @@ static JSValue js_proc_spawn_sync(JSContext *ctx, JSValueConst this_val, int arg
  * `process.execPath fixture.ts` expecting node's erasable-TS support. */
 static JSValue js_proc_facts(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val; (void)argc; (void)argv;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx); /* bundleRoot source */
     static char node_path[4096];
     if (node_path[0] == 0) {
         const char *path = getenv("PATH");
@@ -2382,6 +2679,13 @@ static JSValue js_proc_facts(JSContext *ctx, JSValueConst this_val, int argc, JS
     JS_SetPropertyStr(ctx, res, "execPath", self_path[0] ? JS_NewString(ctx, self_path) : JS_NULL);
     const char *path = getenv("PATH");
     JS_SetPropertyStr(ctx, res, "path", path ? JS_NewString(ctx, path) : JS_NULL);
+    /* bundleRoot (W6-U): the REAL absolute path the loader's bundle-relative
+     * specifier space is rooted at. The flat transpiled specs re-derive
+     * vendored-tree file paths through it (the __dshFlatPathMap builder in
+     * the suite leg) — the same re-rooting dsh_proc_remap_argv does for
+     * child argv, exposed where JS needs to compute a REAL path. */
+    const char *root = dsh_bundle_root_real(s);
+    JS_SetPropertyStr(ctx, res, "bundleRoot", root[0] ? JS_NewString(ctx, root) : JS_NULL);
     return res;
 }
 
@@ -2400,15 +2704,130 @@ static JSValue js_proc_facts(JSContext *ctx, JSValueConst this_val, int argc, JS
 static sqlite3 *dsh_sqlite_dbs[DSH_SQLITE_MAX_DB];
 static sqlite3_stmt *dsh_sqlite_stmts[DSH_SQLITE_MAX_STMT];
 
+/* Prepared statements are owned by their JS StatementSync object through a
+ * class finalizer — node has no StatementSync.close(), it GC-finalizes, and
+ * the vendored session-search engine prepares ad-hoc statements per query
+ * (W6-V, 2026-09-28: with nothing releasing them the 128-slot table
+ * exhausted mid-suite, "statement table full (128)"). The indirection cell
+ * lets a db-wide close (which finalizes every statement of that db) detach
+ * live JS objects safely: their finalizer later sees stmt == NULL. */
+typedef struct DshSqliteStmtCell {
+    sqlite3_stmt *stmt; /* NULL once ownership moved elsewhere */
+    int slot;           /* table index while live, -1 when detached */
+} DshSqliteStmtCell;
+static DshSqliteStmtCell *dsh_sqlite_stmt_cells[DSH_SQLITE_MAX_STMT];
+static JSClassID dsh_sqlite_stmt_class_id;
+
+/* Database handles ride the same pattern: node closes a DatabaseSync on GC
+ * too, and the corpus's engines rely on it when a test fails before dispose
+ * (W6-V, 2026-09-28: 16 fixed slots exhausted mid-suite on unclosed dbs).
+ * The GC close finalizes every surviving statement of the db first, so the
+ * detached statement cells never see a freed db. */
+typedef struct DshSqliteDbCell {
+    sqlite3 *db; /* NULL once ownership moved to an explicit close */
+    int slot;
+    int enforce_mode; /* created here: node's 0600 default applies to sidecars too */
+    char *path;       /* strdup'd at open (sidecar mode enforcement) */
+} DshSqliteDbCell;
+static DshSqliteDbCell *dsh_sqlite_db_cells[DSH_SQLITE_MAX_DB];
+static JSClassID dsh_sqlite_db_class_id;
+
+static void dsh_sqlite_stmt_finalizer(JSRuntime *rt, JSValueConst val);
+
+/* node:sqlite is built with SQLITE_DEFAULT_FILE_PERMISSIONS=0600, so the
+ * main db AND its -wal/-journal sidecars carry owner-only bits (the vendored
+ * schema tests assert the sidecar modes). This sqlite is the system library
+ * (0644 compile default, no knob), so the enforcement runs at open — and
+ * after every write, because sidecars materialize lazily. Only dbs we
+ * created are enforced; reopening a caller-owned medium never rewrites the
+ * caller's own chmods (W6-V, 2026-09-28). */
+static void dsh_sqlite_enforce_mode(DshSqliteDbCell *cell) {
+    if (!cell || !cell->enforce_mode || !cell->path) return;
+    static const char *const suffixes[] = { "", "-wal", "-journal", "-shm" };
+    for (int i = 0; i < 4; i++) {
+        size_t n = strlen(cell->path) + strlen(suffixes[i]) + 1;
+        char full[1024];
+        if (n > sizeof(full)) continue;
+        snprintf(full, n, "%s%s", cell->path, suffixes[i]);
+        struct stat st;
+        if (stat(full, &st) == 0 && (st.st_mode & 0777) != 0600) {
+            (void)chmod(full, 0600);
+        }
+    }
+}
+
+static void dsh_sqlite_db_finalizer(JSRuntime *rt, JSValueConst val) {
+    (void)rt;
+    DshSqliteDbCell *cell = (DshSqliteDbCell *)JS_GetOpaque(val, dsh_sqlite_db_class_id);
+    if (!cell) return;
+    if (cell->db) {
+        for (int i = 0; i < DSH_SQLITE_MAX_STMT; i++) {
+            if (dsh_sqlite_stmts[i] && sqlite3_db_handle(dsh_sqlite_stmts[i]) == cell->db) {
+                sqlite3_finalize(dsh_sqlite_stmts[i]);
+                DshSqliteStmtCell *stmt_cell = dsh_sqlite_stmt_cells[i];
+                if (stmt_cell) {
+                    stmt_cell->stmt = NULL;
+                    stmt_cell->slot = -1;
+                }
+                dsh_sqlite_stmts[i] = NULL;
+                dsh_sqlite_stmt_cells[i] = NULL;
+            }
+        }
+        if (cell->slot >= 0 && cell->slot < DSH_SQLITE_MAX_DB
+            && dsh_sqlite_dbs[cell->slot] == cell->db) {
+            dsh_sqlite_dbs[cell->slot] = NULL;
+        }
+        sqlite3_close_v2(cell->db);
+        cell->db = NULL;
+    }
+    free(cell->path);
+    cell->path = NULL;
+    cell->slot = -1;
+    free(cell);
+}
+
+static void dsh_sqlite_register_classes(JSContext *ctx) {
+    static int registered = 0;
+    if (registered) return;
+    JSClassDef stmt_def = { "SQLiteStmtHandle", dsh_sqlite_stmt_finalizer, NULL, NULL, NULL };
+    JSClassDef db_def = { "SQLiteDatabaseHandle", dsh_sqlite_db_finalizer, NULL, NULL, NULL };
+    /* JS_NewClassID RETURNS the new id (0 on error); JS_NewClass returns 0 ok. */
+    JSClassID id = JS_NewClassID(JS_GetRuntime(ctx), &dsh_sqlite_stmt_class_id);
+    JSClassID db_id = JS_NewClassID(JS_GetRuntime(ctx), &dsh_sqlite_db_class_id);
+    if (id != 0 && db_id != 0
+        && JS_NewClass(JS_GetRuntime(ctx), dsh_sqlite_stmt_class_id, &stmt_def) == 0
+        && JS_NewClass(JS_GetRuntime(ctx), dsh_sqlite_db_class_id, &db_def) == 0) {
+        registered = 1;
+    }
+}
+
+static void dsh_sqlite_stmt_finalizer(JSRuntime *rt, JSValueConst val) {
+    (void)rt;
+    DshSqliteStmtCell *cell = (DshSqliteStmtCell *)JS_GetOpaque(val, dsh_sqlite_stmt_class_id);
+    if (!cell) return;
+    if (cell->stmt) {
+        if (cell->slot >= 0 && cell->slot < DSH_SQLITE_MAX_STMT
+            && dsh_sqlite_stmts[cell->slot] == cell->stmt) {
+            dsh_sqlite_stmts[cell->slot] = NULL;
+            dsh_sqlite_stmt_cells[cell->slot] = NULL;
+        }
+        sqlite3_finalize(cell->stmt);
+        cell->stmt = NULL;
+    }
+    cell->slot = -1;
+    free(cell);
+}
+
 static sqlite3 *dsh_sqlite_db(JSContext *ctx, JSValueConst v) {
-    int32_t h = -1;
-    if (JS_ToInt32(ctx, &h, v) < 0 || h < 0 || h >= DSH_SQLITE_MAX_DB) return NULL;
-    return dsh_sqlite_dbs[h];
+    DshSqliteDbCell *cell = (DshSqliteDbCell *)JS_GetOpaque(v, dsh_sqlite_db_class_id);
+    return cell ? cell->db : NULL;
 }
 static sqlite3_stmt *dsh_sqlite_stmt(JSContext *ctx, JSValueConst v) {
-    int32_t h = -1;
-    if (JS_ToInt32(ctx, &h, v) < 0 || h < 0 || h >= DSH_SQLITE_MAX_STMT) return NULL;
-    return dsh_sqlite_stmts[h];
+    DshSqliteStmtCell *cell = (DshSqliteStmtCell *)JS_GetOpaque(v, dsh_sqlite_stmt_class_id);
+    return cell ? cell->stmt : NULL;
+}
+static DshSqliteDbCell *dsh_sqlite_db_cell(JSContext *ctx, JSValueConst v) {
+    return (DshSqliteDbCell *)JS_GetOpaque(v, dsh_sqlite_db_class_id);
 }
 /* JS error from the engine's own message; resets the statement so the next
  * use starts clean. */
@@ -2538,7 +2957,22 @@ static JSValue js_sqlite_open(JSContext *ctx, JSValueConst this_val, int argc, J
     const char *path = JS_ToCString(ctx, argv[0]);
     if (!path) return JS_EXCEPTION;
     sqlite3 *db = NULL;
+    /* node:sqlite creates database files 0o600 (its documented default) —
+     * the vendored schema tests assert the mode, and the -wal/-journal
+     * sidecars inherit it from the main db (W6-V, 2026-09-28). sqlite takes
+     * the mode from a compile-time default (no open-time knob — the 4th
+     * open_v2 argument is the VFS name), so chmod on CREATION only: reopening
+     * an existing medium must not override the caller's own chmods. */
+    /* The vendored openDatabase pre-creates an EMPTY file ('wx', mode 0600)
+     * through the fs seam — an existing-but-empty medium is the created case
+     * (node: sqlite then keeps the file's 0600 and the sidecars inherit it). */
+    int created = access(path, F_OK) != 0;
+    if (!created) {
+        struct stat st;
+        if (stat(path, &st) == 0 && st.st_size == 0) created = 1;
+    }
     int rc = sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+    if (rc == SQLITE_OK && created) (void)chmod(path, 0600);
     JS_FreeCString(ctx, path);
     if (rc != SQLITE_OK) {
         JSValue err = dsh_sqlite_err(ctx, db, "open");
@@ -2546,11 +2980,69 @@ static JSValue js_sqlite_open(JSContext *ctx, JSValueConst this_val, int argc, J
         return err;
     }
     sqlite3_extended_result_codes(db, 1);
+    dsh_sqlite_register_classes(ctx);
     for (int i = 0; i < DSH_SQLITE_MAX_DB; i++) {
         if (dsh_sqlite_dbs[i] == NULL) {
+            DshSqliteDbCell *cell = (DshSqliteDbCell *)malloc(sizeof(*cell));
+            if (!cell) {
+                dsh_sqlite_dbs[i] = NULL;
+                sqlite3_close(db);
+                return JS_ThrowOutOfMemory(ctx);
+            }
+            cell->db = db;
+            cell->slot = i;
+            cell->enforce_mode = created;
+            cell->path = created ? strdup(path) : NULL;
             dsh_sqlite_dbs[i] = db;
+            dsh_sqlite_db_cells[i] = cell;
+            dsh_sqlite_enforce_mode(cell);
+            JSValue obj = JS_NewObjectClass(ctx, dsh_sqlite_db_class_id);
+            if (JS_IsException(obj)) {
+                dsh_sqlite_dbs[i] = NULL;
+                dsh_sqlite_db_cells[i] = NULL;
+                free(cell->path);
+                free(cell);
+                sqlite3_close(db);
+                return obj;
+            }
+            JS_SetOpaque(obj, cell);
             JSValue res = JS_NewObject(ctx);
-            JS_SetPropertyStr(ctx, res, "handle", JS_NewInt32(ctx, i));
+            JS_SetPropertyStr(ctx, res, "handle", obj);
+            return res;
+        }
+    }
+    /* No free slot: the live JS DatabaseSync objects may be garbage already —
+     * their native sqlite3 allocations put no pressure on the JS GC, so a
+     * collection pass is what releases them (node behaves equivalently by
+     * finalizing on GC). One pass, then re-scan; still-full is a real leak. */
+    JS_RunGC(JS_GetRuntime(ctx));
+    for (int i = 0; i < DSH_SQLITE_MAX_DB; i++) {
+        if (dsh_sqlite_dbs[i] == NULL) {
+            DshSqliteDbCell *cell = (DshSqliteDbCell *)malloc(sizeof(*cell));
+            if (!cell) {
+                dsh_sqlite_dbs[i] = NULL;
+                sqlite3_close(db);
+                return JS_ThrowOutOfMemory(ctx);
+            }
+            cell->db = db;
+            cell->slot = i;
+            cell->enforce_mode = created;
+            cell->path = created ? strdup(path) : NULL;
+            dsh_sqlite_dbs[i] = db;
+            dsh_sqlite_db_cells[i] = cell;
+            dsh_sqlite_enforce_mode(cell);
+            JSValue obj = JS_NewObjectClass(ctx, dsh_sqlite_db_class_id);
+            if (JS_IsException(obj)) {
+                dsh_sqlite_dbs[i] = NULL;
+                dsh_sqlite_db_cells[i] = NULL;
+                free(cell->path);
+                free(cell);
+                sqlite3_close(db);
+                return obj;
+            }
+            JS_SetOpaque(obj, cell);
+            JSValue res = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, res, "handle", obj);
             return res;
         }
     }
@@ -2565,11 +3057,30 @@ static JSValue js_sqlite_close(JSContext *ctx, JSValueConst this_val, int argc, 
     for (int i = 0; i < DSH_SQLITE_MAX_STMT; i++) {
         if (dsh_sqlite_stmts[i] && sqlite3_db_handle(dsh_sqlite_stmts[i]) == db) {
             sqlite3_finalize(dsh_sqlite_stmts[i]);
+            DshSqliteStmtCell *cell = dsh_sqlite_stmt_cells[i];
+            if (cell) {
+                /* Detach the still-live JS object: its finalizer only frees. */
+                cell->stmt = NULL;
+                cell->slot = -1;
+            }
             dsh_sqlite_stmts[i] = NULL;
+            dsh_sqlite_stmt_cells[i] = NULL;
         }
     }
     for (int i = 0; i < DSH_SQLITE_MAX_DB; i++) {
-        if (dsh_sqlite_dbs[i] == db) dsh_sqlite_dbs[i] = NULL;
+        if (dsh_sqlite_dbs[i] == db) {
+            DshSqliteDbCell *cell = dsh_sqlite_db_cells[i];
+            if (cell) {
+                /* Detach the still-live JS object: its finalizer only frees. */
+                cell->db = NULL;
+                cell->slot = -1;
+                free(cell->path);
+                cell->path = NULL;
+                cell->enforce_mode = 0;
+            }
+            dsh_sqlite_dbs[i] = NULL;
+            dsh_sqlite_db_cells[i] = NULL;
+        }
     }
     sqlite3_close(db);
     return JS_NewObject(ctx); /* {} — node returns void; cheap shape */
@@ -2589,8 +3100,10 @@ static JSValue js_sqlite_exec(JSContext *ctx, JSValueConst this_val, int argc, J
         if (errmsg) sqlite3_free(errmsg);
         return err;
     }
+    dsh_sqlite_enforce_mode(dsh_sqlite_db_cell(ctx, argc > 0 ? argv[0] : JS_UNDEFINED));
     return JS_NewObject(ctx);
 }
+
 
 static JSValue js_sqlite_prepare(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
@@ -2604,11 +3117,56 @@ static JSValue js_sqlite_prepare(JSContext *ctx, JSValueConst this_val, int argc
     if (rc != SQLITE_OK || stmt == NULL) {
         return dsh_sqlite_err(ctx, db, "prepare");
     }
+    dsh_sqlite_register_classes(ctx);
     for (int i = 0; i < DSH_SQLITE_MAX_STMT; i++) {
         if (dsh_sqlite_stmts[i] == NULL) {
+            DshSqliteStmtCell *cell = (DshSqliteStmtCell *)malloc(sizeof(*cell));
+            if (!cell) {
+                sqlite3_finalize(stmt);
+                return JS_ThrowOutOfMemory(ctx);
+            }
+            cell->stmt = stmt;
+            cell->slot = i;
             dsh_sqlite_stmts[i] = stmt;
+            dsh_sqlite_stmt_cells[i] = cell;
+            JSValue obj = JS_NewObjectClass(ctx, dsh_sqlite_stmt_class_id);
+            if (JS_IsException(obj)) {
+                dsh_sqlite_stmts[i] = NULL;
+                dsh_sqlite_stmt_cells[i] = NULL;
+                sqlite3_finalize(stmt);
+                free(cell);
+                return obj;
+            }
+            JS_SetOpaque(obj, cell);
             JSValue res = JS_NewObject(ctx);
-            JS_SetPropertyStr(ctx, res, "stmt", JS_NewInt32(ctx, i));
+            JS_SetPropertyStr(ctx, res, "stmt", obj);
+            return res;
+        }
+    }
+    /* Same collect-and-retry as open: statements are GC-owned objects. */
+    JS_RunGC(JS_GetRuntime(ctx));
+    for (int i = 0; i < DSH_SQLITE_MAX_STMT; i++) {
+        if (dsh_sqlite_stmts[i] == NULL) {
+            DshSqliteStmtCell *cell = (DshSqliteStmtCell *)malloc(sizeof(*cell));
+            if (!cell) {
+                sqlite3_finalize(stmt);
+                return JS_ThrowOutOfMemory(ctx);
+            }
+            cell->stmt = stmt;
+            cell->slot = i;
+            dsh_sqlite_stmts[i] = stmt;
+            dsh_sqlite_stmt_cells[i] = cell;
+            JSValue obj = JS_NewObjectClass(ctx, dsh_sqlite_stmt_class_id);
+            if (JS_IsException(obj)) {
+                dsh_sqlite_stmts[i] = NULL;
+                dsh_sqlite_stmt_cells[i] = NULL;
+                sqlite3_finalize(stmt);
+                free(cell);
+                return obj;
+            }
+            JS_SetOpaque(obj, cell);
+            JSValue res = JS_NewObject(ctx);
+            JS_SetPropertyStr(ctx, res, "stmt", obj);
             return res;
         }
     }
@@ -2627,6 +3185,7 @@ static JSValue js_sqlite_run(JSContext *ctx, JSValueConst this_val, int argc, JS
         return dsh_sqlite_err(ctx, db, "run");
     }
     sqlite3_reset(stmt);
+    dsh_sqlite_enforce_mode(dsh_sqlite_db_cell(ctx, argc > 0 ? argv[0] : JS_UNDEFINED));
     JSValue res = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, res, "changes", JS_NewInt64(ctx, sqlite3_changes64(db)));
     JS_SetPropertyStr(ctx, res, "lastInsertRowid", JS_NewInt64(ctx, sqlite3_last_insert_rowid(db)));
@@ -2656,14 +3215,18 @@ static JSValue js_sqlite_all(JSContext *ctx, JSValueConst this_val, int argc, JS
     sqlite3 *db = sqlite3_db_handle(stmt);
     JSValue rows = JS_NewArray(ctx);
     uint32_t n = 0;
-    for (;;) {
-        int rc = dsh_sqlite_bind_and_step(ctx, stmt, argc > 1 ? argv[1] : JS_UNDEFINED);
-        if (rc == SQLITE_DONE) break;
-        if (rc != SQLITE_ROW) {
-            sqlite3_reset(stmt);
-            return dsh_sqlite_err(ctx, db, "all");
-        }
+    /* Bind ONCE, then step to exhaustion: re-binding inside the loop resets
+     * the statement and restarts the query, so every iteration re-yielded
+     * row 1 and the drain never reached SQLITE_DONE (W6-V, 2026-09-28: the
+     * session-query search walk hung forever on the first result set). */
+    int rc = dsh_sqlite_bind_and_step(ctx, stmt, argc > 1 ? argv[1] : JS_UNDEFINED);
+    while (rc == SQLITE_ROW) {
         JS_SetPropertyUint32(ctx, rows, n++, dsh_sqlite_row(ctx, stmt));
+        rc = sqlite3_step(stmt);
+    }
+    sqlite3_reset(stmt);
+    if (rc != SQLITE_DONE) {
+        return dsh_sqlite_err(ctx, db, "all");
     }
     return rows;
 }
@@ -2742,14 +3305,24 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_proc_read_real, "__dshProcReadReal", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcMkdirReal",
                       JS_NewCFunction(ctx, js_proc_mkdir_real, "__dshProcMkdirReal", 1));
+    JS_SetPropertyStr(ctx, global, "__dshProcWriteFileReal",
+                      JS_NewCFunction(ctx, js_proc_write_file_real, "__dshProcWriteFileReal", 2));
+    JS_SetPropertyStr(ctx, global, "__dshProcRmReal",
+                      JS_NewCFunction(ctx, js_proc_rm_real, "__dshProcRmReal", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcStatReal",
                       JS_NewCFunction(ctx, js_proc_stat_real, "__dshProcStatReal", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcAccessReal",
                       JS_NewCFunction(ctx, js_proc_access_real, "__dshProcAccessReal", 2));
+    JS_SetPropertyStr(ctx, global, "__dshProcChmodReal",
+                      JS_NewCFunction(ctx, js_proc_chmod_real, "__dshProcChmodReal", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcWrite",
                       JS_NewCFunction(ctx, js_proc_write, "__dshProcWrite", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcEndStdin",
                       JS_NewCFunction(ctx, js_proc_end_stdin, "__dshProcEndStdin", 1));
+    JS_SetPropertyStr(ctx, global, "__dshProcWriteFd",
+                      JS_NewCFunction(ctx, js_proc_write_fd, "__dshProcWriteFd", 3));
+    JS_SetPropertyStr(ctx, global, "__dshProcEndFd",
+                      JS_NewCFunction(ctx, js_proc_end_fd, "__dshProcEndFd", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcKill",
                       JS_NewCFunction(ctx, js_proc_kill, "__dshProcKill", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcFacts",

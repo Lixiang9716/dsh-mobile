@@ -463,19 +463,68 @@ const BRIDGES = [
     "export default refuse;",
   ].join(' ')],
 
-  // execa: NO vendored tree (the cross-spawn precedent, same D2 wall). The
-  // vendored dsh-plugin-manager and dsh-loader-smoke libs import { execa } at
-  // MODULE scope for their pnpm/loader-subprocess faces; the linkage row
-  // resolves the bare name and the member fails loud when CALLED. The specs
-  // that load these libs only exercise pure config/render logic (or
-  // self-skip on spawnSync's no-process result), never reach the call.
+  // execa: the promise-child face over the W5-R child_process seam (the old
+  // "no subprocess seam" refusal is obsolete — __dshProcSpawn exists, children
+  // never run JS in THIS runtime, D2 holds). Serves the faces the vendored
+  // dsh-plugin-manager / dsh-loader-smoke libs and the upstream process-exit
+  // spec drive: promise + {exitCode, signal, stdout, stderr, timedOut,
+  // failed}, .kill(signal), input, stdin:'ignore', timeout + killSignal,
+  // reject:false, stripFinalNewline. Env merges over the runtime's
+  // process.env like real execa (callers pass ADDITIONS — DSH_HOME et al. —
+  // and the child still needs PATH).
   ['execa', [
-    "const refuse = (name) => () => {",
-    "  throw new Error('execa: ' + name + ' is not served in this runtime — no subprocess seam (rule D2)');",
+    "import { spawn } from 'node:child_process';",
+    "const fail = (name) => () => { throw new Error('execa: ' + name + ' is not implemented in this runtime'); };",
+    "const stripFinalNewline = (value) => (typeof value === 'string' ? value.replace(/\\r?\\n$/, '') : value);",
+    "export const execa = (command, args = [], options = {}) => {",
+    "  const argv = Array.isArray(args) ? args : [args];",
+    "  const stdinMode = (options.stdin ?? options.stdio) === 'ignore' ? 'ignore' : 'pipe';",
+    "  const child = spawn(command, argv, {",
+    "    cwd: options.cwd,",
+    "    env: options.env ? { ...(globalThis.process?.env ?? {}), ...options.env } : undefined,",
+    "    stdio: [stdinMode, 'pipe', 'pipe'],",
+    "  });",
+    "  const state = { timedOut: false, killed: false };",
+    "  let timer = null;",
+    "  if (typeof options.timeout === 'number' && options.timeout > 0) {",
+    "    timer = setTimeout(() => { state.timedOut = true; child.kill(options.killSignal ?? 'SIGTERM'); }, options.timeout);",
+    "  }",
+    "  const promise = new Promise((resolve, reject) => {",
+    "    const out = []; const err = [];",
+    "    child.stdout?.on('data', (c) => out.push(c));",
+    "    child.stderr?.on('data', (c) => err.push(c));",
+    "    child.once('error', (error) => { if (timer) clearTimeout(timer); reject(Object.assign(error, { command, escapedCommand: command, stdout: '', stderr: '', failed: true, timedOut: state.timedOut, killed: state.killed })); });",
+    "    child.once('close', (code, signal) => {",
+    "      if (timer) clearTimeout(timer);",
+    "      const decode = (chunks) => { const joined = chunks.map((c) => (typeof c === 'string' ? c : Buffer.from(c).toString('utf8'))).join(''); return options.stripFinalNewline === false ? joined : stripFinalNewline(joined); };",
+    "      const result = {",
+    "        command: [command, ...argv].join(' '),",
+    "        escapedCommand: [command, ...argv].join(' '),",
+    "        exitCode: signal == null ? code : undefined,",
+    "        signal: signal == null ? undefined : signal,",
+    "        stdout: decode(out),",
+    "        stderr: decode(err),",
+    "        failed: code !== 0 || signal != null,",
+    "        timedOut: state.timedOut,",
+    "        killed: state.killed || child.killed === true,",
+    "      };",
+    "      if (result.failed && options.reject !== false) {",
+    "        reject(Object.assign(new Error('Command failed with exit code ' + String(result.exitCode) + ': ' + result.command), result));",
+    "      } else { resolve(result); }",
+    "    });",
+    "  });",
+    "  promise.kill = (signal) => { state.killed = true; return child.kill(signal ?? 'SIGTERM'); };",
+    "  promise.pid = child.pid;",
+    "  if (stdinMode === 'pipe') {",
+    "    if (options.input !== undefined && options.input !== null) child.stdin?.write(options.input);",
+    "    child.stdin?.end();",
+    "  }",
+    "  return promise;",
     "};",
-    "export const execa = refuse('execa');",
-    "export const $ = refuse('$');",
-    "export default { execa, $ };",
+    "export const $ = fail('$');",
+    "export const execaSync = fail('execaSync');",
+    "export const execaCommand = fail('execaCommand');",
+    "export default { execa, $, execaSync, execaCommand };",
   ].join('\n')],
 
   // @earendil-works/pi-ai 0.85.1 (llm-pi-ai family): the subpaths the specs

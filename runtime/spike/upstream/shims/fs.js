@@ -47,7 +47,7 @@
  * operations since the 2026-09-27 suite round — same store as the promise
  * face, see the block comment at their definitions.
  */
-import { DshBuffer, decodeUtf8, encodeUtf8 } from 'upstream/shims/buffer.js';
+import { DshBuffer, decodeUtf8, encodeUtf8, fromBase64 as fromBase64Real } from 'upstream/shims/buffer.js';
 
 export const constants = {
   F_OK: 0,
@@ -180,7 +180,14 @@ const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alph
   // new URL('../assets/<name>', import.meta.url) from upstream-tests/ —
   // /assets/<name> — and the transpiler seeds the vendored tarball's
   // verbatim asset bytes there (the fixtures seed delivery's VFS root).
-  '/assets/'];
+  '/assets/',
+  // The source-introspection root (W6-V): the source-audit tests read their
+  // package's production sources — readFileSync(new URL('../src/<file>',
+  // import.meta.url)) from /upstream-tests/<stem>.spec.mjs lands at
+  // /src/<file> — and the suite driver stages the vendored tree's verbatim
+  // bytes there (upstream-suite-leg.js stageSourceIntrospectionTree; one
+  // spec per runtime, so the flat /src namespace never collides).
+  '/src/'];
 const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
 const refuse = (name) => () => {
@@ -354,7 +361,22 @@ const vfsRealpath = (path) => {
     }
   }
   if (!underVFS(canonical) && wsAt(canonical) === null) {
+    // Real-disk fallback (W6-V, 2026-09-28): REAL directories/files the leg
+    // staged or children created have no canonical form beyond their own
+    // lexical path (the C seam's stat already passed for statSync) — answer
+    // the canonical spelling instead of ENOENT/OUTSIDE-EVERY-VIEW so the
+    // vendored realPath-canonicalization walks (typert analyzer) proceed.
+    const map = globalThis.__dshFlatPathMap;
+    const mapped = typeof map === 'function' ? map(canonical) : undefined;
+    const real = globalThis.__dshProcStatReal?.(typeof mapped === 'string' ? mapped : canonical);
+    if (real?.isFile === true || real?.isDirectory === true) return canonical;
     throw outsideEveryView(canonical);
+  }
+  // The workspace view knows an ANCESTOR but not this entry (the real-only
+  // children case above) — same real-disk answer before the ENOENT.
+  {
+    const real = globalThis.__dshProcStatReal?.(canonical);
+    if (real?.isFile === true || real?.isDirectory === true) return canonical;
   }
   throw enoent('realpath', canonical);
 };
@@ -578,7 +600,33 @@ export const existsSync = (rawPath) => {
   if (workspaceSymlinkTarget(path) !== undefined) return true;
   if (wsFileAt(path) !== undefined) return true;
   if (wsIsDirAt(path)) return true;
+  // Paths THROUGH a workspace symlink (readFileSync canonicalizes them;
+  // existsSync must agree or fs-promises readFile's existsSync gate hides
+  // real target files — W6-V measured: '<skills>/linked-dir/SKILL.md'
+  // through a real dir symlink read fine via readFileSync but fs-promises
+  // readFile short-circuited ENOENT on this gate).
+  if (typeof path === 'string' && path.startsWith('/')) {
+    const resolvedPath = resolveWorkspaceSymlink(lexical(path));
+    if (resolvedPath !== path) {
+      if (wsFileAt(resolvedPath) !== undefined || wsIsDirAt(resolvedPath)) return true;
+    }
+  }
   if (nodeModulesProbe(path)) return true;
+  // Real-disk fallback (W6-V, 2026-09-28): files created behind the VFS by
+  // real children (the sqlite seam's -wal/-journal sidecars) exist and the
+  // vendored existence checks must agree with stat's fallback. VFS-first
+  // precedence: every staged/workspace face is consulted above. The flat-path
+  // map re-roots bundle-relative paths at the real checkout first.
+  if (typeof path === 'string' && path.startsWith('/')) {
+    const map = globalThis.__dshFlatPathMap;
+    const mapped = typeof map === 'function' ? map(path) : undefined;
+    try {
+      const real = globalThis.__dshProcStatReal?.(typeof mapped === 'string' ? mapped : path);
+      return real?.isFile === true || real?.isDirectory === true;
+    } catch {
+      return false;
+    }
+  }
   return false;
 };
 
@@ -626,7 +674,42 @@ export const readFileSync = (rawPath, encoding) => {
     }
     return decodeUtf8(seeded.bytes);
   }
-  if (wsAt(canonical) !== null) throw enoent('open', workspacePath);
+  // Inside the workspace root a miss is node-ENOENT — but only AFTER the
+  // real-disk twin declines: the leg stages real fixture trees UNDER the
+  // pinned profile root (the workspace root since W6-U's root pin), so the
+  // old pre-real ENOENT hid every staged real file from sync reads (W6-V:
+  // typert analyzer's tsconfig reads — stat saw the file, read ENOENT'd).
+  const insideWorkspace = wsAt(canonical) !== null;
+  // Real-disk fallback (W6-U, 2026-09-28) — the read twin of statSync's
+  // fallback: REAL children (the subprocess seam) write files the parent's
+  // VFS cannot see, and the flat transpiled specs re-derive vendored-tree
+  // paths no VFS face stages. VFS-first precedence is preserved: this runs
+  // only after every workspace/seeded face missed, and only for absolute
+  // paths that stat as REAL files. The flat-path map (spec→vendored origin)
+  // is consulted first so bundle-relative-derived paths re-root there.
+  if (typeof path === 'string' && path.startsWith('/')) {
+    const map = globalThis.__dshFlatPathMap;
+    const mapped = typeof map === 'function' ? map(path) : undefined;
+    const realPath = typeof mapped === 'string' ? mapped : path;
+    // Read-as-existence: __dshProcStatReal declines INTERMEDIATE-symlink
+    // paths (measured W6-V: '<skills>/linked-dir/SKILL.md' through a real
+    // dir symlink — stat null, read serves the bytes), so the read intrinsic
+    // itself is the existence check here; a null b64 answer falls through to
+    // the original error arms below.
+    const b64 = globalThis.__dshProcReadReal?.(realPath);
+    if (b64 !== undefined && b64 !== null) {
+      if (typeof encoding === 'string'
+          && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
+        throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
+      }
+      const bytes = fromBase64Real(b64);
+      if (encoding === 'buffer' || encoding === undefined || encoding === null) {
+        return DshBuffer.fromBytes(bytes);
+      }
+      return decodeUtf8(bytes);
+    }
+  }
+  if (insideWorkspace) throw enoent('open', workspacePath);
   return refuse('readFileSync')();
 };
 
@@ -693,14 +776,19 @@ export const statSync = (path, options = {}) => {
   // anything else does not exist IN it (R3-G1, 2026-09-28 — fs-sandbox's
   // containment walk stats candidate roots that were never staged and
   // classifies the ENOENT itself; the loud refusal broke that classification).
-  if (wsAt(canonical) !== null) throw enoent('stat', canonical);
   // Real-disk fallback (W5-R, 2026-09-28): the subprocess seam's consumers
   // stat REAL binaries (the vendored pre-spawn executability check stats
   // the node that runs the fixture servers — a path no VFS face knows).
   // VFS-first precedence is preserved: this runs only after every
-  // workspace/seeded face missed, and only for absolute paths.
+  // workspace/seeded face missed, and only for absolute paths. It must
+  // answer BEFORE the workspace ENOENT short-circuit (W6-V, 2026-09-28):
+  // real children (the sqlite seam) create sidecar files (-wal/-journal)
+  // inside VFS-known workspace directories, and a stat through the
+  // workspace view would ENOENT them before the fallback was consulted.
   if (typeof path === 'string' && path.startsWith('/')) {
-    const real = globalThis.__dshProcStatReal?.(path);
+    const map = globalThis.__dshFlatPathMap;
+    const mapped = typeof map === 'function' ? map(path) : undefined;
+    const real = globalThis.__dshProcStatReal?.(typeof mapped === 'string' ? mapped : path);
     if (real) {
       const bigint = options.bigint === true;
       const isDir = real.isDirectory === true;
@@ -716,6 +804,7 @@ export const statSync = (path, options = {}) => {
       });
     }
   }
+  if (wsAt(canonical) !== null) throw enoent('stat', canonical);
   throw enoent('stat', typeof path === 'string' ? path : String(path));
 };
 
@@ -819,6 +908,9 @@ export const writeFileSync = (path, data, options) => {
     throw wsEexist('open', path);
   }
   const mode = typeof options === 'object' && options !== null ? options.mode : undefined;
+  // The real-disk write-through lives INSIDE wsWriteFile (fs-workspace.js):
+  // every write face (sync + promises + copyFile/cp/appendFile/fd write)
+  // funnels there, so the mirror cannot be bypassed (W6-U, 2026-09-28).
   return wsWriteFile(path, bytes, mode);
 };
 
@@ -830,6 +922,8 @@ export const mkdirSync = (path, options) => {
 };
 
 export const rmSync = (path, options = {}) => {
+  // The real-disk removal mirror lives inside wsRm (fs-workspace.js), same
+  // funneling argument as the write-through above.
   return wsRm(path, options);
 };
 
@@ -1085,6 +1179,25 @@ const direntFor = (name, path) => {
   };
 };
 
+/** Real-disk readdir (W6-V): the staged fixtures trees (upstream-suite-leg
+ * materializes them for cwd-joined joins) and real children's directories
+ * are REAL directories the served views cannot list. Sync face over the
+ * subprocess seam's find; the namespace loads async at module eval and is
+ * cached by the time any spec walk runs (desktop hosts; elsewhere null). */
+let realFsChildProcess = null;
+import('node:child_process').then((ns) => { realFsChildProcess = ns; }).catch(() => { /* inert */ });
+const realReaddirNames = (realDir) => {
+  // The suite leg pins the namespace early (preloadRealFs) because spec
+  // module bodies walk fixtures before any job drain; the lazy import here
+  // covers non-leg consumers.
+  const spawnSync = realFsChildProcess?.spawnSync ?? globalThis.__dshChildProcessNs?.spawnSync;
+  if (typeof spawnSync !== 'function') return null;
+  const res = spawnSync('find', [realDir, '-maxdepth', '1', '-mindepth', '1']);
+  if (res.status !== 0 || typeof res.stdout !== 'string') return null;
+  const prefix = realDir.endsWith('/') ? realDir : `${realDir}/`;
+  return [...new Set(res.stdout.split('\n').filter((line) => line.startsWith(prefix)).map((line) => line.slice(prefix.length)))].sort();
+};
+
 export const readdirSync = (path, options) => {
   const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
   // A symlinked directory entry reads through the link (node follows the hop
@@ -1106,12 +1219,14 @@ export const readdirSync = (path, options) => {
     }
     return names;
   }
-  if (wsAt(canonical) !== null) {
-    // node's readdir spells a FILE target ENOTDIR (the storage-json lazy
-    // loadAll propagates non-ENOENT failures; ENOENT means "no unit yet").
-    if (wsFileAt(canonical) !== undefined) throw wsEnotdir('readdir', canonical);
-    throw enoent('readdir', canonical);
-  }
+  // Inside the workspace root a miss is ENOENT/ENOTDIR — but only AFTER the
+  // real-disk twin declines: the leg stages real fixture trees UNDER the
+  // pinned profile root (the workspace root since W6-U's root pin), so the
+  // old pre-real throw hid every staged real directory from sync listings
+  // (W6-V: typert analyzer's fixture walks — stat saw the dir, readdir
+  // ENOENT'd).
+  const insideWorkspace = wsAt(canonical) !== null;
+  if (insideWorkspace && wsFileAt(canonical) !== undefined) throw wsEnotdir('readdir', canonical);
   // Outside both served views a directory scan answers ABSENCE, not the
   // loud refusal: the vendored discovery walks (skill-filesystem's root
   // scan, the presets service) branch on the ERROR CODE —
@@ -1122,7 +1237,26 @@ export const readdirSync = (path, options) => {
   // node's own readdir answer — so the error carries code ENOENT (the
   // message keeps the runtime explanation for anyone logging it).
   const absent = enoent('readdir', canonical);
-  absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}`;
+  if (!insideWorkspace) {
+    absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}`;
+  }
+  // Real-disk fallback (W6-V): a REAL directory (the leg's staged fixtures
+  // tree, a child's scratch dir) lists through the subprocess seam. Runs
+  // after every served view declined (and after the in-root check above —
+  // staged real dirs live under the root).
+  if (typeof canonical === 'string' && canonical.startsWith('/')) {
+    const real = globalThis.__dshProcStatReal?.(canonical);
+    if (real?.isDirectory === true) {
+      const names = realReaddirNames(canonical);
+      if (names !== null) {
+        if (options?.withFileTypes === true) {
+          const prefix = canonical.endsWith('/') ? canonical : `${canonical}/`;
+          return names.map((name) => direntFor(name, `${prefix}${name}`));
+        }
+        return names;
+      }
+    }
+  }
   throw absent;
 };
 

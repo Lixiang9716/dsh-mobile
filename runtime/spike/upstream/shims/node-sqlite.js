@@ -28,17 +28,22 @@ class StatementSync {
     return { changes: Number(res.changes ?? 0), lastInsertRowid: Number(res.lastInsertRowid ?? 0) };
   }
   get(...params) {
-    return getIntrinsic(this.#stmt, params);
+    // node:sqlite's get() returns UNDEFINED when the statement yields no row
+    // (the C intrinsic returns null); the vendored engine distinguishes
+    // `row !== undefined` — a null here read as a present-but-null row and
+    // crashed rowHeader (W6-V, 2026-09-28).
+    const row = getIntrinsic(this.#stmt, params);
+    return row === null || row === undefined ? undefined : row;
   }
   all(...params) {
     return allIntrinsic(this.#stmt, params);
   }
   *iterate(...params) {
-    for (;;) {
-      const row = getIntrinsic(this.#stmt, params);
-      if (row === null || row === undefined) return;
-      yield row;
-    }
+    // Materialize through all(): the C __dshSqliteGet re-binds per call, so
+    // driving it in a loop restarted the statement and yielded row 1 forever
+    // (W6-V, 2026-09-28 — the same reset bug the C all() fix removes).
+    const rows = allIntrinsic(this.#stmt, params);
+    for (const row of rows) yield row;
   }
   sourceSQL() { return this.#sourceSQL ?? ''; }
   setReadBigInts(enabled) { this.#readBigInts = enabled === true; return this; }

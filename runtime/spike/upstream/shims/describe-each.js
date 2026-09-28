@@ -77,13 +77,21 @@ export function attachEachForms(describe, it) {
     out = subbed.replace(/\$\{[^}]+\}/g, '').trim(); // leftover ${expr}: strip like the in-file it.each
     return `${out} (${rowLabel(row)})`;
   };
-  describe.each = (rows) => (name, fn) => {
+  describe.each = (rows) => (name, optionsOrFn, maybeFn) => {
+    const fn = typeof optionsOrFn === 'function' ? optionsOrFn : maybeFn;
+    const options = typeof optionsOrFn === 'function' ? undefined : optionsOrFn;
     for (const row of rows) {
-      describe(rowTitle(name, row), () => fn(...rowArgs(row)));
+      if (options !== undefined) describe(rowTitle(name, row), options, () => fn(...rowArgs(row)));
+      else describe(rowTitle(name, row), () => fn(...rowArgs(row)));
     }
   };
-  it.each = (rows) => (name, fn) => {
-    for (const row of rows) it(rowTitle(name, row), () => fn(...rowArgs(row)));
+  it.each = (rows) => (name, optionsOrFn, maybeFn) => {
+    const fn = typeof optionsOrFn === 'function' ? optionsOrFn : maybeFn;
+    const options = typeof optionsOrFn === 'function' ? undefined : optionsOrFn;
+    for (const row of rows) {
+      if (options !== undefined) it(rowTitle(name, row), options, () => fn(...rowArgs(row)));
+      else it(rowTitle(name, row), () => fn(...rowArgs(row)));
+    }
   };
   const pick = (collect, noOp) => (condition) => (condition ? noOp : collect);
   describe.skipIf = pick(describe, describe.skip);

@@ -387,6 +387,18 @@ const wsMkdir = (path, options = {}) => {
       state.dirs.add(dir);
       if (typeof options.mode === 'number' && dir === canonical) state.dirModes.set(dir, options.mode);
       first = first ?? dir;
+      // Real-disk mkdir mirror (W6-U r3, 2026-09-27) — same funneling
+      // argument as the write/rm/chmod mirrors: spawned children chdir into
+      // REAL directories, and with the C child-side mkdir -p removed
+      // (node's spawn-ENOENT contract: a missing workdir must fail the
+      // spawn) every VFS mkdir has to land on the disk itself.
+      // __dshProcMkdirReal is mkdir -p, so nested recursive walks resolve
+      // in one call; best-effort like its siblings.
+      try {
+        if (typeof dir === 'string' && dir.startsWith('/')) {
+          globalThis.__dshProcMkdirReal?.(dir);
+        }
+      } catch { /* structural mirror is best-effort */ }
     }
   }
   return first;
@@ -490,12 +502,49 @@ const wsWriteFile = (path, bytes, mode) => {
     if (typeof mode === 'number') existing.mode = mode;
     defineWrittenModule(path, canonical, bytes);
     notifyWatches(canonical);
+    wsMirrorWriteReal(canonical, bytes);
     return canonical;
   }
   wsCreateFile(state, canonical, bytes, mode);
   defineWrittenModule(path, canonical, bytes);
   notifyWatches(canonical);
+  wsMirrorWriteReal(canonical, bytes);
   return canonical;
+};
+
+/** Real-disk write-through (W6-U, 2026-09-28) — every write face funnels
+ * through wsWriteFile, so the mirror lives here: the mounted workspace root
+ * IS a real directory on the desktop spike (the profile container's tmp),
+ * and the subprocess seam's children read THAT disk. A successful VFS write
+ * mirrors byte-identically onto it (parents mkdir -p'd, idempotent).
+ * Best-effort by design — the VFS stays the world of record; the mirror
+ * only feeds the seam's children. 8 MB cap: suite payloads are tiny and a
+ * runaway mirror should fail loudly on the C side, not here. */
+const wsMirrorWriteReal = (canonical, bytes) => {
+  try {
+    if (typeof canonical === 'string' && canonical.startsWith('/')
+        && bytes.length <= 8 * 1024 * 1024) {
+      let bin = '';
+      const CHUNK = 0x8000;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+      }
+      globalThis.__dshProcWriteFileReal?.(canonical, btoa(bin));
+    }
+  } catch { /* structural mirror is best-effort */ }
+};
+
+/** Real-disk mode mirror (W6-U r3, 2026-09-27) — the chmod sibling of the
+ * write/rm mirrors: a VFS chmod(+x) on a mirrored path must land on the disk
+ * the subprocess seam's children read (hook scripts run through real bash;
+ * a virtual-only mode is "Permission denied" there). Best-effort like its
+ * siblings; the VFS mode stays the world of record. */
+const wsMirrorChmodReal = (canonical, mode) => {
+  try {
+    if (typeof canonical === 'string' && canonical.startsWith('/') && typeof mode === 'number') {
+      globalThis.__dshProcChmodReal?.(canonical, mode & 0o7777);
+    }
+  } catch { /* structural mirror is best-effort */ }
 };
 
 /** Remove a file or a directory subtree. `force` swallows ENOENT (node). */
@@ -505,12 +554,25 @@ const wsRm = (path, options = {}) => {
     throw new Error(`node:fs.rm: path outside the writable workspace root: ${path}`);
   }
   const { state } = at;
+  // Symlink removal (W6-V): unlink NEVER follows the link — check the
+  // literal path BEFORE the canonical chain resolution (which rewrites the
+  // path to the link's TARGET and would delete the target file while
+  // leaving the registration, so a removed-and-recreated link — the
+  // skill-filesystem replacement flow — hit EEXIST forever).
+  if (state.symlinks.has(at.path)) {
+    wsRequireDirWrite(state, at.path, 'unlink');
+    state.symlinks.delete(at.path);
+    notifyWatches(at.path);
+    wsMirrorRmReal(at.path, false);
+    return;
+  }
   const canonical = wsResolveSymlinkChain(state, at.path);
   // Removal needs write on the containing directory (POSIX unlink/rmdir).
   wsRequireDirWrite(state, canonical, state.files.has(canonical) ? 'unlink' : 'rmdir');
   if (state.files.has(canonical)) {
     state.files.delete(canonical);
     notifyWatches(canonical);
+    wsMirrorRmReal(canonical, false);
     return;
   }
   if (state.dirs.has(canonical)) {
@@ -535,6 +597,7 @@ const wsRm = (path, options = {}) => {
         state.dirIno.delete(canonical);
         state.dirModes?.delete(canonical);
         notifyWatches(canonical);
+        wsMirrorRmReal(canonical, false);
       }
       return;
     }
@@ -549,12 +612,19 @@ const wsRm = (path, options = {}) => {
         state.dirModes?.delete(dir);
       }
     }
+    // Recursive rm sweeps symlink registrations below the target too (node:
+    // rm -rf removes links, not their targets — W6-V, same stale-link EEXIST
+    // as the plain unlink case above).
+    for (const link of [...state.symlinks.keys()]) {
+      if (link.startsWith(prefix)) state.symlinks.delete(link);
+    }
     if (canonical !== state.root) {
       state.dirs.delete(canonical);
       state.dirIno.delete(canonical);
       state.dirModes?.delete(canonical);
     }
     notifyWatches(canonical);
+    wsMirrorRmReal(canonical, true);
     return;
   }
   if (wsIsDirAt(canonical) && options.force === true) {
@@ -563,6 +633,17 @@ const wsRm = (path, options = {}) => {
     return;
   }
   if (options.force !== true) throw wsEnoent('rm', canonical);
+};
+
+/** Real-disk removal mirror (W6-U, 2026-09-28): the write-through's twin.
+ * A file or subtree the seam's children could have read must not survive
+ * as a zombie once the VFS removed it. Best-effort, like the write side. */
+const wsMirrorRmReal = (canonical, recursive) => {
+  try {
+    if (typeof canonical === 'string' && canonical.startsWith('/')) {
+      globalThis.__dshProcRmReal?.(canonical, recursive === true);
+    }
+  } catch { /* structural mirror is best-effort */ }
 };
 
 /** Rename within the workspace (files; a directory rename moves its subtree). */
@@ -632,6 +713,11 @@ const wsRename = (from, to) => {
     state.dirIno.delete(sourcePath);
     if (sourceIno !== undefined) state.dirIno.set(dest, sourceIno);
     state.dirs.add(dest);
+    // Real-disk mirror (W6-U r3): the VFS rename moves only its map — the
+    // mirrored real source dir lingers (best-effort litter) and the dest
+    // must exist for the seam's children (same mkdir-mirror argument as
+    // wsMkdir).
+    try { globalThis.__dshProcMkdirReal?.(dest); } catch { /* best-effort */ }
     return;
   }
   throw wsEnoent('rename', sourcePath);
@@ -670,6 +756,7 @@ const wsChmod = (path, mode) => {
   const file = at.state.files.get(at.path);
   if (file !== undefined) {
     file.mode = typeof mode === 'number' ? mode : file.mode;
+    if (typeof mode === 'number') wsMirrorChmodReal(wsResolveSymlinkChain(at.state, at.path), mode);
     return;
   }
   if (!at.state.dirs.has(at.path) && !wsIsDirAt(path)) throw wsEnoent('chmod', at.path);
@@ -678,7 +765,10 @@ const wsChmod = (path, mode) => {
   // below (the contract's conformance clause requires permission-flag
   // enforcement; the settings-file concurrency spec chmods the settings dir
   // 0500 and expects the writer's create to fail with EACCES).
-  if (typeof mode === 'number') at.state.dirModes.set(at.path, mode);
+  if (typeof mode === 'number') {
+    at.state.dirModes.set(at.path, mode);
+    wsMirrorChmodReal(wsResolveSymlinkChain(at.state, at.path), mode);
+  }
 };
 
 /* ---- directory write-permission gate (W4-N, 2026-09-28) ------------------ */

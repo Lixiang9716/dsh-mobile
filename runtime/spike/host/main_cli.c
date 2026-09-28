@@ -41,6 +41,20 @@
 #define HTTP_RCV_TIMEOUT_SECONDS 5
 #define HTTP_HEADER_MAX 16384
 
+/* Backstop deadline, env-tunable (W6-U r3): heavy upstream specs
+ * (session-snapshot's 145 tests, the sandboxed PTC stack) can outgrow the
+ * 120s default on a loaded desktop; DSH_DEADLINE_SECONDS raises it without
+ * a rebuild. Clamped 30..1200 so a stray value cannot disable the backstop
+ * (condition-driven waits still own normal exits; this is the last resort). */
+static int smoke_deadline_seconds(void) {
+    const char *raw = getenv("DSH_DEADLINE_SECONDS");
+    if (!raw || !*raw) return SMOKE_DEADLINE_SECONDS;
+    int v = atoi(raw);
+    if (v < 30) v = 30;
+    if (v > 1200) v = 1200;
+    return v;
+}
+
 static void on_log(void *ud, const char *line) {
     (void)ud;
     fputs(line, stdout);
@@ -1105,6 +1119,20 @@ static int spike_run_main(int argc, char **argv) {
     const char *bus_inject_path = NULL;
     char env_json[2048] = "{";
     size_t env_len = 1;
+    /* The host OS fact, compile-time: the child_process shim's wait-status
+     * signal table is per-platform (darwin and linux WTERMSIG numbers differ
+     * beyond the common core), so the runtime needs the build's OS without
+     * guessing it from a partial table. Same key the platform embedders are
+     * expected to set in their own launch snapshots. */
+    env_len += (size_t)snprintf(env_json + env_len, sizeof(env_json) - env_len,
+#if defined(__linux__)
+                                "\"DSH_HOST_PLATFORM\":\"linux\""
+#elif defined(__APPLE__)
+                                "\"DSH_HOST_PLATFORM\":\"darwin\""
+#else
+                                "\"DSH_HOST_PLATFORM\":\"unknown\""
+#endif
+                                );
     for (int i = 3; i < argc; i++) {
         if (strcmp(argv[i], "--http") == 0) {
             http = 1;
@@ -1209,7 +1237,7 @@ static int spike_run_main(int argc, char **argv) {
      * or the backstop deadline passes — condition-driven, never sleeps. */
     struct timespec deadline;
     clock_gettime(CLOCK_MONOTONIC, &deadline);
-    deadline.tv_sec += SMOKE_DEADLINE_SECONDS;
+    deadline.tv_sec += smoke_deadline_seconds();
     while (rc == 0 && !b.failed && !dsh_spike_complete(b.spike)) {
         rc = dsh_spike_pump(b.spike);
         if (rc != 0) break;
@@ -1241,7 +1269,7 @@ static int spike_run_main(int argc, char **argv) {
             if (wait > 0) {
                 if (deadline.tv_sec - now.tv_sec < (wait + 999) / 1000) {
                     fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
-                            SMOKE_DEADLINE_SECONDS);
+                            smoke_deadline_seconds());
                     rc = -1;
                     break;
                 }
@@ -1262,7 +1290,7 @@ static int spike_run_main(int argc, char **argv) {
         if (now.tv_sec > deadline.tv_sec ||
             (now.tv_sec == deadline.tv_sec && now.tv_nsec >= deadline.tv_nsec)) {
             fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
-                    SMOKE_DEADLINE_SECONDS);
+                    smoke_deadline_seconds());
             rc = -1;
             break;
         }

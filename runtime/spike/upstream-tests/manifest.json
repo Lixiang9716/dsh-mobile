@@ -683,7 +683,7 @@
     "fast-check (not in the loader bare map — a vendoring decision, not a silent drop)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-tool-catalog.ts\"": 1,
-    "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc": 1,
+    "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"": 1,
     "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 2,
@@ -751,7 +751,7 @@
         "count": 1
       },
       {
-        "reason": "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc",
+        "reason": "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f",
         "count": 1
       },
       {

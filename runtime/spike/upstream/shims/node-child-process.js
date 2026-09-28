@@ -26,6 +26,8 @@ const pollIntrinsic = globalThis.__dshProcPoll;
 const writeIntrinsic = globalThis.__dshProcWrite;
 const endStdinIntrinsic = globalThis.__dshProcEndStdin;
 const killIntrinsic = globalThis.__dshProcKill;
+const writeFdIntrinsic = globalThis.__dshProcWriteFd;
+const endFdIntrinsic = globalThis.__dshProcEndFd;
 
 /** Fail loud naming the missing host intrinsic (rule 5) at CALL time —
  * linking child_process must not kill a load that never spawns. */
@@ -40,9 +42,30 @@ const childDebugOn = (() => {
   } catch { return false; }
 })();
 
-const SIGNAL_NAMES = ['SIGHUP', 'SIGINT', 'SIGQUIT', 'SIGABRT', 'SIGKILL', 'SIGUSR1', 'SIGUSR2',
-  'SIGPIPE', 'SIGALRM', 'SIGTERM', 'SIGCHLD', 'SIGCONT', 'SIGSTOP', 'SIGTSTP', 'SIGTTIN', 'SIGTTOU'];
-const signalName = (num) => SIGNAL_NAMES[num - 1] ?? `SIG${num}`;
+/** Signal NUMBER → name for the numbers the C host reports in wait status
+ * (raw WTERMSIG). The previous single partial list indexed num-1 and mapped
+ * most numbers WRONG (signal 15 → 'SIGTTIN': the list skipped SIGILL/SIGTRAP
+ * et al. while the index math assumed contiguity — measured 2026-09-27,
+ * bash-local executor 'classifies a self-killed command'). darwin and linux
+ * share 1-3, 9, 13-15; the rest differ, so the map is per-platform. */
+const SIGNALS_DARWIN = { 1: 'SIGHUP', 2: 'SIGINT', 3: 'SIGQUIT', 4: 'SIGILL', 5: 'SIGTRAP',
+  6: 'SIGABRT', 7: 'SIGEMT', 8: 'SIGFPE', 9: 'SIGKILL', 10: 'SIGBUS', 11: 'SIGSEGV',
+  12: 'SIGSYS', 13: 'SIGPIPE', 14: 'SIGALRM', 15: 'SIGTERM', 16: 'SIGURG', 17: 'SIGSTOP',
+  18: 'SIGTSTP', 19: 'SIGCONT', 20: 'SIGCHLD', 21: 'SIGTTIN', 22: 'SIGTTOU', 23: 'SIGIO',
+  24: 'SIGXCPU', 25: 'SIGXFSZ', 26: 'SIGVTALRM', 27: 'SIGPROF', 28: 'SIGWINCH', 29: 'SIGINFO' };
+const SIGNALS_LINUX = { 1: 'SIGHUP', 2: 'SIGINT', 3: 'SIGQUIT', 4: 'SIGILL', 5: 'SIGTRAP',
+  6: 'SIGABRT', 7: 'SIGBUS', 8: 'SIGFPE', 9: 'SIGKILL', 10: 'SIGUSR1', 11: 'SIGSEGV',
+  12: 'SIGUSR2', 13: 'SIGPIPE', 14: 'SIGALRM', 15: 'SIGTERM', 16: 'SIGSTKFLT',
+  17: 'SIGCHLD', 18: 'SIGCONT', 19: 'SIGSTOP', 20: 'SIGTSTP', 21: 'SIGTTIN', 22: 'SIGTTOU',
+  23: 'SIGIO', 24: 'SIGXCPU', 25: 'SIGXFSZ', 26: 'SIGVTALRM', 27: 'SIGPROF', 28: 'SIGWINCH' };
+const signalTable = (() => {
+  try {
+    const raw = typeof globalThis.__dshLaunchEnv === 'function' ? globalThis.__dshLaunchEnv() : null;
+    const platform = raw ? JSON.parse(raw).DSH_HOST_PLATFORM : undefined;
+    return platform === 'linux' ? SIGNALS_LINUX : SIGNALS_DARWIN;
+  } catch { return SIGNALS_DARWIN; }
+})();
+const signalName = (num) => signalTable[num] ?? `SIG${num}`;
 
 /** bytes → base64 (btoa is the host's latin-1 intrinsic; chunked String
  * construction keeps big stdin frames off the call stack). */
@@ -69,9 +92,13 @@ const normalizeStdio = (stdio) => {
   return ['pipe', 'pipe', 'pipe'];
 };
 
-/** The spawn-failure error node raises: syscall/code/errno/path face. */
+/** The spawn-failure error node raises: message is `spawn <cmd> <CODE>`
+ * (node composes the error message from the UV errno NAME — the bash-local
+ * executor's bad-workdir test matches /ENOENT/ against the message, which
+ * the previous raw.message composition never named), with the
+ * syscall/code/errno/path face. */
 const spawnError = (syscall, command, raw) => {
-  const error = new Error(`${syscall} ${command} ${raw?.message ?? 'failed'}`);
+  const error = new Error(`${syscall} ${command} ${raw?.code ?? raw?.message ?? 'failed'}`);
   error.code = raw?.code ?? 'EIO';
   error.errno = raw?.errno;
   error.syscall = syscall;
@@ -175,7 +202,13 @@ const startPump = (child) => {
     let res;
     try {
       res = pollIntrinsic(child.pid);
-      debug({ outLen: res.out?.length ?? 0, errLen: res.err?.length ?? 0, exited: res.exited, outEof: res.outEof });
+      debug({ outLen: res.out?.length ?? 0, errLen: res.err?.length ?? 0, exited: res.exited, outEof: res.outEof,
+        // Payload heads in the debug stream (only when DSH_CHILD_DEBUG=1):
+        // the pump's counters alone cannot say WHY a child is silent — the
+        // hooks-cluster diagnosis (W6-U r3) turned on reading the child's
+        // stderr text ('Permission denied' on a not-really-executable script).
+        errHead: res.err ? String(decodeUtf8(fromBase64(res.err))).slice(0, 160) : undefined,
+        outHead: res.out ? String(decodeUtf8(fromBase64(res.out))).slice(0, 160) : undefined });
       // Chunks surface as DshBuffer (Buffer.from over the decoded bytes) — plain
       // Uint8Array strips the Buffer face consumers parse with (indexOf / toString(enc,
       // start, end): the lsp-stdio decoder scanned through TypedArray.indexOf — W5-R.
@@ -342,33 +375,109 @@ export const spawnSync = (command, args = [], options = {}) => {
   };
 };
 
-/** execFile(file, args, options?, callback?) — callback form over
- * spawnSync (dispatch async like node's process exit); the bare call
- * returns the child for destructor use. promisify(execFile) drives the
- * synthesized-callback path. */
+/** execFile(file, args, options?, callback?) — callback form over ONE async
+ * spawn (node runs the child exactly once; the previous double-run — async
+ * spawn discarded + spawnSync in setTimeout — leaked a live twin of every
+ * command and re-executed non-idempotent helpers). Node faces served here:
+ * signal (abort kills with SIGTERM, callback gets the ABORT_ERR AbortError),
+ * timeout (SIGTERM, killed:true), maxBuffer (SIGTERM + ENOBUFS), encoding
+ * 'buffer'|utf8, and the non-zero exit error face (code = exit number,
+ * `Command failed: <cmd>` message, killed/signal/cmd). The bare call (no
+ * callback) returns the child for destructor use; promisify(execFile) drives
+ * the synthesized-callback path. */
+const ABORT_ERROR = () => Object.assign(new Error('The operation was aborted'), {
+  name: 'AbortError', code: 'ABORT_ERR',
+});
+
 export const execFile = (file, args = [], optionsOrCallback = {}, maybeCallback) => {
   const options = typeof optionsOrCallback === 'function' ? {} : (optionsOrCallback ?? {});
   const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
-  const child = spawn(file, args, { cwd: options.cwd, env: options.env });
+  const argv = Array.isArray(args) ? args : [];
+  const child = spawn(file, argv, { cwd: options.cwd, env: options.env, stdio: options.stdio });
   if (typeof callback !== 'function') return child;
-  child.once('error', () => { /* the sync result owns the verdict */ });
-  setTimeout(() => {
-    const res = spawnSync(file, args, { cwd: options.cwd, env: options.env, timeout: options.timeout });
-    if (res.error) {
-      callback(res.error, res.stdout, res.stderr);
+  const wantBuffer = options.encoding === 'buffer';
+  const chunks = { 1: [], 2: [] };
+  if (child.stdout) child.stdout.on('data', (chunk) => { chunks[1].push(chunk); });
+  if (child.stderr) child.stderr.on('data', (chunk) => { chunks[2].push(chunk); });
+  let settled = false;
+  let abortFailure = null;
+  let oversized = false;
+  let timer = null;
+  const maxBuffer = typeof options.maxBuffer === 'number' && options.maxBuffer >= 0
+    ? options.maxBuffer
+    : 1024 * 1024;
+  const collected = (side) => {
+    const list = chunks[side];
+    if (wantBuffer) {
+      const parts = list.map((c) => (c instanceof Uint8Array ? c : encodeUtf8(String(c))));
+      let len = 0;
+      for (const p of parts) len += p.length;
+      const out = new Uint8Array(len);
+      let at = 0;
+      for (const p of parts) { out.set(p, at); at += p.length; }
+      return Buffer.from(out);
+    }
+    return list.map((c) => (typeof c === 'string' ? c : decodeUtf8(c instanceof Uint8Array ? c : encodeUtf8(String(c))))).join('');
+  };
+  const settle = (error) => {
+    if (settled) return;
+    settled = true;
+    if (timer !== null) { clearTimeout(timer); timer = null; }
+    options.signal?.removeEventListener?.('abort', onAbort);
+    callback(error, collected(1), collected(2));
+  };
+  const onAbort = () => {
+    if (settled || abortFailure) return;
+    abortFailure = ABORT_ERROR();
+    child.kill('SIGTERM');
+  };
+  if (options.signal) {
+    if (options.signal.aborted) queueMicrotask(onAbort);
+    else options.signal.addEventListener('abort', onAbort, { once: true });
+  }
+  if (typeof options.timeout === 'number' && options.timeout > 0) {
+    timer = setTimeout(() => {
+      if (settled || abortFailure) return;
+      abortFailure = null;
+      child.kill('SIGTERM');
+      child.__timedOut = true;
+    }, options.timeout);
+  }
+  const watchGrowth = () => {
+    let total = 0;
+    for (const side of [1, 2]) for (const c of chunks[side]) total += c.length ?? 0;
+    if (total > maxBuffer && !oversized && !settled) {
+      oversized = true;
+      child.kill('SIGTERM');
+    }
+  };
+  child.stdout?.on?.('data', watchGrowth);
+  child.stderr?.on?.('data', watchGrowth);
+  child.once('error', (error) => {
+    // spawn failure (ENOENT & co): node hands the spawn error to the
+    // callback with empty streams; the paired 'close' is absorbed by settled.
+    if (abortFailure) { settle(abortFailure); return; }
+    settle(error);
+  });
+  child.once('close', (code, signal) => {
+    if (oversized) {
+      settle(Object.assign(new Error('stdout maxBuffer length exceeded'), {
+        code: 'ENOBUFS', killed: true, signal: 'SIGTERM', cmd: `${file} ${argv.join(' ')}`,
+      }));
       return;
     }
-    if (res.status !== 0) {
-      const error = new Error(`Command failed: ${file}${Array.isArray(args) && args.length > 0 ? ` ${args.join(' ')}` : ''}`);
-      error.code = res.status ?? undefined;
-      error.killed = false;
-      error.signal = res.signal;
-      error.cmd = `${file} ${Array.isArray(args) ? args.join(' ') : ''}`;
-      callback(error, res.stdout, res.stderr);
+    if (abortFailure) { settle(abortFailure); return; }
+    if (code !== 0 || signal !== null && signal !== undefined) {
+      const error = new Error(`Command failed: ${file}${argv.length > 0 ? ` ${argv.join(' ')}` : ''}`);
+      error.code = code ?? undefined;
+      error.killed = child.killed || child.__timedOut === true;
+      error.signal = signal ?? null;
+      error.cmd = `${file} ${argv.join(' ')}`;
+      settle(error);
       return;
     }
-    callback(null, res.stdout, res.stderr);
-  }, 0);
+    settle(null);
+  });
   return child;
 };
 
