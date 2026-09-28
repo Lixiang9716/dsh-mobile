@@ -88,6 +88,17 @@ android {
     namespace = "com.dshmobile.spike"
     compileSdk = 35
 
+    // aapt2's default ignore pattern excludes EVERY dotfile ('.*') from
+    // assets — which silently dropped the vendored pi-ai
+    // providers/data/.manifest.json (the providers barrel's require target)
+    // from the APK while the repo staging carried it faithfully. Re-state
+    // the pattern WITHOUT the '.*' token so the bundle's dotfiles package
+    // (2026-09-29, the parity m4 mount's "cannot read
+    // '.../data/.manifest.json'").
+    androidResources {
+        ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~"
+    }
+
     // BuildConfig carries DSH_RELEASE into Kotlin; AGP 8 defaults the class
     // off, so ask for it (the Release build type sets the field below).
     buildFeatures {
