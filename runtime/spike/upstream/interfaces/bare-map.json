@@ -555,19 +555,19 @@
    "provider": "npm-pin @noble/hashes@2.3.0 (sha2.js)",
    "since": "wave5-C' (round 4)",
    "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)",
-   "note": "ESM-native root files; only the subpaths the specs import are named (their own relative ./_md.js resolve beside)"
+   "note": "ESM-native root files; only the subpaths the specs import are named (their own relative ./_md.js resolve beside). ALSO mapped STATICALLY in the host bare map (dsh_map_bare, 2026-09-29): shims/crypto.js imports these names during the static link phase, before the runtime bridge registry exists — the registry row can never serve that import (the parity port-leg failure)"
   },
   {
    "specifier": "@noble/hashes/hmac.js",
    "provider": "npm-pin @noble/hashes@2.3.0 (hmac.js)",
    "since": "wave5-C' (round 4)",
-   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai) + the host static bare map (2026-09-29, link-phase imports)"
   },
   {
    "specifier": "@noble/hashes/legacy.js",
    "provider": "npm-pin @noble/hashes@2.3.0 (legacy.js)",
    "since": "wave5-C' (round 4)",
-   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai)"
+   "registeredBy": "shims/npm-bridges.js (+ fragments b/c/pi-ai) + the host static bare map (2026-09-29, link-phase imports)"
   },
   {
    "specifier": "@jridgewell/gen-mapping",

@@ -1134,6 +1134,18 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
         snprintf(out, out_len, "vendor/dsh/llm@%s/lib/index.js", DSH_UPSTREAM_VERSION);
         return 1;
     }
+    if (strncmp(name, "@noble/hashes/", 14) == 0) {
+        /* STATIC bare map, not the npm-bridges registry: shims/crypto.js
+         * imports these names, and crypto.js itself loads through the
+         * node:crypto row during the STATIC LINK phase — before any module
+         * body has run to register the runtime bridge table, so a registry
+         * row can never serve this import (the parity port leg's "cannot
+         * load module '@noble/hashes/sha2.js'"). Link-time rows read the
+         * pinned vendor tree straight off disk; a subpath outside the pin
+         * fails loud at read. */
+        snprintf(out, out_len, "vendor/npm/@noble/hashes@2.3.0/%s", name + 14);
+        return 1;
+    }
     if (strncmp(name, "@deepseek-ai/dsh-llm/", 21) == 0) {
         /* The vendored package's runtime exports map (package.json "exports"):
          * subpath → path under lib/. The /types subpath is a RUNTIME module

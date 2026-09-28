@@ -83,9 +83,15 @@ until adb shell am start -n $PKG/.MainActivity --ez dsh.parity true >/dev/null 2
 done
 
 # Both conditions: the scenario's own evidence (stale completion tags cannot
-# fake it) and the completion tag itself.
+# fake it) and the completion tag itself. BOTH waits judge the CANARY view —
+# the raw stream still carries the PREVIOUS step's buffered `dsh.spike.result:
+# ALL` + scenario lines that pierced `logcat -c` (the 2026-09-24 race, seen
+# again 2026-09-29: the truncation was canary-pinned but this wait grepped the
+# raw stream, so a stale completion tag satisfied it instantly and the
+# canary-truncated capture came up empty — "no parity/event records").
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "upstream.parity" "$STREAM" && grep -q "dsh.spike.result: ALL" "$STREAM"; do
+canary_view() { awk '/parity-begin-/{seen=1} seen' "$STREAM"; }
+until canary_view | grep -q "upstream.parity" && canary_view | grep -q "dsh.spike.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::upstream.parity scenario did not complete within 300s" >&2
         tail -80 "$STREAM" >&2
