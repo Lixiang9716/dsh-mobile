@@ -54,6 +54,8 @@ else
             --wildcards \
             "*/packages/*/tests" \
             "*/packages/*/src" \
+            "*/packages/*/package.json" \
+            "*/packages/*/*/package.json" \
             "*/scripts/test-invariants.ts" \
             "*/scripts/test-proxy-environment.ts" \
             "*/vitest.shared.ts"
@@ -66,6 +68,7 @@ out = os.environ['TESTS_DIR']
 patterns = [
     'packages/*/tests', 'packages/*/tests/*',
     'packages/*/src', 'packages/*/src/*',
+    'packages/*/package.json', 'packages/*/*/package.json',
     'scripts/test-invariants.ts', 'scripts/test-proxy-environment.ts',
     'vitest.shared.ts',
 ]
@@ -122,6 +125,142 @@ ensure_npm() {
     rm -f "$tgz"
     printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/$name@$ver" "sha256=$sha" > "$dir/.vendor-pin"
 }
+
+# ensure_npm_registry — the same discipline for packages OUTSIDE the
+# @deepseek-ai scope (the test-face npm gaps, 2026-09-27): the full package
+# name arrives as $1 (scoped or not), the tree lands at the same
+# vendor/npm/<full-name>@<ver> layout the C host's bridges re-export from.
+ensure_npm_registry() {
+    full="$1"; ver="$2"; sha="$3"
+    dir="npm/$full@$ver"
+    if [ -f "$dir/.vendor-pin" ] && grep -q "$sha" "$dir/.vendor-pin" 2>/dev/null; then
+        echo "vendor: npm/$full@$ver present (pin-stamped)"
+        return
+    fi
+    echo "vendor: fetching npm/$full@$ver"
+    rm -rf "$dir"; mkdir -p "$dir"
+    tgz="$(mktemp /tmp/dsh-npm.XXXXXX)"
+    case $full in
+        @*/*) scope=${full%%/*}; pkg=${full#"$scope"/} ;;
+        *)    scope=;      pkg=$full ;;
+    esac
+    # The TRACKED MIRROR first (vendor/dsh-tarballs/, the same layout
+    # add-package.sh fetch writes): CI materializes offline; the registry is
+    # the fallback. The mirror's flat name is scope-pkg-ver with @ and /
+    # stripped.
+    flat=$(printf '%s' "$full@$ver" | sed 's/^@//; s|/|-|g; s/@/-/')
+    mirror="dsh-tarballs/$flat.tgz"
+    if [ -f "$mirror" ]; then
+        cp "$mirror" "$tgz"
+    elif [ -n "$scope" ]; then
+        curl -fsSL --retry 3 --max-time 300 \
+            "https://registry.npmjs.org/$scope/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+    else
+        curl -fsSL --retry 3 --max-time 300 \
+            "https://registry.npmjs.org/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+    fi
+    _n=0
+    until echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null 2>&1; do
+        _n=$((_n + 1))
+        [ "$_n" -ge 3 ] && { echo "vendor: sha256 MISMATCH after 3 attempts: $full@$ver" >&2; rm -f "$tgz"; exit 1; }
+        echo "vendor: digest mismatch (attempt $_n) — refetching $full@$ver" >&2
+        if [ -n "$scope" ]; then
+            curl -fsSL --retry 3 --max-time 300 \
+                "https://registry.npmjs.org/$scope/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+        else
+            curl -fsSL --retry 3 --max-time 300 \
+                "https://registry.npmjs.org/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+        fi
+    done
+    tar xzf "$tgz" -C "$dir" --strip-components=1
+    rm -f "$tgz"
+    printf '%s\n' "url=registry.npmjs.org/$full@$ver" "sha256=$sha" > "$dir/.vendor-pin"
+}
+
+# The test-face npm gaps (upstream-suite round 4, 2026-09-27): the pure-JS
+# packages the transpiled specs import bare, pinned at the upstream
+# lockfile's exact resolutions (dsh-v0.1.6-alpha.2 pnpm-lock). Test faces
+# only — nothing here is mounted by the product boot (ensure-dsh.sh).
+ensure_npm_registry "immer" "10.2.0" "23e8ffb42851e74536e4cad3354f1d2183aee0d5a9f16e0d92a33e6fbcea74b2"
+ensure_npm_registry "commander" "15.0.0" "632c1e039b31e98fa79c4fae5b10a5ffbbf9df0f21c9ffb3d74e95734b30696f"
+ensure_npm_registry "acorn" "8.17.0" "afa83fff751e6c9739eea552d84328414d3860408f98ce5c7f3cc7e2a3996424"
+ensure_npm_registry "turndown" "7.2.4" "05f61bc3f0aeca5e5cd7f1b5492e26b9040bb00708cd41fb1b0f7b216e296fa0"
+ensure_npm_registry "@mixmark-io/domino" "2.2.0" "b829bcca09544649f6432020dd6915b6fb054154d7a77eb6f8b3fb1f4165afec"
+ensure_npm_registry "@noble/hashes" "2.3.0" "892281f5dd25ddea8e215c740945bacdfc78aa4fca81f2c25a06876366c8beac"
+ensure_npm_registry "@jridgewell/gen-mapping" "0.3.13" "bc16f658c1f6d63e0c8738ab881d03f49f1955d8f853cdcb8f7d315cf62f0082"
+ensure_npm_registry "@jridgewell/trace-mapping" "0.3.31" "c64c71a119630d5abe8246889edf334b2ca9ddad094e20d623332956b1453ccf"
+ensure_npm_registry "@jridgewell/sourcemap-codec" "1.5.5" "47ad3b0d20a2e5e31ed65049829440fb1e3d4ac554d93f8040562c1821816585"
+ensure_npm_registry "@octokit/webhooks" "14.2.0" "d83e9d49b8a8b8e578e60f4697307d455bc5b071e6bc4fee182a65910a47bfa6"
+ensure_npm_registry "@agentclientprotocol/sdk" "1.4.0" "57beb0f7705b09406e5bcc984d1f6a141940680b4c42755be026f77f64365a37"
+ensure_npm_registry "@deepseek-ai/cordis-plugin-group" "1.0.4" "1f9f9e3cdbb2933ece3acd3fbb90e023886d72aaf31da54cd3b891ac0e4e6cdc"
+ensure_npm_registry "@modelcontextprotocol/client" "2.0.0" "cb470b0249b4a06e262145ab2281ea25344e77608f312a5a52ab4dcc26bfa732"
+ensure_npm_registry "@modelcontextprotocol/core" "2.0.0" "e9433b8d271acad34381bebb50fa68f464edfdef2ee26a35dfd564b5c9ac05e6"
+ensure_npm_registry "jose" "6.2.3" "c4448be09f18470665391b6a29ab3ec108e6830b78aea93076ce3348fb7b55a5"
+ensure_npm_registry "eventsource" "3.0.7" "7c62d4bb196e59b39c5af79e550d6fe4261649a74d9f5e605b071e1da6081c92"
+ensure_npm_registry "pkce-challenge" "5.0.1" "d1fcbbae5bc05562d13de7c520c2951699e8262a8317fa6c8bbcd8dcff3bea70"
+ensure_npm_registry "@jridgewell/resolve-uri" "3.1.2" "db52f9f62558baab13353dd39e3200750fc33e6a129a575b46226f493776e230"
+ensure_npm_registry "@octokit/webhooks-methods" "6.0.0" "18bbbc01e21c55f04396b230b665f6eaf76bdd51dd2c93aba865aeac94204be8"
+ensure_npm_registry "@yarnpkg/parsers" "3.1.0" "88b9d8a741d69ab9fc732f595a39844b20d90100bb7fe18c9a3687b7658960aa"
+ensure_npm_registry "@earendil-works/pi-ai" "0.85.1" "af7d11986179445ce6fe88b37d57de22f823c0ffd3a65cae31c555b7f5e99253"
+ensure_npm_registry "@modelcontextprotocol/node" "2.0.0" "d9a39db5f6b10bebd23cd676e4f7f54c89292d31e05d90e3516a55aafec2a044"
+ensure_npm_registry "@modelcontextprotocol/server" "2.0.0" "b4f0dfda3b73b322f1091b86fabe568994eb2fedef873b12db2c54adc3cfe198"
+ensure_npm_registry "@hono/node-server" "1.19.14" "0b956f346f96d8b89d03ee4e586e267a2d3877f4393fb97eb068572fd7a5b9ad"
+ensure_npm_registry "ipaddr.js" "2.5.0" "586f7ae92cc869bf61612f0d2765a02d98f813c7d1fff461745b93178da626c3"
+ensure_npm_registry "@joplin/turndown-plugin-gfm" "1.0.67" "59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5"
+ensure_npm_registry "ws" "8.21.0" "d08b726b3aae3a0fed5218a0d9a4b2ac8d75d4ad453a9271db55fe38e94eb4cf"
+ensure_npm_registry "react" "18.3.1" "8d9bed01a672e7eaf387942d781ad47c6a43089a30a0306060f9fd5ac7870347"
+ensure_npm_registry "picomatch" "2.3.1" "1b14ee9ec867c090d7b52c77193d83e77910553b3d18b2f86dd2b7b55e82c11f"
+ensure_npm_registry "negotiator" "1.1.0" "04ada283b29ea69189a5eac97fa3815f20480255fa4667258366c31e1d92ced4"
+ensure_npm_registry "mime-db" "1.54.0" "2b21054e65d0eabd58c5002d2713e968dd47b15700bfed4b7281a344ded1c420"
+ensure_npm_registry "mime-types" "3.0.2" "2f9dd28353c303ff8750fbf68e474755b01c54a989883d227d605f7bfa3dd2ac"
+ensure_npm_registry "@deepseek-ai/dsh-host-frontend-static" "0.1.6-alpha.2" "5cc322892525feb0422db40cd0c27f7a2180c9ef746c2f8784c402f7b635944f"
+ensure_npm_registry "@deepseek-ai/dsh-host-plugin-inventory" "0.1.6-alpha.2" "5579043f4b948ba101a77c9a521fda57f151272f464da0b4dbad56ee1fbaedc5"
+ensure_npm_registry "resolve.exports" "2.0.3" "a64cb8c0bfecdc41570b8ae5966f23d2f923fcd3ed4b4d2e33c5a05756172816"
+# W5-T (2026-09-28): the "workspace-only" verdicts overturned — the registry
+# DOES publish both packages at the pinned tag (the r3-F/C claim "never
+# published / only the rc stream" was checked against a stale cache). The
+# webhook-github specs need the dsh-webhook VALUES (WebhookDeliveryId /
+# WebhookSourceId) and the session-telemetry-otel specs need
+# SessionTelemetryCoordinator; the generic @deepseek-ai/dsh-* vendored probe
+# (dsh_vendored_rel, npm family) serves both trees — no bridge rows.
+ensure_npm_registry "@deepseek-ai/dsh-webhook" "0.1.6-alpha.2" "b17a0068ea3f1ab5440dd30c8516af390cd5c15a20e72c4511da1e75e4002855"
+ensure_npm_registry "@deepseek-ai/dsh-session-telemetry" "0.1.6-alpha.2" "8fe7cce72033eb8846170f2f8aae675192eeec7bdd21eba16be9b7e0d1fd267e"
+# W5-T: the @opentelemetry stack the session-telemetry-otel specs need, at
+# the upstream lockfile's exact resolutions (api-logs/sdk-logs/exporter/
+# otlp-exporter-base/otlp-transformer 0.220.0, api 1.9.1, core/resources
+# 2.10.0). Each ships build/esm/index.js — the ESM face the bridges re-export.
+ensure_npm_registry "@opentelemetry/api" "1.9.1" "11e2afae4775acd23e73cf4a131a395d2198eae3bddded177220fbdab9673cd2"
+ensure_npm_registry "@opentelemetry/api-logs" "0.220.0" "ac8413a949b70568454861f42200240e45a00c262d202308083647b9f6379d00"
+ensure_npm_registry "@opentelemetry/sdk-logs" "0.220.0" "862240b5389d7614bee0b389ade9acb1b203a024cfd2006dea197bb8e84755c0"
+ensure_npm_registry "@opentelemetry/core" "2.10.0" "044fdadd86c1ff75f0fb92f5c45b13ae30f22ad268afe0f9bc50c7b8639c0eb6"
+ensure_npm_registry "@opentelemetry/resources" "2.10.0" "e0856d126798b8f0a6b9ea97cce4ed33b2a51887a141164fa38fb236faca9f83"
+ensure_npm_registry "@opentelemetry/exporter-logs-otlp-http" "0.220.0" "49a73e637ff04a813907c6508140285d343356c79d34790014dc172ab9a2fb61"
+ensure_npm_registry "@opentelemetry/otlp-exporter-base" "0.220.0" "13023dfd4d6dae41ad9c1d48059c65b9faa6e3ed63340c5b7daca5ee12e40f64"
+ensure_npm_registry "@opentelemetry/otlp-transformer" "0.220.0" "250275f48cc5a7d4460bce3520c8d464bacd7a24904364865aaea553085c778c"
+ensure_npm_registry "@opentelemetry/semantic-conventions" "1.43.0" "4465839df9cf25046eacb64e37a38e7a2d033546356335190234bad60bd85d42"
+ensure_npm_registry "@opentelemetry/sdk-metrics" "2.9.0" "70f9f4b4313c874f47bb3522994163bdbdf44be8305e20c3c5ed242951621e9b"
+# W5-T: typescript 6.0.3 — the typert generator/proxy-types specs' default
+# import. Self-contained CJS bundle (lib/typescript.js, 9.1 MB); served
+# through the CJS adapter chain as a load experiment with a documented
+# time/memory budget.
+ensure_npm_registry "typescript" "6.0.3" "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a"
+# W7-X1 (2026-09-28): the terminal + watch test faces. @xterm/headless 6.0.0
+# (+ @xterm/addon-serialize 0.14.0) — the session-buffer and terminal-
+# controller specs' createLazyRequire('@xterm/…') targets, resolved through
+# the cjs-loader bare table (CJS lib/ faces; both packages ship no usable
+# ESM for a require() caller). chokidar 4.0.3 + 5.0.0 (+ their readdirp
+# 4.1.2 / 5.0.0) — the webworker-runtime node/chokidar spec mounts BOTH
+# majors into its own Worker loader VFS per consumer fixture (settings-file
+# → 4, skill-filesystem → 5); the wsWatch-faced chokidar bridge row that
+# serves the vendored dsh libs through OUR loader is unchanged. All six at
+# the dsh-v0.1.6-alpha.2 pnpm-lock resolutions (sha512 integrity verified
+# against the lockfile, 2026-09-28).
+ensure_npm_registry "@xterm/headless" "6.0.0" "07e4970b1674e7ef6cbd57c8c17746eaadcd41aa7df5b33695fd649e6ec4d78a"
+ensure_npm_registry "@xterm/addon-serialize" "0.14.0" "f9a290923dc9c6178446e3fc082c29812a7096a1664fd7bf904022c141c5bbfb"
+ensure_npm_registry "chokidar" "4.0.3" "61a29da9d314c2cd33a7be7327014814c4620673e3d4be41b120aa8544868389"
+ensure_npm_registry "chokidar" "5.0.0" "45d07ea7d57ee482c733ab3c547cc49edc1423bc231507e41ff99d2711f7f5e3"
+ensure_npm_registry "readdirp" "4.1.2" "766ea2ba6314aefe6b939c9bbe3999cc473286578aeb1c3805338c2dbd655f5a"
+ensure_npm_registry "readdirp" "5.0.0" "01ecd9d6bf8fdb4b8c462b23d1d8f69604841050ac4316e6fe67967a62b00407"
 
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"

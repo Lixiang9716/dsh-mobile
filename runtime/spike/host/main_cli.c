@@ -41,6 +41,20 @@
 #define HTTP_RCV_TIMEOUT_SECONDS 5
 #define HTTP_HEADER_MAX 16384
 
+/* Backstop deadline, env-tunable (W6-U r3): heavy upstream specs
+ * (session-snapshot's 145 tests, the sandboxed PTC stack) can outgrow the
+ * 120s default on a loaded desktop; DSH_DEADLINE_SECONDS raises it without
+ * a rebuild. Clamped 30..1200 so a stray value cannot disable the backstop
+ * (condition-driven waits still own normal exits; this is the last resort). */
+static int smoke_deadline_seconds(void) {
+    const char *raw = getenv("DSH_DEADLINE_SECONDS");
+    if (!raw || !*raw) return SMOKE_DEADLINE_SECONDS;
+    int v = atoi(raw);
+    if (v < 30) v = 30;
+    if (v > 1200) v = 1200;
+    return v;
+}
+
 static void on_log(void *ud, const char *line) {
     (void)ud;
     fputs(line, stdout);
@@ -1105,6 +1119,22 @@ static int spike_run_main(int argc, char **argv) {
     const char *bus_inject_path = NULL;
     char env_json[2048] = "{";
     size_t env_len = 1;
+    /* The host OS fact, compile-time: the child_process shim's wait-status
+     * signal table is per-platform (darwin and linux WTERMSIG numbers differ
+     * beyond the common core), so the runtime needs the build's OS without
+     * guessing it from a partial table. Same key the platform embedders are
+     * expected to set in their own launch snapshots. The selection lives in
+     * a variable (not inline in the snprintf call): a preprocessor
+     * conditional inside an argument list is valid C but produces an ERROR
+     * node in the editor-level tree-sitter parse the check gate runs. */
+    const char *host_platform = "unknown";
+#if defined(__linux__)
+    host_platform = "linux";
+#elif defined(__APPLE__)
+    host_platform = "darwin";
+#endif
+    env_len += (size_t)snprintf(env_json + env_len, sizeof(env_json) - env_len,
+                                "\"DSH_HOST_PLATFORM\":\"%s\"", host_platform);
     for (int i = 3; i < argc; i++) {
         if (strcmp(argv[i], "--http") == 0) {
             http = 1;
@@ -1209,7 +1239,7 @@ static int spike_run_main(int argc, char **argv) {
      * or the backstop deadline passes — condition-driven, never sleeps. */
     struct timespec deadline;
     clock_gettime(CLOCK_MONOTONIC, &deadline);
-    deadline.tv_sec += SMOKE_DEADLINE_SECONDS;
+    deadline.tv_sec += smoke_deadline_seconds();
     while (rc == 0 && !b.failed && !dsh_spike_complete(b.spike)) {
         rc = dsh_spike_pump(b.spike);
         if (rc != 0) break;
@@ -1217,11 +1247,13 @@ static int spike_run_main(int argc, char **argv) {
         if (served < 0) { rc = -1; break; }
         if (dsh_spike_complete(b.spike)) break;
         if (served == 0) {
-            /* Quiescent with nothing outstanding — except armed timers: the
-             * one place this driver sleeps (wall-clock physics of a timer,
-             * rule 8). Sleep to the earliest fire_at (never past the run
-             * deadline), then deliver the timer.fire event and pump again. */
-            if (b.n_timers == 0) break;
+            /* Quiescent with nothing outstanding — except armed timers and
+             * awaited subprocesses: the two wall-clock realities this driver
+             * sleeps for. Timers fire at their earliest fire_at; a spawned
+             * child (node:child_process seam) keeps the loop alive until the
+             * JS pump drains it or the scenario completes (W5-R, 2026-09-28). */
+            int procs = dsh_spike_procs_alive(b.spike);
+            if (b.n_timers == 0 && procs == 0) break;
             size_t earliest = 0;
             for (size_t i = 1; i < b.n_timers; i++) {
                 if (b.timers[i].fire_at_ms < b.timers[earliest].fire_at_ms) earliest = i;
@@ -1229,30 +1261,38 @@ static int spike_run_main(int argc, char **argv) {
             struct timespec now;
             clock_gettime(CLOCK_MONOTONIC, &now);
             long long now_ms = (long long)now.tv_sec * 1000 + now.tv_nsec / 1000000;
-            long long wait = b.timers[earliest].fire_at_ms - now_ms;
+            long long wait;
+            if (b.n_timers > 0) {
+                wait = b.timers[earliest].fire_at_ms - now_ms;
+                if (procs > 0 && (wait > 10 || wait < 0)) wait = 10;
+            } else {
+                wait = 10;
+            }
             if (wait > 0) {
                 if (deadline.tv_sec - now.tv_sec < (wait + 999) / 1000) {
                     fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
-                            SMOKE_DEADLINE_SECONDS);
+                            smoke_deadline_seconds());
                     rc = -1;
                     break;
                 }
                 struct timespec nap = { wait / 1000, (wait % 1000) * 1000000 };
                 nanosleep(&nap, NULL);
             }
+            if (b.n_timers > 0) {
             int fired_id = b.timers[earliest].id;
             b.timers[earliest] = b.timers[b.n_timers - 1];
             b.n_timers--;
             char ev[80];
             snprintf(ev, sizeof(ev), "{\"event\":\"timer.fire\",\"timerId\":%d}", fired_id);
             if (dsh_spike_gateway_event(b.spike, ev) != 0) { rc = -1; break; }
+            }
         }
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         if (now.tv_sec > deadline.tv_sec ||
             (now.tv_sec == deadline.tv_sec && now.tv_nsec >= deadline.tv_nsec)) {
             fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
-                    SMOKE_DEADLINE_SECONDS);
+                    smoke_deadline_seconds());
             rc = -1;
             break;
         }

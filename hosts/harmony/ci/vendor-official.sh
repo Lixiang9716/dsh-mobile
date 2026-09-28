@@ -297,6 +297,32 @@ upstream/shims/vi-wait.js
 upstream/shims/globals.js
 upstream/shims/npm-bridges.js
 scenario/upstream-suite-leg.js
+scenario/upstream-harness-matchers.js
+scenario/upstream-harness-vi.js
+upstream/shims/buffer-codecs.js
+upstream/shims/fs-paths.js
+upstream/shims/fs-promises-fh.js
+upstream/shims/fs-readdir.js
+upstream/shims/fs-stat.js
+upstream/shims/fs-workspace-rename.js
+upstream/shims/fs-workspace-write.js
+upstream/shims/fs-write-stream.js
+upstream/shims/fs-writes.js
+upstream/shims/node-child-process-exec.js
+upstream/shims/node-http-loopback-client.js
+upstream/shims/node-http-loopback-dispatch.js
+upstream/shims/node-stream-duplex.js
+upstream/shims/node-stream-writable.js
+upstream/shims/node-zlib-stream.js
+upstream/shims/node-zlib-xxh64.js
+upstream/shims/npm-bridges-b.js
+upstream/shims/npm-bridges-c.js
+upstream/shims/npm-bridges-pi-ai.js
+upstream/shims/url-file.js
+upstream/shims/util-errors.js
+upstream/shims/util-parse-args.js
+upstream/shims/web-dom-parser.js
+upstream/shims/web-fetch-forms.js
 vendor/dsh/session-persistence@0.1.6-alpha.2/lib/index.js
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/agent.cordis.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/cordis/preset.yml
@@ -425,6 +451,45 @@ fi
 # sync+check discipline as the closure — the older v0 webclient/
 # dsh-web-client hand-commit predates this script's coverage and stays as-is.
 WEBCLIENT_DIRS="next whale"
+
+# The crypto shims' npm face (2026-09-29): shims/crypto.js statically
+# imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
+# map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
+# (the anti-drift rule). BUNDLE_FILES rows in Index.ets must mirror this
+# tree (check-bundle-files cross-checks both directions).
+NOBLE_DIR="vendor/npm/@noble/hashes@2.3.0"
+# The cd inside a pipeline fails SILENTLY (the pipeline's exit is the
+# while's) — a missing pin tree must be fatal, not a quiet half-rawfile
+# (the CI gates failure of 2026-09-29: the pins rode only the test-suite
+# ensure, the spine ensure didn't materialize them, and 217 BUNDLE_FILES
+# rows went red on CI while the local full-mode sync looked green).
+if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$NOBLE_DIR" ]; then
+    echo "::error::vendor-official: $NOBLE_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+    exit 1
+fi
+if [ "$MODE" != "check" ]; then
+    (cd "runtime/spike/$NOBLE_DIR" && find . -type f -name '*.js') |
+        while IFS= read -r rel; do
+            mkdir -p "$RAW/$NOBLE_DIR/$(dirname "$rel")"
+            cp "runtime/spike/$NOBLE_DIR/$rel" "$RAW/$NOBLE_DIR/$rel"
+        done
+fi
+
+# The pi-ai bridge target (2026-09-29): the providers barrel's
+# data/.manifest.json require needs the data face — the whole pin rides
+# (js+json). BUNDLE_FILES rows in Index.ets must mirror this tree.
+PIAI_DIR="vendor/npm/@earendil-works/pi-ai@0.85.1"
+if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$PIAI_DIR" ]; then
+    echo "::error::vendor-official: $PIAI_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+    exit 1
+fi
+if [ "$MODE" != "check" ]; then
+    (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
+        while IFS= read -r rel; do
+            mkdir -p "$RAW/$PIAI_DIR/$(dirname "$rel")"
+            cp "runtime/spike/$PIAI_DIR/$rel" "$RAW/$PIAI_DIR/$rel"
+        done
+fi
 webclient_files() {
     (cd "presentation/web-client-$1" && find . -type f) |
         while IFS= read -r rel; do echo "webclient/dsh-web-client-$1/${rel#./}"; done

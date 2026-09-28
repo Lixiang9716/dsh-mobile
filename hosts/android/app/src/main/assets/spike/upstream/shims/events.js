@@ -10,9 +10,9 @@
  *     listeners, rawListeners, eventNames, set/getMaxListeners,
  *     prependListener/prependOnce, and node's `error` special case (an
  *     emitted error with no error listener throws — never swallowed).
- *   - once(emitter, name[, {signal}]) → promise; resolves with the single
- *     arg, or the args array when the listener fired with several; rejects
- *     on 'error' and on abort.
+ *   - once(emitter, name[, {signal}]) → promise; resolves with the emitted
+ *     args ARRAY (node's contract — a single-arg event is a one-element
+ *     array), rejects on 'error' and on abort.
  *   - getEventListeners(emitter, name) / listenerCount(emitter, name) —
  *     EventEmitter instances only (an EventTarget's listener list has no
  *     inspectable surface here; that fails loud).
@@ -172,7 +172,10 @@ export const once = (emitter, name, options = {}) => new Promise((resolve, rejec
   };
   const onEvent = (...args) => {
     cleanup();
-    resolve(args.length <= 1 ? args[0] : args);
+    // node's contract: the promise resolves with the args ARRAY (a
+    // single-arg event still resolves with a one-element array — the
+    // worker-rpc specs destructure `const [raw] = await once(port, ...)`.
+    resolve(args);
   };
   const onError = (error) => {
     cleanup();
@@ -183,12 +186,22 @@ export const once = (emitter, name, options = {}) => new Promise((resolve, rejec
   options?.signal?.addEventListener?.('abort', onAbort, { once: true });
 });
 
-/** events.getEventListeners / events.listenerCount — EventEmitter only. */
+/** events.getEventListeners / events.listenerCount — EventEmitters read
+ * through their listeners face; EVENT TARGETS read through their registry
+ * too (node: getEventListeners accepts EventTargets since v15 — the
+ * stagehand worker-rpc product inspects an AbortSignal's abort listeners
+ * through it, R3-G1 2026-09-28). The two in-runtime target shapes: the
+ * web-event EventTarget (__dshEventListeners map of {listener} entries) and
+ * the harness AbortSignal shim (_listeners array, abort-only). */
 export const getEventListeners = (emitter, name) => {
-  if (typeof emitter?.listenerCount !== 'function') {
-    throw new TypeError('node:events.getEventListeners: only EventEmitter instances are supported (an EventTarget listener list has no inspectable surface in this runtime)');
+  if (typeof emitter?.listenerCount === 'function') return emitter.listeners(name);
+  if (emitter?.__dshEventListeners instanceof Map) {
+    return [...(emitter.__dshEventListeners.get(String(name)) ?? [])].map((entry) => entry?.listener ?? entry);
   }
-  return emitter.listeners(name);
+  if (Array.isArray(emitter?._listeners)) {
+    return String(name) === 'abort' ? [...emitter._listeners] : [];
+  }
+  throw new TypeError('node:events.getEventListeners: the first argument is neither an EventEmitter nor an EventTarget this runtime can inspect');
 };
 
 export const listenerCount = getEventListeners;

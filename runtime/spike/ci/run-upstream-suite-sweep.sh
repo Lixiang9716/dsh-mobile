@@ -28,6 +28,10 @@ while [ $# -gt 0 ]; do
     esac
 done
 mkdir -p "$LOGDIR" "$FRAGS"
+# The report below concatenates EVERY fragment in $FRAGS — stale fragments
+# from a killed previous run (a dead worker's diagnostic spec) would ride
+# into this report as ghost rows. Clean slate per run.
+rm -f "$FRAGS"/*.tsv
 
 # macOS has no timeout(1): run_to <seconds> <cmd...> via perl alarm.
 run_to() { perl -e 'alarm shift; exec @ARGV' "$@"; }

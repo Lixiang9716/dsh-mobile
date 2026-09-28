@@ -7,6 +7,10 @@
     {
       "path": "hosts/ios/App/Generated/**",
       "reason": "machine-generated C (the embedded spike bundle, 23.5 MB) — byte-verified deterministically by the closures gate, which regenerates and diffs it; syntax-checking generated output only burns the check gate's entire timeout (measured: gov parse alone takes 62 s on this file)"
+    },
+    {
+      "path": "hosts/android/app/src/main/assets/spike/**",
+      "reason": "byte-identical staged copy of the canonical runtime/spike closure — the closures gate verifies every copy in --check mode, so size/syntax judgment on the copy is double judgment of already-reviewed bytes"
     }
   ]
 }

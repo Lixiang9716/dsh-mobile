@@ -75,8 +75,10 @@
     "compaction__compaction__tests__compaction.spec.mjs",
     "compaction__compaction__tests__invariant.spec.mjs",
     "compaction__compaction__tests__tool-pairing.spec.mjs",
+    "compaction__compaction-basic__tests__compaction-basic.spec.mjs",
     "compaction__compaction-basic__tests__compaction-loop-repro.spec.mjs",
     "compaction__compaction-basic__tests__loader-composition.spec.mjs",
+    "compaction__compaction-basic__tests__manual-compaction.spec.mjs",
     "compaction__compaction-image-offload__tests__projection.spec.mjs",
     "compaction__compaction-tool-result-pruner__tests__loader-composition.spec.mjs",
     "compaction__compaction-tool-result-pruner__tests__tool-result-pruner.spec.mjs",
@@ -90,6 +92,7 @@
     "core__agent__tests__agent.spec.mjs",
     "core__agent__tests__consumed-work.spec.mjs",
     "core__agent__tests__invariant.spec.mjs",
+    "core__agent__tests__model-selection.spec.mjs",
     "core__agent-default-model__tests__agent-default-model.spec.mjs",
     "core__agent-loop__tests__agent-initiator.spec.mjs",
     "core__agent-loop__tests__agent.spec.mjs",
@@ -138,9 +141,11 @@
     "core__tools__tests__execution-signal-types.spec.mjs",
     "core__tools__tests__invariant.spec.mjs",
     "core__tools__tests__ptc.spec.mjs",
+    "core__tools__tests__py-types.spec.mjs",
     "core__tools__tests__schema.spec.mjs",
     "core__tools__tests__scoped.spec.mjs",
     "core__tools__tests__tools.spec.mjs",
+    "core__tools__tests__ts-types.spec.mjs",
     "credentials__authorization__tests__authorization.spec.mjs",
     "credentials__authorization__tests__invariant.spec.mjs",
     "credentials__credentials__tests__credentials.spec.mjs",
@@ -168,6 +173,7 @@
     "experimental__browser-use-stagehand-native__tests__launch-process.spec.mjs",
     "experimental__browser-use-stagehand-native__tests__worker-protocol.spec.mjs",
     "experimental__browser-use-stagehand-native__tests__worker-rpc.spec.mjs",
+    "experimental__computer-use-cua-driver-mcp__tests__composition.spec.mjs",
     "experimental__inspector__tests__client-runtime.client.spec.mjs",
     "experimental__inspector__tests__client-sources.client.spec.mjs",
     "experimental__inspector__tests__client-stack.client.spec.mjs",
@@ -198,17 +204,26 @@
     "experimental__webworker-runtime__tests__node__crypto-globals.spec.mjs",
     "experimental__webworker-runtime__tests__node__events.spec.mjs",
     "experimental__webworker-runtime__tests__node__fs-watch-stream.spec.mjs",
+    "experimental__webworker-runtime__tests__node__fs.spec.mjs",
     "experimental__webworker-runtime__tests__node__http-server.spec.mjs",
     "experimental__webworker-runtime__tests__node__node-stubs.spec.mjs",
+    "experimental__webworker-runtime__tests__node__path-diff.spec.mjs",
     "experimental__webworker-runtime__tests__node__process-shim.spec.mjs",
+    "experimental__webworker-runtime__tests__node__shim-diff.spec.mjs",
     "experimental__webworker-runtime__tests__node__timers-promises.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als-runtime.spec.mjs",
+    "experimental__webworker-runtime__tests__polyfill__als-shim.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__injected-run.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__shell-process.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__shell.spec.mjs",
     "experimental__webworker-runtime__tests__storage__image-gzip.spec.mjs",
     "experimental__webworker-runtime__tests__storage__memory-vfs.spec.mjs",
     "experimental__webworker-runtime__tests__storage__tar.spec.mjs",
     "experimental__webworker-runtime__tests__transport__frames.spec.mjs",
+    "experimental__webworker-runtime__tests__transport__tunnel-client.spec.mjs",
     "experimental__webworker-runtime__tests__transport__tunnel-server.spec.mjs",
+    "experimental__webworker-runtime__tests__vfs-example-fixture.spec.mjs",
     "extensions__cordis-client-runner__tests__api-catalog.client.spec.mjs",
     "extensions__cordis-client-runner__tests__evaluator.client.spec.mjs",
     "extensions__cordis-client-runner__tests__guard.client.spec.mjs",
@@ -216,6 +231,7 @@
     "extensions__cordis-client-runner__tests__plugin.client.spec.mjs",
     "extensions__cordis-client-runner__tests__providers.client.spec.mjs",
     "extensions__cordis-client-runner__tests__runner.client.spec.mjs",
+    "extensions__tool-cordis__tests__cordis-lifecycle.spec.mjs",
     "extensions__ui-cordis__tests__card-model.client.spec.mjs",
     "extensions__ui-cordis__tests__inventory.client.spec.mjs",
     "extensions__ui-cordis__tests__versioning.client.spec.mjs",
@@ -233,6 +249,7 @@
     "fs__tool-str-replace-editor__tests__tools.spec.mjs",
     "goal__command-goal__tests__command-goal.spec.mjs",
     "goal__goal__tests__invariant.spec.mjs",
+    "goal__goal-round-driver__tests__goal-round-driver.spec.mjs",
     "goal__goal-round-driver__tests__invariant.spec.mjs",
     "goal__tool-goal__tests__tool-goal.spec.mjs",
     "guard__repeat-tool-reminder__tests__repeat-tool-reminder.spec.mjs",
@@ -245,11 +262,13 @@
     "hooks__hook-protocol__tests__merge.spec.mjs",
     "hooks__hook-protocol__tests__runner.spec.mjs",
     "hooks__hooks-claude-code__tests__bridge.spec.mjs",
+    "hooks__hooks-claude-code__tests__config.spec.mjs",
     "hooks__hooks-claude-code__tests__coverage-config.spec.mjs",
     "hooks__hooks-claude-code__tests__coverage-context.spec.mjs",
     "hooks__hooks-claude-code__tests__coverage-edge-paths.spec.mjs",
     "hooks__hooks-claude-code__tests__coverage-stop.spec.mjs",
     "hooks__hooks-codex__tests__bridge.spec.mjs",
+    "hooks__hooks-codex__tests__config.spec.mjs",
     "hooks__hooks-codex__tests__coverage-post-tool.spec.mjs",
     "hooks__hooks-codex__tests__coverage-prompt.spec.mjs",
     "hooks__hooks-codex__tests__coverage-result-shape.spec.mjs",
@@ -263,6 +282,7 @@
     "host__open-in-app__tests__host-routes.spec.mjs",
     "host__open-in-app__tests__icons.spec.mjs",
     "host__open-in-app__tests__resolver.spec.mjs",
+    "host__webserver__tests__webserver.spec.mjs",
     "identity__anonymous-user-id__tests__anonymous-user-id.spec.mjs",
     "interaction__commands__tests__commands.spec.mjs",
     "interaction__commands__tests__invariant.spec.mjs",
@@ -324,14 +344,17 @@
     "llm__llm-retry__tests__persistence.spec.mjs",
     "llm__llm-retry__tests__retry.spec.mjs",
     "llm__llm-retry__tests__transport-recovery.spec.mjs",
+    "llm__plugin-package-inventory-deepseek__tests__inventory.spec.mjs",
     "llm__token-meter__tests__context-breakdown-projection.spec.mjs",
     "llm__token-meter__tests__route-pricing.spec.mjs",
     "llm__token-meter__tests__token-meter.spec.mjs",
     "llm__token-meter__tests__token-usage-projection.spec.mjs",
     "llm__token-meter__tests__turn-usage.spec.mjs",
     "lsp__lsp__tests__lsp.spec.mjs",
+    "lsp__lsp-stdio__tests__connection.spec.mjs",
     "lsp__lsp-stdio__tests__framing.spec.mjs",
     "lsp__lsp-stdio__tests__host.spec.mjs",
+    "lsp__lsp-stdio__tests__instance.spec.mjs",
     "lsp__lsp-stdio__tests__lifecycle.spec.mjs",
     "lsp__lsp-stdio__tests__provider.spec.mjs",
     "lsp__tool-lsp__tests__integration.spec.mjs",
@@ -340,6 +363,7 @@
     "lsp__tool-lsp__tests__tool-lsp.spec.mjs",
     "mcp__mcp-client__tests__egress.spec.mjs",
     "mcp__mcp-client__tests__load-path.spec.mjs",
+    "mcp__mcp-client__tests__mcp-client.spec.mjs",
     "mcp__mcp-client__tests__server-context.spec.mjs",
     "mcp__mcp-client__tests__tool-definition.spec.mjs",
     "mcp__mcp-resources__tests__resources.spec.mjs",
@@ -348,6 +372,7 @@
     "plan__plan-mode__tests__plan-mode.spec.mjs",
     "plan__plan-mode__tests__projection.spec.mjs",
     "preset__agent-presets__tests__authoring.spec.mjs",
+    "preset__agent-presets__tests__composition-inventory.spec.mjs",
     "preset__agent-presets__tests__display.spec.mjs",
     "preset__agent-presets__tests__invariant.spec.mjs",
     "preset__agent-presets__tests__metadata.spec.mjs",
@@ -430,6 +455,7 @@
     "session__session-projection-cache__tests__cache.spec.mjs",
     "session__session-projection-cache__tests__fixtures.spec.mjs",
     "session__session-stats__tests__loader-composition.spec.mjs",
+    "session__session-stats__tests__projection.spec.mjs",
     "session__session-telemetry__tests__redact.spec.mjs",
     "session__session-telemetry__tests__telemetry.spec.mjs",
     "session__session-telemetry-otel__tests__egress.spec.mjs",
@@ -446,6 +472,7 @@
     "session__session-title-first-prompt-llm__tests__provider.spec.mjs",
     "session__session-title-llm__tests__llm.spec.mjs",
     "session__session-turn-outline__tests__loader-composition.spec.mjs",
+    "session__session-turn-outline__tests__projection.spec.mjs",
     "session-query__session-log-export__tests__command.host.spec.mjs",
     "session-query__session-log-export__tests__controller.client.spec.mjs",
     "session-query__session-log-export__tests__loader-composition.host.spec.mjs",
@@ -553,10 +580,15 @@
     "subprocess__subprocess-local__tests__native-containment.spec.mjs",
     "subprocess__subprocess-local__tests__native-windows.spec.mjs",
     "subprocess__subprocess-local__tests__process-exit.spec.mjs",
+    "subprocess__subprocess-local__tests__process-inspector.spec.mjs",
     "subprocess__subprocess-local__tests__shell-activity.spec.mjs",
     "subprocess__subprocess-local__tests__spawn-runner.spec.mjs",
+    "terminal__terminal-bash__tests__config.spec.mjs",
+    "terminal__terminal-bash__tests__sanitize.spec.mjs",
     "terminal__terminal-bash__tests__session-buffer.spec.mjs",
     "terminal__tool-terminal__tests__loader-composition.spec.mjs",
+    "terminal__tool-terminal__tests__render.spec.mjs",
+    "terminal__tool-terminal__tests__tools.spec.mjs",
     "test-support__agent-loop-testkit__tests__agent-loop-testkit.spec.mjs",
     "test-support__client-runtime__tests__remote.client.spec.mjs",
     "test-support__llm-mock-server__tests__cli.spec.mjs",
@@ -640,32 +672,31 @@
   "excluded": {
     "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
     "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 3,
-    "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 34,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 52,
-    "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 4,
-    "vi.mock/doMock/resetModules (loader-level module interception)": 64,
+    "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 35,
+    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 28,
+    "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 5,
+    "vi.mock/doMock/resetModules (loader-level module interception)": 66,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
     "node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6,
-    "bundled helper: FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)": 3,
     "esbuild transform failed: ould not resolve \"../../../../scripts/verify-export-jsdoc.ts\"": 1,
     "fast-check (not in the loader bare map — a vendoring decision, not a silent drop)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-tool-catalog.ts\"": 1,
-    "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc": 1,
-    "FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)": 6,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)": 1,
-    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 4,
+    "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"": 1,
+    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 2,
     "expect.extend (custom matchers)": 1,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 1,
-    "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 7,
+    "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 8,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6
   },
+  "workerEntries": [
+    "worker.js"
+  ],
   "counts": {
-    "transpiled": 636,
+    "transpiled": 668,
     "excluded": [
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
@@ -677,19 +708,19 @@
       },
       {
         "reason": "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
-        "count": 34
+        "count": 35
       },
       {
         "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 52
+        "count": 28
       },
       {
         "reason": "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
-        "count": 4
+        "count": 5
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
-        "count": 64
+        "count": 66
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
@@ -702,10 +733,6 @@
       {
         "reason": "node:vm (no spike shim — the vm builtin is a Node embedding surface)",
         "count": 6
-      },
-      {
-        "reason": "bundled helper: FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)",
-        "count": 3
       },
       {
         "reason": "esbuild transform failed: ould not resolve \"../../../../scripts/verify-export-jsdoc.ts\"",
@@ -724,20 +751,8 @@
         "count": 1
       },
       {
-        "reason": "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc",
+        "reason": "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f",
         "count": 1
-      },
-      {
-        "reason": "FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)",
-        "count": 6
-      },
-      {
-        "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)",
-        "count": 1
-      },
-      {
-        "reason": "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 4
       },
       {
         "reason": "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
@@ -748,16 +763,16 @@
         "count": 1
       },
       {
+        "reason": "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
+        "count": 2
+      },
+      {
         "reason": "expect.extend (custom matchers)",
         "count": 1
       },
       {
-        "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
-        "count": 1
-      },
-      {
         "reason": "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 7
+        "count": 8
       },
       {
         "reason": "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"",

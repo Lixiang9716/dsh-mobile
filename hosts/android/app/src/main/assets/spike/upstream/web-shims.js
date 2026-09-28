@@ -65,6 +65,13 @@ import { DshURL } from 'upstream/shims/url.js';
 // second hand-rolled walk (the sha256.js rule).
 import { TextDecoder as DshTextDecoder } from 'upstream/shims/util.js';
 import { releaseKeeps } from 'logger.js';
+// The fetch VALUE-OBJECT family (Headers/Request/Response/FormData/File/
+// Blob/DOMException): the specs and client faces construct these directly;
+// the network seam itself stays with the gateway (see the file's header).
+import { installWebFetchValues } from 'upstream/shims/web-fetch-values.js';
+// The W3C Storage face (localStorage/sessionStorage) client modules persist
+// through — in-memory Map backing, one shared instance per face.
+import { installWebStorage } from 'upstream/shims/web-storage.js';
 
 /** The forwarder every console method rides. The release strip is applied
  * HERE, through the logger's shared policy — not by a copy of the flag — so a
@@ -161,25 +168,34 @@ if (typeof globalThis.structuredClone !== 'function') {
  * Hidden state lives in WeakMaps, not `#private` members: quickjs-ng rejects
  * private METHOD declarations, and the shim must stay parseable. */
 if (typeof globalThis.AbortController !== 'function') {
-  const listenersOf = new WeakMap();
-
   class DshEventTarget {
+    // The listener registry is an OWN property (not a module WeakMap) so
+    // node:events.getEventListeners can inspect targets the way node does —
+    // the stagehand worker-rpc spec asserts an AbortSignal's abort listener
+    // list through that face (R3-G1, 2026-09-28). The registry exists from
+    // CONSTRUCTION, not lazily on first addEventListener: a signal aborted
+    // before anyone listened never runs addEventListener, and node still
+    // reports an EMPTY listener list for it (worker-rpc "does not dispatch
+    // an already canceled request" inspects exactly that shape, W3-J
+    // 2026-09-27).
+    constructor() {
+      this.__dshEventListeners = new Map();
+    }
     addEventListener(type, listener, options = {}) {
       if (typeof listener !== 'function') return;
-      const map = listenersOf.get(this) ?? new Map();
+      const map = this.__dshEventListeners;
       const list = map.get(type) ?? [];
       map.set(type, [...list, { listener, once: options.once === true }]);
-      listenersOf.set(this, map);
     }
     removeEventListener(type, listener) {
-      const map = listenersOf.get(this);
+      const map = this.__dshEventListeners;
       if (!map) return;
       const list = map.get(type);
       if (!list) return;
       map.set(type, list.filter((e) => e.listener !== listener));
     }
     dispatchEvent(type, event) {
-      const map = listenersOf.get(this);
+      const map = this.__dshEventListeners;
       if (!map) return;
       const list = [...(map.get(type) ?? [])];
       map.set(type, list.filter((e) => !e.once));
@@ -230,8 +246,21 @@ if (typeof globalThis.AbortController !== 'function') {
       }
       return composite.signal;
     }
-    static timeout() {
-      throw new Error('AbortSignal.timeout: wall-clock timers are not supported by the spike runtime');
+    static timeout(ms) {
+      // The timed self-abort face over the runtime's own macrotask timers
+      // (W4-M 2026-09-28 — the open-in-app icon flows hand
+      // `AbortSignal.timeout(timeoutMs)` to their command runner, and the
+      // suite's fixture runners answer long before the deadline; the old
+      // unconditional refusal nulled every extraction). Real wall-clock
+      // enforcement rides the same setTimeout the loopback shims use.
+      const controller = new DshAbortController();
+      const error = Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' });
+      if (typeof ms !== 'number' || !Number.isFinite(ms) || ms <= 0) {
+        controller.abort(error);
+        return controller.signal;
+      }
+      globalThis.setTimeout(() => { controller.abort(error); }, ms);
+      return controller.signal;
     }
   }
 
@@ -355,6 +384,34 @@ if (typeof globalThis.window.__ModuleLoader__ === 'undefined') {
   };
 }
 
+/* ---- WebSocket global (installed only when absent) ------------------------
+ * The client-bundle faces READ `WebSocket.OPEN` as an unqualified global on
+ * their guard paths (RemoteStreamMuxClient.waitForSocket consults the
+ * constant BEFORE its not-started/disposed checks), so with no global at all
+ * those paths die with "WebSocket is not defined" instead of the domain
+ * error the contract promises. The class face is honest: the READY_STATE
+ * constants and the event-target surface exist; the CONSTRUCTOR fails loud —
+ * opening a socket is a real carrier connection, and the runtime has no
+ * socket seam (the same refusal node:http.createServer carries). Specs that
+ * drive real mux flows stub the global with their own fixture, overwriting
+ * this writable binding. */
+if (typeof globalThis.WebSocket === 'undefined') {
+  class WebSocketShim {
+    constructor(url) {
+      throw new Error('WebSocket: opening \'' + String(url) + '\' is not served in this runtime — '
+        + 'no socket seam (physical carriers are a desktop host capability)');
+    }
+  }
+  WebSocketShim.CONNECTING = 0;
+  WebSocketShim.OPEN = 1;
+  WebSocketShim.CLOSING = 2;
+  WebSocketShim.CLOSED = 3;
+  for (const [name, value] of [['CONNECTING', 0], ['OPEN', 1], ['CLOSING', 2], ['CLOSED', 3]]) {
+    Object.defineProperty(WebSocketShim.prototype, name, { value, enumerable: true });
+  }
+  globalThis.WebSocket = WebSocketShim;
+}
+
 /* ---- queueMicrotask with context capture (pairs with async-hooks shim) ---
  * The wrapper is installed here (before any vendored import) and consults the
  * async-hooks shim's capture helpers at CALL time, so it behaves identically
@@ -370,3 +427,10 @@ if (typeof nativeQueueMicrotask === 'function') {
     });
   };
 }
+
+/* ---- fetch value objects (Headers/Request/Response/FormData/File/Blob) ---
+ * Installed only when absent (the same rule TextEncoder/Decoder ride): a
+ * host that binds them natively keeps its own. AFTER the queueMicrotask row
+ * so its TextEncoder dependency sees this module's install order. */
+installWebFetchValues();
+installWebStorage();

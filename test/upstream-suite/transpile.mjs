@@ -18,23 +18,26 @@
  * usage: node transpile.mjs   (writes runtime/spike/upstream-tests/ + manifest.json)
  */
 import esbuild from 'esbuild';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync, unlinkSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 const ROOT = new URL('../..', import.meta.url).pathname;
 const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
 const OUT = join(ROOT, 'runtime/spike/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
+// The path-rewrite machinery lives in transpile-rewrites.js (the file
+// crossed the size budget; these faces are pure source->source transforms).
+import { BARE_EXTERNAL_PLUGIN, SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, hoistSubmoduleSrcSubpaths, rewriteBundleManifestRoot, rewriteSeedTreeRoots, collectSeedTreeFiles, walk, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, SEED_TREE_SPECS } from './transpile-rewrites.mjs';
 
 const UNIMPLEMENTED = [
-  [/from\s*['"]node:vm['"]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
+  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
   // NOTE: the session-persistence-jsonl exclusion was REMOVED when the
   // closure harvest staged the koffi-free submodule-built package
   // (vendor/dsh/session-persistence-jsonl@0.1.6-alpha.2, 2026-09-23): its
   // worker-backed lease degrades to the in-process path through the
   // node:worker_threads errors shim, exactly like the vendored session
   // package, and the flock addon maps to a shim.
-  [/from\s*['"]fast-check['"]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
+  [/from\s*[\x27\x22]fast-check[\x27\x22]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
   [/vi\.mock\s*\(|vi\.doMock\s*\(|vi\.resetModules\s*\(/, 'vi.mock/doMock/resetModules (loader-level module interception)'],
   // NOTE: the fake-timers / vi.waitFor / expect.poll exclusions were
   // REMOVED with the v1.4.0 timer seam (contract + host + harness fakes);
@@ -52,11 +55,14 @@ const UNIMPLEMENTED = [
   // Monorepo src/ subpaths: the published tarballs ship lib/ only, so these
   // can never resolve from the vendored closure (upstream's own suite runs
   // from source). A named exclusion, not an on-device noise failure.
-  [/from\s*['"]@deepseek-ai\/dsh-[a-z0-9-]+\/src\//, 'monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)'],
-  // cordis@4.0.2 (the closure's pinned npm dep, D6) predates the FiberState
-  // export upstream's newer lockfile carries. A vendoring decision, not a
-  // silent drop; revisit when the cordis pin moves.
-  [/import\s*\{[^}]*FiberState[^}]*\}\s*from\s*['"]@deepseek-ai\/cordis['"]/, 'FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)'],
+  [/from\s*[\x27\x22]@deepseek-ai\/dsh-[a-z0-9-]+\/src\//, 'monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)'],
+  // NOTE: the FiberState exclusion was REMOVED (2026-09-27, wave 3): the
+  // runtime no longer needs the npm cordis@4.0.2 face to carry the export —
+  // upstream/shims/runtime-modules.js registers `@deepseek-ai/cordis` as the
+  // vendored lib PLUS FiberState (enum values read off the same package's
+  // src/fiber.ts) and LoggerLevel. The tool-cordis lifecycle spec staged
+  // again through the same rule's removal; its probe passed 2/0 on the
+  // registered face (tmp/r3-ledger-H.json).
 ];
 
 /** vi.spyOn on an `import * as` namespace can never land: ESM bindings are
@@ -94,10 +100,6 @@ const spyOnNamespaceRules = (source) => {
 // scope guard is the importer: only the pinned submodule's files get the
 // stub; a SPEC's own pi-ai import stays bare external and keeps failing
 // loud on-device (the llm group's open work, unchanged).
-const UNVENDORED_INLINED = [
-  /^@earendil-works\/pi-ai(?:\/|$)/,
-  /^@deepseek-ai\/dsh-credentials$/,
-];
 // esbuild resolves symlinks by default, so importers arrive as REAL paths —
 // a worktree/symlinked checkout must scope the stub against the resolved
 // submodule location or the guard silently misses (observed: the pi-ai
@@ -110,112 +112,40 @@ try {
   /* absent submodule: SUBMODULE_SRC_HOISTS targets fail existsSync and the
    * generic monorepo-src exclusion names the specifier instead */
 }
-const BARE_EXTERNAL_PLUGIN = {
-  name: 'bare-external',
-  setup(build) {
-    build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
-      if (args.path.startsWith('.') || args.path.startsWith('/')) return null;
-      if (args.importer.startsWith(SUBMODULE_ROOT)
-          && UNVENDORED_INLINED.some((re) => re.test(args.path))) {
-        return { path: `${args.path}.cjs`, namespace: 'unvendored-stub' };
-      }
-      return { path: args.path, external: true };
-    });
-    build.onLoad({ filter: /.*/, namespace: 'unvendored-stub' }, () => ({
-      // The .cjs suffix makes esbuild treat the stub as CommonJS, which is
-      // what lets named imports of arbitrary symbols link through property
-      // access instead of failing "No matching export" at build time.
-      contents: 'module.exports = new Proxy({}, { get(_t, key) {'
-        + ' return () => { throw new Error("unvendored limb executed at runtime: " + String(key)); };'
-        + ' } });',
-      loader: 'js',
-    }));
-  },
-};
-
-const walk = (dir, out = []) => {
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else if (name.endsWith('.spec.ts')) out.push(full);
-  }
-  return out;
-};
-
-const unimplementedIn = (text, extraRules = []) => [...UNIMPLEMENTED, ...extraRules]
-  .filter(([re]) => re.test(text)).map(([, reason]) => reason);
-
-/** `createRequire(import.meta.url)('../package.json')` reads the SPEC'S OWN
- * PACKAGE manifest — a monorepo-layout fact our corpus does not have (the
- * staged spec's parent directory is upstream-tests/, and the tests codeload
- * tarball ships no package.json at all). The manifest DOES exist in the
- * vendored npm tree for the same version, so each such read is rewritten to
- * a bundled JSON import resolved against: (a) the tests tree, then (b) the
- * vendored package (both directory families). esbuild inlines it verbatim,
- * preserving the attribution checks exactly. */
-const hoistCreateRequireJson = (source, rel) => {
-  const re = /createRequire\(import\.meta\.url\)\('([^']+\.json)'\)/g;
-  const specDir = dirname(join(TESTS, rel));
-  const pkgName = rel.split('/')[1];
-  const vendorCandidates = [
-    join(ROOT, `runtime/spike/vendor/dsh/${pkgName}@0.1.6-alpha.2`),
-    join(ROOT, `runtime/spike/vendor/dsh/dsh-${pkgName}@0.1.6-alpha.2`),
-  ];
-  const imports = [];
-  const rewritten = source.replace(re, (_m, rawPath) => {
-    const direct = join(specDir, rawPath);
-    let resolved = existsSync(direct) ? direct : null;
-    if (resolved === null) {
-      // '../package.json' (or deeper) resolves inside the package root the
-      // vendored tarball carries.
-      const inPkg = relative(specDir, join(specDir, rawPath)).replace(/^\.\.\//, '');
-      resolved = vendorCandidates
-        .map((dir) => join(dir, inPkg))
-        .find((full) => existsSync(full)) ?? null;
-    }
-    if (resolved === null) return _m; // unresolved: esbuild will fail loud
-    const name = `__dsh_pkg_json_${imports.length}`;
-    imports.push(`import ${name} from ${JSON.stringify(resolved)};`);
-    return name;
-  });
-  if (imports.length === 0) return source;
-  return `${imports.join('\n')}\n${rewritten}`;
-};
-
-/** Monorepo src/ subpaths a spec needs at RUNTIME for symbols no vendored
- * tarball carries. '@deepseek-ai/dsh-llm-pi-ai/src/context.ts' (toPiContext —
- * the system-prompt-admission spec's admission oracle) is a deliberate
- * TS-source export of the upstream package, but the npm tarball this closure
- * vendors ships a SINGLE-FILE lib/index.js bundle whose export list (Config,
- * PiAiAdapter, apply, inject, name, recordKeyFor, supportedProtocols) omits
- * it — no bare rewrite can reach the symbol, and the loader's probe families
- * cannot serve the tarball's shapes for a src/ subpath. The rewrite points
- * the import at the PINNED SUBMODULE's source (D6: verbatim upstream, never
- * a modified copy) so esbuild inlines the limb exactly like a local fixture;
- * the two packages that limb's dead schemas reach but the closure does not
- * vendor become throwing stubs (see UNVENDORED_INLINED). A missing hoist
- * target leaves the specifier untouched, so the generic monorepo-src
- * exclusion still names it — fail loud, never a silent drop (rule 5). */
-const SUBMODULE_SRC_HOISTS = new Map([
-  ['@deepseek-ai/dsh-llm-pi-ai/src/context.ts', 'packages/llm/llm-pi-ai/src/context.ts'],
-]);
-const hoistSubmoduleSrcSubpaths = (source) => {
-  let out = source;
-  for (const [specifier, rel] of SUBMODULE_SRC_HOISTS) {
-    const target = join(SUBMODULE_ROOT, rel);
-    if (!existsSync(target)) continue;
-    out = out.replaceAll(`'${specifier}'`, JSON.stringify(target))
-              .replaceAll(`"${specifier}"`, JSON.stringify(target));
-  }
-  return out;
-};
-
-/** Transpile one spec (or record its named exclusion). */
-/** The esbuild option shape for one spec: entry file when nothing hoisted,
- * stdin otherwise (the hoisted package.json reads and inlined monorepo
- * limbs build through stdin — split from transpileOne for the function
- * shape budget). */
-const buildOptionsFor = (rel, hoisted, source) => {
+/** Bare specifiers the loader cannot serve as-is, resolved here so the
+ * esbuild graph (spec source, bundled helpers AND inlined submodule limbs —
+ * every importer funnels through this plugin) links without touching the
+ * vendored package bytes (D6) or the C host's bare map:
+ *
+ * - `@deepseek-ai/dsh-subprocess-local` — the npm tarball's lib/index.js is
+ *   the ONE vendored entry carrying RELATIVE chunk imports (the upstream
+ *   build code-splits: `./runner-launch-DGV26RBf.js` + sibling lib files).
+ *   Loaded under the BARE specifier, the host normalizes those relative
+ *   imports against `@deepseek-ai` (the specifier has no subpath to carry
+ *   the package directory) and the chunk name can never resolve. Rewriting
+ *   the external to the `/index` SUBPATH makes the loader's module NAME
+ *   carry the package directory, so `./chunk.js` re-enters the bare map's
+ *   vendored probe and hits `lib/<chunk>.js` in the tarball. Only this
+ *   package gets the rewrite: no vendored lib imports it bare, so no second
+ *   module instance can split state (the generic rewrite would — vendored
+ *   libs import sibling dsh packages bare and must keep the exact names).
+ *
+ * - `@deepseek-ai/cordis-plugin-group` — an upstream vendor/ workspace
+ *   package the test closure never stages; the vendored dsh_app-boot
+ *   tarball's bare import of it fails in the loader. Resolved to the pinned
+ *   submodule's BUILT lib (D6-verbatim, read-only) and inlined.
+ *
+ * - `@deepseek-ai/dsh-app-boot` — same face problem as the group: the
+ *   tarball's lib/index.js imports cordis-plugin-group bare, which no
+ *   loader row serves. The spec-side graph inlines the pinned submodule's
+ *   SOURCE limb instead; the group resolves inside it via the row above,
+ *   `resolve.exports` via the row below, and every vendored dep stays a
+ *   loader-served bare external under its exact name (cordis Context and
+ *   the cordis-plugin-* libs keep one instance across spec + limb).
+ *
+ * - `resolve.exports` — the app-boot limb's package-resolution helper,
+ *   present only in the submodule's lockfile store (pnpm layout). */
+const buildOptionsFor = (rel, hoisted, forceStdin) => {
   const options = {
     bundle: true,
     format: 'esm',
@@ -224,21 +154,38 @@ const buildOptionsFor = (rel, hoisted, source) => {
     plugins: [BARE_EXTERNAL_PLUGIN],
     logLevel: 'silent',
   };
-  if (hoisted === source) {
-    options.entryPoints = [join(TESTS, rel)];
-  } else {
+  // forceStdin is required when an IN-MEMORY transform must reach the build:
+  // entryPoints reads the bytes off DISK, silently dropping any rewrite that
+  // left `hoisted` equal to the rewritten source (measured W5-Q: the
+  // bundle-manifest root rewrite produced a hoisted string identical to the
+  // rewritten source, so the old `hoisted === source` probe took the
+  // entryPoints path and the staged output kept the original '..' join).
+  if (forceStdin) {
     options.stdin = {
       contents: hoisted,
       loader: 'ts',
       resolveDir: dirname(join(TESTS, rel)),
       sourcefile: join(TESTS, rel),
     };
+  } else {
+    options.entryPoints = [join(TESTS, rel)];
   }
   return options;
 };
 
+const unimplementedIn = (text, extraRules = []) => [...UNIMPLEMENTED, ...extraRules]
+  .filter(([re]) => re.test(text)).map(([, reason]) => reason);
+
 const transpileOne = async (rel, manifest) => {
-  const source = readFileSync(join(TESTS, rel), 'utf8');
+  const onDisk = readFileSync(join(TESTS, rel), 'utf8');
+  // The bundle-manifest family's root rewrite lands BEFORE the exclusion
+  // scan and the build (the '..' join is the only thing that changes; see
+  // BUNDLE_MANIFEST_PACKAGES above).
+  const manifestRewritten = BUNDLE_MANIFEST_PACKAGES.has(rel);
+  const seedTree = SEED_TREE_SPECS.get(rel);
+  const source = manifestRewritten
+    ? rewriteBundleManifestRoot(onDisk)
+    : seedTree ? rewriteSeedTreeRoots(onDisk, seedTree.rewrites) : onDisk;
   // Hoisting precedes the exclusion scan: a src/ subpath we can inline from
   // the pinned submodule is no longer a bare monorepo specifier, while any
   // specifier without a hoist target keeps its named exclusion below.
@@ -251,7 +198,7 @@ const transpileOne = async (rel, manifest) => {
   }
   let built;
   try {
-    built = await esbuild.build(buildOptionsFor(rel, hoisted, source));
+    built = await esbuild.build(buildOptionsFor(rel, hoisted, manifestRewritten || seedTree !== undefined || hoisted !== source));
   } catch (error) {
     // Fail loud naming the specifier (rule 5): a swallowed bundle failure
     // turns the missing-dependency map — the whole actionable surface of
@@ -286,21 +233,68 @@ const transpileOne = async (rel, manifest) => {
 // /upstream-tests/fixtures namespace never collides.
 const emitFixturesModule = (rel, flat) => {
   const fixturesDir = join(TESTS, dirname(rel), 'fixtures');
-  if (!existsSync(fixturesDir)) return;
   const files = [];
-  const walkFx = (dir, base) => {
-    for (const name of readdirSync(dir)) {
-      const full = join(dir, name);
-      if (statSync(full).isDirectory()) walkFx(full, `${base}/${name}`);
-      else files.push({ path: `/upstream-tests/fixtures${base}/${name}`,
-        b64: readFileSync(full).toString('base64') });
+  if (existsSync(fixturesDir)) {
+    const walkFx = (dir, base) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walkFx(full, `${base}/${name}`);
+        else files.push({ path: `/upstream-tests/fixtures${base}/${name}`,
+          b64: readFileSync(full).toString('base64') });
+      }
+    };
+    walkFx(fixturesDir, '');
+  }
+  // The bundle-manifest family rides the same seed delivery: the REAL
+  // package-root files at /upstream-tests/<name> (see BUNDLE_MANIFEST_PACKAGES).
+  const manifestPkg = BUNDLE_MANIFEST_PACKAGES.get(rel);
+  if (manifestPkg !== undefined) {
+    const pkgRoot = join(SUBMODULE_ROOT, 'packages', manifestPkg);
+    for (const name of BUNDLE_MANIFEST_FILES) {
+      const full = join(pkgRoot, name);
+      if (existsSync(full)) {
+        files.push({ path: `/upstream-tests/${name}`, b64: readFileSync(full).toString('base64') });
+      }
     }
-  };
-  walkFx(fixturesDir, '');
+  }
+  // The layout-tree family seeds the WHOLE vendored source tree at
+  // /upstream-tests/src (verbatim submodule bytes — the spec re-audits the
+  // real upstream sources), the named compiler manifests, and (mirrorTests)
+  // the vendored tests/*.ts so the spec's own-directory walk sees the same
+  // tree shape upstream's tests/ layout gives it.
+  collectSeedTreeFiles(rel, files, true);
+  emitPackageAssets(rel, files);
+  if (files.length === 0) return;
   const stem = flat.replace(/\.spec\.mjs$/, '');
   writeFileSync(join(OUT, `${stem}.fixtures.js`),
     `// emitted by transpile.mjs: the spec's tests/fixtures tree, seeded by the driver\n`
     + `export const fixtures = ${JSON.stringify(files)};\n`);
+};
+
+// W5-T: the spec's PACKAGE assets (skill-badge's ../assets/dsh-badge.png).
+// The tests tarball stages no assets/, but the vendored npm tree of the same
+// package ships them verbatim; they ride the same fixtures seed delivery at
+// the URL the spec builds (new URL('../assets/<name>', import.meta.url) from
+// upstream-tests/ → /assets/<name>). D6: bytes verbatim from the pinned
+// tarball.
+const emitPackageAssets = (rel, files) => {
+  const pkgName = rel.split('/')[1];
+  const assetCandidates = [
+    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
+  ];
+  for (const assetsDir of assetCandidates) {
+    if (!existsSync(assetsDir)) continue;
+    const walkAssets = (dir, base) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walkAssets(full, `${base}/${name}`);
+        else files.push({ path: `/assets${base}/${name}`, b64: readFileSync(full).toString('base64') });
+      }
+    };
+    walkAssets(assetsDir, '');
+    break; // one staging family only — never double-seed the same bytes
+  }
 };
 
 
@@ -315,6 +309,47 @@ const specs = walk(TESTS)
 
 for (const rel of specs) {
   await transpileOne(rel, manifest);
+}
+
+// The experimental Inspector's WORKER entry (W5-Q, 2026-09-28): the vendored
+// host bridge spawns the BUILT entry sibling of its lib chunk —
+// `new Worker(new URL('./worker.js', import.meta.url))`. The staged .host
+// specs inline the controller source, but the worker entry is a separate
+// build artifact the tests tarball never carries, so the in-process Worker
+// face (node-worker-threads shim) fails the import with "cannot load module
+// '/upstream-tests/worker.js'". Bundle it from the pinned submodule (D6:
+// verbatim upstream) into the staged root — bare externals (node:* shims,
+// ws) stay loader-served so the controller and the worker share ONE shim
+// module instance, which the parentPort/workerData swap window requires.
+const inspectorStaged = manifest.transpiled.some((f) => f.startsWith('experimental__inspector__'));
+const workerEntry = join(TESTS, 'experimental/inspector/src/worker/entry.ts');
+if (inspectorStaged && existsSync(workerEntry)) {
+  const built = await esbuild.build({
+    entryPoints: [workerEntry],
+    bundle: true,
+    format: 'esm',
+    platform: 'neutral',
+    write: false,
+    plugins: [BARE_EXTERNAL_PLUGIN],
+    logLevel: 'silent',
+  });
+  writeFileSync(join(OUT, 'worker.js'), built.outputFiles[0].text);
+  manifest.workerEntries = ['worker.js'];
+}
+
+// Prune staged files the current manifest does not list: exclusions evolve
+// (a specifier's hoist lands, or an exclusion narrows), and a stale .spec.mjs
+// left behind would keep running in the sweep — which enumerates this
+// directory, not the manifest — as a noise failure the manifest already
+// accounts for with a named reason. Only the two suffixes this tool emits
+// are pruned; anything else in OUT is not ours to touch.
+const listed = new Set(manifest.transpiled);
+for (const name of readdirSync(OUT)) {
+  const stem = name.replace(/\.fixtures\.js$/, '.spec.mjs');
+  if ((name.endsWith('.spec.mjs') || name.endsWith('.fixtures.js'))
+      && !listed.has(stem)) {
+    unlinkSync(join(OUT, name));
+  }
 }
 
 manifest.counts = {

@@ -139,6 +139,38 @@ say "staging vendor/npm/yaml@2.9.0 (browser ESM face)"
         cp "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel"
     done
 
+# The crypto shims' npm face (2026-09-29): shims/crypto.js statically
+# imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
+# map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
+# (the anti-drift rule; the in-app parity leg died on exactly this gap).
+say "staging vendor/npm/@noble/hashes@2.3.0 (js)"
+if [ ! -d "$SPIKE/vendor/npm/@noble/hashes@2.3.0" ]; then
+    echo "::error::stage-spine-closure: the @noble/hashes pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    exit 1
+fi
+mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
+(cd "$SPIKE/vendor/npm/@noble/hashes@2.3.0" && find . -type f -name '*.js') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/@noble/hashes@2.3.0/$rel" "$ASSETS/vendor/npm/@noble/hashes@2.3.0/$rel"
+    done
+
+# The pi-ai bridge target (2026-09-29): the providers barrel's
+# data/.manifest.json require needs the data face, the provider rows need
+# their files — the whole pin rides (the parity m4 mount died on exactly
+# this gap: bridge rows present, bytes absent in-app).
+say "staging vendor/npm/@earendil-works/pi-ai@0.85.1 (js+json)"
+if [ ! -d "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" ]; then
+    echo "::error::stage-spine-closure: the pi-ai pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    exit 1
+fi
+mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1"
+(cd "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1/$rel" "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/$rel"
+    done
+
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
 say "staging vendor/npm/zod@4.4.3 (classic runtime closure)"
 mkdir -p "$ZOD_DST/v4/classic" "$ZOD_DST/v4/core" "$ZOD_DST/v4/locales"

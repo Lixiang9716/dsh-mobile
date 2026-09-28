@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Embed the runtime/spike JS bundle into the iOS app as C byte arrays.
 
-The spike host loads ESM imports (logger.js, the vendored dsh package) from
-disk under a bundle_root. Compiling the JS into the binary and staging it to
-a writable sandbox directory at launch keeps the app free of asset-path
-resolution: the bytes the simulator runs are byte-identical to the checkout.
-
-Outputs are committed (App/Generated/) so a fresh clone builds without this
-script; the Xcode pre-build phase re-runs it whenever an input changes.
+The spike host loads ESM imports from disk under a bundle_root; compiling
+the JS into the binary and staging it to a writable sandbox at launch keeps
+the bytes the simulator runs byte-identical to the checkout. Outputs are
+committed (App/Generated/) so a fresh clone builds without this script; the
+Xcode pre-build phase re-runs it whenever an input changes.
 """
 
 from pathlib import Path
@@ -197,9 +195,8 @@ RESOURCES = [
 
 # Directory trees embedded whole and staged back under the same
 # bundle-relative paths: the vendored upstream spine packages (verbatim
-# lib/ trees, the loader's `vendor/dsh/<pkg>@<ver>/lib/**` map). Trees are
-# UNTRACKED upstream code — embedded from the materialized vendor checkout,
-# sha256-pinned by ensure-dsh.sh.
+# lib/ trees, the loader's `vendor/dsh/<pkg>@<ver>/lib/**` map) — UNTRACKED
+# upstream code, embedded from the materialized vendor checkout.
 TREES = [
     (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
      SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
@@ -247,30 +244,33 @@ TREES = [
     ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2",
      SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
 ] + [
-    # the npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports
-    # vendor/npm/diff@9.0.0/libesm/index.js behind the bare specifier the
-    # vendored tool-fs imports for structuredPatch)
+    # the npm `diff` bridge target: npm-bridges re-exports the libesm face
+    # behind the bare specifier vendored tool-fs imports (structuredPatch).
     ("vendor/npm/diff@9.0.0/libesm",
      SPIKE / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
-    # the npm `yaml` bridge target (the SKILL row): upstream/shims/
-    # npm-bridges.js re-exports the browser/ ESM face behind the bare
-    # specifier @deepseek-ai/dsh-skill-filesystem imports for frontmatter
-    # (the package's "node" face is CJS, which the loader cannot serve).
+    # the npm `yaml` bridge target (the SKILL row): the browser/ ESM face
+    # behind the bare specifier skill-filesystem imports for frontmatter
+    # (the "node" face is CJS, which the loader cannot serve).
     ("vendor/npm/yaml@2.9.0/browser",
      SPIKE / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
     # the npm `fflate` bridge target (the OFFICE row's zip engine).
     ("vendor/npm/fflate@0.8.2/esm",
      SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+    # The crypto shims' npm face (crypto.js's static noble imports) and
+    # the pi-ai bridge target (the providers barrel + its data face):
+    # both whole pins ride — the parity legs died on bytes-absent-in-app.
+    ("vendor/npm/@noble/hashes@2.3.0",
+     SPIKE / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
+    ("vendor/npm/@earendil-works/pi-ai@0.85.1",
+     SPIKE / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
      SPIKE / "system-plugins" / "dsh-office"),
     # The upstream shims ride the WHOLE DIRECTORY (the android stager's
-    # convention): a new shim joins the embed by existing in the directory,
-    # not by hand-editing this list — the vi-wait.js drift class, retired.
+    # convention): a shim joins the embed by existing, not by list edit.
     ("upstream/shims",
      SPIKE / "upstream" / "shims"),
-    # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims:
-    # a scenario joins the embed by existing in the directory).
+    # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims).
     ("scenario",
      SPIKE / "scenario"),
 ] + [

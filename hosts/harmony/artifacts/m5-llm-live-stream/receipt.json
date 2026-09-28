@@ -1,0 +1,14 @@
+{
+  "host": "harmony 127.0.0.1:5555 (dsh_phone emulator)",
+  "runner": "hosts/harmony/ci/run-live-llm.sh",
+  "phase": "harmony.llm.live-stream",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real z.ai backend",
+  "tree": "origin/main 2ad8e225bc87 (receipt authored post-run against this green artifact set; the runner predates the receipt clause)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39",
+  "scenarios": [
+    { "manifest": "llm-live-stream-device", "verdict": "verdict-llm-live-stream-device.json", "pass": true },
+    { "manifest": "llm-live-stream-carrier", "verdict": "verdict-llm-live-stream-carrier.json", "pass": true }
+  ],
+  "screens": ["llm-live-stream-live-page.png"],
+  "producedAt": "2026-09-28T05:36:49Z"
+}

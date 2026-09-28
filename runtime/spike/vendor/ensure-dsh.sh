@@ -198,6 +198,8 @@ terminal|0.1.6-alpha.2|cb9b07571654bcfe6877f8ff860a3ebd17564fe17994a9e905aea0ef4
 # cannot skip comment lines, so prose stays HERE, never inside the string.
 NPM_PACKAGES="
 cordis@4.0.2|@deepseek-ai/cordis/-/cordis-4.0.2.tgz|686ca44fc6e8d217804de9062b716b7c72755dde09c2a433dd07045eea3c6a97
+@noble/hashes@2.3.0|@noble/hashes/-/hashes-2.3.0.tgz|892281f5dd25ddea8e215c740945bacdfc78aa4fca81f2c25a06876366c8beac
+@earendil-works/pi-ai@0.85.1|@earendil-works/pi-ai/-/pi-ai-0.85.1.tgz|af7d11986179445ce6fe88b37d57de22f823c0ffd3a65cae31c555b7f5e99253
 cosmokit@1.8.3|@deepseek-ai/cosmokit/-/cosmokit-1.8.3.tgz|552f10313ddfdc2b92cce1867b9bf30b2a4c9de55543ad222fe67c22015e4400
 schemastery@3.18.2|@deepseek-ai/schemastery/-/schemastery-3.18.2.tgz|a0fe700b9c055f04dfec87cb46ae4a1106c6fac6c271f8a1df00e10038f0aac1
 zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a51684314563c8d60f279c

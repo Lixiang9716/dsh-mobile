@@ -6,9 +6,21 @@
 import { register } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { resolve as pathResolve } from 'node:path';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 const ROOT = pathResolve(new URL('../..', import.meta.url).pathname);
 register('./smoke-hooks.mjs', import.meta.url);
+
+// The runtime-module seam, Node side (the hook half lives in smoke-hooks.mjs
+// — see its header). Installed HERE, on the main thread: register()'s
+// bootstrap runs only in the loader worker, so a global set there is never
+// seen by the spec code. Same replay semantics as the host C seam: a second
+// define for a name replaces the source.
+const REG_DIR = pathResolve(ROOT, 'test/upstream-suite/.runtime-modules');
+mkdirSync(REG_DIR, { recursive: true });
+globalThis.__dshModuleDefine = (name, source) => {
+  writeFileSync(pathResolve(REG_DIR, encodeURIComponent(name) + '.mjs'), source);
+};
 
 const unhandled = [];
 process.on('unhandledRejection', (reason) => {
