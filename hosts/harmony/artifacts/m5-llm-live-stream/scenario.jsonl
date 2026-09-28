@@ -1,0 +1,40 @@
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"placeholder write begin","data":[{"path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"placeholder written","data":[{"path":"llm-live-stream/config.json","written":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.stage","message":"bus post","data":[{"type":"stage.ready"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","event":"client.selected","client":"dsh-web-client","source":"launch"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","event":"webclient.mounted","client":"dsh-web-client","path":"/index.html"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","event":"ws.connected","protocol":"session-projection@0"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"main begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"wait for event","data":[{"name":"host.info"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"host.ready","signalled":true}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"descriptor leg probe","data":[]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.leg","leg":"real","transport":"gateway.httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"real config load begin","data":[{"path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"llm-live-stream/config.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":172}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decode","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":129}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 end","data":[{"dangling":false}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.config.loaded","source":"app-scope","model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"session.created","sessionId":"s-llm-live-stream-0001","scope":"app"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"session"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"agent.started","model":"glm-4.6","tools":0}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"projection push","data":[{"kind":"agent"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"turn begin","data":[{"model":"glm-4.6"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"llm.stream.started","turn":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"glm-4.6","messages":1,"maxTokens":256}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","bytes":144}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"https://api.z.ai/api/coding/paas/v4/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"llm.live-stream.carrier","event":"slot.registered","id":"notes.toolbar","label":"llm","by":"llm-live-stream"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"network","primitive":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"llm.live-stream.spike","message":"scenario failed","data":[{"reason":"uncaught: Internal error"}]}
+dsh.spike.log: {"level":"info","module":"llm.live-stream.spike","message":"e2e","data":[{"scenario":"llm.live-stream","event":"scenario.failed","reason":"uncaught: Internal error"}]}
