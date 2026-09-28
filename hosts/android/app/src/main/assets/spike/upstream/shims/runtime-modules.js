@@ -121,7 +121,15 @@ const REGISTRATIONS = [
   // shapes can never hit an aliased name, so the row pins the real file (the
   // dsh-session/types precedent).
   ['@deepseek-ai/dsh-client-web/injections', "export * from '/vendor/npm/@deepseek-ai/dsh-client-web@0.1.6-alpha.2/lib/apply-injections.js';"],
+  // The row is ALSO the trigger for the cordis-plugin-loader failure face:
+  // whatever imports cordis first (a dsh lib, a spec, or the vendored loader
+  // lib itself) evaluates the row, and the face file patches the vendored
+  // loader's prototype methods on a microtask (deferred because when the
+  // first cordis import arrives THROUGH the loader lib, its classes are
+  // still mid-evaluation — see the face file's header). No npm-bridges row
+  // needed, so the effect survives the npm-bridges split churn untouched.
   ['@deepseek-ai/cordis', [
+    "import '/upstream/shims/cordis-loader-failure-face.js';",
     "export * from '/vendor/npm/cordis@4.0.2/lib/index.js';",
     FIBER_STATE,
     LOGGER_LEVEL,
@@ -156,6 +164,27 @@ const REGISTRATIONS = [
     "export default { TLSSocket: undefined, Server: undefined, connect, createServer };",
   ].join('\n')],
 
+  // node:inspector — the experimental inspector's Host realm opens one
+  // native V8 session per DevTools connection (worker/realms/host/bridge.ts:
+  // `new Session()` inside openSession). One serial JS realm here (D2):
+  // there is no second V8 to attach an inspection session to, so the class
+  // fails loud at CONSTRUCTION — but the realm only builds sessions lazily
+  // (openSession, per connection), so the inspector worker boots, answers
+  // bridge queries and reads cordis snapshots (the no-CDP limbs the suite
+  // drives) without ever constructing one. Row added with the W5-Q round
+  // that staged the worker entry (transpile.mjs worker.js emission).
+  ['node:inspector', [
+    "const refuse = (name) => () => {",
+    "  throw new Error('node:inspector: ' + name + ' is not served in this runtime — one serial JS realm (D2) has no native V8 inspection session to attach');",
+    "};",
+    "export class Session {",
+    "  constructor() { refuse('Session')(); }",
+    "  connect() { refuse('Session.connect')(); }",
+    "  post(method, params, callback) { refuse('Session.post')(); }",
+    "}",
+    "export const URL = class { constructor() { refuse('URL')(); } };",
+    "export default { Session };",
+  ].join('\n')],
   // node:dns/promises — lookup exists on the vendored web-fetch-http face's
   // import line; DNS resolution is a host network capability this runtime
   // routes through the gateway, so the promise fails loud naming the seam.
@@ -223,12 +252,7 @@ const REGISTRATIONS = [
   // node:sqlite — node 22's builtin SQL engine; there is no SQL engine to
   // serve and no file backing, so the class links and construction fails
   // loud (the sqlite specs are a desktop-storage family).
-  ['node:sqlite', [
-    "export class DatabaseSync {",
-    "  constructor() { throw new Error('node:sqlite: DatabaseSync is not served in this runtime — the SQL engine (and its file backing) is a desktop host capability'); }",
-    "}",
-    "export default { DatabaseSync };",
-  ].join('\n')],
+
 
   // node:vm — the confined guest realm IS the PTC execution model (see the
   // upstream/README.md row: the subprocess-class seam). Linkage only: the
@@ -301,45 +325,19 @@ const REGISTRATIONS = [
     "export { isIP, isIPv4, isIPv6 };",
   ].join('\n')],
 
-  // node:child_process — folded from npm-bridges.js. D2 forbids the
-  // subprocess seam, so the async members fail loud when CALLED (the lsp-stdio
-  // and ssh families link it; the real-process paths are unrunnable by
-  // design and excluded at the ledger level). spawnSync carries NODE'S OWN
-  // unspawnable-command contract instead of throwing: real node returns a
-  // result object with status:null + .error for a file it cannot execute
-  // (ENOENT), it does not raise — and specs probe executability at MODULE
-  // scope through it (`hasPwsh = spawnSync(...).status === 0` in the pwsh
-  // loader/executor specs), where a throw would kill the load instead of
-  // producing the honest "no such capability here" answer the check exists
-  // to receive. The seam stays named: it rides in the result's .error.
+  // node:child_process — the REAL subprocess face (W5-R, 2026-09-28): the
+  // host grew the __dshProc* intrinsics (portable fork/exec/poll in
+  // dsh_spike_host.c) and upstream/shims/node-child-process.js serves node's
+  // spawn/spawnSync/execFile surface over them (children never run JS in
+  // this runtime — D2's serial-thread constitution is untouched; the
+  // desktop/Android parity leg spawns REAL fixture servers exactly like
+  // upstream CI). The old loud-refusal stub was the honest answer while the
+  // seam was absent; it made the lsp-stdio/bash/hooks families fail every
+  // test downstream of a spawn.
   ['node:child_process', [
-    "const refuse = (name) => () => {",
-    "  throw new Error('node:child_process: ' + name + ' is not served in this runtime — no subprocess seam (rule D2)');",
-    "};",
-    "const spawnSyncRefused = (command) => ({",
-    "  status: null,",
-    "  signal: null,",
-    "  output: [null, null],",
-    "  pid: 0,",
-    "  stdout: '',",
-    "  stderr: '',",
-    "  error: new Error('node:child_process: spawnSync(' + String(command) + ') is not served in this runtime — no subprocess seam (rule D2)'),",
-    "});",
-    "const childProcess = {",
-    "  spawn: refuse('spawn'),",
-    "  spawnSync: spawnSyncRefused,",
-    "  exec: refuse('exec'),",
-    "  execFile: refuse('execFile'),",
-    "  execFileSync: refuse('execFileSync'),",
-    "  fork: refuse('fork'),",
-    "};",
+    "import childProcess from 'upstream/shims/node-child-process.js';",
     "export default childProcess;",
-    "export const spawn = childProcess.spawn;",
-    "export const spawnSync = childProcess.spawnSync;",
-    "export const exec = childProcess.exec;",
-    "export const execFile = childProcess.execFile;",
-    "export const execFileSync = childProcess.execFileSync;",
-    "export const fork = childProcess.fork;",
+    "export const { spawn, spawnSync, execFile, execFileSync, exec, ChildProcess } = childProcess;",
   ].join('\n')],
 ];
 

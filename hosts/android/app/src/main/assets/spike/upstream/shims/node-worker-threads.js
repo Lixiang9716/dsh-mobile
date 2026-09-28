@@ -20,23 +20,134 @@
  * move it over); close() emits 'close' on BOTH ends (node: either side
  * closing ends the channel). Messages queue until the first 'message'
  * listener or start(), node's delivery discipline.
+ *
+ * W4-N (2026-09-28) — the IN-PROCESS Worker face for the single verifier
+ * spawn shape: session-persistence-jsonl's migration verifier runs its
+ * worker entry (`worker.js` — the staged ESM twin of `worker.cjs`, same
+ * translation unit per the shared worker.js.map) on THIS thread. No OS
+ * thread and no subprocess exist (D2 holds: one serial JS thread); the
+ * entry is a dynamic import whose top level reads `parentPort`/`workerData`
+ * through live bindings that this module swaps in for the import window
+ * (spawns serialize on a promise chain so two windows never overlap). The
+ * module registry evaluates an entry ONCE per realm — but quickjs caches
+ * module defs by NAME, so a repeat spawn RE-IMPORTS the same file under a
+ * `./`-padded alias (the specifier-space cache-busting seam the first
+ * Worker round named as a host need): `/vendor/…/lib/worker.js`, then
+ * `/vendor/…/lib/./worker.js`, then `././`, … each alias compiles the same
+ * bytes as a fresh module whose top level re-runs inside the swap window.
+ * Node's message discipline holds: the entry posts one response then
+ * closes its port; the parent's 'message' drains before 'exit'.
  */
-const failLoud = () => {
-  throw new Error(
-    'worker_threads: this runtime is single-process (D2) — Worker spawn is '
-    + 'unavailable; upstream\'s browser path replaces the worker with an '
-    + 'in-process equivalent (see session-persistence-jsonl/lease)');
+/** The refused OS-thread spawn (the constructor face for entries that the
+ * in-process face cannot serve — see the header). */
+const failThread = (why) => {
+  throw new Error(`worker_threads: Worker spawn refused (D2, single process) — ${why}`);
 };
-export class Worker {
-  constructor() { failLoud(); }
-  postMessage() { failLoud(); }
-  terminate() { return Promise.reject(new Error('worker_threads: unavailable')); }
-  once() { return this; }
-  on() { return this; }
-}
-export const parentPort = null;
-export const workerData = undefined;
+
+/* parentPort/workerData are LIVE bindings (export let): the in-process
+ * Worker's import window swaps them in for the worker entry's top level and
+ * restores the main-thread values (null/undefined) after. The default-export
+ * snapshot below reads them through getters for the same reason. */
+export let parentPort = null;
+export let workerData = undefined;
 export const isMainThread = true;
+
+/** Spawns served per resolved entry: spawn 0 imports the plain specifier,
+ * spawn N pads the file's last segment with N copies of './' so quickjs
+ * sees a module NAME it has never evaluated (the registry caches by name,
+ * not by file). Each alias re-runs the entry's top level — the vendored
+ * verifier entry's entire behavior lives there (parse workerData, verify,
+ * post, close). */
+const spawnCounts = new Map();
+/** The alias face: insert `n` './' segments before the file name. open(2)
+ * ignores interior './' segments, so the alias resolves to the same file. */
+const bustSpecifier = (s, n) => {
+  const at = s.lastIndexOf('/');
+  return `${s.slice(0, at + 1)}${'./'.repeat(n)}${s.slice(at + 1)}`;
+};
+/** Serialization of the parentPort/workerData swap window. */
+let spawnChain = Promise.resolve();
+
+/** The worker entry's importable specifier: node passes a URL (the built
+ * worker.cjs sibling of the importing chunk); the staged closure serves the
+ * bundle-root path, and the ESM twin (.js) is the loadable face of a .cjs
+ * entry (worker.cjs/worker.js share one translation unit here). */
+const entrySpecifier = (entry) => {
+  let s = typeof entry === 'string' ? entry : String(entry?.href ?? entry);
+  if (s.startsWith('data:')) {
+    failThread('the data: bootstrap face needs tsx/esm registration (source-closure spawns), not served in this runtime');
+  }
+  if (s.startsWith('file://')) s = decodeURIComponent(s.slice('file://'.length));
+  if (s.endsWith('.cjs')) s = s.slice(0, -'.cjs'.length) + '.js';
+  return s;
+};
+
+export class Worker {
+  #workerPort;
+  #listeners = new Map();
+  #terminated = false;
+
+  constructor(entry, options = {}) {
+    const base = entrySpecifier(entry);
+    const spawnIndex = spawnCounts.get(base) ?? 0;
+    spawnCounts.set(base, spawnIndex + 1);
+    const specifier = spawnIndex === 0 ? base : bustSpecifier(base, spawnIndex);
+    const workerPort = new MessagePort(); // the entry's parentPort end
+    const parentEnd = new MessagePort(); // the main-thread end
+    MessagePort._pair(parentEnd, workerPort);
+    this.#workerPort = workerPort;
+
+    const emit = (event, ...args) => {
+      for (const fn of [...(this.#listeners.get(event) ?? [])]) fn(...args);
+    };
+    workerPort.on('close', () => emit('exit', 0));
+    parentEnd.on('message', (value) => emit('message', value));
+    parentEnd.on('close', () => emit('exit', 0));
+
+    // The import window: serialize so two spawns never swap the live
+    // bindings concurrently (the single JS thread makes each window atomic
+    // once started; the chain keeps the awaits from interleaving).
+    spawnChain = spawnChain.then(async () => {
+      parentPort = workerPort;
+      workerData = structuredClonePort(options?.workerData, []);
+      try {
+        await import(specifier);
+      } catch (error) {
+        emit('error', error instanceof Error ? error : new Error(String(error)));
+        emit('exit', 1);
+      } finally {
+        parentPort = null;
+        workerData = undefined;
+      }
+    });
+  }
+  on(event, fn) {
+    if (!this.#listeners.has(event)) this.#listeners.set(event, []);
+    this.#listeners.get(event).push(fn);
+    return this;
+  }
+  once(event, fn) {
+    const wrapped = (...args) => { this.off(event, wrapped); fn(...args); };
+    return this.on(event, wrapped);
+  }
+  off(event, fn) {
+    const list = this.#listeners.get(event);
+    if (list !== undefined) {
+      const at = list.indexOf(fn);
+      if (at >= 0) list.splice(at, 1);
+    }
+    return this;
+  }
+  /** Main→worker post (the verifier only uses the worker→main direction). */
+  postMessage(value) { this.#workerPort.postMessage(value); }
+  /** node resolves with the exit code; the corpus only awaits settlement. */
+  terminate() {
+    this.#terminated = true;
+    if (!this.#workerPort) return Promise.resolve(0);
+    this.#workerPort.close();
+    return Promise.resolve(0);
+  }
+}
 
 /* getEnvironmentData/setEnvironmentData — node's cross-worker KV. One
  * process here (D2), so the honest transport is a module-global Map (the
@@ -189,4 +300,6 @@ export class MessageChannel {
     MessagePort._pair(this.port1, this.port2);
   }
 }
-export default { Worker, MessageChannel, MessagePort, parentPort, workerData, isMainThread, setEnvironmentData, getEnvironmentData };
+// parentPort/workerData read through getters: the default-import face must
+// observe the live swap window like the named bindings do.
+export default { Worker, MessageChannel, MessagePort, get parentPort() { return parentPort; }, get workerData() { return workerData; }, isMainThread, setEnvironmentData, getEnvironmentData };

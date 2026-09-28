@@ -30,20 +30,30 @@
 
 import { EventEmitter } from 'upstream/shims/events.js';
 import { encodeUtf8, decodeUtf8 } from 'upstream/shims/buffer.js';
+import { encodeFormData } from 'upstream/shims/web-multipart.js';
 
 /** host:port → server record. Key spelling: lowercased host, numeric port. */
-const registry = new Map();
+export const registry = new Map();
 /** Ephemeral port allocator (listen(0)); IANA dynamic range start. */
 let nextEphemeralPort = 49152;
 
-const keyFor = (host, port) => `${String(host).toLowerCase()}:${port}`;
+export const keyFor = (host, port) => `${String(host).toLowerCase()}:${port}`;
 
-const nextTick = (fn) => {
+/** The registry host spelling of a parsed URL. WHATWG `hostname` strips the
+ * IPv6 brackets ('[::1]' → '::1'); the URL shim keeps them, so strip here —
+ * a listen record is keyed by the bare host spelling (W4-N: the mock-server
+ * IPv6 listener test dials `http://[::1]:port`). */
+export const hostFor = (parsed) => {
+  const h = parsed.hostname;
+  return typeof h === 'string' && h.startsWith('[') && h.endsWith(']') ? h.slice(1, -1) : h;
+};
+
+export const nextTick = (fn) => {
   if (typeof globalThis.setTimeout === 'function') setTimeout(fn, 0);
   else Promise.resolve().then(fn);
 };
 
-const toBytes = (value) => {
+export const toBytes = (value) => {
   if (value === undefined || value === null) return new Uint8Array(0);
   if (typeof value === 'string') return encodeUtf8(value);
   if (value instanceof Uint8Array) return value;
@@ -62,13 +72,19 @@ const toBytes = (value) => {
  * inside the handler win) and the async iterator serves the same bytes for
  * `for await` consumers. Mixing the two styles double-reads — node forbids
  * that shape anyway, and the corpus never mixes. */
-class LoopbackIncoming extends EventEmitter {
+export class LoopbackIncoming extends EventEmitter {
   constructor({ method, url, headers, body }) {
     super();
     this.method = method;
     this.url = url;
     this.headers = headers;
     this.rawHeaders = [];
+    // node's IncomingMessage.headersDistinct: the same bag keyed to ARRAYS
+    // (the webhook-github handler's requiredHeader reads headersDistinct[name]
+    // and requires exactly one value — wave 5, measured off its spec).
+    this.headersDistinct = Object.fromEntries(
+      Object.entries(headers ?? {}).map(([name, value]) => [name, Array.isArray(value) ? value : [value]]),
+    );
     this.statusCode = undefined;
     this.complete = false;
     this.readable = true;
@@ -77,7 +93,23 @@ class LoopbackIncoming extends EventEmitter {
   }
   #body;
   #replayed;
+  #encoding;
+  #ended;
   setTimeout() { return this; }
+  /** The readable-stream no-ops node's IncomingMessage carries (the client
+   * face's rawChat callback calls response.resume() — W4-N). */
+  resume() { return this; }
+  pause() { return this; }
+  read() { return null; }
+  /** setEncoding(encoding) — the webhook-github handler spec's request
+   * callback declares `response.setEncoding('utf8')` before its 'data'
+   * accumulation (spec :224); the loopback replays the response body as a
+   * utf8 string on the 'data' channel already, so the face records the
+   * encoding and decodes on emit (Buffer chunks render through toString). */
+  setEncoding(encoding) {
+    this.#encoding = String(encoding ?? 'utf8');
+    return this;
+  }
   destroy(error) {
     this.readable = false;
     this.complete = true;
@@ -90,23 +122,47 @@ class LoopbackIncoming extends EventEmitter {
     if (this.#replayed) return;
     this.#replayed = true;
     nextTick(() => {
-      if (this.#body.length > 0) this.emit('data', this.#body);
-      this.complete = true;
-      this.emit('end');
-      this.emit('close');
+      if (this.#body.length > 0) this.emit('data', this.renderChunk(this.#body));
+      this.#finish();
     });
+  }
+  /** Terminal state, exactly once (an iterate-to-EOF read IS reading to the
+   * end of the body — the webhook-github handler checks `request.complete`
+   * synchronously after its for-await, so the async-iterator path must mark
+   * completion itself, not one tick later via beginReplay). */
+  #finish() {
+    if (this.#ended) return;
+    this.#ended = true;
+    this.complete = true;
+    this.emit('end');
+    this.emit('close');
+  }
+  /** Render one replay chunk per setEncoding (default: utf8 string — the
+   * loopback's 'data' payload has been a utf8 string since the W3 round;
+   * an explicit encoding keeps the same face). */
+  renderChunk(chunk) {
+    if (this.#encoding === undefined) return chunk;
+    if (typeof chunk === 'string') return chunk;
+    if (globalThis.Buffer && typeof chunk.toString === 'function') {
+      return chunk.toString(this.#encoding === 'buffer' ? 'utf8' : this.#encoding);
+    }
+    return chunk;
   }
   [Symbol.asyncIterator]() {
     const source = this;
     let consumed = false;
     return {
       next: async () => {
-        if (consumed) return { value: undefined, done: true };
+        if (consumed) {
+          source.#finish();
+          return { value: undefined, done: true };
+        }
         consumed = true;
         // One tick so an event-style consumer registered first is served by
         // its own channel, not by this iterator.
         await new Promise((resolve) => nextTick(resolve));
         if (source.#body.length > 0) return { value: source.#body, done: false };
+        source.#finish();
         return { value: undefined, done: true };
       },
       return: () => Promise.resolve({ value: undefined, done: true }),
@@ -120,7 +176,7 @@ class LoopbackIncoming extends EventEmitter {
  * — on the FIRST of writeHead/write/flushHeaders/end (the onHeaders hook),
  * not at end: a streaming handler writes SSE events long after fetch has
  * resolved. */
-class LoopbackServerResponse extends EventEmitter {
+export class LoopbackServerResponse extends EventEmitter {
   constructor(streamController, onHeaders, onDestroy) {
     super();
     this.statusCode = 200;
@@ -208,52 +264,86 @@ class LoopbackServerResponse extends EventEmitter {
 /** createServer([options], handler): the loopback server face. The registry
  * maps host:port → the RECORD (server + handler), so the dispatcher reaches
  * the handler without poking server internals. */
+/** Parse a listen() argument list (module level for size): the (port,
+ * host, cb) and (options, cb) spellings. */
+const parseListenArgs = (args) => {
+  const first = args[0];
+  let port = 0;
+  let host = '127.0.0.1';
+  let cb;
+  if (typeof first === 'number') {
+    port = first;
+    for (const arg of args.slice(1)) {
+      if (typeof arg === 'string') host = arg;
+      else if (typeof arg === 'function') cb = arg;
+    }
+  } else if (first && typeof first === 'object') {
+    port = first.port ?? 0;
+    host = first.host ?? host;
+    cb = args[1];
+  }
+  return { port, host, cb };
+};
+
+/** The listen face (module level for size): idempotent, EADDRINUSE-checked
+ * (AFTER the bind port resolves — an explicit port can collide with any
+ * registered listener, ephemeral or not; the inspector endpoint's port
+ * advance relies on this contract, W5-Q), registry-backed. */
+const serverListenFace = (server, registry, keyFor, takeEphemeralPort, handler, recordRef) => (...args) => {
+  const { port, host, cb } = parseListenArgs(args);
+  if (recordRef.current) return server; // this server is already listening — idempotent
+  const boundPort = port === 0 ? takeEphemeralPort() : port;
+  const occupied = registry.get(keyFor(host, boundPort));
+  if (occupied !== undefined && occupied.server !== server) {
+    const error = new Error(`listen EADDRINUSE: address already in use ${host}:${boundPort}`);
+    error.code = 'EADDRINUSE';
+    error.errno = -98;
+    error.syscall = 'listen';
+    error.address = host;
+    error.port = boundPort;
+    nextTick(() => server.emit('error', error));
+    return server;
+  }
+  recordRef.current = { server, host, port: boundPort, handler };
+  registry.set(keyFor(host, boundPort), recordRef.current);
+  server.listening = true;
+  nextTick(() => {
+    server.emit('listening');
+    if (cb) cb();
+  });
+  return server;
+};
+
 export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
   const handler = typeof optionsOrHandler === 'function' ? optionsOrHandler : maybeHandler;
   const server = new EventEmitter();
-  let record = null;
+  const recordRef = { current: null };
   server.listening = false;
-  server.listen = (...args) => {
-    const first = args[0];
-    let port = 0;
-    let host = '127.0.0.1';
-    let cb;
-    if (typeof first === 'number') {
-      port = first;
-      for (const arg of args.slice(1)) {
-        if (typeof arg === 'string') host = arg;
-        else if (typeof arg === 'function') cb = arg;
-      }
-    } else if (first && typeof first === 'object') {
-      port = first.port ?? 0;
-      host = first.host ?? host;
-      cb = args[1];
-    }
-    if (record) return server; // already listening (node throws; idempotent is safer here)
-    const boundPort = port === 0 ? nextEphemeralPort++ : port;
-    record = { server, host, port: boundPort, handler };
-    registry.set(keyFor(host, boundPort), record);
-    server.listening = true;
-    nextTick(() => {
-      server.emit('listening');
-      if (cb) cb();
-    });
-    return server;
-  };
-  server.address = () => record
-    ? { address: record.host, family: record.host.includes(':') ? 'IPv6' : 'IPv4', port: record.port }
+  // node's construction protocol: createServer(handler) registers the
+  // handler AS a 'request' listener, so the in-test swap
+  // (removeAllListeners('request') + on('request', ...)) takes effect — the
+  // web-fetch-http proxy spec's cross-origin redirect test drives exactly
+  // this face (W7-Y2). The record keeps the constructor handler as the
+  // zero-listener dispatch fallback.
+  if (typeof handler === 'function') server.on('request', handler);
+  server.listen = serverListenFace(server, registry, keyFor, () => nextEphemeralPort++, handler, recordRef);
+  server.address = () => recordRef.current
+    ? { address: recordRef.current.host, family: recordRef.current.host.includes(':') ? 'IPv6' : 'IPv4', port: recordRef.current.port }
     : null;
   server.close = (cb) => {
-    if (!record) {
+    if (!recordRef.current) {
       const error = new Error('ERR_SERVER_NOT_RUNNING');
       error.code = 'ERR_SERVER_NOT_RUNNING';
       if (cb) cb(error);
       return server;
     }
-    registry.delete(keyFor(record.host, record.port));
-    record = null;
+    registry.delete(keyFor(recordRef.current.host, recordRef.current.port));
+    recordRef.current = null;
     server.listening = false;
-    if (cb) cb(null);
+    // node's close callback carries NO argument on success (an Error only on
+    // failure); cb(null) made the otel egress afterAll's
+    // `error === undefined ? resolve() : reject(error)` reject with null.
+    if (cb) cb();
     nextTick(() => server.emit('close'));
     return server;
   };
@@ -261,146 +351,58 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
   server[Symbol.asyncDispose] = async () => { server.close(); };
   return server;
 };
-
-/** The fetch-side entry: dispatch `url` through a registered loopback server
- * when one matches; returns undefined so the caller keeps its own behavior
- * (fail-loud or gateway) for everything else. */
-export const dispatchLoopback = (input, init = {}) => {
-  let urlString;
-  try {
-    urlString = typeof input === 'string' ? input : (String(input?.url ?? input));
-  } catch {
-    return undefined;
-  }
-  let parsed;
-  try {
-    parsed = new globalThis.URL(urlString);
-  } catch {
-    return undefined;
-  }
-  if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return undefined;
-  const port = parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port);
-  const record = registry.get(keyFor(parsed.hostname, port));
-  if (!record || !record.server.listening) return undefined;
-
-  const method = String(init?.method ?? 'GET').toUpperCase();
-  const headerBag = new Map();
-  const addHeaders = (source) => {
-    if (!source) return;
-    if (typeof source.forEach === 'function') {
-      source.forEach((value, name) => headerBag.set(String(name).toLowerCase(), String(value)));
-      return;
-    }
-    for (const [name, value] of Object.entries(source)) {
-      headerBag.set(String(name).toLowerCase(), Array.isArray(value) ? value.join(', ') : String(value));
-    }
-  };
-  addHeaders(init?.headers);
-
-  const requestUrl = `${parsed.pathname}${parsed.search}`;
-  const bodyBytes = toBytes(init?.body);
-  if (init?.body !== undefined && init.body !== null && !headerBag.has('content-length')) {
-    headerBag.set('content-length', String(bodyBytes.byteLength));
-  }
-  const headers = Object.fromEntries(headerBag);
-  const signal = init?.signal;
-
-  return new Promise((resolve, reject) => {
-    let captured = null;
-    const body = new ReadableStream({
-      start: (controller) => { captured = controller; },
-    });
-    const abortError = () => {
-      const error = new (globalThis.DOMException ?? Error)('This operation was aborted');
-      error.name = 'AbortError';
-      return error;
-    };
-    let settled = false;
-    // Headers resolve the fetch (real HTTP timing); the body stream keeps
-    // living until end/destroy. See LoopbackServerResponse.#maybeHeaders.
-    const response = new LoopbackServerResponse(captured, (status, headerObject) => {
-      if (settled) return;
-      settled = true;
-      // redirect:'error' contract: a 3xx is the fetch-level TypeError, never
-      // a resolved Response (the adapter's catch classifies it as TRANSPORT).
-      if (init?.redirect === 'error' && [301, 302, 303, 307, 308].includes(status)) {
-        reject(new TypeError(`fetch: redirect for ${requestUrl} (redirect: 'error')`));
-        return;
-      }
-      resolve(new globalThis.Response(body, {
-        status,
-        statusText: response.statusMessage ?? '',
-        headers: headerObject,
-        url: urlString,
-      }));
-    }, (error) => {
-      // Destroyed before headers: real fetch rejects (the socket died).
-      if (settled) return;
-      settled = true;
-      reject(error ?? new Error('response destroyed before headers'));
-    });
-    const request = new LoopbackIncoming({ method, url: requestUrl, headers, body: globalThis.Buffer ? globalThis.Buffer.from(bodyBytes) : bodyBytes });
-    if (signal) {
-      if (signal.aborted) {
-        settled = true;
-        reject(abortError());
-        return;
-      }
-      signal.addEventListener('abort', () => {
-        try { captured.error(abortError()); } catch { /* body already closed */ }
-        response.destroy(); // server-side 'close' — the in-test server observes this
-        if (!settled) {
-          settled = true;
-          reject(abortError());
-        }
-      });
-    }
-    try {
-      const result = record.handler(request, response);
-      if (result && typeof result.catch === 'function') {
-        result.catch((error) => {
-          if (settled) return;
-          settled = true;
-          reject(error instanceof Error ? error : new Error(String(error)));
-        });
-      }
-      request.beginReplay();
-    } catch (error) {
-      if (settled) return;
-      settled = true;
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-  });
-};
+import { dispatchUpgradeRequest, createLoopbackClientRequest } from 'upstream/shims/node-http-loopback-client.js';
+import { dispatchLoopback } from 'upstream/shims/node-http-loopback-dispatch.js';
+export { dispatchUpgradeRequest };
 
 /** The node:http module face: real createServer/Server over the loopback,
  * the pure-validation faces kept verbatim, the never-reachable client faces
  * still failing loud (no socket seam — see the module header). */
+  // validateHeaderName — node's contract is the RFC 7230 TOKEN charset
+  // (lib/_http_common checkIsHttpToken: /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/);
+  // anything else throws. The old CR/LF/NUL-only check silently ACCEPTED
+  // names node rejects (a space — acp bridge's mcpServers header validation
+  // table then reached a real connection instead of its expected config
+  // error, W5-Q 2026-09-28).
+const validateHeaderName = (name) => {
+  if (typeof name !== 'string' || !name
+      || !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(name)) {
+    throw new TypeError('node:http: validateHeaderName: invalid header name');
+  }
+};
+  // validateHeaderValue — node rejects any char outside tab / visible ASCII
+  // / latin-1 high bytes (/[^\t\x20-\x7e\x80-\xff]/), so DEL and the other
+  // C0 controls are invalid here too (the old CR/LF/NUL check was looser).
+const validateHeaderValue = (name, value) => {
+  if (typeof value !== 'string' || /[^\t\x20-\x7e\x80-\xff]/.test(value)) {
+    throw new TypeError('node:http: validateHeaderValue: invalid header value');
+  }
+};
+
 export const createHttpFace = () => {
   const refuse = (name) => () => {
     throw new Error(`node:http: ${name} is not served in this runtime — no socket seam (the in-process loopback is the only served face)`);
   };
-  const validateHeaderName = (name) => {
-    if (typeof name !== 'string' || !name || /[\r\n\0]/.test(name)) {
-      throw new TypeError('node:http: validateHeaderName: invalid header name');
-    }
-  };
-  const validateHeaderValue = (name, value) => {
-    if (typeof value !== 'string' || /[\r\n\0]/.test(value)) {
-      throw new TypeError('node:http: validateHeaderValue: invalid header value');
-    }
-  };
   const createServer = (optionsOrHandler, maybeHandler) => createLoopbackServer(optionsOrHandler, maybeHandler);
   const http = {
     createServer,
-    request: refuse('request'),
+    request: createLoopbackClientRequest,
     get: refuse('get'),
     Server: class Server {
       constructor(handler) { return createLoopbackServer(handler); }
     },
     ServerResponse: LoopbackServerResponse,
     IncomingMessage: LoopbackIncoming,
-    Agent: class { constructor() { refuse('Agent')(); } },
+    Agent: class Agent {
+      // Inert agent face: real node Agents pool sockets, which do not exist
+      // here — the client request face ignores the agent entirely. OTel's
+      // httpAgentFactoryFromOptions CONSTRUCTS one at exporter build time
+      // (`new Agent({ keepAlive, lookup })`) and swallows the failure through
+      // its diag logger, which left the otel egress exports silently empty —
+      // hence constructible (options absorbed) + the destroy() face.
+      constructor(options = {}) { this.options = options; }
+      destroy(cb) { if (typeof cb === 'function') cb(); return this; }
+    },
     validateHeaderName,
     validateHeaderValue,
     MAX_HEADER_COUNT: 2000,
@@ -410,3 +412,4 @@ export const createHttpFace = () => {
   };
   return http;
 };
+export { dispatchLoopback };

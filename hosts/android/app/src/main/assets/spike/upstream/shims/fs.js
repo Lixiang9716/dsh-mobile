@@ -47,7 +47,7 @@
  * operations since the 2026-09-27 suite round — same store as the promise
  * face, see the block comment at their definitions.
  */
-import { DshBuffer, decodeUtf8, encodeUtf8 } from 'upstream/shims/buffer.js';
+import { DshBuffer, decodeUtf8, encodeUtf8, fromBase64 as fromBase64Real } from 'upstream/shims/buffer.js';
 
 export const constants = {
   F_OK: 0,
@@ -84,7 +84,7 @@ export const asFsPath = (path) => {
  * module-local state would silently fork (the seed would land in the
  * instance the vendored scan never reads). The global is the single store.
  */
-const vfs = () => {
+export const vfs = () => {
   if (typeof globalThis.__DSH_WEB_PLUGINS_VFS__ === 'undefined') {
     globalThis.__DSH_WEB_PLUGINS_VFS__ = null;
   }
@@ -175,17 +175,29 @@ const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alph
   // resolve to /upstream-tests/fixtures — the suite driver seeds the bytes
   // there before running the spec's tests (one spec per runtime, so last-
   // write-wins across specs is not a hazard).
-  '/upstream-tests/'];
-const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
+  '/upstream-tests/',
+  // The spec PACKAGE assets (W5-T): skill-badge's spec builds
+  // new URL('../assets/<name>', import.meta.url) from upstream-tests/ —
+  // /assets/<name> — and the transpiler seeds the vendored tarball's
+  // verbatim asset bytes there (the fixtures seed delivery's VFS root).
+  '/assets/',
+  // The source-introspection root (W6-V): the source-audit tests read their
+  // package's production sources — readFileSync(new URL('../src/<file>',
+  // import.meta.url)) from /upstream-tests/<stem>.spec.mjs lands at
+  // /src/<file> — and the suite driver stages the vendored tree's verbatim
+  // bytes there (upstream-suite-leg.js stageSourceIntrospectionTree; one
+  // spec per runtime, so the flat /src namespace never collides).
+  '/src/'];
+export const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
-const refuse = (name) => () => {
+export const refuse = (name) => () => {
   throw new Error(
     `node:fs.${name}: no synchronous filesystem in the spike runtime — `
     + 'this path is a desktop host capability; on mobile the same boundary is the '
     + 'gateway fs scope (see runtime/spike/upstream/README.md)');
 };
 
-const enoent = (name, path) => {
+export const enoent = (name, path) => {
   const error = new Error(`ENOENT: no such file or directory, ${name} '${path}'`);
   error.code = 'ENOENT';
   error.errno = -2;
@@ -223,14 +235,68 @@ import {
   wsSymlink,
   wsReadlinkAt,
   resolveSymlinkAt,
+  statFace,
 } from 'upstream/shims/fs-workspace.js';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
+// The fs split (the file crossed the size budget): paths/realpath machinery
+// in fs-paths.js, stat faces in fs-stat.js, the write faces + descriptor
+// table in fs-writes.js, the write stream in fs-write-stream.js, readdir in
+// fs-readdir.js. Every public face is re-exported here, so both the bare
+// 'node:fs' map row and every bundle-path import keep their specifier; the
+// siblings' references back into this module are call-time only (ESM-cycle
+// safe), like the fs-workspace split before it.
+import { resolveWorkspaceSymlink, realpathCallback } from 'upstream/shims/fs-paths.js';
+import { createWriteStream, createReadStream } from 'upstream/shims/fs-write-stream.js';
+import { statSync, lstatSync, accessSync, existsSync, realpathSync } from 'upstream/shims/fs-stat.js';
+import {
+  writeFileSync, mkdirSync, rmSync, mkdtempSync, chmodSync, utimesSync,
+  symlinkSync, readlinkSync, openSync, writeSync, readSync, closeSync,
+  copyFileSync, renameSync, cpSync, unlinkSync, rmdirSync,
+} from 'upstream/shims/fs-writes.js';
+import { readdirSync } from 'upstream/shims/fs-readdir.js';
+// LAZY on purpose: this module is reachable under TWO names (the bare
+// 'node:fs' map row and the bundle path the split siblings import). Under
+// the bare entry the sibling cycle can still be mid-evaluation when this
+// body runs — a direct initialization would read realpathCallback in its
+// temporal dead zone (measured: 'realpathCallback is not initialized' at
+// boot). Call-time resolution keeps the cycle safe; the arrow preserves the
+// call signature (realpath(path, callback)).
+// A function DECLARATION (not a const arrow): hoisted bindings initialize
+// at module instantiation, so this stays safe under the bare/bundle dual
+// instance even when the sibling cycle is still mid-evaluation (a const
+// initializer read realpathCallback in its dead zone — measured at boot).
+// realpathCallback carries `.native` (= itself, set in fs-paths.js); the
+// closure promisifies realpath.native at module load (fs-local), and specs
+// reassign it (chokidar's realpath.native = realpath) — both faces ride
+// through the accessor (defineProperty, not Object.assign: assign would
+// RUN the source's getter).
+export function realpath(path, callback) { return realpathCallback(path, callback); }
+Object.defineProperty(realpath, 'native', {
+  get() { return realpathCallback.native ?? realpath; },
+  set(v) { realpathCallback.native = v; },
+  configurable: true,
+});
+export {
+  createWriteStream, createReadStream,
+  statSync, lstatSync, accessSync, existsSync, realpathSync,
+  writeFileSync, mkdirSync, rmSync, mkdtempSync, chmodSync, utimesSync,
+  symlinkSync, readlinkSync, openSync, writeSync, readSync, closeSync,
+  copyFileSync, renameSync, cpSync, unlinkSync, rmdirSync,
+  readdirSync,
+};
+import { EventEmitter } from 'upstream/shims/events.js';
+// fs.js has no ambient timers import; the loopback's local nextTick shape
+// (a 0-delay arm, or the microtask before the gateway timer globals exist).
+export const nextTick = (fn) => {
+  if (typeof globalThis.setTimeout === 'function') setTimeout(fn, 0);
+  else Promise.resolve().then(fn);
+};
 export { mountWorkspace };
 
 /** Read bytes: workspace file, or the seeded read-only view. A workspace
  * symlink resolves ONE hop before the lookup (a dangling link ENOENTs).
  * Throws ENOENT outside both views. */
-const readAnyBytes = (path) => {
+export const readAnyBytes = (path) => {
   const resolved = resolveWorkspaceSymlink(path);
   const file = wsFileAt(resolved);
   if (file !== undefined) {
@@ -272,157 +338,43 @@ const readAnyBytes = (path) => {
 /** One-hop symlink resolution for workspace paths (identity elsewhere);
  * resolveSymlinkAt joins relative targets against the link's directory and
  * returns undefined for non-symlinks. The seeded views have no symlinks. */
-const resolveWorkspaceSymlink = (path) => {
-  if (typeof path !== 'string' || !path.startsWith('/')) return path;
-  const canonical = lexical(path);
-  // Resolve the DEEPEST symlinked ancestor chain: '/a/link/b' with a link at
-  // '/a/link' reads through the target (node resolves every symlinked path
-  // prefix, one hop per link here — the store's model). A full-path link is
-  // the special case where the walk resolves the last segment. Measured
-  // 2026-09-27: skill-filesystem publishes whole-directory symlinked skills
-  // (SKILL.md read through the linked directory).
-  const state = workspace();
-  if (state !== null && state.symlinks.size > 0) {
-    let resolved = '';
-    let hit = false;
-    for (const seg of canonical.split('/')) {
-      if (seg === '') continue;
-      const candidate = `${resolved}/${seg}`;
-      const target = state.symlinks.get(candidate);
-      if (target !== undefined) {
-        hit = true;
-        resolved = target.startsWith('/')
-          ? lexical(target)
-          : lexical(`${resolved}/${target}`);
-      } else {
-        resolved = candidate;
-      }
-    }
-    if (hit && resolved !== canonical) return resolved;
+/** The readFileSync encoding gate + result shaping (module level for size):
+ * one gate, one bytes→result arm shared by every read face above. */
+const assertReadEncoding = (encoding) => {
+  if (typeof encoding === 'string'
+      && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
+    throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
   }
-  return resolveSymlinkAt(canonical) ?? canonical;
 };
-const workspaceSymlinkTarget = (path) => {
+
+const decodeReadBytes = (bytes, encoding) => {
+  if (encoding === undefined || encoding === null || encoding === 'buffer') {
+    return DshBuffer.fromBytes(bytes);
+  }
+  return decodeUtf8(bytes);
+};
+
+/** The real-disk read fallback (module level for size). Real-disk fallback
+ * (W6-U, 2026-09-28) — the read twin of statSync's fallback: REAL children
+ * (the subprocess seam) write files the parent's VFS cannot see, and the
+ * flat transpiled specs re-derive vendored-tree paths no VFS face stages.
+ * VFS-first precedence is preserved: callers run this only after every
+ * workspace/seeded face missed, and only for absolute paths that stat as
+ * REAL files. The flat-path map (spec→vendored origin) is consulted first so
+ * bundle-relative-derived paths re-root there. Read-as-existence:
+ * __dshProcStatReal declines INTERMEDIATE-symlink paths (measured W6-V:
+ * '<skills>/linked-dir/SKILL.md' through a real dir symlink — stat null,
+ * read serves the bytes), so the read intrinsic itself is the existence
+ * check here; a null b64 answer falls through to the caller's error arms. */
+const readRealBytes = (path, encoding) => {
   if (typeof path !== 'string' || !path.startsWith('/')) return undefined;
-  return wsReadlinkAt(lexical(path));
-};
-
-const outsideEveryView = (path) => {
-  const error = new Error(
-    `node:fs: path '${path}' is outside the writable workspace root and every staged read-only view `
-    + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `
-    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)`);
-  error.code = 'EACCES';
-  error.path = path;
-  return error;
-};
-
-/** The canonical spelling of an existing staged/workspace path; ENOENT
- * otherwise. Workspace paths resolve ONE symlink hop first (the realpath
- * contract; the seeded views carry no symlinks) — which is what the vendored
- * fs-local uses as its stable target key. */
-const vfsRealpath = (path) => {
-  if (typeof path !== 'string') throw new TypeError(`node:fs.realpath: path must be a string, got ${typeof path}`);
-  const canonical = path.startsWith('/') ? lexical(path) : path;
-  // One hop of symlink resolution (undefined for non-symlinks = identity).
-  const resolved = resolveWorkspaceSymlink(canonical);
-  const target = resolved === canonical ? canonical : (wsFileAt(resolved) !== undefined || wsIsDirAt(resolved)) ? resolved : canonical;
-  const file = wsFileAt(target);
-  if (file !== undefined) return target;
-  if (wsIsDirAt(target)) return target;
-  const files = vfs();
-  if (files !== null) {
-    if (files.has(canonical)) return canonical;
-    const prefix = canonical.endsWith('/') ? canonical : `${canonical}/`;
-    if (underVFS(prefix)) {
-      for (const key of files.keys()) {
-        if (key.startsWith(prefix)) return canonical;
-      }
-    }
-  }
-  if (!underVFS(canonical) && wsAt(canonical) === null) {
-    throw outsideEveryView(canonical);
-  }
-  throw enoent('realpath', canonical);
-};
-
-const realpathCallback = (path, callback) => {
-  if (typeof callback !== 'function') {
-    throw new TypeError('node:fs.realpath: a callback is required (the spike serves the callback face; promise users go through fs/promises)');
-  }
-  try {
-    callback(null, vfsRealpath(path));
-  } catch (error) {
-    callback(error);
-  }
-};
-realpathCallback.native = realpathCallback;
-
-/** createReadStream — the async-iterable face fs-local iterates (`for await
- * (const chunk of stream)`). Bytes are yielded as DshBuffer chunks in file
- * order; `start`/`end` are the node INCLUSIVE byte window; aborting the
- * signal stops the iteration with an AbortError-shaped throw. */
-export const createReadStream = (path, options = {}) => {
-  const start = typeof options.start === 'number' ? options.start : 0;
-  const end = typeof options.end === 'number' ? options.end : Number.MAX_SAFE_INTEGER;
-  const CHUNK = 64 * 1024;
-  const iterate = async function* () {
-    const bytes = readAnyBytes(path);
-    const last = Math.min(end, bytes.length - 1);
-    for (let at = start; at <= last; at += CHUNK) {
-      if (options.signal?.aborted) {
-        const error = new Error('read aborted');
-        error.name = 'AbortError';
-        throw error;
-      }
-      yield DshBuffer.fromBytes(bytes.subarray(at, Math.min(at + CHUNK, last + 1)));
-    }
-  };
-  const iterator = iterate();
-  return {
-    [Symbol.asyncIterator]: () => iterator,
-    // The Readable cleanup face the closure's finally blocks call
-    // (attachment-local's readFileStreamVerbatim destroys the stream after
-    // the drain; a missing member surfaced as 'not a function', R3-G1
-    // 2026-09-28). The generator holds no OS resource — cleanup is a no-op.
-    destroy: () => {},
-    close: async () => {},
-  };
-};
-
-/** Answer one `node_modules/<pkg>/package.json` existence question through
- * the loader's OWN bare-specifier map (__dshBundleRequire — the node:module
- * seam). Consumer: the vendored agent-presets packageInstalled walk, which
- * probes `<dir>/node_modules/<pkg>/package.json` up the directory chain to
- * decide whether a composition row's package name is installed. There is no
- * node_modules in the staged closure — the packages live in the vendored
- * probe families — so the honest answer is the loader's: the name resolves
- * iff the vendored closure serves it. Unmapped names fail the probe and read
- * as absent (a composition row naming a package the deployment does not
- * carry stays `broken`, which is the contract). */
-const nodeModulesProbe = (path) => {
-  const match = typeof path === 'string'
-    ? path.match(/\/node_modules\/(@[^/]+\/[^/]+|[^@/][^/]*)\/package\.json$/) : null;
-  if (match === null) return false;
-  const probe = globalThis.__dshBundleRequire;
-  if (typeof probe !== 'function') return false;
-  try {
-    probe.call(globalThis, match[1], '../package.json');
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const existsSync = (rawPath) => {
-  const path = asFsPath(rawPath);
-  const files = vfs();
-  if (files !== null && underVFS(path)) return files.has(path);
-  if (workspaceSymlinkTarget(path) !== undefined) return true;
-  if (wsFileAt(path) !== undefined) return true;
-  if (wsIsDirAt(path)) return true;
-  if (nodeModulesProbe(path)) return true;
-  return false;
+  const map = globalThis.__dshFlatPathMap;
+  const mapped = typeof map === 'function' ? map(path) : undefined;
+  const realPath = typeof mapped === 'string' ? mapped : path;
+  const b64 = globalThis.__dshProcReadReal?.(realPath);
+  if (b64 === undefined || b64 === null) return undefined;
+  assertReadEncoding(encoding);
+  return decodeReadBytes(fromBase64Real(b64), encoding);
 };
 
 export const readFileSync = (rawPath, encoding) => {
@@ -447,423 +399,32 @@ export const readFileSync = (rawPath, encoding) => {
       error.path = canonical;
       throw error;
     }
-    if (typeof encoding === 'string'
-        && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
-      throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
-    }
-    if (encoding === undefined || encoding === null || encoding === 'buffer') {
-      return DshBuffer.fromBytes(file.bytes);
-    }
-    return decodeUtf8(file.bytes);
+    assertReadEncoding(encoding);
+    return decodeReadBytes(file.bytes, encoding);
   }
   const files = vfs();
   if (files !== null && underVFS(path)) {
     const seeded = files.get(path);
     if (seeded === undefined) throw enoent('open', path);
-    if (typeof encoding === 'string'
-        && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
-      throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
-    }
-    if (encoding === undefined || encoding === null || encoding === 'buffer') {
-      return DshBuffer.fromBytes(seeded.bytes);
-    }
-    return decodeUtf8(seeded.bytes);
+    assertReadEncoding(encoding);
+    return decodeReadBytes(seeded.bytes, encoding);
   }
-  if (wsAt(canonical) !== null) throw enoent('open', workspacePath);
+  // Inside the workspace root a miss is node-ENOENT — but only AFTER the
+  // real-disk twin declines: the leg stages real fixture trees UNDER the
+  // pinned profile root (the workspace root since W6-U's root pin), so the
+  // old pre-real ENOENT hid every staged real file from sync reads (W6-V:
+  // typert analyzer's tsconfig reads — stat saw the file, read ENOENT'd).
+  const insideWorkspace = wsAt(canonical) !== null;
+  const real = readRealBytes(path, encoding);
+  if (real !== undefined) return real;
+  if (insideWorkspace) throw enoent('open', workspacePath);
   return refuse('readFileSync')();
 };
 
-export const statSync = (path, options = {}) => {
-  const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
-  const bigint = options.bigint === true;
-  // The workspace ROOT'S ANCESTORS ('/', '/tmp', ...) sit above the pinned
-  // profile container: a real host answers their stat as owned directories,
-  // so the protected-ancestor walks (spill sweep, atomic-write staging)
-  // climb out of the root without ENOENT. Owned single-user dir: uid/gid 0,
-  // 0755 (group/other write-free — trusted to the POSIX safety checks).
-  const root = globalThis.__DSH_WORKSPACE_FS__?.root;
-  if (typeof root === 'string' && canonical !== root && root.startsWith(`${canonical === '/' ? '' : canonical}/`)) {
-    const mk = (m) => ({
-      isFile: () => false,
-      isDirectory: () => true,
-      isSymbolicLink: () => false,
-      size: bigint ? 0n : 0,
-      dev: 1,
-      ino: 0,
-      mode: m,
-      uid: 0,
-      gid: 0,
-      mtimeMs: 0,
-      ...(bigint ? { dev: 1n, ino: 0n, mode: BigInt(m), mtimeNs: 0n, ctimeNs: 0n } : {}),
-    });
-    return mk(0o100755 & 0o777);
-  }
-  // stat FOLLOWS symlinks (one hop here); lstat does not.
-  const followed = resolveWorkspaceSymlink(canonical);
-  const shape = wsStatAt(followed, bigint);
-  if (shape !== null) return shape;
-  const files = vfs();
-  if (files !== null && underVFS(path)) {
-    const seeded = files.get(path);
-    if (seeded !== undefined) {
-      return {
-        isFile: () => true,
-        isDirectory: () => false,
-        isSymbolicLink: () => false,
-        size: bigint ? BigInt(seeded.bytes.length) : seeded.bytes.length,
-        mode: 0o644,
-        uid: 0,
-        gid: 0,
-        mtimeMs: seeded.mtimeMs,
-        ...(bigint ? {
-          dev: 1n,
-          ino: 0n,
-          mode: 0o100644n & 0o777n,
-          mtimeNs: BigInt(Math.round(seeded.mtimeMs)) * 1000000n,
-          ctimeNs: BigInt(Math.round(seeded.mtimeMs)) * 1000000n,
-        } : {}),
-      };
-    }
-    const names = vfsReaddir(path);
-    if (names !== null) {
-      return {
-        isFile: () => false,
-        isDirectory: () => true,
-        isSymbolicLink: () => false,
-        size: bigint ? 0n : 0,
-        mode: DIR_MODE,
-        mtimeMs: 0,
-        ...(bigint ? { dev: 1n, ino: 0n, mode: BigInt(DIR_MODE), mtimeNs: 0n, ctimeNs: 0n } : {}),
-      };
-    }
-    throw enoent('stat', path);
-  }
-  // A missing file INSIDE the pinned workspace is an ordinary ENOENT (the
-  // vendored fs-local classifies absence by `error.code`), not a seam
-  // refusal. The same in-world answer covers paths OUTSIDE every staged
-  // view: this runtime's world is the workspace plus the seeded views, and
-  // anything else does not exist IN it (R3-G1, 2026-09-28 — fs-sandbox's
-  // containment walk stats candidate roots that were never staged and
-  // classifies the ENOENT itself; the loud refusal broke that classification).
-  if (wsAt(canonical) !== null) throw enoent('stat', canonical);
-  throw enoent('stat', typeof path === 'string' ? path : String(path));
-};
+/** The seeded-VFS stat arm (module level for size): a seeded FILE answers
+ * with its bytes' size; a seeded DIRECTORY (a VFS prefix) answers DIR_MODE.
+ * A seeded-path miss is node-ENOENT. */
 
-export const lstatSync = (path, options = {}) => {
-  const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
-  // The one lstat-vs-stat delta: a symlink entry reports itself (node: the
-  // stat fields of the link itself are a stub beyond isSymbolicLink, which
-  // is the only member the closure's walks consult).
-  if (workspaceSymlinkTarget(canonical) !== undefined) {
-    const bigint = options.bigint === true;
-    return {
-      isFile: () => false,
-      isDirectory: () => false,
-      isSymbolicLink: () => true,
-      size: bigint ? 0n : 0,
-      mode: 0o777,
-      mtimeMs: 0,
-      ...(bigint ? { dev: 1n, ino: 0n, mode: 0o120777n & 0o777n, mtimeNs: 0n, ctimeNs: 0n } : {}),
-    };
-  }
-  return statSync(path, options);
-};
-
-/** accessSync(path, mode) — REAL over the staged views (upgraded 2026-09-28
- * from the loud refusal): existence plus the requested permission bits over
- * the workspace file/directory modes (the same tracked modes chmodSync
- * writes and statSync reads). Consumers: dsh-sandbox root checks and the
- * directory-picker auto-probe's canExecute (chmod 0o755 → X_OK true, absent
- * → ENOENT false). Directory W_OK/X_OK answer true — the workspace is the
- * one writable, traversable root. Outside every staged view: ENOENT (the
- * in-world does-not-exist answer, matching the statSync note below). */
-export const accessSync = (path, mode = constants.F_OK) => {
-  const requested = Number(mode) || 0;
-  let shape;
-  try {
-    shape = statSync(path);
-  } catch (error) {
-    throw error; // ENOENT (or the NUL TypeError) propagates, like node
-  }
-  if ((requested & constants.R_OK) !== 0 && typeof shape.mode === 'number' && (shape.mode & 0o444) === 0 && shape.isFile()) {
-    const error = new Error(`EACCES: permission denied, access '${path}'`);
-    error.code = 'EACCES';
-    error.errno = -13;
-    error.syscall = 'access';
-    error.path = path;
-    throw error;
-  }
-  if ((requested & constants.W_OK) !== 0 && typeof shape.mode === 'number' && (shape.mode & 0o222) === 0 && shape.isFile()) {
-    const error = new Error(`EACCES: permission denied, access '${path}'`);
-    error.code = 'EACCES';
-    error.errno = -13;
-    error.syscall = 'access';
-    error.path = path;
-    throw error;
-  }
-  if ((requested & constants.X_OK) !== 0 && shape.isFile() && typeof shape.mode === 'number' && (shape.mode & 0o111) === 0) {
-    const error = new Error(`EACCES: permission denied, access '${path}'`);
-    error.code = 'EACCES';
-    error.errno = -13;
-    error.syscall = 'access';
-    error.path = path;
-    throw error;
-  }
-  return undefined;
-};
-/** realpathSync(.native) — REAL over the staged views (upgraded 2026-09-27
- * from the loud refusal): the vendored dsh-sandbox canonicalizes root paths
- * with realpathSync.native, and the staged workspace CAN canonicalize — the
- * seeded keys are already canonical (identity), workspace paths resolve one
- * symlink hop lexically, and a missing in-view path is an ENOENT the caller
- * classifies (canonicalPath falls back to the input spelling). Outside every
- * staged view stays the loud refusal naming the seam. */
-const realpathSyncImpl = (path) => vfsRealpath(path);
-export const realpathSync = Object.assign(realpathSyncImpl, {
-  native: realpathSyncImpl,
-});
-// The file-watch surface, linked by @deepseek-ai/dsh-skill-filesystem
-// (`import { unwatchFile, watchFile } from "node:fs"`). Binding-only stubs:
-// they are reached only from its watcher manager, and the mobile profile
-// mounts that package with watch:false — the runtime has no fs-event seam
-// (the same staged gap as the timers). A call here means a watch:true mount
-// slipped through, so it fails loud naming the package's own remedy.
-export const watchFile = refuse('watchFile');
-export const unwatchFile = refuse('unwatchFile');
-export const realpath = realpathCallback;
-
-/* ---- the synchronous workspace writes + fd face (2026-09-27) ------------
- * The old wall ("sync writes refuse; the promise face owns writes") came
- * down when the suite's sync-write consumers (spill-local staging, the
- * subprocess-local spill collector, the settings/spill chmod+utimes aging)
- * linked against these names and then CALLED them: the store is the same
- * workspace VFS the promise face serves, so the sync twins are real
- * operations over it — one store, two spellings. Anything outside the
- * writable workspace root still refuses exactly as before. */
-
-export const writeFileSync = (path, data, options) => {
-  const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
-  if (!(bytes instanceof Uint8Array)) {
-    throw new TypeError(`node:fs.writeFileSync: data must be a string or Uint8Array, got ${typeof data}`);
-  }
-  if (typeof options === 'object' && options !== null && options.flag !== undefined
-      && typeof options.flag === 'string' && options.flag.includes('x')
-      && existsSync(path)) {
-    throw wsEexist('open', path);
-  }
-  const mode = typeof options === 'object' && options !== null ? options.mode : undefined;
-  return wsWriteFile(path, bytes, mode);
-};
-
-export const mkdirSync = (path, options) => {
-  if (options === true || options?.recursive === true) {
-    return wsMkdir(path, { recursive: true });
-  }
-  return wsMkdir(path, {});
-};
-
-export const rmSync = (path, options = {}) => {
-  return wsRm(path, options);
-};
-
-/** mkdtemp — node's unique-suffix temp dir over the workspace (the same
- * monotonic-counter uniqueness the promise face uses; the spill/staging
- * callers derive paths from os.tmpdir(), which the suite leg pins to the
- * workspace root). */
-let mkdtempSyncCounter = 0;
-export const mkdtempSync = (prefix) => {
-  if (typeof prefix !== 'string' || prefix.length === 0) {
-    throw new TypeError('node:fs.mkdtempSync: prefix must be a non-empty string');
-  }
-  const path = `${prefix}${Date.now().toString(36)}-${(mkdtempSyncCounter += 1).toString(36)}`;
-  wsMkdir(path, {});
-  return path;
-};
-
-export const chmodSync = (path, mode) => wsChmod(path, mode);
-
-/** utimes(path, atime, mtime) — seconds (floats) like node; the mtime is
- * what the sweep/spill aging reads back through stat. */
-export const utimesSync = (path, atime, mtime) => wsUtimes(path, atime, mtime);
-
-/** symlink(target, path) — a stored raw target, resolved one hop by the
- * readers (stat/read); readlink returns it verbatim. Replaces the old loud
- * stub: the workspace CAN express a path alias (fs-workspace symlinks map),
- * so the honest operation is the real one. */
-export const symlinkSync = (target, path) => wsSymlink(target, path);
-
-export const readlinkSync = (path) => {
-  const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
-  const target = workspaceSymlinkTarget(canonical);
-  if (target === undefined) {
-    if (existsSync(canonical)) {
-      const error = new Error(`EINVAL: invalid argument, readlink '${canonical}'`);
-      error.code = 'EINVAL';
-      error.syscall = 'readlink';
-      error.path = canonical;
-      throw error;
-    }
-    throw enoent('readlink', canonical);
-  }
-  return target;
-};
-
-/* The descriptor face: subprocess-local's output collector opens its spill
- * file, writes chunks, closes (openSync/writeSync/closeSync). The VFS has
- * no real fds — a monotonic descriptor over a {path, append, cursor} record
- * on the GLOBAL (the multi-instance rule: module state would fork). */
-const fdTable = () => {
-  if (typeof globalThis.__DSH_FS_FDS__ === 'undefined') globalThis.__DSH_FS_FDS__ = new Map();
-  return globalThis.__DSH_FS_FDS__;
-};
-let nextFdSync = 16;
-
-const ebadf = (call, fd) => {
-  const error = new Error(`EBADF: bad file descriptor, ${call} ${fd}`);
-  error.code = 'EBADF';
-  error.errno = -9;
-  error.syscall = call;
-  return error;
-};
-
-export const openSync = (path, flags = 'r', mode) => {
-  const flag = typeof flags === 'string' ? flags : 'r';
-  const exists = existsSync(path);
-  if (flag === 'r' || flag === 'r+') {
-    if (!exists) throw enoent('open', path);
-  } else if (flag === 'w' || flag === 'wx' || flag === 'ax' || flag === 'a' || flag.includes('x')) {
-    if (flag.includes('x') && exists) throw wsEexist('open', path);
-    if (!exists || flag === 'w' || flag === 'wx') wsWriteFile(path, new Uint8Array(0), mode);
-  } else {
-    throw new Error(`node:fs.openSync: flag '${flag}' — supported: r, r+, w, wx, a, ax (the closure's sync faces)`);
-  }
-  const fd = nextFdSync++;
-  fdTable().set(fd, {
-    path,
-    append: flag === 'a' || flag === 'ax',
-    cursor: 0,
-  });
-  return fd;
-};
-
-export const writeSync = (fd, data, ...rest) => {
-  const record = fdTable().get(fd);
-  if (record === undefined) throw ebadf('write', fd);
-  const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
-  if (!(bytes instanceof Uint8Array)) {
-    throw new TypeError(`node:fs.writeSync: data must be a string or Uint8Array, got ${typeof data}`);
-  }
-  const current = (() => {
-    try {
-      return readAnyBytes(record.path);
-    } catch {
-      return DshBuffer.fromBytes(new Uint8Array(0));
-    }
-  })();
-  // An append descriptor always lands at EOF; the rest honor the cursor
-  // (or the explicit position argument, node's 4th form — unused here).
-  const at = record.append ? current.length : Math.min(record.cursor, current.length);
-  const merged = new Uint8Array(Math.max(current.length, at + bytes.length));
-  merged.set(current, 0);
-  merged.set(bytes, at);
-  wsWriteFile(record.path, merged, undefined);
-  if (!record.append) record.cursor = at + bytes.length;
-  return bytes.length;
-};
-
-export const readSync = (fd, buffer, offset = 0, length = buffer.byteLength - offset, position = null) => {
-  const record = fdTable().get(fd);
-  if (record === undefined) throw ebadf('read', fd);
-  if (!(buffer instanceof Uint8Array)) {
-    throw new TypeError(`node:fs.readSync: buffer must be a Uint8Array, got ${typeof buffer}`);
-  }
-  const whole = readAnyBytes(record.path);
-  // position null = the descriptor cursor (node semantics); an explicit
-  // position reads there and leaves the cursor alone.
-  const at = position === null || position === undefined
-    ? Math.min(record.cursor, whole.length)
-    : position;
-  const count = Math.max(0, Math.min(length, whole.length - at));
-  if (count > 0) buffer.set(whole.subarray(at, at + count), offset);
-  if (position === null || position === undefined) record.cursor = at + count;
-  return count;
-};
-
-export const closeSync = (fd) => {
-  if (!fdTable().delete(fd)) throw ebadf('close', fd);
-};
-
-/** copyFile(src, dest) — bytes of src written to dest (COPYFILE_EXCL in
- * flags makes an existing dest an EEXIST, node's one flag). The workspace
- * store is the same one the promise face serves. */
-export const copyFileSync = (src, dest, flags = 0) => {
-  const bytes = readAnyBytes(typeof src === 'string' ? lexical(src) : src);
-  if ((flags & constants.COPYFILE_EXCL) !== 0 && existsSync(dest)) {
-    throw wsEexist('copyfile', dest);
-  }
-  wsWriteFile(dest, bytes, undefined);
-  return undefined;
-};
-
-/** renameSync — the workspace rename (files and directory subtrees; the
- * same store the promise face's rename serves). */
-export const renameSync = (from, to) => wsRename(from, to);
-
-/** cpSync(src, dest[, options]) — the SYNC face of the promise shim's cp
- * (node:fs/promises.cp, wave 1): a real recursive copy between the seeded
- * read-only views and the writable workspace. Options follow node:
- * `recursive` walks directories (without it a directory source throws
- * EISDIR); `force:false` refuses an occupied destination with EEXIST
- * (node's spelling); `dereference` rides statSync/readFileSync's one-hop
- * symlink resolution exactly as the promise face's does. The walk is
- * naturally synchronous — the promise face wraps the same semantics in
- * async — so the two faces stay one contract. Demanded at link time by the
- * subagent-codex real-product spec. */
-const cpSyncEntry = (from, to, options) => {
-  const info = statSync(from);
-  if (info.isDirectory()) {
-    if (options?.recursive !== true) {
-      const error = new Error(`EISDIR: illegal operation on a directory, cp '${from}' -> '${to}'`);
-      error.code = 'EISDIR';
-      error.syscall = 'cp';
-      error.path = from;
-      throw error;
-    }
-    const destInfo = existsSync(to) ? statSync(to) : null;
-    if (destInfo !== null && !destInfo.isDirectory()) throw wsEexist('cp', to);
-    if (destInfo === null) wsMkdir(to, { recursive: true });
-    const prefix = from.endsWith('/') ? from : `${from}/`;
-    for (const name of readdirSync(from)) {
-      cpSyncEntry(`${prefix}${name}`, `${to}/${name}`, options);
-    }
-    return;
-  }
-  if (existsSync(to) && options?.force !== true) throw wsEexist('cp', to);
-  wsWriteFile(to, readFileSync(from), info.mode & 0o777);
-};
-export const cpSync = (source, destination, options) => {
-  cpSyncEntry(source, destination, options ?? {});
-};
-
-/** unlink: files and symlink entries only (node unlinks a directory with
- * EPERM); rmdir: the ENOTEMPTY-enforcing removal (wsRm non-recursive). */
-export const unlinkSync = (path) => {
-  const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
-  if (workspaceSymlinkTarget(canonical) !== undefined) {
-    workspace().symlinks.delete(canonical);
-    return;
-  }
-  if (wsIsDirAt(canonical) && !wsFileAt(canonical)) {
-    const error = new Error(`EPERM: operation not permitted, unlink '${canonical}'`);
-    error.code = 'EPERM';
-    error.syscall = 'unlink';
-    error.path = canonical;
-    throw error;
-  }
-  wsRm(canonical, { force: false });
-};
-
-export const rmdirSync = (path) => wsRm(path, {});
 export {
   // The writable-workspace internals the node:fs/promises shim is built on.
   mountWorkspace as _mountWorkspace,
@@ -882,39 +443,6 @@ export {
 
 /** Directory names derivable from the seeded file keys: one level, sorted —
  * the same contract readdir(3) has and the presets walk expects. */
-const vfsReaddir = (path) => {
-  const files = vfs();
-  if (files === null) return null;
-  const prefix = path.endsWith('/') ? path : `${path}/`;
-  if (!underVFS(prefix)) return null;
-  const names = new Set();
-  for (const key of files.keys()) {
-    if (!key.startsWith(prefix)) continue;
-    const rest = key.slice(prefix.length);
-    const slash = rest.indexOf('/');
-    names.add(slash === -1 ? rest : rest.slice(0, slash));
-  }
-  return names.size > 0 ? [...names].sort() : null;
-};
-
-export const readdirSync = (path) => {
-  const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
-  // A symlinked directory entry reads through the link (node follows the hop
-  // for readdir; measured 2026-09-27: the skill-filesystem suite publishes
-  // skills linked as whole directories).
-  const wsNames = wsReaddirAt(resolveWorkspaceSymlink(canonical));
-  if (wsNames !== null) return wsNames;
-  const names = vfsReaddir(path);
-  if (names !== null) return names;
-  if (wsAt(canonical) !== null) {
-    // node's readdir spells a FILE target ENOTDIR (the storage-json lazy
-    // loadAll propagates non-ENOENT failures; ENOENT means "no unit yet").
-    if (wsFileAt(canonical) !== undefined) throw wsEnotdir('readdir', canonical);
-    throw enoent('readdir', canonical);
-  }
-  return refuse('readdirSync')();
-};
-
 export default {
   constants,
   WEB_PLUGINS_ROOT,
@@ -922,6 +450,7 @@ export default {
   mergeWebPlugins,
   mountWorkspace,
   createReadStream,
+  createWriteStream,
   existsSync,
   readFileSync,
   statSync,

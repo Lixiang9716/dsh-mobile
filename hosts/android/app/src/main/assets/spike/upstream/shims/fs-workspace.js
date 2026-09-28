@@ -102,7 +102,7 @@ const lexical = (path) => {
  * failing the root gate. Guarded: only when the workspace root is the
  * profile container (the suite driver's mount spelling) and only the exact
  * '/tmp' or '/tmp/' prefix maps (never '/tmpfoo'). */
-const systemTmp = (path) => {
+export const systemTmp = (path) => {
   if (typeof path !== 'string' || !path.startsWith('/tmp')) return path;
   const profileCwd = globalThis.__dshProfileCwd;
   if (typeof profileCwd !== 'string' || profileCwd.length <= 1) return path;
@@ -181,7 +181,7 @@ export const wsWatch = (path, notify) => {
   return () => watchRegistry.delete(entry);
 };
 
-const notifyWatches = (path) => {
+export const notifyWatches = (path) => {
   if (watchRegistry.size === 0) return;
   for (const entry of [...watchRegistry]) {
     if (entry.path !== path) continue;
@@ -223,6 +223,20 @@ const wsIsDirAt = (path) => {
 
 const DIR_MODE = 0o40755 & 0o777;
 
+/** Build one stat/dirent-shaped object: the classifier methods live on a
+ * PER-CALL PROTOTYPE (node puts Stats/Dirent methods on the class
+ * prototype), so the object's OWN keys are data only. This is load-bearing
+ * for the worker-threads structured clone (W4-N): node's clone serializes
+ * own properties, and the vendored migration verifier posts a stat
+ * `identity` back from the worker — own-function members would throw the
+ * clone while node's real face never could. */
+const statFace = (kind, data) => (
+  Object.assign(Object.create({
+    isFile: () => kind === 'file',
+    isDirectory: () => kind === 'dir',
+    isSymbolicLink: () => kind === 'symlink',
+  }), data));
+
 /** Stat shape for one workspace path; null when absent. `bigint` asks for the
  * node bigint face (dev/ino/mode/mtimeNs/ctimeNs as BigInt — what the
  * vendored fs-local probes with `{bigint: true}`). */
@@ -231,10 +245,7 @@ const wsStatAt = (path, bigint) => {
   if (at === null) return null;
   const file = at.state.files.get(at.path);
   if (file !== undefined) {
-    return {
-      isFile: () => true,
-      isDirectory: () => false,
-      isSymbolicLink: () => false,
+    return statFace('file', {
       size: bigint ? BigInt(file.bytes.length) : file.bytes.length,
       // The number face carries the permission bits too (the spill/aging
       // walks stat().mode and compare against the 0700/0644 constants), and
@@ -254,16 +265,13 @@ const wsStatAt = (path, bigint) => {
         mtimeNs: file.mtimeNs,
         ctimeNs: file.ctimeNs,
       } : {}),
-    };
+    });
   }
   if (!wsIsDirAt(path)) return null;
   const dirIno = at.state.dirIno.get(at.path) ?? 0;
   // The tracked chmod (see dirModes in mountWorkspace), else the default.
   const dirMode = at.state.dirModes?.get(at.path) ?? DIR_MODE;
-  return {
-    isFile: () => false,
-    isDirectory: () => true,
-    isSymbolicLink: () => false,
+  return statFace('dir', {
     size: bigint ? 0n : 0,
     dev: 1,
     ino: dirIno,
@@ -278,7 +286,7 @@ const wsStatAt = (path, bigint) => {
       mtimeNs: 0n,
       ctimeNs: 0n,
     } : {}),
-  };
+  });
 };
 
 /** One level of workspace directory names, sorted; null when the path is not
@@ -338,338 +346,6 @@ const wsEnotdir = (call, path) => {
  * credentials contract creates its document directory owner-only (0o700) and
  * the review-fixes spec stats it back (R3-G1, 2026-09-28). Returns the first
  * directory created, or undefined. */
-const wsMkdir = (path, options = {}) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.mkdir: path outside the writable workspace root: ${path}`);
-  }
-  const { state, path: canonical } = at;
-  if (state.files.has(canonical)) {
-    if (options.recursive === true) return undefined;
-    throw wsEexist('mkdir', canonical);
-  }
-  if (options.recursive !== true && (state.dirs.has(canonical) || wsIsDirAt(canonical))) {
-    throw wsEexist('mkdir', canonical);
-  }
-  // node: WITHOUT recursive, mkdir creates exactly ONE segment and the
-  // PARENT must already exist (missing parent = ENOENT — the browse picker's
-  // createDirectory maps that to directory-create-failed; the VFS's implied
-  // parents made it silently succeed, R3-G1 2026-09-28). Recursive walks the
-  // missing chain like node's mkdirp.
-  const parent = canonical.slice(0, canonical.lastIndexOf('/'));
-  const parentOk = parent === state.root || state.dirs.has(parent) || wsIsDirAt(parent);
-  if (options.recursive !== true && !parentOk) throw wsEnoent('mkdir', canonical);
-  const segs = options.recursive === true
-    ? (canonical === state.root
-      ? [canonical]
-      : canonical.slice(state.root.length).split('/').filter(Boolean)
-          .map((seg, index, all) => `${state.root}${'/' + all.slice(0, index + 1).join('/')}`))
-    : [canonical];
-  let first;
-  for (const dir of segs) {
-    if (state.files.has(dir)) {
-      if (options.recursive === true) continue;
-      throw wsEexist('mkdir', dir);
-    }
-    if (!state.dirs.has(dir)) {
-      state.dirIno.set(dir, state.nextIno++);
-      state.dirs.add(dir);
-      if (typeof options.mode === 'number' && dir === canonical) state.dirModes.set(dir, options.mode);
-      first = first ?? dir;
-    }
-  }
-  return first;
-};
-
-/** A written `.js`/`.mjs` registers as a runtime-defined module under its
- * `file:` URL — the __dshModuleDefine seam the host loader consults FIRST
- * (R3-G1, 2026-09-28). The vendored cordis loader chain imports composition
- * rows by dynamic `import('file:///…')` (boot__cmdline's spec, the bundle
- * startup specs, and cordis-plugin-include all write a plugin file into the
- * workspace at test time and hand its pathToFileURL to the loader); without
- * this registration the host has no such module and every entry fails
- * "cannot load module 'file:///…'". Mirrors fs.js defineSeededModule for the
- * WRITABLE half (that one serves the seeded read-only view). Both spellings
- * register: the caller's lexical spelling (a hardcoded `/tmp/...` maps onto
- * the container tmp via systemTmp, so the importer's URL keeps the `/tmp`
- * prefix) and the workspace-canonical one. Idempotent: define() replaces. */
-const defineWrittenModule = (callerPath, canonical, bytes) => {
-  if (!/\.(js|mjs)$/.test(canonical)) return;
-  const define = globalThis.__dshModuleDefine;
-  if (typeof define !== 'function') return;
-  let text;
-  try {
-    text = new TextDecoder().decode(bytes);
-  } catch {
-    return; // non-UTF-8 bytes are never a servable module
-  }
-  const lexicalCaller = lexical(callerPath);
-  define.call(globalThis, `file://${canonical}`, text);
-  if (lexicalCaller !== canonical) define.call(globalThis, `file://${lexicalCaller}`, text);
-};
-
-/** Write file bytes (create or replace). Parents must already exist — the
- * fs-local write path always mkdirs them first, and node's writeFile would
- * ENOENT too. */
-const wsWriteFile = (path, bytes, mode) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.writeFile: path outside the writable workspace root: ${path}`);
-  }
-  const { state, path: canonical } = at;
-  // A FILE occupying an ancestor segment is ENOTDIR, like node's open(2)
-  // (measured 2026-09-28: identity's anonymous-user-id writes INTO a
-  // file-path home and expects the write refused so nothing persists). Every
-  // PROPER ancestor prefix checks — including the parent (the final slash's
-  // slice) — while the full path itself never does, so overwriting an
-  // existing file stays the replace flow.
-  let ancestorEnd = canonical.indexOf('/', state.root.length + 1);
-  while (ancestorEnd > 0) {
-    if (state.files.has(canonical.slice(0, ancestorEnd))) throw wsEnotdir('open', canonical);
-    const next = canonical.indexOf('/', ancestorEnd + 1);
-    if (next <= 0) break;
-    ancestorEnd = next;
-  }
-  // A directory occupying the path is EISDIR, like node's writeFile
-  // (measured 2026-09-27: storage-json makes the publish target a directory
-  // to force the atomic-replacement failure its rollback test needs).
-  if (state.dirs.has(canonical) || (state.files.has(canonical) === false && wsIsDirAt(canonical))) {
-    const error = new Error(`EISDIR: illegal operation on a directory, open '${canonical}'`);
-    error.code = 'EISDIR';
-    error.errno = -21;
-    error.syscall = 'open';
-    error.path = canonical;
-    throw error;
-  }
-  const existing = state.files.get(canonical);
-  if (existing !== undefined) {
-    existing.bytes = bytes;
-    existing.mtimeNs = bumpClock(state);
-    if (typeof mode === 'number') existing.mode = mode;
-    defineWrittenModule(path, canonical, bytes);
-    notifyWatches(canonical);
-    return canonical;
-  }
-  wsCreateFile(state, canonical, bytes, mode);
-  defineWrittenModule(path, canonical, bytes);
-  notifyWatches(canonical);
-  return canonical;
-};
-
-/** Remove a file or a directory subtree. `force` swallows ENOENT (node). */
-const wsRm = (path, options = {}) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.rm: path outside the writable workspace root: ${path}`);
-  }
-  const { state, path: canonical } = at;
-  if (state.files.has(canonical)) {
-    state.files.delete(canonical);
-    notifyWatches(canonical);
-    return;
-  }
-  if (state.dirs.has(canonical)) {
-    if (options.recursive !== true) {
-      // Plain rmdir (node): succeeds ONLY on an empty directory — any
-      // tracked file or subdir below it is ENOTEMPTY (W3-K, 2026-09-28: the
-      // spill-local sweep rmdirs emptied session dirs; demanding recursive
-      // here made every plain rmdir throw and left the dir entry alive, so
-      // the prune assertions saw existsSync true).
-      const prefix = `${canonical}/`;
-      const hasChildren = [...state.files.keys()].some((k) => k.startsWith(prefix))
-        || [...state.dirs].some((k) => k.startsWith(prefix));
-      if (hasChildren) {
-        const error = new Error(`ENOTEMPTY: directory not empty, rmdir '${canonical}'`);
-        error.code = 'ENOTEMPTY';
-        error.syscall = 'rmdir';
-        error.path = canonical;
-        throw error;
-      }
-      if (canonical !== state.root) {
-        state.dirs.delete(canonical);
-        state.dirIno.delete(canonical);
-        state.dirModes?.delete(canonical);
-        notifyWatches(canonical);
-      }
-      return;
-    }
-    const prefix = `${canonical}/`;
-    for (const key of [...state.files.keys()]) {
-      if (key.startsWith(prefix)) state.files.delete(key);
-    }
-    for (const dir of [...state.dirs]) {
-      if (dir.startsWith(prefix)) {
-        state.dirs.delete(dir);
-        state.dirIno.delete(dir);
-        state.dirModes?.delete(dir);
-      }
-    }
-    if (canonical !== state.root) {
-      state.dirs.delete(canonical);
-      state.dirIno.delete(canonical);
-      state.dirModes?.delete(canonical);
-    }
-    notifyWatches(canonical);
-    return;
-  }
-  if (wsIsDirAt(canonical) && options.force === true) {
-    // An implicit directory (children-only existence) can only vanish by
-    // removing its children; force swallows that impossibility (node rm -f).
-    return;
-  }
-  if (options.force !== true) throw wsEnoent('rm', canonical);
-};
-
-/** Rename within the workspace (files; a directory rename moves its subtree). */
-const wsRename = (from, to) => {
-  const source = wsAt(from);
-  const target = wsAt(to);
-  if (source === null || target === null) {
-    throw new Error(`node:fs.rename: path outside the writable workspace root: ${from} -> ${to}`);
-  }
-  const { state } = source;
-  const dest = target.path;
-  // node's rename cross-checks: file onto an existing directory is EISDIR;
-  // directory onto an existing non-directory is ENOTDIR.
-  if (state.files.has(source.path) && (state.dirs.has(dest) || wsIsDirAt(dest))) {
-    const error = new Error(`EISDIR: illegal operation on a directory, rename '${source.path}' -> '${dest}'`);
-    error.code = 'EISDIR';
-    error.errno = -21;
-    error.syscall = 'rename';
-    error.path = dest;
-    throw error;
-  }
-  if (state.dirs.has(source.path) && state.files.has(dest)) {
-    const error = new Error(`ENOTDIR: not a directory, rename '${source.path}' -> '${dest}'`);
-    error.code = 'ENOTDIR';
-    error.errno = -20;
-    error.syscall = 'rename';
-    error.path = dest;
-    throw error;
-  }
-  if (state.files.has(source.path)) {
-    const entry = state.files.get(source.path);
-    state.files.delete(source.path);
-    entry.mtimeNs = bumpClock(state);
-    entry.ctimeNs = entry.mtimeNs;
-    state.files.set(dest, entry);
-    notifyWatches(source.path);
-    notifyWatches(dest);
-    return;
-  }
-  if (state.dirs.has(source.path)) {
-    const prefix = `${source.path}/`;
-    const moved = [];
-    for (const [key, entry] of state.files) {
-      if (key.startsWith(prefix)) moved.push([key, entry]);
-    }
-    for (const [key] of moved) state.files.delete(key);
-    for (const [key, entry] of moved) state.files.set(dest + key.slice(source.path.length), entry);
-    for (const dir of [...state.dirs]) {
-      if (!dir.startsWith(prefix)) continue;
-      state.dirs.delete(dir);
-      const ino = state.dirIno.get(dir);
-      state.dirIno.delete(dir);
-      if (ino !== undefined) state.dirIno.set(dest + dir.slice(source.path.length), ino);
-      const trackedMode = state.dirModes?.get(dir);
-      if (trackedMode !== undefined) {
-        state.dirModes.delete(dir);
-        state.dirModes.set(dest + dir.slice(source.path.length), trackedMode);
-      }
-    }
-    state.dirs.delete(source.path);
-    const sourceIno = state.dirIno.get(source.path);
-    state.dirIno.delete(source.path);
-    if (sourceIno !== undefined) state.dirIno.set(dest, sourceIno);
-    state.dirs.add(dest);
-    return;
-  }
-  throw wsEnoent('rename', source.path);
-};
-
-/** Hard-link create-if-absent: bytes shared by copy, destination must not
- * exist. The LINK SHARES IDENTITY: node reports one dev+ino pair for every
- * name of a hard-linked object, and attachment-local's dedup contract
- * asserts the alias stat()s to the OBJECT's ino (measured 2026-09-28: two
- * distinct inos failed the identity assert, R3-G1). */
-const wsLink = (sourcePath, destPath) => {
-  const source = wsAt(sourcePath);
-  const target = wsAt(destPath);
-  if (source === null || target === null) {
-    throw new Error(`node:fs.link: path outside the writable workspace root: ${sourcePath} -> ${destPath}`);
-  }
-  const { state } = source;
-  const entry = state.files.get(source.path);
-  if (entry === undefined) throw wsEnoent('link', source.path);
-  if (state.files.has(target.path) || state.dirs.has(target.path)) throw wsEexist('link', target.path);
-  wsCreateFile(state, target.path, entry.bytes.slice(), entry.mode);
-  state.files.get(target.path).ino = entry.ino;
-};
-
-/** chmod on a workspace file or directory. */
-const wsChmod = (path, mode) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.chmod: path outside the writable workspace root: ${path}`);
-  }
-  const file = at.state.files.get(at.path);
-  if (file !== undefined) {
-    file.mode = typeof mode === 'number' ? mode : file.mode;
-    return;
-  }
-  if (!at.state.dirs.has(at.path) && !wsIsDirAt(path)) throw wsEnoent('chmod', at.path);
-  // Directory modes are tracked (tightenModes stats the 0700 back) but
-  // unenforced — the VFS has no permission gate (contract/primitives.md §3).
-  if (typeof mode === 'number') at.state.dirModes.set(at.path, mode);
-};
-
-/* ---- utimes + symlink faces (the 2026-09-27 suite round) ---------------- */
-
-/** utimes on a workspace file: the seconds-since-epoch floats node accepts
- * become the entry's mtime (the mtime-based sweeps and spill aging read it
- * back through stat). Atime is accepted and not stored — nothing in the
- * closure reads atime. */
-const wsUtimes = (path, atimeSeconds, mtimeSeconds) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.utimes: path outside the writable workspace root: ${path}`);
-  }
-  const { state, path: canonical } = at;
-  const entry = state.files.get(canonical);
-  if (entry === undefined) {
-    if (state.dirs.has(canonical) || state.symlinks?.has(canonical)) return;
-    throw wsEnoent('utimes', canonical);
-  }
-  const ms = Number(mtimeSeconds);
-  if (!Number.isFinite(ms)) {
-    throw new TypeError(`node:fs.utimes: mtime must be a finite number, got ${String(mtimeSeconds)}`);
-  }
-  entry.mtimeNs = BigInt(Math.round(ms * 1000)) * 1000000n;
-  entry.ctimeNs = entry.mtimeNs;
-};
-
-/** symlink(target, path) — store the raw target string; readers resolve one
- * hop through resolveSymlinkAt (fs.js). Node validates the parent directory;
- * the link itself may dangle. */
-const wsSymlink = (target, path) => {
-  const at = wsAt(path);
-  if (at === null) {
-    throw new Error(`node:fs.symlink: path outside the writable workspace root: ${path}`);
-  }
-  const { state, path: canonical } = at;
-  if (state.files.has(canonical) || state.dirs.has(canonical)
-      || state.symlinks.has(canonical) || wsIsDirAt(canonical)) {
-    throw wsEexist('symlink', canonical);
-  }
-  if (typeof target !== 'string') {
-    throw new TypeError(`node:fs.symlink: target must be a string, got ${typeof target}`);
-  }
-  state.symlinks.set(canonical, target);
-  return undefined;
-};
-
-/** The stored target for a symlink path, or undefined when the path is not a
- * symlink (readlink turns that into EINVAL, node's spelling). */
 const wsReadlinkAt = (path) => {
   const at = wsAt(path);
   if (at === null) return undefined;
@@ -689,6 +365,12 @@ const resolveSymlinkAt = (path) => {
   return lexical(`${dir}/${target}`);
 };
 
+// The mutation faces live in fs-workspace-write.js (the file crossed the
+// size budget); re-exported here so every existing import — fs.js's and
+// fs-promises's whole surface — keeps its specifier.
+import { wsMkdir, wsWriteFile, wsRm } from 'upstream/shims/fs-workspace-write.js';
+import { wsRename, wsLink, wsChmod, wsUtimes } from 'upstream/shims/fs-workspace-rename.js';
+import { wsSymlink } from 'upstream/shims/fs-workspace-write.js';
 export {
   workspace,
   wsAt,
@@ -700,6 +382,7 @@ export {
   wsFileAt,
   wsIsDirAt,
   wsStatAt,
+  statFace,
   wsReaddirAt,
   wsEnoent,
   wsEexist,

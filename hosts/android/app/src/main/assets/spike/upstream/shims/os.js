@@ -56,6 +56,11 @@ export const platform = () => globalThis.__dshProfilePlatform ?? 'mobile';
 export const EOL = '\n';
 export const arch = () => 'wasm';
 export const endianness = () => 'LE';
+/** networkInterfaces() — the sandbox exposes no LAN surface to enumerate;
+ * an empty map sends host-address pickers (the vendored webserver's
+ * bind-address scan) to the loopback. */
+export const networkInterfaces = () => ({});
+
 /** availableParallelism() — node 18+'s scheduler-width read. The runtime's
  * honest answer is 1: the JS thread is serial by construction (ARCHITECTURE
  * §6), there is no worker pool, and the host does not expose a CPU count to

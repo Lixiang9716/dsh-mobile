@@ -246,8 +246,21 @@ if (typeof globalThis.AbortController !== 'function') {
       }
       return composite.signal;
     }
-    static timeout() {
-      throw new Error('AbortSignal.timeout: wall-clock timers are not supported by the spike runtime');
+    static timeout(ms) {
+      // The timed self-abort face over the runtime's own macrotask timers
+      // (W4-M 2026-09-28 — the open-in-app icon flows hand
+      // `AbortSignal.timeout(timeoutMs)` to their command runner, and the
+      // suite's fixture runners answer long before the deadline; the old
+      // unconditional refusal nulled every extraction). Real wall-clock
+      // enforcement rides the same setTimeout the loopback shims use.
+      const controller = new DshAbortController();
+      const error = Object.assign(new Error('The operation was aborted due to timeout'), { name: 'TimeoutError' });
+      if (typeof ms !== 'number' || !Number.isFinite(ms) || ms <= 0) {
+        controller.abort(error);
+        return controller.signal;
+      }
+      globalThis.setTimeout(() => { controller.abort(error); }, ms);
+      return controller.signal;
     }
   }
 

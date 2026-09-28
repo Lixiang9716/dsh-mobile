@@ -26,14 +26,18 @@
  * single-phase dispatch.
  */
 import { Event, EventTarget } from './web-event.js';
+// The HTML parser lives in its own module (the file crossed the size
+// budget); the element primitives it needs are exported below — an ESM
+// cycle by construction, call-time access only.
+import { parseHTML } from 'upstream/shims/web-dom-parser.js';
 
-const VOID_TAGS = new Set(['input', 'br', 'img', 'hr', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr']);
+export const VOID_TAGS = new Set(['input', 'br', 'img', 'hr', 'meta', 'link', 'area', 'base', 'col', 'embed', 'source', 'track', 'wbr']);
 
 const ENTITIES = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
 };
 
-const decodeEntities = (text) => String(text).replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (raw, body) => {
+export const decodeEntities = (text) => String(text).replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (raw, body) => {
   if (body[0] === '#') {
     const code = body[1] === 'x' || body[1] === 'X'
       ? parseInt(body.slice(2), 16)
@@ -49,7 +53,7 @@ const escapeMarkup = (text) => String(text)
   .replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;');
 
-class TextNode {
+export class TextNode {
   constructor(text) {
     this.nodeType = 3;
     this.nodeName = '#text';
@@ -314,69 +318,6 @@ const matchesComplex = (el, complex) => {
 
 /* ---- the small HTML parser ------------------------------------------------ */
 
-/** Tokenize a markup string into a root-level node list. Covers the corpus's
- * generated markup: open/close tags, bare and quoted attributes, void
- * elements, self-closing slashes, comments (skipped). No CDATA/doctype. */
-export const parseHTML = (markup) => {
-  const root = [];
-  const stack = []; // innermost open element last
-  const attach = (node) => {
-    const parent = stack[stack.length - 1];
-    if (parent === undefined) root.push(node);
-    else parent.append(node);
-  };
-  let rest = String(markup);
-  const openTag = /^<([a-zA-Z][\w-]*)((?:\s+[\w-]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'=<>`]+))?)*)\s*(\/?)>/;
-  const attrGlob = /([\w-]+)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'=<>`]+))?/g;
-  while (rest.length > 0) {
-    const lt = rest.indexOf('<');
-    if (lt !== 0) {
-      const text = lt === -1 ? rest : rest.slice(0, lt);
-      attach(new TextNode(decodeEntities(text)));
-      rest = lt === -1 ? '' : rest.slice(lt);
-      continue;
-    }
-    if (rest.startsWith('<!--')) {
-      const end = rest.indexOf('-->');
-      rest = end === -1 ? '' : rest.slice(end + 3);
-      continue;
-    }
-    if (rest.startsWith('</')) {
-      const end = rest.indexOf('>');
-      const name = rest.slice(2, end).trim().toUpperCase();
-      // Pop to the nearest matching open tag (implicit close of unclosed ones).
-      for (let at = stack.length - 1; at >= 0; at--) {
-        if (stack[at].tagName === name) { stack.length = at; break; }
-      }
-      rest = rest.slice(end + 1);
-      continue;
-    }
-    const m = openTag.exec(rest);
-    if (m === null) {
-      // A '<' that opens nothing is text (the parser stays total).
-      attach(new TextNode('<'));
-      rest = rest.slice(1);
-      continue;
-    }
-    const el = new DOMElement(m[1]);
-    let am;
-    attrGlob.lastIndex = 0;
-    while ((am = attrGlob.exec(m[2])) !== null) {
-      let value = am[2];
-      if (value === undefined) {
-        el.setAttribute(am[1].toLowerCase(), '');
-        continue;
-      }
-      if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))) value = value.slice(1, -1);
-      el.setAttribute(am[1].toLowerCase(), decodeEntities(value));
-    }
-    attach(el);
-    if (m[3] !== '/' && !VOID_TAGS.has(el.tagName)) stack.push(el);
-    rest = rest.slice(m[0].length);
-  }
-  return root;
-};
-
 export class DOMDocument extends DOMElement {
   constructor() {
     super('#document');
@@ -411,88 +352,100 @@ export class DOMDocument extends DOMElement {
   }
 }
 
+/** The fallback FormData face (W3-K, 2026-09-28): the fetch-values FormData
+ * is the full W3C surface (Blob/File values, set/delete) and replaces this
+ * one when it installs — a bare-string face here regressed the llm-deepseek
+ * upload path to "not a function" on form.set. */
+const DshWebDomFormData = class FormData {
+  constructor(form) {
+    this._entries = [];
+    if (form !== undefined) {
+      for (const node of form._descendants()) {
+        if (node.nodeType !== 1) continue;
+        const name = node.getAttribute('name');
+        if (name === null || name === '') continue;
+        const type = (node.getAttribute('type') ?? '').toLowerCase();
+        if ((type === 'radio' || type === 'checkbox') && node.checked !== true) continue;
+        this._entries.push([name, node.value]);
+      }
+    }
+  }
+  append(name, value) { this._entries.push([String(name), String(value)]); }
+  get(name) { return this._entries.find(([n]) => n === name)?.[1] ?? null; }
+  getAll(name) { return this._entries.filter(([n]) => n === name).map(([, v]) => v); }
+  has(name) { return this._entries.some(([n]) => n === name); }
+};
+
+const installDocumentFaces = () => {
+  if (typeof globalThis.document !== 'undefined') return;
+  globalThis.document = new DOMDocument();
+  globalThis.HTMLElement = DOMElement;
+  globalThis.Node = DOMElement;
+  DshWebDomFormData.__dshWebDomFallback = true;
+  globalThis.FormData = DshWebDomFormData;
+};
+
+// navigator — the identity face browser code reads (the inspector client's
+// realm labels itself through navigator; node 21+ also defines userAgent).
+// Generic honest values: this runtime is none of the commercial browsers.
+const installNavigatorFace = () => {
+  if (typeof globalThis.navigator !== 'undefined') return;
+  globalThis.navigator = {
+    userAgent: 'dsh-spike/1.0 (headless; quickjs)',
+    platform: 'linux',
+    language: 'en-US',
+    languages: ['en-US'],
+    hardwareConcurrency: 1,
+  };
+};
+
+// location + history: the query-reading face only (href/search/pathname/
+// hash over a mutable href string; replaceState repoints it). An in-memory
+// origin — the suite's URLs are relative paths over localhost.
+const installLocationFace = () => {
+  if (typeof globalThis.location !== 'undefined') return;
+  let href = 'http://localhost:3000/preview.html';
+  const local = (url) => {
+    href = String(url);
+  };
+  const split = () => {
+    const withoutOrigin = href.replace(/^[\w-]+:\/\/[^/]+/, '');
+    const [pathAndQuery, hash = ''] = withoutOrigin.split('#');
+    const q = pathAndQuery.indexOf('?');
+    return {
+      pathname: q === -1 ? pathAndQuery : pathAndQuery.slice(0, q),
+      search: q === -1 ? '' : pathAndQuery.slice(q),
+      hash: hash === '' ? '' : `#${hash}`,
+    };
+  };
+  globalThis.location = {
+    get href() { return href; },
+    get origin() { return href.match(/^[\w-]+:\/\/[^/]+/)?.[0] ?? 'http://localhost:3000'; },
+    get pathname() { return split().pathname; },
+    get search() { return split().search; },
+    get hash() { return split().hash; },
+    toString() { return href; },
+    __dshSetHref: local,
+  };
+};
+
+const installHistoryFace = () => {
+  if (typeof globalThis.history !== 'undefined') return;
+  globalThis.history = {
+    replaceState(_state, _title, url) {
+      if (typeof url === 'string') globalThis.location.__dshSetHref(`${globalThis.location.origin}${url}`);
+    },
+    pushState(_state, _title, url) {
+      if (typeof url === 'string') globalThis.location.__dshSetHref(`${globalThis.location.origin}${url}`);
+    },
+  };
+};
+
 /** Install the document/global faces the headless runtime lacks. Idempotent
  * (??= losers keep any host-provided faces). */
 export const installWebDom = () => {
-  if (typeof globalThis.document === 'undefined') {
-    const doc = new DOMDocument();
-    globalThis.document = doc;
-    globalThis.HTMLElement = DOMElement;
-    globalThis.Node = DOMElement;
-    // Marked as a FALLBACK face (W3-K, 2026-09-28): the fetch-values
-    // FormData is the full W3C surface (Blob/File values, set/delete) and
-    // replaces this one when it installs — a bare-string face here regressed
-    // the llm-deepseek upload path to "not a function" on form.set.
-    const DshWebDomFormData = class FormData {
-      constructor(form) {
-        this._entries = [];
-        if (form !== undefined) {
-          for (const node of form._descendants()) {
-            if (node.nodeType !== 1) continue;
-            const name = node.getAttribute('name');
-            if (name === null || name === '') continue;
-            const type = (node.getAttribute('type') ?? '').toLowerCase();
-            if ((type === 'radio' || type === 'checkbox') && node.checked !== true) continue;
-            this._entries.push([name, node.value]);
-          }
-        }
-      }
-      append(name, value) { this._entries.push([String(name), String(value)]); }
-      get(name) { return this._entries.find(([n]) => n === name)?.[1] ?? null; }
-      getAll(name) { return this._entries.filter(([n]) => n === name).map(([, v]) => v); }
-      has(name) { return this._entries.some(([n]) => n === name); }
-    };
-    DshWebDomFormData.__dshWebDomFallback = true;
-    globalThis.FormData = DshWebDomFormData;
-  }
-  // navigator — the identity face browser code reads (the inspector client's
-  // realm labels itself through navigator; node 21+ also defines userAgent).
-  // Generic honest values: this runtime is none of the commercial browsers.
-  if (typeof globalThis.navigator === 'undefined') {
-    globalThis.navigator = {
-      userAgent: 'dsh-spike/1.0 (headless; quickjs)',
-      platform: 'linux',
-      language: 'en-US',
-      languages: ['en-US'],
-      hardwareConcurrency: 1,
-    };
-  }
-  // location + history: the query-reading face only (href/search/pathname/
-  // hash over a mutable href string; replaceState repoints it). An in-memory
-  // origin — the suite's URLs are relative paths over localhost.
-  if (typeof globalThis.location === 'undefined') {
-    let href = 'http://localhost:3000/preview.html';
-    const local = (url) => {
-      href = String(url);
-    };
-    const split = () => {
-      const withoutOrigin = href.replace(/^[\w-]+:\/\/[^/]+/, '');
-      const [pathAndQuery, hash = ''] = withoutOrigin.split('#');
-      const q = pathAndQuery.indexOf('?');
-      return {
-        pathname: q === -1 ? pathAndQuery : pathAndQuery.slice(0, q),
-        search: q === -1 ? '' : pathAndQuery.slice(q),
-        hash: hash === '' ? '' : `#${hash}`,
-      };
-    };
-    globalThis.location = {
-      get href() { return href; },
-      get origin() { return href.match(/^[\w-]+:\/\/[^/]+/)?.[0] ?? 'http://localhost:3000'; },
-      get pathname() { return split().pathname; },
-      get search() { return split().search; },
-      get hash() { return split().hash; },
-      toString() { return href; },
-      __dshSetHref: local,
-    };
-  }
-  if (typeof globalThis.history === 'undefined') {
-    globalThis.history = {
-      replaceState(_state, _title, url) {
-        if (typeof url === 'string') globalThis.location.__dshSetHref(`${globalThis.location.origin}${url}`);
-      },
-      pushState(_state, _title, url) {
-        if (typeof url === 'string') globalThis.location.__dshSetHref(`${globalThis.location.origin}${url}`);
-      },
-    };
-  }
+  installDocumentFaces();
+  installNavigatorFace();
+  installLocationFace();
+  installHistoryFace();
 };

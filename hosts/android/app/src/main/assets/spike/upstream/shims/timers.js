@@ -111,13 +111,57 @@ globalThis.clearTimeout = (handle) => {
 // (tool-call scheduler's quiescence drain). A macrotask: the 0-delay timer
 // arm is the honest mapping (microtask-only would starve the drain loop's
 // interleaving with gateway events).
+//
+// FIFO QUEUE (W6-U r3, 2026-09-27): one 0-delay arm drains ALL queued
+// immediates in insertion order, instead of one gateway round trip per call.
+// The per-call mapping broke node's check-phase ordering guarantee — each
+// arm rides its own timerSchedule dispatch, and under load two immediates
+// armed in the same synchronous stretch could land in different host
+// dispatch batches, letting a LATER-armed immediate run FIRST (measured:
+// subprocess-local's Windows Job 'post-commit termination' test armed its
+// own setImmediate after the runner's and raced it, 32/3 <-> 33/2 across
+// runs). The queue restores insertion-order delivery; immediates armed
+// DURING a drain run in the next batch (node's next-loop-iteration rule).
+// A throwing entry reports through the E2E sink and the drain continues —
+// one bad callback must not silently swallow its batch-mates.
+const immediateQueue = [];
+let immediateArmed = false;
+const drainImmediates = () => {
+  immediateArmed = false;
+  const batch = immediateQueue.splice(0);
+  for (const entry of batch) {
+    if (entry.cancelled) continue;
+    try {
+      runWithCapturedContext(entry.captured, () => entry.fn(...entry.args));
+    } catch (error) {
+      try {
+        globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
+          scenario: 'timers', event: 'immediate/throw',
+          message: String(error?.message ?? error).slice(0, 300),
+        }));
+      } catch { /* the sink is best-effort */ }
+    }
+  }
+};
 globalThis.setImmediate = (fn, ...args) => {
   if (typeof fn !== 'function') {
     throw new TypeError(`setImmediate: callback must be a function (got ${typeof fn})`);
   }
-  return globalThis.setTimeout(fn, 0, ...args);
+  const entry = { __dshImmediate: true, cancelled: false, fn, args, captured: captureContext() };
+  immediateQueue.push(entry);
+  if (!immediateArmed) {
+    immediateArmed = true;
+    globalThis.setTimeout(drainImmediates, 0);
+  }
+  return entry;
 };
-globalThis.clearImmediate = globalThis.clearTimeout;
+globalThis.clearImmediate = (handle) => {
+  if (handle && typeof handle === 'object' && handle.__dshImmediate === true) {
+    handle.cancelled = true;
+    return;
+  }
+  globalThis.clearTimeout?.(handle);
+};
 
 // setInterval — the contract's documented re-arm pattern, implemented once
 // here so callers (the webworker-runtime polyfill's installer binds the
@@ -144,6 +188,18 @@ globalThis.setInterval = (fn, delay = 0, ...args) => {
     runWithCapturedContext(captureContext(), () => fn(...args));
     if (state.cancelled || intervals.get(handle) !== state) return;
     globalThis.setTimeout(tick, state.delayMs);
+  };
+  // node's Timeout handle face: the vendored mux's startHeartbeat calls
+  // `heartbeatTimer.unref()` (stream-server.ts) — no ambient event loop to
+  // opt out of here, so unref/ref are bookkeeping no-ops and refresh just
+  // re-arms the loop (W5-Q 2026-09-28).
+  handle.unref = () => handle;
+  handle.ref = () => handle;
+  handle.hasRef = () => true;
+  handle.refresh = () => {
+    state.cancelled = false;
+    globalThis.setTimeout(tick, state.delayMs);
+    return handle;
   };
   globalThis.setTimeout(tick, delayMs);
   return handle;
