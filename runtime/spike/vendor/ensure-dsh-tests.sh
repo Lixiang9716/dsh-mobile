@@ -202,6 +202,8 @@ ensure_npm_registry "@earendil-works/pi-ai" "0.85.1" "af7d11986179445ce6fe88b37d
 ensure_npm_registry "@modelcontextprotocol/node" "2.0.0" "d9a39db5f6b10bebd23cd676e4f7f54c89292d31e05d90e3516a55aafec2a044"
 ensure_npm_registry "@modelcontextprotocol/server" "2.0.0" "b4f0dfda3b73b322f1091b86fabe568994eb2fedef873b12db2c54adc3cfe198"
 ensure_npm_registry "@hono/node-server" "1.19.14" "0b956f346f96d8b89d03ee4e586e267a2d3877f4393fb97eb068572fd7a5b9ad"
+ensure_npm_registry "ipaddr.js" "2.5.0" "586f7ae92cc869bf61612f0d2765a02d98f813c7d1fff461745b93178da626c3"
+ensure_npm_registry "@joplin/turndown-plugin-gfm" "1.0.67" "59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5"
 
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
