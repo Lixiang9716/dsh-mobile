@@ -12,7 +12,7 @@
     "baseline sweep on current main: every transpiled spec \u00d7 QuickJS CLI + Node reference legs, TSV under tmp/",
     "[x] triage: every red spec assigned a family (missing vendor / missing shim / engine limit / by-design impossible) with counts",
     "[x] fix loop per family; each spec gets \u22643 distinct fix attempts (quickjs fork edits allowed); failures after 3 attempts excluded with named reason",
-    "final sweep: green count + exclusion register recorded in the note; no silent reds"
+    "[x] final sweep: green count + exclusion register recorded in the note; no silent reds"
   ],
   "status": "open",
   "receipt": null,
