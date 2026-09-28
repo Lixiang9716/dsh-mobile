@@ -243,3 +243,4 @@ tmp/
 # the top-level CMake build dirs (the presets write build/cmake-<preset>/;
 # build/ itself is tracked — build/build.sh lives there).
 /build/cmake-*/
+test/upstream-suite/.runtime-modules/
