@@ -267,6 +267,13 @@ TREES = [
     # (the anti-drift rule; the parity port leg died on exactly this gap).
     ("vendor/npm/@noble/hashes@2.3.0",
      SPIKE / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
+    # The pi-ai bridge target (2026-09-29): the npm-bridges-pi-ai rows and
+    # the providers barrel re-export this pin behind the @earendil-works/
+    # pi-ai specifiers, and the barrel's data/.manifest.json require needs
+    # the data face too — the whole pin rides (the parity m4 mount died on
+    # exactly this gap: bridge rows present, bytes absent in-app).
+    ("vendor/npm/@earendil-works/pi-ai@0.85.1",
+     SPIKE / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
      SPIKE / "system-plugins" / "dsh-office"),

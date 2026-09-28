@@ -465,6 +465,18 @@ if [ "$MODE" != "check" ]; then
             cp "runtime/spike/$NOBLE_DIR/$rel" "$RAW/$NOBLE_DIR/$rel"
         done
 fi
+
+# The pi-ai bridge target (2026-09-29): the providers barrel's
+# data/.manifest.json require needs the data face — the whole pin rides
+# (js+json). BUNDLE_FILES rows in Index.ets must mirror this tree.
+PIAI_DIR="vendor/npm/@earendil-works/pi-ai@0.85.1"
+if [ "$MODE" != "check" ]; then
+    (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
+        while IFS= read -r rel; do
+            mkdir -p "$RAW/$PIAI_DIR/$(dirname "$rel")"
+            cp "runtime/spike/$PIAI_DIR/$rel" "$RAW/$PIAI_DIR/$rel"
+        done
+fi
 webclient_files() {
     (cd "presentation/web-client-$1" && find . -type f) |
         while IFS= read -r rel; do echo "webclient/dsh-web-client-$1/${rel#./}"; done
