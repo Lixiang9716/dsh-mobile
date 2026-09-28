@@ -85,7 +85,7 @@ following hold:
 | Verdicts committed (92 green, 2 quota-blocked red) | 94 |
 | Scenarios with at least one committed evidence dir | 45 of 45 distinct scenario ids (37 manifests) |
 | Screenshots verified PNG | 113 |
-| Acceptance-bar findings | 9 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
+| Acceptance-bar findings | 7 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
 
@@ -209,7 +209,7 @@ are headless, and `hosts/android/artifacts/m2-llm/` carries its capture as
 
 ## Known gaps (honest list)
 
-Nine findings are open on this tree, and **every one of them is owned**. The
+Seven findings are open on this tree, and **every one of them is owned**. The
 checker reports all nine and exits non-zero by default; the table below is
 the **known-gaps register** that makes the very same run wireable as a gate.
 
@@ -237,8 +237,6 @@ missing or malformed is a finding of its own, never a silent pass.
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-device.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
-| VERDICT_FAIL | hosts/harmony/artifacts/m5-m2-llm/verdict-m2-llm-carrier.json | harmony work stream (#79) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh once the z.ai quota returns (reset 2026-09-22 14:43:53) |
 
 ### Why none of these nine is closed here (the honest reason)
 

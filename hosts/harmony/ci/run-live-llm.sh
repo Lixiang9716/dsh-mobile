@@ -312,4 +312,27 @@ grep "dsh.spike.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
 for v in "$OUT/verdict-llm-live-stream-device.json" "$OUT/verdict-llm-live-stream-carrier.json"; do
     grep -q '"pass": true' "$v" || die "$(basename "$v") is not a PASS verdict"
 done
+
+# ---- receipt (reachable ONLY on a real green run) ---------------------------
+# The acceptance-bar clause the other runners serve: every evidence dir
+# carries receipt.json, machine-authored HERE — after the verdict checks
+# above would have died on any failure — so a receipt can never exist
+# without this real green run. Harmony shape per run-device-plane.sh.
+TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
+cat > "$OUT/receipt.json" <<EOF
+{
+  "host": "harmony 127.0.0.1:5555 (dsh_phone emulator)",
+  "runner": "hosts/harmony/ci/run-live-llm.sh",
+  "phase": "harmony.llm.live-stream",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real z.ai backend",
+  "tree": "$TREE_LINE",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "scenarios": [
+    { "manifest": "llm-live-stream-device", "verdict": "verdict-llm-live-stream-device.json", "pass": true },
+    { "manifest": "llm-live-stream-carrier", "verdict": "verdict-llm-live-stream-carrier.json", "pass": true }
+  ],
+  "screens": ["llm-live-stream-live-page.png"],
+  "producedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
 say "llm.live-stream real-backend leg complete — evidence under $OUT"
