@@ -239,3 +239,7 @@ runtime/spike/vendor/quickjs-ng/
 runtime/spike/vendor/wasm3/
 runtime/spike/vendor/zstd/
 tmp/
+
+# the top-level CMake build dirs (the presets write build/cmake-<preset>/;
+# build/ itself is tracked — build/build.sh lives there).
+/build/cmake-*/

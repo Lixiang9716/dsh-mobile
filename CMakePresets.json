@@ -1,0 +1,33 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "dev-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/cmake-${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macos-dev",
+      "inherits": "dev-base",
+      "displayName": "macOS dev (ninja, Debug)"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "macos-dev",
+      "configurePreset": "macos-dev"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "macos-dev",
+      "configurePreset": "macos-dev",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

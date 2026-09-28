@@ -23,39 +23,18 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 # (accessor suffix, source file) -> dsh_spike_res_<suffix>()
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
-    ("gateway_js", SPIKE / "gateway.js"),
-    ("registry_js", SPIKE / "registry.js"),
-    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
-    ("sha256_js", SPIKE / "sha256.js"),
-    ("tar_mini_js", SPIKE / "tar-mini.js"),
-    ("manifest_json", SPIKE / "manifest.json"),
-    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
-    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
-    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
-    ("scenario_m2_smoke_js", SPIKE / "scenario" / "gateway-bridge-smoke.js"),
-    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
-    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
     # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
     # leg drives the real gateway httpFetch against the configured backend)
-    ("llm_js", SPIKE / "llm.js"),
-    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
     # M3 completion: on-device fetch-install scenario + its new modules
-    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
     # The upstream-parity differential's port leg (scenario + the SHARED
     # projector both legs normalize through; the spine itself is embedded by
     # the TREES below — this is the drive that proves it matches Node).
-    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
-    ("scenario_parity_projector_js", SPIKE / "scenario" / "parity-projector.js"),
     # The upstream DSH test suite's on-device leg: the driver that imports
     # ONE transpiled upstream spec (staged under upstream-tests/ by the E2E
     # runner) + the quickjs-shaped vitest harness it redirects to.
-    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
-    ("scenario_upstream_harness_js", SPIKE / "scenario" / "upstream-test-harness.js"),
     # The agent-flow leg (the 打通流程 E2E): prompt override + skill loading
     # over the vendored skill family (the spine itself rides the TREES below;
     # the fixture skill is staged at runtime by the scenario itself).
-    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
-    ("install_fetch_js", SPIKE / "install-fetch.js"),
     ("receipt_journal_js", SPIKE / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
     ("profile_m3_patch_json", SPIKE / "profiles" / "install-full-cycle" / "cordis.patch.json"),
@@ -96,27 +75,8 @@ RESOURCES = [
     # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
     # client-modules node + browser faces). NOT the full agent spine — the
     # officialweb-web-live drive composes the boot wire without runtime services.
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
-    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
-    # (mechanical entries packed two-per-line: the file lives under the
-    # code-size ceiling and this block grows with every shim row)
-    ("shims_buffer_js", SPIKE / "upstream" / "shims" / "buffer.js"), ("shims_url_js", SPIKE / "upstream" / "shims" / "url.js"),
-    ("shims_fs_js", SPIKE / "upstream" / "shims" / "fs.js"), ("shims_fs_workspace_js", SPIKE / "upstream" / "shims" / "fs-workspace.js"),
-    ("shims_fs_promises_js", SPIKE / "upstream" / "shims" / "fs-promises.js"), ("shims_timers_promises_js", SPIKE / "upstream" / "shims" / "timers-promises.js"),
-    ("shims_timers_js", SPIKE / "upstream" / "shims" / "timers.js"), ("shims_crypto_js", SPIKE / "upstream" / "shims" / "crypto.js"),
-    # the upstream-suite globals (AbortController/structuredClone — installed by
-    # the test harness before any spec imports; lives with the other shims)
-    ("shims_globals_js", SPIKE / "upstream" / "shims" / "globals.js"),
-    ("shims_node_perf_hooks_js", SPIKE / "upstream" / "shims" / "node-perf-hooks.js"),
-    ("shims_node_addon_flock_js", SPIKE / "upstream" / "shims" / "node-addon-system-flock.js"),
-    ("shims_expect_poll_js", SPIKE / "upstream" / "shims" / "expect-poll.js"),
-    ("shims_node_zlib_js", SPIKE / "upstream" / "shims" / "node-zlib.js"),
-    ("shims_node_worker_threads_js", SPIKE / "upstream" / "shims" / "node-worker-threads.js"), ("shims_node_stream_js", SPIKE / "upstream" / "shims" / "node-stream.js"),
-    ("shims_events_js", SPIKE / "upstream" / "shims" / "events.js"), ("shims_describe_each_js", SPIKE / "upstream" / "shims" / "describe-each.js"),
-    ("shims_node_module_js", SPIKE / "upstream" / "shims" / "node-module.js"), ("shims_path_js", SPIKE / "upstream" / "shims" / "path.js"),
-    ("shims_npm_bridges_js", SPIKE / "upstream" / "shims" / "npm-bridges.js"),
     ("npm_cordis_js",
      SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
     ("npm_cosmokit_js",
@@ -161,8 +121,6 @@ RESOURCES = [
     # session-persistence errors shim).
     ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
-    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
-    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
     # the REAL spine — the write adapter + its booting scenario.
     ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
@@ -177,9 +135,6 @@ RESOURCES = [
     ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
     ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
     ("upstream_preset_mobile_rows_js", SPIKE / "upstream" / "preset-mobile-rows.js"),
-    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
-    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
-    ("shims_async_hooks_js", SPIKE / "upstream" / "shims" / "async-hooks.js"),
     ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
     ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),
     ("shims_os_js", SPIKE / "upstream" / "shims" / "os.js"),
@@ -204,6 +159,40 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
+    # THIRTEEN scenario files keep NAMED accessors — RESOURCES rows are what
+    # emit the dsh_spike_res_<suffix> symbols Swift links against (readers:
+    # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
+    # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
+    # the whole-dir scenario tree row already serves the loader's file view.
+    # 926c6a7 dropped this block while every read site stayed, so a clean
+    # checkout could not build; mapping = the pre-refactor rows, restored.
+    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
+    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
+    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
+    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
+    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
+    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
+    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
+    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
+    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
+    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
+    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
+    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
+    # The spike-root runtime files + upstream adapters Swift stages by name
+    # (SpikeBundleStager / SessionServe / SessionRuntime) — same provenance
+    # as the scenario block above: pre-refactor RESOURCES rows, restored.
+    ("gateway_js", SPIKE / "gateway.js"),
+    ("registry_js", SPIKE / "registry.js"),
+    ("manifest_json", SPIKE / "manifest.json"),
+    ("llm_js", SPIKE / "llm.js"),
+    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
+    ("install_fetch_js", SPIKE / "install-fetch.js"),
+    ("sha256_js", SPIKE / "sha256.js"),
+    ("tar_mini_js", SPIKE / "tar-mini.js"),
+    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
+    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
+    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
 ]
 
 # Directory trees embedded whole and staged back under the same
@@ -275,6 +264,15 @@ TREES = [
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
      SPIKE / "system-plugins" / "dsh-office"),
+    # The upstream shims ride the WHOLE DIRECTORY (the android stager's
+    # convention): a new shim joins the embed by existing in the directory,
+    # not by hand-editing this list — the vi-wait.js drift class, retired.
+    ("upstream/shims",
+     SPIKE / "upstream" / "shims"),
+    # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims:
+    # a scenario joins the embed by existing in the directory).
+    ("scenario",
+     SPIKE / "scenario"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/

@@ -53,6 +53,40 @@ that hole: it byte-verifies every committed copy against the canonical source
 (android and harmony stagers in `--check` mode; iOS by deterministic regen +
 `git diff --quiet`). If it goes red: `build/build.sh sync <platform>`.
 
+## The CMake layer (the same graph, one more face)
+
+A top-level `CMakeLists.txt` + `CMakePresets.json` express the build as a
+dependency graph with a unified entry (cmake ≥ 3.21, Ninja):
+
+```
+cmake --preset macos-dev                                # configure (Ninja)
+cmake --build --preset macos-dev --target dsh-core      # compile the C core
+cmake --build --preset macos-dev --target dsh-android   # sync + build a host (wraps build.sh)
+ctest --preset macos-dev                                # the gates (dsh-gate-closures, dsh-gate-gov)
+```
+
+Scope by construction (phase 1 — add-the-layer, move-no-paths):
+
+- **CMake compiles only the C core**: the `dsh-core` static library, built
+  from `runtime/spike/host` plus the pinned engines — the same file set the
+  android and harmony `cpp/CMakeLists.txt` compile. Configure materializes
+  the vendored pins first (`include(Vendor)` runs the ensure scripts, fail
+  loud; `DSH_SKIP_VENDOR=ON` skips with a named warning).
+- **The three hosts stay owned by their platform toolchains.** `dsh-ios` /
+  `dsh-android` / `dsh-harmony` are wrapper targets delegating to
+  `build/build.sh build <platform>`, with `dsh-sync-<platform>` DAG edges —
+  xcodebuild / Gradle / hvigor still own signing, HAP/AAB packaging, and the
+  e2e legs. `build.sh` remains the documented facade; the targets are an
+  entry, not a replacement.
+- **The gates ride CTest** as `dsh-gate-closures` and `dsh-gate-gov` — a
+  second face of the same checks; the gate DAG, task cards, and pre-push
+  hooks stay owned by govrail.
+
+Build trees live under `build/cmake-<preset>/` (the tracked `build/`
+directory holds `build.sh` itself). Deeper integration — the sync/stage
+steps as first-class custom commands, one vendor manifest driving every
+host's embed lists — is the next phase, not this one.
+
 ## Layout: the periphery ring around the project
 
 ```

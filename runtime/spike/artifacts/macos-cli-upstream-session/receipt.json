@@ -1,5 +1,5 @@
 {
-  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0",
   "quickjsTag": "v0.17.0",
@@ -16,6 +16,6 @@
   ],
   "checker": "test/e2e/scenarios/upstream-session.json",
   "events": 31,
-  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 a3e972ed14dcf8da17a67c318c48d566)",
+  "determinism": "3 consecutive runs byte-identical on the scenario stream (md5 e5604997680f3e2ac210eb16a78e91e2)",
   "exitCode": 0
 }

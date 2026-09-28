@@ -1,0 +1,8 @@
+{
+  "scenario": "install.carrier-evidence",
+  "pass": true,
+  "expected": 11,
+  "logged": 11,
+  "failures": [],
+  "parseErrors": []
+}

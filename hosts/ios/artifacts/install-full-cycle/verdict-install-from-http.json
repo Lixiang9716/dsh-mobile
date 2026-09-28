@@ -1,0 +1,8 @@
+{
+  "scenario": "install.from-http",
+  "pass": true,
+  "expected": 46,
+  "logged": 46,
+  "failures": [],
+  "parseErrors": []
+}

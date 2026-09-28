@@ -152,3 +152,14 @@ if [ "$PASS" -ne 2 ]; then
   die "failing checker(s):$FAILED — see verdict JSONs under $ART"
 fi
 log "ALL CHECKERS PASS"
+
+# ---- 6. receipt (reachable ONLY on a real green run) ------------------------
+# The acceptance-bar clause run-ios.sh already serves (docs/e2e-matrix.md):
+# every evidence dir carries receipt.json, machine-authored HERE — after the
+# summary loop above died on any failing checker — so a receipt can never
+# exist without this real green run (never synthesized). This runner predates
+# the clause and its dir was the last one the evidence matrix flagged.
+sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-install-ui.sh" \
+  "M3 on-device fetch-install — the self-hosted dsh-notes package installs through the REAL gateway httpFetch into the live session, startup-replays two crash-simulated pending receipts, and the session.mock-llm-shaped agent session answers, one-to-one against both manifests (install-from-http + install-carrier-evidence)" \
+  "session-mode drive with the install-full-cycle profile (-dsh-mode session -dsh-profile install-full-cycle); NO UI interaction — the scenario auto-runs once the config-selected page connects and the admitted slot is acked" \
+  install-from-http install-carrier-evidence
