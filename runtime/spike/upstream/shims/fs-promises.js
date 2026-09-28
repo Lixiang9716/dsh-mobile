@@ -1,3 +1,4 @@
+import { fromBase64 as fromBase64Shim } from 'upstream/shims/buffer.js';
 // dsh:logging-exempt (shim layer)
 /**
  * node:fs/promises — the ASYNC face of the staged in-memory file views.
@@ -69,6 +70,22 @@ export const readFile = async (path, options) => {
     throw error;
   }
   if (!existsSync(path)) {
+    // Real-disk fallback (W5-R, 2026-09-28): REAL children (the subprocess
+    // seam) write marker/exit files onto the real disk paths the parent's
+    // VFS models; when the VFS face misses and the real disk has the file,
+    // read it through the host (base64 bridge, same channel the spawn
+    // pumps). VFS-first precedence is preserved — staged bytes win.
+    if (typeof path === 'string' && path.startsWith('/')) {
+      const real = globalThis.__dshProcStatReal?.(path);
+      if (real?.isFile) {
+        const encoding2 = typeof options === 'string' ? options : options?.encoding;
+        const b64 = globalThis.__dshProcReadReal?.(path);
+        if (b64 !== undefined && b64 !== null) {
+          const bytes = Buffer.from(fromBase64Shim(b64));
+          return encoding2 && encoding2 !== 'buffer' ? bytes.toString(encoding2) : bytes;
+        }
+      }
+    }
     throw enoent('open', path);
   }
   const encoding = typeof options === 'string' ? options : options?.encoding;
@@ -144,7 +161,18 @@ export const symlink = async (target, path) => symlinkSync(target, path);
 export const readlink = async (path) => readlinkSync(path);
 
 /** mkdir(path[, options]) — the workspace face (seeded views are read-only). */
-export const mkdir = async (path, options) => _wsMkdir(path, options);
+export const mkdir = async (path, options) => {
+  const res = await _wsMkdir(path, options);
+  // Write-through (W5-R, 2026-09-28): directories under the profile
+  // container exist for REAL on the desktop spike — a spawned child reads
+  // the real disk, so the VFS mkdir mirrors onto it (idempotent).
+  try {
+    if (typeof path === 'string' && path.startsWith('/') && res !== undefined) {
+      globalThis.__dshProcMkdirReal?.(path);
+    }
+  } catch { /* structural mirror is best-effort */ }
+  return res;
+};
 
 /** rm(path[, options]) — the workspace face. */
 export const rm = async (path, options) => _wsRm(path, options);
@@ -318,9 +346,22 @@ export const rmdir = async (path, options) => _wsRm(path, options);
 
 /** access() succeeds for existence checks on readable staged paths — the one
  * write-side name whose SEMANTICS are read-shaped. Mode bits are ignored: the
- * VFS has no permission model (contract/primitives.md §3 — paths are paths). */
-export const access = async (path) => {
-  if (!existsSync(path) && readdirSync(path) === null) {
+ * VFS has no permission model (contract/primitives.md §3 — paths are paths).
+ * Real-disk fallback (W5-R, 2026-09-28): the subprocess seam's pre-spawn
+ * executability check access(X_OK)s REAL binaries (the node running the
+ * fixture servers); a mode-carrying probe consults the host's access(2)
+ * when every VFS face missed. VFS-first precedence is preserved. */
+export const access = async (path, mode) => {
+  let staged = true;
+  try {
+    staged = existsSync(path) || readdirSync(path) !== null;
+  } catch {
+    staged = false; // the VFS faces throw ENOENT on unknown roots — the fallback decides below
+  }
+  if (!staged) {
+    if (typeof path === 'string' && path.startsWith('/') && mode !== undefined) {
+      if (globalThis.__dshProcAccessReal?.(path, mode) === true) return;
+    }
     throw enoent('access', path);
   }
 };

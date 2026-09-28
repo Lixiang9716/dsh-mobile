@@ -1217,11 +1217,13 @@ static int spike_run_main(int argc, char **argv) {
         if (served < 0) { rc = -1; break; }
         if (dsh_spike_complete(b.spike)) break;
         if (served == 0) {
-            /* Quiescent with nothing outstanding — except armed timers: the
-             * one place this driver sleeps (wall-clock physics of a timer,
-             * rule 8). Sleep to the earliest fire_at (never past the run
-             * deadline), then deliver the timer.fire event and pump again. */
-            if (b.n_timers == 0) break;
+            /* Quiescent with nothing outstanding — except armed timers and
+             * awaited subprocesses: the two wall-clock realities this driver
+             * sleeps for. Timers fire at their earliest fire_at; a spawned
+             * child (node:child_process seam) keeps the loop alive until the
+             * JS pump drains it or the scenario completes (W5-R, 2026-09-28). */
+            int procs = dsh_spike_procs_alive(b.spike);
+            if (b.n_timers == 0 && procs == 0) break;
             size_t earliest = 0;
             for (size_t i = 1; i < b.n_timers; i++) {
                 if (b.timers[i].fire_at_ms < b.timers[earliest].fire_at_ms) earliest = i;
@@ -1229,7 +1231,13 @@ static int spike_run_main(int argc, char **argv) {
             struct timespec now;
             clock_gettime(CLOCK_MONOTONIC, &now);
             long long now_ms = (long long)now.tv_sec * 1000 + now.tv_nsec / 1000000;
-            long long wait = b.timers[earliest].fire_at_ms - now_ms;
+            long long wait;
+            if (b.n_timers > 0) {
+                wait = b.timers[earliest].fire_at_ms - now_ms;
+                if (procs > 0 && (wait > 10 || wait < 0)) wait = 10;
+            } else {
+                wait = 10;
+            }
             if (wait > 0) {
                 if (deadline.tv_sec - now.tv_sec < (wait + 999) / 1000) {
                     fprintf(stderr, "smoke: %ds deadline elapsed before completion\n",
@@ -1240,12 +1248,14 @@ static int spike_run_main(int argc, char **argv) {
                 struct timespec nap = { wait / 1000, (wait % 1000) * 1000000 };
                 nanosleep(&nap, NULL);
             }
+            if (b.n_timers > 0) {
             int fired_id = b.timers[earliest].id;
             b.timers[earliest] = b.timers[b.n_timers - 1];
             b.n_timers--;
             char ev[80];
             snprintf(ev, sizeof(ev), "{\"event\":\"timer.fire\",\"timerId\":%d}", fired_id);
             if (dsh_spike_gateway_event(b.spike, ev) != 0) { rc = -1; break; }
+            }
         }
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

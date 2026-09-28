@@ -54,6 +54,8 @@ else
             --wildcards \
             "*/packages/*/tests" \
             "*/packages/*/src" \
+            "*/packages/*/package.json" \
+            "*/packages/*/*/package.json" \
             "*/scripts/test-invariants.ts" \
             "*/scripts/test-proxy-environment.ts" \
             "*/vitest.shared.ts"
@@ -66,6 +68,7 @@ out = os.environ['TESTS_DIR']
 patterns = [
     'packages/*/tests', 'packages/*/tests/*',
     'packages/*/src', 'packages/*/src/*',
+    'packages/*/package.json', 'packages/*/*/package.json',
     'scripts/test-invariants.ts', 'scripts/test-proxy-environment.ts',
     'vitest.shared.ts',
 ]
@@ -213,6 +216,34 @@ ensure_npm_registry "mime-types" "3.0.2" "2f9dd28353c303ff8750fbf68e474755b01c54
 ensure_npm_registry "@deepseek-ai/dsh-host-frontend-static" "0.1.6-alpha.2" "5cc322892525feb0422db40cd0c27f7a2180c9ef746c2f8784c402f7b635944f"
 ensure_npm_registry "@deepseek-ai/dsh-host-plugin-inventory" "0.1.6-alpha.2" "5579043f4b948ba101a77c9a521fda57f151272f464da0b4dbad56ee1fbaedc5"
 ensure_npm_registry "resolve.exports" "2.0.3" "a64cb8c0bfecdc41570b8ae5966f23d2f923fcd3ed4b4d2e33c5a05756172816"
+# W5-T (2026-09-28): the "workspace-only" verdicts overturned — the registry
+# DOES publish both packages at the pinned tag (the r3-F/C claim "never
+# published / only the rc stream" was checked against a stale cache). The
+# webhook-github specs need the dsh-webhook VALUES (WebhookDeliveryId /
+# WebhookSourceId) and the session-telemetry-otel specs need
+# SessionTelemetryCoordinator; the generic @deepseek-ai/dsh-* vendored probe
+# (dsh_vendored_rel, npm family) serves both trees — no bridge rows.
+ensure_npm_registry "@deepseek-ai/dsh-webhook" "0.1.6-alpha.2" "b17a0068ea3f1ab5440dd30c8516af390cd5c15a20e72c4511da1e75e4002855"
+ensure_npm_registry "@deepseek-ai/dsh-session-telemetry" "0.1.6-alpha.2" "8fe7cce72033eb8846170f2f8aae675192eeec7bdd21eba16be9b7e0d1fd267e"
+# W5-T: the @opentelemetry stack the session-telemetry-otel specs need, at
+# the upstream lockfile's exact resolutions (api-logs/sdk-logs/exporter/
+# otlp-exporter-base/otlp-transformer 0.220.0, api 1.9.1, core/resources
+# 2.10.0). Each ships build/esm/index.js — the ESM face the bridges re-export.
+ensure_npm_registry "@opentelemetry/api" "1.9.1" "11e2afae4775acd23e73cf4a131a395d2198eae3bddded177220fbdab9673cd2"
+ensure_npm_registry "@opentelemetry/api-logs" "0.220.0" "ac8413a949b70568454861f42200240e45a00c262d202308083647b9f6379d00"
+ensure_npm_registry "@opentelemetry/sdk-logs" "0.220.0" "862240b5389d7614bee0b389ade9acb1b203a024cfd2006dea197bb8e84755c0"
+ensure_npm_registry "@opentelemetry/core" "2.10.0" "044fdadd86c1ff75f0fb92f5c45b13ae30f22ad268afe0f9bc50c7b8639c0eb6"
+ensure_npm_registry "@opentelemetry/resources" "2.10.0" "e0856d126798b8f0a6b9ea97cce4ed33b2a51887a141164fa38fb236faca9f83"
+ensure_npm_registry "@opentelemetry/exporter-logs-otlp-http" "0.220.0" "49a73e637ff04a813907c6508140285d343356c79d34790014dc172ab9a2fb61"
+ensure_npm_registry "@opentelemetry/otlp-exporter-base" "0.220.0" "13023dfd4d6dae41ad9c1d48059c65b9faa6e3ed63340c5b7daca5ee12e40f64"
+ensure_npm_registry "@opentelemetry/otlp-transformer" "0.220.0" "250275f48cc5a7d4460bce3520c8d464bacd7a24904364865aaea553085c778c"
+ensure_npm_registry "@opentelemetry/semantic-conventions" "1.43.0" "4465839df9cf25046eacb64e37a38e7a2d033546356335190234bad60bd85d42"
+ensure_npm_registry "@opentelemetry/sdk-metrics" "2.9.0" "70f9f4b4313c874f47bb3522994163bdbdf44be8305e20c3c5ed242951621e9b"
+# W5-T: typescript 6.0.3 — the typert generator/proxy-types specs' default
+# import. Self-contained CJS bundle (lib/typescript.js, 9.1 MB); served
+# through the CJS adapter chain as a load experiment with a documented
+# time/memory budget.
+ensure_npm_registry "typescript" "6.0.3" "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a"
 
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"

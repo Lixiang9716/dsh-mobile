@@ -145,6 +145,18 @@ globalThis.setInterval = (fn, delay = 0, ...args) => {
     if (state.cancelled || intervals.get(handle) !== state) return;
     globalThis.setTimeout(tick, state.delayMs);
   };
+  // node's Timeout handle face: the vendored mux's startHeartbeat calls
+  // `heartbeatTimer.unref()` (stream-server.ts) — no ambient event loop to
+  // opt out of here, so unref/ref are bookkeeping no-ops and refresh just
+  // re-arms the loop (W5-Q 2026-09-28).
+  handle.unref = () => handle;
+  handle.ref = () => handle;
+  handle.hasRef = () => true;
+  handle.refresh = () => {
+    state.cancelled = false;
+    globalThis.setTimeout(tick, state.delayMs);
+    return handle;
+  };
   globalThis.setTimeout(tick, delayMs);
   return handle;
 };

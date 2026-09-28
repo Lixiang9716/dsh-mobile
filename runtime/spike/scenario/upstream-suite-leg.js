@@ -121,7 +121,59 @@ const pinProfileContainer = async () => {
   } catch (error) {
     if (error?.code !== 'EEXIST') log.debug('spec module dir mkdir failed', { code: error?.code });
   }
+  // process.execPath: the upstream contract spawns `process.execPath
+  // fixture-server.ts` expecting node's erasable-TS support (the lsp-stdio
+  // fixture's own header says "Run: node fixture-server.ts"). When the host
+  // exposes a node binary (the subprocess seam's PATH probe), pin it — the
+  // old fixed spelling (`/usr/local/bin/dsh-spike-cli`) was a non-executable
+  // placeholder whose only property was being absolute (W5-R, 2026-09-28).
+  try {
+    const facts = globalThis.__dshProcFacts?.();
+    if (typeof facts?.nodePath === 'string' && facts.nodePath.length > 0) {
+      globalThis.__dshProfileExecPath = facts.nodePath;
+    }
+  } catch (error) {
+    log.debug('execPath pin failed', { reason: String(error).slice(0, 120) });
+  }
   log.debug('profile container pinned', { cwd: globalThis.__dshProfileCwd });
+};
+
+/** Stage the specs' SPAWNED sibling files as REAL files next to the
+ * transpiled specs (upstream-tests/ is a real directory on the desktop
+ * spike): upstream CI runs `process.execPath <sibling .ts>` against the
+ * vendored test tree, and a real child reads the real disk — the staged-fs
+ * (in-runtime) fixture seeding cannot serve it. Sources stay vendored and
+ * read-only (D6): the leg COPIES, never edits. Inert where the bundle is
+ * not a writable real directory (device hosts). (W5-R, 2026-09-28.) */
+const REAL_SIBLING_FILES = [
+  // lsp-stdio's scriptable fake LSP server (connection/lifecycle spawn it;
+  // its header: "Run: node fixture-server.ts (Node's erasable TypeScript
+  // syntax support)")
+  ['packages/lsp/lsp-stdio/tests/fixture-server.ts', 'fixture-server.ts'],
+  // the win32-dialog driver spawns the worker and expects the native-less
+  // failure to reject through it ("rejects through the real worker where
+  // the Win32 surface is unavailable")
+  ['packages/host/directory-picker-native/src/win32-dialog-worker.ts', 'win32-dialog-worker.ts'],
+  // the sdk-client fake runtime server (spawned as `execPath fake-runtime.ts`)
+  ['packages/sdk/client/tests/fake-runtime.ts', 'fake-runtime.ts'],
+];
+const VENDOR_TESTS_TAG = 'dsh-v0.1.6-alpha.2'; // the ensure-dsh-tests.sh pin
+const stageRealSiblingFiles = async () => {
+  log.debug('real sibling staging begin', {});
+  // Real children read the REAL disk, so the copies must be real too — and
+  // the runtime's own fs face is the in-memory workspace VFS. The one real
+  // disk actor this seam owns is a CHILD PROCESS: /bin/cp runs in the CLI's
+  // real working directory (the checkout root, where vendor/ and
+  // upstream-tests/ live) — no cwd option on purpose (options.cwd would pin
+  // the virtual profile container, which is NOT on the real disk).
+  const { spawnSync } = await import('node:child_process');
+  for (const [from, to] of REAL_SIBLING_FILES) {
+    const vendorPath = `vendor/dsh-tests@${VENDOR_TESTS_TAG}/${from}`;
+    const res = spawnSync('/bin/cp', [vendorPath, `upstream-tests/${to}`]);
+    if (res.status !== 0) {
+      log.debug('sibling stage failed', { from, to, code: res.error?.code ?? res.stderr?.slice?.(0, 80) });
+    }
+  }
 };
 
 const main = async () => {
@@ -130,19 +182,24 @@ const main = async () => {
   // Pin the profile container for the os/fs shims BEFORE the spec imports
   // evaluate (this driver IS the suite's boot prelude).
   await pinProfileContainer();
+  // Stage the spawned sibling files (real children read the real disk).
+  await stageRealSiblingFiles();
   const spec = cfg.spec;
   if (typeof spec !== 'string' || spec.length === 0) fail('runtime.config carries no spec path');
   emit('suite/spec', { spec });
 
+  // The spec's fixtures module (emitted by transpile.mjs when the spec ships
+  // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the
+  // spec imports — some specs read fixtures at MODULE scope during
+  // collection (session-snapshot's suite.spec reads its record-suite
+  // fixture bytes into a closure before any test runs), so seeding after
+  // the import lost that race (W5-T). `../fixtures` joins resolve at
+  // /upstream-tests/fixtures, one spec per runtime, so the flat namespace
+  // never collides. A spec without a fixtures module simply skips.
+  await seedSpecFixtures(spec, emit);
   // The spec registers its tests at import time (module side effects are
   // the vitest collection model — exactly what the harness captures).
   await import(spec);
-  // The spec's fixtures module (emitted by transpile.mjs when the spec ships
-  // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the
-  // tests run — `../fixtures` joins resolve at /upstream-tests/fixtures, one
-  // spec per runtime, so the flat namespace never collides. A spec without a
-  // fixtures module simply fails this dynamic import and is skipped.
-  await seedSpecFixtures(spec, emit);
   const report = await runCollected((name, verdict, message) => {
     emit(verdict === 'pass' ? 'test/pass' : verdict === 'fail' ? 'test/fail' : verdict === 'start' ? 'test/start' : 'test/skip', {
       name: name.slice(0, 300),

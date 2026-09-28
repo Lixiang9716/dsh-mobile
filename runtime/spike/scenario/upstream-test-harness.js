@@ -357,11 +357,18 @@ const throwMatchers = (actual, check) => ({
     const thrownMessage = threw !== null && typeof threw === 'object' && typeof threw.message === 'string'
       ? threw.message
       : String(threw);
-    if (typeof expected === 'string') return check(thrownMessage.includes(expected), `throw message containing "${expected}" (got "${thrownMessage}")`);
+    // JSON-RPC errors (agentclientprotocol RequestError) keep the REAL server-
+    // side error in `.data` while `message` collapses to "Internal error" —
+    // surface the data in the verdict so the underlying throw is diagnosable
+    // from the structured log alone (W5-Q 2026-09-28).
+    const dataNote = threw !== null && typeof threw === 'object' && threw.data !== undefined
+      ? ` data=${JSON.stringify(threw.data).slice(0, 300)}`
+      : '';
+    if (typeof expected === 'string') return check(thrownMessage.includes(expected), `throw message containing "${expected}" (got "${thrownMessage}")${dataNote}`);
     // The got-message echo stays in the regex arm too: a bare "matching /…/"
     // verdict hides which arm of an it.each table drifted (acp bridge's
     // mcpServers validation table, W3-J 2026-09-27).
-    if (expected instanceof RegExp) return check(expected.test(thrownMessage), `throw message matching ${expected} (got "${thrownMessage}")`);
+    if (expected instanceof RegExp) return check(expected.test(thrownMessage), `throw message matching ${expected} (got "${thrownMessage}")${dataNote}`);
     // A thrown-in ERROR INSTANCE (jest/vitest contract): compared by MESSAGE
     // (and identity), not by instanceof — the product may re-wrap an equal
     // message across a catch boundary, and jest explicitly specifies message
@@ -620,13 +627,20 @@ let currentDescribe = [];
 
 const fullName = (name) => [...currentDescribe, name].join(' > ');
 
-export const describe = (name, factory) => {
+export const describe = (name, optionsOrFactory, maybeFactory) => {
+  // vitest's (name, options, factory) spelling (the remote-mock proxy-types
+  // spec passes { timeout }: the middle argument is optional).
+  const factory = typeof optionsOrFactory === 'function' ? optionsOrFactory : maybeFactory;
   currentDescribe.push(name);
   factory();
   currentDescribe.pop();
 };
 describe.skip = () => { /* counted at transpile time */ };
 describe.only = (name, factory) => describe(name, factory);
+// vitest's concurrent suites run their tests in parallel; the runtime is
+// single-threaded serial (D2), so the face runs them sequentially — the
+// acp-snapshot suite selects describe.concurrent for replay mode (W5-T).
+describe.concurrent = (name, optionsOrFactory, maybeFactory) => describe(name, optionsOrFactory, maybeFactory);
 
 export const it = (name, fn) => {
   suite.tests.push({ name: fullName(name), fn, hooks: { beforeEach: [...suite.beforeEach], afterEach: [...suite.afterEach] } });
@@ -708,7 +722,21 @@ export const expectTypeOf = () => typeChain;
  * test a hang froze on. */
 export const runCollected = async (sink) => {
   const report = { passed: 0, failed: 0, skipped: 0, failures: [] };
-  for (const setup of suite.before) await setup();
+  // Suite-level hooks reject with whatever the spec threw — including bare
+  // null/undefined (the otel egress afterAll rejected with null, which
+  // escaped as a scenario failure with the reason string "null" and no
+  // attribution). Wrap both ends: the hook's identity and the thrown value
+  // are named, never silently re-thrown (rule 5).
+  const suiteHookError = (phase, error) => new Error(
+    `${phase} hook failed: ${error === null ? 'null (rejection with null)' : error instanceof Error ? error.message : String(error)}`,
+  );
+  for (const setup of suite.before) {
+    try {
+      await setup();
+    } catch (error) {
+      throw suiteHookError('beforeAll', error);
+    }
+  }
   for (const t of suite.tests) {
     if (typeof t.fn !== 'function') { report.skipped += 1; sink(t.name, 'skipped'); continue; }
     sink(t.name, 'start');
@@ -721,13 +749,30 @@ export const runCollected = async (sink) => {
       // (stream-rebind). The context face is the documented subset: skip()
       // raises a marker the runner classifies as 'skipped' (vitest never
       // counts a context-skip a failure).
-      await t.fn({
-        skip: (note) => {
-          const skipError = new Error(note ?? 'skipped by test context');
-          skipError.__dshTestContextSkip = true;
-          throw skipError;
-        },
-      });
+      // Per-test abort signal: vitest hands each test fn a context whose
+      // `signal` aborts when the test finishes; tests thread it into
+      // deadline helpers and call signal.throwIfAborted() mid-body.
+      const controller = new AbortController();
+      try {
+        await t.fn({
+          skip: (note) => {
+            const skipError = new Error(note ?? 'skipped by test context');
+            skipError.__dshTestContextSkip = true;
+            throw skipError;
+          },
+          // vitest's `task` face: the running test's handle — task.timeout
+          // is the test's time budget in ms (specs pass it as a DEADLINE
+          // value: waitForFile(marker, task.timeout, signal)); budget
+          // re-arming stays on TestRunner.getCurrentTest().timeout(ms).
+          task: {
+            get name() { return t.name; },
+            get timeout() { return t.timeoutMs ?? 5000; },
+          },
+          signal: controller.signal,
+        });
+      } finally {
+        controller.abort();
+      }
       report.passed += 1;
       sink(t.name, 'pass');
     } catch (error) {
@@ -747,7 +792,8 @@ export const runCollected = async (sink) => {
         try { const raw = globalThis.__dshLaunchEnv?.(); return raw ? JSON.parse(raw) : {}; } catch { return {}; }
       })();
       if (globalThis.__DSH_LOG_SINK__ && launchEnv.DSH_R3E_DEBUG === '1') {
-        globalThis.__DSH_LOG_SINK__(JSON.stringify({ scenario: 'upstream.suite', event: 'debug/failure', name: t.name.slice(0, 120), cls: error?.constructor?.name, stack: String(error?.stack ?? '').slice(0, 900) }));
+        const rawJson = (() => { try { return JSON.stringify(error); } catch { return String(error); } })();
+        globalThis.__DSH_LOG_SINK__(JSON.stringify({ scenario: 'upstream.suite', event: 'debug/failure', name: t.name.slice(0, 120), cls: error?.constructor?.name, stack: String(error?.stack ?? '').slice(0, 900), raw: rawJson }));
       }
       sink(t.name, 'fail', error?.message ?? String(error));
     } finally {
@@ -757,7 +803,20 @@ export const runCollected = async (sink) => {
       }
     }
   }
-  for (const teardown of suite.after) await teardown();
+  for (const teardown of suite.after) {
+    try {
+      await teardown();
+    } catch (error) {
+      // vitest counts an afterAll failure as a suite error, not a test
+      // failure — surface it as its own failure row AND a named rejection,
+      // so the scenario verdict carries the hook's name instead of "null".
+      report.failed += 1;
+      const named = suiteHookError('afterAll', error);
+      report.failures.push({ name: 'afterAll', message: named.message, stack: String(error?.stack ?? '').split('\n').slice(1, 5).join(' | ') });
+      sink('afterAll', 'fail', named.message);
+      throw named;
+    }
+  }
   return report;
 };
 

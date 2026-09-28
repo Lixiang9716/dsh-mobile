@@ -306,6 +306,28 @@ const BRIDGES = [
     "export const isMockFunction = vi.isMockFunction;",
   ].join('\n')],
 
+  // @testing-library/react (W5-T): linkage-only. The vendored
+  // dsh-client-test-runtime lib imports { act, render, within } at module
+  // scope, so every spec importing a member of it (provider.client →
+  // RemoteError) needs the specifier to RESOLVE. No staged spec calls the
+  // renderers (the client/* suites are out of this phase's scope), so the
+  // face is the chokidar precedent: linkage satisfied, every renderer fails
+  // loud when CALLED (rule 5). The full package needs react-dom + @babel/
+  // runtime — a vendoring round that only a staged UI-rendering spec can
+  // justify.
+  ['@testing-library/react', [
+    "const refuse = (name) => () => {",
+    "  throw new Error('@testing-library/react: ' + name + ' is not served in this runtime — no DOM renderer surface (linkage stub)');",
+    "};",
+    "export const act = (callback) => typeof callback === 'function' ? callback() : Promise.resolve();",
+    "export const render = refuse('render');",
+    "export const within = refuse('within');",
+    "export const cleanup = () => {};",
+    "export const fireEvent = refuse('fireEvent');",
+    "export const screen = new Proxy({}, { get() { return refuse('screen.*'); } });",
+    "export default { act, render, within, cleanup, fireEvent, screen };",
+  ].join('\n')],
+
   // immer 10.2.0 (session/terminal/workspace-controller client specs): the
   // dist/immer.mjs ESM face (the export map's "import" row). The file reads
   // process.env.NODE_ENV at module scope and the suite driver installs no
@@ -318,11 +340,15 @@ const BRIDGES = [
   // the faces that need it; ??= keeps any future real global in charge.
   ['dsh-bridge-setup/globals', [
     "import proc from 'node:process';",
+    "import { makeRequire } from 'upstream/shims/cjs-loader.js';",
     "globalThis.process ??= proc;",
     "globalThis.global ??= globalThis;",
-    "globalThis.require ??= (name) => () => {",
-    "  throw new Error('require: ' + name + ' is not served in this runtime — the CJS face has no ESM build (linkage stub)');",
-    "};",
+    // The CJS face's global require (ESM vendored files calling bare
+    // require() — turndown's createHTMLParser is the operative caller).
+    // Bare requests need a cjs-loader table row and fail loud naming the
+    // specifier otherwise (the linkage-stub contract, now backed by real
+    // resolution for the tabled CJS-vendor packages).
+    "globalThis.require ??= (name) => makeRequire('/')(name);",
   ].join('\n')],
   ['immer', [
     "import 'dsh-bridge-setup/globals';",
@@ -377,6 +403,12 @@ const BRIDGES = [
   // agent-presets mount, typert loader): the published face of the
   // workspace vendor/group package, same 1.x stream as the vendored
   // cordis-plugin-loader/include pins; its default is the Group class.
+  // resolve.exports 2.0.3 (the r3-P boot plugin-manager row, restored W5-T):
+  // the vendored dsh-plugin-manager lib imports it bare at runtime — the
+  // transpiler's BARE_RESOLVES inline row only covers spec-graph imports,
+  // so the runtime face needs its own row over the vendored tree.
+  ['resolve.exports', "export * from '/vendor/npm/resolve.exports@2.0.3/dist/index.mjs';"],
+
   ['@deepseek-ai/cordis-plugin-group',
     "export { default } from '/vendor/npm/@deepseek-ai/cordis-plugin-group@1.0.4/lib/index.js';"],
 
@@ -567,14 +599,8 @@ const BRIDGES = [
     "  },",
     "});",
   ].join('\n')],
-  ['http', [
-    "const refuse = (name) => () => {",
-    "  throw new Error('http: ' + name + ' is not served in this runtime — no socket seam');",
-    "};",
-    "export const createServer = refuse('createServer');",
-    "export const request = refuse('request');",
-    "export const get = refuse('get');",
-  ].join(' ')],
+  // bare 'http' moved to the W5-T block below: it now re-exports the same
+  // in-process loopback face runtime-modules serves as node:http.
 
   // ipaddr.js 2.5.0 (the web family's IP classifier: web-fetch-http's
   // loopback/unicast range checks + the tool-web specs' proxies). The
@@ -611,6 +637,79 @@ const BRIDGES = [
     "export default ipaddr;",
     "export const IPv4 = ipaddr.IPv4;",
     "export const IPv6 = ipaddr.IPv6;",
+  ].join('\n')],
+
+  // ---- W5-T (2026-09-28) vendor rows ----
+  // The @opentelemetry stack the session-telemetry-otel specs import (the
+  // dsh-v0.1.6-alpha.2 lockfile's exact resolutions; every package ships a
+  // build/esm ESM face, so each row is the real-path re-export pattern and
+  // the faces' own relative imports resolve beside them). The egress spec
+  // drives OTLPLogExporter against an in-test node:http server — the loopback
+  // faces serve it (no socket).
+  ['@opentelemetry/api', "export * from '/vendor/npm/@opentelemetry/api@1.9.1/build/esm/index.js';"],
+  ['@opentelemetry/api-logs', "export * from '/vendor/npm/@opentelemetry/api-logs@0.220.0/build/esm/index.js';"],
+  ['@opentelemetry/sdk-logs', "export * from '/vendor/npm/@opentelemetry/sdk-logs@0.220.0/build/esm/index.js';"],
+  ['@opentelemetry/core', "export * from '/vendor/npm/@opentelemetry/core@2.10.0/build/esm/index.js';"],
+  ['@opentelemetry/resources', "export * from '/vendor/npm/@opentelemetry/resources@2.10.0/build/esm/index.js';"],
+  ['@opentelemetry/exporter-logs-otlp-http', "export * from '/vendor/npm/@opentelemetry/exporter-logs-otlp-http@0.220.0/build/esm/index.js';"],
+  ['@opentelemetry/otlp-exporter-base', "export * from '/vendor/npm/@opentelemetry/otlp-exporter-base@0.220.0/build/esm/index.js';"],
+  ['@opentelemetry/otlp-transformer', "export * from '/vendor/npm/@opentelemetry/otlp-transformer@0.220.0/build/esm/index.js';"],
+  ['@opentelemetry/semantic-conventions', "export * from '/vendor/npm/@opentelemetry/semantic-conventions@1.43.0/build/esm/index.js';"],
+  ['@opentelemetry/sdk-metrics', "export * from '/vendor/npm/@opentelemetry/sdk-metrics@2.9.0/build/esm/index.js';"],
+
+  // The UNPREFIXED node-builtin specifiers the otel ESM faces import (the
+  // C shim map keys on the node: spelling only). Each re-exports the same
+  // shim module the node: face serves — one implementation instance.
+  ['util', "import * as utilShim from 'upstream/shims/util.js';\nexport * from 'upstream/shims/util.js';\nexport default utilShim;"],
+  ['fs', "export * from 'upstream/shims/fs.js';\nexport { default } from 'upstream/shims/fs.js';"],
+  ['path', "export * from 'upstream/shims/path.js';\nexport { default } from 'upstream/shims/path.js';"],
+  ['process', "export * from 'node:process';\nexport { default } from 'node:process';"],
+  ['zlib', "export * from 'upstream/shims/node-zlib.js';\nexport { default } from 'upstream/shims/node-zlib.js';"],
+  // Bare 'http' now rides the SAME in-process loopback face as node:http
+  // (runtime-modules round 6) — the otel exporter's dynamic import('http')
+  // dispatches through it like every other suite client. The old refuse-stub
+  // predates the loopback round.
+  ['http', [
+    "import { createHttpFace } from 'upstream/shims/node-http-loopback.js';",
+    "const http = createHttpFace();",
+    "export default http;",
+    "export const createServer = http.createServer;",
+    "export const request = http.request;",
+    "export const get = http.get;",
+    "export const Server = http.Server;",
+    "export const ServerResponse = http.ServerResponse;",
+    "export const IncomingMessage = http.IncomingMessage;",
+    "export const Agent = http.Agent;",
+    "export const validateHeaderName = http.validateHeaderName;",
+    "export const validateHeaderValue = http.validateHeaderValue;",
+  ].join('\n')],
+  // https: the real-wire TLS client — no socket seam (D2); the otel exporter
+  // only reaches it for https:// endpoints, and the egress spec's in-test
+  // server is http://127.0.0.1.
+  ['https', [
+    "const refuse = (name) => () => {",
+    "  throw new Error('https: ' + name + ' is not served in this runtime — no socket seam');",
+    "};",
+    "export const request = refuse('request');",
+    "export const get = refuse('get');",
+    "export const createServer = refuse('createServer');",
+    "export const Agent = class { constructor() { refuse('Agent'); } };",
+    "export default { request, get, createServer, Agent };",
+  ].join('\n')],
+  // child_process: the subprocess seam is deliberately unprovided (rule D2);
+  // the resources env-detectors link against it but only execute inside
+  // container/VM detection paths the specs never drive.
+  ['child_process', [
+    "const refuse = (name) => () => {",
+    "  throw new Error('child_process: ' + name + ' is not served in this runtime — no subprocess seam (rule D2)');",
+    "};",
+    "export const exec = refuse('exec');",
+    "export const execFile = refuse('execFile');",
+    "export const execSync = refuse('execSync');",
+    "export const spawn = refuse('spawn');",
+    "export const spawnSync = refuse('spawnSync');",
+    "export const fork = refuse('fork');",
+    "export default { exec, execFile, execSync, spawn, spawnSync, fork };",
   ].join('\n')],
 
   // @joplin/turndown-plugin-gfm 1.0.67 (the tool-web HTML→markdown GFM
@@ -672,19 +771,49 @@ const BRIDGES = [
     "export default compression;",
   ].join('\n')],
 
-  // ws 8.21.0 (the api-gateway's RemoteStreamMux WebSocketServer): the
-  // vendored lib/ is a CJS require-graph over node:net/tls/http — no
-  // in-runtime socket seam serves it (D2), and the loopback carries fetch
-  // dispatch, not WS upgrades. The face keeps the load honest: the
-  // constructors throw loud naming the seam (rule 5) — every mux-free arm
-  // of the gateway specs runs.
+  // ws 8.21.0 (W5-Q 2026-09-28): the REAL vendored lib, loaded through the
+  // userland CJS loader (the published face is CommonJS with relative lib/
+  // requires). Its bare requires (events/http/https/net/tls/crypto/stream/
+  // url/util/buffer/zlib) are satisfied by the builtin faces registered
+  // below BEFORE the entry evaluates — CJS evaluation is synchronous, so
+  // static ESM imports of the shims land in the cjs-loader's face table
+  // first. The HTTP transport rides the loopback: an UPGRADE-shaped
+  // http.request pairs in-memory LoopbackSockets with the registry server
+  // (node-http-loopback.js), so the real ws framing runs on both ends with
+  // no OS socket and no second process/thread (D2 holds). `tls`/`https` are
+  // linkage faces (wss:// is a desktop transport — never dialable here);
+  // `net.connect` is only ws's DEFAULT createConnection, which the loopback
+  // dispatch deliberately bypasses.
   ['ws', [
-    "const WebSocket = globalThis.WebSocket; // web-shims installs the global (constants real, constructor loud)",
-    "export class WebSocketServer {",
-    "  constructor() { throw new Error('ws: WebSocketServer needs a WS-upgrade seam over the loopback — not served in this runtime'); }",
-    "}",
-    "export { WebSocket };",
-    "export default WebSocket;",
+    "import * as __ws_crypto from 'upstream/shims/crypto.js';",
+    "import * as __ws_events from 'upstream/shims/events.js';",
+    "import * as __ws_stream from 'upstream/shims/node-stream.js';",
+    "import * as __ws_buffer from 'upstream/shims/buffer.js';",
+    "import * as __ws_url from 'upstream/shims/url.js';",
+    "import * as __ws_zlib from 'upstream/shims/node-zlib.js';",
+    "import * as __ws_http from 'node:http';",
+    "import * as __ws_net from 'node:net';",
+    "import * as __ws_tls from 'node:tls';",
+    "import { registerBuiltinFace, requireCjsPackage } from 'upstream/shims/cjs-loader.js';",
+    "const __ws_EventEmitter = __ws_events.EventEmitter;",
+    "__ws_EventEmitter.EventEmitter = __ws_EventEmitter;",
+    "registerBuiltinFace('crypto', __ws_crypto);",
+    "registerBuiltinFace('events', __ws_EventEmitter);",
+    "registerBuiltinFace('stream', __ws_stream);",
+    "registerBuiltinFace('buffer', { ...__ws_buffer, isUtf8: __ws_buffer.isUtf8 });",
+    "registerBuiltinFace('url', { URL: __ws_url.DshURL, pathToFileURL: __ws_url.pathToFileURL, fileURLToPath: __ws_url.fileURLToPath, default: __ws_url.default });",
+    "registerBuiltinFace('util', { types: { isUint8Array: (v) => v instanceof Uint8Array } });",
+    "registerBuiltinFace('zlib', __ws_zlib);",
+    "registerBuiltinFace('http', __ws_http);",
+    "registerBuiltinFace('net', __ws_net);",
+    "registerBuiltinFace('tls', __ws_tls);",
+    "registerBuiltinFace('https', { request: () => { throw new Error('node:https: request is not served in this runtime — no TLS transport (wss:// is a desktop capability)'); }, get: () => { throw new Error('node:https: get is not served in this runtime — no TLS transport'); } });",
+    "const ws = requireCjsPackage('/vendor/npm/ws@8.21.0');",
+    "export const WebSocketServer = ws.WebSocketServer;",
+    "export const WebSocket = ws.WebSocket;",
+    "export const Receiver = ws.Receiver;",
+    "export const Sender = ws.Sender;",
+    "export default ws;",
   ].join('\n')],
 
   // readable-stream (the webworker-runtime node-builtin limbs: fs streams
@@ -730,6 +859,99 @@ const BRIDGES = [
     "const readableStream = Object.assign({ Readable, Writable, Duplex, PassThrough, Transform, pipeline }, streamStatics);",
     "readableStream.Stream = readableStream; // node: the Stream base carries the statics (the limbs destructure them off it)",
     "export default readableStream;",
+  ].join('\n')],
+
+  // mime-types 3.0.2 (+ mime-db 1.54.0, W5-T): the vendored
+  // dsh-api-session-controller imports mime-types bare for every media arm
+  // (the media-references spec's family). CJS: index.js requires mime-db +
+  // 'path' + './mimeScore'; mimeScore REBINDS module.exports — exactly the
+  // shape __dshCjsKeep exists for (the r3-P scope-rebind blocker, closed by
+  // the generalized chain infra).
+  ['dsh-bridge-setup/mime-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "import * as pathShim from 'upstream/shims/path.js';",
+    "globalThis.__dshCjsFaces.set('path', pathShim);",
+    // mime-db/index.js requires ./db.json (the vendored tree ships the JSON
+    // beside it); pre-register the parsed face so the require lands.
+    "globalThis.__dshCjsFaces.set('./db.json', JSON.parse(globalThis.__dshBundleRequire(",
+    "  '/vendor/npm/mime-db@1.54.0/index.js', './db.json')));",
+    "globalThis.__dshCjsSetup('mime-db');",
+  ].join('\n')],
+  ['dsh-bridge-setup/mime-cjs-1', [
+    "import 'dsh-bridge-setup/mime-cjs-0';",
+    "import '/vendor/npm/mime-db@1.54.0/index.js';",
+    "globalThis.__dshCjsKeep('mime-db');",
+    "globalThis.__dshCjsSetup('./mimeScore');",
+  ].join('\n')],
+  ['dsh-bridge-setup/mime-cjs-2', [
+    "import 'dsh-bridge-setup/mime-cjs-1';",
+    "import '/vendor/npm/mime-types@3.0.2/mimeScore.js';",
+    "globalThis.__dshCjsKeep('./mimeScore');",
+    "globalThis.__dshCjsSetup('index');",
+  ].join('\n')],
+  ['dsh-bridge-setup/mime-cjs-3', [
+    "import 'dsh-bridge-setup/mime-cjs-2';",
+    "import '/vendor/npm/mime-types@3.0.2/index.js';",
+    "globalThis.__dshCjsKeep('index');",
+    "globalThis.__dshMimeTypesFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshMimeTypesFace?.lookup !== 'function') {",
+    "  throw new Error('npm-bridges: mime-types CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+  // typescript 6.0.3 (W5-T): the typert generator + remote-mock proxy-types
+  // specs' default import. One self-contained CJS file (no internal
+  // requires); the chain is a single link. LOAD EXPERIMENT: 9.1 MB of JS in
+  // quickjs — the specs exercise ts.createSourceFile/transform on small
+  // inputs, so the question is parse time + memory, which this round
+  // measures (90s class budget, documented in tmp/r3-ledger-T.json).
+  ['dsh-bridge-setup/typescript-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "import * as pathShim from 'upstream/shims/path.js';",
+    "import * as osShim from 'upstream/shims/os.js';",
+    "import * as utilShim from 'upstream/shims/util.js';",
+    "import fsDefault from 'upstream/shims/fs.js';",
+    // lib/typescript.js's getNodeSystem require()s the node builtins it
+    // might use at module init; the shims carry those faces.
+    "globalThis.__dshCjsFaces.set('fs', fsDefault);",
+    "globalThis.__dshCjsFaces.set('path', pathShim);",
+    "globalThis.__dshCjsFaces.set('os', osShim);",
+    "globalThis.__dshCjsFaces.set('util', utilShim);",
+    // The bundle probes ambient __filename/__dirname in getNodeSystem
+    // (isFileSystemCaseSensitive). Ambient for exactly this file's
+    // evaluation; the capture link hands them back.
+    "globalThis.__filename = '/vendor/npm/typescript@6.0.3/lib/typescript.js';",
+    "globalThis.__dirname = '/vendor/npm/typescript@6.0.3/lib';",
+    "globalThis.process ??= { platform: 'linux', env: {}, argv: [], cwd: () => '/', nextTick: (fn) => fn() };",
+    "globalThis.__dshCjsSetup('typescript');",
+  ].join('\n')],
+  ['dsh-bridge-setup/typescript-cjs-1', [
+    "import 'dsh-bridge-setup/typescript-cjs-0';",
+    "import '/vendor/npm/typescript@6.0.3/lib/typescript.js';",
+    "delete globalThis.__filename;",
+    "delete globalThis.__dirname;",
+    "globalThis.__dshCjsKeep('typescript');",
+    "globalThis.__dshTypescriptFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshTypescriptFace?.createSourceFile !== 'function') {",
+    "  throw new Error('npm-bridges: typescript CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+  ['typescript', [
+    "import 'dsh-bridge-setup/typescript-cjs-1';",
+    "const ts = globalThis.__dshTypescriptFace;",
+    "export default ts;",
+  ].join('\n')],
+
+  ['mime-types', [
+    "import 'dsh-bridge-setup/mime-cjs-3';",
+    "const mimeTypes = globalThis.__dshMimeTypesFace;",
+    "export default mimeTypes;",
+    "export const charset = mimeTypes.charset;",
+    "export const charsets = mimeTypes.charsets;",
+    "export const contentType = mimeTypes.contentType;",
+    "export const extension = mimeTypes.extension;",
+    "export const extensions = mimeTypes.extensions;",
+    "export const lookup = mimeTypes.lookup;",
+    "export const types = mimeTypes.types;",
   ].join('\n')],
 
   // ---- per-face CJS adapter chains (the ipaddr/gfm pattern generalized).

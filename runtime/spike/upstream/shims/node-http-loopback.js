@@ -79,6 +79,12 @@ class LoopbackIncoming extends EventEmitter {
     this.url = url;
     this.headers = headers;
     this.rawHeaders = [];
+    // node's IncomingMessage.headersDistinct: the same bag keyed to ARRAYS
+    // (the webhook-github handler's requiredHeader reads headersDistinct[name]
+    // and requires exactly one value — wave 5, measured off its spec).
+    this.headersDistinct = Object.fromEntries(
+      Object.entries(headers ?? {}).map(([name, value]) => [name, Array.isArray(value) ? value : [value]]),
+    );
     this.statusCode = undefined;
     this.complete = false;
     this.readable = true;
@@ -87,12 +93,23 @@ class LoopbackIncoming extends EventEmitter {
   }
   #body;
   #replayed;
+  #encoding;
+  #ended;
   setTimeout() { return this; }
   /** The readable-stream no-ops node's IncomingMessage carries (the client
    * face's rawChat callback calls response.resume() — W4-N). */
   resume() { return this; }
   pause() { return this; }
   read() { return null; }
+  /** setEncoding(encoding) — the webhook-github handler spec's request
+   * callback declares `response.setEncoding('utf8')` before its 'data'
+   * accumulation (spec :224); the loopback replays the response body as a
+   * utf8 string on the 'data' channel already, so the face records the
+   * encoding and decodes on emit (Buffer chunks render through toString). */
+  setEncoding(encoding) {
+    this.#encoding = String(encoding ?? 'utf8');
+    return this;
+  }
   destroy(error) {
     this.readable = false;
     this.complete = true;
@@ -105,23 +122,47 @@ class LoopbackIncoming extends EventEmitter {
     if (this.#replayed) return;
     this.#replayed = true;
     nextTick(() => {
-      if (this.#body.length > 0) this.emit('data', this.#body);
-      this.complete = true;
-      this.emit('end');
-      this.emit('close');
+      if (this.#body.length > 0) this.emit('data', this.renderChunk(this.#body));
+      this.#finish();
     });
+  }
+  /** Terminal state, exactly once (an iterate-to-EOF read IS reading to the
+   * end of the body — the webhook-github handler checks `request.complete`
+   * synchronously after its for-await, so the async-iterator path must mark
+   * completion itself, not one tick later via beginReplay). */
+  #finish() {
+    if (this.#ended) return;
+    this.#ended = true;
+    this.complete = true;
+    this.emit('end');
+    this.emit('close');
+  }
+  /** Render one replay chunk per setEncoding (default: utf8 string — the
+   * loopback's 'data' payload has been a utf8 string since the W3 round;
+   * an explicit encoding keeps the same face). */
+  renderChunk(chunk) {
+    if (this.#encoding === undefined) return chunk;
+    if (typeof chunk === 'string') return chunk;
+    if (globalThis.Buffer && typeof chunk.toString === 'function') {
+      return chunk.toString(this.#encoding === 'buffer' ? 'utf8' : this.#encoding);
+    }
+    return chunk;
   }
   [Symbol.asyncIterator]() {
     const source = this;
     let consumed = false;
     return {
       next: async () => {
-        if (consumed) return { value: undefined, done: true };
+        if (consumed) {
+          source.#finish();
+          return { value: undefined, done: true };
+        }
         consumed = true;
         // One tick so an event-style consumer registered first is served by
         // its own channel, not by this iterator.
         await new Promise((resolve) => nextTick(resolve));
         if (source.#body.length > 0) return { value: source.#body, done: false };
+        source.#finish();
         return { value: undefined, done: true };
       },
       return: () => Promise.resolve({ value: undefined, done: true }),
@@ -244,8 +285,23 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
       host = first.host ?? host;
       cb = args[1];
     }
-    if (record) return server; // already listening (node throws; idempotent is safer here)
+    if (record) return server; // this server is already listening — idempotent
     const boundPort = port === 0 ? nextEphemeralPort++ : port;
+    // node: binding a port ANOTHER server holds emits 'error' EADDRINUSE
+    // (checked AFTER the bind port resolves — an explicit port can collide
+    // with any registered listener, ephemeral or not; the inspector
+    // endpoint's port advance relies on this contract, W5-Q).
+    const occupied = registry.get(keyFor(host, boundPort));
+    if (occupied !== undefined && occupied.server !== server) {
+      const error = new Error(`listen EADDRINUSE: address already in use ${host}:${boundPort}`);
+      error.code = 'EADDRINUSE';
+      error.errno = -98;
+      error.syscall = 'listen';
+      error.address = host;
+      error.port = boundPort;
+      nextTick(() => server.emit('error', error));
+      return server;
+    }
     record = { server, host, port: boundPort, handler };
     registry.set(keyFor(host, boundPort), record);
     server.listening = true;
@@ -268,7 +324,10 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
     registry.delete(keyFor(record.host, record.port));
     record = null;
     server.listening = false;
-    if (cb) cb(null);
+    // node's close callback carries NO argument on success (an Error only on
+    // failure); cb(null) made the otel egress afterAll's
+    // `error === undefined ? resolve() : reject(error)` reject with null.
+    if (cb) cb();
     nextTick(() => server.emit('close'));
     return server;
   };
@@ -353,13 +412,48 @@ const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
     // living until end/destroy. See LoopbackServerResponse.#maybeHeaders.
     const response = new LoopbackServerResponse(captured, (status, headerObject) => {
       if (settled) return;
-      settled = true;
       // redirect:'error' contract: a 3xx is the fetch-level TypeError, never
       // a resolved Response (the adapter's catch classifies it as TRANSPORT).
       if (init?.redirect === 'error' && [301, 302, 303, 307, 308].includes(status)) {
+        settled = true;
         reject(new TypeError(`fetch: redirect for ${requestUrl} (redirect: 'error')`));
         return;
       }
+      // Default 'follow': re-dispatch through the registry to the Location
+      // target. 307/308 preserve method+body; 301/302/303 degrade a non-GET
+      // to GET without a body (the fetch spec's change-method rule); a host
+      // change strips the credential pair. The web-search-deepseek redirect
+      // spec drives exactly this face (its 307 must forward the POST body).
+      const locationValue = headerObject?.location ?? headerObject?.Location;
+      if ((init?.redirect ?? 'follow') === 'follow'
+        && [301, 302, 303, 307, 308].includes(status) && locationValue) {
+        if ((options.redirectCount ?? 0) >= 20) {
+          settled = true;
+          reject(new TypeError('fetch: too many redirects'));
+          return;
+        }
+        let nextParsed;
+        try {
+          nextParsed = new globalThis.URL(locationValue, parsed.href);
+        } catch {
+          settled = true;
+          reject(new TypeError(`fetch: invalid redirect location ${locationValue}`));
+          return;
+        }
+        settled = true; // the redirect hop owns the outcome now
+        const keepMethod = status === 307 || status === 308;
+        const nextMethod = keepMethod ? method : 'GET';
+        const nextInit = { ...init, method: nextMethod };
+        const nextBody = keepMethod ? bodyBytes : undefined;
+        if (!keepMethod) nextInit.body = undefined;
+        if (hostFor(nextParsed) !== hostFor(parsed)) {
+          nextInit.headers = Object.fromEntries(Object.entries({ ...headers })
+            .filter(([name]) => name !== 'authorization' && name !== 'cookie'));
+        }
+        resolve(dispatchParsed(nextParsed, nextInit, { ...options, redirectCount: (options.redirectCount ?? 0) + 1 }, nextBody, formDataType));
+        return;
+      }
+      settled = true;
       resolve(new globalThis.Response(body, {
         status,
         statusText: response.statusMessage ?? '',
@@ -372,7 +466,7 @@ const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
       settled = true;
       reject(error ?? new Error('response destroyed before headers'));
     });
-    const request = new LoopbackIncoming({ method, url: requestUrl, headers, body: globalThis.Buffer ? globalThis.Buffer.from(bodyBytes) : bodyBytes });
+    const request = new LoopbackIncoming({ method, url: requestUrl, headers, body: globalThis.Buffer ? globalThis.Buffer.from(bodyBytes ?? new Uint8Array(0)) : (bodyBytes ?? new Uint8Array(0)) });
     // The reset face: `connection_reset` behaviors tear the request socket
     // down (llm-mock-server's `request.socket.destroy()`), which on the wire
     // is a client-side ECONNRESET — the adapter classifies it TRANSPORT.
@@ -412,6 +506,349 @@ const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
   });
 };
 
+/** ===== The WebSocket upgrade seam (W5-Q, 2026-09-28) =====================
+ * The suite's socket-seam family (gateway RemoteStreamMux, the experimental
+ * inspector endpoint) runs the REAL vendored ws@8.21.0 on both ends — the
+ * missing piece was the byte transport the WS handshake rides on. One
+ * process (D2) still holds: a LoopbackSocket is an in-memory byte pipe
+ * paired like pipe(2) — no OS socket, no thread, nothing leaves the
+ * runtime; net.connect/tls.connect stay refused for every other use.
+ * http.request UPGRADE-shaped calls (Upgrade: websocket) route here instead
+ * of the fetch dispatch: the client half carries the serialized request head
+ * to the registry record's server half, the server-side parser emits node's
+ * `server.on('upgrade')(req, socket, head)`, and the 101 response head
+ * flows back to the client's 'upgrade' event. After the handshake the
+ * halves are plain byte pipes and the real ws framing runs.
+ * ========================================================================= */
+
+const HEADER_END = '\r\n\r\n';
+
+/** Index of the header-terminator start across buffered chunks, or -1. */
+const findHeaderEnd = (chunks, totalLength) => {
+  if (chunks.length === 0) return -1;
+  const whole = chunks.length === 1 ? chunks[0] : (() => {
+    const all = new Uint8Array(totalLength);
+    let at = 0;
+    for (const c of chunks) { all.set(c, at); at += c.byteLength; }
+    return all;
+  })();
+  const marker = encodeUtf8(HEADER_END);
+  outer: for (let i = 0; i + marker.length <= whole.length; i++) {
+    for (let j = 0; j < marker.length; j++) {
+      if (whole[i + j] !== marker[j]) continue outer;
+    }
+    return i;
+  }
+  return -1;
+};
+
+const concatChunks = (chunks, totalLength) => {
+  if (chunks.length === 1) return chunks[0];
+  const all = new Uint8Array(totalLength);
+  let at = 0;
+  for (const c of chunks) { all.set(c, at); at += c.byteLength; }
+  return all;
+};
+
+/** Parse one HTTP request/response head (bytes BEFORE the terminator) into
+ * {firstLine, headers, rawHeaders} — header names lowercase in the bag (the
+ * IncomingMessage contract), the last value winning per header name. */
+const parseHttpHead = (headBytes) => {
+  const text = decodeUtf8(headBytes);
+  const lines = text.split('\r\n');
+  const firstLine = lines[0];
+  const headers = Object.create(null);
+  const rawHeaders = [];
+  for (const line of lines.slice(1)) {
+    if (line.length === 0) continue;
+    const colon = line.indexOf(':');
+    if (colon === -1) continue;
+    const name = line.slice(0, colon).trim();
+    const value = line.slice(colon + 1).trim();
+    rawHeaders.push(name, value);
+    headers[name.toLowerCase()] = value;
+  }
+  return { firstLine, headers, rawHeaders };
+};
+
+/** One half of the paired in-memory byte transport. The face is what the
+ * vendored ws sender/receiver/websocket touch on a net.Socket:
+ * write/pause/resume/end/destroy + setTimeout/setNoDelay/setKeepAlive, and
+ * 'data'/'end'/'close'/'error' emission in write order. A HANDSHAKE GATE
+ * may be installed before first delivery: early bytes go to the gate
+ * callback (the HTTP head parser — it returns the bytes it did not consume,
+ * which re-queue and stay gated) until releaseGate turns the half into a
+ * plain pipe. */
+class LoopbackSocket extends EventEmitter {
+  #peer = null;
+  #pending = [];
+  #draining = false;
+  #paused = false;
+  #ended = false;
+  #destroyed = false;
+  #gate = null;
+  remoteAddress = '127.0.0.1';
+  remotePort = 0;
+  localPort = 0;
+  // node's legacy state views (ws's socketOnClose reads
+  // `_socket._readableState.endEmitted` to split clean vs abrupt closes and
+  // `.length` before read()-ing the tail — length mirrors the pending queue
+  // so a non-empty tail is exactly what read() can pull).
+  #endEmitted = false;
+  #errorEmitted = false;
+  #pendingLength() {
+    let n = 0;
+    for (const c of this.#pending) n += c.byteLength;
+    return n;
+  }
+  get _readableState() {
+    const self = this;
+    return {
+      get endEmitted() { return self.#endEmitted; },
+      get errorEmitted() { return self.#errorEmitted; },
+      get destroyed() { return self.#destroyed; },
+      get length() { return self.#pendingLength(); },
+    };
+  }
+  get _writableState() {
+    const self = this;
+    return {
+      get needDrain() { return false; },
+      get errorEmitted() { return self.#errorEmitted; },
+      get destroyed() { return self.#destroyed; },
+      get length() { return 0; },
+      get ended() { return self.#ended; },
+      get finished() { return self.#ended; },
+    };
+  }
+  static _pair(a, b) {
+    a.#peer = b;
+    b.#peer = a;
+    a.remotePort = b.localPort;
+    b.remotePort = a.localPort;
+  }
+  get destroyed() { return this.#destroyed; }
+  get readable() { return !this.#destroyed; }
+  get writable() { return !this.#destroyed && !this.#ended; }
+  write(chunk, ...rest) {
+    const cb = typeof rest[rest.length - 1] === 'function' ? rest[rest.length - 1] : undefined;
+    if (this.#destroyed || this.#ended) {
+      const error = new Error('write after end');
+      if (cb) nextTick(cb, error);
+      else this.emit('error', error);
+      return false;
+    }
+    this.#peer.#pending.push(toBytes(chunk));
+    this.#peer.#schedule();
+    if (cb) nextTick(cb);
+    return true;
+  }
+  cork() {}
+  uncork() {}
+  end(chunk, cb) {
+    if (chunk !== undefined && chunk !== null) this.write(chunk);
+    this.#ended = true;
+    if (typeof cb === 'function') nextTick(cb);
+    const peer = this.#peer;
+    nextTick(() => {
+      if (!peer.#destroyed) {
+        peer.#endEmitted = true;
+        peer.emit('end');
+      }
+    });
+    return this;
+  }
+  pause() { this.#paused = true; return this; }
+  resume() {
+    this.#paused = false;
+    this.#schedule();
+    return this;
+  }
+  destroy(error) {
+    if (this.#destroyed) return this;
+    this.#destroyed = true;
+    this.#pending.length = 0;
+    const peer = this.#peer;
+    peer.#destroyed = true;
+    peer.#pending.length = 0;
+    if (error !== undefined && error !== null) {
+      this.#errorEmitted = true;
+      peer.#errorEmitted = true;
+      this.emit('error', error);
+    }
+    nextTick(() => {
+      this.emit('close');
+      peer.emit('close');
+    });
+    return this;
+  }
+  setTimeout() { return this; }
+  setNoDelay() {}
+  setKeepAlive() {}
+  unref() {}
+  ref() {}
+  /** node's readable read([size]) face: pull up to `size` bytes (default:
+   * one whole queued chunk) out of the pending queue — ws's socketOnClose
+   * reads any tail bytes after the close (W5-Q). */
+  read(size) {
+    if (this.#pending.length === 0) return null;
+    const first = this.#pending.shift();
+    if (size === undefined || size === null || first.byteLength <= size) {
+      return globalThis.Buffer ? globalThis.Buffer.from(first) : first;
+    }
+    const out = first.slice(0, size);
+    this.#pending.unshift(first.slice(size));
+    return globalThis.Buffer ? globalThis.Buffer.from(out) : out;
+  }
+  _installGate(gate) {
+    this.#gate = gate;
+    this.#schedule();
+  }
+  _releaseGate() {
+    this.#gate = null;
+    this.#schedule();
+  }
+  #schedule() {
+    if (this.#draining) return;
+    this.#draining = true;
+    queueMicrotask(() => {
+      this.#draining = false;
+      this.#drain();
+    });
+  }
+  #drain() {
+    if (this.#destroyed) return;
+    while (!this.#paused && !this.#destroyed && this.#pending.length > 0) {
+      const bytes = this.#pending.shift();
+      if (this.#gate !== null) {
+        const leftover = this.#gate(bytes);
+        if (leftover !== undefined && leftover.byteLength > 0) {
+          this.#pending.unshift(leftover);
+        }
+        if (this.#gate !== null) return; // still gated — a partial head waits for more bytes
+      } else {
+        this.emit('data', globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes);
+      }
+    }
+  }
+}
+
+/** The SERVER-side handshake: consume the client's request head off the
+ * server half, emit node's `server.on('upgrade')(req, socket, head)` on the
+ * registry record's server, then release the half into pipe mode. A record
+ * without upgrade listeners gets node's 501 refusal. */
+const serverUpgradeIngress = (record, serverHalf) => {
+  let buffered = [];
+  let total = 0;
+  serverHalf._installGate((bytes) => {
+    buffered.push(bytes);
+    total += bytes.byteLength;
+    const at = findHeaderEnd(buffered, total);
+    if (at === -1) return new Uint8Array(0); // head incomplete — keep gating
+    const whole = concatChunks(buffered, total);
+    const headBytes = whole.slice(0, at);
+    const rest = whole.slice(at + HEADER_END.length);
+    const { firstLine, headers, rawHeaders } = parseHttpHead(headBytes);
+    const firstSpace = firstLine.indexOf(' ');
+    const lastSpace = firstLine.lastIndexOf(' ');
+    const method = firstSpace === -1 ? 'GET' : firstLine.slice(0, firstSpace);
+    const url = firstSpace === -1 ? '/' : firstLine.slice(firstSpace + 1, lastSpace === -1 ? firstLine.length : lastSpace);
+    const incoming = new LoopbackIncoming({ method, url, headers, body: [] });
+    incoming.rawHeaders = rawHeaders;
+    incoming.complete = true;
+    incoming.readable = false;
+    if (record.server.listenerCount('upgrade') === 0) {
+      serverHalf.write(serializeRefusalHead());
+      serverHalf.end();
+      return new Uint8Array(0);
+    }
+    serverHalf._releaseGate();
+    record.server.emit('upgrade', incoming, serverHalf, rest);
+    return new Uint8Array(0);
+  });
+};
+
+/** The refusal head (node: an upgrade request with no upgrade listener). */
+const serializeRefusalHead = () => 'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n';
+
+/** The CLIENT-side handshake: parse the 101 (or any final status) off the
+ * client half and emit `req.emit('upgrade', res, socket, head)` the way
+ * node's http client does. A non-101 becomes a plain 'response'. */
+const clientUpgradeAwait = (clientHalf, req) => {
+  let buffered = [];
+  let total = 0;
+  clientHalf._installGate((bytes) => {
+    buffered.push(bytes);
+    total += bytes.byteLength;
+    const at = findHeaderEnd(buffered, total);
+    if (at === -1) return new Uint8Array(0);
+    const whole = concatChunks(buffered, total);
+    const headBytes = whole.slice(0, at);
+    const rest = whole.slice(at + HEADER_END.length);
+    const { firstLine, headers, rawHeaders } = parseHttpHead(headBytes);
+    const statusCode = Number(firstLine.split(' ')[1] ?? 0);
+    const res = new EventEmitter();
+    res.statusCode = statusCode;
+    res.statusMessage = firstLine.split(' ').slice(2).join(' ');
+    res.headers = headers;
+    res.rawHeaders = rawHeaders;
+    res.resume = () => res;
+    res.pause = () => res;
+    clientHalf._releaseGate();
+    if (statusCode === 101) {
+      req.emit('upgrade', res, clientHalf, rest);
+    } else {
+      const incoming = new LoopbackIncoming({ method: 'GET', url: '/', headers, body: rest.byteLength > 0 ? [globalThis.Buffer ? globalThis.Buffer.from(rest) : rest] : [] });
+      incoming.statusCode = statusCode;
+      incoming.statusMessage = res.statusMessage;
+      incoming.rawHeaders = rawHeaders;
+      req.emit('response', incoming);
+      incoming.beginReplay();
+    }
+    return new Uint8Array(0);
+  });
+};
+
+/** The upgrade dispatch behind http.request for Upgrade-shaped calls:
+ * serialize the client head, pair the halves against the registry record,
+ * and return the req whose 'upgrade' event the vendored ws client awaits.
+ * The caller's `opts.createConnection` is deliberately bypassed: this
+ * runtime has no net.connect seam, and the loopback IS the transport. */
+export const dispatchUpgradeRequest = (options) => {
+  const req = new EventEmitter();
+  req.setTimeout = () => req;
+  req.destroy = () => req;
+  nextTick(() => {
+    const host = String(options.host ?? '127.0.0.1');
+    const port = Number(options.port ?? 80);
+    const record = registry.get(keyFor(host, port));
+    if (!record || !record.server.listening) {
+      const error = new Error(`connect ECONNREFUSED ${host}:${port}`);
+      error.code = 'ECONNREFUSED';
+      req.emit('error', error);
+      return;
+    }
+    const headers = options.headers ?? {};
+    const hostHeader = headers.Host ?? headers.host
+      ?? `${host}${port === 80 ? '' : `:${port}`}`;
+    const lines = [`${String(options.method ?? 'GET').toUpperCase()} ${options.path ?? '/'} HTTP/1.1`, `Host: ${hostHeader}`];
+    for (const [name, value] of Object.entries(headers)) {
+      if (name === 'Host' || name === 'host') continue;
+      lines.push(Array.isArray(value) ? `${name}: ${value.join(', ')}` : `${name}: ${value}`);
+    }
+    const head = encodeUtf8(`${lines.join('\r\n')}\r\n\r\n`);
+    const clientHalf = new LoopbackSocket();
+    const serverHalf = new LoopbackSocket();
+    clientHalf.localPort = port;
+    serverHalf.localPort = port;
+    LoopbackSocket._pair(clientHalf, serverHalf);
+    serverUpgradeIngress(record, serverHalf);
+    clientUpgradeAwait(clientHalf, req);
+    clientHalf.write(head); // client -> server: the request head enters the server half's gate
+  });
+  return req;
+};
+
 /** The loopback CLIENT request (node:http request(url[, options][, cb])) —
  * the in-process counterpart of the server face: write()/end() buffer the
  * body chunks, end() dispatches through the registry exactly like fetch,
@@ -438,6 +875,47 @@ const createLoopbackClientRequest = (urlOrOptions, optionsOrCb, maybeCb) => {
   const finish = () => {
     if (ended) return;
     ended = true;
+    // UPGRADE branch (W5-Q): an Upgrade: websocket request rides the paired
+    // LoopbackSocket seam instead of the fetch dispatch — node emits
+    // 'upgrade' (not 'response') for the 101, and the vendored ws client
+    // owns the raw socket from there.
+    const upgradeHeader = (() => {
+      const h = options?.headers;
+      if (h === undefined || h === null) return undefined;
+      const value = h.Upgrade ?? h.upgrade;
+      return value === undefined ? undefined : String(value).toLowerCase();
+    })();
+    if (upgradeHeader === 'websocket') {
+      nextTick(() => {
+        let host = String(options?.host ?? '127.0.0.1');
+        let port = Number(options?.port ?? 80);
+        let path = options?.path;
+        if (url !== null) {
+          try {
+            const parsed = new globalThis.URL(url);
+            host = hostFor(parsed);
+            port = parsed.port === '' ? 80 : Number(parsed.port);
+            path = `${parsed.pathname}${parsed.search}`;
+          } catch {
+            // fall through with the option-shape values
+          }
+        }
+        const upgradeReq = dispatchUpgradeRequest({
+          host,
+          port,
+          path: path ?? '/',
+          method: String(options?.method ?? 'GET').toUpperCase(),
+          headers: { ...(options?.headers ?? {}) },
+        });
+        upgradeReq.on('upgrade', (res, socket, head) => {
+          if (callback) callback(res);
+          req.emit('upgrade', res, socket, head);
+        });
+        upgradeReq.on('response', (incoming) => req.emit('response', incoming));
+        upgradeReq.on('error', (error) => req.emit('error', error));
+      });
+      return;
+    }
     nextTick(async () => {
       const total = chunks.reduce((n, c) => n + c.byteLength, 0);
       const body = new Uint8Array(total);
@@ -463,7 +941,7 @@ const createLoopbackClientRequest = (urlOrOptions, optionsOrCb, maybeCb) => {
             const bytes = new Uint8Array(buffer);
             incoming.complete = true;
             if (bytes.byteLength > 0) {
-              incoming.emit('data', globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes);
+              incoming.emit('data', incoming.renderChunk(globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes));
             }
             incoming.emit('end');
             incoming.emit('close');
@@ -489,7 +967,14 @@ const createLoopbackClientRequest = (urlOrOptions, optionsOrCb, maybeCb) => {
     finish();
     return req;
   };
-  req.destroy = () => { req.emit('error', new Error('client request destroyed')); return req; };
+  // node's ClientRequest.destroy(error): emit 'error' ONLY with a passed
+  // error — inventing one here masks the ws handshake failure text (the
+  // vendored client's abortHandshake path destroys the request with the real
+  // reason, W5-Q).
+  req.destroy = (error) => {
+    if (error !== undefined && error !== null) req.emit('error', error);
+    return req;
+  };
   return req;
 };
 
@@ -500,13 +985,23 @@ export const createHttpFace = () => {
   const refuse = (name) => () => {
     throw new Error(`node:http: ${name} is not served in this runtime — no socket seam (the in-process loopback is the only served face)`);
   };
+  // validateHeaderName — node's contract is the RFC 7230 TOKEN charset
+  // (lib/_http_common checkIsHttpToken: /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/);
+  // anything else throws. The old CR/LF/NUL-only check silently ACCEPTED
+  // names node rejects (a space — acp bridge's mcpServers header validation
+  // table then reached a real connection instead of its expected config
+  // error, W5-Q 2026-09-28).
   const validateHeaderName = (name) => {
-    if (typeof name !== 'string' || !name || /[\r\n\0]/.test(name)) {
+    if (typeof name !== 'string' || !name
+        || !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(name)) {
       throw new TypeError('node:http: validateHeaderName: invalid header name');
     }
   };
+  // validateHeaderValue — node rejects any char outside tab / visible ASCII
+  // / latin-1 high bytes (/[^\t\x20-\x7e\x80-\xff]/), so DEL and the other
+  // C0 controls are invalid here too (the old CR/LF/NUL check was looser).
   const validateHeaderValue = (name, value) => {
-    if (typeof value !== 'string' || /[\r\n\0]/.test(value)) {
+    if (typeof value !== 'string' || /[^\t\x20-\x7e\x80-\xff]/.test(value)) {
       throw new TypeError('node:http: validateHeaderValue: invalid header value');
     }
   };
@@ -520,7 +1015,16 @@ export const createHttpFace = () => {
     },
     ServerResponse: LoopbackServerResponse,
     IncomingMessage: LoopbackIncoming,
-    Agent: class { constructor() { refuse('Agent')(); } },
+    Agent: class Agent {
+      // Inert agent face: real node Agents pool sockets, which do not exist
+      // here — the client request face ignores the agent entirely. OTel's
+      // httpAgentFactoryFromOptions CONSTRUCTS one at exporter build time
+      // (`new Agent({ keepAlive, lookup })`) and swallows the failure through
+      // its diag logger, which left the otel egress exports silently empty —
+      // hence constructible (options absorbed) + the destroy() face.
+      constructor(options = {}) { this.options = options; }
+      destroy(cb) { if (typeof cb === 'function') cb(); return this; }
+    },
     validateHeaderName,
     validateHeaderValue,
     MAX_HEADER_COUNT: 2000,

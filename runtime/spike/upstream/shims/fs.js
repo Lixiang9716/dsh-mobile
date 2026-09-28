@@ -175,7 +175,12 @@ const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alph
   // resolve to /upstream-tests/fixtures — the suite driver seeds the bytes
   // there before running the spec's tests (one spec per runtime, so last-
   // write-wins across specs is not a hazard).
-  '/upstream-tests/'];
+  '/upstream-tests/',
+  // The spec PACKAGE assets (W5-T): skill-badge's spec builds
+  // new URL('../assets/<name>', import.meta.url) from upstream-tests/ —
+  // /assets/<name> — and the transpiler seeds the vendored tarball's
+  // verbatim asset bytes there (the fixtures seed delivery's VFS root).
+  '/assets/'];
 const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
 const refuse = (name) => () => {
@@ -226,6 +231,13 @@ import {
   statFace,
 } from 'upstream/shims/fs-workspace.js';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
+import { EventEmitter } from 'upstream/shims/events.js';
+// fs.js has no ambient timers import; the loopback's local nextTick shape
+// (a 0-delay arm, or the microtask before the gateway timer globals exist).
+const nextTick = (fn) => {
+  if (typeof globalThis.setTimeout === 'function') setTimeout(fn, 0);
+  else Promise.resolve().then(fn);
+};
 export { mountWorkspace };
 
 /** Read bytes: workspace file, or the seeded read-only view. A workspace
@@ -362,8 +374,7 @@ realpathCallback.native = realpathCallback;
 /** createReadStream — the async-iterable face fs-local iterates (`for await
  * (const chunk of stream)`). Bytes are yielded as DshBuffer chunks in file
  * order; `start`/`end` are the node INCLUSIVE byte window; aborting the
- * signal stops the iteration with an AbortError-shaped throw. */
-export const createReadStream = (path, options = {}) => {
+ * signal stops the iteration with an AbortError-shaped throw. */export const createReadStream = (path, options = {}) => {
   const start = typeof options.start === 'number' ? options.start : 0;
   const end = typeof options.end === 'number' ? options.end : Number.MAX_SAFE_INTEGER;
   const CHUNK = 64 * 1024;
@@ -389,6 +400,151 @@ export const createReadStream = (path, options = {}) => {
     destroy: () => {},
     close: async () => {},
   };
+};
+
+/** createWriteStream (W5-T) — the WriteStream face over the SAME descriptor
+ * table the sync faces own (one store, three spellings). Models node's
+ * WriteStream observable sequence: async 'open', write() hwm accounting
+ * (false + a later 'drain' when the buffered bytes reach the high-water
+ * mark; the VFS flush itself is synchronous, so the buffer empties on the
+ * next tick), bytesWritten, end() → 'finish' → autoClose 'close'. The
+ * fs-watch-stream spec uses this face as the NATIVE oracle against the
+ * webworker-runtime's own WriteStream port, so the node semantics here are
+ * load-bearing, not decorative. */
+export const createWriteStream = (path, options = {}) => {
+  const opts = typeof options === 'string' ? { encoding: options } : (options ?? {});
+  const highWaterMark = typeof opts.highWaterMark === 'number' && opts.highWaterMark > 0
+    ? opts.highWaterMark : 64 * 1024;
+  const stream = new EventEmitter();
+  let fd = null;
+  let pos = 0;
+  let bytesWritten = 0;
+  let buffered = 0;
+  let writing = false;
+  let ended = false;
+  let closed = false;
+  let errored = null;
+  const queue = [];
+  stream.path = typeof path === 'string' ? lexical(path) : path;
+  stream.writable = true;
+  stream.writableHighWaterMark = highWaterMark;
+  stream.writableLength = 0;
+  stream.writableNeedDrain = false;
+  stream.autoClose = opts.autoClose !== false;
+  stream.closed = false;
+  const fail = (error) => {
+    errored = error;
+    stream.emit('error', error);
+    if (stream.autoClose) destroyNow();
+  };
+  const destroyNow = () => {
+    if (closed) return;
+    if (fd !== null) { try { closeSync(fd); } catch { /* already closed */ } fd = null; }
+    closed = true;
+    stream.closed = true;
+    stream.writable = false;
+    nextTick(() => stream.emit('close'));
+  };
+  const flushOne = (chunk, callback) => {
+    try {
+      if (fd === null) throw new Error('node:fs.createWriteStream: write after close');
+      const record = fdTable().get(fd);
+      const bytes = typeof chunk === 'string' ? encodeUtf8(chunk) : chunk;
+      if (!(bytes instanceof Uint8Array)) {
+        throw new TypeError(`node:fs.createWriteStream: chunk must be a string or Uint8Array, got ${typeof chunk}`);
+      }
+      const current = (() => {
+        try { return readAnyBytes(stream.path); } catch { return DshBuffer.fromBytes(new Uint8Array(0)); }
+      })();
+      const at = record.append ? current.length : Math.min(pos, current.length);
+      const merged = new Uint8Array(Math.max(current.length, at + bytes.length));
+      merged.set(current, 0);
+      merged.set(bytes, at);
+      wsWriteFile(stream.path, merged, undefined);
+      if (!record.append) pos = at + bytes.length;
+      bytesWritten += bytes.length;
+      callback(null);
+      return bytes.length;
+    } catch (error) {
+      callback(error);
+      return 0;
+    }
+  };
+  const pump = () => {
+    while (writing === false && queue.length > 0) {
+      const job = queue.shift();
+      writing = true;
+      const len = flushOne(job.chunk, (error) => {
+        writing = false;
+        buffered -= job.len;
+        stream.writableLength = buffered;
+        if (error !== null && error !== undefined) {
+          fail(error);
+          return;
+        }
+        if (job.callback) job.callback(null);
+        stream.emit('flush');
+        if (buffered < highWaterMark && stream.writableNeedDrain) {
+          stream.writableNeedDrain = false;
+          stream.emit('drain');
+        }
+        pump();
+      });
+      buffered += len;
+      stream.writableLength = buffered;
+    }
+  };
+  nextTick(() => {
+    try {
+      fd = openSync(stream.path, typeof opts.flags === 'string' ? opts.flags : 'w', opts.mode);
+      if (typeof opts.start === 'number') pos = opts.start;
+      stream.emit('open', fd);
+      pump();
+    } catch (error) {
+      fail(error);
+    }
+  });
+  stream.write = (chunk, encodingOrCb, maybeCb) => {
+    const callback = typeof encodingOrCb === 'function' ? encodingOrCb
+      : typeof maybeCb === 'function' ? maybeCb : null;
+    if (ended) {
+      const error = new Error('write after end');
+      if (callback) callback(error);
+      else fail(error);
+      return false;
+    }
+    const size = typeof chunk === 'string' ? encodeUtf8(chunk).length : (chunk?.byteLength ?? 0);
+    queue.push({ chunk, len: size, callback });
+    pump();
+    const needDrain = buffered >= highWaterMark;
+    stream.writableNeedDrain = needDrain;
+    return !needDrain;
+  };
+  stream.end = (chunkOrCb, maybeCb) => {
+    const callback = typeof chunkOrCb === 'function' ? chunkOrCb : maybeCb;
+    ended = true;
+    const finishWrite = () => {
+      stream.writable = false;
+      stream.emit('finish');
+      if (callback) callback();
+      if (stream.autoClose) destroyNow();
+    };
+    if (queue.length > 0 || writing) {
+      const poll = () => { if (queue.length > 0 || writing) nextTick(poll); else finishWrite(); };
+      nextTick(poll);
+    } else {
+      finishWrite();
+    }
+    return stream;
+  };
+  stream.destroy = (error) => {
+    if (error) { errored = error; stream.emit('error', error); }
+    destroyNow();
+    return stream;
+  };
+  stream.close = () => destroyNow();
+  Object.defineProperty(stream, 'bytesWritten', { get: () => bytesWritten });
+  return stream;
 };
 
 /** Answer one `node_modules/<pkg>/package.json` existence question through
@@ -538,6 +694,28 @@ export const statSync = (path, options = {}) => {
   // containment walk stats candidate roots that were never staged and
   // classifies the ENOENT itself; the loud refusal broke that classification).
   if (wsAt(canonical) !== null) throw enoent('stat', canonical);
+  // Real-disk fallback (W5-R, 2026-09-28): the subprocess seam's consumers
+  // stat REAL binaries (the vendored pre-spawn executability check stats
+  // the node that runs the fixture servers — a path no VFS face knows).
+  // VFS-first precedence is preserved: this runs only after every
+  // workspace/seeded face missed, and only for absolute paths.
+  if (typeof path === 'string' && path.startsWith('/')) {
+    const real = globalThis.__dshProcStatReal?.(path);
+    if (real) {
+      const bigint = options.bigint === true;
+      const isDir = real.isDirectory === true;
+      return statFace(isDir ? 'dir' : 'file', {
+        size: bigint ? BigInt(real.size) : real.size,
+        dev: 1,
+        ino: 0,
+        mode: real.mode & 0o777,
+        uid: 0,
+        gid: 0,
+        mtimeMs: real.mtimeMs,
+        ...(bigint ? { dev: 1n, ino: 0n, mode: BigInt(real.mode & 0o777), mtimeNs: BigInt(real.mtimeMs) * 1000000n, ctimeNs: BigInt(real.mtimeMs) * 1000000n } : {}),
+      });
+    }
+  }
   throw enoent('stat', typeof path === 'string' ? path : String(path));
 };
 
@@ -934,7 +1112,18 @@ export const readdirSync = (path, options) => {
     if (wsFileAt(canonical) !== undefined) throw wsEnotdir('readdir', canonical);
     throw enoent('readdir', canonical);
   }
-  return refuse('readdirSync')();
+  // Outside both served views a directory scan answers ABSENCE, not the
+  // loud refusal: the vendored discovery walks (skill-filesystem's root
+  // scan, the presets service) branch on the ERROR CODE —
+  // isAbsentSkillPathError accepts ENOENT/ENOTDIR/FS_NOT_FOUND and treats
+  // anything else as a hard failure that poisons the whole observation
+  // (`complete: false`, which silently disables the tool-skill durable
+  // catalog). A directory that does not exist in this runtime is absent —
+  // node's own readdir answer — so the error carries code ENOENT (the
+  // message keeps the runtime explanation for anyone logging it).
+  const absent = enoent('readdir', canonical);
+  absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}`;
+  throw absent;
 };
 
 export default {
@@ -944,6 +1133,7 @@ export default {
   mergeWebPlugins,
   mountWorkspace,
   createReadStream,
+  createWriteStream,
   existsSync,
   readFileSync,
   statSync,

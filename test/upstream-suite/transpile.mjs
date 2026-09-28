@@ -148,6 +148,16 @@ try {
  *   present only in the submodule's lockfile store (pnpm layout). */
 const SUBMODULE_BARE_RESOLVES = () => {
   const abs = (rel) => join(SUBMODULE_ROOT, rel);
+  // W5-T (2026-09-28): the @opentelemetry faces the session-telemetry-otel
+  // specs import — inlined from the vendored npm trees (D6-verbatim) instead
+  // of loader-served, because OTel's build/esm output imports its own files
+  // EXTENSIONLESS ('./LoggerProvider'), which the loader's relative
+  // resolution cannot serve; esbuild's resolver handles that shape natively.
+  // Their bare BUILTIN imports (http/fs/util/...) stay external — the
+  // npm-bridges bare rows serve those.
+  const otel = (name, ver) => ({
+    inline: join(ROOT, `runtime/spike/vendor/npm/@opentelemetry/${name}@${ver}/build/esm/index.js`),
+  });
   const rows = new Map([
     ['@deepseek-ai/dsh-subprocess-local', { externalSubpath: 'index' }],
     ['@deepseek-ai/cordis-plugin-group', { inline: abs('vendor/group/lib/index.js') }],
@@ -155,6 +165,29 @@ const SUBMODULE_BARE_RESOLVES = () => {
     ['resolve.exports', {
       inline: abs('node_modules/.pnpm/resolve.exports@2.0.3'
         + '/node_modules/resolve.exports/dist/index.mjs'),
+    }],
+    ['@opentelemetry/api', otel('api', '1.9.1')],
+    ['@opentelemetry/api-logs', otel('api-logs', '0.220.0')],
+    ['@opentelemetry/sdk-logs', otel('sdk-logs', '0.220.0')],
+    ['@opentelemetry/core', otel('core', '2.10.0')],
+    ['@opentelemetry/resources', otel('resources', '2.10.0')],
+    ['@opentelemetry/exporter-logs-otlp-http', otel('exporter-logs-otlp-http', '0.220.0')],
+    ['@opentelemetry/otlp-exporter-base', otel('otlp-exporter-base', '0.220.0')],
+    ['@opentelemetry/otlp-transformer', otel('otlp-transformer', '0.220.0')],
+    // The exporter's platform subpath (same extensionless-import reasoning).
+    ['@opentelemetry/otlp-exporter-base/node-http', {
+      inline: join(ROOT, 'runtime/spike/vendor/npm/@opentelemetry'
+        + '/otlp-exporter-base@0.220.0/build/esm/index-node-http.js'),
+    }],
+    ['@opentelemetry/semantic-conventions', otel('semantic-conventions', '1.43.0')],
+    ['@opentelemetry/sdk-metrics', otel('sdk-metrics', '2.9.0')],
+    // skill-badge's single-file lib computes its resource base off its OWN
+    // import.meta.url (new URL('../assets/', import.meta.url)); inlined, it
+    // shares the spec's URL (/upstream-tests/<stem>.spec.mjs) and therefore
+    // resolves /assets/ — exactly the path the spec asserts and the package-
+    // asset seed delivers.
+    ['@deepseek-ai/dsh-skill-badge', {
+      inline: join(ROOT, 'runtime/spike/vendor/npm/@deepseek-ai/dsh-skill-badge@0.1.6-alpha.2/lib/index.js'),
     }],
   ]);
   // A missing submodule target must keep its bare external (the loader then
@@ -202,6 +235,30 @@ const BARE_EXTERNAL_PLUGIN = {
         + ' } });',
       loader: 'js',
     }));
+    // INLINED LIMBS carry their own createRequire(import.meta.url)('<x>.json')
+    // package-manifest reads (session-telemetry-otel's src/index.ts reads its
+    // version) — the spec-source rewrite above never sees them. For limb
+    // files under the tests tree, rewrite the reads to real JSON imports:
+    // esbuild bundles JSON natively, and the limb's resolveDir keeps the
+    // relative path pointed at the now-staged package.json (W5-T).
+    build.onLoad({ filter: /\.(ts|mts|js|mjs)$/ }, (args) => {
+      if (!args.path.startsWith(TESTS)) return undefined;
+      const source = readFileSync(args.path, 'utf8');
+      const re = /createRequire\(import\.meta\.url\)\((['"])([^'"]+\.json)\1\)/g;
+      if (!re.test(source)) return undefined;
+      re.lastIndex = 0;
+      const imports = [];
+      const rewritten = source.replace(re, (_m, _q, rawPath) => {
+        const name = `__dsh_limb_json_${imports.length}`;
+        imports.push(`import ${name} from ${JSON.stringify(rawPath)};`);
+        return name;
+      });
+      return {
+        contents: `${imports.join('\n')}\n${rewritten}`,
+        loader: args.path.endsWith('.js') || args.path.endsWith('.mjs') ? 'js' : 'ts',
+        resolveDir: dirname(args.path),
+      };
+    });
   },
 };
 
@@ -226,7 +283,9 @@ const unimplementedIn = (text, extraRules = []) => [...UNIMPLEMENTED, ...extraRu
  * vendored package (both directory families). esbuild inlines it verbatim,
  * preserving the attribution checks exactly. */
 const hoistCreateRequireJson = (source, rel) => {
-  const re = /createRequire\(import\.meta\.url\)\('([^']+\.json)'\)/g;
+  // Both quote spellings occur across the corpus (egress.spec.ts uses double
+  // quotes, other packages single) — the backreference keeps them honest.
+  const re = /createRequire\(import\.meta\.url\)\((['"])([^'"]+\.json)\1\)/g;
   const specDir = dirname(join(TESTS, rel));
   const pkgName = rel.split('/')[1];
   const vendorCandidates = [
@@ -234,7 +293,7 @@ const hoistCreateRequireJson = (source, rel) => {
     join(ROOT, `runtime/spike/vendor/dsh/dsh-${pkgName}@0.1.6-alpha.2`),
   ];
   const imports = [];
-  const rewritten = source.replace(re, (_m, rawPath) => {
+  const rewritten = source.replace(re, (_m, _q, rawPath) => {
     const direct = join(specDir, rawPath);
     let resolved = existsSync(direct) ? direct : null;
     if (resolved === null) {
@@ -386,12 +445,74 @@ const hoistSubmoduleSrcSubpaths = (source) => {
   return out;
 };
 
+/** The bundle-manifest family (W5-Q, 2026-09-28): the bundle/agent-team
+ * profile specs read the SPEC'S OWN PACKAGE manifest off disk —
+ * `fileURLToPath(new URL('..', import.meta.url))` is the package root on the
+ * monorepo layout (spec at <pkg>/tests/x.spec.ts), but flat staging puts the
+ * spec at /upstream-tests/<stem>.spec.mjs, so the '..' lands at '/' and the
+ * read would need files the VFS roots refuse. Two moves, same pattern as the
+ * createRequire JSON hoist above:
+ * 1. REWRITE the root computation to the spec's own directory
+ *    (`new URL('.', ...)`) — the read paths become /upstream-tests/package.json
+ *    and the manifest-named patch file, inside the seeded VFS root.
+ * 2. EMIT the REAL package-root files (package.json + the patch file) as seed
+ *    data through the existing .fixtures.js module — the driver already
+ *    imports and seeds that before the tests run. Bytes come from the pinned
+ *    submodule verbatim (D6: read-only upstream, never a modified copy), so
+ *    every attribution assertion (dsh.bundle.patch field, dependencies map,
+ *    patch rows) runs against the true manifest.
+ * One spec per runtime, so the flat /upstream-tests/package.json namespace
+ * never collides (the fixtures seeding already relies on the same fact). */
+const BUNDLE_MANIFEST_PACKAGES = new Map([
+  ['bundle/base/tests/base.spec.ts', 'bundle/base'],
+  ['bundle/acp-app/tests/acp-app.spec.ts', 'bundle/acp-app'],
+  ['bundle/sdk-app/tests/sdk-app.spec.ts', 'bundle/sdk-app'],
+  ['bundle/sdk-minimal/tests/sdk-minimal.spec.ts', 'bundle/sdk-minimal'],
+  ['experimental/agent-team-profile/tests/profile.spec.ts', 'experimental/agent-team-profile'],
+  ['experimental/agent-team-web-profile/tests/profile.spec.ts', 'experimental/agent-team-web-profile'],
+]);
+/** Files the family reads at the package root, by name. base's second test
+ * also stats 'windows.cordis.patch.yml' and expects FALSE — absent here, the
+ * seeded-view existsSync answers false, which is the asserted fact. */
+const BUNDLE_MANIFEST_FILES = ['package.json', 'cordis.patch.yml'];
+const rewriteBundleManifestRoot = (source) => source
+  .replaceAll("new URL('..', import.meta.url)", "new URL('.', import.meta.url)")
+  .replaceAll('new URL("..", import.meta.url)', 'new URL(".", import.meta.url)');
+
+/** The layout-tree family (W5-Q, 2026-09-28): specs that audit the VENDORED
+ * SOURCE TREE itself (the experimental Inspector's client/host path
+ * mirroring) walk `../src/` off the monorepo layout — the same flat-staging
+ * problem the bundle-manifest family has, at tree scale. Two moves: rewrite
+ * the tree roots to the spec's own directory, and SEED the tree (verbatim
+ * submodule bytes, D6) plus the named compiler manifests through the
+ * existing .fixtures.js delivery. The staged spec then re-audits the REAL
+ * upstream sources through fs.readFile/readdir over the seeded VFS view. */
+const SEED_TREE_SPECS = new Map([
+  ['experimental/inspector/tests/layout.host.spec.ts', {
+    package: 'experimental/inspector',
+    rewrites: [
+      ["new URL('../src/', import.meta.url)", "new URL('./src/', import.meta.url)"],
+      ['new URL("../src/", import.meta.url)', 'new URL("./src/", import.meta.url)'],
+      ["new URL('../', import.meta.url)", "new URL('./', import.meta.url)"],
+      ['new URL("../", import.meta.url)', 'new URL("./", import.meta.url)'],
+    ],
+    tree: 'src',
+    files: ['tsconfig.host.json', 'tsconfig.client.json'],
+    mirrorTests: true,
+  }],
+]);
+const rewriteSeedTreeRoots = (source, rewrites) => {
+  let out = source;
+  for (const [from, to] of rewrites) out = out.replaceAll(from, to);
+  return out;
+};
+
 /** Transpile one spec (or record its named exclusion). */
 /** The esbuild option shape for one spec: entry file when nothing hoisted,
  * stdin otherwise (the hoisted package.json reads and inlined monorepo
  * limbs build through stdin — split from transpileOne for the function
  * shape budget). */
-const buildOptionsFor = (rel, hoisted, source) => {
+const buildOptionsFor = (rel, hoisted, forceStdin) => {
   const options = {
     bundle: true,
     format: 'esm',
@@ -400,21 +521,35 @@ const buildOptionsFor = (rel, hoisted, source) => {
     plugins: [BARE_EXTERNAL_PLUGIN],
     logLevel: 'silent',
   };
-  if (hoisted === source) {
-    options.entryPoints = [join(TESTS, rel)];
-  } else {
+  // forceStdin is required when an IN-MEMORY transform must reach the build:
+  // entryPoints reads the bytes off DISK, silently dropping any rewrite that
+  // left `hoisted` equal to the rewritten source (measured W5-Q: the
+  // bundle-manifest root rewrite produced a hoisted string identical to the
+  // rewritten source, so the old `hoisted === source` probe took the
+  // entryPoints path and the staged output kept the original '..' join).
+  if (forceStdin) {
     options.stdin = {
       contents: hoisted,
       loader: 'ts',
       resolveDir: dirname(join(TESTS, rel)),
       sourcefile: join(TESTS, rel),
     };
+  } else {
+    options.entryPoints = [join(TESTS, rel)];
   }
   return options;
 };
 
 const transpileOne = async (rel, manifest) => {
-  const source = readFileSync(join(TESTS, rel), 'utf8');
+  const onDisk = readFileSync(join(TESTS, rel), 'utf8');
+  // The bundle-manifest family's root rewrite lands BEFORE the exclusion
+  // scan and the build (the '..' join is the only thing that changes; see
+  // BUNDLE_MANIFEST_PACKAGES above).
+  const manifestRewritten = BUNDLE_MANIFEST_PACKAGES.has(rel);
+  const seedTree = SEED_TREE_SPECS.get(rel);
+  const source = manifestRewritten
+    ? rewriteBundleManifestRoot(onDisk)
+    : seedTree ? rewriteSeedTreeRoots(onDisk, seedTree.rewrites) : onDisk;
   // Hoisting precedes the exclusion scan: a src/ subpath we can inline from
   // the pinned submodule is no longer a bare monorepo specifier, while any
   // specifier without a hoist target keeps its named exclusion below.
@@ -427,7 +562,7 @@ const transpileOne = async (rel, manifest) => {
   }
   let built;
   try {
-    built = await esbuild.build(buildOptionsFor(rel, hoisted, source));
+    built = await esbuild.build(buildOptionsFor(rel, hoisted, manifestRewritten || seedTree !== undefined || hoisted !== source));
   } catch (error) {
     // Fail loud naming the specifier (rule 5): a swallowed bundle failure
     // turns the missing-dependency map — the whole actionable surface of
@@ -462,21 +597,96 @@ const transpileOne = async (rel, manifest) => {
 // /upstream-tests/fixtures namespace never collides.
 const emitFixturesModule = (rel, flat) => {
   const fixturesDir = join(TESTS, dirname(rel), 'fixtures');
-  if (!existsSync(fixturesDir)) return;
   const files = [];
-  const walkFx = (dir, base) => {
-    for (const name of readdirSync(dir)) {
-      const full = join(dir, name);
-      if (statSync(full).isDirectory()) walkFx(full, `${base}/${name}`);
-      else files.push({ path: `/upstream-tests/fixtures${base}/${name}`,
-        b64: readFileSync(full).toString('base64') });
+  if (existsSync(fixturesDir)) {
+    const walkFx = (dir, base) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walkFx(full, `${base}/${name}`);
+        else files.push({ path: `/upstream-tests/fixtures${base}/${name}`,
+          b64: readFileSync(full).toString('base64') });
+      }
+    };
+    walkFx(fixturesDir, '');
+  }
+  // The bundle-manifest family rides the same seed delivery: the REAL
+  // package-root files at /upstream-tests/<name> (see BUNDLE_MANIFEST_PACKAGES).
+  const manifestPkg = BUNDLE_MANIFEST_PACKAGES.get(rel);
+  if (manifestPkg !== undefined) {
+    const pkgRoot = join(SUBMODULE_ROOT, 'packages', manifestPkg);
+    for (const name of BUNDLE_MANIFEST_FILES) {
+      const full = join(pkgRoot, name);
+      if (existsSync(full)) {
+        files.push({ path: `/upstream-tests/${name}`, b64: readFileSync(full).toString('base64') });
+      }
     }
-  };
-  walkFx(fixturesDir, '');
+  }
+  // The layout-tree family seeds the WHOLE vendored source tree at
+  // /upstream-tests/src (verbatim submodule bytes — the spec re-audits the
+  // real upstream sources), the named compiler manifests, and (mirrorTests)
+  // the vendored tests/*.ts so the spec's own-directory walk sees the same
+  // tree shape upstream's tests/ layout gives it.
+  const seedTree = SEED_TREE_SPECS.get(rel);
+  if (seedTree !== undefined) {
+    const pkgRoot = join(SUBMODULE_ROOT, 'packages', seedTree.package);
+    const pushFile = (full, path) => {
+      files.push({ path, b64: readFileSync(full).toString('base64') });
+    };
+    const treeDir = join(pkgRoot, seedTree.tree);
+    if (existsSync(treeDir)) {
+      const walkTree = (dir, base) => {
+        for (const name of readdirSync(dir)) {
+          const full = join(dir, name);
+          if (statSync(full).isDirectory()) walkTree(full, `${base}/${name}`);
+          else pushFile(full, `/upstream-tests/${seedTree.tree}${base}/${name}`);
+        }
+      };
+      walkTree(treeDir, '');
+    }
+    for (const name of seedTree.files) {
+      const full = join(pkgRoot, name);
+      if (existsSync(full)) pushFile(full, `/upstream-tests/${name}`);
+    }
+    if (seedTree.mirrorTests) {
+      const testsDir = join(TESTS, dirname(rel));
+      for (const name of readdirSync(testsDir)) {
+        if (!name.endsWith('.ts')) continue;
+        pushFile(join(testsDir, name), `/upstream-tests/${name}`);
+      }
+    }
+  }
+  emitPackageAssets(rel, files);
+  if (files.length === 0) return;
   const stem = flat.replace(/\.spec\.mjs$/, '');
   writeFileSync(join(OUT, `${stem}.fixtures.js`),
     `// emitted by transpile.mjs: the spec's tests/fixtures tree, seeded by the driver\n`
     + `export const fixtures = ${JSON.stringify(files)};\n`);
+};
+
+// W5-T: the spec's PACKAGE assets (skill-badge's ../assets/dsh-badge.png).
+// The tests tarball stages no assets/, but the vendored npm tree of the same
+// package ships them verbatim; they ride the same fixtures seed delivery at
+// the URL the spec builds (new URL('../assets/<name>', import.meta.url) from
+// upstream-tests/ → /assets/<name>). D6: bytes verbatim from the pinned
+// tarball.
+const emitPackageAssets = (rel, files) => {
+  const pkgName = rel.split('/')[1];
+  const assetCandidates = [
+    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
+  ];
+  for (const assetsDir of assetCandidates) {
+    if (!existsSync(assetsDir)) continue;
+    const walkAssets = (dir, base) => {
+      for (const name of readdirSync(dir)) {
+        const full = join(dir, name);
+        if (statSync(full).isDirectory()) walkAssets(full, `${base}/${name}`);
+        else files.push({ path: `/assets${base}/${name}`, b64: readFileSync(full).toString('base64') });
+      }
+    };
+    walkAssets(assetsDir, '');
+    break; // one staging family only — never double-seed the same bytes
+  }
 };
 
 
@@ -491,6 +701,32 @@ const specs = walk(TESTS)
 
 for (const rel of specs) {
   await transpileOne(rel, manifest);
+}
+
+// The experimental Inspector's WORKER entry (W5-Q, 2026-09-28): the vendored
+// host bridge spawns the BUILT entry sibling of its lib chunk —
+// `new Worker(new URL('./worker.js', import.meta.url))`. The staged .host
+// specs inline the controller source, but the worker entry is a separate
+// build artifact the tests tarball never carries, so the in-process Worker
+// face (node-worker-threads shim) fails the import with "cannot load module
+// '/upstream-tests/worker.js'". Bundle it from the pinned submodule (D6:
+// verbatim upstream) into the staged root — bare externals (node:* shims,
+// ws) stay loader-served so the controller and the worker share ONE shim
+// module instance, which the parentPort/workerData swap window requires.
+const inspectorStaged = manifest.transpiled.some((f) => f.startsWith('experimental__inspector__'));
+const workerEntry = join(TESTS, 'experimental/inspector/src/worker/entry.ts');
+if (inspectorStaged && existsSync(workerEntry)) {
+  const built = await esbuild.build({
+    entryPoints: [workerEntry],
+    bundle: true,
+    format: 'esm',
+    platform: 'neutral',
+    write: false,
+    plugins: [BARE_EXTERNAL_PLUGIN],
+    logLevel: 'silent',
+  });
+  writeFileSync(join(OUT, 'worker.js'), built.outputFiles[0].text);
+  manifest.workerEntries = ['worker.js'];
 }
 
 // Prune staged files the current manifest does not list: exclusions evolve

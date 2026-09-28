@@ -89,7 +89,19 @@ class MiniStream {
     this.#wake();
   }
   fail(error) { this.#error = error; this.#wake(); }
-  #wake() { for (const w of this.#waiters.splice(0)) w(); }
+  /** Wake waiting iterator readers ONE MICROTASK LATE (W5-S): node resolves
+   * a pending read on a nextTick AFTER the writer's own continuations — the
+   * writer's post-write chain (the framed-RPC `send().finally` that retires
+   * the served request) settles before the reader's continuation runs. A
+   * synchronous wake let the READER's next tick win that race (measured:
+   * ssh management-capacity's release flow — the client's follow-up request
+   * frame arrived before the server retired the previous active entry, and
+   * the capacity check wrongly closed the connection). */
+  #wake() {
+    const waiters = this.#waiters.splice(0);
+    if (waiters.length === 0) return;
+    queueMicrotask(() => { for (const w of waiters) w(); });
+  }
   #next() {
     if (this.#chunks.length > 0) return Promise.resolve({ value: this.#chunks.shift(), done: false });
     if (this.#destroyed && this.#error === undefined && !this.#ended) return Promise.resolve({ value: undefined, done: true });
@@ -237,13 +249,24 @@ class SinkEvents {
     return this;
   }
   prependOnceListener(event, fn) {
-    const wrapped = (...args) => { this.off(event, wrapped); fn(...args); };
+    const wrapped = function (...args) { this.off(event, wrapped); fn.apply(this, args); };
     wrapped.listener = fn;
     return this.prependListener(event, wrapped);
   }
   listenerCount(event) { return this._listeners.get(event)?.length ?? 0; }
+  /** node's removeAllListeners([event]) — the vendored ws receiver teardown
+   * calls it on socket close (websocket.js emitClose). No event removes
+   * every listener; with one, only that event's list (W5-Q). */
+  removeAllListeners(event) {
+    if (event === undefined) this._listeners.clear();
+    else this._listeners.delete(event);
+    return this;
+  }
+  /** emit binds `this` to the emitter (node's EventEmitter contract) — the
+   * vendored ws receiver's handlers read `this[kWebSocket]`, which is
+   * undefined when listeners are invoked unbound (W5-Q 2026-09-28). */
   emit(event, ...args) {
-    for (const fn of [...(this._listeners.get(event) ?? [])]) fn(...args);
+    for (const fn of [...(this._listeners.get(event) ?? [])]) fn.apply(this, args);
     return this._listeners.has(event);
   }
 }
@@ -261,6 +284,7 @@ export class Writable extends SinkEvents {
   #needDrain = false;
   #ended = false;
   #destroyed = false;
+  #errorEmitted = false;
   writableNeedDrain = false;
   writableEnded = false;
   writableFinished = false;
@@ -268,15 +292,57 @@ export class Writable extends SinkEvents {
 
   constructor(options = {}) {
     super();
-    if (typeof options.write !== 'function' && typeof options.writev !== 'function') {
-      throw new TypeError('node:stream Writable: options.write(chunks, encoding, callback) is required');
+    // node's SECOND construction protocol: a subclass overriding _write/
+    // _final on its prototype (vendored ws's Receiver is the operative
+    // case: `class Receiver extends Writable { _write(chunk, encoding, cb) }`
+    // — the W4 corpus only used the options face). options.write keeps
+    // priority; the prototype override drives when it is absent.
+    const hasOptionsWrite = typeof options.write === 'function';
+    const hasOptionsWritev = typeof options.writev === 'function';
+    const hasProtoWrite = typeof this._write === 'function';
+    if (!hasOptionsWrite && !hasOptionsWritev && !hasProtoWrite) {
+      throw new TypeError('node:stream Writable: options.write(chunks, encoding, callback) or a _write(chunk, encoding, callback) override is required');
     }
-    this.#writeImpl = options.write;
-    this.#finalImpl = options.final;
+    this.#writeImpl = hasOptionsWrite
+      ? options.write
+      : (hasProtoWrite
+        ? (chunk, encoding, callback) => this._write(chunk, encoding, callback)
+        : undefined);
+    this.#finalImpl = typeof options.final === 'function'
+      ? options.final
+      : (typeof this._final === 'function'
+        ? (callback) => this._final(callback)
+        : undefined);
     this.#highWaterMark = typeof options.highWaterMark === 'number' && options.highWaterMark > 0
       ? options.highWaterMark
       : 16 * 1024;
+    // node's LEGACY `_writableState` view (W5-Q): the vendored ws reads
+    // `_writableState.length` (bufferedAmount), `.needDrain` (its resume
+    // gate) and `.errorEmitted` (close accounting) straight off a
+    // receiver/stream subclass. Live getters over the same state — routed
+    // through real class getters because quickjs-ng cannot resolve private
+    // names from a closure inside a constructor (measured: bare
+    // `self.#errorEmitted` in the view getter is a SyntaxError there).
+    const self = this;
+    this._writableState = {
+      get length() { return self.__writableStateQueued(); },
+      get needDrain() { return self.__writableStateNeedDrain(); },
+      get errorEmitted() { return self.__writableStateErrorEmitted(); },
+      get ended() { return self.__writableStateEnded(); },
+      get finished() { return self.writableFinished; },
+      get destroyed() { return self.__writableStateDestroyed(); },
+      autoDestroy: true,
+      objectMode: options.objectMode === true,
+    };
   }
+
+  /** The _writableState view's read faces (private-field access from real
+   * class methods is the quickjs-supported shape). */
+  __writableStateQueued() { return this.#queuedBytes; }
+  __writableStateNeedDrain() { return this.#needDrain; }
+  __writableStateErrorEmitted() { return this.#errorEmitted; }
+  __writableStateEnded() { return this.#ended; }
+  __writableStateDestroyed() { return this.#destroyed; }
 
   get highWaterMark() { return this.#highWaterMark; }
 
@@ -419,7 +485,10 @@ export class Writable extends SinkEvents {
 
   destroy(error) {
     if (this.#destroyed) return this;
-    if (error !== undefined && error !== null) this.emit('error', error);
+    if (error !== undefined && error !== null) {
+      this.#errorEmitted = true;
+      this.emit('error', error);
+    }
     this.#close();
     return this;
   }

@@ -109,6 +109,11 @@ void dsh_spike_set_bus_sink(dsh_spike_t *s,
 /* 0 ok (delivered, or no handler subscribed yet), -1 JS exception. */
 int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line);
 
+/* Live slots in the subprocess seam's process table (spawned children not
+ * yet reaped + drained). The CLI drive loop consults it so a run awaiting a
+ * child does not tear down as quiescent (W5-R, 2026-09-28). */
+int dsh_spike_procs_alive(dsh_spike_t *s);
+
 void dsh_spike_free(dsh_spike_t *s);
 
 #endif /* DSH_SPIKE_HOST_H */

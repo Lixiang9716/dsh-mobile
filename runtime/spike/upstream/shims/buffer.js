@@ -95,9 +95,42 @@ export const byteLengthUtf8 = (text) => {
   return length;
 };
 
+/** buffer.isUtf8 — node's pure-JS-face UTF-8 validity check (added for the
+ * vendored ws receiver's text-frame validation, W5-Q 2026-09-28). A strict
+ * structural scan: lead-byte/continuation shape, no overlong encodings, no
+ * surrogates, no values above U+10FFFF. */
+export const isUtf8 = (bytes) => {
+  if (bytes === null || typeof bytes !== 'object') return false;
+  const view = bytes instanceof Uint8Array
+    ? bytes
+    : new Uint8Array(bytes.buffer ?? bytes, bytes.byteOffset ?? 0, bytes.byteLength ?? 0);
+  for (let i = 0; i < view.length;) {
+    const b0 = view[i];
+    if (b0 <= 0x7f) { i += 1; continue; }
+    let length;
+    if (b0 >= 0xc2 && b0 <= 0xdf) length = 2;
+    else if (b0 >= 0xe0 && b0 <= 0xef) length = 3;
+    else if (b0 >= 0xf0 && b0 <= 0xf4) length = 4;
+    else return false;
+    if (i + length > view.length) return false;
+    for (let k = 1; k < length; k++) {
+      if ((view[i + k] & 0xc0) !== 0x80) return false;
+    }
+    const code = length === 2
+      ? ((b0 & 0x1f) << 6) | (view[i + 1] & 0x3f)
+      : length === 3
+        ? ((b0 & 0x0f) << 12) | ((view[i + 1] & 0x3f) << 6) | (view[i + 2] & 0x3f)
+        : ((b0 & 0x07) << 18) | ((view[i + 1] & 0x3f) << 12) | ((view[i + 2] & 0x3f) << 6) | (view[i + 3] & 0x3f);
+    if (code >= 0xd800 && code <= 0xdfff) return false;
+    if (length === 3 && code < 0x800) return false;
+    if (length === 4 && code < 0x10000) return false;
+    i += length;
+  }
+  return true;
+};
+
 /** UTF-8 decode a byte range (lone truncation bytes become U+FFFD). */
-export const decodeUtf8 = (bytes) => {
-  let out = '';
+export const decodeUtf8 = (bytes) => {  let out = '';
   for (let i = 0; i < bytes.length;) {
     const b0 = bytes[i];
     if (b0 <= 0x7f) {

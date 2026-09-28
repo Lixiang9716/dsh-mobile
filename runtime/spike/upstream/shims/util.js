@@ -445,33 +445,58 @@ export const parseArgs = (config = {}) => {
 };
 
 /**
- * TextDecoder (utf-8) — the face the vendored fs-local decodes file text
- * with: `new TextDecoder('utf-8', { fatal: true })` for whole reads (invalid
- * bytes must throw, not sanitize) and `{ stream: true }` chunked decodes that
- * may split a multi-byte sequence anywhere. Only utf-8 is supported (the
- * closure's only text encoding); `fatal` walks the bytes strictly and throws
- * TypeError on the first invalid sequence, and a stream-mode decode carries
- * the trailing incomplete sequence to the next call. Non-fatal decodes route
- * through the buffer shim's lossy decoder (U+FFFD substitution).
+ * TextDecoder (utf-8 + windows-1252) — the face the vendored fs-local decodes
+ * file text with: `new TextDecoder('utf-8', { fatal: true })` for whole reads
+ * (invalid bytes must throw, not sanitize) and `{ stream: true }` chunked
+ * decodes that may split a multi-byte sequence anywhere. The single-byte
+ * windows-1252 face serves the web-fetch-http charset negotiation (W5-S):
+ * WHATWG maps the iso-8859-1/latin1/ascii label family onto the windows-1252
+ * decoder, whose `.encoding` REPORTS 'windows-1252' (the upstream charset
+ * test's exact expectation). Non-fatal utf-8 decodes route through the
+ * buffer shim's lossy decoder (U+FFFD substitution).
  */
+
+/** The WHATWG windows-1252 label set (the encoding-standard label table,
+ * lowercased): the iso-8859-1 family and the ascii family both map here. */
+const WINDOWS_1252_LABELS = new Set([
+  'windows-1252', 'cp1252', 'cp-1252', 'x-cp1252',
+  'iso-8859-1', 'iso8859-1', 'iso88591', 'iso_8859-1', 'iso88591987',
+  'iso-ir-100', 'csisolatin1', 'l1', 'latin1', 'latin-1', 'ibm819',
+  'cp819', 'us-ascii', 'ascii', 'ansi_x3.4-1968', 'iso-ir-6', '646',
+]);
+
+/** C1 controls (0x80–0x9F) through the cp1252 printable remap; the five
+ * unassigned slots decode U+FFFD (WHATWG index "error" rows — this face
+ * never fatals, so the replacement renders). */
+const WINDOWS_1252_C1 = [
+  0x20ac, 0xfffd, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021,
+  0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0xfffd, 0x017d, 0xfffd,
+  0xfffd, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014,
+  0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0xfffd, 0x017e, 0x0178,
+];
+
 export class TextDecoder {
   #fatal = false;
   #ignoreBOM = false;
   #pending = null; // trailing incomplete sequence bytes between stream decodes
+  #cp1252 = false; // single-byte face: no sequences, no stream carry
 
   constructor(encoding = 'utf-8', options = {}) {
     const label = String(encoding).toLowerCase();
-    if (label !== 'utf-8' && label !== 'utf8') {
-      throw new RangeError(`node:util TextDecoder: encoding '${encoding}' is not supported — only utf-8 (the closure's only text encoding)`);
+    const isUtf8 = label === 'utf-8' || label === 'utf8' || label === 'unicode-1-1-utf-8';
+    const isCp1252 = WINDOWS_1252_LABELS.has(label);
+    if (!isUtf8 && !isCp1252) {
+      throw new RangeError(`node:util TextDecoder: encoding '${encoding}' is not supported — supported: utf-8, windows-1252 (the closure's text encodings)`);
     }
     if (options !== undefined && typeof options !== 'object') {
       throw new TypeError('node:util TextDecoder: options must be an object');
     }
     this.#fatal = options?.fatal === true;
     this.#ignoreBOM = options?.ignoreBOM === true;
+    this.#cp1252 = isCp1252;
   }
 
-  get encoding() { return 'utf-8'; }
+  get encoding() { return this.#cp1252 ? 'windows-1252' : 'utf-8'; }
   get fatal() { return this.#fatal; }
   get ignoreBOM() { return this.#ignoreBOM; }
 
@@ -544,6 +569,18 @@ export class TextDecoder {
     if (bytes === undefined || bytes === null) {
       this.#pending = null;
       return '';
+    }
+    // Single-byte face: every byte maps through the cp1252 index directly
+    // (ASCII passthrough, C1 remap above, 0xA0+ identity); no sequences, so
+    // stream mode carries nothing.
+    if (this.#cp1252) {
+      this.#pending = null;
+      let out = '';
+      for (let at = 0; at < bytes.length; at += 1) {
+        const b = bytes[at];
+        out += String.fromCodePoint(b < 0x80 ? b : b < 0xa0 ? WINDOWS_1252_C1[b - 0x80] : b);
+      }
+      return out;
     }
     let input = bytes;
     if (this.#pending !== null && this.#pending.length > 0) {

@@ -22,9 +22,11 @@
  *   - `dispatchViaDispatcher` — the hook the runtime fetch calls FIRST so a
  *     `fetch(url)` with no dispatcher option still honors the installed
  *     policy (Node's built-in fetch resolves the global dispatcher).
- * https: proxying (CONNECT tunnels) and DNS pinning (`connect.lookup`) keep
- * their real-socket shape and stay unserved: a routed https: target is left
- * to the caller's own fetch behavior (the suite's proxies serve http:).
+ * https: proxying (CONNECT tunnels) keeps its real-socket shape and stays
+ * unserved: a routed https: target is left to the caller's own fetch
+ * behavior (the suite's proxies serve http:). DNS pinning (`connect.lookup`)
+ * IS served for loopback answers (W5-S): the pinned address is the
+ * connection target, and a loopback pin re-dials the in-test server.
  */
 
 import { dispatchLoopback } from 'upstream/shims/node-http-loopback.js';
@@ -47,6 +49,10 @@ const routeFor = (dispatcher, target) => {
     if (isProxyAgent(downstream)) return { proxy: downstream.uri };
     return { direct: true };
   }
+  // A plain Agent (no factory) carrying a pinning lookup is still a routable
+  // direct dispatch — requestPinned's `new Agent({connect: {lookup}})` shape
+  // (W5-S); viaPinnedLookup owns the answer.
+  if (typeof dispatcher?.options?.connect?.lookup === 'function') return { direct: true };
   return undefined;
 };
 
@@ -55,6 +61,49 @@ const routeFor = (dispatcher, target) => {
 const viaProxy = (proxyUri, targetHref, init) => {
   if (!/^http:/.test(proxyUri)) return undefined; // https: needs a CONNECT tunnel — no socket seam
   return dispatchLoopback(proxyUri, init, { requestUrlOverride: targetHref });
+};
+
+/** The pinned-connection face (W5-S): an Agent constructed with
+ * `connect.lookup` (dsh-web-fetch-http's requestPinned — DNS pinning, the
+ * transport half of the public-network policy) resolves the target hostname
+ * through the CALLER-SUPPLIED lookup before connecting. When the pinned
+ * answer is a loopback address, the in-test 127.0.0.1 server IS the pinned
+ * destination — dispatch the loopback with the hostname rewritten to the
+ * resolved address (port/path preserved), so `fetch('http://does-not-
+ * resolve.invalid:PORT/')` pinned to 127.0.0.1 serves the in-test handler
+ * exactly like the real engine dials the pinned address. Non-loopback
+ * answers keep the loud no-network refusal (no egress seam). Returns
+ * undefined when no pinning lookup is present or the answer misses. */
+const viaPinnedLookup = (dispatcher, target, init) => {
+  const lookup = dispatcher?.options?.connect?.lookup;
+  if (typeof lookup !== 'function') return undefined;
+  let url;
+  try {
+    url = new URL(target);
+  } catch {
+    return undefined;
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const done = (value) => { if (!settled) { settled = true; resolve(value); } };
+    try {
+      lookup(url.hostname, {}, (error, address) => {
+        if (error !== undefined && error !== null) return done(undefined);
+        done(typeof address === 'string' ? address : undefined);
+      });
+    } catch {
+      done(undefined);
+    }
+  }).then((address) => {
+    if (address === undefined) return undefined;
+    const loopback = address === '::1' || address === '127.0.0.1' || address.startsWith('127.');
+    if (!loopback || url.protocol !== 'http:') return undefined;
+    // Preserve port (may be empty → default 80), path and query; the Host
+    // header reports the pinned loopback, which is what the connection
+    // target really is in this dispatch.
+    const pinnedHref = `http://127.0.0.1${url.port === '' ? '' : `:${url.port}`}${url.pathname}${url.search}`;
+    return dispatchLoopback(pinnedHref, init);
+  });
 };
 
 /** The engine fetch: `init.dispatcher` wins, else the global dispatcher. */
@@ -70,6 +119,13 @@ export const fetch = (input, init = {}) => {
   if (route?.proxy !== undefined) {
     const proxied = viaProxy(route.proxy, target, init);
     if (proxied !== undefined) return proxied;
+  }
+  // A direct route under a pinning Agent dials the pinned answer first (the
+  // loopback serves registered in-test servers; non-loopback pins and
+  // unrouted fetches keep the loud refusal below).
+  if (route?.direct === true) {
+    const pinned = viaPinnedLookup(dispatcher, target, init);
+    if (pinned !== undefined) return pinned;
   }
   // Direct routes (and unrouted fetches) keep the runtime fetch: the
   // loopback serves registered in-test servers, everything else fails loud.
