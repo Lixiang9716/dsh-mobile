@@ -30,6 +30,7 @@
 
 import { EventEmitter } from 'upstream/shims/events.js';
 import { encodeUtf8, decodeUtf8 } from 'upstream/shims/buffer.js';
+import { encodeFormData } from 'upstream/shims/web-multipart.js';
 
 /** host:port → server record. Key spelling: lowercased host, numeric port. */
 const registry = new Map();
@@ -37,6 +38,15 @@ const registry = new Map();
 let nextEphemeralPort = 49152;
 
 const keyFor = (host, port) => `${String(host).toLowerCase()}:${port}`;
+
+/** The registry host spelling of a parsed URL. WHATWG `hostname` strips the
+ * IPv6 brackets ('[::1]' → '::1'); the URL shim keeps them, so strip here —
+ * a listen record is keyed by the bare host spelling (W4-N: the mock-server
+ * IPv6 listener test dials `http://[::1]:port`). */
+const hostFor = (parsed) => {
+  const h = parsed.hostname;
+  return typeof h === 'string' && h.startsWith('[') && h.endsWith(']') ? h.slice(1, -1) : h;
+};
 
 const nextTick = (fn) => {
   if (typeof globalThis.setTimeout === 'function') setTimeout(fn, 0);
@@ -78,6 +88,11 @@ class LoopbackIncoming extends EventEmitter {
   #body;
   #replayed;
   setTimeout() { return this; }
+  /** The readable-stream no-ops node's IncomingMessage carries (the client
+   * face's rawChat callback calls response.resume() — W4-N). */
+  resume() { return this; }
+  pause() { return this; }
+  read() { return null; }
   destroy(error) {
     this.readable = false;
     this.complete = true;
@@ -264,8 +279,11 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
 
 /** The fetch-side entry: dispatch `url` through a registered loopback server
  * when one matches; returns undefined so the caller keeps its own behavior
- * (fail-loud or gateway) for everything else. */
-export const dispatchLoopback = (input, init = {}) => {
+ * (fail-loud or gateway) for everything else. `options.requestUrlOverride`
+ * serves the PROXY shape (undici shim): the dial goes to the proxy server's
+ * host:port while the request line carries the ABSOLUTE target URL — what a
+ * real HTTP proxy receives, and what the egress specs' in-test proxy records. */
+export const dispatchLoopback = (input, init = {}, options = {}) => {
   let urlString;
   try {
     urlString = typeof input === 'string' ? input : (String(input?.url ?? input));
@@ -280,9 +298,24 @@ export const dispatchLoopback = (input, init = {}) => {
   }
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return undefined;
   const port = parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port);
-  const record = registry.get(keyFor(parsed.hostname, port));
+  const record = registry.get(keyFor(hostFor(parsed), port));
   if (!record || !record.server.listening) return undefined;
 
+  // A FormData body serializes to its multipart byte stream first (real
+  // fetch encodes it inside the engine; the Files API upload family depends
+  // on the bytes + the boundary content-type reaching the in-test server).
+  const rawBody = init?.body;
+  if (rawBody !== null && rawBody !== undefined && typeof globalThis.FormData === 'function'
+    && rawBody instanceof globalThis.FormData) {
+    return encodeFormData(rawBody).then((encoded) => dispatchParsed(parsed, init, options, encoded.bytes, encoded.contentType));
+  }
+  return dispatchParsed(parsed, init, options, toBytes(rawBody), undefined);
+};
+
+/** The resolved-body half of the dispatch (dispatchLoopback above resolves
+ * the URL, the registry record, and any FormData encoding first). */
+const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
+  const record = registry.get(keyFor(hostFor(parsed), parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port)));
   const method = String(init?.method ?? 'GET').toUpperCase();
   const headerBag = new Map();
   const addHeaders = (source) => {
@@ -296,9 +329,9 @@ export const dispatchLoopback = (input, init = {}) => {
     }
   };
   addHeaders(init?.headers);
+  if (formDataType !== undefined && !headerBag.has('content-type')) headerBag.set('content-type', formDataType);
 
-  const requestUrl = `${parsed.pathname}${parsed.search}`;
-  const bodyBytes = toBytes(init?.body);
+  const requestUrl = options.requestUrlOverride ?? `${parsed.pathname}${parsed.search}`;
   if (init?.body !== undefined && init.body !== null && !headerBag.has('content-length')) {
     headerBag.set('content-length', String(bodyBytes.byteLength));
   }
@@ -331,7 +364,7 @@ export const dispatchLoopback = (input, init = {}) => {
         status,
         statusText: response.statusMessage ?? '',
         headers: headerObject,
-        url: urlString,
+        url: String(parsed.href),
       }));
     }, (error) => {
       // Destroyed before headers: real fetch rejects (the socket died).
@@ -340,6 +373,12 @@ export const dispatchLoopback = (input, init = {}) => {
       reject(error ?? new Error('response destroyed before headers'));
     });
     const request = new LoopbackIncoming({ method, url: requestUrl, headers, body: globalThis.Buffer ? globalThis.Buffer.from(bodyBytes) : bodyBytes });
+    // The reset face: `connection_reset` behaviors tear the request socket
+    // down (llm-mock-server's `request.socket.destroy()`), which on the wire
+    // is a client-side ECONNRESET — the adapter classifies it TRANSPORT.
+    request.socket = {
+      destroy: (error) => response.destroy(error ?? new Error('socket hang up')),
+    };
     if (signal) {
       if (signal.aborted) {
         settled = true;
@@ -373,6 +412,87 @@ export const dispatchLoopback = (input, init = {}) => {
   });
 };
 
+/** The loopback CLIENT request (node:http request(url[, options][, cb])) —
+ * the in-process counterpart of the server face: write()/end() buffer the
+ * body chunks, end() dispatches through the registry exactly like fetch,
+ * and the response arrives as an event-style IncomingMessage ('data'/'end'/
+ * 'close', statusCode/headers). W4-N: llm-mock-server's rawChat drives its
+ * in-test server this way and sends the body in TWO writes — the loopback
+ * reassembles them, which is precisely the wire behavior under test. */
+const createLoopbackClientRequest = (urlOrOptions, optionsOrCb, maybeCb) => {
+  // node's overloads: request(url[, options][, cb]) and request(options[, cb]).
+  let url = null;
+  let options = optionsOrCb;
+  let callback = maybeCb;
+  const first = urlOrOptions;
+  if (typeof first === 'string' || (first && typeof first.href === 'string')) {
+    url = String(first.href ?? first);
+    if (typeof optionsOrCb === 'function') { callback = optionsOrCb; options = undefined; }
+  } else {
+    options = first;
+    if (typeof optionsOrCb === 'function') { callback = optionsOrCb; options = undefined; }
+  }
+  const req = new EventEmitter();
+  const chunks = [];
+  let ended = false;
+  const finish = () => {
+    if (ended) return;
+    ended = true;
+    nextTick(async () => {
+      const total = chunks.reduce((n, c) => n + c.byteLength, 0);
+      const body = new Uint8Array(total);
+      let at = 0;
+      for (const c of chunks) { body.set(c, at); at += c.byteLength; }
+      try {
+        const response = await dispatchLoopback(url, {
+          method: options?.method ?? 'GET',
+          headers: options?.headers,
+          ...(total > 0 ? { body } : {}),
+        });
+        if (response === undefined) {
+          throw new Error(`node:http: request to ${url} has no loopback server — no socket seam`);
+        }
+        const headerBag = {};
+        response.headers.forEach((value, name) => { headerBag[String(name).toLowerCase()] = String(value); });
+        const incoming = new LoopbackIncoming({ method: String(options?.method ?? 'GET'), url: '/', headers: headerBag, body: [] });
+        incoming.statusCode = response.status;
+        nextTick(() => {
+          if (callback) callback(incoming);
+          req.emit('response', incoming);
+          response.arrayBuffer().then((buffer) => {
+            const bytes = new Uint8Array(buffer);
+            incoming.complete = true;
+            if (bytes.byteLength > 0) {
+              incoming.emit('data', globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes);
+            }
+            incoming.emit('end');
+            incoming.emit('close');
+          }, (error) => {
+            incoming.emit('error', error instanceof Error ? error : new Error(String(error)));
+          });
+        });
+      } catch (error) {
+        req.emit('error', error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+  };
+  req.write = (chunk, encodingOrCb, maybeWriteCb) => {
+    const cb = typeof encodingOrCb === 'function' ? encodingOrCb : maybeWriteCb;
+    if (chunk !== undefined && chunk !== null) chunks.push(toBytes(chunk));
+    if (cb) cb();
+    return true;
+  };
+  req.end = (chunk, encodingOrCb, maybeEndCb) => {
+    if (chunk !== undefined && chunk !== null) chunks.push(toBytes(chunk));
+    const cb = typeof encodingOrCb === 'function' ? encodingOrCb : maybeEndCb;
+    if (cb) cb();
+    finish();
+    return req;
+  };
+  req.destroy = () => { req.emit('error', new Error('client request destroyed')); return req; };
+  return req;
+};
+
 /** The node:http module face: real createServer/Server over the loopback,
  * the pure-validation faces kept verbatim, the never-reachable client faces
  * still failing loud (no socket seam — see the module header). */
@@ -393,7 +513,7 @@ export const createHttpFace = () => {
   const createServer = (optionsOrHandler, maybeHandler) => createLoopbackServer(optionsOrHandler, maybeHandler);
   const http = {
     createServer,
-    request: refuse('request'),
+    request: createLoopbackClientRequest,
     get: refuse('get'),
     Server: class Server {
       constructor(handler) { return createLoopbackServer(handler); }

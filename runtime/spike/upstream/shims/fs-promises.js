@@ -568,7 +568,9 @@ export const mkdtemp = async (prefix) => {
   if (typeof prefix !== 'string' || prefix.length === 0) {
     throw new TypeError('mkdtemp: prefix must be a non-empty string');
   }
-  const path = `${prefix}${Date.now().toString(36)}-${(mkdtempCounter += 1).toString(36)}`;
+  // Six alphanumeric chars like node's suffix — name-shape-sensitive
+  // consumers (spill-local's DEFAULT_ROOT_RE) match on it (see fs.js).
+  const path = `${prefix}${(mkdtempCounter += 1).toString(36).padStart(6, '0')}`;
   await mkdir(path, { recursive: true });
   return path;
 };

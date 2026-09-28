@@ -204,6 +204,15 @@ ensure_npm_registry "@modelcontextprotocol/server" "2.0.0" "b4f0dfda3b73b322f109
 ensure_npm_registry "@hono/node-server" "1.19.14" "0b956f346f96d8b89d03ee4e586e267a2d3877f4393fb97eb068572fd7a5b9ad"
 ensure_npm_registry "ipaddr.js" "2.5.0" "586f7ae92cc869bf61612f0d2765a02d98f813c7d1fff461745b93178da626c3"
 ensure_npm_registry "@joplin/turndown-plugin-gfm" "1.0.67" "59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5"
+ensure_npm_registry "ws" "8.21.0" "d08b726b3aae3a0fed5218a0d9a4b2ac8d75d4ad453a9271db55fe38e94eb4cf"
+ensure_npm_registry "react" "18.3.1" "8d9bed01a672e7eaf387942d781ad47c6a43089a30a0306060f9fd5ac7870347"
+ensure_npm_registry "picomatch" "2.3.1" "1b14ee9ec867c090d7b52c77193d83e77910553b3d18b2f86dd2b7b55e82c11f"
+ensure_npm_registry "negotiator" "1.1.0" "04ada283b29ea69189a5eac97fa3815f20480255fa4667258366c31e1d92ced4"
+ensure_npm_registry "mime-db" "1.54.0" "2b21054e65d0eabd58c5002d2713e968dd47b15700bfed4b7281a344ded1c420"
+ensure_npm_registry "mime-types" "3.0.2" "2f9dd28353c303ff8750fbf68e474755b01c54a989883d227d605f7bfa3dd2ac"
+ensure_npm_registry "@deepseek-ai/dsh-host-frontend-static" "0.1.6-alpha.2" "5cc322892525feb0422db40cd0c27f7a2180c9ef746c2f8784c402f7b635944f"
+ensure_npm_registry "@deepseek-ai/dsh-host-plugin-inventory" "0.1.6-alpha.2" "5579043f4b948ba101a77c9a521fda57f151272f464da0b4dbad56ee1fbaedc5"
+ensure_npm_registry "resolve.exports" "2.0.3" "a64cb8c0bfecdc41570b8ae5966f23d2f923fcd3ed4b4d2e33c5a05756172816"
 
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"

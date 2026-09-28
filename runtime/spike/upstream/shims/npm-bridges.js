@@ -285,7 +285,14 @@ const BRIDGES = [
   // shim behind the node:buffer face — no new vendored bytes (the same
   // module instance node:crypto's shim composes with, so DshBuffer identity
   // holds across both spellings).
-  ['buffer', "export { Buffer } from 'upstream/shims/buffer.js';"],
+  ['buffer', [
+    "export { Buffer } from 'upstream/shims/buffer.js';",
+    // npm buffer@6 also exports the size ceiling the webworker-runtime
+    // buffer/streams limbs read (kMaxLength, kStringMaxLength): node's
+    // 64-bit values.
+    "export const kMaxLength = 4294967296;",
+    "export const kStringMaxLength = 536870888;",
+  ].join('\n')],
 
   // @vitest/spy (remote-mock + gateway client specs import { fn }): the
   // harness's vi face re-exported under vitest's own spy package name. The
@@ -347,6 +354,7 @@ const BRIDGES = [
   // chokidar specs): ESM-native root files; only the subpaths the specs
   // import are named (their own relative ./_md.js & co. resolve beside).
   ['@noble/hashes/sha2.js', "export * from '/vendor/npm/@noble/hashes@2.3.0/sha2.js';"],
+  ['@noble/hashes/hmac.js', "export * from '/vendor/npm/@noble/hashes@2.3.0/hmac.js';"],
   ['@noble/hashes/legacy.js', "export * from '/vendor/npm/@noble/hashes@2.3.0/legacy.js';"],
 
   // @jridgewell/gen-mapping 0.3.13 (+ its two deps, the lockfile's exact
@@ -458,6 +466,77 @@ const BRIDGES = [
   ['@earendil-works/pi-ai/utils/overflow',
     "export * from '/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/utils/overflow.js';"],
 
+  // openai — the SDK specifier pi-ai's lazy api modules dynamic-import ONLY
+  // at live-transport build time (dist/api/openai-completions.js +
+  // openai-responses.js: `import OpenAI from "openai"`). No vendored tarball
+  // (the heavy SDK was deliberately left unfetched), and the loopback round
+  // (W3-K) made the suite actually reach the transport, so the face is a
+  // composed fetch/SSE client over our own shim (openai-client.js) — the
+  // PI_AI_PROVIDERS_ALL composed-face precedent. The surface is measured
+  // against the pinned pi-ai 0.85.1 dist (see openai-client.js header).
+  ['openai', [
+    "import OpenAI from 'upstream/shims/openai-client.js';",
+    "export default OpenAI;",
+    "export { OpenAI };",
+  ].join('\n')],
+
+  // partial-json — pi-ai's streaming tool-call parser (dist/utils/json-parse.js
+  // imports { parse } — reached by EVERY lazy api load since json-parse.js is
+  // in the openai-completions/openai-responses closure). NO vendored tarball
+  // (never fetched); the composed completion-walk face is partial-json.js.
+  ['partial-json', "export * from 'upstream/shims/partial-json.js';"],
+
+  // undici — the Node HTTP engine dsh-http-proxy and dsh-web-fetch-http
+  // dynamic-import. NO vendored tarball (heavy runtime package); the face is
+  // composed over the loopback (undici.js): ProxyAgent routes re-dial the
+  // in-test proxy server with the absolute-form request line, so the egress
+  // specs' proxy records are real in-process observations, no sockets.
+  ['undici', "export * from 'upstream/shims/undici.js';"],
+
+  // @deepseek-ai/cordis-plugin-loader — the vendored lib subclassed so a
+  // Loader built WITHOUT node's ESM internals still carries a working
+  // `internal.import`. Upstream, `ModuleLoader.fromInternal()` reaches Node's
+  // internal `internal/modules/esm/loader` (host C territory — unreachable
+  // here), leaving `loader.internal` undefined; the plugin-package-inventory
+  // specs wrap that face (`const internal = ctx.loader.internal`) and every
+  // workspace-plugin composition needs it. The subclass installs the same
+  // contract over OUR loader: parent-key-relative resolution for './'/'../'
+  // (URL join against the passed baseUrl), package subpaths under the base's
+  // node_modules (the workspace writes define `file://<canonical>` modules at
+  // write time), absolute paths as file URLs, and the bare map last.
+  ['@deepseek-ai/cordis-plugin-loader', [
+    "import * as loaderLib from '/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js';",
+    "const runtimeImport = async (specifier, baseUrl) => {",
+    "  const candidates = [];",
+    "  if (/^(file:|https?:)/.test(specifier)) candidates.push(specifier);",
+    "  else if (specifier.startsWith('/')) candidates.push('file://' + specifier);",
+    "  const base = typeof baseUrl === 'string' ? baseUrl : String(baseUrl?.href ?? '');",
+    "  const baseDir = base.endsWith('/') ? base : base.slice(0, base.lastIndexOf('/') + 1);",
+    "  if (specifier.startsWith('./') || specifier.startsWith('../')) {",
+    "    try { candidates.push(new URL(specifier, baseDir || 'file:///').href); } catch { /* bad base: bare fallback */ }",
+    "  } else if (baseDir.startsWith('file:') && !/^(file:|https?:)/.test(specifier)) {",
+    "    try { candidates.push(new URL('node_modules/' + specifier, baseDir).href); } catch { /* skip */ }",
+    "  }",
+    "  candidates.push(specifier);",
+    "  let last;",
+    "  for (const candidate of candidates) {",
+    "    try { return await import(candidate); } catch (error) { last = error; }",
+    "  }",
+    "  throw last;",
+    "};",
+    "class Loader extends loaderLib.Loader {",
+    "  constructor(...args) {",
+    "    super(...args);",
+    "    if (this.internal === undefined) {",
+    "      this.internal = { version: 'v2', import: (specifier, baseUrl, _options) => runtimeImport(specifier, baseUrl) };",
+    "    }",
+    "  }",
+    "}",
+    "export * from '/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js';",
+    "export { Loader };",
+    "export default Loader;",
+  ].join('\n')],
+
   // @modelcontextprotocol/server 2.0.0 (+ node adapter and the hono node
   // server face) — the acp bridge spec's MCP-over-HTTP limb. Nothing ever
   // listens on a socket in the suite, but the NODE-BUILTIN faces it links
@@ -478,6 +557,16 @@ const BRIDGES = [
   ].join('\n')],
   ['@hono/node-server',
     "export * from '/vendor/npm/@hono/node-server@1.19.14/dist/index.mjs';"],
+  ['os', [
+    "import * as osShim from 'upstream/shims/os.js';",
+    "export default new Proxy(osShim, {",
+    "  get(t, k) {",
+    "    if (k === 'networkInterfaces') return () => ({}); // no LAN surface in the sandbox: pickers fall back to loopback",
+    "    const v = t[k];",
+    "    return typeof v === 'function' ? v.bind(t) : v;",
+    "  },",
+    "});",
+  ].join('\n')],
   ['http', [
     "const refuse = (name) => () => {",
     "  throw new Error('http: ' + name + ' is not served in this runtime — no socket seam');",
@@ -566,7 +655,398 @@ const BRIDGES = [
     "export * from 'upstream/shims/crypto.js';",
     "export default nodeCrypto;",
   ].join('\n')],
+
+  // ---- W4-P (2026-09-28) vendor rows ----
+  // compression 1.8.1: the vendored dsh-host-webserver imports it for the
+  // optional gzip middleware (config `compression: 'gzip'`; the DEFAULT is
+  // 'none', under which the middleware object is only CREATED, never run).
+  // The published face is a CJS require-graph (bytes/compressible/
+  // on-headers/vary) this loader cannot evaluate; this row serves the
+  // shape the webserver touches: callable middleware factory + .filter —
+  // pass-through honest for 'none' (the corpus default); a 'gzip'
+  // configuration would silently skip compression (documented delta).
+  ['compression', [
+    "const compression = (options) => (req, res, next) => next();",
+    "compression.filter = () => true;",
+    "compression.compress = () => {};",
+    "export default compression;",
+  ].join('\n')],
+
+  // ws 8.21.0 (the api-gateway's RemoteStreamMux WebSocketServer): the
+  // vendored lib/ is a CJS require-graph over node:net/tls/http — no
+  // in-runtime socket seam serves it (D2), and the loopback carries fetch
+  // dispatch, not WS upgrades. The face keeps the load honest: the
+  // constructors throw loud naming the seam (rule 5) — every mux-free arm
+  // of the gateway specs runs.
+  ['ws', [
+    "const WebSocket = globalThis.WebSocket; // web-shims installs the global (constants real, constructor loud)",
+    "export class WebSocketServer {",
+    "  constructor() { throw new Error('ws: WebSocketServer needs a WS-upgrade seam over the loopback — not served in this runtime'); }",
+    "}",
+    "export { WebSocket };",
+    "export default WebSocket;",
+  ].join('\n')],
+
+  // readable-stream (the webworker-runtime node-builtin limbs: fs streams
+  // build on the default export's classes AND its statics — the module-
+  // scope destructure + getDefaultHighWaterMark() call runs at LOAD, so
+  // the face must be complete). Mapped onto THIS runtime's stream face:
+  // the same node-stream shim every other spec rides, plus the node:stream
+  // utility surface the limbs destructured (behaviorally honest: the
+  // statics read the shim's own destroyed/errored flags). Transform is a
+  // through-mode Duplex alias (the corpus drives it only as a pass-through;
+  // documented delta).
+  ['readable-stream', [
+    // DEFAULT-ONLY face: the limbs destructure every face off the default
+    // (`var { Readable, ..., Transform, ... } = Stream`), so named exports
+    // are unnecessary — and a top-level `export const Transform` collides
+    // with a host global (quickjs: invalid redefinition, measured). The
+    // statics are the node:stream utility surface the limbs call at load;
+    // Transform is a through-mode Duplex alias (documented delta).
+    "import nodeStream, { Readable, Writable, Duplex, PassThrough, pipeline } from 'upstream/shims/node-stream.js';",
+    "const state = { defaultHwm: 64 * 1024 };",
+    "const streamStatics = {",
+    "  getDefaultHighWaterMark: (objectMode) => (objectMode ? 16 : state.defaultHwm),",
+    "  setDefaultHighWaterMark: (objectMode, value) => { if (!objectMode) state.defaultHwm = value; },",
+    "  isDestroyed: (stream) => Boolean(stream && stream.destroyed),",
+    "  isWritable: (stream) => Boolean(stream && !stream.destroyed),",
+    "  isErrored: (stream) => Boolean(stream && stream.errored),",
+    "  isReadable: (stream) => Boolean(stream && stream.readable !== false),",
+    "  destroy: (stream, error) => stream.destroy(error),",
+    "  finished: (stream, cb) => {",
+    "    stream.once?.('end', () => cb());",
+    "    stream.once?.('error', (error) => cb(error));",
+    "    stream.once?.('close', () => cb());",
+    "  },",
+    "  addAbortSignal: (signal, stream) => {",
+    "    signal?.addEventListener('abort', () => stream.destroy(new Error('The operation was aborted')));",
+    "    return stream;",
+    "  },",
+    "  compose: () => { throw new Error('readable-stream: compose is not served in this runtime'); },",
+    "  promises: null,",
+    "};",
+    "streamStatics.promises = { pipeline, finished: streamStatics.finished };",
+    "const Transform = function (options) { return new Duplex(options); };",
+    "const readableStream = Object.assign({ Readable, Writable, Duplex, PassThrough, Transform, pipeline }, streamStatics);",
+    "readableStream.Stream = readableStream; // node: the Stream base carries the statics (the limbs destructure them off it)",
+    "export default readableStream;",
+  ].join('\n')],
+
+  // ---- per-face CJS adapter chains (the ipaddr/gfm pattern generalized).
+  // ONE scope module owns globals module/exports/require + a faces map.
+  // ESM import order is depth-first over the import list with bodies
+  // interleaved only BETWEEN modules — so each vendored CJS file gets its
+  // own chain module: import the previous link, import the file (it sees
+  // the previous link's captured faces through the require stub), capture
+  // its exports in the body. Captures inside one module's body would run
+  // only after ALL its imports (measured: shell.js saw no './grammars/
+  // shell' face and the chain threw). ----
+  ['dsh-bridge-setup/cjs-chain-scope', [
+    // Registry model: every file of a chain gets its exports object
+    // PRE-REGISTERED before evaluation — CJS cycles (picomatch's
+    // constants <-> utils) then see each other's live, partially-filled
+    // exports, exactly like a real CJS loader. __dshCjsSetup(key) binds
+    // the ambient module/exports to that object for the file evaluated
+    // next; each chain link imports the previous link, then its file.
+    "globalThis.__dshCjsFaces = new Map();",
+    "globalThis.require = (request) => {",
+    "  if (!globalThis.__dshCjsFaces.has(request)) {",
+    "    throw new Error('npm-bridges: CJS adapter chain has no face for require(' + JSON.stringify(request) + ')');",
+    "  }",
+    "  return globalThis.__dshCjsFaces.get(request);",
+    "};",
+    "globalThis.__dshCjsSetup = (key) => {",
+    "  if (!globalThis.__dshCjsFaces.has(key)) globalThis.__dshCjsFaces.set(key, {});",
+    "  globalThis.module = { exports: globalThis.__dshCjsFaces.get(key) };",
+    "  globalThis.exports = globalThis.module.exports;",
+    "};",
+    // Files that REBIND module.exports (pegjs grammars, the react min
+    // build, mimeScore) leave the registered object behind; the evaluating
+    // link re-points the key at the final exports.
+    "globalThis.__dshCjsKeep = (key) => globalThis.__dshCjsFaces.set(key, globalThis.module.exports);",
+    // Files that REBIND module.exports (pegjs grammars, the react min
+    // build, the picomatch/index shims) leave the registered object behind;
+    // the evaluating link re-points the key at the final exports.
+    "globalThis.__dshCjsKeep = (key) => globalThis.__dshCjsFaces.set(key, globalThis.module.exports);",
+  ].join('\n')],
+
+  // react 18.3.1 (the cordis-client-runner + api-workspace-files client
+  // specs): index.js is a one-require CJS shim over cjs/react.production.
+  // min.js.
+  ['dsh-bridge-setup/react-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "globalThis.__dshCjsSetup('./cjs/react.production.min.js');",
+  ].join('\n')],
+  ['dsh-bridge-setup/react-cjs-1', [
+    "import 'dsh-bridge-setup/react-cjs-0';",
+    "import '/vendor/npm/react@18.3.1/cjs/react.production.min.js';",
+    "globalThis.__dshCjsKeep('./cjs/react.production.min.js');",
+    // index.js picks production vs development from process.env.NODE_ENV —
+    // the runtime runs development — so BOTH builds are served.
+    "globalThis.__dshCjsSetup('./cjs/react.development.js');",
+  ].join('\n')],
+  ['dsh-bridge-setup/react-cjs-1b', [
+    "import 'dsh-bridge-setup/react-cjs-1';",
+    "import '/vendor/npm/react@18.3.1/cjs/react.development.js';",
+    "globalThis.__dshCjsKeep('./cjs/react.development.js');",
+    "globalThis.__dshCjsSetup('index');",
+  ].join('\n')],
+  ['dsh-bridge-setup/react-cjs-2', [
+    "import 'dsh-bridge-setup/react-cjs-1b';",
+    "import '/vendor/npm/react@18.3.1/index.js';",
+    "globalThis.__dshCjsKeep('index');",
+    "globalThis.__dshReactFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshReactFace?.createElement !== 'function') {",
+    "  throw new Error('npm-bridges: react CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+
+  // @yarnpkg/parsers 3.1.0 (the webworker-runtime shell limbs: parseShell).
+  // CJS over three pegjs grammars + wrapper files; syml.js requires js-yaml
+  // at top level, served from the vendored UMD dist (single file).
+  ['dsh-bridge-setup/parsers-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "globalThis.__dshCjsSetup('js-yaml');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-1', [
+    "import 'dsh-bridge-setup/parsers-cjs-0';",
+    "import '/vendor/npm/js-yaml@4.1.0/dist/js-yaml.js';",
+    "globalThis.__dshCjsKeep('js-yaml');",
+    "globalThis.__dshCjsSetup('./grammars/shell');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-2', [
+    "import 'dsh-bridge-setup/parsers-cjs-1';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/grammars/shell.js';",
+    "globalThis.__dshCjsKeep('./grammars/shell');",
+    "globalThis.__dshCjsSetup('./shell');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-3', [
+    "import 'dsh-bridge-setup/parsers-cjs-2';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/shell.js';",
+    "globalThis.__dshCjsKeep('./shell');",
+    "globalThis.__dshCjsSetup('./grammars/resolution');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-4', [
+    "import 'dsh-bridge-setup/parsers-cjs-3';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/grammars/resolution.js';",
+    "globalThis.__dshCjsKeep('./grammars/resolution');",
+    "globalThis.__dshCjsSetup('./resolution');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-5', [
+    "import 'dsh-bridge-setup/parsers-cjs-4';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/resolution.js';",
+    "globalThis.__dshCjsKeep('./resolution');",
+    "globalThis.__dshCjsSetup('./grammars/syml');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-6', [
+    "import 'dsh-bridge-setup/parsers-cjs-5';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/grammars/syml.js';",
+    "globalThis.__dshCjsKeep('./grammars/syml');",
+    "globalThis.__dshCjsSetup('./syml');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-7', [
+    "import 'dsh-bridge-setup/parsers-cjs-6';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/syml.js';",
+    "globalThis.__dshCjsKeep('./syml');",
+    "globalThis.__dshCjsSetup('index');",
+  ].join('\n')],
+  ['dsh-bridge-setup/parsers-cjs-8', [
+    "import 'dsh-bridge-setup/parsers-cjs-7';",
+    "import '/vendor/npm/@yarnpkg/parsers@3.1.0/lib/index.js';",
+    "globalThis.__dshCjsKeep('index');",
+    "globalThis.__dshParsersFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshParsersFace?.parseShell !== 'function') {",
+    "  throw new Error('npm-bridges: @yarnpkg/parsers CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+
+  // picomatch 2.3.1 (the webworker-runtime shell expand/programs limbs).
+  // CJS: index → lib/picomatch → {scan,parse,utils,constants}; constants
+  // and utils are mutually circular (the pre-registered exports objects
+  // give the real CJS partial-exports semantics); utils requires node:path,
+  // served by the shim through the faces map.
+  // negotiator 1.1.0 (the vendored dsh-host-webserver's gzip middleware:
+  // `new Negotiator(req).encoding(['gzip','identity'])`). CJS over
+  // lib/{accept,charset,encoding,language,mediaType}; accept/charset/
+  // language/mediaType require 'content-type' — served as a LOUD stub:
+  // only the encoding-negotiation face runs without it.
+
+  ['dsh-bridge-setup/negotiator-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "globalThis.__dshCjsFaces.set('content-type', { parse: () => { throw new Error('negotiator: content-type parse is not served in this runtime'); }, format: () => { throw new Error('negotiator: content-type format is not served in this runtime'); } });",
+    "globalThis.__dshCjsSetup('./lib/accept');",
+    "globalThis.__dshCjsFaces.set('./accept', globalThis.__dshCjsFaces.get('./lib/accept'));",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-1', [
+    "import 'dsh-bridge-setup/negotiator-cjs-0';",
+    "import '/vendor/npm/negotiator@1.1.0/lib/accept.js';",
+    "globalThis.__dshCjsKeep('./lib/accept');",
+    "globalThis.__dshCjsFaces.set('./accept', globalThis.__dshCjsFaces.get('./lib/accept'));",
+    "globalThis.__dshCjsSetup('./lib/charset');",
+    "globalThis.__dshCjsFaces.set('./charset', globalThis.__dshCjsFaces.get('./lib/charset'));",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-2', [
+    "import 'dsh-bridge-setup/negotiator-cjs-1';",
+    "import '/vendor/npm/negotiator@1.1.0/lib/charset.js';",
+    "globalThis.__dshCjsKeep('./lib/charset');",
+    "globalThis.__dshCjsFaces.set('./charset', globalThis.__dshCjsFaces.get('./lib/charset'));",
+    "globalThis.__dshCjsSetup('./lib/encoding');",
+    "globalThis.__dshCjsFaces.set('./encoding', globalThis.__dshCjsFaces.get('./lib/encoding'));",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-3', [
+    "import 'dsh-bridge-setup/negotiator-cjs-2';",
+    "import '/vendor/npm/negotiator@1.1.0/lib/encoding.js';",
+    "globalThis.__dshCjsKeep('./lib/encoding');",
+    "globalThis.__dshCjsFaces.set('./encoding', globalThis.__dshCjsFaces.get('./lib/encoding'));",
+    "globalThis.__dshCjsSetup('./lib/language');",
+    "globalThis.__dshCjsFaces.set('./language', globalThis.__dshCjsFaces.get('./lib/language'));",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-4', [
+    "import 'dsh-bridge-setup/negotiator-cjs-3';",
+    "import '/vendor/npm/negotiator@1.1.0/lib/language.js';",
+    "globalThis.__dshCjsKeep('./lib/language');",
+    "globalThis.__dshCjsFaces.set('./language', globalThis.__dshCjsFaces.get('./lib/language'));",
+    "globalThis.__dshCjsSetup('./lib/mediaType');",
+    "globalThis.__dshCjsFaces.set('./mediaType', globalThis.__dshCjsFaces.get('./lib/mediaType'));",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-5', [
+    "import 'dsh-bridge-setup/negotiator-cjs-4';",
+    "import '/vendor/npm/negotiator@1.1.0/lib/mediaType.js';",
+    "globalThis.__dshCjsKeep('./lib/mediaType');",
+    "globalThis.__dshCjsFaces.set('./mediaType', globalThis.__dshCjsFaces.get('./lib/mediaType'));",
+    "globalThis.__dshCjsSetup('index');",
+  ].join('\n')],
+  ['dsh-bridge-setup/negotiator-cjs-6', [
+    "import 'dsh-bridge-setup/negotiator-cjs-5';",
+    "import '/vendor/npm/negotiator@1.1.0/index.js';",
+    "globalThis.__dshNegotiatorFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshNegotiatorFace !== 'function') {",
+    "  throw new Error('npm-bridges: negotiator CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+  ['negotiator', [
+    "import 'dsh-bridge-setup/negotiator-cjs-6';",
+    "export default globalThis.__dshNegotiatorFace;",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-0', [
+    "import 'dsh-bridge-setup/cjs-chain-scope';",
+    "import * as pathShim from 'upstream/shims/path.js';",
+    "globalThis.__dshCjsFaces.set('path', pathShim);",
+    "globalThis.__dshCjsSetup('./constants');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-1', [
+    "import 'dsh-bridge-setup/picomatch-cjs-0';",
+    "import '/vendor/npm/picomatch@2.3.1/lib/constants.js';",
+    "globalThis.__dshCjsKeep('./constants');",
+    "globalThis.__dshCjsSetup('./utils');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-2', [
+    "import 'dsh-bridge-setup/picomatch-cjs-1';",
+    "import '/vendor/npm/picomatch@2.3.1/lib/utils.js';",
+    "globalThis.__dshCjsKeep('./utils');",
+    "globalThis.__dshCjsSetup('./parse');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-3', [
+    "import 'dsh-bridge-setup/picomatch-cjs-2';",
+    "import '/vendor/npm/picomatch@2.3.1/lib/parse.js';",
+    "globalThis.__dshCjsKeep('./parse');",
+    "globalThis.__dshCjsSetup('./scan');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-4', [
+    "import 'dsh-bridge-setup/picomatch-cjs-3';",
+    "import '/vendor/npm/picomatch@2.3.1/lib/scan.js';",
+    "globalThis.__dshCjsKeep('./scan');",
+    "globalThis.__dshCjsSetup('./lib/picomatch');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-5', [
+    "import 'dsh-bridge-setup/picomatch-cjs-4';",
+    "import '/vendor/npm/picomatch@2.3.1/lib/picomatch.js';",
+    "globalThis.__dshCjsKeep('./lib/picomatch');",
+    "globalThis.__dshCjsSetup('index');",
+  ].join('\n')],
+  ['dsh-bridge-setup/picomatch-cjs-6', [
+    "import 'dsh-bridge-setup/picomatch-cjs-5';",
+    "import '/vendor/npm/picomatch@2.3.1/index.js';",
+    "globalThis.__dshCjsKeep('index');",
+    "globalThis.__dshPicomatchFace = globalThis.module.exports;",
+    "if (typeof globalThis.__dshPicomatchFace !== 'function') {",
+    "  throw new Error('npm-bridges: picomatch CJS face evaluated to an unexpected shape');",
+    "}",
+  ].join('\n')],
+  // react 18.3.1 face: named exports enumerated from the production
+  // build's export keys (the client-runner closure does `import * as
+  // React`).
+  ['react', [
+    "import 'dsh-bridge-setup/react-cjs-2';",
+    "const React = globalThis.__dshReactFace;",
+    "export default React;",
+    "export const Children = React.Children;",
+    "export const Component = React.Component;",
+    "export const Fragment = React.Fragment;",
+    "export const Profiler = React.Profiler;",
+    "export const PureComponent = React.PureComponent;",
+    "export const StrictMode = React.StrictMode;",
+    "export const Suspense = React.Suspense;",
+    "export const cloneElement = React.cloneElement;",
+    "export const createContext = React.createContext;",
+    "export const createElement = React.createElement;",
+    "export const createFactory = React.createFactory;",
+    "export const createRef = React.createRef;",
+    "export const forwardRef = React.forwardRef;",
+    "export const isValidElement = React.isValidElement;",
+    "export const lazy = React.lazy;",
+    "export const memo = React.memo;",
+    "export const startTransition = React.startTransition;",
+    "export const act = React.act;",
+    "export const useCallback = React.useCallback;",
+    "export const useContext = React.useContext;",
+    "export const useDebugValue = React.useDebugValue;",
+    "export const useDeferredValue = React.useDeferredValue;",
+    "export const useEffect = React.useEffect;",
+    "export const useId = React.useId;",
+    "export const useImperativeHandle = React.useImperativeHandle;",
+    "export const useInsertionEffect = React.useInsertionEffect;",
+    "export const useLayoutEffect = React.useLayoutEffect;",
+    "export const useMemo = React.useMemo;",
+    "export const useReducer = React.useReducer;",
+    "export const useRef = React.useRef;",
+    "export const useState = React.useState;",
+    "export const useSyncExternalStore = React.useSyncExternalStore;",
+    "export const useTransition = React.useTransition;",
+    "export const version = React.version;",
+  ].join('\n')],
+  // @yarnpkg/parsers face: the wrapper index re-exports the three
+  // grammars; the shell limbs use parseShell (+ type-only names).
+  ['@yarnpkg/parsers', [
+    "import 'dsh-bridge-setup/parsers-cjs-8';",
+    "const parsers = globalThis.__dshParsersFace;",
+    "export default parsers;",
+    "export const parseShell = parsers.parseShell;",
+    "export const stringifyShell = parsers.stringifyShell;",
+    "export const stringifyShellLine = parsers.stringifyShellLine;",
+    "export const stringifyCommandLine = parsers.stringifyCommandLine;",
+    "export const stringifyCommandLineThen = parsers.stringifyCommandLineThen;",
+    "export const stringifyCommandChain = parsers.stringifyCommandChain;",
+    "export const stringifyCommandChainThen = parsers.stringifyCommandChainThen;",
+    "export const stringifyCommand = parsers.stringifyCommand;",
+    "export const stringifyArgument = parsers.stringifyArgument;",
+    "export const stringifyArgumentSegment = parsers.stringifyArgumentSegment;",
+    "export const stringifyRedirectArgument = parsers.stringifyRedirectArgument;",
+    "export const stringifyEnvSegment = parsers.stringifyEnvSegment;",
+    "export const stringifyValueArgument = parsers.stringifyValueArgument;",
+    "export const stringifyArithmeticExpression = parsers.stringifyArithmeticExpression;",
+    "export const parseResolution = parsers.parseResolution;",
+    "export const stringifyResolution = parsers.stringifyResolution;",
+    "export const parseSyml = parsers.parseSyml;",
+    "export const stringifySyml = parsers.stringifySyml;",
+  ].join('\n')],
+  ['picomatch', [
+    "import 'dsh-bridge-setup/picomatch-cjs-6';",
+    "const picomatch = globalThis.__dshPicomatchFace;",
+    "export default picomatch;",
+  ].join('\n')]
 ];
+
 
 export const defineNpmBridges = () => {
   const define = globalThis.__dshModuleDefine;

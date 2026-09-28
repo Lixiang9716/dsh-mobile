@@ -223,6 +223,7 @@ import {
   wsSymlink,
   wsReadlinkAt,
   resolveSymlinkAt,
+  statFace,
 } from 'upstream/shims/fs-workspace.js';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 export { mountWorkspace };
@@ -483,10 +484,7 @@ export const statSync = (path, options = {}) => {
   // 0755 (group/other write-free — trusted to the POSIX safety checks).
   const root = globalThis.__DSH_WORKSPACE_FS__?.root;
   if (typeof root === 'string' && canonical !== root && root.startsWith(`${canonical === '/' ? '' : canonical}/`)) {
-    const mk = (m) => ({
-      isFile: () => false,
-      isDirectory: () => true,
-      isSymbolicLink: () => false,
+    const mk = (m) => statFace('dir', {
       size: bigint ? 0n : 0,
       dev: 1,
       ino: 0,
@@ -506,10 +504,7 @@ export const statSync = (path, options = {}) => {
   if (files !== null && underVFS(path)) {
     const seeded = files.get(path);
     if (seeded !== undefined) {
-      return {
-        isFile: () => true,
-        isDirectory: () => false,
-        isSymbolicLink: () => false,
+      return statFace('file', {
         size: bigint ? BigInt(seeded.bytes.length) : seeded.bytes.length,
         mode: 0o644,
         uid: 0,
@@ -522,19 +517,16 @@ export const statSync = (path, options = {}) => {
           mtimeNs: BigInt(Math.round(seeded.mtimeMs)) * 1000000n,
           ctimeNs: BigInt(Math.round(seeded.mtimeMs)) * 1000000n,
         } : {}),
-      };
+      });
     }
     const names = vfsReaddir(path);
     if (names !== null) {
-      return {
-        isFile: () => false,
-        isDirectory: () => true,
-        isSymbolicLink: () => false,
+      return statFace('dir', {
         size: bigint ? 0n : 0,
         mode: DIR_MODE,
         mtimeMs: 0,
         ...(bigint ? { dev: 1n, ino: 0n, mode: BigInt(DIR_MODE), mtimeNs: 0n, ctimeNs: 0n } : {}),
-      };
+      });
     }
     throw enoent('stat', path);
   }
@@ -556,15 +548,12 @@ export const lstatSync = (path, options = {}) => {
   // is the only member the closure's walks consult).
   if (workspaceSymlinkTarget(canonical) !== undefined) {
     const bigint = options.bigint === true;
-    return {
-      isFile: () => false,
-      isDirectory: () => false,
-      isSymbolicLink: () => true,
+    return statFace('symlink', {
       size: bigint ? 0n : 0,
       mode: 0o777,
       mtimeMs: 0,
       ...(bigint ? { dev: 1n, ino: 0n, mode: 0o120777n & 0o777n, mtimeNs: 0n, ctimeNs: 0n } : {}),
-    };
+    });
   }
   return statSync(path, options);
 };
@@ -666,16 +655,19 @@ export const rmSync = (path, options = {}) => {
   return wsRm(path, options);
 };
 
-/** mkdtemp — node's unique-suffix temp dir over the workspace (the same
- * monotonic-counter uniqueness the promise face uses; the spill/staging
- * callers derive paths from os.tmpdir(), which the suite leg pins to the
- * workspace root). */
+/** mkdtemp — node's unique-suffix temp dir over the workspace. Node appends
+ * exactly SIX alphanumeric characters per call; the corpus's consumers match
+ * the produced NAME against shapes that assume that breadth (spill-local's
+ * DEFAULT_ROOT_RE is `^dsh-spill-[A-Za-z0-9]{6}$` — discovery found nothing
+ * under the old time+counter suffix, W4-N 2026-09-28). A zero-padded base-36
+ * counter keeps the six-char shape, uniqueness within the process, and
+ * determinism the logs can follow. */
 let mkdtempSyncCounter = 0;
 export const mkdtempSync = (prefix) => {
   if (typeof prefix !== 'string' || prefix.length === 0) {
     throw new TypeError('node:fs.mkdtempSync: prefix must be a non-empty string');
   }
-  const path = `${prefix}${Date.now().toString(36)}-${(mkdtempSyncCounter += 1).toString(36)}`;
+  const path = `${prefix}${(mkdtempSyncCounter += 1).toString(36).padStart(6, '0')}`;
   wsMkdir(path, {});
   return path;
 };
@@ -897,15 +889,45 @@ const vfsReaddir = (path) => {
   return names.size > 0 ? [...names].sort() : null;
 };
 
-export const readdirSync = (path) => {
+/** The Dirent face for `readdirSync(…, { withFileTypes: true })` — lstat
+ * classes each child (the fs-promises readdir face's identical direntFor);
+ * an unstatable child reads file-like, like the async face. */
+const direntFor = (name, path) => {
+  let info;
+  try {
+    info = statSync(path);
+  } catch {
+    info = { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false };
+  }
+  return {
+    name,
+    isDirectory: info.isDirectory,
+    isFile: info.isFile,
+    isSymbolicLink: info.isSymbolicLink,
+  };
+};
+
+export const readdirSync = (path, options) => {
   const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
   // A symlinked directory entry reads through the link (node follows the hop
   // for readdir; measured 2026-09-27: the skill-filesystem suite publishes
   // skills linked as whole directories).
   const wsNames = wsReaddirAt(resolveWorkspaceSymlink(canonical));
-  if (wsNames !== null) return wsNames;
+  if (wsNames !== null) {
+    if (options?.withFileTypes === true) {
+      const prefix = canonical.endsWith('/') ? canonical : `${canonical}/`;
+      return wsNames.map((name) => direntFor(name, `${prefix}${name}`));
+    }
+    return wsNames;
+  }
   const names = vfsReaddir(path);
-  if (names !== null) return names;
+  if (names !== null) {
+    if (options?.withFileTypes === true) {
+      const prefix = typeof path === 'string' && path.endsWith('/') ? path : `${path}/`;
+      return names.map((name) => direntFor(name, `${prefix}${name}`));
+    }
+    return names;
+  }
   if (wsAt(canonical) !== null) {
     // node's readdir spells a FILE target ENOTDIR (the storage-json lazy
     // loadAll propagates non-ENOENT failures; ENOENT means "no unit yet").

@@ -15,11 +15,44 @@
  * expects as `base`.
  */
 
+import { existsSync } from 'upstream/shims/fs.js';
+import { fileURLToPath } from 'upstream/shims/url.js';
+
+/** The directory one base lives in — base is a file: URL, a bundle-root
+ * path, or a bare module name (import.meta.url in this runtime is the
+ * module NAME; see the module header). A base that NAMES a directory
+ * (trailing separator — tree ctx.baseUrl spellings are directory URLs)
+ * is its own first search parent; anything else uses path.dirname. */
+const baseDirOf = (base) => {
+  let p = base.startsWith('file:') ? fileURLToPath(base) : base;
+  const isDirectory = /\/$/.test(p);
+  p = p.replace(/\/+$/, '');
+  if (isDirectory) return p === '' ? '/' : p;
+  const cut = p.lastIndexOf('/');
+  return cut > 0 ? p.slice(0, cut) : '/';
+};
+
+/** node's resolution search paths for a base: `<ancestor>/node_modules` from
+ * the base directory up to the root (the global/current-dir tail node adds
+ * has no counterpart here). The plugin-package inventory walks these to find
+ * manifests the staged workspace carries. */
+const resolvePathsFor = (base) => {
+  const dirs = [];
+  let current = baseDirOf(base);
+  for (;;) {
+    dirs.push(`${current}/node_modules`);
+    if (current === '/' || current.length === 0) break;
+    const cut = current.lastIndexOf('/');
+    current = cut > 0 ? current.slice(0, cut) : '/';
+  }
+  return dirs;
+};
+
 export function createRequire(base) {
   if (typeof base !== 'string' || base.length === 0) {
     throw new TypeError(`node:module: createRequire needs a module name, got ${String(base)}`);
   }
-  return (request) => {
+  const require = (request) => {
     if (typeof request !== 'string' || request.length === 0) {
       throw new TypeError(`node:module: require needs a relative request, got ${String(request)}`);
     }
@@ -29,6 +62,29 @@ export function createRequire(base) {
     }
     return JSON.parse(text);
   };
+  // require.resolve — the plugin-package inventory reads only `.paths(name)`
+  // (the node_modules candidates a bare specifier would search); the face
+  // answers from the staged fs view so workspace-seeded manifests resolve.
+  const resolve = (request) => {
+    if (typeof request !== 'string' || request.length === 0) {
+      throw new TypeError(`node:module: resolve needs a specifier, got ${String(request)}`);
+    }
+    for (const dir of resolvePathsFor(base)) {
+      const manifest = `${dir}/${request}/package.json`;
+      if (existsSync(manifest)) return manifest;
+    }
+    const error = new Error(`node:module: cannot resolve '${request}' from ${base}`);
+    error.code = 'MODULE_NOT_FOUND';
+    throw error;
+  };
+  resolve.paths = (request) => {
+    if (typeof request !== 'string' || request.length === 0) {
+      throw new TypeError(`node:module: resolve.paths needs a specifier, got ${String(request)}`);
+    }
+    return resolvePathsFor(base);
+  };
+  require.resolve = resolve;
+  return require;
 }
 
 /** isBuiltin(specifier): the presets service classifies composition rows with

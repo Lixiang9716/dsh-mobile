@@ -201,14 +201,45 @@ const joinRelative = (basePathname, relative) => {
  * see the constructor: import.meta.url is a bundle-relative staged path, and
  * vendored packages join their own resources against it. */
 const parsePathUrl = (asString, base) => {
+  // node (WHATWG) rejects a scheme-less RELATIVE reference with no base —
+  // 'not a url' throws Invalid URL there, and the vendored tool-web
+  // sourceLabel relies on that throw for its raw-string fallback (W4-N,
+  // 2026-09-28). Node can throw for EVERY relative no-base input because its
+  // import.meta.url is absolute file:; the spike's module space is
+  // POSIX-relative by design (the loader pins import.meta.url to a
+  // bundle-relative path, and new URL(import.meta.url) must parse — the
+  // ptc-runtime launch spec leans on it), so the guard fires only on inputs
+  // that cannot be a path at all: whitespace-bearing ones. Base resolution
+  // goes through constructBase/parsePathUrlLenient and never guards.
+  if (base === undefined && !asString.startsWith('/') && /\s/.test(asString)) {
+    throw new TypeError('Invalid URL');
+  }
+  return parsePathUrlLenient(asString, base);
+};
+
+/** The LENIENT path-space parse (base join, or the no-base path record):
+ * base resolution uses this — a relative bundle path is a legal BASE
+ * (import.meta.url's staged spelling) even though a relative no-base INPUT
+ * at top level throws node's Invalid URL (see parsePathUrl). */
+const parsePathUrlLenient = (asString, base) => {
   if (base !== undefined) {
-    const baseParsed = new DshURL(base);
+    const baseParsed = constructBase(base);
     return { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
   }
   return {
     scheme: '', authority: '', pathname: joinRelative('/', asString),
     search: '', fragment: '',
   };
+};
+
+/** Internal URL construction for BASE resolution: identical to the
+ * constructor except a RELATIVE path-URL base is accepted (see
+ * parsePathUrlLenient). */
+const constructBase = (base) => {
+  const asString = String(base);
+  const hasScheme = /^[A-Za-z][A-Za-z0-9+.\-]*:/.test(asString);
+  if (hasScheme) return new DshURL(asString);
+  return parsePathUrlLenient(asString, undefined);
 };
 
 export class DshURL {
@@ -238,7 +269,7 @@ export class DshURL {
       // load-bundle spec resolves a root-relative sourceMappingURL
       // '/plugins/…' against an http URL; the old path-space join DOUBLED the
       // first segment: 'plugins/plugins/…').
-      const baseParsed = base !== undefined ? new DshURL(base) : undefined;
+      const baseParsed = base !== undefined ? constructBase(base) : undefined;
       if (baseParsed !== undefined && baseParsed.scheme !== '') {
         if (asString.startsWith('/')) {
           parsed = { ...baseParsed, pathname: asString, search: '', fragment: '' };

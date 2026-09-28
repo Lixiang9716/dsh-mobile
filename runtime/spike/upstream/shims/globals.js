@@ -160,6 +160,44 @@ if (typeof globalThis.structuredClone === 'undefined') {
   };
 }
 
+// String.prototype.localeCompare — quickjs compares code units and ignores
+// the locale/options arguments. Node (ICU) honors `{ numeric: true }`, whose
+// one measured consumer is open-in-app's versioned-install scan: '2024.1.10'
+// must outrank '2024.1.9' (plain lexicographic puts '9' after '1'). The face
+// implements the NUMERIC chunk compare (digit runs compare by value) and
+// falls back to the code-unit comparison otherwise — no ICU data is consulted
+// for any other option, matching what the engine already did (W4-M,
+// 2026-09-28).
+if (typeof String.prototype.localeCompare === 'undefined'
+  || '2024.1.10'.localeCompare('2024.1.9', 'en', { numeric: true }) < 0) {
+  const chunkRe = /(\d+|\D+)/g;
+  const chunksOf = (text) => String(text).match(chunkRe) ?? [];
+  const codeUnitCompare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const numericCompare = (a, b) => {
+    const left = chunksOf(a);
+    const right = chunksOf(b);
+    const length = Math.min(left.length, right.length);
+    for (let i = 0; i < length; i++) {
+      const l = left[i];
+      const r = right[i];
+      const bothDigits = /^\d/.test(l) && /^\d/.test(r);
+      const order = bothDigits
+        ? (Number(l) - Number(r)) || codeUnitCompare(l, r)
+        : codeUnitCompare(l, r);
+      if (order !== 0) return order;
+    }
+    return left.length - right.length;
+  };
+  Object.defineProperty(String.prototype, 'localeCompare', {
+    value(that, _locales, options) {
+      const numeric = options?.numeric === true || options?.numeric === 'true';
+      return numeric ? numericCompare(this, that) : codeUnitCompare(this, String(that));
+    },
+    writable: true,
+    configurable: true,
+  });
+}
+
 
 // The ambient `process` global — the vendored jsonl backend reads bare
 // `process.platform` at module top level WITHOUT importing node:process,

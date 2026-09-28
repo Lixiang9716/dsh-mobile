@@ -204,14 +204,19 @@
     "experimental__webworker-runtime__tests__node__crypto-globals.spec.mjs",
     "experimental__webworker-runtime__tests__node__events.spec.mjs",
     "experimental__webworker-runtime__tests__node__fs-watch-stream.spec.mjs",
+    "experimental__webworker-runtime__tests__node__fs.spec.mjs",
     "experimental__webworker-runtime__tests__node__http-server.spec.mjs",
     "experimental__webworker-runtime__tests__node__node-stubs.spec.mjs",
     "experimental__webworker-runtime__tests__node__path-diff.spec.mjs",
     "experimental__webworker-runtime__tests__node__process-shim.spec.mjs",
+    "experimental__webworker-runtime__tests__node__shim-diff.spec.mjs",
     "experimental__webworker-runtime__tests__node__timers-promises.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als-runtime.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als-shim.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__injected-run.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__shell-process.spec.mjs",
+    "experimental__webworker-runtime__tests__shell__shell.spec.mjs",
     "experimental__webworker-runtime__tests__storage__image-gzip.spec.mjs",
     "experimental__webworker-runtime__tests__storage__memory-vfs.spec.mjs",
     "experimental__webworker-runtime__tests__storage__tar.spec.mjs",
@@ -668,9 +673,9 @@
     "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
     "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 3,
     "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 35,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 33,
+    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 28,
     "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 5,
-    "vi.mock/doMock/resetModules (loader-level module interception)": 65,
+    "vi.mock/doMock/resetModules (loader-level module interception)": 66,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
     "node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6,
@@ -679,16 +684,16 @@
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-tool-catalog.ts\"": 1,
     "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f": 1,
-    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 3,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"": 1,
+    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 2,
     "expect.extend (custom matchers)": 1,
     "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 8,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6
   },
   "counts": {
-    "transpiled": 663,
+    "transpiled": 668,
     "excluded": [
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
@@ -704,7 +709,7 @@
       },
       {
         "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 33
+        "count": 28
       },
       {
         "reason": "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
@@ -712,7 +717,7 @@
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
-        "count": 65
+        "count": 66
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
@@ -747,16 +752,16 @@
         "count": 1
       },
       {
-        "reason": "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 3
-      },
-      {
         "reason": "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
         "count": 5
       },
       {
         "reason": "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"",
         "count": 1
+      },
+      {
+        "reason": "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
+        "count": 2
       },
       {
         "reason": "expect.extend (custom matchers)",

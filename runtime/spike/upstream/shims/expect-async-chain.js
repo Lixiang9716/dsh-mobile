@@ -7,8 +7,11 @@
  * wrapper re-enters makeExpect with a thrower for toThrow matchers.
  */
 export function attachAsyncChain(makeExpect, failWith) {
-  /** One settled-value matcher invocation (module level for nesting). */
-  const settleAndMatch = async (settle, negated, matcher, args, isResolution = false) => {
+  /** One settled-value matcher invocation (module level for nesting). The
+   * custom failure MESSAGE threads through (W4-N 2026-09-28): vitest's
+   * `expect(fn, msg).rejects.toThrow(sub)` throws with msg as the text, and
+   * the spec asserts on that message. */
+  const settleAndMatch = async (settle, negated, matcher, args, isResolution = false, message = '') => {
     const value = await settle();
     if (matcher.startsWith('toThrow')) {
       // A RESOLVED promise threw nothing: toThrow fails and not.toThrow
@@ -18,10 +21,10 @@ export function attachAsyncChain(makeExpect, failWith) {
       if (isResolution && value === undefined) {
         return checkResolution(negated);
       }
-      const chain = makeExpect(() => { throw value; }, negated);
+      const chain = makeExpect(() => { throw value; }, negated, message);
       return chain[matcher](...args);
     }
-    const settled = makeExpect(value, negated);
+    const settled = makeExpect(value, negated, message);
     const fn = settled[matcher];
     if (typeof fn !== 'function') failWith(`harness: matcher "${matcher}" is not implemented`);
     return fn.apply(settled, args);
@@ -31,7 +34,7 @@ export function attachAsyncChain(makeExpect, failWith) {
     if (negated) return undefined;
     return failWith('expected the promise to reject with a thrown error, but it resolved');
   };
-  const makeAsyncChain = (settle, negated, isResolution = false) => {
+  const makeAsyncChain = (settle, negated, isResolution = false, message = '') => {
     const cache = {};
     return new Proxy(cache, {
       get(target, matcher) {
@@ -44,12 +47,12 @@ export function attachAsyncChain(makeExpect, failWith) {
         // the old probe returned undefined and the follow-up read threw.
         if (matcher === 'not') {
           if (!('not' in cache)) {
-            cache.not = makeAsyncChain(settle, !negated, isResolution);
+            cache.not = makeAsyncChain(settle, !negated, isResolution, message);
           }
           return cache.not;
         }
         if (!(matcher in target)) {
-          target[matcher] = (...args) => settleAndMatch(settle, negated, matcher, args, isResolution);
+          target[matcher] = (...args) => settleAndMatch(settle, negated, matcher, args, isResolution, message);
         }
         return target[matcher];
       },

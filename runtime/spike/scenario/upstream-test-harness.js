@@ -190,16 +190,40 @@ class AssertionError extends Error {
   }
 }
 
-const fmt = (v) => {
+/** Render one assertion value. JSON.stringify is NOT used for objects and
+ * String() is NOT used as a fallback: they consult toJSON/toString — property
+ * PROBES that dispatch through lazy test proxies (remote-mock's namespace
+ * proxy registers an endpoint and throws MissingUnaryRule on any
+ * toJSON/toString read — W4-N 2026-09-28) and quickjs stringify throws on
+ * BigInt. The walk reads OWN KEYS ONLY (an ownKeys proxy never sees a get
+ * trap, so formatting never registers endpoints), cycles render as
+ * [Circular], and functions get node's inspect spellings. */
+const fmt = (value, depth = 0, seen = new Set()) => {
   try {
-    // An Error face renders as its class+message (JSON.stringify(Error) is
-    // '{}' — message/name are non-enumerable — which made toMatchObject
-    // failures against errors unreadable, e.g. "got {}" for a whole class
-    // of transport-failure assertions).
-    if (v instanceof Error) return `${v.name ?? 'Error'}: ${v.message}`;
-    return typeof v === 'string' ? JSON.stringify(v) : JSON.stringify(v) ?? String(v);
+    if (typeof value === 'string') return JSON.stringify(value);
+    if (value === null) return 'null';
+    if (typeof value === 'bigint') return `${value}n`;
+    if (typeof value === 'function') return value.name ? `[Function: ${value.name}]` : '[Function (anonymous)]';
+    if (value instanceof Error) return `${value.name ?? 'Error'}: ${value.message}`;
+    if (typeof value !== 'object') return String(value); // number/boolean/undefined/symbol
+    if (seen.has(value)) return '[Circular]';
+    if (depth > 4) return '[Object]';
+    seen.add(value);
+    try {
+      if (Array.isArray(value)) {
+        const items = value.slice(0, 50).map((v) => fmt(v, depth + 1, seen));
+        if (value.length > 50) items.push(`… ${value.length - 50} more`);
+        return `[${items.join(', ')}]`;
+      }
+      const keys = Object.keys(value);
+      const parts = keys.slice(0, 50).map((k) => `${JSON.stringify(k)}:${fmt(value[k], depth + 1, seen)}`);
+      if (keys.length > 50) parts.push('…');
+      return `{${parts.join(',')}}`;
+    } finally {
+      seen.delete(value);
+    }
   } catch {
-    return String(v);
+    return '[unformattable value]';
   }
 };
 
@@ -289,7 +313,11 @@ const propertyMatchers = (actual, check) => ({
     const parts = Array.isArray(key) ? key : key.split('.');
     let at = actual;
     for (const p of parts) {
-      if (at === null || at === undefined || !Object.prototype.hasOwnProperty.call(at, p)) {
+      // vitest reads through PROPERTY ACCESS: a class instance's methods
+      // (`start`/`close` on the MCP transports — the createTransport table,
+      // W4-M 2026-09-28) live on the PROTOTYPE, so an own-key-only walk
+      // failed every method face. Absent = undefined AND no own key.
+      if (at === null || at === undefined || (at[p] === undefined && !Object.prototype.hasOwnProperty.call(at, p))) {
         check(false, `property "${key}"`);
         return;
       }
@@ -417,24 +445,46 @@ const makeExpect = (actual, negatedOrMessage = false, customMessage = '') => {
       check(ok, `to contain ${fmt(expected)}`);
     },
     toHaveLength(n) { check(actual?.length === n, `length ${n} (got ${fmt(actual?.length)})`); },
+    // vitest's inline snapshot: the stored template is dedented (leading
+    // newline dropped, common indentation stripped, trailing blank lines
+    // trimmed) and a string actual serializes quoted with its real newlines
+    // kept (the terminal tools PTC output-map projection is the only corpus
+    // user — W4-N 2026-09-28).
+    toMatchInlineSnapshot(expected) {
+      if (typeof expected !== 'string') {
+        check(false, 'inline snapshot: no stored snapshot (vitest write mode is unsupported here)');
+        return;
+      }
+      let body = expected.startsWith('\n') ? expected.slice(1) : expected;
+      const lines = body.split('\n');
+      while (lines.length > 0 && lines[lines.length - 1].trim() === '') lines.pop();
+      const indents = lines.filter((l) => l.trim() !== '').map((l) => l.match(/^ */)[0].length);
+      const indent = indents.length > 0 ? Math.min(...indents) : 0;
+      const dedented = lines.map((l) => l.slice(indent)).join('\n');
+      const serialized = typeof actual === 'string' ? `"${actual}"` : fmt(actual);
+      check(dedented === serialized, `to match the inline snapshot (got ${serialized.slice(0, 600)})`);
+    },
     ...identityMatchers(actual, check),
     ...propertyMatchers(actual, check),
     ...throwMatchers(actual, check),
     // vitest unwraps a FUNCTION subject by calling it before awaiting
     // (`typeof obj === "function" ? obj() : obj`) — expect(async fn).resolves
     // / .rejects is the corpus's dominant form (api remotes.host, session).
-    resolves: makeAsyncChain(() => Promise.resolve(typeof actual === 'function' ? actual() : actual), negated, true),
+    resolves: makeAsyncChain(() => Promise.resolve(typeof actual === 'function' ? actual() : actual), negated, true, message),
     rejects: makeAsyncChain(() => Promise.resolve(typeof actual === 'function' ? actual() : actual).then(
       () => failWith('expected the promise to reject, but it resolved'),
       (error) => error,
-    ), negated),
+    ), negated, false, message),
   };
   // .not is LAZY: constructing it eagerly would recurse (each negated
-  // matcher set builds its own .not, forever).
+  // matcher set builds its own .not, forever). The custom failure MESSAGE
+  // rides along (W4-N 2026-09-28: vitest's `expect(x, msg).not.toContain()`
+  // throws with msg as the failure text and storage-policy's guard asserts
+  // that message via rejects.toThrow — dropping it broke the match).
   let negatedApi = null;
   Object.defineProperty(api, 'not', {
     get: () => {
-      if (negatedApi === null) negatedApi = makeExpect(actual, true);
+      if (negatedApi === null) negatedApi = makeExpect(actual, !negated, message);
       return negatedApi;
     },
   });
@@ -450,6 +500,7 @@ const makeAsyncChain = attachAsyncChain(makeExpect, failWith);
  * whose body reads this.reasoning; an arrow spy broke every request). */
 const makeMockFn = (impl) => {
   const onceQueue = [];
+  const originalImpl = impl; // mockReset restores the creation implementation
   const f = function (...args) {
     f.mock.calls.push(args);
     // vitest's mock.instances ledger: the receiver of each call (the
@@ -476,8 +527,26 @@ const makeMockFn = (impl) => {
   f.mockResolvedValueOnce = (value) => { onceQueue.push(() => Promise.resolve(value)); return f; };
   f.mockRejectedValue = (value) => { impl = () => Promise.reject(value); return f; };
   f.mockRejectedValueOnce = (value) => { onceQueue.push(() => Promise.reject(value)); return f; };
-  f.mockClear = () => { f.mock.calls.length = 0; f.mock.results.length = 0; onceQueue.length = 0; return f; };
-  f.mockReset = f.mockClear;
+  // vitest's reset family (W4-N 2026-09-28, remote-mock's proxy spec):
+  // mockClear clears the CALL LEDGERS only — queued one-shot overrides
+  // survive it ("keeps queued overrides on mockClear"); mockReset clears
+  // the ledgers AND the queued overrides AND restores the ORIGINAL
+  // implementation the mock was created with ("restores the live default
+  // rule on mockReset" — the vendored remote-mock's fn was created around
+  // its default-rule dispatcher, so a reset re-arms that dispatcher).
+  f.mockClear = () => {
+    f.mock.calls.length = 0;
+    f.mock.instances.length = 0;
+    f.mock.results.length = 0;
+    f.mock.invocationCallOrder.length = 0;
+    return f;
+  };
+  f.mockReset = () => {
+    f.mockClear();
+    onceQueue.length = 0;
+    impl = originalImpl;
+    return f;
+  };
   return f;
 };
 
@@ -568,6 +637,24 @@ it.each = (table) => (name, fn) => {
   for (const row of table) {
     const args = Array.isArray(row) ? row : [row];
     it(`${name.replace(/\$\{[^}]+\}/g, () => '').trim()} [${args.map(fmt).join(',')}]`, () => fn(...args));
+  }
+};
+/** vitest's it.for: a cases table collected once, each case runs the test
+ * fn as (caseValue, ctx) — the ctx carries a test-scoped onTestFinished
+ * (the files-api redirect-refusal arms drive exactly this shape). */
+it.for = (table) => (name, fn) => {
+  for (const row of table) {
+    const value = Array.isArray(row) ? row[0] : row;
+    it(`${name.replace('%s', String(value)).trim()} [${String(value)}]`, () => {
+      let cleanup = null;
+      try {
+        fn(value, { onTestFinished: (fn2) => { cleanup = fn2; } });
+      } finally {
+        if (typeof cleanup === 'function') {
+          try { cleanup(); } catch { /* a cleanup failure must not mask the test's own verdict */ }
+        }
+      }
+    });
   }
 };
 export const test = it;

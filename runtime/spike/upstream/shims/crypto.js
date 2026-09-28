@@ -23,6 +23,11 @@
  * algorithm name outside this table is loud (rule 5).
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
+// sha512 + HMAC ride the VERBATIM vendored @noble/hashes tree (the same
+// pinned 2.3.0 the crypto-globals limbs use; sha1/sha256 keep the in-file
+// implementations below). Noble digests bytes->bytes, matching the face.
+import { sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
+import { hmac as nobleHmac } from '@noble/hashes/hmac.js';
 import { sha256Hex } from 'sha256.js';
 
 const randomUUID = () => {
@@ -88,7 +93,44 @@ const sha256Digest = (bytes) => {
   return out;
 };
 
-const SUPPORTED_ALGOS = { sha1: sha1Digest, sha256: sha256Digest };
+const SUPPORTED_ALGOS = { sha1: sha1Digest, sha256: sha256Digest, sha512: nobleSha512 };
+
+/** createHmac(algorithm, key) — HMAC over the same digest set, built on the
+ * vendored noble hmac combinator (block sizes and ipad/opad handling stay
+ * noble's problem; node's `hmac.update()`/`digest()` shapes are kept). */
+const createHmac = (algorithm, key) => {
+  const nobleHash = { sha1: sha1Digest, sha256: sha256Digest, sha512: nobleSha512 }[algorithm];
+  if (nobleHash === undefined) {
+    throw new Error(`node:crypto: createHmac('${algorithm}') is not supported `
+      + `by the spike runtime (supported: sha1, sha256, sha512)`);
+  }
+  let keyBytes;
+  if (typeof key === 'string') keyBytes = encodeUtf8(key);
+  else if (key instanceof Uint8Array || Array.isArray(key)) keyBytes = Uint8Array.from(key);
+  else throw new TypeError(`node:crypto: createHmac key (${typeof key}) is not supported`);
+  let fed = new Uint8Array(0);
+  const h = {
+    update(data, encoding = 'utf8') {
+      let chunk;
+      if (typeof data === 'string') chunk = encodeUtf8(data);
+      else if (data instanceof Uint8Array || Array.isArray(data)) chunk = Uint8Array.from(data);
+      else throw new TypeError(`node:crypto: hmac.update(${typeof data}) is not supported`);
+      const merged = new Uint8Array(fed.length + chunk.length);
+      merged.set(fed);
+      merged.set(chunk, fed.length);
+      fed = merged;
+      return h;
+    },
+    digest(encoding = 'buffer') {
+      const bytes = nobleHmac(nobleHash, keyBytes, fed);
+      if (encoding === 'buffer' || encoding === undefined) return DshBuffer.fromBytes(bytes);
+      if (encoding === 'hex') return DshBuffer.fromBytes(bytes).toString('hex');
+      if (encoding === 'base64') return DshBuffer.fromBytes(bytes).toString('base64');
+      throw new Error(`node:crypto: hmac.digest('${encoding}') — supported: buffer, hex, base64`);
+    },
+  };
+  return h;
+};
 
 const createHash = (algorithm) => {
   const digestOf = SUPPORTED_ALGOS[algorithm];
@@ -127,6 +169,20 @@ const createHash = (algorithm) => {
   return hash;
 };
 
+/** timingSafeEqual(a, b) — node's constant-time byte comparison: lengths
+ * must match (TypeError otherwise), result is a boolean. The comparison
+ * walks every byte regardless of early mismatch. */
+const timingSafeEqual = (a, b) => {
+  const da = a instanceof Uint8Array ? a : Uint8Array.from(a);
+  const db = b instanceof Uint8Array ? b : Uint8Array.from(b);
+  if (da.length !== db.length) {
+    throw new TypeError(`node:crypto: timingSafeEqual needs equal-length buffers (got ${da.length} vs ${db.length})`);
+  }
+  let diff = 0;
+  for (let i = 0; i < da.length; i++) diff |= da[i] ^ db[i];
+  return diff === 0;
+};
+
 const randomBytes = (size) => {
   if (!Number.isInteger(size) || size < 0) {
     throw new TypeError(`node:crypto: randomBytes(${size}) needs a non-negative integer`);
@@ -136,5 +192,5 @@ const randomBytes = (size) => {
   return DshBuffer.fromBytes(bytes);
 };
 
-export { randomUUID, createHash, randomBytes };
+export { randomUUID, createHash, createHmac, timingSafeEqual, randomBytes };
 export const webcrypto = globalThis.crypto;

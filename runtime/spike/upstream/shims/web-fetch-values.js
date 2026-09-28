@@ -26,6 +26,8 @@
  */
 import { ReadableStream } from '/upstream/shims/web-streams.js';
 import { dispatchLoopback } from 'upstream/shims/node-http-loopback.js';
+import { dispatchViaDispatcher } from 'upstream/shims/undici.js';
+import { parseMultipart } from 'upstream/shims/web-multipart.js';
 
 const encoder = () => new globalThis.TextEncoder();
 const decoder = () => new globalThis.TextDecoder();
@@ -40,6 +42,33 @@ export class DOMException extends Error {
 
 /* ---- Headers ------------------------------------------------------------- */
 const headersState = new WeakMap(); // Headers → Map<lowercased name, string[]>
+
+/** A header field-name token (RFC 9110 via the fetch spec; undici's own
+ * nameRegex). Real fetch REJECTS a write of anything else with a TypeError —
+ * pi-ai's profile validation leans on exactly that throw to reject provider
+ * headers Fetch could never represent (measured 2026-09-28: the pi-ai
+ * adapter's header-rejection table drives `new Headers([[name, value]])`). */
+const HEADER_NAME_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+
+/** fetch's header WRITE normalization + validation: strip HTTP whitespace
+ * around the name and value, then reject a non-token name, any CR/LF/NUL in
+ * the value, and any value code point above 0xFF (the value is a ByteString —
+ * undici throws "invalid character in header content" for e.g. 部署). Reads
+ * stay lenient: only the write paths validate. */
+const normalizeHeaderEntry = (name, value) => {
+  const strippedName = String(name).replace(/^[\t\n\r ]+/, '').replace(/[\t\n\r ]+$/, '');
+  if (!HEADER_NAME_RE.test(strippedName)) {
+    throw new TypeError(`Headers: invalid header name "${String(name).slice(0, 60)}"`);
+  }
+  const strippedValue = String(value).replace(/^[\t\n\r ]+/, '').replace(/[\t\n\r ]+$/, '');
+  if (/[\r\n\0]/.test(strippedValue)) {
+    throw new TypeError('Headers: invalid header value');
+  }
+  for (let i = 0; i < strippedValue.length; i++) {
+    if (strippedValue.charCodeAt(i) > 0xFF) throw new TypeError('Headers: invalid character in header content');
+  }
+  return [strippedName, strippedValue];
+};
 
 export class Headers {
   constructor(init = undefined) {
@@ -57,19 +86,26 @@ export class Headers {
       throw new TypeError('Headers: init must be an object or a pair iterable');
     }
   }
+  #entries() {
+    const entries = formDataState.get(this);
+    if (entries === undefined) throw new TypeError('FormData: receiver is not a FormData instance');
+    return entries;
+  }
   #map() {
     const map = headersState.get(this);
     if (map === undefined) throw new TypeError('Headers: receiver is not a Headers instance');
     return map;
   }
   append(name, value) {
-    const key = String(name).toLowerCase();
+    const [strippedName, strippedValue] = normalizeHeaderEntry(name, value);
+    const key = strippedName.toLowerCase();
     const values = this.#map().get(key) ?? [];
-    values.push(String(value).trim());
+    values.push(strippedValue);
     this.#map().set(key, values);
   }
   set(name, value) {
-    this.#map().set(String(name).toLowerCase(), [String(value).trim()]);
+    const [strippedName, strippedValue] = normalizeHeaderEntry(name, value);
+    this.#map().set(strippedName.toLowerCase(), [strippedValue]);
   }
   get(name) {
     const values = this.#map().get(String(name).toLowerCase());
@@ -148,7 +184,45 @@ export class File extends Blob {
 const formDataState = new WeakMap(); // FormData → Array<{name, value, filename}>
 
 export class FormData {
-  constructor() { formDataState.set(this, []); }
+  constructor(init = undefined) {
+    formDataState.set(this, []);
+    // The FORM-harvest face: `new FormData(form)` collects the form's named
+    // fields (the preview source chooser reads the checked radio back —
+    // W4-M 2026-09-28). Duck-typed on the DOM query face; radios and
+    // checkboxes contribute only when checked, disabled fields never do.
+    if (init !== null && typeof init === 'object' && typeof init.querySelectorAll === 'function'
+      && typeof init.getAttribute === 'function' && !(Symbol.iterator in Object(init))) {
+      for (const el of init.querySelectorAll('input[name], select[name], textarea[name]')) {
+        const name = el.getAttribute('name');
+        if (name === null || name === '' || el.getAttribute('disabled') !== null) continue;
+        const type = (el.getAttribute('type') ?? '').toLowerCase();
+        // The DOM `value` PROPERTY wins (the live value a test or user set —
+        // the chooser's unavailable-source arm mutates selected.value);
+        // the value ATTRIBUTE is the fallback, 'on' for checkables without
+        // either (the HTML default).
+        const liveValue = el.value !== undefined && el.value !== null && el.value !== '' ? String(el.value) : el.getAttribute('value');
+        if (type === 'radio' || type === 'checkbox') {
+          if (el.getAttribute('checked') === null && el.checked !== true) continue;
+          this.append(name, liveValue ?? 'on');
+        } else {
+          if (liveValue !== null) this.append(name, liveValue);
+        }
+      }
+      return;
+    }
+    if (init === undefined || init === null) return;
+    const consume = (key, value) => this.append(key, value);
+    if (typeof init === 'object' && Symbol.iterator in Object(init)) {
+      for (const pair of init) {
+        if (!Array.isArray(pair) || pair.length < 2) throw new TypeError('FormData: iterable init must yield [name, value] pairs');
+        consume(pair[0], pair[1]);
+      }
+    } else if (typeof init === 'object') {
+      for (const key of Reflect.ownKeys(init)) consume(key, init[key]);
+    } else {
+      throw new TypeError('FormData: init must be a form, a pair iterable, or a record');
+    }
+  }
   #entries() {
     const entries = formDataState.get(this);
     if (entries === undefined) throw new TypeError('FormData: receiver is not a FormData instance');
@@ -318,7 +392,23 @@ export class Request {
   text() { return bodyBytes(requestState.get(this).body).then(decoder().decode.bind(decoder())); }
   json() { return this.text().then((text) => JSON.parse(text)); }
   blob() { return bodyBytes(requestState.get(this).body).then((bytes) => new Blob([bytes])); }
-  formData() { throw new TypeError('Request.formData: multipart decoding is not supported by the fetch-values shim'); }
+  formData() {
+    // The in-test servers parse uploaded multipart bodies through this face
+    // (the Files API mocks: `new Request(...).formData()`); urlencoded forms
+    // decode through URLSearchParams. Anything else is the engines' TypeError.
+    const type = String(requestState.get(this).headers.get('content-type') ?? '');
+    if (type.includes('multipart/form-data')) {
+      return bodyBytes(requestState.get(this).body).then((bytes) => parseMultipart(bytes, type));
+    }
+    if (type.includes('application/x-www-form-urlencoded')) {
+      return this.text().then((text) => {
+        const form = new FormData();
+        for (const [name, value] of new URLSearchParams(text)) form.append(name, value);
+        return form;
+      });
+    }
+    return Promise.reject(new TypeError('Request.formData: body is not multipart/form-data or application/x-www-form-urlencoded'));
+  }
 }
 
 /* ---- Response ------------------------------------------------------------ */
@@ -355,7 +445,20 @@ export class Response {
   text() { return bodyBytes(responseState.get(this).body).then(decoder().decode.bind(decoder())); }
   json() { return this.text().then((text) => JSON.parse(text)); }
   blob() { return bodyBytes(responseState.get(this).body).then((bytes) => new Blob([bytes])); }
-  formData() { throw new TypeError('Response.formData: multipart decoding is not supported by the fetch-values shim'); }
+  formData() {
+    const type = String(responseState.get(this).headers.get('content-type') ?? '');
+    if (type.includes('multipart/form-data')) {
+      return bodyBytes(responseState.get(this).body).then((bytes) => parseMultipart(bytes, type));
+    }
+    if (type.includes('application/x-www-form-urlencoded')) {
+      return this.text().then((text) => {
+        const form = new FormData();
+        for (const [name, value] of new URLSearchParams(text)) form.append(name, value);
+        return form;
+      });
+    }
+    return Promise.reject(new TypeError('Response.formData: body is not multipart/form-data or application/x-www-form-urlencoded'));
+  }
 }
 
 /* ---- URLSearchParams ----------------------------------------------------- */
@@ -431,6 +534,11 @@ const encodeComponent = (text) => encodeURIComponent(text).replace(/[!'()*]/g, (
  * rejection below, byte for byte. */
 export const installWebFetchValues = () => {
   const failLoudFetch = (input, init) => {
+    // An installed proxy policy (undici's global dispatcher, the egress
+    // family) routes first — a policy that proxies the target re-dials the
+    // in-test proxy server; no route keeps the plain loopback/fail-loud plan.
+    const viaDispatcher = dispatchViaDispatcher(input, init);
+    if (viaDispatcher !== undefined) return viaDispatcher;
     const loopback = dispatchLoopback(input, init);
     if (loopback !== undefined) return loopback;
     return Promise.reject(

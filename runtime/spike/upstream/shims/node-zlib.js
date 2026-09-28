@@ -29,17 +29,20 @@
  *     'data'/'end' events and async iteration.
  *
  * Node-semantic judgment calls (deltas, stated up front):
- *   - ZSTD_c_checksumFlag is accepted but not expressed: the intrinsic ABI
- *     exposes only the level, so frames carry no XXH64 checksum. The corpus
- *     scanner reads the checksum bit from each frame descriptor and decoders
- *     validate only when present, so the container stays well-formed; what is
- *     lost vs Node is that extra integrity check. Any OTHER param name fails
- *     loud (rule 5).
- *   - finishFlush is validated against the ZSTD_e_* table but the one-shot
- *     intrinsic cannot surface partial plaintext from a torn frame: where
- *     Node's ZSTD_e_flush recovers a prefix, this shim rejects — and the
- *     corpus's torn-tail recovery already treats rejection as "no
- *     recoverable prefix" (decodeStreamingMigration swallows it).
+ *   - ZSTD_c_checksumFlag is expressed STRUCTURALLY: the flag sets the
+ *     descriptor bit and appends the 4-byte frame trailer (zeros — no
+ *     intrinsic computes XXH64), and the decompress route strips that
+ *     trailer instead of validating it. The container's byte layout
+ *     matches Node's (the corpus scanner and its torn-tail truncations
+ *     walk the trailer); what is lost vs Node is the integrity CHECK
+ *     itself. Any OTHER param name fails loud (rule 5).
+ *   - finishFlush:ZSTD_e_flush recovers a torn frame's complete-block
+ *     prefix WITHOUT a streaming decoder: the shim walks the frame's block
+ *     headers (RFC 8878 layout, same walk the vendored scanZstdFrames
+ *     validates), drops the incomplete tail, clears the checksum
+ *     descriptor bit, and closes the copy with a synthetic 0-byte Raw
+ *     Last_Block so the one-shot intrinsic accepts it. E_continue/E_end
+ *     keep the plain full-frame decode.
  *   - Results are DshBuffer (a Uint8Array subclass from shims/buffer.js), so
  *     consumers get Node-Buffer encodings (`toString('utf8')`) on decompressed
  *     plaintext — exactly what the corpus calls on it.
@@ -134,28 +137,34 @@ const b64ToBytes = (b64) => {
 };
 
 /** Level from options.level or params[ZSTD_c_compressionLevel]; the checksum
- * param is the one accepted-but-unexpressible name (module header); rest loud. */
-const compressLevel = (options) => {
+ * param is EXPRESSED (structurally — see compressBytes); the rest fail loud. */
+const compressOptions = (options) => {
   const params = options?.params;
   if (params !== undefined && (typeof params !== 'object' || params === null)) {
     throw new TypeError(`zlib shim: options.params must be an object, got ${describe(params)}`);
   }
   let level = options?.level;
+  let checksum = false;
   if (level !== undefined && (!Number.isInteger(level) || level < 1 || level > 22)) {
     throw new RangeError(`zlib shim: zstd level must be an integer in [1, 22], got ${String(level)}`);
   }
   for (const key of Object.keys(params ?? {})) {
-    if (key === PARAM_CHECKSUM) continue;
-    if (key === PARAM_LEVEL && level === undefined) level = params[key];
-    else if (key !== PARAM_LEVEL) {
+    if (key === PARAM_CHECKSUM) {
+      if (params[key] !== 0 && params[key] !== 1) {
+        throw new RangeError(`zlib shim: zstd params[ZSTD_c_checksumFlag] must be 0 or 1, got ${String(params[key])}`);
+      }
+      checksum = params[key] === 1;
+    } else if (key === PARAM_LEVEL && level === undefined) {
+      level = params[key];
+    } else if (key !== PARAM_LEVEL) {
       throw new Error(`zlib shim: unsupported zstd params[${key}] — the host intrinsic exposes only the compression level`);
     }
   }
-  return level;
+  return { level, checksum };
 };
 
-/** finishFlush must name a real ZSTD_e_* flush mode; partial recovery of torn
- * frames is not expressible through the one-shot intrinsic (module header). */
+/** finishFlush must name a real ZSTD_e_* flush mode; the E_flush face is
+ * served by the prefix-recovery walk below (module header note). */
 const checkFinishFlush = (options) => {
   const flag = options?.finishFlush;
   if (flag === undefined) return;
@@ -163,6 +172,73 @@ const checkFinishFlush = (options) => {
   if (!known.includes(flag)) {
     throw new RangeError(`zlib shim: unknown finishFlush ${String(flag)}`);
   }
+};
+
+/** Walk one frame's RFC 8878 layout (magic, descriptor, header fields, block
+ * sequence) — the same structure the vendored scanZstdFrames validates.
+ * Returns null when not even magic+descriptor are present; otherwise
+ * { blocksEnd, frameEnd, hasChecksum, lastSeen }: blocksEnd = end of the
+ * last COMPLETE block (or end of header), frameEnd = end of the whole frame
+ * including the checksum trailer when present, or null when the frame is
+ * torn, lastSeen = whether the frame's own Last_Block was reached. */
+const walkZstdFrame = (bytes) => {
+  if (bytes.length < 5) return null;
+  const descriptor = bytes[4];
+  const contentSizeFlag = descriptor >>> 6;
+  const singleSegment = (descriptor & 0x20) !== 0;
+  const hasChecksum = (descriptor & 0x04) !== 0;
+  const dictionaryFlag = descriptor & 0x03;
+  const dictionaryBytes = dictionaryFlag === 3 ? 4 : dictionaryFlag;
+  const contentSizeBytes = contentSizeFlag === 0 ? (singleSegment ? 1 : 0) : 1 << contentSizeFlag;
+  const headerEnd = 5 + (singleSegment ? 0 : 1) + dictionaryBytes + contentSizeBytes;
+  if (bytes.length < headerEnd) {
+    return { blocksEnd: bytes.length, frameEnd: null, hasChecksum };
+  }
+  let at = headerEnd;
+  let lastSeen = false;
+  while (!lastSeen) {
+    if (bytes.length - at < 3) break; // torn block header
+    const blockHeader = bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
+    const blockType = (blockHeader >>> 1) & 0x03;
+    const payloadBytes = blockType === 0x01 ? 1 : blockHeader >>> 3;
+    if (bytes.length - at - 3 < payloadBytes) break; // torn payload
+    lastSeen = (blockHeader & 1) !== 0;
+    at += 3 + payloadBytes;
+  }
+  const blocksEnd = at;
+  let frameEnd = null;
+  if (lastSeen) {
+    const trailer = hasChecksum ? 4 : 0;
+    frameEnd = bytes.length - blocksEnd >= trailer ? blocksEnd + trailer : null;
+  }
+  return { blocksEnd, frameEnd, hasChecksum, lastSeen };
+};
+
+/** Node's finishFlush:ZSTD_e_flush over a one-shot decoder: recover the
+ * plaintext of every COMPLETE block of a (possibly torn) frame. The
+ * intrinsic runs ZSTD_decompress, which requires a frame-complete input —
+ * but the frame is self-describing, so walkZstdFrame finds the truncation
+ * point, the incomplete tail is dropped, and a synthetic 0-byte Raw block
+ * with the Last_Block bit closes the copy (checksum bit cleared — E_flush
+ * never completes or validates one). Mirrors Node's ZSTD_decompressStream
+ * flush semantics: complete blocks out, no frame completion required. */
+const decompressFlushPrefix = (bytes, maxOutputBytes) => {
+  const frame = walkZstdFrame(bytes);
+  if (frame === null || frame.frameEnd !== null) {
+    // Frame-complete input (or nothing walkable): E_flush decodes it whole.
+    return decompressBytes(bytes, maxOutputBytes);
+  }
+  const rebuilt = bytes.slice(0, frame.blocksEnd);
+  if (frame.hasChecksum) rebuilt[4] = bytes[4] & ~0x04;
+  if (frame.lastSeen) {
+    // Every block survived (the tear hit the checksum trailer): the body
+    // alone is a valid frame once the checksum bit is cleared. Appending a
+    // closer here would leave unparseable trailing bytes.
+    return decompressBytes(rebuilt, maxOutputBytes);
+  }
+  // Synthetic last block: Last_Block=1, type Raw(0), size 0 → header 0x000001 LE.
+  const closed = DshBuffer.concat([rebuilt, DshBuffer.fromBytes(Uint8Array.of(0x01, 0x00, 0x00))]);
+  return decompressBytes(closed, maxOutputBytes);
 };
 
 /** maxOutputLength -> the intrinsic's maxOutputBytes (0 = unlimited, Node's default). */
@@ -175,17 +251,44 @@ const decompressLimit = (options) => {
   return max;
 };
 
-/** Sync codec cores; intrinsic failures ("zstd: ...") propagate unchanged. */
-const compressBytes = (bytes, level) => (
-  b64ToBytes(intrinsic(COMPRESS_INTRINSIC)(bytesToB64(bytes), level ?? constants.ZSTD_CLEVEL_DEFAULT))
-);
-const decompressBytes = (bytes, maxOutputBytes) => (
-  b64ToBytes(intrinsic(DECOMPRESS_INTRINSIC)(bytesToB64(bytes), maxOutputBytes ?? 0))
-);
+/** Sync codec core (compress): one intrinsic shot, then — when the caller
+ * requested ZSTD_c_checksumFlag — the checksum bit is SET in the descriptor
+ * and a 4-byte trailer is appended (zero-initialized). The VALUE is not an
+ * XXH64 digest: no intrinsic face computes one, and the decompress route
+ * never validates the field (the one documented delta vs Node, module
+ * header). The FRAMING is byte-layout faithful, which is what the corpus's
+ * scanner and its torn-tail truncation tests observe. */
+const compressBytes = (bytes, level, checksum) => {
+  const frame = b64ToBytes(intrinsic(COMPRESS_INTRINSIC)(bytesToB64(bytes), level ?? constants.ZSTD_CLEVEL_DEFAULT));
+  if (checksum !== true) return frame;
+  const out = new Uint8Array(frame.length + 4);
+  out.set(frame, 0);
+  out[4] |= 0x04; // Frame_Header_Descriptor bit 2: Content_Checksum_flag
+  return out; // trailing 4 checksum bytes stay zero
+};
+
+/** Sync codec core (decompress): a checksum-flagged frame is first stripped
+ * to its block body with the descriptor bit cleared, so the one-shot
+ * intrinsic — which WOULD validate a flagged frame's XXH64 — accepts the
+ * never-validated trailer this runtime writes. Non-checksum frames pass
+ * through byte-identical. */
+const decompressBytes = (bytes, maxOutputBytes) => {
+  const frame = walkZstdFrame(bytes);
+  if (frame !== null && frame.hasChecksum && frame.frameEnd === bytes.length) {
+    const body = bytes.slice(0, frame.blocksEnd);
+    body[4] = bytes[4] & ~0x04;
+    return decompressBytes(body, maxOutputBytes);
+  }
+  return b64ToBytes(intrinsic(DECOMPRESS_INTRINSIC)(bytesToB64(bytes), maxOutputBytes ?? 0));
+};
 
 /** One-shot forms; results are DshBuffer (Uint8Array subclass with encodings). */
 export const zstdCompressSync = (buffer, options) => (
-  DshBuffer.fromBytes(compressBytes(asBytes(buffer, 'zstdCompressSync'), compressLevel(options)))
+  DshBuffer.fromBytes((() => {
+    const bytes = asBytes(buffer, 'zstdCompressSync');
+    const { level, checksum } = compressOptions(options);
+    return compressBytes(bytes, level, checksum);
+  })())
 );
 
 /** gzip/gunzip — the one-shot face the webworker-runtime image loader drives
@@ -215,10 +318,18 @@ export const gunzipSync = (buffer, options) => {
 };
 
 
+/** The decode route options take: ZSTD_e_flush recovers complete-block
+ * plaintext (the prefix walk); everything else is the plain one-shot. */
+const decompressWithOptions = (bytes, options) => (
+  options?.finishFlush === constants.ZSTD_e_flush
+    ? decompressFlushPrefix(bytes, decompressLimit(options))
+    : decompressBytes(bytes, decompressLimit(options))
+);
+
 export const zstdDecompressSync = (buffer, options) => {
   const bytes = asBytes(buffer, 'zstdDecompressSync');
   checkFinishFlush(options);
-  return DshBuffer.fromBytes(decompressBytes(bytes, decompressLimit(options)));
+  return DshBuffer.fromBytes(decompressWithOptions(bytes, options));
 };
 
 /** Split (buffer, options, callback) vs (buffer, callback); Node validates the
@@ -236,10 +347,10 @@ const splitArguments = (options, callback, caller) => {
 export const zstdCompress = (buffer, options, callback) => {
   const [opts, cb] = splitArguments(options, callback, 'zstdCompress');
   const bytes = asBytes(buffer, 'zstdCompress');
-  const level = compressLevel(opts);
+  const { level, checksum } = compressOptions(opts);
   Promise.resolve().then(() => {
     try {
-      cb(null, DshBuffer.fromBytes(compressBytes(bytes, level)));
+      cb(null, DshBuffer.fromBytes(compressBytes(bytes, level, checksum)));
     } catch (error) {
       cb(error);
     }
@@ -250,10 +361,9 @@ export const zstdDecompress = (buffer, options, callback) => {
   const [opts, cb] = splitArguments(options, callback, 'zstdDecompress');
   const bytes = asBytes(buffer, 'zstdDecompress');
   checkFinishFlush(opts);
-  const maxOutputBytes = decompressLimit(opts);
   Promise.resolve().then(() => {
     try {
-      cb(null, DshBuffer.fromBytes(decompressBytes(bytes, maxOutputBytes)));
+      cb(null, DshBuffer.fromBytes(decompressWithOptions(bytes, opts)));
     } catch (error) {
       cb(error);
     }
@@ -278,7 +388,9 @@ const concatBytes = (chunks, total) => {
 class ZstdShimStream {
   constructor(codec, options) {
     this.codec = codec;
-    this.level = compressLevel(options);
+    const { level, checksum } = compressOptions(options);
+    this.level = level;
+    this.checksum = checksum;
     this.maxOutputBytes = decompressLimit(options);
     checkFinishFlush(options);
     this.chunks = [];
@@ -354,7 +466,7 @@ class ZstdShimStream {
     let result = null;
     try {
       result = this.codec === 'compress'
-        ? compressBytes(input, this.level)
+        ? compressBytes(input, this.level, this.checksum)
         : decompressBytes(input, this.maxOutputBytes);
     } catch (failure) {
       error = failure;

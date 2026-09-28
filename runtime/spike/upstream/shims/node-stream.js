@@ -582,47 +582,55 @@ export class Duplex extends SinkEvents {
     }).then(resolve, reject);
   }
 }
-const pumpThrough = async (value, transforms) => {
-  let current = value;
-  for (const transform of transforms) {
-    if (typeof transform.write !== 'function') {
-      if (typeof transform === 'function') current = transform(current);
-      continue;
-    }
-    transform.write(current);
-    current = await new Promise((resolve) => {
-      const tick = () => {
-        const out = transform.read();
-        if (out !== null) resolve(out);
-        else globalThis.setTimeout(tick, 0);
-      };
-      tick();
-    });
+/** Output a transform has ALREADY buffered, drained synchronously. Never
+ * waits: read() === null means "nothing buffered now", not "data will
+ * arrive" — only more writes or end() produce more output. */
+const drainNow = (t) => {
+  const out = [];
+  for (;;) {
+    const v = t.read();
+    if (v === null || v === undefined) break;
+    out.push(v);
   }
-  return current;
+  return out;
 };
 
 export async function pipeline(...parts) {
   const callback = typeof parts[parts.length - 1] === 'function' ? parts.pop() : undefined;
-  const transforms = parts.slice(1);
-  const pumped = [];
+  const stages = parts.slice(1);
   try {
     let source = parts[0];
     if (!(source && typeof source[Symbol.asyncIterator] === 'function')) {
       source = Readable.from(source);
     }
+    const streams = stages.filter((s) => s !== null && typeof s === 'object' && typeof s.write === 'function');
+    // node's sink shape: plain function stages consume the stream before
+    // them ONCE (as an AsyncIterable), never per chunk.
+    const sinks = stages.filter((s) => typeof s === 'function');
     for await (const chunk of source) {
-      pumped.push(await pumpThrough(chunk, transforms));
+      let value = chunk;
+      for (const t of streams) {
+        t.write(value);
+        // Incremental faces emit per write — hand buffered output to the
+        // next stage now. Buffered faces (zlib zstd streams) produce
+        // nothing until end(); the old per-chunk read poll re-armed a
+        // 0-timer forever against them (the session-persistence-jsonl
+        // generation/multi-edge hang).
+        const out = drainNow(t);
+        if (out.length > 0) value = out.length === 1 ? out[0] : out;
+      }
     }
-    for (const transform of transforms) {
-      if (typeof transform.end === 'function') transform.end();
+    for (const t of streams) {
+      if (typeof t.end === 'function') t.end();
     }
+    let current = streams.length > 0 ? streams[streams.length - 1] : source;
+    for (const sink of sinks) current = await sink(current);
+    if (callback) callback(undefined, current);
+    return current;
   } catch (error) {
     if (callback) return callback(error);
     throw error;
   }
-  if (callback) callback(undefined, pumped);
-  return pumped;
 }
 /** duplexPair([options]) — two cross-wired duplexes ([client, server]):
  * writes to one arrive as reads on the other (node:stream's convenience
