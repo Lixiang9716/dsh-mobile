@@ -2212,7 +2212,14 @@ static JSValue js_proc_stat_real(JSContext *ctx, JSValueConst this_val, int argc
     JSValue res = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, res, "mode", JS_NewInt32(ctx, (int32_t)(st.st_mode & 0xffff)));
     JS_SetPropertyStr(ctx, res, "size", JS_NewInt64(ctx, (int64_t)st.st_size));
-    JS_SetPropertyStr(ctx, res, "mtimeMs", JS_NewInt64(ctx, (int64_t)(st.st_mtimespec.tv_sec * 1000 + st.st_mtimespec.tv_nsec / 1000000)));
+    /* BSD/Darwin names the timespec st_mtimespec; POSIX 2008 (glibc, musl —
+     * the harmony/android toolchains, both with _GNU_SOURCE) names it st_mtim. */
+#if defined(__APPLE__)
+    int64_t mtime_ms = (int64_t)(st.st_mtimespec.tv_sec * 1000 + st.st_mtimespec.tv_nsec / 1000000);
+#else
+    int64_t mtime_ms = (int64_t)(st.st_mtim.tv_sec * 1000 + st.st_mtim.tv_nsec / 1000000);
+#endif
+    JS_SetPropertyStr(ctx, res, "mtimeMs", JS_NewInt64(ctx, mtime_ms));
     JS_SetPropertyStr(ctx, res, "isFile", JS_NewBool(ctx, S_ISREG(st.st_mode)));
     JS_SetPropertyStr(ctx, res, "isDirectory", JS_NewBool(ctx, S_ISDIR(st.st_mode)));
     return res;
@@ -2696,7 +2703,13 @@ static JSValue js_proc_facts(JSContext *ctx, JSValueConst this_val, int argc, JS
  * the seam is a thin registry: JS opens/prepares through intrinsics, rows
  * cross as plain objects. Values bind as null/number/string/blob; reads
  * return null/number/string/Uint8Array — the node:sqlite defaults the
- * vendored schemas rely on. */
+ * vendored schemas rely on.
+ *
+ * Guard: only hosts that LINK a real sqlite3 (the CLI's iSH userland, iOS's
+ * system lib) define DSH_WITH_SQLITE and get this seam; the android/harmony
+ * builds compile the whole block out and the JS shim degrades to its
+ * absent-seam error — capability-honest, per the contract's additive rule. */
+#if defined(DSH_WITH_SQLITE)
 #include <sqlite3.h>
 
 #define DSH_SQLITE_MAX_DB 16
@@ -3230,6 +3243,7 @@ static JSValue js_sqlite_all(JSContext *ctx, JSValueConst this_val, int argc, JS
     }
     return rows;
 }
+#endif /* DSH_WITH_SQLITE */
 
 /* ---- lifecycle ---------------------------------------------------------- */
 
@@ -3287,6 +3301,7 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_proc_spawn_sync, "__dshProcSpawnSync", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcPoll",
                       JS_NewCFunction(ctx, js_proc_poll, "__dshProcPoll", 1));
+#if defined(DSH_WITH_SQLITE)
     JS_SetPropertyStr(ctx, global, "__dshSqliteOpen",
                       JS_NewCFunction(ctx, js_sqlite_open, "__dshSqliteOpen", 1));
     JS_SetPropertyStr(ctx, global, "__dshSqliteClose",
@@ -3301,6 +3316,7 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_sqlite_get, "__dshSqliteGet", 2));
     JS_SetPropertyStr(ctx, global, "__dshSqliteAll",
                       JS_NewCFunction(ctx, js_sqlite_all, "__dshSqliteAll", 2));
+#endif
     JS_SetPropertyStr(ctx, global, "__dshProcReadReal",
                       JS_NewCFunction(ctx, js_proc_read_real, "__dshProcReadReal", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcMkdirReal",
