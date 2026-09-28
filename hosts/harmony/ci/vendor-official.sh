@@ -458,6 +458,15 @@ WEBCLIENT_DIRS="next whale"
 # (the anti-drift rule). BUNDLE_FILES rows in Index.ets must mirror this
 # tree (check-bundle-files cross-checks both directions).
 NOBLE_DIR="vendor/npm/@noble/hashes@2.3.0"
+# The cd inside a pipeline fails SILENTLY (the pipeline's exit is the
+# while's) — a missing pin tree must be fatal, not a quiet half-rawfile
+# (the CI gates failure of 2026-09-29: the pins rode only the test-suite
+# ensure, the spine ensure didn't materialize them, and 217 BUNDLE_FILES
+# rows went red on CI while the local full-mode sync looked green).
+if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$NOBLE_DIR" ]; then
+    echo "::error::vendor-official: $NOBLE_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+    exit 1
+fi
 if [ "$MODE" != "check" ]; then
     (cd "runtime/spike/$NOBLE_DIR" && find . -type f -name '*.js') |
         while IFS= read -r rel; do
@@ -470,6 +479,10 @@ fi
 # data/.manifest.json require needs the data face — the whole pin rides
 # (js+json). BUNDLE_FILES rows in Index.ets must mirror this tree.
 PIAI_DIR="vendor/npm/@earendil-works/pi-ai@0.85.1"
+if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$PIAI_DIR" ]; then
+    echo "::error::vendor-official: $PIAI_DIR absent — runtime/spike/vendor/ensure.sh materializes the pin" >&2
+    exit 1
+fi
 if [ "$MODE" != "check" ]; then
     (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
         while IFS= read -r rel; do

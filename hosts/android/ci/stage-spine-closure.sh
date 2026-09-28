@@ -144,6 +144,10 @@ say "staging vendor/npm/yaml@2.9.0 (browser ESM face)"
 # map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
 # (the anti-drift rule; the in-app parity leg died on exactly this gap).
 say "staging vendor/npm/@noble/hashes@2.3.0 (js)"
+if [ ! -d "$SPIKE/vendor/npm/@noble/hashes@2.3.0" ]; then
+    echo "::error::stage-spine-closure: the @noble/hashes pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    exit 1
+fi
 mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
 (cd "$SPIKE/vendor/npm/@noble/hashes@2.3.0" && find . -type f -name '*.js') |
     while IFS= read -r rel; do
@@ -156,6 +160,10 @@ mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
 # their files — the whole pin rides (the parity m4 mount died on exactly
 # this gap: bridge rows present, bytes absent in-app).
 say "staging vendor/npm/@earendil-works/pi-ai@0.85.1 (js+json)"
+if [ ! -d "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" ]; then
+    echo "::error::stage-spine-closure: the pi-ai pin is absent — runtime/spike/vendor/ensure.sh materializes it" >&2
+    exit 1
+fi
 mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1"
 (cd "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
     while IFS= read -r rel; do
