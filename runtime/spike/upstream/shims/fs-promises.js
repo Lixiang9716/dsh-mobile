@@ -41,6 +41,8 @@ import {
   _wsRename,
   _wsLink,
   _wsChmod,
+  _wsWatch,
+  _wsAt,
 } from 'node:fs';
 import { encodeUtf8 } from 'upstream/shims/buffer.js';
 
@@ -157,8 +159,28 @@ export const link = async (sourcePath, destPath) => _wsLink(sourcePath, destPath
  * no permission gate). */
 export const chmod = async (path, mode) => _wsChmod(path, mode);
 
+/** watchPath(path, notify) — register a mutation watcher on one workspace
+ * file; notify(canonicalPath) fires synchronously when a write/rm/rename
+ * lands on it. Consumer: the chokidar linkage shim (npm-bridges.js), which
+ * fronts this as settings-file's document watcher. The watched path is
+ * canonicalized the same way mutations canonicalize theirs, so string
+ * equality is exact. */
+export const watchPath = async (path, notify) => {
+  const at = _wsAt(path);
+  if (at === null) {
+    throw new Error(`node:fs.watch: path outside the writable workspace root: ${path}`);
+  }
+  return _wsWatch(at.path, notify);
+};
+
 /** writeFile(path, data[, options]) — the workspace face (create or
- * replace; parents must exist, matching node). */
+ * replace; parents must exist, matching node). flags: the vendored
+ * atomic-write writer lock creates its `<file>.lock` sibling with
+ * { flag: 'wx' } — the exclusive create IS the lock (measured 2026-09-27:
+ * with the flag ignored the lock never contended and settings-file's
+ * cross-instance tests resolved instead of timing out). 'x' faces refuse an
+ * existing target with EEXIST; 'a' faces append; read flags on a write call
+ * are EBADF like node. */
 export const writeFile = async (path, data, options) => {
   const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
   if (!(bytes instanceof Uint8Array)) {
@@ -168,6 +190,30 @@ export const writeFile = async (path, data, options) => {
   if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
     throw new Error(`node:fs/promises: writeFile encoding '${encoding}' — supported: utf8, buffer`);
   }
+  const flag = typeof options === 'string' ? 'w' : (options?.flag ?? 'w');
+  if (flag === 'r' || flag === 'r+') {
+    const error = new Error(`EBADF: bad file descriptor, write '${path}'`);
+    error.code = 'EBADF';
+    error.errno = -9;
+    error.syscall = 'write';
+    error.path = String(path);
+    throw error;
+  }
+  if (flag.includes('x')) {
+    let exists = false;
+    try { exists = existsSync(path); } catch { exists = false; }
+    if (exists) {
+      const error = new Error(`EEXIST: file already exists, open '${path}'`);
+      error.code = 'EEXIST';
+      error.errno = -17;
+      error.syscall = 'open';
+      error.path = String(path);
+      throw error;
+    }
+    if (flag.startsWith('a')) return appendFile(path, bytes);
+    return _wsWriteFile(path, bytes, options?.mode);
+  }
+  if (flag.startsWith('a')) return appendFile(path, bytes);
   return _wsWriteFile(path, bytes, options?.mode);
 };
 
@@ -342,10 +388,15 @@ class FileHandle {
     this.#append = append;
   }
 
-  /** writeFile(data[, options]) — replace the whole file, EXCEPT on an
-   * append-mode handle ('a'/'ax'), where node appends at EOF (the jsonl
-   * spine's appendLines relies on it: it stats `before`, writes, and rolls
-   * back to `before` on failure). */
+  /** writeFile(data[, options]) — node semantics: writes AT the handle's
+   * current file position and advances it, so sequential writeFile calls on
+   * one handle ACCUMULATE (node: filehandle.writeFile uses the position,
+   * which starts at 0 for the O_CREAT-staged handles the closure opens).
+   * Append-mode handles ('a'/'ax') append at EOF regardless (the jsonl
+   * spine's appendLines relies on it). The cursor-tracking upgrade fixes
+   * attachment-local's staging loop, which writeFile()s every chunk into one
+   * fresh O_CREAT|O_EXCL handle — with whole-file replacement only the LAST
+   * chunk survived (measured 2026-09-28, R3-G1). */
   async writeFile(data, options) {
     const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
     if (!(bytes instanceof Uint8Array)) {
@@ -355,18 +406,22 @@ class FileHandle {
     if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
       throw new Error(`FileHandle.writeFile: encoding '${encoding}' — supported: utf8, buffer`);
     }
-    if (this.#append) {
+    if (this.#append || this.#position > 0) {
       let current = new Uint8Array(0);
       try {
         current = await readFile(this.#path);
       } catch (error) {
         if (error?.code !== 'ENOENT') throw error;
       }
-      const merged = new Uint8Array(current.length + bytes.length);
-      merged.set(current, 0);
-      merged.set(bytes, current.length);
-      return _wsWriteFile(this.#path, merged, undefined);
+      const at = this.#append ? current.length : Math.min(this.#position, current.length);
+      const merged = new Uint8Array(at + bytes.length);
+      merged.set(current.subarray(0, at), 0);
+      merged.set(bytes, at);
+      const out = _wsWriteFile(this.#path, merged, undefined);
+      if (!this.#append) this.#position = at + bytes.length;
+      return out;
     }
+    this.#position = bytes.length;
     return _wsWriteFile(this.#path, bytes, undefined);
   }
 

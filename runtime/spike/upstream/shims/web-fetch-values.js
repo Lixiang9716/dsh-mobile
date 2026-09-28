@@ -448,13 +448,65 @@ export const installWebFetchValues = () => {
   }
   if (globalThis.ReadableStream === undefined) globalThis.ReadableStream = ReadableStream;
   // DshURL parses `search` but stops short of URLSearchParams (url.js's
-  // declared boundary); the Files-API mocks read url.searchParams.has/get.
-  // Read-only view: each access parses the current search string (the corpus
-  // never mutates through the view, so write-back stays unsupported).
+  // declared boundary). The view is LIVE and WRITE-THROUGH: reads re-parse
+  // the current search string, mutations (set/append/delete) rewrite
+  // `url.search` so href/toString see them (measured 2026-09-27: the
+  // session-log-export controller builds /api/session.export with
+  // searchParams.set — the old read-only view dropped the query silently).
+  // Memoized per URL instance so `url.searchParams === url.searchParams`
+  // holds and a held reference stays visible, like node's.
   const URLClass = globalThis.URL;
   if (URLClass !== undefined && URLClass.prototype.searchParams === undefined) {
+    const liveViews = new WeakMap();
+    class URLSearchWriteView {
+      #url;
+      constructor(url) { this.#url = url; }
+      #read() {
+        return searchParamsState.get(new URLSearchParams(String(this.#url.search ?? '').replace(/^\?/, '')));
+      }
+      #write(entries) {
+        const serialized = entries.length === 0 ? '' : `?${entries
+          .map(([key, value]) => `${encodeComponent(key)}=${encodeComponent(value)}`)
+          .join('&')}`;
+        this.#url.search = serialized;
+      }
+      append(name, value) { const entries = this.#read(); entries.push([String(name), String(value)]); this.#write(entries); }
+      set(name, value) {
+        const entries = this.#read();
+        const key = String(name);
+        const at = entries.findIndex(([existing]) => existing === key);
+        if (at < 0) { entries.push([key, String(value)]); } else {
+          entries[at] = [key, String(value)];
+          for (let i = entries.length - 1; i >= 0; i--) if (i !== at && entries[i][0] === key) entries.splice(i, 1);
+        }
+        this.#write(entries);
+      }
+      delete(name) { this.#write(this.#read().filter(([key]) => key !== String(name))); }
+      get(name) {
+        const found = this.#read().find(([key]) => key === String(name));
+        return found === undefined ? null : found[1];
+      }
+      getAll(name) { return this.#read().filter(([key]) => key === String(name)).map(([, value]) => value); }
+      has(name) { return this.#read().some(([key]) => key === String(name)); }
+      forEach(callback, thisArg = undefined) {
+        for (const [key, value] of this.#read()) callback.call(thisArg, value, key, this);
+      }
+      * entries() { for (const [key, value] of this.#read()) yield [key, value]; }
+      * keys() { for (const [key] of this.#read()) yield key; }
+      * values() { for (const [, value] of this.#read()) yield value; }
+      [Symbol.iterator]() { return this.entries(); }
+      toString() {
+        return this.#read()
+          .map(([key, value]) => `${encodeComponent(key)}=${encodeComponent(value)}`)
+          .join('&');
+      }
+    }
     Object.defineProperty(URLClass.prototype, 'searchParams', {
-      get() { return new URLSearchParams(String(this.search ?? '').replace(/^\?/, '')); },
+      get() {
+        let view = liveViews.get(this);
+        if (view === undefined) { view = new URLSearchWriteView(this); liveViews.set(this, view); }
+        return view;
+      },
       configurable: true,
     });
   }

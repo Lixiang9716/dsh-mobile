@@ -399,7 +399,32 @@ export const win32Resolve = (...parts) => {
   }
   return win32Normalize(resolved.replace(/\\+$/, ''));
 };
+/** win32.relative(from, to) — node's drive-aware case-insensitive ordering:
+  * segments compare case-insensitively (the drive letter too) but the
+  * result preserves `to`'s case; different drives return `to` itself
+  * (the lsp renderUri windows-world tests drive exactly this face). */
+export const win32Relative = (from, to) => {
+  assertPath(from);
+  assertPath(to);
+  if (from === to) return '';
+  if (from.toLowerCase() === to.toLowerCase()) return '';
+  const fromDev = WIN32_DEVICE.exec(from)?.[1]?.toLowerCase();
+  const toDev = WIN32_DEVICE.exec(to)?.[1]?.toLowerCase();
+  const fromUnc = WIN32_UNC.test(from);
+  const toUnc = WIN32_UNC.test(to);
+  if ((fromDev !== undefined || toDev !== undefined) && fromDev !== toDev) return win32Normalize(to);
+  if (fromUnc !== toUnc) return win32Normalize(to);
+  const fromSegs = from.toLowerCase().split(WIN32_SEPS).filter((p) => p !== '');
+  const toSegs = to.split(WIN32_SEPS).filter((p) => p !== '');
+  let shared = 0;
+  while (shared < fromSegs.length && shared < toSegs.length && fromSegs[shared] === toSegs[shared].toLowerCase()) shared++;
+  const up = Array.from({ length: fromSegs.length - shared }, () => '..');
+  const rel = [...up, ...toSegs.slice(shared)].join('\\');
+  return rel === '' ? '.' : rel;
+};
+
 export const win32 = {
+  relative: win32Relative,
   resolve: win32Resolve,
   normalize: win32Normalize,
   isAbsolute: win32IsAbsolute,

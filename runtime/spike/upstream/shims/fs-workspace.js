@@ -73,7 +73,12 @@ export const mountWorkspace = (root) => {
     nextIno: 1,
     clock: 0,
   };
-  ws().dirs.add(root);
+  // The EFFECTIVE root enters the explicit dir set: when the profile pin
+  // widens the caller's tmp spelling to the container, the container itself
+  // must stat() as a directory (the subagent cwd gate stats the profile
+  // root; with the caller's spelling in the set, statSync(root) ENOENTed —
+  // R3-G1 2026-09-28).
+  ws().dirs.add(effective);
   return root;
 };
 
@@ -103,6 +108,10 @@ const systemTmp = (path) => {
   if (typeof profileCwd !== 'string' || profileCwd.length <= 1) return path;
   const state = workspace();
   if (state === null || state.root !== profileCwd.replace(/\/$/, '')) return path;
+  // Already inside the container: the container itself lives under /tmp on
+  // the desktop CLI, and naively translating its OWN prefix doubled it
+  // (root/tmp/root — statSync(root) ENOENTed, R3-G1 2026-09-28).
+  if (path === profileCwd || path.startsWith(`${profileCwd}/`)) return path;
   const real = `${profileCwd.replace(/\/$/, '')}/tmp`;
   if (path === '/tmp') return real;
   if (path.startsWith('/tmp/')) return `${real}${path.slice(4)}`;
@@ -111,8 +120,18 @@ const systemTmp = (path) => {
 
 /** The workspace state for an absolute path inside the pinned root, else null.
  * Relative paths never reach the workspace: every fs-local caller resolves
- * against its config cwd (absolute) before touching the seam. */
+ * against its config cwd (absolute) before touching the seam.
+ * A NUL byte in a path is the OS boundary no string survives — node throws
+ * TypeError ERR_INVALID_ARG_VALUE at the syscall gate BEFORE any lookup
+ * (measured 2026-09-28: credentials-local "propagates a permission check
+ * rejected before the OS lookup" boots a `name\0` path and expects the
+ * rejection). This is the one choke point every workspace op flows through. */
 const wsAt = (path) => {
+  if (typeof path === 'string' && path.includes('\0')) {
+    const error = new TypeError(`The argument 'path' must be a string or Uint8Array without null bytes. Received type string ('${path}')`);
+    error.code = 'ERR_INVALID_ARG_VALUE';
+    throw error;
+  }
   const state = workspace();
   if (state === null || typeof path !== 'string' || !path.startsWith('/')) return null;
   const canonical = lexical(systemTmp(path));
@@ -132,6 +151,31 @@ const bumpClock = (state) => {
   state.clock += 1;
   return BigInt(state.clock) * 1000000n; // a distinct nanosecond stamp per mutation
 };
+
+/* ---- watch registry (the chokidar shim's event source) -------------------
+ * The workspace VFS is in-memory, so an fs watcher needs no OS seam: every
+ * mutation funnels through wsWriteFile/wsRm/wsRename, and those notify the
+ * registered watchers whose watched path matches the canonical mutated path.
+ * Event-driven (D8): a write IS the event — no polling, no timers. */
+const watchRegistry = new Set(); // { path, notify }
+
+/** Register a mutation watcher for one canonical workspace path. Returns the
+ * unwatch function. Consumer: the chokidar linkage shim (npm-bridges.js)
+ * serving settings-file's document watcher. */
+export const wsWatch = (path, notify) => {
+  const entry = { path, notify };
+  watchRegistry.add(entry);
+  return () => watchRegistry.delete(entry);
+};
+
+const notifyWatches = (path) => {
+  if (watchRegistry.size === 0) return;
+  for (const entry of [...watchRegistry]) {
+    if (entry.path !== path) continue;
+    try { entry.notify(path); } catch { /* a throwing watcher must not corrupt the mutation */ }
+  }
+};
+
 
 const wsCreateFile = (state, path, bytes, mode) => {
   const now = bumpClock(state);
@@ -186,6 +230,8 @@ const wsStatAt = (path, bigint) => {
       dev: 1,
       ino: file.ino,
       mode: file.mode,
+      uid: 0,
+      gid: 0,
       mtimeMs: Number(file.mtimeNs) / 1e6,
       ctimeMs: Number(file.ctimeNs) / 1e6,
       ...(bigint ? {
@@ -209,6 +255,8 @@ const wsStatAt = (path, bigint) => {
     dev: 1,
     ino: dirIno,
     mode: dirMode,
+    uid: 0,
+    gid: 0,
     mtimeMs: 0,
     ...(bigint ? {
       dev: 1n,
@@ -271,7 +319,12 @@ const wsEnotdir = (call, path) => {
 
 /** Create a directory. `{recursive: true}` creates missing parents and never
  * errors on an existing directory (node's contract); without it, an existing
- * entry is EEXIST. Returns the first directory created, or undefined. */
+ * entry is EEXIST. `options.mode` tracks on the FINAL created directory
+ * through dirModes (node: intermediates of a recursive mkdir keep the
+ * default; the caller's bits land on the leaf) — the atomic-write
+ * credentials contract creates its document directory owner-only (0o700) and
+ * the review-fixes spec stats it back (R3-G1, 2026-09-28). Returns the first
+ * directory created, or undefined. */
 const wsMkdir = (path, options = {}) => {
   const at = wsAt(path);
   if (at === null) {
@@ -285,20 +338,61 @@ const wsMkdir = (path, options = {}) => {
   if (options.recursive !== true && (state.dirs.has(canonical) || wsIsDirAt(canonical))) {
     throw wsEexist('mkdir', canonical);
   }
-  const segs = canonical === state.root
-    ? [canonical]
-    : canonical.slice(state.root.length).split('/').filter(Boolean)
-        .map((seg, index, all) => `${state.root}${'/' + all.slice(0, index + 1).join('/')}`);
+  // node: WITHOUT recursive, mkdir creates exactly ONE segment and the
+  // PARENT must already exist (missing parent = ENOENT — the browse picker's
+  // createDirectory maps that to directory-create-failed; the VFS's implied
+  // parents made it silently succeed, R3-G1 2026-09-28). Recursive walks the
+  // missing chain like node's mkdirp.
+  const parent = canonical.slice(0, canonical.lastIndexOf('/'));
+  const parentOk = parent === state.root || state.dirs.has(parent) || wsIsDirAt(parent);
+  if (options.recursive !== true && !parentOk) throw wsEnoent('mkdir', canonical);
+  const segs = options.recursive === true
+    ? (canonical === state.root
+      ? [canonical]
+      : canonical.slice(state.root.length).split('/').filter(Boolean)
+          .map((seg, index, all) => `${state.root}${'/' + all.slice(0, index + 1).join('/')}`))
+    : [canonical];
   let first;
   for (const dir of segs) {
-    if (state.files.has(dir)) throw wsEnotdir('mkdir', dir);
+    if (state.files.has(dir)) {
+      if (options.recursive === true) continue;
+      throw wsEexist('mkdir', dir);
+    }
     if (!state.dirs.has(dir)) {
       state.dirIno.set(dir, state.nextIno++);
       state.dirs.add(dir);
+      if (typeof options.mode === 'number' && dir === canonical) state.dirModes.set(dir, options.mode);
       first = first ?? dir;
     }
   }
   return first;
+};
+
+/** A written `.js`/`.mjs` registers as a runtime-defined module under its
+ * `file:` URL — the __dshModuleDefine seam the host loader consults FIRST
+ * (R3-G1, 2026-09-28). The vendored cordis loader chain imports composition
+ * rows by dynamic `import('file:///…')` (boot__cmdline's spec, the bundle
+ * startup specs, and cordis-plugin-include all write a plugin file into the
+ * workspace at test time and hand its pathToFileURL to the loader); without
+ * this registration the host has no such module and every entry fails
+ * "cannot load module 'file:///…'". Mirrors fs.js defineSeededModule for the
+ * WRITABLE half (that one serves the seeded read-only view). Both spellings
+ * register: the caller's lexical spelling (a hardcoded `/tmp/...` maps onto
+ * the container tmp via systemTmp, so the importer's URL keeps the `/tmp`
+ * prefix) and the workspace-canonical one. Idempotent: define() replaces. */
+const defineWrittenModule = (callerPath, canonical, bytes) => {
+  if (!/\.(js|mjs)$/.test(canonical)) return;
+  const define = globalThis.__dshModuleDefine;
+  if (typeof define !== 'function') return;
+  let text;
+  try {
+    text = new TextDecoder().decode(bytes);
+  } catch {
+    return; // non-UTF-8 bytes are never a servable module
+  }
+  const lexicalCaller = lexical(callerPath);
+  define.call(globalThis, `file://${canonical}`, text);
+  if (lexicalCaller !== canonical) define.call(globalThis, `file://${lexicalCaller}`, text);
 };
 
 /** Write file bytes (create or replace). Parents must already exist — the
@@ -310,6 +404,19 @@ const wsWriteFile = (path, bytes, mode) => {
     throw new Error(`node:fs.writeFile: path outside the writable workspace root: ${path}`);
   }
   const { state, path: canonical } = at;
+  // A FILE occupying an ancestor segment is ENOTDIR, like node's open(2)
+  // (measured 2026-09-28: identity's anonymous-user-id writes INTO a
+  // file-path home and expects the write refused so nothing persists). Every
+  // PROPER ancestor prefix checks — including the parent (the final slash's
+  // slice) — while the full path itself never does, so overwriting an
+  // existing file stays the replace flow.
+  let ancestorEnd = canonical.indexOf('/', state.root.length + 1);
+  while (ancestorEnd > 0) {
+    if (state.files.has(canonical.slice(0, ancestorEnd))) throw wsEnotdir('open', canonical);
+    const next = canonical.indexOf('/', ancestorEnd + 1);
+    if (next <= 0) break;
+    ancestorEnd = next;
+  }
   // A directory occupying the path is EISDIR, like node's writeFile
   // (measured 2026-09-27: storage-json makes the publish target a directory
   // to force the atomic-replacement failure its rollback test needs).
@@ -326,9 +433,13 @@ const wsWriteFile = (path, bytes, mode) => {
     existing.bytes = bytes;
     existing.mtimeNs = bumpClock(state);
     if (typeof mode === 'number') existing.mode = mode;
+    defineWrittenModule(path, canonical, bytes);
+    notifyWatches(canonical);
     return canonical;
   }
   wsCreateFile(state, canonical, bytes, mode);
+  defineWrittenModule(path, canonical, bytes);
+  notifyWatches(canonical);
   return canonical;
 };
 
@@ -341,6 +452,7 @@ const wsRm = (path, options = {}) => {
   const { state, path: canonical } = at;
   if (state.files.has(canonical)) {
     state.files.delete(canonical);
+    notifyWatches(canonical);
     return;
   }
   if (state.dirs.has(canonical)) {
@@ -405,6 +517,8 @@ const wsRename = (from, to) => {
     entry.mtimeNs = bumpClock(state);
     entry.ctimeNs = entry.mtimeNs;
     state.files.set(dest, entry);
+    notifyWatches(source.path);
+    notifyWatches(dest);
     return;
   }
   if (state.dirs.has(source.path)) {
@@ -437,8 +551,11 @@ const wsRename = (from, to) => {
   throw wsEnoent('rename', source.path);
 };
 
-/** Hard-link create-if-absent: bytes shared by copy (the VFS has no inodes to
- * share), destination must not exist. */
+/** Hard-link create-if-absent: bytes shared by copy, destination must not
+ * exist. The LINK SHARES IDENTITY: node reports one dev+ino pair for every
+ * name of a hard-linked object, and attachment-local's dedup contract
+ * asserts the alias stat()s to the OBJECT's ino (measured 2026-09-28: two
+ * distinct inos failed the identity assert, R3-G1). */
 const wsLink = (sourcePath, destPath) => {
   const source = wsAt(sourcePath);
   const target = wsAt(destPath);
@@ -450,6 +567,7 @@ const wsLink = (sourcePath, destPath) => {
   if (entry === undefined) throw wsEnoent('link', source.path);
   if (state.files.has(target.path) || state.dirs.has(target.path)) throw wsEexist('link', target.path);
   wsCreateFile(state, target.path, entry.bytes.slice(), entry.mode);
+  state.files.get(target.path).ino = entry.ino;
 };
 
 /** chmod on a workspace file or directory. */

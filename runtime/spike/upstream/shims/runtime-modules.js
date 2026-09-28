@@ -60,7 +60,52 @@ const STREAM_PROMISES = [
   'export default { pipeline, finished };',
 ].join(' ');
 
+// --- the __ModuleLoader__ client-bundle faces (2026-09-27 wave 2). The
+// dsh client packages publish their /client faces as BROWSER bundles: one
+// `window.__ModuleLoader__.load({ id, factory })` call whose factory takes
+// a CommonJS `require` and RETURNS `module.exports`. The loader compiles
+// such a file as ESM (its `var module = ...` is a plain script) and the
+// link then fails with "Could not find export 'RemoteStream'" — the module
+// executes into a local, unreachable `module.exports`. The runtime seam
+// fixes this without touching vendored bytes (D6): web-shims.js (loaded
+// FIRST by the suite leg) already provides the queue-mode
+// `window.__ModuleLoader__` facade, so a registered row statically imports
+// the bundle (its registration lands in the queue), drains OUR id, invokes
+// `factory(require)` with a user-land require over statically imported
+// namespaces, and re-exports the returned namespace object. The classes are
+// the VENDORED implementations driven against spec-owned fakes — real
+// semantics, zero porting drift. require map misses fail loud (rule 5).
+const moduleLoaderFace = (id, bundlePath, deps, exportNames) => [
+  ...deps.map(([spec, local]) => `import * as ${local} from '${spec}';`),
+  `import '${bundlePath}';`,
+  `const queue = globalThis.window.__ModuleLoader__.pendingQueue;`,
+  `const at = queue.findIndex((registration) => registration.id === ${JSON.stringify(id)});`,
+  `if (at < 0) throw new Error('runtime-modules: no queued __ModuleLoader__ registration for ${id}');`,
+  `const [registration] = queue.splice(at, 1);`,
+  `const DEPS = { ${deps.map(([spec, local]) => `${JSON.stringify(spec)}: ${local}`).join(', ')} };`,
+  `const require_ = (name) => {`,
+  `  if (name in DEPS) return DEPS[name];`,
+  `  throw new Error('runtime-modules: ${id} bundle require is not served: ' + name);`,
+  `};`,
+  `const ns = registration.factory(require_);`,
+  ...exportNames.map((name) => `export const ${name} = ns.${name};`),
+  `export default ns;`,
+].join('\n');
+
 const REGISTRATIONS = [
+['@deepseek-ai/dsh-api-gateway/client',
+  moduleLoaderFace('@deepseek-ai/dsh-api-gateway',
+    '/vendor/npm/@deepseek-ai/dsh-api-gateway@0.1.6-alpha.2/lib/client.js',
+    [['@deepseek-ai/cordis', 'cordis']],
+    ['RemoteJournalStream', 'RemoteSnapshotStream', 'RemoteStream',
+      'RemoteStreamCarrierError', 'apply', 'cancelledFailure',
+      'carrierFailure', 'inject', 'isRemoteFailure'])],
+
+['@deepseek-ai/dsh-client-connection/client',
+  moduleLoaderFace('@deepseek-ai/dsh-client-connection',
+    '/vendor/npm/@deepseek-ai/dsh-client-connection@0.1.6-alpha.2/lib/client.js',
+    [],
+    ['RpcId', 'apply', 'inject', 'installConnection', 'transportError'])],
   ['node:string_decoder', "export { default as StringDecoder, default } from '/upstream/shims/string-decoder.js';"],
   ['node:stream/promises', STREAM_PROMISES],
   ['@deepseek-ai/dsh-session/types.js', "export * from '/vendor/dsh/session@0.1.6-alpha.2/lib/types/types.js';"],
@@ -76,6 +121,13 @@ const REGISTRATIONS = [
     LOGGER_LEVEL,
   ].join(' ')],
   ['@deepseek-ai/dsh-client-ui-renderer/client', "export * from '/upstream/shims/dsh-client-ui-renderer-client.js';"],
+
+  // @deepseek-ai/node-addon-system/landlock-run — the Landlock launcher's
+  // JS API face (the flock precedent: a linkage shim with the source's own
+  // absence semantics; see the shim's header). The 12-spec sandbox/ssh/
+  // spill/workflow family loads it at module scope through the vendored
+  // sandbox-local and spill-policy libs.
+  ['@deepseek-ai/node-addon-system/landlock-run', "export * from '/upstream/shims/node-addon-system-landlock-run.js';"],
 
   // --- node: builtin faces the SHIMS table lacks (2026-09-27 suite round).
   // These live HERE, not in npm-bridges.js: they are node-face shims, and a
@@ -285,6 +337,7 @@ const REGISTRATIONS = [
     "export const fork = childProcess.fork;",
   ].join('\n')],
 ];
+
 
 /** Register the runtime-module rows; idempotent (define() replaces). */
 export const defineRuntimeModules = () => {

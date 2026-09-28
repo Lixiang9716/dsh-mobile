@@ -100,6 +100,18 @@ const pinProfileContainer = async () => {
   globalThis.__dshProfileHome = resolved.path.replace(/\/$/, '') + '/home';
   const { mountWorkspace } = await import('upstream/shims/fs.js');
   mountWorkspace(globalThis.__dshProfileTmpdir);
+  // The pinned HOME exists before the first spec runs: on the desktop the
+  // user home is a REAL directory os.homedir() may list (the browse picker's
+  // home listing asserts exactly that), so the leg materializes both pinned
+  // roots in the workspace VFS (R3-G1, 2026-09-28).
+  const { mkdirSync } = await import('node:fs');
+  for (const dir of [globalThis.__dshProfileHome, globalThis.__dshProfileTmpdir]) {
+    try {
+      mkdirSync(dir, { recursive: true });
+    } catch (error) {
+      if (error?.code !== 'EEXIST') log.debug('profile root mkdir failed', { dir: String(dir).slice(0, 120), code: error?.code });
+    }
+  }
   log.debug('profile container pinned', { cwd: globalThis.__dshProfileCwd });
 };
 

@@ -192,6 +192,11 @@ class AssertionError extends Error {
 
 const fmt = (v) => {
   try {
+    // An Error face renders as its class+message (JSON.stringify(Error) is
+    // '{}' — message/name are non-enumerable — which made toMatchObject
+    // failures against errors unreadable, e.g. "got {}" for a whole class
+    // of transport-failure assertions).
+    if (v instanceof Error) return `${v.name ?? 'Error'}: ${v.message}`;
     return typeof v === 'string' ? JSON.stringify(v) : JSON.stringify(v) ?? String(v);
   } catch {
     return String(v);
@@ -237,6 +242,26 @@ const callMatchers = (actual, check) => ({
   toMatch(pattern) {
     const ok = typeof actual === 'string' && (pattern instanceof RegExp ? pattern.test(actual) : actual.includes(pattern));
     check(ok, `to match ${fmt(pattern)} (got ${fmt(actual?.slice?.(0, 120))})`);
+  },
+  /** vitest's file-snapshot matcher without a disk: the store lives on the
+   * global (one spec per runtime), writes on FIRST sight and compares on any
+   * repeat within the run (R3-G1, 2026-09-28 — messages__serialize awaits
+   * toMatchFileSnapshot for its degraded-replay fixture). The transpiler
+   * seeds no `expected/` files, and the runtime keeps no persistent disk, so
+   * the CI-strict compare-every-run mode is not reproducible here; per-run
+   * stability (same input → same snapshot text) is still asserted on
+   * repeats. */
+  async toMatchFileSnapshot(path, _options) {
+    const store = globalThis.__dshFileSnapshots ??= new Map();
+    const current = runningTest ?? suite.tests[suite.tests.length - 1];
+    const key = `${current?.name ?? '?'}::${path}`;
+    const text = typeof actual === 'string' ? actual : fmt(actual);
+    const existing = store.get(key);
+    if (existing === undefined) {
+      store.set(key, text);
+      return check(true);
+    }
+    check(existing === text, `to match file snapshot ${path} (snapshot drift within the run)`);
   },
   toContainEqual(expected) {
     // matchSubset (not deepEqual): the corpus passes asymmetric matchers
@@ -296,8 +321,25 @@ const throwMatchers = (actual, check) => ({
     }
     if (!didThrow) return check(false, 'to throw');
     if (expected === undefined) return check(true);
-    if (typeof expected === 'string') return check(threw.message?.includes(expected), `throw message containing "${expected}" (got "${threw.message}")`);
-    if (expected instanceof RegExp) return check(expected.test(threw.message ?? ''), `throw message matching ${expected}`);
+    // vitest's thrown-message extraction (jest-compatible): an object with a
+    // `message` string compares through it; anything else (a thrown STRING —
+    // boot__cmdline "rethrows a thrown value that is not an object at all" —
+    // a number, undefined) stringifies and compares against that (R3-G1,
+    // 2026-09-28).
+    const thrownMessage = threw !== null && typeof threw === 'object' && typeof threw.message === 'string'
+      ? threw.message
+      : String(threw);
+    if (typeof expected === 'string') return check(thrownMessage.includes(expected), `throw message containing "${expected}" (got "${thrownMessage}")`);
+    if (expected instanceof RegExp) return check(expected.test(thrownMessage), `throw message matching ${expected}`);
+    // A thrown-in ERROR INSTANCE (jest/vitest contract): compared by MESSAGE
+    // (and identity), not by instanceof — the product may re-wrap an equal
+    // message across a catch boundary, and jest explicitly specifies message
+    // equality for this form (measured 2026-09-28: llm-pi-ai config's
+    // "propagates unexpected catalog failures").
+    if (expected instanceof Error) {
+      return check(threw === expected || thrownMessage === expected.message,
+        `throw with message "${expected.message}" (got "${thrownMessage}")`);
+    }
     if (typeof expected === 'object') return check(matchSubset(threw, expected, false), `throw matching ${fmt(expected)}`);
     check(threw instanceof expected, `throw ${expected?.name}`);
   },
@@ -407,6 +449,10 @@ const makeMockFn = (impl) => {
   const onceQueue = [];
   const f = function (...args) {
     f.mock.calls.push(args);
+    // vitest's mock.instances ledger: the receiver of each call (the
+    // controller.client download spec reads click.mock.instances[0] to
+    // inspect the anchor the product mutated).
+    f.mock.instances.push(this);
     f.mock.invocationCallOrder.push(++mockCallSeq);
     const next = onceQueue.length > 0 ? onceQueue.shift() : impl;
     try {
@@ -418,7 +464,7 @@ const makeMockFn = (impl) => {
       throw error;
     }
   };
-  f.mock = { calls: [], results: [], invocationCallOrder: [] };
+  f.mock = { calls: [], instances: [], results: [], invocationCallOrder: [] };
   f.mockImplementation = (next) => { impl = next; return f; };
   f.mockImplementationOnce = (next) => { onceQueue.push(next); return f; };
   f.mockReturnValue = (value) => { impl = () => value; return f; };
@@ -449,9 +495,21 @@ const viApi = {
   },
   stubGlobal(name, value) {
     if (!viApi._globalStubs) viApi._globalStubs = [];
-    const original = globalThis[name];
-    globalThis[name] = value;
-    const restore = { mockRestore: () => { globalThis[name] = original; } };
+    // vitest installs stubs through defineProperty and restores the original
+    // PROPERTY DESCRIPTOR — not by read-then-assign. The distinction is
+    // load-bearing: a stubbed global may be (or become) a getter-only
+    // accessor (recovery.client's "storage denied" fixture defines a
+    // throwing localStorage getter), where a value read throws at stub time
+    // and a value write cannot undo the accessor. Descriptor capture + a
+    // defineProperty install keeps every shape stubbable and restorable.
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, name);
+    Object.defineProperty(globalThis, name, {
+      value, writable: true, enumerable: true, configurable: true,
+    });
+    const restore = { mockRestore: () => {
+      if (descriptor === undefined) delete globalThis[name];
+      else Object.defineProperty(globalThis, name, descriptor);
+    } };
     viApi._globalStubs.push(restore);
     return restore;
   },
@@ -567,10 +625,28 @@ export const runCollected = async (sink) => {
     runningTest = t;
     try {
       for (const hook of t.hooks.beforeEach) await hook();
-      await t.fn();
+      // vitest hands every test fn a CONTEXT as its first argument — tests
+      // that destructure it (`async ({ skip }) => …`) throw
+      // "Cannot convert undefined or null to object" when it is missing
+      // (stream-rebind). The context face is the documented subset: skip()
+      // raises a marker the runner classifies as 'skipped' (vitest never
+      // counts a context-skip a failure).
+      await t.fn({
+        skip: (note) => {
+          const skipError = new Error(note ?? 'skipped by test context');
+          skipError.__dshTestContextSkip = true;
+          throw skipError;
+        },
+      });
       report.passed += 1;
       sink(t.name, 'pass');
     } catch (error) {
+      if (error?.__dshTestContextSkip) {
+        report.skipped += 1;
+        sink(t.name, 'skipped');
+        runningTest = null;
+        continue;
+      }
       report.failed += 1;
       report.failures.push({
         name: t.name,

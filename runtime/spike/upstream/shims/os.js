@@ -35,6 +35,13 @@ export const tmpdir = () => {
 };
 
 export const homedir = () => {
+  // Node's POSIX contract reads $HOME first (os.homedir(): "on POSIX, uses
+  // the $HOME environment variable if defined") — the suite stubs HOME
+  // through vi.stubEnv to repoint ~ expansion per test (measured 2026-09-28,
+  // llm-pi-ai auth: fileExists('~/creds') never saw the stub). The pinned
+  // profile home stays the fallback ($DSH_HOME equivalent).
+  const home = globalThis.process?.env?.HOME;
+  if (typeof home === 'string' && home.length > 0) return home;
   const pinned = globalThis.__dshProfileHome;
   if (typeof pinned !== 'string' || pinned.length === 0) {
     throw new Error(
@@ -49,6 +56,13 @@ export const platform = () => globalThis.__dshProfilePlatform ?? 'mobile';
 export const EOL = '\n';
 export const arch = () => 'wasm';
 export const endianness = () => 'LE';
+/** availableParallelism() — node 18+'s scheduler-width read. The runtime's
+ * honest answer is 1: the JS thread is serial by construction (ARCHITECTURE
+ * §6), there is no worker pool, and the host does not expose a CPU count to
+ * pretend otherwise. Demanded at module load by the tool-workflow and
+ * tool-ralph integrations (they size their async pools with it — a pool of
+ * one on a serial runtime is exactly right). */
+export const availableParallelism = () => 1;
 /** release() — kernel version string. There is no kernel here; the constant
  * is a non-Windows, non-WSL answer (the vendored native-command reads it only
  * to test `.includes("microsoft")` for its WSL branch). */

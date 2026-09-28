@@ -75,15 +75,24 @@ class MiniStream {
     this.#chunks.push(chunk);
     this.#wake();
   }
-  end() {
+  /** end([chunk][, callback]) — node's readable.end pushes the FINAL chunk
+   * before ending (ptc-runtime's drainOutput test ends a PassThrough with
+   * 'last output'; the old body dropped the argument so the data listener
+   * saw nothing). */
+  end(chunk, ...rest) {
+    if (typeof chunk === 'function') { rest.unshift(chunk); chunk = undefined; }
+    if (chunk !== undefined && chunk !== null) this.push(chunk);
     this.#ended = true;
     if (this.#flowing) this.emit('end');
+    const callback = typeof rest[0] === 'function' ? rest[0] : undefined;
+    if (callback !== undefined) queueMicrotask(callback);
     this.#wake();
   }
   fail(error) { this.#error = error; this.#wake(); }
   #wake() { for (const w of this.#waiters.splice(0)) w(); }
   #next() {
     if (this.#chunks.length > 0) return Promise.resolve({ value: this.#chunks.shift(), done: false });
+    if (this.#destroyed && this.#error === undefined && !this.#ended) return Promise.resolve({ value: undefined, done: true });
     if (this.#error !== undefined) return Promise.reject(this.#error);
     if (this.#ended) return Promise.resolve({ value: undefined, done: true });
     // Wake re-evaluates the state; the promise ALWAYS settles with an
@@ -149,20 +158,29 @@ class MiniStream {
   /** node's destroy(error): 'error' only when an error was passed, then
    * 'close' — the ssh peers wire output.on('error'/'close') to connection
    * loss, so the events (not just the iterator state) must move. A CLEAN
-   * destroy ends the readable side (for-await drains, never errors). */
+   * destroy terminates the iterator face WITHOUT marking a graceful end:
+   * node keeps readableEnded false on a destroyed-never-ended stream (the
+   * ptc-runtime bounds test drains a destroyed stream and expects false),
+   * and #next returns done for a destroyed queue so for-await still
+   * finishes. */
   destroy(error) {
     if (this.#destroyed) return this;
     this.#destroyed = true;
     if (error !== undefined && error !== null) {
       this.emit('error', error);
       this.fail(error);
-    } else {
-      this.end();
     }
+    this.#wake();
     this.emit('close');
     return this;
   }
   get destroyed() { return this.#destroyed; }
+  /** node's terminal-state getters: drainOutput re-drains an already-ended
+   * stream and short-circuits on readableEnded — without the getter the
+   * second call arms a fresh 1s timer and resolves false (measured
+   * 2026-09-28, ptc-runtime output-stream). */
+  get readableEnded() { return this.#ended; }
+  get writableEnded() { return this.#ended; }
   close() { this.end(); }
 }
 export class PassThrough extends MiniStream {}
@@ -278,7 +296,16 @@ export class Writable extends SinkEvents {
 
   /** node: write() returns whether the stream wants more (false = over hwm,
    * 'drain' fires once the queued bytes retire). The callback form is the
-   * same call with a trailing completion. */
+   * same call with a trailing completion.
+   *
+   * Writes are SERIALIZED node-style: the user write impl sees one chunk at
+   * a time and chunk N+1's impl runs only after chunk N's callback retires
+   * (the sdk-protocol flush() contract queues an empty barrier chunk behind
+   * the pending frame — measured 2026-09-27: parallel impl invocation let
+   * the barrier overtake the frame). */
+  #writeQueue = []; // pending [chunk, encoding, callback, length] — FIFO
+  #inFlight = false; // the head's impl is running, its callback pending
+
   write(chunk, ...rest) {
     if (this.#destroyed) {
       const error = new Error('write after destroy');
@@ -296,19 +323,52 @@ export class Writable extends SinkEvents {
     const callback = typeof rest[rest.length - 1] === 'function' ? rest.pop() : undefined;
     const encoding = typeof rest[0] === 'string' ? rest.shift() : undefined;
     const length = chunk?.length ?? 0;
+    this.#writeQueue.push([chunk, encoding ?? 'buffer', callback, length]);
     this.#queuedBytes += length;
     this.#needDrain = this.#queuedBytes >= this.#highWaterMark;
     this.writableNeedDrain = this.#needDrain;
-    this.#writeImpl(chunk, encoding ?? 'buffer', () => {
-      this.#queuedBytes = Math.max(0, this.#queuedBytes - length);
-      if (this.#needDrain && this.#queuedBytes < this.#highWaterMark) {
-        this.#needDrain = false;
-        this.writableNeedDrain = false;
-        this.emit('drain');
-      }
-      callback?.();
-    });
+    this.#pump();
     return !this.#needDrain;
+  }
+
+  /** Drive the FIFO: the head chunk's impl is in flight; a synchronous
+   * callback lets the loop continue, an async one re-enters via #pump when
+   * it retires. */
+  #pump() {
+    if (this.#inFlight) return;
+    while (this.#writeQueue.length > 0) {
+      const [chunk, encoding, callback, length] = this.#writeQueue[0];
+      let retired = false;
+      const done = (error) => {
+        if (retired) return;
+        retired = true;
+        this.#inFlight = false;
+        this.#writeQueue.shift();
+        this.#queuedBytes = Math.max(0, this.#queuedBytes - length);
+        if (this.#needDrain && this.#queuedBytes < this.#highWaterMark) {
+          this.#needDrain = false;
+          this.writableNeedDrain = false;
+          this.emit('drain');
+        }
+        if (typeof callback === 'function') callback(error);
+        if (this.#writeQueue.length > 0) this.#pump();
+        else this.#settleEnded();
+      };
+      this.#inFlight = true;
+      this.#writeImpl(chunk, encoding, done);
+      if (!retired) return; // async callback — resume from its done()
+      // synchronous callback — the entry retired; keep draining in-tick
+    }
+  }
+
+  /** end() defers finish until every queued write retired (node flushes
+   * first); re-checked from #pump's done path. */
+  #pendingFinish = null;
+  #settleEnded() {
+    const settle = this.#pendingFinish;
+    if (settle === null) return;
+    this.#pendingFinish = null;
+    settle();
   }
 
   /** Optional trailing callback, node's `end(chunk, cb)` shape. */
@@ -334,8 +394,10 @@ export class Writable extends SinkEvents {
         typeof callback === 'function' && callback();
       }
     };
-    // A queued write retires before the finish event (node flushes first).
-    if (this.#queuedBytes > 0) queueMicrotask(settle);
+    // A queued write retires before the finish event (node flushes first):
+    // the queue drives settle through #pump's done path; an empty queue
+    // settles immediately.
+    if (this.#writeQueue.length > 0) this.#pendingFinish = settle;
     else settle();
     return this;
   }

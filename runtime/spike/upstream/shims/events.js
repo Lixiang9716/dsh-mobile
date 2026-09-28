@@ -186,12 +186,22 @@ export const once = (emitter, name, options = {}) => new Promise((resolve, rejec
   options?.signal?.addEventListener?.('abort', onAbort, { once: true });
 });
 
-/** events.getEventListeners / events.listenerCount — EventEmitter only. */
+/** events.getEventListeners / events.listenerCount — EventEmitters read
+ * through their listeners face; EVENT TARGETS read through their registry
+ * too (node: getEventListeners accepts EventTargets since v15 — the
+ * stagehand worker-rpc product inspects an AbortSignal's abort listeners
+ * through it, R3-G1 2026-09-28). The two in-runtime target shapes: the
+ * web-event EventTarget (__dshEventListeners map of {listener} entries) and
+ * the harness AbortSignal shim (_listeners array, abort-only). */
 export const getEventListeners = (emitter, name) => {
-  if (typeof emitter?.listenerCount !== 'function') {
-    throw new TypeError('node:events.getEventListeners: only EventEmitter instances are supported (an EventTarget listener list has no inspectable surface in this runtime)');
+  if (typeof emitter?.listenerCount === 'function') return emitter.listeners(name);
+  if (emitter?.__dshEventListeners instanceof Map) {
+    return [...(emitter.__dshEventListeners.get(String(name)) ?? [])].map((entry) => entry?.listener ?? entry);
   }
-  return emitter.listeners(name);
+  if (Array.isArray(emitter?._listeners)) {
+    return String(name) === 'abort' ? [...emitter._listeners] : [];
+  }
+  throw new TypeError('node:events.getEventListeners: the first argument is neither an EventEmitter nor an EventTarget this runtime can inspect');
 };
 
 export const listenerCount = getEventListeners;

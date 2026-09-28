@@ -209,6 +209,7 @@ import {
   wsLink,
   wsChmod,
   wsUtimes,
+  wsWatch,
   wsSymlink,
   wsReadlinkAt,
   resolveSymlinkAt,
@@ -222,7 +223,32 @@ export { mountWorkspace };
 const readAnyBytes = (path) => {
   const resolved = resolveWorkspaceSymlink(path);
   const file = wsFileAt(resolved);
-  if (file !== undefined) return DshBuffer.fromBytes(file.bytes);
+  if (file !== undefined) {
+    // File-level read permission: the workspace tracks a mode per file, and
+    // a 0-bit mode is unreadable — EACCES like node (settings-file's
+    // fails-loud-at-boot test chmods the document to 0o000). Directory modes
+    // stay tracked-but-unenforced (the §3 note above): only FILE reads gate.
+    if (((file.mode ?? 0o644) & 0o444) === 0) {
+      const error = new Error(`EACCES: permission denied, open '${resolved}'`);
+      error.code = 'EACCES';
+      error.errno = -13;
+      error.syscall = 'open';
+      error.path = resolved;
+      throw error;
+    }
+    return DshBuffer.fromBytes(file.bytes);
+  }
+  // Reading a DIRECTORY is EISDIR, like node's open(2) gate (measured
+  // 2026-09-28: credentials-local mkdirs the document path and expects the
+  // boot read to reject /EISDIR/, not to treat it as an absent document).
+  if (wsIsDirAt(resolved)) {
+    const error = new Error(`EISDIR: illegal operation on a directory, read '${resolved}'`);
+    error.code = 'EISDIR';
+    error.errno = -21;
+    error.syscall = 'read';
+    error.path = resolved;
+    throw error;
+  }
   const files = vfs();
   if (files !== null && underVFS(path)) {
     const seeded = files.get(path);
@@ -345,6 +371,12 @@ export const createReadStream = (path, options = {}) => {
   const iterator = iterate();
   return {
     [Symbol.asyncIterator]: () => iterator,
+    // The Readable cleanup face the closure's finally blocks call
+    // (attachment-local's readFileStreamVerbatim destroys the stream after
+    // the drain; a missing member surfaced as 'not a function', R3-G1
+    // 2026-09-28). The generator holds no OS resource — cleanup is a no-op.
+    destroy: () => {},
+    close: async () => {},
   };
 };
 
@@ -393,6 +425,16 @@ export const readFileSync = (path, encoding) => {
       error.code = 'EISDIR';
       throw error;
     }
+    // File-level read permission (see readAnyBytes): a 0-read-bit mode is
+    // EACCES, like node's open gate (settings-file fails-loud-at-boot).
+    if (((file.mode ?? 0o644) & 0o444) === 0) {
+      const error = new Error(`EACCES: permission denied, open '${canonical}'`);
+      error.code = 'EACCES';
+      error.errno = -13;
+      error.syscall = 'open';
+      error.path = canonical;
+      throw error;
+    }
     if (typeof encoding === 'string'
         && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
       throw new Error(`node:fs: readFileSync encoding '${encoding}' — supported: utf8, buffer`);
@@ -421,9 +463,31 @@ export const readFileSync = (path, encoding) => {
 
 export const statSync = (path, options = {}) => {
   const canonical = typeof path === 'string' && path.startsWith('/') ? lexical(path) : path;
+  const bigint = options.bigint === true;
+  // The workspace ROOT'S ANCESTORS ('/', '/tmp', ...) sit above the pinned
+  // profile container: a real host answers their stat as owned directories,
+  // so the protected-ancestor walks (spill sweep, atomic-write staging)
+  // climb out of the root without ENOENT. Owned single-user dir: uid/gid 0,
+  // 0755 (group/other write-free — trusted to the POSIX safety checks).
+  const root = globalThis.__DSH_WORKSPACE_FS__?.root;
+  if (typeof root === 'string' && canonical !== root && root.startsWith(`${canonical === '/' ? '' : canonical}/`)) {
+    const mk = (m) => ({
+      isFile: () => false,
+      isDirectory: () => true,
+      isSymbolicLink: () => false,
+      size: bigint ? 0n : 0,
+      dev: 1,
+      ino: 0,
+      mode: m,
+      uid: 0,
+      gid: 0,
+      mtimeMs: 0,
+      ...(bigint ? { dev: 1n, ino: 0n, mode: BigInt(m), mtimeNs: 0n, ctimeNs: 0n } : {}),
+    });
+    return mk(0o100755 & 0o777);
+  }
   // stat FOLLOWS symlinks (one hop here); lstat does not.
   const followed = resolveWorkspaceSymlink(canonical);
-  const bigint = options.bigint === true;
   const shape = wsStatAt(followed, bigint);
   if (shape !== null) return shape;
   const files = vfs();
@@ -436,6 +500,8 @@ export const statSync = (path, options = {}) => {
         isSymbolicLink: () => false,
         size: bigint ? BigInt(seeded.bytes.length) : seeded.bytes.length,
         mode: 0o644,
+        uid: 0,
+        gid: 0,
         mtimeMs: seeded.mtimeMs,
         ...(bigint ? {
           dev: 1n,
@@ -462,9 +528,13 @@ export const statSync = (path, options = {}) => {
   }
   // A missing file INSIDE the pinned workspace is an ordinary ENOENT (the
   // vendored fs-local classifies absence by `error.code`), not a seam
-  // refusal — the loud refusal stays for paths outside every staged view.
+  // refusal. The same in-world answer covers paths OUTSIDE every staged
+  // view: this runtime's world is the workspace plus the seeded views, and
+  // anything else does not exist IN it (R3-G1, 2026-09-28 — fs-sandbox's
+  // containment walk stats candidate roots that were never staged and
+  // classifies the ENOENT itself; the loud refusal broke that classification).
   if (wsAt(canonical) !== null) throw enoent('stat', canonical);
-  return refuse('statSync')();
+  throw enoent('stat', typeof path === 'string' ? path : String(path));
 };
 
 export const lstatSync = (path, options = {}) => {
@@ -487,7 +557,48 @@ export const lstatSync = (path, options = {}) => {
   return statSync(path, options);
 };
 
-export const accessSync = refuse('accessSync');
+/** accessSync(path, mode) — REAL over the staged views (upgraded 2026-09-28
+ * from the loud refusal): existence plus the requested permission bits over
+ * the workspace file/directory modes (the same tracked modes chmodSync
+ * writes and statSync reads). Consumers: dsh-sandbox root checks and the
+ * directory-picker auto-probe's canExecute (chmod 0o755 → X_OK true, absent
+ * → ENOENT false). Directory W_OK/X_OK answer true — the workspace is the
+ * one writable, traversable root. Outside every staged view: ENOENT (the
+ * in-world does-not-exist answer, matching the statSync note below). */
+export const accessSync = (path, mode = constants.F_OK) => {
+  const requested = Number(mode) || 0;
+  let shape;
+  try {
+    shape = statSync(path);
+  } catch (error) {
+    throw error; // ENOENT (or the NUL TypeError) propagates, like node
+  }
+  if ((requested & constants.R_OK) !== 0 && typeof shape.mode === 'number' && (shape.mode & 0o444) === 0 && shape.isFile()) {
+    const error = new Error(`EACCES: permission denied, access '${path}'`);
+    error.code = 'EACCES';
+    error.errno = -13;
+    error.syscall = 'access';
+    error.path = path;
+    throw error;
+  }
+  if ((requested & constants.W_OK) !== 0 && typeof shape.mode === 'number' && (shape.mode & 0o222) === 0 && shape.isFile()) {
+    const error = new Error(`EACCES: permission denied, access '${path}'`);
+    error.code = 'EACCES';
+    error.errno = -13;
+    error.syscall = 'access';
+    error.path = path;
+    throw error;
+  }
+  if ((requested & constants.X_OK) !== 0 && shape.isFile() && typeof shape.mode === 'number' && (shape.mode & 0o111) === 0) {
+    const error = new Error(`EACCES: permission denied, access '${path}'`);
+    error.code = 'EACCES';
+    error.errno = -13;
+    error.syscall = 'access';
+    error.path = path;
+    throw error;
+  }
+  return undefined;
+};
 /** realpathSync(.native) — REAL over the staged views (upgraded 2026-09-27
  * from the loud refusal): the vendored dsh-sandbox canonicalizes root paths
  * with realpathSync.native, and the staged workspace CAN canonicalize — the
@@ -686,6 +797,42 @@ export const copyFileSync = (src, dest, flags = 0) => {
  * same store the promise face's rename serves). */
 export const renameSync = (from, to) => wsRename(from, to);
 
+/** cpSync(src, dest[, options]) — the SYNC face of the promise shim's cp
+ * (node:fs/promises.cp, wave 1): a real recursive copy between the seeded
+ * read-only views and the writable workspace. Options follow node:
+ * `recursive` walks directories (without it a directory source throws
+ * EISDIR); `force:false` refuses an occupied destination with EEXIST
+ * (node's spelling); `dereference` rides statSync/readFileSync's one-hop
+ * symlink resolution exactly as the promise face's does. The walk is
+ * naturally synchronous — the promise face wraps the same semantics in
+ * async — so the two faces stay one contract. Demanded at link time by the
+ * subagent-codex real-product spec. */
+const cpSyncEntry = (from, to, options) => {
+  const info = statSync(from);
+  if (info.isDirectory()) {
+    if (options?.recursive !== true) {
+      const error = new Error(`EISDIR: illegal operation on a directory, cp '${from}' -> '${to}'`);
+      error.code = 'EISDIR';
+      error.syscall = 'cp';
+      error.path = from;
+      throw error;
+    }
+    const destInfo = existsSync(to) ? statSync(to) : null;
+    if (destInfo !== null && !destInfo.isDirectory()) throw wsEexist('cp', to);
+    if (destInfo === null) wsMkdir(to, { recursive: true });
+    const prefix = from.endsWith('/') ? from : `${from}/`;
+    for (const name of readdirSync(from)) {
+      cpSyncEntry(`${prefix}${name}`, `${to}/${name}`, options);
+    }
+    return;
+  }
+  if (existsSync(to) && options?.force !== true) throw wsEexist('cp', to);
+  wsWriteFile(to, readFileSync(from), info.mode & 0o777);
+};
+export const cpSync = (source, destination, options) => {
+  cpSyncEntry(source, destination, options ?? {});
+};
+
 /** unlink: files and symlink entries only (node unlinks a directory with
  * EPERM); rmdir: the ENOTEMPTY-enforcing removal (wsRm non-recursive). */
 export const unlinkSync = (path) => {
@@ -714,6 +861,8 @@ export {
   wsRename as _wsRename,
   wsLink as _wsLink,
   wsChmod as _wsChmod,
+  wsWatch as _wsWatch,
+  wsAt as _wsAt,
   wsStatAt as _wsStatAt,
   wsReaddirAt as _wsReaddirAt,
   wsFileAt as _wsFileAt,
@@ -783,6 +932,7 @@ export default {
   readSync,
   closeSync,
   copyFileSync,
+  cpSync,
   unlinkSync,
   rmdirSync,
 };

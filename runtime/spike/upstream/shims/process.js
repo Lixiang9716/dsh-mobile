@@ -113,6 +113,25 @@ export const chdir = (dir) => {
   return undefined;
 };
 export const platform = () => globalThis.__dshProfilePlatform ?? 'mobile';
+/** execPath: node reports the running node binary; this runtime's host
+ * process is the spike engine, whose path is not exported to JS. The name is
+ * the honest face — a non-empty string so consumers that RECORD it (lsp
+ * config validation treats `command: process.execPath` as provided) see a
+ * value, while any attempt to EXECUTE it hits the no-subprocess seam. The
+ * spelling is ABSOLUTE (R3-G1, 2026-09-28): node's execPath is always
+ * absolute and the acp bridge validates `isAbsolute(server.command)` with it
+ * — the bare 'dsh' default failed that gate for the whole acp mcp family. */
+export const execPath = () => globalThis.__dshProfileExecPath ?? '/usr/local/bin/dsh-spike-cli';
+/** uid/gid faces: the runtime is single-user — ONE identity owns everything
+ * (the spill/settings POSIX safety checks compare stat.uid against
+ * process.geteuid() to detect foreign-owned directories; a single-user
+ * runtime reports a fixed identity on both sides, so ownership always
+ * matches and only the MODE bits can mark a directory unsafe — exactly the
+ * property the VFS can model honestly). */
+export const getuid = () => globalThis.__dshProfileUid ?? 0;
+export const geteuid = () => getuid();
+export const getgid = () => globalThis.__dshProfileGid ?? 0;
+export const getegid = () => getgid();
 export const nextTick = (fn, ...args) => {
   if (typeof fn !== 'function') throw new TypeError('process.nextTick requires a function');
   return globalThis.queueMicrotask(() => fn(...args));
@@ -147,6 +166,11 @@ const proc = {
   get argv() { return argv(); },
   get execArgv() { return execArgv; },
   get platform() { return platform(); },
+  get execPath() { return execPath(); },
+  getuid,
+  geteuid,
+  getgid,
+  getegid,
   get pid() { return pid; },
   get version() { return version(); },
   get versions() { return versions; },
@@ -168,6 +192,30 @@ const proc = {
     }
     return proc;
   },
+  /* prependListener/prependOnceListener: cordis plugin setup registers the
+   * host-exit hook through them (subprocess-local's LocalSubprocessRuntime
+   * ctx.effect — measured 2026-09-27, "not a function" for the whole
+   * shell/lsp family). Node orders prepended listeners FIRST; the exit
+   * registry never fires here, so relative order is inert — keep the honest
+   * shape anyway. */
+  prependListener(event, fn) {
+    if (event === 'exit' && typeof fn === 'function') exitListeners.unshift(fn);
+    return proc;
+  },
+  prependOnceListener(event, fn) {
+    if (event === 'exit' && typeof fn === 'function') {
+      const wrapped = () => {
+        const at = exitListeners.indexOf(wrapped);
+        if (at >= 0) exitListeners.splice(at, 1);
+        fn();
+      };
+      wrapped.listener = fn;
+      exitListeners.unshift(wrapped);
+    }
+    return proc;
+  },
+  listeners(event) { return event === 'exit' ? [...exitListeners] : []; },
+  rawListeners(event) { return event === 'exit' ? [...exitListeners] : []; },
   off(event, fn) {
     if (event !== 'exit') return proc;
     const at = exitListeners.findIndex((entry) => entry === fn || entry?.listener === fn);

@@ -114,18 +114,51 @@ const BRIDGES = [
   // dsh-office plugin (imported after this module registers).
   ['fflate', "export * from '/vendor/npm/fflate@0.8.2/esm/browser.js';"],
   // The chokidar linkage shim (no vendored tree — see the row note above).
-  // The importing vendored package binds only the default export and calls
-  // `chokidar.watch(...)`, so the shim is exactly that face; it fails loud
-  // naming the seam that is missing, so an accidental watch:true mount can
-  // never silently no-op.
+  // The importing vendored package binds the default export and
+  // `chokidar.watch(path, options)`, so the shim is exactly that face —
+  // served over the workspace VFS's mutation registry (fs-workspace's
+  // wsWatch; a write IS the event, no polling — D8). 'ready' fires on the
+  // next timer tick (after the initial scan that has nothing to scan);
+  // 'all' fires on mutations of the watched path; close() unhooks. A path
+  // outside the workspace still fails loud through watchPath (rule 5), so
+  // an accidental watch:true mount over an unwatchable surface never
+  // silently no-ops.
   ['chokidar', [
-    "const refuse = () => {",
-    "  throw new Error('chokidar: watch() is not served in this runtime — ",
-    "no fs-event or wall-clock timer seam (mount skill-filesystem with watch:false)');",
+    "import { _wsAt as wsAt, _wsWatch as wsWatchRegister } from 'node:fs';",
+    "// Real chokidar's watch() returns the FSWatcher SYNCHRONOUSLY (the path",
+    "// argument may be async internally) — the vendored settings-file init",
+    "// binds `watcher.on(...)` on the returned value with no await, so this",
+    "// face must not be a promise (measured 2026-09-27).",
+    "export const watch = (path, _options = {}) => {",
+    "  const handlers = { all: [], ready: [], error: [] };",
+    "  let closed = false;",
+    "  let unwatch = null;",
+    "  try {",
+    "    const at = wsAt(String(path));",
+    "    if (at === null) {",
+    "      throw new Error(`chokidar.watch: path outside the writable workspace root: ${path}`);",
+    "    }",
+    "    unwatch = wsWatchRegister(at.path, () => {",
+    "      if (closed) return;",
+    "      for (const handler of [...handlers.all]) handler();",
+    "    });",
+    "  } catch (error) {",
+    "    for (const handler of [...handlers.error]) handler(error);",
+    "    throw error;",
+    "  }",
+    "  const watcher = {",
+    "    on(event, handler) {",
+    "      if (handlers[event] === undefined) return watcher;",
+    "      handlers[event].push(handler);",
+    "      return watcher;",
+    "    },",
+    "    close: async () => { closed = true; unwatch(); },",
+    "  };",
+    "  setTimeout(() => { if (!closed) for (const handler of [...handlers.ready]) handler(); }, 0);",
+    "  return watcher;",
     "};",
-    "export const watch = refuse;",
-    "export default { watch: refuse };",
-  ].join(' ')],
+    "export default { watch };",
+  ].join('\n')],
 
   // ---------------------------------------------------------------------
   // Upstream-suite growth round 4 (2026-09-27, the test-face npm gaps):
@@ -269,6 +302,18 @@ const BRIDGES = [
   // and node faces there, and the handoff note in tmp/r3-ledger-C.json is
   // satisfied.
 
+  // @deepseek-ai/dsh-sandbox-windows-acl — vendored tarball whose lib/index.js
+  // carries RELATIVE chunk imports ('./types-CutH1Lgc.js', the dsh-subprocess-
+  // local code-split precedent): loaded under the BARE specifier the host
+  // normalizes those relatives against '@deepseek-ai' (no subpath to carry
+  // the package directory) and the chunk can never resolve. The dsh-sandbox-
+  // local lib imports the bare name at MODULE scope (AclWriteGrant et al. —
+  // linkage every sandbox spec loads, even on darwin), so the re-export via
+  // the ABSOLUTE path lets the chunk re-enter beside its importer. One
+  // instance: the vendored package imports nothing else by the bare name.
+  ['@deepseek-ai/dsh-sandbox-windows-acl',
+    "export * from '/vendor/dsh/sandbox-windows-acl@0.1.6-alpha.2/lib/index.js';"],
+
   // cross-spawn: NO vendored tree (the chokidar precedent). The mcp stdio
   // transport's CJS-only spawn wrapper — D2 forbids the subprocess seam it
   // wraps, so the linkage shim satisfies the import and the default export
@@ -329,6 +374,69 @@ const BRIDGES = [
     "export const request = refuse('request');",
     "export const get = refuse('get');",
   ].join(' ')],
+
+  // ipaddr.js 2.5.0 (the web family's IP classifier: web-fetch-http's
+  // loopback/unicast range checks + the tool-web specs' proxies). The
+  // closure pins the lockfile's ^2.5.0 exact. The published face is
+  // UMD/CommonJS ONLY (lib/ipaddr.js — `(function (root) { ... if (typeof
+  // module !== 'undefined' && module.exports) module.exports = ipaddr; ...
+  // }(this))`), which this loader cannot serve as ESM: with no global
+  // `module` the free variable falls to the root branch and `this` is
+  // undefined at ESM top level. The userland CJS adapter rides the same
+  // evaluate-dependencies-first order as dsh-bridge-setup/globals: the
+  // prelude row installs global `module`/`exports`, the vendored CJS file
+  // then binds its exports against the globals, and the face row captures
+  // them and hands the globals back (a later CJS evaluation must never see
+  // a STALE exports object and silently bind to it). No vendored byte is
+  // touched (D6); the classes are the pinned implementation.
+  //
+  // The scope is ONE PRELUDE MODULE PER CJS FACE: a module evaluates once
+  // per runtime, so a shared scope row cannot hand the globals back after
+  // the first face (the second face's file then evaluates against the
+  // deletion and dies on "exports is not defined" — measured 2026-09-28
+  // with the spill spec importing ipaddr before gfm). Dedicated scopes
+  // keep every face's setup + handback self-contained.
+  ['dsh-bridge-setup/ipaddr-cjs-scope', [
+    "globalThis.module = { exports: {} };",
+  ].join('\n')],
+  ['ipaddr.js', [
+    "import 'dsh-bridge-setup/ipaddr-cjs-scope';",
+    "import '/vendor/npm/ipaddr.js@2.5.0/lib/ipaddr.js';",
+    "const ipaddr = globalThis.module.exports;",
+    "delete globalThis.module;",
+    "if (typeof ipaddr?.parse !== 'function') {",
+    "  throw new Error('npm-bridges: ipaddr.js CJS face evaluated to an unexpected shape');",
+    "}",
+    "export default ipaddr;",
+    "export const IPv4 = ipaddr.IPv4;",
+    "export const IPv6 = ipaddr.IPv6;",
+  ].join('\n')],
+
+  // @joplin/turndown-plugin-gfm 1.0.67 (the tool-web HTML→markdown GFM
+  // rules; the lockfile pin, same upstream lockfile as the turndown 7.2.4
+  // + @mixmark-io/domino faces already vendored). esbuild-CJS shape
+  // (`exports.X = …` over a free `exports`) — the per-face adapter again;
+  // the vendored tool-web lib imports the named `gfm` bundle.
+  ['dsh-bridge-setup/gfm-cjs-scope', [
+    "globalThis.module = { exports: {} };",
+    "globalThis.exports = globalThis.module.exports;",
+  ].join('\n')],
+  ['@joplin/turndown-plugin-gfm', [
+    "import 'dsh-bridge-setup/gfm-cjs-scope';",
+    "import '/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js';",
+    "const gfmFace = globalThis.exports;",
+    "delete globalThis.exports;",
+    "delete globalThis.module;",
+    "if (typeof gfmFace?.gfm !== 'function') {",
+    "  throw new Error('npm-bridges: turndown-plugin-gfm CJS face evaluated to an unexpected shape');",
+    "}",
+    "export const gfm = gfmFace.gfm;",
+    "export const highlightedCodeBlock = gfmFace.highlightedCodeBlock;",
+    "export const strikethrough = gfmFace.strikethrough;",
+    "export const tables = gfmFace.tables;",
+    "export const taskListItems = gfmFace.taskListItems;",
+    "export default gfmFace;",
+  ].join('\n')],
   ['http2', [
     "const refuse = (name) => () => {",
     "  throw new Error('http2: ' + name + ' is not served in this runtime — no socket seam');",

@@ -63,48 +63,67 @@ class ReadableQueue {
 }
 
 /** A minimal readable object over a queue: async-iterable, getReader(),
- * pipeThrough/pipeTo over this file's transform faces. */
-const readableFromQueue = (queue) => ({
-  [Symbol.asyncIterator]() {
-    return {
-      next: () => queue.next(),
-      return: (value) => Promise.resolve({ value, done: true }),
-      throw: (error) => Promise.reject(error),
-    };
-  },
-  getReader: () => ({
-    read: () => queue.next(),
-    cancel: () => queue.close(),
-    releaseLock: () => {},
-  }),
-  pipeThrough: (next) => {
-    if (next?.writable === undefined || next?.readable === undefined) {
-      throw new TypeError('pipeThrough: a {writable, readable} transform is required');
-    }
-    (async () => {
+ * pipeThrough/pipeTo over this file's transform faces. `armPull` re-drives
+ * the user pull around EVERY consumption step — the constructor's one
+ * start-pull covers only the first chunk, so a pull-per-chunk source (the
+ * SSE spec's byte-at-a-time ReadableStream) starved after chunk one and the
+ * await deadlocked (measured 2026-09-28, R3-H). #pullBusy keeps this
+ * re-entrant-safe (one pull in flight). */
+const readableFromQueue = (queue, armPull) => {
+  const consume = () => {
+    armPull?.();
+    return queue.next();
+  };
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        next: consume,
+        return: (value) => Promise.resolve({ value, done: true }),
+        throw: (error) => Promise.reject(error),
+      };
+    },
+    getReader: () => ({
+      read: consume,
+      cancel: () => queue.close(),
+      releaseLock: () => {},
+    }),
+    pipeThrough: (transform) => {
+      if (transform?.writable === undefined || transform?.readable === undefined) {
+        throw new TypeError('pipeThrough: a {writable, readable} transform is required');
+      }
+      (async () => {
+        for (;;) {
+          const { value, done } = await consume();
+          if (done) {
+            transform.writable.close?.();
+            return;
+          }
+          transform.writable.enqueue?.(value);
+        }
+      })().catch((cause) => {
+        // WHATWG error propagation: a source error ABORTS the destination
+        // writable (which errors the transform's readable with the cause) —
+        // a clean cancel would mask the failure and downstream would resolve
+        // with a truncated body instead of rejecting (measured 2026-09-28,
+        // R3-H: the image-gzip refusal tests resolved on corrupt input).
+        try { transform.writable.abort?.(cause); } catch { /* already closed */ }
+        try { transform.readable.cancel?.(cause); } catch { /* already closed */ }
+      });
+      return transform.readable;
+    },
+    pipeTo: (writable) => (async () => {
       for (;;) {
-        const { value, done } = await queue.next();
+        const { value, done } = await consume();
         if (done) {
-          next.writable.close?.();
+          writable.close?.();
           return;
         }
-        next.writable.enqueue?.(value);
+        await writable.write?.(value);
       }
-    })().catch(() => { try { next.readable.cancel?.(); } catch { /* already closed */ } });
-    return next.readable;
-  },
-  pipeTo: (writable) => (async () => {
-    for (;;) {
-      const { value, done } = await queue.next();
-      if (done) {
-        writable.close?.();
-        return;
-      }
-      await writable.write?.(value);
-    }
-  })(),
-  cancel: () => queue.close(),
-});
+    })(),
+    cancel: () => queue.close(),
+  };
+};
 
 const isReadableFace = (value) => value !== null && typeof value === 'object'
   && (typeof value.getReader === 'function' || typeof value[Symbol.asyncIterator] === 'function');
@@ -154,7 +173,7 @@ export class ReadableStream {
     Promise.resolve(startResult)
       .then(() => this.#maybePull(controller))
       .catch((error) => this.#queue.error(error));
-    this.#face = readableFromQueue(this.#queue);
+    this.#face = readableFromQueue(this.#queue, () => this.#armPull());
   }
 
   /** Drive the user pull once per read while open (the queue carries the
@@ -277,23 +296,46 @@ export class DecompressionStream {
       throw new Error(`DecompressionStream: format '${String(format)}' — supported: gzip, deflate`);
     }
     const queue = new ReadableQueue();
-    const dec = new Gunzip((chunk) => {
+    // fflate's streaming callback carries the member-end marker (final=true)
+    // — the completeness signal node's zlib raises as "unexpected end of
+    // file" on a truncated member. Synchronous throws (invalid gzip data)
+    // and a missing marker at close both land in the READABLE as an error,
+    // so a corrupt body rejects downstream instead of resolving as an empty
+    // archive (measured 2026-09-28, R3-H: the webworker image-gzip refusal
+    // tests resolved on garbage input).
+    let sawFinal = false;
+    const dec = new Gunzip((chunk, final) => {
       queue.enqueue(chunk);
+      if (final === true) sawFinal = true;
     });
     let closed = false;
     this.readable = readableFromQueue(queue);
     this.writable = withWriter({
       enqueue: (chunk) => {
         if (closed) throw new Error('DecompressionStream: write after close');
-        dec.push(chunk);
+        try {
+          dec.push(chunk);
+        } catch (cause) {
+          queue.error(cause);
+          throw cause;
+        }
       },
       close: () => {
         if (closed) return;
         closed = true;
-        dec.push(new Uint8Array(0), true);
+        try {
+          dec.push(new Uint8Array(0), true);
+        } catch (cause) {
+          queue.error(cause);
+          throw cause;
+        }
+        if (!sawFinal) {
+          queue.error(new Error('DecompressionStream: truncated gzip member (stream ended before the deflate footer)'));
+          return;
+        }
         queue.close();
       },
-      abort: () => queue.close(),
+      abort: (reason) => queue.error(reason ?? new Error('DecompressionStream: aborted')),
     });
   }
 }

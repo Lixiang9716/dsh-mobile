@@ -67,10 +67,11 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
   if (typeof fn !== 'function') {
     throw new TypeError(`setTimeout: callback must be a function (got ${typeof fn})`);
   }
-  const delayMs = Number(delay);
-  if (!Number.isInteger(delayMs) || delayMs < 0) {
-    throw new TypeError(`setTimeout: delay must be a non-negative integer (got ${String(delay)})`);
-  }
+  // node coerces the delay: non-numbers → 0, negatives → 0, fractions
+  // TRUNCATE toward zero, values above 2^31-1 clamp to 2147483647 (measured
+  // 2026-09-28, R3-G1: the inspector client's reconnect backoff computes
+  // fractional multipliers — 8.859 ms — and the strict integer check threw).
+  const delayMs = Math.min(2147483647, Math.max(0, Math.trunc(Number(delay) || 0)));
   const id = nextHandle++;
   // Cross-timer ALS propagation (the async-hooks shim predates the seam):
   // the context captured AT ARM TIME wraps the fire — Node's timer semantics.

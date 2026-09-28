@@ -46,7 +46,10 @@ const percentDecode = (text) => {
   return decodeUtf8(bytes);
 };
 
-const pathEncode = (path) => path.replace(/[^A-Za-z0-9\-._~/!$&'()*+,;=:@]/g, (ch) => {
+const pathEncode = (path) => path.replace(/%[0-9a-fA-F]{2}|[^A-Za-z0-9\-._~/!$&'()*+,;=:@]/g, (ch) => {
+  // An existing %XX escape is kept verbatim (node hrefs preserve the URL's
+  // own encoding; re-encoding '%' corrupted %2F paths into %252F).
+  if (ch.startsWith('%')) return ch;
   const bytes = encodeUtf8(ch);
   return [...bytes].map((b) => `%${b.toString(16).toUpperCase().padStart(2, '0')}`).join('');
 });
@@ -93,6 +96,29 @@ const parseAbsolute = (input) => {
   if (pathname === '') pathname = '/';
   let authorityFinal = authority;
   if (scheme === 'file' && authorityFinal === 'localhost') authorityFinal = '';
+  // Port validation (R3-G1, 2026-09-28): node throws TypeError 'Invalid URL'
+  // when the authority carries a port that is not all-digits (or above
+  // 65535) — the browser-use endpoint validator distinguishes
+  // `http://localhost:bad/path` through exactly that throw. Accepted ports
+  // keep the authority verbatim (the port face reads it back). The scan runs
+  // after the last '@' so a userinfo colon never counts, and skips bracketed
+  // IPv6 hosts.
+  const hostPart = authorityFinal.slice(authorityFinal.lastIndexOf('@') + 1);
+  const portAt = hostPart.lastIndexOf(':');
+  if (portAt >= 0 && !hostPart.endsWith(']')) {
+    const port = hostPart.slice(portAt + 1);
+    if (port !== '' && (!/^\d+$/.test(port) || Number(port) > 65535)) {
+      throw new TypeError('Invalid URL');
+    }
+  }
+  // Host bracket validation (node throws TypeError on hosts like '[' — the
+  // only legal bracket pair is a full IPv6 literal): an unterminated or
+  // otherwise-brackety host must FAIL construction, not become a URL whose
+  // authority silently round-trips into paths (lsp renderUri keeps-malformed
+  // test: 'file://[' stayed verbatim only if URL construction rejects it).
+  if (/[[\]]/.test(hostPart) && !/^\[[0-9a-fA-F:.]+\]$/.test(hostPart)) {
+    throw new TypeError('Invalid URL');
+  }
   return { scheme, authority: authorityFinal, pathname, search, fragment };
 };
 
@@ -202,7 +228,33 @@ export class DshURL {
     // joins keep new URL('../presets/', import.meta.url) in the same space,
     // and fileURLToPath passes path URLs through unchanged.
     if (!hasScheme) {
-      parsed = parsePathUrl(asString, base);
+      // A special-scheme base keeps the input in WHATWG space: '/x' is
+      // ROOT-relative (replaces the path), '?q'/'#f' swap one component, and
+      // a bare segment joins the base directory (R3-G1, 2026-09-28 — the
+      // load-bundle spec resolves a root-relative sourceMappingURL
+      // '/plugins/…' against an http URL; the old path-space join DOUBLED the
+      // first segment: 'plugins/plugins/…').
+      const baseParsed = base !== undefined ? new DshURL(base) : undefined;
+      if (baseParsed !== undefined && baseParsed.scheme !== '') {
+        if (asString.startsWith('/')) {
+          parsed = { ...baseParsed, pathname: asString, search: '', fragment: '' };
+        } else if (asString.startsWith('?')) {
+          parsed = { ...baseParsed, search: asString, fragment: '' };
+        } else if (asString.startsWith('#')) {
+          parsed = { ...baseParsed, fragment: asString };
+        } else if (asString === '') {
+          parsed = { ...baseParsed };
+        } else {
+          // Bare segment against a special-scheme base: resolve against the
+          // base DIRECTORY with dot-segment normalization (joinRelative) —
+          // agent-presets health checks join '../../plugins/x.js' against a
+          // file: URL, and the old plain concatenation left '../' in the
+          // path so isFile missed the target (R3-G2, 2026-09-28).
+          parsed = { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
+        }
+      } else {
+        parsed = parsePathUrl(asString, base);
+      }
     } else if (hasScheme) {
       parsed = parseAbsolute(asString) ?? parseOpaque(asString);
     } else if (base !== undefined) {
@@ -243,7 +295,56 @@ export class DshURL {
   }
 
   get protocol() { return `${this.scheme}:`; }
+  /** WHATWG protocol SETTER — the scheme-swap face (`url.protocol = 'wss:'`).
+   * The api-gateway client mux derives its stream URL by building the page
+   * URL and flipping https:→wss: in place (remoteStreamUrl), so a getter-only
+   * protocol broke the vendored client at its first connect. Follows the
+   * basic URL parser's scheme state: accept the scheme with or without its
+   * trailing ':', lowercase it, and when the scheme CHANGES, drop an explicit
+   * port that equals the NEW scheme's default (443 on an https:→wss: swap is
+   * elided; an explicit-80 https: URL flipped to ws: keeps its 80 per spec).
+   * Targets outside the special-scheme table the shim serves fail loud
+   * (rule 5). */
+  set protocol(value) {
+    const match = /^([A-Za-z][A-Za-z0-9+.\-]*):?$/.exec(String(value));
+    if (match === null) {
+      throw new TypeError(`node:url: protocol setter: invalid scheme '${String(value)}'`);
+    }
+    const next = match[1].toLowerCase();
+    if (next === this.scheme) return;
+    const newDefault = SPECIAL[`${next}:`];
+    if (newDefault === undefined) {
+      throw new Error(`node:url: protocol setter: scheme '${next}:' is not served (special schemes only)`);
+    }
+    if (this.port !== '' && this.port === newDefault) {
+      // Strip the ':port' suffix (IPv6-aware: a ':' inside brackets is an
+      // address segment, never the port separator).
+      const bracketAt = this.authority.lastIndexOf(']');
+      const colonAt = this.authority.lastIndexOf(':');
+      if (colonAt > bracketAt) this.authority = this.authority.slice(0, colonAt);
+    }
+    this.scheme = next;
+  }
   get host() { return this.authority; }
+  /** username/password — the authority's `user:pass@` prefix (WHATWG keeps
+   * them percent-encoded verbatim). The llm-deepseek Messages baseURL
+   * validator refuses credentials in the URL through exactly these members
+   * (R3-G1, 2026-09-28: absent getters read falsy and a credentialed URL
+   * slipped the "must be a root without credentials" gate). */
+  get username() {
+    const at = this.authority.lastIndexOf('@');
+    if (at <= 0) return '';
+    const userInfo = this.authority.slice(0, at);
+    const colon = userInfo.indexOf(':');
+    return userInfo.slice(0, colon === -1 ? userInfo.length : colon);
+  }
+  get password() {
+    const at = this.authority.lastIndexOf('@');
+    if (at <= 0) return '';
+    const userInfo = this.authority.slice(0, at);
+    const colon = userInfo.indexOf(':');
+    return colon === -1 ? '' : userInfo.slice(colon + 1);
+  }
   get hostname() {
     // Bracketed IPv6: everything through `]` is the host (the colons inside
     // are address segments, never a host:port separator — WHATWG rule the
@@ -269,7 +370,12 @@ export class DshURL {
   get hash() { return this.fragment; }
   get href() {
     if (this.scheme === 'file') {
-      return `file://${pathEncode(this.pathname)}${this.search}${this.fragment}`;
+      // The file: AUTHORITY is part of the href (node: file://server/share/x
+      // hrefs carry the host). Dropping it made 'file://[' round-trip as
+      // 'file:///' — a malformed authority silently became a valid root URL
+      // (measured 2026-09-28: lsp renderUri keeps-malformed test).
+      const head = this.authority === '' ? '' : `//${this.authority}`;
+      return `file://${head}${pathEncode(this.pathname)}${this.search}${this.fragment}`;
     }
     // Path URLs (empty scheme) serialize as plain paths — a '://' with an
     // empty scheme would be unparseable noise round-tripping through href.
@@ -314,7 +420,8 @@ export const pathToFileURL = (path) => {
 };
 
 /** POSIX `fileURLToPath`: file: URL (string or URL-like) → absolute path. */
-export const fileURLToPath = (input) => {
+export const fileURLToPath = (input, options) => {
+  const windows = typeof options === 'object' && options !== null ? options.windows === true : false;
   const href = typeof input === 'string' ? input : String(input?.href ?? input);
   // A scheme-less absolute path is already the spike's path space — identity.
   if (!href.startsWith('file:')) {
@@ -335,10 +442,30 @@ export const fileURLToPath = (input) => {
     throw new Error(`node:url: fileURLToPath cannot parse ${JSON.stringify(href)}`);
   }
   const host = parsed.authority;
+  // node: an ENCODED separator (%2F) or a bad escape in the path is an
+  // invalid file URL path; decoded NUL likewise (the lsp renderUri tests
+  // exercise 'file:///bad%2Fpath' and 'file:///bad%00path' — both must
+  // THROW so the caller keeps the URI verbatim).
+  if (/%2f/i.test(parsed.pathname)) {
+    throw new Error(`file URL path must not include encoded / characters: ${parsed.pathname}`);
+  }
+  if (windows && /%5c/i.test(parsed.pathname)) {
+    throw new Error(`file URL path must not include encoded \\ characters: ${parsed.pathname}`);
+  }
+  let path = percentDecode(parsed.pathname);
+  if (path.includes('\0')) {
+    throw new Error(`file URL path must not include encoded null characters: ${parsed.pathname}`);
+  }
+  if (windows) {
+    // node's windows world: file://host/share → UNC; /C:/x → C:\x; all
+    // separators become backslashes.
+    if (host !== '' && host !== 'localhost') return `\\\\${host}${path.replaceAll('/', '\\')}`;
+    path = path.replace(/^\/[a-zA-Z]:/, (m) => m.slice(1));
+    return path.replaceAll('/', '\\');
+  }
   if (host !== '' && host !== 'localhost') {
     throw new Error(`node:url: fileURLToPath refuses non-local file host '${host}'`);
   }
-  const path = percentDecode(parsed.pathname);
   if (!path.startsWith('/')) {
     throw new Error(`node:url: fileURLToPath resolved a non-absolute path: ${JSON.stringify(path)}`);
   }

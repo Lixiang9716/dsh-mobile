@@ -363,6 +363,12 @@ export const parseArgs = (config = {}) => {
     const arg = args[i];
     if (tokens !== undefined) tokens.push({ kind: 'positional', value: arg, index: i });
     if (onlyPositionals || arg === '-' || !arg.startsWith('-')) {
+      if (config.allowPositionals !== true) {
+        // node's 22+ contract: strict parse of a positional without
+        // allowPositionals is `Unexpected argument '<arg>'` (the
+        // llm-mock-server CLI tests match that text).
+        throw new Error(`Unexpected argument '${arg}'`);
+      }
       positionals.push(arg);
       continue;
     }
@@ -378,11 +384,16 @@ export const parseArgs = (config = {}) => {
       const bare = negated ? longName.slice(3) : longName;
       const inlineValue = eq === -1 ? undefined : body.slice(eq + 1);
       if (strict && !declared(bare)) {
-        throw new Error(`unknown option '--${longName}'`);
+        // node's capital-U contract (llm-mock-server CLI tests match the exact text)
+        throw new Error(`Unknown option '--${longName}'`);
       }
       if (inlineValue !== undefined) {
         values[bare] = inlineValue;
       } else if (wantsValue(bare)) {
+        if (i + 1 >= args.length) {
+          // node's missing-argument contract (strict mode)
+          throw new Error(`Option '--${bare} <value>' argument missing`);
+        }
         values[bare] = args[++i];
       } else {
         values[bare] = !negated;
@@ -401,7 +412,7 @@ export const parseArgs = (config = {}) => {
       const name = longFor ?? shortName;
       const rest = cluster.slice(k + 1);
       if (strict && !declared(name)) {
-        throw new Error(`unknown option '-${shortName}'`);
+        throw new Error(`Unknown option '-${shortName}'`);
       }
       if (rest.length > 0 && wantsValue(name)) {
         values[name] = rest;
@@ -409,6 +420,10 @@ export const parseArgs = (config = {}) => {
         break;
       }
       if (wantsValue(name)) {
+        if (i + 1 >= args.length) {
+          // node reports the LONG spelling when the short maps to one
+          throw new Error(`Option '--${declared(name) ? name : shortName} <value>' argument missing`);
+        }
         values[name] = args[++i];
         if (tokens !== undefined) tokens.push({ kind: 'option', name, rawName: `-${shortName}`, index: i, value: values[name] });
         break;

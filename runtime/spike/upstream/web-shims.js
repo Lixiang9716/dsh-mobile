@@ -168,25 +168,26 @@ if (typeof globalThis.structuredClone !== 'function') {
  * Hidden state lives in WeakMaps, not `#private` members: quickjs-ng rejects
  * private METHOD declarations, and the shim must stay parseable. */
 if (typeof globalThis.AbortController !== 'function') {
-  const listenersOf = new WeakMap();
-
   class DshEventTarget {
+    // The listener registry is an OWN property (not a module WeakMap) so
+    // node:events.getEventListeners can inspect targets the way node does —
+    // the stagehand worker-rpc spec asserts an AbortSignal's abort listener
+    // list through that face (R3-G1, 2026-09-28).
     addEventListener(type, listener, options = {}) {
       if (typeof listener !== 'function') return;
-      const map = listenersOf.get(this) ?? new Map();
+      const map = this.__dshEventListeners ??= new Map();
       const list = map.get(type) ?? [];
       map.set(type, [...list, { listener, once: options.once === true }]);
-      listenersOf.set(this, map);
     }
     removeEventListener(type, listener) {
-      const map = listenersOf.get(this);
+      const map = this.__dshEventListeners;
       if (!map) return;
       const list = map.get(type);
       if (!list) return;
       map.set(type, list.filter((e) => e.listener !== listener));
     }
     dispatchEvent(type, event) {
-      const map = listenersOf.get(this);
+      const map = this.__dshEventListeners;
       if (!map) return;
       const list = [...(map.get(type) ?? [])];
       map.set(type, list.filter((e) => !e.once));
@@ -360,6 +361,34 @@ if (typeof globalThis.window.__ModuleLoader__ === 'undefined') {
         + 'the spike runtime composes the boot wire but never boots the client module system');
     },
   };
+}
+
+/* ---- WebSocket global (installed only when absent) ------------------------
+ * The client-bundle faces READ `WebSocket.OPEN` as an unqualified global on
+ * their guard paths (RemoteStreamMuxClient.waitForSocket consults the
+ * constant BEFORE its not-started/disposed checks), so with no global at all
+ * those paths die with "WebSocket is not defined" instead of the domain
+ * error the contract promises. The class face is honest: the READY_STATE
+ * constants and the event-target surface exist; the CONSTRUCTOR fails loud —
+ * opening a socket is a real carrier connection, and the runtime has no
+ * socket seam (the same refusal node:http.createServer carries). Specs that
+ * drive real mux flows stub the global with their own fixture, overwriting
+ * this writable binding. */
+if (typeof globalThis.WebSocket === 'undefined') {
+  class WebSocketShim {
+    constructor(url) {
+      throw new Error('WebSocket: opening \'' + String(url) + '\' is not served in this runtime — '
+        + 'no socket seam (physical carriers are a desktop host capability)');
+    }
+  }
+  WebSocketShim.CONNECTING = 0;
+  WebSocketShim.OPEN = 1;
+  WebSocketShim.CLOSING = 2;
+  WebSocketShim.CLOSED = 3;
+  for (const [name, value] of [['CONNECTING', 0], ['OPEN', 1], ['CLOSING', 2], ['CLOSED', 3]]) {
+    Object.defineProperty(WebSocketShim.prototype, name, { value, enumerable: true });
+  }
+  globalThis.WebSocket = WebSocketShim;
 }
 
 /* ---- queueMicrotask with context capture (pairs with async-hooks shim) ---

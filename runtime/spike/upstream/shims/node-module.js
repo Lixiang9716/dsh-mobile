@@ -48,4 +48,17 @@ export function isBuiltin(specifier) {
   return BUILTIN_PREFIXES.includes(pkg);
 }
 
-export default { createRequire, isBuiltin };
+/** stripTypeScriptTypes — node 22.8+'s type-stripping loader API (node
+ * embeds the amaro/swc stripper). The runtime has neither: and the vendored
+ * consumer (ptc-runtime-node's lib) links the name at MODULE scope only to
+ * strip PTC programs it then runs in a node SUBPROCESS — the seam this
+ * runtime deliberately does not provide (rule D2, the same verdict as the
+ * node:vm face). Linkage only (the chokidar pattern): the import resolves,
+ * every call fails loud naming the gap. */
+export function stripTypeScriptTypes() {
+  throw new Error('node:module: stripTypeScriptTypes is not served in this runtime — '
+    + 'the TypeScript type-stripper is a node-embedding capability, and its caller '
+    + '(ptc-runtime-node) executes in the subprocess class this runtime does not provide (rule D2)');
+}
+
+export default { createRequire, isBuiltin, stripTypeScriptTypes };

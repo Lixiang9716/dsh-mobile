@@ -33,7 +33,14 @@ export function attachEachForms(describe, it) {
     }
     return String(row);
   };
-  const rowArgs = (row) => (Array.isArray(row) ? row : [row]);
+  /** Row → callback args: array rows spread positionally (vitest), EXCEPT
+   * the degenerate EMPTY array row, which arrives as the single value itself
+   * (core session canonical-envelopes seeds `it.each([null, [], 1, "invalid"])`
+   * and expects `[]` as the row value — called with zero args the seed is
+   * `undefined` and the vendored constructor classifies it lossless-JSON
+   * before the envelope assert, the wrong message). Non-array rows are the
+   * single argument. */
+  const rowArgs = (row) => (Array.isArray(row) ? (row.length === 0 ? [row] : row) : [row]);
   const rowTitle = (name, row) => {
     const args = rowArgs(row);
     let i = 0;

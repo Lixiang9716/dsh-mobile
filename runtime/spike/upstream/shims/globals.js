@@ -60,6 +60,14 @@ if (typeof globalThis.CloseEvent === 'undefined') globalThis.CloseEvent = CloseE
 // `URL.parse` and the eventsource faces construct `new URL(...)` as a bare
 // global (quickjs defines none). The node:url shim's class IS the URL here.
 if (typeof globalThis.URL === 'undefined') globalThis.URL = DshURL;
+// The minimal DOM + location/history/FormData faces (shims/web-dom.js) — the
+// webworker-runtime client specs drive a real DOM through the product's
+// chooser/script-injection paths, and nothing upstream of the suite defines
+// these on a headless host (R3-G1, 2026-09-28). Installed at the top of this
+// file's import chain so the faces precede the first spec import (the
+// source-chooser spec touches document in beforeEach).
+import { installWebDom } from './web-dom.js';
+installWebDom();
 // cancellation path needs (signal.aborted, addEventListener('abort'),
 // abort(reason), throwIfAborted). The suite's largest single gap before
 // this shim: every agent-loop cancel test failed on the missing global,
@@ -396,5 +404,30 @@ if (globalThis.DOMException === undefined) {
     }
     static get INDEX_SIZE_ERR() { return 1; }
     static get ABORT_ERR() { return 20; }
+  };
+}
+
+// HTMLAnchorElement + document.createElement('a') — the browser download
+// gesture face: the session-log-export controller hands a Host URL to
+// `document.createElement('a')` and clicks it (measured 2026-09-27,
+// controller.client.spec spies HTMLAnchorElement.prototype.click). The
+// minimal honest surface: a real class (prototype spyable), href/download
+// properties, a no-op click (this runtime has no navigation seam); every
+// OTHER tag fails loud — the spike serves no general DOM.
+if (globalThis.HTMLAnchorElement === undefined) {
+  globalThis.HTMLAnchorElement = class HTMLAnchorElement {
+    constructor() {
+      this.href = '';
+      this.download = '';
+    }
+    click() { /* no navigation seam in the spike runtime */ }
+  };
+}
+if (globalThis.document === undefined) {
+  globalThis.document = {
+    createElement(tag) {
+      if (tag === 'a') return new globalThis.HTMLAnchorElement();
+      throw new Error(`document.createElement('${String(tag)}'): not served in this runtime — the spike serves only the anchor download gesture`);
+    },
   };
 }

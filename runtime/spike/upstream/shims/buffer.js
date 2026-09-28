@@ -335,6 +335,30 @@ export class DshBuffer extends Uint8Array {
     return out;
   }
 
+  /** Buffer.compare(a, b) — node's lexicographic byte ordering (-1/0/1);
+   * the session-snapshot workspace spec sorts directory entries through it
+   * (measured 2026-09-27, "not a function" inside .sort). */
+  static compare(a, b) {
+    if (!(a instanceof Uint8Array) || !(b instanceof Uint8Array)) {
+      throw new TypeError('buffer: Buffer.compare needs two Uint8Array arguments');
+    }
+    const n = Math.min(a.length, b.length);
+    for (let i = 0; i < n; i++) {
+      if (a[i] !== b[i]) return a[i] < b[i] ? -1 : 1;
+    }
+    if (a.length === b.length) return 0;
+    return a.length < b.length ? -1 : 1;
+  }
+
+  /** buf.compare(target) — the instance face of the same ordering. */
+  compare(target) { return DshBuffer.compare(this, target); }
+
+  /** buf.equals(other) — byte-wise equality (same contract as compare===0). */
+  equals(other) {
+    if (!(other instanceof Uint8Array)) return false;
+    return DshBuffer.compare(this, other) === 0;
+  }
+
   toString(encoding = 'utf8', start = 0, end = this.length) {
     // node's (encoding, start, end) slice-decode face — the lsp-stdio
     // MessageDecoder parses its header with toString('ascii', 0, separator)
