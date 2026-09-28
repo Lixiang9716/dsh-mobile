@@ -71,11 +71,25 @@ globalThis.setTimeout = (fn, delay = 0, ...args) => {
   if (!Number.isInteger(delayMs) || delayMs < 0) {
     throw new TypeError(`setTimeout: delay must be a non-negative integer (got ${String(delay)})`);
   }
-  const handle = nextHandle++;
+  const id = nextHandle++;
   // Cross-timer ALS propagation (the async-hooks shim predates the seam):
   // the context captured AT ARM TIME wraps the fire — Node's timer semantics.
   const captured = captureContext();
   const entry = { timerId: null, cancelled: false, fn, args, captured };
+  // Node's setTimeout hands back a Timeout OBJECT carrying ref/unref/hasRef/
+  // refresh (measured 2026-09-27: the sdk client dispose ladder calls
+  // setTimeout(...).unref()). ref/unref have no runtime meaning here (the
+  // gateway timer seam is the only wake source), so they are identity; the
+  // object doubles as the cancellation key (identity-cleared in clearTimeout)
+  // and still compares as its numeric id through Symbol.toPrimitive.
+  const handle = {
+    id,
+    ref() { return handle; },
+    unref() { return handle; },
+    hasRef() { return true; },
+    refresh() { armTimer(delayMs, handle, entry); return handle; },
+    [Symbol.toPrimitive]() { return id; },
+  };
   pending.set(handle, entry);
   armTimer(delayMs, handle, entry);
   return handle;
@@ -103,3 +117,39 @@ globalThis.setImmediate = (fn, ...args) => {
   return globalThis.setTimeout(fn, 0, ...args);
 };
 globalThis.clearImmediate = globalThis.clearTimeout;
+
+// setInterval — the contract's documented re-arm pattern, implemented once
+// here so callers (the webworker-runtime polyfill's installer binds the
+// ambient face at init) get real repetition instead of a missing global:
+// each fire re-arms the same delay until clearInterval. A fire that throws
+// stops the loop (a throw inside a gateway event is a runtime fault; the
+// re-arm would otherwise chase it). The re-arm handle rides the SAME
+// setTimeout machinery, so clearTimeout also disarms a pending fire and
+// ALS context propagation applies per fire.
+const intervals = new Map(); // interval handle -> { delayMs, cancelled }
+globalThis.setInterval = (fn, delay = 0, ...args) => {
+  if (typeof fn !== 'function') {
+    throw new TypeError(`setInterval: callback must be a function (got ${typeof fn})`);
+  }
+  const delayMs = Number(delay);
+  if (!Number.isInteger(delayMs) || delayMs < 0) {
+    throw new TypeError(`setInterval: delay must be a non-negative integer (got ${String(delay)})`);
+  }
+  const handle = { id: nextHandle++ };
+  const state = { delayMs, cancelled: false };
+  intervals.set(handle, state);
+  const tick = () => {
+    if (state.cancelled || intervals.get(handle) !== state) return;
+    runWithCapturedContext(captureContext(), () => fn(...args));
+    if (state.cancelled || intervals.get(handle) !== state) return;
+    globalThis.setTimeout(tick, state.delayMs);
+  };
+  globalThis.setTimeout(tick, delayMs);
+  return handle;
+};
+globalThis.clearInterval = (handle) => {
+  const state = intervals.get(handle);
+  if (state === undefined) return;
+  state.cancelled = true;
+  intervals.delete(handle);
+};

@@ -200,14 +200,17 @@
     "experimental__webworker-runtime__tests__node__fs-watch-stream.spec.mjs",
     "experimental__webworker-runtime__tests__node__http-server.spec.mjs",
     "experimental__webworker-runtime__tests__node__node-stubs.spec.mjs",
+    "experimental__webworker-runtime__tests__node__path-diff.spec.mjs",
     "experimental__webworker-runtime__tests__node__process-shim.spec.mjs",
     "experimental__webworker-runtime__tests__node__timers-promises.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als-runtime.spec.mjs",
+    "experimental__webworker-runtime__tests__polyfill__als-shim.spec.mjs",
     "experimental__webworker-runtime__tests__polyfill__als.spec.mjs",
     "experimental__webworker-runtime__tests__storage__image-gzip.spec.mjs",
     "experimental__webworker-runtime__tests__storage__memory-vfs.spec.mjs",
     "experimental__webworker-runtime__tests__storage__tar.spec.mjs",
     "experimental__webworker-runtime__tests__transport__frames.spec.mjs",
+    "experimental__webworker-runtime__tests__transport__tunnel-client.spec.mjs",
     "experimental__webworker-runtime__tests__transport__tunnel-server.spec.mjs",
     "extensions__cordis-client-runner__tests__api-catalog.client.spec.mjs",
     "extensions__cordis-client-runner__tests__evaluator.client.spec.mjs",
@@ -330,8 +333,10 @@
     "llm__token-meter__tests__token-usage-projection.spec.mjs",
     "llm__token-meter__tests__turn-usage.spec.mjs",
     "lsp__lsp__tests__lsp.spec.mjs",
+    "lsp__lsp-stdio__tests__connection.spec.mjs",
     "lsp__lsp-stdio__tests__framing.spec.mjs",
     "lsp__lsp-stdio__tests__host.spec.mjs",
+    "lsp__lsp-stdio__tests__instance.spec.mjs",
     "lsp__lsp-stdio__tests__lifecycle.spec.mjs",
     "lsp__lsp-stdio__tests__provider.spec.mjs",
     "lsp__tool-lsp__tests__integration.spec.mjs",
@@ -553,6 +558,7 @@
     "subprocess__subprocess-local__tests__native-containment.spec.mjs",
     "subprocess__subprocess-local__tests__native-windows.spec.mjs",
     "subprocess__subprocess-local__tests__process-exit.spec.mjs",
+    "subprocess__subprocess-local__tests__process-inspector.spec.mjs",
     "subprocess__subprocess-local__tests__shell-activity.spec.mjs",
     "subprocess__subprocess-local__tests__spawn-runner.spec.mjs",
     "terminal__terminal-bash__tests__session-buffer.spec.mjs",
@@ -641,9 +647,9 @@
     "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
     "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 3,
     "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 34,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 52,
-    "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 4,
-    "vi.mock/doMock/resetModules (loader-level module interception)": 64,
+    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 46,
+    "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 5,
+    "vi.mock/doMock/resetModules (loader-level module interception)": 65,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
     "node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6,
@@ -652,20 +658,19 @@
     "fast-check (not in the loader bare map — a vendoring decision, not a silent drop)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-tool-catalog.ts\"": 1,
-    "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc": 1,
+    "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f": 1,
     "FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)": 6,
     "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + FiberState from @deepseek-ai/cordis (the closure pins cordis@4.0.2, which predates that export)": 1,
-    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 4,
+    "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 3,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"": 1,
     "expect.extend (custom matchers)": 1,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 1,
     "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 7,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6
   },
   "counts": {
-    "transpiled": 636,
+    "transpiled": 642,
     "excluded": [
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
@@ -681,15 +686,15 @@
       },
       {
         "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 52
+        "count": 46
       },
       {
         "reason": "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
-        "count": 4
+        "count": 5
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
-        "count": 64
+        "count": 65
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
@@ -724,7 +729,7 @@
         "count": 1
       },
       {
-        "reason": "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc",
+        "reason": "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f",
         "count": 1
       },
       {
@@ -737,7 +742,7 @@
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 4
+        "count": 3
       },
       {
         "reason": "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
@@ -749,10 +754,6 @@
       },
       {
         "reason": "expect.extend (custom matchers)",
-        "count": 1
-      },
-      {
-        "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
         "count": 1
       },
       {

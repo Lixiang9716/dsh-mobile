@@ -10,9 +10,9 @@
  *     listeners, rawListeners, eventNames, set/getMaxListeners,
  *     prependListener/prependOnce, and node's `error` special case (an
  *     emitted error with no error listener throws — never swallowed).
- *   - once(emitter, name[, {signal}]) → promise; resolves with the single
- *     arg, or the args array when the listener fired with several; rejects
- *     on 'error' and on abort.
+ *   - once(emitter, name[, {signal}]) → promise; resolves with the emitted
+ *     args ARRAY (node's contract — a single-arg event is a one-element
+ *     array), rejects on 'error' and on abort.
  *   - getEventListeners(emitter, name) / listenerCount(emitter, name) —
  *     EventEmitter instances only (an EventTarget's listener list has no
  *     inspectable surface here; that fails loud).
@@ -172,7 +172,10 @@ export const once = (emitter, name, options = {}) => new Promise((resolve, rejec
   };
   const onEvent = (...args) => {
     cleanup();
-    resolve(args.length <= 1 ? args[0] : args);
+    // node's contract: the promise resolves with the args ARRAY (a
+    // single-arg event still resolves with a one-element array — the
+    // worker-rpc specs destructure `const [raw] = await once(port, ...)`.
+    resolve(args);
   };
   const onError = (error) => {
     cleanup();

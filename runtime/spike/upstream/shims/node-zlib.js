@@ -3,7 +3,10 @@
  * node:zlib shim — the Zstandard surface the vendored session-persistence
  * family reads (session-persistence-jsonl's concatenated-frame session log:
  * named imports in lib/{zstd,zstd-public-decoder,zstd-private-decoder,
- * generation,index}.js plus `require("node:zlib")` in worker.cjs).
+ * generation,index}.js plus `require("node:zlib")` in worker.cjs), and —
+ * since the 2026-09-27 suite round — the gzip one-shot face the
+ * webworker-runtime image loader imports (`gzipSync`), bridged over the
+ * vendored fflate (see the import note below).
  *
  * Everything rides the host intrinsics, read LAZILY AT CALL TIME (never at
  * import time — the intrinsics may not exist under plain Node):
@@ -44,6 +47,15 @@
  *     argument/option validation stays synchronous, as in Node.
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
+// The gzip family rides the VERBATIM vendored fflate tree (the office row's
+// pinned 0.8.2; zero deps, ESM) — the same no-second-hand-rolled-copy
+// discipline as sha256. The zstd face stays on the host intrinsics: the
+// gateway has no zstd primitive the JS layer could substitute, and gzip has
+// no host intrinsic at all (checked against gateway.js before bridging).
+import {
+  gzipSync as fflateGzipSync,
+  gunzipSync as fflateGunzipSync,
+} from '/vendor/npm/fflate@0.8.2/esm/browser.js';
 
 /** Node 24 zlib.constants, Zstandard + flush faces (values verbatim). */
 export const constants = {
@@ -175,6 +187,33 @@ const decompressBytes = (bytes, maxOutputBytes) => (
 export const zstdCompressSync = (buffer, options) => (
   DshBuffer.fromBytes(compressBytes(asBytes(buffer, 'zstdCompressSync'), compressLevel(options)))
 );
+
+/** gzip/gunzip — the one-shot face the webworker-runtime image loader drives
+ * (`gzipSync(tar)` builds the fixture; the product decoder walks the gzip
+ * member). Options: fflate's `{ level, mtime }` subset; node's memLevel/
+ * strategy names fail loud. Results are DshBuffer like the zstd face. */
+export const gzipSync = (buffer, options) => {
+  if (options !== undefined && options !== null
+      && typeof options !== 'object') {
+    throw new TypeError(`zlib shim: gzipSync options must be an object, got ${describe(options)}`);
+  }
+  for (const key of Object.keys(options ?? {})) {
+    if (key !== 'level' && key !== 'mtime' && key !== 'finishFlush') {
+      throw new Error(`zlib shim: unsupported gzipSync options[${key}] — the fflate bridge exposes level/mtime only`);
+    }
+  }
+  return DshBuffer.fromBytes(fflateGzipSync(asBytes(buffer, 'gzipSync'), options));
+};
+
+export const gunzipSync = (buffer, options) => {
+  const limit = decompressLimit(options);
+  const out = fflateGunzipSync(asBytes(buffer, 'gunzipSync'));
+  if (limit > 0 && out.length > limit) {
+    throw new RangeError(`zlib shim: gunzipSync output exceeds maxOutputLength ${limit}`);
+  }
+  return DshBuffer.fromBytes(out);
+};
+
 
 export const zstdDecompressSync = (buffer, options) => {
   const bytes = asBytes(buffer, 'zstdDecompressSync');
@@ -422,6 +461,8 @@ export default {
   zstdDecompress,
   zstdCompressSync,
   zstdDecompressSync,
+  gzipSync,
+  gunzipSync,
   createZstdCompress,
   createZstdDecompress,
   __esModule,

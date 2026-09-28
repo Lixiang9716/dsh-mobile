@@ -123,6 +123,86 @@ ensure_npm() {
     printf '%s\n' "url=registry.npmjs.org/@deepseek-ai/$name@$ver" "sha256=$sha" > "$dir/.vendor-pin"
 }
 
+# ensure_npm_registry — the same discipline for packages OUTSIDE the
+# @deepseek-ai scope (the test-face npm gaps, 2026-09-27): the full package
+# name arrives as $1 (scoped or not), the tree lands at the same
+# vendor/npm/<full-name>@<ver> layout the C host's bridges re-export from.
+ensure_npm_registry() {
+    full="$1"; ver="$2"; sha="$3"
+    dir="npm/$full@$ver"
+    if [ -f "$dir/.vendor-pin" ] && grep -q "$sha" "$dir/.vendor-pin" 2>/dev/null; then
+        echo "vendor: npm/$full@$ver present (pin-stamped)"
+        return
+    fi
+    echo "vendor: fetching npm/$full@$ver"
+    rm -rf "$dir"; mkdir -p "$dir"
+    tgz="$(mktemp /tmp/dsh-npm.XXXXXX)"
+    case $full in
+        @*/*) scope=${full%%/*}; pkg=${full#"$scope"/} ;;
+        *)    scope=;      pkg=$full ;;
+    esac
+    # The TRACKED MIRROR first (vendor/dsh-tarballs/, the same layout
+    # add-package.sh fetch writes): CI materializes offline; the registry is
+    # the fallback. The mirror's flat name is scope-pkg-ver with @ and /
+    # stripped.
+    flat=$(printf '%s' "$full@$ver" | sed 's/^@//; s|/|-|g; s/@/-/')
+    mirror="dsh-tarballs/$flat.tgz"
+    if [ -f "$mirror" ]; then
+        cp "$mirror" "$tgz"
+    elif [ -n "$scope" ]; then
+        curl -fsSL --retry 3 --max-time 300 \
+            "https://registry.npmjs.org/$scope/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+    else
+        curl -fsSL --retry 3 --max-time 300 \
+            "https://registry.npmjs.org/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+    fi
+    _n=0
+    until echo "$sha  $tgz" | shasum -a 256 -c - >/dev/null 2>&1; do
+        _n=$((_n + 1))
+        [ "$_n" -ge 3 ] && { echo "vendor: sha256 MISMATCH after 3 attempts: $full@$ver" >&2; rm -f "$tgz"; exit 1; }
+        echo "vendor: digest mismatch (attempt $_n) — refetching $full@$ver" >&2
+        if [ -n "$scope" ]; then
+            curl -fsSL --retry 3 --max-time 300 \
+                "https://registry.npmjs.org/$scope/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+        else
+            curl -fsSL --retry 3 --max-time 300 \
+                "https://registry.npmjs.org/$pkg/-/$pkg-$ver.tgz" -o "$tgz"
+        fi
+    done
+    tar xzf "$tgz" -C "$dir" --strip-components=1
+    rm -f "$tgz"
+    printf '%s\n' "url=registry.npmjs.org/$full@$ver" "sha256=$sha" > "$dir/.vendor-pin"
+}
+
+# The test-face npm gaps (upstream-suite round 4, 2026-09-27): the pure-JS
+# packages the transpiled specs import bare, pinned at the upstream
+# lockfile's exact resolutions (dsh-v0.1.6-alpha.2 pnpm-lock). Test faces
+# only — nothing here is mounted by the product boot (ensure-dsh.sh).
+ensure_npm_registry "immer" "10.2.0" "23e8ffb42851e74536e4cad3354f1d2183aee0d5a9f16e0d92a33e6fbcea74b2"
+ensure_npm_registry "commander" "15.0.0" "632c1e039b31e98fa79c4fae5b10a5ffbbf9df0f21c9ffb3d74e95734b30696f"
+ensure_npm_registry "acorn" "8.17.0" "afa83fff751e6c9739eea552d84328414d3860408f98ce5c7f3cc7e2a3996424"
+ensure_npm_registry "turndown" "7.2.4" "05f61bc3f0aeca5e5cd7f1b5492e26b9040bb00708cd41fb1b0f7b216e296fa0"
+ensure_npm_registry "@mixmark-io/domino" "2.2.0" "b829bcca09544649f6432020dd6915b6fb054154d7a77eb6f8b3fb1f4165afec"
+ensure_npm_registry "@noble/hashes" "2.3.0" "892281f5dd25ddea8e215c740945bacdfc78aa4fca81f2c25a06876366c8beac"
+ensure_npm_registry "@jridgewell/gen-mapping" "0.3.13" "bc16f658c1f6d63e0c8738ab881d03f49f1955d8f853cdcb8f7d315cf62f0082"
+ensure_npm_registry "@jridgewell/trace-mapping" "0.3.31" "c64c71a119630d5abe8246889edf334b2ca9ddad094e20d623332956b1453ccf"
+ensure_npm_registry "@jridgewell/sourcemap-codec" "1.5.5" "47ad3b0d20a2e5e31ed65049829440fb1e3d4ac554d93f8040562c1821816585"
+ensure_npm_registry "@octokit/webhooks" "14.2.0" "d83e9d49b8a8b8e578e60f4697307d455bc5b071e6bc4fee182a65910a47bfa6"
+ensure_npm_registry "@agentclientprotocol/sdk" "1.4.0" "57beb0f7705b09406e5bcc984d1f6a141940680b4c42755be026f77f64365a37"
+ensure_npm_registry "@deepseek-ai/cordis-plugin-group" "1.0.4" "1f9f9e3cdbb2933ece3acd3fbb90e023886d72aaf31da54cd3b891ac0e4e6cdc"
+ensure_npm_registry "@modelcontextprotocol/client" "2.0.0" "cb470b0249b4a06e262145ab2281ea25344e77608f312a5a52ab4dcc26bfa732"
+ensure_npm_registry "@modelcontextprotocol/core" "2.0.0" "e9433b8d271acad34381bebb50fa68f464edfdef2ee26a35dfd564b5c9ac05e6"
+ensure_npm_registry "jose" "6.2.3" "c4448be09f18470665391b6a29ab3ec108e6830b78aea93076ce3348fb7b55a5"
+ensure_npm_registry "eventsource" "3.0.7" "7c62d4bb196e59b39c5af79e550d6fe4261649a74d9f5e605b071e1da6081c92"
+ensure_npm_registry "pkce-challenge" "5.0.1" "d1fcbbae5bc05562d13de7c520c2951699e8262a8317fa6c8bbcd8dcff3bea70"
+ensure_npm_registry "@jridgewell/resolve-uri" "3.1.2" "db52f9f62558baab13353dd39e3200750fc33e6a129a575b46226f493776e230"
+ensure_npm_registry "@octokit/webhooks-methods" "6.0.0" "18bbbc01e21c55f04396b230b665f6eaf76bdd51dd2c93aba865aeac94204be8"
+ensure_npm_registry "@yarnpkg/parsers" "3.1.0" "88b9d8a741d69ab9fc732f595a39844b20d90100bb7fe18c9a3687b7658960aa"
+ensure_npm_registry "@earendil-works/pi-ai" "0.85.1" "af7d11986179445ce6fe88b37d57de22f823c0ffd3a65cae31c555b7f5e99253"
+ensure_npm_registry "@modelcontextprotocol/node" "2.0.0" "d9a39db5f6b10bebd23cd676e4f7f54c89292d31e05d90e3516a55aafec2a044"
+ensure_npm_registry "@modelcontextprotocol/server" "2.0.0" "b4f0dfda3b73b322f1091b86fabe568994eb2fedef873b12db2c54adc3cfe198"
+ensure_npm_registry "@hono/node-server" "1.19.14" "0b956f346f96d8b89d03ee4e586e267a2d3877f4393fb97eb068572fd7a5b9ad"
+
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
 ensure_npm "dsh-llm-replay" "0.1.6-alpha.2" "85850f414d26bbdac00ebcc05a81212943b92864f386e37c5c2d5818e7b0d04b"

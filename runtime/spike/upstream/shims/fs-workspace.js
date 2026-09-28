@@ -41,17 +41,35 @@ const workspace = () => {
  * vendored fs-local backend (its `Config.cwd` names the same root); every
  * workspace op before the pin fails loud — a write without a world is a
  * defect, not an empty result.
+ *
+ * When the requested root is the PROFILE CONTAINER's tmp (`<cwd>/tmp` with
+ * `<cwd>` pinned as __dshProfileCwd — the suite driver's spelling), the
+ * CONTAINER is pinned instead: the container is the unit of writability on
+ * this host, and its home subtree (the derived harness-home preset root
+ * `<cwd>/home/.dsh/.agent-presets`) must be traversable too — the upstream
+ * user-root suite discovers presets there. mkdtemp/tmpdir-derived paths stay
+ * in-root either way.
  * @param root - absolute POSIX path prefix, e.g. `/workspace`.
  */
 export const mountWorkspace = (root) => {
   if (typeof root !== 'string' || !root.startsWith('/') || root === '/' || root.endsWith('/')) {
     throw new Error(`node:fs: mountWorkspace needs an absolute POSIX root without a trailing slash, got ${JSON.stringify(root)}`);
   }
+  const profileCwd = globalThis.__dshProfileCwd;
+  const effective = typeof profileCwd === 'string' && profileCwd.length > 1
+    && root === `${profileCwd.replace(/\/$/, '')}/tmp`
+    ? profileCwd.replace(/\/$/, '')
+    : root;
   globalThis.__DSH_WORKSPACE_FS__ = {
-    root,
+    root: effective,
     files: new Map(), // path → { bytes: Uint8Array, mode, ino, mtimeNs: bigint, ctimeNs: bigint }
     dirs: new Set(), // explicit directory paths (the root itself included)
     dirIno: new Map(), // path → stable inode
+    // path → tracked directory mode: chmod on a directory is stored (the
+    // agent-presets copy tightens a copied tree to 0700 and stats it back),
+    // though still unenforced — the VFS has no permission gate.
+    dirModes: new Map(),
+    symlinks: new Map(), // path → raw target string (readlink returns it verbatim)
     nextIno: 1,
     clock: 0,
   };
@@ -70,13 +88,34 @@ const lexical = (path) => {
   return `/${out.join('/')}`;
 };
 
+/** The SYSTEM-TMP translation (2026-09-27 suite round): upstream code — and
+ * its tests — spell staging dirs with the bare desktop '/tmp/...' spelling
+ * (the ssh/llm families literally hardcode `/tmp/dsh-<name>-`). On this host
+ * the system tmp IS the profile container's tmp (os.tmpdir() =
+ * <container>/tmp), so a bare '/tmp'-rooted path resolves onto it and both
+ * spellings land in the SAME writable place, instead of the hardcoded one
+ * failing the root gate. Guarded: only when the workspace root is the
+ * profile container (the suite driver's mount spelling) and only the exact
+ * '/tmp' or '/tmp/' prefix maps (never '/tmpfoo'). */
+const systemTmp = (path) => {
+  if (typeof path !== 'string' || !path.startsWith('/tmp')) return path;
+  const profileCwd = globalThis.__dshProfileCwd;
+  if (typeof profileCwd !== 'string' || profileCwd.length <= 1) return path;
+  const state = workspace();
+  if (state === null || state.root !== profileCwd.replace(/\/$/, '')) return path;
+  const real = `${profileCwd.replace(/\/$/, '')}/tmp`;
+  if (path === '/tmp') return real;
+  if (path.startsWith('/tmp/')) return `${real}${path.slice(4)}`;
+  return path;
+};
+
 /** The workspace state for an absolute path inside the pinned root, else null.
  * Relative paths never reach the workspace: every fs-local caller resolves
  * against its config cwd (absolute) before touching the seam. */
 const wsAt = (path) => {
   const state = workspace();
   if (state === null || typeof path !== 'string' || !path.startsWith('/')) return null;
-  const canonical = lexical(path);
+  const canonical = lexical(systemTmp(path));
   if (canonical !== state.root && !canonical.startsWith(`${state.root}/`)) return null;
   return { state, path: canonical };
 };
@@ -140,7 +179,15 @@ const wsStatAt = (path, bigint) => {
       isDirectory: () => false,
       isSymbolicLink: () => false,
       size: bigint ? BigInt(file.bytes.length) : file.bytes.length,
+      // The number face carries the permission bits too (the spill/aging
+      // walks stat().mode and compare against the 0700/0644 constants), and
+      // dev/ino like node's non-bigint stat (the v2 migration asserts a
+      // rename preserved the predecessor's identity, measured 2026-09-27).
+      dev: 1,
+      ino: file.ino,
+      mode: file.mode,
       mtimeMs: Number(file.mtimeNs) / 1e6,
+      ctimeMs: Number(file.ctimeNs) / 1e6,
       ...(bigint ? {
         dev: 1n,
         ino: BigInt(file.ino),
@@ -152,16 +199,21 @@ const wsStatAt = (path, bigint) => {
   }
   if (!wsIsDirAt(path)) return null;
   const dirIno = at.state.dirIno.get(at.path) ?? 0;
+  // The tracked chmod (see dirModes in mountWorkspace), else the default.
+  const dirMode = at.state.dirModes?.get(at.path) ?? DIR_MODE;
   return {
     isFile: () => false,
     isDirectory: () => true,
     isSymbolicLink: () => false,
     size: bigint ? 0n : 0,
+    dev: 1,
+    ino: dirIno,
+    mode: dirMode,
     mtimeMs: 0,
     ...(bigint ? {
       dev: 1n,
       ino: BigInt(dirIno),
-      mode: BigInt(DIR_MODE),
+      mode: BigInt(dirMode),
       mtimeNs: 0n,
       ctimeNs: 0n,
     } : {}),
@@ -169,7 +221,8 @@ const wsStatAt = (path, bigint) => {
 };
 
 /** One level of workspace directory names, sorted; null when the path is not
- * a workspace directory. */
+ * a workspace directory. Symlink entries list alongside files (they are
+ * directory members; the walk classifies them through dirent/lstat). */
 const wsReaddirAt = (path) => {
   const at = wsAt(path);
   if (at === null) return null;
@@ -177,6 +230,12 @@ const wsReaddirAt = (path) => {
   if (!wsIsDirAt(path)) return null;
   const names = new Set();
   for (const key of at.state.files.keys()) {
+    if (!key.startsWith(prefix)) continue;
+    const rest = key.slice(prefix.length);
+    const slash = rest.indexOf('/');
+    names.add(slash === -1 ? rest : rest.slice(0, slash));
+  }
+  for (const key of at.state.symlinks.keys()) {
     if (!key.startsWith(prefix)) continue;
     const rest = key.slice(prefix.length);
     const slash = rest.indexOf('/');
@@ -251,6 +310,17 @@ const wsWriteFile = (path, bytes, mode) => {
     throw new Error(`node:fs.writeFile: path outside the writable workspace root: ${path}`);
   }
   const { state, path: canonical } = at;
+  // A directory occupying the path is EISDIR, like node's writeFile
+  // (measured 2026-09-27: storage-json makes the publish target a directory
+  // to force the atomic-replacement failure its rollback test needs).
+  if (state.dirs.has(canonical) || (state.files.has(canonical) === false && wsIsDirAt(canonical))) {
+    const error = new Error(`EISDIR: illegal operation on a directory, open '${canonical}'`);
+    error.code = 'EISDIR';
+    error.errno = -21;
+    error.syscall = 'open';
+    error.path = canonical;
+    throw error;
+  }
   const existing = state.files.get(canonical);
   if (existing !== undefined) {
     existing.bytes = bytes;
@@ -289,11 +359,13 @@ const wsRm = (path, options = {}) => {
       if (dir.startsWith(prefix)) {
         state.dirs.delete(dir);
         state.dirIno.delete(dir);
+        state.dirModes?.delete(dir);
       }
     }
     if (canonical !== state.root) {
       state.dirs.delete(canonical);
       state.dirIno.delete(canonical);
+      state.dirModes?.delete(canonical);
     }
     return;
   }
@@ -309,6 +381,24 @@ const wsRename = (from, to) => {
   }
   const { state } = source;
   const dest = target.path;
+  // node's rename cross-checks: file onto an existing directory is EISDIR;
+  // directory onto an existing non-directory is ENOTDIR.
+  if (state.files.has(source.path) && (state.dirs.has(dest) || wsIsDirAt(dest))) {
+    const error = new Error(`EISDIR: illegal operation on a directory, rename '${source.path}' -> '${dest}'`);
+    error.code = 'EISDIR';
+    error.errno = -21;
+    error.syscall = 'rename';
+    error.path = dest;
+    throw error;
+  }
+  if (state.dirs.has(source.path) && state.files.has(dest)) {
+    const error = new Error(`ENOTDIR: not a directory, rename '${source.path}' -> '${dest}'`);
+    error.code = 'ENOTDIR';
+    error.errno = -20;
+    error.syscall = 'rename';
+    error.path = dest;
+    throw error;
+  }
   if (state.files.has(source.path)) {
     const entry = state.files.get(source.path);
     state.files.delete(source.path);
@@ -331,6 +421,11 @@ const wsRename = (from, to) => {
       const ino = state.dirIno.get(dir);
       state.dirIno.delete(dir);
       if (ino !== undefined) state.dirIno.set(dest + dir.slice(source.path.length), ino);
+      const trackedMode = state.dirModes?.get(dir);
+      if (trackedMode !== undefined) {
+        state.dirModes.delete(dir);
+        state.dirModes.set(dest + dir.slice(source.path.length), trackedMode);
+      }
     }
     state.dirs.delete(source.path);
     const sourceIno = state.dirIno.get(source.path);
@@ -369,10 +464,76 @@ const wsChmod = (path, mode) => {
     return;
   }
   if (!at.state.dirs.has(at.path) && !wsIsDirAt(path)) throw wsEnoent('chmod', at.path);
-  // Directory modes are tracked but unenforced (the VFS has no permission
-  // gate; contract/primitives.md — paths are paths).
+  // Directory modes are tracked (tightenModes stats the 0700 back) but
+  // unenforced — the VFS has no permission gate (contract/primitives.md §3).
+  if (typeof mode === 'number') at.state.dirModes.set(at.path, mode);
 };
 
+/* ---- utimes + symlink faces (the 2026-09-27 suite round) ---------------- */
+
+/** utimes on a workspace file: the seconds-since-epoch floats node accepts
+ * become the entry's mtime (the mtime-based sweeps and spill aging read it
+ * back through stat). Atime is accepted and not stored — nothing in the
+ * closure reads atime. */
+const wsUtimes = (path, atimeSeconds, mtimeSeconds) => {
+  const at = wsAt(path);
+  if (at === null) {
+    throw new Error(`node:fs.utimes: path outside the writable workspace root: ${path}`);
+  }
+  const { state, path: canonical } = at;
+  const entry = state.files.get(canonical);
+  if (entry === undefined) {
+    if (state.dirs.has(canonical) || state.symlinks?.has(canonical)) return;
+    throw wsEnoent('utimes', canonical);
+  }
+  const ms = Number(mtimeSeconds);
+  if (!Number.isFinite(ms)) {
+    throw new TypeError(`node:fs.utimes: mtime must be a finite number, got ${String(mtimeSeconds)}`);
+  }
+  entry.mtimeNs = BigInt(Math.round(ms * 1000)) * 1000000n;
+  entry.ctimeNs = entry.mtimeNs;
+};
+
+/** symlink(target, path) — store the raw target string; readers resolve one
+ * hop through resolveSymlinkAt (fs.js). Node validates the parent directory;
+ * the link itself may dangle. */
+const wsSymlink = (target, path) => {
+  const at = wsAt(path);
+  if (at === null) {
+    throw new Error(`node:fs.symlink: path outside the writable workspace root: ${path}`);
+  }
+  const { state, path: canonical } = at;
+  if (state.files.has(canonical) || state.dirs.has(canonical)
+      || state.symlinks.has(canonical) || wsIsDirAt(canonical)) {
+    throw wsEexist('symlink', canonical);
+  }
+  if (typeof target !== 'string') {
+    throw new TypeError(`node:fs.symlink: target must be a string, got ${typeof target}`);
+  }
+  state.symlinks.set(canonical, target);
+  return undefined;
+};
+
+/** The stored target for a symlink path, or undefined when the path is not a
+ * symlink (readlink turns that into EINVAL, node's spelling). */
+const wsReadlinkAt = (path) => {
+  const at = wsAt(path);
+  if (at === null) return undefined;
+  return at.state.symlinks?.get(at.path);
+};
+
+/** Resolve ONE symlink hop for readers (stat/read): a relative target joins
+ * the link's directory; absolute targets stand alone. Undefined when the
+ * path is not a symlink. */
+const resolveSymlinkAt = (path) => {
+  const target = wsReadlinkAt(path);
+  if (target === undefined) return undefined;
+  if (target.startsWith('/')) return lexical(target);
+  const at = wsAt(path);
+  const slash = at.path.lastIndexOf('/');
+  const dir = slash <= 0 ? '/' : at.path.slice(0, slash);
+  return lexical(`${dir}/${target}`);
+};
 
 export {
   workspace,
@@ -395,4 +556,8 @@ export {
   wsRename,
   wsLink,
   wsChmod,
+  wsUtimes,
+  wsSymlink,
+  wsReadlinkAt,
+  resolveSymlinkAt,
 };

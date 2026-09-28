@@ -18,7 +18,7 @@
  * usage: node transpile.mjs   (writes runtime/spike/upstream-tests/ + manifest.json)
  */
 import esbuild from 'esbuild';
-import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync, unlinkSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 
 const ROOT = new URL('../..', import.meta.url).pathname;
@@ -110,6 +110,59 @@ try {
   /* absent submodule: SUBMODULE_SRC_HOISTS targets fail existsSync and the
    * generic monorepo-src exclusion names the specifier instead */
 }
+/** Bare specifiers the loader cannot serve as-is, resolved here so the
+ * esbuild graph (spec source, bundled helpers AND inlined submodule limbs —
+ * every importer funnels through this plugin) links without touching the
+ * vendored package bytes (D6) or the C host's bare map:
+ *
+ * - `@deepseek-ai/dsh-subprocess-local` — the npm tarball's lib/index.js is
+ *   the ONE vendored entry carrying RELATIVE chunk imports (the upstream
+ *   build code-splits: `./runner-launch-DGV26RBf.js` + sibling lib files).
+ *   Loaded under the BARE specifier, the host normalizes those relative
+ *   imports against `@deepseek-ai` (the specifier has no subpath to carry
+ *   the package directory) and the chunk name can never resolve. Rewriting
+ *   the external to the `/index` SUBPATH makes the loader's module NAME
+ *   carry the package directory, so `./chunk.js` re-enters the bare map's
+ *   vendored probe and hits `lib/<chunk>.js` in the tarball. Only this
+ *   package gets the rewrite: no vendored lib imports it bare, so no second
+ *   module instance can split state (the generic rewrite would — vendored
+ *   libs import sibling dsh packages bare and must keep the exact names).
+ *
+ * - `@deepseek-ai/cordis-plugin-group` — an upstream vendor/ workspace
+ *   package the test closure never stages; the vendored dsh_app-boot
+ *   tarball's bare import of it fails in the loader. Resolved to the pinned
+ *   submodule's BUILT lib (D6-verbatim, read-only) and inlined.
+ *
+ * - `@deepseek-ai/dsh-app-boot` — same face problem as the group: the
+ *   tarball's lib/index.js imports cordis-plugin-group bare, which no
+ *   loader row serves. The spec-side graph inlines the pinned submodule's
+ *   SOURCE limb instead; the group resolves inside it via the row above,
+ *   `resolve.exports` via the row below, and every vendored dep stays a
+ *   loader-served bare external under its exact name (cordis Context and
+ *   the cordis-plugin-* libs keep one instance across spec + limb).
+ *
+ * - `resolve.exports` — the app-boot limb's package-resolution helper,
+ *   present only in the submodule's lockfile store (pnpm layout). */
+const SUBMODULE_BARE_RESOLVES = () => {
+  const abs = (rel) => join(SUBMODULE_ROOT, rel);
+  const rows = new Map([
+    ['@deepseek-ai/dsh-subprocess-local', { externalSubpath: 'index' }],
+    ['@deepseek-ai/cordis-plugin-group', { inline: abs('vendor/group/lib/index.js') }],
+    ['@deepseek-ai/dsh-app-boot', { inline: abs('packages/boot/app-boot/src/index.ts') }],
+    ['resolve.exports', {
+      inline: abs('node_modules/.pnpm/resolve.exports@2.0.3'
+        + '/node_modules/resolve.exports/dist/index.mjs'),
+    }],
+  ]);
+  // A missing submodule target must keep its bare external (the loader then
+  // fails loud naming the specifier) — never a silently half-mapped graph.
+  for (const [spec, row] of rows) {
+    if (row.inline && !existsSync(row.inline)) rows.delete(spec);
+  }
+  return rows;
+};
+const BARE_RESOLVES = SUBMODULE_BARE_RESOLVES();
+
 const BARE_EXTERNAL_PLUGIN = {
   name: 'bare-external',
   setup(build) {
@@ -118,6 +171,13 @@ const BARE_EXTERNAL_PLUGIN = {
       if (args.importer.startsWith(SUBMODULE_ROOT)
           && UNVENDORED_INLINED.some((re) => re.test(args.path))) {
         return { path: `${args.path}.cjs`, namespace: 'unvendored-stub' };
+      }
+      const resolveRow = BARE_RESOLVES.get(args.path);
+      if (resolveRow) {
+        if (resolveRow.externalSubpath !== undefined) {
+          return { path: `${args.path}/${resolveRow.externalSubpath}`, external: true };
+        }
+        return { path: resolveRow.inline }; // absolute: esbuild loads + inlines
       }
       return { path: args.path, external: true };
     });
@@ -198,6 +258,34 @@ const hoistCreateRequireJson = (source, rel) => {
  * exclusion still names it — fail loud, never a silent drop (rule 5). */
 const SUBMODULE_SRC_HOISTS = new Map([
   ['@deepseek-ai/dsh-llm-pi-ai/src/context.ts', 'packages/llm/llm-pi-ai/src/context.ts'],
+  // subprocess-local src/ faces the lsp-stdio and process-inspector specs
+  // drive directly (spawnSubprocess / the inspector classes). The tarball
+  // ships only the bundled lib/ face; these files exist verbatim in the
+  // pinned submodule, whose relative imports esbuild inlines while the bare
+  // deps (dsh-subprocess, dsh-timeout, dsh-lazy-require) stay loader-served.
+  ['@deepseek-ai/dsh-subprocess-local/src/spawn.ts', 'packages/subprocess/subprocess-local/src/spawn.ts'],
+  ['@deepseek-ai/dsh-subprocess-local/src/process-inspector.ts', 'packages/subprocess/subprocess-local/src/process-inspector.ts'],
+  ['@deepseek-ai/dsh-subprocess-local/src/windows-inspector.ts', 'packages/subprocess/subprocess-local/src/windows-inspector.ts'],
+  // lsp-stdio's specs import connection.ts / instance.ts TYPE-ONLY (esbuild
+  // erases them), but the monorepo-src exclusion regex reads the SOURCE —
+  // hoisting the specifier past the scan lets the erased-at-build reality
+  // hold, instead of a named exclusion for an import that never loads.
+  ['@deepseek-ai/dsh-lsp-stdio/src/connection.ts', 'packages/lsp/lsp-stdio/src/connection.ts'],
+  ['@deepseek-ai/dsh-lsp-stdio/src/instance.ts', 'packages/lsp/lsp-stdio/src/instance.ts'],
+  // webworker-runtime src/ faces whose transitive closure stays inside the
+  // loader's surface (its externals are shimmed node: builtins or vendored
+  // dsh packages). Deliberately NARROW: the other src/-importing specs pull
+  // unvendored npm packages through their limbs (buffer / readable-stream /
+  // @noble/hashes / @yarnpkg/parsers / picomatch) and keep their named
+  // monorepo-src exclusion instead of trading it for an on-device load
+  // failure. Each row below was checked to close over served externals only:
+  // path-diff → node:path; als-shim → node:async_hooks; tunnel-client →
+  // dsh-host-webserver (vendored).
+  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/client/client.ts', 'packages/experimental/webworker-runtime/src/client/client.ts'],
+  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/path.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/path.ts'],
+  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts'],
+  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/globals/timers.ts', 'packages/experimental/webworker-runtime/src/node/globals/timers.ts'],
+  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/polyfill/async-context/async-context-hooks.ts', 'packages/experimental/webworker-runtime/src/polyfill/async-context/async-context-hooks.ts'],
 ]);
 const hoistSubmoduleSrcSubpaths = (source) => {
   let out = source;
@@ -315,6 +403,21 @@ const specs = walk(TESTS)
 
 for (const rel of specs) {
   await transpileOne(rel, manifest);
+}
+
+// Prune staged files the current manifest does not list: exclusions evolve
+// (a specifier's hoist lands, or an exclusion narrows), and a stale .spec.mjs
+// left behind would keep running in the sweep — which enumerates this
+// directory, not the manifest — as a noise failure the manifest already
+// accounts for with a named reason. Only the two suffixes this tool emits
+// are pruned; anything else in OUT is not ours to touch.
+const listed = new Set(manifest.transpiled);
+for (const name of readdirSync(OUT)) {
+  const stem = name.replace(/\.fixtures\.js$/, '.spec.mjs');
+  if ((name.endsWith('.spec.mjs') || name.endsWith('.fixtures.js'))
+      && !listed.has(stem)) {
+    unlinkSync(join(OUT, name));
+  }
 }
 
 manifest.counts = {

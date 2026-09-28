@@ -96,6 +96,43 @@ const parseAbsolute = (input) => {
   return { scheme, authority: authorityFinal, pathname, search, fragment };
 };
 
+/** Non-special scheme (socks5:, mailto:, urn: …) — the WHATWG opaque-path
+ * parser: after `scheme:` an optional `//authority`, then the path taken
+ * verbatim (no dot-segment normalization, no special-scheme table). The
+ * http-proxy policy reader discriminates SOCKS proxies through
+ * `URL.parse("socks5://…")` — under a special-schemes-only parser those
+ * read as "invalid URL" and the diagnostic mislabels them. */
+const parseOpaque = (input) => {
+  const schemeAt = input.indexOf(':');
+  const scheme = input.slice(0, schemeAt).toLowerCase();
+  let rest = input.slice(schemeAt + 1);
+  let authority = '';
+  if (rest.startsWith('//')) {
+    rest = rest.slice(2);
+    const slashAt = rest.indexOf('/');
+    if (slashAt >= 0) {
+      authority = rest.slice(0, slashAt);
+      rest = rest.slice(slashAt);
+    } else {
+      authority = rest;
+      rest = '';
+    }
+  }
+  const hashAt = rest.indexOf('#');
+  let fragment = '';
+  if (hashAt >= 0) {
+    fragment = rest.slice(hashAt);
+    rest = rest.slice(0, hashAt);
+  }
+  const queryAt = rest.indexOf('?');
+  let search = '';
+  if (queryAt >= 0) {
+    search = rest.slice(queryAt);
+    rest = rest.slice(0, queryAt);
+  }
+  return { scheme, authority, pathname: rest, search, fragment };
+};
+
 /** POSIX dirname+pjoin with '.'/'..' resolution (lexical; no fs access). */
 const resolvePath = (path) => {
   const out = [];
@@ -107,22 +144,55 @@ const resolvePath = (path) => {
   return '/' + out.join('/');
 };
 
+/** WHATWG directory-ness: an input whose FINAL segment is empty, '.', or '..'
+ * resolves to a DIRECTORY — the result carries a trailing slash. The slash is
+ * load-bearing: a later relative resolution against this result as the base
+ * drops the final segment only when it is marked a directory (measured
+ * 2026-09-27: the agent-presets mount health check joins a row's
+ * `../../plugins/x.js` against `new URL('.', fileURLToPath-of-composition)`;
+ * without the trailing slash the walk climbed one level too far and the row
+ * read as unresolvable). */
+const endsAtDirectory = (relative) => relative === '' || relative === '.'
+  || relative === '..' || relative.endsWith('/') || relative.endsWith('/.')
+  || relative.endsWith('/..');
+
+/** The lexical join the two relative-resolution branches share: the base's
+ * directory prefix + the relative spelling, dot-segments resolved, and the
+ * trailing-slash rule applied. */
+const joinRelative = (basePathname, relative) => {
+  const dir = basePathname.slice(0, basePathname.lastIndexOf('/') + 1);
+  const resolved = resolvePath(dir + relative);
+  return endsAtDirectory(relative) && resolved !== '/' && !resolved.endsWith('/')
+    ? `${resolved}/`
+    : resolved;
+};
+
 /** Resolve a scheme-less input (spike path space) against an optional base —
  * see the constructor: import.meta.url is a bundle-relative staged path, and
  * vendored packages join their own resources against it. */
 const parsePathUrl = (asString, base) => {
   if (base !== undefined) {
     const baseParsed = new DshURL(base);
-    const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
-    return { ...baseParsed, pathname: resolvePath(dir + asString), search: '', fragment: '' };
+    return { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
   }
   return {
-    scheme: '', authority: '', pathname: resolvePath(`/${asString}`),
+    scheme: '', authority: '', pathname: joinRelative('/', asString),
     search: '', fragment: '',
   };
 };
 
 export class DshURL {
+  /** URL.parse — the WHATWG static face (Node 22+): the constructor without
+   * the throw, null on any invalid input. The vendored http-proxy policy
+   * reader discriminates "invalid proxy URL" with exactly that contract. */
+  static parse(input, base = undefined) {
+    try {
+      return new DshURL(input, base);
+    } catch {
+      return null;
+    }
+  }
+
   constructor(input, base = undefined) {
     let parsed;
     const asString = String(input);
@@ -134,7 +204,7 @@ export class DshURL {
     if (!hasScheme) {
       parsed = parsePathUrl(asString, base);
     } else if (hasScheme) {
-      parsed = parseAbsolute(asString);
+      parsed = parseAbsolute(asString) ?? parseOpaque(asString);
     } else if (base !== undefined) {
       const baseParsed = new DshURL(base);
       if (asString.startsWith('/')) {
@@ -144,8 +214,7 @@ export class DshURL {
       } else if (baseParsed.scheme === '' || asString.startsWith('.')) {
         // Lexical join in PATH space (scheme-less spike URLs): '.'/'..' kept
         // verbatim would corrupt the walk; resolve them the way realpath does.
-        const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
-        parsed = { ...baseParsed, pathname: resolvePath(dir + asString), search: '', fragment: '' };
+        parsed = { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
       } else {
         const dir = baseParsed.pathname.slice(0, baseParsed.pathname.lastIndexOf('/') + 1);
         parsed = { ...baseParsed, pathname: dir + asString, search: '', fragment: '' };
@@ -175,10 +244,23 @@ export class DshURL {
 
   get protocol() { return `${this.scheme}:`; }
   get host() { return this.authority; }
-  get hostname() { return this.authority.split(':')[0] ?? this.authority; }
+  get hostname() {
+    // Bracketed IPv6: everything through `]` is the host (the colons inside
+    // are address segments, never a host:port separator — WHATWG rule the
+    // http-proxy loopback checks lean on for [::1]/[::ffff:...]).
+    const bracketAt = this.authority.lastIndexOf(']');
+    if (bracketAt > 0) return this.authority.slice(0, bracketAt + 1);
+    const colonAt = this.authority.lastIndexOf(':');
+    return colonAt > 0 ? this.authority.slice(0, colonAt) : this.authority;
+  }
   get port() {
-    const at = this.authority.lastIndexOf(':');
-    return at > 0 ? this.authority.slice(at + 1) : '';
+    const bracketAt = this.authority.lastIndexOf(']');
+    if (bracketAt > 0) {
+      const rest = this.authority.slice(bracketAt + 1);
+      return rest.startsWith(':') ? rest.slice(1) : '';
+    }
+    const colonAt = this.authority.lastIndexOf(':');
+    return colonAt > 0 ? this.authority.slice(colonAt + 1) : '';
   }
   get origin() {
     if (this.scheme === 'file') return 'null';
@@ -196,6 +278,24 @@ export class DshURL {
   }
   toString() { return this.href; }
   toJSON() { return this.href; }
+
+  /** WHATWG URL.canParse — boolean parse probe (the web-search providers
+   * validate configured base URLs with it; measured 2026-09-27). */
+  static canParse(input, base = undefined) {
+    // WHATWG: a scheme-less input WITHOUT a base is a relative URL that
+    // cannot parse. (WITH a base it is a valid relative reference — the
+    // spike additionally allows scheme-less PATH-URL joins, its loader's
+    // import.meta.url space; both stay parseable when a base is given.)
+    const asString = String(input);
+    const hasScheme = /^[A-Za-z][A-Za-z0-9+.\-]*:/.test(asString);
+    if (base === undefined && !hasScheme) return false;
+    try {
+      new DshURL(input, base);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
 
 /** POSIX `pathToFileURL`: absolute path → file: URL (percent-encoded). */

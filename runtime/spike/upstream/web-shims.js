@@ -65,6 +65,13 @@ import { DshURL } from 'upstream/shims/url.js';
 // second hand-rolled walk (the sha256.js rule).
 import { TextDecoder as DshTextDecoder } from 'upstream/shims/util.js';
 import { releaseKeeps } from 'logger.js';
+// The fetch VALUE-OBJECT family (Headers/Request/Response/FormData/File/
+// Blob/DOMException): the specs and client faces construct these directly;
+// the network seam itself stays with the gateway (see the file's header).
+import { installWebFetchValues } from 'upstream/shims/web-fetch-values.js';
+// The W3C Storage face (localStorage/sessionStorage) client modules persist
+// through — in-memory Map backing, one shared instance per face.
+import { installWebStorage } from 'upstream/shims/web-storage.js';
 
 /** The forwarder every console method rides. The release strip is applied
  * HERE, through the logger's shared policy — not by a copy of the flag — so a
@@ -370,3 +377,10 @@ if (typeof nativeQueueMicrotask === 'function') {
     });
   };
 }
+
+/* ---- fetch value objects (Headers/Request/Response/FormData/File/Blob) ---
+ * Installed only when absent (the same rule TextEncoder/Decoder ride): a
+ * host that binds them natively keeps its own. AFTER the queueMicrotask row
+ * so its TextEncoder dependency sees this module's install order. */
+installWebFetchValues();
+installWebStorage();
