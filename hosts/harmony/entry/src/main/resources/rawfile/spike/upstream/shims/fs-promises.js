@@ -31,6 +31,9 @@ import {
   lstatSync,
   readdirSync,
   realpath as realpathCallback,
+  readlinkSync,
+  utimesSync,
+  symlinkSync,
   _mountWorkspace,
   _wsMkdir,
   _wsWriteFile,
@@ -38,6 +41,8 @@ import {
   _wsRename,
   _wsLink,
   _wsChmod,
+  _wsWatch,
+  _wsAt,
 } from 'node:fs';
 import { encodeUtf8 } from 'upstream/shims/buffer.js';
 
@@ -72,19 +77,20 @@ export const readFile = async (path, options) => {
 
 /** Dirent-shaped entry ({name, isDirectory(), isFile(), isSymbolicLink()}) —
  * what the presets walk iterates and what fs-local's `readdir({
- * withFileTypes: true })` classifies through. Neither view has symlinks. */
+ * withFileTypes: true })` classifies through. Lstat semantics: a workspace
+ * symlink entry reports itself (the snapshot walks branch on it). */
 const direntFor = (name, path) => {
   let info;
   try {
-    info = statSync(path);
+    info = lstatSync(path);
   } catch {
-    info = { isFile: () => true, isDirectory: () => false };
+    info = { isFile: () => true, isDirectory: () => false, isSymbolicLink: () => false };
   }
   return {
     name,
     isDirectory: info.isDirectory,
     isFile: info.isFile,
-    isSymbolicLink: () => false,
+    isSymbolicLink: info.isSymbolicLink,
   };
 };
 
@@ -115,13 +121,27 @@ export const readdir = async (path, options) => {
   return names.map((name) => direntFor(name, `${prefix}${name}`));
 };
 
-/** stat(path[, options]) — the sync shim's answer; `{bigint: true}` asks for
- * the bigint face (dev/ino/mode/mtimeNs/ctimeNs) fs-local versions files
- * with. */
+/** stat(path[, options]) — the sync shim's answer (symlinks followed one
+ * hop); `{bigint: true}` asks for the bigint face (dev/ino/mode/mtimeNs/
+ * ctimeNs) fs-local versions files with. */
 export const stat = async (path, options) => statSync(path, options);
 
-/** lstat(path[, options]) — neither view has symlinks, so lstat == stat. */
+/** lstat(path[, options]) — the lstat face: a workspace symlink entry
+ * reports itself instead of its target; everything else stats the same. */
 export const lstat = async (path, options) => lstatSync(path, options);
+
+/** utimes(path, atime, mtime) — the workspace face: seconds floats become
+ * the entry's mtime (the sweeps and spill aging read it through stat). */
+export const utimes = async (path, atime, mtime) => utimesSync(path, atime, mtime);
+
+/** symlink(target, path) — the workspace face (note node's argument order):
+ * a stored raw target, resolved one hop by the readers, returned verbatim
+ * by readlink. */
+export const symlink = async (target, path) => symlinkSync(target, path);
+
+/** readlink(path) — the raw target string; ENOENT for missing paths and
+ * EINVAL for non-symlinks, node's spellings (the sync face owns them). */
+export const readlink = async (path) => readlinkSync(path);
 
 /** mkdir(path[, options]) — the workspace face (seeded views are read-only). */
 export const mkdir = async (path, options) => _wsMkdir(path, options);
@@ -139,8 +159,28 @@ export const link = async (sourcePath, destPath) => _wsLink(sourcePath, destPath
  * no permission gate). */
 export const chmod = async (path, mode) => _wsChmod(path, mode);
 
+/** watchPath(path, notify) — register a mutation watcher on one workspace
+ * file; notify(canonicalPath) fires synchronously when a write/rm/rename
+ * lands on it. Consumer: the chokidar linkage shim (npm-bridges.js), which
+ * fronts this as settings-file's document watcher. The watched path is
+ * canonicalized the same way mutations canonicalize theirs, so string
+ * equality is exact. */
+export const watchPath = async (path, notify) => {
+  const at = _wsAt(path);
+  if (at === null) {
+    throw new Error(`node:fs.watch: path outside the writable workspace root: ${path}`);
+  }
+  return _wsWatch(at.path, notify);
+};
+
 /** writeFile(path, data[, options]) — the workspace face (create or
- * replace; parents must exist, matching node). */
+ * replace; parents must exist, matching node). flags: the vendored
+ * atomic-write writer lock creates its `<file>.lock` sibling with
+ * { flag: 'wx' } — the exclusive create IS the lock (measured 2026-09-27:
+ * with the flag ignored the lock never contended and settings-file's
+ * cross-instance tests resolved instead of timing out). 'x' faces refuse an
+ * existing target with EEXIST; 'a' faces append; read flags on a write call
+ * are EBADF like node. */
 export const writeFile = async (path, data, options) => {
   const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
   if (!(bytes instanceof Uint8Array)) {
@@ -150,6 +190,30 @@ export const writeFile = async (path, data, options) => {
   if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
     throw new Error(`node:fs/promises: writeFile encoding '${encoding}' — supported: utf8, buffer`);
   }
+  const flag = typeof options === 'string' ? 'w' : (options?.flag ?? 'w');
+  if (flag === 'r' || flag === 'r+') {
+    const error = new Error(`EBADF: bad file descriptor, write '${path}'`);
+    error.code = 'EBADF';
+    error.errno = -9;
+    error.syscall = 'write';
+    error.path = String(path);
+    throw error;
+  }
+  if (flag.includes('x')) {
+    let exists = false;
+    try { exists = existsSync(path); } catch { exists = false; }
+    if (exists) {
+      const error = new Error(`EEXIST: file already exists, open '${path}'`);
+      error.code = 'EEXIST';
+      error.errno = -17;
+      error.syscall = 'open';
+      error.path = String(path);
+      throw error;
+    }
+    if (flag.startsWith('a')) return appendFile(path, bytes);
+    return _wsWriteFile(path, bytes, options?.mode);
+  }
+  if (flag.startsWith('a')) return appendFile(path, bytes);
   return _wsWriteFile(path, bytes, options?.mode);
 };
 
@@ -159,13 +223,73 @@ export const writeFile = async (path, data, options) => {
  * the resume-torn-tail recovery appends closers to a persisted log in its
  * own tmpdir; the workspace root's own boundary still refuses anything
  * outside it (seeded views are not writable there, so the honest refusal
- * survives for them). cp stays a refusal — no recursive-copy consumer. */
+ * survives for them). */
 const refuseAsync = (name) => async () => {
   throw new Error(
     `node:fs/promises.${name}: the staged fs view is read-only — `
     + 'seed data cannot be mutated inside the spike runtime');
 };
-export const cp = refuseAsync('cp');
+/** cp(src, dest[, options]) — a REAL recursive copy between the two staged
+ * views: reads go through the sync face (which serves the seeded read-only
+ * views AND the workspace), writes land in the workspace only (the seeded
+ * views stay read-only). Consumer: the agent-presets authoring copy
+ * (copyComposition) calls cp with {recursive, dereference, force:false,
+ * errorOnExist:true} to copy a preset directory — shipped (seeded view) or
+ * locally authored (workspace) — into the user root. Options follow node:
+ * `recursive` walks directories (a non-recursive cp of a directory throws
+ * EISDIR); `force:false` + `errorOnExist:true` refuse an occupied
+ * destination with EEXIST (node's spelling); `dereference` is honored in
+ * effect — statSync/readFileSync already resolve one symlink hop, and the
+ * seeded views carry no symlinks. Modes travel with the files (the source
+ * stat's permission bits); the caller (tightenModes) re-tightens after. */
+const cpEexist = (call, path) => {
+  const error = new Error(`EEXIST: file already exists, ${call} '${path}'`);
+  error.code = 'EEXIST';
+  error.errno = -17;
+  error.syscall = call;
+  error.path = path;
+  return error;
+};
+const cpEntry = async (from, to, options) => {
+  // statSync (not lstat): dereference semantics — a symlinked entry copies
+  // as its target, which is what the authoring copy asks for.
+  const info = statSync(from);
+  if (info.isDirectory()) {
+    if (options?.recursive !== true) {
+      const error = new Error(`EISDIR: illegal operation on a directory, cp '${from}' -> '${to}'`);
+      error.code = 'EISDIR';
+      error.syscall = 'cp';
+      error.path = from;
+      throw error;
+    }
+    const destInfo = existsSync(to) ? statSync(to) : null;
+    if (destInfo !== null && !destInfo.isDirectory()) throw cpEexist('cp', to);
+    if (destInfo === null) _wsMkdir(to, { recursive: true });
+    const prefix = from.endsWith('/') ? from : `${from}/`;
+    for (const name of readdirSync(from)) {
+      await cpEntry(`${prefix}${name}`, `${to}/${name}`, options);
+    }
+    return;
+  }
+  if (existsSync(to) && options?.force !== true) throw cpEexist('cp', to);
+  // readFileSync serves both views and resolves the one symlink hop; the
+  // Buffer face is a Uint8Array, the shape _wsWriteFile stores.
+  const bytes = readFileSync(from);
+  _wsWriteFile(to, bytes, info.mode & 0o777);
+};
+export const cp = async (source, destination, options) => {
+  await cpEntry(source, destination, options ?? {});
+};
+/** copyFile(src, dest, mode) — the single-file copy (cp's file case without
+ * the directory walk); COPYFILE_EXCL makes an existing dest an EEXIST.
+ * Demanded at link time by ptc-runtime-node's process spec. */
+export const copyFile = async (src, dest, mode = 0) => {
+  const bytes = readFileSync(src);
+  if ((mode & constants.COPYFILE_EXCL) !== 0 && existsSync(dest)) {
+    throw cpEexist('copyfile', dest);
+  }
+  return _wsWriteFile(dest, bytes, undefined);
+};
 export const appendFile = async (path, data, options) => {
   const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
   if (!(bytes instanceof Uint8Array)) {
@@ -191,10 +315,6 @@ export const unlink = async (path) => _wsRm(path, { force: false });
 // view has no empty-dir bookkeeping, so the POSIX empty-dir restriction is
 // not expressible here; demanded at link time by the upstream specs.
 export const rmdir = async (path, options) => _wsRm(path, options);
-// symlink: the workspace link seam is a HARD link (wsLink) — the symlink
-// semantic (a path alias resolved at read time) has no backing in either
-// staged view, so it fails loud naming the boundary.
-export const symlink = refuseAsync('symlink');
 
 /** access() succeeds for existence checks on readable staged paths — the one
  * write-side name whose SEMANTICS are read-shaped. Mode bits are ignored: the
@@ -210,16 +330,25 @@ export const access = async (path) => {
 export const constants = {
   F_OK: 0, R_OK: 4, W_OK: 2, X_OK: 1,
   O_RDONLY: 0, O_WRONLY: 1, O_RDWR: 2,
+  // node's numeric O_* values — the attachment-local durable-store calls
+  // open(path, constants.O_RDONLY) and friends with NUMBERS (R3-D,
+  // 2026-09-27); the string-face mapping below consumes them.
+  O_CREAT: 64, O_EXCL: 128, O_TRUNC: 512, O_APPEND: 1024,
   COPYFILE_EXCL: 1, COPYFILE_FICLONE: 2, COPYFILE_FICLONE_FORCE: 4,
 };
 
-/** realpath(): the staged keys ARE canonical (no symlinks in either view), so
- * this is identity for known paths and ENOENT otherwise. */
+/** realpath(): canonicalizes through the workspace symlink chain (the sync
+ * face's vfsRealpath — one link-hop per segment) and stays identity for the
+ * seeded views (their keys are canonical). ENOENT for missing in-view paths.
+ * Measured 2026-09-27: the home-paths watcher test realpaths an alias
+ * symlink and asserts the TARGET spelling. */
 export const realpath = async (path) => {
   if (!existsSync(path) && readdirSync(path) === null) {
     throw enoent('realpath', path);
   }
-  return path;
+  return new Promise((resolve, reject) => {
+    realpathCallback(path, (error, resolved) => (error ? reject(error) : resolve(resolved)));
+  });
 };
 
 /** opendir(): the async iterator face of readdir, one level. The presets
@@ -259,10 +388,15 @@ class FileHandle {
     this.#append = append;
   }
 
-  /** writeFile(data[, options]) — replace the whole file, EXCEPT on an
-   * append-mode handle ('a'/'ax'), where node appends at EOF (the jsonl
-   * spine's appendLines relies on it: it stats `before`, writes, and rolls
-   * back to `before` on failure). */
+  /** writeFile(data[, options]) — node semantics: writes AT the handle's
+   * current file position and advances it, so sequential writeFile calls on
+   * one handle ACCUMULATE (node: filehandle.writeFile uses the position,
+   * which starts at 0 for the O_CREAT-staged handles the closure opens).
+   * Append-mode handles ('a'/'ax') append at EOF regardless (the jsonl
+   * spine's appendLines relies on it). The cursor-tracking upgrade fixes
+   * attachment-local's staging loop, which writeFile()s every chunk into one
+   * fresh O_CREAT|O_EXCL handle — with whole-file replacement only the LAST
+   * chunk survived (measured 2026-09-28, R3-G1). */
   async writeFile(data, options) {
     const bytes = typeof data === 'string' ? encodeUtf8(data) : data;
     if (!(bytes instanceof Uint8Array)) {
@@ -272,18 +406,22 @@ class FileHandle {
     if (encoding !== undefined && encoding !== 'utf8' && encoding !== 'utf-8' && encoding !== 'buffer') {
       throw new Error(`FileHandle.writeFile: encoding '${encoding}' — supported: utf8, buffer`);
     }
-    if (this.#append) {
+    if (this.#append || this.#position > 0) {
       let current = new Uint8Array(0);
       try {
         current = await readFile(this.#path);
       } catch (error) {
         if (error?.code !== 'ENOENT') throw error;
       }
-      const merged = new Uint8Array(current.length + bytes.length);
-      merged.set(current, 0);
-      merged.set(bytes, current.length);
-      return _wsWriteFile(this.#path, merged, undefined);
+      const at = this.#append ? current.length : Math.min(this.#position, current.length);
+      const merged = new Uint8Array(at + bytes.length);
+      merged.set(current.subarray(0, at), 0);
+      merged.set(bytes, at);
+      const out = _wsWriteFile(this.#path, merged, undefined);
+      if (!this.#append) this.#position = at + bytes.length;
+      return out;
     }
+    this.#position = bytes.length;
     return _wsWriteFile(this.#path, bytes, undefined);
   }
 
@@ -346,8 +484,31 @@ class FileHandle {
  * file), 'a' appends-or-creates (the jsonl durable append), 'r+' requires
  * existence and rewrites in place (repair/rollback). */
 export const open = async (path, flags = 'r', mode) => {
+  // Numeric O_* flags (attachment-local's directory fsync passes
+  // constants.O_RDONLY): fold the access mode + behavior bits onto the
+  // string faces the body below serves. 'wx'/'ax' keep their exclusivity
+  // through the x-bit, matching node's O_CREAT|O_EXCL compositions.
+  if (typeof flags === 'number') {
+    const O = constants;
+    const access = flags & 3;
+    let text = access === 2 ? 'r+' : access === 1 ? 'w' : 'r';
+    if (flags & O.O_APPEND) text = 'a' + (text === 'r+' ? '+' : '');
+    if (flags & O.O_EXCL) text += 'x';
+    flags = text;
+  }
   if (flags === 'r') {
-    if (!existsSync(path)) throw enoent('open', path);
+    if (!existsSync(path)) {
+      // The durability walk (attachment-local's syncDirectory) opens every
+      // ancestor up to the filesystem root; this VFS serves ONE pinned
+      // workspace, so ancestors ABOVE it come back as anonymous empty
+      // directory handles (sync/close no-ops) instead of ENOENT — node
+      // answers those opens on a real host (R3-D, 2026-09-27).
+      const wsRoot = globalThis.__dshProfileTmpdir;
+      if (typeof wsRoot === 'string' && path !== undefined && wsRoot.startsWith(path)) {
+        return { sync: async () => {}, close: async () => {} };
+      }
+      throw enoent('open', path);
+    }
     return new FileHandle(path, flags);
   }
   if (flags === 'r+') {
@@ -417,4 +578,5 @@ export default {
   readFile, readdir, stat, lstat, mkdir, rm, rename, link, chmod, writeFile, open,
   cp, appendFile, unlink, access,
   constants, realpath, opendir, mkdtemp, truncate,
+  utimes, symlink, readlink,
 };

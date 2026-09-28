@@ -8,9 +8,16 @@
  */
 export function attachAsyncChain(makeExpect, failWith) {
   /** One settled-value matcher invocation (module level for nesting). */
-  const settleAndMatch = async (settle, negated, matcher, args) => {
+  const settleAndMatch = async (settle, negated, matcher, args, isResolution = false) => {
     const value = await settle();
     if (matcher.startsWith('toThrow')) {
+      // A RESOLVED promise threw nothing: toThrow fails and not.toThrow
+      // passes, regardless of the resolved value (a void dispose resolves
+      // undefined — telemetry's resolves.not.toThrow on dispose). A REJECTED
+      // promise feeds the rejection to the thrower machinery below.
+      if (isResolution && value === undefined) {
+        return checkResolution(negated);
+      }
       const chain = makeExpect(() => { throw value; }, negated);
       return chain[matcher](...args);
     }
@@ -19,15 +26,30 @@ export function attachAsyncChain(makeExpect, failWith) {
     if (typeof fn !== 'function') failWith(`harness: matcher "${matcher}" is not implemented`);
     return fn.apply(settled, args);
   };
-  const makeAsyncChain = (settle, negated) => {
+  /** The no-throw verdict for a RESOLVED promise (negation-aware). */
+  const checkResolution = (negated) => {
+    if (negated) return undefined;
+    return failWith('expected the promise to reject with a thrown error, but it resolved');
+  };
+  const makeAsyncChain = (settle, negated, isResolution = false) => {
     const cache = {};
     return new Proxy(cache, {
       get(target, matcher) {
-        if (typeof matcher !== 'string' || matcher === 'then' || matcher === 'not') {
+        if (typeof matcher !== 'string' || matcher === 'then') {
           return undefined; // symbols/protocol probes never start a chain
         }
+        // `.resolves.not.toThrow()` / `.rejects.not.toThrow()` — vitest
+        // negates the SETTLED matcher (measured 2026-09-27: telemetry's
+        // "warns instead of throwing" disposes with resolves.not.toThrow);
+        // the old probe returned undefined and the follow-up read threw.
+        if (matcher === 'not') {
+          if (!('not' in cache)) {
+            cache.not = makeAsyncChain(settle, !negated, isResolution);
+          }
+          return cache.not;
+        }
         if (!(matcher in target)) {
-          target[matcher] = (...args) => settleAndMatch(settle, negated, matcher, args);
+          target[matcher] = (...args) => settleAndMatch(settle, negated, matcher, args, isResolution);
         }
         return target[matcher];
       },
