@@ -261,6 +261,12 @@ TREES = [
     # the npm `fflate` bridge target (the OFFICE row's zip engine).
     ("vendor/npm/fflate@0.8.2/esm",
      SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+    # The crypto shims' npm face (2026-09-29): shims/crypto.js statically
+    # imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
+    # map resolves @noble/hashes/<sub> into this pin — the whole dir rides
+    # (the anti-drift rule; the parity port leg died on exactly this gap).
+    ("vendor/npm/@noble/hashes@2.3.0",
+     SPIKE / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
      SPIKE / "system-plugins" / "dsh-office"),

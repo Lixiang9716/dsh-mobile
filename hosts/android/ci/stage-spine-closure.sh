@@ -139,6 +139,18 @@ say "staging vendor/npm/yaml@2.9.0 (browser ESM face)"
         cp "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel"
     done
 
+# The crypto shims' npm face (2026-09-29): shims/crypto.js statically
+# imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
+# map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
+# (the anti-drift rule; the in-app parity leg died on exactly this gap).
+say "staging vendor/npm/@noble/hashes@2.3.0 (js)"
+mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0"
+(cd "$SPIKE/vendor/npm/@noble/hashes@2.3.0" && find . -type f -name '*.js') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/@noble/hashes@2.3.0/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/@noble/hashes@2.3.0/$rel" "$ASSETS/vendor/npm/@noble/hashes@2.3.0/$rel"
+    done
+
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
 say "staging vendor/npm/zod@4.4.3 (classic runtime closure)"
 mkdir -p "$ZOD_DST/v4/classic" "$ZOD_DST/v4/core" "$ZOD_DST/v4/locales"

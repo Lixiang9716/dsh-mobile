@@ -451,6 +451,20 @@ fi
 # sync+check discipline as the closure — the older v0 webclient/
 # dsh-web-client hand-commit predates this script's coverage and stays as-is.
 WEBCLIENT_DIRS="next whale"
+
+# The crypto shims' npm face (2026-09-29): shims/crypto.js statically
+# imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
+# map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
+# (the anti-drift rule). BUNDLE_FILES rows in Index.ets must mirror this
+# tree (check-bundle-files cross-checks both directions).
+NOBLE_DIR="vendor/npm/@noble/hashes@2.3.0"
+if [ "$MODE" != "check" ]; then
+    (cd "runtime/spike/$NOBLE_DIR" && find . -type f -name '*.js') |
+        while IFS= read -r rel; do
+            mkdir -p "$RAW/$NOBLE_DIR/$(dirname "$rel")"
+            cp "runtime/spike/$NOBLE_DIR/$rel" "$RAW/$NOBLE_DIR/$rel"
+        done
+fi
 webclient_files() {
     (cd "presentation/web-client-$1" && find . -type f) |
         while IFS= read -r rel; do echo "webclient/dsh-web-client-$1/${rel#./}"; done

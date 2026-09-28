@@ -1,5 +1,5 @@
 {
-  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
   "engine": "quickjs-ng + node v24.14.0 (reference)",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned; the SAME closure serves both legs)",
   "scenario": "upstream.parity",
