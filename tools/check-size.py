@@ -46,6 +46,18 @@ SOURCE_EXTS = {".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".swift", ".kt", ".
 # code this repo authors. Same precedent as the logging gate's VENDOR_SEGMENT.
 VENDOR_SEGMENT = "/vendor/"
 
+# Staged platform copies of the canonical runtime/spike closure (the Android
+# app assets and the HarmonyOS rawfile tree): byte-identical mirrors of the
+# canonical files, byte-verified by the closures gate (build/check-closures.sh
+# in --check mode). Judging a copy here is double judgment of already-reviewed
+# bytes and counts every canonical over-budget file 2-3x — the canonical file
+# is the one that carries the violation. Same rationale as the .gov/checks/
+# exclude.json entry for the Android assets subtree.
+STAGED_CLOSURE_DIRS = (
+    "hosts/android/app/src/main/assets/spike/",
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/",
+)
+
 # Bare-method signature: `name(args) {` — exclude control-flow keywords so
 # `if (...) {` is not counted as a function start.
 CTRL = r"(?!(if|for|while|switch|catch|else|try|do|match|when|with|return|function)\b)"
@@ -344,8 +356,12 @@ def main():
     # Vendored upstream packages are kept verbatim (D6/D9): their bundled
     # single-file builds cannot be refactored to our size limits, so the
     # unified-size contract applies only to code this repo authors. Same
-    # precedent as the logging gate's VENDOR_SEGMENT exemption.
-    files = [f for f in files if VENDOR_SEGMENT not in f]
+    # precedent as the logging gate's VENDOR_SEGMENT exemption. The staged
+    # platform copies of the spike closure are skipped for the mirror reason:
+    # the canonical file carries the violation, the copy is byte-verified by
+    # the closures gate.
+    files = [f for f in files if VENDOR_SEGMENT not in f
+             and not f.startswith(STAGED_CLOSURE_DIRS)]
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0

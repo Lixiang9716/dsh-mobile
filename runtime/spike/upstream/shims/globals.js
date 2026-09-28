@@ -2,13 +2,8 @@
 import proc from './process.js';
 import { defineRuntimeModules } from './runtime-modules.js';
 import {
-  ReadableStream,
-  WritableStream,
-  TransformStream,
-  DecompressionStream,
-  Response,
-  TextDecoderStream,
-  TextEncoderStream,
+  ReadableStream, WritableStream, TransformStream, DecompressionStream,
+  Response, TextDecoderStream, TextEncoderStream,
 } from './web-streams.js';
 import {
   Event,
@@ -24,21 +19,20 @@ import { DshURL } from './url.js';
  * code paths need and quickjs does not define (AbortController for the
  * agent-loop cancellation path, structuredClone for its state clones).
  * Installed by scenario/upstream-test-harness.js BEFORE any spec imports
- * run, so every host (CLI, iOS, Android, HarmonyOS) gets them from this
- * one file. Extracted from the harness when its size crossed the 500-line
- * file budget (measured 2026-09-23, CI code-size).
+ * run, so every host (CLI, iOS, Android, HarmonyOS) gets them from this one
+ * file. Extracted from the harness at the 2026-09-23 code-size gate.
  */
 // The runtime-module registrations (node:string_decoder, node:stream/
 // promises, the package shim faces) must land before the FIRST spec import:
-// ESM links statically, so a specifier registered late still fails its
-// link. This file is the harness's first import — the same property the
-// globals themselves rely on.
+// ESM links statically, so a specifier registered late still fails its link.
+// This file is the harness's first import — the same property the globals
+// themselves rely on.
 defineRuntimeModules();
 
 // WHATWG streams/response — the web-adjacent faces use them as bare globals
 // (ReadableStream for the SSE decoders; TransformStream/DecompressionStream/
-// Response for the webworker image loader's pipe chain). Installed behind
-// the host's own bindings when it has any (the web-shims.js rule).
+// Response for the image loader's pipe chain) sit behind any host binding
+// (the web-shims.js rule).
 if (typeof globalThis.ReadableStream === 'undefined') globalThis.ReadableStream = ReadableStream;
 if (typeof globalThis.WritableStream === 'undefined') globalThis.WritableStream = WritableStream;
 if (typeof globalThis.TransformStream === 'undefined') globalThis.TransformStream = TransformStream;

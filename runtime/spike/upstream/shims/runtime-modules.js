@@ -121,7 +121,15 @@ const REGISTRATIONS = [
   // shapes can never hit an aliased name, so the row pins the real file (the
   // dsh-session/types precedent).
   ['@deepseek-ai/dsh-client-web/injections', "export * from '/vendor/npm/@deepseek-ai/dsh-client-web@0.1.6-alpha.2/lib/apply-injections.js';"],
+  // The row is ALSO the trigger for the cordis-plugin-loader failure face:
+  // whatever imports cordis first (a dsh lib, a spec, or the vendored loader
+  // lib itself) evaluates the row, and the face file patches the vendored
+  // loader's prototype methods on a microtask (deferred because when the
+  // first cordis import arrives THROUGH the loader lib, its classes are
+  // still mid-evaluation — see the face file's header). No npm-bridges row
+  // needed, so the effect survives the npm-bridges split churn untouched.
   ['@deepseek-ai/cordis', [
+    "import '/upstream/shims/cordis-loader-failure-face.js';",
     "export * from '/vendor/npm/cordis@4.0.2/lib/index.js';",
     FIBER_STATE,
     LOGGER_LEVEL,

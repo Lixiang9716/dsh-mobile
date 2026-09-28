@@ -25,6 +25,59 @@ const ROOT_INSTANCE_KEY = 'root';
 
 class SlotAssemblyError extends Error {}
 
+/** The inject effect body (module level for size): effect-per-declaration-
+ * lifetime (the vendored inject) — the controller belongs to the caller's
+ * fiber, so plugin unload cancels a pending wait. `core` is the SlotCore
+ * (`this._core` at the call site). */
+const injectEffect = (core, ctx, key, callback) => {
+  let active;
+  let activeEpoch;
+  let stopped = false;
+  let unsubscribe = () => {};
+  const stop = () => {
+    if (stopped) return;
+    stopped = true;
+    unsubscribe();
+    const dispose = active;
+    active = undefined;
+    activeEpoch = undefined;
+    dispose?.();
+  };
+  const reconcile = () => {
+    if (stopped) return;
+    const spec = core.specDynamic(key);
+    const epoch = core.declarationEpoch(key);
+    if (active !== undefined && activeEpoch === epoch) return;
+    const dispose = active;
+    active = undefined;
+    activeEpoch = undefined;
+    dispose?.();
+    if (spec === undefined) return;
+    const disposeEffect = ctx.effect(callback, `slots.inject(${JSON.stringify(key)}): declaration`);
+    active = () => disposeEffect();
+    activeEpoch = epoch;
+  };
+  const changed = () => {
+    try {
+      reconcile();
+    } catch (error) {
+      stop();
+      if (error?.code !== 'INACTIVE_EFFECT') {
+        const failure = error instanceof Error ? error : new Error(String(error));
+        queueMicrotask(() => { throw failure; });
+      }
+    }
+  };
+  unsubscribe = core.subscribeDeclaration(key, changed);
+  try {
+    reconcile();
+  } catch (error) {
+    stop();
+    throw error;
+  }
+  return stop;
+};
+
 const copyUnique = (kind, target, values, finalProps, propNameOf) => {
   if (values === undefined) return;
   for (const [name, value] of Object.entries(values)) {
@@ -80,58 +133,12 @@ class SlotRegistryImpl extends Service {
     });
   }
 
-  /** Effect-per-declaration-lifetime (the vendored inject): the controller
-   * belongs to the caller's fiber, so plugin unload cancels a pending wait. */
   inject(key, callback) {
     const ctx = this.ctx;
-    const disposeController = ctx.effect(() => {
-      let active;
-      let activeEpoch;
-      let stopped = false;
-      let unsubscribe = () => {};
-      const stop = () => {
-        if (stopped) return;
-        stopped = true;
-        unsubscribe();
-        const dispose = active;
-        active = undefined;
-        activeEpoch = undefined;
-        dispose?.();
-      };
-      const reconcile = () => {
-        if (stopped) return;
-        const spec = this._core.specDynamic(key);
-        const epoch = this._core.declarationEpoch(key);
-        if (active !== undefined && activeEpoch === epoch) return;
-        const dispose = active;
-        active = undefined;
-        activeEpoch = undefined;
-        dispose?.();
-        if (spec === undefined) return;
-        const disposeEffect = ctx.effect(callback, `slots.inject(${JSON.stringify(key)}): declaration`);
-        active = () => disposeEffect();
-        activeEpoch = epoch;
-      };
-      const changed = () => {
-        try {
-          reconcile();
-        } catch (error) {
-          stop();
-          if (error?.code !== 'INACTIVE_EFFECT') {
-            const failure = error instanceof Error ? error : new Error(String(error));
-            queueMicrotask(() => { throw failure; });
-          }
-        }
-      };
-      unsubscribe = this._core.subscribeDeclaration(key, changed);
-      try {
-        reconcile();
-      } catch (error) {
-        stop();
-        throw error;
-      }
-      return stop;
-    }, `slots.inject(${JSON.stringify(key)})`);
+    const disposeController = ctx.effect(
+      () => injectEffect(this._core, ctx, key, callback),
+      `slots.inject(${JSON.stringify(key)})`,
+    );
     return () => disposeController();
   }
 

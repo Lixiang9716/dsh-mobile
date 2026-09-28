@@ -1,3 +1,4 @@
+// dsh:logging-exempt (dev script: the log stream is the product)
 /**
  * upstream-suite-leg — the on-emulator driver of the UPSTREAM DSH test
  * suite: it loads ONE transpiled upstream spec (esbuild output, bare
@@ -227,10 +228,30 @@ const stageSourceIntrospectionTree = async (spec, emit) => {
  * against the CLI's real working directory, exactly like the sibling
  * staging's /bin/cp. Undefined for paths with no real-world twin. */
 const installFlatPathMap = () => {
+  // The webworker-runtime node/chokidar spec's per-consumer package trees
+  // (W7-X1): the spec resolves REAL chokidar/readdirp bytes through
+  // createRequire(<consumer manifest>).resolve() — the node:module shim's
+  // node_modules ancestor walk over the staged view — then mounts the files
+  // into its own Worker-loader VFS. Upstream's lockfile pins DIFFERENT
+  // majors per consumer (settings-file/credentials → chokidar 4.0.3 +
+  // readdirp 4.1.2; skill-filesystem → chokidar 5.0.0 + readdirp 5.0.0), so
+  // the per-consumer node_modules nesting is what makes both fixtures
+  // resolve their own version; one shared <cwd>/node_modules cannot. The
+  // vendored registry trees answer through this map (read-only re-rooting —
+  // D6: the same pinned bytes, staged not copied).
+  const watchTrees = [
+    ['/packages/settings/settings-file/node_modules/chokidar/', 'vendor/npm/chokidar@4.0.3/'],
+    ['/packages/settings/settings-file/node_modules/readdirp/', 'vendor/npm/readdirp@4.1.2/'],
+    ['/packages/skill/skill-filesystem/node_modules/chokidar/', 'vendor/npm/chokidar@5.0.0/'],
+    ['/packages/skill/skill-filesystem/node_modules/readdirp/', 'vendor/npm/readdirp@5.0.0/'],
+  ];
   globalThis.__dshFlatPathMap = (path) => {
     if (typeof path !== 'string') return undefined;
     if (path.startsWith('/vendor/') || path.startsWith('/upstream-tests/')) {
       return path.slice(1);
+    }
+    for (const [staged, real] of watchTrees) {
+      if (path.startsWith(staged)) return `${real}${path.slice(staged.length)}`;
     }
     return undefined;
   };
@@ -256,50 +277,36 @@ const preloadRealFs = async () => {
  * WORKSPACE-absolute <cwd>/upstream-tests/fixtures path — outside every
  * seeded view. The copy is verbatim (D6: read-only staging) and desktop-only
  * like the sibling staging. */
-const stageRealFixturesTree = async (spec) => {
-  const stem = spec.replace(/^upstream-tests\//, '').replace(/\.spec\.mjs$/, '');
-  const parts = stem.split('__');
-  if (parts.length < 3 || parts[2] !== 'tests') return;
-  const vendorFixtures = `vendor/dsh-tests@${VENDOR_TESTS_TAG}/packages/${parts[0]}/${parts[1]}/tests/fixtures`;
-  // The cwd-joined path is the RUN'S OWN real scope root (the per-run
-  // mkdtemp), not the CLI checkout — materialize there (absolute real paths;
-  // the /bin tools see exactly what the real fallback will stat).
-  const target = `${globalThis.__dshProfileCwd?.replace(/\/$/, '') ?? ''}/upstream-tests`;
-  if (!target.startsWith('/tmp/')) return;
-  const { spawnSync } = await import('node:child_process');
-  spawnSync('/bin/mkdir', ['-p', target]);
-  const res = spawnSync('/bin/cp', ['-R', vendorFixtures, `${target}/`]);
-  if (res.status !== 0) {
-    log.debug('fixtures tree stage skipped', { vendorFixtures, code: res.status });
-  }
-  // Fixture tsconfigs compile REAL TypeScript against the staged tree; bare
-  // imports the tsconfig `paths` map does not cover resolve through
-  // node_modules walk-up, which ends at <profile>/node_modules (nothing
-  // above the per-run container exists). The vendored zod (the one bare
-  // specifier the typert type-model fixture uses) mirrors there as a real
-  // copy — cp -R follows the vendor symlink, so the run container is
-  // self-contained (D6: read-only staging of the pinned vendored bytes).
-  // Extend SPECIFIC packages here when a fixture names one; never mirror
-  // the whole vendor tree (host cost, and @deepseek-ai/* types are served
-  // by the fixture tsconfig's own paths map).
+/** Mirror the vendored node_modules packages a fixture's tsconfig walk-up
+ * needs (module level for size): SPECIFIC packages only (extend the list
+ * when a fixture names one; never mirror the whole vendor tree — host cost,
+ * and @deepseek-ai/* types are served by the fixture tsconfig's own paths
+ * map). cp -R follows the vendor symlink, so the run container is
+ * self-contained (D6: read-only staging of the pinned vendored bytes). */
+const stageFixtureNodeModules = async (spawnSync) => {
+  const root = globalThis.__dshProfileCwd?.replace(/\/$/, '');
   for (const pkg of ['zod']) {
     const probe = spawnSync('/bin/test', ['-d', `vendor/node_modules/${pkg}`]);
     if (probe.status !== 0) continue;
     // cp -R src dest/ needs dest to exist (no implicit mkdir in /bin/cp).
-    spawnSync('/bin/mkdir', ['-p', `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules`]);
-    const mirror = spawnSync('/bin/cp', ['-R', `vendor/node_modules/${pkg}`, `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules/`]);
+    spawnSync('/bin/mkdir', ['-p', `${root}/node_modules`]);
+    const mirror = spawnSync('/bin/cp', ['-R', `vendor/node_modules/${pkg}`, `${root}/node_modules/`]);
     if (mirror.status !== 0) {
       log.debug('fixture node_modules mirror skipped', { pkg, code: mirror.status });
     }
   }
-  // @types/node is NOT vendored (a vendoring decision — only the fixture
-  // compiles want it), but the type-model fixture's models reference the
-  // NodeJS namespace (NodeJS.Process). Stage a MINIMAL test-support
-  // declaration authored in OUR layer (the .parity-shim precedent): just
-  // enough ambient vocabulary for the namespace lookups to resolve — the
-  // analyzer under test observes the fixture's OWN declarations, and the
-  // vendored fixture tree must stay verbatim (D6).
-  const nm = `${globalThis.__dshProfileCwd?.replace(/\/$/, '')}/node_modules/@types/node`;
+};
+
+/** Stage the MINIMAL @types/node test-support declaration (module level for
+ * size). @types/node is NOT vendored (a vendoring decision — only the
+ * fixture compiles want it), but the type-model fixture's models reference
+ * the NodeJS namespace (NodeJS.Process). Authored in OUR layer (the
+ * .parity-shim precedent): just enough ambient vocabulary for the namespace
+ * lookups to resolve — the analyzer under test observes the fixture's OWN
+ * declarations, and the vendored fixture tree must stay verbatim (D6). */
+const stageFixtureTypesStub = async (spawnSync) => {
+  const root = globalThis.__dshProfileCwd?.replace(/\/$/, '');
+  const nm = `${root}/node_modules/@types/node`;
   spawnSync('/bin/mkdir', ['-p', nm]);
   const decl = [
     '// Test-support minimum staged by upstream-suite-leg (W6-V): the vendored',
@@ -324,11 +331,63 @@ const stageRealFixturesTree = async (spec) => {
   }
 };
 
-const main = async () => {
+const stageRealFixturesTree = async (spec) => {
+  const stem = spec.replace(/^upstream-tests\//, '').replace(/\.spec\.mjs$/, '');
+  const parts = stem.split('__');
+  if (parts.length < 3 || parts[2] !== 'tests') return;
+  const vendorFixtures = `vendor/dsh-tests@${VENDOR_TESTS_TAG}/packages/${parts[0]}/${parts[1]}/tests/fixtures`;
+  // The cwd-joined path is the RUN'S OWN real scope root (the per-run
+  // mkdtemp), not the CLI checkout — materialize there (absolute real paths;
+  // the /bin tools see exactly what the real fallback will stat).
+  const target = `${globalThis.__dshProfileCwd?.replace(/\/$/, '') ?? ''}/upstream-tests`;
+  if (!target.startsWith('/tmp/')) return;
+  const { spawnSync } = await import('node:child_process');
+  spawnSync('/bin/mkdir', ['-p', target]);
+  const res = spawnSync('/bin/cp', ['-R', vendorFixtures, `${target}/`]);
+  if (res.status !== 0) {
+    log.debug('fixtures tree stage skipped', { vendorFixtures, code: res.status });
+  }
+  await stageFixtureNodeModules(spawnSync);
+  await stageFixtureTypesStub(spawnSync);
+};
+
+/** Pin the real host platform for the shell-gated suites (W7-X1): upstream
+ * guards its real-shell compositions with `process.platform === 'linux' ||
+ * 'darwin'` (tool-terminal loader-composition's suite selector) — a gate
+ * this runtime's 'mobile' default silently fails, registering the suite as
+ * skipped (0/0 green = skipped in the dark, the exact shape the transpiler's
+ * named-exclusion contract refuses). The desktop spike IS a shell host (the
+ * subprocess seam spawns real children throughout), so the REAL platform is
+ * the honest value here: uname(1) through the seam's real-child channel,
+ * desktop-only like every other real-disk staging arm; device hosts keep
+ * 'mobile' and upstream's own gate keeps skipping (its intent). Spec-scoped
+ * until a wave owns the global flip: 70 staged specs read process.platform,
+ * and repinning every arm in one sweep is that wave's blast radius, not a
+ * vendoring side effect. */
+const stageShellSuitePlatform = async (spec) => {
+  if (!spec.includes('terminal__tool-terminal__tests__loader-composition')) return;
+  const { spawnSync } = await import('node:child_process');
+  const res = spawnSync('/usr/bin/uname', ['-s']);
+  const platform = res.status === 0 && typeof res.stdout === 'string'
+    ? { Darwin: 'darwin', Linux: 'linux' }[res.stdout.trim()]
+    : undefined;
+  if (platform === undefined) {
+    log.debug('shell-suite platform pin skipped', { code: res.status, out: String(res.stdout).slice(0, 20) });
+    return;
+  }
+  globalThis.__dshProfilePlatform = platform;
+  log.debug('shell-suite platform pinned', { platform });
+};
+
+/** Boot the leg's environment and stage everything the spec needs before
+ * its import (module level for size): pin the profile container (the os/fs
+ * shims read it BEFORE the spec imports evaluate — this driver IS the
+ * suite's boot prelude), stage the spawned sibling files, install the
+ * flat-path map, preload the child-process namespace, then run the
+ * spec-specific staging faces. Returns the resolved spec path. */
+const bootLegEnvironment = async () => {
   log.debug('main begin', {});
   const cfg = launchSpecFacts() ?? await takeRuntimeConfig();
-  // Pin the profile container for the os/fs shims BEFORE the spec imports
-  // evaluate (this driver IS the suite's boot prelude).
   await pinProfileContainer();
   // Stage the spawned sibling files (real children read the real disk).
   await stageRealSiblingFiles();
@@ -354,6 +413,14 @@ const main = async () => {
   await seedSpecFixtures(spec, emit);
   // cwd-joined fixture joins need the REAL tree (see stageRealFixturesTree).
   await stageRealFixturesTree(spec);
+  // The shell-gated suites need the REAL host platform before the spec's
+  // module-scope suite selector evaluates (see above).
+  await stageShellSuitePlatform(spec);
+  return spec;
+};
+
+const main = async () => {
+  const spec = await bootLegEnvironment();
   // The spec registers its tests at import time (module side effects are
   // the vitest collection model — exactly what the harness captures).
   await import(spec);

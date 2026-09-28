@@ -22,14 +22,20 @@
  * shims construct the SAME class.
  */
 
-const HEX = '0123456789abcdef';
-const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
 // Module-captured string intrinsics: the UTF-8 walks below MUST NOT consult
 // String.prototype live — the ptc-runtime output-json suite mutates
 // model-visible globals (charCodeAt/codePointAt) and its contract is that
 // module-captured intrinsics keep working (measured 2026-09-27). The same
 // capture discipline the vendored output-json module models.
+// The base64/base64url/hex/latin1 codecs live in buffer-codecs.js (the
+// file crossed the size budget); re-exported here so every existing
+// import keeps its specifier.
+import {
+  fromBase64, fromBase64Url, fromHex,
+  toStringHex, toStringBase64, toStringBase64Url, toStringAscii,
+} from 'upstream/shims/buffer-codecs.js';
+export { fromBase64, fromBase64Url, fromHex };
+
 const intrinsicCharCodeAt = String.prototype.charCodeAt;
 const intrinsicFromCharCode = String.fromCharCode;
 
@@ -166,86 +172,39 @@ export const decodeUtf8 = (bytes) => {  let out = '';
   return out;
 };
 
-const toStringHex = (bytes) => {
+/** UTF-16LE encode: code units as 2-byte LE pairs — the raw code-unit copy
+ * node's encoder does (a lone surrogate writes as-is). W7-X1: the vendored
+ * terminal-bash BoundedTextBuffer normalizes every chunk through the
+ * `Buffer.from(text, 'utf16le').toString('utf16le')` round-trip. */
+export const encodeUtf16le = (text) => {
+  const bytes = new Uint8Array(text.length * 2);
+  for (let i = 0; i < text.length; i++) {
+    const code = intrinsicCharCodeAt.call(text, i);
+    bytes[i * 2] = code & 0xff;
+    bytes[i * 2 + 1] = code >>> 8;
+  }
+  return bytes;
+};
+
+/** UTF-16LE decode: LE pairs back into code units; a surrogate pair code
+ * unit decodes to U+FFFD (node's WHATWG utf-16le decoder, and the point of
+ * the vendored round-trip: lone surrogates from a split multibyte boundary
+ * normalize to replacement characters). An odd trailing byte is U+FFFD. */
+export const decodeUtf16le = (bytes) => {
   let out = '';
-  for (let i = 0; i < bytes.length; i++) {
-    out += HEX[bytes[i] >> 4] + HEX[bytes[i] & 0xf];
+  const units = bytes.length - (bytes.length % 2);
+  for (let i = 0; i < units; i += 2) {
+    const code = bytes[i] | (bytes[i + 1] << 8);
+    out += (code >= 0xd800 && code <= 0xdfff) ? '\uFFFD' : intrinsicFromCharCode(code);
   }
+  if (units !== bytes.length) out += '\uFFFD';
   return out;
-};
-
-const B64_INDEX = new Map([...B64].map((ch, i) => [ch, i]));
-
-export const fromBase64 = (text) => {
-  const clean = text.replace(/[^A-Za-z0-9+/]/g, '');
-  const pad = clean.endsWith('==') ? 2 : clean.endsWith('=') ? 1 : 0;
-  const out = new Uint8Array(Math.floor((clean.length * 3) / 4) - pad);
-  let at = 0;
-  let bits = 0;
-  let acc = 0;
-  for (const ch of clean) {
-    acc = (acc << 6) | B64_INDEX.get(ch);
-    bits += 6;
-    if (bits >= 8) {
-      bits -= 8;
-      out[at++] = (acc >> bits) & 0xff;
-    }
-  }
-  if (at !== out.length) {
-    throw new Error('buffer: base64 decode length mismatch');
-  }
-  return out;
-};
-
-const toStringBase64 = (bytes) => {
-  let out = '';
-  for (let i = 0; i < bytes.length; i += 3) {
-    const rem = bytes.length - i;
-    const b0 = bytes[i];
-    const b1 = rem > 1 ? bytes[i + 1] : 0;
-    const b2 = rem > 2 ? bytes[i + 2] : 0;
-    out += B64[b0 >> 2];
-    out += B64[((b0 & 3) << 4) | (b1 >> 4)];
-    out += rem > 1 ? B64[((b1 & 15) << 2) | (b2 >> 6)] : '=';
-    out += rem > 2 ? B64[b2 & 63] : '=';
-  }
-  return out;
-};
-
-/** base64url — the RFC 4648 §5 alphabet (-_ for +/, no padding). Decode maps
- * back onto the standard alphabet and rides fromBase64. */
-export const fromBase64Url = (text) => fromBase64(text.replace(/-/g, '+').replace(/_/g, '/'));
-
-const toStringBase64Url = (bytes) => toStringBase64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-/** hex decode — byte-at-a-time base16; odd length or a non-hex pair throws
- * (node's behavior). */
-export const fromHex = (text) => {
-  if (text.length % 2 !== 0) {
-    throw new Error('buffer: hex decode: odd-length string');
-  }
-  const out = new Uint8Array(text.length / 2);
-  for (let i = 0; i < text.length; i += 2) {
-    const hi = Number.parseInt(text.slice(i, i + 2), 16);
-    if (Number.isNaN(hi)) {
-      throw new Error(`buffer: hex decode: invalid byte '${text.slice(i, i + 2)}'`);
-    }
-    out[i / 2] = hi;
-  }
-  return out;
-};
-
-const toStringAscii = (buffer) => {
-  // latin1 family: one byte per code unit (node's 'ascii' masks the high bit
-  // only for non-ASCII input bytes; the corpus's headers are pure ASCII).
-  let text = '';
-  for (let i = 0; i < buffer.length; i++) text += String.fromCharCode(buffer[i] & 0xff);
-  return text;
 };
 
 const ENCODINGS = {
   utf8: decodeUtf8, 'utf-8': decodeUtf8, hex: toStringHex, base64: toStringBase64, base64url: toStringBase64Url,
   ascii: toStringAscii, latin1: toStringAscii, binary: toStringAscii,
+  utf16le: decodeUtf16le, 'utf-16le': decodeUtf16le, ucs2: decodeUtf16le, 'ucs-2': decodeUtf16le,
 };
 
 /** buffer.constants — the byte-cap bounds vendored code validates against
@@ -278,7 +237,10 @@ export class DshBuffer extends Uint8Array {
         for (let i = 0; i < input.length; i++) out[i] = input.charCodeAt(i) & 0xff;
         return out;
       }
-      throw new Error(`buffer: Buffer.from(string, '${encoding}') — only utf8, base64, and the single-byte family (ascii/latin1/binary) are supported`);
+      if (encoding === 'utf16le' || encoding === 'utf-16le' || encoding === 'ucs2' || encoding === 'ucs-2') {
+        return DshBuffer.fromBytes(encodeUtf16le(input));
+      }
+      throw new Error(`buffer: Buffer.from(string, '${encoding}') — only utf8, base64, the single-byte family (ascii/latin1/binary), and utf16le are supported`);
     }
     if (input instanceof Uint8Array || Array.isArray(input)) {
       const out = new DshBuffer(input.length);

@@ -24,62 +24,63 @@ const assertPath = (path) => {
 };
 
 /** node's normalizeString: walk once, collapsing separators and dot
- * segments; `allowAboveRoot` lets leading `..` survive on relative paths. */
+ * segments; `allowAboveRoot` lets leading `..` survive on relative paths.
+ * (Split into module-level helpers for the size gate — the scan state rides
+ * a plain object so the separator handler can mutate it in place; the
+ * algorithm is node's lib/path.js verbatim.) */
+const popLastSegment = (res) => {
+  const lastSlashIndex = res.lastIndexOf('/');
+  if (lastSlashIndex === -1) return { res: '', lastSegmentLength: 0 };
+  const cut = res.slice(0, lastSlashIndex);
+  return { res: cut, lastSegmentLength: cut.length - 1 - cut.lastIndexOf('/') };
+};
+
+const handleSeparator = (state, path, i, allowAboveRoot) => {
+  const res = state.res;
+  if (state.lastSlash === i - 1 || state.dots === 1) {
+    // double separator or a single dot segment: drop
+  } else if (state.dots === 2) {
+    const isDotDot = res.length >= 2 && state.lastSegmentLength === 2
+      && res.charCodeAt(res.length - 1) === CHAR_DOT
+      && res.charCodeAt(res.length - 2) === CHAR_DOT;
+    if (!isDotDot && res.length > 2) {
+      Object.assign(state, popLastSegment(res));
+      state.lastSlash = i;
+      state.dots = 0;
+      return;
+    }
+    if (!isDotDot && res.length !== 0) {
+      state.res = '';
+      state.lastSegmentLength = 0;
+      state.lastSlash = i;
+      state.dots = 0;
+      return;
+    }
+    if (allowAboveRoot) {
+      state.res += state.res.length > 0 ? '/..' : '..';
+      state.lastSegmentLength = 2;
+    }
+  } else {
+    if (res.length > 0) state.res += `/${path.slice(state.lastSlash + 1, i)}`;
+    else state.res = path.slice(state.lastSlash + 1, i);
+    state.lastSegmentLength = i - state.lastSlash - 1;
+  }
+  state.lastSlash = i;
+  state.dots = 0;
+};
+
 const normalizeString = (path, allowAboveRoot) => {
-  let res = '';
-  let lastSegmentLength = 0;
-  let lastSlash = -1;
-  let dots = 0;
+  const state = { res: '', lastSegmentLength: 0, lastSlash: -1, dots: 0 };
   let code = 0;
   for (let i = 0; i <= path.length; ++i) {
     if (i < path.length) code = path.charCodeAt(i);
     else if (code === CHAR_FORWARD_SLASH) break;
     else code = CHAR_FORWARD_SLASH;
-    if (code === CHAR_FORWARD_SLASH) {
-      if (lastSlash === i - 1 || dots === 1) {
-        // double separator or a single dot segment: drop
-      } else if (dots === 2) {
-        if (res.length < 2 || lastSegmentLength !== 2
-            || res.charCodeAt(res.length - 1) !== CHAR_DOT
-            || res.charCodeAt(res.length - 2) !== CHAR_DOT) {
-          if (res.length > 2) {
-            const lastSlashIndex = res.lastIndexOf('/');
-            if (lastSlashIndex === -1) {
-              res = '';
-              lastSegmentLength = 0;
-            } else {
-              res = res.slice(0, lastSlashIndex);
-              lastSegmentLength = res.length - 1 - res.lastIndexOf('/');
-            }
-            lastSlash = i;
-            dots = 0;
-            continue;
-          } else if (res.length !== 0) {
-            res = '';
-            lastSegmentLength = 0;
-            lastSlash = i;
-            dots = 0;
-            continue;
-          }
-        }
-        if (allowAboveRoot) {
-          res += res.length > 0 ? '/..' : '..';
-          lastSegmentLength = 2;
-        }
-      } else {
-        if (res.length > 0) res += `/${path.slice(lastSlash + 1, i)}`;
-        else res = path.slice(lastSlash + 1, i);
-        lastSegmentLength = i - lastSlash - 1;
-      }
-      lastSlash = i;
-      dots = 0;
-    } else if (code === CHAR_DOT && dots !== -1) {
-      ++dots;
-    } else {
-      dots = -1;
-    }
+    if (code === CHAR_FORWARD_SLASH) handleSeparator(state, path, i, allowAboveRoot);
+    else if (code === CHAR_DOT && state.dots !== -1) ++state.dots;
+    else state.dots = -1;
   }
-  return res;
+  return state.res;
 };
 
 /** The process cwd the relative forms resolve against (the profile container;

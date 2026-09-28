@@ -3,17 +3,14 @@
  * shims/web-streams.js — the WHATWG streams/response globals the upstream
  * suite's web-adjacent faces use as BARE GLOBALS (quickjs defines none):
  *   - ReadableStream — the enqueue/pull controller face; async-iterable
- *     (node lets `for await` consume a ReadableStream — parseSse's decoder
- *     rides it), getReader(), pipeThrough/pipeTo over this file's faces.
- *   - TransformStream — the transform callback between a writable and a
- *     readable: enqueues flow writable→transform→readable; a throwing
+ *     (parseSse's decoder rides it), getReader(), pipeThrough/pipeTo.
+ *   - TransformStream — the writable→transform→readable pipe; a throwing
  *     transform errors the readable (the image-gzip member check throws
  *     mid-pipe BY DESIGN), close runs the flush.
  *   - DecompressionStream("gzip") — streaming decode over the vendored
- *     fflate Gunzip (the node:zlib gzip bridge's streaming twin; the same
- *     pinned 0.8.2 tree, no second decoder copy).
- *   - Response — constructed from bytes or any readable face; .body,
- *     .arrayBuffer(), .text() (the image loader pipes Response.body).
+ *     fflate Gunzip (the node:zlib bridge's twin; same pinned 0.8.2 tree).
+ *   - Response — from bytes or any readable face; .body, .arrayBuffer(),
+ *     .text() (the image loader pipes Response.body).
  * Deliberately NOT implemented: HTTP semantics (status/header plumbing),
  * CompressionStream (nothing compresses through a global), Blob/FormData.
  * Installed by shims/globals.js only when the host has not bound its own.
@@ -21,9 +18,8 @@
 import { Gunzip } from '/vendor/npm/fflate@0.8.2/esm/browser.js';
 
 /** Shared queue machinery for every readable side here: reads resolve with
- * {value, done}; a later enqueue/close/error wakes pending reads with a
- * fresh evaluation (never a bare undefined — quickjs enforces the iterator
- * result shape). */
+ * {value, done}; a later enqueue/close/error wakes pending reads with a fresh
+ * evaluation (never a bare undefined — quickjs enforces the iterator shape). */
 class ReadableQueue {
   #queue = [];
   #done = false;
@@ -62,6 +58,44 @@ class ReadableQueue {
   }
 }
 
+/** The pipeThrough face: pump the source into a {writable, readable}
+ * transform, closing the destination on completion. WHATWG error propagation:
+ * a source error ABORTS the destination writable (which errors the
+ * transform's readable with the cause) — a clean cancel would mask the
+ * failure (measured 2026-09-28, R3-H: image-gzip refusal tests resolved). */
+const pipeThroughFace = (consume, transform) => {
+  if (transform?.writable === undefined || transform?.readable === undefined) {
+    throw new TypeError('pipeThrough: a {writable, readable} transform is required');
+  }
+  (async () => {
+    for (;;) {
+      const { value, done } = await consume();
+      if (done) {
+        transform.writable.close?.();
+        return;
+      }
+      transform.writable.enqueue?.(value);
+    }
+  })().catch((cause) => {
+    try { transform.writable.abort?.(cause); } catch { /* already closed */ }
+    try { transform.readable.cancel?.(cause); } catch { /* already closed */ }
+  });
+  return transform.readable;
+};
+
+/** The pipeTo face: pump the source into a writable sink, closing it on
+ * completion (every chunk awaited — backpressure over the sink face). */
+const pipeToFace = (consume, writable) => (async () => {
+  for (;;) {
+    const { value, done } = await consume();
+    if (done) {
+      writable.close?.();
+      return;
+    }
+    await writable.write?.(value);
+  }
+})();
+
 /** A minimal readable object over a queue: async-iterable, getReader(),
  * pipeThrough/pipeTo over this file's transform faces. `armPull` re-drives
  * the user pull around EVERY consumption step — the constructor's one
@@ -87,40 +121,8 @@ const readableFromQueue = (queue, armPull) => {
       cancel: () => queue.close(),
       releaseLock: () => {},
     }),
-    pipeThrough: (transform) => {
-      if (transform?.writable === undefined || transform?.readable === undefined) {
-        throw new TypeError('pipeThrough: a {writable, readable} transform is required');
-      }
-      (async () => {
-        for (;;) {
-          const { value, done } = await consume();
-          if (done) {
-            transform.writable.close?.();
-            return;
-          }
-          transform.writable.enqueue?.(value);
-        }
-      })().catch((cause) => {
-        // WHATWG error propagation: a source error ABORTS the destination
-        // writable (which errors the transform's readable with the cause) —
-        // a clean cancel would mask the failure and downstream would resolve
-        // with a truncated body instead of rejecting (measured 2026-09-28,
-        // R3-H: the image-gzip refusal tests resolved on corrupt input).
-        try { transform.writable.abort?.(cause); } catch { /* already closed */ }
-        try { transform.readable.cancel?.(cause); } catch { /* already closed */ }
-      });
-      return transform.readable;
-    },
-    pipeTo: (writable) => (async () => {
-      for (;;) {
-        const { value, done } = await consume();
-        if (done) {
-          writable.close?.();
-          return;
-        }
-        await writable.write?.(value);
-      }
-    })(),
+    pipeThrough: (transform) => pipeThroughFace(consume, transform),
+    pipeTo: (writable) => pipeToFace(consume, writable),
     cancel: () => queue.close(),
   };
 };
@@ -340,6 +342,26 @@ export class DecompressionStream {
   }
 }
 
+/** The Response stream-body face: an already-native ReadableStream passes
+ * through; any other readable face wraps in a native one-chunk-per-pull
+ * stream (a fresh reader per pull, like the direct spelling). */
+const streamBodyFace = (stream) => {
+  if (stream instanceof ReadableStream) return stream;
+  return new ReadableStream({
+    pull: (controller) => (async () => {
+      for (;;) {
+        const { value, done } = await stream.getReader().read();
+        if (done) {
+          controller.close();
+          return;
+        }
+        controller.enqueue(value);
+        return;
+      }
+    })(),
+  });
+};
+
 /** Response — the body face the image loader drives: constructed from bytes
  * or any readable face; .body (a ReadableStream), .arrayBuffer(), .text(). */
 export class Response {
@@ -372,23 +394,7 @@ export class Response {
   }
 
   get body() {
-    if (this.#source.kind === 'stream') {
-      return this.#source.stream instanceof ReadableStream
-        ? this.#source.stream
-        : new ReadableStream({
-          pull: (controller) => (async () => {
-            for (;;) {
-              const { value, done } = await this.#source.stream.getReader().read();
-              if (done) {
-                controller.close();
-                return;
-              }
-              controller.enqueue(value);
-              return;
-            }
-          })(),
-        });
-    }
+    if (this.#source.kind === 'stream') return streamBodyFace(this.#source.stream);
     const bytes = this.#source.bytes;
     return new ReadableStream({
       start(controller) {

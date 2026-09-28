@@ -49,42 +49,40 @@ const resolvePathsFor = (base) => {
   return dirs;
 };
 
-export function createRequire(base) {
-  if (typeof base !== 'string' || base.length === 0) {
-    throw new TypeError(`node:module: createRequire needs a module name, got ${String(base)}`);
+/** The require face for one base (module level for size). JS modules
+ * (relative .js/.cjs/.mjs) go through the userland CJS loader: it EVALUATES
+ * (per-file scope, memoized, cycle-safe) over the staged view and the bundle
+ * disk — the host seam only returns raw text, and the CJS graph
+ * (@mixmark-io/domino et al) needs node's per-file semantics, which no flat
+ * bridge row can express. RELATIVE .json stays on the host seam: the seam
+ * resolves `base` through the loader's bare map (dsh-llm's attribution header
+ * reads ../package.json with base = the bare specifier — lexical dirname
+ * math on a bare name cannot reproduce that resolution). */
+const makeRequireFace = (base) => (request) => {
+  if (typeof request !== 'string' || request.length === 0) {
+    throw new TypeError(`node:module: require needs a relative request, got ${String(request)}`);
   }
-  const require = (request) => {
-    if (typeof request !== 'string' || request.length === 0) {
-      throw new TypeError(`node:module: require needs a relative request, got ${String(request)}`);
-    }
-    // JS modules (relative .js/.cjs/.mjs) go through the userland CJS
-    // loader: it EVALUATES (per-file scope, memoized, cycle-safe) over the
-    // staged view and the bundle disk — the host seam only returns raw
-    // text, and the CJS graph (@mixmark-io/domino et al) needs node's
-    // per-file semantics, which no flat bridge row can express.
-    // RELATIVE .json stays on the host seam: the seam resolves `base`
-    // through the loader's bare map (dsh-llm's attribution header reads
-    // ../package.json with base = the bare specifier — lexical dirname
-    // math on a bare name cannot reproduce that resolution).
-    const isJsModule = /\.(js|cjs|mjs)$/.test(request);
-    const isRelative = request.startsWith('./') || request.startsWith('../') || request.startsWith('/');
-    // bare requests naming a cjs-loader table row (package name or subpath
-    // of one) evaluate through the CJS loader as well
-    const pkgName = request.startsWith('@')
-      ? request.split('/').slice(0, 2).join('/')
-      : request.split('/')[0];
-    if ((isJsModule && isRelative) || (!isRelative && pkgName in bareCjsPackages)) {
-      return makeRequire(base)(request);
-    }
-    const text = globalThis.__dshBundleRequire?.(base, request);
-    if (typeof text !== 'string') {
-      throw new Error(`node:module: require('${request}') from ${base}: host bundle-read seam unavailable`);
-    }
-    return JSON.parse(text);
-  };
-  // require.resolve — the plugin-package inventory reads only `.paths(name)`
-  // (the node_modules candidates a bare specifier would search); the face
-  // answers from the staged fs view so workspace-seeded manifests resolve.
+  const isJsModule = /\.(js|cjs|mjs)$/.test(request);
+  const isRelative = request.startsWith('./') || request.startsWith('../') || request.startsWith('/');
+  // bare requests naming a cjs-loader table row (package name or subpath
+  // of one) evaluate through the CJS loader as well
+  const pkgName = request.startsWith('@')
+    ? request.split('/').slice(0, 2).join('/')
+    : request.split('/')[0];
+  if ((isJsModule && isRelative) || (!isRelative && pkgName in bareCjsPackages)) {
+    return makeRequire(base)(request);
+  }
+  const text = globalThis.__dshBundleRequire?.(base, request);
+  if (typeof text !== 'string') {
+    throw new Error(`node:module: require('${request}') from ${base}: host bundle-read seam unavailable`);
+  }
+  return JSON.parse(text);
+};
+
+/** require.resolve — the plugin-package inventory reads only `.paths(name)`
+ * (the node_modules candidates a bare specifier would search); the face
+ * answers from the staged fs view so workspace-seeded manifests resolve. */
+const makeResolveFace = (base) => {
   const resolve = (request) => {
     if (typeof request !== 'string' || request.length === 0) {
       throw new TypeError(`node:module: resolve needs a specifier, got ${String(request)}`);
@@ -103,7 +101,15 @@ export function createRequire(base) {
     }
     return resolvePathsFor(base);
   };
-  require.resolve = resolve;
+  return resolve;
+};
+
+export function createRequire(base) {
+  if (typeof base !== 'string' || base.length === 0) {
+    throw new TypeError(`node:module: createRequire needs a module name, got ${String(base)}`);
+  }
+  const require = makeRequireFace(base);
+  require.resolve = makeResolveFace(base);
   return require;
 }
 

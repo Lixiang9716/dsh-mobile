@@ -39,6 +39,16 @@ const BARE_PACKAGES = {
   // it bare when no DOMParser global exists (tool-web fetch-formatting).
   // main: "./lib" → lib/index.js.
   '@mixmark-io/domino': '/vendor/npm/@mixmark-io/domino@2.2.0',
+  // @xterm/headless 6.0.0 + @xterm/addon-serialize 0.14.0 (W7-X1) — the
+  // session-buffer / terminal-controller specs' createLazyRequire targets:
+  // the lazy-require face goes through node:module's require, whose bare
+  // routing consults THIS table (bareCjsPackages), so the row is the
+  // operative mapping; the npm-bridges rows only mirror it for ESM
+  // spellings. Both bundles are self-contained webpack CJS (zero require()
+  // calls — measured 2026-09-28): no builtin faces needed. main:
+  // "./lib-headless/xterm-headless.js" / "./lib/addon-serialize.js".
+  '@xterm/headless': '/vendor/npm/@xterm/headless@6.0.0',
+  '@xterm/addon-serialize': '/vendor/npm/@xterm/addon-serialize@0.14.0',
 };
 
 const dirOf = (p) => {

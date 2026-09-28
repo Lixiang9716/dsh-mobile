@@ -25,16 +25,19 @@ const ROOT = new URL('../..', import.meta.url).pathname;
 const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
 const OUT = join(ROOT, 'runtime/spike/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
+// The path-rewrite machinery lives in transpile-rewrites.js (the file
+// crossed the size budget; these faces are pure source->source transforms).
+import { BARE_EXTERNAL_PLUGIN, SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, hoistSubmoduleSrcSubpaths, rewriteBundleManifestRoot, rewriteSeedTreeRoots, collectSeedTreeFiles, walk, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, SEED_TREE_SPECS } from './transpile-rewrites.mjs';
 
 const UNIMPLEMENTED = [
-  [/from\s*['"]node:vm['"]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
+  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
   // NOTE: the session-persistence-jsonl exclusion was REMOVED when the
   // closure harvest staged the koffi-free submodule-built package
   // (vendor/dsh/session-persistence-jsonl@0.1.6-alpha.2, 2026-09-23): its
   // worker-backed lease degrades to the in-process path through the
   // node:worker_threads errors shim, exactly like the vendored session
   // package, and the flock addon maps to a shim.
-  [/from\s*['"]fast-check['"]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
+  [/from\s*[\x27\x22]fast-check[\x27\x22]/, 'fast-check (not in the loader bare map — a vendoring decision, not a silent drop)'],
   [/vi\.mock\s*\(|vi\.doMock\s*\(|vi\.resetModules\s*\(/, 'vi.mock/doMock/resetModules (loader-level module interception)'],
   // NOTE: the fake-timers / vi.waitFor / expect.poll exclusions were
   // REMOVED with the v1.4.0 timer seam (contract + host + harness fakes);
@@ -52,7 +55,7 @@ const UNIMPLEMENTED = [
   // Monorepo src/ subpaths: the published tarballs ship lib/ only, so these
   // can never resolve from the vendored closure (upstream's own suite runs
   // from source). A named exclusion, not an on-device noise failure.
-  [/from\s*['"]@deepseek-ai\/dsh-[a-z0-9-]+\/src\//, 'monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)'],
+  [/from\s*[\x27\x22]@deepseek-ai\/dsh-[a-z0-9-]+\/src\//, 'monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)'],
   // NOTE: the FiberState exclusion was REMOVED (2026-09-27, wave 3): the
   // runtime no longer needs the npm cordis@4.0.2 face to carry the export —
   // upstream/shims/runtime-modules.js registers `@deepseek-ai/cordis` as the
@@ -97,10 +100,6 @@ const spyOnNamespaceRules = (source) => {
 // scope guard is the importer: only the pinned submodule's files get the
 // stub; a SPEC's own pi-ai import stays bare external and keeps failing
 // loud on-device (the llm group's open work, unchanged).
-const UNVENDORED_INLINED = [
-  /^@earendil-works\/pi-ai(?:\/|$)/,
-  /^@deepseek-ai\/dsh-credentials$/,
-];
 // esbuild resolves symlinks by default, so importers arrive as REAL paths —
 // a worktree/symlinked checkout must scope the stub against the resolved
 // submodule location or the guard silently misses (observed: the pi-ai
@@ -146,372 +145,6 @@ try {
  *
  * - `resolve.exports` — the app-boot limb's package-resolution helper,
  *   present only in the submodule's lockfile store (pnpm layout). */
-const SUBMODULE_BARE_RESOLVES = () => {
-  const abs = (rel) => join(SUBMODULE_ROOT, rel);
-  // W5-T (2026-09-28): the @opentelemetry faces the session-telemetry-otel
-  // specs import — inlined from the vendored npm trees (D6-verbatim) instead
-  // of loader-served, because OTel's build/esm output imports its own files
-  // EXTENSIONLESS ('./LoggerProvider'), which the loader's relative
-  // resolution cannot serve; esbuild's resolver handles that shape natively.
-  // Their bare BUILTIN imports (http/fs/util/...) stay external — the
-  // npm-bridges bare rows serve those.
-  const otel = (name, ver) => ({
-    inline: join(ROOT, `runtime/spike/vendor/npm/@opentelemetry/${name}@${ver}/build/esm/index.js`),
-  });
-  const rows = new Map([
-    ['@deepseek-ai/dsh-subprocess-local', { externalSubpath: 'index' }],
-    ['@deepseek-ai/cordis-plugin-group', { inline: abs('vendor/group/lib/index.js') }],
-    ['@deepseek-ai/dsh-app-boot', { inline: abs('packages/boot/app-boot/src/index.ts') }],
-    ['resolve.exports', {
-      inline: abs('node_modules/.pnpm/resolve.exports@2.0.3'
-        + '/node_modules/resolve.exports/dist/index.mjs'),
-    }],
-    ['@opentelemetry/api', otel('api', '1.9.1')],
-    ['@opentelemetry/api-logs', otel('api-logs', '0.220.0')],
-    ['@opentelemetry/sdk-logs', otel('sdk-logs', '0.220.0')],
-    ['@opentelemetry/core', otel('core', '2.10.0')],
-    ['@opentelemetry/resources', otel('resources', '2.10.0')],
-    ['@opentelemetry/exporter-logs-otlp-http', otel('exporter-logs-otlp-http', '0.220.0')],
-    ['@opentelemetry/otlp-exporter-base', otel('otlp-exporter-base', '0.220.0')],
-    ['@opentelemetry/otlp-transformer', otel('otlp-transformer', '0.220.0')],
-    // The exporter's platform subpath (same extensionless-import reasoning).
-    ['@opentelemetry/otlp-exporter-base/node-http', {
-      inline: join(ROOT, 'runtime/spike/vendor/npm/@opentelemetry'
-        + '/otlp-exporter-base@0.220.0/build/esm/index-node-http.js'),
-    }],
-    ['@opentelemetry/semantic-conventions', otel('semantic-conventions', '1.43.0')],
-    ['@opentelemetry/sdk-metrics', otel('sdk-metrics', '2.9.0')],
-    // skill-badge's single-file lib computes its resource base off its OWN
-    // import.meta.url (new URL('../assets/', import.meta.url)); inlined, it
-    // shares the spec's URL (/upstream-tests/<stem>.spec.mjs) and therefore
-    // resolves /assets/ — exactly the path the spec asserts and the package-
-    // asset seed delivers.
-    ['@deepseek-ai/dsh-skill-badge', {
-      inline: join(ROOT, 'runtime/spike/vendor/npm/@deepseek-ai/dsh-skill-badge@0.1.6-alpha.2/lib/index.js'),
-    }],
-  ]);
-  // A missing submodule target must keep its bare external (the loader then
-  // fails loud naming the specifier) — never a silently half-mapped graph.
-  for (const [spec, row] of rows) {
-    if (row.inline && !existsSync(row.inline)) rows.delete(spec);
-  }
-  return rows;
-};
-const BARE_RESOLVES = SUBMODULE_BARE_RESOLVES();
-
-const BARE_EXTERNAL_PLUGIN = {
-  name: 'bare-external',
-  setup(build) {
-    build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
-      if (args.path.startsWith('.') || args.path.startsWith('/')) return null;
-      if (args.importer.startsWith(SUBMODULE_ROOT)
-          && UNVENDORED_INLINED.some((re) => re.test(args.path))) {
-        return { path: `${args.path}.cjs`, namespace: 'unvendored-stub' };
-      }
-      const resolveRow = BARE_RESOLVES.get(args.path);
-      if (resolveRow) {
-        if (resolveRow.externalSubpath !== undefined) {
-          return { path: `${args.path}/${resolveRow.externalSubpath}`, external: true };
-        }
-        return { path: resolveRow.inline }; // absolute: esbuild loads + inlines
-      }
-      // src/ hoist rows also resolve NESTED importers (a vendored package's
-      // inlined src limb imports the same monorepo specifier its spec does):
-      // returning the submodule file inlines it, so the bare specifier never
-      // survives to the bundled-output scan. The spec-source rewrite (above)
-      // hits the same absolute path, so esbuild keeps ONE instance.
-      const srcRow = SUBMODULE_SRC_HOISTS.get(args.path);
-      if (srcRow !== undefined && existsSync(join(SUBMODULE_ROOT, srcRow))) {
-        return { path: join(SUBMODULE_ROOT, srcRow) };
-      }
-      return { path: args.path, external: true };
-    });
-    build.onLoad({ filter: /.*/, namespace: 'unvendored-stub' }, () => ({
-      // The .cjs suffix makes esbuild treat the stub as CommonJS, which is
-      // what lets named imports of arbitrary symbols link through property
-      // access instead of failing "No matching export" at build time.
-      contents: 'module.exports = new Proxy({}, { get(_t, key) {'
-        + ' return () => { throw new Error("unvendored limb executed at runtime: " + String(key)); };'
-        + ' } });',
-      loader: 'js',
-    }));
-    // INLINED LIMBS carry their own createRequire(import.meta.url)('<x>.json')
-    // package-manifest reads (session-telemetry-otel's src/index.ts reads its
-    // version) — the spec-source rewrite above never sees them. For limb
-    // files under the tests tree, rewrite the reads to real JSON imports:
-    // esbuild bundles JSON natively, and the limb's resolveDir keeps the
-    // relative path pointed at the now-staged package.json (W5-T).
-    build.onLoad({ filter: /\.(ts|mts|js|mjs)$/ }, (args) => {
-      if (!args.path.startsWith(TESTS)) return undefined;
-      const source = readFileSync(args.path, 'utf8');
-      const re = /createRequire\(import\.meta\.url\)\((['"])([^'"]+\.json)\1\)/g;
-      if (!re.test(source)) return undefined;
-      re.lastIndex = 0;
-      const imports = [];
-      const rewritten = source.replace(re, (_m, _q, rawPath) => {
-        const name = `__dsh_limb_json_${imports.length}`;
-        imports.push(`import ${name} from ${JSON.stringify(rawPath)};`);
-        return name;
-      });
-      return {
-        contents: `${imports.join('\n')}\n${rewritten}`,
-        loader: args.path.endsWith('.js') || args.path.endsWith('.mjs') ? 'js' : 'ts',
-        resolveDir: dirname(args.path),
-      };
-    });
-  },
-};
-
-const walk = (dir, out = []) => {
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) walk(full, out);
-    else if (name.endsWith('.spec.ts')) out.push(full);
-  }
-  return out;
-};
-
-const unimplementedIn = (text, extraRules = []) => [...UNIMPLEMENTED, ...extraRules]
-  .filter(([re]) => re.test(text)).map(([, reason]) => reason);
-
-/** `createRequire(import.meta.url)('../package.json')` reads the SPEC'S OWN
- * PACKAGE manifest — a monorepo-layout fact our corpus does not have (the
- * staged spec's parent directory is upstream-tests/, and the tests codeload
- * tarball ships no package.json at all). The manifest DOES exist in the
- * vendored npm tree for the same version, so each such read is rewritten to
- * a bundled JSON import resolved against: (a) the tests tree, then (b) the
- * vendored package (both directory families). esbuild inlines it verbatim,
- * preserving the attribution checks exactly. */
-const hoistCreateRequireJson = (source, rel) => {
-  // Both quote spellings occur across the corpus (egress.spec.ts uses double
-  // quotes, other packages single) — the backreference keeps them honest.
-  const re = /createRequire\(import\.meta\.url\)\((['"])([^'"]+\.json)\1\)/g;
-  const specDir = dirname(join(TESTS, rel));
-  const pkgName = rel.split('/')[1];
-  const vendorCandidates = [
-    join(ROOT, `runtime/spike/vendor/dsh/${pkgName}@0.1.6-alpha.2`),
-    join(ROOT, `runtime/spike/vendor/dsh/dsh-${pkgName}@0.1.6-alpha.2`),
-  ];
-  const imports = [];
-  const rewritten = source.replace(re, (_m, _q, rawPath) => {
-    const direct = join(specDir, rawPath);
-    let resolved = existsSync(direct) ? direct : null;
-    if (resolved === null) {
-      // '../package.json' (or deeper) resolves inside the package root the
-      // vendored tarball carries.
-      const inPkg = relative(specDir, join(specDir, rawPath)).replace(/^\.\.\//, '');
-      resolved = vendorCandidates
-        .map((dir) => join(dir, inPkg))
-        .find((full) => existsSync(full)) ?? null;
-    }
-    if (resolved === null) return _m; // unresolved: esbuild will fail loud
-    const name = `__dsh_pkg_json_${imports.length}`;
-    imports.push(`import ${name} from ${JSON.stringify(resolved)};`);
-    return name;
-  });
-  if (imports.length === 0) return source;
-  return `${imports.join('\n')}\n${rewritten}`;
-};
-
-/** Monorepo src/ subpaths a spec needs at RUNTIME for symbols no vendored
- * tarball carries. '@deepseek-ai/dsh-llm-pi-ai/src/context.ts' (toPiContext —
- * the system-prompt-admission spec's admission oracle) is a deliberate
- * TS-source export of the upstream package, but the npm tarball this closure
- * vendors ships a SINGLE-FILE lib/index.js bundle whose export list (Config,
- * PiAiAdapter, apply, inject, name, recordKeyFor, supportedProtocols) omits
- * it — no bare rewrite can reach the symbol, and the loader's probe families
- * cannot serve the tarball's shapes for a src/ subpath. The rewrite points
- * the import at the PINNED SUBMODULE's source (D6: verbatim upstream, never
- * a modified copy) so esbuild inlines the limb exactly like a local fixture;
- * the two packages that limb's dead schemas reach but the closure does not
- * vendor become throwing stubs (see UNVENDORED_INLINED). A missing hoist
- * target leaves the specifier untouched, so the generic monorepo-src
- * exclusion still names it — fail loud, never a silent drop (rule 5). */
-const SUBMODULE_SRC_HOISTS = new Map([
-  ['@deepseek-ai/dsh-llm-pi-ai/src/context.ts', 'packages/llm/llm-pi-ai/src/context.ts'],
-  // subprocess-local src/ faces the lsp-stdio and process-inspector specs
-  // drive directly (spawnSubprocess / the inspector classes). The tarball
-  // ships only the bundled lib/ face; these files exist verbatim in the
-  // pinned submodule, whose relative imports esbuild inlines while the bare
-  // deps (dsh-subprocess, dsh-timeout, dsh-lazy-require) stay loader-served.
-  ['@deepseek-ai/dsh-subprocess-local/src/spawn.ts', 'packages/subprocess/subprocess-local/src/spawn.ts'],
-  ['@deepseek-ai/dsh-subprocess-local/src/process-inspector.ts', 'packages/subprocess/subprocess-local/src/process-inspector.ts'],
-  ['@deepseek-ai/dsh-subprocess-local/src/windows-inspector.ts', 'packages/subprocess/subprocess-local/src/windows-inspector.ts'],
-  // lsp-stdio's specs import connection.ts / instance.ts TYPE-ONLY (esbuild
-  // erases them), but the monorepo-src exclusion regex reads the SOURCE —
-  // hoisting the specifier past the scan lets the erased-at-build reality
-  // hold, instead of a named exclusion for an import that never loads.
-  ['@deepseek-ai/dsh-lsp-stdio/src/connection.ts', 'packages/lsp/lsp-stdio/src/connection.ts'],
-  ['@deepseek-ai/dsh-lsp-stdio/src/instance.ts', 'packages/lsp/lsp-stdio/src/instance.ts'],
-  // webworker-runtime src/ faces whose transitive closure stays inside the
-  // loader's surface (its externals are shimmed node: builtins or vendored
-  // dsh packages). Deliberately NARROW: the other src/-importing specs pull
-  // unvendored npm packages through their limbs (buffer / readable-stream /
-  // @noble/hashes / @yarnpkg/parsers / picomatch) and keep their named
-  // monorepo-src exclusion instead of trading it for an on-device load
-  // failure. Each row below was checked to close over served externals only:
-  // path-diff → node:path; als-shim → node:async_hooks; tunnel-client →
-  // dsh-host-webserver (vendored).
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/client/client.ts', 'packages/experimental/webworker-runtime/src/client/client.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/path.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/path.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/async_hooks.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/globals/timers.ts', 'packages/experimental/webworker-runtime/src/node/globals/timers.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/polyfill/async-context/async-context-hooks.ts', 'packages/experimental/webworker-runtime/src/polyfill/async-context/async-context-hooks.ts'],
-  // Wave-3 batch (2026-09-27, worker L): the monorepo-src specs whose src
-  // limbs close over SERVED externals only — every bare import below is a
-  // vendored vendor/dsh/ tarball, a shimmed node: builtin, a bare-map npm pin
-  // (zod@4.4.3), or a registered runtime-module/npm-bridge face
-  // (@modelcontextprotocol/client + /stdio — npm-bridges rows). Each row was
-  // checked limb-by-limb (the files' import lines): pure config/sanitize/
-  // render/projection units, no unvendored npm package reachable.
-  ['@deepseek-ai/dsh-tools/src/py-types.ts', 'packages/core/tools/src/py-types.ts'],
-  ['@deepseek-ai/dsh-tools/src/ts-types.ts', 'packages/core/tools/src/ts-types.ts'],
-  ['@deepseek-ai/dsh-tools/src/json-schema.ts', 'packages/core/tools/src/json-schema.ts'],
-  ['@deepseek-ai/dsh-hooks-claude-code/src/config.ts', 'packages/hooks/hooks-claude-code/src/config.ts'],
-  ['@deepseek-ai/dsh-hooks-codex/src/config.ts', 'packages/hooks/hooks-codex/src/config.ts'],
-  ['@deepseek-ai/dsh-mcp-client/src/transport.ts', 'packages/mcp/mcp-client/src/transport.ts'],
-  ['@deepseek-ai/dsh-mcp-client/src/tools.ts', 'packages/mcp/mcp-client/src/tools.ts'],
-  ['@deepseek-ai/dsh-session-stats/src/projection.ts', 'packages/session/session-stats/src/projection.ts'],
-  ['@deepseek-ai/dsh-session-turn-outline/src/projection.ts', 'packages/session/session-turn-outline/src/projection.ts'],
-  ['@deepseek-ai/dsh-terminal-bash/src/config.ts', 'packages/terminal/terminal-bash/src/config.ts'],
-  ['@deepseek-ai/dsh-terminal-bash/src/sanitize.ts', 'packages/terminal/terminal-bash/src/sanitize.ts'],
-  ['@deepseek-ai/dsh-tool-terminal/src/render.ts', 'packages/terminal/tool-terminal/src/render.ts'],
-  ['@deepseek-ai/dsh-compaction-basic/src/config.ts', 'packages/compaction/compaction-basic/src/config.ts'],
-  ['@deepseek-ai/dsh-compaction-basic/src/summarizer.ts', 'packages/compaction/compaction-basic/src/summarizer.ts'],
-  ['@deepseek-ai/dsh-compaction-basic/src/region.ts', 'packages/compaction/compaction-basic/src/region.ts'],
-  ['@deepseek-ai/dsh-session-persistence-jsonl/src/format.ts', 'packages/session/session-persistence-jsonl/src/format.ts'],
-
-  // Wave-4 batch (2026-09-28, worker P): the webworker-runtime specs that
-  // name src/ files BARELY (or transitively inline limbs that do). Every
-  // bare import in this package's src tree is served: node:* shims, buffer
-  // (bridge row), acorn + @noble/hashes + @deepseek-ai/dsh-util-crypto
-  // (vendored/bridged), and the new readable-stream / picomatch /
-  // @yarnpkg/parsers bridge rows — checked by census over src/{node,shell,
-  // storage,module-system,compile,polyfill}. Relative imports inline.
-    ['@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/memory.ts', 'packages/experimental/webworker-runtime/src/storage/memory.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/active.ts', 'packages/experimental/webworker-runtime/src/storage/active.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/types.ts', 'packages/experimental/webworker-runtime/src/storage/types.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/paths.ts', 'packages/experimental/webworker-runtime/src/storage/paths.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/storage/tar.ts', 'packages/experimental/webworker-runtime/src/storage/tar.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/image-layout.ts', 'packages/experimental/webworker-runtime/src/image-layout.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/module-system/posix-path.ts', 'packages/experimental/webworker-runtime/src/module-system/posix-path.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/module-system/module-loader.ts', 'packages/experimental/webworker-runtime/src/module-system/module-loader.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/compile/transform.ts', 'packages/experimental/webworker-runtime/src/compile/transform.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtins.ts', 'packages/experimental/webworker-runtime/src/node/builtins.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/notImplementedFail.ts', 'packages/experimental/webworker-runtime/src/node/notImplementedFail.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/process-table.ts', 'packages/experimental/webworker-runtime/src/node/process-table.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/globals/process.ts', 'packages/experimental/webworker-runtime/src/node/globals/process.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/interpret.ts', 'packages/experimental/webworker-runtime/src/shell/interpret.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/types.ts', 'packages/experimental/webworker-runtime/src/shell/types.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/ast.ts', 'packages/experimental/webworker-runtime/src/shell/ast.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/expand.ts', 'packages/experimental/webworker-runtime/src/shell/expand.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/fs-access.ts', 'packages/experimental/webworker-runtime/src/shell/fs-access.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/programs/index.ts', 'packages/experimental/webworker-runtime/src/shell/programs/index.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/programs/builtins.ts', 'packages/experimental/webworker-runtime/src/shell/programs/builtins.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/programs/files.ts', 'packages/experimental/webworker-runtime/src/shell/programs/files.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/programs/text.ts', 'packages/experimental/webworker-runtime/src/shell/programs/text.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/programs/options.ts', 'packages/experimental/webworker-runtime/src/shell/programs/options.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/process/child.ts', 'packages/experimental/webworker-runtime/src/shell/process/child.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/process/host.ts', 'packages/experimental/webworker-runtime/src/shell/process/host.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/process/protocol.ts', 'packages/experimental/webworker-runtime/src/shell/process/protocol.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/process/landlock.ts', 'packages/experimental/webworker-runtime/src/shell/process/landlock.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/shell/process/virtual-executables.ts', 'packages/experimental/webworker-runtime/src/shell/process/virtual-executables.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/child_process.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/child_process.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/fs.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/fs.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/fs/promises.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/fs/promises.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/util.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/util.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/crypto.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/crypto.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/stream.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/stream.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/events.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/events.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/abort-error.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/abort-error.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/buffer.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/buffer.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/fs-watch.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/fs-watch.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/http.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/http.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/module.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/module.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/os.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/os.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/perf_hooks.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/perf_hooks.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/tty.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/tty.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/url.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/url.ts'],
-  ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/zlib.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/zlib.ts'],
-]);
-const hoistSubmoduleSrcSubpaths = (source) => {
-  let out = source;
-  for (const [specifier, rel] of SUBMODULE_SRC_HOISTS) {
-    const target = join(SUBMODULE_ROOT, rel);
-    if (!existsSync(target)) continue;
-    out = out.replaceAll(`'${specifier}'`, JSON.stringify(target))
-              .replaceAll(`"${specifier}"`, JSON.stringify(target));
-  }
-  return out;
-};
-
-/** The bundle-manifest family (W5-Q, 2026-09-28): the bundle/agent-team
- * profile specs read the SPEC'S OWN PACKAGE manifest off disk —
- * `fileURLToPath(new URL('..', import.meta.url))` is the package root on the
- * monorepo layout (spec at <pkg>/tests/x.spec.ts), but flat staging puts the
- * spec at /upstream-tests/<stem>.spec.mjs, so the '..' lands at '/' and the
- * read would need files the VFS roots refuse. Two moves, same pattern as the
- * createRequire JSON hoist above:
- * 1. REWRITE the root computation to the spec's own directory
- *    (`new URL('.', ...)`) — the read paths become /upstream-tests/package.json
- *    and the manifest-named patch file, inside the seeded VFS root.
- * 2. EMIT the REAL package-root files (package.json + the patch file) as seed
- *    data through the existing .fixtures.js module — the driver already
- *    imports and seeds that before the tests run. Bytes come from the pinned
- *    submodule verbatim (D6: read-only upstream, never a modified copy), so
- *    every attribution assertion (dsh.bundle.patch field, dependencies map,
- *    patch rows) runs against the true manifest.
- * One spec per runtime, so the flat /upstream-tests/package.json namespace
- * never collides (the fixtures seeding already relies on the same fact). */
-const BUNDLE_MANIFEST_PACKAGES = new Map([
-  ['bundle/base/tests/base.spec.ts', 'bundle/base'],
-  ['bundle/acp-app/tests/acp-app.spec.ts', 'bundle/acp-app'],
-  ['bundle/sdk-app/tests/sdk-app.spec.ts', 'bundle/sdk-app'],
-  ['bundle/sdk-minimal/tests/sdk-minimal.spec.ts', 'bundle/sdk-minimal'],
-  ['experimental/agent-team-profile/tests/profile.spec.ts', 'experimental/agent-team-profile'],
-  ['experimental/agent-team-web-profile/tests/profile.spec.ts', 'experimental/agent-team-web-profile'],
-]);
-/** Files the family reads at the package root, by name. base's second test
- * also stats 'windows.cordis.patch.yml' and expects FALSE — absent here, the
- * seeded-view existsSync answers false, which is the asserted fact. */
-const BUNDLE_MANIFEST_FILES = ['package.json', 'cordis.patch.yml'];
-const rewriteBundleManifestRoot = (source) => source
-  .replaceAll("new URL('..', import.meta.url)", "new URL('.', import.meta.url)")
-  .replaceAll('new URL("..", import.meta.url)', 'new URL(".", import.meta.url)');
-
-/** The layout-tree family (W5-Q, 2026-09-28): specs that audit the VENDORED
- * SOURCE TREE itself (the experimental Inspector's client/host path
- * mirroring) walk `../src/` off the monorepo layout — the same flat-staging
- * problem the bundle-manifest family has, at tree scale. Two moves: rewrite
- * the tree roots to the spec's own directory, and SEED the tree (verbatim
- * submodule bytes, D6) plus the named compiler manifests through the
- * existing .fixtures.js delivery. The staged spec then re-audits the REAL
- * upstream sources through fs.readFile/readdir over the seeded VFS view. */
-const SEED_TREE_SPECS = new Map([
-  ['experimental/inspector/tests/layout.host.spec.ts', {
-    package: 'experimental/inspector',
-    rewrites: [
-      ["new URL('../src/', import.meta.url)", "new URL('./src/', import.meta.url)"],
-      ['new URL("../src/", import.meta.url)', 'new URL("./src/", import.meta.url)'],
-      ["new URL('../', import.meta.url)", "new URL('./', import.meta.url)"],
-      ['new URL("../", import.meta.url)', 'new URL("./", import.meta.url)'],
-    ],
-    tree: 'src',
-    files: ['tsconfig.host.json', 'tsconfig.client.json'],
-    mirrorTests: true,
-  }],
-]);
-const rewriteSeedTreeRoots = (source, rewrites) => {
-  let out = source;
-  for (const [from, to] of rewrites) out = out.replaceAll(from, to);
-  return out;
-};
-
-/** Transpile one spec (or record its named exclusion). */
-/** The esbuild option shape for one spec: entry file when nothing hoisted,
- * stdin otherwise (the hoisted package.json reads and inlined monorepo
- * limbs build through stdin — split from transpileOne for the function
- * shape budget). */
 const buildOptionsFor = (rel, hoisted, forceStdin) => {
   const options = {
     bundle: true,
@@ -539,6 +172,9 @@ const buildOptionsFor = (rel, hoisted, forceStdin) => {
   }
   return options;
 };
+
+const unimplementedIn = (text, extraRules = []) => [...UNIMPLEMENTED, ...extraRules]
+  .filter(([re]) => re.test(text)).map(([, reason]) => reason);
 
 const transpileOne = async (rel, manifest) => {
   const onDisk = readFileSync(join(TESTS, rel), 'utf8');
@@ -626,35 +262,7 @@ const emitFixturesModule = (rel, flat) => {
   // real upstream sources), the named compiler manifests, and (mirrorTests)
   // the vendored tests/*.ts so the spec's own-directory walk sees the same
   // tree shape upstream's tests/ layout gives it.
-  const seedTree = SEED_TREE_SPECS.get(rel);
-  if (seedTree !== undefined) {
-    const pkgRoot = join(SUBMODULE_ROOT, 'packages', seedTree.package);
-    const pushFile = (full, path) => {
-      files.push({ path, b64: readFileSync(full).toString('base64') });
-    };
-    const treeDir = join(pkgRoot, seedTree.tree);
-    if (existsSync(treeDir)) {
-      const walkTree = (dir, base) => {
-        for (const name of readdirSync(dir)) {
-          const full = join(dir, name);
-          if (statSync(full).isDirectory()) walkTree(full, `${base}/${name}`);
-          else pushFile(full, `/upstream-tests/${seedTree.tree}${base}/${name}`);
-        }
-      };
-      walkTree(treeDir, '');
-    }
-    for (const name of seedTree.files) {
-      const full = join(pkgRoot, name);
-      if (existsSync(full)) pushFile(full, `/upstream-tests/${name}`);
-    }
-    if (seedTree.mirrorTests) {
-      const testsDir = join(TESTS, dirname(rel));
-      for (const name of readdirSync(testsDir)) {
-        if (!name.endsWith('.ts')) continue;
-        pushFile(join(testsDir, name), `/upstream-tests/${name}`);
-      }
-    }
-  }
+  collectSeedTreeFiles(rel, files, true);
   emitPackageAssets(rel, files);
   if (files.length === 0) return;
   const stem = flat.replace(/\.spec\.mjs$/, '');

@@ -18,6 +18,10 @@
  * unicode host parsing, IPv6 literals — no mounted closure reaches them.
  */
 import { encodeUtf8, decodeUtf8 } from 'upstream/shims/buffer.js';
+// The file: URL faces live in url-file.js (the file crossed the size
+// budget); re-exported here so every existing import keeps its specifier.
+import { pathToFileURL, fileURLToPath } from 'upstream/shims/url-file.js';
+export { pathToFileURL, fileURLToPath };
 
 const SPECIAL = {
   'http:': '80',
@@ -28,7 +32,7 @@ const SPECIAL = {
   'file:': null,
 };
 
-const percentDecode = (text) => {
+export const percentDecode = (text) => {
   if (!text.includes('%')) return text;
   const bytes = [];
   for (let i = 0; i < text.length; i++) {
@@ -54,8 +58,42 @@ const pathEncode = (path) => path.replace(/%[0-9a-fA-F]{2}|[^A-Za-z0-9\-._~/!$&'
   return [...bytes].map((b) => `%${b.toString(16).toUpperCase().padStart(2, '0')}`).join('');
 });
 
-/** Split `scheme://authority/path?query#hash`; path may be empty for file:/ */
-const parseAbsolute = (input) => {
+/** Authority validation for a parsed special-scheme URL (module level for
+ * size; both checks throw TypeError 'Invalid URL' like node).
+ *
+ * Port validation (R3-G1, 2026-09-28): node throws when the authority
+ * carries a port that is not all-digits (or above 65535) — the browser-use
+ * endpoint validator distinguishes `http://localhost:bad/path` through
+ * exactly that throw. Accepted ports keep the authority verbatim (the port
+ * face reads it back). The scan runs after the last '@' so a userinfo colon
+ * never counts, and skips bracketed IPv6 hosts.
+ *
+ * Host bracket validation (node throws TypeError on hosts like '[' — the
+ * only legal bracket pair is a full IPv6 literal): an unterminated or
+ * otherwise-brackety host must FAIL construction, not become a URL whose
+ * authority silently round-trips into paths (lsp renderUri keeps-malformed
+ * test: 'file://[' stayed verbatim only if URL construction rejects it).
+ * A trailing numeric port belongs to the authority, not the literal
+ * (W3-K 2026-09-28: `http://[::1]:3000/a` threw here because the regex
+ * anchored before the port — the http-proxy policy's IPv6 bypass rows all
+ * build bracketed-with-port URLs). */
+const validateAuthority = (authorityFinal) => {
+  const hostPart = authorityFinal.slice(authorityFinal.lastIndexOf('@') + 1);
+  const portAt = hostPart.lastIndexOf(':');
+  if (portAt >= 0 && !hostPart.endsWith(']')) {
+    const port = hostPart.slice(portAt + 1);
+    if (port !== '' && (!/^\d+$/.test(port) || Number(port) > 65535)) {
+      throw new TypeError('Invalid URL');
+    }
+  }
+  if (/[[\]]/.test(hostPart) && !/^\[[0-9a-fA-F:.]+\](?::\d*)?$/.test(hostPart)) {
+    throw new TypeError('Invalid URL');
+  }
+};
+
+/** Split `scheme://authority/path?query#hash`; path may be empty for file:/
+ * (exported for the file: URL faces in url-file.js). */
+export const parseAbsolute = (input) => {
   const schemeAt = input.indexOf(':');
   if (schemeAt <= 0) return undefined;
   const scheme = input.slice(0, schemeAt).toLowerCase();
@@ -96,33 +134,7 @@ const parseAbsolute = (input) => {
   if (pathname === '') pathname = '/';
   let authorityFinal = authority;
   if (scheme === 'file' && authorityFinal === 'localhost') authorityFinal = '';
-  // Port validation (R3-G1, 2026-09-28): node throws TypeError 'Invalid URL'
-  // when the authority carries a port that is not all-digits (or above
-  // 65535) — the browser-use endpoint validator distinguishes
-  // `http://localhost:bad/path` through exactly that throw. Accepted ports
-  // keep the authority verbatim (the port face reads it back). The scan runs
-  // after the last '@' so a userinfo colon never counts, and skips bracketed
-  // IPv6 hosts.
-  const hostPart = authorityFinal.slice(authorityFinal.lastIndexOf('@') + 1);
-  const portAt = hostPart.lastIndexOf(':');
-  if (portAt >= 0 && !hostPart.endsWith(']')) {
-    const port = hostPart.slice(portAt + 1);
-    if (port !== '' && (!/^\d+$/.test(port) || Number(port) > 65535)) {
-      throw new TypeError('Invalid URL');
-    }
-  }
-  // Host bracket validation (node throws TypeError on hosts like '[' — the
-  // only legal bracket pair is a full IPv6 literal): an unterminated or
-  // otherwise-brackety host must FAIL construction, not become a URL whose
-  // authority silently round-trips into paths (lsp renderUri keeps-malformed
-  // test: 'file://[' stayed verbatim only if URL construction rejects it).
-  // A trailing numeric port belongs to the authority, not the literal
-  // (W3-K 2026-09-28: `http://[::1]:3000/a` threw here because the regex
-  // anchored before the port — the http-proxy policy's IPv6 bypass rows all
-  // build bracketed-with-port URLs).
-  if (/[[\]]/.test(hostPart) && !/^\[[0-9a-fA-F:.]+\](?::\d*)?$/.test(hostPart)) {
-    throw new TypeError('Invalid URL');
-  }
+  validateAuthority(authorityFinal);
   return { scheme, authority: authorityFinal, pathname, search, fragment };
 };
 
@@ -163,8 +175,9 @@ const parseOpaque = (input) => {
   return { scheme, authority, pathname: rest, search, fragment };
 };
 
-/** POSIX dirname+pjoin with '.'/'..' resolution (lexical; no fs access). */
-const resolvePath = (path) => {
+/** POSIX dirname+pjoin with '.'/'..' resolution (lexical; no fs access;
+ * exported for the file: URL faces in url-file.js). */
+export const resolvePath = (path) => {
   const out = [];
   for (const seg of path.split('/')) {
     if (seg === '' || seg === '.') continue;
@@ -242,6 +255,47 @@ const constructBase = (base) => {
   return parsePathUrlLenient(asString, undefined);
 };
 
+/** Scheme-less input against a SPECIAL-scheme base (module level for size):
+ * '/x' is ROOT-relative (replaces the path), '?q'/'#f' swap one component,
+ * an empty input keeps the base, and a bare segment joins the base DIRECTORY
+ * with dot-segment normalization (joinRelative) — agent-presets health
+ * checks join '../../plugins/x.js' against a file: URL, and the old plain
+ * concatenation left '../' in the path so isFile missed the target
+ * (R3-G2, 2026-09-28). */
+const resolveAgainstSpecialBase = (asString, baseParsed) => {
+  if (asString.startsWith('/')) {
+    return { ...baseParsed, pathname: asString, search: '', fragment: '' };
+  }
+  if (asString.startsWith('?')) {
+    return { ...baseParsed, search: asString, fragment: '' };
+  }
+  if (asString.startsWith('#')) {
+    return { ...baseParsed, fragment: asString };
+  }
+  if (asString === '') {
+    return { ...baseParsed };
+  }
+  return { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
+};
+
+/** Copy the parsed components onto the URL face, then split a path-embedded
+ * `?#` tail off the pathname (the parser-level component split). */
+const splitPathComponents = (target, parsed) => {
+  target.pathname = parsed.pathname;
+  target.search = parsed.search;
+  target.fragment = parsed.fragment;
+  const hashAt = target.pathname.indexOf('#');
+  if (hashAt >= 0) {
+    target.fragment = target.pathname.slice(hashAt);
+    target.pathname = target.pathname.slice(0, hashAt);
+  }
+  const queryAt = target.pathname.indexOf('?');
+  if (queryAt >= 0) {
+    target.search = target.pathname.slice(queryAt);
+    target.pathname = target.pathname.slice(0, queryAt);
+  }
+};
+
 export class DshURL {
   /** URL.parse — the WHATWG static face (Node 22+): the constructor without
    * the throw, null on any invalid input. The vendored http-proxy policy
@@ -271,22 +325,7 @@ export class DshURL {
       // first segment: 'plugins/plugins/…').
       const baseParsed = base !== undefined ? constructBase(base) : undefined;
       if (baseParsed !== undefined && baseParsed.scheme !== '') {
-        if (asString.startsWith('/')) {
-          parsed = { ...baseParsed, pathname: asString, search: '', fragment: '' };
-        } else if (asString.startsWith('?')) {
-          parsed = { ...baseParsed, search: asString, fragment: '' };
-        } else if (asString.startsWith('#')) {
-          parsed = { ...baseParsed, fragment: asString };
-        } else if (asString === '') {
-          parsed = { ...baseParsed };
-        } else {
-          // Bare segment against a special-scheme base: resolve against the
-          // base DIRECTORY with dot-segment normalization (joinRelative) —
-          // agent-presets health checks join '../../plugins/x.js' against a
-          // file: URL, and the old plain concatenation left '../' in the
-          // path so isFile missed the target (R3-G2, 2026-09-28).
-          parsed = { ...baseParsed, pathname: joinRelative(baseParsed.pathname, asString), search: '', fragment: '' };
-        }
+        parsed = resolveAgainstSpecialBase(asString, baseParsed);
       } else {
         parsed = parsePathUrl(asString, base);
       }
@@ -314,19 +353,7 @@ export class DshURL {
     }
     this.scheme = parsed.scheme;
     this.authority = parsed.authority;
-    this.pathname = parsed.pathname;
-    this.search = parsed.search;
-    this.fragment = parsed.fragment;
-    const hashAt = this.pathname.indexOf('#');
-    if (hashAt >= 0) {
-      this.fragment = this.pathname.slice(hashAt);
-      this.pathname = this.pathname.slice(0, hashAt);
-    }
-    const queryAt = this.pathname.indexOf('?');
-    if (queryAt >= 0) {
-      this.search = this.pathname.slice(queryAt);
-      this.pathname = this.pathname.slice(0, queryAt);
-    }
+    splitPathComponents(this, parsed);
   }
 
   get protocol() { return `${this.scheme}:`; }
@@ -439,93 +466,11 @@ export class DshURL {
   }
 }
 
-/** POSIX `pathToFileURL`: absolute path → file: URL (percent-encoded). The
- * input is a RAW FILESYSTEM path, not URL-space: a literal '%' is data and
- * must become %25 (measured 2026-09-28: fs-ssh's remote paths carry literal
- * '%20' names and node's pathToFileURL answers 'literal%2520…'). This is why
- * the raw-path encoder below does NOT reuse pathEncode's keep-%XX rule —
- * that rule is correct only for pathname values already in URL-space. */
-const rawFilePathEncode = (path) => path.replace(/[^A-Za-z0-9\-._~/!$&'()*+,;=:@]/g, (ch) => {
-  const bytes = encodeUtf8(ch);
-  return [...bytes].map((b) => `%${b.toString(16).toUpperCase().padStart(2, '0')}`).join('');
-});
-export const pathToFileURL = (path) => {
-  // node resolves a relative input against process.cwd() (pathToFileURL
-  // shares path.resolve's semantics); the pinned profile cwd plays that
-  // role here (W3-K, 2026-09-28 — the typert generator re-URLs its
-  // cwd-relative scratch dir).
-  let resolved = path;
-  if (typeof resolved === 'string' && !resolved.startsWith('/')) {
-    const cwd = globalThis.__dshProfileCwd;
-    if (typeof cwd !== 'string' || !cwd.startsWith('/')) {
-      throw new Error(`node:url: pathToFileURL needs an absolute POSIX path (no profile cwd pinned), got ${JSON.stringify(path)}`);
-    }
-    resolved = `${cwd.replace(/\/$/, '')}/${resolved}`;
-  }
-  if (typeof resolved !== 'string' || !resolved.startsWith('/')) {
-    throw new Error(`node:url: pathToFileURL needs an absolute POSIX path, got ${JSON.stringify(path)}`);
-  }
-  const url = new DshURL('file:///');
-  url.pathname = resolved;
-  return {
-    href: `file://${rawFilePathEncode(resolved)}`,
-    protocol: 'file:',
-    pathname: rawFilePathEncode(resolved),
-    toString() { return this.href; },
-  };
+// The file: faces come from url-file.js (an ESM cycle under the bare
+// 'node:url' entry) — getters defer the binding reads past the cycle, the
+// object shape stays the same.
+export default {
+  get pathToFileURL() { return pathToFileURL; },
+  get fileURLToPath() { return fileURLToPath; },
+  URL: DshURL,
 };
-
-/** POSIX `fileURLToPath`: file: URL (string or URL-like) → absolute path. */
-export const fileURLToPath = (input, options) => {
-  const windows = typeof options === 'object' && options !== null ? options.windows === true : false;
-  const href = typeof input === 'string' ? input : String(input?.href ?? input);
-  // A scheme-less absolute path is already the spike's path space — identity.
-  if (!href.startsWith('file:')) {
-    // ':///path' is a path URL a caller stringified through a file:-expecting
-    // API — the empty-scheme serialization. Strip the marker, keep the path.
-    if (href.startsWith(':///')) return href.slice(3);
-    if (href.startsWith('/')) return href;
-    // A scheme-less RELATIVE path is the loader's import.meta.url spelling for
-    // bundle-root-relative modules (the transpiled upstream specs): resolve it
-    // against the bundle root the same lexical walk absolute path-URLs get.
-    if (!/^[A-Za-z][A-Za-z0-9+.\-]*:/.test(href)) {
-      return resolvePath(`/${href}`);
-    }
-    throw new Error(`node:url: fileURLToPath needs a file: URL, got ${JSON.stringify(href)}`);
-  }
-  const parsed = parseAbsolute(href);
-  if (parsed === undefined || parsed.scheme !== 'file') {
-    throw new Error(`node:url: fileURLToPath cannot parse ${JSON.stringify(href)}`);
-  }
-  const host = parsed.authority;
-  // node: an ENCODED separator (%2F) or a bad escape in the path is an
-  // invalid file URL path; decoded NUL likewise (the lsp renderUri tests
-  // exercise 'file:///bad%2Fpath' and 'file:///bad%00path' — both must
-  // THROW so the caller keeps the URI verbatim).
-  if (/%2f/i.test(parsed.pathname)) {
-    throw new Error(`file URL path must not include encoded / characters: ${parsed.pathname}`);
-  }
-  if (windows && /%5c/i.test(parsed.pathname)) {
-    throw new Error(`file URL path must not include encoded \\ characters: ${parsed.pathname}`);
-  }
-  let path = percentDecode(parsed.pathname);
-  if (path.includes('\0')) {
-    throw new Error(`file URL path must not include encoded null characters: ${parsed.pathname}`);
-  }
-  if (windows) {
-    // node's windows world: file://host/share → UNC; /C:/x → C:\x; all
-    // separators become backslashes.
-    if (host !== '' && host !== 'localhost') return `\\\\${host}${path.replaceAll('/', '\\')}`;
-    path = path.replace(/^\/[a-zA-Z]:/, (m) => m.slice(1));
-    return path.replaceAll('/', '\\');
-  }
-  if (host !== '' && host !== 'localhost') {
-    throw new Error(`node:url: fileURLToPath refuses non-local file host '${host}'`);
-  }
-  if (!path.startsWith('/')) {
-    throw new Error(`node:url: fileURLToPath resolved a non-absolute path: ${JSON.stringify(path)}`);
-  }
-  return path;
-};
-
-export default { pathToFileURL, fileURLToPath, URL: DshURL };

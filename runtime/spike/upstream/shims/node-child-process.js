@@ -111,6 +111,34 @@ const spawnError = (syscall, command, raw) => {
  * backpressure (return false, callback pending) instead of blocking the
  * runtime — the abort-during-backpressured-write contract depends on the
  * callback staying pending while the pipe is full. */
+/** The stdin write face (module level for size): fail-loud on a dead pid,
+ * hand the bytes to the host seam, and report backpressure by parking the
+ * callback until the pump drains (node's write-callback contract for a full
+ * pipe). */
+const stdinWrite = (child, pendingWrites, fail, data, cb) => {
+  if (childDebugOn && globalThis.__DSH_LOG_SINK__) {
+    globalThis.__DSH_LOG_SINK__(JSON.stringify({ scenario: 'upstream.suite', event: 'debug/stdin-write', pid: child.pid, bytes: data?.length ?? 0 }));
+  }
+  if (child.pid === undefined || child.pid === null) {
+    fail(Object.assign(new Error('write EPIPE'), { code: 'EPIPE', errno: -1, syscall: 'write' }));
+    return false;
+  }
+  const res = writeIntrinsic(child.pid, toB64(data));
+  if (res.error) {
+    fail(Object.assign(new Error(`write ${res.error.code}`), { code: res.error.code, errno: res.error.errno, syscall: 'write' }));
+    return false;
+  }
+  if (res.buffered > 0) {
+    // Backpressured: the host holds the refused bytes; the callback
+    // stays pending until the pump drains them (or fails on child
+    // death) — node's write-callback contract for a full pipe.
+    pendingWrites.push(cb);
+    return false;
+  }
+  if (typeof cb === 'function') queueMicrotask(cb);
+  return true;
+};
+
 const makeStdin = (child, pendingWrites) => {
   const errorListeners = [];
   const fail = (error) => {
@@ -133,29 +161,7 @@ const makeStdin = (child, pendingWrites) => {
       return stdin;
     },
     removeListener(event, fn) { return stdin.off(event, fn); },
-    write(data, cb) {
-      if (childDebugOn && globalThis.__DSH_LOG_SINK__) {
-        globalThis.__DSH_LOG_SINK__(JSON.stringify({ scenario: 'upstream.suite', event: 'debug/stdin-write', pid: child.pid, bytes: data?.length ?? 0 }));
-      }
-      if (child.pid === undefined || child.pid === null) {
-        fail(Object.assign(new Error('write EPIPE'), { code: 'EPIPE', errno: -1, syscall: 'write' }));
-        return false;
-      }
-      const res = writeIntrinsic(child.pid, toB64(data));
-      if (res.error) {
-        fail(Object.assign(new Error(`write ${res.error.code}`), { code: res.error.code, errno: res.error.errno, syscall: 'write' }));
-        return false;
-      }
-      if (res.buffered > 0) {
-        // Backpressured: the host holds the refused bytes; the callback
-        // stays pending until the pump drains them (or fails on child
-        // death) — node's write-callback contract for a full pipe.
-        pendingWrites.push(cb);
-        return false;
-      }
-      if (typeof cb === 'function') queueMicrotask(cb);
-      return true;
-    },
+    write(data, cb) { return stdinWrite(child, pendingWrites, fail, data, cb); },
     end(data, cb) {
       if (data !== undefined && data !== null) stdin.write(data);
       if (child.pid !== undefined && child.pid !== null) endStdinIntrinsic(child.pid);
@@ -176,72 +182,82 @@ const makeStdin = (child, pendingWrites) => {
  * fatal to the pipe chain; here the error is logged through the E2E sink
  * and the pump continues so the failure names itself instead of hanging
  * the awaited connection). */
-const startPump = (child) => {
-  let exitEmitted = false;
+/** The pump's debug emitter (12 lines per child when DSH_CHILD_DEBUG=1 —
+ * a runaway child's 4ms poll must not flood the E2E sink). */
+const pumpDebugEmitter = (child) => {
   let debugLeft = childDebugOn ? 12 : 0;
-  const debug = (fields) => {
+  return (fields) => {
     if (debugLeft <= 0) return;
     debugLeft -= 1;
     try {
       globalThis.__DSH_LOG_SINK__?.(JSON.stringify({ scenario: 'upstream.suite', event: 'debug/child', pid: child.pid, ...fields }));
     } catch { /* best-effort */ }
   };
-  const report = (error) => {
-    try {
-      globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
-        scenario: 'upstream.suite',
-        event: 'debug/child-pump-error',
-        pid: child.pid,
-        message: String(error?.message ?? error).slice(0, 300),
-        stack: String(error?.stack ?? '').split('\n').slice(1, 4).join(' | ').slice(0, 400),
-      }));
-    } catch { /* the sink is best-effort */ }
-  };
-  const tick = () => {
-    if (child.__done) return;
-    let res;
-    try {
-      res = pollIntrinsic(child.pid);
-      debug({ outLen: res.out?.length ?? 0, errLen: res.err?.length ?? 0, exited: res.exited, outEof: res.outEof,
-        // Payload heads in the debug stream (only when DSH_CHILD_DEBUG=1):
-        // the pump's counters alone cannot say WHY a child is silent — the
-        // hooks-cluster diagnosis (W6-U r3) turned on reading the child's
-        // stderr text ('Permission denied' on a not-really-executable script).
-        errHead: res.err ? String(decodeUtf8(fromBase64(res.err))).slice(0, 160) : undefined,
-        outHead: res.out ? String(decodeUtf8(fromBase64(res.out))).slice(0, 160) : undefined });
-      // Chunks surface as DshBuffer (Buffer.from over the decoded bytes) — plain
-      // Uint8Array strips the Buffer face consumers parse with (indexOf / toString(enc,
-      // start, end): the lsp-stdio decoder scanned through TypedArray.indexOf — W5-R.
-      if (res.out && child.stdout) {
-        const bytes = Buffer.from(fromBase64(res.out));
-        child.stdout.push(child.stdout.__dshEncoding ? bytes.toString(child.stdout.__dshEncoding) : bytes);
-      }
-      if (res.err && child.stderr) {
-        const bytes = Buffer.from(fromBase64(res.err));
-        child.stderr.push(child.stderr.__dshEncoding ? bytes.toString(child.stderr.__dshEncoding) : bytes);
-      }
-      if (res.flushError !== null && res.flushError !== undefined) {
-        child.__stdinFlush?.(res.flushError);
-      } else if ((res.pendingStdin ?? 0) === 0 && child.__stdinHasPending?.()) {
-        child.__stdinFlush?.(null);
-      }
-      if (res.exited && !exitEmitted) {
-        exitEmitted = true;
-        child.exitCode = res.signal === null || res.signal === undefined ? res.exitCode : null;
-        child.signalCode = res.signal !== null && res.signal !== undefined ? signalName(res.signal) : null;
-        child.emit('exit', child.exitCode, child.signalCode);
-      }
-      if (res.exited && res.outEof && res.errEof) {
-        child.__done = true;
-        child.emit('close', child.exitCode, child.signalCode);
-        return;
-      }
-    } catch (error) {
-      report(error);
+};
+
+const pumpReportError = (child, error) => {
+  try {
+    globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
+      scenario: 'upstream.suite',
+      event: 'debug/child-pump-error',
+      pid: child.pid,
+      message: String(error?.message ?? error).slice(0, 300),
+      stack: String(error?.stack ?? '').split('\n').slice(1, 4).join(' | ').slice(0, 400),
+    }));
+  } catch { /* the sink is best-effort */ }
+};
+
+/** One poll step: surface decoded chunks (DshBuffer face), drain pending
+ * stdin writes, emit exit on reap and close on all-drained. Mutates
+ * pump.exitEmitted across ticks. */
+const pumpTick = (child, pump) => {
+  if (child.__done) return;
+  let res;
+  try {
+    res = pollIntrinsic(child.pid);
+    pump.debug({ outLen: res.out?.length ?? 0, errLen: res.err?.length ?? 0, exited: res.exited, outEof: res.outEof,
+      // Payload heads in the debug stream (only when DSH_CHILD_DEBUG=1):
+      // the pump's counters alone cannot say WHY a child is silent — the
+      // hooks-cluster diagnosis (W6-U r3) turned on reading the child's
+      // stderr text ('Permission denied' on a not-really-executable script).
+      errHead: res.err ? String(decodeUtf8(fromBase64(res.err))).slice(0, 160) : undefined,
+      outHead: res.out ? String(decodeUtf8(fromBase64(res.out))).slice(0, 160) : undefined });
+    // Chunks surface as DshBuffer (Buffer.from over the decoded bytes) — plain
+    // Uint8Array strips the Buffer face consumers parse with (indexOf / toString(enc,
+    // start, end): the lsp-stdio decoder scanned through TypedArray.indexOf — W5-R.
+    if (res.out && child.stdout) {
+      const bytes = Buffer.from(fromBase64(res.out));
+      child.stdout.push(child.stdout.__dshEncoding ? bytes.toString(child.stdout.__dshEncoding) : bytes);
     }
-    setTimeout(tick, 4);
-  };
-  setTimeout(tick, 4);
+    if (res.err && child.stderr) {
+      const bytes = Buffer.from(fromBase64(res.err));
+      child.stderr.push(child.stderr.__dshEncoding ? bytes.toString(child.stderr.__dshEncoding) : bytes);
+    }
+    if (res.flushError !== null && res.flushError !== undefined) {
+      child.__stdinFlush?.(res.flushError);
+    } else if ((res.pendingStdin ?? 0) === 0 && child.__stdinHasPending?.()) {
+      child.__stdinFlush?.(null);
+    }
+    if (res.exited && !pump.exitEmitted) {
+      pump.exitEmitted = true;
+      child.exitCode = res.signal === null || res.signal === undefined ? res.exitCode : null;
+      child.signalCode = res.signal !== null && res.signal !== undefined ? signalName(res.signal) : null;
+      child.emit('exit', child.exitCode, child.signalCode);
+    }
+    if (res.exited && res.outEof && res.errEof) {
+      child.__done = true;
+      child.emit('close', child.exitCode, child.signalCode);
+      return;
+    }
+  } catch (error) {
+    pumpReportError(child, error);
+  }
+  setTimeout(() => pumpTick(child, pump), 4);
+};
+
+const startPump = (child) => {
+  const pump = { exitEmitted: false, debug: pumpDebugEmitter(child) };
+  setTimeout(() => pumpTick(child, pump), 4);
 };
 
 export class ChildProcess extends EventEmitter {
@@ -375,134 +391,11 @@ export const spawnSync = (command, args = [], options = {}) => {
   };
 };
 
-/** execFile(file, args, options?, callback?) — callback form over ONE async
- * spawn (node runs the child exactly once; the previous double-run — async
- * spawn discarded + spawnSync in setTimeout — leaked a live twin of every
- * command and re-executed non-idempotent helpers). Node faces served here:
- * signal (abort kills with SIGTERM, callback gets the ABORT_ERR AbortError),
- * timeout (SIGTERM, killed:true), maxBuffer (SIGTERM + ENOBUFS), encoding
- * 'buffer'|utf8, and the non-zero exit error face (code = exit number,
- * `Command failed: <cmd>` message, killed/signal/cmd). The bare call (no
- * callback) returns the child for destructor use; promisify(execFile) drives
- * the synthesized-callback path. */
-const ABORT_ERROR = () => Object.assign(new Error('The operation was aborted'), {
-  name: 'AbortError', code: 'ABORT_ERR',
-});
-
-export const execFile = (file, args = [], optionsOrCallback = {}, maybeCallback) => {
-  const options = typeof optionsOrCallback === 'function' ? {} : (optionsOrCallback ?? {});
-  const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
-  const argv = Array.isArray(args) ? args : [];
-  const child = spawn(file, argv, { cwd: options.cwd, env: options.env, stdio: options.stdio });
-  if (typeof callback !== 'function') return child;
-  const wantBuffer = options.encoding === 'buffer';
-  const chunks = { 1: [], 2: [] };
-  if (child.stdout) child.stdout.on('data', (chunk) => { chunks[1].push(chunk); });
-  if (child.stderr) child.stderr.on('data', (chunk) => { chunks[2].push(chunk); });
-  let settled = false;
-  let abortFailure = null;
-  let oversized = false;
-  let timer = null;
-  const maxBuffer = typeof options.maxBuffer === 'number' && options.maxBuffer >= 0
-    ? options.maxBuffer
-    : 1024 * 1024;
-  const collected = (side) => {
-    const list = chunks[side];
-    if (wantBuffer) {
-      const parts = list.map((c) => (c instanceof Uint8Array ? c : encodeUtf8(String(c))));
-      let len = 0;
-      for (const p of parts) len += p.length;
-      const out = new Uint8Array(len);
-      let at = 0;
-      for (const p of parts) { out.set(p, at); at += p.length; }
-      return Buffer.from(out);
-    }
-    return list.map((c) => (typeof c === 'string' ? c : decodeUtf8(c instanceof Uint8Array ? c : encodeUtf8(String(c))))).join('');
-  };
-  const settle = (error) => {
-    if (settled) return;
-    settled = true;
-    if (timer !== null) { clearTimeout(timer); timer = null; }
-    options.signal?.removeEventListener?.('abort', onAbort);
-    callback(error, collected(1), collected(2));
-  };
-  const onAbort = () => {
-    if (settled || abortFailure) return;
-    abortFailure = ABORT_ERROR();
-    child.kill('SIGTERM');
-  };
-  if (options.signal) {
-    if (options.signal.aborted) queueMicrotask(onAbort);
-    else options.signal.addEventListener('abort', onAbort, { once: true });
-  }
-  if (typeof options.timeout === 'number' && options.timeout > 0) {
-    timer = setTimeout(() => {
-      if (settled || abortFailure) return;
-      abortFailure = null;
-      child.kill('SIGTERM');
-      child.__timedOut = true;
-    }, options.timeout);
-  }
-  const watchGrowth = () => {
-    let total = 0;
-    for (const side of [1, 2]) for (const c of chunks[side]) total += c.length ?? 0;
-    if (total > maxBuffer && !oversized && !settled) {
-      oversized = true;
-      child.kill('SIGTERM');
-    }
-  };
-  child.stdout?.on?.('data', watchGrowth);
-  child.stderr?.on?.('data', watchGrowth);
-  child.once('error', (error) => {
-    // spawn failure (ENOENT & co): node hands the spawn error to the
-    // callback with empty streams; the paired 'close' is absorbed by settled.
-    if (abortFailure) { settle(abortFailure); return; }
-    settle(error);
-  });
-  child.once('close', (code, signal) => {
-    if (oversized) {
-      settle(Object.assign(new Error('stdout maxBuffer length exceeded'), {
-        code: 'ENOBUFS', killed: true, signal: 'SIGTERM', cmd: `${file} ${argv.join(' ')}`,
-      }));
-      return;
-    }
-    if (abortFailure) { settle(abortFailure); return; }
-    if (code !== 0 || signal !== null && signal !== undefined) {
-      const error = new Error(`Command failed: ${file}${argv.length > 0 ? ` ${argv.join(' ')}` : ''}`);
-      error.code = code ?? undefined;
-      error.killed = child.killed || child.__timedOut === true;
-      error.signal = signal ?? null;
-      error.cmd = `${file} ${argv.join(' ')}`;
-      settle(error);
-      return;
-    }
-    settle(null);
-  });
-  return child;
-};
-
-/** execFileSync(file, args, options?) — sync run; node throws on nonzero
- * status with the process facts riding the error. */
-export const execFileSync = (file, args = [], options = {}) => {
-  const res = spawnSync(file, args, options);
-  if (res.error) throw res.error;
-  if (res.status !== 0) {
-    const error = new Error(`Command failed: ${file}${Array.isArray(args) && args.length > 0 ? ` ${args.join(' ')}` : ''}`);
-    error.status = res.status;
-    error.signal = res.signal;
-    error.stdout = res.stdout;
-    error.stderr = res.stderr;
-    throw error;
-  }
-  return res.stdout;
-};
-
-/** exec(command, options?, callback?) — /bin/sh -c over spawnSync. */
-export const exec = (command, optionsOrCallback = {}, maybeCallback) => {
-  const options = typeof optionsOrCallback === 'function' ? {} : (optionsOrCallback ?? {});
-  const callback = typeof optionsOrCallback === 'function' ? optionsOrCallback : maybeCallback;
-  return execFile('/bin/sh', ['-c', command], options, callback);
-};
+// The exec family lives in node-child-process-exec.js (the file crossed
+// the size budget); re-exported here so every existing import and the
+// default namespace below keep their shape.
+import { execFile, execFileSync, exec } from 'upstream/shims/node-child-process-exec.js';
+export { execFile, execFileSync, exec };
 
 const childProcess = {
   spawn,

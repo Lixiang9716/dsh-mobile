@@ -1123,16 +1123,18 @@ static int spike_run_main(int argc, char **argv) {
      * signal table is per-platform (darwin and linux WTERMSIG numbers differ
      * beyond the common core), so the runtime needs the build's OS without
      * guessing it from a partial table. Same key the platform embedders are
-     * expected to set in their own launch snapshots. */
-    env_len += (size_t)snprintf(env_json + env_len, sizeof(env_json) - env_len,
+     * expected to set in their own launch snapshots. The selection lives in
+     * a variable (not inline in the snprintf call): a preprocessor
+     * conditional inside an argument list is valid C but produces an ERROR
+     * node in the editor-level tree-sitter parse the check gate runs. */
+    const char *host_platform = "unknown";
 #if defined(__linux__)
-                                "\"DSH_HOST_PLATFORM\":\"linux\""
+    host_platform = "linux";
 #elif defined(__APPLE__)
-                                "\"DSH_HOST_PLATFORM\":\"darwin\""
-#else
-                                "\"DSH_HOST_PLATFORM\":\"unknown\""
+    host_platform = "darwin";
 #endif
-                                );
+    env_len += (size_t)snprintf(env_json + env_len, sizeof(env_json) - env_len,
+                                "\"DSH_HOST_PLATFORM\":\"%s\"", host_platform);
     for (int i = 3; i < argc; i++) {
         if (strcmp(argv[i], "--http") == 0) {
             http = 1;

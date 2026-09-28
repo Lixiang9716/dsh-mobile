@@ -244,6 +244,23 @@ ensure_npm_registry "@opentelemetry/sdk-metrics" "2.9.0" "70f9f4b4313c874f47bb35
 # through the CJS adapter chain as a load experiment with a documented
 # time/memory budget.
 ensure_npm_registry "typescript" "6.0.3" "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a"
+# W7-X1 (2026-09-28): the terminal + watch test faces. @xterm/headless 6.0.0
+# (+ @xterm/addon-serialize 0.14.0) — the session-buffer and terminal-
+# controller specs' createLazyRequire('@xterm/…') targets, resolved through
+# the cjs-loader bare table (CJS lib/ faces; both packages ship no usable
+# ESM for a require() caller). chokidar 4.0.3 + 5.0.0 (+ their readdirp
+# 4.1.2 / 5.0.0) — the webworker-runtime node/chokidar spec mounts BOTH
+# majors into its own Worker loader VFS per consumer fixture (settings-file
+# → 4, skill-filesystem → 5); the wsWatch-faced chokidar bridge row that
+# serves the vendored dsh libs through OUR loader is unchanged. All six at
+# the dsh-v0.1.6-alpha.2 pnpm-lock resolutions (sha512 integrity verified
+# against the lockfile, 2026-09-28).
+ensure_npm_registry "@xterm/headless" "6.0.0" "07e4970b1674e7ef6cbd57c8c17746eaadcd41aa7df5b33695fd649e6ec4d78a"
+ensure_npm_registry "@xterm/addon-serialize" "0.14.0" "f9a290923dc9c6178446e3fc082c29812a7096a1664fd7bf904022c141c5bbfb"
+ensure_npm_registry "chokidar" "4.0.3" "61a29da9d314c2cd33a7be7327014814c4620673e3d4be41b120aa8544868389"
+ensure_npm_registry "chokidar" "5.0.0" "45d07ea7d57ee482c733ab3c547cc49edc1423bc231507e41ff99d2711f7f5e3"
+ensure_npm_registry "readdirp" "4.1.2" "766ea2ba6314aefe6b939c9bbe3999cc473286578aeb1c3805338c2dbd655f5a"
+ensure_npm_registry "readdirp" "5.0.0" "01ecd9d6bf8fdb4b8c462b23d1d8f69604841050ac4316e6fe67967a62b00407"
 
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
