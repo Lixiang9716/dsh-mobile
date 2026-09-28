@@ -2,13 +2,8 @@
 import proc from './process.js';
 import { defineRuntimeModules } from './runtime-modules.js';
 import {
-  ReadableStream,
-  WritableStream,
-  TransformStream,
-  DecompressionStream,
-  Response,
-  TextDecoderStream,
-  TextEncoderStream,
+  ReadableStream, WritableStream, TransformStream, DecompressionStream,
+  Response, TextDecoderStream, TextEncoderStream,
 } from './web-streams.js';
 import {
   Event,
@@ -24,21 +19,20 @@ import { DshURL } from './url.js';
  * code paths need and quickjs does not define (AbortController for the
  * agent-loop cancellation path, structuredClone for its state clones).
  * Installed by scenario/upstream-test-harness.js BEFORE any spec imports
- * run, so every host (CLI, iOS, Android, HarmonyOS) gets them from this
- * one file. Extracted from the harness when its size crossed the 500-line
- * file budget (measured 2026-09-23, CI code-size).
+ * run, so every host (CLI, iOS, Android, HarmonyOS) gets them from this one
+ * file. Extracted from the harness at the 2026-09-23 code-size gate.
  */
 // The runtime-module registrations (node:string_decoder, node:stream/
 // promises, the package shim faces) must land before the FIRST spec import:
-// ESM links statically, so a specifier registered late still fails its
-// link. This file is the harness's first import — the same property the
-// globals themselves rely on.
+// ESM links statically, so a specifier registered late still fails its link.
+// This file is the harness's first import — the same property the globals
+// themselves rely on.
 defineRuntimeModules();
 
 // WHATWG streams/response — the web-adjacent faces use them as bare globals
 // (ReadableStream for the SSE decoders; TransformStream/DecompressionStream/
-// Response for the webworker image loader's pipe chain). Installed behind
-// the host's own bindings when it has any (the web-shims.js rule).
+// Response for the image loader's pipe chain) sit behind any host binding
+// (the web-shims.js rule).
 if (typeof globalThis.ReadableStream === 'undefined') globalThis.ReadableStream = ReadableStream;
 if (typeof globalThis.WritableStream === 'undefined') globalThis.WritableStream = WritableStream;
 if (typeof globalThis.TransformStream === 'undefined') globalThis.TransformStream = TransformStream;
@@ -158,6 +152,44 @@ if (typeof globalThis.structuredClone === 'undefined') {
     if (typeof value === 'function') throw new Error('structuredClone: functions cannot be cloned');
     return JSON.parse(JSON.stringify(value));
   };
+}
+
+// String.prototype.localeCompare — quickjs compares code units and ignores
+// the locale/options arguments. Node (ICU) honors `{ numeric: true }`, whose
+// one measured consumer is open-in-app's versioned-install scan: '2024.1.10'
+// must outrank '2024.1.9' (plain lexicographic puts '9' after '1'). The face
+// implements the NUMERIC chunk compare (digit runs compare by value) and
+// falls back to the code-unit comparison otherwise — no ICU data is consulted
+// for any other option, matching what the engine already did (W4-M,
+// 2026-09-28).
+if (typeof String.prototype.localeCompare === 'undefined'
+  || '2024.1.10'.localeCompare('2024.1.9', 'en', { numeric: true }) < 0) {
+  const chunkRe = /(\d+|\D+)/g;
+  const chunksOf = (text) => String(text).match(chunkRe) ?? [];
+  const codeUnitCompare = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+  const numericCompare = (a, b) => {
+    const left = chunksOf(a);
+    const right = chunksOf(b);
+    const length = Math.min(left.length, right.length);
+    for (let i = 0; i < length; i++) {
+      const l = left[i];
+      const r = right[i];
+      const bothDigits = /^\d/.test(l) && /^\d/.test(r);
+      const order = bothDigits
+        ? (Number(l) - Number(r)) || codeUnitCompare(l, r)
+        : codeUnitCompare(l, r);
+      if (order !== 0) return order;
+    }
+    return left.length - right.length;
+  };
+  Object.defineProperty(String.prototype, 'localeCompare', {
+    value(that, _locales, options) {
+      const numeric = options?.numeric === true || options?.numeric === 'true';
+      return numeric ? numericCompare(this, that) : codeUnitCompare(this, String(that));
+    },
+    writable: true,
+    configurable: true,
+  });
 }
 
 

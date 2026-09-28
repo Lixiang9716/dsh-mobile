@@ -23,6 +23,18 @@
  * algorithm name outside this table is loud (rule 5).
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
+// sha512 + HMAC ride the VERBATIM vendored @noble/hashes tree (the same
+// pinned 2.3.0 the crypto-globals limbs use; sha1/sha256 keep the in-file
+// implementations below). Noble digests bytes->bytes, matching the face.
+import { sha512 as nobleSha512 } from '@noble/hashes/sha2.js';
+import { hmac as nobleHmac } from '@noble/hashes/hmac.js';
+// Noble 2.x's hmac combinator drives the WRAPPED hasher face (`hash.create()`
+// in HMAC.setKey — utils.js throws 'expected hash wrapped by utils.createHasher'
+// for anything else), so createHmac imports the wrapped sha1/sha256 hashers
+// from the same pinned 2.3.0 tree (createHash keeps the raw digest functions
+// below — its callers only feed+digest).
+import { sha1 as nobleSha1Wrapped } from '@noble/hashes/legacy.js';
+import { sha256 as nobleSha256Wrapped } from '@noble/hashes/sha2.js';
 import { sha256Hex } from 'sha256.js';
 
 const randomUUID = () => {
@@ -88,7 +100,45 @@ const sha256Digest = (bytes) => {
   return out;
 };
 
-const SUPPORTED_ALGOS = { sha1: sha1Digest, sha256: sha256Digest };
+const SUPPORTED_ALGOS = { sha1: sha1Digest, sha256: sha256Digest, sha512: nobleSha512 };
+
+/** createHmac(algorithm, key) — HMAC over the same digest set, built on the
+ * vendored noble hmac combinator (block sizes and ipad/opad handling stay
+ * noble's problem; node's `hmac.update()`/`digest()` shapes are kept). */
+const createHmac = (algorithm, key) => {
+  const nobleHash = {
+    sha1: nobleSha1Wrapped,
+    sha256: nobleSha256Wrapped,
+    sha512: nobleSha512,
+  }[algorithm];
+  if (nobleHash === undefined) {
+    throw new Error(`node:crypto: createHmac('${algorithm}') is not supported `
+      + `by the spike runtime (supported: sha1, sha256, sha512)`);
+  }
+  let keyBytes;
+  if (typeof key === 'string') keyBytes = encodeUtf8(key);
+  else if (key instanceof Uint8Array || Array.isArray(key)) keyBytes = Uint8Array.from(key);
+  else throw new TypeError(`node:crypto: createHmac key (${typeof key}) is not supported`);
+  const h = nobleHmac.create(nobleHash, keyBytes);
+  return {
+    update(data) {
+      let chunk;
+      if (typeof data === 'string') chunk = encodeUtf8(data);
+      else if (data instanceof Uint8Array || Array.isArray(data)) chunk = Uint8Array.from(data);
+      else throw new TypeError(`node:crypto: hmac.update(${typeof data}) is not supported`);
+      h.update(chunk);
+      return this;
+    },
+    digest(encoding = 'buffer') {
+      const bytes = h.digest();
+      if (encoding === 'buffer' || encoding === undefined) return DshBuffer.fromBytes(bytes);
+      if (encoding === 'hex') return DshBuffer.fromBytes(bytes).toString('hex');
+      if (encoding === 'base64') return DshBuffer.fromBytes(bytes).toString('base64');
+      if (encoding === 'base64url') return DshBuffer.fromBytes(bytes).toString('base64url');
+      throw new Error(`node:crypto: hmac.digest('${encoding}') — supported: buffer, hex, base64, base64url`);
+    },
+  };
+};
 
 const createHash = (algorithm) => {
   const digestOf = SUPPORTED_ALGOS[algorithm];
@@ -121,10 +171,25 @@ const createHash = (algorithm) => {
       if (encoding === 'buffer' || encoding === undefined) return DshBuffer.fromBytes(bytes);
       if (encoding === 'hex') return DshBuffer.fromBytes(bytes).toString('hex');
       if (encoding === 'base64') return DshBuffer.fromBytes(bytes).toString('base64');
-      throw new Error(`node:crypto: hash.digest('${encoding}') — supported: buffer, hex, base64`);
+      if (encoding === 'base64url') return DshBuffer.fromBytes(bytes).toString('base64url');
+      throw new Error(`node:crypto: hash.digest('${encoding}') — supported: buffer, hex, base64, base64url`);
     },
   };
   return hash;
+};
+
+/** timingSafeEqual(a, b) — node's constant-time byte comparison: lengths
+ * must match (TypeError otherwise), result is a boolean. The comparison
+ * walks every byte regardless of early mismatch. */
+const timingSafeEqual = (a, b) => {
+  const da = a instanceof Uint8Array ? a : Uint8Array.from(a);
+  const db = b instanceof Uint8Array ? b : Uint8Array.from(b);
+  if (da.length !== db.length) {
+    throw new TypeError(`node:crypto: timingSafeEqual needs equal-length buffers (got ${da.length} vs ${db.length})`);
+  }
+  let diff = 0;
+  for (let i = 0; i < da.length; i++) diff |= da[i] ^ db[i];
+  return diff === 0;
 };
 
 const randomBytes = (size) => {
@@ -136,5 +201,30 @@ const randomBytes = (size) => {
   return DshBuffer.fromBytes(bytes);
 };
 
-export { randomUUID, createHash, randomBytes };
+/** randomFillSync(buffer[, offset[, size]]) — fills a buffer in place with
+ * random bytes and returns it (node's contract). The ws client masks every
+ * outbound frame with randomFillSync data (sender.js), so the vendored lib
+ * needs the in-place face, not a fresh buffer (W5-Q 2026-09-28). */
+const randomFillSync = (buffer, offset = 0, size) => {
+  if (typeof buffer !== 'object' || buffer === null) {
+    throw new TypeError('node:crypto: randomFillSync needs a buffer-like argument');
+  }
+  const view = buffer instanceof Uint8Array
+    ? buffer
+    : new Uint8Array(buffer.buffer ?? buffer, buffer.byteOffset ?? 0, buffer.byteLength ?? 0);
+  const start = Number(offset);
+  if (!Number.isInteger(start) || start < 0 || start > view.length) {
+    throw new TypeError(`node:crypto: randomFillSync offset ${String(offset)} is out of bounds`);
+  }
+  const len = size === undefined ? view.length - start : Number(size);
+  if (!Number.isInteger(len) || len < 0 || start + len > view.length) {
+    throw new TypeError(`node:crypto: randomFillSync size ${String(size)} is out of bounds`);
+  }
+  const random = new Uint8Array(len);
+  globalThis.crypto.getRandomValues(random);
+  view.set(random, start);
+  return buffer;
+};
+
+export { randomUUID, createHash, createHmac, timingSafeEqual, randomBytes, randomFillSync };
 export const webcrypto = globalThis.crypto;

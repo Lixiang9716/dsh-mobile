@@ -230,6 +230,20 @@ const proc = {
   },
   listenerCount(event) { return event === 'exit' ? exitListeners.length : 0; },
   exitCode: undefined,
+  /* kill(pid, signal): the subprocess seam's signal face (W5-R, 2026-09-28).
+   * Negative pids signal process GROUPS (detached: true spawns are group
+   * leaders — subprocess-local's killGroup probes liveness with signal 0
+   * through exactly this face and tears down with SIGTERM/SIGKILL). ESRCH
+   * throws, node's contract. Delegates to the host intrinsic — signal
+   * delivery must not touch the JS runtime (D2). */
+  kill(pid, signal = 'SIGTERM') {
+    const killIntrinsic = globalThis.__dshProcKill;
+    if (typeof killIntrinsic !== 'function') {
+      throw new Error('process.kill: the host subprocess seam is absent (__dshProcKill intrinsic missing)');
+    }
+    killIntrinsic(pid, signal);
+    return true;
+  },
   /* stdout/stderr: the inherit-stdio legs pipe into them ({end: false}); the
    * spike has no console of its own — writes drain into a no-op sink (the
    * harness's processState carries the real output capture). */
