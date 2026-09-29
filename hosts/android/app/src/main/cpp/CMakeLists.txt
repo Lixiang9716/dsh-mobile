@@ -15,6 +15,11 @@ add_library(dsh_spike SHARED
         dsh_spike_smoke.c
         android_compat.c
         ${DSH_SPIKE_DIR}/host/dsh_spike_host.c
+        # dsh_socket.c — the loopback socket seam's pump table (contract
+        # v1.8.0): dsh_spike_host.c references dsh_socket_poll/close_all
+        # unconditionally, so leaving it out is a link error, not a
+        # negotiation (the gateway still decides what gets SERVED).
+        ${DSH_SPIKE_DIR}/host/dsh_socket.c
         ${DSH_ENGINE_DIR}/dtoa.c
         ${DSH_ENGINE_DIR}/libregexp.c
         ${DSH_ENGINE_DIR}/libunicode.c
