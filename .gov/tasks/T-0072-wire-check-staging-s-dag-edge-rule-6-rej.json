@@ -12,9 +12,9 @@
     "[x] Materialize vendored closures in worktree (CI parity: ensure.sh, ensure-dsh.sh, vendor-official.sh --closure-only)",
     "[x] Hand-edit gates.json: staging-check gains needs=[self-test] (tree-reader serialization, 2026-09-26 note pattern)",
     "[x] Add .gov/rejections/case-staging-check.sh proving the gate intercepts a staging gap; re-seal plane",
-    "gov self-test green + full gov run green with staging-check output in the gate log",
-    "Agent Note (process) + surprise record + status-doc sync",
-    "Receipt run, push, open PR"
+    "[x] gov self-test green + full gov run green with staging-check output in the gate log",
+    "[x] Agent Note (process) + surprise record + status-doc sync",
+    "[x] Receipt run, push, open PR"
   ],
   "status": "open",
   "receipt": null,
