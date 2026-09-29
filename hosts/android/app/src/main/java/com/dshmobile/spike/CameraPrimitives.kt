@@ -192,14 +192,14 @@ class CameraPrimitives(
         fun onOpened(camera: CameraDevice, reader: ImageReader, size: Size, handler: Handler) {
             device = camera
             this.reader = reader
+            val callback = object : CameraCaptureSession.StateCallback() {
+                override fun onConfigured(s: CameraCaptureSession) {
+                    shootAll(s, handler)
+                }
+                override fun onConfigureFailed(s: CameraCaptureSession) = failUnavailable()
+            }
             try {
-                val session = camera.createCaptureSession(listOf(reader.surface),
-                    object : CameraCaptureSession.StateCallback() {
-                        override fun onConfigured(s: CameraCaptureSession) {
-                            shootAll(s, size, handler)
-                        }
-                        override fun onConfigureFailed(s: CameraCaptureSession) = failUnavailable()
-                    }, handler)
+                camera.createCaptureSession(listOf(reader.surface), callback, handler)
             } catch (e: Exception) {
                 failUnavailable()
             }
@@ -209,7 +209,7 @@ class CameraPrimitives(
          * is honored where the AE table supports it, clamped honestly where
          * it does not (the audit names the decision). A FAILED capture is a
          * dropped frame, never a hang — the callback resumes the countdown. */
-        private fun shootAll(session: CameraCaptureSession, size: Size, handler: Handler) {
+        private fun shootAll(session: CameraCaptureSession, handler: Handler) {
             val device = this.device ?: return failUnavailable()
             val aeFlash = when (flash) {
                 "on" -> CaptureRequest.CONTROL_AE_MODE_ON_ALWAYS_FLASH
@@ -226,12 +226,10 @@ class CameraPrimitives(
                 }
             }
             for (i in 0 until count) {
-                val request = device.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
-                    .apply {
-                        addTarget(reader!!.surface)
-                        set(CaptureRequest.CONTROL_AE_MODE, aeFlash)
-                    }
-                session.capture(request.build(), failureCallback, handler)
+                val builder = device.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
+                builder.addTarget(reader!!.surface)
+                builder.set(CaptureRequest.CONTROL_AE_MODE, aeFlash)
+                session.capture(builder.build(), failureCallback, handler)
             }
         }
 

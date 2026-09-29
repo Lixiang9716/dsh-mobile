@@ -8,13 +8,13 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var webView: WKWebView?
     private var bootVerdict = "PENDING"
     private var carrierVerdict = "PENDING"
-    private var gatewayVerdict = "PENDING"
+    var gatewayVerdict = "PENDING"
     /// Strong ref for the session: CarrierRuntime's internal closures are all
     /// weak, so without this the runtime deallocates the moment the queue
     /// drains its first block and the session dies silently.
     private var carrier: CarrierRuntime?
     /// Same for the m2 gateway phase (boot → carrier → gateway, order frozen).
-    private var gateway: GatewaySession?
+    var gateway: GatewaySession?
     /// The m2 on-device session phase (session launch mode only).
     private var session: SessionRuntime?
     private var sessionVerdict = "PENDING"
@@ -423,35 +423,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    /// The v1.5.0 device-plane drive over the device.plane scenario.
-    private func runDevicePlane() {
-        let session = GatewaySession(
-            entryModule: "scenario/device-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_device_plane_js(nil)) })
-        self.gateway = session
-        session.run { [weak self] outcome in
-            self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
-            self?.gateway = nil
-            print("spike: device-plane drive finished verdict=\(outcome.verdict)")
-            fflush(stdout)
-        }
-    }
 
-    /// The capability plane's camera drive over the camera.plane scenario
-    /// (proposal v1.10.0): the burst, the read-through scope, the phased
-    /// rows' honest `unavailable`.
-    private func runCameraPlane() {
-        let session = GatewaySession(
-            entryModule: "scenario/camera-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_camera_plane_js(nil)) })
-        self.gateway = session
-        session.run { [weak self] outcome in
-            self?.show(outcome, phase: "camera.plane") { self?.gatewayVerdict = $0 }
-            self?.gateway = nil
-            print("spike: camera-plane drive finished verdict=\(outcome.verdict)")
-            fflush(stdout)
-        }
-    }
 
     /// The m2 phase: the real nine-primitive gateway binding. Its outcome
     /// completes the launch sequence — this is where the final marker prints.
@@ -469,7 +441,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    private func show(
+    func show(
         _ outcome: SpikeOutcome, phase: String, setVerdict: @escaping (String) -> Void
     ) {
         setVerdict(outcome.verdict)

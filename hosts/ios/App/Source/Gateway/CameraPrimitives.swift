@@ -49,25 +49,39 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
-            startBurst(device: device, call: call, count: count, flash: flash,
-                       requested: requested, done)
+            startBurst(device, call, count, flash, requested, done)
         case .notDetermined:
-            // The OS prompt is the second consent layer; the burst starts (or
-            // the refusal settles) from the user's answer, off this thread.
-            // The marker is the device driver's hook (the simulator leg never
-            // reaches it — no camera, `unavailable` before any prompt).
-            DispatchQueue.main.async { GatewayCore.uiMarker("camera-permission", "wait") }
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                DispatchQueue.main.async { GatewayCore.uiMarker("camera-permission", "done") }
-                if granted {
-                    self?.startBurst(device: device, call: call, count: count,
-                                     flash: flash, requested: requested, done)
-                } else {
-                    self?.settleRefusal(done)
-                }
-            }
+            requestThenBurst(device, call, count, flash, requested, done)
         default:
             settleRefusal(done) // OS-layer refusal is a value (resolves null)
+        }
+    }
+
+    /// The OS prompt is the second consent layer; the burst starts (or the
+    /// refusal settles) from the user's answer, off this thread. The marker
+    /// is the device driver's hook (the simulator leg never reaches it — no
+    /// camera, `unavailable` before any prompt).
+    private func requestThenBurst(
+        _ device: AVCaptureDevice, _ call: GatewayCall, _ count: Int,
+        _ flash: String, _ requested: Int, _ done: @escaping GatewayDone
+    ) {
+        DispatchQueue.main.async { GatewayCore.uiMarker("camera-permission", "wait") }
+        AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+            self?.resumeBurst(granted, device, call, count, flash, requested, done)
+        }
+    }
+
+    /// The request's answer: granted → the burst; refused → the OS refusal
+    /// value. The done marker rides the main queue like the wait marker.
+    private func resumeBurst(
+        _ granted: Bool, _ device: AVCaptureDevice, _ call: GatewayCall,
+        _ count: Int, _ flash: String, _ requested: Int, _ done: @escaping GatewayDone
+    ) {
+        DispatchQueue.main.async { GatewayCore.uiMarker("camera-permission", "done") }
+        if granted {
+            startBurst(device, call, count, flash, requested, done)
+        } else {
+            settleRefusal(done)
         }
     }
 
@@ -81,8 +95,8 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
     /// thread (never the runtime thread, §6); the serial queue keeps bursts
     /// from interleaving.
     private func startBurst(
-        device: AVCaptureDevice, call: GatewayCall, count: Int,
-        flash: String, requested: Int, _ done: @escaping GatewayDone
+        _ device: AVCaptureDevice, _ call: GatewayCall, _ count: Int,
+        _ flash: String, _ requested: Int, _ done: @escaping GatewayDone
     ) {
         let session = AVCaptureSession()
         let output = AVCapturePhotoOutput()

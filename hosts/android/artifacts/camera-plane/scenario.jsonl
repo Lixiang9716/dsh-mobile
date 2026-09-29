@@ -1,21 +1,23 @@
-09-30 06:25:08.967 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.camera-plane","event":"client.selected","client":"dsh-web-client"}]}
-09-30 06:25:09.900 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
-09-30 06:25:09.917 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
-09-30 06:25:09.920 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
-09-30 06:25:10.058 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
-09-30 06:25:10.064 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
-09-30 06:25:10.064 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
-09-30 06:25:10.072 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
-09-30 06:25:10.074 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
-09-30 06:25:10.074 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
-09-30 06:25:12.825 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.burst","count":2,"formatOk":true,"sizedOk":true,"stampedOk":true}]}
-09-30 06:25:12.825 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-c4c481c5.jpg"}]}
-09-30 06:25:12.826 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 06:25:12.889 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":28816}]}
-09-30 06:25:13.092 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-229d697d.jpg"}]}
-09-30 06:25:13.093 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 06:25:13.109 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":29768}]}
-09-30 06:25:13.228 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.readback","frames":2,"matched":true}]}
-09-30 06:25:13.229 11227 11296 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
-09-30 06:25:13.769 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.maxbytes","photos":0,"dropped":true}]}
-09-30 06:25:13.769 11227 11296 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}
+09-30 06:40:17.150 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.camera-plane","event":"client.selected","client":"dsh-web-client"}]}
+09-30 06:40:17.189 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 06:40:17.190 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+09-30 06:40:17.190 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.camera.plane","message":"phased row probe","data":[{"what":"cameraRecordStart"}]}
+09-30 06:40:17.190 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+09-30 06:40:17.203 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+09-30 06:40:17.204 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+09-30 06:40:17.204 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.camera.plane","message":"phased row probe","data":[{"what":"cameraRecordStop"}]}
+09-30 06:40:17.204 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+09-30 06:40:17.215 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+09-30 06:40:17.215 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+09-30 06:40:17.215 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+09-30 06:40:17.998 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.burst","count":2,"formatOk":true,"sizedOk":true,"stampedOk":true}]}
+09-30 06:40:17.998 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-271c4c3c.jpg"}]}
+09-30 06:40:17.998 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 06:40:18.056 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":30556}]}
+09-30 06:40:18.346 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-ff911ab2.jpg"}]}
+09-30 06:40:18.346 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 06:40:18.370 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":30436}]}
+09-30 06:40:18.529 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.readback","frames":2,"matched":true}]}
+09-30 06:40:18.530 11946 12021 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+09-30 06:40:18.847 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.maxbytes","photos":0,"dropped":true}]}
+09-30 06:40:18.848 11946 12021 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}

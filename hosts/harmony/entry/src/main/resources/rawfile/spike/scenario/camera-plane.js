@@ -42,6 +42,7 @@ const demand = (cond, reason) => {
 };
 /* The phased rows' rejection is the EXPECTED shape; anything else is loud. */
 const demandUnavailable = async (call, what) => {
+  log.debug('phased row probe', { what });
   try {
     await call();
     demand(false, `${what} should reject unavailable (phased shape)`);
