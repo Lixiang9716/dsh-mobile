@@ -35,6 +35,7 @@ const makeMockFn = (impl) => {
   };
   f.mock = { calls: [], instances: [], results: [], invocationCallOrder: [] };
   f.mockImplementation = (next) => { impl = next; return f; };
+  f.getMockImplementation = () => impl;
   f.mockImplementationOnce = (next) => { onceQueue.push(next); return f; };
   f.mockReturnValue = (value) => { impl = () => value; return f; };
   f.mockReturnValueOnce = (value) => { onceQueue.push(() => value); return f; };
@@ -57,10 +58,7 @@ const makeMockFn = (impl) => {
     return f;
   };
   f.mockReset = () => {
-    f.mockClear();
-    onceQueue.length = 0;
-    impl = originalImpl;
-    return f;
+    f.mockClear(); onceQueue.length = 0; impl = originalImpl; return f;
   };
   return f;
 };

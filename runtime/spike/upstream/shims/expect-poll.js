@@ -22,6 +22,14 @@ export function attachExpectPoll(expect, makeExpect, failWith) {
       for (;;) {
         let value;
         try { value = getter(); } catch (error) { value = error; }
+        // vitest's expect.poll AWAITS an async getter before matching
+        // (the shell-activity spec polls `async () => (await
+        // handle.inspectActivity()).state` — a promise must not be the
+        // matched value; measured: every poll arm timed out printing
+        // "[object Promise]" while the terminal underneath was idle).
+        if (value && typeof value.then === 'function') {
+          try { value = await value; } catch (error) { value = error; }
+        }
         const assertion = makeExpect(value);
         try {
           const maybe = assertion[matcherName](...args);

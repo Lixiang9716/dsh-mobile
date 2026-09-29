@@ -1,0 +1,22 @@
+{
+  "name": "dsh-lynx-client-bundle",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ReactLynx bundle for the dsh-lynx-client render surface — pure presentation: zero network, zero gateway, zero business logic.",
+  "scripts": {
+    "build": "rspeedy build",
+    "build:web": "rspeedy build --config lynx.web.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lynx-js/react": "0.126.2",
+    "@lynx-js/react-rsbuild-plugin": "0.20.3",
+    "@lynx-js/rspeedy": "0.18.0",
+    "@lynx-js/types": "4.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.9.0"
+  }
+}

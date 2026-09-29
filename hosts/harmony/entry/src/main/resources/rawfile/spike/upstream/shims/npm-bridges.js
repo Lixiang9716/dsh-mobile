@@ -452,3 +452,16 @@ export const defineNpmBridges = () => {
 };
 
 defineNpmBridges();
+
+// node-pty — the FIRST-PARTY PTY face over the host forkpty seam (decision
+// D-b, 2026-09-29; contract/proposals/2026-09-29-forkpty-face.md). The
+// vendored `dsh-subprocess-local` terminal path loads its backend through
+// `createLazyRequire('node-pty')`, whose require face routes bare names
+// through the cjs-loader's builtin-face table (the 'ws' row precedent).
+// Registered here — a module the product boot AND the suite driver both
+// import — so the lazy require resolves wherever vendored code runs; a
+// host whose toolchain lacks forkpty fails the spawn loud at its own
+// intrinsic (the honest unavailable, never a fake).
+import { registerBuiltinFace } from 'upstream/shims/cjs-loader.js';
+import nodePtyFace from 'upstream/shims/node-pty.js';
+registerBuiltinFace('node-pty', nodePtyFace);
