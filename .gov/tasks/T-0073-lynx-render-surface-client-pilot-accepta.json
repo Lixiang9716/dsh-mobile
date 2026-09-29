@@ -1,0 +1,23 @@
+{
+  "title": "Lynx render-surface client pilot \u2014 acceptance + PR round",
+  "created": "2026-09-29T18:10:36+00:00",
+  "rules": {
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+    }
+  },
+  "checklist": [
+    "worktree current with origin/main; local env healed (proxy) so bundle-files/staging materialize",
+    "mock LLM full loop with structured scenario-id logs: lynx.mount 34/34 both faces (test/e2e/run-cli-lynx-mount.sh)",
+    "lynx.mount scenario leg per nextweb.mount discipline (scenario entry, __dshComplete, logs/scenario.jsonl/verdict/receipt), CLI host; stub skin same leg (replaceability)",
+    "vitest seam/adapter/fold/wire suite green (36 tests)",
+    "render evidence: @lynx-js/web-core real render in headless Chrome, screenshot in gitignored screens/",
+    "docs: README milestone pair, e2e-matrix pair rows, test README scenarios, architecture note (D5 boundary)",
+    "gov run receipt + push + gh pr create"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0073"
+}
