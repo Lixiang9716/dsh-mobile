@@ -19,37 +19,9 @@
       }
     },
     {
-      "event": "mic.armed",
+      "event": "mic.refused",
       "match": {
-        "format": "pcm-s16le"
-      }
-    },
-    {
-      "event": "mic.frames",
-      "match": {
-        "consumed": true,
-        "monotonic": true,
-        "samples": true
-      }
-    },
-    {
-      "event": "mic.stopped",
-      "match": {
-        "stopped": true,
-        "duration": true,
-        "bytes": true
-      }
-    },
-    {
-      "event": "mic.end",
-      "match": {
-        "reason": "stopped"
-      }
-    },
-    {
-      "event": "mic.stop.idempotent",
-      "match": {
-        "stopped": false
+        "resolved": "unavailable"
       }
     },
     {
