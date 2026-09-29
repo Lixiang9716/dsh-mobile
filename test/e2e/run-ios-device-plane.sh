@@ -88,6 +88,7 @@ fi
 
 # ---- 2. install + boot ------------------------------------------------------
 log "2/5 boot + install"
+sh hosts/ios/Tools/sim-preflight.sh "$UDID"   # runtime < 26 = dead launch (18.5 dyld lacks libswiftWebKit)
 xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1 || xcrun simctl boot "$UDID" 2>/dev/null || true
 if [ "$SKIP_INSTALL" = "0" ]; then
   # UNINSTALL first: a fresh container resets the clipboard standing grant,

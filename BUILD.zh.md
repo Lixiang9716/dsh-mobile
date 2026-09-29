@@ -17,6 +17,7 @@ build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--rel
 | `build/build.sh test ios` | 只跑 e2e 腿（构建须已新鲜） |
 | `build/build.sh check` | 只跑 `closures` 门禁——不需要任何工具链 |
 | `build/build.sh sync harmony` | 从 `runtime/spike` 重新暂存 harmony 的已提交闭包 |
+| `build/build.sh sync all` | 重新暂存全部已提交闭包（ios → android → harmony → core，按序执行；未知平台响亮中止，绝不静默跳过） |
 
 - 默认命令是 `build`；默认平台集是 `all`（即 CI 矩阵——单机很少凑齐所有
   工具链；iOS 只能在 macOS 编译）。

@@ -2,7 +2,7 @@
   "title": "Close the HarmonyOS m5-m2-llm leg and the platform check gates",
   "created": "2026-09-21T17:34:17+00:00",
   "rules": {
-    "hash": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
+    "hash": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -51,6 +51,13 @@
       "from": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
       "to": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
       "reason": "constitution advanced: gates.json gained needs edges (gate-race fix, Agent Note 2026-09-26-serialize-the-tree-mutating-rejection-case-ahead); brief unchanged"
+    },
+    {
+      "ts": "2026-09-29T05:37:17+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
+      "to": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
+      "reason": "the real-LLM harmony leg landed and ran green: llm.live-stream 7/7 on-device with receipts in the round-4 branch base; the card's remaining scope (platform check gates) is superseded by the gates DAG's current shape"
     }
   ]
 }

@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: 7c121c207b15bc043392524bd774c282cbefc18a
-  zh: f6e37e0be541647a7d9d72eec59024ad06e4b2e5
-counterpart: BUILD.zh.md
-last_confirmed: 2026-09-29T03:59:16+00:00
-en_commit: f1627796
-zh_commit: f1627796
+  en: a0cb879251cf5807fc1da81a12277fd105c5b440
+  zh: 4476e63308488331927e8805c5a79a46204d9e25
+counterpart: 2026-09-29-generated-bundles.zh.md
+last_confirmed: 2026-09-29T04:14:08+00:00
+en_commit: untracked
+zh_commit: untracked

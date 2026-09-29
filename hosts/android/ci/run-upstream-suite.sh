@@ -10,6 +10,7 @@
 #        (artifacts: hosts/android/artifacts/upstream-suite)
 set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+CAPTURE="$ROOT/hosts/android/ci/logcat-capture.sh"
 cd "$ROOT"
 
 PKG=com.dshmobile.spike
@@ -82,29 +83,25 @@ say "corpus staged (driver + harness come from the APK assets)"
 PASS_TOTAL=0; FAIL_TOTAL=0; FILES_PASS=0; FILES_FAIL=0; FILES_ERROR=0
 for spec in $SPECS; do
     STREAM="$OUT/stream-$(echo "$spec" | tr '/' '_').txt"
-    adb logcat -c
     adb shell am force-stop $PKG >/dev/null 2>&1 || true
-    : > "$STREAM"
-    adb logcat -s dsh.spike dsh.spike.result > "$STREAM" 2>/dev/null &
-    streamer=$!
-    cleanup_streamer() { kill "$streamer" 2>/dev/null || true; }
+    # Shared canary-pinned capture (logcat-capture.sh): `logcat -c` races the
+    # reader's initial snapshot, so the wait and the truncation judge the
+    # canary view only — a previous spec's completion tag must not satisfy
+    # this spec's wait.
+    CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+    cleanup_streamer() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
     trap cleanup_streamer EXIT INT TERM
 
     adb shell am start -n $PKG/.MainActivity --ez dsh.suite true --es dsh.spec "$spec" >/dev/null 2>&1 \
         || { cleanup_streamer; die "am start failed for $spec"; }
 
-    deadline=$(( $(date +%s) + LAUNCH_DEADLINE_SECONDS ))
     timed_out=0
-    until grep -q "dsh.spike.result: ALL" "$STREAM" 2>/dev/null; do
-        if [ "$(date +%s)" -ge "$deadline" ]; then
-            echo "{\"spec\":\"$spec\",\"status\":\"timeout\"}" >> "$OUT/aggregate.jsonl"
-            FILES_ERROR=$((FILES_ERROR + 1))
-            timed_out=1
-            cleanup_streamer
-            break
-        fi
-        sleep 0.2
-    done
+    if ! "$CAPTURE" wait -f "$STREAM" "$CANARY" "$LAUNCH_DEADLINE_SECONDS" "dsh.spike.result: ALL"; then
+        echo "{\"spec\":\"$spec\",\"status\":\"timeout\"}" >> "$OUT/aggregate.jsonl"
+        FILES_ERROR=$((FILES_ERROR + 1))
+        timed_out=1
+        cleanup_streamer
+    fi
     sleep 0.3
     cleanup_streamer
     trap - EXIT
@@ -115,7 +112,8 @@ for spec in $SPECS; do
         continue
     fi
 
-    sed '/dsh.spike.result: ALL/q' "$STREAM" > "$STREAM.final" 2>/dev/null || cp "$STREAM" "$STREAM.final"
+    "$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > "$STREAM.final" 2>/dev/null \
+        || cp "$STREAM" "$STREAM.final"
     # the aggregate line: one JSON per spec from its suite/summary record
     node - "$spec" "$STREAM.final" >> "$OUT/aggregate.jsonl" <<'EXTRACT'
 const fs = require('fs');

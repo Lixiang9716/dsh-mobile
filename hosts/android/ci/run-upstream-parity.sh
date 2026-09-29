@@ -9,12 +9,14 @@
 # --reference-only) produced from the SAME vendored packages under plain Node.
 #
 # Every wait is a polled condition with a deadline (rule 8); the capture is
-# the logcat stream truncated at the first completion tag (the discipline
-# run-spike-e2e.sh learned the hard way).
+# the shared canary-pinned discipline (hosts/android/ci/logcat-capture.sh):
+# the logcat stream truncated at the first completion tag, judged from the
+# canary onward.
 #
 # usage: run-upstream-parity.sh   (artifacts: hosts/android/artifacts/upstream-parity)
 set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+CAPTURE="$ROOT/hosts/android/ci/logcat-capture.sh"
 cd "$ROOT"
 
 PKG=com.dshmobile.spike
@@ -52,29 +54,19 @@ until adb install -r "$APK"; do
     sleep 3
 done
 
-adb logcat -c
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
-: > "$STREAM"
 # The logcat clear races a reader's initial snapshot: lines buffered BEFORE
 # the clear (the previous step's scenarios leave `dsh.spike.result: ALL`
 # tags behind) can still reach this stream and instantly satisfy the
 # completion wait, truncating the capture before this run logged anything
-# ("no parity/event records", seen 2026-09-24). Pin the capture point: a
-# canary line this streamer can only see once attached, then judge and
-# truncate from the canary onward.
-CANARY="parity-begin-$$"
-adb logcat -s dsh.spike dsh.spike.result dsh.canary > "$STREAM" 2>/dev/null &
-streamer=$!
+# ("no parity/event records", seen 2026-09-24). logcat-capture.sh start
+# clears, attaches with the canary tag in the specs, and pins the capture
+# point with a canary line the streamer can only see once attached.
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
 cleanup() {
-    kill "$streamer" 2>/dev/null || true
+    "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
-adb shell log -t dsh.canary "$CANARY" >/dev/null
-deadline=$(( $(date +%s) + 60 ))
-until grep -q "$CANARY" "$STREAM"; do
-    [ "$(date +%s)" -ge "$deadline" ] && die "logcat streamer never attached (canary unseen within 60s)"
-    sleep 0.2
-done
 
 deadline=$(( $(date +%s) + 60 ))
 until adb shell am start -n $PKG/.MainActivity --ez dsh.parity true >/dev/null 2>&1; do
@@ -83,27 +75,22 @@ until adb shell am start -n $PKG/.MainActivity --ez dsh.parity true >/dev/null 2
 done
 
 # Both conditions: the scenario's own evidence (stale completion tags cannot
-# fake it) and the completion tag itself. BOTH waits judge the CANARY view —
+# fake it) and the completion tag itself. wait judges the CANARY VIEW ONLY —
 # the raw stream still carries the PREVIOUS step's buffered `dsh.spike.result:
 # ALL` + scenario lines that pierced `logcat -c` (the 2026-09-24 race, seen
-# again 2026-09-29: the truncation was canary-pinned but this wait grepped the
+# again 2026-09-29: the truncation was canary-pinned but the wait grepped the
 # raw stream, so a stale completion tag satisfied it instantly and the
 # canary-truncated capture came up empty — "no parity/event records").
-deadline=$(( $(date +%s) + 300 ))
-canary_view() { awk '/parity-begin-/{seen=1} seen' "$STREAM"; }
-until canary_view | grep -q "upstream.parity" && canary_view | grep -q "dsh.spike.result: ALL"; do
-    if [ "$(date +%s)" -ge "$deadline" ]; then
-        echo "::error::upstream.parity scenario did not complete within 300s" >&2
-        tail -80 "$STREAM" >&2
-        exit 1
-    fi
-    sleep 0.2
-done
+"$CAPTURE" wait -f "$STREAM" "$CANARY" 300 "upstream.parity" "dsh.spike.result: ALL" || {
+    echo "::error::upstream.parity scenario did not complete within 300s" >&2
+    tail -80 "$STREAM" >&2
+    exit 1
+}
 sleep 0.3          # let the completion-tag line itself flush
 trap - EXIT
 cleanup
 
-awk '/parity-begin-/{seen=1} seen' "$STREAM" | sed '/dsh.spike.result: ALL/q' > "$OUT/logs.txt"
+"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > "$OUT/logs.txt"
 grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
 # ---- extract the projected records and diff against the golden -------------

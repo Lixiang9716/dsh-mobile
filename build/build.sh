@@ -46,7 +46,19 @@ for arg in "$@"; do
         --list) LIST=1 ;;
         ios|android|harmony|core) PLATFORMS="$PLATFORMS $arg" ;;
         all) PLATFORMS="$PLATFORMS ios android harmony core" ;;
-        *,*) PLATFORMS="$PLATFORMS $(echo "$arg" | tr ',' ' ')" ;;
+        *,*)
+            # Comma lists are split here, so they are validated here — an
+            # unknown token must never reach the stage dispatch, where a
+            # missing case arm would silently skip it (fail loud, rule 5).
+            for t in $(echo "$arg" | tr ',' ' '); do
+                case "$t" in
+                    ios|android|harmony|core) PLATFORMS="$PLATFORMS $t" ;;
+                    all) PLATFORMS="$PLATFORMS ios android harmony core" ;;
+                    *) echo "build: unknown platform '$t' in '$arg'" >&2
+                       echo "usage: build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--release] [--list]" >&2
+                       exit 2 ;;
+                esac
+            done ;;
         *) echo "build: unknown platform or flag '$arg'" >&2
            echo "usage: build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--release] [--list]" >&2
            exit 2 ;;
@@ -107,6 +119,9 @@ stage_sync() {
         core)
             echo "build: sync core (verify the vendored pins)"
             (cd runtime/spike && ./vendor/ensure.sh) ;;
+        *)
+            echo "::error::build: sync: unknown platform '$1' (want ios|android|harmony|core)" >&2
+            return 1 ;;
     esac
 }
 
@@ -143,6 +158,9 @@ stage_compile() {
                 echo "build: compile core (C host CLI, debug flavor)"
                 (cd runtime/spike && ./host/build.sh)
             fi ;;
+        *)
+            echo "::error::build: compile: unknown platform '$1' (want ios|android|harmony|core)" >&2
+            return 1 ;;
     esac
 }
 
@@ -168,6 +186,9 @@ stage_test() {
             runtime/spike/ci/run-settings-surfaces-e2e.sh
             runtime/spike/ci/run-open-design-e2e.sh
             runtime/spike/ci/run-office-e2e.sh ;;
+        *)
+            echo "::error::build: test: unknown platform '$1' (want ios|android|harmony|core)" >&2
+            return 1 ;;
     esac
 }
 

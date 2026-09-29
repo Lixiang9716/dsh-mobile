@@ -3,16 +3,17 @@
 # (run-spike-e2e.sh, untouched) plus the M4 completion session
 # (`android.capability-binding`: loopback carrier + WebView mount + the real
 # nine-primitive gateway binding, UI-driven where native). Evidence: the
-# canonical log stream bounded at the first `dsh.spike.result: ALL` line
-# (see run-spike-e2e.sh for the streaming-capture discipline), one checker
-# verdict per manifest, and screenshots at each UI stage (human evidence
-# only — never a checker input).
+# canonical log stream bounded at the first `dsh.spike.result: ALL` line,
+# judged from the canary onward (the shared canary-pinned capture discipline,
+# hosts/android/ci/logcat-capture.sh), one checker verdict per manifest, and
+# screenshots at each UI stage (human evidence only — never a checker input).
 #
 # Every wait is a polled condition with a deadline (rules.md rule 8); every
 # exhaustion is loud (rule 5). UI automation follows the same discipline:
 # uiautomator dump -> find node -> tap, re-polled until a deadline passes.
 set -eu
 
+CAPTURE="$(cd "$(dirname "$0")" && pwd)/logcat-capture.sh"
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 PKG=com.dshmobile.spike
 OUT=${DSH_M4_OUT:-/tmp}
@@ -123,17 +124,17 @@ drive_picker() {
 }
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
-adb logcat -c
-: > "$M4_STREAM"
-# Line-buffered stream: the driver greps markers from the file in real time,
-# so a plain `adb logcat > file &` (stdio block buffering — the file only
-# grows in 4KB flushes, and the tail arrives at kill) would starve it.
-adb logcat -s dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit 2>/dev/null \
-    | while IFS= read -r line; do printf '%s\n' "$line" >> "$M4_STREAM"; done &
-streamer=$!
+# Line-buffered streamer with the canary pin (logcat-capture.sh start): the
+# driver greps markers from the capture in real time, so the pump appends
+# line by line (a plain `adb logcat > file &` block-buffers — the file only
+# grows in 4KB flushes and the tail arrives at kill). Every marker grep and
+# the completion wait judge the CANARY view: `logcat -c` races the reader's
+# initial snapshot, and a stale pre-clear marker must not fire a screenshot,
+# a tap, or the wait.
+CANARY=$("$CAPTURE" start -f "$M4_STREAM" dsh.spike dsh.spike.result dsh.spike.ui dsh.spike.audit)
+cview() { "$CAPTURE" view -f "$M4_STREAM" "$CANARY"; }
 cleanup() {
-    kill "$streamer" 2>/dev/null || true
-    pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+    "$CAPTURE" stop -f "$M4_STREAM" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
 
@@ -145,31 +146,31 @@ done
 
 saw_mount=0; saw_picker=0; saw_approval=0; saw_notify=0
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "dsh.spike.result: ALL" "$M4_STREAM"; do
+until cview | grep -q "dsh.spike.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$M4_STREAM"
         die "m4 session did not complete within 300s"
     fi
-    if [ "$saw_mount" -eq 0 ] && grep -q "ws.session-complete" "$M4_STREAM"; then
+    if [ "$saw_mount" -eq 0 ] && cview | grep -q "ws.session-complete"; then
         # the mounted page has the full session rendered; the binding leg's
         # first dialog is still ~1s away, so the shot catches the client
         saw_mount=1
         sleep 0.5
         shot 01-mount
     fi
-    if [ "$saw_picker" -eq 0 ] && grep -q "ui-wait picker" "$M4_STREAM"; then
+    if [ "$saw_picker" -eq 0 ] && cview | grep -q "ui-wait picker"; then
         saw_picker=1; drive_picker
     fi
-    if [ "$saw_approval" -eq 0 ] && grep -q "ui-wait approval" "$M4_STREAM"; then
+    if [ "$saw_approval" -eq 0 ] && cview | grep -q "ui-wait approval"; then
         # Material renders AlertDialog buttons uppercase (textAllCaps).
         saw_approval=1; shot 03-approval; tap_when_present "Approve|APPROVE"
     fi
-    if [ "$saw_notify" -eq 0 ] && grep -q "notify.scheduled" "$M4_STREAM"; then
+    if [ "$saw_notify" -eq 0 ] && cview | grep -q "notify.scheduled"; then
         saw_notify=1
         adb shell input keyevent KEYCODE_HOME
         # background edge first (the manifest pins the event order)
         dline=$(( $(date +%s) + 20 ))
-        until grep -q '"state":"background"' "$M4_STREAM"; do
+        until cview | grep -q '"state":"background"'; do
             [ "$(date +%s)" -ge "$dline" ] && die "no app.state background within 20s"
             sleep 0.5
         done
@@ -184,7 +185,7 @@ sleep 0.3
 trap - EXIT
 cleanup
 
-sed '/dsh.spike.result: ALL/q' "$M4_STREAM" > "$OUT/dsh-m4-logs.txt"
+cview | sed '/dsh.spike.result: ALL/q' > "$OUT/dsh-m4-logs.txt"
 grep 'dsh.spike.result' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-results.txt"
 cat "$OUT/dsh-m4-results.txt"
 grep 'dsh.spike.log:' "$OUT/dsh-m4-logs.txt" > "$OUT/dsh-m4-scenario.jsonl"
@@ -217,14 +218,11 @@ mkdir -p "$ART/screens"
 wshot() { adb exec-out screencap -p > "$ART/screens/$1.png" 2>/dev/null || true; }
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
-adb logcat -c
-: > "$WEB_STREAM"
-adb logcat -s dsh.spike dsh.spike.result 2>/dev/null \
-    | while IFS= read -r line; do printf '%s\n' "$line" >> "$WEB_STREAM"; done &
-wstreamer=$!
+# Same capture discipline as phase 2, via the shared canary-pinned script.
+WCANARY=$("$CAPTURE" start -f "$WEB_STREAM" dsh.spike dsh.spike.result)
+wview() { "$CAPTURE" view -f "$WEB_STREAM" "$WCANARY"; }
 cleanup_web() {
-    kill "$wstreamer" 2>/dev/null || true
-    pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+    "$CAPTURE" stop -f "$WEB_STREAM" >/dev/null 2>&1 || true
 }
 trap cleanup_web EXIT INT TERM
 
@@ -236,12 +234,12 @@ done
 
 saw_index=0; saw_plugins=0
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "dsh.spike.result: ALL" "$WEB_STREAM"; do
+until wview | grep -q "dsh.spike.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$WEB_STREAM"
         die "official-web drive did not complete within 300s"
     fi
-    if [ "$saw_index" -eq 0 ] && grep -q '"event":"index.served"' "$WEB_STREAM"; then
+    if [ "$saw_index" -eq 0 ] && wview | grep -q '"event":"index.served"'; then
         saw_index=1
         # index.served precedes first paint; give the boot page its ~1s to
         # paint so the shot shows the actual HARNESS boot screen, not a
@@ -249,7 +247,7 @@ until grep -q "dsh.spike.result: ALL" "$WEB_STREAM"; do
         sleep 1.2
         wshot 01-official-boot-screen
     fi
-    if [ "$saw_plugins" -eq 0 ] && grep -q '"event":"plugins.served"' "$WEB_STREAM"; then
+    if [ "$saw_plugins" -eq 0 ] && wview | grep -q '"event":"plugins.served"'; then
         saw_plugins=1
         sleep 0.5
         wshot 02-plugins-loading
@@ -266,7 +264,7 @@ wshot 04-final-state
 trap - EXIT
 cleanup_web
 
-sed '/dsh.spike.result: ALL/q' "$WEB_STREAM" > "$ART/logs.txt"
+wview | sed '/dsh.spike.result: ALL/q' > "$ART/logs.txt"
 grep 'dsh.spike.result' "$ART/logs.txt" > "$ART/results.txt"
 cat "$ART/results.txt"
 grep 'dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl" || true
@@ -299,14 +297,11 @@ mkdir -p "$SART/screens"
 sshots() { adb exec-out screencap -p > "$SART/screens/$1.png" 2>/dev/null || true; }
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
-adb logcat -c
-: > "$SESSION_STREAM"
-adb logcat -s dsh.spike dsh.spike.result 2>/dev/null \
-    | while IFS= read -r line; do printf '%s\n' "$line" >> "$SESSION_STREAM"; done &
-sstreamer=$!
+# Same capture discipline as phase 3, via the shared canary-pinned script.
+SECANARY=$("$CAPTURE" start -f "$SESSION_STREAM" dsh.spike dsh.spike.result)
+sview() { "$CAPTURE" view -f "$SESSION_STREAM" "$SECANARY"; }
 cleanup_session() {
-    kill "$sstreamer" 2>/dev/null || true
-    pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+    "$CAPTURE" stop -f "$SESSION_STREAM" >/dev/null 2>&1 || true
 }
 trap cleanup_session EXIT INT TERM
 
@@ -318,23 +313,23 @@ done
 
 saw_index=0; saw_list=0; saw_journal=0
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "dsh.spike.result: ALL" "$SESSION_STREAM"; do
+until sview | grep -q "dsh.spike.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$SESSION_STREAM"
         die "session-live drive did not complete within 300s"
     fi
-    if [ "$saw_index" -eq 0 ] && grep -q '"event":"index.served"' "$SESSION_STREAM"; then
+    if [ "$saw_index" -eq 0 ] && sview | grep -q '"event":"index.served"'; then
         saw_index=1
         # index.served precedes first paint; give the boot page its ~1s.
         sleep 1.2
         sshots 01-session-live-boot
     fi
-    if [ "$saw_list" -eq 0 ] && grep -q '"event":"session.list.responded"' "$SESSION_STREAM"; then
+    if [ "$saw_list" -eq 0 ] && sview | grep -q '"event":"session.list.responded"'; then
         saw_list=1
         sleep 0.5
         sshots 02-session-list-real
     fi
-    if [ "$saw_journal" -eq 0 ] && grep -q '"event":"journal/live"' "$SESSION_STREAM"; then
+    if [ "$saw_journal" -eq 0 ] && sview | grep -q '"event":"journal/live"'; then
         saw_journal=1
         sleep 0.5
         sshots 03-journal-live
@@ -350,7 +345,7 @@ sshots 04-final-state
 trap - EXIT
 cleanup_session
 
-sed '/dsh.spike.result: ALL/q' "$SESSION_STREAM" > "$SART/logs.txt"
+sview | sed '/dsh.spike.result: ALL/q' > "$SART/logs.txt"
 grep 'dsh.spike.result' "$SART/logs.txt" > "$SART/results.txt"
 cat "$SART/results.txt"
 grep 'dsh.spike.log:' "$SART/logs.txt" > "$SART/scenario.jsonl" || true
@@ -379,14 +374,11 @@ mkdir -p "$WART/screens"
 wshots() { adb exec-out screencap -p > "$WART/screens/$1.png" 2>/dev/null || true; }
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
-adb logcat -c
-: > "$WRITE_STREAM"
-adb logcat -s dsh.spike dsh.spike.result 2>/dev/null \
-    | while IFS= read -r line; do printf '%s\n' "$line" >> "$WRITE_STREAM"; done &
-wstringer=$!
+# Same capture discipline as phases 3-4, via the shared canary-pinned script.
+WRCANARY=$("$CAPTURE" start -f "$WRITE_STREAM" dsh.spike dsh.spike.result)
+wrview() { "$CAPTURE" view -f "$WRITE_STREAM" "$WRCANARY"; }
 cleanup_write() {
-    kill "$wstringer" 2>/dev/null || true
-    pkill -f "logcat -s dsh.spike" 2>/dev/null || true
+    "$CAPTURE" stop -f "$WRITE_STREAM" >/dev/null 2>&1 || true
 }
 trap cleanup_write EXIT INT TERM
 
@@ -398,23 +390,23 @@ done
 
 saw_index=0; saw_typed=0; saw_reply=0
 deadline=$(( $(date +%s) + 300 ))
-until grep -q "dsh.spike.result: ALL" "$WRITE_STREAM"; do
+until wrview | grep -q "dsh.spike.result: ALL"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         tail -80 "$WRITE_STREAM"
         die "write-live drive did not complete within 300s"
     fi
-    if [ "$saw_index" -eq 0 ] && grep -q '"event":"index.served"' "$WRITE_STREAM"; then
+    if [ "$saw_index" -eq 0 ] && wrview | grep -q '"event":"index.served"'; then
         saw_index=1
         # index.served precedes first paint; give the boot page its ~1s.
         sleep 1.2
         wshots 01-write-boot-screen
     fi
-    if [ "$saw_typed" -eq 0 ] && grep -q '"event":"composer.ready"' "$WRITE_STREAM"; then
+    if [ "$saw_typed" -eq 0 ] && wrview | grep -q '"event":"composer.ready"'; then
         saw_typed=1
         sleep 0.5
         wshots 02-composer-typed
     fi
-    if [ "$saw_reply" -eq 0 ] && grep -q '"event":"write.reply.rendered"' "$WRITE_STREAM"; then
+    if [ "$saw_reply" -eq 0 ] && wrview | grep -q '"event":"write.reply.rendered"'; then
         saw_reply=1
         sleep 0.5
         wshots 03-reply-rendered
@@ -430,7 +422,7 @@ wshots 04-final-state
 trap - EXIT
 cleanup_write
 
-sed '/dsh.spike.result: ALL/q' "$WRITE_STREAM" > "$WART/logs.txt"
+wrview | sed '/dsh.spike.result: ALL/q' > "$WART/logs.txt"
 grep 'dsh.spike.result' "$WART/logs.txt" > "$WART/results.txt"
 cat "$WART/results.txt"
 grep 'dsh.spike.log:' "$WART/logs.txt" > "$WART/scenario.jsonl" || true
