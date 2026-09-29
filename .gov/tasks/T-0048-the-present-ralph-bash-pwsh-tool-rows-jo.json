@@ -2,7 +2,7 @@
   "title": "the present/ralph/bash/pwsh tool rows join the harmony closure \u2014 vendor-official.sh's BUNDLE_FILES list + the preset markers on-device",
   "created": "2026-09-24T12:05:03+00:00",
   "rules": {
-    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -37,6 +37,13 @@
       "from": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
       "to": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
       "reason": "bulk re-pin to the adopted rules set: briefs unchanged, the rules hash moved under the 2026-09-29 governance edits"
+    },
+    {
+      "ts": "2026-09-29T16:16:10+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+      "to": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+      "reason": "constitution advanced (the staging-check gate's needs edge + rule-6 rejection case, plane re-sealed; the same move that staled these pins began with wave-1's gates.json change); briefs unchanged"
     }
   ]
 }
