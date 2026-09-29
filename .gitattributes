@@ -1,1 +1,22 @@
+# Generated iOS artifacts — never edit by hand.
+#
+# hosts/ios/App/Generated/** is the runtime/spike JS bundle embedded as C
+# byte arrays, and hosts/ios/DSHSpike.xcodeproj/** is regenerated from
+# project.yml by xcodegen — both produced by hosts/ios/gen.sh (committed
+# for D9 self-containment; a D9 amendment proposal lands alongside).
+#
+# Marking them generated collapses PR diffs to a single line and moves
+# review to the JS diff — the sources gen.sh embeds are the only place a
+# change should start.
+#
+# `binary` is git's built-in macro (= -diff -merge -text): with diff unset,
+# `git diff` renders these as "Bin" / "binary files differ" instead of the
+# 300k-line C byte-array wall. `diff=binary` alone is NOT enough — it names
+# a diff driver that does not exist, and git falls back to a textual diff.
+
+hosts/ios/App/Generated/** binary linguist-generated
+hosts/ios/DSHSpike.xcodeproj/project.pbxproj linguist-generated
+hosts/ios/DSHSpike.xcodeproj/** linguist-generated
+
+# govrail's append-only surprises ledger: concurrent writers union-merge.
 .gov/surprises.jsonl merge=union

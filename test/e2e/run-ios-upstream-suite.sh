@@ -87,6 +87,7 @@ fi
 [ -d "$APP" ] || die "app bundle missing: $APP (build first or drop --skip-build)"
 
 log "3/5 boot + install"
+sh hosts/ios/Tools/sim-preflight.sh "$UDID"   # runtime < 26 = dead launch (18.5 dyld lacks libswiftWebKit)
 xcrun simctl bootstatus "$UDID" -b   # already booted is fine
 xcrun simctl install "$UDID" "$APP"
 

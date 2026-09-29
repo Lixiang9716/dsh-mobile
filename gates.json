@@ -16,7 +16,8 @@
       "e2e-matrix",
       "closures",
       "vendoring-repro",
-      "bundle-files"
+      "bundle-files",
+      "quickjs-boot-parse"
     ],
     "quick": [
       "notes"
@@ -201,7 +202,9 @@
         "build/check-closures.sh"
       ],
       "description": "committed host copies of the canonical runtime/spike closure are byte-identical (android assets, harmony rawfile, ios generated bundle)",
-      "needs": ["self-test"]
+      "needs": [
+        "self-test"
+      ]
     },
     {
       "id": "vendoring-repro",
@@ -220,8 +223,22 @@
         "hosts/harmony/ci/check-bundle-files.mjs"
       ],
       "description": "harmony BUNDLE_FILES vs rawfile/spike cross-check, both directions (#57)",
-      "needs": ["self-test"],
+      "needs": [
+        "self-test"
+      ],
       "timeoutMs": 120000
+    },
+    {
+      "id": "quickjs-boot-parse",
+      "command": [
+        "sh",
+        "runtime/spike/ci/check-quickjs-boot-parse.sh"
+      ],
+      "description": "the real boot graph (fs/fs-seeded/buffer/buffer-codecs splits + bridges) compiles under vendored quickjs-ng via the desktop CLI — node --check passing is not QuickJS can parse",
+      "needs": [
+        "self-test"
+      ],
+      "timeoutMs": 300000
     }
   ]
 }

@@ -336,6 +336,7 @@ fi
 [ -d "$APP" ] || die "app bundle missing: $APP (build first or drop --skip-build)"
 
 log "3/6 boot + install"
+sh hosts/ios/Tools/sim-preflight.sh "$UDID"   # runtime < 26 = dead launch (18.5 dyld lacks libswiftWebKit)
 # Reboot (not erase): erase loses the Files remembered picker location and
 # the notification authorization, both of which the in-run choreography
 # needs; a reboot clears transient daemons and is fast. --no-reboot keeps

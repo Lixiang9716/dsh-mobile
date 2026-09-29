@@ -88,6 +88,7 @@ fi
 [ -d "$APP" ] || die "app bundle missing: $APP (build first or drop --skip-build)"
 
 log "3/5 boot + install"
+sh hosts/ios/Tools/sim-preflight.sh "$UDID"   # runtime < 26 = dead launch (18.5 dyld lacks libswiftWebKit)
 xcrun simctl bootstatus "$UDID" -b   # already booted is fine
 # Uninstall first: the app scope (profiles/) PERSISTS across launches, and
 # the receipt journal is append-only — the startup-replay assertions need a

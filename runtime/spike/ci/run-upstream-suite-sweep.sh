@@ -12,6 +12,12 @@
 # (2026-09-25, bug-fix class) for the sweep's first full run and what it
 # bought.
 #
+# A qjs leg whose summary never arrives (90s-cap timeout or harness error —
+# under CPU contention the cap claims specs that pass at lower load) gets
+# exactly ONE immediate retry, in the same worker slot (same parallelism):
+# the retry writes <stem>.qjs.retry.log and the first attempt's log stays
+# untouched at <stem>.qjs.log. The recorded result is the retry's.
+#
 # usage: runtime/spike/ci/run-upstream-suite-sweep.sh [--paral N]
 set -u
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -41,6 +47,7 @@ worker() {
     name="$(basename "$spec")"
     stem="${name%.spec.mjs}"
     qjs_log="$LOGDIR/$stem.qjs.log"
+    qjs_retry_log="$LOGDIR/$stem.qjs.retry.log"
     node_log="$LOGDIR/$stem.node.log"
     frag="$FRAGS/$stem.tsv"
 
@@ -48,6 +55,16 @@ worker() {
         scenario/upstream-suite-leg.js \
         --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" > "$qjs_log" 2>&1 \
         && grep -o '"event":"suite/summary".*' "$qjs_log" | tail -1)"
+    # One TIMEOUT retry for the qjs leg only: the first attempt came back
+    # with no summary (90s-cap timeout or harness error). The retry runs
+    # immediately, inside this worker (same xargs slot — same parallelism),
+    # to its own log so the first failure stays inspectable in $qjs_log.
+    if [ -z "${qjs_summary:-}" ]; then
+        qjs_summary="$(cd "$SPIKE" && run_to 90 ./build/dsh-spike-cli . \
+            scenario/upstream-suite-leg.js \
+            --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" > "$qjs_retry_log" 2>&1 \
+            && grep -o '"event":"suite/summary".*' "$qjs_retry_log" | tail -1)"
+    fi
     [ -z "${qjs_summary:-}" ] && qjs_summary='TIMEOUT-OR-ERROR'
 
     node_summary="$(run_to 90 node "$ROOT/test/upstream-suite/smoke.mjs" "$name" \

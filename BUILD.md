@@ -18,6 +18,7 @@ build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--rel
 | `build/build.sh test ios` | the e2e leg only (build must already be fresh) |
 | `build/build.sh check` | the `closures` gate only — no toolchains needed |
 | `build/build.sh sync harmony` | re-stage the committed harmony closure from `runtime/spike` |
+| `build/build.sh sync all` | re-stage every committed closure (ios → android → harmony → core, in order; an unknown platform aborts loud, never a silent skip) |
 
 - The default command is `build`; the default platform set is `all` (the CI
   matrix — one machine rarely has every toolchain; iOS compiles only on macOS).

@@ -10,6 +10,7 @@
 # sleeps only pace polling) and every exhaustion is loud (rule 5).
 set -eu
 
+CAPTURE="$(cd "$(dirname "$0")" && pwd)/logcat-capture.sh"
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 
 # KVM is a hard precondition on Linux runners: without it the emulator
@@ -53,8 +54,6 @@ until adb install -r "$APK"; do
     sleep 3
 done
 
-adb logcat -c
-
 # Launch exactly ONCE and STREAM the log to a file, then bound the capture
 # at the FIRST completion tag ("ALL PASS"/"ALL FAIL" — emitted after ALL
 # scenarios ran). Two capture disciplines already burned here: (1) a second
@@ -65,38 +64,36 @@ adb logcat -c
 # returns TWO interleaved runs and the one-to-one checker rightly rejects
 # the doubled log while the device itself reports ALL PASS twice. So: the
 # checker input is the stream TRUNCATED at the first completion tag —
-# exactly one run's stream, by construction.
+# exactly one run's stream, by construction. The capture is the shared
+# canary-pinned discipline (logcat-capture.sh): `logcat -c` races the
+# reader's initial snapshot, so a PREVIOUS run's buffered
+# `dsh.spike.result: ALL` can pierce the clear and satisfy this run's wait —
+# both the wait and the truncation judge the canary view only.
 adb shell am force-stop com.dshmobile.spike >/dev/null 2>&1 || true
 STREAM=/tmp/dsh-spike-stream.txt
-: > "$STREAM"
 # the completion tag rides its own tag (dsh.spike.result) — stream both
 # (logcat tag specs are EXACT, -s dsh.spike alone never sees it)
-adb logcat -s dsh.spike dsh.spike.result > "$STREAM" 2>/dev/null &
-streamer=$!
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+cleanup() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
+trap cleanup EXIT INT TERM
 deadline=$(( $(date +%s) + 120 ))
 until adb shell am start -n com.dshmobile.spike/.MainActivity >/dev/null 2>&1; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         echo "::error::am start kept failing within 120s"
-        kill "$streamer" 2>/dev/null || true
         exit 1
     fi
     sleep 2
 done
-deadline=$(( $(date +%s) + 120 ))
-until grep -q "dsh.spike.result: ALL" "$STREAM"; do
-    if [ "$(date +%s)" -ge "$deadline" ]; then
-        echo "::error::spike scenarios did not complete within 120s"
-        kill "$streamer" 2>/dev/null || true
-        tail -200 "$STREAM"
-        exit 1
-    fi
-    sleep 0.2
-done
+"$CAPTURE" wait -f "$STREAM" "$CANARY" 120 "dsh.spike.result: ALL" || {
+    echo "::error::spike scenarios did not complete within 120s"
+    tail -200 "$STREAM"
+    exit 1
+}
 sleep 0.3          # let the completion-tag line itself flush
-kill "$streamer" 2>/dev/null || true
-wait "$streamer" 2>/dev/null || true
+trap - EXIT
+cleanup
 
-sed '/dsh.spike.result: ALL/q' "$STREAM" > /tmp/dsh-spike-logs.txt
+"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > /tmp/dsh-spike-logs.txt
 grep 'dsh.spike.result' /tmp/dsh-spike-logs.txt > /tmp/dsh-spike-results.txt
 cat /tmp/dsh-spike-results.txt
 
