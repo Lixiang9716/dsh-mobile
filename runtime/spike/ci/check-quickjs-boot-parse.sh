@@ -30,6 +30,14 @@ cd "$ROOT/runtime/spike"
 # 1. The engine exists — build on miss (rule 5: a missing engine is a loud
 #    build, never a silent skip).
 if [ ! -x build/dsh-spike-cli ]; then
+    # host/build.sh links the iSH static libs, whose vendor tree is
+    # materialized by ensure-ish.sh — NOT by ensure.sh/ensure-dsh.sh (the
+    # gov.yml materialize step), so a cold CI runner needs it here first
+    # (the 2026-09-29 CI run: 'vendored iSH-arm64 sources not found').
+    if [ ! -d vendor/ish ] || [ -z "$(find vendor/ish -mindepth 1 -maxdepth 1 -type d -print -quit 2>/dev/null)" ]; then
+        echo "quickjs-boot-parse: ish vendor tree absent — materializing (vendor/ensure-ish.sh)"
+        sh vendor/ensure-ish.sh
+    fi
     echo "quickjs-boot-parse: build/dsh-spike-cli missing — building (host/build.sh)"
     sh host/build.sh
 fi
