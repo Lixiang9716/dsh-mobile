@@ -28,11 +28,16 @@ function applyOrientation(image, orientation) {
   const map = ORIENTATION_MAP[orientation] ?? ORIENTATION_MAP[1];
   const { width, height, data } = image;
   const out = new data.constructor(width * height * 4);
+  // Destination row stride: orientations 5-8 transpose the canvas (its width
+  // becomes the SOURCE height); 1-4 keep width×height. Hardcoding one stride
+  // misplaces or drops pixels on every non-square image (caught in review on
+  // a 3×2, R-channel=index probe: orientation 3 read 5,4,3,1,0,0).
+  const destStride = orientation >= 5 ? height : width;
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const src = (y * width + x) * 4;
       const [dx, dy] = map(x, y, width, height);
-      const dst = (dy * height + dx) * 4;
+      const dst = (dy * destStride + dx) * 4;
       for (let c = 0; c < 4; c += 1) out[dst + c] = data[src + c];
     }
   }

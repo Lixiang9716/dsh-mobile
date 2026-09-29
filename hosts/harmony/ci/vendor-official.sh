@@ -110,11 +110,17 @@ if [ "$MODE" = "suite" ]; then
     # this rides the SUITE closure: BUNDLE_FILES carries nothing, and every
     # path lands in the manifest the materializer serves.
     mkdir -p "$RAW/upstream/shims/sharp"
-    for f in package.json index.js bytes.js png-codec.js jpeg-codec.js \
-             gif-codec.js webp-codec.js svg-face.js; do
-        cp "runtime/spike/upstream/shims/sharp/$f" "$RAW/upstream/shims/sharp/$f"
-        echo "upstream/shims/sharp/$f" >> "$RAW/upstream-tests/__files.txt"
-    done
+    # find-based (NOT a hand list): the adapter gained ops.js after this
+    # manifest shipped and the hand list missed it — the exact rot the
+    # android scenario hand list hit (2026-09-29 surprise). Every file the
+    # package carries rides, so a future module cannot be forgotten.
+    (cd "runtime/spike/upstream/shims/sharp" && find . -type f) |
+        while IFS= read -r f; do
+            rel="upstream/shims/sharp/${f#./}"
+            mkdir -p "$RAW/$(dirname "$rel")"
+            cp "runtime/spike/$rel" "$RAW/$rel"
+            echo "$rel" >> "$RAW/upstream-tests/__files.txt"
+        done
     for engine in "vendor/npm/pngjs@5.0.0/lib|.js" "vendor/npm/jpeg-js@0.4.4|.js"; do
         engine_dir="${engine%%|*}"
         engine_suffix="${engine##*|}"
