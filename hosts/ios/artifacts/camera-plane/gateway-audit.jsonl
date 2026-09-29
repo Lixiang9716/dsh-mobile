@@ -1,3 +1,3 @@
-dsh.gateway.audit: {"primitive":"cameraRecordStart","verdict":"granted","outcome":"unavailable","ts":"2026-09-29T22:39:24Z","caller":"dsh.spike.scenario"}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-29T22:39:24Z","primitive":"cameraRecordStop","outcome":"unavailable","caller":"dsh.spike.scenario"}
-dsh.gateway.audit: {"ts":"2026-09-29T22:39:24Z","verdict":"granted","caller":"dsh.spike.scenario","primitive":"cameraCapture","outcome":"unavailable"}
+dsh.gateway.audit: {"ts":"2026-09-29T23:37:07Z","outcome":"unavailable","primitive":"cameraRecordStart","caller":"dsh.spike.scenario","verdict":"granted"}
+dsh.gateway.audit: {"outcome":"unavailable","caller":"dsh.spike.scenario","primitive":"cameraRecordStop","ts":"2026-09-29T23:37:07Z","verdict":"granted"}
+dsh.gateway.audit: {"primitive":"cameraCapture","ts":"2026-09-29T23:37:07Z","caller":"dsh.spike.scenario","verdict":"granted","outcome":"unavailable"}

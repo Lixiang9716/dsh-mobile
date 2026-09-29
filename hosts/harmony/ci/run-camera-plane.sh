@@ -83,16 +83,47 @@ until [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; do
     sleep 3
 done
 
-# ---- drive: the OS permission prompt (FIRST RUN ONLY) ------------------------
-# The scenario's camera-permission marker is the hook; the system dialog's
-# Allow button is probed from the uitest layout (bounded), the coordinate
-# law of drive-device-plane.mjs's tapText. After the grant the scenario
-# finishes alone; the terminal marker is the C verdict line.
-say "driving: OS camera prompt (Allow) — probe the layout, tap by label"
+# ---- drive: the TWO consent layers -------------------------------------------
+# Layer 1 (gateway): the host's custom approval dialog — its button is
+# 'Approve' (Index.ets showApproval); the drive-device-plane.mjs precedent
+# taps it by layout probe. Layer 2 (OS): the system permission dialog's
+# Allow. The scenario's camera-approval / camera-permission markers are the
+# hooks; both buttons are probed from the uitest layout (bounded). After
+# both grants the scenario finishes alone; the terminal marker is the C
+# verdict line.
+say "driving: gateway approval (Approve) + OS camera prompt (Allow)"
 VERDICT_LINE=""
 overall_deadline=$(( $(date +%s) + 600 ))
 allow_tapped=0
+approve_tapped=0
 while [ "$(date +%s)" -lt "$overall_deadline" ]; do
+    if [ "$approve_tapped" = "0" ] && grep -q "ui-wait camera-approval" "$STREAM" 2>/dev/null; then
+        sleep 1
+        "$HDC" shell uitest dumpLayout -p /data/local/tmp/dsh-cp-layout.json >/dev/null 2>&1 || true
+        "$HDC" file recv /data/local/tmp/dsh-cp-layout.json /tmp/dsh-cp-layout.json >/dev/null 2>&1 || true
+        if [ -s /tmp/dsh-cp-layout.json ]; then
+            HIT=$(node -e '
+const t = JSON.parse(require("fs").readFileSync("/tmp/dsh-cp-layout.json", "utf8"));
+const walk = (n) => {
+  if (n === null || typeof n !== "object") return null;
+  const a = n.attributes ?? n;
+  const text = `${a.text ?? ""} ${a["content-desc"] ?? ""}`.trim();
+  if (/^(Approve|批准)$/i.test(text)) {
+    const m = (a.bounds ?? "").match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+    if (m) return [Math.round((+m[1] + +m[3]) / 2), Math.round((+m[2] + +m[4]) / 2)];
+  }
+  for (const c of n.children ?? []) { const h = walk(c); if (h) return h; }
+  return null;
+};
+const hit = walk(t);
+process.exit(hit ? (console.log(hit[0] + " " + hit[1]), 0) : 1);' 2>/dev/null || true)
+            if [ -n "$HIT" ]; then
+                "$HDC" shell uitest uiInput click $HIT >/dev/null 2>&1 || true
+                approve_tapped=1
+                say "tapped Approve at ($HIT)"
+            fi
+        fi
+    fi
     if [ "$allow_tapped" = "0" ] && grep -q "ui-wait camera-permission" "$STREAM" 2>/dev/null; then
         sleep 1
         "$HDC" shell uitest dumpLayout -p /data/local/tmp/dsh-cp-layout.json >/dev/null 2>&1 || true

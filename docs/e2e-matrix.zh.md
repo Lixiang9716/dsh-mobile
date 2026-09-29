@@ -9,7 +9,7 @@
 > **时效性**：本矩阵反映能力面相机变更（2026-09-30）：`camera.plane` +
 > `camera.plane.audit` 在 iOS（模拟器的如实 capture-unavailable 姿态，目录
 > `hosts/ios/artifacts/camera-plane/`）与 Android（模拟器虚拟相机真实连拍
-> —— 2 帧 / 45148 字节 / 333 ms —— 加 maxBytes 丢弃腿，目录
+> —— 2 帧 / 44157 字节 / 457 ms —— 加 maxBytes 丢弃腿，目录
 > `hosts/android/artifacts/camera-plane/`）双绿；总量对本树重跑（59 目录 /
 > 122 verdict / 65 of 65 scenario id 绿覆盖 / 51 manifest；harmony 真机腿与
 > iOS 真机腿待真机——一键脚本已备好，绝不合成证据）。下面的注记是历史的

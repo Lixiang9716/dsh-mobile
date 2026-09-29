@@ -581,6 +581,47 @@ if [ "$MODE" = "check" ]; then
     # that silently skipped everything; this is why the probes exist).
     TRACKED=$(git ls-files "$RAW")
 fi
+# The spike-ROOT closure (gateway.js et al) byte-checks here: these are the
+# runtime files the materialized bundle imports by relative path — a stale
+# gateway.js here silently drops every primitive the runtime bundle grew
+# (2026-09-30: cameraCapture was absent from the rawfile copy while the
+# scenario rode byte-identical — the leg would die at import-link, and
+# nothing compared the two; the staged SCENARIO copies byte-check below in
+# the same sweep, so the pair cannot drift apart again).
+SPIKE_ROOT="gateway.js
+logger.js
+registry.js
+sha256.js
+tar-mini.js
+llm.js
+install-pipeline.js"
+for f in $SPIKE_ROOT; do
+    if [ "$MODE" != "check" ] && [ -f "runtime/spike/$f" ]; then
+        cmp -s "runtime/spike/$f" "$RAW/$f" || cp "runtime/spike/$f" "$RAW/$f"
+    fi
+    if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+       ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$f"; then
+        echo skip >> "$SKIPS_FILE"
+        continue
+    fi
+    cmp -s "runtime/spike/$f" "$RAW/$f" || echo "spike/$f" >> "$DRIFT"
+done
+for s in $(ls "$RAW/scenario" 2>/dev/null); do
+    if [ ! -f "runtime/spike/scenario/$s" ]; then
+        continue  # a rawfile-only scenario (harmony-*.js) has no runtime twin
+    fi
+    if [ "$MODE" != "check" ]; then
+        cmp -s "runtime/spike/scenario/$s" "$RAW/scenario/$s" ||
+            cp "runtime/spike/scenario/$s" "$RAW/scenario/$s"
+    fi
+    if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+       ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/scenario/$s"; then
+        echo skip >> "$SKIPS_FILE"
+        continue
+    fi
+    cmp -s "runtime/spike/scenario/$s" "$RAW/scenario/$s" ||
+        echo "spike/scenario/$s" >> "$DRIFT"
+done
 for rel in $CLOSURE; do
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
        ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then

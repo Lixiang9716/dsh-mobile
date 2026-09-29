@@ -48,3 +48,21 @@
 2026-09-30 06:39:24.590 DSHSpike[50746:42073460] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraCapture"}]}
 2026-09-30 06:39:24.591 DSHSpike[50746:42073460] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.unavailable","code":"unavailable"}]}
 2026-09-30 06:39:24.591 DSHSpike[50746:42073460] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}
+2026-09-30 07:37:07.360 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 07:37:07.363 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+2026-09-30 07:37:07.363 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.camera.plane","message":"phased row probe","data":[{"what":"cameraRecordStart"}]}
+2026-09-30 07:37:07.364 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+2026-09-30 07:37:07.370 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+2026-09-30 07:37:07.420 DSHSpike[94943:43036345] dsh.gateway.audit: {"ts":"2026-09-29T23:37:07Z","outcome":"unavailable","primitive":"cameraRecordStart","caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 07:37:07.421 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+2026-09-30 07:37:07.422 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+2026-09-30 07:37:07.422 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.camera.plane","message":"phased row probe","data":[{"what":"cameraRecordStop"}]}
+2026-09-30 07:37:07.422 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+2026-09-30 07:37:07.424 DSHSpike[94943:43036345] dsh.gateway.audit: {"outcome":"unavailable","caller":"dsh.spike.scenario","primitive":"cameraRecordStop","ts":"2026-09-29T23:37:07Z","verdict":"granted"}
+2026-09-30 07:37:07.425 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+2026-09-30 07:37:07.425 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+2026-09-30 07:37:07.426 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+2026-09-30 07:37:07.491 DSHSpike[94943:43036345] dsh.gateway.audit: {"primitive":"cameraCapture","ts":"2026-09-29T23:37:07Z","caller":"dsh.spike.scenario","verdict":"granted","outcome":"unavailable"}
+2026-09-30 07:37:07.492 DSHSpike[94943:43036634] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraCapture"}]}
+2026-09-30 07:37:07.493 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.unavailable","code":"unavailable"}]}
+2026-09-30 07:37:07.497 DSHSpike[94943:43036634] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}

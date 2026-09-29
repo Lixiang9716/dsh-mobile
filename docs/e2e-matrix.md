@@ -21,7 +21,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > (2026-09-30): `camera.plane` + `camera.plane.audit` green on iOS (the
 > simulator's honest capture-unavailable posture, dir
 > `hosts/ios/artifacts/camera-plane/`) and Android (the emulator's REAL
-> virtual-camera burst — 2 frames / 45148 bytes / 333 ms — plus the
+> virtual-camera burst — 2 frames / 44157 bytes / 457 ms — plus the
 > maxBytes drop leg, dir `hosts/android/artifacts/camera-plane/`); the
 > totals are re-run against this tree (66 dirs / 136 verdicts / 67 of 67
 > scenario ids green-covered / 53 manifests; the harmony device leg and the

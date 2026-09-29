@@ -239,6 +239,78 @@ export const keychainSet = async (ref, secret) => await call('keychainSet', {
   secretB64: secret ? bytesToBase64(secret) : null,
 });
 
+// ---- the socket seam (contract v1.8.0) ------------------------------------
+// Audited LOOPBACK-ONLY TCP under the adopted proposal's five-rule model:
+// direction grading (listen vs connect), the narrowest-scope default
+// (`loopback` is v1.8.0's only scope), family-flag grants, one gateway audit
+// record per listen/connect/accept, session-scoped grants. The data face
+// rides the same gateway bridge (socketWrite/socketEnd/socketClose — the
+// proposal's connection face) while the pump's poll is the one host
+// intrinsic (the same child-process/pty split: the JS pump turns the poll
+// into the data/close event sequence, D8). A host without the seam answers
+// `unavailable` — a capability gap, not a retryable error.
+
+/** `{ serverId, port } | null`; omitting `port` lets the host pick (the
+ * resolved port is the source of truth). `null` = the user refused. */
+export const socketListen = async (request) =>
+  await call('socketListen', { scope: 'loopback', ...request });
+
+/** `{ connectionId } | null`; host is the literal 127.0.0.1 in v1.8.0. */
+export const socketConnect = async (request) =>
+  await call('socketConnect', { scope: 'loopback', host: '127.0.0.1', ...request });
+
+/** `{ written, buffered }` — `buffered` > 0 is the host parking the refused
+ * tail in the slot's backpressure buffer (it drains on the pump ticks). */
+export const socketWrite = async (connectionId, bytes) => {
+  log.debug('socketWrite', { connectionId, bytes: bytes.byteLength });
+  const res = await call('socketWrite', {
+    connectionId,
+    bytesB64: bytesToBase64(bytes),
+  });
+  return { written: res.written, buffered: res.buffered ?? 0 };
+};
+
+/** Half-close: the peer reads the trailing bytes then sees EOF. */
+export const socketEnd = async (connectionId) =>
+  await call('socketEnd', { connectionId });
+
+/** Close a server (`{ id }`) or a connection (`{ connectionId }`). */
+export const socketClose = async (ref) =>
+  await call('socketClose', ref.connectionId !== undefined
+    ? { id: ref.connectionId }
+    : ref);
+
+// ---- the system capability plane: camera (proposal v1.10.0) ---------------
+// The capture burst is the v1 implementation face; photos land in the host's
+// capture scope (the v1.5.0 media-picker read-through posture) and ride the
+// fs primitives like any file. The recording shape is specified and PHASED:
+// its implementation follows as its own change, so hosts register the two
+// control rows to answer `unavailable` (the honest declaration — contract
+// §1), and the descriptor's unavailable array names them. User refusal at
+// either consent layer resolves null; a device without a camera rejects
+// `unavailable`.
+
+/** One capture burst: `{ photos: CapturedPhoto[] }`, or null on refusal. */
+export const cameraCapture = async (request = {}) => await call('cameraCapture', {
+  count: request.count,
+  format: request.format,
+  flash: request.flash,
+  maxBytes: request.maxBytes,
+  tag: request.tag,
+});
+
+/** Phased shape: `{ recordingId }`, or null on refusal — answers
+ * `unavailable` until the recording line lands. */
+export const cameraRecordStart = async (request = {}) => await call('cameraRecordStart', {
+  maxDurationMs: request.maxDurationMs,
+  withAudio: request.withAudio,
+});
+
+/** Phased shape: `{ recording: CapturedPhoto }` — answers `unavailable`
+ * until the recording line lands. */
+export const cameraRecordStop = async (recordingId) =>
+  await call('cameraRecordStop', { recordingId });
+
 // ---- bridge event plumbing ------------------------------------------------
 
 const listeners = new Set();

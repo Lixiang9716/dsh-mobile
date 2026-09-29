@@ -331,6 +331,9 @@ export class HostPhase {
       });
     this.cameraKit = new CameraPrimitives(ctx);
     if (this.approvalPresenter !== null) {
+      this.cameraKit.setApprovalPresenter(this.approvalPresenter);
+    }
+    if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
     }
     hostStart(bundleRoot, capturePath, fsRoot, BINDING_DESCRIPTOR,

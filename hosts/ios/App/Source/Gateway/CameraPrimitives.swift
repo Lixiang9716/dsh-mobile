@@ -18,6 +18,10 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
     /// Host-declared burst range (the proposal's "host clamps to a declared
     /// range"); the audit carries the requested count and the honored count.
     static let maxBurst = 8
+    /// The burst deadline (rule 8: a wait on a condition carries a deadline).
+    /// A burst the camera never completes settles `unavailable` at expiry —
+    /// the caller's promise answers, it never hangs.
+    static let burstDeadlineSeconds = 20.0
     private weak var core: GatewayCore?
     private let fs: FSPrimitives
     private var mediaDir: URL?
@@ -92,8 +96,11 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
 
     /// The burst: one session, `count` sequential photo captures, one audit
     /// record and one settle at the end. The session runs on this work-queue
-    /// thread (never the runtime thread, §6); the serial queue keeps bursts
-    /// from interleaving.
+    /// thread (never the runtime thread, §6). Bursts are PER-CALL state keyed
+    /// by the settings' uniqueID — the async tail runs on the AVCapture
+    /// delegate queue where nothing serializes, so overlapping calls must
+    /// never share a slot (the single-slot first draft hung the first
+    /// caller's promise and mis-billed its frames to the second call).
     private func startBurst(
         _ device: AVCaptureDevice, _ call: GatewayCall, _ count: Int,
         _ flash: String, _ requested: Int, _ done: @escaping GatewayDone
@@ -119,31 +126,60 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
             settings.flashMode = mode
         }
         let maxBytes = call.args["maxBytes"] as? Int
-        burstLock.lock()
-        pendingBurst = BurstState(
+        let burst = BurstState(
             remaining: count, flash: mode, maxBytes: maxBytes, requested: requested,
-            output: output, settings: settings, dir: mediaDirectory())
-        burstDone = done
-        burstSession = session
-        let first = pendingBurst
+            settingsID: settings.uniqueID, session: session, output: output,
+            settings: settings, done: done, dir: mediaDirectory())
+        burst.armDeadline { [weak self] in
+            self?.expireBurst(settings.uniqueID)
+        }
+        burstLock.lock()
+        bursts[settings.uniqueID] = burst
         burstLock.unlock()
-        first?.output.capturePhoto(with: first!.settings, delegate: self)
+        output.capturePhoto(with: settings, delegate: self)
     }
 
     // ---- the burst collector ---------------------------------------------------
 
     private let burstLock = NSLock()
-    private var pendingBurst: BurstState?
-    private var burstDone: GatewayDone?
-    private var burstSession: AVCaptureSession?
+    /// Per-call bursts keyed by AVCapturePhotoSettings.uniqueID (delegate
+    /// callbacks carry it back on photo.resolvedSettings).
+    private var bursts: [Int64: BurstState] = [:]
 
-    /// One burst's accumulator: the frames, the audit facts, the request.
+    private func takeBurst(_ settingsID: Int64) -> BurstState? {
+        burstLock.lock()
+        defer { burstLock.unlock() }
+        return bursts.removeValue(forKey: settingsID)
+    }
+
+    /// The deadline's expiry path: settle the burst unavailable and tear the
+    /// session down — the promise answers, it never hangs.
+    private func expireBurst(_ settingsID: Int64) {
+        guard let burst = takeBurst(settingsID) else { return }
+        burst.session.stopRunning()
+        let elapsed = Int(Date().timeIntervalSince(burst.startedAt) * 1000)
+        core?.stageAuditDetail([
+            "count": burst.photos.count, "requested": burst.requested,
+            "totalBytes": burst.totalBytes, "dropped": burst.dropped,
+            "flash": Self.flashName(burst.flash), "durationMs": elapsed,
+            "expired": true,
+        ])
+        burst.done(.failure(GatewayError(
+            code: "unavailable", primitive: "cameraCapture",
+            message: "camera burst did not complete (deadline)")))
+    }
+
+    /// One burst's accumulator: the frames, the audit facts, the request,
+    /// its own session, its settle and its own deadline.
     private final class BurstState {
         let flash: AVCaptureDevice.FlashMode
         let maxBytes: Int?
         let requested: Int
+        let settingsID: Int64
+        let session: AVCaptureSession
         let output: AVCapturePhotoOutput
         let settings: AVCapturePhotoSettings
+        let done: GatewayDone
         let dir: URL?
         let startedAt = Date()
         private let lock = NSLock()
@@ -151,17 +187,45 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         private(set) var photos: [[String: Any]] = []
         private(set) var totalBytes = 0
         private(set) var dropped = 0
+        private var deadline: DispatchWorkItem?
 
         init(remaining: Int, flash: AVCaptureDevice.FlashMode, maxBytes: Int?,
-             requested: Int, output: AVCapturePhotoOutput,
-             settings: AVCapturePhotoSettings, dir: URL?) {
+             requested: Int, settingsID: Int64, session: AVCaptureSession,
+             output: AVCapturePhotoOutput, settings: AVCapturePhotoSettings,
+             done: @escaping GatewayDone, dir: URL?) {
             self.remaining = remaining
             self.flash = flash
             self.maxBytes = maxBytes
             self.requested = requested
+            self.settingsID = settingsID
+            self.session = session
             self.output = output
             self.settings = settings
+            self.done = done
             self.dir = dir
+        }
+
+        /// Rule 8: the wait carries its deadline — armed once, disarmed by
+        /// the settle path.
+        func armDeadline(_ onExpire: @escaping () -> Void) {
+            let work = DispatchWorkItem { [weak self] in
+                guard let self, !self.isSettled() else { return }
+                onExpire()
+            }
+            deadline = work
+            DispatchQueue.global().asyncAfter(
+                deadline: .now() + CameraPrimitives.burstDeadlineSeconds, execute: work)
+        }
+
+        func cancelDeadline() {
+            deadline?.cancel()
+            deadline = nil
+        }
+
+        private func isSettled() -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            return remaining <= 0
         }
 
         func accept(_ photo: [String: Any], bytes: Int) {
@@ -180,9 +244,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         }
 
         func finished() -> Bool {
-            lock.lock()
-            defer { lock.unlock() }
-            return remaining <= 0
+            isSettled()
         }
     }
 
@@ -190,8 +252,9 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         _ output: AVCapturePhotoOutput,
         didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?
     ) {
+        let settingsID = photo.resolvedSettings.uniqueID
         burstLock.lock()
-        let burst = pendingBurst
+        let burst = bursts[settingsID]
         burstLock.unlock()
         guard let burst else { return }
         if let error {
@@ -204,28 +267,25 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
             burst.drop() // an over-cap frame is dropped, never truncated
         }
         guard burst.finished() else {
+            // the SAME settings ride every frame of the burst — the uniqueID
+            // is how the next callback finds this burst in the map
             burst.output.capturePhoto(with: burst.settings, delegate: self)
             return
         }
-        settleBurst(burst)
+        settleBurst(settingsID, burst)
     }
 
-    private func settleBurst(_ burst: BurstState) {
-        burstLock.lock()
-        pendingBurst = nil
-        burstDone = nil
-        let session = burstSession
-        burstSession = nil
-        let done = burstDone
-        burstLock.unlock()
-        session?.stopRunning()
+    private func settleBurst(_ settingsID: Int64, _ burst: BurstState) {
+        guard takeBurst(settingsID) != nil else { return }
+        burst.cancelDeadline()
+        burst.session.stopRunning()
         let elapsed = Int(Date().timeIntervalSince(burst.startedAt) * 1000)
         core?.stageAuditDetail([
             "count": burst.photos.count, "requested": burst.requested,
             "totalBytes": burst.totalBytes, "dropped": burst.dropped,
             "flash": Self.flashName(burst.flash), "durationMs": elapsed,
         ])
-        done?(.success(["photos": burst.photos]))
+        burst.done(.success(["photos": burst.photos]))
     }
 
     /// One frame's CapturedPhoto dict: written into the capture scope (the

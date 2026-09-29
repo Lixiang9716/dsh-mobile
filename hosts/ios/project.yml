@@ -230,6 +230,11 @@ targets:
         UILaunchScreen: {}
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
+        # The capability plane's camera family (v1.10.0): without this key the
+        # OS kills the app at the first requestAccess — the declaration lives
+        # HERE (the xcodegen generation source), not in the generated
+        # App/Info.plist, or every `gen.sh` silently drops it.
+        NSCameraUsageDescription: The camera capture burst (cameraCapture) lands the frames you shoot into the session's capture scope.
         # The picker E2E grants a scope into the app's Documents directory;
         # both flags keep that directory visible/browsable in Files.app so
         # the granted files can be inspected from the simulator UI.

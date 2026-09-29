@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "camera.plane",
   "launchConfiguration": "ios camera-plane drive (Debug, -dsh-mode camera-plane; simulator: capture honestly unavailable)",
-  "tree": "origin/main b4c6bf50db42 (dirty working tree at receipt time)",
+  "tree": "origin/main fe6dd066cfac (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "camera.plane",
@@ -21,6 +21,6 @@
   ],
   "runner": "test/e2e/run-ios-camera-plane.sh",
   "screens": [],
-  "timestamp": "2026-09-30T06:39:27+08:00",
+  "timestamp": "2026-09-30T07:37:11+08:00",
   "exitCode": 0
 }

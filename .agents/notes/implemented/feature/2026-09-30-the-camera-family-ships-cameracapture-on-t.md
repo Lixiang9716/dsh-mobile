@@ -41,10 +41,16 @@ honest surface:
   array AND their handlers reject with `unavailable` + the phased message
   (the audit's verdict is `granted/unavailable`, not a fake permission
   refusal). The family flag `camera` gates all three rows.
+- **HarmonyOS consent layer**: the smoke backend carries no family-flag
+  table, so the gateway layer's consent surface IS the custom approval
+  dialog — `cameraCapture` asks through the SAME presenter presentApproval
+  uses (the clipboardRead precedent, wired in HostPhase) before the OS
+  permission request; a declined presenter settles null. The host carries
+  no audit stream (the device-plane posture — nothing pretended).
 - **E2E**: the simulator leg (iOS) walks the denial legs without content
   assertions and is green (6/6 + audit 3/3); the Android leg REALLY captures
   on the emulator's virtual camera (8/8 + audit 5/5; burst 2 frames /
-  45148 bytes / 333 ms; the maxBytes leg drops both over-cap frames —
+  44157 bytes / 457 ms; the maxBytes leg drops both over-cap frames —
   dropped, never truncated); the harmony and iOS device legs are D-g
   one-click scripts (skip-loud with no device, no synthesized evidence).
   Audit detail (count/requested/totalBytes/dropped/flash/durationMs) rides
@@ -72,3 +78,15 @@ honest surface:
   seed precedent) — rejected: the picker's seed proves the PICKER; a seeded
   "capture" would lie about the camera. A simulator without a camera
   answers `unavailable`, and the real burst awaits real hardware.
+- **A single-slot burst accumulator** (the first draft) — rejected in
+  review: the serial work queue only orders the handlers' synchronous
+  heads; the AVCapture delegate tail runs elsewhere, so overlapping calls
+  hung the first caller's promise and billed its frames to the second
+  burst. The shipped state is PER-CALL, keyed by the photo settings'
+  uniqueID, with a 20s deadline that settles `unavailable` (rule 8: the
+  wait carries its deadline; a dead promise was the failure it prevents).
+- **The NSCameraUsageDescription in the generated App/Info.plist** —
+  silently dropped by every `gen.sh`: xcodegen REGENERATES that file from
+  project.yml's `info.properties`, which is the only durable home for the
+  key (the review caught the tree/body mismatch; the built app's plist is
+  the proof, grep it after a build).

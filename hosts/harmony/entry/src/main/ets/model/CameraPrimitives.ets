@@ -31,6 +31,7 @@ import { util } from '@kit.ArkTS';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import fs from '@ohos.file.fs';
 import { SettleFn } from './PickerPrimitives';
+import { ApprovalPresenter } from './DevicePlanePrimitives';
 
 const TAG: string = 'dsh.app';
 
@@ -117,9 +118,16 @@ function flashMode(name: string): camera.FlashMode {
 
 export class CameraPrimitives {
   private ctx: common.UIAbilityContext;
+  private presenter: ApprovalPresenter | null = null;
 
   constructor(ctx: common.UIAbilityContext) {
     this.ctx = ctx;
+  }
+
+  /** The gateway-layer consent surface — the SAME presenter presentApproval
+   * uses (HostPhase wires it alongside the device primitives'). */
+  setApprovalPresenter(presenter: ApprovalPresenter): void {
+    this.presenter = presenter;
   }
 
   /** The phased recording rows: shape now, implementation phased (proposal
@@ -154,7 +162,23 @@ export class CameraPrimitives {
     setTimeout((): void => {
       once.reject('unavailable', 'camera service did not settle (guard timeout)');
     }, CAPTURE_GUARD_MS);
-    this.requestGrantThenCapture(requested, count, flashName, args.maxBytes, once);
+    if (this.presenter === null) {
+      once.reject('unavailable', 'no approval presenter');
+      return;
+    }
+    hilog.info(0x0000, TAG, 'ui-wait camera-approval');
+    const presenter = this.presenter;
+    // The GATEWAY layer answers first (the proposal's two-layer rule): a
+    // caller the user declined here never reaches the OS prompt.
+    presenter('Allow camera capture?', (approved: boolean): void => {
+      if (!approved) {
+        hilog.info(0x0000, TAG, 'ui-done camera-approval declined');
+        once.settleOk('null'); // gateway-layer refusal is a value (null)
+        return;
+      }
+      hilog.info(0x0000, TAG, 'ui-done camera-approval approved');
+      this.requestGrantThenCapture(requested, count, flashName, args.maxBytes, once);
+    });
   }
 
   /** The OS prompt is the second consent layer: granted → the burst; refused
