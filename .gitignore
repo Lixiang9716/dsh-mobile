@@ -182,6 +182,11 @@
 /runtime/spike/build/
 __pycache__/
 dist/
+# the lynx-client's built ReactLynx bundle IS the product payload (manifest
+# bundle field + skin-lynx verify + run-lynx all address it) — vendored like
+# the official-web client-bundles dists, not treated as a build scratch
+!presentation/lynx-client/bundle/dist/
+!presentation/lynx-client/bundle/dist/**
 docs/.decision.lock
 graphify-out/
 hosts/android/.gradle/

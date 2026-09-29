@@ -1,0 +1,20 @@
+/* Keyframes only — every color, radius and gradient value comes from
+ * theme.generated.ts (the token single source's Lynx face). */
+
+@keyframes dsh-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes dsh-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.1; }
+}
+
+/* the two animated faces (theme values stay in theme.generated.ts) */
+.dot-pulse {
+  animation: dsh-pulse 1.6s ease-in-out infinite;
+}
+.cursor-blink {
+  animation: dsh-blink 1s steps(1) infinite;
+}
