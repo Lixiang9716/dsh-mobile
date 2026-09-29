@@ -3,20 +3,15 @@
  * upstream/shims/fs-workspace.js — the WRITABLE WORKSPACE VFS half of the
  * node:fs shim (split from fs.js at the 2026-09-22 file-size gate): one
  * pinned in-memory root, file entries + explicit directories, a monotonic
- * version clock, and the mutating/read operations over them. fs.js keeps
- * the node:fs API surface and the seeded read-only view; this module owns
- * the world fs-local mounts (mountWorkspace).
+ * version clock, and the mutating/read ops; fs.js keeps the node:fs API
+ * surface, this module the world fs-local mounts.
  */
 
-/* ---------------------------------------------------------------------- *
- * The WRITABLE WORKSPACE VFS (the FILE-TOOLS row's world).
- *
- * One pinned root; a Map of file entries and a Set of directory paths, all
- * on the global (see the multi-instance note above). Every mutation bumps a
- * monotonic clock so file versions (dev:ino:size:mtimeNs:ctimeNs — what the
- * vendored fs-local hashes into its stale-write guards) change on write and
- * hold steady across reads.
- * ---------------------------------------------------------------------- */
+/* The WRITABLE WORKSPACE VFS (the FILE-TOOLS row's world): one pinned root;
+ * a Map of file entries and a Set of directory paths, all on the global (see
+ * the multi-instance note above). Every mutation bumps a monotonic clock so
+ * file versions (dev:ino:size:mtimeNs:ctimeNs — what the vendored fs-local
+ * hashes into its stale-write guards) change on write and hold steady. */
 
 /** The ENOENT shape (mirrors fs.js's — this module cannot import from it
  * without a cycle: fs.js imports this module for the workspace faces). */
@@ -202,7 +197,6 @@ export const notifyWatches = (path) => {
     try { entry.notify(path); } catch { /* a throwing watcher must not corrupt the mutation */ }
   }
 };
-
 
 const wsCreateFile = (state, path, bytes, mode) => {
   const now = bumpClock(state);

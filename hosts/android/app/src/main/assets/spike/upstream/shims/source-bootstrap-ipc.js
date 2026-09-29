@@ -74,55 +74,65 @@ const bytesToB64 = (bytes) => {
   return btoa(bin);
 };
 
-/** Attach the IPC pump to one spawned child (the caller saw an 'ipc'
- * entry and armed NODE_CHANNEL_FD). Frames come from the siphon registry
- * (the shim's stdio pump does the polling); 'disconnect' follows channel
- * EOF or child exit, node's own channel lifecycle. */
-const wireIpc = (child) => {
-  let buffer = '';
-  const entryOf = () => {
-    const entry = channelRegistry().get(child.pid) ?? { buffer: '', eof: false };
-    channelRegistry().set(child.pid, entry);
-    return entry;
-  };
-  const pump = () => {
-    if (child.__done || child.exitCode !== null) {
-      child.emit('disconnect');
-      return;
-    }
-    const entry = entryOf();
-    buffer += entry.buffer;
-    entry.buffer = '';
-    let at;
-    while ((at = buffer.indexOf('\n')) >= 0) {
-      const line = buffer.slice(0, at);
-      buffer = buffer.slice(at + 1);
-      if (line.length === 0) continue;
-      try {
-        const frame = JSON.parse(line);
-        // Node-internal channel control ({"cmd":"node:…"}) stays below the
-        // message surface, exactly like a plain-JSON channel consumer sees.
-        if (frame !== null && typeof frame === 'object' && typeof frame.cmd === 'string' && frame.cmd.startsWith('node:')) continue;
-        child.emit('message', frame);
-      } catch { /* a malformed line is not a message */ }
-    }
-    if (entry.eof) {
-      if (buffer.trim().length > 0) {
-        try { child.emit('message', JSON.parse(buffer)); } catch { /* partial frame dropped */ }
-        buffer = '';
-      }
-      child.emit('disconnect');
-      return;
-    }
-    setTimeout(pump, 4);
-  };
-  setTimeout(pump, 4);
-  child.connected = true;
-  child.disconnect = () => {
-    if (!child.connected) return;
-    child.connected = false;
-    try { globalThis.__dshProcEndFd(child.pid, IPC_SLOT); } catch { /* already gone */ }
-  };
+/** The channel-registry entry for one pid (create-if-missing). */
+const entryOf = (pid) => {
+  const entry = channelRegistry().get(pid) ?? { buffer: '', eof: false };
+  channelRegistry().set(pid, entry);
+  return entry;
+};
+
+/** Emit every complete NDJSON frame in state.buffer as a 'message' event
+ * (module level for size). Node-internal channel control frames
+ * ({"cmd":"node:…"}) stay below the message surface, exactly like a
+ * plain-JSON channel consumer sees; a malformed line is not a message. */
+const emitIpcFrames = (child, state) => {
+  let at;
+  while ((at = state.buffer.indexOf('\n')) >= 0) {
+    const line = state.buffer.slice(0, at);
+    state.buffer = state.buffer.slice(at + 1);
+    if (line.length === 0) continue;
+    try {
+      const frame = JSON.parse(line);
+      if (frame !== null && typeof frame === 'object' && typeof frame.cmd === 'string' && frame.cmd.startsWith('node:')) continue;
+      child.emit('message', frame);
+    } catch { /* a malformed line is not a message */ }
+  }
+};
+
+/** The channel-EOF flush: a trailing frame without a newline still delivers
+ * (node's channel semantics), then 'disconnect'. */
+const flushIpcEof = (child, state) => {
+  if (state.buffer.trim().length > 0) {
+    try { child.emit('message', JSON.parse(state.buffer)); } catch { /* partial frame dropped */ }
+    state.buffer = '';
+  }
+  child.emit('disconnect');
+};
+
+/** The receive pump (module level for size): drain the siphoned channel
+ * bytes into 'message' events; 'disconnect' follows channel EOF or child
+ * exit, node's own channel lifecycle. `state.buffer` carries a partial
+ * frame across pumps. */
+const pumpIpc = (child, state) => {
+  if (child.__done || child.exitCode !== null) {
+    child.emit('disconnect');
+    return;
+  }
+  const entry = entryOf(child.pid);
+  state.buffer += entry.buffer;
+  entry.buffer = '';
+  emitIpcFrames(child, state);
+  if (entry.eof) {
+    flushIpcEof(child, state);
+    return;
+  }
+  setTimeout(() => pumpIpc(child, state), 4);
+};
+
+/** The send face (module level for size): one JSON frame per send through
+ * the fd-3+ write intrinsic; a closed channel errors the callback (or
+ * throws when the caller passed none), EPIPE reports through it too. */
+const wireIpcSend = (child) => {
   child.send = (message, callback) => {
     if (!child.connected || child.pid === undefined || child.pid === null) {
       const error = new Error('channel closed');
@@ -142,6 +152,21 @@ const wireIpc = (child) => {
     if (typeof callback === 'function') queueMicrotask(() => callback(ok ? null : new Error(res?.error?.code ?? 'EPIPE')));
     return ok;
   };
+};
+
+/** Attach the IPC pump to one spawned child (the caller saw an 'ipc'
+ * entry and armed NODE_CHANNEL_FD). Frames come from the siphon registry
+ * (the shim's stdio pump does the polling). */
+const wireIpc = (child) => {
+  const state = { buffer: '' };
+  setTimeout(() => pumpIpc(child, state), 4);
+  child.connected = true;
+  child.disconnect = () => {
+    if (!child.connected) return;
+    child.connected = false;
+    try { globalThis.__dshProcEndFd(child.pid, IPC_SLOT); } catch { /* already gone */ }
+  };
+  wireIpcSend(child);
 };
 
 /** The spawn face wrap: everything without an 'ipc' entry is untouched. */

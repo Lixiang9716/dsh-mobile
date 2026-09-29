@@ -358,7 +358,8 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
   return server;
 };
 import { dispatchUpgradeRequest, createLoopbackClientRequest } from 'upstream/shims/node-http-loopback-client.js';
-import { dispatchLoopback, connectLoopbackNet } from 'upstream/shims/node-http-loopback-dispatch.js';
+import { dispatchLoopback } from 'upstream/shims/node-http-loopback-dispatch.js';
+import { connectLoopbackNet } from 'upstream/shims/node-http-loopback-net.js';
 export { dispatchUpgradeRequest, connectLoopbackNet };
 
 /** The node:http module face: real createServer/Server over the loopback,
@@ -371,8 +372,13 @@ export { dispatchUpgradeRequest, connectLoopbackNet };
   // table then reached a real connection instead of its expected config
   // error, W5-Q 2026-09-28).
 const validateHeaderName = (name) => {
+  // The token charset is built via new RegExp (same pattern as the literal
+  // /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/): a regex literal here carries ' and `
+  // inside the class, and the code-size scanner (line-based, no regex state)
+  // reads them as an unterminated string — desyncing its comment tracking
+  // for the rest of the file and poisoning its indent-unit detection.
   if (typeof name !== 'string' || !name
-      || !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/.test(name)) {
+      || !new RegExp("^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$").test(name)) {
     throw new TypeError('node:http: validateHeaderName: invalid header name');
   }
 };
