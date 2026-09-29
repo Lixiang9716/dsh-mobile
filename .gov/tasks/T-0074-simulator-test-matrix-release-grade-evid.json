@@ -9,13 +9,13 @@
     }
   },
   "checklist": [
-    "Inventory: CI dev-ios/dev-android/harmony + hosts/*/ci runner patterns + existing e2e evidence-dir shapes",
-    "Build tools/test/run-simulator-matrix.sh: per-platform release leg (plain launch, machinery-absence + drive-refusal assertions), harness legs on the existing runners, harmony honest skip receipt; fail-fast, conditional polling only",
-    "iOS leg green on dsh-iphone/iOS 26.5: release proof + harness full-app drive receipts (scenario-id logs 1:1)",
-    "Android leg green on the emulator: release proof + regression + device-plane receipts",
-    "Capability skips auto-declared with traces (no UI driver / no radio on simulators)",
-    "BUILD.md matrix usage added as a bilingual pair, gov verify pairing --write green",
-    "Agent Note (testing) + gov run full DAG green + push + PR opened"
+    "[x] Inventory: CI dev-ios/dev-android/harmony + hosts/*/ci runner patterns + existing e2e evidence-dir shapes",
+    "[x] Build tools/test/run-simulator-matrix.sh: per-platform release leg (plain launch, machinery-absence + drive-refusal assertions), harness legs on the existing runners, harmony honest skip receipt; fail-fast, conditional polling only",
+    "[x] iOS leg green on dsh-iphone/iOS 26.5: release proof + harness full-app drive receipts (scenario-id logs 1:1)",
+    "[x] Android leg green on the emulator: release proof + regression + device-plane receipts",
+    "[x] Capability skips auto-declared with traces (no UI driver / no radio on simulators)",
+    "[x] BUILD.md matrix usage added as a bilingual pair, gov verify pairing --write green",
+    "[x] Agent Note (testing) + gov run full DAG green + push + PR opened"
   ],
   "status": "open",
   "receipt": null,
