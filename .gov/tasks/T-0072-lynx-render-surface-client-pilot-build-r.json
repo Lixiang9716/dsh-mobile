@@ -16,10 +16,15 @@
     "[x] event model: adapter -> view events {message-delta,tool-card-phase,session-settled} -> pure fold; unknown intent/view event fail loud",
     "[x] stub skin (plain-text transcription) + lynx skin module over the same interface",
     "[x] rspeedy build produces real ReactLynx bundle (drawer + streaming thread + tool cards 3-state + composer)",
-    "driver mock full loop green (run-mock.mjs: create/prompt/stream/tool/cancel/seed-replay/intents round-trip)",
+    "[x] driver mock full loop green (run-mock.mjs: create/prompt/stream/tool/cancel/seed-replay/intents round-trip)",
     "agent note + incremental conventional commits + gov run --receipt green"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0072"
+  "id": "T-0072",
+  "void": {
+    "ts": "2026-09-29T16:54:26+00:00",
+    "by": "lixiang@MacBookAir.mshome.net",
+    "reason": "Build round LANDED (commits through 0244da9; receipts r-635606654e2d, r-5b6b1b243929): items 1-8 done \u2014 bundle 149.0 kB built+verified, mock loop 18/18, theme --check green, logging/code-size 0 violations. Item 9's 'full DAG green' is blocked by three pre-existing/environmental reds NOT owned by this diff, each proven on pristine origin/main (ceb43826): staging-check (harmony 601 / ios 81 findings), self-test case-bundle-files (fails on baseline), vendoring-repro (github.com:443 timeouts \u2014 passed on the first receipt run, network flapping). Defer per rule 9; the acceptance+PR round re-briefs and closes with a green DAG once the baseline reds clear."
+  }
 }
