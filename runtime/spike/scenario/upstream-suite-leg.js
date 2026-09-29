@@ -245,13 +245,61 @@ const installFlatPathMap = () => {
     ['/packages/skill/skill-filesystem/node_modules/chokidar/', 'vendor/npm/chokidar@5.0.0/'],
     ['/packages/skill/skill-filesystem/node_modules/readdirp/', 'vendor/npm/readdirp@5.0.0/'],
   ];
+  // W8 (2026-09-29), the sdk-launch / subagent-dsh-sdk launch-resolution
+  // family: `import.meta.resolve("@deepseek-ai/dsh/package.json")` answers
+  // with the SPECIFIER VERBATIM (the product package is outside both
+  // vendored staging families, so the bare map declines it and the loader's
+  // legacy bundle-relative arm passes it through), and the spec reads the
+  // manifest + launch files through THAT spelling — `@deepseek-ai/dsh/...`
+  // raw (the resolve answer) and `/tmp/<run>/@deepseek-ai/dsh/...`
+  // (path.resolve joins it against the run cwd). The pinned submodule
+  // carries the VERBATIM product tree (apps/cli: manifest, built lib/bin.js,
+  // src/bin.ts + sdk-source.cordis.patch.yml + tsconfig.json — the complete
+  // source-launch set the spec requires), so the map re-roots both
+  // spellings at it (D6: read-only re-rooting, bytes untouched). The re-root
+  // target is relative to the CLI's REAL working directory — the spike root
+  // (runtime/spike, where vendor/ lives; every real-disk staging arm
+  // resolves there) — hence the ../../ prefix into the checkout.
+  const reRoots = [
+    ['@deepseek-ai/dsh/', '../../third-party/deepseek-harness/apps/cli/'],
+    ['/@deepseek-ai/dsh/', '../../third-party/deepseek-harness/apps/cli/'],
+    ['/package.json', 'vendor/npm/@deepseek-ai/dsh-sdk-client@0.1.6-alpha.2/package.json'],
+  ];
+  // W8 (2026-09-29): the spec joins its consumer manifest against
+  // process.cwd() — the RUN's workspace root (/tmp/dsh-spike-smoke.*) — so
+  // the ancestor walk produces WORKSPACE-ABSOLUTE spellings
+  // (<root>/packages/.../node_modules/...) the bare watchTrees rows above
+  // never match ("cannot resolve 'chokidar' from /tmp/.../settings-file/
+  // package.json"). The workspace root is pinned by pinProfileContainer
+  // BEFORE the spec loads, so the map strips it (and the tmpdir root)
+  // before the prefix match; unprefixed spellings still hit directly.
+  const roots = [globalThis.__dshProfileCwd, globalThis.__dshProfileTmpdir]
+    .filter((root) => typeof root === 'string' && root.length > 0)
+    .map((root) => `${root.replace(/\/$/, '')}/`);
+  const mapAll = (candidate) => {
+    for (const [staged, real] of reRoots) {
+      if (staged.endsWith('/') ? candidate.startsWith(staged) : candidate === staged) {
+        return `${real}${candidate.slice(staged.length)}`;
+      }
+    }
+    for (const [staged, real] of watchTrees) {
+      if (candidate.startsWith(staged)) return `${real}${candidate.slice(staged.length)}`;
+    }
+    return undefined;
+  };
   globalThis.__dshFlatPathMap = (path) => {
     if (typeof path !== 'string') return undefined;
     if (path.startsWith('/vendor/') || path.startsWith('/upstream-tests/')) {
       return path.slice(1);
     }
-    for (const [staged, real] of watchTrees) {
-      if (path.startsWith(staged)) return `${real}${path.slice(staged.length)}`;
+    const direct = mapAll(path);
+    if (direct !== undefined) return direct;
+    for (const root of roots) {
+      if (root !== '/' && path.startsWith(root)) {
+        const inner = path.slice(root.length - 1); // keep the leading '/'
+        const mapped = mapAll(inner);
+        if (mapped !== undefined) return mapped;
+      }
     }
     return undefined;
   };
@@ -379,6 +427,140 @@ const stageShellSuitePlatform = async (spec) => {
   log.debug('shell-suite platform pinned', { platform });
 };
 
+/** Stage the committed session-format corpus (W8, 2026-09-29): the
+ * llm-replay session-format-corpus spec walks the upstream REPO ROOT
+ * (`resolve(import.meta.dirname, '../../../..')` — the bundle root '/' under
+ * flat staging) for committed session fixtures under snapshots/ + packages/
+ * + scripts/snapshots/python-sdk-single-exe, then reads every one. The
+ * pinned submodule IS the verbatim upstream repo tree (D6: read-only
+ * staging), so the leg lists its session*.jsonl corpus (find; excluding the
+ * walk's own excludedDirectories dist/lib/node_modules) and seeds the bytes
+ * into the staged view at exactly the bundle-root spellings the walk joins
+ * (fs.js serves them from the /snapshots + /packages + /scripts roots).
+ * Spec-scoped: only that spec's runtime pays the ~4 MB seed. */
+const SUBMODULE_ROOT_REL = '../../third-party/deepseek-harness';
+const SESSION_NAME = /^session(?:\.[1-9]\d*)?(?:\.v[1-9]\d*)?\.jsonl$/;
+const stageSessionFormatCorpus = async (spec, emit) => {
+  if (!spec.includes('test-support__llm-replay__tests__session-format-corpus')) return;
+  log.debug('session corpus staging begin', {});
+  const { spawnSync } = await import('node:child_process');
+  const realFiles = [];
+  for (const root of ['snapshots', 'packages', 'scripts/snapshots/python-sdk-single-exe']) {
+    const list = spawnSync('find', [`${SUBMODULE_ROOT_REL}/${root}`, '-type', 'f', '-name', 'session*.jsonl',
+      '-not', '-path', '*/node_modules/*', '-not', '-path', '*/dist/*', '-not', '-path', '*/lib/*']);
+    if (list.status !== 0 || typeof list.stdout !== 'string') {
+      log.debug('session corpus list failed', { root, code: list.status });
+      continue;
+    }
+    for (const realPath of list.stdout.split('\n')) {
+      if (realPath.length === 0) continue;
+      const rel = realPath.slice(SUBMODULE_ROOT_REL.length + 1);
+      // The walk COLLECTS only session-named jsonl files and THROWS on a
+      // non-canonical name — stage exactly the canonical set.
+      if (SESSION_NAME.test(realPath.split('/').at(-1) ?? '')) realFiles.push(rel);
+    }
+  }
+  if (realFiles.length === 0) return;
+  const { fromBase64 } = await import('upstream/shims/buffer.js');
+  const { seedStagedFiles } = await import('upstream/shims/fs.js');
+  const seeds = {};
+  for (const rel of realFiles) {
+    const b64 = globalThis.__dshProcReadReal?.(`${SUBMODULE_ROOT_REL}/${rel}`);
+    if (typeof b64 !== 'string') continue;
+    seeds[`/${rel}`] = { bytes: fromBase64(b64), mtimeMs: 0 };
+  }
+  const staged = Object.keys(seeds).length;
+  if (staged === 0) return;
+  seedStagedFiles(seeds);
+  emit('suite/corpus-stage', { staged });
+};
+
+/** Stage the remote-mock type world (W8, 2026-09-29): the proxy-types spec
+ * type-checks against the upstream REPO ROOT (root =
+ * resolve(import.meta.dirname, '../../../..') → '/' under flat staging) —
+ * it reads tsconfig.base.client.json (→ extends tsconfig.base.json) there,
+ * typeRoots ./scripts/types, the typert protocol sources the virtual paths
+ * re-export from, and resolves @vitest/spy + @types/node under
+ * root/node_modules. The pinned submodule carries all of it VERBATIM (D6:
+ * read-only staging), so the leg seeds the closure the program reaches at
+ * exactly those '/'-spellings before the spec import:
+ *   - the two tsconfig chain files,
+ *   - scripts/types/** (the client-build-environment ambient types),
+ *   - packages/typert/protocol/src/** (types/remote-error/owned-value/index),
+ *   - the pnpm store's @vitest/{spy,expect,utils} d.ts + package.json trees
+ *     seeded at the /node_modules/@vitest/<name>/ spellings (the store is
+ *     symlinked; the bytes are read THROUGH the links),
+ *   - the same minimal @types/node ambient stub stageFixtureTypesStub
+ *     writes for the fixture compilers (authored in OUR layer — @types/node
+ *     itself is not vendored; sources only name the NodeJS namespace).
+ * Spec-scoped: only the proxy-types runtime pays the seed. */
+const stageRemoteMockTypeWorld = async (spec, emit) => {
+  if (!spec.includes('test-support__remote-mock__tests__proxy-types.client')) return;
+  log.debug('remote-mock type world staging begin', {});
+  const { spawnSync } = await import('node:child_process');
+  const { fromBase64, encodeUtf8 } = await import('upstream/shims/buffer.js');
+  const { seedStagedFiles } = await import('upstream/shims/fs.js');
+  const seeds = {};
+  const readSeed = (virtualPath, realPath) => {
+    const b64 = globalThis.__dshProcReadReal?.(realPath);
+    if (typeof b64 === 'string') seeds[virtualPath] = { bytes: fromBase64(b64), mtimeMs: 0 };
+  };
+  // The tsconfig chain + the ambient client-build-environment types +
+  // the typert protocol sources: find-listed verbatim trees.
+  const trees = [
+    ['tsconfig.base.client.json', '/tsconfig.base.client.json', false],
+    ['tsconfig.base.json', '/tsconfig.base.json', false],
+    ['scripts/types', '/scripts/types', true],
+    ['packages/typert/protocol/src', '/packages/typert/protocol/src', true],
+  ];
+  for (const [from, to, isDir] of trees) {
+    if (!isDir) { readSeed(to, `${SUBMODULE_ROOT_REL}/${from}`); continue; }
+    const list = spawnSync('find', [`${SUBMODULE_ROOT_REL}/${from}`, '-type', 'f']);
+    if (list.status !== 0 || typeof list.stdout !== 'string') continue;
+    for (const realPath of list.stdout.split('\n')) {
+      if (realPath.length === 0) continue;
+      readSeed(`${to}${realPath.slice(`${SUBMODULE_ROOT_REL}/${from}`.length)}`, realPath);
+    }
+  }
+  // The @vitest trio out of the pnpm store (declaration + manifest files
+  // only — the typecheck never executes them), seeded at the root
+  // node_modules spellings the compiler resolves from.
+  for (const name of ['spy', 'expect', 'utils']) {
+    const dirs = spawnSync('/bin/sh', ['-c',
+      `ls -d ${SUBMODULE_ROOT_REL}/node_modules/.pnpm/@vitest+${name}@*/node_modules/@vitest/${name} 2>/dev/null`]);
+    const dir = String(dirs.stdout ?? '').split('\n').find((line) => line.length > 0);
+    if (dir === undefined) { log.debug('vitest types dir missing', { name }); continue; }
+    const list = spawnSync('find', [dir, '-type', 'f', '(', '-name', '*.d.ts', '-o', '-name', 'package.json', ')']);
+    if (list.status !== 0 || typeof list.stdout !== 'string') continue;
+    for (const realPath of list.stdout.split('\n')) {
+      if (realPath.length === 0) continue;
+      readSeed(`/node_modules/@vitest/${name}${realPath.slice(dir.length)}`, realPath);
+    }
+  }
+  // The @types/node ambient stub (same vocabulary the fixture compilers
+  // get; authored in OUR layer, see stageFixtureTypesStub).
+  seeds['/node_modules/@types/node/package.json'] = {
+    bytes: encodeUtf8(JSON.stringify({ name: '@types/node', version: '0.0.0-test-support', types: './index.d.ts' })),
+    mtimeMs: 0,
+  };
+  seeds['/node_modules/@types/node/index.d.ts'] = { bytes: encodeUtf8([
+    '// Test-support minimum staged by upstream-suite-leg (W8): the vendored',
+    '// closure names the NodeJS namespace; @types/node itself is not vendored.',
+    'declare namespace NodeJS {',
+    '  interface Process {}',
+    '  interface ProcessEnv { [key: string]: string | undefined }',
+    '  interface Timeout {}',
+    '  interface Immediate {}',
+    '}',
+    'declare namespace NodeJS { interface Process { env: ProcessEnv } }',
+    '',
+  ].join('\n')), mtimeMs: 0 };
+  const staged = Object.keys(seeds).length;
+  if (staged === 0) return;
+  seedStagedFiles(seeds);
+  emit('suite/type-world-stage', { staged });
+};
+
 /** Boot the leg's environment and stage everything the spec needs before
  * its import (module level for size): pin the profile container (the os/fs
  * shims read it BEFORE the spec imports evaluate — this driver IS the
@@ -401,6 +583,11 @@ const bootLegEnvironment = async () => {
   emit('suite/spec', { spec });
   // Stage the package source tree for the source-audit tests (see above).
   await stageSourceIntrospectionTree(spec, emit);
+  // Stage the committed session-format corpus for the llm-replay walk (W8).
+  await stageSessionFormatCorpus(spec, emit);
+  // Stage the remote-mock type world (tsconfig chain + ambient types +
+  // @vitest trio) for the proxy-types compiler (W8).
+  await stageRemoteMockTypeWorld(spec, emit);
 
   // The spec's fixtures module (emitted by transpile.mjs when the spec ships
   // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the

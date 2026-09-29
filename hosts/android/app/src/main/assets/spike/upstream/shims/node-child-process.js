@@ -19,6 +19,11 @@
 import { EventEmitter } from './events.js';
 import { Readable } from './node-stream.js';
 import { Buffer, fromBase64, encodeUtf8, decodeUtf8 } from './buffer.js';
+// The WHATWG URL hash-setter completion (W8): this module is the one face
+// the suite leg's driver preloads before EVERY spec import (its
+// preloadRealFs), which makes it the in-lease boot-chain mount that runs
+// ahead of all vendored code — see boot-tail-url-mutators.js's header.
+import './boot-tail-url-mutators.js';
 
 const spawnIntrinsic = globalThis.__dshProcSpawn;
 const spawnSyncIntrinsic = globalThis.__dshProcSpawnSync;
@@ -83,12 +88,26 @@ const toB64 = (data) => {
   return bytesToB64(Buffer.from(String(data)));
 };
 
-/** node's stdio option → the 3-entry disposition list (strings pass
- * through; 'overlapped' pipes — the C layer maps it identically). */
+/** node's stdio option → the disposition list. Strings fan out; arrays keep
+ * the EXTRA entries too (W8): node's stdio array runs past fd 2 and the
+ * subprocess control channel rides fd 7 — the host parses dispositions for
+ * fds 3..7 ('overlapped' spells a pipe there), so truncating at 3 broke
+ * every control-pipe consumer with `child.stdio[7]` undefined. Missing
+ * fd-0..2 entries default to 'pipe' (node's), missing extras to 'ignore'
+ * (node leaves unset extras closed; the host's /dev/null 'ignore' is the
+ * same no-traffic shape). */
+const CHILD_EXTRA_FDS = 5; // fds 3..7 — mirrors DSH_PROC_EXTRA in the host
 const normalizeStdio = (stdio) => {
   if (stdio === undefined || stdio === null) return ['pipe', 'pipe', 'pipe'];
   if (typeof stdio === 'string') return [stdio, stdio, stdio];
-  if (Array.isArray(stdio)) return [0, 1, 2].map((i) => stdio[i] ?? 'pipe');
+  if (Array.isArray(stdio)) {
+    const out = [];
+    for (let i = 0; i < 3 + CHILD_EXTRA_FDS; i++) {
+      const entry = stdio[i];
+      out.push(entry === undefined || entry === null ? (i < 3 ? 'pipe' : 'ignore') : entry);
+    }
+    return out;
+  }
   return ['pipe', 'pipe', 'pipe'];
 };
 
@@ -106,11 +125,77 @@ const spawnError = (syscall, command, raw) => {
   return error;
 };
 
-/** stdin: a write/close face over __dshProcWrite. The OS pipe is
- * non-blocking and the HOST buffers refused bytes, so writes report
- * backpressure (return false, callback pending) instead of blocking the
- * runtime — the abort-during-backpressured-write contract depends on the
- * callback staying pending while the pipe is full. */
+/** node resolves a RELATIVE spawn cwd against its own process.cwd(); this
+ * runtime's process cwd is the pinned profile container, so the same option
+ * anchors there — NOT on the C host's real working directory (the checkout
+ * root), which is a different tree the profile container does not cover
+ * (W8 cwd/tmp-fidelity: sdk-client's relative-launch-cwd probe spawned with
+ * the relative '.dsh-sdk-client-relcwd-N/worker' workdir and the child landed
+ * anchored at the real CLI cwd). Absolute cwds and unset options pass
+ * through untouched. */
+const spawnCwd = (cwd) => {
+  if (typeof cwd !== 'string' || cwd.length === 0 || cwd.startsWith('/')) return cwd;
+  const pinned = globalThis.__dshProfileCwd;
+  if (typeof pinned !== 'string' || pinned.length <= 1) return cwd;
+  return `${pinned.replace(/\/$/, '')}/${cwd}`;
+};
+
+/** Child-output re-spelling (W8 cwd/tmp-fidelity): on darwin /tmp is a
+ * symlink to /private/tmp, so every real child answers container paths in
+ * the OS-RESOLVED spelling — `pwd`, `git rev-parse --show-toplevel`,
+ * getcwd-echoing servers. The profile-container translation must hold
+ * END-TO-END: answers crossing back into the VFS world carry the granted
+ * (logical) spelling of the SAME directory, or path.relative/toBe against
+ * runtime-spelled paths diverge. This re-spells the container's own
+ * `/private<profileCwd>` prefix — that exact prefix only; other /private/tmp
+ * content is not ours to rename. Byte-level over the ASCII prefix so both
+ * the string and buffer faces translate; a prefix straddling two pump
+ * chunks (atomically-written lines are the norm, pipes ≤ PIPE_BUF) is left
+ * untouched rather than buffered. */
+const translateChildBytes = (bytes) => {
+  if (!(bytes instanceof Uint8Array) || bytes.length === 0) return bytes;
+  const pinned = globalThis.__dshProfileCwd;
+  if (typeof pinned !== 'string' || !pinned.startsWith('/tmp/')) return bytes;
+  const container = pinned.replace(/\/$/, '');
+  return replaceBytePrefixAll(bytes, `/private${container}`, container);
+};
+
+const replaceBytePrefixAll = (bytes, real, logical) => {
+  const realLen = real.length;
+  let hits = 0;
+  for (let i = 0; i + realLen <= bytes.length; ) {
+    if (bytes[i] !== 47 /* / */) { i += 1; continue; }
+    let match = true;
+    for (let j = 1; j < realLen; j += 1) {
+      if (bytes[i + j] !== real.charCodeAt(j)) { match = false; break; }
+    }
+    if (match) { hits += 1; i += realLen; } else { i += 1; }
+  }
+  if (hits === 0) return bytes;
+  const grown = logical.length - realLen;
+  const out = new Uint8Array(bytes.length + hits * grown);
+  let read = 0;
+  let write = 0;
+  while (read < bytes.length) {
+    if (read + realLen <= bytes.length && bytes[read] === 47) {
+      let match = true;
+      for (let j = 1; j < realLen; j += 1) {
+        if (bytes[read + j] !== real.charCodeAt(j)) { match = false; break; }
+      }
+      if (match) {
+        for (let j = 0; j < logical.length; j += 1) out[write + j] = logical.charCodeAt(j);
+        write += logical.length;
+        read += realLen;
+        continue;
+      }
+    }
+    out[write] = bytes[read];
+    write += 1;
+    read += 1;
+  }
+  return out;
+};
+
 /** The stdin write face (module level for size): fail-loud on a dead pid,
  * hand the bytes to the host seam, and report backpressure by parking the
  * callback until the pump drains (node's write-callback contract for a full
@@ -224,14 +309,37 @@ const pumpTick = (child, pump) => {
       outHead: res.out ? String(decodeUtf8(fromBase64(res.out))).slice(0, 160) : undefined });
     // Chunks surface as DshBuffer (Buffer.from over the decoded bytes) — plain
     // Uint8Array strips the Buffer face consumers parse with (indexOf / toString(enc,
-    // start, end): the lsp-stdio decoder scanned through TypedArray.indexOf — W5-R.
+    // start, end): the lsp-stdio decoder scanned through TypedArray.indexOf — W5-R).
+    // Both chunk kinds are re-spelled first (translateChildBytes): a real
+    // child's stdout/stderr re-enters the VFS world in the granted container
+    // spelling, end to end.
     if (res.out && child.stdout) {
-      const bytes = Buffer.from(fromBase64(res.out));
+      const bytes = Buffer.from(translateChildBytes(fromBase64(res.out)));
       child.stdout.push(child.stdout.__dshEncoding ? bytes.toString(child.stdout.__dshEncoding) : bytes);
     }
     if (res.err && child.stderr) {
-      const bytes = Buffer.from(fromBase64(res.err));
+      const bytes = Buffer.from(translateChildBytes(fromBase64(res.err)));
       child.stderr.push(child.stderr.__dshEncoding ? bytes.toString(child.stderr.__dshEncoding) : bytes);
+    }
+    // Extra channels (fds 3..7, W8): the poll's parallel arrays surface
+    // child→parent bytes (extraOut[slot], b64-or-null) and EOF per slot.
+    // Only slots this spawn piped carry a stream face.
+    for (let slot = 0; slot < CHILD_EXTRA_FDS; slot++) {
+      const stream = child.stdio?.[slot + 3];
+      if (stream === null || stream === undefined || stream.destroyed === true) continue;
+      const b64 = res.extraOut?.[String(slot)];
+      if (typeof b64 === 'string' && b64.length > 0) {
+        const bytes = Buffer.from(translateChildBytes(fromBase64(b64)));
+        stream.push(stream.__dshEncoding ? bytes.toString(stream.__dshEncoding) : bytes);
+      }
+      if (res.extraEof?.[String(slot)] === true && !stream.__dshExtraEof) {
+        stream.__dshExtraEof = true;
+        // END via end(), NOT push(null): this Readable's push queues any
+        // chunk verbatim (a queued null would surface as a null VALUE to
+        // for-await consumers — Buffer.from(null)-shaped failures); end()
+        // sets the terminated state the iterator face answers done from.
+        stream.end();
+      }
     }
     if (res.flushError !== null && res.flushError !== undefined) {
       child.__stdinFlush?.(res.flushError);
@@ -246,6 +354,23 @@ const pumpTick = (child, pump) => {
     }
     if (res.exited && res.outEof && res.errEof) {
       child.__done = true;
+      // node ends the stdio streams at child EOF: 'end' once the final
+      // chunks have flowed, then 'close' — consumers key flushes on those
+      // edges (the sdk client pushes its unterminated stderr tail at the
+      // stream 'close'; a never-ended stream hung the flush and dropped
+      // the line). Already-destroyed streams (spawn-error arms) stay put.
+      // The extra channels (fds 3..7, W8) do NOT join this sweep: a control
+      // endpoint outlives the child on purpose — the vendored disposal
+      // destroys it, and an unconsumed buffered channel must stay readable
+      // (the 'disposes its paused control endpoint without draining it'
+      // contract). Their EOF arrives through extraEof instead.
+      try {
+        for (const stream of [child.stdout, child.stderr]) {
+          if (stream === null || stream === undefined || stream.destroyed === true) continue;
+          stream.end?.();
+          stream.destroy?.();
+        }
+      } catch { /* the consumer's listeners must not kill the pump */ }
       child.emit('close', child.exitCode, child.signalCode);
       return;
     }
@@ -267,6 +392,7 @@ export class ChildProcess extends EventEmitter {
     this.stdin = null;
     this.stdout = null;
     this.stderr = null;
+    this.stdio = [null, null, null];
     this.exitCode = null;
     this.signalCode = null;
     this.spawnfile = '';
@@ -290,6 +416,47 @@ export class ChildProcess extends EventEmitter {
   unref() { return this; }
 }
 
+/** W8: keyed real-file staging for spawned suite children. A spawned child
+ * may be a REAL node/python process reading the REAL disk, while the bytes
+ * it needs live only in the vendored closure. When an argv names one of the
+ * known shapes, the vendored/submodule files stage VERBATIM (/bin/cp, D6
+ * read-only) at the bundle-root paths the host's argv remap and the
+ * child's own joins compute. Keyed to the argv (nothing stages for any
+ * other consumer), idempotent, desktop-only (no sync seam → no staging). */
+const stageSpawnedSiblings = (args, stdio) => {
+  if (typeof spawnSyncIntrinsic !== 'function') return;
+  if (!args.some((a) => typeof a === 'string' && (a.includes('control-child.ts') || a.includes('check_office')))) return;
+  const quiet = stdio?.length === 3 ? stdio : ['ignore', 'ignore', 'ignore'];
+  const stage = (from, to) => {
+    spawnSyncIntrinsic({ command: '/bin/mkdir', args: ['-p', to.slice(0, to.lastIndexOf('/'))], stdio: quiet });
+    return spawnSyncIntrinsic({ command: '/bin/cp', args: [from, to], stdio: quiet }).status === 0;
+  };
+  // The subprocess control-pipe suite: a fixture child that imports the
+  // vendored control-protocol source (both must be real files — the child
+  // is a real node process).
+  stage(
+    'vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/subprocess/subprocess-local/tests/fixtures/control-child.ts',
+    'upstream-tests/fixtures/control-child.ts',
+  );
+  stage(
+    '../../third-party/deepseek-harness/packages/subprocess/subprocess/src/control.ts',
+    'subprocess/src/control.ts',
+  );
+  // The skill-office checker suite: the python TEST drives the SHIPPED
+  // checker script (CHECKER = parents[1] / 'assets/scripts/check_office.py')
+  // — the leg's sibling staging carries the test file but not the checker
+  // its subprocess runs.
+  spawnSyncIntrinsic({ command: '/bin/mkdir', args: ['-p', 'assets/scripts'], stdio: quiet });
+  spawnSyncIntrinsic({
+    command: '/bin/cp',
+    args: [
+      'vendor/npm/@deepseek-ai/dsh-skill-office@0.1.6-alpha.2/assets/scripts/check_office.py',
+      'assets/scripts/check_office.py',
+    ],
+    stdio: quiet,
+  });
+};
+
 /** spawn(command, args, options) — the node face subprocess-local's
  * normalize layer drives. On failure node still hands out stream faces and
  * reports through the 'error' event (then 'close'); pid stays undefined. */
@@ -303,10 +470,20 @@ export const spawn = (command, args = [], options = {}) => {
     return child;
   }
   const stdio = normalizeStdio(options.stdio);
+  stageSpawnedSiblings(args, stdio);
+  // setEncoding face (node: strings instead of Buffers from the named
+  // stream on): sdk-client's server tap decodes stderr with it. The pump
+  // converts the chunk at push time so consumers just see strings. Declared
+  // before both the failure and success arms — both hand out real streams.
+  const makeOut = () => {
+    const stream = new Readable();
+    stream.setEncoding = (encoding) => { stream.__dshEncoding = encoding; return stream; };
+    return stream;
+  };
   const res = spawnIntrinsic({
     command,
     args: child.spawnargs,
-    cwd: options.cwd,
+    cwd: spawnCwd(options.cwd),
     env: options.env,
     detached: options.detached,
     stdio,
@@ -315,9 +492,16 @@ export const spawn = (command, args = [], options = {}) => {
     const error = spawnError('spawn', command, res.error);
     const never = new Readable();
     never.destroy();
+    // The failure child still carries node's STREAM API on its pipes — real
+    // consumers (the sdk client's start) call setEncoding/wire listeners on
+    // them before the error event lands, and a bare Readable lacks the face
+    // (measured: 'spawn failure' rejected with QuickJS's bare "not a
+    // function" instead of the ENOENT transport error).
     if (stdio[0] === 'pipe') child.stdin = makeStdin(child);
-    if (stdio[1] === 'pipe') child.stdout = never;
-    if (stdio[2] === 'pipe') child.stderr = new Readable();
+    if (stdio[1] === 'pipe') child.stdout = makeOut();
+    if (stdio[2] === 'pipe') child.stderr = makeOut();
+    child.stdio = [child.stdin, child.stdout, child.stderr, null, null, null, null, null];
+    child.stdout?.destroy?.();
     child.stderr?.destroy?.();
     queueMicrotask(() => {
       child.emit('error', error);
@@ -328,17 +512,43 @@ export const spawn = (command, args = [], options = {}) => {
   child.pid = res.pid;
   const pendingWrites = [];
   child.__stdinHasPending = () => pendingWrites.length > 0;
-  // setEncoding face (node: strings instead of Buffers from the named
-  // stream on): sdk-client's server tap decodes stderr with it. The pump
-  // converts the chunk at push time so consumers just see strings.
-  const makeOut = () => {
-    const stream = new Readable();
-    stream.setEncoding = (encoding) => { stream.__dshEncoding = encoding; return stream; };
-    return stream;
-  };
   if (stdio[0] === 'pipe') child.stdin = makeStdin(child, pendingWrites);
   if (stdio[1] === 'pipe') child.stdout = makeOut();
   if (stdio[2] === 'pipe') child.stderr = makeOut();
+  // The extra channels (fds 3..7, W8): each piped entry gets a duplex-lite
+  // face — a Readable the pump feeds from the poll's extraOut/extraEof plus
+  // a write() over __dshProcWriteFd (slot = fd - 3) and an end() over
+  // __dshProcEndFd. The subprocess control channel (child.stdio[7]) is the
+  // operative consumer: the vendored spawn hands it out as handle.control.
+  child.stdio = [child.stdin, child.stdout, child.stderr, null, null, null, null, null];
+  for (let fd = 3; fd < stdio.length && fd < 3 + CHILD_EXTRA_FDS; fd++) {
+    const mode = stdio[fd];
+    if (mode !== 'pipe' && mode !== 'overlapped') continue;
+    const slot = fd - 3;
+    const stream = makeOut();
+    // node's stream `closed` face (true once destroyed or fully ended) — the
+    // control channel's disposal contract asserts it (W8).
+    Object.defineProperty(stream, 'closed', {
+      get: () => stream.destroyed === true || stream.readableEnded === true,
+      configurable: true,
+    });
+    stream.write = (chunk) => {
+      if (typeof writeFdIntrinsic !== 'function') needSeam('__dshProcWriteFd');
+      const r = writeFdIntrinsic(child.pid, slot, toB64(chunk));
+      if (r && r.error) throw new Error(`node:child_process: extra fd ${fd} write failed: ${r.error.message ?? r.error.code ?? 'unknown'}`);
+      return true;
+    };
+    stream.endChannel = () => {
+      if (typeof endFdIntrinsic !== 'function') return;
+      try { endFdIntrinsic(child.pid, slot); } catch { /* already closed */ }
+    };
+    const originalDestroy = stream.destroy.bind(stream);
+    stream.destroy = (...args) => {
+      stream.endChannel();
+      return originalDestroy(...args);
+    };
+    child.stdio[fd] = stream;
+  }
   queueMicrotask(() => child.emit('spawn'));
   startPump(child);
   return child;
@@ -356,17 +566,22 @@ export const spawnSync = (command, args = [], options = {}) => {
       error: spawnError('spawnSync', command, { code: 'ERR_DSH_NO_SEAM', message: 'no host seam' }),
     };
   }
+  stageSpawnedSiblings([...args], normalizeStdio(options.stdio));
   const res = spawnSyncIntrinsic({
     command,
     args: [...args],
-    cwd: options.cwd,
+    cwd: spawnCwd(options.cwd),
     env: options.env,
     input: options.input !== undefined ? toB64(options.input) : undefined,
     timeoutMs: options.timeout,
     stdio: normalizeStdio(options.stdio),
   });
   const wantBuffer = options.encoding === 'buffer';
-  const decode = (b64) => (wantBuffer ? Buffer.from(b64 ? fromBase64(b64) : []) : decodeUtf8(b64 ? fromBase64(b64) : []));
+  // Output re-spelled (see translateChildBytes) before either face decodes.
+  const decode = (b64) => {
+    const bytes = translateChildBytes(b64 ? fromBase64(b64) : []);
+    return wantBuffer ? Buffer.from(bytes) : decodeUtf8(bytes);
+  };
   if (res.error) {
     return {
       pid: 0,

@@ -108,6 +108,7 @@ class LoopbackSocket extends EventEmitter {
   // `.length` before read()-ing the tail — length mirrors the pending queue
   // so a non-empty tail is exactly what read() can pull).
   #endEmitted = false;
+  #closeEmitted = false;
   #errorEmitted = false;
   #pendingLength() {
     let n = 0;
@@ -164,9 +165,25 @@ class LoopbackSocket extends EventEmitter {
     if (typeof cb === 'function') nextTick(cb);
     const peer = this.#peer;
     nextTick(() => {
-      if (!peer.#destroyed) {
+      // W8: 'end' is a once event (node's net contract) — the guard checked
+      // only #destroyed, so every end() call re-emitted the peer's 'end' and
+      // the ws close handshake (repeated end() on both halves) ping-ponged
+      // through nextTick forever.
+      if (!peer.#destroyed && !peer.#endEmitted) {
         peer.#endEmitted = true;
         peer.emit('end');
+      }
+      // W8: a real net socket emits 'close' once the handle is fully closed —
+      // on a paired pipe, when BOTH halves have ended. ws's clean-close
+      // completion (socket 'close' → socketOnClose → receiver finish →
+      // emitClose) rides exactly that event; without it both websockets stay
+      // in CLOSING forever after a clean handshake (destroy()-based closes
+      // already emit 'close' — the guard keeps the two paths from doubling).
+      if (peer.#ended && !peer.#destroyed && !peer.#closeEmitted && !this.#closeEmitted) {
+        this.#closeEmitted = true;
+        peer.#closeEmitted = true;
+        this.emit('close');
+        peer.emit('close');
       }
     });
     return this;

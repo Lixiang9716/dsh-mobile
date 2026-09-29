@@ -198,6 +198,12 @@ export class LoopbackServerResponse extends EventEmitter {
     const hook = this.#onHeaders;
     this.#onHeaders = null;
     this.headersSent = true;
+    // The on-headers contract (npm compression's hook point): listeners run
+    // AFTER the handler's writeHead arguments are merged into the header set
+    // and BEFORE the headers reach the dispatch (which resolves fetch with
+    // getHeaders()) — so a listener may add Content-Encoding / Vary and drop
+    // Content-Length (W8: the webserver gzip arm's compression middleware).
+    this.emit('headers', this.statusCode, this.getHeaders());
     hook(this.statusCode, this.getHeaders());
   }
   setHeader(name, value) { this.#headers.set(String(name).toLowerCase(), String(value)); return this; }
@@ -352,8 +358,8 @@ export const createLoopbackServer = (optionsOrHandler, maybeHandler) => {
   return server;
 };
 import { dispatchUpgradeRequest, createLoopbackClientRequest } from 'upstream/shims/node-http-loopback-client.js';
-import { dispatchLoopback } from 'upstream/shims/node-http-loopback-dispatch.js';
-export { dispatchUpgradeRequest };
+import { dispatchLoopback, connectLoopbackNet } from 'upstream/shims/node-http-loopback-dispatch.js';
+export { dispatchUpgradeRequest, connectLoopbackNet };
 
 /** The node:http module face: real createServer/Server over the loopback,
  * the pure-validation faces kept verbatim, the never-reachable client faces
@@ -379,6 +385,18 @@ const validateHeaderValue = (name, value) => {
   }
 };
 
+/** The pinned-connection resolvers (W8): node:http Agents constructed with a
+ * DNS `lookup` (OTLP's httpAgentOptions pinning — the session-telemetry
+ * egress suite's `otel-direct.invalid → 127.0.0.1` shape) hand that resolver
+ * to every connect they make. There are no sockets here, so the pin rides
+ * the dispatch instead: a registry MISS consults the registered resolvers
+ * and, when one answers a loopback address that HAS a live in-process server
+ * on the same port, the dispatch re-dials that address — what a real
+ * connect would have dialed. registerPinnedHttpLookup is wired by the
+ * Agent face below; dispatchLoopback (node-http-loopback-dispatch.js)
+ * consumes the set. */
+export const pinnedHttpLookups = new Set();
+
 export const createHttpFace = () => {
   const refuse = (name) => () => {
     throw new Error(`node:http: ${name} is not served in this runtime — no socket seam (the in-process loopback is the only served face)`);
@@ -394,14 +412,27 @@ export const createHttpFace = () => {
     ServerResponse: LoopbackServerResponse,
     IncomingMessage: LoopbackIncoming,
     Agent: class Agent {
-      // Inert agent face: real node Agents pool sockets, which do not exist
-      // here — the client request face ignores the agent entirely. OTel's
-      // httpAgentFactoryFromOptions CONSTRUCTS one at exporter build time
-      // (`new Agent({ keepAlive, lookup })`) and swallows the failure through
-      // its diag logger, which left the otel egress exports silently empty —
-      // hence constructible (options absorbed) + the destroy() face.
-      constructor(options = {}) { this.options = options; }
-      destroy(cb) { if (typeof cb === 'function') cb(); return this; }
+      // The agent face: options absorbed (OTel's httpAgentFactoryFromOptions
+      // CONSTRUCTS one at exporter build time and swallows construction
+      // failures through its diag logger). A DNS `lookup` option — node's
+      // top-level http.Agent spelling and the connect:{lookup} spelling
+      // alike — REGISTERS the resolver with the dispatch (see
+      // pinnedHttpLookups); destroy() unregisters. Everything else stays
+      // inert (real Agents pool sockets, which do not exist here — the
+      // client request face has no sockets to pool).
+      constructor(options = {}) {
+        this.options = options;
+        const lookup = options?.lookup ?? options?.connect?.lookup;
+        if (typeof lookup === 'function') {
+          this.__dshPinnedHttpLookup = lookup;
+          pinnedHttpLookups.add(lookup);
+        }
+      }
+      destroy(cb) {
+        if (this.__dshPinnedHttpLookup !== undefined) pinnedHttpLookups.delete(this.__dshPinnedHttpLookup);
+        if (typeof cb === 'function') cb();
+        return this;
+      }
     },
     validateHeaderName,
     validateHeaderValue,

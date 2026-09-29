@@ -244,3 +244,5 @@ tmp/
 # build/ itself is tracked — build/build.sh lives there).
 /build/cmake-*/
 test/upstream-suite/.runtime-modules/
+runtime/spike/assets/
+runtime/spike/subprocess/

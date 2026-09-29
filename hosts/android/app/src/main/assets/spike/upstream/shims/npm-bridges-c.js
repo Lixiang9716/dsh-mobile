@@ -252,18 +252,102 @@ const BRIDGES_C = [
   ].join('\n')],
 
   // ---- W4-P (2026-09-28) vendor rows ----
+  // node:net (W8, 2026-09-29): shadows the runtime-modules stub with the
+  // RAW loopback dial face — net.connect/createConnection pair a
+  // LoopbackNetSocket against the registry record's server half through
+  // serverUpgradeIngress (the same head-parser the http.request UPGRADE
+  // branch rides), so the webserver spec's raw-socket upgrade dials reach
+  // its registered upgrade routes with node's event shapes ('connect'/
+  // 'ready'/'data'/'close', ECONNREFUSED error on an unregistered target).
+  // isIP/isIPv4/isIPv6 stay the real string classifiers; Socket/
+  // StreamDuplex/createServer keep failing loud (no general socket seam).
+  // A second __dshModuleDefine(name, source) REPLACES the earlier row (the
+  // host seam's replay semantics), and this fragment evaluates after
+  // runtime-modules (web-shims → globals → runtime-modules, THEN
+  // npm-bridges → this table).
+
+
+
   // compression 1.8.1: the vendored dsh-host-webserver imports it for the
   // optional gzip middleware (config `compression: 'gzip'`; the DEFAULT is
   // 'none', under which the middleware object is only CREATED, never run).
-  // The published face is a CJS require-graph (bytes/compressible/
-  // on-headers/vary) this loader cannot evaluate; this row serves the
-  // shape the webserver touches: callable middleware factory + .filter —
-  // pass-through honest for 'none' (the corpus default); a 'gzip'
-  // configuration would silently skip compression (documented delta).
   ['compression', [
-    "const compression = (options) => (req, res, next) => next();",
-    "compression.filter = () => true;",
-    "compression.compress = () => {};",
+    "import { gzipSync } from 'upstream/shims/node-zlib.js';",
+    "import { encodeUtf8 } from 'upstream/shims/buffer.js';",
+    "const mimeDb = JSON.parse(globalThis.__dshBundleRequire(",
+    "  '/vendor/npm/mime-db@1.54.0/index.js', './db.json'));",
+    // The compressible package's decision order over mime-db: the db entry
+    // first, then the text/* and structured-suffix fallbacks.
+    "const compressible = (type) => {",
+    "  if (typeof type !== 'string' || type.length === 0) return false;",
+    "  const mime = type.split(';')[0].trim().toLowerCase();",
+    "  const entry = mimeDb[mime];",
+    "  if (entry && entry.compressible !== undefined) return entry.compressible === true;",
+    "  if (mime.startsWith('text/')) return true;",
+    "  return /\\+(json|xml|text|yaml|proto)$/i.test(mime);",
+    "};",
+    "const shouldCompress = (req, res) => compressible(String(res.getHeader('content-type') ?? ''));",
+    "const concatBytes = (chunks, total) => {",
+    "  if (chunks.length === 1) return chunks[0];",
+    "  const all = new Uint8Array(total);",
+    "  let at = 0;",
+    "  for (const chunk of chunks) { all.set(chunk, at); at += chunk.byteLength; }",
+    "  return all;",
+    "};",
+    "const toBytes = (value) => {",
+    "  if (typeof value === 'string') return encodeUtf8(value);",
+    "  if (value instanceof Uint8Array) return value;",
+    "  if (value instanceof ArrayBuffer) return new Uint8Array(value);",
+    "  if (ArrayBuffer.isView(value)) return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);",
+    "  return encodeUtf8(String(value));",
+    "};",
+    "const compression = (options = {}) => {",
+    "  const opts = { threshold: 1024, level: 6, filter: shouldCompress, ...options };",
+    "  return (req, res, next) => {",
+    "    let nonted = false;",
+    "    let encoding = null;",
+    "    const chunks = [];",
+    "    let total = 0;",
+    "    res.on('headers', () => {",
+    "      if (!opts.filter(req, res)) { nonted = true; return; }",
+    "      const existingVary = res.getHeader('vary');",
+    "      res.setHeader('Vary', existingVary ? `${existingVary}, Accept-Encoding` : 'Accept-Encoding');",
+    "      if (res.getHeader('content-encoding') !== undefined) { nonted = true; return; }",
+    "      const length = res.getHeader('content-length');",
+    "      if (length !== undefined && length !== null && Number(length) < opts.threshold) return;",
+    "      const accept = String(req.headers?.['accept-encoding'] ?? 'identity');",
+    "      encoding = accept.includes('gzip') ? 'gzip' : accept.includes('deflate') ? 'deflate' : null;",
+    "      if (encoding === null) return;",
+    "      res.setHeader('Content-Encoding', encoding);",
+    "      res.removeHeader('Content-Length');",
+    "    });",
+    "    const originalWrite = res.write.bind(res);",
+    "    const originalEnd = res.end.bind(res);",
+    "    res.write = (chunk, ...rest) => {",
+    "      if (!nonted && encoding !== null && chunk !== undefined && chunk !== null) {",
+    "        const bytes = toBytes(chunk);",
+    "        chunks.push(bytes);",
+    "        total += bytes.byteLength;",
+    "        return true;",
+    "      }",
+    "      return originalWrite(chunk, ...rest);",
+    "    };",
+    "    res.end = (chunk, ...rest) => {",
+    "      if (nonted || encoding === null) return originalEnd(chunk, ...rest);",
+    "      if (chunk !== undefined && chunk !== null && typeof chunk !== 'function') {",
+    "        const bytes = toBytes(chunk);",
+    "        chunks.push(bytes);",
+    "        total += bytes.byteLength;",
+    "      }",
+    "      if (total === 0) return originalEnd();",
+    "      const compressed = gzipSync(concatBytes(chunks, total), { level: opts.level });",
+    "      return originalEnd(compressed instanceof Uint8Array ? compressed : new Uint8Array(compressed.buffer, compressed.byteOffset, compressed.byteLength));",
+    "    };",
+    "    next();",
+    "  };",
+    "};",
+    "compression.filter = shouldCompress;",
+    "compression.compress = () => { throw new Error('compression.compress: the cache-push face has no store in this runtime'); };",
     "export default compression;",
   ].join('\n')],
 
@@ -418,5 +502,140 @@ const BRIDGES_C = [
     "}",
   ].join('\n')],
 ];
+
+// W8 (2026-09-29): the negotiator chain's content-type LOUD stub is the one
+// thing the vendored webserver's gzip middleware cannot run without —
+// negotiator 1.1.0's parseAccept drives content-type.parse(header,
+// { comma: true, start }) once per accept member
+// (vendor/npm/negotiator@1.1.0/lib/accept.js:29). The stub row lives in
+// npm-bridges.js's BRIDGES array AFTER this fragment is spread in (its
+// define() call lands later in the same synchronous loop, replacing any
+// earlier same-name row), so this replacement is deferred one microtask: it
+// lands after that loop finishes and long before any spec imports the chain
+// (row sources are evaluated lazily per import). The link body is otherwise
+// the original cjs-0 row's shape.
+const negotiatorCjs0Replacement = [
+  "import 'dsh-bridge-setup/cjs-chain-scope';",
+  // content-type: the accept-member parse face — ONE member per call (the
+  // caller loops via the returned index), type lowercased (the caller
+  // re-slices original casing off the header), parameter keys lowercased /
+  // values verbatim, index = the terminating comma position.
+  "const parse = (header, options = {}) => {",
+  "  const headerText = String(header ?? '');",
+  "  let i = options.start ?? 0;",
+  "  while (i < headerText.length && (headerText[i] === ' ' || headerText[i] === '\\t')) i += 1;",
+  "  const typeStart = i;",
+  "  while (i < headerText.length && headerText[i] !== ',' && headerText[i] !== ';' && headerText[i] !== ' ' && headerText[i] !== '\\t') i += 1;",
+  "  const type = headerText.slice(typeStart, i).toLowerCase();",
+  "  const parameters = {};",
+  "  while (i < headerText.length && headerText[i] !== ',') {",
+  "    while (i < headerText.length && (headerText[i] === ' ' || headerText[i] === '\\t' || headerText[i] === ';')) i += 1;",
+  "    if (i >= headerText.length || headerText[i] === ',') break;",
+  "    const keyStart = i;",
+  "    while (i < headerText.length && headerText[i] !== '=' && headerText[i] !== ',' && headerText[i] !== ';') i += 1;",
+  "    const key = headerText.slice(keyStart, i).trim().toLowerCase();",
+  "    let value = '';",
+  "    if (headerText[i] === '=') {",
+  "      i += 1;",
+  "      if (headerText[i] === '\"') {",
+  "        i += 1;",
+  "        const valueStart = i;",
+  "        while (i < headerText.length && headerText[i] !== '\"') i += 1;",
+  "        value = headerText.slice(valueStart, i);",
+  "        i += 1;",
+  "      } else {",
+  "        const valueStart = i;",
+  "        while (i < headerText.length && headerText[i] !== ',' && headerText[i] !== ';') i += 1;",
+  "        value = headerText.slice(valueStart, i).trim();",
+  "      }",
+  "    }",
+  "    if (key.length > 0) parameters[key] = value;",
+  "  }",
+  "  return { type, parameters, index: i };",
+  "};",
+  "const format = () => { throw new Error('content-type: format is not served in this runtime'); };",
+  "globalThis.__dshCjsFaces.set('content-type', { parse, format });",
+  "globalThis.__dshCjsSetup('./lib/accept');",
+  "globalThis.__dshCjsFaces.set('./accept', globalThis.__dshCjsFaces.get('./lib/accept'));",
+].join('\n');
+
+queueMicrotask(() => {
+  globalThis.__dshModuleDefine?.('dsh-bridge-setup/negotiator-cjs-0', negotiatorCjs0Replacement);
+});
+
+// W8 (2026-09-29): the node:net face define rides the same microtask as the
+// negotiator-cjs-0 replacement — the suite harness re-imports globals.js under a
+// second RELATIVE spelling ('../upstream/shims/globals.js' from scenario/), the
+// loader does not canonicalize specifier spellings into one module record, and
+// that second evaluation re-runs defineRuntimeModules() AFTER this fragment's
+// synchronous define() would land, re-registering the OLD loud stub over it. A
+// microtask deferral puts this define after every synchronous evaluation
+// (including both globals.js evaluations) and before any spec imports 'node:net'
+// (nothing imports it statically; instantiation is lazy).
+const nodeNetFaceRow = [
+    "import { connectLoopbackNet } from 'upstream/shims/node-http-loopback.js';",
+    "const isIPv4 = (value) => {",
+    "  if (typeof value !== 'string') return false;",
+    "  const parts = value.split('.');",
+    "  return parts.length === 4 && parts.every((p) => /^\\d{1,3}$/.test(p) && Number(p) <= 255 && (p.length === 1 || p[0] !== '0' || p === '0'));",
+    "};",
+    "const isIPv6 = (value) => typeof value === 'string' && value.includes(':') && /^[0-9a-fA-F:.]+$/.test(value);",
+    "const isIP = (value) => (isIPv4(value) ? 4 : isIPv6(value) ? 6 : 0);",
+    "const net = {",
+    "  isIP, isIPv4, isIPv6,",
+    "  Socket: class { constructor() { throw new Error('node:net: Socket is not served in this runtime — the loopback connect face is the only raw transport'); } },",
+    "  StreamDuplex: class { constructor() { throw new Error('node:net: StreamDuplex is not served in this runtime — no socket seam'); } },",
+    "  connect: connectLoopbackNet,",
+    "  createConnection: connectLoopbackNet,",
+    "  createServer: () => { throw new Error('node:net: createServer is not served in this runtime — no socket seam'); },",
+    "};",
+    "export default net;",
+    "export const Socket = net.Socket;",
+    "export const StreamDuplex = net.StreamDuplex;",
+    "export const connect = net.connect;",
+    "export const createConnection = net.createConnection;",
+    "export const createServer = net.createServer;",
+    "export { isIP, isIPv4, isIPv6 };"
+].join('\n');
+queueMicrotask(() => {
+  globalThis.__dshModuleDefine?.('node:net', nodeNetFaceRow);
+});
+
+// W8 (2026-09-29): the tool-web markdown class — under the suite leg's boot
+// steps the domino face turndown captured at module load comes back missing
+// createDocument ('not a function' at turndown.es.js:468; the vendored
+// tool-web swallows the throw into '[HTML content omitted …]' — 6 tool-web +
+// 1 integration failures). The documented shared-scope CJS hazard again
+// (the ipaddr-before-gfm lesson in the compression comment): another
+// chain's globals-capture dance runs between the domino graph's evaluation
+// and its capture, and the captured exports lose members. The repair pins
+// the CAPTURE TIMING, not the bytes: this async block runs right after the
+// synchronous bridges pass (before the leg's boot steps and before any
+// other CJS chain), evaluates the domino graph through the canonical
+// cjs-loader machinery, and stashes the healthy face. globalThis.require is
+// then armed to serve it for the one bare request turndown makes —
+// dsh-bridge-setup/globals arms its own require with `??=`, so an
+// already-armed require stays in charge and this IS the require
+// turndown.es.js:466 later calls. Every other bare request delegates to the
+// canonical makeRequire('/'). Same vendored bytes, same graph — capture
+// order only.
+(async () => {
+  try {
+    const { makeRequire } = await import('upstream/shims/cjs-loader.js');
+    const canonicalRequire = makeRequire('/');
+    const dominoFace = canonicalRequire('@mixmark-io/domino');
+    if (dominoFace && typeof dominoFace.createDocument === 'function') {
+      globalThis.__dshW8DominoFace = dominoFace;
+      globalThis.require = (name) => (
+        name === '@mixmark-io/domino' && globalThis.__dshW8DominoFace
+          ? globalThis.__dshW8DominoFace
+          : canonicalRequire(name)
+      );
+    }
+  } catch {
+    /* the canonical require stays armed; the failure stays visible at the
+       call site instead of being masked here */
+  }
+})();
 
 export { BRIDGES_C };

@@ -95,14 +95,31 @@ const viaPinnedLookup = (dispatcher, target, init) => {
       done(undefined);
     }
   }).then((address) => {
-    if (address === undefined) return undefined;
+    // The connection phase: a pin answer the dispatch cannot serve is a
+    // FAILED CONNECT, not a response-less success — real undici's fetch
+    // rejects (TypeError 'fetch failed', cause ECONNREFUSED) and the
+    // provider's translateAbortOrNetwork wraps that into
+    // WEB_PROVIDER_ERROR. Resolving undefined here made the vendored
+    // provider read `.status` of undefined (W8: 'maps a connection failure
+    // to WEB_PROVIDER_ERROR').
+    const connectRefused = () => {
+      const error = new TypeError('fetch failed');
+      error.cause = new Error(`connect ECONNREFUSED 127.0.0.1:${url.port === '' ? '80' : url.port}`);
+      error.cause.code = 'ECONNREFUSED';
+      error.cause.errno = -61;
+      error.cause.syscall = 'connect';
+      return error;
+    };
+    if (address === undefined) throw connectRefused();
     const loopback = address === '::1' || address === '127.0.0.1' || address.startsWith('127.');
-    if (!loopback || url.protocol !== 'http:') return undefined;
+    if (!loopback || url.protocol !== 'http:') throw connectRefused();
     // Preserve port (may be empty → default 80), path and query; the Host
     // header reports the pinned loopback, which is what the connection
     // target really is in this dispatch.
     const pinnedHref = `http://127.0.0.1${url.port === '' ? '' : `:${url.port}`}${url.pathname}${url.search}`;
-    return dispatchLoopback(pinnedHref, init);
+    const dispatched = dispatchLoopback(pinnedHref, init);
+    if (dispatched === undefined) throw connectRefused();
+    return dispatched;
   });
 };
 

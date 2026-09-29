@@ -13,6 +13,7 @@
     "acp__acp__tests__updates.spec.mjs",
     "api__gateway__tests__control-retry.client.spec.mjs",
     "api__gateway__tests__gateway.client.spec.mjs",
+    "api__gateway__tests__gateway.host.spec.mjs",
     "api__gateway__tests__journal-stream.client.spec.mjs",
     "api__gateway__tests__remote-event-protocol.host.spec.mjs",
     "api__gateway__tests__stream-protocol.host.spec.mjs",
@@ -30,16 +31,21 @@
     "api__session-controller__tests__notifier.client.spec.mjs",
     "api__session-controller__tests__scope.client.spec.mjs",
     "api__session-controller__tests__session-remote-rejection.client.spec.mjs",
+    "api__session-controller__tests__session-skills.host.spec.mjs",
     "api__session-controller__tests__time-zone.client.spec.mjs",
     "api__session-controller__tests__transport.client.spec.mjs",
+    "api__settings-controller__tests__credentials-controller.host.spec.mjs",
     "api__terminal-controller__tests__bindings.client.spec.mjs",
+    "api__terminal-controller__tests__controller.spec.mjs",
     "api__terminal-controller__tests__model.client.spec.mjs",
     "api__terminal-controller__tests__recovery.client.spec.mjs",
     "api__terminal-controller__tests__retention.client.spec.mjs",
     "api__terminal-controller__tests__retention.spec.mjs",
     "api__terminal-controller__tests__stream.spec.mjs",
     "api__terminal-controller__tests__terminal.spec.mjs",
+    "api__workspace-controller__tests__directory-picker.host.spec.mjs",
     "api__workspace-controller__tests__model.client.spec.mjs",
+    "api__workspace-controller__tests__workspace-controller.host.spec.mjs",
     "api__workspace-files__tests__apply.client.spec.mjs",
     "api__workspace-files__tests__change-feed.client.spec.mjs",
     "api__workspace-files__tests__host-path.client.spec.mjs",
@@ -163,7 +169,9 @@
     "deliverables__workspace-changes__tests__paths.spec.mjs",
     "deliverables__workspace-changes__tests__plugin.spec.mjs",
     "experimental__agent-team__tests__invariant.spec.mjs",
+    "experimental__agent-team__tests__persistence.spec.mjs",
     "experimental__agent-team__tests__projection-events.spec.mjs",
+    "experimental__agent-team__tests__team.spec.mjs",
     "experimental__agent-team-profile__tests__profile.spec.mjs",
     "experimental__agent-team-web-profile__tests__profile.spec.mjs",
     "experimental__auto-review__tests__auto-review.spec.mjs",
@@ -236,6 +244,7 @@
     "extensions__ui-cordis__tests__inventory.client.spec.mjs",
     "extensions__ui-cordis__tests__versioning.client.spec.mjs",
     "feedback__command-feedback__tests__loader-composition.spec.mjs",
+    "feedback__message-feedback__tests__loader-composition.spec.mjs",
     "fs__fs__tests__invariant.spec.mjs",
     "fs__fs__tests__service.spec.mjs",
     "fs__fs-observation-policy__tests__policy.spec.mjs",
@@ -282,6 +291,7 @@
     "host__open-in-app__tests__host-routes.spec.mjs",
     "host__open-in-app__tests__icons.spec.mjs",
     "host__open-in-app__tests__resolver.spec.mjs",
+    "host__plugin-inventory__tests__inventory.spec.mjs",
     "host__webserver__tests__webserver.spec.mjs",
     "identity__anonymous-user-id__tests__anonymous-user-id.spec.mjs",
     "interaction__commands__tests__commands.spec.mjs",
@@ -619,6 +629,7 @@
     "typert__generator__tests__type-model.spec.mjs",
     "typert__loader__tests__loader.spec.mjs",
     "typert__protocol__tests__owned-value.spec.mjs",
+    "typert__protocol__tests__protocol.spec.mjs",
     "typert__registry__tests__typert.spec.mjs",
     "util__brand__tests__brand.spec.mjs",
     "util__chunked-list__tests__chunked-list.spec.mjs",
@@ -670,12 +681,10 @@
     "workspace__workspace__tests__workspace.spec.mjs"
   ],
   "excluded": {
-    "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
-    "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 3,
-    "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 35,
+    "vi.mock/doMock/resetModules (loader-level module interception)": 67,
+    "esbuild transform failed: xpected \")\" but found \"{\"": 31,
     "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 28,
     "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 5,
-    "vi.mock/doMock/resetModules (loader-level module interception)": 66,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
     "node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6,
@@ -683,32 +692,28 @@
     "fast-check (not in the loader bare map — a vendoring decision, not a silent drop)": 5,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-persistence-catalog.ts\"": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-tool-catalog.ts\"": 1,
-    "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f": 1,
-    "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 5,
+    "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc": 1,
     "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"": 1,
     "vi.mock/doMock/resetModules (loader-level module interception) + monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 2,
     "expect.extend (custom matchers)": 1,
     "bundled helper: monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 8,
     "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"": 1,
+    "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)": 1,
     "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface)": 6
   },
   "workerEntries": [
     "worker.js"
   ],
   "counts": {
-    "transpiled": 668,
+    "transpiled": 679,
     "excluded": [
       {
-        "reason": "vi.mock/doMock/resetModules (loader-level module interception) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
-        "count": 1
+        "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
+        "count": 67
       },
       {
-        "reason": "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
-        "count": 3
-      },
-      {
-        "reason": "bundled helper: decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
-        "count": 35
+        "reason": "esbuild transform failed: xpected \")\" but found \"{\"",
+        "count": 31
       },
       {
         "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
@@ -717,10 +722,6 @@
       {
         "reason": "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
         "count": 5
-      },
-      {
-        "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
-        "count": 66
       },
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",
@@ -751,12 +752,8 @@
         "count": 1
       },
       {
-        "reason": "esbuild transform failed: annot import \"runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaScript f",
+        "reason": "esbuild transform failed: annot import \"../../runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages/experimental/client-ui-agent-team/src/client/TeamAction.module.css\" into a JavaSc",
         "count": 1
-      },
-      {
-        "reason": "bundled helper: node:vm (no spike shim — the vm builtin is a Node embedding surface) + decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
-        "count": 5
       },
       {
         "reason": "esbuild transform failed: ould not resolve \"../../../../scripts/snapshot-workspace-parent.ts\"",
@@ -776,6 +773,10 @@
       },
       {
         "reason": "esbuild transform failed: ould not resolve \"../../../../scripts/gen-cordis-catalog.ts\"",
+        "count": 1
+      },
+      {
+        "reason": "decorators (@Remote/@RemoteScope — quickjs-ng 0.17 cannot parse them; stripping would drop the remote-registration semantics)",
         "count": 1
       },
       {

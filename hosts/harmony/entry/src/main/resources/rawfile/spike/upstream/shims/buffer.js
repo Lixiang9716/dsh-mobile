@@ -35,6 +35,13 @@ import {
   toStringHex, toStringBase64, toStringBase64Url, toStringAscii,
 } from 'upstream/shims/buffer-codecs.js';
 export { fromBase64, fromBase64Url, fromHex };
+// The split loopback shims' free-variable helper fallback (W8): mounted
+// here because every module that reaches those call sites already imports
+// this one — see boot-tail-loopback-globals.js's header.
+import 'upstream/shims/boot-tail-loopback-globals.js';
+// The WHATWG URL hash-setter completion (W8) — same in-lease boot-chain
+// mount, same rationale; see boot-tail-url-mutators.js's header.
+import 'upstream/shims/boot-tail-url-mutators.js';
 
 const intrinsicCharCodeAt = String.prototype.charCodeAt;
 const intrinsicFromCharCode = String.fromCharCode;
@@ -186,18 +193,21 @@ export const encodeUtf16le = (text) => {
   return bytes;
 };
 
-/** UTF-16LE decode: LE pairs back into code units; a surrogate pair code
- * unit decodes to U+FFFD (node's WHATWG utf-16le decoder, and the point of
- * the vendored round-trip: lone surrogates from a split multibyte boundary
- * normalize to replacement characters). An odd trailing byte is U+FFFD. */
+/** UTF-16LE decode: LE pairs back into code units. node's
+ * Buffer.toString('utf16le') is a RAW code-unit copy — lone surrogates are
+ * valid UTF-16 content and SURVIVE the round-trip, and an odd trailing byte
+ * drops silently (measured on node 24: '\ud83d' round-trips byte-exact;
+ * [0x61,0x00,0x41] decodes to 'a'). The vendored terminal-bash scrollback
+ * normalizes every chunk through exactly this round-trip and its reference
+ * semantics keep lone surrogates — the earlier FFFD-for-any-surrogate
+ * spelling turned every split surrogate into U+FFFD (W8: the
+ * session-buffer suite's lone-and-split-surrogate faces). */
 export const decodeUtf16le = (bytes) => {
   let out = '';
   const units = bytes.length - (bytes.length % 2);
   for (let i = 0; i < units; i += 2) {
-    const code = bytes[i] | (bytes[i + 1] << 8);
-    out += (code >= 0xd800 && code <= 0xdfff) ? '\uFFFD' : intrinsicFromCharCode(code);
+    out += intrinsicFromCharCode(bytes[i] | (bytes[i + 1] << 8));
   }
-  if (units !== bytes.length) out += '\uFFFD';
   return out;
 };
 
@@ -293,6 +303,35 @@ export class DshBuffer extends Uint8Array {
     const end = Math.min(this.length, sourceEnd);
     const count = Math.max(0, Math.min(end - start, target.length - targetStart));
     if (count > 0) target.set(this.subarray(start, start + count), targetStart);
+    return count;
+  }
+
+  /** buf.write(string[, offset[, length]][, encoding]) — node's string
+   * writer, the write-side sibling of copy (W8, 2026-09-29): the vendored
+   * ws sender's close frame assembles its status reason through it
+   * (sender.js close → buf.write(reason, 2)), and the missing face surfaced
+   * as `TypeError: not a function` one hop inside the mux's 1003/1008
+   * close paths (the gateway stream-server carrier suite). Writes the
+   * encoded bytes at offset, clamped to length and the buffer end; returns
+   * the bytes written (node's contract). Encodings follow the static
+   * from() family's discipline: utf8 default, latin1/ascii/binary one byte
+   * per code unit, everything else fails loud (rule 5). */
+  write(input, offset = 0, length = this.length - offset, encoding = 'utf8') {
+    if (typeof input !== 'string') {
+      throw new TypeError(`buffer.write: input must be a string, got ${typeof input}`);
+    }
+    let bytes;
+    if (encoding === 'utf8' || encoding === 'utf-8') bytes = encodeUtf8(input);
+    else if (encoding === 'latin1' || encoding === 'ascii' || encoding === 'binary') {
+      bytes = new Uint8Array(input.length);
+      for (let at = 0; at < input.length; at++) bytes[at] = input.charCodeAt(at) & 0xff;
+    } else {
+      throw new TypeError(`buffer.write: unsupported encoding '${encoding}'`);
+    }
+    const start = Math.max(0, offset);
+    const writable = Math.max(0, Math.min(length, this.length - start));
+    const count = Math.min(bytes.length, writable);
+    if (count > 0) this.set(bytes.subarray(0, count), start);
     return count;
   }
 

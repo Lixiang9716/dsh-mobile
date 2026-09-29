@@ -39,9 +39,11 @@
  * Intentionally NOT supported: `accessSync`/`realpathSync` (the sandbox's
  * disk-gate calls — still loud: the workspace answers existence questions
  * through `existsSync` and `realpath`), the seeded views as write targets
- * (they stay read-only; the workspace is the one writable root), and file
- * watching (`watchFile`/`unwatchFile` stay binding-only loud stubs — no
- * fs-event seam). The sync writes (writeFileSync/mkdirSync/rmSync/
+ * (they stay read-only; the workspace is the one writable root), and the
+ * fs-EVENT seam (`watch()` notify stays the wsWatch workspace face). The
+ * stat-POLL face (`watchFile`/`unwatchFile`, loader-faces-fs-watch.js) is
+ * REAL since the W8 round — a pure poll loop over the stat face, no event
+ * seam claimed. The sync writes (writeFileSync/mkdirSync/rmSync/
  * mkdtempSync/symlinkSync/chmodSync/utimesSync) and the descriptor face
  * (openSync/writeSync/closeSync/unlinkSync/rmdirSync) are REAL workspace
  * operations since the 2026-09-27 suite round — same store as the promise
@@ -187,14 +189,33 @@ const VFS_ROOTS = [`${WEB_PLUGINS_ROOT}/`, '/vendor/dsh/agent-presets@0.1.6-alph
   // /src/<file> — and the suite driver stages the vendored tree's verbatim
   // bytes there (upstream-suite-leg.js stageSourceIntrospectionTree; one
   // spec per runtime, so the flat /src namespace never collides).
-  '/src/'];
+  '/src/',
+  // The committed session-format corpus roots (W8, 2026-09-29): the
+  // llm-replay session-format-corpus spec walks the upstream REPO ROOT
+  // (resolve(import.meta.dirname, '../../../..') → '/' under flat staging)
+  // for committed session fixtures under snapshots/ + packages/ +
+  // scripts/snapshots/python-sdk-single-exe — the leg stages the pinned
+  // submodule's verbatim corpus at exactly those spellings (D6: read-only,
+  // staged not edited). Seeded-only arms: a prefix miss stays ENOENT, and
+  // no real-disk fallback claims these spellings.
+  '/snapshots/',
+  '/packages/',
+  '/scripts/',
+  // The remote-mock type world (W8): the tsconfig chain sits at the bundle
+  // ROOT (root = resolve(dirname,'../../../..') → '/'), and the compiler
+  // resolves @vitest/@types packages under /node_modules/. File-spelling
+  // roots for the two configs; /node_modules/ carries only what the leg
+  // seeds (the pnpm store's vitest d.ts trees + the @types/node stub).
+  '/tsconfig.base.client.json',
+  '/tsconfig.base.json',
+  '/node_modules/'];
 export const underVFS = (path) => typeof path === 'string' && VFS_ROOTS.some((root) => path.startsWith(root));
 
-export const refuse = (name) => () => {
+export const refuse = (name) => (path) => {
   throw new Error(
     `node:fs.${name}: no synchronous filesystem in the spike runtime — `
     + 'this path is a desktop host capability; on mobile the same boundary is the '
-    + 'gateway fs scope (see runtime/spike/upstream/README.md)');
+    + `gateway fs scope (see runtime/spike/upstream/README.md)${path === undefined ? '' : ` [path: ${String(path)}]`}`);
 };
 
 export const enoent = (name, path) => {
@@ -254,6 +275,14 @@ import {
   copyFileSync, renameSync, cpSync, unlinkSync, rmdirSync,
 } from 'upstream/shims/fs-writes.js';
 import { readdirSync } from 'upstream/shims/fs-readdir.js';
+// The stat-watcher face (W8, 2026-09-29): watchFile/unwatchFile are real
+// poll loops over the stat face (loader-faces-fs-watch.js) — the vendored
+// dsh-skill-filesystem lib imports them at link time, and the
+// webworker-runtime fs-watch-stream spec diffs its own StatWatcher against
+// these native faces. Without the exports the modules fail the LINK
+// ("Could not find export 'unwatchFile' in module 'node:fs'").
+import { watchFile, unwatchFile } from 'upstream/shims/loader-faces-fs-watch.js';
+export { watchFile, unwatchFile };
 // LAZY on purpose: this module is reachable under TWO names (the bare
 // 'node:fs' map row and the bundle path the split siblings import). Under
 // the bare entry the sibling cycle can still be mid-evaluation when this
@@ -367,9 +396,22 @@ const decodeReadBytes = (bytes, encoding) => {
  * read serves the bytes), so the read intrinsic itself is the existence
  * check here; a null b64 answer falls through to the caller's error arms. */
 const readRealBytes = (path, encoding) => {
-  if (typeof path !== 'string' || !path.startsWith('/')) return undefined;
+  if (typeof path !== 'string' || path.length === 0) return undefined;
+  // W8 (2026-09-29): RELATIVE bundle spellings read through a flat-map row
+  // only. `import.meta.resolve` of a specifier outside both vendored
+  // staging families answers with the SPECIFIER VERBATIM (the loader's
+  // legacy bundle-relative arm), and the sdk-launch/subagent-dsh-sdk launch
+  // resolution then reads the manifest through that literal spelling —
+  // '@deepseek-ai/dsh/package.json'. The leg's flat map re-roots it at the
+  // pinned submodule's verbatim product tree; a relative path with NO map
+  // row has no checkout twin (the runtime's cwd is the run workspace, not
+  // the checkout) and stays refused. Absolute paths keep the raw fallback
+  // below (read-as-existence).
+  const absolute = path.startsWith('/');
+  if (!absolute && !path.includes('/')) return undefined;
   const map = globalThis.__dshFlatPathMap;
   const mapped = typeof map === 'function' ? map(path) : undefined;
+  if (!absolute && typeof mapped !== 'string') return undefined;
   const realPath = typeof mapped === 'string' ? mapped : path;
   const b64 = globalThis.__dshProcReadReal?.(realPath);
   if (b64 === undefined || b64 === null) return undefined;
@@ -418,7 +460,7 @@ export const readFileSync = (rawPath, encoding) => {
   const real = readRealBytes(path, encoding);
   if (real !== undefined) return real;
   if (insideWorkspace) throw enoent('open', workspacePath);
-  return refuse('readFileSync')();
+  return refuse('readFileSync')(path);
 };
 
 /** The seeded-VFS stat arm (module level for size): a seeded FILE answers
@@ -476,4 +518,6 @@ export default {
   cpSync,
   unlinkSync,
   rmdirSync,
+  watchFile,
+  unwatchFile,
 };

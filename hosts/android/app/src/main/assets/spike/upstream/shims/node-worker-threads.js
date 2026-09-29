@@ -82,20 +82,83 @@ const entrySpecifier = (entry) => {
   return s;
 };
 
+/** The `{eval: true}` face (W8 source-entry-bootstrap): node compiles the
+ * entry STRING as a CommonJS script inside the worker. In-process, the
+ * evaluation runs on this thread inside the same parentPort/workerData
+ * swap window the import face uses, with node's CJS eval-worker frame:
+ * require / module / exports / process / __filename / __dirname. Two
+ * scoped adaptations stand in for the OS-thread boundary node gives every
+ * worker for free (single realm — D2):
+ *   - `process` is a derivative of the runtime's process whose exit(code)
+ *     ends only THIS worker (emits 'exit' with the code); node's worker
+ *     process.exit never takes down the parent.
+ *   - async callbacks the source schedules through setImmediate (the
+ *     crash-probe idiom) are wrapped so an UNCAUGHT throw surfaces as the
+ *     worker 'error' event followed by 'exit' 1 — the boundary the real
+ *     thread's uncaughtException channel provides. There is no second
+ *     thread to crash, so the worker face owns the error surface.
+ * `require` serves the worker-threads namespace (the live parentPort /
+ * workerData bindings — the same face the import window swaps), which is
+ * the one specifier the corpus's eval sources ask for. */
+const runEvalWorker = (source, workerPort, emit) => {
+  let exited = false;
+  const exit = (code) => {
+    if (exited) return;
+    exited = true;
+    emit('exit', code);
+  };
+  const scopedProcess = Object.create(globalThis.process ?? {});
+  scopedProcess.exit = (code = 0) => exit(code);
+  const scopedSetImmediate = (fn, ...rest) => {
+    return setImmediate(() => {
+      try {
+        fn(...rest);
+      } catch (error) {
+        emit('error', error instanceof Error ? error : new Error(String(error)));
+        exit(1);
+      }
+    }, ...rest);
+  };
+  const workerFace = {
+    get parentPort() { return parentPort; },
+    get workerData() { return workerData; },
+    get threadId() { return 1; },
+    isMainThread: false,
+    MessageChannel,
+    MessagePort,
+    setEnvironmentData,
+    getEnvironmentData,
+  };
+  const requireFace = (specifier) => {
+    if (specifier === 'node:worker_threads' || specifier === 'worker_threads') return workerFace;
+    throw new Error(`eval worker: require('${specifier}') is not served in this runtime (the corpus's eval sources require only node:worker_threads)`);
+  };
+  const fn = new Function('require', 'module', 'exports', 'process', '__filename', '__dirname', 'setImmediate', source);
+  fn(requireFace, { exports: {} }, {}, scopedProcess, 'eval-worker.js', '.', scopedSetImmediate);
+  // The sync body ran; yield a turn so the top-level scheduled callbacks
+  // (setImmediate probes) surface before the window closes.
+  return new Promise((resolve) => setImmediate(resolve));
+};
+
 export class Worker {
   #workerPort;
+  #parentEnd;
   #listeners = new Map();
   #terminated = false;
 
   constructor(entry, options = {}) {
-    const base = entrySpecifier(entry);
-    const spawnIndex = spawnCounts.get(base) ?? 0;
-    spawnCounts.set(base, spawnIndex + 1);
-    const specifier = spawnIndex === 0 ? base : bustSpecifier(base, spawnIndex);
+    // The {eval: true} arm: the entry STRING is source code, not a path —
+    // node compiles it as CJS inside the worker (runEvalWorker below).
+    const evalSource = options?.eval === true && typeof entry === 'string' ? entry : null;
+    const base = evalSource !== null ? null : entrySpecifier(entry);
+    const spawnIndex = base === null ? 0 : (spawnCounts.get(base) ?? 0);
+    if (base !== null) spawnCounts.set(base, spawnIndex + 1);
+    const specifier = base === null ? null : (spawnIndex === 0 ? base : bustSpecifier(base, spawnIndex));
     const workerPort = new MessagePort(); // the entry's parentPort end
     const parentEnd = new MessagePort(); // the main-thread end
     MessagePort._pair(parentEnd, workerPort);
     this.#workerPort = workerPort;
+    this.#parentEnd = parentEnd;
 
     const emit = (event, ...args) => {
       for (const fn of [...(this.#listeners.get(event) ?? [])]) fn(...args);
@@ -111,7 +174,8 @@ export class Worker {
       parentPort = workerPort;
       workerData = structuredClonePort(options?.workerData, []);
       try {
-        await import(specifier);
+        if (evalSource !== null) await runEvalWorker(evalSource, workerPort, emit);
+        else await import(specifier);
       } catch (error) {
         emit('error', error instanceof Error ? error : new Error(String(error)));
         emit('exit', 1);
@@ -138,8 +202,12 @@ export class Worker {
     }
     return this;
   }
-  /** Main→worker post (the verifier only uses the worker→main direction). */
-  postMessage(value) { this.#workerPort.postMessage(value); }
+  /** Main→worker post: the MAIN-side end sends, so the entry's parentPort
+   * (the worker-side end) receives (W8 — the in-process Worker's first
+   * consumer drove only worker→main, so this direction posted on the
+   * worker's own end and never arrived; the lifecycle stop() handshake
+   * needs it). */
+  postMessage(value) { this.#parentEnd.postMessage(value); }
   /** node resolves with the exit code; the corpus only awaits settlement. */
   terminate() {
     this.#terminated = true;

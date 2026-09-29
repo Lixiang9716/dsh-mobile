@@ -1844,7 +1844,19 @@ static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv
         close_fds[n++] = out[0]; close_fds[n++] = out[1];
         close_fds[n++] = err[0]; close_fds[n++] = err[1];
         close_fds[n++] = status[0];
-        for (int i = 0; i < DSH_PROC_EXTRA; i++) { close_fds[n++] = x[i][0]; close_fds[n++] = x[i][1]; }
+        for (int i = 0; i < DSH_PROC_EXTRA; i++) {
+            for (int e = 0; e < 2; e++) {
+                /* W8: an fd inside the extras window [3, 3+DSH_PROC_EXTRA)
+                 * is, after the dup2 loop, either a live channel end (dup2
+                 * was a no-op: raw == target) or a replaced parent copy —
+                 * the pre-exec close must NEVER touch the window, or a raw
+                 * source whose number collides with a target kills that
+                 * channel (reproduced standalone: x[2][0] == 7 killed slot
+                 * 4's just-dup'd end and the control channel arrived dead). */
+                if (x[i][e] < 3 + DSH_PROC_EXTRA) continue;
+                close_fds[n++] = x[i][e];
+            }
+        }
         dsh_close_all(close_fds, n);
         if (devnull > 2) close(devnull);
         dsh_execvpe(command, argv, envp);
