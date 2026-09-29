@@ -1,0 +1,20 @@
+{
+  "title": "Review round on PR #244: the self-test in-gate case mutex + note facts",
+  "created": "2026-09-29T16:42:45+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "Reproduce both cross-kill directions (staging-check window breaks bundle-files green leg; bundle-files window breaks staging-check green leg) and read the govrail harness concurrency facts",
+    "Add the shared live-tree lock to case-staging-check.sh and case-bundle-files.sh; prove mutual exclusion (held-lock wait + parallel stress)",
+    "Fix the Agent Note sandbox-clean facts + describe the in-gate mutex; gov note check",
+    "Re-seal plane, self-test green, close card with receipt, push"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0073"
+}

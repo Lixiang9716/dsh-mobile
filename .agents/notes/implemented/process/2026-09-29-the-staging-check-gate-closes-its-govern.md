@@ -1,4 +1,4 @@
-# Agent Note: the staging-check gate closes its governance debts: the rule-6 rejection case and the self-test serialization edge
+# Agent Note: the staging-check gate closes its governance debts: the rule-6 rejection case, the self-test serialization edge, and the in-gate live-tree case mutex
 
 Status: implemented
 Related: D5
@@ -32,11 +32,37 @@ telemetry; the hard state is the pre-authorized end state, not an overrun.
 ## Decision
 
 `gates.json`'s `staging-check` gate declares `needs: ["self-test"]`,
-serializing it after the only tree-mutating gate, matching every other tree
-reader (`closures`, `bundle-files`, `quickjs-boot-parse`). The gate keeps
-its wave-1 blocking form unchanged — no flag, no mode, no allowFailure
-moved. The plane is re-sealed (one deliberate re-baseline; the reason is in
-the ritual ledger).
+serializing it after `self-test` — the only gate whose run mutates the live
+tree at the DAG layer — matching every other tree reader (`closures`,
+`bundle-files`, `quickjs-boot-parse`). The gate keeps its wave-1 blocking
+form unchanged — no flag, no mode, no allowFailure moved. The plane is
+re-sealed (one deliberate re-baseline; the reason is in the ritual ledger).
+
+That DAG edge does NOT cover races inside `self-test` itself: govrail runs
+project cases on a ThreadPoolExecutor (`self_test/_harness.py:24`
+`CONCURRENCY = 4`; `self_test/__init__.py:342-346` submits every project
+job to the pool, no mutex). Three of the seven project cases mutate the
+live tree — `case-bundle-files.sh` (rawfile mv), `case-quickjs-boot-parse.sh`
+(`fs-seeded.js` append), and this PR's new `case-staging-check.sh`
+(`Index.ets` row removal) — and two of them have intersecting read
+surfaces, measured both directions the day this note was first reviewed
+(worktree 0a538482): inside the staging-check window
+(`'upstream/boot.js',` gone) `node hosts/harmony/ci/check-bundle-files.mjs`
+reports `rawfile file missing from BUNDLE_FILES: upstream/boot.js` exit 1,
+so bundle-files' green leg would false-fail; inside the bundle-files window
+(`composer-web-live.js` mv'd) `node tools/check-staging.mjs` reports
+`STALE scenario/composer-web-live.js` exit 1, so staging-check's green leg
+would false-fail. The pre-existing mutating pair (bundle-files ×
+quickjs-boot-parse) had disjoint read surfaces, which is why the race class
+stayed theoretical until this PR introduced the first intersecting pair.
+
+So the mutation windows of the two intersecting cases now serialize on a
+shared machine-local lock (`${TMPDIR:-/tmp}/dsh-gov-live-tree-case.lock`):
+an atomic `mkdir` spinlock — portable where `flock(1)` is absent (macOS) —
+with a 60s fail-loud deadline (a hang must not hold CI hostage) and a
+stale-lock steal after 2 minutes (`find -mmin`, for a SIGKILLed case). Both
+cases acquire before their first tree write and release after their final
+green read; the trap releases only a lock the case actually holds.
 
 `.gov/rejections/case-staging-check.sh` ships the rule-6 proof: it removes
 the single `'upstream/boot.js',` row from harmony's `Index.ets`
@@ -61,10 +87,25 @@ budget; passes in `gov self-test` (tools 56 + project 7).
   brief's premise no longer needs; two gates over one checker is drift
   surface, not evidence.
 - **Sandbox the rejection case into a temp-tree copy** — rejected for the
-  reason the bundle-files case keeps: the proof's contract is "the checker
-  against the REAL tree"; the mutation is one committed manifest row with
-  a byte-identical restore, so no sandbox is needed and the case stays
-  sandbox-clean like five of the six existing cases.
+  reason the 2026-09-26 note records: `check-staging.mjs` and
+  `check-bundle-files.mjs` hardcode the repo's paths, so a redirect seam is
+  a checker change riding an infra fix. Factually: four of the seven
+  project cases are sandbox-clean (`case-code-size`, `case-e2e-matrix`,
+  `case-logging`, `case-logging-l4` — `mktemp -d` fixtures); three mutate
+  the live tree (`case-bundle-files`, `case-quickjs-boot-parse`, and this
+  new case). The new case is NOT sandbox-clean — it holds the live-tree
+  lock instead. (An earlier draft of this note miscounted this as
+  "sandbox-clean like five of the six"; corrected in review.)
+- **Move the new case's mutation to a disjoint surface (the android
+  stage-spine rows) so the pair stops intersecting** — rejected: it does
+  not disjoint them. The bundle-files window (rawfile `composer-web-live.js`
+  mv'd) turns ANY staging-check green leg red — the harmony manifest rows
+  name that file, harmony is a blocked host, exit 1 — regardless of which
+  surface the staging case itself mutates.
+- **The govrail exclusive lease for project cases (upstream fix)** — the
+  durable home, already the 2026-09-26 note's filed upstream ask; the local
+  lock is the effective-today guardrail and stays correct even after
+  govrail changes.
 - **Leave the `needs` edge to a future race report** — rejected: the
   race signature is already twice-recorded telemetry (the closures flakes,
   the surprise ledger); wiring the edge now is cheaper than the third
