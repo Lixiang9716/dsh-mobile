@@ -16,7 +16,7 @@
       "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
     },
     ".gov/rejections/case-logging-l4.sh": {
-      "sha256": "f410a435d2ab5b627ae27e7c8ec4c1283536e4d9b598f3708966eedb7b755a59"
+      "sha256": "566f9ba8a8fd94b8c2ec9f027aa79cce932c4be0e750fc2fb5f7854d9e9359c3"
     },
     ".gov/rejections/case-logging.sh": {
       "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
@@ -32,9 +32,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T08:13:49+00:00",
+    "ts": "2026-09-29T09:06:35+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "staging-check gate wiring (2026-09-29 staging-triage ask): gates.json gains the check-staging gate (WARN default, --block harmony,android,ios \u2014 all hosts triage-cleared this run); the 23 REAL staging gaps were fixed in the same change (Index.ets/vendor-official.sh/stage-spine-closure.sh). Authorized by the r3-X1 staging-triage brief."
+    "reason": "case-logging-l4 follows the accepted D9 flip: the iOS L4c plumbing row points at hosts/ios/project.yml (the pbxproj is generated and no longer committed), so the rejection case's fixture wires project.yml instead"
   }
 }
