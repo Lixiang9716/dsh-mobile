@@ -220,6 +220,8 @@ yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146
 zustand@4.4.7|zustand/-/zustand-4.4.7.tgz|c22d32f791abba72fc246ef1d3ca964d01da204bc73727318a5be61daa2ad66b
 eventsource-parser@3.1.0|eventsource-parser/-/eventsource-parser-3.1.0.tgz|eca84ce0e9314076ea17bcc8bbdfed0316cc5b4a291565b347a275ffdac5053a
 fflate@0.8.2|fflate/-/fflate-0.8.2.tgz|61fd5061e2fc8e5e3e3129f7f2fec7bd78a313e1bf4becbf1cc1cc9998d141dc
+jpeg-js@0.4.4|jpeg-js/-/jpeg-js-0.4.4.tgz|269f988267bc71efe58baf97e8b2da064b5bbbbb8b0eab11e2149049935e1160
+pngjs@5.0.0|pngjs/-/pngjs-5.0.0.tgz|4d960bbbe078022d7a36822e2874f884c7410ead111f3603d69d70fc7af36f20
 
 "
 
@@ -270,11 +272,49 @@ fetch_npm() {
     dir="$1"; suffix="$2"; sha="$3"
     have_pkg "npm/$dir" && stamped "npm/$dir" "$sha" && { echo "vendor: npm/$dir present (pin-stamped)"; return; }
     tmp=$(mktemp /tmp/dsh-vendor.XXXXXX)
-    fetch_retry "$NPM_BASE/$suffix" "$tmp"
+    # Tier 1: the TRACKED MIRROR (vendor/dsh-tarballs/, the same record
+    # fetch_dsh reads) — PARTIAL coverage: add-package.sh fetch drops a
+    # tarball there only for packages vendored through it (measured
+    # 2026-09-29: 14/26 npm rows carry a mirror tarball), so a cold checkout
+    # materializes THOSE pins without network; the rest still ride the
+    # registry. The mirror file name is add-package.sh's FLAT spelling of
+    # dir (leading @ stripped, / and @ folded to -) — the exact bytes the
+    # pin row's sha256 names. Digest check unchanged: a mismatched or
+    # missing mirror falls through to network, and the caller's sha256 -c
+    # still guards whatever lands.
+    MIRROR="dsh-tarballs/$(printf '%s' "$dir" | sed 's/^@//; s|/|-|g; s/@/-/').tgz"
+    if [ -f "$MIRROR" ]; then
+        echo "$sha  $MIRROR" | shasum -a 256 -c - >/dev/null \
+            && cp "$MIRROR" "$tmp" \
+            || echo "vendor: mirror digest mismatch for $dir — falling through to network" >&2
+    fi
+    if [ ! -s "$tmp" ]; then
+        fetch_retry "$NPM_BASE/$suffix" "$tmp"
+    fi
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "npm/$dir"
     mkdir -p "npm/$dir"
-    tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    # Directory modes ride the tarball verbatim, and some registry tarballs
+    # pack dirs without the execute bit (pngjs@5.0.0 measured 2026-09-29:
+    # lib/ landed drw-r--r--) — every require under it then fails
+    # MODULE_NOT_FOUND-shaped while the files are all there, and the embed
+    # generator's rglob silently yields an empty row. Worse, the two tar
+    # flavors disagree MID-extract: GNU tar applies a directory's archived
+    # mode the moment the entry lands, so pngjs's drw-rw-rw-packed lib/ and
+    # coverage/ blocked their OWN children and the extract itself died
+    # "Cannot open: Permission denied" across lib/* and coverage/lcov-report/*
+    # before any chmod could run (CI 2026-09-30, run 36609975825); bsdtar
+    # defers all dir modes to the end, which is why local trees extracted
+    # clean. Delay the restore where the tar is GNU; the u+rwX below then
+    # normalizes the end state on both hosts. Owner hygiene, not a content
+    # edit (D6: the file BYTES are untouched; a re-extract reproduces them
+    # exactly).
+    if tar --version 2>/dev/null | grep -q GNU; then
+        tar xzf "$tmp" -C "npm/$dir" --strip-components=1 --delay-directory-restore
+    else
+        tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    fi
+    chmod -R u+rwX "npm/$dir"
     echo "$sha" > "npm/$dir/.vendor-pin"
     rm -f "$tmp"
     echo "vendor: fetched npm/$dir (sha256 verified, pin-stamped)"

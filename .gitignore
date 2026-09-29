@@ -215,7 +215,11 @@ hosts/harmony/.preview/
 hosts/harmony/build/
 hosts/harmony/entry/src/main/resources/rawfile/spike/officialweb/
 hosts/harmony/entry/src/main/resources/rawfile/spike/upstream-tests/
+hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/sharp/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/fflate@0.8.2/lib/
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/jpeg-js@0.4.4/
+hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/pngjs@5.0.0/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/
 hosts/ios/**/*.xcuserstate
 hosts/ios/**/xcuserdata/

@@ -102,6 +102,39 @@ if [ "$MODE" = "suite" ]; then
             echo "vendor/dsh/$pkg/package.json" >> "$RAW/upstream-tests/__files.txt"
         fi
     done
+    # The sharp face (decision-matrix D-c, 2026-09-29): OUR adapter package
+    # (upstream/shims/sharp/) plus its vendored engines — pngjs 5.0.0's lib
+    # stages (filter-parse/bitmapper/format-normaliser), jpeg-js 0.4.4, and
+    # the fflate CJS face the adapter's zlib calls ride. The attachment-local
+    # family is test-suite-reachable only (zero product-side callers), so
+    # this rides the SUITE closure: BUNDLE_FILES carries nothing, and every
+    # path lands in the manifest the materializer serves.
+    mkdir -p "$RAW/upstream/shims/sharp"
+    # find-based (NOT a hand list): the adapter gained ops.js after this
+    # manifest shipped and the hand list missed it — the exact rot the
+    # android scenario hand list hit (2026-09-29 surprise). Every file the
+    # package carries rides, so a future module cannot be forgotten.
+    (cd "runtime/spike/upstream/shims/sharp" && find . -type f) |
+        while IFS= read -r f; do
+            rel="upstream/shims/sharp/${f#./}"
+            mkdir -p "$RAW/$(dirname "$rel")"
+            cp "runtime/spike/$rel" "$RAW/$rel"
+            echo "$rel" >> "$RAW/upstream-tests/__files.txt"
+        done
+    for engine in "vendor/npm/pngjs@5.0.0/lib|.js" "vendor/npm/jpeg-js@0.4.4|.js"; do
+        engine_dir="${engine%%|*}"
+        engine_suffix="${engine##*|}"
+        (cd "runtime/spike/$engine_dir" && find . -type f -name "*$engine_suffix") |
+            while IFS= read -r f; do
+                rel="$engine_dir/${f#./}"
+                mkdir -p "$RAW/$(dirname "$rel")"
+                cp "runtime/spike/$rel" "$RAW/$rel"
+                echo "$rel" >> "$RAW/upstream-tests/__files.txt"
+            done
+    done
+    mkdir -p "$RAW/vendor/npm/fflate@0.8.2/lib"
+    cp runtime/spike/vendor/npm/fflate@0.8.2/lib/index.cjs "$RAW/vendor/npm/fflate@0.8.2/lib/index.cjs"
+    echo "vendor/npm/fflate@0.8.2/lib/index.cjs" >> "$RAW/upstream-tests/__files.txt"
     echo "vendor-official: suite extras staged ($(wc -l < "$RAW/upstream-tests/__files.txt" | tr -d ' ') files listed)"
     exit 0
 fi

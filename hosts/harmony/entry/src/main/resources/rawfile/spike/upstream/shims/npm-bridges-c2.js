@@ -222,6 +222,22 @@ const BRIDGES_C2 = [
     "export default serialize;",
   ].join('\n')],
 
+  // sharp — the D-c face (2026-09-29): NOT the upstream binary package (the
+  // libvips native module cannot ride a QuickJS closure), but our pure-JS
+  // adaptation package over the vendored pngjs 5.0.0 / jpeg-js 0.4.4 /
+  // fflate 0.8.2 pins plus the hand-written GIF/WebP/SVG codecs in
+  // upstream/shims/sharp/. The operative mapping for the staged specs is the
+  // cjs-loader BARE_PACKAGES row — attachment-local's createLazyRequire
+  // ('sharp', import.meta.url) reaches it through node:module's bare routing
+  // — this row mirrors the table for the ESM spelling the four attachment
+  // specs import directly (the @xterm pattern). Only a default export: the
+  // specs bind sharp's callable and everything else is type-only.
+  ['sharp', [
+    "import { requireCjsPackage } from 'upstream/shims/cjs-loader.js';",
+    "const sharp = requireCjsPackage('/upstream/shims/sharp');",
+    "export default sharp;",
+  ].join('\n')],
+
   // readable-stream (the webworker-runtime node-builtin limbs: fs streams
   // build on the default export's classes AND its statics — the module-
   // scope destructure + getDefaultHighWaterMark() call runs at LOAD, so

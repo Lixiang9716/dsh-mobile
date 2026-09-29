@@ -49,6 +49,13 @@ const BARE_PACKAGES = {
   // "./lib-headless/xterm-headless.js" / "./lib/addon-serialize.js".
   '@xterm/headless': '/vendor/npm/@xterm/headless@6.0.0',
   '@xterm/addon-serialize': '/vendor/npm/@xterm/addon-serialize@0.14.0',
+  // sharp 0.34.4 FACE — NOT the upstream package (the libvips binary cannot
+  // ride a QuickJS closure; decision-matrix D-c). Our pure-JS adaptation
+  // package (upstream/shims/sharp/) over the vendored pngjs/jpeg-js/fflate
+  // pins serves attachment-local's createLazyRequire('sharp') through
+  // node:module's bare routing; the npm-bridges row mirrors it for the ESM
+  // spelling (the @xterm pattern).
+  sharp: '/upstream/shims/sharp',
 };
 
 const dirOf = (p) => {
