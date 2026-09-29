@@ -1,2 +1,2 @@
-09-30 06:02:47.316 10886 10947 I dsh.spike.result: android.camera-plane PASS | quickjs-ng 0.17.0
-09-30 06:02:47.316 10886 10947 I dsh.spike.result: ALL PASS
+09-30 06:25:13.770 11227 11296 I dsh.spike.result: android.camera-plane PASS | quickjs-ng 0.17.0
+09-30 06:25:13.770 11227 11296 I dsh.spike.result: ALL PASS

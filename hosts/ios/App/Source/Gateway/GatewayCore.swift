@@ -79,6 +79,8 @@ struct GatewayManifest {
         "presentShare": "share",
         "keepAwake": "screen",
         "cameraCapture": "camera",
+        "cameraRecordStart": "camera",
+        "cameraRecordStop": "camera",
     ]
 
     func grants(primitive: String) -> Bool {

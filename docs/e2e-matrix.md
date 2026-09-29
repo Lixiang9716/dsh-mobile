@@ -17,6 +17,16 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > implemented note). Totals below re-run against this tree (54 dirs / 113
 > verdicts).
 >
+> **Currency**: this matrix reflects the capability-plane camera change
+> (2026-09-30): `camera.plane` + `camera.plane.audit` green on iOS (the
+> simulator's honest capture-unavailable posture, dir
+> `hosts/ios/artifacts/camera-plane/`) and Android (the emulator's REAL
+> virtual-camera burst — 2 frames / 45148 bytes / 333 ms — plus the
+> maxBytes drop leg, dir `hosts/android/artifacts/camera-plane/`); the
+> totals are re-run against this tree (66 dirs / 136 verdicts / 67 of 67
+> scenario ids green-covered / 53 manifests; the harmony device leg and the
+> iOS device leg await real hardware — one-click scripts staged, no
+> evidence synthesized). The notes below are the previous currency records.
 > **Currency**: this matrix reflects the socket-seam change (2026-09-30,
 > PR #251): scenario `socket.seam` 17→19 records / 19/19, dir
 > `runtime/spike/artifacts/macos-cli-socket-seam/` — and the totals are
@@ -88,10 +98,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 47 |
-| Verdicts committed (93 green, 2 quota-blocked red) | 95 |
-| Scenarios with at least one committed evidence dir | 46 of 46 distinct scenario ids (38 manifests) |
-| Screenshots verified PNG | 113 |
+| Evidence dirs | 66 |
+| Verdicts committed (136 green) | 136 |
+| Scenarios with at least one committed evidence dir | 67 of 67 distinct scenario ids (53 manifests) |
+| Screenshots verified PNG | 158 |
 | Acceptance-bar findings | 7 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -112,6 +122,8 @@ evidence on that platform.
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
+| `camera.plane` | 6/6 | 8/8 | — | — |
+| `camera.plane.audit` | 3/3 | 5/6 | — | — |
 | `m1.spike.boot` | 9/9 (drift), 7/7 | 9/9 (drift), 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9 (drift), 7/7, 7/7 | 9/9 (drift) |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |

@@ -141,7 +141,7 @@ grep -h '^dsh.spike.log:' "$OUT/camera-plane-capture.txt" > "$OUT/scenario.jsonl
 
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/camera-plane-capture.json \
     --log "$OUT/camera-plane-capture.txt" \
-    --out "$OUT/verdict-harmony-camera-plane.json"; then
+    --out "$OUT/verdict-camera-plane-capture.json"; then
     :
 else
     echo "::error::harmony camera-plane checker failed" >&2
@@ -159,7 +159,7 @@ cat > "$OUT/receipt.json" <<EOF
   "tree": "$TREE_LINE",
   "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
   "scenarios": [
-    { "manifest": "camera-plane-capture", "verdict": "verdict-harmony-camera-plane.json", "pass": true }
+    { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true }
   ],
   "screens": [],
   "producedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

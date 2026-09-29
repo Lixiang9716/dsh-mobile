@@ -117,13 +117,13 @@ run_check() { # MANIFEST OUT
 # same platform-neutral capture manifest the Android emulator and the
 # harmony device leg pin, because the scenario emits the same sequence on
 # any camera-capable host; the receipt (host/udid/runner) says who ran it.
-run_check test/e2e/scenarios/camera-plane-capture.json       "$ART/verdict-camera-plane.json"
-run_check test/e2e/scenarios/camera-plane-capture-audit.json "$ART/verdict-camera-plane-audit.json"
+run_check test/e2e/scenarios/camera-plane-capture.json       "$ART/verdict-camera-plane-capture.json"
+run_check test/e2e/scenarios/camera-plane-capture-audit.json "$ART/verdict-camera-plane-capture-audit.json"
 
 echo "==================== camera-plane device E2E summary ($ART) ===================="
 echo "scenario rows: $PASS pass, $FAIL fail"
 [ "$FAIL" = "0" ] || exit 1
 sh test/e2e/write-receipt.sh "$ART" "$UDID" test/e2e/run-ios-camera-plane-device.sh \
   "camera.plane" "ios camera-plane device drive (Debug, real camera burst)" \
-  camera-plane camera-plane-audit
+  camera-plane-capture camera-plane-capture-audit
 log "receipt written — camera.plane green on device"

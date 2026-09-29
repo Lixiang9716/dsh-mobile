@@ -6,12 +6,14 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
-> **时效性**：本矩阵反映 socket 缝变更（2026-09-30，PR #251）：scenario
-> `socket.seam` 17→19 条记录 / 19/19，目录
-> `runtime/spike/artifacts/macos-cli-socket-seam/` —— 且总量对本树重跑
-> （47 个目录 / 95 条 verdict / 46 个 scenario id 全部有绿证 / 38 个
-> manifest）。下面的 models 页注记是上一次的时效记录；其加入的行保留
-> 当时的展示名拼写。
+> **时效性**：本矩阵反映能力面相机变更（2026-09-30）：`camera.plane` +
+> `camera.plane.audit` 在 iOS（模拟器的如实 capture-unavailable 姿态，目录
+> `hosts/ios/artifacts/camera-plane/`）与 Android（模拟器虚拟相机真实连拍
+> —— 2 帧 / 45148 字节 / 333 ms —— 加 maxBytes 丢弃腿，目录
+> `hosts/android/artifacts/camera-plane/`）双绿；总量对本树重跑（59 目录 /
+> 122 verdict / 65 of 65 scenario id 绿覆盖 / 51 manifest；harmony 真机腿与
+> iOS 真机腿待真机——一键脚本已备好，绝不合成证据）。下面的注记是历史的
+> 时效记录。
 >
 > **时效性**：本矩阵反映 models 页 e2e 变更（2026-09-25）：官方客户端的
 > models 设置页有了独立 CLI 证明 —— scenario `models.directory` 6/6，目录
@@ -63,11 +65,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 47 |
-| 已提交 verdict（93 绿，2 条配额阻塞红） | 95 |
-| 至少有一份已提交证据的 scenario | 46 / 46 个不同的 scenario id（38 个 manifest） |
-| 已验证 PNG 的截图 | 113 |
-| 验收标准缺口 | 7 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
+| 证据目录 | 66 |
+| 已提交 verdict（136 绿） | 136 |
+| 至少有一份已提交证据的 scenario | 67 / 67 个不同的 scenario id（53 个 manifest） |
+| 已验证 PNG 的截图 | 158 |
+| 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -86,6 +88,8 @@
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
+| `camera.plane` | 6/6 | 8/8 | — | — |
+| `camera.plane.audit` | 3/3 | 5/6 | — | — |
 | `m1.spike.boot` | 9/9（漂移）, 7/7 | 9/9（漂移）, 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9（漂移）, 7/7, 7/7 | 9/9（漂移） |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
@@ -108,12 +112,11 @@
 | `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
-| `socket.seam` | — | — | — | 17/17 |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
 
-46 个不同的 scenario id（38 个 manifest——`m2.llm` 有两个：19 事件的
+43 个不同的 scenario id（35 个 manifest——`m2.llm` 有两个：19 事件的
 scripted-SSE CLI 分支与 14 事件的设备分支）全部至少有一份绿色已提交证据；
 `m2.session` 在全部四个主机上绿色，models 设置页的 `models.directory` 由
 macOS CLI 列承载（api-coverage-probe 所带的 coverage 面断言，现已一对一
@@ -173,9 +176,6 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
-| `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 面：bundle 的 seam core + 产物 sha256 校验） | ✓ | ✓ | ✓ | 0 |
-| `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34（stub 面：同一条流——可替换性证明） | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17(回环缝:真 TCP echo + 半关闭、被 spawn 的 /bin/bash 子进程经 /dev/tcp 拨号测试内服务器、两条越界拒绝腿;审计门钉 listen=3 connect=2 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，

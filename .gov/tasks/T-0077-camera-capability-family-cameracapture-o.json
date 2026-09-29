@@ -9,11 +9,11 @@
     }
   },
   "checklist": [
-    "JS face: gateway.js exports cameraCapture/cameraRecordStart/cameraRecordStop verbatim to the proposal; manifest.json requires the camera family flag; scenario camera-plane.js (id camera.plane)",
-    "iOS host: CameraPrimitives.swift burst into the capture scope (media-picker read-through), cameraRecord* answer unavailable, GatewayCore descriptor + family flag, NSCameraUsageDescription, -dsh-mode camera-plane",
-    "Android host: CameraPrimitives.kt camera2 burst, runtime CAMERA permission, cameraRecord* unavailable, descriptor + family flag, manifest row, dsh.cameraplane extra",
-    "Harmony host: CameraPrimitives.ets CameraKit burst (settleGuarded), module.json5 ohos.permission.CAMERA, HostPhase+gateway_smoke descriptor/forward, camera.plane leg, rawfile+BUNDLE_FILES row",
-    "E2E per honest matrix: iOS simulator leg walks capture-unavailable honestly + real-device one-click script; Android emulator leg really captures (virtual camera); harmony real-device script staged; per-host expected-manifest pairs + audit manifests",
+    "[x] JS face: gateway.js exports cameraCapture/cameraRecordStart/cameraRecordStop verbatim to the proposal; manifest.json requires the camera family flag; scenario camera-plane.js (id camera.plane)",
+    "[x] iOS host: CameraPrimitives.swift burst into the capture scope (media-picker read-through), cameraRecord* answer unavailable, GatewayCore descriptor + family flag, NSCameraUsageDescription, -dsh-mode camera-plane",
+    "[x] Android host: CameraPrimitives.kt camera2 burst, runtime CAMERA permission, cameraRecord* unavailable, descriptor + family flag, manifest row, dsh.cameraplane extra",
+    "[x] Harmony host: CameraPrimitives.ets CameraKit burst (settleGuarded), module.json5 ohos.permission.CAMERA, HostPhase+gateway_smoke descriptor/forward, camera.plane leg, rawfile+BUNDLE_FILES row",
+    "[x] E2E per honest matrix: iOS simulator leg walks capture-unavailable honestly + real-device one-click script; Android emulator leg really captures (virtual camera); harmony real-device script staged; per-host expected-manifest pairs + audit manifests",
     "staging embed lists updated both directions, check-staging --block green; pre-existing descriptor-count manifests resynced; gov run full DAG green; PR opened stacked on feat/capability-plane-contract"
   ],
   "status": "open",
