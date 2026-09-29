@@ -1,0 +1,21 @@
+{
+  "title": "staging generator Phase 2: derive the four per-host staging manifests from the import graph",
+  "created": "2026-09-29T15:39:51+00:00",
+  "rules": {
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+    }
+  },
+  "checklist": [
+    "[x] Read tools/check-staging.mjs (+graph/+hosts) as the living map of manifest locations and formats",
+    "[x] Design + implement tools/ generator: input = runtime/spike import graph (walkGraph roots), output = the four manifest contents (ios TREES, harmony CLOSURE/BUNDLE_FILES, android stage list)",
+    "[x] Round-trip proof: run generator on current tree, diff vs committed manifests byte-identical (or delta report itemized generator-defect vs manifest-typo)",
+    "[x] Land generator + delta report only; do NOT replace existing manifests or change vendor flow; Agent Note (architecture/process) explains the two-step split",
+    "check-staging all three hosts green + gov run green; push and open PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0072"
+}
