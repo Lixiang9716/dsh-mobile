@@ -1,3 +1,4 @@
+// dsh:logging-exempt (ReactLynx bundle: pure presentation, zero logging surface — E2E evidence flows through the driver, as with the web clients)
 /**
  * App.tsx — the root: aurora backdrop, top bar, thread, composer, drawer.
  * The single subscription point on the bundle side is useSurface() here;
@@ -27,6 +28,24 @@ export const App: FC = () => {
   }, []);
   const state = useSurface();
 
+  const closeDrawer = (): void => setDrawerOpen(false);
+  const selectFromDrawer = (sessionId: string): void => {
+    setDrawerOpen(false);
+    emitIntent({ type: 'select-session', sessionId });
+  };
+  const newFromDrawer = (): void => {
+    setDrawerOpen(false);
+    emitIntent({ type: 'new-session' });
+  };
+  const drawer = drawerOpen ? (
+    <Drawer
+      sessions={state.sessions}
+      onClose={closeDrawer}
+      onSelect={selectFromDrawer}
+      onNew={newFromDrawer}
+    />
+  ) : null;
+
   return (
     <view style={styles.root}>
       <AuroraBackdrop />
@@ -35,20 +54,7 @@ export const App: FC = () => {
         <Thread state={state} />
         <Composer running={state.running} />
       </view>
-      {drawerOpen ? (
-        <Drawer
-          sessions={state.sessions}
-          onClose={() => setDrawerOpen(false)}
-          onSelect={(sessionId) => {
-            setDrawerOpen(false);
-            emitIntent({ type: 'select-session', sessionId });
-          }}
-          onNew={() => {
-            setDrawerOpen(false);
-            emitIntent({ type: 'new-session' });
-          }}
-        />
-      ) : null}
+      {drawer}
     </view>
   );
 };

@@ -46,6 +46,16 @@ export const verifyBundleArtifact = (path = BUNDLE_PATH) => {
   };
 };
 
+/** The no-engine refusal: fail loud, name the wall, keep the verification
+ * facts (the artifact bytes + sha travel with the error). */
+const engineRefusal = (artifact) => new Error(
+  `fail loud: no Lynx engine in this runtime — the ReactLynx bundle is `
+  + `built and verified (${artifact.path}, ${artifact.bytes} bytes, sha256 `
+  + `${artifact.sha256.slice(0, 16)}…); pixel rendering needs `
+  + `LynxExplorer or an on-device LynxView (pilot build round boundary, `
+  + `see skin-lynx.js header)`,
+);
+
 export const createLynxSkin = ({ bundlePath = BUNDLE_PATH } = {}) => {
   let engine = null;
   let intentHandler = null;
@@ -60,6 +70,15 @@ export const createLynxSkin = ({ bundlePath = BUNDLE_PATH } = {}) => {
     engine.pushViewEvent(assertViewEvent(event));
   };
 
+  const installIntentTarget = (bridge) => {
+    bridge.setIntentTarget((intent) => {
+      if (intentHandler === null) {
+        throw new Error('fail loud: lynx skin has no intent handler (driver not mounted)');
+      }
+      intentHandler(intent);
+    });
+  };
+
   return defineRenderSurfaceClient({
     async mount() {
       const artifact = verifyBundleArtifact(bundlePath);
@@ -69,21 +88,10 @@ export const createLynxSkin = ({ bundlePath = BUNDLE_PATH } = {}) => {
       // wall, keep the verification facts.
       const bridge = globalThis.__dshRenderSurface;
       if (bridge === undefined || typeof bridge.pushViewEvent !== 'function') {
-        throw new Error(
-          `fail loud: no Lynx engine in this runtime — the ReactLynx bundle is `
-          + `built and verified (${artifact.path}, ${artifact.bytes} bytes, sha256 `
-          + `${artifact.sha256.slice(0, 16)}…); pixel rendering needs `
-          + `LynxExplorer or an on-device LynxView (pilot build round boundary, `
-          + `see skin-lynx.js header)`,
-        );
+        throw engineRefusal(artifact);
       }
       engine = bridge;
-      bridge.setIntentTarget((intent) => {
-        if (intentHandler === null) {
-          throw new Error('fail loud: lynx skin has no intent handler (driver not mounted)');
-        }
-        intentHandler(intent);
-      });
+      installIntentTarget(bridge);
     },
     pushViewEvent(event) {
       deliverToEngine(event);

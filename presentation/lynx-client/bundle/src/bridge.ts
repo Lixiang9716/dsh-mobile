@@ -1,3 +1,4 @@
+// dsh:logging-exempt (ReactLynx bundle: pure presentation, zero logging surface — E2E evidence flows through the driver, as with the web clients)
 /**
  * bridge.ts — the in-bundle half of the RenderSurfaceClient seam. The
  * four seam names map onto the engine bridge the host installs:

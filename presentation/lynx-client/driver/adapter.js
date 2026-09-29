@@ -1,3 +1,4 @@
+// dsh:logging-exempt (pure data machinery: no I/O — the driver boundary owns logging)
 /**
  * adapter.js — the ONE domain→view translator (event-model iron law #1:
  * the driver's follow feed is the single subscription point; nothing

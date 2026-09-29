@@ -1,3 +1,4 @@
+// dsh:logging-exempt (ReactLynx bundle: pure presentation, zero logging surface — E2E evidence flows through the driver, as with the web clients)
 /**
  * Cards.tsx — the tool card's THREE states and the collapsible process
  * group. A card is pure props: it renders whatever the fold says and
@@ -73,6 +74,15 @@ export const TailToolRow: FC<{ tool: TailTool }> = ({ tool }) => (
   </view>
 );
 
+/** The expanded group body: one row per reasoning/tool item. */
+const groupRows = (run: FoldItem[]) => run.map((item, i) => (item.kind === 'tool'
+  ? <ToolCard key={item.callId ?? i} item={item} />
+  : (
+    <view key={i} style={styles.row}>
+      <text style={styles.tailReason}>{`◆ 思考：${item.text ?? ''}`}</text>
+    </view>
+  )));
+
 /** The collapsible group over a consecutive run of reasoning/tool rows. */
 export const ProcessGroup: FC<{ run: FoldItem[] }> = ({ run }) => {
   const [open, setOpen] = useState(false);
@@ -80,6 +90,7 @@ export const ProcessGroup: FC<{ run: FoldItem[] }> = ({ run }) => {
   const preview = tools.length > 0
     ? `使用了 ${tools.map((t) => t.name ?? 'tool').slice(0, 3).join('、')}${tools.length > 3 ? ' 等' : ''} 工具`
     : '思考过程';
+  const body = open ? <view style={styles.groupBody}>{groupRows(run)}</view> : null;
   return (
     <view style={styles.group}>
       <view style={styles.groupHead} bindtap={() => setOpen(!open)}>
@@ -87,17 +98,7 @@ export const ProcessGroup: FC<{ run: FoldItem[] }> = ({ run }) => {
         <text style={styles.groupPreview}>{`${preview} · ${run.length}`}</text>
         <text style={styles.groupChevron}>{open ? '▼' : '▶'}</text>
       </view>
-      {open ? (
-        <view style={styles.groupBody}>
-          {run.map((item, i) => (item.kind === 'tool'
-            ? <ToolCard key={item.callId ?? i} item={item} />
-            : (
-              <view key={i} style={styles.row}>
-                <text style={styles.tailReason}>{`◆ 思考：${item.text ?? ''}`}</text>
-              </view>
-            )))}
-        </view>
-      ) : null}
+      {body}
     </view>
   );
 };

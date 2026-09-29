@@ -1,3 +1,4 @@
+// dsh:logging-exempt (ReactLynx bundle: pure presentation, zero logging surface — E2E evidence flows through the driver, as with the web clients)
 /**
  * Thread.tsx — the conversation thread: a scroll-view of rows built from
  * the fold snapshot (props only — no subscriptions below App). Structure

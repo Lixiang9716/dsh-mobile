@@ -1,3 +1,4 @@
+// dsh:logging-exempt (pure data machinery: no I/O — the driver boundary owns logging)
 /**
  * view-events.js — the closed view-event vocabulary and the fail-loud
  * validators for both seam directions (event-model iron law #2 and rule 5:

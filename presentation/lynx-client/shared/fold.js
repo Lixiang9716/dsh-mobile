@@ -1,3 +1,4 @@
+// dsh:logging-exempt (pure data machinery: no I/O — the driver boundary owns logging)
 /**
  * fold.js — the view events → view state fold (a pure state machine, the
  * clarklevis projection pattern). Shared by BOTH skins: the stub skin
@@ -151,6 +152,46 @@ const promoteTail = (state, turn, step) => {
   state.tail = null;
 };
 
+const applyAssistantMessage = (state, event) => {
+  promoteTail(state, event.turn, event.step);
+  if (event.reasoning !== '' && !state.streamed.has(keyFor(event.turn, event.step))) {
+    add(state, {
+      kind: 'reasoning', text: event.reasoning,
+      turn: event.turn, step: event.step,
+    });
+  }
+  add(state, {
+    kind: 'assistant', markdown: event.markdown,
+    interrupted: event.interrupted, turn: event.turn, step: event.step,
+  });
+};
+
+const applyTurnEnd = (state, event) => {
+  state.pendingPrompt = false;
+  state.tail = state.tail === null ? null : { ...state.tail, streaming: false };
+  if (NORMAL_TURN_REASONS.has(event.reason)) return;
+  if (event.reason === 'aborted' || event.reason === 'cancelled') {
+    // A cancelled turn gets NO promoting assistant/message — drop the
+    // streaming tail here or it hangs (and pins the stop button on).
+    state.tail = null;
+    add(state, { kind: 'status', text: '已停止', tone: 'info' });
+    return;
+  }
+  add(state, { kind: 'status', text: `回合结束（${event.reason}）`, tone: 'warn' });
+};
+
+const applySeed = (state, event) => {
+  if (event.kind === 'seed-start') {
+    const fresh = makeFoldState();
+    fresh.connection = state.connection;
+    fresh.sessions = state.sessions;
+    Object.assign(state, fresh);
+    return;
+  }
+  state.seedComplete = true;
+  state.pendingPrompt = false;
+};
+
 const applySettled = (state, event) => {
   switch (event.kind) {
     case 'user-message':
@@ -159,38 +200,14 @@ const applySettled = (state, event) => {
         images: Array.isArray(event.images) ? event.images : [],
       });
       break;
-    case 'assistant-message': {
-      promoteTail(state, event.turn, event.step);
-      const reasoning = event.reasoning;
-      if (reasoning !== '' && !state.streamed.has(keyFor(event.turn, event.step))) {
-        add(state, { kind: 'reasoning', text: reasoning, turn: event.turn, step: event.step });
-      }
-      add(state, {
-        kind: 'assistant', markdown: event.markdown,
-        interrupted: event.interrupted, turn: event.turn, step: event.step,
-      });
-      break;
-    }
+    case 'assistant-message': applyAssistantMessage(state, event); break;
     case 'creation':
       add(state, { kind: 'creation', files: event.files });
       break;
     case 'title':
       state.title = event.title;
       break;
-    case 'turn-end': {
-      state.pendingPrompt = false;
-      state.tail = state.tail === null ? null : { ...state.tail, streaming: false };
-      if (NORMAL_TURN_REASONS.has(event.reason)) break;
-      if (event.reason === 'aborted' || event.reason === 'cancelled') {
-        // A cancelled turn gets NO promoting assistant/message — drop the
-        // streaming tail here or it hangs (and pins the stop button on).
-        state.tail = null;
-        add(state, { kind: 'status', text: '已停止', tone: 'info' });
-        break;
-      }
-      add(state, { kind: 'status', text: `回合结束（${event.reason}）`, tone: 'warn' });
-      break;
-    }
+    case 'turn-end': applyTurnEnd(state, event); break;
     case 'status':
       add(state, { kind: 'status', text: event.text, tone: event.tone });
       break;
@@ -206,17 +223,7 @@ const applySettled = (state, event) => {
     case 'system':
       add(state, { kind: 'system', label: event.label, types: [event.type] });
       break;
-    case 'seed-start': {
-      const fresh = makeFoldState();
-      fresh.connection = state.connection;
-      fresh.sessions = state.sessions;
-      Object.assign(state, fresh);
-      break;
-    }
-    case 'seed-end':
-      state.seedComplete = true;
-      state.pendingPrompt = false;
-      break;
+    case 'seed-start': case 'seed-end': applySeed(state, event); break;
     default:
       throw new TypeError(`fail loud: unhandled settled kind: ${event.kind}`);
   }
