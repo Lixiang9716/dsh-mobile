@@ -214,7 +214,9 @@ hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/zod@4.4.3/
 hosts/ios/**/*.xcuserstate
 hosts/ios/**/xcuserdata/
-hosts/ios/App/Generated/ish-rootfs.tar.gz
+# (hosts/ios/App/Generated/ish-rootfs.tar.gz rode here until the D9 flip; the
+# whole App/Generated/ and DSHSpike.xcodeproj/ trees are ignored by
+# hosts/ios/.gitignore since the generated bundles stopped being committed)
 hosts/ios/DerivedData/
 hosts/ios/Pods/
 node_modules/

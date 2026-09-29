@@ -28,13 +28,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "6d93808208ac83624e025e367b47fd52af3deb7a5366f83804cee0c16aadbff8"
+      "sha256": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T06:12:03+00:00",
+    "ts": "2026-09-29T08:13:49+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "case-quickjs-boot-parse: the CLI-absent arm becomes an explicit SKIP (the gate builds on demand with a 300s budget and carries the full proof) \u2014 the cold-CI blocker the workflow's own notes predicted"
+    "reason": "staging-check gate wiring (2026-09-29 staging-triage ask): gates.json gains the check-staging gate (WARN default, --block harmony,android,ios \u2014 all hosts triage-cleared this run); the 23 REAL staging gaps were fixed in the same change (Index.ets/vendor-official.sh/stage-spine-closure.sh). Authorized by the r3-X1 staging-triage brief."
   }
 }

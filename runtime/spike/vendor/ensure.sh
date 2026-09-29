@@ -37,10 +37,16 @@ sh ./ensure-zstd.sh
 # snapshot / wrap as an ENGINE INTRINSIC (JS_AddIntrinsicAsyncContext),
 # upstreamable to quickjs-ng as-is. Rebase the branch when tracking a
 # newer quickjs-ng.
-PIN=0.17.0+fork-tostring+async-context+tc39
+PIN=0.17.0+fork-tostring+async-context+tc39+promise-mark
 QJS_REPO=Lixiang9716/quickjs
-COMMIT=4153a1f0edef441e5dc71871eb071bc405a0bd04
-TARBALL_SHA256=c635c1e73629b6a69043b09ba181b69a679b4341f9cb6a012d47b83dce6a4f57
+# #239 re-pin (2026-09-29, 4153a1f0 -> 63b33ea5): js_promise_mark now marks
+# the reaction's captured async_context (unmarked, it read as an eternal
+# external root and pinned frame arrays through JS_FreeRuntime — teardown
+# SIGABRT), and promise_reaction_data_free no longer reads rd->async_context
+# after freeing the record (the out-of-band vendor reorder is now IN the
+# fork, so the pin is self-contained again).
+COMMIT=63b33ea5a7a53fedebd05c3413f2ee556e60f849
+TARBALL_SHA256=63310bdbd9dc153c489db98f1c0fb840e69f67f4c52c5945ad915ab275a58408
 
 # fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
 #

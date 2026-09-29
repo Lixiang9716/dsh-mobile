@@ -521,6 +521,7 @@
     "shell__tool-pwsh__tests__integration.spec.mjs",
     "shell__tool-pwsh__tests__loader.spec.mjs",
     "shell__tool-pwsh__tests__tools.spec.mjs",
+    "shell__tool-pwsh-persistent__tests__loader-composition.spec.mjs",
     "shell__tool-pwsh-persistent__tests__tools.spec.mjs",
     "skill__skill__tests__skill.spec.mjs",
     "skill__skill-badge__tests__skill-badge.spec.mjs",
@@ -594,6 +595,7 @@
     "subprocess__subprocess-local__tests__shell-activity.spec.mjs",
     "subprocess__subprocess-local__tests__spawn-runner.spec.mjs",
     "terminal__terminal-bash__tests__config.spec.mjs",
+    "terminal__terminal-bash__tests__local.spec.mjs",
     "terminal__terminal-bash__tests__sanitize.spec.mjs",
     "terminal__terminal-bash__tests__session-buffer.spec.mjs",
     "terminal__tool-terminal__tests__loader-composition.spec.mjs",
@@ -683,7 +685,7 @@
   "excluded": {
     "vi.mock/doMock/resetModules (loader-level module interception)": 67,
     "esbuild transform failed: xpected \")\" but found \"{\"": 31,
-    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 28,
+    "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)": 26,
     "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 5,
     "vi.mock/doMock/resetModules (loader-level module interception) + vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)": 2,
     "wall-clock time mocking (the v1.4.0 seam is monotonic scheduling only)": 7,
@@ -705,7 +707,7 @@
     "worker.js"
   ],
   "counts": {
-    "transpiled": 679,
+    "transpiled": 681,
     "excluded": [
       {
         "reason": "vi.mock/doMock/resetModules (loader-level module interception)",
@@ -717,7 +719,7 @@
       },
       {
         "reason": "monorepo src/ subpath (npm tarballs ship lib/ only — upstream runs its suite from source)",
-        "count": 28
+        "count": 26
       },
       {
         "reason": "vi.spyOn on a module namespace (ESM bindings are read-only without vi.mock loader interception — excluded class)",

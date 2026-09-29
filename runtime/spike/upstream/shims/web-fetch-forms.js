@@ -287,7 +287,14 @@ export const installURLSearchParamsView = () => {
   // Memoized per URL instance so `url.searchParams === url.searchParams`
   // holds and a held reference stays visible, like node's.
   const URLClass = globalThis.URL;
-  if (URLClass !== undefined && URLClass.prototype.searchParams === undefined) {
+  // Presence probe must NOT be a property READ: on node the prototype member
+  // is an accessor whose getter dereferences a #searchParams private field
+  // on the receiver, so `URLClass.prototype.searchParams` throws
+  // 'Cannot read private member #searchParams' when the receiver is the
+  // prototype itself (node differential leg, 2026-09-29). `in` consults the
+  // same chain and never invokes accessors; on DshURL.prototype (no such
+  // member) it is false exactly where the old read returned undefined.
+  if (URLClass !== undefined && !('searchParams' in URLClass.prototype)) {
     const liveViews = new WeakMap();
     Object.defineProperty(URLClass.prototype, 'searchParams', {
       get() {

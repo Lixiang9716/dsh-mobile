@@ -269,7 +269,9 @@ done
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js \
-         upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
+         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
+         upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
+         upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
     if [ -f "$SPIKE/scenario/$s" ]; then
         cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"
     fi
@@ -369,7 +371,9 @@ done
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js \
-         upstream-suite-leg.js upstream-test-harness.js agent-flow.js; do
+         upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
+         upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
+         upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
     if [ "$MODE" = "check" ] && ! is_tracked "scenario/$s"; then note_skip; continue; fi
     cmp -s "$SPIKE/scenario/$s" "$ASSETS/scenario/$s" || note_drift "scenario/$s"
 done
