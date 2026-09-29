@@ -63,8 +63,11 @@ RELEASE_GLOBAL = "globalThis.__DSH_RELEASE__"
 # platform; the marker is the define as it appears in that build system, so a
 # silently dropped define names the exact file that lost it (rule 5).
 PLUMBING = (
-    ("iOS", "hosts/ios/DSHSpike.xcodeproj/project.pbxproj",
-     "SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE"),
+    # iOS: the D9 flip (2026-09-29) stopped committing the generated pbxproj;
+    # the flag's source of truth is now project.yml (xcodegen renders it into
+    # the pbxproj at build time — the generated file no longer exists on a
+    # fresh checkout, so the row must point at the tracked input).
+    ("iOS", "hosts/ios/project.yml", "DSH_RELEASE"),
     ("Android", "hosts/android/app/build.gradle.kts", "DSH_RELEASE"),
     ("HarmonyOS", "hosts/harmony/entry/build-profile.json5", "DSH_RELEASE"),
     ("macOS CLI", "runtime/spike/host/build.sh", "DSH_RELEASE"),
