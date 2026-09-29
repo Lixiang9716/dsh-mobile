@@ -14,7 +14,7 @@
     "[x] JS face: gateway.js socketListen/socketConnect, real-TCP shim over the pump (in-process dispatch preserved), node:net face upgrade (Socket/createServer served, registry-miss dials real TCP), family-flag grant narrow-default loopback, zero prompts",
     "[x] e2e: socket-seam scenario on the CLI (server+client in one scenario; subprocess\u00d7socket leg \u2014 spawned OS child dials the in-test server)",
     "[x] suite regression: the socket-class excluded specs (ssh\u00d78, lsp-stdio, subprocess-ssh\u00d75 per the current baseline sweep) re-run per-spec; every entry has failed:0 or a named reason in the PR; loopback zero-regression subset green",
-    "gov run full DAG green with receipt; push; gh pr create with acceptance evidence"
+    "[x] gov run full DAG green with receipt; push; gh pr create with acceptance evidence"
   ],
   "status": "open",
   "receipt": null,
