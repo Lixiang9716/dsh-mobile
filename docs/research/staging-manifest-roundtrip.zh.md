@@ -23,8 +23,10 @@ node tools/gen-staging-manifests.mjs --out /tmp/gen-out
 各腿要求的每一行都已出现在已提交清单中 —— 新装冻结类今天零实例。工具的拒绝
 案例是真的,不是摆设:在清单之外往启动图里加一个 shim(一个被
 `upstream/boot.js` 引用的临时文件)即触发
-`FATAL harmony BUNDLE_FILES missing graph row: …` 与退出码 1;还原突变后恢复
-退出码 0。开发过程中它真实触发过一次,抓的正是这一类。
+`FATAL harmony BUNDLE_FILES missing graph row: …` 与退出码 1;而 stager 点名、
+物化树里却缺席的 pin 目录(vendor 改名/升版)会以退出码 2 中止并报出目录名 ——
+若腿静默清空,证据报告会在 vendored 行悄悄腐坏成误分类 "extra" 时依旧绿着。
+两种突变还原后均恢复退出码 0。开发过程中两者都真实触发过,各抓各的类。
 
 ## 2. 推导覆盖了什么
 
@@ -78,12 +80,12 @@ harmony CLOSURE、iOS ZOD_FILES),三份都与重算的 79 行闭包集合相等�
    - 8 行插件 `manifest.json` + `dsh-device-plane/index.js`:**运行时数据**
      —— 插件加载器读 manifest,不存在导入边。
    - `e2e-stage.js`:**e2e 载具** —— 为 runner 自身的加载而暂存,启动图到不了。
-   - 4 行 util-crypto 文档(LICENSE + 三个 README)与 2 行 npm-face
-     (cordis-plugin-loader/include 的 `lib/index.js`):util-crypto 用了一个
+   - 4 行 util-crypto 文档(LICENSE + 三个 README):util-crypto 用了一个
      兄弟 pin 都不用的暂存形状(带文档行)—— 本次审计唯一判定为"疑似清单不
      一致"的条目,无害(rawfile 里字节齐全)但下次动 vendor 时值得看一眼。
-     两行 npm-face 是加载器桥的解析结果,被分类器现行正则误归入 vendor-shape
-     桶;修正纯机械。
+   - 2 行 npm-face(cordis-plugin-loader/include 的 `lib/index.js`):
+     与 shim 同类的**宿主加载器命名空间** —— 加载器桥解析该 face,不存在
+     JS 导入边。
 4. **harmony CLOSURE/SPINE_OURS advisory 面上 31 条计数型覆盖差** —— 已知且
    有意:该表暂存的是更窄的 officialweb+spine 闭包,图到而不表有的行只是
    上下文,永不定罪(门正是为此把该面配成 advisory)。

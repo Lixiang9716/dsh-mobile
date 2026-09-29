@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: 58b76227ac2578bac5f4deef8e7b4506461848cc
-  zh: d07928b38e2cb1bcf6b1a216b9daed0ed4aed58f
+  en: 667464c3e390e0efa2bb24df518284f653738f70
+  zh: 46f05e33b2ef9923ab3a8441498030e744771b15
 counterpart: staging-manifest-roundtrip.zh.md
-last_confirmed: 2026-09-29T16:13:24+00:00
-en_commit: untracked
-zh_commit: untracked
+last_confirmed: 2026-09-29T16:49:19+00:00
+en_commit: be0de501
+zh_commit: be0de501

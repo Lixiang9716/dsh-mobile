@@ -25,11 +25,14 @@ node tools/gen-staging-manifests.mjs --out /tmp/gen-out
 `staging-generate: round-trip holds · 0 freeze-fatal row(s)` (exit 0). Every
 row the derivation legs demand is present in the committed manifests — the
 fresh-install freeze class has zero instances today. The tool's rejection
-case is real, not vacuous: adding one shim to the boot graph outside the
+cases are real, not vacuous: adding one shim to the boot graph outside the
 manifests (a scratch file imported from `upstream/boot.js`) trips
-`FATAL harmony BUNDLE_FILES missing graph row: …` and exit 1; reverting the
-mutation restores exit 0. It fired during development and caught exactly that
-class.
+`FATAL harmony BUNDLE_FILES missing graph row: …` and exit 1, and a pin tree
+a stager names that is absent from the materialized tree (vendor rename/
+re-pin) aborts exit 2 naming the dir — a silently emptied leg would let the
+evidence rot green while vendored rows decay into misclassified "extras".
+Reverting either mutation restores exit 0. Both fired during development and
+caught exactly their class.
 
 ## 2. What the derivation covers
 
@@ -92,14 +95,13 @@ round-trip that holds is set-level and attribution-level. The residue:
      exists.
    - `e2e-stage.js`: **e2e-harness** — staged for the runner's own load,
      not reached from the boot graph.
-   - 4 util-crypto doc rows (LICENSE + three READMEs) and 2 npm-face rows
-     (cordis-plugin-loader/include `lib/index.js`): util-crypto is staged
+   - 4 util-crypto doc rows (LICENSE + three READMEs): util-crypto is staged
      under a pin shape NO sibling pin uses (docs/LICENSE rows) — the one
      entry this audit calls a probable manifest inconsistency, harmless
      (rawfile holds the bytes) but worth a look at the next vendor touch.
-     The two npm-face rows are the loader bridge's resolution, mis-filed
-     under the vendor-shape bucket by the classifier's current regex; the
-     fix is mechanical.
+   - 2 npm-face rows (cordis-plugin-loader/include `lib/index.js`):
+     **host-loader namespace** like the shims — the loader bridge resolves
+     the face; no JS import edge exists.
 4. **31 counted coverage misses on the harmony CLOSURE/SPINE_OURS advisory
    surface** — known and deliberate: that list stages the narrower
    officialweb+spine closure, so graph rows outside it are context, never a

@@ -117,10 +117,12 @@ export function dirPinRows(spikeAbs, pin, opts = {}) {
 }
 
 /** The vendored zod's runtime closure: walk the pin's own relative import
- * graph from index.js. Resolves ./x, missing-.js, and dir/index.js exactly
+ * graph from index.js. The pin is REQUIRED — the caller derives it from a
+ * stager declaration, never a default (a defaulted version is a fourth copy
+ * of the pin policy). Resolves ./x, missing-.js, and dir/index.js exactly
  * like the vendored classic build spells them; non-relative specifiers
  * (node:, bare names) are leaves. Returns pin-relative rows, sorted. */
-export function zodClosureRows(spikeAbs, pin = 'vendor/npm/zod@4.4.3') {
+export function zodClosureRows(spikeAbs, pin) {
   const abs = join(spikeAbs, pin);
   const spec = /from\s*['"](\.[^'"]+)['"]|import\s*['"](\.[^'"]+)['"]|require\(\s*['"](\.[^'"]+)['"]\s*\)/g;
   const seen = new Set();
