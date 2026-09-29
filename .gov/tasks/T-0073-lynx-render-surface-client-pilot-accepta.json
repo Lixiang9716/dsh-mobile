@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "worktree current with origin/main; local env healed (proxy) so bundle-files/staging materialize",
-    "mock LLM full loop with structured scenario-id logs: lynx.mount 34/34 both faces (test/e2e/run-cli-lynx-mount.sh)",
-    "lynx.mount scenario leg per nextweb.mount discipline (scenario entry, __dshComplete, logs/scenario.jsonl/verdict/receipt), CLI host; stub skin same leg (replaceability)",
-    "vitest seam/adapter/fold/wire suite green (36 tests)",
-    "render evidence: @lynx-js/web-core real render in headless Chrome, screenshot in gitignored screens/",
-    "docs: README milestone pair, e2e-matrix pair rows, test README scenarios, architecture note (D5 boundary)",
+    "[x] worktree current with origin/main; local env healed (proxy) so bundle-files/staging materialize",
+    "[x] mock LLM full loop with structured scenario-id logs: lynx.mount 34/34 both faces (test/e2e/run-cli-lynx-mount.sh)",
+    "[x] lynx.mount scenario leg per nextweb.mount discipline (scenario entry, __dshComplete, logs/scenario.jsonl/verdict/receipt), CLI host; stub skin same leg (replaceability)",
+    "[x] vitest seam/adapter/fold/wire suite green (36 tests)",
+    "[x] render evidence: @lynx-js/web-core real render in headless Chrome, screenshot in gitignored screens/",
+    "[x] docs: README milestone pair, e2e-matrix pair rows, test README scenarios, architecture note (D5 boundary)",
     "gov run receipt + push + gh pr create"
   ],
   "status": "open",
