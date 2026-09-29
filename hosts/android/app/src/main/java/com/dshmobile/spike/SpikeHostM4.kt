@@ -55,6 +55,8 @@ class SpikeHostM4 private constructor(
         const val WHALE_ENTRY = "scenario/session-mock-llm.js"
         const val DEVICE_PLANE_SCENARIO = "android.device-plane"
         const val DEVICE_PLANE_ENTRY = "scenario/device-plane.js"
+        const val CAMERA_PLANE_SCENARIO = "android.camera-plane"
+        const val CAMERA_PLANE_ENTRY = "scenario/camera-plane.js"
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -63,11 +65,12 @@ class SpikeHostM4 private constructor(
         private const val RESULT_TAG = "dsh.spike.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 
-        /** RuntimeDescriptor pre-eval: all nine available, zero unavailable
-         * — conformance §7 (Android Keystore + SAF make the surface real). */
+        /** RuntimeDescriptor pre-eval: the full table available, the
+         * capability plane's phased rows unavailable — conformance §7
+         * (Android Keystore + SAF + camera2 make the surface real). */
         private val DESCRIPTOR: String = JSONObject()
             .put("available", JSONArray(GatewayCore.PRIMITIVES))
-            .put("unavailable", JSONArray())
+            .put("unavailable", JSONArray(GatewayCore.PHASED_ROWS))
             .toString()
 
         @Volatile private var instance: SpikeHostM4? = null
@@ -120,6 +123,26 @@ class SpikeHostM4 private constructor(
                 scenarioId = DEVICE_PLANE_SCENARIO,
                 entryPath = DEVICE_PLANE_ENTRY,
                 captureLabel = "device-plane",
+            )
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The capability plane's camera drive (scenario
+         * `android.camera-plane`, v1.10.0): the capture burst against the
+         * emulator's virtual camera, the phased rows' honest `unavailable`. */
+        fun startCameraPlane(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = CAMERA_PLANE_SCENARIO,
+                entryPath = CAMERA_PLANE_ENTRY,
+                captureLabel = "camera-plane",
             )
             host.pump.attach(webView)
             instance = host
@@ -223,6 +246,7 @@ class SpikeHostM4 private constructor(
     private val ui = UiPrimitives(activity, fs)
     private val device = DevicePlanePrimitives(activity, fs)
     private val clipboard = ClipboardPrimitives(activity)
+    private val camera = CameraPrimitives(activity, fs)
 
     private var handle: Long = 0
 
@@ -328,6 +352,7 @@ class SpikeHostM4 private constructor(
         ui.register(core)
         device.register(core)
         clipboard.register(core)
+        camera.register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -421,6 +446,16 @@ class SpikeHostM4 private constructor(
         if (requestCode == UiPrimitives.REQUEST_PICKER) ui.onPickerResult(resultCode, data)
         if (requestCode == UiPrimitives.REQUEST_MEDIA) ui.onMediaResult(resultCode, data)
         if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
+    }
+
+    /** The camera runtime-permission resume (MainActivity routes it here):
+     * the burst starts on grant; an OS refusal settles null (a value). */
+    fun onRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
+        if (requestCode == CameraPrimitives.REQUEST_CAMERA) {
+            camera.onPermissionResult(
+                grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,
+            )
+        }
     }
 
     // ---- settling ---------------------------------------------------------------

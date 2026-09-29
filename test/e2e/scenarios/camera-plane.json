@@ -1,0 +1,45 @@
+{
+  "scenario": "camera.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.camera",
+      "match": {
+        "capture": true,
+        "phased": 2
+      }
+    },
+    {
+      "event": "record.unavailable",
+      "match": {
+        "code": "unavailable"
+      }
+    },
+    {
+      "event": "record.stop.unavailable",
+      "match": {
+        "code": "unavailable"
+      }
+    },
+    {
+      "event": "capture.unavailable",
+      "match": {
+        "code": "unavailable"
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

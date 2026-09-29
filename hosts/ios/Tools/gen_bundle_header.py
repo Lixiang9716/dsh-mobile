@@ -157,16 +157,16 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
-    # THIRTEEN scenario files keep NAMED accessors — RESOURCES rows are what
+    # FOURTEEN scenario files keep NAMED accessors — RESOURCES rows are what
     # emit the dsh_spike_res_<suffix> symbols Swift links against (readers:
     # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
     # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
     # the whole-dir scenario tree row already serves the loader's file view.
-    # 926c6a7 dropped this block while every read site stayed, so a clean
-    # checkout could not build; mapping = the pre-refactor rows, restored.
+    # (926c6a7 dropped this block while every read site stayed — restored.)
     ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
     ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
+    ("scenario_camera_plane_js", SPIKE / "scenario" / "camera-plane.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
     ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),

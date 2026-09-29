@@ -1,0 +1,15 @@
+{
+  "host": "android",
+  "udid": "emulator-5554",
+  "runner": "hosts/android/ci/run-camera-plane.sh",
+  "phase": "android.camera-plane",
+  "launch": "emulator, --ez dsh.cameraplane true (Debug, virtual camera burst)",
+  "tree": "origin/main fe6dd066cfac (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true },
+    { "manifest": "camera-plane-capture-audit", "verdict": "verdict-camera-plane-capture-audit.json", "pass": true }
+  ],
+  "screens": [],
+  "producedAt": "2026-09-29T23:39:08Z"
+}

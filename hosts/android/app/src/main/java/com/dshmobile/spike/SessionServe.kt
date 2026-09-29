@@ -249,6 +249,7 @@ class SessionServe private constructor(
         ui.register(core)
         DevicePlanePrimitives(activity, fs).register(core)
         ClipboardPrimitives(activity).register(core)
+        CameraPrimitives(activity, fs).register(core)
         TimerPrimitive().register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
@@ -318,10 +319,11 @@ class SessionServe private constructor(
         .put("customSkillDirs", JSONArray().put("${workspace.absolutePath}/skills"))
 
     /** The full primitive table — the spine and its tools use the real
-     * gateway (fs scopes, httpFetch for the llm transport, timers). */
+     * gateway (fs scopes, httpFetch for the llm transport, timers, the
+     * capability plane's capture burst); the phased rows declare honestly. */
     private val DESCRIPTOR: String = JSONObject()
         .put("available", JSONArray(GatewayCore.PRIMITIVES))
-        .put("unavailable", JSONArray()).toString()
+        .put("unavailable", JSONArray(GatewayCore.PHASED_ROWS)).toString()
 
     /** The M4Bridge the C host calls back (runtime thread): gateway calls
      * dispatch into the core; bus messages fold into the web-boot row

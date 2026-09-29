@@ -58,6 +58,8 @@ const LEG_LLM: string = 'llm.live-stream';
 const LEG_WHALE: string = 'whale.mount';
 const LEG_NEXTWEB: string = 'nextweb.mount';
 const LEG_DEVICE_PLANE: string = 'device.plane';
+/** The capability plane's camera leg (`--ps dsh.e2e.leg camera.plane`). */
+const LEG_CAMERA_PLANE: string = 'camera.plane';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -147,6 +149,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/session-mock-llm.js',
   'scenario/harmony-capability-binding.js',
   'scenario/device-plane.js',
+  'scenario/camera-plane.js',
   'scenario/upstream-parity.js',
   'scenario/parity-projector.js',
   'scenario/upstream-suite-leg.js',
@@ -1398,6 +1401,9 @@ struct Index {
     } else if (leg === LEG_DEVICE_PLANE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runDevicePlaneLeg();
+    } else if (leg === LEG_CAMERA_PLANE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runCameraPlaneLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1755,6 +1761,50 @@ struct Index {
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
         hilog.error(0x0000, TAG, 'device-plane leg failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
+  /** The camera.plane leg (`harmony.camera-plane`, ONE launch): the binding
+   * phase's carrier + HostPhase machinery with the camera-plane scenario as
+   * the entry — the capture burst against a real camera; a camera-less image
+   * answers `unavailable` and the ladder walks the denial legs. The verdict
+   * is the C `dsh.spike.verdict: harmony.camera-plane` line. */
+  private runCameraPlaneLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
+      this.showApproval(title, resolve);
+    });
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.camera-plane (logs are the verdict)';
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        this.verdict = 'camera-plane leg: running...';
+        phase.beginCameraPlane(ctx, root, ctx.cacheDir + '/dsh-camera-plane-capture.log', fsRoot);
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          phase.evalEntryDirect();
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'camera-plane leg: running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'camera-plane leg failed: %{public}s',
           err.message ?? 'unknown');
       });
   }

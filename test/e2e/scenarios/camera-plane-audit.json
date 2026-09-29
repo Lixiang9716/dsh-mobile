@@ -1,0 +1,24 @@
+{
+  "scenario": "camera.plane.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "cameraRecordStart",
+      "verdict": "granted",
+      "outcome": "unavailable"
+    },
+    {
+      "primitive": "cameraRecordStop",
+      "verdict": "granted",
+      "outcome": "unavailable"
+    },
+    {
+      "primitive": "cameraCapture",
+      "verdict": "granted",
+      "outcome": "unavailable"
+    }
+  ]
+}

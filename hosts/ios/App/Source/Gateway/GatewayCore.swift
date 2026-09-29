@@ -78,6 +78,9 @@ struct GatewayManifest {
         "clipboardWrite": "clipboard",
         "presentShare": "share",
         "keepAwake": "screen",
+        "cameraCapture": "camera",
+        "cameraRecordStart": "camera",
+        "cameraRecordStop": "camera",
     ]
 
     func grants(primitive: String) -> Bool {
@@ -94,7 +97,7 @@ struct GatewayManifest {
 /// lines use their own stdout prefix ("dsh.gateway.audit: ") so the
 /// canonical "dsh.spike.log: " E2E stream stays one-to-one.
 final class GatewayCore {
-    /// The full serving table (contract/primitives.md §2 through v1.5.0):
+    /// The full serving table (contract/primitives.md §2 through v1.10.0):
     /// the name list IS the RuntimeDescriptor's available array, so it must
     /// stay identical to what `registerStandardPrimitives` actually wires —
     /// an honestly-declared descriptor (conformance §7).
@@ -105,7 +108,12 @@ final class GatewayCore {
         "keychainGet", "keychainSet",
         "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
         "presentShare", "keepAwake",
+        "cameraCapture",
     ]
+    /// The capability plane's PHASED rows (proposal v1.10.0): shapes on
+    /// record, implementations follow as their own changes — declared
+    /// unavailable, and their handlers answer `unavailable`.
+    static let phasedRows = ["cameraRecordStart", "cameraRecordStop"]
     static let auditPrefix = "dsh.gateway.audit: "
 
     /// Registers the full serving table on this core — the one list every
@@ -120,6 +128,7 @@ final class GatewayCore {
         _ = UIPrimitives(core: self, fs: fs)
         _ = DevicePlanePrimitives(core: self, fs: fs)
         _ = ClipboardPrimitives(core: self)
+        _ = CameraPrimitives(core: self, fs: fs)
         return NotifyPrimitive(core: self)
     }
 

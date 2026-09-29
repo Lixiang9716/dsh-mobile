@@ -21,7 +21,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         const val CALLER = "dsh.spike.scenario"
 
         /** The frozen primitive table (contract v1.4.0: nine + fs additions
-         * + wasmRun + ishRun-unavailable-on-android + the timer seam). */
+         * + wasmRun + ishRun-unavailable-on-android + the timer seam; the
+         * capability plane adds cameraCapture, v1.10.0). */
         val PRIMITIVES = listOf(
             "fsRead", "fsWrite", "fsScope", "httpFetch", "notify",
             "presentApproval", "presentPicker", "keychainGet", "keychainSet",
@@ -29,7 +30,14 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "wasmRun", "timerSchedule", "timerCancel",
             "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
             "presentShare", "keepAwake",
+            "cameraCapture",
         )
+
+        /** The capability plane's PHASED rows (proposal v1.10.0): shapes on
+         * record, implementations follow as their own changes — declared
+         * unavailable in the descriptor, and their handlers answer
+         * `unavailable`. */
+        val PHASED_ROWS = listOf("cameraRecordStart", "cameraRecordStop")
         const val AUDIT_PREFIX = "dsh.gateway.audit: "
         private const val AUDIT_TAG = "dsh.spike.audit"
         private const val UI_TAG = "dsh.spike.ui"
@@ -70,12 +78,16 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
     class GatewayManifest(val id: String, val required: List<String>) {
         /** `<name>` or `<name>@<major>` grammar (contract §6). */
         /** v1.5.0: one flag may gate two primitives — `clipboard` gates both
-         * clipboard rows (contract/primitives.md §2, v1.5.0 additions). */
+         * clipboard rows (contract/primitives.md §2, v1.5.0 additions); the
+         * capability plane adds the `camera` family (v1.10.0). */
         private val familyFlags = mapOf(
             "clipboardRead" to "clipboard",
             "clipboardWrite" to "clipboard",
             "presentShare" to "share",
             "keepAwake" to "screen",
+            "cameraCapture" to "camera",
+            "cameraRecordStart" to "camera",
+            "cameraRecordStop" to "camera",
         )
 
         fun grants(primitive: String): Boolean {

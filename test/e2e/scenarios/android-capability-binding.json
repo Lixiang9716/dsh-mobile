@@ -19,8 +19,8 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 23,
-        "unavailable": 0
+        "available": 24,
+        "unavailable": 2
       }
     },
     {
