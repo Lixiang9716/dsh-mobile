@@ -1,0 +1,23 @@
+{
+  "title": "Simulator test matrix: release-grade evidence net across iOS/Android/Harmony",
+  "created": "2026-09-29T18:43:02+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "Inventory: CI dev-ios/dev-android/harmony + hosts/*/ci runner patterns + existing e2e evidence-dir shapes",
+    "Build tools/test/run-simulator-matrix.sh: per-platform release leg (plain launch, machinery-absence + drive-refusal assertions), harness legs on the existing runners, harmony honest skip receipt; fail-fast, conditional polling only",
+    "iOS leg green on dsh-iphone/iOS 26.5: release proof + harness full-app drive receipts (scenario-id logs 1:1)",
+    "Android leg green on the emulator: release proof + regression + device-plane receipts",
+    "Capability skips auto-declared with traces (no UI driver / no radio on simulators)",
+    "BUILD.md matrix usage added as a bilingual pair, gov verify pairing --write green",
+    "Agent Note (testing) + gov run full DAG green + push + PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0074"
+}

@@ -1,0 +1,12 @@
+{
+  "platform": "harmonyos",
+  "status": "skipped",
+  "leg": "simulator e2e (the harmony ladder)",
+  "reason": "no DevEco toolchain and no hdc simulator target on this machine \u2014 the leg stays script-ready (D-g): hosts/harmony/ci/run-host-e2e.sh runs it when a device exists. Never faked: a skip receipt, not a green one.",
+  "probes": {
+    "DevEco-Studio.app present": false,
+    "hdc list targets": "[Empty];"
+  },
+  "tree": "origin/main 281f63232c86 (dirty working tree at receipt time)",
+  "producedAt": "2026-09-30T02:53:36+08:00"
+}
