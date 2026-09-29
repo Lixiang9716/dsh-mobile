@@ -31,9 +31,18 @@ npm run lynx-mode             # 校验已构建 bundle + 引擎墙
 npm run theme:check           # token 单源同步
 ```
 
-mock 环路(`driver/run-mock.mjs`)是本轮构建的绿灯标准:冷启动外壳 →
-选会话/新建 → 流式回合(工具卡三态全程可见)→ 中途重进的 seed 重建 →
-取消 → fail-loud 腿。
+两条证据通道,双绿(验收轮):
 
-**试点边界:** 像素需要 Lynx 引擎(LynxExplorer / 真机 LynxView)。纯
-Node 下 lynx 皮肤校验产物(sha256)并拒绝挂载、指名这堵墙——不假装渲染。
+- `test/e2e/run-cli-lynx-mount.sh` —— `lynx.mount` CLI 腿:完整 mock-LLM
+  driver 环路在同一流上跑两遍(先 lynx 面、后 stub 面——可替换性证明)。
+  每面 34/34 条结构化日志事件,与 `test/e2e/scenarios/lynx-mount{,-stub}.json`
+  一一对应;verdict + receipt 入库在 `artifacts/cli-lynx-mount-{lynx,stub}/`。
+  `npm run mock-loop` 保留为快速内层断言环路(18/18)。
+- vitest(`npm test`,36 个用例):缝契约、fold、adapter 映射表、wire
+  客户端(本地起真服务器、真 ws-lite 升级)。
+
+**试点边界:** 真机像素需要 Lynx 引擎(LynxExplorer / 真机 LynxView)。CLI
+宿主上 lynx 面驱动的是 bundle 的 seam core(`shared/surface-core.js`——编译
+进产物的那份模块),挂载同时校验产物 sha256。bundle 在 @lynx-js/web-core
+平台的 headless Chrome 上也能真实渲染(人看的截图在 gitignored 的
+`artifacts/screens/`;CI 只认日志,按 E2E 契约)。

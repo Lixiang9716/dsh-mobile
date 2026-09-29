@@ -6,6 +6,7 @@
   "description": "ReactLynx bundle for the dsh-lynx-client render surface — pure presentation: zero network, zero gateway, zero business logic.",
   "scripts": {
     "build": "rspeedy build",
+    "build:web": "rspeedy build --config lynx.web.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

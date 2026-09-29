@@ -201,6 +201,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
+| `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |
+| `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs

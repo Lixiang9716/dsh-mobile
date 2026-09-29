@@ -165,6 +165,8 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
+| `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 面：bundle 的 seam core + 产物 sha256 校验） | ✓ | ✓ | ✓ | 0 |
+| `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34（stub 面：同一条流——可替换性证明） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，

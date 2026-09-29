@@ -1,5 +1,6 @@
-/* Keyframes only — every color, radius and gradient value comes from
- * theme.generated.ts (the token single source's Lynx face). */
+/* The two animated faces of the surface. Every color/radius value comes
+ * from theme.generated.ts (the token single source's Lynx face); the
+ * keyframes live here because Lynx CSS animation is stylesheet-scoped. */
 
 @keyframes dsh-pulse {
   0%, 100% { opacity: 1; }
@@ -11,7 +12,6 @@
   50% { opacity: 0.1; }
 }
 
-/* the two animated faces (theme values stay in theme.generated.ts) */
 .dot-pulse {
   animation: dsh-pulse 1.6s ease-in-out infinite;
 }

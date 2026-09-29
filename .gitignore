@@ -253,3 +253,5 @@ tmp/
 test/upstream-suite/.runtime-modules/
 runtime/spike/assets/
 runtime/spike/subprocess/
+# the human-facing render evidence (screenshots are debugging artifacts, never CI inputs)
+presentation/lynx-client/artifacts/screens/

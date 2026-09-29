@@ -34,10 +34,22 @@ npm run lynx-mode             # verify the built bundle + the engine wall
 npm run theme:check           # token single source in sync
 ```
 
-The mock loop (`driver/run-mock.mjs`) is the build round's green criterion:
-cold-start shell → select/new-session → streaming turn (all three tool-card
-states live) → mid-history seed rebuild → cancel → fail-loud legs.
+Two evidence channels, both green (acceptance round):
 
-**Pilot boundary:** pixels need a Lynx engine (LynxExplorer / on-device
-LynxView). On plain Node the lynx skin verifies the artifact (sha256) and
-refuses mount, naming the wall — nothing pretends to render.
+- `test/e2e/run-cli-lynx-mount.sh` — the `lynx.mount` CLI leg: the full
+  mock-LLM driver loop run TWICE over one flow (lynx face, then the stub
+  face — the replaceability proof). 34/34 structured-log events per face,
+  one-to-one against `test/e2e/scenarios/lynx-mount{,-stub}.json`; verdicts
+  + receipts committed under `artifacts/cli-lynx-mount-{lynx,stub}/`.
+  `npm run mock-loop` stays as the fast inner assert loop (18/18).
+- vitest (`npm test`, 36 tests): the seam contract, the fold, the adapter
+  mapping table, and the wire client (live local server, real ws-lite
+  upgrade).
+
+**Pilot boundary:** device pixels need a Lynx engine (LynxExplorer /
+on-device LynxView). On the CLI host the lynx face drives the bundle's seam
+core (`shared/surface-core.js` — the module compiled into the artifact) with
+the artifact verified by sha256 in the same mount. The bundle ALSO renders
+for real on the @lynx-js/web-core platform in headless Chrome (a
+human-facing screenshot lives under the gitignored `artifacts/screens/`;
+CI asserts on logs only, per the E2E contract).
