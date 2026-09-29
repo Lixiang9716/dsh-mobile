@@ -59,6 +59,7 @@ import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
 import { CameraPrimitives } from './CameraPrimitives';
+import { BlePrimitives } from './BlePrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
@@ -91,6 +92,8 @@ const ENTRY_DEVICE_PLANE: string = 'scenario/device-plane.js';
  * honest `unavailable`, over the same HostPhase machinery. */
 const SCENARIO_CAMERA_PLANE: string = 'harmony.camera-plane';
 const ENTRY_CAMERA_PLANE: string = 'scenario/camera-plane.js';
+const SCENARIO_BLE: string = 'harmony.ble.plane';
+const ENTRY_BLE: string = 'scenario/ble-plane.js';
 /** The whale creation-client mount (the iOS session-mock-llm drive's
  * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
  * web-client-whale page — the session-mock scenario (notes slot, two
@@ -112,8 +115,12 @@ export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
-  '"keepAwake","cameraCapture"],' +
+  '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
+  '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
   '"unavailable":["cameraRecordStart","cameraRecordStop"]}';
+  '"keepAwake","bleScanStart","bleScanStop","bleConnect","bleDisconnect",' +
+  '"bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
+  '"unavailable":[]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
 export type ApprovalPresenter = (title: string,
@@ -169,6 +176,8 @@ export class HostPhase {
   private devicePlaneLeg: boolean = false;
   private cameraPlaneLeg: boolean = false;
   private parityLeg: boolean = false;
+  private bleLeg: boolean = false;
+  private bleMock: boolean = false;
   /** The whale creation-client leg: session-mock-llm over the whale page —
    * the client id in the mount records, host.info on page connect (the
    * scenario never reads host.seed), and the slot.ack record this leg
@@ -184,6 +193,7 @@ export class HostPhase {
   private picker: PickerPrimitives | null = null;
   private device: DevicePlanePrimitives | null = null;
   private cameraKit: CameraPrimitives | null = null;
+  private ble: BlePrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -293,6 +303,27 @@ export class HostPhase {
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
+  /** The BLE face's leg (ONE launch, its own scenario id): the binding
+   * machinery with the ble.plane scenario as the entry — no web client
+   * mounts (the drive uses no page). The radio rides the launch parameter
+   * (`--ps dsh.e2e.ble.mock true`): the deterministic mock for the CI leg,
+   * the real radio otherwise (the emulator answers unavailable honestly). */
+  beginBle(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string, mockRadio: boolean): void {
+    this.scenario = SCENARIO_BLE;
+    this.carrierScenario = SCENARIO_BLE;
+    this.entry = ENTRY_BLE;
+    this.llmLeg = false;
+    this.whaleLeg = false;
+    this.devicePlaneLeg = false;
+    this.bleLeg = true;
+    this.bleMock = mockRadio;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   /** The upstream-suite leg: the driver scenario plus the runtime.config
    * bus delivery carrying the spec selection (bundle-root-relative) and the
    * container root. The delivery lands after hostEval returns — the driver
@@ -374,6 +405,13 @@ export class HostPhase {
     }
     if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
+    }
+    this.ble = new BlePrimitives(ctx, this.bleMock);
+    this.ble.emitFn = (eventJson: string): void => {
+      this.deliverEvent(eventJson);
+    };
+    if (this.approvalPresenter !== null) {
+      this.ble.setPresenter(this.approvalPresenter);
     }
     hostStart(bundleRoot, capturePath, fsRoot, BINDING_DESCRIPTOR,
       (line: string): void => {
@@ -700,6 +738,22 @@ export class HostPhase {
       this.cameraKit?.capture(callId, args, this.settleFn());
     } else if (name === 'cameraRecordStart' || name === 'cameraRecordStop') {
       this.cameraKit?.recordPhased(name, callId, this.settleFn());
+    } else if (name === 'bleScanStart') {
+      this.ble?.scanStart(callId, args, this.settleFn());
+    } else if (name === 'bleScanStop') {
+      this.ble?.scanStop(callId, args, this.settleFn());
+    } else if (name === 'bleConnect') {
+      this.ble?.connect(callId, args, this.settleFn());
+    } else if (name === 'bleDisconnect') {
+      this.ble?.disconnect(callId, args, this.settleFn());
+    } else if (name === 'bleRead') {
+      this.ble?.read(callId, args, this.settleFn());
+    } else if (name === 'bleWrite') {
+      this.ble?.write(callId, args, this.settleFn());
+    } else if (name === 'bleSubscribe') {
+      this.ble?.subscribe(callId, args, this.settleFn());
+    } else if (name === 'bleUnsubscribe') {
+      this.ble?.unsubscribe(callId, args, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);

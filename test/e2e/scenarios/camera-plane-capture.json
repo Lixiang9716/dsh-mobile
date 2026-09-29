@@ -1,5 +1,5 @@
 {
-  "scenario": "camera.plane",
+  "scenario": "ble.plane",
   "extract": {
     "prefix": "dsh.spike.log:"
   },
@@ -11,45 +11,42 @@
       }
     },
     {
-      "event": "descriptor.camera",
+      "event": "descriptor.declared",
       "match": {
-        "capture": true,
-        "phased": 2
+        "available": 31,
+        "unavailable": 0,
+        "blePlane": 8
       }
     },
     {
-      "event": "record.unavailable",
+      "event": "ble.radio",
       "match": {
-        "code": "unavailable"
+        "mode": "denied",
+        "layer": "os"
       }
     },
     {
-      "event": "record.stop.unavailable",
+      "event": "ble.scan.denied",
       "match": {
-        "code": "unavailable"
+        "code": "denied"
       }
     },
     {
-      "event": "capture.burst",
+      "event": "ble.stop.idempotent",
       "match": {
-        "count": 2,
-        "formatOk": true,
-        "sizedOk": true,
-        "stampedOk": true
+        "stopped": false
       }
     },
     {
-      "event": "capture.readback",
+      "event": "ble.connect.denied",
       "match": {
-        "frames": 2,
-        "matched": true
+        "code": "denied"
       }
     },
     {
-      "event": "capture.maxbytes",
+      "event": "ble.disconnect.idempotent",
       "match": {
-        "photos": 0,
-        "dropped": true
+        "closed": false
       }
     },
     {

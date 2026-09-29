@@ -1,33 +1,27 @@
 {
-  "scenario": "camera.plane.audit",
+  "scenario": "ble.plane.audit",
   "extract": {
     "prefix": "dsh.gateway.audit:",
     "envelope": "flat"
   },
   "expect": [
     {
-      "primitive": "cameraRecordStart",
+      "primitive": "bleScanStart",
       "verdict": "granted",
-      "outcome": "unavailable"
+      "outcome": "denied"
     },
     {
-      "primitive": "cameraRecordStop",
-      "verdict": "granted",
-      "outcome": "unavailable"
-    },
-    {
-      "primitive": "cameraCapture",
+      "primitive": "bleScanStop",
       "verdict": "granted",
       "outcome": "ok"
     },
     {
-      "primitive": "fsRead",
+      "primitive": "bleConnect",
       "verdict": "granted",
-      "outcome": "ok",
-      "repeat": true
+      "outcome": "denied"
     },
     {
-      "primitive": "cameraCapture",
+      "primitive": "bleDisconnect",
       "verdict": "granted",
       "outcome": "ok"
     }

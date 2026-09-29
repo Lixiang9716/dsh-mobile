@@ -208,6 +208,14 @@ jobs:
       - name: Run the upstream parity differential on the emulator (vendored spine vs the committed Node golden)
         run: sh hosts/android/ci/run-upstream-parity.sh
 
+      # The capability plane's BLE face: the mock-radio leg verifies the
+      # envelope + audit through the REAL gateway enforcement (no radio
+      # needed); the skip posture of the same scenario runs locally
+      # (run-ble.sh skip — the emulator's virtual radio answers the OS
+      # layer's `denied` honestly).
+      - name: Run the BLE mock-radio leg on the emulator and verify (logs only)
+        run: sh hosts/android/ci/run-ble.sh mock
+
       - name: Upload E2E evidence
         if: always()
         uses: actions/upload-artifact@v6

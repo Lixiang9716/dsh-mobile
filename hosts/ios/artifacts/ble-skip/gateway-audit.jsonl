@@ -1,0 +1,4 @@
+dsh.gateway.audit: {"primitive":"bleScanStart","caller":"dsh.spike.scenario","ts":"2026-09-29T23:09:02Z","verdict":"granted","outcome":"unavailable"}
+dsh.gateway.audit: {"detail":{"scanId":"scan:none","stopped":false},"primitive":"bleScanStop","caller":"dsh.spike.scenario","ts":"2026-09-29T23:09:02Z","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"primitive":"bleConnect","caller":"dsh.spike.scenario","ts":"2026-09-29T23:09:02Z","verdict":"granted","outcome":"unavailable"}
+dsh.gateway.audit: {"detail":{"connectionId":"conn:none","closed":false},"primitive":"bleDisconnect","caller":"dsh.spike.scenario","ts":"2026-09-29T23:09:02Z","verdict":"granted","outcome":"ok"}

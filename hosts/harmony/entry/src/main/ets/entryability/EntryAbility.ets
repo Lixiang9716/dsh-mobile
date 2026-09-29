@@ -27,6 +27,11 @@ export default class EntryAbility extends UIAbility {
     const leg = want.parameters?.['dsh.e2e.leg'];
     const spec = want.parameters?.['dsh.e2e.spec'];
     const webClient = want.parameters?.['dsh.web.client'];
+    const bleMock = want.parameters?.['dsh.e2e.ble.mock'];
+    if (bleMock === 'true' || bleMock === true) {
+      E2eLeg.setBleMock(true);
+      hilog.info(DOMAIN, TAG, 'ble mock radio selected at launch');
+    }
     if (typeof spec === 'string' && spec !== '') {
       E2eLeg.setSpec(spec);
     }

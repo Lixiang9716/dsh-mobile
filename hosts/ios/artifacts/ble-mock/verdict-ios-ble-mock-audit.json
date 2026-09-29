@@ -1,5 +1,5 @@
 {
-  "scenario": "camera.plane",
+  "scenario": "boot.verification",
   "pass": true,
   "expected": 8,
   "logged": 8,
