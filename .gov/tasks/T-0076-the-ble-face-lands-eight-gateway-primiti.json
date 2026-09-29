@@ -16,7 +16,7 @@
     "[x] three honest skip legs on simulators + D-g one-click real-device scripts; mock-radio leg passes gateway audit and runs in CI",
     "[x] embed lists updated (ios RESOURCES, android stage copy, harmony BUNDLE_FILES/CLOSURE) + check-staging green",
     "[x] descriptor count pins bumped (+8) in every manifest that pins them",
-    "gov run full DAG green with receipt, then push + gh pr create stacked on the contract PR"
+    "[x] gov run full DAG green with receipt, then push + gh pr create stacked on the contract PR"
   ],
   "status": "open",
   "receipt": null,
