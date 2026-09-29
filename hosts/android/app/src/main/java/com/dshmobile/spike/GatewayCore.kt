@@ -31,6 +31,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
             "presentShare", "keepAwake",
             "cameraCapture",
+            "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
+            "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
         )
 
         /** The capability plane's PHASED rows (proposal v1.10.0): shapes on
@@ -88,6 +90,15 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "cameraCapture" to "camera",
             "cameraRecordStart" to "camera",
             "cameraRecordStop" to "camera",
+=======
+            "bleScanStart" to "ble",
+            "bleScanStop" to "ble",
+            "bleConnect" to "ble",
+            "bleDisconnect" to "ble",
+            "bleRead" to "ble",
+            "bleWrite" to "ble",
+            "bleSubscribe" to "ble",
+            "bleUnsubscribe" to "ble",
         )
 
         fun grants(primitive: String): Boolean {

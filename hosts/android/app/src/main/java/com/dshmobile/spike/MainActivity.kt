@@ -59,6 +59,10 @@ class MainActivity : Activity() {
             startM4(savedInstanceState, devicePlane = true)
         } else if (intent.getBooleanExtra(EXTRA_CAMERA_PLANE, false)) {
             startM4(savedInstanceState, cameraPlane = true)
+        } else if (intent.getBooleanExtra(EXTRA_BLE, false)) {
+            startM4(
+                savedInstanceState, ble = true,
+                bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
             startNextWeb()
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
@@ -139,7 +143,7 @@ class MainActivity : Activity() {
         spikeHost?.onRequestPermissionsResult(requestCode, grantResults)
     }
 
-    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false) {
+    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -166,11 +170,9 @@ class MainActivity : Activity() {
         webView = view
         // The gateway core reads filesDir/spike at construction: materialize
         // the bundle FIRST (runtime thread), then construct the host.
-            SpikeRuntime.post {
-                materializeBundle()
-                runOnUiThread {
-                    spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane)
-                }
+                spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane, ble, bleMock)
+
+
             }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
     }
@@ -178,7 +180,9 @@ class MainActivity : Activity() {
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
      * the whale creation-client mount, or the M4 binding — with the same
      * carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false): SpikeHostM4 {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false): SpikeHostM4 {
+
+
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
             suite != null -> SpikeHostM4.startSuite(this, view, onVerdict, suite)
@@ -186,6 +190,8 @@ class MainActivity : Activity() {
             whale -> SpikeHostM4.startWhale(this, view, onVerdict)
             devicePlane -> SpikeHostM4.startDevicePlane(this, view, onVerdict)
             cameraPlane -> SpikeHostM4.startCameraPlane(this, view, onVerdict)
+            ble -> SpikeHostM4.startBle(this, view, onVerdict, bleMock)
+
             llm -> SpikeHostM4.startLlm(this, view, onVerdict)
             else -> SpikeHostM4.start(this, view, onVerdict)
         }
@@ -203,6 +209,9 @@ class MainActivity : Activity() {
         const val EXTRA_WHALE = "dsh.whale"
         const val EXTRA_DEVICE_PLANE = "dsh.deviceplane"
         const val EXTRA_CAMERA_PLANE = "dsh.cameraplane"
+        const val EXTRA_BLE = "dsh.ble"
+        const val EXTRA_BLE_MOCK = "dsh.blemock"
+
         const val EXTRA_NEXT = "dsh.next"
         /** The Web Client the release boot serves (string extra; the iOS
          * launch arg -dsh-web-client's sibling — a client selection, not a

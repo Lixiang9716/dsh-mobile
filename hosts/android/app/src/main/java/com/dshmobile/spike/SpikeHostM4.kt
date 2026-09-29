@@ -40,6 +40,8 @@ class SpikeHostM4 private constructor(
     private val clientId: String = "dsh-web-client",
     private val webRootDir: String = "webclient/web",
     private val whaleLeg: Boolean = false,
+    /** The BLE face's radio choice (the launch extras decide). */
+    private val mockRadio: Boolean = false,
 ) {
 
     companion object {
@@ -57,6 +59,9 @@ class SpikeHostM4 private constructor(
         const val DEVICE_PLANE_ENTRY = "scenario/device-plane.js"
         const val CAMERA_PLANE_SCENARIO = "android.camera-plane"
         const val CAMERA_PLANE_ENTRY = "scenario/camera-plane.js"
+        const val BLE_SCENARIO = "android.ble-plane"
+        const val BLE_ENTRY = "scenario/ble-plane.js"
+
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -143,6 +148,29 @@ class SpikeHostM4 private constructor(
                 scenarioId = CAMERA_PLANE_SCENARIO,
                 entryPath = CAMERA_PLANE_ENTRY,
                 captureLabel = "camera-plane",
+            )
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+
+        /** The capability plane's BLE drive (scenario `android.ble-plane`):
+         * the real radio by default (an emulator answers `unavailable`
+         * honestly — the CI skip leg), the deterministic mock on the mock
+         * extra (the envelope + audit CI leg). */
+        fun startBle(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+            mockRadio: Boolean,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = BLE_SCENARIO,
+                entryPath = BLE_ENTRY,
+                captureLabel = "ble-plane",
+                mockRadio = mockRadio,
             )
             host.pump.attach(webView)
             instance = host
@@ -247,6 +275,8 @@ class SpikeHostM4 private constructor(
     private val device = DevicePlanePrimitives(activity, fs)
     private val clipboard = ClipboardPrimitives(activity)
     private val camera = CameraPrimitives(activity, fs)
+    private val ble = BlePrimitives(activity, core, if (mockRadio) MockBleRadio() else SystemBleRadio(activity))
+
 
     private var handle: Long = 0
 
@@ -353,6 +383,8 @@ class SpikeHostM4 private constructor(
         device.register(core)
         clipboard.register(core)
         camera.register(core)
+        ble.register(core)
+
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -362,6 +394,7 @@ class SpikeHostM4 private constructor(
         http.eventFn = { json -> event(json) }
         notify.emitFn = { json -> event(json) }
         timer.emitFn = { json -> event(json) }
+        ble.emitFn = { json -> event(json) }
         timer.register(core)
     }
 
