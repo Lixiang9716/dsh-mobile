@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "dsh-lynx-client",
+  "name": "DSH Lynx render surface",
+  "version": "0.1.0",
+  "type": "render-surface-client",
+  "surface": "lynx",
+  "entry": "driver/driver.js",
+  "bundle": "bundle/dist/main.lynx.bundle",
+  "skins": {
+    "lynx": "driver/skin-lynx.js",
+    "stub": "driver/skin-stub.js"
+  },
+  "capabilities": { "required": [], "optional": [] },
+  "notes": "Render-surface client plugin, NOT a system-plugin: zero gateway calls, zero contract changes. The wire client (SessionServe three-layer envelope) lives in driver/wire; the bundle is pure presentation."
+}

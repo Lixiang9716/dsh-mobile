@@ -1,0 +1,16 @@
+{
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
+  "engine": "node v24.14.0",
+  "scenario": "lynx.mount",
+  "face": "lynx",
+  "proves": [
+    "the RenderSurfaceClient seam is genuinely replaceable: the SAME driver loop — mock SessionServe over real loopback HTTP+WS, the {args:{request}} envelope, the one subscription point, the domain→view adapter, the seed protocol — drives two different skins to the identical 34-record structured-log contract",
+  "the full mock LLM arc holds end to end: session select + create → submit → the streamed turn (message deltas: start/reasoning/text/end) with the tool card through all three phases (streaming → waiting → ok) → the collapsed result with output → the creation card → the settled title",
+  "a mid-history re-open replays the seed burst and rebuilds the thread (the seed.replayed record fires exactly when the seed-end view event crosses the seam)",
+  "an optimistic cancel settles as 已停止 with the streaming tail dropped, and the cancelled reply never settles as text",
+  "unknown intents and unknown view events fail loud — same-package-same-version, no forward tolerance"
+  ],
+  "checker": "test/e2e/scenarios/lynx-mount.json",
+  "events": 21,
+  "exitCode": 0
+}

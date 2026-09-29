@@ -1,0 +1,19 @@
+{
+  "name": "dsh-lynx-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Lynx render-surface client pilot \u2014 a self-contained, wholly replaceable render surface: ReactLynx bundle (pure presentation) + host-side driver (wire + state), joined by the RenderSurfaceClient seam.",
+  "scripts": {
+    "build": "npm --prefix bundle run build",
+    "typecheck": "npm --prefix bundle run typecheck",
+    "theme:gen": "node theme/gen.mjs",
+    "theme:check": "node theme/gen.mjs --check",
+    "mock-loop": "node driver/run-mock.mjs",
+    "lynx-mode": "node driver/run-lynx.mjs",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.8"
+  }
+}
