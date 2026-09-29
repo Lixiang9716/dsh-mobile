@@ -9,13 +9,13 @@
     }
   },
   "checklist": [
-    "worktree rebased onto origin/main (ceb43826)",
-    "manifest.json + RenderSurfaceClient seam (mount/pushViewEvent/onIntent/teardown) documented",
-    "theme token single source generates web CSS vars + Lynx style constants (gen.mjs --check green)",
-    "SessionServe wire client ported into driver (api/mux/session-serve, {args:{request}} envelope)",
-    "event model: adapter -> view events {message-delta,tool-card-phase,session-settled} -> pure fold; unknown intent/view event fail loud",
-    "stub skin (plain-text transcription) + lynx skin module over the same interface",
-    "rspeedy build produces real ReactLynx bundle (drawer + streaming thread + tool cards 3-state + composer)",
+    "[x] worktree rebased onto origin/main (ceb43826)",
+    "[x] manifest.json + RenderSurfaceClient seam (mount/pushViewEvent/onIntent/teardown) documented",
+    "[x] theme token single source generates web CSS vars + Lynx style constants (gen.mjs --check green)",
+    "[x] SessionServe wire client ported into driver (api/mux/session-serve, {args:{request}} envelope)",
+    "[x] event model: adapter -> view events {message-delta,tool-card-phase,session-settled} -> pure fold; unknown intent/view event fail loud",
+    "[x] stub skin (plain-text transcription) + lynx skin module over the same interface",
+    "[x] rspeedy build produces real ReactLynx bundle (drawer + streaming thread + tool cards 3-state + composer)",
     "driver mock full loop green (run-mock.mjs: create/prompt/stream/tool/cancel/seed-replay/intents round-trip)",
     "agent note + incremental conventional commits + gov run --receipt green"
   ],
