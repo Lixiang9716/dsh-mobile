@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "Baseline: transpile + per-spec CLI runs of shell__tool-pwsh-persistent__tests__loader-composition and terminal__terminal-bash__tests__local on the pre-change tree, recorded",
-    "The missing SUBMODULE_SRC_HOISTS row(s) located against the specs' real imports and landed",
-    "Both per-spec commands report failed:0 after the change",
-    "node tools/check-staging.mjs --host ios|android|harmony each zero gaps",
-    "Full sweep (runtime/spike/ci/run-upstream-suite-sweep.sh) shows no regression vs main",
-    "gov run full DAG green + receipt; PR opened"
+    "[x] Baseline: transpile + per-spec CLI runs of shell__tool-pwsh-persistent__tests__loader-composition and terminal__terminal-bash__tests__local on the pre-change tree, recorded",
+    "[x] The missing SUBMODULE_SRC_HOISTS row(s) located against the specs' real imports and landed",
+    "[x] Both per-spec commands report failed:0 after the change",
+    "[x] node tools/check-staging.mjs --host ios|android|harmony each zero gaps",
+    "[x] Full sweep (runtime/spike/ci/run-upstream-suite-sweep.sh) shows no regression vs main",
+    "[x] gov run full DAG green + receipt; PR opened"
   ],
   "status": "open",
   "receipt": null,
