@@ -1,0 +1,21 @@
+{
+  "title": "PR #249 review fix: bring contract/ bilingual pairs under the pairing gate",
+  "created": "2026-09-29T19:18:52+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] Extend .gov/pairing.json include with contract/**/*.md (the medium finding: the gate was blind to contract pairs)",
+    "[x] Backfill the missing socket-seam pairing record (gov verify pairing --write contract/proposals/2026-09-28-socket-seam.md)",
+    "[x] Re-baseline the plane seal over the changed pairing.json (verify-plane --write --confirm-unattended with the review as reason)",
+    "[x] Process Agent Note for the gate-jurisdiction change",
+    "gov verify pairing all-ok + full gov run green with receipt, push to PR #249"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0075"
+}
