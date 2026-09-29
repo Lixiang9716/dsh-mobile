@@ -3,20 +3,63 @@
  * shims/node-http-loopback-dispatch.js — the fetch-side dispatch of the
  * loopback shim (dispatchLoopback + the request/response exchange), split
  * out of node-http-loopback.js when that file crossed the code-size budget.
- * The server registry and the Incoming/Response classes stay the single
- * source of truth in node-http-loopback.js (imported here; the cycle is
- * call-time-only).
+ * The upgrade ingress/await helpers and the raw net.connect face moved one
+ * split further, to node-http-loopback-net.js (re-exported below — the
+ * boot-tail globalThis wiring imports them from HERE). The server registry
+ * and the Incoming/Response classes stay the single source of truth in
+ * node-http-loopback.js (imported here; the cycle is call-time-only).
  */
 import {
   registry,
   keyFor,
   toBytes,
   hostFor,
-  nextTick,
   LoopbackIncoming,
   LoopbackServerResponse,
+  pinnedHttpLookups,
 } from 'upstream/shims/node-http-loopback.js';
 import { encodeFormData } from 'upstream/shims/web-multipart.js';
+import { gunzipSync } from 'upstream/shims/node-zlib.js';
+
+/** Assemble the buffered chunks and serve the whole gunzipped payload on
+ * close (module level for size — keeps the pump one block shallower). */
+const enqueueGunzipped = (controller, chunks, total) => {
+  if (total > 0) {
+    const whole = new Uint8Array(total);
+    let at = 0;
+    for (const chunk of chunks) { whole.set(chunk, at); at += chunk.byteLength; }
+    const out = gunzipSync(whole);
+    const bytes = out instanceof Uint8Array ? out : new Uint8Array(out.buffer, out.byteOffset, out.byteLength);
+    controller.enqueue(globalThis.Buffer ? globalThis.Buffer.from(bytes) : bytes);
+  }
+  controller.close();
+};
+
+/** The transparent content-decoding face (W8): real fetch decodes the
+ * `content-encoding` the server applied (the webserver gzip arm asserts the
+ * PLAINTEXT body after requesting compression). gzip rides the one-shot
+ * fflate face — the corpus's compressed bodies are complete-at-end plain
+ * payloads (SSE is excluded from compression by the webserver's own
+ * filter), so the decoded stream serves the whole payload on close. */
+const decodeContentEncoding = (body, encoding) => {
+  if (encoding !== 'gzip') return body; // deflate/br never negotiated in the corpus
+  return new ReadableStream({
+    start(controller) {
+      const reader = body.getReader();
+      const chunks = [];
+      let total = 0;
+      const pump = () => reader.read().then(({ done, value }) => {
+        if (done) return enqueueGunzipped(controller, chunks, total);
+        chunks.push(value instanceof Uint8Array ? value : new Uint8Array(value));
+        total += chunks[chunks.length - 1].byteLength;
+        return pump();
+      });
+      pump().catch((error) => {
+        try { controller.error(error); } catch { /* already closed */ }
+      });
+    },
+  });
+};
 
 /** The fetch-side entry: dispatch `url` through a registered loopback server
  * when one matches; returns undefined so the caller keeps its own behavior
@@ -24,6 +67,53 @@ import { encodeFormData } from 'upstream/shims/web-multipart.js';
  * serves the PROXY shape (undici shim): the dial goes to the proxy server's
  * host:port while the request line carries the ABSOLUTE target URL — what a
  * real HTTP proxy receives, and what the egress specs' in-test proxy records. */
+/** The pinned-lookup consult (W8): resolve the hostname through each
+ * registered node:http Agent resolver; a loopback answer with a live
+ * in-process server on the port re-dials that address (the real connect
+ * target). Async — the resolvers are callback-style — so this returns a
+ * promise, or undefined when no resolver is registered at all. */
+const isLoopbackAddress = (address) => address === '::1' || address === '127.0.0.1' || address.startsWith('127.');
+
+const dispatchPinnedHttp = (parsed, init, options) => {
+  if (pinnedHttpLookups.size === 0) return undefined;
+  const port = parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port);
+  const hostname = hostFor(parsed);
+  const resolveOne = (lookup) => new Promise((resolve) => {
+    let done = false;
+    const finish = (value) => { if (!done) { done = true; resolve(value); } };
+    try {
+      lookup(hostname, { all: false }, (error, address) => {
+        if (error !== undefined && error !== null) return finish(undefined);
+        if (typeof address === 'string') return finish(address);
+        if (Array.isArray(address) && typeof address[0]?.address === 'string') return finish(address[0].address);
+        finish(undefined);
+      });
+      // A resolver that never calls back must not wedge the dispatch — real
+      // DNS resolves or errors; this face budgets one macrotask second.
+      setTimeout(() => finish(undefined), 1000);
+    } catch {
+      finish(undefined);
+    }
+  });
+  return (async () => {
+    for (const lookup of pinnedHttpLookups) {
+      const address = await resolveOne(lookup);
+      if (address === undefined || !isLoopbackAddress(address)) continue;
+      const pinnedHost = address === '::1' ? '[::1]' : '127.0.0.1';
+      const pinnedHref = `http://${pinnedHost}${parsed.port === '' ? '' : `:${parsed.port}`}${parsed.pathname}${parsed.search}`;
+      let pinnedParsed;
+      try {
+        pinnedParsed = new globalThis.URL(pinnedHref);
+      } catch {
+        continue;
+      }
+      const pinnedRecord = registry.get(keyFor(hostFor(pinnedParsed), port));
+      if (!pinnedRecord || !pinnedRecord.server.listening) continue;
+      return dispatchLoopback(pinnedHref, init, { ...options, __dshPinnedHop: true });
+    }
+    return undefined;
+  })();
+};
 export const dispatchLoopback = (input, init = {}, options = {}) => {
   let urlString;
   try {
@@ -40,6 +130,17 @@ export const dispatchLoopback = (input, init = {}, options = {}) => {
   if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return undefined;
   const port = parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port);
   const record = registry.get(keyFor(hostFor(parsed), port));
+  if ((!record || !record.server.listening) && options.__dshPinnedHop !== true) {
+    // Registry miss under a PINNING AGENT (W8): a node:http request whose
+    // agent carries a DNS lookup dials the RESOLVED address, not the URL
+    // host — the session-telemetry egress suite pins its collector hostname
+    // to 127.0.0.1 exactly that way. Consult the registered resolvers; a
+    // loopback answer with a live in-process server on the port is the
+    // address a real connect would have dialed. The hop flag keeps the
+    // rewritten dial from re-entering this branch.
+    const pinned = dispatchPinnedHttp(parsed, init, options);
+    if (pinned !== undefined) return pinned;
+  }
   if (!record || !record.server.listening) return undefined;
 
   // A FormData body serializes to its multipart byte stream first (real
@@ -100,7 +201,8 @@ const onLoopbackHeaders = (ctx) => (status, headerObject) => {
     return;
   }
   settled.set();
-  resolve(new globalThis.Response(body, {
+  const contentEncoding = String(headerObject?.['content-encoding'] ?? headerObject?.['Content-Encoding'] ?? '').trim().toLowerCase();
+  resolve(new globalThis.Response(decodeContentEncoding(body, contentEncoding), {
     status,
     statusText: ctx.response.statusMessage ?? '',
     headers: headerObject,
@@ -184,20 +286,13 @@ const runLoopbackHandler = (record, request, response, settled, reject) => {
   }
 };
 
-const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
-  const record = registry.get(keyFor(hostFor(parsed), parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port)));
-  const method = String(init?.method ?? 'GET').toUpperCase();
-  const headerBag = new Map();
-  collectRequestHeaders(init?.headers, headerBag);
-  if (formDataType !== undefined && !headerBag.has('content-type')) headerBag.set('content-type', formDataType);
-
-  const requestUrl = options.requestUrlOverride ?? `${parsed.pathname}${parsed.search}`;
-  if (init?.body !== undefined && init.body !== null && !headerBag.has('content-length')) {
-    headerBag.set('content-length', String(bodyBytes.byteLength));
-  }
-  const headers = Object.fromEntries(headerBag);
-  const signal = init?.signal;
-
+/** The exchange half of the dispatch (module level for size): builds the
+ * request/response pair over one registry record and runs the handler inside
+ * a promise the headers/destroy/abort outcomes settle. `settled` is a tiny
+ * gate object — the header callback and the abort listener both own the
+ * outcome. */
+const runLoopbackExchange = (record, ctx) => {
+  const { parsed, init, options, method, headers, requestUrl, bodyBytes, formDataType } = ctx;
   return new Promise((resolve, reject) => {
     let captured = null;
     const body = new ReadableStream({
@@ -213,7 +308,7 @@ const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
     // Headers resolve the fetch (real HTTP timing); the body stream keeps
     // living until end/destroy. See LoopbackServerResponse.#maybeHeaders.
     const response = new LoopbackServerResponse(captured, (status, headerObject) => {
-      onLoopbackHeaders({ parsed, init, options, requestUrl, method, headers, bodyBytes, formDataType, body, settled, resolve, reject, response })(status, headerObject);
+      onLoopbackHeaders({ ...ctx, body, settled, resolve, reject, response })(status, headerObject);
     }, (error) => {
       // Destroyed before headers: real fetch rejects (the socket died).
       if (settled.get()) return;
@@ -227,92 +322,43 @@ const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
     request.socket = {
       destroy: (error) => response.destroy(error ?? new Error('socket hang up')),
     };
-    if (signal) wireLoopbackAbort(signal, captured, response, settled, reject, abortError);
+    // node's res.socket points at the connection — the vendored webserver's
+    // gzip middleware gates on `res.socket === void 0` ("socket-backed"
+    // responses only; W8). A socket-level destroy tears the exchange down.
+    response.socket = request.socket;
+    if (init?.signal) wireLoopbackAbort(init.signal, captured, response, settled, reject, abortError);
     runLoopbackHandler(record, request, response, settled, reject);
   });
 };
 
+const dispatchParsed = (parsed, init, options, bodyBytes, formDataType) => {
+  const record = registry.get(keyFor(hostFor(parsed), parsed.port === '' ? (parsed.protocol === 'https:' ? 443 : 80) : Number(parsed.port)));
+  const method = String(init?.method ?? 'GET').toUpperCase();
+  const headerBag = new Map();
+  collectRequestHeaders(init?.headers, headerBag);
+  // W8: a real HTTP client always sends the Host header (HTTP/1.1 requires
+  // it). The vendored gateway's Host/Origin fence reads request.headers.host
+  // and 403'd every /api request without it. WHATWG spelling: no default
+  // port on the value.
+  if (!headerBag.has('host')) headerBag.set('host', parsed.host);
+  if (formDataType !== undefined && !headerBag.has('content-type')) headerBag.set('content-type', formDataType);
+
+  const requestUrl = options.requestUrlOverride ?? `${parsed.pathname}${parsed.search}`;
+  if (init?.body !== undefined && init.body !== null && !headerBag.has('content-length')) {
+    headerBag.set('content-length', String(bodyBytes.byteLength));
+  }
+  return runLoopbackExchange(record, {
+    parsed, init, options, method, bodyBytes, formDataType,
+    requestUrl, headers: Object.fromEntries(headerBag),
+  });
+};
+
 // The HTTP upgrade + client-request face lives in node-http-loopback-client.js
-// (the file crossed the size budget); re-exported so bare-importers keep shape.
-
-// The upgrade ingress/refusal/await helpers serve the client module's
-// dispatchUpgradeRequest (the registry read is call-time).
-
-const serverUpgradeIngress = (record, serverHalf) => {
-  let buffered = [];
-  let total = 0;
-  serverHalf._installGate((bytes) => {
-    buffered.push(bytes);
-    total += bytes.byteLength;
-    const at = findHeaderEnd(buffered, total);
-    if (at === -1) return new Uint8Array(0); // head incomplete — keep gating
-    const whole = concatChunks(buffered, total);
-    const headBytes = whole.slice(0, at);
-    const rest = whole.slice(at + HEADER_END.length);
-    const { firstLine, headers, rawHeaders } = parseHttpHead(headBytes);
-    const firstSpace = firstLine.indexOf(' ');
-    const lastSpace = firstLine.lastIndexOf(' ');
-    const method = firstSpace === -1 ? 'GET' : firstLine.slice(0, firstSpace);
-    const url = firstSpace === -1 ? '/' : firstLine.slice(firstSpace + 1, lastSpace === -1 ? firstLine.length : lastSpace);
-    const incoming = new LoopbackIncoming({ method, url, headers, body: [] });
-    incoming.rawHeaders = rawHeaders;
-    incoming.complete = true;
-    incoming.readable = false;
-    if (record.server.listenerCount('upgrade') === 0) {
-      serverHalf.write(serializeRefusalHead());
-      serverHalf.end();
-      return new Uint8Array(0);
-    }
-    serverHalf._releaseGate();
-    record.server.emit('upgrade', incoming, serverHalf, rest);
-    return new Uint8Array(0);
-  });
-};
-
-/** The refusal head (node: an upgrade request with no upgrade listener). */
-const serializeRefusalHead = () => 'HTTP/1.1 501 Not Implemented\r\nConnection: close\r\n\r\n';
-
-/** The CLIENT-side handshake: parse the 101 (or any final status) off the
- * client half and emit `req.emit('upgrade', res, socket, head)` the way
- * node's http client does. A non-101 becomes a plain 'response'. */
-const clientUpgradeAwait = (clientHalf, req) => {
-  let buffered = [];
-  let total = 0;
-  clientHalf._installGate((bytes) => {
-    buffered.push(bytes);
-    total += bytes.byteLength;
-    const at = findHeaderEnd(buffered, total);
-    if (at === -1) return new Uint8Array(0);
-    const whole = concatChunks(buffered, total);
-    const headBytes = whole.slice(0, at);
-    const rest = whole.slice(at + HEADER_END.length);
-    const { firstLine, headers, rawHeaders } = parseHttpHead(headBytes);
-    const statusCode = Number(firstLine.split(' ')[1] ?? 0);
-    const res = new EventEmitter();
-    res.statusCode = statusCode;
-    res.statusMessage = firstLine.split(' ').slice(2).join(' ');
-    res.headers = headers;
-    res.rawHeaders = rawHeaders;
-    res.resume = () => res;
-    res.pause = () => res;
-    clientHalf._releaseGate();
-    if (statusCode === 101) {
-      req.emit('upgrade', res, clientHalf, rest);
-    } else {
-      const incoming = new LoopbackIncoming({ method: 'GET', url: '/', headers, body: rest.byteLength > 0 ? [globalThis.Buffer ? globalThis.Buffer.from(rest) : rest] : [] });
-      incoming.statusCode = statusCode;
-      incoming.statusMessage = res.statusMessage;
-      incoming.rawHeaders = rawHeaders;
-      req.emit('response', incoming);
-      incoming.beginReplay();
-    }
-    return new Uint8Array(0);
-  });
-};
-
-/** The upgrade dispatch behind http.request for Upgrade-shaped calls:
- * serialize the client head, pair the halves against the registry record,
- * and return the req whose 'upgrade' event the vendored ws client awaits.
- * The caller's `opts.createConnection` is deliberately bypassed: this
- * runtime has no net.connect seam, and the loopback IS the transport. */
-export { serverUpgradeIngress, serializeRefusalHead, clientUpgradeAwait };
+// and the upgrade/raw-net transport in node-http-loopback-net.js (this file
+// crossed the size budget twice); re-exported so boot-tail-loopback-globals
+// (globalThis wiring) and bare-importers keep shape.
+export {
+  serverUpgradeIngress,
+  serializeRefusalHead,
+  clientUpgradeAwait,
+} from 'upstream/shims/node-http-loopback-net.js';

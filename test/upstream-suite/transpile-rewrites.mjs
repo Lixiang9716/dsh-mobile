@@ -139,7 +139,7 @@ const UNVENDORED_INLINED = [
   /^@deepseek-ai\/dsh-credentials$/,
 ];
 
-const BARE_EXTERNAL_PLUGIN = {
+export const BARE_EXTERNAL_PLUGIN = {
   name: 'bare-external',
   setup(build) {
     build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
@@ -174,6 +174,20 @@ const BARE_EXTERNAL_PLUGIN = {
     // esbuild bundles JSON natively, and the limb's resolveDir keeps the
     // relative path pointed at the now-staged package.json (W5-T).
     build.onLoad({ filter: /\.(ts|mts|js|mjs)$/ }, limbJsonLoad);
+    // The decorator lowering for BUNDLED HELPER files (W8): local test
+    // helpers the spec imports carry the same @Remote shapes as the specs,
+    // and esbuild bundles them from disk after the spec-source rewrite —
+    // without this hook the built output re-trips the decorators exclusion
+    // scan (the 'bundled helper: decorators' family, 35 specs). Registered
+    // AFTER limbJsonLoad so esbuild consults it first; returning undefined
+    // for decorator-free sources falls the file through to the JSON hoist
+    // untouched.
+    build.onLoad({ filter: /\.(ts|mts|tsx)$/ }, (args) => {
+      const source = readFileSync(args.path, 'utf8');
+      const lowered = lowerDecorators(source);
+      if (lowered === source) return undefined;
+      return { contents: lowered, loader: args.path.endsWith('.tsx') ? 'tsx' : 'ts' };
+    });
   },
 };
 
@@ -240,7 +254,7 @@ const hoistCreateRequireJson = (source, rel) => {
  * vendor become throwing stubs (see UNVENDORED_INLINED). A missing hoist
  * target leaves the specifier untouched, so the generic monorepo-src
  * exclusion still names it — fail loud, never a silent drop (rule 5). */
-const SUBMODULE_SRC_HOISTS = new Map([
+export const SUBMODULE_SRC_HOISTS = new Map([
   ['@deepseek-ai/dsh-llm-pi-ai/src/context.ts', 'packages/llm/llm-pi-ai/src/context.ts'],
   // subprocess-local src/ faces the lsp-stdio and process-inspector specs
   // drive directly (spawnSubprocess / the inspector classes). The tarball
@@ -348,6 +362,18 @@ const SUBMODULE_SRC_HOISTS = new Map([
   ['@deepseek-ai/dsh-experimental-webworker-runtime/src/node/builtin_modules/implemented/zlib.ts', 'packages/experimental/webworker-runtime/src/node/builtin_modules/implemented/zlib.ts'],
 ]);
 
+export const hoistSubmoduleSrcSubpaths = (source) => {
+  let out = lowerDecorators(source);
+  for (const [specifier, rel] of SUBMODULE_SRC_HOISTS) {
+    const target = join(SUBMODULE_ROOT, rel);
+    if (!existsSync(target)) continue;
+    out = out.replaceAll(`'${specifier}'`, JSON.stringify(target))
+      .replaceAll(`"${specifier}"`, JSON.stringify(target));
+  }
+  return out;
+};
+
+
 /** Collect the layout-tree family's files for one spec (module level for
  * size): the WHOLE vendored source tree at /upstream-tests/src (verbatim
  * submodule bytes — the spec re-audits the real upstream sources), the
@@ -385,84 +411,15 @@ const collectSeedTreeFiles = (rel, files, mirrorTests) => {
   }
 };
 
-const hoistSubmoduleSrcSubpaths = (source) => {
-  let out = source;
-  for (const [specifier, rel] of SUBMODULE_SRC_HOISTS) {
-    const target = join(SUBMODULE_ROOT, rel);
-    if (!existsSync(target)) continue;
-    out = out.replaceAll(`'${specifier}'`, JSON.stringify(target))
-      .replaceAll(`"${specifier}"`, JSON.stringify(target));
-  }
-  return out;
-};
+// The TC39 method-decorator lowering (W8) and the bundle-manifest /
+// seed-tree families live in transpile-decorators.mjs (this file crossed
+// the code-size gate). THIS module still calls lowerDecorators (the
+// bundled-helper onLoad in BARE_EXTERNAL_PLUGIN, hoistSubmoduleSrcSubpaths)
+// and SEED_TREE_SPECS (collectSeedTreeFiles), so those two are imported
+// plainly; every moved name is re-exported for the existing importers —
+// transpile.mjs keeps importing them all from here.
 
-/** The bundle-manifest family (W5-Q, 2026-09-28): the bundle/agent-team
- * profile specs read the SPEC'S OWN PACKAGE manifest off disk —
- * `fileURLToPath(new URL('..', import.meta.url))` is the package root on the
- * monorepo layout (spec at <pkg>/tests/x.spec.ts), but flat staging puts the
- * spec at /upstream-tests/<stem>.spec.mjs, so the '..' lands at '/' and the
- * read would need files the VFS roots refuse. Two moves, same pattern as the
- * createRequire JSON hoist above:
- * 1. REWRITE the root computation to the spec's own directory
- *    (`new URL('.', ...)`) — the read paths become /upstream-tests/package.json
- *    and the manifest-named patch file, inside the seeded VFS root.
- * 2. EMIT the REAL package-root files (package.json + the patch file) as seed
- *    data through the existing .fixtures.js module — the driver already
- *    imports and seeds that before the tests run. Bytes come from the pinned
- *    submodule verbatim (D6: read-only upstream, never a modified copy), so
- *    every attribution assertion (dsh.bundle.patch field, dependencies map,
- *    patch rows) runs against the true manifest.
- * One spec per runtime, so the flat /upstream-tests/package.json namespace
- * never collides (the fixtures seeding already relies on the same fact). */
-const BUNDLE_MANIFEST_PACKAGES = new Map([
-  ['bundle/base/tests/base.spec.ts', 'bundle/base'],
-  ['bundle/acp-app/tests/acp-app.spec.ts', 'bundle/acp-app'],
-  ['bundle/sdk-app/tests/sdk-app.spec.ts', 'bundle/sdk-app'],
-  ['bundle/sdk-minimal/tests/sdk-minimal.spec.ts', 'bundle/sdk-minimal'],
-  ['experimental/agent-team-profile/tests/profile.spec.ts', 'experimental/agent-team-profile'],
-  ['experimental/agent-team-web-profile/tests/profile.spec.ts', 'experimental/agent-team-web-profile'],
-]);
-/** Files the family reads at the package root, by name. base's second test
- * also stats 'windows.cordis.patch.yml' and expects FALSE — absent here, the
- * seeded-view existsSync answers false, which is the asserted fact. */
-const BUNDLE_MANIFEST_FILES = ['package.json', 'cordis.patch.yml'];
-const rewriteBundleManifestRoot = (source) => source
-  .replaceAll("new URL('..', import.meta.url)", "new URL('.', import.meta.url)")
-  .replaceAll('new URL("..", import.meta.url)', 'new URL(".", import.meta.url)');
+import { lowerDecorators, SEED_TREE_SPECS } from './transpile-decorators.mjs';
+export { DECORATOR_LINE, DECORATED_MEMBER, CLASS_OPEN, CLASS_ONE_LINER, DSH_DECORATE_HELPER, lineBraceDelta, lowerDecorators, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, rewriteBundleManifestRoot, SEED_TREE_SPECS, rewriteSeedTreeRoots } from './transpile-decorators.mjs';
 
-/** The layout-tree family (W5-Q, 2026-09-28): specs that audit the VENDORED
- * SOURCE TREE itself (the experimental Inspector's client/host path
- * mirroring) walk `../src/` off the monorepo layout — the same flat-staging
- * problem the bundle-manifest family has, at tree scale. Two moves: rewrite
- * the tree roots to the spec's own directory, and SEED the tree (verbatim
- * submodule bytes, D6) plus the named compiler manifests through the
- * existing .fixtures.js delivery. The staged spec then re-audits the REAL
- * upstream sources through fs.readFile/readdir over the seeded VFS view. */
-const SEED_TREE_SPECS = new Map([
-  ['experimental/inspector/tests/layout.host.spec.ts', {
-    package: 'experimental/inspector',
-    rewrites: [
-      ["new URL('../src/', import.meta.url)", "new URL('./src/', import.meta.url)"],
-      ['new URL("../src/", import.meta.url)', 'new URL("./src/", import.meta.url)'],
-      ["new URL('../', import.meta.url)", "new URL('./', import.meta.url)"],
-      ['new URL("../", import.meta.url)', 'new URL("./", import.meta.url)'],
-    ],
-    tree: 'src',
-    files: ['tsconfig.host.json', 'tsconfig.client.json'],
-    mirrorTests: true,
-  }],
-]);
-const rewriteSeedTreeRoots = (source, rewrites) => {
-  let out = source;
-  for (const [from, to] of rewrites) out = out.replaceAll(from, to);
-  return out;
-};
-
-/** Transpile one spec (or record its named exclusion). */
-/** The esbuild option shape for one spec: entry file when nothing hoisted,
- * stdin otherwise (the hoisted package.json reads and inlined monorepo
- * limbs build through stdin — split from transpileOne for the function
- * shape budget). */
-
-export { UNVENDORED_INLINED, BARE_EXTERNAL_PLUGIN, SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, hoistSubmoduleSrcSubpaths, rewriteBundleManifestRoot, rewriteSeedTreeRoots, collectSeedTreeFiles, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, SEED_TREE_SPECS };
-
+export { SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, collectSeedTreeFiles };

@@ -336,10 +336,88 @@ const REGISTRATIONS = [
   // test downstream of a spawn.
   ['node:child_process', [
     "import childProcess from 'upstream/shims/node-child-process.js';",
-    "export default childProcess;",
-    "export const { spawn, spawnSync, execFile, execFileSync, exec, ChildProcess } = childProcess;",
+    "import { wrapChildProcessFace } from 'upstream/shims/source-bootstrap-ipc.js';",
+    "const face = wrapChildProcessFace(childProcess);",
+    "export default face;",
+    "export const { spawn, spawnSync, execFile, execFileSync, exec, ChildProcess } = face;",
+  ].join('\n')],
+
+  // @deepseek-ai/dsh-loader-smoke — the W8 source-entry-bootstrap overlay
+  // (shims/source-bootstrap-loader-smoke.js): the vendored lib's
+  // resolveExampleLaunch calls import.meta.resolve('tsx'), which the C
+  // resolve cannot answer for the slash-less bare name — every src-mode
+  // launch in the corpus died there before any child existed. The overlay
+  // re-exports the vendored lib and re-points the two tsx-naming faces at
+  // the source-bootstrap tsx face. Registered here because the
+  // __dshModuleDefine seam is checked BEFORE the bare map — the same
+  // shadow channel as the cordis failure-face overlay (W7-X3).
+  ['@deepseek-ai/dsh-loader-smoke', [
+    "export * from 'upstream/shims/source-bootstrap-loader-smoke.js';",
+  ].join('\n')],
+
+  // tsx / tsx/esm / tsx/esm/api — the IN-REALM tsx face the source-closure
+  // Worker data: bootstraps import ({ register }) before their TypeScript
+  // entry (W8 source-entry-bootstrap). The CHILD-side face is the real tsx
+  // resolved by shims/source-bootstrap-tsx.js; in THIS realm there is no
+  // TS eraser, so register() is the honest no-op — a .ts entry that needs
+  // real erasure fails loudly at its own import instead of mis-parsing.
+  // Three names because the C resolve passes 'tsx/esm[/api]' through as
+  // the literal spelling the vendored bootstraps embed in their data: URLs.
+  ['tsx', sourceBootstrapRegisterFace()],
+  ['tsx/esm', sourceBootstrapRegisterFace()],
+  ['tsx/esm/api', sourceBootstrapRegisterFace()],
+
+  // node:url — the staged-asset re-root face (W8 loader-face-staged-world,
+  // 2026-09-29): the vendored dsh-skill-office lib resolves its bundled
+  // skill assets from ITS OWN module URL — the C loader pins import.meta.url
+  // of a mapped module to the staged vendor path, so the lib's
+  // `new URL("../assets/", import.meta.url)` spells
+  // /vendor/npm/@deepseek-ai/dsh-skill-office@0.1.6-alpha.2/assets/ while
+  // the transpiler's package-assets staging (upstream-suite-leg.js
+  // emitPackageAssets) serves the same verbatim bytes at /assets/ — the
+  // spelling the vendored skill-office spec itself computes and asserts
+  // (`new URL("../assets/", import.meta.url)` from /upstream-tests/).
+  // Re-export the url shim with fileURLToPath (and pathToFileURL, its
+  // inverse) re-rooting EXACTLY that one subtree between the two spellings;
+  // every other path passes through byte-identical, and shim-internal
+  // consumers keep the unwrapped faces (they never name that subtree).
+  ['node:url', [
+    "import * as urlShim from 'upstream/shims/url.js';",
+    "const OFFICE_ASSETS = '/vendor/npm/@deepseek-ai/dsh-skill-office@0.1.6-alpha.2/assets/';",
+    "const STAGED_ASSETS = '/assets/';",
+    "const reRoot = (path) => (typeof path === 'string' && path.startsWith(OFFICE_ASSETS)",
+    "  ? `${STAGED_ASSETS}${path.slice(OFFICE_ASSETS.length)}`",
+    "  : path);",
+    "const unRoot = (path) => (typeof path === 'string' && path.startsWith(STAGED_ASSETS)",
+    "  ? `${OFFICE_ASSETS}${path.slice(STAGED_ASSETS.length)}`",
+    "  : path);",
+    "export const fileURLToPath = (input, options) => reRoot(urlShim.fileURLToPath(input, options));",
+    "export const pathToFileURL = (path) => urlShim.pathToFileURL(unRoot(path));",
+    "export const percentDecode = urlShim.percentDecode;",
+    "export const parseAbsolute = urlShim.parseAbsolute;",
+    "export const resolvePath = urlShim.resolvePath;",
+    "export const DshURL = urlShim.DshURL;",
+    "export default urlShim.default;",
   ].join('\n')],
 ];
+
+/** The in-realm tsx register face (module level for size — one body shared
+ * by the three tsx spellings above). */
+function sourceBootstrapRegisterFace() {
+  return [
+    "// source-bootstrap tsx face (in-realm): the Worker data: bootstraps",
+    "// import { register } from the resolved tsx face before importing their",
+    "// TypeScript entry. This realm serves the vendored closure as plain JS",
+    "// modules — register() arms nothing here; a .ts entry that needed real",
+    "// erasure fails loudly at its own import, naming itself.",
+    'const register = () => {};',
+    'export { register };',
+    'export const registerHooks = register;',
+    'export const transform = (code) => ({ code });',
+    'export default { register, registerHooks, transform };',
+    '',
+  ].join('\n');
+}
 
 
 /** Register the runtime-module rows; idempotent (define() replaces). */
@@ -355,3 +433,22 @@ export const defineRuntimeModules = () => {
 };
 
 defineRuntimeModules();
+
+// W8 source-entry-bootstrap: stage spawned SOURCE entries before the
+// child_process shim captures the seam (its module eval happens after
+// boot, so it serves the wrapped intrinsics — see
+// shims/source-bootstrap-tsx.js installSpawnArgvStager). The static
+// import keeps the wrap synchronous with boot: no node:child_process
+// consumer can evaluate between the registrations and the wrap. The
+// stager also carries the W8 subprocess-family platform pin (see
+// maybePinSubprocessPlatform there — it needs the child-process
+// namespace, which the suite leg preloads only just before the spec
+// import, so the pin rides the first staging call instead of boot).
+import { installSpawnArgvStager } from 'upstream/shims/source-bootstrap-tsx.js';
+installSpawnArgvStager();
+
+// The IPC face's poll siphon must ALSO precede the child_process shim's
+// capture (its pump is the poller the siphon rides — see
+// shims/source-bootstrap-ipc.js installPollSiphon).
+import { installPollSiphon } from 'upstream/shims/source-bootstrap-ipc.js';
+installPollSiphon();

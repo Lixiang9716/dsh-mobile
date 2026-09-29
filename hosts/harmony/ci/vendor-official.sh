@@ -297,6 +297,14 @@ upstream/shims/vi-wait.js
 upstream/shims/globals.js
 upstream/shims/npm-bridges.js
 scenario/upstream-suite-leg.js
+scenario/upstream-suite-flatmap.js
+scenario/upstream-suite-type-world.js
+upstream/shims/fs-seeded.js
+upstream/shims/node-child-process-tables.js
+upstream/shims/node-child-process-pump.js
+upstream/shims/node-http-loopback-net.js
+upstream/shims/npm-bridges-c2.js
+upstream/shims/source-bootstrap-tsx-stage.js
 scenario/upstream-harness-matchers.js
 scenario/upstream-harness-vi.js
 upstream/shims/buffer-codecs.js

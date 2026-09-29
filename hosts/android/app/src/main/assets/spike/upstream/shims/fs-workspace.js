@@ -3,20 +3,15 @@
  * upstream/shims/fs-workspace.js — the WRITABLE WORKSPACE VFS half of the
  * node:fs shim (split from fs.js at the 2026-09-22 file-size gate): one
  * pinned in-memory root, file entries + explicit directories, a monotonic
- * version clock, and the mutating/read operations over them. fs.js keeps
- * the node:fs API surface and the seeded read-only view; this module owns
- * the world fs-local mounts (mountWorkspace).
+ * version clock, and the mutating/read ops; fs.js keeps the node:fs API
+ * surface, this module the world fs-local mounts.
  */
 
-/* ---------------------------------------------------------------------- *
- * The WRITABLE WORKSPACE VFS (the FILE-TOOLS row's world).
- *
- * One pinned root; a Map of file entries and a Set of directory paths, all
- * on the global (see the multi-instance note above). Every mutation bumps a
- * monotonic clock so file versions (dev:ino:size:mtimeNs:ctimeNs — what the
- * vendored fs-local hashes into its stale-write guards) change on write and
- * hold steady across reads.
- * ---------------------------------------------------------------------- */
+/* The WRITABLE WORKSPACE VFS (the FILE-TOOLS row's world): one pinned root;
+ * a Map of file entries and a Set of directory paths, all on the global (see
+ * the multi-instance note above). Every mutation bumps a monotonic clock so
+ * file versions (dev:ino:size:mtimeNs:ctimeNs — what the vendored fs-local
+ * hashes into its stale-write guards) change on write and hold steady. */
 
 /** The ENOENT shape (mirrors fs.js's — this module cannot import from it
  * without a cycle: fs.js imports this module for the workspace faces). */
@@ -101,18 +96,32 @@ const lexical = (path) => {
  * spellings land in the SAME writable place, instead of the hardcoded one
  * failing the root gate. Guarded: only when the workspace root is the
  * profile container (the suite driver's mount spelling) and only the exact
- * '/tmp' or '/tmp/' prefix maps (never '/tmpfoo'). */
+ * '/tmp' or '/tmp/' prefix maps (never '/tmpfoo').
+ *
+ * The REVERSE half (W8 cwd/tmp-fidelity round): on darwin /tmp is a symlink
+ * to /private/tmp, so every answer that crosses BACK from the real-disk
+ * side — a spawned child's getcwd/pwd/git rev-parse, an error path the C
+ * seam resolved — spells the container `/private/tmp/<container>`. That is
+ * the same single directory; the profile-container translation holds
+ * END-TO-END only if the VFS re-accepts the OS-resolved spelling, so the
+ * exact `/private<container>` prefix maps back onto the container (and
+ * nothing else — other /private/tmp content is not ours to rename). */
 export const systemTmp = (path) => {
-  if (typeof path !== 'string' || !path.startsWith('/tmp')) return path;
+  if (typeof path !== 'string') return path;
   const profileCwd = globalThis.__dshProfileCwd;
   if (typeof profileCwd !== 'string' || profileCwd.length <= 1) return path;
+  const container = profileCwd.replace(/\/$/, '');
   const state = workspace();
-  if (state === null || state.root !== profileCwd.replace(/\/$/, '')) return path;
+  if (state === null || state.root !== container) return path;
   // Already inside the container: the container itself lives under /tmp on
   // the desktop CLI, and naively translating its OWN prefix doubled it
   // (root/tmp/root — statSync(root) ENOENTed, R3-G1 2026-09-28).
-  if (path === profileCwd || path.startsWith(`${profileCwd}/`)) return path;
-  const real = `${profileCwd.replace(/\/$/, '')}/tmp`;
+  if (path === container || path.startsWith(`${container}/`)) return path;
+  // The darwin OS-resolved spelling of the container itself (see above).
+  const realContainer = `/private${container}`;
+  if (path === realContainer) return container;
+  if (path.startsWith(`${realContainer}/`)) return `${container}${path.slice(realContainer.length)}`;
+  const real = `${container}/tmp`;
   if (path === '/tmp') return real;
   if (path.startsWith('/tmp/')) return `${real}${path.slice(4)}`;
   return path;
@@ -188,7 +197,6 @@ export const notifyWatches = (path) => {
     try { entry.notify(path); } catch { /* a throwing watcher must not corrupt the mutation */ }
   }
 };
-
 
 const wsCreateFile = (state, path, bytes, mode) => {
   const now = bumpClock(state);
@@ -368,9 +376,103 @@ const resolveSymlinkAt = (path) => {
 // The mutation faces live in fs-workspace-write.js (the file crossed the
 // size budget); re-exported here so every existing import — fs.js's and
 // fs-promises's whole surface — keeps its specifier.
-import { wsMkdir, wsWriteFile, wsRm } from 'upstream/shims/fs-workspace-write.js';
-import { wsRename, wsLink, wsChmod, wsUtimes } from 'upstream/shims/fs-workspace-rename.js';
+import { wsMkdir as wsMkdirCore, wsWriteFile, wsRm, wsResolveSymlinkChain } from 'upstream/shims/fs-workspace-write.js';
+import { wsRename as wsRenameCore, wsLink, wsChmod, wsUtimes } from 'upstream/shims/fs-workspace-rename.js';
 import { wsSymlink } from 'upstream/shims/fs-workspace-write.js';
+
+/** Real-disk rename mirror (W8 cwd/tmp-fidelity). The VFS rename re-keys its
+ * maps only — the workspace-write round mirrored write/rm/mkdir/chmod but
+ * left rename's real side unmoved, so a moved file lingered under the old
+ * name on the disk the seam's children read and never appeared at the new
+ * one (measured: workspace-changes' turn diff lost the same.txt → moved.txt
+ * rename entirely — real git saw the file unchanged). After the core
+ * re-key, whatever the VFS now holds at the DESTINATION (one file or a
+ * subtree) is the rename's payload: the real source is removed and the
+ * destination re-materialized from the moved entries. Best-effort like the
+ * sibling mirrors — the VFS stays the world of record. */
+const writeRealFile = (path, bytes) => {
+  if (typeof path !== 'string' || !path.startsWith('/') || !(bytes instanceof Uint8Array)
+      || bytes.length > 8 * 1024 * 1024) return;
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
+  }
+  globalThis.__dshProcWriteFileReal?.(path, btoa(bin));
+};
+
+const mirrorRenameReal = (state, sourcePath, destPath) => {
+  try {
+    const destFile = state.files.get(destPath);
+    if (destFile !== undefined) {
+      globalThis.__dshProcRmReal?.(sourcePath, false);
+      writeRealFile(destPath, destFile.bytes);
+      return;
+    }
+    if (state.dirs.has(destPath)) {
+      globalThis.__dshProcRmReal?.(sourcePath, true);
+      globalThis.__dshProcMkdirReal?.(destPath);
+      const prefix = `${destPath}/`;
+      for (const [key, entry] of state.files) {
+        if (key.startsWith(prefix)) writeRealFile(key, entry.bytes);
+      }
+    }
+  } catch { /* structural mirror is best-effort */ }
+};
+
+export const wsRename = (from, to) => {
+  const source = wsAt(from);
+  const dest = wsAt(to);
+  const result = wsRenameCore(from, to);
+  if (source !== null && dest !== null) {
+    mirrorRenameReal(source.state, source.path, dest.path);
+  }
+  return result;
+};
+
+/** The mkdir faces' real-disk awareness (W8 cwd/tmp-fidelity). The
+ * workspace-write round's core mkdir is VFS-blind in two ways the real-disk
+ * mirror exposes: (1) an ancestor directory only the REAL side has (real git
+ * children's .git) makes the parent-exists gate ENOENT; (2) a FILE occupying
+ * an ancestor segment is skipped silently under recursive instead of node's
+ * ENOTDIR (measured: workspace-changes git.spec's bad-index mkdir ENOENTed
+ * and its store-file scratch resolved instead of rejecting). The wrapper
+ * materializes real-only ancestors as tracked dirs and refuses file-occupied
+ * prefixes BEFORE the core runs — every consumer imports through this
+ * specifier, so the wrap covers the sync, promises, and mkdirSync faces. */
+const realStat = (path) => {
+  try {
+    return globalThis.__dshProcStatReal?.(path) ?? null;
+  } catch { return null; }
+};
+
+export const wsMkdir = (path, options = {}) => {
+  const at = wsAt(path);
+  if (at !== null) {
+    const { state } = at;
+    const canonical = wsResolveSymlinkChain(state, at.path);
+    let end = canonical.indexOf('/', state.root.length + 1);
+    while (end > 0) {
+      const dir = canonical.slice(0, end);
+      if (state.files.has(dir)) {
+        const error = new Error(`ENOTDIR: not a directory, mkdir '${canonical}'`);
+        error.code = 'ENOTDIR';
+        error.errno = -20;
+        error.syscall = 'mkdir';
+        error.path = canonical;
+        throw error;
+      }
+      if (!state.dirs.has(dir) && !wsIsDirAt(dir) && realStat(dir)?.isDirectory === true) {
+        state.dirs.add(dir);
+        state.dirIno.set(dir, state.nextIno++);
+      }
+      const next = canonical.indexOf('/', end + 1);
+      if (next <= 0) break;
+      end = next;
+    }
+  }
+  return wsMkdirCore(path, options);
+};
 export {
   workspace,
   wsAt,
@@ -387,10 +489,8 @@ export {
   wsEnoent,
   wsEexist,
   wsEnotdir,
-  wsMkdir,
   wsWriteFile,
   wsRm,
-  wsRename,
   wsLink,
   wsChmod,
   wsUtimes,

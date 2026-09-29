@@ -22,190 +22,34 @@
  * shims construct the SAME class.
  */
 
-// Module-captured string intrinsics: the UTF-8 walks below MUST NOT consult
-// String.prototype live — the ptc-runtime output-json suite mutates
-// model-visible globals (charCodeAt/codePointAt) and its contract is that
-// module-captured intrinsics keep working (measured 2026-09-27). The same
-// capture discipline the vendored output-json module models.
-// The base64/base64url/hex/latin1 codecs live in buffer-codecs.js (the
-// file crossed the size budget); re-exported here so every existing
-// import keeps its specifier.
+// The codec half lives in buffer-codecs.js (the file crossed the code-size
+// budget; the base64/hex/latin1 codecs moved first, and W9 moved the UTF
+// half — encodeUtf8/decodeUtf8, the utf16le pair, isUtf8, byteLengthUtf8,
+// the toString ENCODINGS table, and the module-captured string intrinsics —
+// beside them). Re-exported here so every existing import keeps its
+// specifier; the codecs module imports NOTHING from this file (one-way; a
+// shim-shim import cycle kills QuickJS at link). The intrinsic capture
+// rationale lives in buffer-codecs.js's UTF-half header — its capture lands
+// at that module's evaluation, before this body runs.
 import {
   fromBase64, fromBase64Url, fromHex,
-  toStringHex, toStringBase64, toStringBase64Url, toStringAscii,
+  intrinsicCharCodeAt, intrinsicFromCharCode,
+  encodeUtf8, encodeCodePoint, byteLengthUtf8, isUtf8, decodeUtf8,
+  encodeUtf16le, decodeUtf16le, ENCODINGS,
 } from 'upstream/shims/buffer-codecs.js';
-export { fromBase64, fromBase64Url, fromHex };
-
-const intrinsicCharCodeAt = String.prototype.charCodeAt;
-const intrinsicFromCharCode = String.fromCharCode;
-
-/** UTF-8 encode a string (the only string encoding the closure writes). */
-export const encodeUtf8 = (text) => {
-  const bytes = new Uint8Array(byteLengthUtf8(text));
-  let wrote = 0;
-  for (let i = 0; i < text.length; i++) {
-    let code = intrinsicCharCodeAt.call(text, i);
-    if (code >= 0xd800 && code <= 0xdbff && i + 1 < text.length) {
-      const next = intrinsicCharCodeAt.call(text, i + 1);
-      if (next >= 0xdc00 && next <= 0xdfff) {
-        code = 0x10000 + ((code - 0xd800) << 10) + (next - 0xdc00);
-        i++;
-      }
-    }
-    wrote += encodeCodePoint(bytes, wrote, code);
-  }
-  if (wrote !== bytes.length) {
-    throw new Error('buffer: utf8 length mismatch (surrogate walk diverged)');
-  }
-  return bytes;
+export {
+  fromBase64, fromBase64Url, fromHex,
+  intrinsicCharCodeAt, intrinsicFromCharCode,
+  encodeUtf8, encodeCodePoint, byteLengthUtf8, isUtf8, decodeUtf8,
+  encodeUtf16le, decodeUtf16le,
 };
-
-const encodeCodePoint = (bytes, at, code) => {
-  if (code <= 0x7f) {
-    bytes[at] = code;
-    return 1;
-  }
-  if (code <= 0x7ff) {
-    bytes[at] = 0xc0 | (code >> 6);
-    bytes[at + 1] = 0x80 | (code & 0x3f);
-    return 2;
-  }
-  if (code <= 0xffff) {
-    bytes[at] = 0xe0 | (code >> 12);
-    bytes[at + 1] = 0x80 | ((code >> 6) & 0x3f);
-    bytes[at + 2] = 0x80 | (code & 0x3f);
-    return 3;
-  }
-  bytes[at] = 0xf0 | (code >> 18);
-  bytes[at + 1] = 0x80 | ((code >> 12) & 0x3f);
-  bytes[at + 2] = 0x80 | ((code >> 6) & 0x3f);
-  bytes[at + 3] = 0x80 | (code & 0x3f);
-  return 4;
-};
-
-/** UTF-8 byte length of a string (surrogate pairs count once). */
-export const byteLengthUtf8 = (text) => {
-  let length = 0;
-  for (let i = 0; i < text.length; i++) {
-    const code = intrinsicCharCodeAt.call(text, i);
-    if (code >= 0xd800 && code <= 0xdbff && i + 1 < text.length) {
-      const next = intrinsicCharCodeAt.call(text, i + 1);
-      if (next >= 0xdc00 && next <= 0xdfff) {
-        length += 4;
-        i++;
-        continue;
-      }
-    }
-    length += code <= 0x7f ? 1 : code <= 0x7ff ? 2 : 3;
-  }
-  return length;
-};
-
-/** buffer.isUtf8 — node's pure-JS-face UTF-8 validity check (added for the
- * vendored ws receiver's text-frame validation, W5-Q 2026-09-28). A strict
- * structural scan: lead-byte/continuation shape, no overlong encodings, no
- * surrogates, no values above U+10FFFF. */
-export const isUtf8 = (bytes) => {
-  if (bytes === null || typeof bytes !== 'object') return false;
-  const view = bytes instanceof Uint8Array
-    ? bytes
-    : new Uint8Array(bytes.buffer ?? bytes, bytes.byteOffset ?? 0, bytes.byteLength ?? 0);
-  for (let i = 0; i < view.length;) {
-    const b0 = view[i];
-    if (b0 <= 0x7f) { i += 1; continue; }
-    let length;
-    if (b0 >= 0xc2 && b0 <= 0xdf) length = 2;
-    else if (b0 >= 0xe0 && b0 <= 0xef) length = 3;
-    else if (b0 >= 0xf0 && b0 <= 0xf4) length = 4;
-    else return false;
-    if (i + length > view.length) return false;
-    for (let k = 1; k < length; k++) {
-      if ((view[i + k] & 0xc0) !== 0x80) return false;
-    }
-    const code = length === 2
-      ? ((b0 & 0x1f) << 6) | (view[i + 1] & 0x3f)
-      : length === 3
-        ? ((b0 & 0x0f) << 12) | ((view[i + 1] & 0x3f) << 6) | (view[i + 2] & 0x3f)
-        : ((b0 & 0x07) << 18) | ((view[i + 1] & 0x3f) << 12) | ((view[i + 2] & 0x3f) << 6) | (view[i + 3] & 0x3f);
-    if (code >= 0xd800 && code <= 0xdfff) return false;
-    if (length === 3 && code < 0x800) return false;
-    if (length === 4 && code < 0x10000) return false;
-    i += length;
-  }
-  return true;
-};
-
-/** UTF-8 decode a byte range (lone truncation bytes become U+FFFD). */
-export const decodeUtf8 = (bytes) => {  let out = '';
-  for (let i = 0; i < bytes.length;) {
-    const b0 = bytes[i];
-    if (b0 <= 0x7f) {
-      out += intrinsicFromCharCode(b0);
-      i += 1;
-      continue;
-    }
-    let length = b0 >= 0xf0 ? 4 : b0 >= 0xe0 ? 3 : b0 >= 0xc0 ? 2 : 0;
-    if (length === 0 || i + length > bytes.length) {
-      out += '\uFFFD';
-      i += 1;
-      continue;
-    }
-    let code = b0 & (0x7f >> length);
-    let valid = true;
-    for (let k = 1; k < length; k++) {
-      const bk = bytes[i + k];
-      if ((bk & 0xc0) !== 0x80) { valid = false; break; }
-      code = (code << 6) | (bk & 0x3f);
-    }
-    if (!valid || code > 0x10ffff || (code >= 0xd800 && code <= 0xdfff)) {
-      out += '\uFFFD';
-      i += 1;
-      continue;
-    }
-    if (code <= 0xffff) out += intrinsicFromCharCode(code);
-    else {
-      code -= 0x10000;
-      out += intrinsicFromCharCode(0xd800 + (code >> 10), 0xdc00 + (code & 0x3ff));
-    }
-    i += length;
-  }
-  return out;
-};
-
-/** UTF-16LE encode: code units as 2-byte LE pairs — the raw code-unit copy
- * node's encoder does (a lone surrogate writes as-is). W7-X1: the vendored
- * terminal-bash BoundedTextBuffer normalizes every chunk through the
- * `Buffer.from(text, 'utf16le').toString('utf16le')` round-trip. */
-export const encodeUtf16le = (text) => {
-  const bytes = new Uint8Array(text.length * 2);
-  for (let i = 0; i < text.length; i++) {
-    const code = intrinsicCharCodeAt.call(text, i);
-    bytes[i * 2] = code & 0xff;
-    bytes[i * 2 + 1] = code >>> 8;
-  }
-  return bytes;
-};
-
-/** UTF-16LE decode: LE pairs back into code units; a surrogate pair code
- * unit decodes to U+FFFD (node's WHATWG utf-16le decoder, and the point of
- * the vendored round-trip: lone surrogates from a split multibyte boundary
- * normalize to replacement characters). An odd trailing byte is U+FFFD. */
-export const decodeUtf16le = (bytes) => {
-  let out = '';
-  const units = bytes.length - (bytes.length % 2);
-  for (let i = 0; i < units; i += 2) {
-    const code = bytes[i] | (bytes[i + 1] << 8);
-    out += (code >= 0xd800 && code <= 0xdfff) ? '\uFFFD' : intrinsicFromCharCode(code);
-  }
-  if (units !== bytes.length) out += '\uFFFD';
-  return out;
-};
-
-const ENCODINGS = {
-  utf8: decodeUtf8, 'utf-8': decodeUtf8, hex: toStringHex, base64: toStringBase64, base64url: toStringBase64Url,
-  ascii: toStringAscii, latin1: toStringAscii, binary: toStringAscii,
-  utf16le: decodeUtf16le, 'utf-16le': decodeUtf16le, ucs2: decodeUtf16le, 'ucs-2': decodeUtf16le,
-};
+// The split loopback shims' free-variable helper fallback (W8): mounted
+// here because every module that reaches those call sites already imports
+// this one — see boot-tail-loopback-globals.js's header.
+import 'upstream/shims/boot-tail-loopback-globals.js';
+// The WHATWG URL hash-setter completion (W8) — same in-lease boot-chain
+// mount, same rationale; see boot-tail-url-mutators.js's header.
+import 'upstream/shims/boot-tail-url-mutators.js';
 
 /** buffer.constants — the byte-cap bounds vendored code validates against
  * (fs-local's diff-basis ceiling). The VFS holds whole files in memory, so
@@ -293,6 +137,35 @@ export class DshBuffer extends Uint8Array {
     const end = Math.min(this.length, sourceEnd);
     const count = Math.max(0, Math.min(end - start, target.length - targetStart));
     if (count > 0) target.set(this.subarray(start, start + count), targetStart);
+    return count;
+  }
+
+  /** buf.write(string[, offset[, length]][, encoding]) — node's string
+   * writer, the write-side sibling of copy (W8, 2026-09-29): the vendored
+   * ws sender's close frame assembles its status reason through it
+   * (sender.js close → buf.write(reason, 2)), and the missing face surfaced
+   * as `TypeError: not a function` one hop inside the mux's 1003/1008
+   * close paths (the gateway stream-server carrier suite). Writes the
+   * encoded bytes at offset, clamped to length and the buffer end; returns
+   * the bytes written (node's contract). Encodings follow the static
+   * from() family's discipline: utf8 default, latin1/ascii/binary one byte
+   * per code unit, everything else fails loud (rule 5). */
+  write(input, offset = 0, length = this.length - offset, encoding = 'utf8') {
+    if (typeof input !== 'string') {
+      throw new TypeError(`buffer.write: input must be a string, got ${typeof input}`);
+    }
+    let bytes;
+    if (encoding === 'utf8' || encoding === 'utf-8') bytes = encodeUtf8(input);
+    else if (encoding === 'latin1' || encoding === 'ascii' || encoding === 'binary') {
+      bytes = new Uint8Array(input.length);
+      for (let at = 0; at < input.length; at++) bytes[at] = input.charCodeAt(at) & 0xff;
+    } else {
+      throw new TypeError(`buffer.write: unsupported encoding '${encoding}'`);
+    }
+    const start = Math.max(0, offset);
+    const writable = Math.max(0, Math.min(length, this.length - start));
+    const count = Math.min(bytes.length, writable);
+    if (count > 0) this.set(bytes.subarray(0, count), start);
     return count;
   }
 

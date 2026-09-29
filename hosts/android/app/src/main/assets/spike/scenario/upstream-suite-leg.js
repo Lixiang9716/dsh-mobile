@@ -18,6 +18,8 @@ import 'upstream/shims/npm-bridges.js'; // the bare-npm bridges (diff/yaml/choki
 import { createLogger } from 'logger.js';
 import { resetCollection, runCollected } from 'scenario/upstream-test-harness.js';
 import { fsScope } from 'gateway.js';
+import { installFlatPathMap } from 'scenario/upstream-suite-flatmap.js';
+import { stageRemoteMockTypeWorld } from 'scenario/upstream-suite-type-world.js';
 
 const SCENARIO = 'upstream.suite';
 
@@ -220,42 +222,6 @@ const stageSourceIntrospectionTree = async (spec, emit) => {
   emit('suite/source-stage', { staged });
 };
 
-/** Install the flat-path map (W6-V): the transpiled specs' bundle-relative
- * joins (/vendor/..., /upstream-tests/...) are REAL directories of the
- * desktop checkout — the fs faces' real-disk fallbacks re-root through this
- * map so reads/stats of vendored assets answer from the pinned tree (D6: the
- * same read-only bytes the loader serves). Relative re-rootings resolve
- * against the CLI's real working directory, exactly like the sibling
- * staging's /bin/cp. Undefined for paths with no real-world twin. */
-const installFlatPathMap = () => {
-  // The webworker-runtime node/chokidar spec's per-consumer package trees
-  // (W7-X1): the spec resolves REAL chokidar/readdirp bytes through
-  // createRequire(<consumer manifest>).resolve() — the node:module shim's
-  // node_modules ancestor walk over the staged view — then mounts the files
-  // into its own Worker-loader VFS. Upstream's lockfile pins DIFFERENT
-  // majors per consumer (settings-file/credentials → chokidar 4.0.3 +
-  // readdirp 4.1.2; skill-filesystem → chokidar 5.0.0 + readdirp 5.0.0), so
-  // the per-consumer node_modules nesting is what makes both fixtures
-  // resolve their own version; one shared <cwd>/node_modules cannot. The
-  // vendored registry trees answer through this map (read-only re-rooting —
-  // D6: the same pinned bytes, staged not copied).
-  const watchTrees = [
-    ['/packages/settings/settings-file/node_modules/chokidar/', 'vendor/npm/chokidar@4.0.3/'],
-    ['/packages/settings/settings-file/node_modules/readdirp/', 'vendor/npm/readdirp@4.1.2/'],
-    ['/packages/skill/skill-filesystem/node_modules/chokidar/', 'vendor/npm/chokidar@5.0.0/'],
-    ['/packages/skill/skill-filesystem/node_modules/readdirp/', 'vendor/npm/readdirp@5.0.0/'],
-  ];
-  globalThis.__dshFlatPathMap = (path) => {
-    if (typeof path !== 'string') return undefined;
-    if (path.startsWith('/vendor/') || path.startsWith('/upstream-tests/')) {
-      return path.slice(1);
-    }
-    for (const [staged, real] of watchTrees) {
-      if (path.startsWith(staged)) return `${real}${path.slice(staged.length)}`;
-    }
-    return undefined;
-  };
-};
 
 /** Preload the child-process namespace for the fs faces' real-disk readdir
  * (fs.js lazy-imports it, but specs walk fixtures at MODULE scope — no job
@@ -379,6 +345,55 @@ const stageShellSuitePlatform = async (spec) => {
   log.debug('shell-suite platform pinned', { platform });
 };
 
+/** Stage the committed session-format corpus (W8, 2026-09-29): the
+ * llm-replay session-format-corpus spec walks the upstream REPO ROOT
+ * (`resolve(import.meta.dirname, '../../../..')` — the bundle root '/' under
+ * flat staging) for committed session fixtures under snapshots/ + packages/
+ * + scripts/snapshots/python-sdk-single-exe, then reads every one. The
+ * pinned submodule IS the verbatim upstream repo tree (D6: read-only
+ * staging), so the leg lists its session*.jsonl corpus (find; excluding the
+ * walk's own excludedDirectories dist/lib/node_modules) and seeds the bytes
+ * into the staged view at exactly the bundle-root spellings the walk joins
+ * (fs.js serves them from the /snapshots + /packages + /scripts roots).
+ * Spec-scoped: only that spec's runtime pays the ~4 MB seed. */
+const SUBMODULE_ROOT_REL = '../../third-party/deepseek-harness';
+const SESSION_NAME = /^session(?:\.[1-9]\d*)?(?:\.v[1-9]\d*)?\.jsonl$/;
+const stageSessionFormatCorpus = async (spec, emit) => {
+  if (!spec.includes('test-support__llm-replay__tests__session-format-corpus')) return;
+  log.debug('session corpus staging begin', {});
+  const { spawnSync } = await import('node:child_process');
+  const realFiles = [];
+  for (const root of ['snapshots', 'packages', 'scripts/snapshots/python-sdk-single-exe']) {
+    const list = spawnSync('find', [`${SUBMODULE_ROOT_REL}/${root}`, '-type', 'f', '-name', 'session*.jsonl',
+      '-not', '-path', '*/node_modules/*', '-not', '-path', '*/dist/*', '-not', '-path', '*/lib/*']);
+    if (list.status !== 0 || typeof list.stdout !== 'string') {
+      log.debug('session corpus list failed', { root, code: list.status });
+      continue;
+    }
+    for (const realPath of list.stdout.split('\n')) {
+      if (realPath.length === 0) continue;
+      const rel = realPath.slice(SUBMODULE_ROOT_REL.length + 1);
+      // The walk COLLECTS only session-named jsonl files and THROWS on a
+      // non-canonical name — stage exactly the canonical set.
+      if (SESSION_NAME.test(realPath.split('/').at(-1) ?? '')) realFiles.push(rel);
+    }
+  }
+  if (realFiles.length === 0) return;
+  const { fromBase64 } = await import('upstream/shims/buffer.js');
+  const { seedStagedFiles } = await import('upstream/shims/fs.js');
+  const seeds = {};
+  for (const rel of realFiles) {
+    const b64 = globalThis.__dshProcReadReal?.(`${SUBMODULE_ROOT_REL}/${rel}`);
+    if (typeof b64 !== 'string') continue;
+    seeds[`/${rel}`] = { bytes: fromBase64(b64), mtimeMs: 0 };
+  }
+  const staged = Object.keys(seeds).length;
+  if (staged === 0) return;
+  seedStagedFiles(seeds);
+  emit('suite/corpus-stage', { staged });
+};
+
+
 /** Boot the leg's environment and stage everything the spec needs before
  * its import (module level for size): pin the profile container (the os/fs
  * shims read it BEFORE the spec imports evaluate — this driver IS the
@@ -401,6 +416,11 @@ const bootLegEnvironment = async () => {
   emit('suite/spec', { spec });
   // Stage the package source tree for the source-audit tests (see above).
   await stageSourceIntrospectionTree(spec, emit);
+  // Stage the committed session-format corpus for the llm-replay walk (W8).
+  await stageSessionFormatCorpus(spec, emit);
+  // Stage the remote-mock type world (tsconfig chain + ambient types +
+  // @vitest trio) for the proxy-types compiler (W8).
+  await stageRemoteMockTypeWorld(spec, emit, SUBMODULE_ROOT_REL);
 
   // The spec's fixtures module (emitted by transpile.mjs when the spec ships
   // a tests/fixtures tree): seed the bytes into the staged fs view BEFORE the
