@@ -1,0 +1,25 @@
+{
+  "title": "the microphone face lands \u2014 micStart/micStop + mic.frame on all three hosts (contract v1.10.0 candidate)",
+  "created": "2026-09-29T21:18:57+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "the mic face implements the proposal's signatures verbatim (micStart/micStop, the mic.frame channel, drop-oldest ring, seq continuity)",
+    "iOS: MicPrimitives.swift + NSMicrophoneUsageDescription + gateway registration + descriptor",
+    "Android: MicPrimitives.kt + RECORD_AUDIO runtime request + gateway registration + descriptor",
+    "Harmony: MicPrimitives.ets + ohos.permission.MICROPHONE + C forward list + descriptor constants equal",
+    "JS shim micStart/micStop + mic.frame subscription over the bridge event plumbing; manifest carries the microphone grant",
+    "scenario mic-plane.js (scenario-id, __dshComplete) + per-host expected\u2194logged manifests + audit manifests",
+    "E2E drivers: run-ios-mic-plane.sh, hosts/android/ci/run-mic-plane.sh, hosts/harmony/ci/run-mic-plane.sh (D-g ready) \u2014 simulator legs really run, mic permission automation honestly recorded",
+    "staged closures synced (build/build.sh sync) and check-staging green",
+    "gov run full DAG green receipt, push, PR opened stacked on the contract PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0076"
+}
