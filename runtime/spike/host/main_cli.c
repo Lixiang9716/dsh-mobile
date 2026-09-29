@@ -22,6 +22,7 @@
  */
 #include "dsh_spike_host.h"
 #include "dsh_ish.h"
+#include "dsh_socket.h" /* the loopback socket seam (contract v1.8.0) */
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -109,8 +110,17 @@ typedef struct smoke_backend {
     int next_timer_id;
 } smoke_backend;
 
+/* The socket seam (contract v1.8.0) declares BOTH loopback grants available:
+ * this desktop CLI is the dev/test profile — its grants come from this
+ * declaration alone (the manifest source of the contract's rule 3), so the
+ * suite runs with zero prompts and zero interaction by construction. The
+ * loopback-ONLY scope is enforced downstream (dsh_socket.c refuses any other
+ * scope/host at its own layer too). */
+#define SMOKE_SOCKET_AVAILABLE "\"socketListen\",\"socketConnect\""
+
 static const char *SMOKE_DESCRIPTOR =
-    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"timerSchedule\",\"timerCancel\"],"
+    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"timerSchedule\",\"timerCancel\","
+    SMOKE_SOCKET_AVAILABLE "],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
     "\"presentPicker\",\"keychainGet\",\"keychainSet\","
     "\"deviceInfo\",\"haptic\",\"clipboardRead\",\"clipboardWrite\","
@@ -1047,6 +1057,114 @@ static void smoke_serve(smoke_backend *b, int call_id, const char *name,
                  cancelled ? "true" : "false");
         return smoke_settle(b, call_id, 1, payload);
     }
+    /* ---- the socket seam (contract v1.8.0) --------------------------------
+     * The grant checks LIVE HERE (the serve layer owns the descriptor and the
+     * grants; dsh_socket.c enforces the loopback invariant a second time, in
+     * depth): any scope other than "loopback", or a connect host other than
+     * the literal 127.0.0.1, is `denied`. This CLI is the dev/test profile —
+     * its descriptor declares the two loopback grants, so a granted call
+     * never prompts (zero-interaction by construction for the suite). */
+    if (strcmp(name, "socketListen") == 0) {
+        char *scope = json_str_dup(args, "scope");
+        if (!scope || strcmp(scope, "loopback") != 0) {
+            free(scope);
+            /* A DENIED attempt audits too (contract §6: the audit answers
+             * "who tried what" — refusals are the interesting half). The
+             * reason is a fixed code, never the raw request value: audit
+             * lines are JSON and attacker-controlled text does not go in. */
+            fprintf(stderr,
+                    "{\"audit\":\"socket.listen\",\"direction\":\"inbound\","
+                    "\"grant\":\"socket.listen.loopback\",\"outcome\":\"denied\","
+                    "\"reason\":\"scope-not-loopback\"}\n");
+            return smoke_reject(b, call_id, "socketListen", "denied",
+                                "the loopback seam serves scope=loopback only");
+        }
+        free(scope);
+        int port = json_int(args, "port", 0); /* 0 = the host picks */
+        char err[256];
+        char server_id[32];
+        int bound = 0;
+        if (dsh_socket_listen(port, server_id, sizeof(server_id), &bound,
+                              err, sizeof(err)) != 0) {
+            return smoke_reject(b, call_id, "socketListen", "invalid", err);
+        }
+        char payload[128];
+        snprintf(payload, sizeof(payload), "{\"serverId\":\"%s\",\"port\":%d}",
+                 server_id, bound);
+        return smoke_settle(b, call_id, 1, payload);
+    }
+    if (strcmp(name, "socketConnect") == 0) {
+        char *scope = json_str_dup(args, "scope");
+        if (!scope || strcmp(scope, "loopback") != 0) {
+            free(scope);
+            fprintf(stderr,
+                    "{\"audit\":\"socket.connect\",\"direction\":\"outbound\","
+                    "\"grant\":\"socket.connect.loopback\",\"outcome\":\"denied\","
+                    "\"reason\":\"scope-not-loopback\"}\n");
+            return smoke_reject(b, call_id, "socketConnect", "denied",
+                                "the loopback seam serves scope=loopback only");
+        }
+        free(scope);
+        char *host = json_str_dup(args, "host");
+        int port = json_int(args, "port", -1);
+        if (!host || strcmp(host, "127.0.0.1") != 0) {
+            free(host);
+            fprintf(stderr,
+                    "{\"audit\":\"socket.connect\",\"direction\":\"outbound\","
+                    "\"grant\":\"socket.connect.loopback\",\"outcome\":\"denied\","
+                    "\"reason\":\"host-not-loopback\"}\n");
+            return smoke_reject(b, call_id, "socketConnect", "denied",
+                                "only the literal 127.0.0.1 is dialable in the loopback scope");
+        }
+        free(host);
+        char err[256];
+        char conn_id[32];
+        if (dsh_socket_connect("127.0.0.1", port, conn_id, sizeof(conn_id),
+                               err, sizeof(err)) != 0) {
+            return smoke_reject(b, call_id, "socketConnect", "invalid", err);
+        }
+        char payload[96];
+        snprintf(payload, sizeof(payload), "{\"connectionId\":\"%s\"}", conn_id);
+        return smoke_settle(b, call_id, 1, payload);
+    }
+    if (strcmp(name, "socketWrite") == 0) {
+        char *conn = json_str_dup(args, "connectionId");
+        char *b64 = json_str_dup(args, "bytesB64");
+        if (!conn || !b64) {
+            free(conn);
+            free(b64);
+            return smoke_reject(b, call_id, "socketWrite", "invalid",
+                                "connectionId and bytesB64 are required");
+        }
+        char err[256];
+        int written = 0, buffered = 0;
+        int rc = dsh_socket_write_b64(conn, b64, &written, &buffered, err, sizeof(err));
+        free(conn);
+        free(b64);
+        if (rc != 0) {
+            return smoke_reject(b, call_id, "socketWrite", "invalid", err);
+        }
+        char payload[96];
+        snprintf(payload, sizeof(payload), "{\"written\":%d,\"buffered\":%d}",
+                 written, buffered);
+        return smoke_settle(b, call_id, 1, payload);
+    }
+    if (strcmp(name, "socketEnd") == 0 || strcmp(name, "socketClose") == 0) {
+        char *id = json_str_dup(args, strcmp(name, "socketEnd") == 0
+                                           ? "connectionId" : "id");
+        if (!id) {
+            return smoke_reject(b, call_id, name, "invalid", "id required");
+        }
+        char err[256];
+        int rc = strcmp(name, "socketEnd") == 0
+                     ? dsh_socket_end(id, err, sizeof(err))
+                     : dsh_socket_close(id, err, sizeof(err));
+        free(id);
+        if (rc != 0) {
+            return smoke_reject(b, call_id, name, "invalid", err);
+        }
+        return smoke_settle(b, call_id, 1, "{\"ok\":true}");
+    }
     smoke_reject(b, call_id, name, "unavailable",
                  "declared unavailable by the smoke backend");
 }
@@ -1198,7 +1316,8 @@ static int spike_run_main(int argc, char **argv) {
     b.http = http;
     dsh_spike_set_gateway_dispatch(b.spike, smoke_on_call, &b);
     dsh_spike_set_descriptor(b.spike, http
-        ? "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\"],"
+        ? "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
+          SMOKE_SOCKET_AVAILABLE "],"
           "\"unavailable\":[\"notify\",\"presentApproval\",\"presentPicker\","
           "\"keychainGet\",\"keychainSet\",\"deviceInfo\",\"haptic\","
           "\"clipboardRead\",\"clipboardWrite\",\"presentShare\",\"keepAwake\"]}"
@@ -1247,13 +1366,18 @@ static int spike_run_main(int argc, char **argv) {
         if (served < 0) { rc = -1; break; }
         if (dsh_spike_complete(b.spike)) break;
         if (served == 0) {
-            /* Quiescent with nothing outstanding — except armed timers and
-             * awaited subprocesses: the two wall-clock realities this driver
-             * sleeps for. Timers fire at their earliest fire_at; a spawned
-             * child (node:child_process seam) keeps the loop alive until the
-             * JS pump drains it or the scenario completes (W5-R, 2026-09-28). */
+            /* Quiescent with nothing outstanding — except armed timers,
+             * awaited subprocesses, and LIVE SOCKETS: the wall-clock
+             * realities this driver sleeps for. Timers fire at their
+             * earliest fire_at; a spawned child (node:child_process seam)
+             * keeps the loop alive until the JS pump drains it or the
+             * scenario completes (W5-R, 2026-09-28); a loopback listener or
+             * connection (the v1.8.0 socket seam) keeps it alive the same
+             * way — a run must not exit with doors open (contract §4: the
+             * server lifetime is the opening session's). */
             int procs = dsh_spike_procs_alive(b.spike);
-            if (b.n_timers == 0 && procs == 0) break;
+            int sockets = dsh_socket_alive();
+            if (b.n_timers == 0 && procs == 0 && sockets == 0) break;
             size_t earliest = 0;
             for (size_t i = 1; i < b.n_timers; i++) {
                 if (b.timers[i].fire_at_ms < b.timers[earliest].fire_at_ms) earliest = i;
@@ -1264,7 +1388,7 @@ static int spike_run_main(int argc, char **argv) {
             long long wait;
             if (b.n_timers > 0) {
                 wait = b.timers[earliest].fire_at_ms - now_ms;
-                if (procs > 0 && (wait > 10 || wait < 0)) wait = 10;
+                if ((procs > 0 || sockets > 0) && (wait > 10 || wait < 0)) wait = 10;
             } else {
                 wait = 10;
             }

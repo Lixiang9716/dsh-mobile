@@ -29,6 +29,8 @@
 #include <time.h>
 #include <unistd.h> /* access() — the vendored-package probe's existence check */
 
+#include "dsh_socket.h" /* the loopback socket seam's pump table (v1.8.0) */
+
 /* The forkpty seam (D-b, 2026-09-29; contract/proposals/2026-09-29-
  * forkpty-face.md): <util.h> is the Darwin/iOS spelling of forkpty(3),
  * <pty.h> the Linux/bionic/musl one — same face, same semantics. A host
@@ -2791,6 +2793,32 @@ static JSValue js_pty_kill(JSContext *ctx, JSValueConst this_val, int argc, JSVa
     return r;
 }
 
+/* The socket seam (D-d, 2026-09-30; contract v1.8.0, §4 "the socket seam").
+ * Exactly ONE intrinsic lives here — the pump's poll (one non-blocking
+ * accept/read pass per server/connection id), the same shape the
+ * child-process and pty polls serve and the JS pump turns into the
+ * data/close event sequence. EVERYTHING else is the contract's gateway
+ * surface: socketListen/socketConnect (the two primitives) and the
+ * connection face (socketWrite/socketEnd/socketClose) travel the gateway
+ * call bridge, so the grant checks, the audit records and the `unavailable`
+ * negotiation all stay where the contract puts them — with the embedder's
+ * gateway dispatch. A host that serves none of it simply never sees a call. */
+static JSValue js_socket_poll(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1) return JS_ThrowTypeError(ctx, "__dshSocketPoll needs an id");
+    size_t n = 0;
+    const char *id = JS_ToCStringLen(ctx, &n, argv[0]);
+    if (!id) return JS_EXCEPTION;
+    char err[DSH_ERR_MAX];
+    char *json = dsh_socket_poll(id, err, sizeof(err));
+    JS_FreeCString(ctx, id);
+    if (json == NULL) return JS_ThrowTypeError(ctx, "__dshSocketPoll: %s", err);
+    JSValue parsed = JS_ParseJSON(ctx, json, strlen(json), "<socket>");
+    free(json);
+    if (JS_IsException(parsed)) return JS_EXCEPTION;
+    return parsed;
+}
+
 /* Shared spawn/spawnSync option parsing: command, args, cwd, env, stdio,
  * detached. modes[] holds DSH_PROC_EXTRA+3 dispositions (0 pipe / 1 ignore /
  * 2 inherit) — node's stdio array may name fds beyond 2 (the ptc control
@@ -3751,6 +3779,13 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_pty_resize, "__dshPtyResize", 3));
     JS_SetPropertyStr(ctx, global, "__dshPtyKill",
                       JS_NewCFunction(ctx, js_pty_kill, "__dshPtyKill", 2));
+    /* The socket seam's pump face (see the section comment above): the ONE
+     * intrinsic — the poll the JS socket shim drives every few ms. The
+     * contract primitives (socketListen/socketConnect) and the connection
+     * face (socketWrite/socketEnd/socketClose) travel the gateway-call
+     * bridge like every primitive. */
+    JS_SetPropertyStr(ctx, global, "__dshSocketPoll",
+                      JS_NewCFunction(ctx, js_socket_poll, "__dshSocketPoll", 1));
     JSValue crypto = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, crypto, "getRandomValues",
                       JS_NewCFunction(ctx, js_get_random_values, "getRandomValues", 1));
@@ -3981,6 +4016,10 @@ void dsh_spike_free(dsh_spike_t *s) {
         t->pending = NULL; t->pending_n = 0; t->pending_cap = 0;
         t->used = 0;
     }
+    /* Socket teardown: every loopback listener and connection fd closes —
+     * a run must not leak open doors (the server lifetime is the opening
+     * session's, contract §4). */
+    dsh_socket_close_all();
     if (s->ctx) {
         for (int i = 0; i < s->pending_count; i++) {
             JS_FreeValue(s->ctx, s->pending[i].resolve);

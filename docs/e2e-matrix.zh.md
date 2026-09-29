@@ -56,7 +56,7 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 46 |
+| 证据目录 | 47 |
 | 已提交 verdict（91 绿，2 条配额阻塞红） | 93 |
 | 至少有一份已提交证据的 scenario | 45 / 45 个不同的 scenario id（37 个 manifest） |
 | 已验证 PNG 的截图 | 113 |
@@ -101,6 +101,7 @@
 | `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
+| `socket.seam` | — | — | — | 17/17 |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
@@ -167,6 +168,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 面：bundle 的 seam core + 产物 sha256 校验） | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34（stub 面：同一条流——可替换性证明） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17(回环缝:真 TCP echo + 半关闭、被 spawn 的 /bin/bash 子进程经 /dev/tcp 拨号测试内服务器、两条越界拒绝腿;审计门钉 listen=3 connect=2 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，

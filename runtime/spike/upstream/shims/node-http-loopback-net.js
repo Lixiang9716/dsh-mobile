@@ -17,6 +17,7 @@ import {
   nextTick,
   LoopbackIncoming,
 } from 'upstream/shims/node-http-loopback.js';
+import { TcpSocketFace, socketSeamAvailable } from 'upstream/shims/node-socket-tcp.js';
 
 /** ===== Upgrade-gate helpers ==============================================
  * serverUpgradeIngress/clientUpgradeAwait moved here from the client module
@@ -273,7 +274,15 @@ class LoopbackNetSocket extends EventEmitter {
 /** The net.connect face over the loopback registry: connect(port[, host]),
  * connect(path) (a unix path is never registered — ECONNREFUSED), and
  * connect(options[, callback]). The 'connect'/'ready' pair fires on the
- * next macrotask like a real dial. */
+ * next macrotask like a real dial.
+ *
+ * v1.8.0 (the socket seam): a registry MISS used to be ECONNREFUSED
+ * unconditionally — the peer can now be another OS process (the v1.5.0
+ * subprocess seam's children, an in-test server's real listener), so a miss
+ * dials REAL loopback TCP when the host negotiated the seam. The in-process
+ * dispatch (registry HIT) is byte-for-byte unchanged — every existing spec
+ * keeps its paired-pipe behavior; without the seam the honest ECONNREFUSED
+ * stays (the negotiation floor, zero regression). */
 export const connectLoopbackNet = (...args) => {
   let options = {};
   let callback;
@@ -296,11 +305,19 @@ export const connectLoopbackNet = (...args) => {
   }
   const port = Number(options.port ?? 0);
   const host = String(options.host ?? '127.0.0.1');
+  const record = registry.get(keyFor(host, port));
+  if ((!record || !record.server.listening) && host === '127.0.0.1'
+      && socketSeamAvailable()) {
+    const tcp = new TcpSocketFace();
+    tcp.localPort = port;
+    if (typeof callback === 'function') tcp.once('connect', callback);
+    tcp.connect({ host, port });
+    return tcp;
+  }
   const socket = new LoopbackNetSocket();
   socket.localPort = port;
   if (typeof callback === 'function') socket.once('connect', callback);
   nextTick(() => {
-    const record = registry.get(keyFor(host, port));
     if (!record || !record.server.listening) {
       const error = new Error(`connect ECONNREFUSED ${host}:${port}`);
       error.code = 'ECONNREFUSED';

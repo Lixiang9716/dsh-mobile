@@ -23,8 +23,13 @@ add_library(dsh-core STATIC
   # The platform-neutral host + the WebAssembly seam (dsh_wasm.c pulls the
   # wasm3 API below; the android/harmony shells do not compile it, the iOS
   # app does — it is portable C, so the portable spine carries it).
+  # dsh_socket.c — the loopback socket seam's pump table (contract v1.8.0),
+  # plain POSIX/BSD sockets; every per-host build compiles it, and a host
+  # whose gateway layer does not SERVE the socket primitives answers
+  # `unavailable` (negotiation, not a branch).
   dsh_spike_host.c
   dsh_wasm.c
+  dsh_socket.c
   # The quickjs-ng fork (pin: vendor/ensure.sh) — exactly the four TUs every
   # proven build compiles; quickjs-libc is deliberately excluded (the spike
   # host provides its own glue, runtime/spike/README.md "Embedding contract").

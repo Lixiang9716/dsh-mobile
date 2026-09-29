@@ -1,6 +1,8 @@
-# 提案:socket 缝——可审计的回环网络与能力分级(v1.8.0 candidate)
+# 提案:socket 缝——可审计的回环网络与能力分级(v1.8.0)
 
-> **状态:DRAFT(D5 提案——未冻结、未实现)。**
+> **状态:ADOPTED(2026-09-30,决策矩阵 D-d)——以可加性方式冻结为合同 v1.8.0;v0 只出回环。**
+> 更宽的作用域(`lan`、`any-remote`)与 TLS 终结仍是具名非目标,各配各的授权类;冻结的形状见
+> [primitives.md](../primitives.md) §4「the socket seam (v1.8.0)」。
 > [English](2026-09-28-socket-seam.md) | 简体中文
 
 ## 动机
@@ -78,4 +80,4 @@ export declare function socketConnect(request: SocketConnectRequest): Promise<
 
 ## 版本
 
-v1.8.0 candidate(可加性:两个原语 + 一条通道;授权类复用 v1.5.0 family-flag 机制)。
+v1.8.0(可加性:两个原语 + 一条通道;授权类复用 v1.5.0 family-flag 机制)。2026-09-30 采纳——v0 作用域:仅回环,与上文规格一致;没有此缝的宿主按调用应答 `unavailable`,协商保留一切现有底线。

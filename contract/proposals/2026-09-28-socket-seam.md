@@ -1,6 +1,10 @@
-# Proposal: the socket seam — audited loopback networking with capability-graded scopes (v1.8.0 candidate)
+# Proposal: the socket seam — audited loopback networking with capability-graded scopes (v1.8.0)
 
-> **Status: DRAFT (D5 proposal — nothing frozen, nothing implemented).**
+> **Status: ADOPTED (2026-09-30, decision matrix D-d) — frozen additively as
+> contract v1.8.0; v0 ships LOOPBACK ONLY.** The wider scopes (`lan`,
+> `any-remote`) and TLS termination remain named non-goals with their own
+> grant classes; the frozen shapes live in
+> [primitives.md](../primitives.md) §4 "the socket seam (v1.8.0)".
 > English | [简体中文](2026-09-28-socket-seam.zh.md)
 
 ## Motivation
@@ -127,5 +131,7 @@ polling anywhere (D8).
 
 ## Version
 
-v1.8.0 candidate (additive: two primitives + one channel; the grant classes
-reuse the v1.5.0 family-flag mechanism).
+v1.8.0 (additive: two primitives + one channel; the grant classes reuse the
+v1.5.0 family-flag mechanism). Adopted 2026-09-30 — v0 scope: loopback only,
+exactly as specified above; hosts without the seam answer `unavailable` per
+call and negotiation keeps every current floor.

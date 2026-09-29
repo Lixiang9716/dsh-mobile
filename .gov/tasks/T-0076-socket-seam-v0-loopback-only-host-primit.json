@@ -1,0 +1,22 @@
+{
+  "title": "socket seam v0 \u2014 loopback-only host primitives, contract flip, CLI leg",
+  "created": "2026-09-29T19:58:49+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] contract flip: proposals/2026-09-28-socket-seam DRAFT\u2192adopted (en+zh), pairing --write, primitives.md(+zh) v1.8.0 additive note + \u00a74/\u00a75/\u00a76 rows, d.ts declarations, contract/README(+zh) proposal-row sync",
+    "[x] host C: runtime/spike/host/dsh_socket.c/.h (loopback-only, host picks free port, 4ms-pollable non-blocking), intrinsics + main_cli gateway serve (socketListen/socketConnect, grant+audit per listen/connect/accept), descriptor, run-loop alive wiring, teardown",
+    "[x] JS face: gateway.js socketListen/socketConnect, real-TCP shim over the pump (in-process dispatch preserved), node:net face upgrade (Socket/createServer served, registry-miss dials real TCP), family-flag grant narrow-default loopback, zero prompts",
+    "[x] e2e: socket-seam scenario on the CLI (server+client in one scenario; subprocess\u00d7socket leg \u2014 spawned OS child dials the in-test server)",
+    "suite regression: the socket-class excluded specs (ssh\u00d78, lsp-stdio, subprocess-ssh\u00d75 per the current baseline sweep) re-run per-spec; every entry has failed:0 or a named reason in the PR; loopback zero-regression subset green",
+    "gov run full DAG green with receipt; push; gh pr create with acceptance evidence"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0076"
+}
