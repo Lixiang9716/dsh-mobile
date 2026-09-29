@@ -295,6 +295,14 @@ fetch_npm() {
     rm -rf "npm/$dir"
     mkdir -p "npm/$dir"
     tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    # Directory modes ride the tarball verbatim, and some registry tarballs
+    # pack dirs without the execute bit (pngjs@5.0.0 measured 2026-09-29:
+    # lib/ landed drw-r--r--) — every require under it then fails
+    # MODULE_NOT_FOUND-shaped while the files are all there, and the embed
+    # generator's rglob silently yields an empty row. u+rwX on the
+    # materialized tree is owner-hygiene, not a content edit (D6: the file
+    # BYTES are untouched; a re-extract reproduces them exactly).
+    chmod -R u+rwX "npm/$dir"
     echo "$sha" > "npm/$dir/.vendor-pin"
     rm -f "$tmp"
     echo "vendor: fetched npm/$dir (sha256 verified, pin-stamped)"
