@@ -108,6 +108,35 @@ Path history: `tools/e2e → test/e2e` and `tools/release → packages/release`
 (2026-09-23, [D17]). Historical notes and e2e receipts keep the paths they
 were written with — they are records, not drift.
 
+## The simulator matrix (release-grade evidence)
+
+`tools/test/run-simulator-matrix.sh` is the one command that proves, per
+platform, both halves of the flavor split on a real simulator/emulator:
+
+| Leg | What it proves | Evidence |
+| --- | --- | --- |
+| release (iOS / Android) | the user-facing build boots to the official UI with ZERO drive machinery — no drive markers (`spike: sequence` / `ui-wait` / verdict text), no debug/info logger records — and refuses an E2E drive BY NAME. The Release configuration cannot run the drives (they are compiled out of it by design), and that absence plus the loud refusal is exactly its evidence. The audit stream and warn/error records are the product's own planes (the serving boot brings up the full spine); they are RECORDED in `release-proof.json`, never asserted zero | `hosts/<plat>/artifacts/simulator-matrix/release/` |
+| harness (iOS / Android) | the debug harness — the verification vehicle — runs the existing e2e runners unchanged: scenario-id logs 1:1 against the manifests, receipts machine-authored on the green path only | `…/simulator-matrix/{gateway-drive,device-plane,regression}/` |
+| harmony | honestly skipped when no DevEco toolchain / hdc target exists on the machine — a skip receipt, never a fake pass (the leg stays script-ready for a real device) | `hosts/harmony/artifacts/simulator-matrix/matrix-skip-receipt.json` |
+
+```
+tools/test/run-simulator-matrix.sh                    # every platform
+tools/test/run-simulator-matrix.sh --platform ios     # one platform
+tools/test/run-simulator-matrix.sh --platform android --skip-release
+```
+
+Fail fast: the first failing leg stops the run and fails it
+(`DSH_MATRIX_KEEP_GOING=1` runs every requested leg anyway — the summary
+still exits non-zero). Every wait polls a condition with a deadline, never a
+blind sleep; a failed leg's evidence dir moves to /tmp so the e2e-matrix
+checker never inventories a verdict-bearing dir without its receipt. Legs
+that need a driver the machine lacks (idb/WDA on iOS) skip with a trace in
+`capability-skips.json`, alongside the standing hardware rows (camera /
+Bluetooth / NFC: a simulator has no radio — future system-capability
+scenarios negotiate `unavailable` through the capability plane, never assume
+the hardware). The matrix is deliberately NOT wired into the gate DAG —
+running it is a release ritual; gating it is a later decision.
+
 ## CI mapping
 
 The facade's per-platform steps are the verbatim commands of the matching

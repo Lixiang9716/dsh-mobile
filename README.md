@@ -36,7 +36,7 @@ npm deps), with in-house code reduced to glue (shims, adapters, the contract car
 through the carrier on iOS / Android / HarmonyOS: the official client-modules web boot, the
 official app shell (the 58-package application tier, #61), real `session.list`/journal, and
 the composer write path. The consolidated numbers and per-dir inventory:
-[docs/e2e-matrix.md](docs/e2e-matrix.md) — 35 evidence dirs, 78 green verdicts (2 quota-blocked red, disclosed) — under
+[docs/e2e-matrix.md](docs/e2e-matrix.md) — 61 evidence dirs, 129 green verdicts — under
 `hosts/{ios,android,harmony}/artifacts/` (`b1-official-web`, `session-live-read`,
 `composer-live-write`, `android-upstream`, `android-session-live`, `d9-official-web`,
 `d9-session-live`, `d9-write-live`).

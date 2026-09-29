@@ -1,0 +1,136 @@
+2026-09-30 03:31:50.889 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 03:31:50.898 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":22,"unavailable":0,"devicePlane":6}]}
+2026-09-30 03:31:50.899 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+2026-09-30 03:31:50.903 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+2026-09-30 03:31:50.944 DSHSpike[88081:39094659] dsh.gateway.audit: {"primitive":"deviceInfo","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"platform":"ios"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.945 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"ios","screen":true,"locale":true,"timezone":true,"battery":false}]}
+2026-09-30 03:31:50.945 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.949 DSHSpike[88081:39094659] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"light"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.953 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.954 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"medium"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.954 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.954 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"heavy"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.955 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.955 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"rigid"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.955 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.957 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"soft"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.957 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.966 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"selection"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.967 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.967 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"success"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.968 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.969 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"warning"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.969 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 03:31:50.969 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"haptic","ts":"2026-09-29T19:31:50Z","outcome":"ok","detail":{"pattern":"error"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:50.970 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9,"unavailable":0}]}
+2026-09-30 03:31:50.970 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+2026-09-30 03:31:51.009 DSHSpike[88081:39094661] dsh.gateway.audit: {"primitive":"clipboardWrite","ts":"2026-09-29T19:31:51Z","outcome":"ok","detail":{"length":19,"kind":"text"},"caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:31:51.010 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":19,"unavailable":false}]}
+2026-09-30 03:31:51.016 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+objc[88081]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x107ee8310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x107f84398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-09-30 03:31:55.900 DSHSpike[88081:39094471] dsh.gateway.audit: {"primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:31:55Z"}
+2026-09-30 03:31:55.910 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.read","match":true}]}
+2026-09-30 03:31:55.910 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+2026-09-30 03:31:55.916 DSHSpike[88081:39094680] dsh.gateway.audit: {"primitive":"clipboardWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:31:55Z","detail":{"length":9,"kind":"text"}}
+2026-09-30 03:31:55.917 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+2026-09-30 03:31:59.010 DSHSpike[88081:39094471] dsh.gateway.audit: {"outcome":"ok","ts":"2026-09-29T19:31:59Z","primitive":"clipboardRead","verdict":"granted","caller":"dsh.spike.scenario"}
+2026-09-30 03:31:59.011 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.remember","match":true}]}
+2026-09-30 03:31:59.011 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+2026-09-30 03:31:59.023 DSHSpike[88081:39094658] dsh.gateway.audit: {"outcome":"ok","ts":"2026-09-29T19:31:59Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"clipboardRead"}
+2026-09-30 03:31:59.024 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.standing","match":true}]}
+2026-09-30 03:31:59.025 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+2026-09-30 03:31:59.026 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+2026-09-30 03:31:59.069 DSHSpike[88081:39094658] dsh.gateway.audit: {"outcome":"ok","ts":"2026-09-29T19:31:59Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsWrite"}
+2026-09-30 03:31:59.072 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 03:32:08.538 DSHSpike[88081:39094471] dsh.gateway.audit: {"primitive":"presentShare","outcome":"ok","detail":{"kind":"files"},"ts":"2026-09-29T19:32:08Z","caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:32:08.550 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":true}]}
+2026-09-30 03:32:08.550 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 03:32:16.404 DSHSpike[88081:39094471] dsh.gateway.audit: {"primitive":"presentShare","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","detail":{"kind":"text"},"ts":"2026-09-29T19:32:16Z"}
+2026-09-30 03:32:16.410 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":true}]}
+2026-09-30 03:32:16.411 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 03:32:16.416 DSHSpike[88081:39102628] dsh.gateway.audit: {"outcome":"denied","primitive":"presentShare","verdict":"granted","caller":"dsh.spike.scenario","ts":"2026-09-29T19:32:16Z"}
+2026-09-30 03:32:16.416 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+2026-09-30 03:32:16.417 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+2026-09-30 03:32:16.417 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+2026-09-30 03:32:16.420 DSHSpike[88081:39098929] dsh.gateway.audit: {"outcome":"ok","detail":{"hold":true},"primitive":"keepAwake","verdict":"granted","caller":"dsh.spike.scenario","ts":"2026-09-29T19:32:16Z"}
+2026-09-30 03:32:16.420 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+2026-09-30 03:32:16.420 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+2026-09-30 03:32:16.422 DSHSpike[88081:39098929] dsh.gateway.audit: {"outcome":"ok","detail":{"hold":false},"primitive":"keepAwake","verdict":"granted","caller":"dsh.spike.scenario","ts":"2026-09-29T19:32:16Z"}
+2026-09-30 03:32:16.422 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+2026-09-30 03:32:16.422 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+2026-09-30 03:32:52.880 DSHSpike[88081:39102628] dsh.gateway.audit: {"ts":"2026-09-29T19:32:52Z","primitive":"presentPicker","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 03:32:52.900 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.granted","mode":"media","scopeOpaque":true,"pathOpaque":true}]}
+2026-09-30 03:32:52.900 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:9C4EC77A-020E-444F-AC68-09DC245E4D32","path":"media-63FF9D1F.jpeg"}]}
+2026-09-30 03:32:52.900 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+2026-09-30 03:32:52.903 DSHSpike[88081:39102628] dsh.gateway.audit: {"outcome":"ok","verdict":"granted","ts":"2026-09-29T19:32:52Z","caller":"dsh.spike.scenario","primitive":"fsRead"}
+2026-09-30 03:32:52.903 DSHSpike[88081:39094971] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3796}]}
+2026-09-30 03:32:52.909 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.read","bytes":2847,"reads":true}]}
+2026-09-30 03:32:52.909 DSHSpike[88081:39094971] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}
+2026-09-30 04:24:30.884 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 04:24:30.886 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"descriptor.declared","available":22,"unavailable":0,"devicePlane":6}]}
+2026-09-30 04:24:30.886 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"deviceInfo"}]}
+2026-09-30 04:24:30.897 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+2026-09-30 04:24:30.946 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"deviceInfo","caller":"dsh.spike.scenario","verdict":"granted","detail":{"platform":"ios"},"outcome":"ok"}
+2026-09-30 04:24:30.949 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"device.info","platform":"ios","screen":true,"locale":true,"timezone":true,"battery":false}]}
+2026-09-30 04:24:30.950 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.957 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"light"},"outcome":"ok"}
+2026-09-30 04:24:30.957 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.974 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"medium"},"outcome":"ok"}
+2026-09-30 04:24:30.974 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.976 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"heavy"},"outcome":"ok"}
+2026-09-30 04:24:30.976 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.980 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"rigid"},"outcome":"ok"}
+2026-09-30 04:24:30.981 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.982 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"soft"},"outcome":"ok"}
+2026-09-30 04:24:30.982 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:30.984 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"selection"},"outcome":"ok"}
+2026-09-30 04:24:30.984 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:31.002 DSHSpike[41090:39860432] dsh.gateway.audit: {"ts":"2026-09-29T20:24:30Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"success"},"outcome":"ok"}
+2026-09-30 04:24:31.002 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:31.003 DSHSpike[41090:39860434] dsh.gateway.audit: {"ts":"2026-09-29T20:24:31Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"warning"},"outcome":"ok"}
+2026-09-30 04:24:31.004 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"haptic"}]}
+2026-09-30 04:24:31.006 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:31Z","primitive":"haptic","caller":"dsh.spike.scenario","verdict":"granted","detail":{"pattern":"error"},"outcome":"ok"}
+2026-09-30 04:24:31.006 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"haptic.series","patterns":9,"unavailable":0}]}
+2026-09-30 04:24:31.007 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+2026-09-30 04:24:31.067 DSHSpike[41090:39860434] dsh.gateway.audit: {"ts":"2026-09-29T20:24:31Z","primitive":"clipboardWrite","caller":"dsh.spike.scenario","verdict":"granted","detail":{"kind":"text","length":19},"outcome":"ok"}
+2026-09-30 04:24:31.068 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.written","length":19,"unavailable":false}]}
+2026-09-30 04:24:31.069 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+objc[41090]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x106578310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x1065c0398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-09-30 04:24:35.948 DSHSpike[41090:39860296] dsh.gateway.audit: {"ts":"2026-09-29T20:24:35Z","primitive":"clipboardRead","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+2026-09-30 04:24:35.955 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.read","match":true}]}
+2026-09-30 04:24:35.955 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardWrite"}]}
+2026-09-30 04:24:35.959 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:35Z","primitive":"clipboardWrite","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"kind":"text","length":9}}
+2026-09-30 04:24:35.959 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+2026-09-30 04:24:39.095 DSHSpike[41090:39860296] dsh.gateway.audit: {"outcome":"ok","primitive":"clipboardRead","caller":"dsh.spike.scenario","ts":"2026-09-29T20:24:39Z","verdict":"granted"}
+2026-09-30 04:24:39.096 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.remember","match":true}]}
+2026-09-30 04:24:39.096 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"clipboardRead"}]}
+2026-09-30 04:24:39.106 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:39Z","caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","primitive":"clipboardRead"}
+2026-09-30 04:24:39.106 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"clipboard.standing","match":true}]}
+2026-09-30 04:24:39.107 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"share-e2e.txt"}]}
+2026-09-30 04:24:39.108 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+2026-09-30 04:24:39.113 DSHSpike[41090:39860439] dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsWrite","verdict":"granted","outcome":"ok","ts":"2026-09-29T20:24:39Z"}
+2026-09-30 04:24:39.115 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 04:24:47.097 DSHSpike[41090:39860296] dsh.gateway.audit: {"ts":"2026-09-29T20:24:47Z","detail":{"kind":"files"},"primitive":"presentShare","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted"}
+2026-09-30 04:24:47.107 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.files.completed","shared":true}]}
+2026-09-30 04:24:47.108 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 04:24:51.865 DSHSpike[41090:39860296] dsh.gateway.audit: {"ts":"2026-09-29T20:24:51Z","primitive":"presentShare","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted","detail":{"kind":"text"}}
+2026-09-30 04:24:51.875 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.text.completed","shared":true}]}
+2026-09-30 04:24:51.875 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentShare"}]}
+2026-09-30 04:24:51.878 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:51Z","primitive":"presentShare","caller":"dsh.spike.scenario","verdict":"granted","outcome":"denied"}
+2026-09-30 04:24:51.879 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"presentShare"}]}
+2026-09-30 04:24:51.879 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"share.denied","code":"denied"}]}
+2026-09-30 04:24:51.879 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+2026-09-30 04:24:51.881 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:51Z","primitive":"keepAwake","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"hold":true}}
+2026-09-30 04:24:51.881 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.hold","hold":true}]}
+2026-09-30 04:24:51.881 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keepAwake"}]}
+2026-09-30 04:24:51.882 DSHSpike[41090:39860439] dsh.gateway.audit: {"ts":"2026-09-29T20:24:51Z","primitive":"keepAwake","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"hold":false}}
+2026-09-30 04:24:51.883 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
+2026-09-30 04:24:51.884 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
+2026-09-30 04:25:26.955 DSHSpike[41090:39863427] dsh.gateway.audit: {"primitive":"presentPicker","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","ts":"2026-09-29T20:25:26Z"}
+2026-09-30 04:25:26.982 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.granted","mode":"media","scopeOpaque":true,"pathOpaque":true}]}
+2026-09-30 04:25:26.982 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:7A1208BC-9EB8-4C0B-B410-58F90F305F66","path":"media-F5123AEC.jpeg"}]}
+2026-09-30 04:25:26.982 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+2026-09-30 04:25:26.984 DSHSpike[41090:39863427] dsh.gateway.audit: {"ts":"2026-09-29T20:25:26Z","primitive":"fsRead","verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario"}
+2026-09-30 04:25:26.985 DSHSpike[41090:39860828] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5404}]}
+2026-09-30 04:25:26.993 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.read","bytes":4053,"reads":true}]}
+2026-09-30 04:25:26.993 DSHSpike[41090:39860828] dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}

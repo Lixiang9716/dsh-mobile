@@ -1,0 +1,27 @@
+{
+  "leg": "release",
+  "configuration": "Release (the user-facing distribution build; debug-keystore verification copy)",
+  "host": "android emulator-5554",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "tree": "origin/main 89a73c236bce (dirty working tree at receipt time)",
+  "assertions": {
+    "driveMachineryMarkers": 0,
+    "assertedZero": [
+      "dsh.spike.result",
+      "ALL PASS",
+      "ALL FAIL",
+      "level:debug records",
+      "level:info records",
+      "debuggable"
+    ],
+    "officialUiReached": "carrier LISTEN + page fetch + GET / -> 401 (origin-release.txt); plain-launch-release.png",
+    "driveRefusal": "refusal.logcat.txt \u2014 refusing 'dsh.llm' by name"
+  },
+  "observedNotAsserted": {
+    "gatewayAuditLines": 0,
+    "warnLevelRecords": 2,
+    "note": "the product's own planes on today's serving boot \u2014 recorded as fact, never asserted zero (see the surprise ledger: the committed release-logging 0/0 assertions are stale against this tree)"
+  },
+  "producedAt": "2026-09-30T04:20:26+08:00"
+}
