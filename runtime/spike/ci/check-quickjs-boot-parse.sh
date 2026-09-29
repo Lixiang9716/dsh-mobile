@@ -1,28 +1,22 @@
 #!/bin/sh
 # runtime/spike/ci/check-quickjs-boot-parse.sh — the `quickjs-boot-parse` gate.
 #
-# WHY: `node --check` passing is not "QuickJS can parse". The 2026-09-29 shim
-# splits (fs.js → fs-seeded.js, buffer.js → buffer-codecs.js) landed node-clean
-# and QuickJS-fatal — a class of error only the real engine exposes — and the
-# DAG noticed only when a scenario happened to import the broken file. This
-# gate compiles the break surface on purpose: a throwaway scenario importing
-# the two split roots, booted under the vendored quickjs-ng through the
-# desktop CLI (the same embed path every platform ships), requiring exit 0.
-# The import graph pulls fs → fs-seeded → buffer → buffer-codecs plus the
-# fs-workspace/fs-paths/fs-stat/fs-write-stream bridges — exactly the surface
-# a split touches — so the next node-clean/QuickJS-fatal edit goes red here,
-# at the gate, instead of red in a scenario nobody ran.
+# WHY: node --check passing is not "QuickJS can parse". The 2026-09-29 shim
+# splits (fs.js -> fs-seeded.js, buffer.js -> buffer-codecs.js) landed
+# node-clean and QuickJS-fatal — a class of error only the real engine
+# exposes. This gate compiles the break surface on purpose: a throwaway
+# scenario importing the two split roots, booted under the vendored
+# quickjs-ng through the desktop CLI, requiring exit 0 — so the next
+# node-clean/QuickJS-fatal edit goes red here, at the gate.
 #
-# The stub follows the logging rules (unified logger, entry log.debug) so a
-# gate that glimpses it mid-run stays green, and is deleted on every exit
-# path. Closure stagers enumerate scenarios from explicit pin lists, so the
-# transient file cannot trip closures/bundle-files.
+# The stub is deleted on every exit path. Closure stagers enumerate
+# scenarios from explicit pin lists, so the transient file cannot trip
+# closures/bundle-files.
 #
-# Budget: sub-second with the prebuilt CLI (measured 0.04s); on a miss the
-# CLI is built first (host/build.sh — the same rule run-*-e2e.sh uses; a cold
-# CI build is the one path that can exceed the steady-state budget).
-#
-# usage: check-quickjs-boot-parse.sh   (cwd-independent; exit 0 = boot graph compiles)
+# ARCH GUARD: the CLI's link embeds the iSH static libs — AArch64 assembly
+# an x86_64 assembler cannot build. Non-arm64 machines skip here; the
+# gov.yml arm64 job (ubuntu-24.04-arm) + arm64 dev machines carry the proof.
+
 set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT/runtime/spike"
@@ -73,7 +67,6 @@ if [ "$(uname -m)" != "arm64" ]; then
     exit 0
 fi
 
-!/bin/sh
 # runtime/spike/ci/check-quickjs-boot-parse.sh — the `quickjs-boot-parse` gate.
 #
 # WHY: `node --check` passing is not "QuickJS can parse". The 2026-09-29 shim
