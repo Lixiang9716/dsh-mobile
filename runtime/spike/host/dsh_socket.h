@@ -59,7 +59,12 @@ int dsh_socket_connect(const char *host, int port, char *conn_id_out,
  *   - conn id    → {"kind":"connection","connected":bool,"chunkB64":str|null,
  *                  "eof":bool,"pendingWrite":N,"flushError":int|null}
  *                  (pendingWrite/flushError surface the write-backpressure
- *                  buffer's drain, mirroring the pty poll).
+ *                  buffer's drain, mirroring the pty poll). A FAILED dial is
+ *                  terminal on the first poll:
+ *                  {"connected":false,"eof":true,"dialError":<SO_ERROR>}
+ *                  — and the slot is RELEASED with that same poll (the JS
+ *                  pump turns it into the connect-failure face; nobody holds
+ *                  a dead id, alive() drops back to the truth).
  * Returns a malloc'd JSON string (caller frees) or NULL with err filled for
  * an unknown id. */
 char *dsh_socket_poll(const char *id, char *err, size_t errcap);

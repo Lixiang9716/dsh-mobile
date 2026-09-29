@@ -19,6 +19,10 @@
  *      listen and a non-literal-loopback connect both reject `denied`
  *      (the five-rule model's narrowest-scope default, exercised with zero
  *      prompts and zero interaction).
+ *   4. `dial.refused` — the negotiation floor WITH the seam on: a dead
+ *      loopback port fails loud ECONNREFUSED then 'close' (never a hang —
+ *      the failed dial is terminal on the host's first poll and the slot is
+ *      released there).
  *
  * The gateway audit records (one per listen/connect/accept, denied attempts
  * included) live on the host's stderr as structured JSON lines;
@@ -99,7 +103,7 @@ const legEcho = async (net) => {
   demand(echoed === 'ping-over-loopback', `echo mismatch: got "${echoed.slice(0, 40)}"`);
   emit('socket.client.data', { text: echoed });
 
-  const endP = once(client, 'close');
+  const endP = onceClose(client);
   client.end();
   await endP;
   emit('socket.client.closed', { halfClose: true });
@@ -166,6 +170,29 @@ const legDenials = async () => {
   emit('socket.connect.denied', { request: 'connect host=10.0.0.1', code: 'denied' });
 };
 
+/** A pure close-await (NO error-reject side channel): the seam's failure
+ * face emits 'error' and 'close' in one burst, so a once('close') that
+ * also rejects on 'error' would settle rejected before the close lands. */
+const onceClose = (emitter) => new Promise((resolve) => emitter.once('close', resolve));
+
+/** Leg 4: the negotiation floor WITH the seam on — a dial to a dead loopback
+ * port fails loud (ECONNREFUSED then 'close'), never a hang, and the host
+ * releases the connection so the run loop can go quiet. */
+const legRefused = async (net) => {
+  const client = net.connect(1, '127.0.0.1'); // tcpmux: nothing listens there
+  // The failure face is 'error' THEN 'close' in one synchronous burst —
+  // subscribe to both up front or the close is already gone.
+  const closedP = onceClose(client);
+  const err = await new Promise((resolve, reject) => {
+    client.once('error', resolve);
+    client.once('connect', () => reject(new Error('dial to port 1 unexpectedly connected')));
+  });
+  demand(err && err.code === 'ECONNREFUSED', `expected ECONNREFUSED, got ${err ? err.code : 'connect'}`);
+  emit('socket.refused', { port: 1, code: err.code });
+  await closedP;
+  emit('socket.refused.closed', {});
+};
+
 const run = async () => {
   // The node faces ride the shim registration chain (see the first import);
   // these dynamic imports are what keep that order honest at run time.
@@ -175,7 +202,8 @@ const run = async () => {
   await legEcho(net);
   await legSubprocess(net, spawn);
   await legDenials();
-  emit('socket.passed', { legs: 3 });
+  await legRefused(net);
+  emit('socket.passed', { legs: 4 });
   finish(true, 'socket seam legs green');
 };
 

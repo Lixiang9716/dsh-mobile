@@ -17,6 +17,13 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > implemented note). Totals below re-run against this tree (54 dirs / 113
 > verdicts).
 >
+> **Currency**: this matrix reflects the socket-seam change (2026-09-30,
+> PR #251): scenario `socket.seam` 17→19 records / 19/19, dir
+> `runtime/spike/artifacts/macos-cli-socket-seam/` — and the totals are
+> re-run against this tree (47 dirs / 95 verdicts / 46 of 46 scenario ids
+> green-covered / 38 manifests). The models-page note below is the previous
+> currency record; rows it added keep their display-name spellings.
+>
 > **Currency**: this matrix reflects the models-page e2e change
 > (2026-09-25): the official client's models 设置页 has its own CLI proof —
 > scenario `models.directory` 6/6, dir
@@ -136,7 +143,7 @@ evidence on that platform.
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
 
-All 43 distinct scenario ids (35 manifests — `m2.llm` has two: the
+All 46 distinct scenario ids (38 manifests — `m2.llm` has two: the
 19-event scripted-SSE CLI leg and the 14-event device leg) have at least
 one green committed evidence dir; `m2.session` runs green on all four
 hosts, and the models 设置页's `models.directory` rides the macOS CLI

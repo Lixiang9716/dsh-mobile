@@ -20,6 +20,8 @@
     { "event": "socket.subprocess.closed" },
     { "event": "socket.grant.denied", "match": { "request": "listen scope=lan", "code": "denied" } },
     { "event": "socket.connect.denied", "match": { "request": "connect host=10.0.0.1", "code": "denied" } },
-    { "event": "socket.passed", "match": { "legs": 3 } }
+    { "event": "socket.refused", "match": { "port": 1, "code": "ECONNREFUSED" } },
+    { "event": "socket.refused.closed" },
+    { "event": "socket.passed", "match": { "legs": 4 } }
   ]
 }

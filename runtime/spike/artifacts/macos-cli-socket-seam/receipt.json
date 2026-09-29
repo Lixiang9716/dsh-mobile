@@ -7,9 +7,9 @@
    "id": "socket.seam",
    "checker": "test/e2e/scenarios/socket-seam-local.json",
    "result": "pass",
-   "note": "17 records, one-to-one: host-picked listen port, a real TCP echo roundtrip with a half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp (bytes crossing between two OS processes), and the two out-of-scope denials (lan listen, non-loopback connect)"
+   "note": "19 records, one-to-one: host-picked listen port, a real TCP echo roundtrip with a half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp (bytes crossing between two OS processes), the two out-of-scope denials (lan listen, non-loopback connect), and the dead-port dial refused loud ECONNREFUSED (the negotiation floor, proven WITH the seam on)"
   }
  ],
- "audit": "listen=2 connect=2 accept=2, all granted, every record loopback-scoped (runtime/spike/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
- "notes": "Negotiation floor: hosts without the seam keep descriptorless descriptors and the JS face answers the honest ECONNREFUSED/EACCES — zero behavior change where the seam is absent."
+ "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: listen=3 connect=3 accept=2 denied=2 — every attempt one record, loopback-scoped (runtime/spike/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
+ "notes": "Negotiation floor: hosts without the seam keep descriptorless descriptors and the JS face answers the honest ECONNREFUSED/EACCES — zero behavior change where the seam is absent; with the seam on, a dead-port dial fails loud ECONNREFUSED (scenario leg 4), never a hang."
 }

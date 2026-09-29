@@ -232,6 +232,18 @@ class TcpSocket extends EventEmitter {
     }, PUMP_TICK_MS);
   }
 
+  /** A failed dial is TERMINAL, and the host releases the slot with the
+   * same poll (dialError carries the SO_ERROR errno): emit the node
+   * connect-failure face — 'error' ECONNREFUSED, then 'close' — so a dead
+   * port never hangs an awaiter, the pump stops re-arming, and the
+   * negotiation floor (ECONNREFUSED, not a hang) holds with the seam on. */
+  __failDial(res) {
+    this.__fail(Object.assign(
+      new Error(`connect ECONNREFUSED 127.0.0.1 (errno ${res.dialError ?? -61})`),
+      { code: 'ECONNREFUSED', errno: res.dialError ?? -61, syscall: 'connect' },
+    ));
+  }
+
   __tick() {
     if (this.#destroyed) return;
     if (this.#id === null) return; // dial still in flight — write() re-arms
@@ -245,10 +257,7 @@ class TcpSocket extends EventEmitter {
     if (this.#destroyed) return;
     if (res.kind !== 'connection') return;
     if (!res.connected && res.eof) {
-      // The dial failed at the host (refused mid-pump) — name it.
-      this.__fail(Object.assign(new Error('connect ECONNREFUSED 127.0.0.1'), {
-        code: 'ECONNREFUSED', errno: -61, syscall: 'connect',
-      }));
+      this.__failDial(res);
       return;
     }
     if (res.connected && !this.__announced) {
@@ -283,19 +292,29 @@ class TcpSocket extends EventEmitter {
 
   /** Surface buffered chunks as 'data' (Base64 → bytes → Buffer — the same
    * DshBuffer face discipline the child-process pump keeps: consumers parse
-   * with the Buffer face, a bare Uint8Array strips it). */
+   * with the Buffer face, a bare Uint8Array strips it).
+   * Index-consumed ON PURPOSE: a 'data' handler that pauses() mid-drain (the
+   * standard node flow-control shape — pause on a backpressure threshold,
+   * resume on drain) must leave every UNDELIVERED tail in the queue. A
+   * take-all-then-unshift-current spelling would orphan chunks[at+1..] and
+   * silently drop bytes on a TCP stream (rule 5). */
   __drain() {
     const chunks = this.__chunk;
     if (!chunks || chunks.length === 0) return;
-    this.__chunk = [];
-    for (const b64 of chunks) {
-      if (this.#destroyed) return;
-      if (this.#paused) {
-        (this.__chunk = this.__chunk || []).unshift(b64);
+    let at = 0;
+    while (at < chunks.length) {
+      if (this.#destroyed) {
+        this.__chunk = chunks.slice(at);
         return;
       }
-      this.emit('data', asBuffer(fromB64(b64)));
+      if (this.#paused) {
+        this.__chunk = chunks.slice(at);
+        return;
+      }
+      this.emit('data', asBuffer(fromB64(chunks[at])));
+      at += 1;
     }
+    this.__chunk = [];
   }
 }
 

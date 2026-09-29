@@ -52,16 +52,18 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/socket-seam-local.json \
     --log "$LOG" --out "$ART/verdict-socket-seam-local.json"
 
 echo "== audit gate: one structured record per listen/connect/accept =="
-# 3 listens (2 granted servers + 1 denied lan attempt) + 2 connects (1 granted
-# dial + 1 denied non-loopback host; the subprocess dial rides the OS's own
-# /dev/tcp, not the gateway) + 2 accepts (one per server) — every attempt
-# carries exactly one record, none carrying payload bytes.
+# 3 listens (2 granted servers + 1 denied lan attempt) + 3 connects (2 granted
+# dials — the echo client and the dead-port refusal, which the host records
+# as a GRANTED dial attempt that then fails at the kernel — plus 1 denied
+# non-loopback host; the subprocess dial rides the OS's own /dev/tcp, not the
+# gateway) + 2 accepts (one per server) — every attempt carries exactly one
+# record, none carrying payload bytes. The receipt below quotes THESE counts.
 N_LISTEN=$(grep -c '"audit":"socket.listen"' "$ART/socket-audit.jsonl" || true)
 N_CONNECT=$(grep -c '"audit":"socket.connect"' "$ART/socket-audit.jsonl" || true)
 N_ACCEPT=$(grep -c '"audit":"socket.accept"' "$ART/socket-audit.jsonl" || true)
 N_DENIED=$(grep -c '"outcome":"denied"' "$ART/socket-audit.jsonl" || true)
 [ "$N_LISTEN" -eq 3 ] || { echo "   FAIL: expected 3 listen audits, got $N_LISTEN" >&2; exit 1; }
-[ "$N_CONNECT" -eq 2 ] || { echo "   FAIL: expected 2 connect audits, got $N_CONNECT" >&2; exit 1; }
+[ "$N_CONNECT" -eq 3 ] || { echo "   FAIL: expected 3 connect audits, got $N_CONNECT" >&2; exit 1; }
 [ "$N_ACCEPT" -eq 2 ] || { echo "   FAIL: expected 2 accept audits, got $N_ACCEPT" >&2; exit 1; }
 [ "$N_DENIED" -eq 2 ] || { echo "   FAIL: expected 2 denied audits, got $N_DENIED" >&2; exit 1; }
 grep -q '"scope":"loopback"' "$ART/socket-audit.jsonl" \
@@ -80,11 +82,11 @@ cat > "$ART/receipt.json" <<EOF
    "id": "socket.seam",
    "checker": "test/e2e/scenarios/socket-seam-local.json",
    "result": "pass",
-   "note": "17 records, one-to-one: host-picked listen port, a real TCP echo roundtrip with a half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp (bytes crossing between two OS processes), and the two out-of-scope denials (lan listen, non-loopback connect)"
+   "note": "19 records, one-to-one: host-picked listen port, a real TCP echo roundtrip with a half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp (bytes crossing between two OS processes), the two out-of-scope denials (lan listen, non-loopback connect), and the dead-port dial refused loud ECONNREFUSED (the negotiation floor, proven WITH the seam on)"
   }
  ],
- "audit": "listen=2 connect=2 accept=2, all granted, every record loopback-scoped (runtime/spike/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
- "notes": "Negotiation floor: hosts without the seam keep descriptorless descriptors and the JS face answers the honest ECONNREFUSED/EACCES — zero behavior change where the seam is absent."
+ "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: listen=$N_LISTEN connect=$N_CONNECT accept=$N_ACCEPT denied=$N_DENIED — every attempt one record, loopback-scoped (runtime/spike/artifacts/macos-cli-socket-seam/socket-audit.jsonl)",
+ "notes": "Negotiation floor: hosts without the seam keep descriptorless descriptors and the JS face answers the honest ECONNREFUSED/EACCES — zero behavior change where the seam is absent; with the seam on, a dead-port dial fails loud ECONNREFUSED (scenario leg 4), never a hang."
 }
 EOF
 

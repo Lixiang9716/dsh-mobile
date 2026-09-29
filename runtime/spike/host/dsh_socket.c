@@ -328,6 +328,27 @@ static char *server_accept_all(dsh_sock_server *sv) {
 
 static char *conn_poll_json(dsh_sock_conn *c) {
     if (c->connecting) conn_finish_connect(c);
+    /* A FAILED dial is TERMINAL: report connected:false / eof:true with the
+     * SO_ERROR errno and release the slot right here — the JS pump turns
+     * this poll into the node connect-failure face ('error' ECONNREFUSED
+     * then 'close') and stops re-arming, so neither side holds a dead id
+     * and dsh_socket_alive() drops back to the truth. Leaving the slot with
+     * eof:false here would hold the pump (and the run loop) forever. */
+    if (c->connect_err != 0) {
+        char *out = malloc(128);
+        if (out == NULL) return NULL;
+        snprintf(out, 128,
+                 "{\"kind\":\"connection\",\"connected\":false,\"chunkB64\":null,"
+                 "\"eof\":true,\"pendingWrite\":0,\"flushError\":null,"
+                 "\"dialError\":%d}", c->connect_err);
+        close(c->fd);
+        free(c->pending);
+        c->pending = NULL;
+        c->pending_n = 0;
+        c->fd = -1;
+        c->used = 0;
+        return out;
+    }
     int flush_err = 0;
     if (c->fd >= 0 && !c->connecting && c->connect_err == 0) {
         /* Drain the write-backpressure park first (the pty discipline); a
