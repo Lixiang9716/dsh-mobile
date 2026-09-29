@@ -294,14 +294,26 @@ fetch_npm() {
     echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "npm/$dir"
     mkdir -p "npm/$dir"
-    tar xzf "$tmp" -C "npm/$dir" --strip-components=1
     # Directory modes ride the tarball verbatim, and some registry tarballs
     # pack dirs without the execute bit (pngjs@5.0.0 measured 2026-09-29:
     # lib/ landed drw-r--r--) — every require under it then fails
     # MODULE_NOT_FOUND-shaped while the files are all there, and the embed
-    # generator's rglob silently yields an empty row. u+rwX on the
-    # materialized tree is owner-hygiene, not a content edit (D6: the file
-    # BYTES are untouched; a re-extract reproduces them exactly).
+    # generator's rglob silently yields an empty row. Worse, the two tar
+    # flavors disagree MID-extract: GNU tar applies a directory's archived
+    # mode the moment the entry lands, so pngjs's drw-rw-rw-packed lib/ and
+    # coverage/ blocked their OWN children and the extract itself died
+    # "Cannot open: Permission denied" across lib/* and coverage/lcov-report/*
+    # before any chmod could run (CI 2026-09-30, run 36609975825); bsdtar
+    # defers all dir modes to the end, which is why local trees extracted
+    # clean. Delay the restore where the tar is GNU; the u+rwX below then
+    # normalizes the end state on both hosts. Owner hygiene, not a content
+    # edit (D6: the file BYTES are untouched; a re-extract reproduces them
+    # exactly).
+    if tar --version 2>/dev/null | grep -q GNU; then
+        tar xzf "$tmp" -C "npm/$dir" --strip-components=1 --delay-directory-restore
+    else
+        tar xzf "$tmp" -C "npm/$dir" --strip-components=1
+    fi
     chmod -R u+rwX "npm/$dir"
     echo "$sha" > "npm/$dir/.vendor-pin"
     rm -f "$tmp"
