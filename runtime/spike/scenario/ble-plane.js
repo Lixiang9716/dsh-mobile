@@ -71,6 +71,7 @@ const TUPLE_NOTIFY = ['180f', '2a19'];
  * timers (the spike scenario context has none; the session watchdog bounds
  * every wait, failing the drive loud if the radio misbehaves — rule 8). */
 const makeEvents = () => {
+  log.debug('event tap armed');
   const seen = [];
   const waiters = [];
   const off = onEvent((ev) => {
@@ -257,5 +258,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
  * 3 bytes and each pad char marks one byte fewer in the tail group. */
 function atobBytesLength(b64) {
   const pads = (String(b64).match(/=+$/) ?? [''])[0].length;
-  return Math.floor(String(b64).length * 3 / 4) - pads;
+  const bytes = Math.floor(String(b64).length * 3 / 4) - pads;
+  log.debug('payload decoded', { chars: String(b64).length, bytes });
+  return bytes;
 }

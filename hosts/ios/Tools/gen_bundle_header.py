@@ -54,6 +54,7 @@ RESOURCES = [
      REPO / "system-plugins" / "dsh-device-plane" / "manifest.json"),
     ("plugin_device_plane_js",
      REPO / "system-plugins" / "dsh-device-plane" / "index.js"),
+    ("plugin_ble_manifest", REPO / "system-plugins" / "dsh-ble" / "manifest.json"), ("plugin_ble_js", REPO / "system-plugins" / "dsh-ble" / "index.js"),
     # the dsh-notes fixture (M3 install pipeline: builder + plugin source data)
     ("fixture_notes_js", SPIKE / "fixtures" / "dsh-notes.js"),
     ("fixture_notes_source_js", SPIKE / "fixtures" / "dsh-notes-source.js"),

@@ -87,35 +87,55 @@ class BlePrimitives(
     ) {
         GatewayCore.uiMarker("ble-consent", "wait")
         activity.runOnUiThread {
-            val dialog = android.app.AlertDialog.Builder(activity)
-                .setTitle("Allow Bluetooth access?")
-                .setMessage(
-                    "The agent wants to reach nearby BLE devices (scan, connect, "
-                        + "GATT). Approve once, always, or decline.")
-                .setPositiveButton("Approve") { _, _ ->
-                    GatewayCore.uiMarker("ble-consent", "done")
-                    sessionGrant = true
-                    body()
-                }
-                .setNeutralButton("Approve & Remember") { _, _ ->
-                    GatewayCore.uiMarker("ble-consent", "done")
-                    activity.getSharedPreferences("dsh", 0).edit()
-                        .putBoolean(STANDING_GRANT_KEY, true).apply()
-                    sessionGrant = true
-                    body()
-                }
-                .setNegativeButton("Decline") { _, _ ->
-                    GatewayCore.uiMarker("ble-consent", "done")
-                    done.settle(
-                        null,
-                        GatewayCore.GatewayError(
-                            "denied", primitive,
-                            "the gateway consent layer refused"),
-                    )
-                }
-                .create()
-            dialog.show()
+            buildConsentDialog(primitive, done, body).show()
         }
+    }
+
+    /** The gateway consent surface — the three answers are the approval
+     * ladder; each handler is a named method so the builder chain stays
+     * inside the indent budget. */
+    private fun buildConsentDialog(
+        primitive: String, done: GatewayCore.Done, body: () -> Unit,
+    ): android.app.AlertDialog {
+        val approve = { _: android.content.DialogInterface, _: Int ->
+            GatewayCore.uiMarker("ble-consent", "done")
+            sessionGrant = true
+            body()
+        }
+        val remember = { _: android.content.DialogInterface, _: Int ->
+            GatewayCore.uiMarker("ble-consent", "done")
+            rememberGrant()
+            body()
+        }
+        val decline = { _: android.content.DialogInterface, _: Int ->
+            GatewayCore.uiMarker("ble-consent", "done")
+            denyGateway(primitive, done)
+        }
+        return android.app.AlertDialog.Builder(activity)
+            .setTitle("Allow Bluetooth access?")
+            .setMessage(
+                "The agent wants to reach nearby BLE devices (scan, connect, "
+                    + "GATT). Approve once, always, or decline.")
+            .setPositiveButton("Approve", approve)
+            .setNeutralButton("Approve & Remember", remember)
+            .setNegativeButton("Decline", decline)
+            .create()
+    }
+
+    /** The session grant dies with the session; "remember" persists the
+     * app-scoped standing grant (the clipboardRead posture). */
+    private fun rememberGrant() {
+        activity.getSharedPreferences("dsh", 0).edit()
+            .putBoolean(STANDING_GRANT_KEY, true).apply()
+        sessionGrant = true
+    }
+
+    private fun denyGateway(primitive: String, done: GatewayCore.Done) {
+        done.settle(
+            null,
+            GatewayCore.GatewayError(
+                "denied", primitive, "the gateway consent layer refused"),
+        )
     }
 
     // ---- the OS consent + capability gate ------------------------------------
@@ -146,28 +166,48 @@ class BlePrimitives(
     private fun scanStart(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
         ensureGrant("bleScanStart", call, done) {
             ensureRadio("bleScanStart", done) {
-                val filter = call.args.optJSONArray("serviceUuids")
-                    ?.let { arr -> List(arr.length()) { arr.getString(it) } } ?: emptyList()
+                val filter = scanFilterOf(call)
                 val asked = call.args.optInt("timeoutMs", 5_000)
                 radio.scanStart(filter, asked) { result ->
-                    when (result) {
-                        is BleResult.Ok -> {
-                            val scanId = result.value
-                            synchronized(armedScans) { armedScans[scanId] = System.nanoTime() }
-                            val detail = JSONObject()
-                                .put("scanId", scanId)
-                                .put("filters", filter.size)
-                                .put("timeoutMs", bleScanTimeoutClamp(asked))
-                            val tag = call.args.optString("tag", "")
-                            if (tag.isNotEmpty()) detail.put("tag", tag)
-                            core.stageAuditDetail(detail)
-                            done.settle(JSONObject().put("scanId", scanId), null)
-                        }
-                        is BleResult.Err -> doneRadioFailure("bleScanStart", result.failure, done)
-                    }
+                    onScanArmed(result, filter.size, asked, call, done)
                 }
             }
         }
+    }
+
+    /** The scan request's service-uuid filter (absent = all). */
+    private fun scanFilterOf(call: GatewayCore.GatewayCall): List<String> {
+        val arr = call.args.optJSONArray("serviceUuids") ?: return emptyList()
+        return List(arr.length()) { arr.getString(it) }
+    }
+
+    /** The scan arm's completion — named so the ladder nesting stays flat. */
+    private fun onScanArmed(
+        result: BleResult<String>, filters: Int, asked: Int,
+        call: GatewayCore.GatewayCall, done: GatewayCore.Done,
+    ) {
+        when (result) {
+            is BleResult.Err -> return doneRadioFailure("bleScanStart", result.failure, done)
+            is BleResult.Ok -> {
+                val scanId = result.value
+                synchronized(armedScans) { armedScans[scanId] = System.nanoTime() }
+                core.stageAuditDetail(scanStartDetail(scanId, filters, asked, call))
+                done.settle(JSONObject().put("scanId", scanId), null)
+            }
+        }
+    }
+
+    /** The scan record's closed-vocabulary detail (the timer tag precedent). */
+    private fun scanStartDetail(
+        scanId: String, filters: Int, asked: Int, call: GatewayCore.GatewayCall,
+    ): JSONObject {
+        val detail = JSONObject()
+            .put("scanId", scanId)
+            .put("filters", filters)
+            .put("timeoutMs", bleScanTimeoutClamp(asked))
+        val tag = call.args.optString("tag", "")
+        if (tag.isNotEmpty()) detail.put("tag", tag)
+        return detail
     }
 
     private fun scanStop(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
@@ -219,30 +259,42 @@ class BlePrimitives(
         }
         ensureGrant("bleConnect", call, done) {
             ensureRadio("bleConnect", done) {
-                radio.connect(deviceId, onDisconnect = { connectionId ->
-                    val record = JSONObject()
-                        .put("event", "ble.event")
-                        .put("kind", "disconnect")
-                        .put("connectionId", connectionId)
-                        .put("reason", "link-lost")
-                    emitFn?.invoke(record.toString())
-                }, completion = { result ->
-                    when (result) {
-                        is BleResult.Ok -> {
-                            val connectionId = result.value
-                            core.stageAuditDetail(
-                                JSONObject().put("deviceId", deviceId)
-                                    .put("connected", connectionId != null))
-                            val payload = if (connectionId != null) {
-                                JSONObject().put("connectionId", connectionId)
-                            } else {
-                                null
-                            }
-                            done.settle(payload, null)
-                        }
-                        is BleResult.Err -> doneRadioFailure("bleConnect", result.failure, done)
-                    }
-                })
+                radio.connect(deviceId,
+                    onDisconnect = { connectionId -> emitDrop(connectionId) },
+                    completion = { result -> onConnected(result, deviceId, done) })
+            }
+        }
+    }
+
+    /** The drop event: exactly one `disconnect` record per connection. */
+    private fun emitDrop(connectionId: String) {
+        val record = JSONObject()
+            .put("event", "ble.event")
+            .put("kind", "disconnect")
+            .put("connectionId", connectionId)
+            .put("reason", "link-lost")
+        emitFn?.invoke(record.toString())
+    }
+
+    /** The connect completion — walked away resolves null (a value, not an
+     * error); the audit record carries the device token and the outcome. */
+    private fun onConnected(
+        result: BleResult<String?>, deviceId: String, done: GatewayCore.Done,
+    ) {
+        when (result) {
+            is BleResult.Err -> return doneRadioFailure("bleConnect", result.failure, done)
+            is BleResult.Ok -> {
+                val connectionId = result.value
+                val audit = JSONObject()
+                audit.put("deviceId", deviceId)
+                audit.put("connected", connectionId != null)
+                core.stageAuditDetail(audit)
+                val payload = if (connectionId != null) {
+                    JSONObject().put("connectionId", connectionId)
+                } else {
+                    null
+                }
+                done.settle(payload, null)
             }
         }
     }
@@ -265,35 +317,32 @@ class BlePrimitives(
     private fun read(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
         tupleCall("bleRead", call, done) { connectionId, service, characteristic ->
             radio.read(connectionId, service, characteristic) { result ->
-                when (result) {
-                    is BleResult.Ok -> {
-                        val bytes = result.value
-                        core.stageAuditDetail(gattDetail(
-                            "read", connectionId, service, characteristic, bytes.size))
-                        done.settle(
-                            JSONObject().put(
-                                "bytesB64",
-                                android.util.Base64.encodeToString(
-                                    bytes, android.util.Base64.NO_WRAP)),
-                            null)
-                    }
-                    is BleResult.Err -> doneRadioFailure("bleRead", result.failure, done)
-                }
+                onRead(result, connectionId, service, characteristic, done)
+            }
+        }
+    }
+
+    /** The read completion — one byte-count detail line, base64 payload. */
+    private fun onRead(
+        result: BleResult<ByteArray>, connectionId: String,
+        service: String, characteristic: String, done: GatewayCore.Done,
+    ) {
+        when (result) {
+            is BleResult.Err -> return doneRadioFailure("bleRead", result.failure, done)
+            is BleResult.Ok -> {
+                val bytes = result.value
+                core.stageAuditDetail(gattDetail(
+                    "read", connectionId, service, characteristic, bytes.size))
+                val payload = JSONObject()
+                payload.put("bytesB64", android.util.Base64.encodeToString(
+                    bytes, android.util.Base64.NO_WRAP))
+                done.settle(payload, null)
             }
         }
     }
 
     private fun write(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
-        val b64 = call.args.optString("bytesB64", "")
-        val bytes = if (b64.isEmpty()) {
-            null
-        } else {
-            try {
-                android.util.Base64.decode(b64, android.util.Base64.NO_WRAP)
-            } catch (e: IllegalArgumentException) {
-                null
-            }
-        }
+        val bytes = writePayloadOf(call)
         if (bytes == null) {
             done.settle(null, GatewayCore.GatewayError(
                 "invalid", "bleWrite", "bytesB64 missing or malformed"))
@@ -302,54 +351,82 @@ class BlePrimitives(
         val withResponse = call.args.optBoolean("response", true)
         tupleCall("bleWrite", call, done) { connectionId, service, characteristic ->
             radio.write(connectionId, service, characteristic, bytes, withResponse) { result ->
-                when (result) {
-                    is BleResult.Ok -> {
-                        core.stageAuditDetail(gattDetail(
-                            "write", connectionId, service, characteristic, bytes.size))
-                        done.settle(JSONObject().put("written", true), null)
-                    }
-                    is BleResult.Err -> doneRadioFailure("bleWrite", result.failure, done)
-                }
+                onWritten(result, connectionId, service, characteristic, bytes.size, done)
+            }
+        }
+    }
+
+    /** The write payload: base64 in, bytes out; malformed is null (invalid). */
+    private fun writePayloadOf(call: GatewayCore.GatewayCall): ByteArray? {
+        val b64 = call.args.optString("bytesB64", "")
+        if (b64.isEmpty()) return null
+        return try {
+            android.util.Base64.decode(b64, android.util.Base64.NO_WRAP)
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+    }
+
+    /** The write completion — direction "write" + byte count in the record. */
+    private fun onWritten(
+        result: BleResult<Boolean>, connectionId: String,
+        service: String, characteristic: String, size: Int, done: GatewayCore.Done,
+    ) {
+        when (result) {
+            is BleResult.Err -> return doneRadioFailure("bleWrite", result.failure, done)
+            is BleResult.Ok -> {
+                core.stageAuditDetail(gattDetail(
+                    "write", connectionId, service, characteristic, size))
+                done.settle(JSONObject().put("written", true), null)
             }
         }
     }
 
     private fun subscribe(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
         tupleCall("bleSubscribe", call, done) { connectionId, service, characteristic ->
-            radio.subscribe(connectionId, service, characteristic, onNotify = { data ->
-                val record = JSONObject()
-                    .put("event", "ble.event")
-                    .put("kind", "notify")
-                    .put("connectionId", connectionId)
-                    .put("service", service)
-                    .put("characteristic", characteristic)
-                    .put("bytesB64", android.util.Base64.encodeToString(
-                        data, android.util.Base64.NO_WRAP))
-                emitFn?.invoke(record.toString())
-            }, completion = { result ->
-                when (result) {
-                    is BleResult.Ok -> {
-                        core.stageAuditDetail(gattDetail(
-                            "subscribe", connectionId, service, characteristic, 0))
-                        done.settle(JSONObject().put("subscribed", result.value), null)
-                    }
-                    is BleResult.Err -> doneRadioFailure("bleSubscribe", result.failure, done)
-                }
-            })
+            radio.subscribe(connectionId, service, characteristic,
+                onNotify = { data -> emitNotify(connectionId, service, characteristic, data) },
+                completion = { result ->
+                    onArmed(result, "bleSubscribe", connectionId, service, characteristic, done)
+                })
+        }
+    }
+
+    /** The notify event: the value rides base64 (the bridge's convention). */
+    private fun emitNotify(
+        connectionId: String, service: String, characteristic: String, data: ByteArray,
+    ) {
+        val record = JSONObject()
+            .put("event", "ble.event")
+            .put("kind", "notify")
+            .put("connectionId", connectionId)
+            .put("service", service)
+            .put("characteristic", characteristic)
+            .put("bytesB64", android.util.Base64.encodeToString(
+                data, android.util.Base64.NO_WRAP))
+        emitFn?.invoke(record.toString())
+    }
+
+    /** Subscribe/unsubscribe share the tuple-record + boolean settle. */
+    private fun onArmed(
+        result: BleResult<Boolean>, primitive: String, connectionId: String,
+        service: String, characteristic: String, done: GatewayCore.Done,
+    ) {
+        when (result) {
+            is BleResult.Err -> return doneRadioFailure(primitive, result.failure, done)
+            is BleResult.Ok -> {
+                val direction = if (primitive == "bleSubscribe") "subscribe" else "unsubscribe"
+                core.stageAuditDetail(gattDetail(
+                    direction, connectionId, service, characteristic, 0))
+                done.settle(JSONObject().put("subscribed", result.value), null)
+            }
         }
     }
 
     private fun unsubscribe(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
         tupleCall("bleUnsubscribe", call, done) { connectionId, service, characteristic ->
             radio.unsubscribe(connectionId, service, characteristic) { result ->
-                when (result) {
-                    is BleResult.Ok -> {
-                        core.stageAuditDetail(gattDetail(
-                            "unsubscribe", connectionId, service, characteristic, 0))
-                        done.settle(JSONObject().put("subscribed", result.value), null)
-                    }
-                    is BleResult.Err -> doneRadioFailure("bleUnsubscribe", result.failure, done)
-                }
+                onArmed(result, "bleUnsubscribe", connectionId, service, characteristic, done)
             }
         }
     }

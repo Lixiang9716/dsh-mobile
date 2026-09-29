@@ -311,6 +311,32 @@ export const cameraRecordStart = async (request = {}) => await call('cameraRecor
 export const cameraRecordStop = async (recordingId) =>
   await call('cameraRecordStop', { recordingId });
 
+export const bleConnect = async (deviceId) => await call('bleConnect', { deviceId });
+
+export const bleDisconnect = async (connectionId) =>
+  await call('bleDisconnect', { connectionId });
+
+export const bleRead = async (connectionId, service, characteristic) => {
+  log.debug('bleRead', { connectionId, service, characteristic });
+  const res = await call('bleRead', { connectionId, service, characteristic });
+  return { bytes: base64ToBytes(res.bytesB64) };
+};
+
+export const bleWrite = async (connectionId, service, characteristic, bytes, opts = {}) =>
+  await call('bleWrite', {
+    connectionId,
+    service,
+    characteristic,
+    bytesB64: bytesToBase64(bytes),
+    response: opts.response ?? true,
+  });
+
+export const bleSubscribe = async (connectionId, service, characteristic) =>
+  await call('bleSubscribe', { connectionId, service, characteristic });
+
+export const bleUnsubscribe = async (connectionId, service, characteristic) =>
+  await call('bleUnsubscribe', { connectionId, service, characteristic });
+
 // ---- bridge event plumbing ------------------------------------------------
 
 const listeners = new Set();
@@ -318,6 +344,16 @@ const listeners = new Set();
 /** Subscribe to non-stream bridge events (app.state, notify.response,
  * host.info, ...). httpFetch body traffic is consumed by the shim itself. */
 export const onEvent = (fn) => listeners.add(fn);
+
+ * host.info, ble.event, ...). httpFetch body traffic is consumed by the
+ * shim itself. Returns the unsubscribe function. */
+export const onEvent = (fn) => {
+  listeners.add(fn);
+  return () => {
+    log.debug('event unsubscribe');
+    listeners.delete(fn);
+  };
+};
 
 globalThis.__dshGatewayOnEvent = (eventJson) => {
   log.debug('gateway event', { chars: eventJson.length });

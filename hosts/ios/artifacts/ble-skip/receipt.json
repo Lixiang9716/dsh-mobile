@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "ble.plane",
   "launchConfiguration": "ios ble-plane drive (Debug, -dsh-mode ble-plane, mode=skip)",
-  "tree": "origin/main 90e72caca03a (dirty working tree at receipt time)",
+  "tree": "origin/main 7d3404fbc856 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "ble.plane",
@@ -21,6 +21,6 @@
   ],
   "runner": "test/e2e/run-ios-ble.sh",
   "screens": [],
-  "timestamp": "2026-09-30T07:09:09+08:00",
+  "timestamp": "2026-09-30T07:47:41+08:00",
   "exitCode": 0
 }
