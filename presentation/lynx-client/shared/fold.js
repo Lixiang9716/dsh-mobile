@@ -221,7 +221,7 @@ const applySettled = (state, event) => {
       state.pendingPrompt = true;
       break;
     case 'system':
-      add(state, { kind: 'system', label: event.label, types: [event.type] });
+      add(state, { kind: 'system', label: event.label, types: [event.source] });
       break;
     case 'seed-start': case 'seed-end': applySeed(state, event); break;
     default:

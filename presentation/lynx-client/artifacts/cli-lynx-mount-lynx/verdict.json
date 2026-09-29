@@ -1,0 +1,8 @@
+{
+  "scenario": "lynx.mount",
+  "pass": true,
+  "expected": 34,
+  "logged": 34,
+  "failures": [],
+  "parseErrors": []
+}

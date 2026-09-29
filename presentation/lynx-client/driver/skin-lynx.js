@@ -22,7 +22,9 @@ import { readFileSync, existsSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { assertViewEvent } from '../shared/view-events.js';
+import { createSurfaceCore } from '../shared/surface-core.js';
 import { defineRenderSurfaceClient } from './render-surface-client.js';
+import { renderTranscript } from './skin-stub.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const BUNDLE_PATH = join(HERE, '../bundle/dist/main.lynx.bundle');
@@ -56,7 +58,62 @@ const engineRefusal = (artifact) => new Error(
   + `see skin-lynx.js header)`,
 );
 
-export const createLynxSkin = ({ bundlePath = BUNDLE_PATH } = {}) => {
+/** The lynx skin's CLI-HOST mode: the same RenderSurfaceClient contract over
+ * the bundle's REAL seam core (shared/surface-core.js — the exact module
+ * bridge.ts compiles into main.lynx.bundle) plus the artifact verification
+ * the engine mode does. Plain Node drives the seam the artifact ships; the
+ * pixels stay honestly engine-only. Exposes `.transcript` (the stub's
+ * transcription over the core's fold state) so the E2E leg asserts the same
+ * markers both faces produce, and `.artifact`/`.mountMode` so the leg's log
+ * names its mechanism precisely — never a pretend render. */
+const createLynxBridgeSkin = ({ bundlePath }) => {
+  const core = createSurfaceCore();
+  let artifact = null;
+  let handler = null;
+  return defineRenderSurfaceClient({
+    async mount() {
+      artifact = verifyBundleArtifact(bundlePath);
+      core.setIntentTarget((intent) => {
+        if (handler === null) {
+          throw new Error(
+            'fail loud: lynx bridge skin has no intent handler (driver not mounted)',
+          );
+        }
+        handler(intent);
+      });
+    },
+    pushViewEvent(event) {
+      core.pushViewEvent(event);
+    },
+    onIntent(intentHandler) {
+      handler = intentHandler;
+    },
+    async teardown() {
+      handler = null;
+    },
+    /** Test affordance: a "tap" — the bundle raising an intent through the
+     * seam core (validated there, forwarded to the driver's handler). */
+    tap(intent) {
+      core.emitIntent(intent);
+    },
+    get transcript() {
+      return renderTranscript(core.snapshot());
+    },
+    get artifact() {
+      return artifact;
+    },
+    get face() {
+      return 'lynx';
+    },
+    get mountMode() {
+      return 'cli: bundle seam core (shared/surface-core.js, the module compiled '
+        + `into ${BUNDLE_PATH}) — artifact verified, pixels engine-only`;
+    },
+  });
+};
+
+export const createLynxSkin = ({ bundlePath = BUNDLE_PATH, host = 'engine' } = {}) => {
+  if (host === 'cli') return createLynxBridgeSkin({ bundlePath });
   let engine = null;
   let intentHandler = null;
 

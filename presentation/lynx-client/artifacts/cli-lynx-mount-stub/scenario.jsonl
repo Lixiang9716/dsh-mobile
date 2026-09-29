@@ -1,0 +1,34 @@
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"face.mounted","face":"stub","mode":"plain-text transcription of the fold","artifactBytes":null,"artifactSha256":null}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"serve.listening","loopback":true,"carrier":"mock session-serve (dev-echo fixture)"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"connection.opened"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"drawer.settled","sessions":1}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"select-session","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"session.selected","sessionId":"s-dev-lynx-0000"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"new-session","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"session.created","sessionId":"s-dev-lynx-0001"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"submit","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"prompt.submitted","text":"画出极光"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"prompt.admitted"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"start","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"reasoning","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"streaming","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"streaming","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"text","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"end","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"waiting","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"ok","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"turn.settled","tool":"bash · 完成","creation":"桌面回声鲸鱼"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"select-session","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"waiting","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"ok","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"seed.replayed","sessionId":"s-dev-lynx-0001","rebuilt":"mid-history, no blank mount"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"submit","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"start","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.message.delta","kind":"reasoning","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"view.tool.phase","phase":"streaming","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"cancel.requested"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"intent.observed","type":"cancel","face":"stub"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"cancel.settled","status":"已停止","tail":"dropped"}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"fail.loud.intent","threw":true}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"fail.loud.view-event","threw":true}]}
+dsh.spike.log: {"level":"info","module":"lynx.mount","message":"e2e","data":[{"scenario":"lynx.mount","event":"loop.complete","face":"stub","status":"pass"}]}

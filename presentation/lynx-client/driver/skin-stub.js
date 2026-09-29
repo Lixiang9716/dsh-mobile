@@ -161,5 +161,8 @@ export const createStubSkin = ({ stream = process.stdout } = {}) => {
     get transcript() {
       return renderTranscript(snapshotState(fold.state));
     },
+    get face() {
+      return 'stub';
+    },
   });
 };

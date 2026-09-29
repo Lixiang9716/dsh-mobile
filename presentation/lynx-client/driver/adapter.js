@@ -123,7 +123,7 @@ const translateEvent = (event) => {
     case 'turn/end': return translateTurnEnd(data);
     case 'system/message': case 'todo/write': case 'approval/asked':
     case 'approval/decided': case 'goal/change': case 'plan/mode':
-      return [makeSettled('system', { label: type.split('/')[0], type })];
+      return [makeSettled('system', { label: type.split('/')[0], source: type })];
     case 'turn/start': case 'step/start': case 'step/end':
     case 'request/header': case 'request/context':
       return [];

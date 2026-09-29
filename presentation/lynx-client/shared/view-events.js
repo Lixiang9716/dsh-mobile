@@ -116,7 +116,7 @@ const assertSettled = (event) => {
     case 'prompt-admitted': case 'seed-start': case 'seed-end':
       break;
     case 'system':
-      if (!isStr(event.label) || !isStr(event.type)) fail('system payload', event);
+      if (!isStr(event.label) || !isStr(event.source)) fail('system payload', event);
       break;
     default:
       fail('session-settled kind', event);
@@ -163,13 +163,13 @@ export const assertIntent = (intent) => {
 // unvalidated event by accident) ---------------------------------------------
 
 export const makeDelta = (kind, payload) =>
-  assertViewEvent({ type: 'message-delta', kind, ...payload });
+  assertViewEvent({ ...payload, type: 'message-delta', kind });
 
 export const makeToolPhase = (phase, payload) =>
-  assertViewEvent({ type: 'tool-card-phase', phase, ...payload });
+  assertViewEvent({ ...payload, type: 'tool-card-phase', phase });
 
 export const makeSettled = (kind, payload) =>
-  assertViewEvent({ type: 'session-settled', kind, ...payload });
+  assertViewEvent({ ...payload, type: 'session-settled', kind });
 
 export const makeIntent = (type, payload) =>
-  assertIntent({ type, ...payload });
+  assertIntent({ ...payload, type });
