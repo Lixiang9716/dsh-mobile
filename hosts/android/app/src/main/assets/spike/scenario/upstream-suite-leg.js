@@ -331,7 +331,16 @@ const stageRealFixturesTree = async (spec) => {
  * and repinning every arm in one sweep is that wave's blast radius, not a
  * vendoring side effect. */
 const stageShellSuitePlatform = async (spec) => {
-  if (!spec.includes('terminal__tool-terminal__tests__loader-composition')) return;
+  // The forkpty-face wave (D-b) adds the terminal-controller controller and
+  // the subprocess-local shell-activity specs to the pin: both drive the
+  // vendored terminal path, whose ps-based process inspector refuses on
+  // any platform spelling but darwin/linux/win32 (createProcessInspector).
+  const SHELL_SUITE_SPECS = [
+    'terminal__tool-terminal__tests__loader-composition',
+    'api__terminal-controller__tests__controller',
+    'subprocess__subprocess-local__tests__shell-activity',
+  ];
+  if (!SHELL_SUITE_SPECS.some((stem) => spec.includes(stem))) return;
   const { spawnSync } = await import('node:child_process');
   const res = spawnSync('/usr/bin/uname', ['-s']);
   const platform = res.status === 0 && typeof res.stdout === 'string'
