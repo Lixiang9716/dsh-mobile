@@ -302,6 +302,10 @@ export const SUBMODULE_SRC_HOISTS = new Map([
   ['@deepseek-ai/dsh-session-turn-outline/src/projection.ts', 'packages/session/session-turn-outline/src/projection.ts'],
   ['@deepseek-ai/dsh-terminal-bash/src/config.ts', 'packages/terminal/terminal-bash/src/config.ts'],
   ['@deepseek-ai/dsh-terminal-bash/src/sanitize.ts', 'packages/terminal/terminal-bash/src/sanitize.ts'],
+  // pwsh-local's dependency-free resolver (node:fs + node:path only): the
+  // loader-composition and terminal-bash local specs import it bare and
+  // previously died at module load ("cannot load module").
+  ['@deepseek-ai/dsh-pwsh-local/src/resolve.ts', 'packages/shell/pwsh-local/src/resolve.ts'],
   ['@deepseek-ai/dsh-tool-terminal/src/render.ts', 'packages/terminal/tool-terminal/src/render.ts'],
   ['@deepseek-ai/dsh-compaction-basic/src/config.ts', 'packages/compaction/compaction-basic/src/config.ts'],
   ['@deepseek-ai/dsh-compaction-basic/src/summarizer.ts', 'packages/compaction/compaction-basic/src/summarizer.ts'],

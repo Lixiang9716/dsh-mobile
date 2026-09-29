@@ -2,7 +2,7 @@
   "title": "The API residue: session deep-page legs, subagents, feedback, permissionPresets, uploads",
   "created": "2026-09-24T13:51:32+00:00",
   "rules": {
-    "hash": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -31,6 +31,13 @@
       "from": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
       "to": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
       "reason": "the API residue remains open future work; item 4 (consolidate the four hand-maintained closure manifests into one generated list) gained its verifier tonight (tools/check-staging.mjs) \u2014 the generator itself is Phase 2"
+    },
+    {
+      "ts": "2026-09-29T08:36:42+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
+      "to": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+      "reason": "bulk re-pin to the adopted rules set: briefs unchanged, the rules hash moved under the 2026-09-29 governance edits"
     }
   ]
 }

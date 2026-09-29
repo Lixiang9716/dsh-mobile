@@ -52,14 +52,14 @@ export function createLogger(module) {
 JS
   fi
   if [ "$plumbing" = yes ]; then
-    echo 'SWIFT_ACTIVE_COMPILATION_CONDITIONS = DSH_RELEASE;' \
-      > hosts/ios/DSHSpike.xcodeproj/project.pbxproj
+    echo 'SWIFT_ACTIVE_COMPILATION_CONDITIONS: DSH_RELEASE' \
+      > hosts/ios/project.yml
     echo 'externalNativeBuild { cmake { cFlags += "-DDSH_RELEASE=1" } }' \
       > hosts/android/app/build.gradle.kts
     echo '"DSH_RELEASE": true' > hosts/harmony/entry/build-profile.json5
     echo '-DDSH_RELEASE=1' > runtime/spike/host/build.sh
   else
-    : > hosts/ios/DSHSpike.xcodeproj/project.pbxproj
+    : > hosts/ios/project.yml
     : > hosts/android/app/build.gradle.kts
     : > hosts/harmony/entry/build-profile.json5
     : > runtime/spike/host/build.sh

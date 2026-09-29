@@ -17,7 +17,8 @@
       "closures",
       "vendoring-repro",
       "bundle-files",
-      "quickjs-boot-parse"
+      "quickjs-boot-parse",
+      "staging-check"
     ],
     "quick": [
       "notes"
@@ -239,6 +240,30 @@
         "self-test"
       ],
       "timeoutMs": 300000
+    },
+    {
+      "id": "staging-check",
+      "command": [
+        "node",
+        "tools/check-staging.mjs",
+        "--json",
+        "--block",
+        "harmony,android,ios"
+      ],
+      "description": "staging manifests match the real import graph (check-staging; findings on blocked hosts exit 1)",
+      "paths": [
+        "hosts/harmony/entry/src/main/ets/pages/Index.ets",
+        "hosts/harmony/ci/vendor-official.sh",
+        "hosts/android/ci/stage-spine-closure.sh",
+        "hosts/ios/Tools/gen_bundle_header.py",
+        "tools/check-staging.mjs",
+        "tools/check-staging-graph.mjs",
+        "tools/check-staging-hosts.mjs",
+        "runtime/spike/scenario/**",
+        "runtime/spike/upstream/**",
+        "runtime/spike/system-plugins/**"
+      ],
+      "timeoutMs": 120000
     }
   ]
 }

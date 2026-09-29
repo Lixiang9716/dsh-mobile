@@ -32,12 +32,20 @@
  *   (b) manifest → disk: every hand row must name a file that exists
  *       (stale rows — the list remembering a file the tree renamed).
  *
- * usage: node tools/check-staging.mjs [--host harmony|android|ios] [--json]
- * exit: 0 = clean · 1 = staging gaps or stale rows · 2 = usage/structure
- * error (a manifest this tool cannot parse is a manifest nobody can trust).
+ * usage: node tools/check-staging.mjs [--host harmony|android|ios]
+ *                                     [--block harmony,android,ios] [--json]
+ * exit: 0 = no BLOCKED host has findings · 1 = a blocked host has staging
+ * gaps or stale rows · 2 = usage/structure error (a manifest this tool
+ * cannot parse is a manifest nobody can trust).
  *
- * NOT wired into a gate: the clean-run residual gap count goes to the owner
- * first; gate wiring is the owner's call after seeing it.
+ * Gate modes (--block, the staging-check gate): hosts named in --block are
+ * BLOCKING — findings there exit 1. Every other host runs WARN mode:
+ * findings are counted and reported as warnings, exit 0 — the mode for a
+ * host whose residual findings are triaged as mitigated elsewhere. No
+ * --block at all = pure warn (the P2 registration default). The 2026-09-29
+ * triage cleared every host's REAL gaps (all 23 manifest rows landed), so
+ * the gate pins --block harmony,android,ios; a host only leaves that list
+ * with a recorded triage saying its residual findings are mitigated.
  *
  * Layout: the import-graph walker lives in check-staging-graph.mjs, the
  * three host manifest adapters (Index.ets rows, the android stage script's
@@ -119,11 +127,26 @@ function checkHost(host) {
 
 // --- report -----------------------------------------------------------------
 
-function humanReport(results) {
+/** Findings that count against one host: coverage gaps on verdict surfaces,
+ * stale rows everywhere, broken edges, missing roots — the same set the
+ * per-host failing logic below has always covered, now counted so warn
+ * mode can surface it as a number and --block can judge it. */
+function hostFindings(r) {
+  let n = r.brokenEdges.length + r.missingRoots.length;
+  for (const s of r.surfaces) n += (s.advisory ? 0 : s.gaps.length) + s.stale.length;
+  return n;
+}
+
+function humanReport(results, blocked) {
   const lines = [];
-  let failing = false;
+  const hostFailing = {};
+  let warnFindings = 0;
   for (const r of results) {
-    lines.push(`== host ${r.host} ==`);
+    const blocking = blocked.has(r.host);
+    const findings = hostFindings(r);
+    hostFailing[r.host] = findings > 0;
+    if (!blocking) warnFindings += findings;
+    lines.push(`== host ${r.host} (${blocking ? 'blocking' : 'warn'}) ==`);
     lines.push(`roots ${r.roots} · graph ${r.reached} files reached (${r.scopedReached} in scenario/upstream/system-plugins scope) · bare bridge/map imports skipped: ${r.skippedBare} distinct specifiers`);
     for (const e of r.brokenEdges) {
       lines.push(`  BROKEN EDGE ${e.from}:${e.line} imports '${e.spec}' (${e.kind}) — resolves to no file under runtime/spike`);
@@ -144,31 +167,36 @@ function humanReport(results) {
       for (const st of s.stale) {
         lines.push(`  STALE ${st} — no such file`);
       }
-      if (!s.advisory && (s.gaps.length || r.brokenEdges.length)) failing = true;
-      if (s.stale.length) failing = true;
       if (!s.gaps.length && !s.stale.length) lines.push('  clean');
     }
     if (r.missingRoots.length) {
-      failing = true;
       lines.push(`  MISSING ROOTS (staged scenario entry does not exist): ${r.missingRoots.join(', ')}`);
     }
+    if (findings > 0 && !blocking) {
+      lines.push(`  warn: ${findings} finding(s) on a warn-mode host — counted, exit unaffected`);
+    }
   }
-  return { lines, failing };
+  return { lines, hostFailing, warnFindings };
 }
 
 // --- main -------------------------------------------------------------------
 
-/** argv → { '--host': name|null, '--json': bool }; anything else is a usage
- * error (exit 2 via fail). */
+/** argv → { '--host': name|null, '--block': string[], '--json': bool };
+ * anything else is a usage error (exit 2 via fail). */
 function parseArgs(argv) {
-  const only = { '--host': null, '--json': false };
+  const only = { '--host': null, '--block': [], '--json': false };
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--host') {
       if (!argv[i + 1]) fail('--host requires a value: harmony|android|ios');
       only['--host'] = argv[i + 1];
       i += 1;
+    } else if (argv[i] === '--block') {
+      if (!argv[i + 1]) fail('--block requires a value: comma-separated host names');
+      only['--block'] = argv[i + 1].split(',').map((h) => h.trim()).filter(Boolean);
+      if (!only['--block'].length) fail('--block value parsed to zero host names');
+      i += 1;
     } else if (argv[i] === '--json') only['--json'] = true;
-    else fail(`unknown argument: ${argv[i]} (usage: node tools/check-staging.mjs [--host harmony|android|ios] [--json])`);
+    else fail(`unknown argument: ${argv[i]} (usage: node tools/check-staging.mjs [--host harmony|android|ios] [--block h1,h2] [--json])`);
   }
   return only;
 }
@@ -182,14 +210,28 @@ function main() {
   for (const h of selected) {
     if (!hosts[h]) fail(`unknown host '${h}' (expected harmony|android|ios)`);
   }
-  const results = selected.map((h) => checkHost(hosts[h]));
-  const { lines, failing } = humanReport(results);
+  const blocked = new Set(only['--block']);
+  for (const h of blocked) {
+    if (!hosts[h]) fail(`unknown --block host '${h}' (expected harmony|android|ios)`);
+  }
+  const results = selected.map((h) => {
+    const r = checkHost(hosts[h]);
+    r.mode = blocked.has(h) ? 'blocking' : 'warn';
+    r.findings = hostFindings(r);
+    return r;
+  });
+  const { lines, hostFailing, warnFindings } = humanReport(results, blocked);
+  const blockedFailing = results.some((r) => r.mode === 'blocking' && hostFailing[r.host]);
+  const summary = `staging-check: ${blockedFailing ? 'FAIL' : 'ok'} · blocking hosts ${[...blocked].join(',') || '(none)'} · ${warnFindings} warning(s) on warn-mode hosts`;
+  lines.push(summary);
   if (only['--json']) {
-    console.log(JSON.stringify({ ok: !failing, results }, null, 2));
+    console.log(JSON.stringify({
+      ok: !blockedFailing, blockedHosts: [...blocked], warnFindings, results,
+    }, null, 2));
   } else {
     console.log(lines.join('\n'));
   }
-  process.exitCode = failing ? 1 : 0;
+  process.exitCode = blockedFailing ? 1 : 0;
 }
 
 try {
