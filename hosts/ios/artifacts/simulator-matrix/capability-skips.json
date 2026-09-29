@@ -1,0 +1,36 @@
+{
+  "platform": "ios",
+  "target": "A4AE41BF-026A-441E-85DF-F53522996073",
+  "generatedAt": "2026-09-30T03:15:53+08:00",
+  "probed": [
+    {
+      "driver": "idb",
+      "present": true,
+      "reason": "idb present; harness legs skipped by flag (--skip-harness)",
+      "skippedLegs": [],
+      "note": "the drives block on system UI (alerts, banner, picker) only idb/WDA can reach"
+    }
+  ],
+  "hardware": [
+    {
+      "capability": "camera",
+      "status": "no-simulator-hardware",
+      "baseline": "a simulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "microphone",
+      "status": "no-simulator-hardware",
+      "baseline": "a simulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "bluetooth",
+      "status": "no-simulator-hardware",
+      "baseline": "a simulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "nfc",
+      "status": "no-simulator-hardware",
+      "baseline": "a simulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    }
+  ]
+}

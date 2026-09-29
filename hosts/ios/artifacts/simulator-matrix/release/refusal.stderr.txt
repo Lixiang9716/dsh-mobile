@@ -1,0 +1,1 @@
+DSHSpike/AppDelegate.swift:183: Fatal error: DSHSpike release build: refusing '-dsh-mode session'. This is the user-facing distribution build — the verification drives, the verdict panel, and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Build/run the harness variant (dsh-ios-harness) to drive E2E legs.

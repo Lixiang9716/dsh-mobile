@@ -102,6 +102,32 @@ dsh-mobile/
 （2026-09-23，[D17]）。历史 note 与 e2e 回执保留它们写下时的路径——
 它们是记录，不是漂移。
 
+## 模拟器矩阵（发布级证据）
+
+`tools/test/run-simulator-matrix.sh` 是一条命令，在真实模拟器/仿真器上
+逐平台证明 flavor 两分的两半：
+
+| 腿 | 证明什么 | 证据 |
+| --- | --- | --- |
+| release（iOS / Android） | 用户面构建启动到官方 UI，驱动机制为零——无驱动标记（`spike: sequence` / `ui-wait` / verdict 文本）、无 debug/info 日志记录——并对 E2E 驱动**点名拒绝**。Release 配置本来就跑不了驱动（驱动在构建期被编译掉），"零机制 + 响亮拒绝"正是它的证据。audit 流与 warn/error 记录是产品自己的平面（serving boot 会拉起完整 spine）：在 `release-proof.json` 里**记录**其计数，绝不断言为零 | `hosts/<plat>/artifacts/simulator-matrix/release/` |
+| harness（iOS / Android） | debug harness（验证载体）原样跑既有 e2e runner：scenario-id 日志与 manifest 一一对应，回执只在绿路机器生成 | `…/simulator-matrix/{gateway-drive,device-plane,regression}/` |
+| harmony | 本机没有 DevEco 工具链 / hdc 目标时诚实跳过——一张 skip 回执，绝不假绿（腿保持脚本就绪，等真设备） | `hosts/harmony/artifacts/simulator-matrix/matrix-skip-receipt.json` |
+
+```
+tools/test/run-simulator-matrix.sh                    # 全部平台
+tools/test/run-simulator-matrix.sh --platform ios     # 单平台
+tools/test/run-simulator-matrix.sh --platform android --skip-release
+```
+
+失败即停：第一条失败的腿中止整个运行并使其失败
+（`DSH_MATRIX_KEEP_GOING=1` 可把请求的腿全部跑完——汇总仍以非零退出）。
+一切等待都是带截止时间的条件轮询，绝不盲睡；失败腿的证据目录移去 /tmp，
+让 e2e-matrix 检查器永远不会把"带 verdict 却缺回执"的目录算进清单。缺
+驱动器的腿（iOS 缺 idb/WDA）按能力跳腿并在 `capability-skips.json` 留痕，
+与常设硬件行并列（相机 / 蓝牙 / NFC：模拟器没有无线电——未来的系统能力
+场景必须经能力协商回答 `unavailable`，绝不假设硬件在场）。矩阵**有意**
+不接入门禁 DAG——跑它是发布仪式，接门是后续决定。
+
 ## CI 映射
 
 门面的各平台步骤就是对应工作流的逐字命令——映射与各腿运行处：

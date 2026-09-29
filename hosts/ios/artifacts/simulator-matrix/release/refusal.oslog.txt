@@ -1,0 +1,98 @@
+getpwuid_r did not find a match for uid 501
+Timestamp               Ty Process[PID:TID]
+2026-09-30 03:15:52.523 Df DSHSpike[73942:2508e66] [com.apple.xpc:connection] [0x104022430] activating connection: mach=true listener=false peer=false name=com.apple.cfprefsd.daemon
+2026-09-30 03:15:52.527 Df DSHSpike[73942:2508e0c] (libMobileGestalt.dylib) No persisted cache on this platform.
+2026-09-30 03:15:52.529 A  DSHSpike[73942:2508e67] (CoreFoundation) Loading Preferences From User Session CFPrefsD
+2026-09-30 03:15:52.535 Df DSHSpike[73942:2508e68] [com.apple.BoardServices:XPCErrors] [C:1] Alloc com.apple.frontboard.systemappservices
+2026-09-30 03:15:52.536 Df DSHSpike[73942:2508e68] [com.apple.xpc:connection] [0x10495c140] activating connection: mach=false listener=false peer=false name=(anonymous)
+2026-09-30 03:15:52.539 Df DSHSpike[73942:2508e66] [com.apple.UIKit:BackgroundTask] Creating new assertion because there is no existing background assertion.
+2026-09-30 03:15:52.542 Df DSHSpike[73942:2508e66] [com.apple.UIKit:BackgroundTask] Creating new background assertion
+2026-09-30 03:15:52.542 Df DSHSpike[73942:2508e66] [com.apple.UIKit:BackgroundTask] Created new background assertion <BKSProcessAssertion: 0x10402a1f0>
+2026-09-30 03:15:52.543 Df DSHSpike[73942:2508e66] [com.apple.runningboard:connection] Initializing connection
+2026-09-30 03:15:52.543 Df DSHSpike[73942:2508e66] [com.apple.runningboard:process] Removing all cached process handles
+2026-09-30 03:15:52.544 Df DSHSpike[73942:2508e6b] [com.apple.runningboard:connection] Sending handshake request attempt #1 to server
+2026-09-30 03:15:52.544 Df DSHSpike[73942:2508e6b] [com.apple.runningboard:connection] Creating connection to com.apple.runningboard
+2026-09-30 03:15:52.544 Df DSHSpike[73942:2508e6b] [com.apple.xpc:connection] [0x10495c280] activating connection: mach=true listener=false peer=false name=com.apple.runningboard
+2026-09-30 03:15:52.547 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:Application] Deactivation reason added: 10; deactivation reasons: 0 -> 1024; animating application lifecycle event: 0
+2026-09-30 03:15:52.548 Df DSHSpike[73942:2508e0c] [com.apple.BoardServices:Injection] activating monitor for service com.apple.frontboard.open
+2026-09-30 03:15:52.548 A  DSHSpike[73942:2508e68] (RunningBoardServices) didChangeInheritances
+2026-09-30 03:15:52.550 Df DSHSpike[73942:2508e0c] [com.apple.BoardServices:Injection] activating monitor for service com.apple.frontboard.workspace-service
+2026-09-30 03:15:52.550 Df DSHSpike[73942:2508e6b] [com.apple.runningboard:connection] Handshake succeeded
+2026-09-30 03:15:52.550 Df DSHSpike[73942:2508e6b] [com.apple.runningboard:connection] Identity resolved as app<org.dsh.DSHSpike((null))>
+2026-09-30 03:15:52.551 Df DSHSpike[73942:2508e0c] [com.apple.FrontBoard:Common] FBSWorkspace registering source: com.apple.frontboard.systemappservices
+2026-09-30 03:15:52.551 Df DSHSpike[73942:2508e66] [com.apple.UIKit:BackgroundTask] Incrementing reference count for background assertion <BKSProcessAssertion: 0x10402a1f0>
+2026-09-30 03:15:52.551 Df DSHSpike[73942:2508e66] [com.apple.UIKit:BackgroundTask] Created background task <_UIBackgroundTaskInfo: 0x104890980>: taskID = 1, taskName = Launch Background Task for Coalescing, creationTime = 188222 (elapsed = 0).
+2026-09-30 03:15:52.551 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UIApplicationSceneKeyboardSettings on FBSSceneSettings
+2026-09-30 03:15:52.560 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneOcclusionSettings> on FBSSceneSettings
+2026-09-30 03:15:52.562 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneInterfaceProtectionSettings> on FBSSceneSettings
+2026-09-30 03:15:52.562 Df DSHSpike[73942:2508e0c] [com.apple.FrontBoard:Common] FBSWorkspace connected to endpoint : <BSServiceConnectionEndpoint: 0x10492c460; target: com.apple.frontboard.systemappservices; service: com.apple.frontboard.workspace-service>
+2026-09-30 03:15:52.562 Df DSHSpike[73942:2508e0c] [com.apple.FrontBoard:Common] <FBSWorkspaceScenesClient:0x1048ec320 com.apple.frontboard.systemappservices> attempting immediate handshake from activate
+2026-09-30 03:15:52.563 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneLayoutPreferencesHostSettingsExtension on FBSSceneSettings
+2026-09-30 03:15:52.563 Df DSHSpike[73942:2508e0c] [com.apple.FrontBoard:Common] <FBSWorkspaceScenesClient:0x1048ec320 com.apple.frontboard.systemappservices> sent handshake
+2026-09-30 03:15:52.564 Df DSHSpike[73942:2508e0c] [com.apple.runningboard:general] Added observer for process assertions expiration warning: <_RBSExpirationWarningClient: 0x10492d1c0>
+2026-09-30 03:15:52.564 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneSafeAreaSettingsExtension on FBSSceneSettings
+2026-09-30 03:15:52.569 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneLayoutPreferenceClientSettingsExtension on FBSSceneClientSettings
+2026-09-30 03:15:52.570 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UIHomeAffordanceHostSceneSettings> on FBSSceneSettings
+2026-09-30 03:15:52.571 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:UIScreen] Evaluated capturing state as 0 on <UIScreen: 0x10495c500> for initial
+2026-09-30 03:15:52.571 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISystemShellSceneHostingEnvironmentSettings on FBSSceneSettings
+2026-09-30 03:15:52.572 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneRenderingEnvironmentSettings on FBSSceneSettings
+2026-09-30 03:15:52.573 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:UIScreen] Evaluated capturing state as 0 on <UIScreen: 0x10495c500> for CADisplay KVO
+2026-09-30 03:15:52.573 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneRenderingEnvironmentClientSettings> on FBSSceneClientSettings
+2026-09-30 03:15:52.573 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneTransitioningHostSettings> on FBSSceneSettings
+2026-09-30 03:15:52.574 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneFocusSystemSettings> on FBSSceneSettings
+2026-09-30 03:15:52.575 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneOrientationSettingsExtension on FBSSceneSettings
+2026-09-30 03:15:52.575 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneOrientationClientSettingsExtension on FBSSceneClientSettings
+2026-09-30 03:15:52.575 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneWindowingControlClientSettings on FBSSceneClientSettings
+2026-09-30 03:15:52.576 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneHostingContentSizePreferenceClientSettings> on FBSSceneClientSettings
+2026-09-30 03:15:52.577 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension _UISceneHostingTraitCollectionPropagationSettings on FBSSceneSettings
+2026-09-30 03:15:52.579 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneHostingSheetPresentationSettings> on FBSSceneSettings
+2026-09-30 03:15:52.581 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneHostingSheetPresentationClientSettings> on FBSSceneClientSettings
+2026-09-30 03:15:52.581 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneHostingEventDeferringSettings> on FBSSceneSettings
+2026-09-30 03:15:52.583 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <UIKit__UITypedKeyValueSceneSettings> on FBSSceneSettings
+2026-09-30 03:15:52.585 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <UIKit__UITypedKeyValueSceneSettings> on FBSSceneClientSettings
+2026-09-30 03:15:52.585 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneHostingViewControllerPreferencePropagationClientSettings> on FBSSceneClientSettings
+2026-09-30 03:15:52.586 Df DSHSpike[73942:2508e0c] [com.apple.Accessibility:AXSupportCommon] Read CategoryName: per-app = 1, category name = (null)
+2026-09-30 03:15:52.586 Df DSHSpike[73942:2508e66] [com.apple.FrontBoard:SceneExtension] Realizing settings extension <_UISceneZoomTransitionSettings> on FBSSceneSettings
+2026-09-30 03:15:52.586 Df DSHSpike[73942:2508e0c] [com.apple.Accessibility:AXSupportCommon] Read CategoryName: per-app = 0, category name = (null)
+2026-09-30 03:15:52.587 Df DSHSpike[73942:2508e68] [com.apple.FrontBoard:SceneExtension] Realizing settings extension FBSSceneSettingsCore on FBSSceneSettings
+2026-09-30 03:15:52.591 Df DSHSpike[73942:2508e68] [com.apple.FrontBoard:SceneExtension] Realizing settings extension FBSSceneClientSettingsCore on FBSSceneClientSettings
+2026-09-30 03:15:52.721 Df DSHSpike[73942:2508e0c] [com.apple.dt.xctest:Default] Registering for test daemon availability notify post.
+2026-09-30 03:15:52.722 Df DSHSpike[73942:2508e68] [com.apple.FrontBoard:SceneExtension] UIMutableApplicationSceneSettings setting counterpart class: UIApplicationSceneSettings
+2026-09-30 03:15:52.722 Df DSHSpike[73942:2508e0c] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-09-30 03:15:52.722 Df DSHSpike[73942:2508e0c] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-09-30 03:15:52.722 Df DSHSpike[73942:2508e0c] [com.apple.dt.xctest:Default] notify_get_state check indicated test daemon not ready.
+2026-09-30 03:15:52.722 Df DSHSpike[73942:2508e68] [com.apple.FrontBoard:SceneExtension] UIMutableApplicationSceneClientSettings setting counterpart class: UIApplicationSceneClientSettings
+2026-09-30 03:15:52.723 Df DSHSpike[73942:2508e68] [com.apple.FrontBoard:SceneExtension] Realizing settings extension FBSSceneTransitionContextCore on FBSSceneTransitionContext
+2026-09-30 03:15:52.724 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:UpdateScheduler] Selected display: name=LCD (PurpleMain), id=1
+2026-09-30 03:15:52.728 Df DSHSpike[73942:2508e0c] [com.apple.app_launch_measurement:ApplicationLaunch] alm_acquire_pageins_recording_assertion: acquired pageins recording assertion!
+2026-09-30 03:15:52.732 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:Application] Deactivation reason added: 5; deactivation reasons: 1024 -> 1056; animating application lifecycle event: 1
+2026-09-30 03:15:52.732 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.732 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Should send trait collection or coordinate space update, interface style 1 -> 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.735 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.735 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:HomeAffordanceObservation] Initializing: <_UIHomeAffordanceSceneNotifier: 0x104a5cd20>; with scene: <UIWindowScene: 0x10401bf00>
+2026-09-30 03:15:52.736 Df DSHSpike[73942:2508e0c] [com.apple.BacklightServices:scenes] 0x104a35980 setDelegate:<0x104a35ce0 _UIBacklightEnvironment> hasDelegate:YES for environment:sceneID:org.dsh.DSHSpike-default
+2026-09-30 03:15:52.737 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.737 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:EventDeferring] [0x104a5cee0] Initialized with scene: <UIWindowScene: 0x10401bf00>; behavior: <_UIEventDeferringBehavior_iOS: 0x10492ee60>; availableForProcess: 1, systemShellManagesKeyboardFocus: 1
+2026-09-30 03:15:52.737 Df DSHSpike[73942:2508e0c] [com.apple.BoardServices:XPCErrors] [C:2] Alloc com.apple.backboard.hid-services.xpc
+2026-09-30 03:15:52.737 Df DSHSpike[73942:2508e0c] [com.apple.xpc:connection] [0x10495cdc0] activating connection: mach=false listener=false peer=false name=(anonymous)
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e6b] [com.apple.BackBoard:EventDelivery] BKSHIDEventObserver - connection activation
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.BackBoard:EventDelivery] policyStatus:<BKSHIDEventDeliveryPolicyObserver: 0x1048619e0; process scope; status: target> was:none
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Setting default evaluation strategy for UIUserInterfaceIdiomPhone to LastOneWins
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Scene target of keyboard event deferring environment did change: 1; scene: UIWindowScene: 0x10401bf00; scene identity: com.apple.frontboard.systemappservices/FBSceneManager:sceneID%3Aorg.dsh.DSHSpike-default
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:EventDeferring] [0x104a5cee0] Scene target of event deferring environments did update: scene: 0x10401bf00; current systemShellManagesKeyboardFocus: 1; systemShellManagesKeyboardFocusForScene: 1; eligibleForRecordRemoval: 1;
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Scene became target of keyboard event deferring environment: UIWindowScene: 0x10401bf00; scene identity: com.apple.frontboard.systemappservices/FBSceneManager:sceneID%3Aorg.dsh.DSHSpike-default
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Stack[KeyWindow] 0x104a35f80: Taking no further action for migration from LastOneWins -> SystemShellManaged as there are no scenes
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Setting default evaluation strategy for UIUserInterfaceIdiomPhone to SystemShellManaged
+2026-09-30 03:15:52.741 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:KeyWindow] Key window needs update: 0; currentKeyWindowScene: 0x0; evaluatedKeyWindowScene: 0x10401bf00; currentApplicationKeyWindow: 0x0; evaluatedApplicationKeyWindow: 0x0; reason: UIWindowScene: 0x10401bf00: Window scene became target of keyboard environment
+2026-09-30 03:15:52.742 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.743 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.744 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.745 F  DSHSpike[73942:2508e0c] [com.apple.runtime-issues:UIKit App Config] `UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+2026-09-30 03:15:52.745 A  DSHSpike[73942:2508e0c] (libsystem_trace.dylib) Activity for state dumps
+2026-09-30 03:15:52.745 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:InterfaceStyle] Not push traits update to screen for new style 1, <UIWindowScene: 0x10401bf00> (58ACD054-4A51-4330-B6A5-86ED0A5A3B0D)
+2026-09-30 03:15:52.747 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:AppLifecycle] sceneOfRecord: sceneID: sceneID:org.dsh.DSHSpike-default  persistentID: 58ACD054-4A51-4330-B6A5-86ED0A5A3B0D
+2026-09-30 03:15:52.748 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:Application] Ignoring already applied deactivation reason: 5; deactivation reasons: 1056
+2026-09-30 03:15:52.748 Df DSHSpike[73942:2508e0c] [com.apple.UIKit:Application] Deactivation reason added: 11; deactivation reasons: 1056 -> 3104; animating application lifecycle event: 1
+2026-09-30 03:15:52.749 Df DSHSpike[73942:2508e0c] [com.apple.KeyboardArbiter:Client] startConnection
+2026-09-30 03:15:52.752 Df DSHSpike[73942:2508e0c] [com.apple.xpc:connection] [0x10495d680] activating connection: mach=true listener=false peer=false name=com.apple.UIKit.KeyboardManagement.hosted
+2026-09-30 03:15:52.767 Df DSHSpike[73942:2508e0c] (libswiftCore.dylib) DSHSpike/AppDelegate.swift:183: Fatal error: DSHSpike release build: refusing '-dsh-mode session'. This is the user-facing distribution build — the verification drives, the verdict panel, and the per-event E2E log stream are compiled out (AGENTS.md constraint 5, rules.md rule L4). Build/run the harness variant (dsh-ios-harness) to drive E2E legs.

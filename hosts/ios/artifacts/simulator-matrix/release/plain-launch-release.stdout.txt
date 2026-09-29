@@ -1,0 +1,20 @@
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"io","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsRead"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsMkdir","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"primitive":"fsWrite","caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T19:15:24Z","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsWrite"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsRead","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsStat","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsList","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsRename","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsList","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsStat","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsRemove"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsStat","verdict":"granted","outcome":"io","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"fsMkdir","verdict":"granted","outcome":"ok","ts":"2026-09-29T19:15:24Z"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsWrite"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"ok","caller":"dsh.spike.scenario","verdict":"granted","primitive":"wasmRun"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"io","caller":"dsh.spike.scenario","verdict":"granted","primitive":"wasmRun"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:24Z","outcome":"io","caller":"dsh.spike.scenario","verdict":"granted","primitive":"wasmRun"}
+dsh.gateway.audit: {"ts":"2026-09-29T19:15:28Z","outcome":"io","caller":"dsh.spike.scenario","verdict":"granted","primitive":"fsRead"}
+dsh.gateway.audit: {"primitive":"fsRead","caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T19:15:28Z","outcome":"io"}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5f90020f-e393-4c08-a89d-15111fee2af8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
