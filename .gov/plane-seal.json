@@ -22,7 +22,7 @@
       "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
     },
     ".gov/rejections/case-quickjs-boot-parse.sh": {
-      "sha256": "22cfe910c679685ac9a91f475228b1bd3d733f4a18b25c90db6de112616367c8"
+      "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
@@ -32,9 +32,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T04:04:32+00:00",
+    "ts": "2026-09-29T06:12:03+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "round-3 DX worker DX-boot-compile-gate: add .gov/rejections/case-quickjs-boot-parse.sh \u2014 the rule-6 rejection proof for the new quickjs-boot-parse gate (proven red on a node-clean/QuickJS-fatal import cycle, green on restore)"
+    "reason": "case-quickjs-boot-parse: the CLI-absent arm becomes an explicit SKIP (the gate builds on demand with a 300s budget and carries the full proof) \u2014 the cold-CI blocker the workflow's own notes predicted"
   }
 }
