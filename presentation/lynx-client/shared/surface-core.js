@@ -1,3 +1,4 @@
+// dsh:logging-exempt (pure data machinery: no I/O — the driver boundary owns logging)
 /**
  * surface-core.js — the bundle's seam core, React-free. ONE file, three
  * consumers: bundle/src/bridge.ts wraps it for ReactLynx (this exact module
@@ -32,34 +33,25 @@ export const createSurfaceCore = () => {
       current = snapshotState(fold.state);
       notify();
     },
-
     /** The host installs the intent receiver (the seam's onIntent,
      * engine-bridge side). */
     setIntentTarget(handler) {
       intentTarget = handler;
     },
-
     /** A user gesture that needs the wire: validated here, fail loud when
      * no target was installed (no silent no-ops). */
     emitIntent(intent) {
       assertIntent(intent);
       if (intentTarget === undefined) {
-        throw new Error(
-          'fail loud: no intent target — the host embedding must install '
-          + 'the intent receiver (setIntentTarget) before user interactions',
-        );
+        throw new Error('fail loud: no intent target installed');
       }
       intentTarget(intent);
     },
-
     /** The published snapshot (plain data; Maps spread — React-safe). */
     state: () => current,
-
     /** A fresh snapshot straight from the fold (assertion helper). */
     snapshot: () => snapshotState(fold.state),
-
-    /** Subscribe to publications; returns the unsubscribe. The single
-     * subscription point every renderer hangs off. */
+    /** Subscribe to publications; returns the unsubscribe. */
     subscribe(listener) {
       listeners.add(listener);
       return () => {

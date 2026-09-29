@@ -70,17 +70,18 @@ const createLynxBridgeSkin = ({ bundlePath }) => {
   const core = createSurfaceCore();
   let artifact = null;
   let handler = null;
+  const forwardIntent = (intent) => {
+    if (handler === null) {
+      throw new Error(
+        'fail loud: lynx bridge skin has no intent handler (driver not mounted)',
+      );
+    }
+    handler(intent);
+  };
   return defineRenderSurfaceClient({
     async mount() {
       artifact = verifyBundleArtifact(bundlePath);
-      core.setIntentTarget((intent) => {
-        if (handler === null) {
-          throw new Error(
-            'fail loud: lynx bridge skin has no intent handler (driver not mounted)',
-          );
-        }
-        handler(intent);
-      });
+      core.setIntentTarget(forwardIntent);
     },
     pushViewEvent(event) {
       core.pushViewEvent(event);

@@ -37,6 +37,9 @@ describe('adapter: journal records → view events', () => {
     expect(events[1]).toMatchObject({ callId: 't9', name: 'bash', output: '已中断' });
   });
 
+});
+
+describe('adapter: tool cards', () => {
   it('tool/call and tool/result map to the waiting and ok phases', () => {
     const call = translateRecord(ev('tool/call', {
       callId: 'c1', name: 'bash', arguments: '{"command":"ls"}',
@@ -78,7 +81,10 @@ describe('adapter: journal records → view events', () => {
     }
   });
 
-  it('assistant-stream frames map to deltas and building cards', () => {
+});
+
+describe('adapter: assistant-stream frames → view events', () => {
+  it('map to deltas and building cards', () => {
     expect(translateRecord({ type: 'start', attemptId: 'a1', turn: 1, step: 1 })[0])
       .toMatchObject({ type: 'message-delta', kind: 'start' });
     expect(translateRecord({
@@ -117,18 +123,15 @@ describe('adapter: the snapshot seed burst', () => {
   });
 
   it('replays a live attempt from assistantStream.activeAttempt', () => {
+    const frames = [
+      { type: 'start', attemptId: 'a1', turn: 2, step: 1 },
+      { type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: 'live' } },
+    ];
     const snapshot = {
       records: [],
-      assistantStream: {
-        revision: 1,
-        activeAttempt: {
-          attemptId: 'a1', turn: 2, step: 1,
-          stream: [
-            { type: 'start', attemptId: 'a1', turn: 2, step: 1 },
-            { type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: 'live' } },
-          ],
-        },
-      },
+      assistantStream: { revision: 1, activeAttempt: {
+        attemptId: 'a1', turn: 2, step: 1, stream: frames,
+      } },
     };
     const fold = createFold();
     translateSnapshot(snapshot).forEach((event) => fold.apply(event));
