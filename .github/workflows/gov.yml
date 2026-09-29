@@ -77,3 +77,34 @@ jobs:
       # own parsers (ABI mismatch, seen in CI run 35297964574).
       - name: Run the gate DAG
         run: gov run
+
+  # The quickjs-boot-parse gate builds the desktop CLI, whose link embeds
+  # the iSH static libs — AArch64 assembly an x86_64 runner cannot
+  # assemble. The arm64 runner (free for public repos) proves the boot
+  # graph compiles under the vendored engine; x86_64 gate runs skip the
+  # gate by its own arch guard.
+  quickjs-boot-parse:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install govrail
+        run: pip install govrail==0.48.0
+      - name: Cache the engine + ish vendor trees
+        uses: actions/cache@v5
+        with:
+          path: |
+            runtime/spike/vendor/quickjs-ng
+            runtime/spike/vendor/zstd
+            runtime/spike/vendor/wasm3
+            runtime/spike/vendor/ish
+          key: qjs-boot-arm64-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-ish.sh') }}
+      - name: Materialize the engine + ish trees
+        run: |
+          runtime/spike/vendor/ensure.sh
+          runtime/spike/vendor/ensure-ish.sh
+      - name: Run the quickjs-boot-parse gate
+        run: gov run --gate quickjs-boot-parse
