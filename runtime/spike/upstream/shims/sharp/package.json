@@ -1,0 +1,7 @@
+{
+  "name": "sharp",
+  "version": "0.34.4-dsh-shim.1",
+  "private": true,
+  "description": "DSH mobile sharp face: pure-JS adaptation over the vendored pngjs/jpeg-js/fflate pins plus hand-written GIF/WebP codecs. Serves the lazy createLazyRequire('sharp') face and the bare ESM spelling for the vendored attachment-local family (see upstream/shims/npm-bridges-c2.js). NOT the upstream package — the libvips binary cannot ride a QuickJS closure.",
+  "main": "index.js"
+}

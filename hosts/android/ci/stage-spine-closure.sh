@@ -139,6 +139,28 @@ say "staging vendor/npm/yaml@2.9.0 (browser ESM face)"
         cp "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel"
     done
 
+# The sharp face's vendored engines (the D-c row, 2026-09-29): the adapter
+# package (upstream/shims/sharp/, riding the subdir-aware mirror above)
+# requires these pin files by absolute staged path — pngjs's pixel stages,
+# jpeg-js's codec, and the fflate CJS face its zlib calls ride.
+say "staging vendor/npm/pngjs@5.0.0 (lib pixel stages)"
+mkdir -p "$ASSETS/vendor/npm/pngjs@5.0.0/lib"
+(cd "$SPIKE/vendor/npm/pngjs@5.0.0/lib" && find . -type f -name '*.js') |
+    while IFS= read -r rel; do
+        mkdir -p "$ASSETS/vendor/npm/pngjs@5.0.0/lib/$(dirname "$rel")"
+        cp "$SPIKE/vendor/npm/pngjs@5.0.0/lib/$rel" "$ASSETS/vendor/npm/pngjs@5.0.0/lib/$rel"
+    done
+say "staging vendor/npm/jpeg-js@0.4.4 (codec)"
+mkdir -p "$ASSETS/vendor/npm/jpeg-js@0.4.4/lib"
+cp "$SPIKE/vendor/npm/jpeg-js@0.4.4/index.js" "$ASSETS/vendor/npm/jpeg-js@0.4.4/index.js"
+(cd "$SPIKE/vendor/npm/jpeg-js@0.4.4/lib" && find . -type f -name '*.js') |
+    while IFS= read -r rel; do
+        cp "$SPIKE/vendor/npm/jpeg-js@0.4.4/lib/$rel" "$ASSETS/vendor/npm/jpeg-js@0.4.4/lib/$rel"
+    done
+say "staging vendor/npm/fflate@0.8.2 (lib CJS face)"
+mkdir -p "$ASSETS/vendor/npm/fflate@0.8.2/lib"
+cp "$SPIKE/vendor/npm/fflate@0.8.2/lib/index.cjs" "$ASSETS/vendor/npm/fflate@0.8.2/lib/index.cjs"
+
 # The crypto shims' npm face (2026-09-29): shims/crypto.js statically
 # imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare
 # map resolves @noble/hashes/<sub> into this pin — the whole .js set rides
@@ -190,9 +212,16 @@ mkdir -p "$ASSETS/upstream/shims"
 find "$SPIKE/upstream" -maxdepth 1 -name '*.js' -type f | while IFS= read -r src; do
     cp "$src" "$ASSETS/upstream/$(basename "$src")"
 done
+# Subdir-aware mirror (the sharp face's adapter package lives at
+# upstream/shims/sharp/): the relative path rides intact, and the adapter's
+# package.json (the cjs-loader entry probe reads it) stages beside the code.
 find "$SPIKE/upstream/shims" -name '*.js' -type f | while IFS= read -r src; do
-    cp "$src" "$ASSETS/upstream/shims/$(basename "$src")"
+    rel="${src#"$SPIKE"/upstream/shims/}"
+    mkdir -p "$ASSETS/upstream/shims/$(dirname "$rel")"
+    cp "$src" "$ASSETS/upstream/shims/$rel"
 done
+mkdir -p "$ASSETS/upstream/shims/sharp"
+cp "$SPIKE/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json"
 for f in gateway.js logger.js registry.js; do
     cmp -s "$SPIKE/$f" "$ASSETS/$f" || cp "$SPIKE/$f" "$ASSETS/$f"
 done
@@ -352,6 +381,8 @@ done
     while IFS= read -r rel; do
         cmp -s "$SPIKE/upstream/shims/$rel" "$ASSETS/upstream/shims/$rel" || note_drift "shims/$rel"
     done
+cmp -s "$SPIKE/upstream/shims/sharp/package.json" "$ASSETS/upstream/shims/sharp/package.json" ||
+    note_drift "shims/sharp/package.json"
 for f in gateway.js logger.js registry.js; do
     cmp -s "$SPIKE/$f" "$ASSETS/$f" || note_drift "$f"
 done

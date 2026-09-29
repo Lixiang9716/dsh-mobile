@@ -1,0 +1,23 @@
+{
+  "title": "sharp pure-JS decoder shim lands: vendor jpeg-js/pngjs (+webp face), map the sharp API face in runtime/spike/upstream/shims, wire per-host embeds, unblock the read-image spec family",
+  "created": "2026-09-29T12:20:09+00:00",
+  "rules": {
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+    }
+  },
+  "checklist": [
+    "Locate the read-image spec family and the exact sharp API face the vendored attachment-local package drives",
+    "Vendor the minimal pure-JS codec set via add-package.sh with sha256 pins and mirror tarballs",
+    "Implement the sharp shim over the vendored codecs and register the bare specifier row",
+    "Per-host embed lists cover the new vendored packages and shim (iOS TREES, harmony CLOSURE/BUNDLE_FILES, android stage list); regen + determinism",
+    "Per-spec acceptance: request-image (and any sibling attachment-local spec that comes along) failed:0 on dsh-spike-cli",
+    "closures gate green; gov run full DAG green with receipt; Agent Note lands",
+    "Push and open the PR with acceptance evidence"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0071"
+}
