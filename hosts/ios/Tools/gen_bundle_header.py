@@ -257,7 +257,7 @@ TREES = [
     ("vendor/npm/fflate@0.8.2/esm",
      SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
     # D-c: the sharp face's engines (its adapter rides upstream/shims below).
-    *(("vendor/npm/" + r, SPIKE / "vendor" / "npm" / r) for r in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
+    *(("vendor/npm/%s" % n, SPIKE / "vendor" / "npm" / n) for n in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
     # The crypto shims' npm face (crypto.js's static noble imports) and
     # the pi-ai bridge target (the providers barrel + its data face):
     # both whole pins ride — the parity legs died on bytes-absent-in-app.
