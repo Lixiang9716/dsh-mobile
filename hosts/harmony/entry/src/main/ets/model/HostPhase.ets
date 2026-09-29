@@ -255,7 +255,7 @@ export class HostPhase {
     this.entry = ENTRY_LLM;
     this.llmLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_STAGE);
+    const status: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'llm leg: staging eval failed');
     }
@@ -265,7 +265,7 @@ export class HostPhase {
    * scenario drives primitives only), so the hello-gated eval never fires —
    * the runner calls this directly once the carrier is up. */
   evalEntryDirect(): void {
-    const status = hostEval(PHASE_ID, this.entry);
+    const status: number = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed (device-plane leg)');
     }
@@ -355,7 +355,7 @@ export class HostPhase {
     this.entry = ENTRY_SUITE;
     this.llmLeg = false;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_SUITE);
+    const status: number = hostEval(PHASE_ID, ENTRY_SUITE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'suite leg: driver eval failed');
       return;
@@ -503,7 +503,7 @@ export class HostPhase {
   onPageHello(protocol: string): void {
     this.carrierLine('ws.connected', { 'protocol': protocol });
     this.connectedLogged = true;
-    const status = hostEval(PHASE_ID, this.entry);
+    const status: number = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed');
       return;
@@ -556,7 +556,7 @@ export class HostPhase {
       this.onSlotAck(msg);
       return;
     }
-    const status = hostBusDeliver(PHASE_ID, text);
+    const status: number = hostBusDeliver(PHASE_ID, text);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: bus deliver failed');
     }
@@ -625,7 +625,7 @@ export class HostPhase {
     if (!this.started) {
       return;
     }
-    const status = hostEvent(PHASE_ID, eventJson);
+    const status: number = hostEvent(PHASE_ID, eventJson);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: event failed: %{public}s', eventJson);
     }
@@ -644,7 +644,7 @@ export class HostPhase {
   }
 
   private settleCall(callId: number, payloadJson: string, ok: boolean): void {
-    const status = hostSettle(PHASE_ID, callId, ok, payloadJson);
+    const status: number = hostSettle(PHASE_ID, callId, ok, payloadJson);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: settle failed for call %{public}d', callId);
     }

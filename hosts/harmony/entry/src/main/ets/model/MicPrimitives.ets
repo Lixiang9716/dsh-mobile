@@ -100,6 +100,15 @@ class MicStream {
   }
 }
 
+/** Copies a view's bytes into a fresh, exactly-sized ArrayBuffer (ArkTS:
+ * a view's .buffer is ArrayBufferLike — structural typing forbids passing
+ * it where the chunk field declares ArrayBuffer). */
+function copyToArrayBuffer(src: Uint8Array): ArrayBuffer {
+  const out = new ArrayBuffer(src.length);
+  new Uint8Array(out).set(src);
+  return out;
+}
+
 function reject(callId: number, settle: SettleFn, code: string, primitive: string,
   message: string): void {
   settle(callId,
@@ -202,23 +211,26 @@ export class MicPrimitives {
     if (frameBytes < 2) {
       frameBytes = 2;
     }
+    const streamInfo: audio.AudioStreamInfo = {
+      samplingRate: rate,
+      channels: 1,
+      encodingType: audio.AudioEncodingType.ENCODING_TYPE_RAW,
+      sampleFormat: audio.AudioSampleFormat.SAMPLE_FORMAT_S16LE,
+    };
+    const capturerInfo: audio.AudioCapturerInfo = {
+      source: audio.SourceType.SOURCE_TYPE_MIC,
+      capturerFlags: 0,
+    };
     const options: audio.AudioCapturerOptions = {
-      streamInfo: {
-        samplingRate: rate,
-        channels: 1,
-        sampleFormat: audio.AudioSampleFormat.SAMPLE_FORMAT_S16LE,
-      },
-      capturerInfo: {
-        source: audio.SourceType.SOURCE_TYPE_MIC,
-        capturerFlags: 0,
-      },
+      streamInfo: streamInfo,
+      capturerInfo: capturerInfo,
     };
     const id = 'mic:' + Date.now().toString(16) + '-'
       + Math.floor(Math.random() * 0x100000000).toString(16);
     const s = new MicStream(id, frameBytes);
-    audio.createAudioCapturer(options).then((capturer: audio.AudioCapturer): void => {
-      s.capturer = capturer;
-      return capturer.start();
+    audio.createAudioCapturer(options).then((created: audio.AudioCapturer): Promise<void> => {
+      s.capturer = created;
+      return created.start();
     }).then((): void => {
       s.startedAt = Date.now();
       this.stream = s;
@@ -227,7 +239,7 @@ export class MicPrimitives {
       // micStart promise (which registers the channel state) always
       // resolves before the first frame lands.
       settle(callId, '{"streamId":"' + id + '"}', true);
-      capturer.on('readData', (buffer: ArrayBuffer): void => {
+      s.capturer?.on('readData', (buffer: ArrayBuffer): void => {
         this.capture(s, buffer);
       });
     }).catch((err: BusinessError): void => {
@@ -250,7 +262,8 @@ export class MicPrimitives {
     let offset = 0;
     while (merged.length - offset >= s.frameBytes) {
       s.seq += 1;
-      s.pending.push(new MicChunk(s.seq, merged.slice(offset, offset + s.frameBytes).buffer));
+      s.pending.push(new MicChunk(s.seq,
+        copyToArrayBuffer(merged.slice(offset, offset + s.frameBytes))));
       offset += s.frameBytes;
       if (s.pending.length > RING_CAP) {
         s.pending.shift();
@@ -326,7 +339,7 @@ export class MicPrimitives {
     // the accumulator's tail (< frameBytes) flushes as a final chunk
     if (s.accumulator.length > 0) {
       s.seq += 1;
-      s.pending.push(new MicChunk(s.seq, s.accumulator.slice().buffer));
+      s.pending.push(new MicChunk(s.seq, copyToArrayBuffer(s.accumulator)));
       if (s.pending.length > RING_CAP) {
         s.pending.shift();
       }

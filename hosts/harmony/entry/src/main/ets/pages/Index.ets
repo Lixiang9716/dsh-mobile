@@ -157,6 +157,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/device-plane.js',
   'scenario/camera-plane.js',
   'scenario/ble-plane.js',
+  'scenario/mic-plane.js',
   'scenario/upstream-parity.js',
   'scenario/parity-projector.js',
   'scenario/upstream-suite-leg.js',
