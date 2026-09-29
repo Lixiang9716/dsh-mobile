@@ -1,0 +1,23 @@
+{
+  "title": "node-pty boundary lands as the host forkpty face (decision D-b)",
+  "created": "2026-09-29T10:41:44+00:00",
+  "rules": {
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+    }
+  },
+  "checklist": [
+    "[x] D5 proposal contract/proposals/2026-09-29-forkpty-face.md + .zh.md written; gov verify pairing --write passes (repo-root-relative path)",
+    "[x] Version numbered additively against primitives.md (v1.9.0 candidate; no collision with socket-seam v1.8.0) and both proposals state their numbers consistently",
+    "[x] Host C seam: forkpty spawn + data/exit events (no polling) + write/resize/kill intrinsics in runtime/spike/host/dsh_spike_host.c; Darwin <util.h> forkpty; compiles debug+release under host/build.sh",
+    "[x] JS shim upstream/shims/node-pty.js serves the node-pty API shape (spawn/onData/onExit/write/resize/kill) and the vendored createLazyRequire('node-pty') face resolves through the require seam",
+    "[x] Per-host embed lists updated per vendor-package pin rules (iOS TREES, harmony CLOSURE/BUNDLE_FILES); build/build.sh sync for the touched platforms is clean",
+    "[x] The 3 node-pty-family specs verify green one by one via ./build/dsh-spike-cli . scenario/upstream-suite-leg.js --env DSH_UPSTREAM_SPEC=upstream-tests/<spec>: terminal-controller controller, subprocess-local shell-activity, tool-terminal loader-composition \u2014 each suite/summary failed:0",
+    "[x] Agent Note (rule 2) landed; gov run complete DAG green with receipt; push + gh pr create with a Conventional title"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0071"
+}

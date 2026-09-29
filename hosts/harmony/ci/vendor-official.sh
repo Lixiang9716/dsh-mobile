@@ -295,6 +295,7 @@ upstream/shims/dsh-session-persistence.js
 upstream/shims/expect-async-chain.js
 upstream/shims/vi-wait.js
 upstream/shims/globals.js
+upstream/shims/node-pty.js
 upstream/shims/npm-bridges.js
 scenario/upstream-suite-leg.js
 scenario/upstream-suite-flatmap.js
