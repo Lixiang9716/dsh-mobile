@@ -1,4 +1,4 @@
-# Capability Gateway — Primitive Contract v1.5.0
+# Capability Gateway — Primitive Contract v1.8.0
 
 > **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). Shapes in this document are immutable
 > for the life of major version 1. Evolution policy in [§8](#8-versioning--evolution).
@@ -51,6 +51,21 @@
 > seam keeps negotiating `gateway@1` and answers `unavailable`. Location, camera,
 > microphone, sensors, contacts and full Photos-library access remain out — each
 > demands an OS permission prompt whose lifecycle deserves its own design round (§8).
+>
+> **v1.8.0 (additive, 2026-09-30)**: the socket seam — `socketListen` /
+> `socketConnect` plus the `socket` event channel (§4, "the socket seam"):
+> audited LOOPBACK-ONLY TCP, capability-graded under the five-rule model of the
+> adopted proposal `contract/proposals/2026-09-28-socket-seam.md` (direction
+> grading, narrowest-scope default, family-flag grants, a gateway audit record
+> on every listen/connect/accept, session-scoped grants). The wider scopes
+> (`lan`, `any-remote`) and TLS termination stay named non-goals. Folded from
+> that proposal (its evidence base: 18 socket-class excluded upstream specs —
+> `ssh/ssh` 8, `lsp/lsp-stdio` 5, `ssh/subprocess-ssh` 5 — and the v1.5.0
+> subprocess seam's OS children, which need real loopback to talk past the
+> in-process dispatch). Same additive rule as v1.1.0–v1.5.0: a host without the
+> seam keeps negotiating `gateway@1` and answers `unavailable`. (v1.6.0 /
+> v1.7.0 stay reserved by the event-channel and render-surface proposals,
+> which remain unimplemented; the socket seam took the next free minor.)
 
 This is the shared service foundation of all four platforms (iOS / Android / HarmonyOS /
 desktop interop): the **narrow primitive table of the capability gateway**. Every host
@@ -377,6 +392,59 @@ pattern, a malformed share payload, or a share file path outside every granted s
 `unavailable` on a host without the primitive (a capability gap negotiation should have
 caught).
 
+### the socket seam (v1.8.0)
+
+Two primitives plus one event channel for audited LOOPBACK-ONLY TCP — the
+minimal "open a door, talk, close the door" seam (an LSP integration, an
+MCP-over-TCP transport, a webhook receiver, and the v1.5.0 subprocess seam's
+OS children talking to in-test servers past the in-process dispatch). v0
+ships `loopback` only; the wider scopes are named non-goals.
+
+- `socketListen(request) → { serverId, port } | null` — grant
+  `socket.listen.loopback`. `request` is `{ scope: "loopback", port? }`;
+  omitting `port` makes the host pick a free port and the resolved `port` is
+  the source of truth. Binds a loopback TCP listener and resolves once bound;
+  the user refusing the grant resolves `null`. Connections arrive on the
+  server's channel as `connection.accepted` events carrying a
+  `connectionId`.
+- `socketConnect(request) → { connectionId } | null` — grant
+  `socket.connect.loopback`. `request` is
+  `{ scope: "loopback", host: "127.0.0.1", port }`; the literal loopback
+  address is the only dialable host in v0 (anything else is `denied`).
+  `connectionId` names a duplex stream: `connection.write(bytes)` (a gateway
+  call), half-close as `connection.end()`; `connection.data` / `close` /
+  `error` arrive as events.
+
+The five-rule security model governs both primitives:
+
+1. **Direction grading** — `connect` (outbound) and `listen` (inbound) are
+   separate grant classes; `listen` is gated harder.
+2. **Narrowest-scope default** — v0 has exactly one scope, `loopback`
+   (127.0.0.1 only); `lan` / `any-remote` are non-goals with their own grant
+   classes.
+3. **Family-flag grants** — the installing profile declares the flag in its
+   manifest (`capabilities.required`/`optional`); out-of-scope calls raise the
+   runtime prompt where the host has one. A test suite granted only
+   `socket.*.loopback` runs with zero prompts, zero interaction, by
+   construction.
+4. **Gateway audit on everything** — one structured record per
+   `listen` / `connect` / accepted connection (direction, peer, grant source,
+   byte counts; never payload bytes).
+5. **Session-scoped by default** — a grant dies with its session; persistence
+   requires the user's explicit "remember".
+
+The `socket` channel (§5) carries `connection.accepted`, `data`, `close`,
+`error` per server/connection, delivered onto the runtime queue like every
+host event (D2, D8). Server lifetime is the opening session's lifetime —
+no background listening.
+
+Rejections in §3's vocabulary: `denied` without the direction's grant, for a
+scope other than `loopback`, or for a `socketConnect` host that is not the
+literal `127.0.0.1`; `invalid` for a malformed request or a `port` outside
+1–65535; `unavailable` on a host without the seam (a capability gap
+negotiation should have caught); `null` resolution is reserved for the user
+refusing a prompted grant.
+
 ## 5. Event channels
 
 Delivered by the bridge onto the runtime queue — not per-call primitives, part of this
@@ -387,6 +455,7 @@ contract and versioned with it:
 | `app.state` | `{ state: "foreground" \| "background" }` | drives checkpoint / resume (D7) |
 | `notify.response` | `{ id, action? }` | user interacted with a notification |
 | `timer.fire` | `{ timerId, tag? }` | a `timerSchedule`d wake-up fired (v1.4.0; one arm ⇒ at most one fire) |
+| `socket.*` (v1.8.0) | `connection.accepted` / `data` / `close` / `error`, keyed by `serverId` / `connectionId` | the socket seam's per-server and per-connection streams (§4, "the socket seam"); loopback-only in v1.8.0 |
 
 Streaming progress of a specific `httpFetch` call is delivered through that call's response
 body, not a global channel.

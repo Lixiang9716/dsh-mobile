@@ -35,6 +35,11 @@ add_library(spike SHARED
   napi_init.cpp
   gateway_smoke.cpp
   ${SPIKE_ROOT}/host/dsh_spike_host.c
+  # dsh_socket.c — the loopback socket seam's pump table (contract v1.8.0):
+  # dsh_spike_host.c references dsh_socket_poll/close_all unconditionally,
+  # so leaving it out is a link error, not a negotiation (the gateway still
+  # decides what gets SERVED).
+  ${SPIKE_ROOT}/host/dsh_socket.c
   ${QJS_DIR}/dtoa.c
   ${QJS_DIR}/libregexp.c
   ${QJS_DIR}/libunicode.c

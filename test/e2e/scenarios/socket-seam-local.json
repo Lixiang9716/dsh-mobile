@@ -1,0 +1,27 @@
+{
+  "scenario": "socket.seam",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    { "event": "socket.started", "match": { "scenario": "socket.seam" } },
+    { "event": "socket.server.listening", "match": { "pickedBy": "host" } },
+    { "event": "socket.server.connection", "order": "any" },
+    { "event": "socket.client.connected", "order": "any" },
+    { "event": "socket.client.wrote", "match": { "bytes": 18 }, "order": "any" },
+    { "event": "socket.server.data", "match": { "bytes": 18 }, "order": "any" },
+    { "event": "socket.client.data", "match": { "text": "ping-over-loopback" } },
+    { "event": "socket.client.closed", "match": { "halfClose": true } },
+    { "event": "socket.server.closed" },
+    { "event": "socket.subprocess.listening" },
+    { "event": "socket.subprocess.connection" },
+    { "event": "socket.subprocess.data", "match": { "text": "hello-from-child" } },
+    { "event": "socket.subprocess.roundtrip", "match": { "sent": "hello-from-child", "received": "ack-from-server", "exitCode": 0 } },
+    { "event": "socket.subprocess.closed" },
+    { "event": "socket.grant.denied", "match": { "request": "listen scope=lan", "code": "denied" } },
+    { "event": "socket.connect.denied", "match": { "request": "connect host=10.0.0.1", "code": "denied" } },
+    { "event": "socket.refused", "match": { "port": 1, "code": "ECONNREFUSED" } },
+    { "event": "socket.refused.closed" },
+    { "event": "socket.passed", "match": { "legs": 4 } }
+  ]
+}

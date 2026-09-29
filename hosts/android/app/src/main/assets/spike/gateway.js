@@ -239,6 +239,47 @@ export const keychainSet = async (ref, secret) => await call('keychainSet', {
   secretB64: secret ? bytesToBase64(secret) : null,
 });
 
+// ---- the socket seam (contract v1.8.0) ------------------------------------
+// Audited LOOPBACK-ONLY TCP under the adopted proposal's five-rule model:
+// direction grading (listen vs connect), the narrowest-scope default
+// (`loopback` is v1.8.0's only scope), family-flag grants, one gateway audit
+// record per listen/connect/accept, session-scoped grants. The data face
+// rides the same gateway bridge (socketWrite/socketEnd/socketClose — the
+// proposal's connection face) while the pump's poll is the one host
+// intrinsic (the same child-process/pty split: the JS pump turns the poll
+// into the data/close event sequence, D8). A host without the seam answers
+// `unavailable` — a capability gap, not a retryable error.
+
+/** `{ serverId, port } | null`; omitting `port` lets the host pick (the
+ * resolved port is the source of truth). `null` = the user refused. */
+export const socketListen = async (request) =>
+  await call('socketListen', { scope: 'loopback', ...request });
+
+/** `{ connectionId } | null`; host is the literal 127.0.0.1 in v1.8.0. */
+export const socketConnect = async (request) =>
+  await call('socketConnect', { scope: 'loopback', host: '127.0.0.1', ...request });
+
+/** `{ written, buffered }` — `buffered` > 0 is the host parking the refused
+ * tail in the slot's backpressure buffer (it drains on the pump ticks). */
+export const socketWrite = async (connectionId, bytes) => {
+  log.debug('socketWrite', { connectionId, bytes: bytes.byteLength });
+  const res = await call('socketWrite', {
+    connectionId,
+    bytesB64: bytesToBase64(bytes),
+  });
+  return { written: res.written, buffered: res.buffered ?? 0 };
+};
+
+/** Half-close: the peer reads the trailing bytes then sees EOF. */
+export const socketEnd = async (connectionId) =>
+  await call('socketEnd', { connectionId });
+
+/** Close a server (`{ id }`) or a connection (`{ connectionId }`). */
+export const socketClose = async (ref) =>
+  await call('socketClose', ref.connectionId !== undefined
+    ? { id: ref.connectionId }
+    : ref);
+
 // ---- bridge event plumbing ------------------------------------------------
 
 const listeners = new Set();

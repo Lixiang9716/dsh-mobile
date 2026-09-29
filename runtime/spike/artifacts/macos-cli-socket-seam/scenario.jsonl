@@ -1,0 +1,74 @@
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.started"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketListen"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.server.listening","port":58277,"pickedBy":"host"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketConnect"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.server.connection","from":"127.0.0.1:58278"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.client.connected","to":"127.0.0.1:58277"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"socketWrite","data":[{"connectionId":"conn:2","bytes":18}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketWrite"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.client.wrote","bytes":18}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.server.data","bytes":18}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"socketWrite","data":[{"connectionId":"conn:3","bytes":18}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketEnd"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.client.data","text":"ping-over-loopback"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketEnd"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketClose"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.client.closed","halfClose":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketClose"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.server.closed"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketListen"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.subprocess.listening","port":58279}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketClose"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.subprocess.connection","from":"127.0.0.1:58280"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.subprocess.data","text":"hello-from-child"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"socketWrite","data":[{"connectionId":"conn:5","bytes":15}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketEnd"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.subprocess.roundtrip","sent":"hello-from-child","received":"ack-from-server","exitCode":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketClose"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.subprocess.closed"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketListen"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"socketListen"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.grant.denied","request":"listen scope=lan","code":"denied"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketConnect"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"denied","primitive":"socketConnect"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.connect.denied","request":"connect host=10.0.0.1","code":"denied"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketConnect"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"timerSchedule"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"socketClose"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":35}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.refused","port":1,"code":"ECONNREFUSED"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.refused.closed"}]}
+dsh.spike.log: {"level":"info","module":"dsh.socket.seam","message":"e2e","data":[{"scenario":"socket.seam","event":"socket.passed","legs":4}]}

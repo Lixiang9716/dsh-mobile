@@ -1,4 +1,4 @@
-# 能力网关 — 原语契约 v1.5.0
+# 能力网关 — 原语契约 v1.8.0
 
 > **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。本文档中的形状在主版本 1 的整个生命周期内不可变。
 > 演进策略见 [§8](#8-版本与演进)。机器可读接口:[primitives.d.ts](primitives.d.ts)。
@@ -39,6 +39,17 @@
 > 提供它给不了的触觉反馈)。与 v1.1.0–v1.4.0 同一增量规则:无该接缝的宿主继续协商
 > `gateway@1` 并如实回答 `unavailable`。位置、相机、麦克风、传感器、通讯录与完整相册访问
 > 仍然不在其中——每一项都需要一轮自己的 OS 权限弹窗生命周期设计(§8)。
+>
+> **v1.8.0(增量,2026-09-30)**:socket 缝——`socketListen` / `socketConnect` 加
+> `socket` 事件通道(§4「the socket seam (v1.8.0)」):仅回环、可审计的 TCP,按已采纳提案
+> `contract/proposals/2026-09-28-socket-seam.zh.md` 的五规则模型能力分级(方向分级、默认最窄
+> 作用域、family-flag 授权、每次 listen/connect/accept 一条 gateway 审计记录、授权随会话
+> 失效)。更宽的作用域(`lan`、`any-remote`)与 TLS 终结仍是具名非目标。自该提案折叠而来
+> (证据基础:18 个 socket 类排除的上游 spec——`ssh/ssh` 8、`lsp/lsp-stdio` 5、
+> `ssh/subprocess-ssh` 5——以及 v1.5.0 子进程缝的 OS 子进程,它们需要真实回环才能穿透
+> 进程内分发通话)。与 v1.1.0–v1.5.0 同一增量规则:无该缝的宿主继续协商 `gateway@1` 并如实
+> 回答 `unavailable`。(v1.6.0 / v1.7.0 由事件通道与 render 面提案保留——它们仍未实现;
+> socket 缝取下一个空闲次要版本号。)
 
 这是四个平台(iOS / Android / HarmonyOS / 桌面互通)共同的服务基础:**能力网关的窄原语表**。
 每个宿主实现同一张表;它之上的一切——上游 Harness 包、系统实现插件、Web Client——看到的都是
@@ -319,6 +330,44 @@ resolve 出范围句柄——读经范围,无相册访问。既有原语上的�
 中拒绝亦是;未知的 haptic 模式、畸形的分享负载、不在任何已授予范围内的分享文件路径 →
 `invalid`;宿主没有该原语 → `unavailable`(协商本应发现的 capability 缺口)。
 
+### the socket seam(v1.8.0)
+
+两个原语加一条事件通道,承载仅回环、可审计的 TCP——最小化的「开一扇门、说话、关门」缝
+(LSP 集成、MCP-over-TCP 传输、webhook 接收器,以及 v1.5.0 子进程缝的 OS 子进程穿透进程内
+分发与测试内服务器通话)。v0 只出 `loopback`;更宽的作用域是具名非目标。
+
+- `socketListen(request) → { serverId, port } | null` —— 授权
+  `socket.listen.loopback`。`request` 为 `{ scope: "loopback", port? }`;省略 `port`
+  即由宿主挑选空闲端口,resolve 出的 `port` 是事实来源。绑定回环 TCP 监听后即 resolve;
+  用户拒绝授权时 resolve `null`。连接以服务器通道上的 `connection.accepted` 事件到达,
+  携带 `connectionId`。
+- `socketConnect(request) → { connectionId } | null` —— 授权
+  `socket.connect.loopback`。`request` 为
+  `{ scope: "loopback", host: "127.0.0.1", port }`;字面回环地址是 v0 唯一可拨的主机
+  (其余一律 `denied`)。`connectionId` 标识一条双工流:`connection.write(bytes)`
+  (gateway 调用),半关闭表达为 `connection.end()`;`connection.data` / `close` /
+  `error` 以事件到达。
+
+五规则安全模型约束两个原语:
+
+1. **方向分级** —— `connect`(出站)与 `listen`(入站)是不同的授权类;`listen` 门禁更严。
+2. **默认最窄作用域** —— v0 只有一个作用域 `loopback`(仅 127.0.0.1);`lan` /
+   `any-remote` 是非目标,各配各的授权类。
+3. **family-flag 授权** —— 安装 profile 在 manifest 中声明旗标
+   (`capabilities.required` / `optional`);宿主有弹窗时,越界调用触发运行时弹窗。仅获授
+   `socket.*.loopback` 的测试套件由构造保证零弹窗、零交互。
+4. **一切过 gateway 审计** —— 每次 `listen` / `connect` / 被接受的连接各一条结构化记录
+   (方向、peer、授权来源、字节计数;绝不带载荷字节)。
+5. **默认会话作用域** —— 授权随会话结束失效;持久化需要用户显式「记住」。
+
+`socket` 通道(§5)按服务器/连接承载 `connection.accepted`、`data`、`close`、`error`,
+像每个宿主事件一样派发到运行时队列(D2、D8)。服务器生命周期即开启会话的生命周期——
+无后台监听。
+
+§3 词汇的拒绝:缺少该方向的授权、`loopback` 之外的作用域、或 `socketConnect` 的主机不是
+字面 `127.0.0.1` → `denied`;请求畸形或 `port` 超出 1–65535 → `invalid`;宿主没有此缝 →
+`unavailable`(协商本应发现的 capability 缺口);`null` resolve 保留给用户在弹窗中拒绝授权。
+
 ## 5. 事件通道
 
 由桥接派发到运行时队列——不是按调用计的原语,但属于本契约、随其一起版本化:
@@ -328,6 +377,7 @@ resolve 出范围句柄——读经范围,无相册访问。既有原语上的�
 | `app.state` | `{ state: "foreground" \| "background" }` | 驱动检查点 / 恢复(D7) |
 | `notify.response` | `{ id, action? }` | 用户与通知发生了交互 |
 | `timer.fire` | `{ timerId, tag? }` | `timerSchedule` 的唤醒已触发(v1.4.0;一次 arm ⇒ 至多一次触发) |
+| `socket.*`(v1.8.0) | `connection.accepted` / `data` / `close` / `error`,以 `serverId` / `connectionId` 为键 | socket 缝的每服务器、每连接流(§4「the socket seam」);v1.8.0 仅回环 |
 
 某次 `httpFetch` 调用的流式进度经该调用的响应体送达,不走全局通道。
 

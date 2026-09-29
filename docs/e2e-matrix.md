@@ -17,6 +17,13 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > implemented note). Totals below re-run against this tree (54 dirs / 113
 > verdicts).
 >
+> **Currency**: this matrix reflects the socket-seam change (2026-09-30,
+> PR #251): scenario `socket.seam` 17→19 records / 19/19, dir
+> `runtime/spike/artifacts/macos-cli-socket-seam/` — and the totals are
+> re-run against this tree (47 dirs / 95 verdicts / 46 of 46 scenario ids
+> green-covered / 38 manifests). The models-page note below is the previous
+> currency record; rows it added keep their display-name spellings.
+>
 > **Currency**: this matrix reflects the models-page e2e change
 > (2026-09-25): the official client's models 设置页 has its own CLI proof —
 > scenario `models.directory` 6/6, dir
@@ -81,9 +88,9 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 46 |
-| Verdicts committed (92 green, 2 quota-blocked red) | 94 |
-| Scenarios with at least one committed evidence dir | 45 of 45 distinct scenario ids (37 manifests) |
+| Evidence dirs | 47 |
+| Verdicts committed (93 green, 2 quota-blocked red) | 95 |
+| Scenarios with at least one committed evidence dir | 46 of 46 distinct scenario ids (38 manifests) |
 | Screenshots verified PNG | 113 |
 | Acceptance-bar findings | 7 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
@@ -131,11 +138,12 @@ evidence on that platform.
 | `harmony.whale.mount` | — | — | 7/7 | — |
 | `harmony.nextweb.mount` | — | — | 24/24 | — |
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
+| `socket.seam` | — | — | — | 17/17 |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
 
-All 43 distinct scenario ids (35 manifests — `m2.llm` has two: the
+All 46 distinct scenario ids (38 manifests — `m2.llm` has two: the
 19-event scripted-SSE CLI leg and the 14-event device leg) have at least
 one green committed evidence dir; `m2.session` runs green on all four
 hosts, and the models 设置页's `models.directory` rides the macOS CLI
@@ -203,6 +211,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=2 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs

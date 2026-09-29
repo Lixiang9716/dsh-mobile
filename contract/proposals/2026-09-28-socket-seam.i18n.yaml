@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: adf645b513b9891124bb6d6b97d91b6613048d89
-  zh: eaf5546b132b2b314689a7eb0f622c932949a22f
+  en: 98c3a237217f675415ad723639a65278edc82250
+  zh: 5dcb0ba5ce982475a95c7fc4df8495137f44a3fe
 counterpart: 2026-09-28-socket-seam.zh.md
-last_confirmed: 2026-09-29T19:20:06+00:00
+last_confirmed: 2026-09-29T20:02:49+00:00
 en_commit: 64889c54
 zh_commit: 64889c54

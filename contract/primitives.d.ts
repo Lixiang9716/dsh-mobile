@@ -254,3 +254,59 @@ export type SharePayload =
 export declare function presentShare(payload: SharePayload): Promise<{ shared: boolean }>;
 
 export declare function keepAwake(hold: boolean): Promise<void>;
+
+// ---- 25-26 · the socket seam (v1.8.0) -----------------------------------
+// Audited LOOPBACK-ONLY TCP under the five-rule model of the adopted
+// proposal (contract/proposals/2026-09-28-socket-seam.md): direction grading
+// (listen vs connect are separate grants), narrowest-scope default
+// (`loopback` is the only scope in v1.8.0), family-flag grants
+// (`socket.listen.loopback` / `socket.connect.loopback`, declared in the
+// manifest), one gateway audit record per listen/connect/accept, and
+// session-scoped grants. Bytes are end-to-end raw pipes — TLS termination
+// stays out (non-goal). socketListen resolves once bound; the resolved port
+// is the source of truth when the caller omitted one. socketConnect dials
+// the literal loopback address only — anything else is `denied`. `null`
+// resolutions are reserved for the user refusing a prompted grant. Data
+// flows per connection over the socket channel (§5), delivered onto the
+// caller's serial queue (D2, D8). A host without the seam answers
+// unavailable — negotiation, not a branch.
+export type SocketListenRequest = {
+  scope: "loopback";
+  port?: number;
+};
+export declare function socketListen(
+  request: SocketListenRequest,
+): Promise<{ serverId: string; port: number } | null>;
+
+export type SocketConnectRequest = {
+  scope: "loopback";
+  host: "127.0.0.1";
+  port: number;
+};
+export declare function socketConnect(
+  request: SocketConnectRequest,
+): Promise<{ connectionId: string } | null>;
+
+/** Event channel payloads (§5). */
+export type SocketConnectionAcceptedEvent = {
+  event: "connection.accepted";
+  serverId: string;
+  connectionId: string;
+  peerPort: number;
+};
+export type SocketDataEvent = {
+  event: "socket.data";
+  connectionId: string;
+  chunkB64: string;
+};
+export type SocketCloseEvent = {
+  event: "socket.close";
+  connectionId: string;
+};
+export type SocketErrorEvent = {
+  event: "socket.error";
+  serverId?: string;
+  connectionId?: string;
+  code: string;
+  message: string;
+};

@@ -1,0 +1,8 @@
+{
+  "scenario": "socket.seam",
+  "pass": true,
+  "expected": 19,
+  "logged": 19,
+  "failures": [],
+  "parseErrors": []
+}

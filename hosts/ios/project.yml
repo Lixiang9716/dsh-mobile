@@ -45,6 +45,11 @@ targets:
     sources:
       - path: App
       - path: ../../runtime/spike/host/dsh_spike_host.c
+      # dsh_socket.c — the loopback socket seam's pump table (contract
+      # v1.8.0): dsh_spike_host.c references dsh_socket_poll/close_all
+      # unconditionally, so leaving it out is a link error, not a
+      # negotiation (the gateway still decides what gets SERVED).
+      - path: ../../runtime/spike/host/dsh_socket.c
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/dtoa.c
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libregexp.c
       - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libunicode.c

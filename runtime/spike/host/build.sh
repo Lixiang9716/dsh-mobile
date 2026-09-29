@@ -47,7 +47,7 @@ if [ "$RELEASE" -eq 1 ]; then
     cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli-release \
-       host/dsh_spike_host.c host/main_cli.c \
+       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm
@@ -56,7 +56,7 @@ else
     cc -std=c11 -O1 -D_GNU_SOURCE -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
        -o build/dsh-spike-cli \
-       host/dsh_spike_host.c host/main_cli.c \
+       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm
