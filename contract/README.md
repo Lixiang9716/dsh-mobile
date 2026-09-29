@@ -1,5 +1,7 @@
 # contract/
 
+> English | [简体中文](README.zh.md)
+
 **The contract-freeze deliverable — the first priority of the entire project. Status: FROZEN v1.0.0 (2026-09-19, D5), additively extended to v1.5.0 (2026-09-26).**
 
 No implementation code lands before this directory is frozen (D5: contract first). It is now.
@@ -14,7 +16,7 @@ No implementation code lands before this directory is frozen (D5: contract first
 | [schemas/manifest.schema.json](schemas/manifest.schema.json) | Plugin manifest, `schemaVersion: 1` (JSON Schema 2020-12) |
 | [schemas/integrity.schema.json](schemas/integrity.schema.json) | Installed-tree digest ledger, `ledgerVersion: 1` |
 | [schemas/receipt.schema.json](schemas/receipt.schema.json) | Install/remove transaction receipt, `receiptVersion: 1` |
-| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented) · current: [the event channel](proposals/2026-09-26-event-channel.md) (a v1.6.0 candidate), [the render surface](proposals/2026-09-26-render-surface.md) (a v1.7.0 candidate), [the socket seam](proposals/2026-09-28-socket-seam.md) (a v1.8.0 candidate), and [the forkpty face](proposals/2026-09-29-forkpty-face.md) (a v1.9.0 candidate) |
+| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented) · current: [the event channel](proposals/2026-09-26-event-channel.md) (a v1.6.0 candidate), [the render surface](proposals/2026-09-26-render-surface.md) (a v1.7.0 candidate), [the socket seam](proposals/2026-09-28-socket-seam.md) (a v1.8.0 candidate), [the forkpty face](proposals/2026-09-29-forkpty-face.md) (a v1.9.0 candidate), and [the system capability plane](proposals/2026-09-30-system-capability-plane.md) (a v1.10.0 candidate) |
 
 ## Reading order
 

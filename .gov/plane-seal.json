@@ -1,7 +1,7 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "7748c71c35d72d56b141b28dbed2587b6393a43fe30b798864f0adb288f3a64f"
+      "sha256": "a0b3015c7fb08fc667ec56ac296f103ed0f696f13030c2a00e5eb20bcb3cae6b"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
@@ -35,9 +35,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T16:47:57+00:00",
+    "ts": "2026-09-29T19:20:20+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "PR #244 review round: the two intersecting live-tree rejection cases (case-bundle-files \u00d7 case-staging-check) gain a shared mkdir mutation-window mutex \u2014 the in-gate race measured by the independent review (both directions reproduced on 0a538482); recorded act per the review thread"
+    "reason": "PR #249 independent review (medium finding): the pairing gate's include list omitted contract/**/*.md, leaving the contract bilingual pairs outside gate jurisdiction; the extension + socket-seam record backfill + data-protocols re-confirmation + contract/README.zh.md translation were reviewed on the PR thread and are landed as the review fix"
   }
 }

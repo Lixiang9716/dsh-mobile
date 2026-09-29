@@ -1,6 +1,7 @@
 {
   "include": [
     "docs/**/*.md",
+    "contract/**/*.md",
     "README.md"
   ],
   "counterparts": [
