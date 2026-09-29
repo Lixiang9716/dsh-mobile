@@ -1,0 +1,19 @@
+{
+  "title": "PR #245 review fixes: pin-absence fails loud; all pin versions derive from stager declarations",
+  "created": "2026-09-29T16:45:02+00:00",
+  "rules": {
+    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+    }
+  },
+  "checklist": [
+    "[x] high: pinfiles legs (noble/pi-ai/goal-trio) fail exit 2 naming the absent pin dir instead of silently emptying (?? [] removed); harmony roster absent pins promoted to freeze-fatal",
+    "[x] medium: the five hardcoded versions replaced by stager declarations \u2014 facts.ver (android pinAbs), NOBLE_DIR/PIAI_DIR consumed, goal trio from the CLOSURE find span, zod pin from ZOD_SRC (legs default removed)",
+    "[x] verify: happy path numbers unchanged (derived 897 / missing 0 / extras 33 / zod 79x4), negative test (noble dir moved) exits 2 naming the dir, check-size 0, check-staging 3 hosts green, gov run green + receipt; push"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0073"
+}
