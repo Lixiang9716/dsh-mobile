@@ -1,0 +1,32 @@
+{
+  "host": "android emulator-5554",
+  "runner": "hosts/android/ci/run-spike-e2e.sh (assembled by tools/test/run-simulator-matrix.sh)",
+  "phase": "three-scenario regression (boot.verification + gateway.bridge-smoke + session.mock-llm)",
+  "launch": "emulator, plain am start (Debug harness)",
+  "tree": "origin/main 9336f0b19d5a (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    {
+      "manifest": "boot-verification",
+      "verdict": "verdict-boot-verification.json",
+      "id": "boot.verification",
+      "pass": true
+    },
+    {
+      "manifest": "gateway-bridge-smoke",
+      "verdict": "verdict-gateway-bridge-smoke.json",
+      "id": "gateway.bridge-smoke",
+      "pass": true
+    },
+    {
+      "manifest": "session-mock-llm",
+      "verdict": "verdict-session-mock-llm.json",
+      "id": "session.mock-llm",
+      "pass": true
+    }
+  ],
+  "screens": [
+    "screens/final.png"
+  ],
+  "producedAt": "2026-09-30T03:44:22+08:00"
+}

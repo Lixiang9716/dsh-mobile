@@ -1,0 +1,4 @@
+# the release boot's served origin, probed through adb forward
+carrier_port=37175 uid=10162 page_connections_to_carrier=1
+GET / -> status=401   (401 = the auth-lite token gate of the official dist seat)
+launcher focus:   mCurrentFocus=Window{23ed7e9 u0 com.dshmobile.spike/com.dshmobile.spike.MainActivity}

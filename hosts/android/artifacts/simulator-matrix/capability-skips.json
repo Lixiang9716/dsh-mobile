@@ -1,0 +1,35 @@
+{
+  "platform": "android",
+  "target": "emulator-5554",
+  "generatedAt": "2026-09-30T03:44:58+08:00",
+  "probed": [
+    {
+      "driver": "uiautomator",
+      "present": true,
+      "path": "/system/bin/uiautomator",
+      "note": "the emulator's own UI automator drives the native surfaces; no leg skipped"
+    }
+  ],
+  "hardware": [
+    {
+      "capability": "camera",
+      "status": "no-emulator-hardware",
+      "baseline": "an emulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "microphone",
+      "status": "no-emulator-hardware",
+      "baseline": "an emulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "bluetooth",
+      "status": "no-emulator-hardware",
+      "baseline": "an emulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    },
+    {
+      "capability": "nfc",
+      "status": "no-emulator-hardware",
+      "baseline": "an emulator exposes no camera/BT/NFC radio; when the system capability face lands, its scenarios negotiate `unavailable` through the capability plane (device-plane precedent: the harmony emulator's pasteboard answers honestly unavailable)"
+    }
+  ]
+}

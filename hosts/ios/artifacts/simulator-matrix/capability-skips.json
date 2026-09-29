@@ -1,12 +1,12 @@
 {
   "platform": "ios",
   "target": "A4AE41BF-026A-441E-85DF-F53522996073",
-  "generatedAt": "2026-09-30T03:15:53+08:00",
+  "generatedAt": "2026-09-30T03:32:54+08:00",
   "probed": [
     {
       "driver": "idb",
       "present": true,
-      "reason": "idb present; harness legs skipped by flag (--skip-harness)",
+      "reason": "idb present; the UI-driven harness legs ran",
       "skippedLegs": [],
       "note": "the drives block on system UI (alerts, banner, picker) only idb/WDA can reach"
     }

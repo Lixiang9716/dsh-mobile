@@ -325,6 +325,27 @@ with open(os.path.join(art, "release-proof.json"), "w") as f:
 PY
     [ -f "$art/release-proof.json" ] || mx_die "the release-proof.json writer lied (file absent) — refusing to record"
     record ios release PASS "0 drive markers / 0 debug+info; audit=$audit_n warn=$warn_n (product planes, recorded); refusal by name; proof in $art/release-proof.json"
+    ios_restage_picker_target
+}
+
+# ios_restage_picker_target — the release leg UNINSTALLS the app (its plain
+# launch needs an empty container), which wipes the Files-picker target the
+# gateway drive later searches for. A copy staged AFTER that, minutes before
+# the drive, loses the race against the file-provider search index — measured
+# 2026-09-30: the fresh staging stayed invisible ("未找到相关结果") and the
+# binding watchdog died waiting for `ui-done picker`. Staging HERE gives the
+# index the whole harness build + reboot to settle, so run-ios.sh finds the
+# target present and leaves it untouched (its stage-once recipe).
+ios_restage_picker_target() {
+    local container
+    container="$(xcrun simctl get_app_container "$IOS_UDID" "$IOS_BUNDLE" data 2>/dev/null)" \
+        || mx_die "cannot read the app container to re-stage the picker target"
+    mkdir -p "$container/Documents/gateway-e2e"
+    if [ ! -f "$container/Documents/gateway-e2e/notes.txt" ]; then
+        printf 'gateway e2e target file — dsh-mobile m2\n' \
+            > "$container/Documents/gateway-e2e/notes.txt"
+        mx "re-staged the picker target (the release uninstall wiped it) — index settles while the harness builds"
+    fi
 }
 
 ios_harness_leg() {
@@ -343,13 +364,13 @@ ios_harness_leg() {
     mx "harness leg 1/2: run-ios.sh (gateway binding, the full UI drive)"
     test/e2e/run-ios.sh --udid "$IOS_UDID" \
         --art-dir "$m/gateway-drive" \
-        || { record ios gateway-drive FAIL "run-ios.sh exited non-zero — see its verdicts"; return 1; }
+        || { archive_failed_dir ios gateway-drive; record ios gateway-drive FAIL "run-ios.sh exited non-zero — its dir moved to /tmp for diagnosis"; return 1; }
     record ios gateway-drive PASS "4 verdicts green + receipt (boot, carrier, gateway binding, audit)"
 
     mx "harness leg 2/2: run-ios-device-plane.sh (the v1.5.0 capability ladder)"
     test/e2e/run-ios-device-plane.sh --udid "$IOS_UDID" \
         --art-dir "$m/device-plane" --skip-build \
-        || { record ios device-plane FAIL "run-ios-device-plane.sh exited non-zero"; return 1; }
+        || { archive_failed_dir ios device-plane; record ios device-plane FAIL "run-ios-device-plane.sh exited non-zero — dir moved to /tmp"; return 1; }
     record ios device-plane PASS "device.plane + audit verdicts green + receipt"
 }
 
@@ -446,9 +467,14 @@ android_release_leg() {
     ( cd hosts/android && ./gradlew assembleRelease --no-daemon --console=plain 2>&1 | tail -3 ) \
         || mx_die "gradle assembleRelease failed"
     [ -f "$apk" ] || mx_die "release APK missing: $apk"
-    unzip -l "$apk" | grep -q "assets/official-web/dist/index.html" \
+    # Read the listing ONCE, grep the FILE: `unzip -l | grep -q` lets grep exit
+    # the pipeline early, SIGPIPE kills unzip, and pipefail then fails a check
+    # that SUCCEEDED — the exact trap the committed release-logging runner
+    # documents ("one listing, read twice"); stepped into here, fixed the same way.
+    unzip -l "$apk" > "$art/apk-release-listing.txt"
+    grep -q "assets/official-web/dist/index.html" "$art/apk-release-listing.txt" \
         || mx_die "the release APK embeds no official dist"
-    unzip -l "$apk" | grep -q "assets/spike/logger.js" \
+    grep -q "assets/spike/logger.js" "$art/apk-release-listing.txt" \
         || mx_die "the release APK embeds no spike bundle"
 
     # The shipped artifact is unsigned (release.yml uploads it that way); the
@@ -468,27 +494,37 @@ android_release_leg() {
     adb_of logcat -c || mx_die "logcat -c failed (the absence assertions need a clean window)"
     adb_of shell am start -n "$ANDROID_PKG/.MainActivity" >/dev/null || mx_die "am start failed"
 
-    # Conditions, not clocks: pid -> carrier LISTEN (by uid, from the kernel
-    # socket tables) -> a page connection to that port -> the seat answering.
+    # Conditions, not clocks: pid -> a uid SELF-CONNECTION (the WebView fetched
+    # the loopback carrier) -> the seat answering.
     poll_until 90 adb_of shell pidof "$ANDROID_PKG" || mx_die "the release app process never came up"
-    local uid port
+    local uid
     uid="$(adb_of shell "stat -c %u /proc/$(adb_of shell pidof "$ANDROID_PKG" | tr -d '\r')" | tr -d '\r')"
-    port=""
-    local deadline=$((SECONDS + 90))
-    # `until port="$(...)"` alone would exit the loop on the FIRST read — the
-    # pipeline's exit status is `tr`'s, always 0, empty port or not. The
-    # non-emptiness IS the condition.
-    until port="$(adb_of shell "cat /proc/net/tcp /proc/net/tcp6" 2>/dev/null |
-        awk -v u="$uid" '$4=="0A" && $8==u {print $2}' | head -1 | tr -d '\r')" && [ -n "$port" ]; do
-        [ "$SECONDS" -lt "$deadline" ] || mx_die "the release boot never bound the loopback carrier (uid $uid)"
+    # The carrier = a LISTEN socket of the uid that the uid itself connected to
+    # (the WebView's fetch). Finding the listener FIRST (`head -1`) loses to a
+    # second listener: measured 2026-09-30, the plain release launch also keeps
+    # the carrier on a tcp6 v4-mapped row while the first LISTEN row may be an
+    # internal WebView port — the fetch check then waits on the wrong port and
+    # starves. The self-connection predicate has no "which listener" question:
+    # any non-LISTEN row whose REMOTE port is one of the uid's own LISTEN ports
+    # is the page's live connection to the carrier, and names the carrier port.
+    carrier_fetch() { # -> "HEXPORT NCONNECTIONS"; exit 3 while not yet fetched
+        adb_of shell "cat /proc/net/tcp /proc/net/tcp6" 2>/dev/null | awk -v u="$uid" '
+            $8==u {
+                if ($4=="0A") listen[substr($2, index($2,":")+1)]++
+                else est[substr($3, index($3,":")+1)]++
+            }
+            END {
+                found=0
+                for (p in listen) if (p in est) { print p, est[p]; found=1 }
+                exit(found ? 0 : 3)
+            }'
+    }
+    local deadline=$((SECONDS + 90)) port_and_n port nfetch
+    until port_and_n="$(carrier_fetch)"; do
+        [ "$SECONDS" -lt "$deadline" ] || mx_die "the WebView never fetched the carrier origin (no uid self-connection in the socket tables)"
         sleep 3
     done
-    deadline=$((SECONDS + 90))
-    until [ "$(adb_of shell "cat /proc/net/tcp /proc/net/tcp6" 2>/dev/null |
-        awk -v p="$port" '$4!="0A" && $3 ~ (":" p "$")' | wc -l | tr -d ' ')" -gt 0 ]; do
-        [ "$SECONDS" -lt "$deadline" ] || mx_die "the WebView never fetched the carrier origin"
-        sleep 3
-    done
+    port="${port_and_n%% *}"; nfetch="${port_and_n#* }"
     adb_of forward "tcp:48045" "tcp:$((16#$port))" >/dev/null
     local probe; probe="$(curl -s -o /dev/null -w 'status=%{http_code}' http://127.0.0.1:48045/ || true)"
     adb_of forward --remove tcp:48045 >/dev/null 2>&1 || true
@@ -496,7 +532,7 @@ android_release_leg() {
 
     {
         echo "# the release boot's served origin, probed through adb forward"
-        echo "carrier_port=$((16#$port)) uid=$uid"
+        echo "carrier_port=$((16#$port)) uid=$uid page_connections_to_carrier=$nfetch"
         echo "GET / -> $probe   (401 = the auth-lite token gate of the official dist seat)"
         echo "launcher focus: $(adb_of shell dumpsys window 2>/dev/null | grep -m1 mCurrentFocus | tr -d '\r')"
     } > "$art/origin-release.txt"
@@ -625,7 +661,7 @@ android_device_plane_leg() {
     local art="hosts/android/artifacts/simulator-matrix/device-plane"
     mx "harness device-plane: run-device-plane.sh (the v1.5.0 capability ladder)"
     DSH_ANDROID_ART="$art" hosts/android/ci/run-device-plane.sh --skip-build \
-        || { record android device-plane FAIL "run-device-plane.sh exited non-zero"; return 1; }
+        || { archive_failed_dir android device-plane; record android device-plane FAIL "run-device-plane.sh exited non-zero — dir moved to /tmp"; return 1; }
     record android device-plane PASS "device.plane + audit verdicts green + receipt ($art)"
 }
 

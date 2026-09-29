@@ -1,0 +1,32 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "device.plane",
+  "launchConfiguration": "ios device-plane drive (Debug, -dsh-mode device-plane)",
+  "tree": "origin/main 9336f0b19d5a (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "device.plane",
+      "checker": "test/e2e/scenarios/device-plane.json",
+      "events": 16,
+      "result": "pass"
+    },
+    {
+      "id": "device.plane.audit",
+      "checker": "test/e2e/scenarios/device-plane-audit.json",
+      "events": 23,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-device-plane.sh",
+  "screens": [
+    "screens/clipboard-1.png",
+    "screens/clipboard-2.png",
+    "screens/picker-media.png",
+    "screens/share-1.png",
+    "screens/share-2.png"
+  ],
+  "timestamp": "2026-09-30T03:32:54+08:00",
+  "exitCode": 0
+}

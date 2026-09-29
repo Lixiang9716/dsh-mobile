@@ -4,7 +4,7 @@
   "host": "iOS dsh-iphone (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
-  "tree": "origin/main ca5b6b212db7 (dirty working tree at receipt time)",
+  "tree": "origin/main 9336f0b19d5a (dirty working tree at receipt time)",
   "assertions": {
     "driveMachineryMarkers": 0,
     "assertedZero": [
@@ -26,5 +26,5 @@
     "warnLevelRecords": 2,
     "note": "the product's own planes on today's serving boot (the audit stream rides NSLog regardless of flavor; L4 keeps warn/error) \u2014 recorded as fact, never asserted zero (the committed release-logging 0/0 assertions are stale against this tree; see the surprise ledger)"
   },
-  "producedAt": "2026-09-30T03:15:53+08:00"
+  "producedAt": "2026-09-30T03:28:58+08:00"
 }

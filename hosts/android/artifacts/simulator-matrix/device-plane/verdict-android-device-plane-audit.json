@@ -1,0 +1,8 @@
+{
+  "scenario": "device.plane.audit",
+  "pass": true,
+  "expected": 13,
+  "logged": 22,
+  "failures": [],
+  "parseErrors": []
+}
