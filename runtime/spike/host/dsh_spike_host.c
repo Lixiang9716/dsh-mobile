@@ -29,6 +29,24 @@
 #include <time.h>
 #include <unistd.h> /* access() — the vendored-package probe's existence check */
 
+/* The forkpty seam (D-b, 2026-09-29; contract/proposals/2026-09-29-
+ * forkpty-face.md): <util.h> is the Darwin/iOS spelling of forkpty(3),
+ * <pty.h> the Linux/bionic/musl one — same face, same semantics. A host
+ * toolchain that carries neither compiles the seam with
+ * DSH_HAVE_FORKPTY undefined, and the spawn intrinsic answers the honest
+ * runtime error instead (never a fake). */
+#if defined(__APPLE__)
+#include <util.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#define DSH_HAVE_FORKPTY 1
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__OHOS__)
+#include <pty.h>
+#include <termios.h>
+#include <sys/ioctl.h>
+#define DSH_HAVE_FORKPTY 1
+#endif
+
 #include "quickjs.h"
 /* Vendored zstd (single-threaded build: no ZSTD_MULTITHREAD — D2's one
  * serial runtime thread). The include paths (-I<zstd> -I<zstd>/common) are
@@ -144,6 +162,33 @@ typedef struct dsh_proc {
     int flush_err;    /* EPIPE once the child died with pending stdin bytes */
 } dsh_proc;
 
+/* ---- forkpty seam (D-b, 2026-09-29) -------------------------------------- *
+ * The terminal path of the vendored `dsh-subprocess-local` spawns REAL
+ * children on REAL pseudo-terminals (the node-pty face): echo, job control,
+ * a foreground process group, TERM, and a SIGWINCH-carrying window size are
+ * semantics no pipe can carry, and the pipe-backbone shim was rejected by
+ * the owner (decision matrix D-b) for fabricating exactly those facts. One
+ * slot per live PTY; the master fd is host-owned and NON-BLOCKING; the
+ * node-pty shim (upstream/shims/node-pty.js) drives spawn/poll/write/
+ * resize/kill through the intrinsics below with the same 4ms pump the
+ * child-process shim runs. No threads: every intrinsic runs on the
+ * embedder's single runtime thread (D2), and the C seam never calls JS.
+ * Data/exit surface through the JS pump as the pty.event sequence the
+ * proposal freezes — events, never a poll-a-state API (D8). */
+#define DSH_PTY_MAX_SLOTS 32
+typedef struct dsh_pty {
+    int used;
+    int pid;
+    int master;              /* parent's end of the pty; -1 once closed */
+    int eof;                 /* master drained to EOF (EIO after slave close) */
+    int reaped;
+    int exit_code;           /* WEXITSTATUS form; exit_sig carries the signal */
+    int exit_sig;            /* terminating signal number, 0 when exited normally */
+    unsigned char *pending;  /* master-write backpressure (accepted-but-unwritten) */
+    size_t pending_n, pending_cap;
+    int flush_err;           /* nonzero errno once the master is gone with pending bytes */
+} dsh_pty;
+
 typedef struct dsh_spike {
     JSRuntime *rt;
     JSContext *ctx;
@@ -160,6 +205,7 @@ typedef struct dsh_spike {
     int pending_count;
     int pending_cap;
     dsh_proc procs[DSH_PROC_MAX_SLOTS];
+    dsh_pty ptys[DSH_PTY_MAX_SLOTS];
     char base[512];
     char err[DSH_ERR_MAX];
     int completed;
@@ -2421,6 +2467,330 @@ static JSValue js_proc_kill(JSContext *ctx, JSValueConst this_val, int argc, JSV
     return r;
 }
 
+/* ---- forkpty seam intrinsics (see the section comment above) ------------- */
+
+static dsh_pty *dsh_pty_slot(dsh_spike_t *s, int pid) {
+    for (int i = 0; i < DSH_PTY_MAX_SLOTS; i++) {
+        if (s->ptys[i].used && s->ptys[i].pid == pid) return &s->ptys[i];
+    }
+    return NULL;
+}
+
+/* __dshPtySpawn({file,args,cwd,env,cols,rows}) → {pid} | {error:{code,errno}}.
+ * forkpty(3): the child is a session leader with the slave as its
+ * controlling terminal and stdio on it — the honest terminal the vendored
+ * terminal path requires. A missing workdir FAILS with ENOENT (no child
+ * runs), the same contract the subprocess seam enforces. */
+static JSValue js_pty_spawn(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshPtySpawn needs an options object");
+#ifndef DSH_HAVE_FORKPTY
+    (void)s;
+    return JS_ThrowTypeError(ctx, "__dshPtySpawn: no forkpty on this host (the pty seam is unavailable here)");
+#else
+    const char *file = NULL; char **cargv = NULL, **envp = NULL;
+    const char *cwd = NULL; char *err = NULL;
+    int32_t cols = 80, rows = 24;
+    JSValue fv = JS_GetPropertyStr(ctx, argv[0], "file");
+    const char *f = JS_IsException(fv) ? NULL : JS_ToCString(ctx, fv);
+    JS_FreeValue(ctx, fv);
+    if (!f) return JS_ThrowTypeError(ctx, "__dshPtySpawn: file missing");
+    file = js_strdup(ctx, f);
+    JS_FreeCString(ctx, f);
+    JSValue av = JS_GetPropertyStr(ctx, argv[0], "args");
+    if (!dsh_build_str_array(ctx, av, file, &cargv, &err)) {
+        JS_FreeValue(ctx, av);
+        js_free(ctx, (void *)file);
+        return JS_ThrowTypeError(ctx, "__dshPtySpawn: %s", err ? err : "bad args");
+    }
+    JS_FreeValue(ctx, av);
+    JSValue cwdv = JS_GetPropertyStr(ctx, argv[0], "cwd");
+    if (!JS_IsUndefined(cwdv) && !JS_IsNull(cwdv)) {
+        const char *cd = JS_ToCString(ctx, cwdv);
+        if (cd) { cwd = js_strdup(ctx, cd); JS_FreeCString(ctx, cd); }
+    }
+    JS_FreeValue(ctx, cwdv);
+    JSValue envv = JS_GetPropertyStr(ctx, argv[0], "env");
+    if (JS_IsObject(envv) && !dsh_build_envp(ctx, envv, &envp, &err)) {
+        JS_FreeValue(ctx, envv);
+        dsh_free_vec(ctx, cargv);
+        js_free(ctx, (void *)file);
+        js_free(ctx, (void *)cwd);
+        return JS_ThrowTypeError(ctx, "__dshPtySpawn: %s", err ? err : "bad env");
+    }
+    JS_FreeValue(ctx, envv);
+    JSValue cv = JS_GetPropertyStr(ctx, argv[0], "cols");
+    if (!JS_IsUndefined(cv)) JS_ToInt32(ctx, &cols, cv);
+    JS_FreeValue(ctx, cv);
+    JSValue rv = JS_GetPropertyStr(ctx, argv[0], "rows");
+    if (!JS_IsUndefined(rv)) JS_ToInt32(ctx, &rows, rv);
+    JS_FreeValue(ctx, rv);
+
+    struct winsize ws = { .ws_row = (unsigned short)rows, .ws_col = (unsigned short)cols };
+    int master = -1;
+    int status[2] = { -1, -1 };
+    if (pipe(status) < 0) {
+        dsh_free_vec(ctx, cargv); dsh_free_vec(ctx, envp);
+        js_free(ctx, (void *)file); js_free(ctx, (void *)cwd);
+        return JS_ThrowTypeError(ctx, "__dshPtySpawn: status pipe failed");
+    }
+    fcntl(status[1], F_SETFD, FD_CLOEXEC); /* the exec-success probe */
+    pid_t pid = forkpty(&master, NULL, NULL, &ws);
+    if (pid < 0) {
+        int e = errno;
+        dsh_close_all((int[]){status[0], status[1]}, 2);
+        dsh_free_vec(ctx, cargv); dsh_free_vec(ctx, envp);
+        js_free(ctx, (void *)file); js_free(ctx, (void *)cwd);
+        return JS_ThrowTypeError(ctx, "__dshPtySpawn: forkpty failed: %s",
+                                 dsh_errno_name(e) ? dsh_errno_name(e) : "EIO");
+    }
+    if (pid == 0) {
+        /* child: the slave is already stdio + controlling tty (forkpty);
+         * only the workdir and the program remain. */
+        if (cwd && chdir(cwd) != 0) {
+            int e = errno;
+            (void)!write(status[1], &e, sizeof(e));
+            _exit(126);
+        }
+        if (envp) dsh_execvpe(cargv[0], cargv, envp);
+        else execvp(cargv[0], cargv); /* no env map: node inherits process.env */
+        int e = errno;
+        (void)!write(status[1], &e, sizeof(e));
+        _exit(126);
+    }
+    /* parent: read the exec probe — a short read carrying errno means the
+     * child never exec'd (node's contract: the spawn FAILS). */
+    close(status[1]);
+    int exec_errno = 0;
+    ssize_t got = read(status[0], &exec_errno, sizeof(exec_errno));
+    close(status[0]);
+    dsh_free_vec(ctx, cargv); dsh_free_vec(ctx, envp);
+    js_free(ctx, (void *)file); js_free(ctx, (void *)cwd);
+    if (got == (ssize_t)sizeof(exec_errno) && exec_errno != 0) {
+        close(master);
+        kill(pid, SIGKILL);
+        waitpid(pid, NULL, 0);
+        JSValue res = JS_NewObject(ctx);
+        JSValue e = JS_NewObject(ctx);
+        const char *name = dsh_errno_name(exec_errno);
+        JS_SetPropertyStr(ctx, e, "code", JS_NewString(ctx, name ? name : "EIO"));
+        JS_SetPropertyStr(ctx, e, "errno", JS_NewInt32(ctx, exec_errno));
+        JS_SetPropertyStr(ctx, e, "message", JS_NewString(ctx, "spawn failed"));
+        JS_SetPropertyStr(ctx, res, "error", e);
+        return res;
+    }
+    dsh_pty *t = NULL;
+    for (int i = 0; i < DSH_PTY_MAX_SLOTS; i++) {
+        if (!s->ptys[i].used) { t = &s->ptys[i]; break; }
+    }
+    if (!t) {
+        kill(pid, SIGKILL);
+        waitpid(pid, NULL, 0);
+        close(master);
+        return JS_ThrowTypeError(ctx, "__dshPtySpawn: pty table full (%d)", DSH_PTY_MAX_SLOTS);
+    }
+    fcntl(master, F_SETFL, fcntl(master, F_GETFL, 0) | O_NONBLOCK);
+    t->used = 1; t->pid = (int)pid; t->master = master;
+    t->eof = 0; t->reaped = 0; t->exit_code = 0; t->exit_sig = 0;
+    t->pending = NULL; t->pending_n = 0; t->pending_cap = 0; t->flush_err = 0;
+    JSValue res = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, res, "pid", JS_NewInt32(ctx, (int32_t)pid));
+    return res;
+#endif
+}
+
+/* __dshPtyPoll(pid) → {out(b64|null), outEof, exited, exitCode, signal,
+ * pendingStdin, flushError} — one non-blocking read pass on the master plus
+ * a WNOHANG reap, the same pump contract the child-process poll serves
+ * (the JS pump turns it into the pty.event sequence). Reading a master
+ * whose slave side is gone raises EIO — dsh_drain_fd already reports that
+ * as EOF, which is exactly the terminal's EOF shape. */
+static JSValue js_pty_poll(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    int32_t pid = 0;
+    if (argc < 1 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshPtyPoll needs a pid");
+    dsh_pty *t = dsh_pty_slot(s, (int)pid);
+    if (!t) {
+        /* Slot released (settled + drained before the last JS pump tick):
+         * report a settled terminal instead of throwing through a timer. */
+        JSValue settled = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, settled, "out", JS_NULL);
+        JS_SetPropertyStr(ctx, settled, "outEof", JS_TRUE);
+        JS_SetPropertyStr(ctx, settled, "exited", JS_TRUE);
+        JS_SetPropertyStr(ctx, settled, "exitCode", JS_NewInt32(ctx, 0));
+        JS_SetPropertyStr(ctx, settled, "signal", JS_NULL);
+        JS_SetPropertyStr(ctx, settled, "pendingStdin", JS_NewInt32(ctx, 0));
+        JS_SetPropertyStr(ctx, settled, "flushError", JS_NULL);
+        return settled;
+    }
+    JSRuntime *rt = s->rt;
+    /* Flush the master-write backpressure buffer first (same discipline as
+     * the pipe seam's stdin face): EAGAIN parks the tail for the next tick,
+     * a dead master surfaces as flushError so JS fails the pending writes. */
+    int flush_err = 0;
+    while (t->pending_n > 0 && t->master >= 0) {
+        ssize_t w = write(t->master, t->pending, t->pending_n);
+        if (w > 0) {
+            memmove(t->pending, t->pending + w, t->pending_n - (size_t)w);
+            t->pending_n -= (size_t)w;
+            continue;
+        }
+        if (w < 0 && errno == EINTR) continue;
+        if (w < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) break;
+        flush_err = errno ? errno : EIO;
+        break;
+    }
+    if (t->pending_n == 0 && t->flush_err == 0) t->flush_err = flush_err;
+    unsigned char *outb = NULL;
+    size_t on = 0, ocap = 0;
+    int out_eof = 0;
+    if (t->master >= 0) {
+        out_eof = dsh_drain_fd(rt, t->master, &outb, &on, &ocap);
+        if (out_eof) { close(t->master); t->master = -1; t->eof = 1; }
+    } else out_eof = t->eof;
+    if (!t->reaped) {
+        int st = 0;
+        pid_t r = waitpid((pid_t)t->pid, &st, WNOHANG);
+        if (r == (pid_t)t->pid) {
+            t->reaped = 1;
+            if (WIFEXITED(st)) { t->exit_code = WEXITSTATUS(st); t->exit_sig = 0; }
+            else if (WIFSIGNALED(st)) { t->exit_code = -1; t->exit_sig = WTERMSIG(st); }
+        } else if (r < 0 && errno == ECHILD) {
+            t->reaped = 1; t->exit_code = 0; t->exit_sig = 0;
+        }
+    }
+    JSValue res = JS_NewObject(ctx);
+    JSValue outv;
+    if (on > 0) {
+        char *b64 = dsh_b64_encode_bytes(ctx, outb, on);
+        outv = b64 ? JS_NewString(ctx, b64) : JS_NULL;
+        js_free(ctx, b64);
+    } else outv = JS_NULL;
+    js_free_rt(rt, outb);
+    JS_SetPropertyStr(ctx, res, "out", outv);
+    JS_SetPropertyStr(ctx, res, "outEof", JS_NewBool(ctx, t->eof));
+    JS_SetPropertyStr(ctx, res, "exited", JS_NewBool(ctx, t->reaped));
+    JS_SetPropertyStr(ctx, res, "exitCode", t->reaped && t->exit_sig == 0 ? JS_NewInt32(ctx, t->exit_code) : JS_NULL);
+    JS_SetPropertyStr(ctx, res, "signal", t->reaped && t->exit_sig != 0 ? JS_NewInt32(ctx, t->exit_sig) : JS_NULL);
+    JS_SetPropertyStr(ctx, res, "pendingStdin", JS_NewInt32(ctx, (int32_t)t->pending_n));
+    JS_SetPropertyStr(ctx, res, "flushError", t->flush_err != 0 ? JS_NewInt32(ctx, t->flush_err) : JS_NULL);
+    /* Fully settled and drained: release the slot (pid no longer needed). */
+    if (t->reaped && t->master < 0 && t->pending_n == 0) {
+        js_free_rt(rt, t->pending);
+        t->pending = NULL; t->pending_n = 0; t->pending_cap = 0;
+        t->used = 0;
+    }
+    return res;
+}
+
+/* __dshPtyWrite(pid, b64) → {written, buffered} | {error:{code,errno}} —
+ * keystrokes into the master; the refused tail parks in the slot's
+ * backpressure buffer and drains on the pump's poll ticks. */
+static JSValue js_pty_write(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    int32_t pid = 0;
+    if (argc < 2 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshPtyWrite needs (pid, base64)");
+    dsh_pty *t = dsh_pty_slot(s, (int)pid);
+    if (!t || t->master < 0) {
+        JSValue r = JS_NewObject(ctx);
+        JSValue e = JS_NewObject(ctx);
+        JS_SetPropertyStr(ctx, e, "code", JS_NewString(ctx, "EPIPE"));
+        JS_SetPropertyStr(ctx, e, "errno", JS_NewInt32(ctx, EPIPE));
+        JS_SetPropertyStr(ctx, r, "error", e);
+        return r;
+    }
+    size_t n = 0;
+    const char *b64 = JS_ToCStringLen(ctx, &n, argv[1]);
+    if (!b64) return JS_EXCEPTION;
+    size_t bytes_n = 0;
+    unsigned char *bytes = dsh_b64_decode_bytes(ctx, b64, n, &bytes_n);
+    JS_FreeCString(ctx, b64);
+    if (!bytes) return JS_ThrowTypeError(ctx, "__dshPtyWrite input is not valid base64");
+    size_t written = 0;
+    int werr = 0;
+    while (written < bytes_n) {
+        ssize_t w = write(t->master, bytes + written, bytes_n - written);
+        if (w > 0) { written += (size_t)w; continue; }
+        if (w < 0 && errno == EINTR) continue;
+        if (w < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) { errno = 0; break; }
+        werr = errno;
+        break;
+    }
+    /* the refused tail parks (accepted-but-unwritten), drained at poll */
+    size_t buffered = bytes_n - written;
+    if (buffered > 0 && !werr) {
+        if (t->pending_n + buffered > t->pending_cap) {
+            size_t next = t->pending_cap ? t->pending_cap : 8192;
+            while (next < t->pending_n + buffered) next *= 2;
+            unsigned char *grown = js_realloc_rt(s->rt, t->pending, next);
+            if (!grown) { js_free(ctx, bytes); return JS_ThrowTypeError(ctx, "__dshPtyWrite: out of memory"); }
+            t->pending = grown; t->pending_cap = next;
+        }
+        memcpy(t->pending + t->pending_n, bytes + written, buffered);
+        t->pending_n += buffered;
+    }
+    js_free(ctx, bytes);
+    JSValue r = JS_NewObject(ctx);
+    if (werr) {
+        JSValue e = JS_NewObject(ctx);
+        const char *name = dsh_errno_name(werr);
+        JS_SetPropertyStr(ctx, e, "code", JS_NewString(ctx, name ? name : "EIO"));
+        JS_SetPropertyStr(ctx, e, "errno", JS_NewInt32(ctx, werr));
+        JS_SetPropertyStr(ctx, r, "error", e);
+    } else {
+        JS_SetPropertyStr(ctx, r, "written", JS_NewInt32(ctx, (int32_t)written));
+        JS_SetPropertyStr(ctx, r, "buffered", JS_NewInt32(ctx, (int32_t)buffered));
+    }
+    return r;
+}
+
+/* __dshPtyResize(pid, cols, rows) → {ok} | throws — TIOCSWINSZ on the
+ * master; the kernel delivers SIGWINCH to the child's foreground group. */
+static JSValue js_pty_resize(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    int32_t pid = 0, cols = 0, rows = 0;
+    if (argc < 3 || JS_ToInt32(ctx, &pid, argv[0]) < 0
+        || JS_ToInt32(ctx, &cols, argv[1]) < 0 || JS_ToInt32(ctx, &rows, argv[2]) < 0) {
+        return JS_ThrowTypeError(ctx, "__dshPtyResize needs (pid, cols, rows)");
+    }
+    dsh_pty *t = dsh_pty_slot(s, (int)pid);
+    if (!t || t->master < 0) return JS_ThrowTypeError(ctx, "__dshPtyResize: no such pty");
+    struct winsize ws = { .ws_row = (unsigned short)rows, .ws_col = (unsigned short)cols };
+    if (ioctl(t->master, TIOCSWINSZ, &ws) != 0) {
+        int e = errno;
+        const char *name = dsh_errno_name(e);
+        return JS_ThrowTypeError(ctx, "__dshPtyResize failed: %s", name ? name : "EIO");
+    }
+    JSValue r = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, r, "ok", JS_TRUE);
+    return r;
+}
+
+/* __dshPtyKill(pid, signalNameOrNumber) → {ok} | throws (the ESRCH contract
+ * of process.kill, mirrored from the subprocess seam's kill face). Signal 0
+ * probes existence without signalling. */
+static JSValue js_pty_kill(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    int32_t pid = 0, sig = SIGHUP; /* the node-pty default the vendored path assumes */
+    if (argc < 1 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshPtyKill needs (pid, signal)");
+    if (argc >= 2 && !JS_IsUndefined(argv[1])) {
+        sig = dsh_signal_num(ctx, argv[1]);
+        if (sig < 0) return JS_ThrowTypeError(ctx, "__dshPtyKill: unknown signal");
+    }
+    if (kill((pid_t)pid, sig) != 0) {
+        int e = errno;
+        const char *name = dsh_errno_name(e);
+        return JS_ThrowTypeError(ctx, "kill %d failed: %s", pid, name ? name : "EIO");
+    }
+    JSValue r = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, r, "ok", JS_TRUE);
+    return r;
+}
+
 /* Shared spawn/spawnSync option parsing: command, args, cwd, env, stdio,
  * detached. modes[] holds DSH_PROC_EXTRA+3 dispositions (0 pipe / 1 ignore /
  * 2 inherit) — node's stdio array may name fds beyond 2 (the ptc control
@@ -3367,6 +3737,20 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_proc_kill, "__dshProcKill", 2));
     JS_SetPropertyStr(ctx, global, "__dshProcFacts",
                       JS_NewCFunction(ctx, js_proc_facts, "__dshProcFacts", 0));
+    /* The forkpty seam (see the section comment above): the node-pty shim
+     * drives REAL terminal children through these calls — spawn plus the
+     * per-terminal pump (poll/write/resize/kill), the pty.event face the
+     * D-b decision froze the shape of. */
+    JS_SetPropertyStr(ctx, global, "__dshPtySpawn",
+                      JS_NewCFunction(ctx, js_pty_spawn, "__dshPtySpawn", 1));
+    JS_SetPropertyStr(ctx, global, "__dshPtyPoll",
+                      JS_NewCFunction(ctx, js_pty_poll, "__dshPtyPoll", 1));
+    JS_SetPropertyStr(ctx, global, "__dshPtyWrite",
+                      JS_NewCFunction(ctx, js_pty_write, "__dshPtyWrite", 2));
+    JS_SetPropertyStr(ctx, global, "__dshPtyResize",
+                      JS_NewCFunction(ctx, js_pty_resize, "__dshPtyResize", 3));
+    JS_SetPropertyStr(ctx, global, "__dshPtyKill",
+                      JS_NewCFunction(ctx, js_pty_kill, "__dshPtyKill", 2));
     JSValue crypto = JS_NewObject(ctx);
     JS_SetPropertyStr(ctx, crypto, "getRandomValues",
                       JS_NewCFunction(ctx, js_get_random_values, "getRandomValues", 1));
@@ -3580,6 +3964,22 @@ void dsh_spike_free(dsh_spike_t *s) {
         if (s->rt) { js_free_rt(s->rt, p->pending); }
         p->pending = NULL; p->pending_n = 0; p->pending_cap = 0;
         p->used = 0;
+    }
+    /* PTY teardown: the same discipline for the terminal children — SIGKILL
+     * every still-tracked pty child, reap, close the master, drop the
+     * backpressure buffer. A run must not leak awaited terminals. */
+    for (int i = 0; i < DSH_PTY_MAX_SLOTS; i++) {
+        dsh_pty *t = &s->ptys[i];
+        if (!t->used) continue;
+        if (!t->reaped) {
+            kill((pid_t)t->pid, SIGKILL);
+            waitpid((pid_t)t->pid, NULL, 0);
+            t->reaped = 1;
+        }
+        if (t->master >= 0) close(t->master);
+        if (s->rt) js_free_rt(s->rt, t->pending);
+        t->pending = NULL; t->pending_n = 0; t->pending_cap = 0;
+        t->used = 0;
     }
     if (s->ctx) {
         for (int i = 0; i < s->pending_count; i++) {

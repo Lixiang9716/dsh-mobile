@@ -54,22 +54,23 @@ const resolvePathsFor = (base) => {
  * (per-file scope, memoized, cycle-safe) over the staged view and the bundle
  * disk — the host seam only returns raw text, and the CJS graph
  * (@mixmark-io/domino et al) needs node's per-file semantics, which no flat
- * bridge row can express. RELATIVE .json stays on the host seam: the seam
- * resolves `base` through the loader's bare map (dsh-llm's attribution header
- * reads ../package.json with base = the bare specifier — lexical dirname
- * math on a bare name cannot reproduce that resolution). */
+ * bridge row can express. BARE requests resolve through the same loader
+ * (its BARE_PACKAGES table, then the builtin faces the bridge rows
+ * registered — 'node-pty' rides this: the vendored lazy-require targets are
+ * exactly this shape); an untabled bare name fails loud THERE, which is
+ * behavior-equivalent to the old path (the host bundle seam never served a
+ * bare request). RELATIVE .json stays on the host seam: the seam resolves
+ * `base` through the loader's bare map (dsh-llm's attribution header reads
+ * ../package.json with base = the bare specifier — lexical dirname math on
+ * a bare name cannot reproduce that resolution). */
 const makeRequireFace = (base) => (request) => {
   if (typeof request !== 'string' || request.length === 0) {
     throw new TypeError(`node:module: require needs a relative request, got ${String(request)}`);
   }
   const isJsModule = /\.(js|cjs|mjs)$/.test(request);
-  const isRelative = request.startsWith('./') || request.startsWith('../') || request.startsWith('/');
-  // bare requests naming a cjs-loader table row (package name or subpath
-  // of one) evaluate through the CJS loader as well
-  const pkgName = request.startsWith('@')
-    ? request.split('/').slice(0, 2).join('/')
-    : request.split('/')[0];
-  if ((isJsModule && isRelative) || (!isRelative && pkgName in bareCjsPackages)) {
+  const startsRelative = request.startsWith('./') || request.startsWith('../');
+  const isAbsolute = request.startsWith('/');
+  if ((isJsModule && (startsRelative || isAbsolute)) || (!startsRelative && !isAbsolute)) {
     return makeRequire(base)(request);
   }
   const text = globalThis.__dshBundleRequire?.(base, request);

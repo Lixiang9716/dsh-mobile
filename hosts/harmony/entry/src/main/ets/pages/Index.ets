@@ -670,6 +670,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/harmony-composer-live-write.js',
   'upstream/shims/fs-promises.js',
   'upstream/shims/events.js',
+  'upstream/shims/node-pty.js',
   'upstream/shims/npm-bridges.js',
   'upstream/web-write-inventory.js',
   'vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js',
