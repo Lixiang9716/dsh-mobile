@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "M2 gateway binding \u2014 the native UI legs the gateway scenario blocks on (notification permission alert, banner tap, approval dialog, Files-document picker search) are driven LIVE on the simulator while the gateway/fs/http primitives answer over the real JS bridge, one-to-one against all four scenario manifests",
   "launchConfiguration": "default DSHSpike scenario drive (boot -> carrier -> gateway binding -> audit); picker target pre-staged at Documents/gateway-e2e/notes.txt, stage-once per the provider index-settle recipe",
-  "tree": "origin/main 9336f0b19d5a (dirty working tree at receipt time)",
+  "tree": "origin/main 89a73c236bce (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "boot.verification",
@@ -41,6 +41,6 @@
     "screens/05b-picker-results.png",
     "screens/06-picker-selected.png"
   ],
-  "timestamp": "2026-09-30T03:31:40+08:00",
+  "timestamp": "2026-09-30T04:24:22+08:00",
   "exitCode": 0
 }

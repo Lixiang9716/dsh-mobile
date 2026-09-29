@@ -1,210 +1,210 @@
-09-30 03:44:17.585  8916  8916 I dsh.canary: dsh-canary-75469-1790711058
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"sink.bound"}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"gateway.negotiated","version":"gateway@1"}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.2"}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"crypto.shim.ok","uuid":"ba92bacf-4a29-452f-923d-93c50e2a7a14","v4":true}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"shims.selftest","textDecoder":"utf8+multibyte ok","bufferSingleByte":"ascii/latin1 ok","fileURLToPath":"relative+absolute ok","fsPromises":"rmdir+symlink linked"}]}
-09-30 03:44:20.330  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"scenario.complete","status":"pass"}]}
-09-30 03:44:20.333  8924  8942 I dsh.spike.result: boot.verification PASS | quickjs-ng 0.17.0
-09-30 03:44:20.335  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"gateway.negotiated","version":"gateway@1"}]}
-09-30 03:44:20.335  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe.txt"}]}
-09-30 03:44:20.335  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.335  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
-09-30 03:44:20.336  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.write.ok","written":17}]}
-09-30 03:44:20.336  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe.txt"}]}
-09-30 03:44:20.336  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"../escape"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.read.invalid","code":"invalid"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"scenario.complete","status":"pass"}]}
-09-30 03:44:20.337  8924  8942 I dsh.spike.result: gateway.bridge-smoke PASS | quickjs-ng 0.17.0
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"gateway.negotiated","version":"gateway@1"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs","data":[]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-subprocess-quickjs"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-subprocess-quickjs"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"activating dsh-subprocess-quickjs","data":[]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"subprocess"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-ui"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-ui"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.ui","message":"activating dsh-ui","data":[]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"ui"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"plugins.installed","count":3,"services":"fs,subprocess,ui"}]}
-09-30 03:44:20.344  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"notes install begin","data":[]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar write","data":[{"members":2}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":13}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":258}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.345  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":15}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":936}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":936}]}
-09-30 03:44:20.346  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
-09-30 03:44:20.364  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"session-mock-llm-0001","bytes":3584,"journal":false}]}
-09-30 03:44:20.380  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0","bytes":3584}]}
-09-30 03:44:20.380  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
-09-30 03:44:20.381  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.381  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
-09-30 03:44:20.382  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
-09-30 03:44:20.382  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
-09-30 03:44:20.382  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.382  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4780}]}
-09-30 03:44:20.404  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
-09-30 03:44:20.404  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":3584}]}
-09-30 03:44:20.404  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":3584}]}
-09-30 03:44:20.404  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-09-30 03:44:20.404  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":936}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-notes"}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":2}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
-09-30 03:44:20.405  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
-09-30 03:44:20.413  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-session-mock-llm-0001","files":2}]}
-09-30 03:44:20.414  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
-09-30 03:44:20.414  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.414  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
-09-30 03:44:20.414  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.415  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
-09-30 03:44:20.417  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
-09-30 03:44:20.417  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
-09-30 03:44:20.417  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.417  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1248}]}
-09-30 03:44:20.423  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
-09-30 03:44:20.423  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
-09-30 03:44:20.423  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.424  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
-09-30 03:44:20.426  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","files":3}]}
-09-30 03:44:20.426  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
-09-30 03:44:20.426  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.426  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
-09-30 03:44:20.426  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/manifest.json"}]}
-09-30 03:44:20.427  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.427  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
-09-30 03:44:20.427  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.427  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1248}]}
-09-30 03:44:20.429  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
-09-30 03:44:20.429  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.430  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
-09-30 03:44:20.430  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.430  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
-09-30 03:44:20.430  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/integrity.json"}]}
-09-30 03:44:20.431  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.431  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/session-mock-llm-0001.json"}]}
-09-30 03:44:20.431  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/session-mock-llm-0001.json"}]}
-09-30 03:44:20.432  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.432  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","receiptPath":"receipts/session-mock-llm-0001.json"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-notes"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-notes"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes","message":"activating dsh-notes","data":[]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"notes"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"notes"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"host.ready","signalled":true}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"subprocess"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"session.created","sessionId":"s-m2-0001","scope":"app"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"session"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"agent.started","model":"mock-mini","tools":1}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"agent"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":1,"tokens":3}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.started","turn":1}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":0,"text":"Hello"}]}
-09-30 03:44:20.433  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":1,"text":" from"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":2,"text":" DSH"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.completed","turn":1,"deltas":3,"toolCalls":1}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"tool.invoked","name":"notes.persist","call":"t-1"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"spawn","data":[{"id":"task-1","steps":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle created","data":[{"id":"task-1"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"complete"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.spawned","taskId":"task-1","steps":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"progress"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"task started","data":[{"id":"task-1","steps":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"started","steps":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":1}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","label":"computed"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task compute step done","data":[]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":1,"of":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.progress","taskId":"task-1","step":1}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task persist step begin","data":[{"path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.writeText","data":[{"scope":"app","path":"session-mock-llm/result.txt","chars":33}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.write","data":[{"scope":"app","path":"session-mock-llm/result.txt","bytes":33,"append":false}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":2,"of":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.progress","taskId":"task-1","step":2}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"complete","ok":true,"result":{"written":33}}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"complete observed","data":[{"id":"task-1","ok":true}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"fs.write.ok","written":33,"path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.completed","taskId":"task-1","ok":true}]}
-09-30 03:44:20.434  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"tool.result","name":"notes.persist","call":"t-1","ok":true}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":2,"tokens":2}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.started","turn":2}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":3,"text":" Saved"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":4,"text":" ok"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.completed","turn":2,"deltas":2,"toolCalls":0}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.read","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"session-mock-llm/result.txt","chars":33}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
-09-30 03:44:20.435  8924  8942 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
-09-30 03:44:20.436  8924  8942 I dsh.spike.result: session.mock-llm PASS | quickjs-ng 0.17.0
-09-30 03:44:20.436  8924  8942 I dsh.spike.result: ALL PASS
+09-30 04:20:46.585  9865  9865 I dsh.canary: dsh-canary-19573-1790713247
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"runtime.created","engine":"quickjs-ng","engineVersion":"0.17.0"}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"sink.bound"}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"package.loaded","name":"@deepseek-ai/dsh-util-crypto","version":"0.1.6-alpha.2"}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"crypto.shim.ok","uuid":"ff925371-7753-4179-ae99-efed54576bb5","v4":true}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"base64.shim.ok","input":"hello","b64":"aGVsbG8="}]}
+09-30 04:20:49.449  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"shims.selftest","textDecoder":"utf8+multibyte ok","bufferSingleByte":"ascii/latin1 ok","fileURLToPath":"relative+absolute ok","fsPromises":"rmdir+symlink linked"}]}
+09-30 04:20:49.450  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m1.spike","message":"e2e","data":[{"scenario":"boot.verification","event":"scenario.complete","status":"pass"}]}
+09-30 04:20:49.452  9873  9892 I dsh.spike.result: boot.verification PASS | quickjs-ng 0.17.0
+09-30 04:20:49.455  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 04:20:49.455  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe.txt"}]}
+09-30 04:20:49.455  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.455  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+09-30 04:20:49.456  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.write.ok","written":17}]}
+09-30 04:20:49.456  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe.txt"}]}
+09-30 04:20:49.456  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.457  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":24}]}
+09-30 04:20:49.457  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.read.ok","bytes":17,"matches":true}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"../escape"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"invalid","primitive":"fsRead"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"fs.read.invalid","code":"invalid"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.spike/cred"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"keychainGet"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"keychain.unavailable","name":"keychainGet","code":"unavailable"}]}
+09-30 04:20:49.458  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.bridge-smoke","event":"scenario.complete","status":"pass"}]}
+09-30 04:20:49.459  9873  9892 I dsh.spike.result: gateway.bridge-smoke PASS | quickjs-ng 0.17.0
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"activating dsh-fs","data":[]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"fs"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-subprocess-quickjs"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"activating dsh-subprocess-quickjs","data":[]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"subprocess"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-ui"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-ui"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.ui","message":"activating dsh-ui","data":[]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"ui"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"plugins.installed","count":3,"services":"fs,subprocess,ui"}]}
+09-30 04:20:49.465  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"notes install begin","data":[]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar write","data":[{"members":2}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":13}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.466  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":258}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":15}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":420}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.467  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":936}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar octal field","data":[{"value":0}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":12}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":6}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":2}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar ascii field","data":[{"chars":8}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":936}]}
+09-30 04:20:49.468  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes-fixture","message":"fixture package built","data":[{"tampered":false,"bytes":3584}]}
+09-30 04:20:49.490  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-notes","txId":"session-mock-llm-0001","bytes":3584,"journal":false}]}
+09-30 04:20:49.508  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0","bytes":3584}]}
+09-30 04:20:49.508  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
+09-30 04:20:49.509  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.509  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+09-30 04:20:49.509  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
+09-30 04:20:49.509  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/531c86ffcb11c70f4fe9652fbf3370b4da33e71315f2e4c5d6ff48f8cdd4bdc0"}]}
+09-30 04:20:49.509  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.510  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4780}]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":3584}]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":3584}]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":258}]}
+09-30 04:20:49.534  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
+09-30 04:20:49.535  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":936}]}
+09-30 04:20:49.535  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
+09-30 04:20:49.535  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-notes"}]}
+09-30 04:20:49.535  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":2}]}
+09-30 04:20:49.535  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
+09-30 04:20:49.536  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
+09-30 04:20:49.544  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-session-mock-llm-0001","files":2}]}
+09-30 04:20:49.544  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
+09-30 04:20:49.545  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.545  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
+09-30 04:20:49.545  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.546  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-30 04:20:49.549  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
+09-30 04:20:49.549  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
+09-30 04:20:49.549  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.549  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1248}]}
+09-30 04:20:49.557  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
+09-30 04:20:49.557  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
+09-30 04:20:49.557  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.557  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-30 04:20:49.559  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","files":3}]}
+09-30 04:20:49.560  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/manifest.json"}]}
+09-30 04:20:49.560  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.560  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":344}]}
+09-30 04:20:49.560  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/manifest.json"}]}
+09-30 04:20:49.560  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.561  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/bundle/index.js"}]}
+09-30 04:20:49.561  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.561  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1248}]}
+09-30 04:20:49.563  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/bundle/index.js"}]}
+09-30 04:20:49.564  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.565  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-session-mock-llm-0001/integrity.json"}]}
+09-30 04:20:49.565  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.565  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
+09-30 04:20:49.569  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-notes@0.1.0/integrity.json"}]}
+09-30 04:20:49.569  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.569  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/session-mock-llm-0001.json"}]}
+09-30 04:20:49.571  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/session-mock-llm-0001.json"}]}
+09-30 04:20:49.572  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.572  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-notes@0.1.0","receiptPath":"receipts/session-mock-llm-0001.json"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-notes"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-notes"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.notes","message":"activating dsh-notes","data":[]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"register","data":[{"name":"notes"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"notes"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"notes.installed","pkg":"dsh-notes","version":"0.1.0","status":"committed"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"slot.register"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"wait for event","data":[{"name":"host.info"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"host.ready","signalled":true}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"fs"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"service lookup","data":[{"name":"subprocess"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"session.created","sessionId":"s-m2-0001","scope":"app"}]}
+09-30 04:20:49.573  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"session"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"agent.started","model":"mock-mini","tools":1}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"agent"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":1,"tokens":3}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.started","turn":1}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":0,"text":"Hello"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":1,"text":" from"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":2,"text":" DSH"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.completed","turn":1,"deltas":3,"toolCalls":1}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"tool.invoked","name":"notes.persist","call":"t-1"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"spawn","data":[{"id":"task-1","steps":2}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle created","data":[{"id":"task-1"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"complete"}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.spawned","taskId":"task-1","steps":2}]}
+09-30 04:20:49.574  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"subscribe","data":[{"id":"task-1","event":"progress"}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"task started","data":[{"id":"task-1","steps":2}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"started","steps":2}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":1}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","label":"computed"}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task compute step done","data":[]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":1,"of":2}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.progress","taskId":"task-1","step":1}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"step begin","data":[{"id":"task-1","step":2}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"task persist step begin","data":[{"path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.575  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.writeText","data":[{"scope":"app","path":"session-mock-llm/result.txt","chars":33}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.write","data":[{"scope":"app","path":"session-mock-llm/result.txt","bytes":33,"append":false}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"progress","step":2,"of":2}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.progress","taskId":"task-1","step":2}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"handle event","data":[{"id":"task-1","event":"complete","ok":true,"result":{"written":33}}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.subprocess","message":"complete observed","data":[{"id":"task-1","ok":true}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"fs.write.ok","written":33,"path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.576  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"subprocess.completed","taskId":"task-1","ok":true}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"tool.result","name":"notes.persist","call":"t-1","ok":true}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"tool"}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"stream turn","data":[{"turn":2,"tokens":2}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.started","turn":2}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":3,"text":" Saved"}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.delta","index":4,"text":" ok"}]}
+09-30 04:20:49.577  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"token-delta"}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"llm.stream.completed","turn":2,"deltas":2,"toolCalls":0}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.read","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"path check","data":[{"path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"session-mock-llm/result.txt"}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":44}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data":[{"scope":"app","path":"session-mock-llm/result.txt","chars":33}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"session.mock-llm","event":"session.completed","sessionId":"s-m2-0001","status":"pass","deltas":5,"toolCalls":1,"persisted":true}]}
+09-30 04:20:49.578  9873  9892 I dsh.spike: dsh.spike.log: {"level":"debug","module":"m2.spike","message":"projection push","data":[{"kind":"complete"}]}
+09-30 04:20:49.579  9873  9892 I dsh.spike.result: session.mock-llm PASS | quickjs-ng 0.17.0
+09-30 04:20:49.579  9873  9892 I dsh.spike.result: ALL PASS

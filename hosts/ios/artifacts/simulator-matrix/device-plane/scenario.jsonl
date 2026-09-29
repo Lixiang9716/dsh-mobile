@@ -37,8 +37,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call",
 dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"keepawake.release","hold":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"presentPicker"}]}
 dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.granted","mode":"media","scopeOpaque":true,"pathOpaque":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:9C4EC77A-020E-444F-AC68-09DC245E4D32","path":"media-63FF9D1F.jpeg"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"user:7A1208BC-9EB8-4C0B-B410-58F90F305F66","path":"media-F5123AEC.jpeg"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3796}]}
-dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.read","bytes":2847,"reads":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5404}]}
+dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"picker.media.read","bytes":4053,"reads":true}]}
 dsh.spike.log: {"level":"info","module":"dsh.device.plane","message":"e2e","data":[{"scenario":"device.plane","event":"scenario.complete","status":"pass"}]}

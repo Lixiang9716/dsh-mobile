@@ -1,0 +1,20 @@
+{
+  "title": "PR #250 review round: four findings fixed (frozen poll args, capability overwrite, harmony guard, README status)",
+  "created": "2026-09-29T20:26:35+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] poll_until frozen-arg sites replaced with the android_booted function (stub-verified: flip followed in 1s; inline baseline still freezes)",
+    "[x] capability-skips.json written once from a fresh ios_idb_present probe (no-idb path verified end to end with a failing idb stub: present:false + skippedLegs survives)",
+    "[x] harmony target guard strips the trailing separator and decouples from DevEco (stub-verified over empty/real/multi inputs; real run receipt probes field clean)",
+    "[x] README.md + README.zh.md status line refreshed to 61 dirs / 129 green verdicts (pairing re-confirmed); all three platforms re-run green on the fixed script"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0075"
+}

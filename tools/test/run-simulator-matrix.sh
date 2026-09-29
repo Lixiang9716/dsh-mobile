@@ -91,6 +91,10 @@ record() { # PLATFORM LEG STATUS DETAIL
 
 # poll_until DEADLINESeconds CMD... — condition polling, never clock-waiting
 # (rule 8): CMD re-runs until it exits 0 or the deadline passes (2 s pacing).
+# PASS A COMMAND RE-RUN, not an inline `[ "$(…)" ]` condition: the
+# substitution evaluates ONCE while building the arguments, so the loop
+# would re-poll a CONSTANT until the deadline (measured; wrap conditions in
+# a function — see android_booted).
 poll_until() {
     local deadline=$(( SECONDS + $1 )); shift
     until "$@" >/dev/null 2>&1; do
@@ -348,6 +352,13 @@ ios_restage_picker_target() {
     fi
 }
 
+# ios_idb_present — THE idb probe, one definition (ios_platform's
+# capability-skips write and the harness leg's skip decision must never
+# diverge on what the machine can drive).
+ios_idb_present() {
+    command -v idb >/dev/null 2>&1 && idb list-targets 2>/dev/null | grep -q "$IOS_UDID"
+}
+
 ios_harness_leg() {
     local m; m="$(ios_m)"
     local node_dir; node_dir="$(node_bin)" || mx_die "node not found (checkers cannot run)"
@@ -356,8 +367,9 @@ ios_harness_leg() {
     # idb is the ONLY local UI driver for the system surfaces the drives
     # block on. Without it the drive legs cannot be driven — that is a
     # declared capability skip, not a pass and not a silent omission.
-    if ! command -v idb >/dev/null 2>&1 || ! idb list-targets 2>/dev/null | grep -q "$IOS_UDID"; then
-        ios_capability_skips no "idb missing or does not list $IOS_UDID"
+    # capability-skips.json itself is written ONCE by ios_platform from the
+    # same ios_idb_present probe (this leg only decides + records).
+    if ! ios_idb_present; then
         record ios harness SKIP "no idb UI driver — the UI-driven harness legs are skipped (traced in capability-skips.json)"
         return 0
     fi
@@ -420,11 +432,20 @@ ios_platform() {
     fi
     if [ "${SKIP_HARNESS:-0}" -ne 1 ]; then
         leg_or_stop ios harness ios_harness_leg
-        ios_capability_skips yes "idb present; the UI-driven harness legs ran" \
-            || mx_die "writing capability-skips.json failed"
+    fi
+    # ONE capability-skips write per run, from a FRESH probe here — never a
+    # hardcoded assertion of what the legs did (the first landing wrote
+    # "idb present; legs ran" unconditionally, overwriting the honest
+    # present:no record the no-driver path had just laid down — review
+    # finding; a skip receipt must never be edited into a fake pass).
+    if ios_idb_present; then
+        if [ "${SKIP_HARNESS:-0}" -eq 1 ]; then
+            ios_capability_skips yes "idb present; harness legs skipped by flag (--skip-harness)"
+        else
+            ios_capability_skips yes "idb present; the UI-driven harness legs ran"
+        fi
     else
-        ios_capability_skips yes "idb present; harness legs skipped by flag (--skip-harness)" \
-            || mx_die "writing capability-skips.json failed"
+        ios_capability_skips no "idb missing or does not list $IOS_UDID"
     fi
 }
 
@@ -434,10 +455,19 @@ and_m() { echo "hosts/android/artifacts/simulator-matrix"; }
 
 adb_of() { adb -s "$ADB_SERIAL" "$@"; }
 
+# android_booted — the boot condition as a FUNCTION: poll_until re-executes
+# its arguments each cycle, so an inline `[ "$(…)" = "1" ]` would freeze the
+# command substitution at call time and poll a CONSTANT (measured: the stub
+# flips state at 0.5s and the frozen shape still times out — review finding
+# on the first landing). A function body re-evaluates every cycle.
+android_booted() {
+    [ "$(adb_of shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]
+}
+
 android_preflight() {
     command -v adb >/dev/null || mx_die "adb not found (ANDROID_HOME=$ANDROID_HOME)"
     if adb -s "$ADB_SERIAL" get-state >/dev/null 2>&1; then
-        poll_until 600 [ "$(adb_of shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] \
+        poll_until 600 android_booted \
             || mx_die "$ADB_SERIAL never finished booting (600s)"
         return 0
     fi
@@ -451,7 +481,7 @@ android_preflight() {
     ( "$emu" -avd "$ANDROID_AVD" -no-snapshot-save > /tmp/dsh-matrix-emulator.log 2>&1 & )
     poll_until 600 adb -s "$ADB_SERIAL" get-state \
         || mx_die "emulator $ADB_SERIAL never appeared within 600s (see /tmp/dsh-matrix-emulator.log)"
-    poll_until 300 [ "$(adb_of shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] \
+    poll_until 300 android_booted \
         || mx_die "emulator $ADB_SERIAL never finished booting (300s)"
 }
 
@@ -720,34 +750,53 @@ harmony_platform() {
     local hdc="/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools/sdk/default/openharmony/toolchains/hdc"
     local art="hosts/harmony/artifacts/simulator-matrix"
     mkdir -p "$art"
-    local deveco=0 targets="unavailable"
+    local deveco=0 targets="unavailable" real_target=no
     [ -d "/Applications/DevEco-Studio.app" ] && deveco=1
     if [ -x "$hdc" ]; then
-        targets="$("$hdc" list targets 2>&1 | tr -d '\r' | tr '\n' ';' )" || targets="hdc failed"
+        # Join with "; " but STRIP the trailing separator before any
+        # comparison: `tr '\n' ';'` yields "[Empty];", which compares
+        # unequal to "[Empty]" forever (review finding — the guard then
+        # treats an EMPTY list as a target present, or a real target is
+        # masked by the deveco=0 short-circuit and the receipt contradicts
+        # its own probes field).
+        targets="$("$hdc" list targets 2>&1 | tr -d '\r' | tr '\n' ';')"
+        targets="${targets%;}"
+        [ -n "$targets" ] || targets="(no output)"
+        # The REAL-target question is decoupled from DevEco's presence: any
+        # hdc line other than the empty-list marker is a live target.
+        local line
+        while IFS= read -r line; do
+            [ -n "$line" ] || continue
+            [ "$line" = "[Empty]" ] || { real_target=yes; break; }
+        done <<< "$(printf '%s' "$targets" | tr ';' '\n')"
     fi
-    if [ "$deveco" -eq 1 ] && [ -n "$targets" ] && [ "$targets" != "[Empty]" ]; then
+    if [ "$real_target" = yes ]; then
         mx_die "a harmony target IS present ($targets) — wire the real leg (hosts/harmony/ci/run-host-e2e.sh) instead of skipping; this script only skips honestly"
     fi
-    python3 - "$art" "$deveco" "$targets" "$(tree_line)" <<'PY'
+    local reason
+    if [ "$deveco" -eq 1 ]; then
+        reason="no hdc simulator target on this machine (DevEco IS present, but nothing is booted) — the leg stays script-ready (D-g): hosts/harmony/ci/run-host-e2e.sh runs it when a device exists. Never faked: a skip receipt, not a green one."
+    else
+        reason="no DevEco toolchain and no hdc simulator target on this machine — the leg stays script-ready (D-g): hosts/harmony/ci/run-host-e2e.sh runs it when a device exists. Never faked: a skip receipt, not a green one."
+    fi
+    python3 - "$art" "$deveco" "$targets" "$reason" "$(tree_line)" <<'PY'
 import json, sys
 from datetime import datetime
-art, deveco, targets = sys.argv[1], int(sys.argv[2]), sys.argv[3]
+art, deveco, targets, reason = sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4]
 skip = {
     "platform": "harmonyos",
     "status": "skipped",
     "leg": "simulator e2e (the harmony ladder)",
-    "reason": "no DevEco toolchain and no hdc simulator target on this machine — the leg "
-              "stays script-ready (D-g): hosts/harmony/ci/run-host-e2e.sh runs it when a "
-              "device exists. Never faked: a skip receipt, not a green one.",
+    "reason": reason,
     "probes": {"DevEco-Studio.app present": bool(deveco), "hdc list targets": targets},
-    "tree": sys.argv[4] if len(sys.argv) > 4 else "",
+    "tree": sys.argv[5] if len(sys.argv) > 5 else "",
     "producedAt": datetime.now().astimezone().isoformat(timespec="seconds"),
 }
 with open(f"{art}/matrix-skip-receipt.json", "w") as f:
     json.dump(skip, f, indent=2); f.write("\n")
 PY
     [ -f "$art/matrix-skip-receipt.json" ] || mx_die "the matrix-skip-receipt.json writer lied (file absent) — refusing to record"
-    record harmony platform SKIP "no DevEco/hdc target — matrix-skip-receipt.json written (D-g standby)"
+    record harmony platform SKIP "no live hdc target — matrix-skip-receipt.json written (D-g standby)"
 }
 
 # ---- orchestration ----------------------------------------------------------
