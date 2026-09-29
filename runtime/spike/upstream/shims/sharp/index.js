@@ -1,4 +1,4 @@
-'use strict';
+// dsh:logging-exempt (shim layer: the pipeline face, no logging surface of its own)
 /**
  * The sharp face of the DSH mobile shim — the pipeline object the vendored
  * attachment-local family drives (construct → metadata/raw/resize/rotate/
@@ -22,6 +22,7 @@ const jpeg = require('./jpeg-codec.js');
 const gif = require('./gif-codec.js');
 const webp = require('./webp-codec.js');
 const svg = require('./svg-face.js');
+const ops = require('./ops.js');
 
 const SNIFF_LIMIT = 512;
 
@@ -48,138 +49,9 @@ const PIXEL_DECODE = { png: png.pngDecode, jpeg: jpeg.jpegDecode, gif: gif.gifDe
 /** JPEG orientation >= 5 transposes the stored raster. */
 const ORIENTATION_TRANSPOSES = (o) => o !== undefined && o >= 5;
 
-/** Apply one EXIF orientation (1-8) to an RGBA pixel buffer; returns a new
- * buffer (ops never mutate shared state). */
-function applyOrientation(image, orientation) {
-  const { width, height, data } = image;
-  const out = new (data.constructor)(width * height * 4);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const src = (y * width + x) * 4;
-      let dx; let dy;
-      switch (orientation) {
-        case 2: dx = width - 1 - x; dy = y; break; // flip horizontal
-        case 3: dx = width - 1 - x; dy = height - 1 - y; break; // 180
-        case 4: dx = x; dy = height - 1 - y; break; // flip vertical
-        case 5: dx = y; dy = x; break; // transpose
-        case 6: dx = height - 1 - y; dy = x; break; // rotate 90 CW
-        case 7: dx = height - 1 - y; dy = width - 1 - x; break; // transverse
-        case 8: dx = y; dy = width - 1 - x; break; // rotate 270 CW
-        default: dx = x; dy = y;
-      }
-      const dst = (dy * height + dx) * 4;
-      out[dst] = data[src];
-      out[dst + 1] = data[src + 1];
-      out[dst + 2] = data[src + 2];
-      out[dst + 3] = data[src + 3];
-    }
-  }
-  const rotated = orientation >= 5;
-  return {
-    data: out,
-    width: rotated ? height : width,
-    height: rotated ? width : height,
-    channels: 4,
-    depth: image.depth,
-    space: image.space,
-    hasAlpha: image.hasAlpha,
-    orientation: undefined,
-  };
-}
-
-/** Area-average downscale / bilinear upscale to exact target dimensions.
- * Works for 8- and 16-bit sample arrays (constructor-selected). */
-function resizePixels(image, targetW, targetH) {
-  const { width, height, data } = image;
-  if (width === targetW && height === targetH) return image;
-  const Out = data.constructor;
-  const out = new Out(targetW * targetH * 4);
-  const channels4 = 4;
-  const scaleDown = targetW <= width && targetH <= height;
-  for (let ty = 0; ty < targetH; ty += 1) {
-    if (scaleDown) {
-      // box filter over the source rect mapping to this target row/col
-      const y0 = (ty * height) / targetH;
-      const y1 = ((ty + 1) * height) / targetH;
-      for (let tx = 0; tx < targetW; tx += 1) {
-        const x0 = (tx * width) / targetW;
-        const x1 = ((tx + 1) * width) / targetW;
-        let r = 0; let g = 0; let b = 0; let a = 0; let count = 0;
-        for (let sy = Math.floor(y0); sy < Math.min(height, Math.ceil(y1)); sy += 1) {
-          for (let sx = Math.floor(x0); sx < Math.min(width, Math.ceil(x1)); sx += 1) {
-            const at = (sy * width + sx) * channels4;
-            r += data[at]; g += data[at + 1]; b += data[at + 2]; a += data[at + 3];
-            count += 1;
-          }
-        }
-        const dst = (ty * targetW + tx) * channels4;
-        out[dst] = Math.round(r / count);
-        out[dst + 1] = Math.round(g / count);
-        out[dst + 2] = Math.round(b / count);
-        out[dst + 3] = Math.round(a / count);
-      }
-    } else {
-      // bilinear
-      const fy = (ty * (height - 1)) / Math.max(1, targetH - 1);
-      const y0 = Math.floor(fy);
-      const y1 = Math.min(height - 1, y0 + 1);
-      const wy = fy - y0;
-      for (let tx = 0; tx < targetW; tx += 1) {
-        const fx = (tx * (width - 1)) / Math.max(1, targetW - 1);
-        const x0 = Math.floor(fx);
-        const x1 = Math.min(width - 1, x0 + 1);
-        const wx = fx - x0;
-        for (let c = 0; c < 4; c += 1) {
-          const p00 = data[(y0 * width + x0) * 4 + c];
-          const p01 = data[(y0 * width + x1) * 4 + c];
-          const p10 = data[(y1 * width + x0) * 4 + c];
-          const p11 = data[(y1 * width + x1) * 4 + c];
-          const top = p00 + (p01 - p00) * wx;
-          const bottom = p10 + (p11 - p10) * wx;
-          out[(ty * targetW + tx) * 4 + c] = Math.round(top + (bottom - top) * wy);
-        }
-      }
-    }
-  }
-  return { ...image, data: out, width: targetW, height: targetH };
-}
-
-/** 16→8 bit sample conversion ((v*255 + 32767) >> 16 — round-half-up). */
-function depthTo8(image) {
-  if (image.depth === 8) return image;
-  const src = image.data;
-  const out = new Uint8Array(src.length);
-  for (let i = 0; i < src.length; i += 1) out[i] = (src[i] * 255 + 32767) >> 16;
-  return { ...image, data: out, depth: 8, space: image.space === 'rgb16' ? 'srgb' : image.space };
-}
-
-/** 8→16 bit (v*257) for the rgb16 output colourspace. */
-function depthTo16(image) {
-  if (image.depth === 16) return image;
-  const src = image.data;
-  const out = new Uint16Array(src.length);
-  for (let i = 0; i < src.length; i += 1) out[i] = src[i] * 257;
-  return { ...image, data: out, depth: 16, space: 'rgb16' };
-}
-
-function greyscalePixels(image) {
-  const src = image.data;
-  const out = new src.constructor(src.length);
-  for (let px = 0; px < src.length; px += 4) {
-    const luma = Math.round(0.299 * src[px] + 0.587 * src[px + 1] + 0.114 * src[px + 2]);
-    out[px] = luma;
-    out[px + 1] = luma;
-    out[px + 2] = luma;
-    out[px + 3] = src[px + 3];
-  }
-  return { ...image, data: out };
-}
-
-function dropAlpha(image) {
-  const src = image.data;
-  for (let px = 3; px < src.length; px += 4) src[px] = 255; // shared buffer is never aliased post-materialization
-  return { ...image, hasAlpha: false };
-}
+// The pixel ops (EXIF orientation, the area/bilinear resampler, depth and
+// colourspace conversions, greyscale, alpha removal) live beside this file in
+// ops.js — split when this file crossed the code-size budget.
 
 /** The one Pipeline class sharp(input, options) hands out. */
 class Pipeline {
@@ -275,7 +147,7 @@ class Pipeline {
     if (op.op === 'rotate') {
       const orientation = image.orientation;
       if (op.angle === undefined && orientation !== undefined) {
-        return applyOrientation(image, orientation);
+        return ops.applyOrientation(image, orientation);
       }
       return image;
     }
@@ -297,17 +169,17 @@ class Pipeline {
         targetW = Math.max(1, Math.round(src.width * scale));
         targetH = Math.max(1, Math.round(src.height * scale));
       }
-      return resizePixels(src, targetW, targetH);
+      return ops.resizePixels(src, targetW, targetH);
     }
     if (op.op === 'colourspace') {
-      if (op.tag === 'srgb' && image.space === 'rgb16') return depthTo8(image);
+      if (op.tag === 'srgb' && image.space === 'rgb16') return ops.depthTo8(image);
       if (op.tag === 'srgb') return { ...image, space: 'srgb' };
-      if (op.tag === 'rgb16') return depthTo16(image);
+      if (op.tag === 'rgb16') return ops.depthTo16(image);
       if (op.tag === 'cmyk') return { ...image, space: 'cmyk' };
       throw new Error(`sharp shim: colourspace ${op.tag} is not a served face`);
     }
-    if (op.op === 'removeAlpha') return dropAlpha(image);
-    if (op.op === 'greyscale') return greyscalePixels(image);
+    if (op.op === 'removeAlpha') return ops.dropAlpha(image);
+    if (op.op === 'greyscale') return ops.greyscalePixels(image);
     throw new Error(`sharp shim: unknown op ${op.op}`);
   }
 
@@ -467,7 +339,7 @@ class Pipeline {
       );
     }
     if (format === 'jpeg' || format === 'jpg') {
-      const eight = depthTo8(image);
+      const eight = ops.depthTo8(image);
       return jpeg.jpegEncode(
         { width: eight.width, height: eight.height, data: eight.data },
         {
@@ -478,14 +350,14 @@ class Pipeline {
       );
     }
     if (format === 'webp') {
-      const eight = depthTo8(image);
+      const eight = ops.depthTo8(image);
       return webp.webpEncode(
         { width: eight.width, height: eight.height, data: eight.data },
         { quality: this._quality ?? 80, effort: this._effort },
       );
     }
     if (format === 'gif') {
-      const eight = depthTo8(image);
+      const eight = ops.depthTo8(image);
       return gif.gifEncode({ width: eight.width, height: eight.height, data: eight.data });
     }
     if (format === 'tiff') {

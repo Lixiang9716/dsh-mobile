@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * JPEG face of the sharp shim: the VENDORED jpeg-js 0.4.4 does the entropy

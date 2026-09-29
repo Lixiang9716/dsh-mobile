@@ -1,9 +1,9 @@
-# The sharp face is a pure-JS decoder shim over the vendored pins (decision-matrix D-c)
+# Agent Note: The sharp face is a pure-JS decoder shim over the vendored pins (decision-matrix D-c)
 
+Status: implemented
 Date: 2026-09-29
 Class: feature
-Task: T-0071 (ledger item 11; decision-matrix D-c — "vendor 纯 JS 解码器", owner-ratified
-rejection of "accept the mobile boundary")
+Related: D6, D-c (decision matrix), T-0071 (ledger item 11)
 
 ## Problem
 

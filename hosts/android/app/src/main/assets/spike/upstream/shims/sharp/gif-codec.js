@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * GIF face of the sharp shim — hand-written LZW codec (the family needs GIF
@@ -12,61 +13,74 @@
  */
 const bytes = require('./bytes.js');
 
+/** One LZW decode state: dict, code width, bit reader, output cursor. */
+function lzwState(minCodeSize, pixelCount) {
+  const clearCode = 1 << minCodeSize;
+  const dict = [];
+  for (let i = 0; i < clearCode; i += 1) dict[i] = [i];
+  dict[clearCode] = []; // clear
+  dict[clearCode + 1] = []; // end-of-information
+  return {
+    clearCode, eoiCode: clearCode + 1, dict,
+    codeSize: minCodeSize + 1, prev: -1,
+    bitBuffer: 0, bitCount: 0, at: 0,
+    out: new Uint8Array(pixelCount), outAt: 0,
+  };
+}
+
+/** Read the next code (or null at end-of-input). */
+function lzwNextCode(state, data) {
+  while (state.bitCount < state.codeSize) {
+    if (state.at >= data.length) return null;
+    state.bitBuffer |= data[state.at] << state.bitCount;
+    state.bitCount += 8;
+    state.at += 1;
+  }
+  const code = state.bitBuffer & ((1 << state.codeSize) - 1);
+  state.bitBuffer >>= state.codeSize;
+  state.bitCount -= state.codeSize;
+  return code;
+}
+
+/** Resolve one code against the dictionary, painting samples + growing it. */
+function lzwApplyCode(state, code) {
+  let entry;
+  if (code < state.dict.length) {
+    entry = state.dict[code];
+  } else if (state.prev >= 0 && code === state.dict.length) {
+    entry = state.dict[state.prev].concat([state.dict[state.prev][0]]);
+  } else {
+    throw new Error('gif: bad LZW code');
+  }
+  for (const sample of entry) {
+    if (state.outAt >= state.out.length) break;
+    state.out[state.outAt] = sample;
+    state.outAt += 1;
+  }
+  if (state.prev >= 0 && state.dict.length < 4096) {
+    state.dict.push(state.dict[state.prev].concat([entry[0]]));
+    if (state.dict.length === (1 << state.codeSize) && state.codeSize < 12) state.codeSize += 1;
+  }
+  state.prev = code;
+}
+
 /** Variable-width LZW decode of one frame's code stream. */
 function lzwDecode(minCodeSize, data, pixelCount) {
-  const clearCode = 1 << minCodeSize;
-  const eoiCode = clearCode + 1;
-  let codeSize = minCodeSize + 1;
-  let dict = [];
-  const resetDict = () => {
-    dict = [];
-    for (let i = 0; i < clearCode; i += 1) dict[i] = [i];
-    dict[clearCode] = [];
-    dict[eoiCode] = [];
-  };
-  resetDict();
-  const out = new Uint8Array(pixelCount);
-  let outAt = 0;
-  let prev = -1;
-  let bitBuffer = 0;
-  let bitCount = 0;
-  let at = 0;
-  while (at < data.length && outAt < pixelCount) {
-    bitBuffer |= data[at] << bitCount;
-    bitCount += 8;
-    at += 1;
-    while (bitCount >= codeSize) {
-      const code = bitBuffer & ((1 << codeSize) - 1);
-      bitBuffer >>= codeSize;
-      bitCount -= codeSize;
-      if (code === clearCode) {
-        codeSize = minCodeSize + 1;
-        resetDict();
-        prev = -1;
-        continue;
-      }
-      if (code === eoiCode) return out;
-      let entry;
-      if (code < dict.length) {
-        entry = dict[code];
-      } else if (prev >= 0 && code === dict.length) {
-        entry = dict[prev].concat([dict[prev][0]]);
-      } else {
-        throw new Error('gif: bad LZW code');
-      }
-      for (const sample of entry) {
-        if (outAt >= pixelCount) break;
-        out[outAt] = sample;
-        outAt += 1;
-      }
-      if (prev >= 0 && dict.length < 4096) {
-        dict.push(dict[prev].concat([entry[0]]));
-        if (dict.length === (1 << codeSize) && codeSize < 12) codeSize += 1;
-      }
-      prev = code;
+  const state = lzwState(minCodeSize, pixelCount);
+  for (;;) {
+    const code = lzwNextCode(state, data);
+    if (code === null || code === state.eoiCode) return state.out;
+    if (code === state.clearCode) {
+      state.codeSize = minCodeSize + 1;
+      state.dict.length = 0;
+      for (let i = 0; i < state.clearCode; i += 1) state.dict[i] = [i];
+      state.dict[state.clearCode] = [];
+      state.dict[state.clearCode + 1] = [];
+      state.prev = -1;
+      continue;
     }
+    lzwApplyCode(state, code);
   }
-  return out;
 }
 
 /** Interlace pass row order (GIF89a §23). */
@@ -80,26 +94,71 @@ const INTERLACE_ROWS = (height) => {
 };
 
 /** Parse GIF structure; decode pixels for every frame (RGBA composite). */
-function gifDecode(data) {
-  if (!bytes.asciiAt(data, 0, 'GIF87a') && !bytes.asciiAt(data, 0, 'GIF89a')) {
-    throw new Error('gif: bad header');
-  }
-  const width = bytes.u16le(data, 6);
-  const height = bytes.u16le(data, 8);
+/** Read the GCT (if present) starting at byte 13; returns { palette, at }. */
+function readGlobalPalette(data) {
   const packed = data[10];
   let at = 13;
-  let globalPalette = null;
+  if (!(packed & 0x80)) return { palette: null, at };
+  const size = 2 << (packed & 0x07);
+  const palette = [];
+  for (let i = 0; i < size; i += 1) {
+    palette.push([data[at], data[at + 1], data[at + 2], 0xff]);
+    at += 3;
+  }
+  return { palette, at };
+}
+
+/** Walk the block stream: extensions (GCE transparency) + image frames. */
+/** Skip one extension's sub-block run; returns the offset past it. */
+function skipSubBlocks(data, at) {
+  while (at < data.length) {
+    const sub = data[at];
+    at += 1;
+    if (sub === 0) break;
+    at += sub;
+  }
+  return at;
+}
+
+/** Read one image descriptor + its LZW pixels; returns { frame, at }. */
+function readGifFrame(data, at, globalPalette, transparentIndex) {
+  const packed = data[at + 8];
+  const frameW = bytes.u16le(data, at + 4);
+  const frameH = bytes.u16le(data, at + 6);
+  let palette = globalPalette;
+  at += 9;
   if (packed & 0x80) {
     const size = 2 << (packed & 0x07);
-    globalPalette = [];
+    palette = [];
     for (let i = 0; i < size; i += 1) {
-      globalPalette.push([data[at], data[at + 1], data[at + 2], 0xff]);
+      palette.push([data[at], data[at + 1], data[at + 2], 0xff]);
       at += 3;
     }
   }
+  const minCodeSize = data[at];
+  at += 1;
+  const codeEnd = skipSubBlocks(data, at);
+  const codeBytes = [];
+  while (at < codeEnd) {
+    const sub = data[at];
+    at += 1;
+    codeBytes.push(data.subarray(at, at + sub));
+    at += sub;
+  }
+  const pixels = lzwDecode(minCodeSize, bytes.concat(codeBytes), frameW * frameH);
+  return {
+    frame: { width: frameW, height: frameH, pixels, palette, interlaced: (packed & 0x40) !== 0, transparentIndex },
+    at: codeEnd,
+  };
+}
+
+/** Walk the block stream: extensions (GCE transparency) + image frames. */
+function parseGifBlocks(data, globalPalette) {
+  let at = globalPalette.at;
   let transparentIndex = -1;
   const frames = [];
-  while (at < data.length) {
+  for (;;) {
+    if (at >= data.length) break;
     const block = data[at];
     at += 1;
     if (block === 0x3B) break; // trailer
@@ -113,45 +172,28 @@ function gifDecode(data) {
         at += 4;
         at += 1; // block terminator
       } else {
-        while (at < data.length) {
-          const sub = data[at];
-          at += 1;
-          if (sub === 0) break;
-          at += sub;
-        }
+        at = skipSubBlocks(data, at);
       }
       continue;
     }
     if (block === 0x2C) { // image descriptor
-      const packed2 = data[at + 8];
-      const frameW = bytes.u16le(data, at + 4);
-      const frameH = bytes.u16le(data, at + 6);
-      let palette = globalPalette;
-      at += 9;
-      if (packed2 & 0x80) {
-        const size = 2 << (packed2 & 0x07);
-        palette = [];
-        for (let i = 0; i < size; i += 1) {
-          palette.push([data[at], data[at + 1], data[at + 2], 0xff]);
-          at += 3;
-        }
-      }
-      const minCodeSize = data[at];
-      at += 1;
-      const codeBytes = [];
-      while (at < data.length) {
-        const sub = data[at];
-        at += 1;
-        if (sub === 0) break;
-        codeBytes.push(data.subarray(at, at + sub));
-        at += sub;
-      }
-      const pixels = lzwDecode(minCodeSize, bytes.concat(codeBytes), frameW * frameH);
-      frames.push({ width: frameW, height: frameH, pixels, palette, interlaced: (packed2 & 0x40) !== 0, transparentIndex });
+      const parsed = readGifFrame(data, at, globalPalette.palette, transparentIndex);
+      frames.push(parsed.frame);
+      at = parsed.at;
       continue;
     }
     throw new Error(`gif: unknown block 0x${block.toString(16)}`);
   }
+  return frames;
+}
+
+function gifDecode(data) {
+  if (!bytes.asciiAt(data, 0, 'GIF87a') && !bytes.asciiAt(data, 0, 'GIF89a')) {
+    throw new Error('gif: bad header');
+  }
+  const width = bytes.u16le(data, 6);
+  const height = bytes.u16le(data, 8);
+  const frames = parseGifBlocks(data, readGlobalPalette(data));
   if (frames.length === 0) throw new Error('gif: no frames');
   // Composite onto an RGBA canvas, first frame wins per pixel for opaque
   // paint (matches libvips's first-frame-first compositing for stills).
@@ -202,37 +244,49 @@ const u16le = (out, at, value) => {
 
 /** Palette building: exact palette when ≤256 unique colors, else a uniform
  * 3-3-2 reduction (the fixtures' flat fields hit the exact path). */
+/** The uniform 3-3-2 fallback palette (256 entries) + quantized indices. */
+function quantizeTo256(data, width, height) {
+  const keys = new Map();
+  for (let r = 0; r < 8; r += 1) {
+    for (let g = 0; g < 8; g += 1) {
+      for (let b = 0; b < 4; b += 1) {
+        keys.set((r << 21) | (g << 18) | (b << 16), keys.size);
+      }
+    }
+  }
+  const indices = new Uint8Array(width * height);
+  for (let p = 0; p < width * height; p += 1) {
+    const base = p * 4;
+    const r = data[base] >> 5;
+    const g = data[base + 1] >> 5;
+    const b = data[base + 2] >> 6;
+    indices[p] = keys.get((r << 21) | (g << 18) | (b << 16));
+  }
+  return { indices, keys };
+}
+
+/** Palette of the unique colors in scan order (caller guarantees ≤256). */
+function paletteOf(unique) {
+  const palette = [];
+  for (const key of unique.keys()) {
+    palette.push([(key >> 16) & 0xFF, (key >> 8) & 0xFF, key & 0xFF, 0xff]);
+  }
+  return palette;
+}
+
+/** Palette building: exact palette when ≤256 unique colors, else the
+ * uniform 3-3-2 reduction (the fixtures' flat fields hit the exact path). */
 function buildPalette(data, width, height) {
   const unique = new Map();
   let opaque = true;
   for (let px = 0; px < width * height; px += 1) {
     const at = px * 4;
-    const alpha = data[at + 3];
-    if (alpha !== 255) opaque = false;
+    if (data[at + 3] !== 255) opaque = false;
     const key = (data[at] << 16) | (data[at + 1] << 8) | data[at + 2];
     if (!unique.has(key)) unique.set(key, unique.size);
     if (unique.size > 256) {
-      unique.clear();
-      for (let r = 0; r < 8; r += 1) {
-        for (let g = 0; g < 8; g += 1) {
-          for (let b = 0; b < 4; b += 1) {
-            unique.set((r << 21) | (g << 18) | (b << 16), unique.size);
-          }
-        }
-      }
-      const quantized = new Uint8Array(width * height);
-      for (let p = 0; p < width * height; p += 1) {
-        const base = p * 4;
-        const r = data[base] >> 5;
-        const g = data[base + 1] >> 5;
-        const b = data[base + 2] >> 6;
-        quantized[p] = unique.get((r << 21) | (g << 18) | (b << 16));
-      }
-      const palette = [];
-      for (const key2 of unique.keys()) {
-        palette.push([(key2 >> 16) & 0xFF, (key2 >> 8) & 0xFF, key2 & 0xFF, 0xff]);
-      }
-      return { indices: quantized, palette, opaque };
+      const q = quantizeTo256(data, width, height);
+      return { indices: q.indices, palette: paletteOf(q.keys), opaque };
     }
   }
   const indices = new Uint8Array(width * height);
@@ -240,11 +294,7 @@ function buildPalette(data, width, height) {
     const at = px * 4;
     indices[px] = unique.get((data[at] << 16) | (data[at + 1] << 8) | data[at + 2]);
   }
-  const palette = [];
-  for (const key2 of unique.keys()) {
-    palette.push([(key2 >> 16) & 0xFF, (key2 >> 8) & 0xFF, key2 & 0xFF, 0xff]);
-  }
-  return { indices, palette, opaque };
+  return { indices, palette: paletteOf(unique), opaque };
 }
 
 /** Variable-width LZW encode (GIF flavour: codes packed LSB-first). The

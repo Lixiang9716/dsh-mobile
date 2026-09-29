@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * Byte helpers for the sharp face's codecs (CJS — this package loads through

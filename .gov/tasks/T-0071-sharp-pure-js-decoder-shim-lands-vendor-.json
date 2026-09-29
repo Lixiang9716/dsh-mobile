@@ -9,11 +9,11 @@
     }
   },
   "checklist": [
-    "Locate the read-image spec family and the exact sharp API face the vendored attachment-local package drives",
-    "Vendor the minimal pure-JS codec set via add-package.sh with sha256 pins and mirror tarballs",
-    "Implement the sharp shim over the vendored codecs and register the bare specifier row",
-    "Per-host embed lists cover the new vendored packages and shim (iOS TREES, harmony CLOSURE/BUNDLE_FILES, android stage list); regen + determinism",
-    "Per-spec acceptance: request-image (and any sibling attachment-local spec that comes along) failed:0 on dsh-spike-cli",
+    "[x] Locate the read-image spec family and the exact sharp API face the vendored attachment-local package drives",
+    "[x] Vendor the minimal pure-JS codec set via add-package.sh with sha256 pins and mirror tarballs",
+    "[x] Implement the sharp shim over the vendored codecs and register the bare specifier row",
+    "[x] Per-host embed lists cover the new vendored packages and shim (iOS TREES, harmony CLOSURE/BUNDLE_FILES, android stage list); regen + determinism",
+    "[x] Per-spec acceptance: request-image (and any sibling attachment-local spec that comes along) failed:0 on dsh-spike-cli",
     "closures gate green; gov run full DAG green with receipt; Agent Note lands",
     "Push and open the PR with acceptance evidence"
   ],

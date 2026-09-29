@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * SVG face of the sharp shim — a SUBSET rasterizer, and the one honest place
@@ -192,6 +193,23 @@ function svgMetadata(data) {
   };
 }
 
+/** Paint one scale×scale font cell (clipped to the canvas). */
+function paintGlyphCell(out, width, height, x0, y0, scale, color) {
+  for (let dy = 0; dy < scale; dy += 1) {
+    const py = y0 + dy;
+    if (py < 0 || py >= height) continue;
+    for (let dx = 0; dx < scale; dx += 1) {
+      const px = x0 + dx;
+      if (px < 0 || px >= width) continue;
+      const at = (py * width + px) * 4;
+      out[at] = color[0];
+      out[at + 1] = color[1];
+      out[at + 2] = color[2];
+      out[at + 3] = 255;
+    }
+  }
+}
+
 /** Paint one scaled bitmap-font run: each glyph cell becomes scale×scale
  * solid pixels — legible, metric-free, unantialiased. */
 function drawText(out, width, height, x, y, content, fontSize, color) {
@@ -204,21 +222,7 @@ function drawText(out, width, height, x, y, content, fontSize, color) {
       const bits = glyph[row];
       for (let col = 0; col < 5; col += 1) {
         if ((bits >> (4 - col)) & 1) {
-          const x0 = penX + col * scale;
-          const y0 = penY + row * scale;
-          for (let dy = 0; dy < scale; dy += 1) {
-            const py = y0 + dy;
-            if (py < 0 || py >= height) continue;
-            for (let dx = 0; dx < scale; dx += 1) {
-              const px = x0 + dx;
-              if (px < 0 || px >= width) continue;
-              const at = (py * width + px) * 4;
-              out[at] = color[0];
-              out[at + 1] = color[1];
-              out[at + 2] = color[2];
-              out[at + 3] = 255;
-            }
-          }
+          paintGlyphCell(out, width, height, penX + col * scale, penY + row * scale, scale, color);
         }
       }
     }

@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * PNG face of the sharp shim. Decode = chunk walk + the VENDORED pngjs
@@ -26,6 +27,31 @@ const pngConstants = require(PNG_LIB + '/constants.js');
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const BPP = pngConstants.COLORTYPE_TO_BPP_MAP; // colorType → samples per pixel
 
+/** Validate + apply one IHDR body onto the parse record. */
+function applyPngIhdr(info, data, bodyStart) {
+  info.width = bytes.u32be(data, bodyStart);
+  info.height = bytes.u32be(data, bodyStart + 4);
+  info.depth = data[bodyStart + 8];
+  info.colorType = data[bodyStart + 9];
+  const compression = data[bodyStart + 10];
+  const filterMethod = data[bodyStart + 11];
+  info.interlace = data[bodyStart + 12];
+  if (info.width <= 0 || info.height <= 0) throw new Error('png: bad IHDR dimensions');
+  if (compression !== 0 || filterMethod !== 0) throw new Error('png: unsupported IHDR methods');
+  if (BPP[info.colorType] === undefined) throw new Error(`png: unsupported color type ${info.colorType}`);
+  if (![1, 2, 4, 8, 16].includes(info.depth)) throw new Error(`png: unsupported bit depth ${info.depth}`);
+  if (info.colorType === 3 && info.depth === 16) throw new Error('png: 16-bit palette is invalid');
+}
+
+/** PLTE body → palette triples (opaque until a tRNS says otherwise). */
+function readPngPalette(data, bodyStart, bodyEnd) {
+  const palette = [];
+  for (let at = bodyStart; at + 2 < bodyEnd; at += 3) {
+    palette.push([data[at], data[at + 1], data[at + 2], 0xff]);
+  }
+  return palette;
+}
+
 /** Parse PNG chunks up to IEND: header facts + ancillary metadata + IDAT list. */
 function parsePng(data) {
   for (let i = 0; i < 8; i += 1) {
@@ -47,25 +73,10 @@ function parsePng(data) {
     const bodyEnd = bodyStart + length;
     if (bodyEnd + 4 > data.length) throw new Error(`png: truncated ${type} chunk`);
     if (type === 'IHDR') {
-      info.width = bytes.u32be(data, bodyStart);
-      info.height = bytes.u32be(data, bodyStart + 4);
-      info.depth = data[bodyStart + 8];
-      info.colorType = data[bodyStart + 9];
-      const compression = data[bodyStart + 10];
-      const filterMethod = data[bodyStart + 11];
-      info.interlace = data[bodyStart + 12];
-      if (info.width <= 0 || info.height <= 0) throw new Error('png: bad IHDR dimensions');
-      if (compression !== 0 || filterMethod !== 0) throw new Error('png: unsupported IHDR methods');
-      if (BPP[info.colorType] === undefined) throw new Error(`png: unsupported color type ${info.colorType}`);
-      if (![1, 2, 4, 8, 16].includes(info.depth)) throw new Error(`png: unsupported bit depth ${info.depth}`);
-      if (info.colorType === 3 && info.depth === 16) throw new Error('png: 16-bit palette is invalid');
+      applyPngIhdr(info, data, bodyStart);
       sawIhdr = true;
     } else if (type === 'PLTE') {
-      const palette = [];
-      for (let at2 = bodyStart; at2 + 2 < bodyEnd; at2 += 3) {
-        palette.push([data[at2], data[at2 + 1], data[at2 + 2], 0xff]);
-      }
-      info.palette = palette;
+      info.palette = readPngPalette(data, bodyStart, bodyEnd);
     } else if (type === 'tRNS') {
       info.trnsRaw = bytes.concat([data.subarray(bodyStart, bodyEnd)]);
     } else if (type === 'iCCP') {
@@ -73,14 +84,10 @@ function parsePng(data) {
       // sharp face reports (icc profile); the payload is not interpreted.
       const nul = data.indexOf(0, bodyStart);
       if (nul > bodyStart && nul < bodyEnd) info.icc = 'iccp';
-    } else if (type === 'tEXt') {
-      const nul = data.indexOf(0, bodyStart);
-      if (nul > bodyStart) info.comments.push(String.fromCharCode(...data.subarray(bodyStart, nul)));
-    } else if (type === 'zTXt' || type === 'iTXt') {
+    } else if (type === 'tEXt' || type === 'zTXt' || type === 'iTXt') {
       const nul = data.indexOf(0, bodyStart);
       if (nul > bodyStart) info.comments.push(String.fromCharCode(...data.subarray(bodyStart, nul)));
     } else if (type === 'eXIf') {
-      info.exif = true;
     } else if (type === 'IDAT') {
       info.idat.push(data.subarray(bodyStart, bodyEnd));
     } else if (type === 'IEND') {
@@ -92,27 +99,32 @@ function parsePng(data) {
   if (!sawIhdr) throw new Error('png: no IHDR');
   if (info.colorType === 3 && !info.palette) throw new Error('png: palette image has no PLTE');
   info.sawIend = sawIend;
-  if (info.trnsRaw !== undefined) {
-    if (info.colorType === 3) {
-      // pngjs's own model: the first fully-transparent palette entry becomes
-      // the transColor triple (partial palette alphas are not representable).
-      for (let i = 0; i < info.trnsRaw.length && i < info.palette.length; i += 1) {
-        if (info.trnsRaw[i] === 0) {
-          info.transColor = info.palette[i].slice(0, 3);
-          break;
-        }
-      }
-    } else if (info.colorType === 0 && info.trnsRaw.length >= 2) {
-      const sample = (info.trnsRaw[0] << 8) | info.trnsRaw[1];
-      info.transColor = [sample];
-    } else if (info.colorType === 2 && info.trnsRaw.length >= 6) {
-      const r = (info.trnsRaw[0] << 8) | info.trnsRaw[1];
-      const g = (info.trnsRaw[2] << 8) | info.trnsRaw[3];
-      const b = (info.trnsRaw[4] << 8) | info.trnsRaw[5];
-      info.transColor = [r, g, b];
-    }
-  }
+  applyPngTransparency(info);
   return info;
+}
+
+/** Derive the transColor fact from a tRNS body (pngjs's own model: the
+ * first fully-transparent palette entry becomes the transColor triple —
+ * partial palette alphas are not representable; gray/RGB spellings carry
+ * the 16-bit sample(s) verbatim). */
+function applyPngTransparency(info) {
+  if (info.trnsRaw === undefined) return;
+  if (info.colorType === 3) {
+    for (let i = 0; i < info.trnsRaw.length && i < info.palette.length; i += 1) {
+      if (info.trnsRaw[i] === 0) {
+        info.transColor = info.palette[i].slice(0, 3);
+        break;
+      }
+    }
+  } else if (info.colorType === 0 && info.trnsRaw.length >= 2) {
+    info.transColor = [(info.trnsRaw[0] << 8) | info.trnsRaw[1]];
+  } else if (info.colorType === 2 && info.trnsRaw.length >= 6) {
+    info.transColor = [
+      (info.trnsRaw[0] << 8) | info.trnsRaw[1],
+      (info.trnsRaw[2] << 8) | info.trnsRaw[3],
+      (info.trnsRaw[4] << 8) | info.trnsRaw[5],
+    ];
+  }
 }
 
 /** Header-only facts (no IDAT inflate). */
@@ -212,36 +224,37 @@ function placeholderIccProfile(name) {
   return profile;
 }
 
+/** Pack one filter-0 scanline: samples ride big-endian at the image depth;
+ * the source is ALWAYS interleaved RGBA — `channels` (3) drops alpha. */
+function packPngScanline(raw, rowAt, samples, pxStart, width, channels, depth) {
+  raw[rowAt] = 0; // filter type None — the deterministic baseline
+  let out = rowAt + 1;
+  for (let px = pxStart; px < pxStart + width; px += 1) {
+    for (let c = 0; c < channels; c += 1) {
+      const sample = samples[px * 4 + c] & 0xFFFF;
+      if (depth === 16) {
+        raw[out] = (sample >> 8) & 0xFF;
+        raw[out + 1] = sample & 0xFF;
+        out += 2;
+      } else {
+        raw[out] = sample & 0xFF;
+        out += 1;
+      }
+    }
+  }
+}
+
 /** Encode interleaved RGBA (8- or 16-bit samples) as PNG. samples: the
  * full-range value array (0..255 or 0..65535); channels 3 drops alpha. */
 function pngEncode(image, options = {}) {
   const { width, height, channels, depth } = image;
   const samples = image.data;
-  const sampleCount = width * height * channels;
-  if (samples.length < sampleCount) throw new Error('png: pixel buffer smaller than its dimensions');
+  if (samples.length < width * height * channels) throw new Error('png: pixel buffer smaller than its dimensions');
   const colorType = channels === 4 ? 6 : 2;
-  const bpp = channels * (depth === 16 ? 2 : 1);
-  const stride = width * bpp;
+  const stride = width * channels * (depth === 16 ? 2 : 1);
   const raw = new Uint8Array((stride + 1) * height);
   for (let y = 0; y < height; y += 1) {
-    const rowAt = y * (stride + 1);
-    raw[rowAt] = 0; // filter type None — the deterministic baseline
-    // Source samples are ALWAYS interleaved RGBA (4 per pixel); the scanline
-    // carries the requested channel count (3 drops alpha).
-    let out = rowAt + 1;
-    for (let px = y * width; px < (y + 1) * width; px += 1) {
-      for (let c = 0; c < channels; c += 1) {
-        const sample = samples[px * 4 + c] & 0xFFFF;
-        if (depth === 16) {
-          raw[out] = (sample >> 8) & 0xFF;
-          raw[out + 1] = sample & 0xFF;
-          out += 2;
-        } else {
-          raw[out] = sample & 0xFF;
-          out += 1;
-        }
-      }
-    }
+    packPngScanline(raw, y * (stride + 1), samples, y * width, width, channels, depth);
   }
   const ihdr = new Uint8Array(13);
   const ihdrView = new DataView(ihdr.buffer);

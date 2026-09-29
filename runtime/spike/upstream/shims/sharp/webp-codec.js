@@ -1,3 +1,4 @@
+// dsh:logging-exempt (shim layer: pure codecs, no logging surface of its own)
 'use strict';
 /**
  * WebP face of the sharp shim — an extended-format (VP8X) writer/reader
@@ -230,6 +231,27 @@ function padded(body) {
   return (body.length & 1) === 0 ? [body] : [body, Uint8Array.of(0)];
 }
 
+/** The VP8X canvas record (flags + 24-bit max-minus-one dimensions). */
+function vp8xChunk(includeAlpha, width, height) {
+  const vp8x = new Uint8Array(10);
+  vp8x[0] = includeAlpha ? 0x10 : 0x00; // ALPHA flag
+  vp8x[4] = (width - 1) & 0xFF;
+  vp8x[5] = ((width - 1) >> 8) & 0xFF;
+  vp8x[6] = ((width - 1) >> 16) & 0xFF;
+  vp8x[7] = (height - 1) & 0xFF;
+  vp8x[8] = ((height - 1) >> 8) & 0xFF;
+  vp8x[9] = ((height - 1) >> 16) & 0xFF;
+  return vp8x;
+}
+
+/** The raw ALPH chunk (compression 0 — the spec's uncompressed spelling). */
+function alphChunk(width, height, data) {
+  const alph = new Uint8Array(1 + width * height);
+  alph[0] = 0x00; // compression 0 (raw), filter 0, preprocessing 0
+  for (let px = 0; px < width * height; px += 1) alph[1 + px] = data[px * 4 + 3];
+  return alph;
+}
+
 /** Encode RGBA pixels (Uint8Array, 4/channel) as an extended-format WebP. */
 function webpEncode(image, options = {}) {
   const { width, height, data } = image;
@@ -245,51 +267,34 @@ function webpEncode(image, options = {}) {
     }
   }
   const includeAlpha = hasAlpha && !allOpaque;
-  const vp8x = new Uint8Array(10);
-  vp8x[0] = includeAlpha ? 0x10 : 0x00; // ALPHA flag
-  vp8x[4] = (width - 1) & 0xFF;
-  vp8x[5] = ((width - 1) >> 8) & 0xFF;
-  vp8x[6] = ((width - 1) >> 16) & 0xFF;
-  vp8x[7] = (height - 1) & 0xFF;
-  vp8x[8] = ((height - 1) >> 8) & 0xFF;
-  vp8x[9] = ((height - 1) >> 16) & 0xFF;
   const vp8 = vp8Keyframe(width, height, typeof options.quality === 'number' ? Math.min(127, Math.max(0, Math.round((100 - options.quality) * 1.27))) : 60);
-  const body = [
-    // (the 'WEBP' form-type word is written by the header assembly below)
-    chunkHeader('VP8X', vp8x.length), ...padded(vp8x),
-  ];
-  if (includeAlpha) {
-    const alph = new Uint8Array(1 + width * height);
-    alph[0] = 0x00; // compression 0 (raw), filter 0, preprocessing 0
-    for (let px = 0; px < width * height; px += 1) alph[1 + px] = data[px * 4 + 3];
-    body.push(chunkHeader('ALPH', alph.length), ...padded(alph));
-  }
+  const body = [chunkHeader('VP8X', 10), ...padded(vp8xChunk(includeAlpha, width, height))];
+  if (includeAlpha) body.push(chunkHeader('ALPH', 1 + width * height), ...padded(alphChunk(width, height, data)));
   // Stability rule: the VP8 chunk carries zero padding so the FINISHED FILE
-  // lands on an 8-byte boundary (every output ≥ 1 pad byte). The bool
-  // stream's trailing region is inert — readers consume exactly the bools
-  // the frame defines — so the pad changes no decoded fact.
-  const before = 12 + 8 + vp8x.length + (vp8x.length & 1)
-    + (includeAlpha ? 8 + (1 + width * height) + ((1 + width * height) & 1) : 0)
-    + 8;
-  let vp8Body = vp8;
-  let missing = (8 - ((before + vp8.length) % 8)) % 8;
-  if (missing === 0) missing = 8;
-  if (missing > 0) {
-    vp8Body = new Uint8Array(vp8.length + missing);
-    vp8Body.set(vp8, 0);
-  }
+  // lands on an 8-byte boundary. The bool stream's trailing region is
+  // inert — readers consume exactly the bools the frame defines — so the
+  // pad changes no decoded fact. Layout before the VP8 chunk: RIFF header
+  // (8) + size field is inside it (4 'WEBP') + VP8X chunk (18) + ALPH chunk.
+  const alphLen = includeAlpha ? 1 + width * height : 0;
+  const before = 12 + 18 + (alphLen ? 8 + alphLen + (alphLen & 1) : 0) + 8;
+  const missing = (8 - ((before + vp8.length) % 8)) % 8;
+  const vp8Body = new Uint8Array(vp8.length + missing);
+  vp8Body.set(vp8, 0);
   body.push(chunkHeader('VP8 ', vp8Body.length), ...padded(vp8Body));
-  const bodyBytes = bytes.concat(body);
-  const file = new Uint8Array(12 + bodyBytes.length);
+  return riffFile('WEBP', bytes.concat(body));
+}
+
+/** Assemble a RIFF file: 'RIFF' + size (form word + body) + form + body. */
+function riffFile(form, body) {
+  const file = new Uint8Array(12 + body.length);
   file.set(bytes.concat([Uint8Array.from([0x52, 0x49, 0x46, 0x46])]));
-  // RIFF size = filesize - 8: the 'WEBP' form word + every chunk.
-  const riffSize = bodyBytes.length + 4;
+  const riffSize = body.length + 4;
   file[4] = riffSize & 0xFF;
   file[5] = (riffSize >> 8) & 0xFF;
   file[6] = (riffSize >> 16) & 0xFF;
   file[7] = (riffSize >> 24) & 0xFF;
-  file.set(bytes.concat([Uint8Array.from([0x57, 0x45, 0x42, 0x50])]), 8);
-  file.set(bodyBytes, 12);
+  for (let i = 0; i < 4; i += 1) file[8 + i] = form.charCodeAt(i);
+  file.set(body, 12);
   return file;
 }
 

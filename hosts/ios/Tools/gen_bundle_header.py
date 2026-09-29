@@ -256,19 +256,8 @@ TREES = [
     # the npm `fflate` bridge target (the OFFICE row's zip engine).
     ("vendor/npm/fflate@0.8.2/esm",
      SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
-    # The sharp face's vendored engines (the D-c row, 2026-09-29): pngjs's
-    # pixel stages (filter-parse/bitmapper/format-normaliser), jpeg-js's
-    # codec, and the fflate CJS face the sharp adapter's zlib calls ride.
-    # upstream/shims/sharp/ itself rides the whole-directory upstream/shims
-    # row below (a shim joins the embed by existing, not by list edit).
-    ("vendor/npm/pngjs@5.0.0/lib",
-     SPIKE / "vendor" / "npm" / "pngjs@5.0.0" / "lib"),
-    ("vendor/npm/jpeg-js@0.4.4/index.js",
-     SPIKE / "vendor" / "npm" / "jpeg-js@0.4.4" / "index.js"),
-    ("vendor/npm/jpeg-js@0.4.4/lib",
-     SPIKE / "vendor" / "npm" / "jpeg-js@0.4.4" / "lib"),
-    ("vendor/npm/fflate@0.8.2/lib/index.cjs",
-     SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "lib" / "index.cjs"),
+    # D-c: the sharp face's engines (its adapter rides upstream/shims below).
+    *(("vendor/npm/" + r, SPIKE / "vendor" / "npm" / r) for r in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
     # The crypto shims' npm face (crypto.js's static noble imports) and
     # the pi-ai bridge target (the providers barrel + its data face):
     # both whole pins ride — the parity legs died on bytes-absent-in-app.
