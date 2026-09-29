@@ -7,7 +7,7 @@
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rejections/case-bundle-files.sh": {
-      "sha256": "966a77ec7df077781dc7391f26eecbf39bf4a92c8d7fb9a44ca5571681fa89c2"
+      "sha256": "32e5989c7340eb828564a8aec4fbbf9311bf159636b73bdd85a7fa92d18ef107"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
@@ -24,17 +24,20 @@
     ".gov/rejections/case-quickjs-boot-parse.sh": {
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
+    ".gov/rejections/case-staging-check.sh": {
+      "sha256": "8a52786089ec229a9d331749b456d650a0b2f144a9ef2c878c67a6b764851e7a"
+    },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+      "sha256": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T09:21:34+00:00",
+    "ts": "2026-09-29T16:47:57+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "the merge's residual conflict markers stripped from the .gov tasks/rituals lineage (our side)"
+    "reason": "PR #244 review round: the two intersecting live-tree rejection cases (case-bundle-files \u00d7 case-staging-check) gain a shared mkdir mutation-window mutex \u2014 the in-gate race measured by the independent review (both directions reproduced on 0a538482); recorded act per the review thread"
   }
 }
