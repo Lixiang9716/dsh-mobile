@@ -2,7 +2,7 @@
   "title": "Wire check-staging's DAG edge + rule-6 rejection case (D-e reality check: gate already hard since wave-1)",
   "created": "2026-09-29T15:47:26+00:00",
   "rules": {
-    "hash": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
@@ -18,5 +18,14 @@
   ],
   "status": "open",
   "receipt": null,
-  "id": "T-0072"
+  "id": "T-0072",
+  "repins": [
+    {
+      "ts": "2026-09-29T16:09:35+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
+      "to": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+      "reason": "the constitution moved as this card's own deliverable (gates.json needs edge + the rule-6 rejection case + the plane re-seal); the brief still describes the work verbatim"
+    }
+  ]
 }
