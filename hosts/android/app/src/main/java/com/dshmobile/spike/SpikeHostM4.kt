@@ -59,7 +59,8 @@ class SpikeHostM4 private constructor(
         const val CAMERA_PLANE_ENTRY = "scenario/camera-plane.js"
         const val BLE_SCENARIO = "android.ble-plane"
         const val BLE_ENTRY = "scenario/ble-plane.js"
-
+        const val MIC_PLANE_SCENARIO = "android.mic-plane"
+        const val MIC_PLANE_ENTRY = "scenario/mic-plane.js"
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -133,6 +134,27 @@ class SpikeHostM4 private constructor(
             captureLabel = "ble-plane",
             mockRadio = mockRadio,
         )
+
+        /** The capability plane's microphone drive (scenario
+         * `android.mic-plane`): micStart/micStop + the mic.frame channel,
+         * the OS RECORD_AUDIO prompt pre-granted by the runner in
+         * automation. */
+        fun startMicPlane(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = MIC_PLANE_SCENARIO,
+                entryPath = MIC_PLANE_ENTRY,
+                captureLabel = "mic-plane",
+            )
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
 
         /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
          * upstream spec executed by the quickjs-shaped harness inside our
@@ -225,6 +247,7 @@ class SpikeHostM4 private constructor(
     private val clipboard = ClipboardPrimitives(activity)
     private val camera = CameraPrimitives(activity, fs)
     private val ble = BlePrimitives(activity, core, if (mockRadio) MockBleRadio() else SystemBleRadio(activity))
+    val mic = MicPrimitives(activity)
 
     private var handle: Long = 0
 
@@ -333,6 +356,7 @@ class SpikeHostM4 private constructor(
         camera.register(core)
         ble.register(core)
 
+        mic.register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -343,6 +367,7 @@ class SpikeHostM4 private constructor(
         notify.emitFn = { json -> event(json) }
         timer.emitFn = { json -> event(json) }
         ble.emitFn = { json -> event(json) }
+        mic.emitFn = { json -> event(json) }
         timer.register(core)
     }
 
@@ -442,6 +467,7 @@ class SpikeHostM4 private constructor(
             ble.onPermissionResult(grantResults.isNotEmpty()
                 && grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED })
         }
+        mic.onPermissionResult(requestCode, grantResults)
     }
 
     // ---- settling ---------------------------------------------------------------

@@ -98,6 +98,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             startCameraMode()
         case "ble-plane", "ble-plane-mock":
             startBleMode()
+        case "mic-plane":
+            announce("DSH mic plane — mic.plane, the capability plane's microphone face live…",
+                     line: "spike: app launched in mic-plane mode", web: false)
+            runMicPlane()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -420,6 +424,34 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.show(outcome, phase: "carrier.loopback") { self.carrierVerdict = $0 }
             self.carrier = nil
             self.runGateway()
+        }
+    }
+
+    /// The v1.5.0 device-plane drive over the device.plane scenario.
+    private func runDevicePlane() {
+        let session = GatewaySession(
+            entryModule: "scenario/device-plane.js",
+            sourceProvider: { String(cString: dsh_spike_res_scenario_device_plane_js(nil)) })
+        self.gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("spike: device-plane drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The capability plane's microphone drive over the mic.plane scenario.
+    private func runMicPlane() {
+        let session = GatewaySession(
+            entryModule: "scenario/mic-plane.js",
+            sourceProvider: { String(cString: dsh_spike_res_scenario_mic_plane_js(nil)) })
+        self.gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "mic.plane") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("spike: mic-plane drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
         }
     }
 

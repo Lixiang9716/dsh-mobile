@@ -167,6 +167,7 @@ RESOURCES = [
     ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
     ("scenario_ble_plane_js", SPIKE / "scenario" / "ble-plane.js"),
     ("scenario_camera_plane_js", SPIKE / "scenario" / "camera-plane.js"),
+    ("scenario_mic_plane_js", SPIKE / "scenario" / "mic-plane.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
     ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),

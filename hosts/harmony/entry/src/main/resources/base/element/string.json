@@ -31,6 +31,10 @@
     {
       "name": "bluetooth_reason",
       "value": "The BLE face scans, connects to and reads nearby devices an agent session talks to."
+    },
+    {
+      "name": "microphone_reason",
+      "value": "The microphone primitive streams audio only while an agent session you started is using it."
     }
   ]
 }

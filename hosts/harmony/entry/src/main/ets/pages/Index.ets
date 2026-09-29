@@ -63,6 +63,7 @@ const LEG_DEVICE_PLANE: string = 'device.plane';
 const LEG_CAMERA_PLANE: string = 'camera.plane';
 const LEG_PARITY: string = 'upstream.parity';
 const LEG_BLE: string = 'ble.plane';
+const LEG_MIC_PLANE: string = 'mic.plane';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -1419,6 +1420,9 @@ struct Index {
     } else if (leg === LEG_BLE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runBleLeg();
+    } else if (leg === LEG_MIC_PLANE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runMicPlaneLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1741,6 +1745,50 @@ struct Index {
    * the entry — no web client mounts (the scenario drives primitives only),
    * and the page's approval dialog serves clipboardRead's gate. The verdict
    * is the C `dsh.spike.verdict: harmony.device-plane` line. */
+  /** The capability plane's microphone leg (v1.10.0 candidate): the
+   * device-plane leg's shape — micStart/micStop + the mic.frame channel,
+   * no web client mounts. The OS microphone prompt is driven by the
+   * runner's drive script (the uitest allow-button tap; a pre-granted
+   * install has no dialog). */
+  private runMicPlaneLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
+      this.showApproval(title, resolve);
+    });
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.mic-plane (logs are the verdict)';
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        this.verdict = 'mic-plane leg: running...';
+        phase.beginMicPlane(ctx, root, ctx.cacheDir + '/dsh-mic-plane-capture.log', fsRoot);
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          phase.evalEntryDirect();
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'mic-plane leg: running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'mic-plane leg failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
   private runDevicePlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/spike-fs';

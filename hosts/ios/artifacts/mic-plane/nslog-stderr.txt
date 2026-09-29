@@ -1,0 +1,70 @@
+2026-09-30 05:46:32.355 DSHSpike[44662:41169423] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 05:46:32.356 DSHSpike[44662:41169423] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":24,"unavailable":0,"micPlane":2}]}
+2026-09-30 05:46:32.356 DSHSpike[44662:41169423] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+2026-09-30 05:46:32.364 DSHSpike[44662:41169423] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+objc[44662]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1097f4310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x109890398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+*** Terminating app due to uncaught exception 'com.apple.coreaudio.avfaudio', reason: 'Failed to create tap due to format mismatch, <AVAudioFormat 0x10a6aabc0:  1 ch,  16000 Hz, Int16>'
+*** First throw call stack:
+(
+	0   CoreFoundation                      0x00000001804c3dec __exceptionPreprocess + 172
+	1   libobjc.A.dylib                     0x0000000180063438 objc_exception_throw + 72
+	2   CoreFoundation                      0x00000001804c3cfc -[NSException initWithCoder:] + 0
+	3   AVFAudio                            0x00000001cc4cd424 _ZN17AVAudioEngineImpl16InstallTapOnNodeEP11AVAudioNodemjP13AVAudioFormatU13block_pointerFvP16AVAudioPCMBufferP11AVAudioTimeE + 1304
+	4   AVFAudio                            0x00000001cc4ac598 -[AVAudioNode installTapOnBus:bufferSize:format:block:] + 560
+	5   DSHSpike.debug.dylib                0x0000000105a5b8a8 $s8DSHSpike13MicPrimitivesC3arm33_6A2F0260856DE97D5305CD8B6C6690C0LL10sampleRate7frameMs_ySd_Sdys6ResultOyypAA12GatewayErrorVGctF + 1592
+	6   DSHSpike.debug.dylib                0x0000000105a5b0a4 $s8DSHSpike13MicPrimitivesC5start33_6A2F0260856DE97D5305CD8B6C6690C0LLyyAA11GatewayCallV_ys6ResultOyypAA0M5ErrorVGctFyyScMYccfU_ySbYbcfU_ + 356
+	7   DSHSpike.debug.dylib                0x0000000105a5c18c $sSbIeghy_SbIeyBhy_TR + 56
+	8   AudioSession                        0x00000001d6a723c4 -[AVAudioSession requestRecordPermission:] + 132
+	9   AudioSession                        0x00000001d6a83138 +[AVAudioApplication requestRecordPermissionWithCompletionHandler:] + 56
+	10  DSHSpike.debug.dylib                0x0000000105a5aecc $s8DSHSpike13MicPrimitivesC5start33_6A2F0260856DE97D5305CD8B6C6690C0LLyyAA11GatewayCallV_ys6ResultOyypAA0M5ErrorVGctFyyScMYccfU_ + 484
+	11  DSHSpike.debug.dylib                0x00000001059d9f28 $sIeg_IeyB_TR + 48
+	12  libdispatch.dylib                   0x00000001801866a0 _dispatch_call_block_and_release + 24
+	13  libdispatch.dylib                   0x00000001801a0e98 _dispatch_client_callout + 12
+	14  libdispatch.dylib                   0x00000001801bd748 _dispatch_main_queue_drain.cold.8 + 24
+	15  libdispatch.dylib                   0x0000000180195d34 _dispatch_main_queue_drain + 1172
+	16  libdispatch.dylib                   0x0000000180195890 _dispatch_main_queue_callback_4CF + 40
+	17  CoreFoundation                      0x0000000180422a94 __CFRUNLOOP_IS_SERVICING_THE_MAIN_DISPATCH_QUEUE__ + 12
+	18  CoreFoundation                      0x0000000180421c6c __CFRunLoopRun + 1884
+	19  CoreFoundation                      0x000000018041c904 _CFRunLoopRunSpecificWithOptions + 496
+	20  GraphicsServices                    0x00000001933599c0 GSEventRunModal + 116
+	21  UIKitCore                           0x00000001864a54cc -[UIApplication _run] + 776
+	22  UIKitCore                           0x0000000186b9f910 UIApplicationMain + 120
+	23  UIKitCore                           0x000000018564a820 block_destroy_helper.15 + 4692
+	24  DSHSpike.debug.dylib                0x00000001059de9f0 $sSo21UIApplicationDelegateP5UIKitE4mainyyFZ + 128
+	25  DSHSpike.debug.dylib                0x00000001059de964 $s8DSHSpike11AppDelegateC5$mainyyFZ + 32
+	26  DSHSpike.debug.dylib                0x00000001059df150 __debug_main_executable_dylib_entry_point + 28
+	27  dyld                                0x00000001043370e4 start_sim + 20
+	28  ???                                 0x000000010453de80 0x0 + 4367572608
+)
+libc++abi: terminating due to uncaught exception of type NSException
+2026-09-30 05:52:21.884 DSHSpike[5037:41300062] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 05:52:21.886 DSHSpike[5037:41300062] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":24,"unavailable":0,"micPlane":2}]}
+2026-09-30 05:52:21.886 DSHSpike[5037:41300062] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+2026-09-30 05:52:21.895 DSHSpike[5037:41300062] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+*** Terminating app due to uncaught exception 'com.apple.coreaudio.avfaudio', reason: 'Failed to create tap due to format mismatch, <AVAudioFormat 0x10869ac60:  1 ch,  16000 Hz, Int16>'
+*** First throw call stack:
+(
+	0   CoreFoundation                      0x00000001804c3dec __exceptionPreprocess + 172
+	1   libobjc.A.dylib                     0x0000000180063438 objc_exception_throw + 72
+	2   CoreFoundation                      0x00000001804c3cfc -[NSException initWithCoder:] + 0
+	3   AVFAudio                            0x00000001cc4cd424 _ZN17AVAudioEngineImpl16InstallTapOnNodeEP11AVAudioNodemjP13AVAudioFormatU13block_pointerFvP16AVAudioPCMBufferP11AVAudioTimeE + 1304
+	4   AVFAudio                            0x00000001cc4ac598 -[AVAudioNode installTapOnBus:bufferSize:format:block:] + 560
+	5   DSHSpike.debug.dylib                0x0000000103977cac $s8DSHSpike13MicPrimitivesC3arm33_6A2F0260856DE97D5305CD8B6C6690C0LL10sampleRate7frameMs_ySd_Sdys6ResultOyypAA12GatewayErrorVGctF + 1592
+	6   DSHSpike.debug.dylib                0x0000000103977664 $s8DSHSpike13MicPrimitivesC5start33_6A2F0260856DE97D5305CD8B6C6690C0LLyyAA11GatewayCallV_ys6ResultOyypAA0M5ErrorVGctFyyScMYccfU_ySbYbcfU_yyYbcfU_ + 84
+	7   DSHSpike.debug.dylib                0x00000001039027a0 $sIegh_IeyBh_TR + 48
+	8   libdispatch.dylib                   0x00000001801866a0 _dispatch_call_block_and_release + 24
+	9   libdispatch.dylib                   0x00000001801a0e98 _dispatch_client_callout + 12
+	10  libdispatch.dylib                   0x00000001801bd748 _dispatch_main_queue_drain.cold.8 + 24
+	11  libdispatch.dylib                   0x00000001801996fc _dispatch_root_queue_drain + 880
+	12  libdispatch.dylib                   0x0000000180199eb0 _dispatch_worker_thread2 + 252
+	13  libsystem_pthread.dylib             0x000000010216ec40 _pthread_wqthread + 228
+	14  libsystem_pthread.dylib             0x000000010216da7c start_wqthread + 8
+)
+libc++abi: terminating due to uncaught exception of type NSException
+2026-09-30 06:03:25.574 DSHSpike[85371:41478344] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 06:03:25.575 DSHSpike[85371:41478344] dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":24,"unavailable":0,"micPlane":2}]}
+2026-09-30 06:03:25.575 DSHSpike[85371:41478344] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+2026-09-30 06:03:25.579 DSHSpike[85371:41478344] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+objc[85371]: Class UIAccessibilityLoaderWebShared is implemented in both /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x10976c310) and /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x109808398). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+2026-09-30 06:03:26.003 DSHSpike[85371:41478043] dsh.gateway.audit: {"verdict":"granted","outcome":"unavailable","caller":"dsh.spike.scenario","ts":"2026-09-29T22:03:25Z","primitive":"micStart"}
+2026-09-30 06:03:26.005 DSHSpike[85371:41478344] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"micStart"}]}

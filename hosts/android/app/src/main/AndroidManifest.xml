@@ -8,6 +8,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- The v1.5.0 haptic primitive maps onto the platform vibrator. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- The capability plane's microphone face (v1.10.0 candidate): the
+         appendix row for `microphone` — a RUNTIME request; the prompt is the
+         second consent layer (the gateway grant is the first). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- The capability plane's camera family (v1.10.0): the capture burst
          (cameraCapture) frames ride the app's capture scope. Runtime

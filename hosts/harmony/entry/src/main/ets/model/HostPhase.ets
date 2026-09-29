@@ -60,6 +60,7 @@ import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
 import { CameraPrimitives } from './CameraPrimitives';
 import { BlePrimitives } from './BlePrimitives';
+import { MicPrimitives } from './MicPrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
@@ -94,6 +95,11 @@ const SCENARIO_CAMERA_PLANE: string = 'harmony.camera-plane';
 const ENTRY_CAMERA_PLANE: string = 'scenario/camera-plane.js';
 const SCENARIO_BLE: string = 'harmony.ble.plane';
 const ENTRY_BLE: string = 'scenario/ble-plane.js';
+/** The capability plane's microphone leg (v1.10.0 candidate, ONE launch,
+ * its own scenario id): micStart/micStop + the mic.frame channel over the
+ * binding machinery — the device-plane leg's shape (no web client mounts). */
+const SCENARIO_MIC_PLANE: string = 'harmony.mic-plane';
+const ENTRY_MIC_PLANE: string = 'scenario/mic-plane.js';
 /** The whale creation-client mount (the iOS session-mock-llm drive's
  * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
  * web-client-whale page — the session-mock scenario (notes slot, two
@@ -108,18 +114,18 @@ export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-whale/web';
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
 
-/** Binding RuntimeDescriptor: the full serving table (nine v0 primitives
- * plus the six v1.5.0 device-plane rows), none unavailable (conformance §7 —
- * keep in sync with the C fallback in gateway_smoke.cpp). */
+/** Binding RuntimeDescriptor: the full serving table (nine v0 primitives,
+ * the six v1.5.0 device-plane rows, and the capability plane's mic pair —
+ * v1.10.0 candidate), none unavailable (conformance §7 — keep in sync with
+ * the C fallback in gateway_smoke.cpp). */
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
   '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
-  '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
+  '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe",' +
+  '"micStart","micStop"],' +
   '"unavailable":["cameraRecordStart","cameraRecordStop"]}';
-  '"keepAwake","bleScanStart","bleScanStop","bleConnect","bleDisconnect",' +
-  '"bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
   '"unavailable":[]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
@@ -194,6 +200,7 @@ export class HostPhase {
   private device: DevicePlanePrimitives | null = null;
   private cameraKit: CameraPrimitives | null = null;
   private ble: BlePrimitives | null = null;
+  private mic: MicPrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -318,6 +325,18 @@ export class HostPhase {
     this.devicePlaneLeg = false;
     this.bleLeg = true;
     this.bleMock = mockRadio;
+  /** The capability plane's microphone leg (ONE launch, its own scenario
+   * id): the device-plane leg's shape — no web client mounts (the scenario
+   * drives primitives only), the runner calls evalEntryDirect once the
+   * carrier is up. */
+  beginMicPlane(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_MIC_PLANE;
+    this.carrierScenario = SCENARIO_MIC_PLANE;
+    this.entry = ENTRY_MIC_PLANE;
+    this.llmLeg = false;
+    this.whaleLeg = false;
+    this.devicePlaneLeg = true;
     this.slotAcked = false;
     this.connectedLogged = false;
     this.hostInfoDelivered = false;
@@ -403,6 +422,10 @@ export class HostPhase {
     if (this.approvalPresenter !== null) {
       this.cameraKit.setApprovalPresenter(this.approvalPresenter);
     }
+    this.mic = new MicPrimitives(ctx);
+    this.mic.setEmitter((eventJson: string): void => {
+      this.deliverEvent(eventJson);
+    });
     if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
     }
@@ -754,6 +777,10 @@ export class HostPhase {
       this.ble?.subscribe(callId, args, this.settleFn());
     } else if (name === 'bleUnsubscribe') {
       this.ble?.unsubscribe(callId, args, this.settleFn());
+    } else if (name === 'micStart') {
+      this.mic?.micStart(callId, args, this.settleFn());
+    } else if (name === 'micStop') {
+      this.mic?.micStop(callId, args, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);

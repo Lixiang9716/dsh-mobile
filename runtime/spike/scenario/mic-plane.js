@@ -96,14 +96,22 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   });
 
   // ---- micStart: armed, not flowing (the timerSchedule posture). A null
-  // resolution is a VALUE — the OS layer or the host's mic service
-  // refused; the scenario walks the refusal leg honestly (no content
+  // resolution is a VALUE (the OS layer refused), an `unavailable`
+  // rejection is a capability gap (the emulator's mic service can be dead
+  // — the haptic posture); both walk the refusal leg honestly (no content
   // assertions) and the per-host manifest pins which shape ran. ----
-  const armed = await micStart({
-    format: FORMAT, sampleRate: SAMPLE_RATE, frameMs: FRAME_MS, tag: 'mic.plane',
-  });
-  if (armed === null) {
-    emit('mic.refused', { resolved: 'null' });
+  let armed = null;
+  let gap = false;
+  try {
+    armed = await micStart({
+      format: FORMAT, sampleRate: SAMPLE_RATE, frameMs: FRAME_MS, tag: 'mic.plane',
+    });
+  } catch (err) {
+    demand(err.code === 'unavailable', `micStart failed: ${err.code}`);
+    gap = true;
+  }
+  if (armed === null || gap) {
+    emit('mic.refused', { resolved: gap ? 'unavailable' : 'null' });
   } else {
     demand(typeof armed.streamId === 'string' && armed.streamId.length > 0,
       'micStart resolved no streamId');
