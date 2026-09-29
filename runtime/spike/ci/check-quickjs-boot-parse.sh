@@ -7,16 +7,24 @@
 # exposes. This gate compiles the break surface on purpose: a throwaway
 # scenario importing the two split roots, booted under the vendored
 # quickjs-ng through the desktop CLI, requiring exit 0 — so the next
-# node-clean/QuickJS-fatal edit goes red here, at the gate.
-#
-# The stub is deleted on every exit path. Closure stagers enumerate
-# scenarios from explicit pin lists, so the transient file cannot trip
-# closures/bundle-files.
+# node-clean/QuickJS-fatal edit goes red here, at the gate, instead of red
+# in a scenario nobody ran. The stub is deleted on every exit path; closure
+# stagers enumerate scenarios from explicit pin lists, so the transient file
+# cannot trip closures/bundle-files.
 #
 # ARCH GUARD: the CLI's link embeds the iSH static libs — AArch64 assembly
 # an x86_64 assembler cannot build. Non-arm64 machines skip here; the
 # gov.yml arm64 job (ubuntu-24.04-arm) + arm64 dev machines carry the proof.
+if [ "$(uname -m)" != "arm64" ]; then
+    echo "quickjs-boot-parse: SKIP — $(uname -m) cannot assemble the iSH AArch64 objects; the gov.yml arm64 job proves the boot graph"
+    exit 0
+fi
 
+# Budget: sub-second with the prebuilt CLI (measured 0.04s); on a miss the
+# CLI is built first (host/build.sh — the same rule run-*-e2e.sh uses; a cold
+# CI build is the one path that can exceed the steady-state budget).
+#
+# usage: check-quickjs-boot-parse.sh   (cwd-independent; exit 0 = boot graph compiles)
 set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 cd "$ROOT/runtime/spike"
@@ -36,7 +44,7 @@ if [ ! -x build/dsh-spike-cli ]; then
     sh host/build.sh
 fi
 
-# 2. The stub scenario: imports the two split roots under the real loader.
+# 3. The stub scenario: imports the two split roots under the real loader.
 STUB="scenario/ci-quickjs-parse-probe.js"
 cleanup() { rm -f "$STUB"; }
 trap cleanup EXIT INT TERM
@@ -110,7 +118,7 @@ if [ ! -x build/dsh-spike-cli ]; then
     sh host/build.sh
 fi
 
-# 2. The stub scenario: imports the two split roots under the real loader.
+# 3. The stub scenario: imports the two split roots under the real loader.
 STUB="scenario/ci-quickjs-parse-probe.js"
 cleanup() { rm -f "$STUB"; }
 trap cleanup EXIT INT TERM
@@ -129,6 +137,5 @@ log.debug('quickjs parse probe: boot graph resolved', {
 globalThis.__dshComplete(true, 'quickjs parse probe: boot graph compiled');
 EOF
 
-# 3. Compile + boot it under QuickJS. Exit 0 = the whole graph parsed and the
-#    scenario completed; anything else surfaces the engine's error verbatim.
+# 4. Boot it: exit 0 only when the whole graph compiles AND evaluates.
 ./build/dsh-spike-cli . "$STUB"
