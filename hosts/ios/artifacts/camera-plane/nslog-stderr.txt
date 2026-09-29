@@ -1,0 +1,32 @@
+2026-09-30 06:18:59.961 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 06:18:59.961 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+2026-09-30 06:18:59.961 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+2026-09-30 06:18:59.965 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+2026-09-30 06:19:00.000 DSHSpike[3810:41740524] dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"unavailable","verdict":"granted","primitive":"cameraRecordStart","ts":"2026-09-29T22:18:59Z"}
+2026-09-30 06:19:00.005 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+2026-09-30 06:19:00.006 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:00.006 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+2026-09-30 06:19:00.014 DSHSpike[3810:41740524] dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"unavailable","verdict":"granted","primitive":"cameraRecordStop","ts":"2026-09-29T22:19:00Z"}
+2026-09-30 06:19:00.016 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+2026-09-30 06:19:00.018 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:00.020 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+2026-09-30 06:19:00.180 DSHSpike[3810:41740524] dsh.gateway.audit: {"caller":"dsh.spike.scenario","ts":"2026-09-29T22:19:00Z","primitive":"cameraCapture","outcome":"unavailable","verdict":"granted"}
+2026-09-30 06:19:00.180 DSHSpike[3810:41740676] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraCapture"}]}
+2026-09-30 06:19:00.181 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:00.181 DSHSpike[3810:41740676] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}
+2026-09-30 06:19:27.800 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+2026-09-30 06:19:27.800 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+2026-09-30 06:19:27.801 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+2026-09-30 06:19:27.804 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+2026-09-30 06:19:27.859 DSHSpike[6381:41746655] dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T22:19:27Z","primitive":"cameraRecordStart","outcome":"unavailable"}
+2026-09-30 06:19:27.860 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+2026-09-30 06:19:27.860 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:27.861 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+2026-09-30 06:19:27.862 DSHSpike[6381:41746655] dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T22:19:27Z","primitive":"cameraRecordStop","outcome":"unavailable"}
+2026-09-30 06:19:27.862 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+2026-09-30 06:19:27.862 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:27.863 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+2026-09-30 06:19:27.917 DSHSpike[6381:41746655] dsh.gateway.audit: {"verdict":"granted","outcome":"unavailable","ts":"2026-09-29T22:19:27Z","caller":"dsh.spike.scenario","primitive":"cameraCapture"}
+2026-09-30 06:19:27.917 DSHSpike[6381:41746893] dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraCapture"}]}
+2026-09-30 06:19:27.917 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.unavailable","code":"unavailable"}]}
+2026-09-30 06:19:27.918 DSHSpike[6381:41746893] dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}

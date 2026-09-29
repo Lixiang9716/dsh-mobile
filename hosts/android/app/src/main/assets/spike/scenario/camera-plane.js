@@ -50,8 +50,6 @@ const demandUnavailable = async (call, what) => {
   }
 };
 
-log.debug('scenario start', { scenario: SCENARIO });
-
 if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   fail('gateway negotiation failed');
 } else {

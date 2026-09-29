@@ -86,6 +86,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "presentShare" to "share",
             "keepAwake" to "screen",
             "cameraCapture" to "camera",
+            "cameraRecordStart" to "camera",
+            "cameraRecordStop" to "camera",
         )
 
         fun grants(primitive: String): Boolean {

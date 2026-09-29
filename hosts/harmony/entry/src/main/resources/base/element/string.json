@@ -23,6 +23,10 @@
     {
       "name": "pasteboard_reason",
       "value": "The approval-gated clipboard read needs the pasteboard permission."
+    },
+    {
+      "name": "camera_reason",
+      "value": "The camera capture burst (cameraCapture) lands the frames you shoot into the session's capture scope."
     }
   ]
 }

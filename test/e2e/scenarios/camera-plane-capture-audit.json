@@ -21,10 +21,15 @@
       "outcome": "ok"
     },
     {
-      "primitive": "cameraCapture",
+      "primitive": "fsRead",
       "verdict": "granted",
       "outcome": "ok",
       "repeat": true
+    },
+    {
+      "primitive": "cameraCapture",
+      "verdict": "granted",
+      "outcome": "ok"
     }
   ]
 }

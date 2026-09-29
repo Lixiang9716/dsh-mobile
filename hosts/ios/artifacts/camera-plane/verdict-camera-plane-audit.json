@@ -1,0 +1,8 @@
+{
+  "scenario": "camera.plane.audit",
+  "pass": true,
+  "expected": 3,
+  "logged": 3,
+  "failures": [],
+  "parseErrors": []
+}

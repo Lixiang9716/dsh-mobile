@@ -58,6 +58,7 @@ import { HttpPrimitive } from './HttpPrimitive';
 import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
+import { CameraPrimitives } from './CameraPrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
@@ -78,6 +79,10 @@ const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
 
 const SCENARIO_DEVICE_PLANE: string = 'harmony.device-plane';
 const ENTRY_DEVICE_PLANE: string = 'scenario/device-plane.js';
+/** The capability plane's camera leg (v1.10.0): the burst + the phased rows'
+ * honest `unavailable`, over the same HostPhase machinery. */
+const SCENARIO_CAMERA_PLANE: string = 'harmony.camera-plane';
+const ENTRY_CAMERA_PLANE: string = 'scenario/camera-plane.js';
 /** The whale creation-client mount (the iOS session-mock-llm drive's
  * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
  * web-client-whale page — the session-mock scenario (notes slot, two
@@ -99,8 +104,8 @@ export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
-  '"keepAwake"],' +
-  '"unavailable":[]}';
+  '"keepAwake","cameraCapture"],' +
+  '"unavailable":["cameraRecordStart","cameraRecordStop"]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
 export type ApprovalPresenter = (title: string,
@@ -154,6 +159,7 @@ export class HostPhase {
   private entry: string = ENTRY_BINDING;
   private llmLeg: boolean = false;
   private devicePlaneLeg: boolean = false;
+  private cameraPlaneLeg: boolean = false;
   /** The whale creation-client leg: session-mock-llm over the whale page —
    * the client id in the mount records, host.info on page connect (the
    * scenario never reads host.seed), and the slot.ack record this leg
@@ -168,6 +174,7 @@ export class HostPhase {
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
   private device: DevicePlanePrimitives | null = null;
+  private cameraKit: CameraPrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -257,6 +264,24 @@ export class HostPhase {
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
+  /** The capability plane's camera leg (`harmony.camera-plane`, ONE launch):
+   * the same machinery with the camera-plane scenario as the entry — no web
+   * client mounts (the scenario drives primitives only). The verdict is the
+   * C `dsh.spike.verdict: harmony.camera-plane` line. */
+  beginCameraPlane(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_CAMERA_PLANE;
+    this.carrierScenario = SCENARIO_CAMERA_PLANE;
+    this.entry = ENTRY_CAMERA_PLANE;
+    this.llmLeg = false;
+    this.whaleLeg = false;
+    this.cameraPlaneLeg = true;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   /** The upstream-suite leg: the driver scenario plus the runtime.config
    * bus delivery carrying the spec selection (bundle-root-relative) and the
    * container root. The delivery lands after hostEval returns — the driver
@@ -304,6 +329,7 @@ export class HostPhase {
       (scope: string, rel: string): string | null => {
         return this.resolveShareUri(ctx, scope, rel);
       });
+    this.cameraKit = new CameraPrimitives(ctx);
     if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
     }
@@ -325,7 +351,7 @@ export class HostPhase {
 
   onCarrierListening(port: number): void {
     this.carrierPort = port;
-    if (this.devicePlaneLeg) {
+    if (this.devicePlaneLeg || this.cameraPlaneLeg) {
       // No web client mounts on this leg (the scenario drives primitives
       // only) — carrier-side selection records would pin records no page
       // produces; the manifest carries the scenario's own records alone.
@@ -628,6 +654,10 @@ export class HostPhase {
       this.device?.clipboardRead(callId, args, this.settleFn());
     } else if (name === 'clipboardWrite') {
       this.device?.clipboardWrite(callId, args, this.settleFn());
+    } else if (name === 'cameraCapture') {
+      this.cameraKit?.capture(callId, args, this.settleFn());
+    } else if (name === 'cameraRecordStart' || name === 'cameraRecordStop') {
+      this.cameraKit?.recordPhased(name, callId, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);

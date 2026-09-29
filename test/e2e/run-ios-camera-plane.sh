@@ -32,7 +32,7 @@ while [ $# -gt 0 ]; do
 done
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
 command -v node >/dev/null 2>&1 || { echo "run-ios-camera-plane: FAIL: node not on PATH" >&2; exit 1; }
-mkdir -p "$ART"
+mkdir -p "$ART/screens"   # the headless leg takes no screenshots; the receipt helper lists the dir
 
 log() { echo "run-ios-camera-plane: $*"; }
 

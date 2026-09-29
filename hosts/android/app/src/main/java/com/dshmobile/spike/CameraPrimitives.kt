@@ -3,6 +3,7 @@ package com.dshmobile.spike
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.hardware.camera2.CameraCaptureSession
@@ -106,10 +107,13 @@ class CameraPrimitives(
      * emulator's virtual cameras pass FEATURE_CAMERA_ANY either way). */
     private fun pickCamera(manager: CameraManager): String? {
         val all = manager.cameraIdList
-        return all.firstOrNull {
-            manager.getCameraCharacteristics(it).get(CameraCharacteristics.LENS_FACING)
-                == CameraCharacteristics.LENS_FACING_BACK
-        } ?: all.firstOrNull()
+        for (id in all) {
+            val facing = manager.getCameraCharacteristics(id).get(CameraCharacteristics.LENS_FACING)
+            if (facing == CameraCharacteristics.LENS_FACING_BACK) {
+                return id
+            }
+        }
+        return all.firstOrNull()
     }
 
     @SuppressLint("MissingPermission") // every caller holds the grant
@@ -150,16 +154,15 @@ class CameraPrimitives(
     }
 
     private fun onFrame(reader: ImageReader, burst: Burst) {
-        val image: Image = reader.acquireLatestImage() ?: return
-        val bytes = image.planes()[0].buffer.let { buf ->
-            val data = ByteArray(buf.remaining())
-            buf.get(data)
-            data
-        }
-        val width = image.width
-        val height = image.height
-        image.close()
-        burst.onFrame(bytes, width, height)
+        val shot: Image = reader.acquireLatestImage() ?: return
+        val plane: Image.Plane = shot.planes[0]
+        val buf: java.nio.ByteBuffer = plane.buffer
+        val data = ByteArray(buf.remaining())
+        buf.get(data)
+        val width: Int = shot.width
+        val height: Int = shot.height
+        shot.close()
+        burst.onFrame(data, width, height)
     }
 
     // ---- the burst accumulator -------------------------------------------------

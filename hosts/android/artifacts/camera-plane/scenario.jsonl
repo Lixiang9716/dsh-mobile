@@ -1,0 +1,21 @@
+09-30 06:02:46.003 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.camera-plane","event":"client.selected","client":"dsh-web-client"}]}
+09-30 06:02:46.023 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 06:02:46.023 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+09-30 06:02:46.023 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+09-30 06:02:46.030 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+09-30 06:02:46.031 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+09-30 06:02:46.031 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+09-30 06:02:46.032 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+09-30 06:02:46.032 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+09-30 06:02:46.032 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+09-30 06:02:46.398 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.burst","count":2,"formatOk":true,"sizedOk":true,"stampedOk":true}]}
+09-30 06:02:46.398 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-aa9b5c5d.jpg"}]}
+09-30 06:02:46.398 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 06:02:46.442 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":29468}]}
+09-30 06:02:46.673 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"media-picks/capture-a60ea820.jpg"}]}
+09-30 06:02:46.673 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+09-30 06:02:46.690 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":30732}]}
+09-30 06:02:46.994 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.readback","frames":2,"matched":true}]}
+09-30 06:02:46.995 10886 10947 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+09-30 06:02:47.316 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.maxbytes","photos":0,"dropped":true}]}
+09-30 06:02:47.316 10886 10947 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}

@@ -54,12 +54,16 @@ const char *DSH_SMOKE_DESCRIPTOR =
 /* Binding descriptor: all nine contract primitives are served for real —
  * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
  * presentPicker (and user-scope fs) forwarded to the ArkTS capability layer
- * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets). */
+ * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets). The
+ * capability plane (v1.10.0) adds cameraCapture (CameraPrimitives.ets);
+ * the recording rows are PHASED — declared unavailable, their handlers
+ * answer exactly that (conformance §7). */
 const char *DSH_BINDING_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
     "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
     "\"keychainSet\",\"deviceInfo\",\"haptic\",\"clipboardRead\","
-    "\"clipboardWrite\",\"presentShare\",\"keepAwake\"],\"unavailable\":[]}";
+    "\"clipboardWrite\",\"presentShare\",\"keepAwake\",\"cameraCapture\"],"
+    "\"unavailable\":[\"cameraRecordStart\",\"cameraRecordStop\"]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
 
@@ -340,8 +344,17 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
             strcmp(name, "keychainSet") == 0 || strcmp(name, "httpFetch") == 0 ||
             strcmp(name, "deviceInfo") == 0 || strcmp(name, "haptic") == 0 ||
             strcmp(name, "clipboardRead") == 0 || strcmp(name, "clipboardWrite") == 0 ||
-            strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0) {
+            strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0 ||
+            strcmp(name, "cameraCapture") == 0) {
             b->forward_fn(b->forward_ud, call_id, name, args);
+            return;
+        }
+        if (strcmp(name, "cameraRecordStart") == 0 ||
+            strcmp(name, "cameraRecordStop") == 0) {
+            /* The capability plane's PHASED rows (proposal v1.10.0): shape
+             * on record, implementation follows as its own change. */
+            smoke_reject(b, call_id, name, "unavailable",
+                         "phased — the capture burst is the v1 implementation face");
             return;
         }
         if (strcmp(name, "httpFetch.abort") == 0) {

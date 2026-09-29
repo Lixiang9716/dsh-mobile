@@ -1,0 +1,20 @@
+spike: app launched in camera-plane mode
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"descriptor.camera","capture":true,"phased":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStart"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T22:19:27Z","primitive":"cameraRecordStart","outcome":"unavailable"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStart"}]}
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraRecordStop"}]}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","ts":"2026-09-29T22:19:27Z","primitive":"cameraRecordStop","outcome":"unavailable"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraRecordStop"}]}
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"record.stop.unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"cameraCapture"}]}
+dsh.gateway.audit: {"verdict":"granted","outcome":"unavailable","ts":"2026-09-29T22:19:27Z","caller":"dsh.spike.scenario","primitive":"cameraCapture"}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"cameraCapture"}]}
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"capture.unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"info","module":"dsh.camera.plane","message":"e2e","data":[{"scenario":"camera.plane","event":"scenario.complete","status":"pass"}]}
+spike: gateway drive finished verdict=PASS
+spike: verdict PASS (camera.plane, events logged: 13)
+spike: camera-plane drive finished verdict=PASS

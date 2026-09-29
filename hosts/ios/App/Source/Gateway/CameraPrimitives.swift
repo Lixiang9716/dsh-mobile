@@ -50,7 +50,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             startBurst(device: device, call: call, count: count, flash: flash,
-                       requested: requested, done: done)
+                       requested: requested, done)
         case .notDetermined:
             // The OS prompt is the second consent layer; the burst starts (or
             // the refusal settles) from the user's answer, off this thread.
@@ -61,7 +61,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
                 DispatchQueue.main.async { GatewayCore.uiMarker("camera-permission", "done") }
                 if granted {
                     self?.startBurst(device: device, call: call, count: count,
-                                     flash: flash, requested: requested, done: done)
+                                     flash: flash, requested: requested, done)
                 } else {
                     self?.settleRefusal(done)
                 }
@@ -84,9 +84,9 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         device: AVCaptureDevice, call: GatewayCall, count: Int,
         flash: String, requested: Int, _ done: @escaping GatewayDone
     ) {
+        let session = AVCaptureSession()
+        let output = AVCapturePhotoOutput()
         guard let input = try? AVCaptureDeviceInput(device: device),
-              let session = AVCaptureSession(),
-              let output = AVCapturePhotoOutput(),
               session.canAddInput(input), session.canAddOutput(output)
         else {
             return done(.failure(GatewayError(
@@ -125,7 +125,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
 
     /// One burst's accumulator: the frames, the audit facts, the request.
     private final class BurstState {
-        let flash: AVCapturePhotoOutput.FlashMode
+        let flash: AVCaptureDevice.FlashMode
         let maxBytes: Int?
         let requested: Int
         let output: AVCapturePhotoOutput
@@ -138,7 +138,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         private(set) var totalBytes = 0
         private(set) var dropped = 0
 
-        init(remaining: Int, flash: AVCapturePhotoOutput.FlashMode, maxBytes: Int?,
+        init(remaining: Int, flash: AVCaptureDevice.FlashMode, maxBytes: Int?,
              requested: Int, output: AVCapturePhotoOutput,
              settings: AVCapturePhotoSettings, dir: URL?) {
             self.remaining = remaining
@@ -240,7 +240,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         return (width, height)
     }
 
-    private static func flashMode(_ name: String) -> AVCapturePhotoOutput.FlashMode {
+    private static func flashMode(_ name: String) -> AVCaptureDevice.FlashMode {
         switch name {
         case "off": return .off
         case "on": return .on
@@ -248,7 +248,7 @@ final class CameraPrimitives: NSObject, AVCapturePhotoCaptureDelegate {
         }
     }
 
-    private static func flashName(_ mode: AVCapturePhotoOutput.FlashMode) -> String {
+    private static func flashName(_ mode: AVCaptureDevice.FlashMode) -> String {
         switch mode {
         case .off: return "off"
         case .on: return "on"
