@@ -24,17 +24,20 @@
     ".gov/rejections/case-quickjs-boot-parse.sh": {
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
+    ".gov/rejections/case-staging-check.sh": {
+      "sha256": "b123a4eefdec1eb7fa2ca2fc65708ad3590c3e87f51379843f45dccccefeaa70"
+    },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "de8e6f81e66cfff65535426dae17fbdfd3cdcefd2300bc3503adf0b035f31851"
+      "sha256": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T09:21:34+00:00",
+    "ts": "2026-09-29T15:58:37+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "the merge's residual conflict markers stripped from the .gov tasks/rituals lineage (our side)"
+    "reason": "owner decision D-e follow-through (orchestrator brief): the staging-check gate gains its rule-6 rejection case (.gov/rejections/case-staging-check.sh) and the needs=[self-test] tree-reader serialization edge from the 2026-09-26 note pattern \u2014 reviewed plane change, one deliberate re-baseline"
   }
 }
