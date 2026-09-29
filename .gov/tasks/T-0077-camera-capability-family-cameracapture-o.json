@@ -1,0 +1,22 @@
+{
+  "title": "Camera capability family: cameraCapture on three hosts over the system capability plane (proposal v1.10.0)",
+  "created": "2026-09-29T21:19:34+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "JS face: gateway.js exports cameraCapture/cameraRecordStart/cameraRecordStop verbatim to the proposal; manifest.json requires the camera family flag; scenario camera-plane.js (id camera.plane)",
+    "iOS host: CameraPrimitives.swift burst into the capture scope (media-picker read-through), cameraRecord* answer unavailable, GatewayCore descriptor + family flag, NSCameraUsageDescription, -dsh-mode camera-plane",
+    "Android host: CameraPrimitives.kt camera2 burst, runtime CAMERA permission, cameraRecord* unavailable, descriptor + family flag, manifest row, dsh.cameraplane extra",
+    "Harmony host: CameraPrimitives.ets CameraKit burst (settleGuarded), module.json5 ohos.permission.CAMERA, HostPhase+gateway_smoke descriptor/forward, camera.plane leg, rawfile+BUNDLE_FILES row",
+    "E2E per honest matrix: iOS simulator leg walks capture-unavailable honestly + real-device one-click script; Android emulator leg really captures (virtual camera); harmony real-device script staged; per-host expected-manifest pairs + audit manifests",
+    "staging embed lists updated both directions, check-staging --block green; pre-existing descriptor-count manifests resynced; gov run full DAG green; PR opened stacked on feat/capability-plane-contract"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0077"
+}

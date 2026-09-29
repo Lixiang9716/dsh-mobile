@@ -9,6 +9,11 @@
     <!-- The v1.5.0 haptic primitive maps onto the platform vibrator. -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- The capability plane's camera family (v1.10.0): the capture burst
+         (cameraCapture) frames ride the app's capture scope. Runtime
+         request happens at first use (the second consent layer). -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:label="DSH Spike Host"
         android:supportsRtl="true"

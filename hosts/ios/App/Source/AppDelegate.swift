@@ -94,6 +94,10 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             announce("DSH device plane — device.plane, the v1.5.0 SDK surface live…",
                      line: "spike: app launched in device-plane mode", web: false)
             runDevicePlane()
+        case "camera-plane":
+            announce("DSH camera plane — camera.plane, the capability plane's capture burst live…",
+                     line: "spike: app launched in camera-plane mode", web: false)
+            runCameraPlane()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -429,6 +433,22 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
             self?.gateway = nil
             print("spike: device-plane drive finished verdict=\(outcome.verdict)")
+            fflush(stdout)
+        }
+    }
+
+    /// The capability plane's camera drive over the camera.plane scenario
+    /// (proposal v1.10.0): the burst, the read-through scope, the phased
+    /// rows' honest `unavailable`.
+    private func runCameraPlane() {
+        let session = GatewaySession(
+            entryModule: "scenario/camera-plane.js",
+            sourceProvider: { String(cString: dsh_spike_res_scenario_camera_plane_js(nil)) })
+        self.gateway = session
+        session.run { [weak self] outcome in
+            self?.show(outcome, phase: "camera.plane") { self?.gatewayVerdict = $0 }
+            self?.gateway = nil
+            print("spike: camera-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
         }
     }

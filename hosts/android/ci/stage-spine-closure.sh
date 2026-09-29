@@ -297,7 +297,7 @@ done
 # drives is staged above).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js \
+         composer-web-live.js device-plane.js camera-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
          upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
@@ -401,7 +401,7 @@ done
 # 2026-09-23 round-two chase hit).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js \
+         composer-web-live.js device-plane.js camera-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
          upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do

@@ -279,12 +279,13 @@ final class GatewaySession {
         try notes.write(to: dir.appendingPathComponent("notes.txt"))
     }
 
-    /// RuntimeDescriptor pre-eval: the full serving table available, zero
-    /// unavailable — the honest declaration (conformance §7, contract §1).
+    /// RuntimeDescriptor pre-eval: the full serving table available, the
+    /// capability plane's phased rows unavailable — the honest declaration
+    /// (conformance §7, contract §1).
     private static let descriptorJSON: String = {
         GatewayCore.jsonLine([
             "available": GatewayCore.primitives,
-            "unavailable": [],
+            "unavailable": GatewayCore.phasedRows,
         ]) ?? "{}"
     }()
 
