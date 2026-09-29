@@ -20,9 +20,10 @@
  *      (the five-rule model's narrowest-scope default, exercised with zero
  *      prompts and zero interaction).
  *
- * The gateway audit records (one per listen/connect/accept) live on the
- * host's stderr as structured JSON lines; test/e2e/run-socket-seam.sh greps
- * them beside this log the same way run-ios.sh drives gateway-audit.
+ * The gateway audit records (one per listen/connect/accept, denied attempts
+ * included) live on the host's stderr as structured JSON lines;
+ * test/e2e/run-socket-seam.sh greps them beside this log the same way
+ * run-ios.sh drives gateway-audit.
  */
 import 'upstream/shims/globals.js'; // MUST be first: the node:net / node:child_process faces register through the shim chain (globals → runtime-modules, THEN the npm-bridges microtask defines replace the stub rows) — the dynamic imports below resolve AFTER that chain has evaluated (a static import would instantiate before the registration runs, exactly the timing the suite leg's late awaits respect)
 import 'upstream/shims/npm-bridges.js';
@@ -63,19 +64,14 @@ const once = (emitter, event) => new Promise((resolve, reject) => {
 
 const drain = (socket) => new Promise((resolve) => {
   const chunks = [];
-  socket.on('data', (chunk) => chunks.push(chunk.toString()));
+  socket.on('data', (chunk) => chunks.push(chunk.toString('utf8')));
   socket.on('end', () => resolve(chunks.join('')));
   socket.on('close', () => resolve(chunks.join('')));
 });
 
-const run = async () => {
-  // The node faces ride the shim registration chain (see the first import);
-  // these dynamic imports are what keep that order honest at run time.
-  const { default: net } = await import('node:net');
-  const { spawn } = await import('node:child_process');
-  emit('socket.started', { scenario: SCENARIO });
-
-  // ---- leg 1: in-scenario server + client over REAL loopback TCP ----------
+/** Leg 1: an echo server and its client, both in this scenario, over REAL
+ * loopback TCP — the host picks the port, the resolved port is the truth. */
+const legEcho = async (net) => {
   const server = net.createServer((socket) => {
     emit('socket.server.connection', { from: `${socket.remoteAddress}:${socket.remotePort}` });
     socket.on('data', (chunk) => {
@@ -109,39 +105,46 @@ const run = async () => {
   emit('socket.client.closed', { halfClose: true });
   server.close();
   emit('socket.server.closed', {});
+};
 
-  // ---- leg 2: a spawned OS child dials the in-test server -----------------
-  const server2 = net.createServer((socket) => {
+/** Leg 2: the motivating shape — a spawned OS child (/bin/bash's /dev/tcp)
+ * dials the in-test server; the ack the child reads back proves bytes
+ * crossed a kernel socket between two OS processes. */
+const legSubprocess = async (net, spawn) => {
+  const server = net.createServer((socket) => {
     emit('socket.subprocess.connection', { from: `${socket.remoteAddress}:${socket.remotePort}` });
     socket.on('data', (chunk) => {
-      emit('socket.subprocess.data', { text: chunk.toString() });
+      emit('socket.subprocess.data', { text: chunk.toString('utf8') });
       socket.write('ack-from-server');
       socket.end();
     });
   });
-  const listen2P = once(server2, 'listening');
-  server2.listen(0, '127.0.0.1');
-  await listen2P;
-  const port2 = server2.address().port;
-  emit('socket.subprocess.listening', { port: port2 });
+  const listenP = once(server, 'listening');
+  server.listen(0, '127.0.0.1');
+  await listenP;
+  const port = server.address().port;
+  emit('socket.subprocess.listening', { port });
 
   const child = spawn('/bin/bash', [
     '-c',
-    `exec 3<>/dev/tcp/127.0.0.1/${port2} && printf 'hello-from-child' >&3 && head -c 15 <&3`,
+    `exec 3<>/dev/tcp/127.0.0.1/${port} && printf 'hello-from-child' >&3 && head -c 15 <&3`,
   ], { stdio: ['ignore', 'pipe', 'pipe'] });
   let childOut = '';
   let childErr = '';
-  child.stdout.on('data', (c) => { childOut += c.toString(); });
-  child.stderr.on('data', (c) => { childErr += c.toString(); });
-  const childExit = once(child, 'exit');
-  const exitCode = await childExit;
+  child.stdout.on('data', (c) => { childOut += c.toString('utf8'); });
+  child.stderr.on('data', (c) => { childErr += c.toString('utf8'); });
+  const exitCode = await once(child, 'exit');
   demand(exitCode === 0, `subprocess dial exited ${exitCode} (${childErr.slice(0, 120)})`);
   demand(childOut === 'ack-from-server', `subprocess read "${childOut.slice(0, 40)}"`);
   emit('socket.subprocess.roundtrip', { sent: 'hello-from-child', received: childOut, exitCode });
-  server2.close();
+  server.close();
   emit('socket.subprocess.closed', {});
+};
 
-  // ---- leg 3: out-of-scope grants refuse loud (no prompt, no interaction) --
+/** Leg 3: the five-rule model's narrowest-scope default, exercised — a
+ * `lan` listen and a non-loopback dial both reject `denied`, with zero
+ * prompts and zero interaction. */
+const legDenials = async () => {
   let denied = null;
   try {
     denied = await socketListen({ scope: 'lan' }).then(() => null, (e) => e);
@@ -161,7 +164,17 @@ const run = async () => {
   demand(denied2 && denied2.code === 'denied',
     `a non-loopback connect was not denied (${denied2 ? denied2.code : 'resolved'})`);
   emit('socket.connect.denied', { request: 'connect host=10.0.0.1', code: 'denied' });
+};
 
+const run = async () => {
+  // The node faces ride the shim registration chain (see the first import);
+  // these dynamic imports are what keep that order honest at run time.
+  const { default: net } = await import('node:net');
+  const { spawn } = await import('node:child_process');
+  emit('socket.started', { scenario: SCENARIO });
+  await legEcho(net);
+  await legSubprocess(net, spawn);
+  await legDenials();
   emit('socket.passed', { legs: 3 });
   finish(true, 'socket seam legs green');
 };

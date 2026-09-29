@@ -99,6 +99,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/shims/node-child-process-tables.js',
   'upstream/shims/node-child-process-pump.js',
   'upstream/shims/node-http-loopback-net.js',
+  'upstream/shims/node-socket-tcp.js',
   'upstream/shims/npm-bridges-c2.js',
   'upstream/shims/source-bootstrap-tsx-stage.js',
   'scenario/upstream-suite-leg.js',

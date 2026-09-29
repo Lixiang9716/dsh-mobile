@@ -262,6 +262,7 @@ export const socketConnect = async (request) =>
 /** `{ written, buffered }` — `buffered` > 0 is the host parking the refused
  * tail in the slot's backpressure buffer (it drains on the pump ticks). */
 export const socketWrite = async (connectionId, bytes) => {
+  log.debug('socketWrite', { connectionId, bytes: bytes.byteLength });
   const res = await call('socketWrite', {
     connectionId,
     bytesB64: bytesToBase64(bytes),

@@ -1,7 +1,7 @@
-{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","scope":"loopback","port":60157,"outcome":"granted"}
-{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","peer":"127.0.0.1:60157","outcome":"granted"}
-{"audit":"socket.accept","direction":"inbound","grant":"socket.listen.loopback","serverId":"srv:1","connectionId":"conn:3","peer":"127.0.0.1:60158","outcome":"granted"}
-{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","scope":"loopback","port":60159,"outcome":"granted"}
-{"audit":"socket.accept","direction":"inbound","grant":"socket.listen.loopback","serverId":"srv:4","connectionId":"conn:5","peer":"127.0.0.1:60160","outcome":"granted"}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","scope":"loopback","port":63199,"outcome":"granted"}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","peer":"127.0.0.1:63199","outcome":"granted"}
+{"audit":"socket.accept","direction":"inbound","grant":"socket.listen.loopback","serverId":"srv:1","connectionId":"conn:3","peer":"127.0.0.1:63200","outcome":"granted"}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","scope":"loopback","port":63201,"outcome":"granted"}
+{"audit":"socket.accept","direction":"inbound","grant":"socket.listen.loopback","serverId":"srv:4","connectionId":"conn:5","peer":"127.0.0.1:63202","outcome":"granted"}
 {"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","outcome":"denied","reason":"scope-not-loopback"}
 {"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}

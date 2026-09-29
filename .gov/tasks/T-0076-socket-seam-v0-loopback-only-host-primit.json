@@ -13,7 +13,7 @@
     "[x] host C: runtime/spike/host/dsh_socket.c/.h (loopback-only, host picks free port, 4ms-pollable non-blocking), intrinsics + main_cli gateway serve (socketListen/socketConnect, grant+audit per listen/connect/accept), descriptor, run-loop alive wiring, teardown",
     "[x] JS face: gateway.js socketListen/socketConnect, real-TCP shim over the pump (in-process dispatch preserved), node:net face upgrade (Socket/createServer served, registry-miss dials real TCP), family-flag grant narrow-default loopback, zero prompts",
     "[x] e2e: socket-seam scenario on the CLI (server+client in one scenario; subprocess\u00d7socket leg \u2014 spawned OS child dials the in-test server)",
-    "suite regression: the socket-class excluded specs (ssh\u00d78, lsp-stdio, subprocess-ssh\u00d75 per the current baseline sweep) re-run per-spec; every entry has failed:0 or a named reason in the PR; loopback zero-regression subset green",
+    "[x] suite regression: the socket-class excluded specs (ssh\u00d78, lsp-stdio, subprocess-ssh\u00d75 per the current baseline sweep) re-run per-spec; every entry has failed:0 or a named reason in the PR; loopback zero-regression subset green",
     "gov run full DAG green with receipt; push; gh pr create with acceptance evidence"
   ],
   "status": "open",

@@ -49,7 +49,7 @@ rm -f "$LOG"
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/socket-seam-local.json \
-    --log "$LOG" --out "$ART/verdict-socket-seam.json"
+    --log "$LOG" --out "$ART/verdict-socket-seam-local.json"
 
 echo "== audit gate: one structured record per listen/connect/accept =="
 # 3 listens (2 granted servers + 1 denied lan attempt) + 2 connects (1 granted
