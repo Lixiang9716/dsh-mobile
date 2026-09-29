@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "Reproduce both cross-kill directions (staging-check window breaks bundle-files green leg; bundle-files window breaks staging-check green leg) and read the govrail harness concurrency facts",
-    "Add the shared live-tree lock to case-staging-check.sh and case-bundle-files.sh; prove mutual exclusion (held-lock wait + parallel stress)",
-    "Fix the Agent Note sandbox-clean facts + describe the in-gate mutex; gov note check",
-    "Re-seal plane, self-test green, close card with receipt, push"
+    "[x] Reproduce both cross-kill directions (staging-check window breaks bundle-files green leg; bundle-files window breaks staging-check green leg) and read the govrail harness concurrency facts",
+    "[x] Add the shared live-tree lock to case-staging-check.sh and case-bundle-files.sh; prove mutual exclusion (held-lock wait + parallel stress)",
+    "[x] Fix the Agent Note sandbox-clean facts + describe the in-gate mutex; gov note check",
+    "[x] Re-seal plane, self-test green, close card with receipt, push"
   ],
   "status": "open",
   "receipt": null,
