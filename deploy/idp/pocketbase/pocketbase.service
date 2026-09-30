@@ -8,6 +8,11 @@
 # land Logto instead (or a dedicated lightweight IdP). See README
 # "Selection rationale".
 #
+# PATHS ARE TEMPLATED: @REMOTE_DIR@ is substituted by deploy.sh at
+# install time (sed) with the actual --remote-dir value. Installing this
+# unit by hand? Substitute the placeholder yourself, e.g.
+#   sed "s|@REMOTE_DIR@|/opt/dsh-idp/pocketbase|g" pocketbase.service
+#
 # Secrets: none here. The superuser is created at FIRST BOOT through the
 # web installer (https://<host>/_/) — the password is typed once, in the
 # browser, and never enters git, shell history, or this unit file.
@@ -21,15 +26,15 @@ Wants=network-online.target
 Type=simple
 User=pocketbase
 Group=pocketbase
-WorkingDirectory=/opt/pocketbase
-ExecStart=/opt/pocketbase/pocketbase serve --http=127.0.0.1:8090
+WorkingDirectory=@REMOTE_DIR@
+ExecStart=@REMOTE_DIR@/pocketbase serve --http=127.0.0.1:8090
 Restart=on-failure
 RestartSec=5
 LimitNOFILE=4096
 PrivateTmp=true
 NoNewPrivileges=true
 ProtectSystem=strict
-ReadWritePaths=/opt/pocketbase
+ReadWritePaths=@REMOTE_DIR@
 
 [Install]
 WantedBy=multi-user.target
