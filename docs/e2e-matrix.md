@@ -272,13 +272,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg, on-device MockLlmRoute) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
-| `hosts/android/artifacts/ble-mock` | Android | ble.plane.audit 8/8, ble.plane 16/16 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/ble-skip` | Android | ble.plane.audit 4/4, ble.plane 8/8 (the radio-absent skip face) | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/camera-plane` | Android | camera.plane.audit 5/6 (repeat-aware), camera.plane 8/8 (the REAL virtual-camera burst) | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/device-plane` | Android | device.plane.audit 13/22 (repeat-aware), device.plane 15/15 | ✓ | ✓ | ✓ | 4 |
-| `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane.audit 13/22, device.plane 15/15 (the simulator matrix's drive leg) | ✓ | ✓ | ✓ | 4 |
-| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8 (the deterministic mock radio's two-device GATT db — 180f/2a19 read+notify, fe00/fe01 write — riding the same gateway enforcement, consent layers, and audit as a real radio) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4 (the honest no-radio posture: the emulator's virtual controller with ungranted runtime permissions) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8, camera.plane.audit 5/6 (drift — the register's eighth row: the audit verdict records pass=true with expected=5 logged=6, inherited red) | ✓ | ✓ | ✓ | 0 |

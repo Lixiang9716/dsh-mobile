@@ -11,7 +11,7 @@
   "checklist": [
     "[x] Rebase onto origin/main, conflicts resolved taking both sides",
     "[x] Totals/currency/README counts reconciled to the new checker inventory; shim-exposure-probe row added both languages; cell verifier 0 mismatches",
-    "Push, dispatch, gates green on final head sha, mergeable"
+    "[x] Push, dispatch, gates green on final head sha, mergeable"
   ],
   "status": "open",
   "receipt": null,
