@@ -10,7 +10,7 @@
  */
 import { afterAll, describe, expect, it } from 'vitest';
 import { createServer } from 'node:http';
-import { rpc, isRemoteError, RemoteError } from '../web/js/api.js';
+import { rpc, isRemoteError, RemoteError } from '../../presentation/web-client-next/web/js/api.js';
 
 const servers = [];
 const listen = (handler) => new Promise((resolve) => {

@@ -86,7 +86,11 @@ const recordInterruptedCalls = (state, blocks, turn, step) => {
     if (block?.type !== 'tool-call' || state.byCall.has(block.id)) continue;
     const item = add(state, {
       kind: 'tool', callId: block.id, name: block.name,
-      args: block.arguments, status: 'fail', output: '已中断', turn, step,
+      // args normalizes like every other path — a missing arguments field
+      // must not leak undefined into the fold (the renderer's
+      // `item.args !== ''` branch would render a ghost args row)
+      args: typeof block.arguments === 'string' ? block.arguments : '',
+      status: 'fail', output: '已中断', turn, step,
     });
     state.byCall.set(block.id, item);
   }

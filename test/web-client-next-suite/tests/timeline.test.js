@@ -8,7 +8,7 @@
  * snapshot (seed) rebuilds, and records with missing fields.
  */
 import { describe, expect, it } from 'vitest';
-import { createFold, createTimeline } from '../web/js/timeline.js';
+import { createFold, createTimeline } from '../../presentation/web-client-next/web/js/timeline.js';
 
 const event = (type, data, seq = 1) => ({ type: 'event', event: { type, seq, time: 0, data } });
 const stream = (frame) => frame;

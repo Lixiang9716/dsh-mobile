@@ -36,19 +36,30 @@ there ships to the browser.
   honest about what exists; the two self-executing runners are excluded —
   their checks ARE the driver-loop suite now. Before → after (same config,
   all files lines): 50.87% → 91.15% (driver group 26.64% → 87.5%).
-- **web-client-next**: a test package (`npm test`) with three suites:
-  `tests/wire.test.js` (the api.js envelope over a real local HTTP server;
-  the one browser-only byte — the relative `/api` URL — is shimmed with a
-  base prefix, everything else byte-for-byte), `tests/mux.test.js` (the
-  page mux over real sockets; only `location` is provided; Node 24's
-  native WebSocket is the same WHATWG surface the browser ships), and
-  `tests/timeline.test.js` (the journal fold: every event family, the
-  streaming tail accumulate→promote, snapshot/seed rebuilds, the two-tier
-  notifications). The coverage config includes the browser-only files at
-  their honest numbers (main.js / render-*.js / composer.js / markdown.js
-  stay 0 — no jsdom theater; the DOM faces are reported as out of scope,
-  not faked). Node-face lines after: api.js 100%, mux.js 97.46%,
-  timeline.js 95.5%.
+- **web-client-next**: a test suite at `test/web-client-next-suite/` (`npm
+  test`) with three files: `tests/wire.test.js` (the api.js envelope over a
+  real local HTTP server; the one browser-only byte — the relative `/api`
+  URL — is shimmed with a base prefix, everything else byte-for-byte),
+  `tests/mux.test.js` (the page mux over real sockets; only `location` is
+  provided; Node 24's native WebSocket is the same WHATWG surface the
+  browser ships), and `tests/timeline.test.js` (the journal fold: every
+  event family, the streaming tail accumulate→promote, snapshot/seed
+  rebuilds, the two-tier notifications). The coverage config includes the
+  browser-only files at their honest numbers (main.js / render-*.js /
+  composer.js / markdown.js stay 0 — no jsdom theater; the DOM faces are
+  reported as out of scope, not faked). Node-face lines after: api.js
+  100%, mux.js 97.46%, timeline.js 95.5%.
+  **The suite deliberately does NOT live in `presentation/web-client-next/`**:
+  that directory is WHOLE-TREE staged into the harmony HAP rawfile
+  (`vendor-official.sh` `webclient_files` find()s every file), and
+  check-bundle-files reds on anything the HAP cannot carry — an in-place
+  `npm install` there sweeps node_modules (and vitest's cache/coverage
+  artifacts) into the app's payload (observed live: hidden-file violations
+  for `webclient/dsh-web-client-next/node_modules/.vite/...`). The suite's
+  vitest config pins the product directory as root (coverage can only
+  include files under root) while pinning BOTH artifact sinks — the vite
+  cache and the coverage report — back into the suite's own directory, so
+  a test run leaves the product tree byte-identical.
 - **Falsify-then-restore discipline** held for every new suite: the mock's
   cancelled turn/end dropped → cancel leg red; api.js's rpcId guard
   removed → wire-edge leg red; the fold's cancelled-tail drop removed →
