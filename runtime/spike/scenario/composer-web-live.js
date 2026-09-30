@@ -28,53 +28,31 @@ import { createLogger } from 'logger.js';
 import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
+import { resolveLlmRoute as sharedResolveLlmRoute } from 'upstream/llm-route.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-b4-ondevice-0001'; // the configured agent; the page creates its own session
 const EXPECTED_TEXT = 'Hello from upstream'; // the scripted endpoint's successText
 
-/** The llm route for this boot, from the host's runtime.config. TWO shapes,
- * and which one is live decides whether the turn text is asserted:
+/** The llm route for this boot — upstream/llm-route.js's shared resolver,
+ * ONE home for staged → byok → mock (the BYOK onboarding round reads the
+ * keychain through the gateway here). The shape contract is unchanged:
  *
  *   llmBaseUrl present → a REAL user-supplied OpenAI-compatible endpoint (the
  *     user-facing serving boot). The turn is a genuine model call, so its text
  *     is nondeterministic and NOT asserted — the settled event carries whatever
  *     the model said (the llm.live-stream leg's honesty: a served turn is reported, not
  *     predicted).
+ *   byok keychain credential present (and nothing staged) → the user's own
+ *     endpoint, saved through the onboarding panel — same nondeterminism rule.
  *   otherwise → the carrier's scripted loopback endpoint (the E2E determinism
  *     boundary composer.live-write pins). The loopback demand is what keeps a drive
  *     from silently reaching the network, so it stays fail-loud.
  *
  * The key never reaches a record: it rides apiKey only, and the transport
  * labels name the endpoint's HOST, never the credential. */
-const resolveLlmRoute = (cfg) => {
-  if (typeof cfg.llmBaseUrl === 'string' && cfg.llmBaseUrl.length > 0) {
-    demand(typeof cfg.llmApiKey === 'string' && cfg.llmApiKey.length > 0,
-      'runtime.config llmBaseUrl given without llmApiKey');
-    demand(typeof cfg.llmModel === 'string' && cfg.llmModel.length > 0,
-      'runtime.config llmBaseUrl given without llmModel');
-    const provider = typeof cfg.llmProvider === 'string' && cfg.llmProvider.length > 0
-      ? cfg.llmProvider : 'openai-compatible';
-    let host = 'the configured endpoint';
-    try { host = new URL(cfg.llmBaseUrl).host; } catch { /* keep the generic label */ }
-    return {
-      baseURL: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, provider,
-      model: cfg.llmModel, scripted: false, userEndpoint: true,
-      adapterName: `user-supplied OpenAI-compatible endpoint (${provider})`,
-      transportLabel: `gateway httpFetch → ${host} (user-supplied endpoint)`,
-    };
-  }
-  demand(typeof cfg.mockLlmUrl === 'string' && cfg.mockLlmUrl.startsWith('http://127.0.0.1:'),
-    `runtime.config mock endpoint missing: ${JSON.stringify(cfg.mockLlmUrl)}`);
-  return {
-    baseURL: cfg.mockLlmUrl, apiKey: cfg.apiKey, provider: 'mock',
-    model: 'mock-1', scripted: true, userEndpoint: false,
-    adapterName: 'scripted loopback chat-completions (carrier mock-llm endpoint)',
-    transportLabel: 'gateway httpFetch → carrier scripted chat-completions '
-      + '(E2E determinism boundary, mirrors the CLI mock server)',
-  };
-};
+const resolveLlmRoute = (cfg) => sharedResolveLlmRoute(cfg);
 
 const log = createLogger('b4.web');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
@@ -253,6 +231,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       provider: route.provider,
       model: route.model,
       baseURL: route.baseURL,
+      routeKind: route.kind,
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
     },
@@ -485,7 +464,7 @@ const probeWasmRun = async () => {
 const main = async () => {
   log.debug('main begin', {});
   const cfg = await take('runtime.config');
-  const route = resolveLlmRoute(cfg);
+  const route = await resolveLlmRoute(cfg);
 
   const ctx = await bootPhase(cfg, route);
   await probeFsPrimitives();
