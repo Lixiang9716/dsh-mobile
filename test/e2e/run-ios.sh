@@ -347,6 +347,7 @@ if [ "$NO_REBOOT" -eq 0 ]; then
   xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
 fi
 xcrun simctl bootstatus "$UDID" -b
+REBOOT_AT="$(date +%s)"   # the file-provider index clock's zero point (below)
 sleep 5   # let springboard settle before the provider indexes the container
 if [ "$SKIP_INSTALL" -eq 0 ]; then
   xcrun simctl install "$UDID" "$APP"
@@ -380,18 +381,20 @@ if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
 else
   log "notes.txt already staged — untouched (index-settle recipe)"
 fi
-# A FRESHLY-created staged target is invisible to the picker's search until
-# the file-provider's re-index pass surfaces it — measured twice: a 04:52
-# staging surfaced at 04:55 (2026-09-21), and the release regression's final
-# run starved exactly here (staged 19:37, searched 19:38, 未找到相关结果;
-# 2026-09-30). One more invalidator lives APP-side: the session boot rewrote
-# the target at every launch (GatewaySession.stageE2ETarget, now stage-once
-# too), so the settle window matters whenever a fresh copy had to be made.
-# This paces that physics (rules.md rule 8: a sleep may pace real wall-clock
-# physics, and the condition is asserted after the wait); when the target
-# was already staged and settled the cost is zero.
-if [ "$STAGED_FRESH" -eq 1 ]; then
-  log "fresh staging — pacing the file-provider index settle (~180s, the measured surfacing window)"
+# A staged target is invisible to the picker's search until the file-provider's
+# re-index pass surfaces it — measured ~3 minutes (a 04:52 staging surfaced at
+# 04:55, 2026-09-21; the release regression's final run starved exactly inside
+# that window, 2026-09-30). TWO shapes need the pacing here, and BOTH were
+# measured red: a FRESHLY-created target (mtime now), and a target that
+# predates THIS RUN's reboot — the reboot restarts the indexing from scratch,
+# so a pre-reboot file's visibility is post-boot fresh no matter how long it
+# has existed (matrix attempt 6: staged 20:34, reboot ~20:36, searched ~20:39,
+# starved). The wait is rule-8 physics pacing with the file's existence
+# asserted after it; a target staged AFTER the reboot and already settled
+# costs nothing.
+STAGED_MTIME="$(stat -f %m "$CONTAINER/Documents/gateway-e2e/notes.txt" 2>/dev/null || echo 0)"
+if [ "$STAGED_FRESH" -eq 1 ] || [ "$STAGED_MTIME" -lt "$REBOOT_AT" ]; then
+  log "picker target is fresh-created or predates this run's reboot — pacing the file-provider index settle (~180s, the measured surfacing window)"
   sleep 180
   [ -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ] \
     || { log "FAIL: the staged target vanished during the settle window"; exit 1; }
