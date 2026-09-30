@@ -172,8 +172,11 @@ const sseBody = (frames) => new ReadableStream({
   },
 });
 
-const probeOpenAiClient = async () => {
-  log.debug('openai-client leg begin', {});
+/** The streaming leg: a stubbed fetch answers 200 with a streamed body of
+ * three data frames + [DONE], one frame split mid-JSON across the stream
+ * boundary; the shim must reassemble them into parsed payloads and stop at
+ * [DONE]. Returns the verdict fields. */
+const probeOpenAiStream = async () => {
   const frames = [
     'data: {"id":"1","choices":[{"delta":{"content":"he"}}]}\n\n',
     'data: {"id":"2","choices":[{"delta":{"content":"',
@@ -208,7 +211,11 @@ const probeOpenAiClient = async () => {
     && chunks[0]?.choices?.[0]?.delta?.content === 'he'
     && chunks[1]?.choices?.[0]?.delta?.content === 'llo'
     && response.status === 200;
-  // The non-2xx leg: the SDK's error-field shapes (status + parsed body).
+  return { streamed, chunks: chunks.length, status: response.status, calls };
+};
+
+/** The non-2xx leg: the SDK's error-field shapes (status + parsed body). */
+const probeOpenAiError = async () => {
   const failing = new OpenAI({
     apiKey: 'probe-key',
     fetch: async () => ({
@@ -227,14 +234,21 @@ const probeOpenAiClient = async () => {
   const errored = wireError?.status === 401
     && wireError?.error?.error?.message === 'bad key'
     && wireError?.message === 'bad key';
+  return { errored, status: wireError?.status ?? null };
+};
+
+const probeOpenAiClient = async () => {
+  log.debug('openai-client leg begin', {});
+  const stream = await probeOpenAiStream();
+  const error = await probeOpenAiError();
   emit('probe/openai-client', {
-    sseChunks: chunks.length,
-    midFrameSplitJoined: streamed,
-    withResponseStatus: response.status,
-    errorStatus: wireError?.status ?? null,
-    errorBodyCarried: errored,
+    sseChunks: stream.chunks,
+    midFrameSplitJoined: stream.streamed,
+    withResponseStatus: stream.status,
+    errorStatus: error.status,
+    errorBodyCarried: error.errored,
   });
-  return streamed && errored && calls === 1;
+  return stream.streamed && error.errored && stream.calls === 1;
 };
 
 const probeSlotRegistry = () => {
