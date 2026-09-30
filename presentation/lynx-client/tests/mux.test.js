@@ -164,22 +164,30 @@ describe('reconnect: generation-tracked', () => {
   });
 });
 
-describe('handshake failure: killed during CONNECTING', () => {
-  it('surfaces one honest close, never an onerror recursion', async () => {
-    const raw = createServer();
-    const kills = [];
-    raw.on('connection', (socket) => kills.push(socket));
+describe('handshake failure: the server refuses the upgrade', () => {
+  it('surfaces the honest close, never an onerror recursion', async () => {
+    // undici re-enters onerror synchronously when close() runs during
+    // CONNECTING — the exact stack-overflow the runner caught (RangeError
+    // from mux.js onerror). A definite handshake failure: the server has
+    // NO upgrade listener, so Node answers the upgrade request from the
+    // plain handler with 500, and undici fails the WebSocket (error +
+    // close both fire while still CONNECTING). The mux's own reconnect
+    // then loops connecting→closed on the backoff — the recursion guard
+    // is what keeps each cycle bounded and the process alive.
+    const raw = createServer((req, res) => {
+      res.writeHead(500, { 'Content-Length': 0 });
+      res.end();
+    });
     await new Promise((r) => raw.listen(0, '127.0.0.1', r));
     const url = `ws://127.0.0.1:${raw.address().port}/api/remote.mux`;
     const mux = track(new Mux(url));
     const statuses = [];
     mux.onStatus((s) => statuses.push(s));
     mux.connect();
-    await waitFor('socket destroyed under the handshake', () => kills.length >= 1);
-    for (const socket of kills) socket.destroy();
-    await waitFor('closed status surfaced', () => statuses.includes('closed'), 3000);
+    await waitFor('first closed surfaced', () => statuses.includes('closed'), 4000);
     mux.close(); // user close on top: stays closed, throws nothing
     expect(statuses[0]).toBe('connecting');
+    expect(statuses).toContain('closed');
     await new Promise((r) => raw.close(r));
   });
 });
