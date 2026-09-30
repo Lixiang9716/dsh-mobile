@@ -76,8 +76,13 @@ on:
   # second build of the same tag. The tag push is the one trigger.
 
 # `gh release upload` writes the asset onto the published release.
+# `id-token` + `attestations` let attest-build-provenance sign the package's
+# build-provenance attestation and persist it to the repository's attestation
+# store (public repo: free).
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 # Queued, never cancelled. Three hosts build one tag and each ends in
 # `gh release upload --clobber`; cancelling mid-upload would leave whichever
@@ -90,6 +95,13 @@ concurrency:
 jobs:
   android-package:
     runs-on: ubuntu-latest
+    # The go gate. A release is a human's decision, so every run of this job
+    # (tag push or dispatch — a dispatch can replace a release asset via the
+    # release_tag input) targets the `release` environment. The owner arms it
+    # by adding a required reviewer in the repository settings; until then the
+    # reference is inert — GitHub creates the environment with no protection
+    # rules, so nothing waits.
+    environment: release
     timeout-minutes: 60
     env:
       # Empty on a plain dispatch (the package stays on the run); the release
@@ -216,6 +228,18 @@ jobs:
           name: dsh-android
           path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
           if-no-files-found: error
+
+      - name: Attest the build provenance
+        # SLSA build provenance for the bytes this run attaches to the release:
+        # the subject is the actual built file (the digest is computed from it),
+        # named after the release asset it ships as, so a download of
+        # dsh-android.apk verifies with `gh attestation verify`. Skipped on a
+        # plain dispatch, whose package never reaches a release.
+        if: env.RELEASE_TAG != ''
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
+          subject-name: dsh-android.apk
 
       - name: Attach dsh-android to the release
         if: env.RELEASE_TAG != ''

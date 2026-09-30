@@ -76,8 +76,13 @@ on:
   # second build of the same tag. The tag push is the one trigger.
 
 # `gh release upload` writes the asset onto the published release.
+# `id-token` + `attestations` let attest-build-provenance sign the package's
+# build-provenance attestation and persist it to the repository's attestation
+# store (public repo: free).
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 # Queued, never cancelled. Three hosts build one tag and each ends in
 # `gh release upload --clobber`; cancelling mid-upload would leave whichever
@@ -90,6 +95,13 @@ concurrency:
 jobs:
   harmony-package:
     runs-on: ubuntu-latest
+    # The go gate. A release is a human's decision, so every run of this job
+    # (tag push or dispatch — a dispatch can replace a release asset via the
+    # release_tag input) targets the `release` environment. The owner arms it
+    # by adding a required reviewer in the repository settings; until then the
+    # reference is inert — GitHub creates the environment with no protection
+    # rules, so nothing waits.
+    environment: release
     timeout-minutes: 60
     env:
       DEVECO_SDK_HOME: ${{ github.workspace }}/clt/command-line-tools/sdk
@@ -195,6 +207,19 @@ jobs:
           name: dsh-harmony
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
           if-no-files-found: error
+
+      - name: Attest the build provenance
+        # SLSA build provenance for the bytes this run attaches to the release:
+        # the subject is the actual built HAP (the digest is computed from it),
+        # named after the release asset it ships as, so a download of
+        # dsh-harmony.hap verifies with `gh attestation verify`. Runs BEFORE the
+        # harness build below, which overwrites this same output path. Skipped
+        # on a plain dispatch, whose package never reaches a release.
+        if: env.RELEASE_TAG != ''
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
+          subject-name: dsh-harmony.hap
 
       - name: Attach dsh-harmony to the release
         # Runs BEFORE the harness build below, which overwrites this same
