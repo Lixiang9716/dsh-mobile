@@ -23,7 +23,7 @@ set -eu
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$ROOT"
 
-PRODUCT_FILES=12
+PRODUCT_FILES=14
 run_suite() {
     suite_dir="$1"
     name="$2"
