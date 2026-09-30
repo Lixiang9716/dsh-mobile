@@ -1,0 +1,14 @@
+{
+  "name": "dsh-web-client-next",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The next web client \u2014 journal fold + mux wire over the session-projection@0 contract. Tests cover the Node-runnable faces (api.js envelope, mux.js state machine, timeline.js fold); the DOM faces (render-*.js, composer.js, markdown.js rendering, main.js) are browser-only and honestly out of scope.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.8",
+    "vitest": "^4.1.8"
+  }
+}
