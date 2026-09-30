@@ -69,12 +69,15 @@ const awaitEnd = async (streamId, already) => {
   for (;;) {
     const left = deadline - Date.now();
     if (left <= 0) return null;
-    let fire;
-    const timeout = new Promise((r) => {
-      fire = setTimeout(() => r('timeout'), left);
-    });
-    const res = await Promise.race([it.next(), timeout]);
-    clearTimeout(fire);
+    // The losing timeout promise is orphaned on purpose: the host's
+    // built-in setTimeout surface has no clearTimeout pairing on this
+    // runtime build (the dsh-timeout shim's pairing loads with the
+    // upstream modules, not for a bare scenario), and an orphan that
+    // fires after the scenario completed is harmless.
+    const res = await Promise.race([
+      it.next(),
+      new Promise((r) => setTimeout(() => r('timeout'), left)),
+    ]);
     if (res === 'timeout' || res.done) return null;
     if (res.value.kind === 'end') return res.value;
   }
@@ -159,6 +162,6 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   demand(unknown !== null && unknown.stopped === false, 'micStop unknown id answered stopped');
   emit('mic.stop.unknown', { stopped: false });
 
-  emit('scenario.complete', { status: 'pass' });
-  globalThis.__dshComplete(true, 'ok');
+    emit('scenario.complete', { status: 'pass' });
+    globalThis.__dshComplete(true, 'ok');
 }

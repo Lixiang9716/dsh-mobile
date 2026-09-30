@@ -1,0 +1,15 @@
+{
+  "host": "android",
+  "udid": "emulator-5554",
+  "runner": "hosts/android/ci/run-mic-plane.sh",
+  "phase": "android.mic-plane",
+  "launch": "emulator, --ez dsh.micplane true (Debug, RECORD_AUDIO pre-granted)",
+  "tree": "origin/main f249a1c23583 (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "android-mic-plane", "verdict": "verdict-android-mic-plane.json", "pass": true },
+    { "manifest": "android-mic-plane-audit", "verdict": "verdict-android-mic-plane-audit.json", "pass": true }
+  ],
+  "screens": ["screens/01-final.png"],
+  "producedAt": "2026-09-30T00:09:30Z"
+}

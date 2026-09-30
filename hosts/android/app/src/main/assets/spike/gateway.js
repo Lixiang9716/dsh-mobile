@@ -344,14 +344,95 @@ export const bleSubscribe = async (connectionId, service, characteristic) =>
 
 export const bleUnsubscribe = async (connectionId, service, characteristic) =>
   await call('bleUnsubscribe', { connectionId, service, characteristic });
+// ---- the microphone face (the capability plane, v1.10.0 candidate) --------
+// The forkpty precedent: a dedicated control face over the event seam's
+// delivery rules. micStart resolves when the stream is ARMED (the
+// timerSchedule posture), `{ streamId } | null` — null is a value (user
+// refusal at the OS consent layer, or a host whose mic service is dead);
+// micStop is idempotent (`{ stopped: false }` for an unknown or
+// already-stopped id, the timerCancel shape) and carries the duration and
+// byte count. Samples ride the mic.frame CHANNEL over the bridge event
+// plumbing (D8: the host pushes events, the consumer iterates — no
+// polling, no blocking whole-result). Drop-oldest under pressure is the
+// HOST's rule: a consumer that cannot keep up sees honest gaps in `seq`,
+// never a growing queue — monotonicity is the only continuity the
+// consumer may assert.
+
+/** Arms the stream: registers the channel state the moment the host
+ * answers, so no frame or end event is lost to a late subscriber. */
+export const micStart = async (request = {}) => {
+  const res = await call('micStart', {
+    format: request.format,
+    sampleRate: request.sampleRate,
+    channels: request.channels,
+    frameMs: request.frameMs,
+    tag: request.tag,
+  });
+  if (res && res.streamId) {
+    micStreams.set(res.streamId, { frames: [], end: null, endSeen: false, wake: null });
+  }
+  return res;
+};
+
+export const micStop = async (streamId) => await call('micStop', { streamId });
+
+/** Live mic streams keyed by streamId: `{ frames: [], end, wake }` — the
+ * frames a consumer has not consumed yet, plus the stream's single end
+ * event (published exactly once, reason "stopped" | "revoked" |
+ * "interrupted"). Created the moment micStart resolves, so an end that
+ * races a late subscriber is still delivered. */
+const micStreams = new Map();
+
+/** Consume one bridge event for a known mic stream; false = not ours.
+ * Payload bytes ride base64 (the frozen bridge convention) and decode to
+ * Uint8Array here, so the consumer sees the proposal's shapes verbatim. */
+const micEvent = (ev) => {
+  if (ev.event !== 'mic.frame' && ev.event !== 'mic.end') return false;
+  const st = micStreams.get(ev.streamId);
+  if (!st) return false;
+  if (ev.event === 'mic.frame') {
+    st.frames.push({
+      streamId: ev.streamId, kind: 'frame', seq: ev.seq,
+      bytes: base64ToBytes(ev.bytesB64),
+    });
+  } else {
+    st.end = { streamId: ev.streamId, kind: 'end', reason: ev.reason ?? 'stopped' };
+  }
+  const pending = st.wake;
+  st.wake = null;
+  pending?.();
+  return true;
+};
+
+/** One stream's mic.frame channel as an AsyncIterable (the httpFetch body
+ * precedent): yields `{ streamId, kind: "frame", seq, bytes }` per chunk,
+ * then the single `{ streamId, kind: "end", reason }` event as the last
+ * value (delivered once; the iteration completes after it). */
+export const micFrames = (streamId) => {
+  const st = micStreams.get(streamId);
+  if (!st) throw new GatewayError('invalid', 'mic.frame', `unknown stream ${streamId}`);
+  const next = async () => {
+    while (st.frames.length === 0 && st.end === null) {
+      await new Promise((resolve) => (st.wake = resolve));
+    }
+    if (st.frames.length > 0) return { value: st.frames.shift(), done: false };
+    if (!st.endSeen) {
+      st.endSeen = true;
+      return { value: st.end, done: false };
+    }
+    return { value: undefined, done: true };
+  };
+  return { [Symbol.asyncIterator]: () => ({ next }) };
+};
 
 // ---- bridge event plumbing ------------------------------------------------
 
 const listeners = new Set();
 
 /** Subscribe to non-stream bridge events (app.state, notify.response,
- * host.info, ble.event, ...). httpFetch body traffic is consumed by the
- * shim itself. Returns the unsubscribe function. */
+ * host.info, ble.event, mic.frame, ...). httpFetch body traffic and
+ * mic.frame channel traffic are consumed by the shim itself. Returns the
+ * unsubscribe function. */
 export const onEvent = (fn) => {
   listeners.add(fn);
   return () => {
@@ -369,5 +450,5 @@ globalThis.__dshGatewayOnEvent = (eventJson) => {
     ev.bytes = base64ToBytes(ev.bytesB64);
     delete ev.bytesB64;
   }
-  if (!streamEvent(ev)) listeners.forEach((fn) => fn(ev));
+  if (!streamEvent(ev) && !micEvent(ev)) listeners.forEach((fn) => fn(ev));
 };
