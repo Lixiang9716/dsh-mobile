@@ -128,6 +128,13 @@ tools/test/run-simulator-matrix.sh --platform android --skip-release
 场景必须经能力协商回答 `unavailable`，绝不假设硬件在场）。矩阵**有意**
 不接入门禁 DAG——跑它是发布仪式，接门是后续决定。
 
+## Node 侧可测面的行覆盖
+
+`tools/test/run-coverage.sh` 度量我们自研代码中 Node 可测面的真实行覆盖
+（vitest + v8 provider，逐面 include/exclude、边界具名），汇总成一张聚合
+表；`--check` 强制 `coverage-floor` 门盯着的 warn 档地板。完整契约——实测
+基线、诚实的不计入清单、如何新增面：[docs/test-coverage.zh.md](docs/test-coverage.zh.md)。
+
 ## CI 映射
 
 门面的各平台步骤就是对应工作流的逐字命令——映射与各腿运行处：
