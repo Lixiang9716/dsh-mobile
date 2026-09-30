@@ -2,6 +2,7 @@
   "include": [
     "docs/**/*.md",
     "contract/**/*.md",
+    "deploy/**/*.md",
     "README.md"
   ],
   "counterparts": [

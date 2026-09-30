@@ -1,7 +1,7 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "a0b3015c7fb08fc667ec56ac296f103ed0f696f13030c2a00e5eb20bcb3cae6b"
+      "sha256": "e14c7f053ddff9776fdf3d9d7b343f0c12431eeaa7c8b2649ec8d1e569634e4f"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
@@ -41,9 +41,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T15:14:24+00:00",
+    "ts": "2026-09-30T20:23:27+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "rebase onto main (89277ed4), commit bcb51165 replay: presentation-tests gate leaves the sealed DAG (branch's own revert \u2014 suites run as a CI workflow step); coverage-floor (main #274) stays \u2014 seal recomputed over the merged tree"
+    "reason": "Owner instruction (2026-10-01, user-management service deployment): the IdP deploy README must be a bilingual pair that passes the pairing gate; precedent .agents/notes/implemented/process/2026-09-30-the-pairing-gate-covers-the-contract-dir.md"
   }
 }

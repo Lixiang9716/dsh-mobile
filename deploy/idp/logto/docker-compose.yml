@@ -1,0 +1,53 @@
+# Logto — the marketplace-v2 publisher IdP (standby package, config-as-data).
+#
+# Named evolution in contract/proposals/2026-10-01-plugin-marketplace.md
+# ("v2 — identities and review: publisher accounts via an OIDC IdP,
+# Logto-class, TS, self-hostable"). This file prepares the run; it has
+# been executed against no server yet — see deploy/idp/README.md
+# "Deployment status".
+#
+# All placeholders come from .env, which is created ON THE DEPLOYMENT
+# HOST ONLY (see logto.env.example). No secret value ever lives in this
+# repository.
+#
+# Both Logto ports bind to loopback on purpose: HTTPS terminates at a
+# reverse proxy (caddy recommended — see README "HTTPS"). Never publish
+# 3001/3002 directly.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?generate on the host, see logto.env.example}
+      POSTGRES_DB: ${POSTGRES_DB:-logto}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB:-logto}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  logto:
+    image: svhd/logto:latest
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    # Official OSS boot: seed the schema, deploy alterations, start core+admin.
+    entrypoint:
+      - sh
+      - -c
+      - npm run cli db seed -- --swe && npm run cli db alteration deploy latest && npm start
+    ports:
+      - "127.0.0.1:3001:3001" # core / OIDC issuer
+      - "127.0.0.1:3002:3002" # admin console
+    environment:
+      TRUST_PROXY_HEADER: 1 # terminate TLS at the reverse proxy
+      DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-logto}
+      ENDPOINT: ${ENDPOINT:?set your issuer URL, e.g. https://idp.example.com}
+      ADMIN_ENDPOINT: ${ADMIN_ENDPOINT:?set your admin URL, e.g. https://idp-admin.example.com}
+
+volumes:
+  postgres-data:
