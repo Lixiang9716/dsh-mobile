@@ -1004,7 +1004,9 @@ static void smoke_ish_run(smoke_backend *b, int call_id, const char *args) {
 /* ---- the keychain primitives (contract v1.0.0 §4, rows 8-9) --------------
  * The dev host's honest implementation: one file per ref under
  * <tmpdir>/keychain/, bytes base64 (the same encoding the bridge speaks),
- * created mode 0600 under a 0700 directory. `keychainSet(ref, null)` is the
+ * the file created mode 0600 and the store directory mode 0700 at creation
+ * (the file lives one level deep, so smoke_mkdirs' 0755 pass never applies
+ * to either). `keychainSet(ref, null)` is the
  * documented delete; an unset ref reads back as JSON null. */
 
 #define KEYCHAIN_REF_MAX 128
@@ -1083,6 +1085,15 @@ static void smoke_keychain_set(smoke_backend *b, int call_id,
         free(b64);
         return smoke_reject(b, call_id, "keychainSet", "invalid",
                             "secret exceeds the dev-host cap");
+    }
+    /* The store's directory is tightened to 0700 FIRST — smoke_mkdirs below
+     * builds parents at 0755 and its mkdir on this existing dir is an
+     * ignored EEXIST, so without this the comment's promise would be 0755
+     * (review finding, PR #280). */
+    {
+        char dir[1024];
+        snprintf(dir, sizeof(dir), "%s/keychain", b->tmpdir);
+        mkdir(dir, 0700); /* EEXIST fine — the mode applies at creation only */
     }
     smoke_mkdirs(path);
     int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
