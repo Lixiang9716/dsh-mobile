@@ -4,11 +4,11 @@
   "type": "module",
   "description": "The upstream DSH test suite (same tag as the vendored closure, dsh-v0.1.6-alpha.2) executed against OUR vendored packages — the full-suite compatibility proof. Imports resolve through runtime/spike/vendor/node_modules (ci/parity-node-modules.sh); the runner is test/upstream-suite/run.sh.",
   "devDependencies": {
-    "vitest": "^4.1.8"
+    "vitest": "^5.0.2"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "^1.5.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.30.1",
     "acorn": "^8.18.0",
     "chokidar": "^5.0.0",
     "commander": "^15.0.0",
@@ -21,8 +21,8 @@
     "picomatch": "^4.0.7",
     "tsx": "4.23.15",
     "turndown": "^7.2.4",
-    "undici": "^8.11.0",
-    "ws": "^8.21.3",
+    "undici": "^8.11.2",
+    "ws": "^8.22.0",
     "yaml": "^2.9.1"
   }
 }
