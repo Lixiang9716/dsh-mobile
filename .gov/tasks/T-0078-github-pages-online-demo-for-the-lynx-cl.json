@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "workflow: .github/workflows/pages.yml \u2014 workflow_dispatch + main-push path-filtered, node setup, pinned npm ci (npmmirror fallback), build:web, static index + pages artifact + deploy-pages (pages:write + id-token:write)",
-    "demo page: static index.html wrapping the bundle's web render container (lynx-view over dist-web/main.web.bundle), DSH landing + dark aurora tokens reused, zero new deps",
-    "local acceptance: npm ci + npm run build:web real output + headless page verification (CDP screenshot per #248 precedent, else DOM assertions, honestly labeled)",
-    "landing: gov run full DAG green with receipt, push, PR opened (first-run failure expected until owner flips Settings\u2192Pages, stated in PR body)"
+    "[x] workflow: .github/workflows/pages.yml \u2014 workflow_dispatch + main-push path-filtered, node setup, pinned npm ci (npmmirror fallback), build:web, static index + pages artifact + deploy-pages (pages:write + id-token:write)",
+    "[x] demo page: static index.html wrapping the bundle's web render container (lynx-view over dist-web/main.web.bundle), DSH landing + dark aurora tokens reused, zero new deps",
+    "[x] local acceptance: npm ci + npm run build:web real output + headless page verification (CDP screenshot per #248 precedent, else DOM assertions, honestly labeled)",
+    "[x] landing: gov run full DAG green with receipt, push, PR opened (first-run failure expected until owner flips Settings\u2192Pages, stated in PR body)"
   ],
   "status": "open",
   "receipt": null,
