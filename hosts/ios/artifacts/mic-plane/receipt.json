@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "mic.plane",
   "launchConfiguration": "ios mic-plane drive (Debug, -dsh-mode mic-plane)",
-  "tree": "origin/main cf4d159990cf (dirty working tree at receipt time)",
+  "tree": "origin/main 4587da6e45b1 (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "mic.plane",
@@ -23,6 +23,6 @@
   "screens": [
     "screens/01-final.png"
   ],
-  "timestamp": "2026-09-30T08:12:36+08:00",
+  "timestamp": "2026-09-30T09:04:46+08:00",
   "exitCode": 0
 }

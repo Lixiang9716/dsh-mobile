@@ -1,4 +1,4 @@
-dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","detail":{"sampleRate":16000,"format":"pcm-s16le","tag":"mic.plane","frameMs":100},"verdict":"granted","ts":"2026-09-30T00:12:33Z","primitive":"micStart"}
-dsh.gateway.audit: {"detail":{"bytes":10912,"durationMs":959},"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"outcome":"ok","caller":"dsh.spike.scenario","primitive":"micStart","verdict":"granted","ts":"2026-09-30T01:04:36Z","detail":{"frameMs":100,"format":"pcm-s16le","sampleRate":16000,"tag":"mic.plane"}}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","detail":{"durationMs":1557,"bytes":10912},"verdict":"granted","ts":"2026-09-30T01:04:36Z","primitive":"micStop"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-30T01:04:36Z","primitive":"micStop"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","verdict":"granted","ts":"2026-09-30T01:04:36Z","primitive":"micStop"}

@@ -1,35 +1,38 @@
 --------- beginning of main
-09-30 08:10:38.769 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.mic-plane","event":"client.selected","client":"dsh-web-client"}]}
-09-30 08:10:38.798 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
-09-30 08:10:38.800 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":25,"unavailable":0,"micPlane":2}]}
-09-30 08:10:38.800 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
-09-30 08:10:38.866 16743 16806 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T00:10:38.866077Z","primitive":"micStart","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"}}
-09-30 08:10:38.868 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.armed","format":"pcm-s16le"}]}
-09-30 08:10:39.005 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5479}]}
-09-30 08:10:39.009 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c","known":true,"registered":["mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c"]}]}
-09-30 08:10:39.009 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
-09-30 08:10:39.099 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5680}]}
-09-30 08:10:39.099 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c","known":true,"registered":["mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c"]}]}
-09-30 08:10:39.099 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
-09-30 08:10:39.194 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5383}]}
-09-30 08:10:39.194 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c","known":true,"registered":["mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c"]}]}
-09-30 08:10:39.194 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
-09-30 08:10:39.302 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4572}]}
-09-30 08:10:39.303 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c","known":true,"registered":["mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c"]}]}
-09-30 08:10:39.303 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
-09-30 08:10:39.310 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.frames","consumed":true,"monotonic":true,"samples":true}]}
-09-30 08:10:39.310 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T00:10:39.365957Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"durationMs":520,"bytes":12800}}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":92}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.end","streamId":"mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c","known":true,"registered":["mic:0975a61f-d4f9-405f-9bbc-27ff80052a9c"]}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stopped","stopped":true,"duration":true,"bytes":true}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.end","reason":"stopped"}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T00:10:39.366733Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.idempotent","stopped":false}]}
-09-30 08:10:39.366 16743 16806 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
-09-30 08:10:39.367 16743 16806 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T00:10:39.366981Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
-09-30 08:10:39.367 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.unknown","stopped":false}]}
-09-30 08:10:39.367 16743 16806 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"scenario.complete","status":"pass"}]}
-09-30 08:10:39.367 16743 16806 I dsh.spike.result: android.mic-plane PASS | quickjs-ng 0.17.0
-09-30 08:10:39.367 16743 16806 I dsh.spike.result: ALL PASS
+09-30 09:14:05.643 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"android.mic-plane","event":"client.selected","client":"dsh-web-client"}]}
+09-30 09:14:05.723 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+09-30 09:14:05.725 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":25,"unavailable":0,"micPlane":2}]}
+09-30 09:14:05.726 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+09-30 09:14:06.144 18895 18968 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T01:14:06.109010Z","primitive":"micStart","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"}}
+09-30 09:14:06.176 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.armed","format":"pcm-s16le"}]}
+09-30 09:14:06.325 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5247}]}
+09-30 09:14:06.325 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:06.326 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
+09-30 09:14:06.407 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5537}]}
+09-30 09:14:06.408 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:06.408 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
+09-30 09:14:06.509 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5197}]}
+09-30 09:14:06.510 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:06.511 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
+09-30 09:14:06.910 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4365}]}
+09-30 09:14:06.915 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:06.916 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
+09-30 09:14:07.047 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.frames","consumed":true,"monotonic":true,"samples":true}]}
+09-30 09:14:07.047 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+09-30 09:14:07.325 18895 18968 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T01:14:07.325335Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"durationMs":1256,"bytes":16000}}
+09-30 09:14:07.330 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4365}]}
+09-30 09:14:07.330 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:07.331 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4268}]}
+09-30 09:14:07.415 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":92}]}
+09-30 09:14:07.415 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.end","streamId":"mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962","known":true,"registered":["mic:a7538033-9f2b-4a93-9a17-6be0c3a6f962"]}]}
+09-30 09:14:07.416 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stopped","stopped":true,"duration":true,"bytes":true}]}
+09-30 09:14:07.416 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.end","reason":"stopped"}]}
+09-30 09:14:07.417 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+09-30 09:14:07.417 18895 18968 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T01:14:07.417768Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-30 09:14:07.418 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.idempotent","stopped":false}]}
+09-30 09:14:07.418 18895 18968 I dsh.spike: dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+09-30 09:14:07.418 18895 18968 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T01:14:07.418827Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-30 09:14:07.419 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.unknown","stopped":false}]}
+09-30 09:14:07.419 18895 18968 I dsh.spike: dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"scenario.complete","status":"pass"}]}
+09-30 09:14:07.420 18895 18968 I dsh.spike.result: android.mic-plane PASS | quickjs-ng 0.17.0
+09-30 09:14:07.420 18895 18968 I dsh.spike.result: ALL PASS

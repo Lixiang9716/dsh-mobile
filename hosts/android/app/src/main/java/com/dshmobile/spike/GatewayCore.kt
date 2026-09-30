@@ -22,7 +22,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
 
         /** The frozen primitive table (contract v1.4.0: nine + fs additions
          * + wasmRun + ishRun-unavailable-on-android + the timer seam; the
-         * capability plane adds cameraCapture and the mic pair — v1.10.0). */        val PRIMITIVES = listOf(
+         * capability plane adds the mic pair + cameraCapture, v1.10.0). */
+        val PRIMITIVES = listOf(
             "fsRead", "fsWrite", "fsScope", "httpFetch", "notify",
             "presentApproval", "presentPicker", "keychainGet", "keychainSet",
             "fsStat", "fsList", "fsMkdir", "fsRemove", "fsRename",
@@ -80,8 +81,9 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         /** `<name>` or `<name>@<major>` grammar (contract §6). */
         /** v1.5.0: one flag may gate two primitives — `clipboard` gates both
          * clipboard rows (contract/primitives.md §2, v1.5.0 additions); the
-         * capability plane adds the `camera` family; the `microphone`
-         * gates the mic pair (v1.10.0). */        private val familyFlags = mapOf(
+         * capability plane's `microphone` gates the mic pair and its
+         * `camera` family gates the three camera rows (v1.10.0). */
+        private val familyFlags = mapOf(
             "clipboardRead" to "clipboard",
             "clipboardWrite" to "clipboard",
             "presentShare" to "share",

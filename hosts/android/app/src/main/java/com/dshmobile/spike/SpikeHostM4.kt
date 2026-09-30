@@ -454,9 +454,12 @@ class SpikeHostM4 private constructor(
         if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
     }
 
-    /** The camera runtime-permission resume (MainActivity routes it here):
-     * the burst starts on grant; an OS refusal settles null (a value). */
+    /** The capability planes' OS runtime-permission answers (MainActivity
+     * forwards both): the mic face's RECORD_AUDIO answer, and the camera
+     * face's CAMERA answer — the burst starts on grant; an OS refusal
+     * settles null (a value). */
     fun onRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
+        mic.onPermissionResult(requestCode, grantResults)
         if (requestCode == CameraPrimitives.REQUEST_CAMERA) {
             camera.onPermissionResult(
                 grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,

@@ -361,6 +361,7 @@ export const bleUnsubscribe = async (connectionId, service, characteristic) =>
 /** Arms the stream: registers the channel state the moment the host
  * answers, so no frame or end event is lost to a late subscriber. */
 export const micStart = async (request = {}) => {
+  log.debug('micStart', { format: request.format, sampleRate: request.sampleRate });
   const res = await call('micStart', {
     format: request.format,
     sampleRate: request.sampleRate,
