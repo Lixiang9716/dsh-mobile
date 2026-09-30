@@ -50,6 +50,15 @@ else
     # worked (measured 2026-09-25). GNU tar when present; otherwise a python3
     # tarfile pass applying the same patterns — identical filter, both hosts.
     if command -v gtar >/dev/null 2>&1; then
+        # GNU tar exits nonzero when a LATER --wildcards pattern's members were
+        # already consumed by an earlier slash-crossing one — with the
+        # extraction itself complete (measured on this tag, gtar 1.35: it
+        # reports "*/packages/*/*/package.json: Not found in archive" with all
+        # 303 package.json files extracted; fresh worktrees hit this on every
+        # materialization because only the pin-stamp short-circuits the gtar
+        # pass). Fail loud on a REAL failure — an incomplete tree — instead of
+        # trusting the exit code: the measured floor for this tag is ~300
+        # package.json files across the two shapes plus the tests/src trees.
         gtar xzf "$TMP_TGZ" -C "$TESTS_DIR" --strip-components=1 \
             --wildcards \
             "*/packages/*/tests" \
@@ -58,7 +67,11 @@ else
             "*/packages/*/*/package.json" \
             "*/scripts/test-invariants.ts" \
             "*/scripts/test-proxy-environment.ts" \
-            "*/vitest.shared.ts"
+            "*/vitest.shared.ts" || {
+            echo "vendor: gtar exited nonzero — verifying the extraction is complete" >&2
+            [ "$(find "$TESTS_DIR" -name package.json | wc -l | tr -d ' ')" -ge 200 ] \
+                || { echo "vendor: extraction INCOMPLETE — refusing to stamp" >&2; exit 1; }
+        }
     else
         TMP_TGZ="$TMP_TGZ" TESTS_DIR="$TESTS_DIR" python3 - <<'PYTAR'
 import os, tarfile
