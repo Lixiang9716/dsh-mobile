@@ -1,0 +1,8 @@
+{
+  "scenario": "marketplace.ui.flow",
+  "pass": true,
+  "expected": 10,
+  "logged": 10,
+  "failures": [],
+  "parseErrors": []
+}

@@ -652,3 +652,49 @@
   color: inherit;
 }
 .onboarding-probe-line { min-height: 16px; font-size: 12.5px; margin: 8px 0 0; }
+
+/* ---- marketplace panel (the onboarding overlay pattern) ------------------ */
+
+.market-open-btn {
+  width: min(420px, calc(100% - 48px));
+  margin: 10px auto 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+.market-open-btn:active { transform: scale(0.985); }
+
+.market-card { max-height: 86vh; overflow-y: auto; }
+.market-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.market-header .onboarding-title { flex: 1; }
+
+.market-tabs { display: flex; gap: 6px; margin-top: 12px; }
+.market-tab {
+  flex: 1;
+  padding: 9px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.market-tab.active { background: var(--ocean); color: #fff; border-color: transparent; }
+
+.market-catalog-line { min-height: 14px; font-size: 12px; opacity: 0.75; margin: 6px 0 0; }
+
+.market-list { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.market-entry { padding: 12px; border-radius: 14px; }
+.market-entry-title { font-size: 15px; font-weight: 700; }
+.market-entry-title-en { font-size: 12px; font-weight: 500; opacity: 0.7; margin-left: 6px; }
+.market-entry-meta { font-size: 11.5px; opacity: 0.7; margin-top: 2px; word-break: break-all; }
+.market-entry-intro { font-size: 12.5px; margin-top: 4px; opacity: 0.9; }
+.market-entry-actions { margin-top: 10px; display: flex; }

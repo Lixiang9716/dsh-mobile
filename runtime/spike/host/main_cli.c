@@ -29,6 +29,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -950,6 +951,64 @@ static void smoke_fs_stat(smoke_backend *b, int call_id, const char *args) {
     smoke_fs_args_free(&a);
 }
 
+/* The remove primitive's recursive delete (a small depth-first unlink —
+ * the scope mirror tree is small and trusted). */
+static void smoke_rm_real(const char *path) {
+    struct stat st;
+    if (lstat(path, &st) != 0) return;
+    if (!S_ISDIR(st.st_mode)) {
+        unlink(path);
+        return;
+    }
+    DIR *dir = opendir(path);
+    if (dir) {
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != NULL) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+            size_t n = strlen(path) + strlen(entry->d_name) + 2;
+            char *child = malloc(n);
+            if (child) {
+                snprintf(child, n, "%s/%s", path, entry->d_name);
+                smoke_rm_real(child);
+                free(child);
+            }
+        }
+        closedir(dir);
+    }
+    rmdir(path);
+}
+
+/* `fsRemove` — the fs v1 remove primitive (the §4 lifecycle's symmetric
+ * action; the marketplace panel's removal leg): unlink a file or, with
+ * `recursive`, a tree, under the SAME scope discipline as every other fs
+ * primitive. The smoke mirror is one directory under tmpdir — the same
+ * trust domain. The gateway's default `missing: "ok"` answers settled-ok on
+ * an absent path. */
+static void smoke_fs_remove(smoke_backend *b, int call_id, const char *args) {
+    smoke_fs_args a = { json_str_dup(args, "scope"), json_str_dup(args, "path"),
+                        NULL, 0, 1 };
+    int recursive = json_bool(args, "recursive", 0);
+    if (!a.scope || !a.path) {
+        smoke_reject(b, call_id, "fsRemove", "invalid", "missing scope/path");
+    } else if (strcmp(a.scope, "app") != 0) {
+        smoke_reject(b, call_id, "fsRemove", "denied", "scope not granted");
+    } else if (!smoke_path_ok(a.path)) {
+        smoke_reject(b, call_id, "fsRemove", "invalid", "path escapes its scope");
+    } else {
+        char *full = smoke_path(b, a.path);
+        struct stat st;
+        if (!full || lstat(full, &st) != 0) {
+            smoke_settle(b, call_id, 1, "{\"removed\":0}");
+        } else {
+            if (recursive || !S_ISDIR(st.st_mode)) smoke_rm_real(full);
+            else rmdir(full);
+            smoke_settle(b, call_id, 1, "{\"removed\":1}");
+        }
+        free(full);
+    }
+    smoke_fs_args_free(&a);
+}
+
 /* `ishRun` — one program in the host's in-process Linux userland (contract
  * v1.3.0). The scope root this backend already owns is what gets mounted inside
  * the guest, so the command runs against the same files the fs primitives serve;
@@ -1119,6 +1178,7 @@ static void smoke_serve(smoke_backend *b, int call_id, const char *name,
     if (strcmp(name, "fsStat") == 0) return smoke_fs_stat(b, call_id, args);
     if (strcmp(name, "ishRun") == 0) return smoke_ish_run(b, call_id, args);
     if (strcmp(name, "fsRead") == 0) return smoke_fs_read(b, call_id, args);
+    if (strcmp(name, "fsRemove") == 0) return smoke_fs_remove(b, call_id, args);
     if (strcmp(name, "httpFetch") == 0 && b->http) return smoke_http_fetch(b, call_id, args);
     if (strcmp(name, "httpFetch.abort") == 0 && b->http) {
         /* loopback requests complete synchronously inside one drain pass, so

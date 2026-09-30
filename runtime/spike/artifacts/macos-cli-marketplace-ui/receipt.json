@@ -1,0 +1,20 @@
+{
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "marketplace.ui.flow",
+  "proves": [
+    "the browse view is the SIGNED catalog: the resolver fetched the loopback index.json over the REAL gateway httpFetch, re-serialized its canonical form, and the pure-JS ed25519 verifier (RFC 8032, verify-only, pinned by test/panel) accepted node:crypto/OpenSSL's signature — two independent implementations agreeing on the one new seam",
+    "the install is the REAL transaction: one marketplace/install stream folded the pipeline's own steps (index.verified → resolved → fetch.start → fetch.status → fetch.body → blob.stored → digest.verified → manifest.validated → integrity.computed → negotiated → receipt.pending → staged.verified → promoted → committed → receipt) with the package bytes over real loopback HTTP — installFromFetch/install-pipeline consumed UNCHANGED with the catalog entry's blobSha256/manifestSha256 as the trust record",
+    "the installed view reads the profile's receipts journal (the §4 data plane): exactly the committed install, with its plugins/ directory",
+    "the remove leg is the §4 symmetric action: the tree unlinked, the append-only remove receipt appended, the installed view empty and the browse annotation reset to null afterwards",
+    "the key audit is green: the signing seed and the PKCS8 prefix appear nowhere in the raw log"
+  ],
+  "checker": "test/e2e/scenarios/marketplace-ui-flow.json",
+  "events": 10,
+  "exitCode": 0
+}

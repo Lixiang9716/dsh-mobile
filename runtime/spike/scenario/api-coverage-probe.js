@@ -324,8 +324,12 @@ const gapsPhase = async (ctx, s) => {
     && bare.api['goals/get'] === undefined
     && bare.api['commands/list'] === undefined,
     'without fullCoverage the surface stays byte-identical');
-  demand(COVERAGE_STREAMS.length === 1 && COVERAGE_STREAMS[0] === 'workspaceFiles/changes',
-    'coverage streams');
+  demand(COVERAGE_STREAMS.length === 3
+    && COVERAGE_STREAMS[0] === 'workspaceFiles/changes'
+    && COVERAGE_STREAMS[1] === 'onboarding/test'
+    && COVERAGE_STREAMS[2] === 'marketplace/install',
+    'coverage streams (the assertion had gone stale at length 1 after the'
+    + ' onboarding/test stream landed — restored to enumerate reality)');
   log.info('gaps ok', { coverage: COVERAGE_ENDPOINTS.length,
     historical: WRITE_ENDPOINTS.length });
 };

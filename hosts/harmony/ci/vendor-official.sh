@@ -318,6 +318,7 @@ upstream/web-write-streams.js
 upstream/web-write-coverage.js
 upstream/web-write-llm.js
 upstream/web-write-onboarding.js
+upstream/web-write-marketplace.js
 upstream/preset-mobile-rows.js
 upstream/web-write-files.js
 upstream/web-write-picker.js
@@ -623,6 +624,9 @@ registry.js
 sha256.js
 tar-mini.js
 llm.js
+ed25519.js
+marketplace-resolver.js
+canonical-json.js
 install-pipeline.js"
 for f in $SPIKE_ROOT; do
     if [ "$MODE" != "check" ] && [ -f "runtime/spike/$f" ]; then

@@ -454,6 +454,9 @@ export const createWriteSurface = (ctx, post, options) => {
       // the CLI probes). The onboarding status answers from it.
       kind: options.routeKind,
     },
+    // The plugin marketplace's opt-in (web-write-marketplace.js): the
+    // resolver's index url. Absent → the marketplace legs stay unclaimed.
+    marketplace: options.marketplace,
     mintId: mintUUID,
     publish: streams.publish,
   };

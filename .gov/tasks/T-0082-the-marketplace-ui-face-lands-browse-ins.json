@@ -1,0 +1,23 @@
+{
+  "title": "the marketplace UI face lands \u2014 browse/install/installed over the resolver's signed index",
+  "created": "2026-09-30T20:21:17+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] runtime seam: ed25519 verify + marketplace-resolver (index fetch, canonical JSON, signature verify, lookup, cache)",
+    "[x] wire face: web-write-marketplace.js \u2014 marketplace/index, marketplace/install stream (fetch.start\u2192\u2026\u2192receipt fold), marketplace/installed, marketplace/remove",
+    "[x] page: web-client-next marketplace panel (list, install progress fold, installed+remove), bilingual copy",
+    "[x] vitest: test/panel marketplace-core suite green",
+    "[x] e2e: marketplace.ui.flow CLI leg \u2014 loopback mock index \u2192 browse \u2192 install \u2192 progress \u2192 receipt \u2192 installed \u2192 remove, one-to-one log check green",
+    "[x] host closures synced (android assets, harmony rawfile lists, ios bundle list) + staging lists updated",
+    "[x] Agent Note (feature) + full gov DAG green with receipt"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0082"
+}
