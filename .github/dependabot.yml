@@ -1,0 +1,37 @@
+# Dependabot version updates. Dependabot SECURITY updates are intentionally
+# NOT configured here — that switch lives in the repository settings
+# (Settings → Code security → Dependabot security updates), and it is an
+# owner web action: see docs/github-owner-actions.md. It composes with this
+# file automatically once enabled.
+#
+# Two ecosystems, both grouped so the weekly cadence cannot flood the PR
+# queue:
+#
+# - github-actions over "/" — every action pin in .github/workflows/*.yml.
+#
+# - npm over /test/upstream-suite — the minimal reasonable surface, chosen by
+#   evidence: the repository root has no package.json; presentation/lynx-client
+#   has a manifest but no lockfile (a single devDependency, so nothing for a
+#   resolution to be verified against); and the shim manifests under
+#   runtime/spike/upstream/shims/ and their host copies are pinned by the
+#   vendoring plane — the closures gate byte-verifies them — so npm must NOT
+#   point at "/", which would sweep those manifests in.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: /test/upstream-suite
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns:
+          - "*"
