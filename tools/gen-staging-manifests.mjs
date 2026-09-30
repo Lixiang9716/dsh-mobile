@@ -264,7 +264,13 @@ function roundTripHarmony(hosts, facts, closure) {
       pin: zod,
       recomputed: zodDerived.length,
       bundleFiles: zodHand.length, closure: zodClosureHand.length, iosZodFiles: zodIos.length,
+      // "all three hand copies agree with each other and with the recomputed
+      // closure": the union check proves closure/ios hold no EXTRA row, but
+      // a copy MISSING a row slips a subset test (union size stays at
+      // zodHand.length) — equal lengths close that quadrant.
       copiesAgree: new Set([...zodHand, ...zodClosureHand, ...zodIos]).size === zodHand.length
+        && zodClosureHand.length === zodHand.length
+        && zodIos.length === zodHand.length
         && zodHand.length === zodDerived.length,
       missingFromRecomputed: zodDerived.filter((r) => !zodHand.includes(r)),
     },
