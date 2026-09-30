@@ -1,0 +1,21 @@
+{
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
+  "kernel": "@deepseek-ai/cordis@4.0.2",
+  "scenario": "marketplace.ui.flow",
+  "proves": [
+    "the browse view is the SIGNED catalog under a HOST-SIDE PIN (proposal rule 2): the resolver fetched the loopback index.json over the REAL gateway httpFetch, re-serialized its canonical form, required the signing key to EQUAL the runner's out-of-band pin, and the pure-JS ed25519 verifier accepted node:crypto/OpenSSL's signature — two independent implementations agreeing on the one new seam; the curve itself is pinned in the tree by test/panel/ed25519.test.js (RFC §7.1 vectors as fixed data + fresh OpenSSL-signed cases + tamper refusals)",
+    "the tamper ladder's signature family really refuses: a flipped-summary index under the real key's signature rejects as marketplace/signature, and a wholesale keys+index+signature swap by a foreign key — self-consistent, exactly what a hosting attacker ships — rejects as marketplace/unknown-key against the pin; the digest-mismatch half of the ladder is the pipeline's own trust-record enforcement, already proven by install.full-cycle",
+    "the install is the REAL transaction: one marketplace/install stream folded the pipeline's own steps (index.verified → resolved → fetch.start → fetch.status → fetch.body → blob.stored → digest.verified → manifest.validated → integrity.computed → negotiated → receipt.pending → staged.verified → promoted → committed → receipt) with the package bytes over real loopback HTTP — installFromFetch/install-pipeline consumed UNCHANGED with the catalog entry's blobSha256/manifestSha256 as the trust record",
+    "the installed view reads the profile's receipts journal (the §4 data plane): exactly the committed install, with its plugins/ directory",
+    "the remove leg is the §4 symmetric action: the tree unlinked, the append-only remove receipt appended, the installed view empty and the browse annotation reset to null afterwards",
+    "the key audit is green: the signing seed and the PKCS8 prefix appear nowhere in the raw log"
+  ],
+  "checker": "test/e2e/scenarios/marketplace-ui-flow.json",
+  "events": 12,
+  "exitCode": 0
+}

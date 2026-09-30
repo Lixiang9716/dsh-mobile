@@ -1,0 +1,91 @@
+{
+  "scenario": "marketplace.ui.flow",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "marketplace.browse",
+      "match": {
+        "entries": 1,
+        "id": "dsh-market-demo",
+        "version": "0.1.0",
+        "key": "dsh-market-1",
+        "installed": null
+      }
+    },
+    {
+      "event": "marketplace.tamper.signature",
+      "match": {
+        "code": "signature",
+        "url": "/index-tampered.json"
+      }
+    },
+    {
+      "event": "marketplace.tamper.foreign-key",
+      "match": {
+        "code": "unknown-key",
+        "url": "/index-foreign.json"
+      }
+    },
+    {
+      "event": "marketplace.install.start",
+      "match": {
+        "id": "dsh-market-demo"
+      }
+    },
+    {
+      "event": "marketplace.install.progress",
+      "match": {
+        "steps": 15
+      }
+    },
+    {
+      "event": "marketplace.install.committed",
+      "match": {
+        "id": "dsh-market-demo",
+        "version": "0.1.0",
+        "status": "committed"
+      }
+    },
+    {
+      "event": "marketplace.install.receipt",
+      "match": {
+        "status": "committed"
+      }
+    },
+    {
+      "event": "marketplace.installed",
+      "match": {
+        "id": "dsh-market-demo",
+        "version": "0.1.0",
+        "items": 1
+      }
+    },
+    {
+      "event": "marketplace.removed",
+      "match": {
+        "id": "dsh-market-demo",
+        "version": "0.1.0"
+      }
+    },
+    {
+      "event": "marketplace.installed.empty",
+      "match": {
+        "items": 0
+      }
+    },
+    {
+      "event": "marketplace.browse.after",
+      "match": {
+        "installed": null
+      }
+    },
+    {
+      "event": "marketplace.flow/completed",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

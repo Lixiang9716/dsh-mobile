@@ -25,6 +25,9 @@ import { makeSkillsHandlers,
 } from 'upstream/web-write-catalog.js';
 import { buildLlmCoverageApi } from 'upstream/web-write-llm.js';
 import { buildOnboardingApi, openOnboardingStream } from 'upstream/web-write-onboarding.js';
+import {
+  buildMarketplaceApi, openMarketplaceStream,
+} from 'upstream/web-write-marketplace.js';
 import { errorOf } from 'upstream/web-write.js';
 
 /**
@@ -69,11 +72,21 @@ export const COVERAGE_ENDPOINTS = [
   // credential detect/test/save over the frozen keychain + httpFetch
   // primitives — no new gateway primitive (the round's red line held).
   'onboarding/status', 'onboarding/save',
+  // The plugin marketplace's legs (web-write-marketplace.js): browse over
+  // the SIGNED catalog (the resolver's ed25519 verify — the proposal's one
+  // new seam), the install stream over the UNCHANGED installFromFetch, and
+  // the installed view + removal over the receipts journal. Claimed only
+  // when the boot options carry `marketplace: {indexUrl}` (handlers spread
+  // conditionally below; an unconfigured boot answers unimplemented).
+  'marketplace/index', 'marketplace/installed', 'marketplace/remove',
 ];
 
 /** The COVERAGE streams: the workspace file change feed + the onboarding
- * connection test (one probe turn, event-streamed, D8). */
-export const COVERAGE_STREAMS = ['workspaceFiles/changes', 'onboarding/test'];
+ * connection test (one probe turn, event-streamed, D8) + the marketplace
+ * install stream (one transaction, step events as they happen, D8). */
+export const COVERAGE_STREAMS = [
+  'workspaceFiles/changes', 'onboarding/test', 'marketplace/install',
+];
 
 /**
  * The coverage api map: every COVERAGE endpoint's handler, each backed by
@@ -91,6 +104,10 @@ export const buildCoverageApi = (ctx, deps) => ({
   ...makeCommandHandlers(ctx),
   ...buildLlmCoverageApi(ctx, deps),
   ...buildOnboardingApi(ctx, deps),
+  // The marketplace legs exist only when the boot opted in (options.
+  // marketplace carries the resolver's index url) — otherwise the claim
+  // resolves to unimplemented, the onboarding precedent.
+  ...(deps.marketplace === undefined ? {} : buildMarketplaceApi(deps)),
 });
 
 /**
@@ -104,6 +121,8 @@ export const buildCoverageApi = (ctx, deps) => ({
 export const openCoverageStream = (ctx, deps, changeFeed, post, msg) => {
   const onboarding = openOnboardingStream(ctx, deps, post, msg);
   if (onboarding !== undefined) return onboarding;
+  const marketplace = openMarketplaceStream(ctx, deps, post, msg);
+  if (marketplace !== undefined) return marketplace;
   if (msg.endpoint !== 'workspaceFiles/changes') return undefined;
   const attach = async () => {
     const unsubscribe = await changeFeed.follow(
