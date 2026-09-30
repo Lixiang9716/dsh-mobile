@@ -10,6 +10,8 @@
 `gh api .../branches/main/protection`);若时日已过,动手前先重查:
 
 - `main` 的 required status checks:目前只有 `gates`。
+- Dependabot alerts:**关闭**(`gh api .../vulnerability-alerts` 返回
+  404 "Vulnerability alerts are disabled")。
 - Dependabot security updates:**关闭**。
 - Secret scanning:**已开**;push protection:**已开**。
 - Discussions:**关**。Pages:**关**。
@@ -19,16 +21,26 @@
 
 ## 1. 打开 Dependabot security updates
 
-- **入口**:Settings → **Code security** → Dependabot → **Dependabot
-  security updates** → **Enable**。
+- **入口**:Settings → **Code security** → Dependabot,按这个顺序:
+  1. **Dependabot alerts** → **Enable**——这是前置,不是可选项。
+  2. **Dependabot security updates** → **Enable**。
 - **为什么**:版本更新已由 `.github/dependabot.yml` 接管(每周、group 合并:
   `github-actions` 管所有 workflow,`npm` 管带锁文件的
   `test/upstream-suite`)。那个节奏是按计划表升 pin;security updates 则是
   公告(advisory)一落地就对被 pin 的版本开 PR,不用等最长一周的下一次
   计划扫描。两者自动叠加——文件里没有、也不需要按 ecosystem 配安全开关。
-- **现状**:关闭(API 核验,见上文事实)。
-- **完成标志**:开关显示 Enabled,Security 标签页下能看到 Dependabot 的
-  安全更新条目。
+- **为什么 alerts 在前**:security updates 是*由* Dependabot alerts *触发*的
+  ——GitHub 文档明言该功能 "is available for repositories where you have
+  enabled the dependency graph and Dependabot alerts",而 grouped security
+  updates(正是 `dependabot.yml` 里 `npm` 组用的形态)额外要求 alerts 先开。
+  alerts 关着,security updates 开关就没有公告来源:开关本身会不会拒绝启用
+  无法只读验证,但可观察的失败更糟——开关显示已开,**Security** 页永远空白,
+  这一项看起来完成了,实际上什么都不会发生。先开 alerts,Security 页同时
+  也是验证面。
+- **现状**:两者都关(API 核验,见上文事实)。
+- **完成标志**:Dependabot alerts 显示 Enabled,security updates 开关显示
+  Enabled,且 **Security** 标签页列出 Dependabot alerts(及其安全更新
+  PR)——而不是一片空白。
 
 ## 2. 把 `ci-verdict` 检查设为 `main` 的 required
 

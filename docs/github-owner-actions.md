@@ -13,6 +13,8 @@ Repository-state facts below were verified read-only via the API on
 passed:
 
 - Required status checks on `main`: `gates` only.
+- Dependabot alerts: **disabled** (`gh api .../vulnerability-alerts` answers
+  404 "Vulnerability alerts are disabled").
 - Dependabot security updates: **disabled**.
 - Secret scanning: **enabled**; push protection: **enabled**.
 - Discussions: **off**. Pages: **off**.
@@ -22,8 +24,10 @@ passed:
 
 ## 1. Enable Dependabot security updates
 
-- **Where**: Settings → **Code security** → Dependabot → **Dependabot
-  security updates** → **Enable**.
+- **Where**: Settings → **Code security** → Dependabot, in this order:
+  1. **Dependabot alerts** → **Enable** — this is the prerequisite, not an
+     optional extra.
+  2. **Dependabot security updates** → **Enable**.
 - **Why**: version updates are already wired by `.github/dependabot.yml`
   (weekly, grouped: `github-actions` over the workflows, `npm` over
   `test/upstream-suite` — the one manifest with a lockfile). That cadence
@@ -31,9 +35,20 @@ passed:
   an advisory lands against a pinned version, instead of waiting up to a week
   for the next scheduled pass. The two compose automatically — there is no
   per-ecosystem security switch to configure in the file.
-- **Current state**: disabled (verified — see the facts above).
-- **Done when**: the toggle reads "Enabled" and Dependabot lists security
-  updates under the **Security** tab.
+- **Why alerts come first**: security updates are *triggered by* Dependabot
+  alerts — GitHub's docs state the feature "is available for repositories
+  where you have enabled the dependency graph and Dependabot alerts", and
+  grouped security updates (which the `npm` group in `dependabot.yml` uses)
+  additionally require alerts enabled. With alerts off, the security-updates
+  toggle has no advisory source: whether the toggle itself refuses to enable
+  could not be verified read-only, but the observable failure is worse — it
+  enables, the **Security** tab stays empty, and the item looks done while
+  nothing can ever fire. Enable alerts first and the tab is also the
+  verification surface.
+- **Current state**: both off (verified — see the facts above).
+- **Done when**: Dependabot alerts reads "Enabled", the security-updates
+  toggle reads "Enabled", and the **Security** tab lists Dependabot alerts
+  (and their security-update pull requests) instead of nothing.
 
 ## 2. Make the `ci-verdict` check required on `main`
 
