@@ -63,7 +63,8 @@ const parseManifest = (file) => {
 };
 
 const specFiles = readdirSync(manifestDir)
-  .filter((f) => f.endsWith('.txt') || f.endsWith('.manifest'))
+  // `__*` names are reserved for baseline/auxiliary runs — never spec rows.
+  .filter((f) => (f.endsWith('.txt') || f.endsWith('.manifest')) && !f.startsWith('__'))
   .sort();
 const baseline = baselineFile ? parseManifest(baselineFile) : { top: new Set(), sharp: new Set() };
 

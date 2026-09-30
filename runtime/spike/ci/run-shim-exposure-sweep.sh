@@ -53,7 +53,7 @@ worker() {
         --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" \
         > "$LOGDIR/$stem.log" 2>&1
 }
-export -f worker
+export -f worker run_to
 export OUT LOGDIR SPIKE
 
 ls "$SPIKE"/upstream-tests/*.spec.mjs | xargs -P "$PARAL" -I{} bash -c 'worker "$@"' _ {}
