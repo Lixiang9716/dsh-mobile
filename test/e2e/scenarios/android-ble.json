@@ -13,7 +13,7 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 32,
+        "available": 34,
         "unavailable": 2,
         "blePlane": 8
       }
