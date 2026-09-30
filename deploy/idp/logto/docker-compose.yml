@@ -30,7 +30,9 @@ services:
       retries: 12
 
   logto:
-    image: svhd/logto:latest
+    # pinned (2026-10-01) to the verified release tag v1.44.0 — same image
+    # the official docs list first (ghcr.io); bump deliberately, never :latest
+    image: ghcr.io/logto-io/logto:1.44.0
     restart: unless-stopped
     depends_on:
       postgres:
