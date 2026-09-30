@@ -106,10 +106,10 @@ FAIL=0
 # ble.plane), which silently left this runner checking a manifest that can
 # never match; the v0.0.2 release regression caught it (2026-09-30) and the
 # #252 shapes came back under non-conflicting android- names.
-node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-capture.json \
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane.json" || FAIL=1
 cat "$OUT/verdict-android-camera-plane.json"
-node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-capture-audit.json \
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-audit.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane-audit.json" || FAIL=1
 cat "$OUT/verdict-android-camera-plane-audit.json"
 [ "$FAIL" = "0" ] || die "checkers red — evidence stays unreceipted (rule: receipts only from green runs)"
