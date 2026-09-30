@@ -1,0 +1,17 @@
+# Code owners. CODEOWNERS only gates merges when branch protection opts into
+# "Require review from Code Owners" — this repository deliberately does not
+# (required reviews: 0, by design; CI plus the `gates` check carry the merge).
+# Until then this file is a routing declaration: review requests on any PR are
+# auto-addressed to the owner.
+# Syntax reference:
+# https://docs.github.com/en/repositories/managing-a-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# The whole repository.
+*             @Lixiang9716
+
+# The contract freeze gets its own line on purpose — it is NOT redundant with
+# the glob above. The frozen surface is the review contract for everything
+# downstream, so a PR that moves it must always read as a contract review,
+# even if protection is one day split by path or reviews-by-owners is enabled:
+# this line keeps the contract owned explicitly, never by inheritance.
+/contract/    @Lixiang9716
