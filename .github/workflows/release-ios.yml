@@ -101,7 +101,10 @@ jobs:
     # release_tag input) targets the `release` environment. The owner arms it
     # by adding a required reviewer in the repository settings; until then the
     # reference is inert — GitHub creates the environment with no protection
-    # rules, so nothing waits.
+    # rules, so nothing waits. Leave "Prevent self-review" off when arming it:
+    # the solo maintainer is the only reviewer, so checking it deadlocks every
+    # release run; unchecked, the recorded — if self-given — approval still
+    # stands before any build.
     environment: release
     timeout-minutes: 60
     env:

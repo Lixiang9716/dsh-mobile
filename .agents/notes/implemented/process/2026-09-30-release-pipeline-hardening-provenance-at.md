@@ -33,7 +33,13 @@ The reference is deliberately static and the environment deliberately
 unconfigured in this change — arming it (required reviewer) is owner web-UI
 work documented separately; until then the reference creates an empty
 environment and no run waits (GitHub creates the environment with no
-protection rules). Release notes needed no change: `gh release create
+protection rules). The arming guide names the one checkbox that decides what
+the gate is worth on a single-maintainer repo — "Prevent self-review": left
+off, the reviewer can approve the run they triggered (a recorded go, but
+self-given); left on, "users who initiate a deployment cannot approve the
+deployment job", which on this solo repo deadlocks every release run with
+`cancel-in-progress: false` queueing behind it — so the guide says leave it
+off. Release notes needed no change: `gh release create
 --verify-tag --title <tag> --generate-notes` has been the create step since
 PR #112, which is exactly the conventional-commits-fed form the hardening
 pass asked for, and the `gh release upload` traps it avoids (the `file#text`

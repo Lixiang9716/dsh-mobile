@@ -77,7 +77,14 @@ Two ways in, one build path:
    (Settings → Environments → `release`), a job waits for that one approval
    before it builds: the go gate on cutting a release. Until then the
    reference is inert — GitHub creates the environment with no protection
-   rules, so nothing waits. And each package's **build provenance is signed** —
+   rules, so nothing waits. **One checkbox decides what the gate is worth on a
+   single-maintainer repo:** "Prevent self-review" left off, the reviewer can
+   approve the run they triggered — a recorded go, but your own; left on,
+   the user who pushed the tag cannot approve it at all ("users who initiate a
+   deployment cannot approve the deployment job"), which on a solo repo waits
+   forever and parks the queued release runs. Leave it off here, and treat the
+   recorded approval as a deliberate second look by your future self, not a
+   second pair of eyes. And each package's **build provenance is signed** —
    see "Provenance: verify what you downloaded" below.
 5. **Recovery — a release shipped a bad package.** Do not delete the release.
    Dispatch that host's workflow (e.g. `release/harmony`) with **`release_tag:
@@ -136,7 +143,11 @@ provenance attestation.
 The one optional setting is the `release` environment above — the go gate. It
 is owner web-UI work (create the environment, add a required reviewer); until
 it is armed, the workflows' reference creates it empty and the release runs
-ungated.
+ungated. Leave "Prevent self-review" unchecked when arming it: on a
+single-maintainer repo the only reviewer is the person pushing the tag, so
+checking it would deadlock every release run (they can never approve their
+own), while leaving it off keeps a recorded — if self-given — go before any
+package builds.
 
 That is deliberate, and it is what the pipeline's history converged on: a
 release PR opened by `GITHUB_TOKEN` cannot receive the required check — its

@@ -62,8 +62,14 @@
    构建的同时还有两道强化随行。每个打包 job 都指向 **`release` 环境**——一旦
    owner 在其上配置了必需评审人(Settings → Environments → `release`),job 就会
    在构建前等待这一份批准:这就是切发布的 go 闸。在那之前这个引用是惰性的——
-   GitHub 会创建一个没有任何保护规则的环境,什么都不用等。此外每个包的**构建溯源
-   会被签名**——见下文「溯源:验证你下载到的包」。
+   GitHub 会创建一个没有任何保护规则的环境,什么都不用等。**单人维护的仓库上,
+   有一个勾选项直接决定这道闸值多少:**"Prevent self-review" 不勾,评审人可以批准
+   自己触发的 run——是留了记录的 go,但批的人还是你自己;勾上,推标签的人就永远
+   无法批准这个 run(官方文档:"users who initiate a deployment cannot approve the
+   deployment job"),在单人仓库里意味着无限等待,而且队列里的发布 run 会被堵住。
+   本仓库的选择是不勾,并把这份留了记录的批准当作"未来的自己郑重看一眼",而不是
+   "第二双眼睛"。此外每个包的**构建溯源会被签名**——见下文「溯源:验证你下载到
+   的包」。
 5. **补救——某个 Release 上的包有问题。** 不要删掉 Release。触发那个宿主的
    workflow(例如 `release/harmony`)并填 **`release_tag: vX.Y.Z`**:包会从当前
    `main` 构建,然后就地替换该标签下的资产(`gh release upload --clobber`)。
@@ -110,7 +116,9 @@ HarmonyOS 的 `versionCode` 是 semver 表达不了的单调整数,继续手工�
 
 唯一可选的设置就是上面的 `release` 环境——即 go 闸。它是 owner 的网页端动作
 (创建环境、添加必需评审人);在配置好之前,workflow 的引用只会创建一个空环境,
-发布不被拦截。
+发布不被拦截。配置时**不要勾选 "Prevent self-review"**:单人维护的仓库里,唯一的
+评审人就是推标签的那个人,勾上等于让每次发布 run 永远等一个不可能出现的批准
+(死锁);不勾则保住一道留了记录的——虽然是自批的——go,任何包构建之前都要过它。
 
 这是刻意的,也是这条流水线的历史收敛出来的结论:用 `GITHUB_TOKEN` 开的 release PR
 拿不到必需的检查——它的 `pull_request` workflow 会以 `action_required` 到达;而由
