@@ -1,9 +1,9 @@
 {
-  "host": "harmony (127.0.0.1:5557, emulator)",
+  "host": "harmony (127.0.0.1:5555, emulator)",
   "runner": "hosts/harmony/ci/run-device-parity.sh",
   "phase": "upstream.parity",
   "launch": "--ps dsh.e2e.leg upstream.parity (Debug, in-app ParityMockRoute)",
-  "tree": "8dae0cbfb340 (dirty working tree at receipt time)",
+  "tree": "1466763e63d1 (dirty working tree at receipt time)",
   "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "upstream": "@deepseek-ai/dsh-* (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",

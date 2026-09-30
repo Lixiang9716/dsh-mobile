@@ -45,3 +45,9 @@ dsh.spike.log: {"level":"debug","module":"b4.web","message":"settings probes don
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"b4 runtime resident (write surface live; awaiting the page)","data":[{}]}
 dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"index.rendered","rows":0,"bytes":3160}]}
 dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"index.served","path":"/","status":200}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"asset.served","path":"/js/main.js"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"upgrade.accepted","path":"/api/remote.mux"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"rpc.observed","endpoint":"session/list","answered":"forwarded"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-88e79726-5265-4340-b230-31ee10b9ad45\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"rpc.observed","endpoint":"session/create","answered":"forwarded"}]}
+dsh.spike.log: {"level":"info","module":"dsh.carrier","message":"e2e","data":[{"scenario":"harmony.nextweb.mount","event":"session.attached","stream":"session/follow"}]}
