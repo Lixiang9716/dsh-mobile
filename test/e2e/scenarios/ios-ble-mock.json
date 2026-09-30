@@ -1,0 +1,115 @@
+{
+  "scenario": "ble.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 31,
+        "unavailable": 2,
+        "blePlane": 8
+      }
+    },
+    {
+      "event": "ble.radio",
+      "match": {
+        "mode": "live"
+      }
+    },
+    {
+      "event": "ble.scan.armed",
+      "match": {
+        "scanIdOpaque": true,
+        "tag": "ble-plane-probe"
+      }
+    },
+    {
+      "event": "ble.device",
+      "match": {
+        "deviceIdOpaque": true,
+        "name": "DSH Mock BLE Sensor",
+        "rssi": -42
+      }
+    },
+    {
+      "event": "ble.device",
+      "match": {
+        "deviceIdOpaque": true,
+        "name": "DSH Mock BLE Beacon",
+        "rssi": -66
+      }
+    },
+    {
+      "event": "ble.scan.stopped",
+      "match": {
+        "stopped": true
+      }
+    },
+    {
+      "event": "ble.connect",
+      "match": {
+        "connectionIdOpaque": true
+      }
+    },
+    {
+      "event": "ble.read",
+      "match": {
+        "bytes": 1
+      }
+    },
+    {
+      "event": "ble.write",
+      "match": {
+        "written": true,
+        "bytes": 3
+      }
+    },
+    {
+      "event": "ble.subscribed",
+      "match": {
+        "subscribed": true
+      }
+    },
+    {
+      "event": "ble.notify",
+      "match": {
+        "seq": 1,
+        "bytes": 2
+      }
+    },
+    {
+      "event": "ble.notify",
+      "match": {
+        "seq": 2,
+        "bytes": 2
+      }
+    },
+    {
+      "event": "ble.unsubscribed",
+      "match": {
+        "subscribed": false
+      }
+    },
+    {
+      "event": "ble.disconnected",
+      "match": {
+        "closed": true,
+        "gatt": true
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

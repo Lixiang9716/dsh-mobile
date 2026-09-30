@@ -1,0 +1,49 @@
+{
+  "scenario": "ble.plane.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "bleScanStart",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleScanStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleConnect",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleRead",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleWrite",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleSubscribe",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleUnsubscribe",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleDisconnect",
+      "verdict": "granted",
+      "outcome": "ok"
+    }
+  ]
+}
