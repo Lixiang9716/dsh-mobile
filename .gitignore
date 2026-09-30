@@ -239,6 +239,11 @@ node_modules/
 out/
 package-lock.json
 !test/panel/package-lock.json
+# the two presentation test suites: committed lockfiles so CI installs
+# deterministically with npm ci (the edgesOut npm bug hit the lockfile-less
+# install on the runner — observed live, run 36717057763)
+!presentation/lynx-client/package-lock.json
+!test/web-client-next-suite/package-lock.json
 presentation/official-web/client-bundles/MANIFEST.sha256.computed
 presentation/official-web/client-bundles/npm/
 runtime/spike/logs-models-directory.txt

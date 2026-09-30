@@ -12,9 +12,12 @@
 # runner re-asserts that invariant on every run: the product tree must hold
 # exactly its shipped files before AND after each suite.
 #
-# Dependencies: each suite installs its own devDependencies when absent
-# (npm install; the same bootstrap shape the vendor ensure scripts use —
-# materialize, then verify). Registry honors npm_config_registry.
+# Dependencies: each suite installs its own devDependencies when absent.
+# Both suites carry COMMITTED lockfiles (gitignore-exempt like
+# test/upstream-suite's): npm ci is the deterministic path — the
+# lockfile-less npm install hit arborist's `edgesOut` null bug on the CI
+# runner (observed live, run 36717057763). Registry honors
+# npm_config_registry.
 # usage: sh tools/test/run-presentation-tests.sh   exit 0 = both suites green
 set -eu
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
@@ -28,7 +31,7 @@ run_suite() {
     cd "$ROOT/$suite_dir"
     if [ ! -d node_modules ]; then
         echo "presentation-tests: $name — installing devDependencies (first run on this tree)"
-        npm install --no-audit --no-fund
+        npm ci --no-audit --no-fund
     fi
     npm test
 }
