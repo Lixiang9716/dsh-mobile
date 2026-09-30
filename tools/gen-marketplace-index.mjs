@@ -25,11 +25,14 @@
  * as-is. If the gzip transport leg lands upstream, this generator and the
  * pin discipline must switch in lockstep.
  *
- * SIGNATURE SHAPE: a normal index carries `signature: {key, value}` exactly
- * as the proposal shows. A key-rotation WINDOW index carries `signatures`
- * (array of the same {key, value} objects) — the one additive extension the
- * proposal's rotation rule ("signed by both the outgoing and incoming key
- * for one rotation window") needs; see tools/marketplace-rotate-key.mjs.
+ * SIGNATURE SHAPE (FROZEN, data-protocols.md §7 v1.1.0): the index carries
+ * `signatures` — an ARRAY of one or two {key, value} objects (one for a
+ * normal publish, two during a key-rotation window), required,
+ * additionalProperties: false. The ADOPTED proposal's singular `signature`
+ * object became the array when the proposal folded into the contract, so a
+ * rotation window needs no second shape; the resolver's hand validator and
+ * schemas/marketplace-index.schema.json both enforce the array, and this
+ * generator must never emit anything else. See tools/marketplace-rotate-key.mjs.
  *
  * Key material: MARKETPLACE_SIGNING_KEY is the base64 of the 32-byte ed25519
  * SEED (what `openssl genpkey -algorithm ed25519` stores as the last 32
@@ -314,11 +317,16 @@ const buildIndex = ({ packed, summaries, baseUrl, keys, generatedAt }) => {
   return { schemaVersion: 1, marketplace: 'dsh', generatedAt, keys, entries };
 };
 
-/** Attach signatures: one → `signature` (the proposal's shape); a rotation
- * window's two → `signatures` (same shape, array). Never both. */
+/** Attach signatures: ALWAYS the frozen `signatures` ARRAY (1..2 — one for
+ * a normal publish, two for a rotation window; data-protocols.md §7,
+ * schemas/marketplace-index.schema.json). The singular `signature` object
+ * this tool shipped before the contract folded (PR #283) is dead: the
+ * resolver's hand validator rejects it as an unknown field, and a catalog
+ * the frozen schema cannot validate must never be published. */
 const attachSignatures = (index, sigs) => {
-  if (sigs.length === 0) fail('internal: no signatures to attach');
-  if (sigs.length === 1) return { ...index, signature: sigs[0] };
+  if (sigs.length === 0 || sigs.length > 2) {
+    fail(`internal: signatures must carry one or two entries, got ${sigs.length}`);
+  }
   return { ...index, signatures: sigs };
 };
 

@@ -1,6 +1,13 @@
 # Proposal: the plugin marketplace — a signed catalog over the frozen package format (data-protocols v1.1.0 candidate)
 
-> **Status: DRAFT (D5 proposal — nothing frozen, nothing implemented).**
+> **Status: ADOPTED (2026-10-01, owner decision: the mobile-side dsh plugin
+> marketplace, and the plugin format is exactly the existing DSH package
+> format) — frozen additively as data-protocols v1.1.0 §7.** One draft-shape
+> delta: the single `signature` object became a `signatures` ARRAY (one entry
+> normally, two during a rotation window) so dual-signing is expressible in
+> the one frozen shape. The frozen rules live in
+> [data-protocols.md](../data-protocols.md) §7; the machine schema is
+> [schemas/marketplace-index.schema.json](../schemas/marketplace-index.schema.json).
 > English | [简体中文](2026-10-01-plugin-marketplace.zh.md)
 
 ## Motivation

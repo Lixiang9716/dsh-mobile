@@ -2,8 +2,9 @@
 /**
  * generate-index.mjs — the marketplace v0 catalog tool (host-side, node ≥18,
  * zero dependencies). Implements the signed static index.json of
- * contract/proposals/2026-10-01-plugin-marketplace.md (data-protocols v1.1.0
- * candidate) over the FROZEN DSH package format (data-protocols.md v1.0.0):
+ * contract/data-protocols.md §7 (v1.1.0, FROZEN — the ADOPTED
+ * contract/proposals/2026-10-01-plugin-marketplace.md folded here) over the
+ * FROZEN DSH package format (data-protocols.md v1.0.0 §1–§4):
  *
  *   --keygen <prefix>   create an ed25519 test keypair (PEM files)
  *   --build …           pack system-plugins → deterministic tgz + signed index
@@ -20,8 +21,13 @@
  *   blobSha256     = sha256 of the tgz bytes
  *   manifestSha256 = sha256 of the manifest.json member bytes
  *
+ * Signature shape (FROZEN, data-protocols.md §7 v1.1.0): `signatures` is a
+ * required 1..2 array of {key, value} — one entry here (the deploy standby
+ * publishes single-signed); the rotation window's dual-sign shape comes
+ * from tools/marketplace-rotate-key.mjs.
+ *
  * Canonical JSON (what the signature covers): everything except
- * `signature`, serialized with object keys sorted recursively, arrays in
+ * `signatures`, serialized with object keys sorted recursively, arrays in
  * order, no whitespace — UTF-8 bytes. Signer and verifier MUST share this
  * one function; it is defined here and nowhere else.
  *
@@ -224,7 +230,11 @@ const build = (opts) => {
   };
   const payload = canonicalJson(index);
   const signatureValue = toB64(sign(null, Buffer.from(payload, 'utf8'), privateKey));
-  index.signature = { key: opts.keyId, value: signatureValue };
+  // The FROZEN signature shape (data-protocols.md §7 v1.1.0): `signatures`
+  // is a required 1..2 ARRAY — the singular `signature` object this tool
+  // once wrote is dead (the resolver's validator rejects it as an unknown
+  // field; schemas/marketplace-index.schema.json forbids it).
+  index.signatures = [{ key: opts.keyId, value: signatureValue }];
   writeFileSync(join(outDir, 'index.json'), `${JSON.stringify(index, null, 2)}\n`);
   console.log(`signed index.json (key=${opts.keyId}, entries=${entries.length}, canonical bytes=${Buffer.byteLength(payload)})`);
 };
@@ -233,14 +243,23 @@ const build = (opts) => {
 
 const verifyIndex = (indexPath) => {
   const index = JSON.parse(readFileSync(resolve(indexPath), 'utf8'));
-  if (!index.signature?.key || !index.signature?.value) die('index has no signature');
-  const { signature, ...rest } = index;
-  const publicKey = pubFromRawB64(index.keys?.[signature.key]
-    ?? die(`signature names key "${signature.key}" which is not in keys{}`));
+  // The frozen `signatures` ARRAY (data-protocols.md §7): a regular index
+  // carries exactly one entry. A singular `signature` object is the dead
+  // pre-contract shape — refuse it loudly rather than verify it.
+  if (!Array.isArray(index.signatures) || index.signatures.length !== 1) {
+    die('index has no single-entry signatures[] (the frozen §7 shape)');
+  }
+  const [sig] = index.signatures;
+  if (!sig || typeof sig.key !== 'string' || typeof sig.value !== 'string') {
+    die('malformed signatures[0] entry');
+  }
+  const { signatures: _drop, ...rest } = index;
+  const publicKey = pubFromRawB64(index.keys?.[sig.key]
+    ?? die(`signature names key "${sig.key}" which is not in keys{}`));
   const payload = Buffer.from(canonicalJson(rest), 'utf8');
-  const ok = verify(null, payload, publicKey, Buffer.from(signature.value, 'base64'));
+  const ok = verify(null, payload, publicKey, Buffer.from(sig.value, 'base64'));
   if (!ok) die('SIGNATURE INVALID — the index does not match its own signature');
-  console.log(`signature valid (key=${signature.key}, canonical bytes=${payload.length})`);
+  console.log(`signature valid (key=${sig.key}, canonical bytes=${payload.length})`);
 
   const siteDir = dirname(resolve(indexPath));
   let checked = 0;

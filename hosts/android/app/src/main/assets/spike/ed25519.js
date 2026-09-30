@@ -281,3 +281,42 @@ export const ed25519Verify = (publicKeyB64, messageBytes, signatureB64) => {
 
 /** The encoded base point — the resolver's self-check and the e2e's anchor. */
 export const ed25519BaseEncoded = () => encodePt(BASE);
+
+/** The RFC 8032 §7.1 vectors as an IN-RUNTIME self-test (the node-side pin
+ * lives in test/panel/ed25519.test.js, which the embedded runtime cannot
+ * run — this is the same pinning available on-device, before any catalog is
+ * trusted). Two positives across the vector classes plus tamper negatives
+ * (flipped R bit, flipped s bit, flipped message byte); true only if every
+ * case lands exactly as the RFC says. */
+export const ed25519SelfTest = () => {
+  // The RFC's vectors are hex; this module's face is base64 (the catalog's
+  // encoding) and bytes (the message) — convert at the boundary.
+  const hexBytes = (h) => Uint8Array.from((h.match(/../g) ?? []).map((b) => parseInt(b, 16)));
+  // btoa is one of the runtime's two crypto seams — the same encoder both
+  // node and the embedded runtime carry.
+  const b64 = (h) => btoa(String.fromCharCode(...hexBytes(h)));
+  const flipB64 = (h, at) => {
+    const b = hexBytes(h);
+    b[at] ^= 0x01;
+    return b64([...b].map((x) => x.toString(16).padStart(2, '0')).join(''));
+  };
+  const VECTORS = [
+    {
+      pub: 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+      msg: '',
+      sig: 'e5564300c360ac729086e2cc806e828a84877f1eb8e5d974d873e065224901555fb8821590a33bacc61e39701cf9b46bd25bf5f0595bbe24655141438e7a100b',
+    },
+    {
+      pub: '3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c',
+      msg: '72',
+      sig: '92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00',
+    },
+  ];
+  for (const { pub, msg, sig } of VECTORS) {
+    if (!ed25519Verify(b64(pub), hexBytes(msg), b64(sig))) return false;
+  }
+  const { pub, msg, sig } = VECTORS[1];
+  return !ed25519Verify(b64(pub), flipB64(sig, 5), msg)
+    && !ed25519Verify(b64(pub), flipB64(sig, 40), msg)
+    && !ed25519Verify(b64(pub), hexBytes(msg === '72' ? '73' : '72'), sig);
+};

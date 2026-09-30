@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: b812fcb5e5b3214563d39af7cdfe08cdc35aca52
-  zh: f64b5583c273f3b29bcdaca6da17530287b9ca58
+  en: a680bee7fd5dd8bd39f109d7bc786bc07d975839
+  zh: d0ccb7fa6642d37e8505cb4a0ee0bc7a96262473
 counterpart: README.zh.md
-last_confirmed: 2026-09-30T19:59:35+00:00
-en_commit: 180cf8bc
+last_confirmed: 2026-09-30T20:29:43+00:00
+en_commit: cae35e74
 zh_commit: 35222508

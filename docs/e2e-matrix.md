@@ -6,6 +6,16 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the plugin marketplace core (2026-10-01):
+> the signed catalog (data-protocols §7) CLI leg `marketplace.install` 71/71
+> — pure-JS ed25519 verify (zero new gateway primitives) over a loopback
+> file-hosted catalog authored from `system-plugins/`, the trust record
+> passed through to the unchanged installer, the §7.2 rotation drill and the
+> §7.1 tamper ladder (four rungs, each `InstallRejected` + audited + zero
+> staging), dir `runtime/spike/artifacts/macos-cli-marketplace-install/`.
+> The checker re-ran on this tree with the new dir: 75 dirs / 151 verdicts,
+> PASS.
+>
 > **Currency**: this matrix reflects the BYOK onboarding change (2026-09-30):
 > a first-run credential panel for beta users with no API key — the CLI leg
 > `onboarding.flow` 9/9 (no-credential detect → the connection test's success
@@ -365,6 +375,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=3 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71 (the signed catalog: pure-JS ed25519 verify, trust passthrough to the unchanged installer, the rotation drill, the four-rung tamper ladder — zero staging on every rejection) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots

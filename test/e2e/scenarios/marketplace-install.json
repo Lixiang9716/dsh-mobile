@@ -1,0 +1,507 @@
+{
+  "scenario": "marketplace.install",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "market.ed25519.selftest",
+      "match": {
+        "positives": 2,
+        "negatives": 3,
+        "standard": "RFC 8032"
+      }
+    },
+    {
+      "event": "market.resolver.built",
+      "match": {
+        "pinnedKeys": [
+          "dsh-market-1"
+        ],
+        "indexUrlPath": "/index.json"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index.json"
+      }
+    },
+    {
+      "event": "market.index.verified",
+      "match": {
+        "key": "dsh-market-1",
+        "signatures": 1,
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "entries": 9
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-office@*",
+        "id": "dsh-office",
+        "version": "0.1.0",
+        "blobSha256": "fd8a94d814580c16eff3593a9d315ad8a7a3718dcdff416f8e21ec74e71bcd76",
+        "manifestSha256": "0d4f1f520aa902bdeb753831a7550427de85114cbbc02b7f89ede856d0949205"
+      }
+    },
+    {
+      "event": "market.lookup.range",
+      "match": {
+        "spec": "dsh-office@*",
+        "matched": "0.1.0"
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
+      }
+    },
+    {
+      "event": "install.fetch.start",
+      "match": {
+        "url": "/dsh-fs@0.1.0.tgz"
+      }
+    },
+    {
+      "event": "install.fetch.status",
+      "match": {
+        "status": 200
+      }
+    },
+    {
+      "event": "install.fetch.body",
+      "match": {
+        "chunks": 2
+      }
+    },
+    {
+      "event": "install.blob.stored",
+      "match": {
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
+      }
+    },
+    {
+      "event": "install.digest.verified",
+      "match": {
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
+      }
+    },
+    {
+      "event": "install.manifest.validated",
+      "match": {
+        "id": "dsh-fs",
+        "version": "0.1.0"
+      }
+    },
+    {
+      "event": "install.integrity.computed",
+      "match": {
+        "files": 2,
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
+      }
+    },
+    {
+      "event": "install.negotiated",
+      "match": {
+        "required": 3,
+        "skipped": false
+      }
+    },
+    {
+      "event": "install.receipt.pending",
+      "match": {
+        "txId": "mkt-c001",
+        "journal": "receipts/journal.jsonl"
+      }
+    },
+    {
+      "event": "install.staged.verified",
+      "match": {
+        "files": 3
+      }
+    },
+    {
+      "event": "install.promoted",
+      "match": {
+        "dir": "plugins/dsh-fs@0.1.0",
+        "files": 3
+      }
+    },
+    {
+      "event": "install.committed",
+      "match": {
+        "status": "committed",
+        "previousVersion": null,
+        "treeSha256": "7797c8bf55b80945c6e208f75cc9847775b0e8d699fcd5d7a316a66b4958ff49"
+      }
+    },
+    {
+      "event": "market.install.receipt.asserted",
+      "match": {
+        "status": "committed",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "trustMatched": true
+      }
+    },
+    {
+      "event": "market.installed.loaded",
+      "match": {
+        "id": "dsh-fs",
+        "moduleId": "plugins/dsh-fs@0.1.0/bundle/index.js"
+      }
+    },
+    {
+      "event": "market.fs.write.ok",
+      "match": {
+        "written": 33
+      }
+    },
+    {
+      "event": "market.fs.read.ok",
+      "match": {
+        "text": "installed from the signed catalog"
+      }
+    },
+    {
+      "event": "market.happy.completed",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "version": "0.1.0"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-rotation-window.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-rotation-window.json"
+      }
+    },
+    {
+      "event": "market.index.verified",
+      "match": {
+        "key": "dsh-market-1",
+        "signatures": 2,
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "entries": 9
+      }
+    },
+    {
+      "event": "market.key.learned",
+      "match": {
+        "key": "dsh-market-2"
+      }
+    },
+    {
+      "event": "market.rotation.window.accepted",
+      "match": {
+        "dualSigned": true,
+        "under": "dsh-market-1",
+        "learned": "dsh-market-2"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-rotated-final.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-rotated-final.json"
+      }
+    },
+    {
+      "event": "market.index.verified",
+      "match": {
+        "key": "dsh-market-2",
+        "signatures": 1,
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "entries": 9
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"
+      }
+    },
+    {
+      "event": "market.rotation.completed",
+      "match": {
+        "acceptedUnder": "dsh-market-2"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-rotated-final.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-rotated-final.json"
+      }
+    },
+    {
+      "event": "market.rotation.stale-pin-rejected",
+      "match": {
+        "key": "dsh-market-2",
+        "code": "unknown-key"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-bad-signature.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-bad-signature.json"
+      }
+    },
+    {
+      "event": "market.tamper.rejected",
+      "match": {
+        "case": "bad-signature",
+        "code": "signature"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-unknown-key.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-unknown-key.json"
+      }
+    },
+    {
+      "event": "market.tamper.rejected",
+      "match": {
+        "case": "unknown-key",
+        "code": "unknown-key",
+        "signedBy": "attacker-key-9"
+      }
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index.json"
+      }
+    },
+    {
+      "event": "market.index.verified",
+      "match": {
+        "key": "dsh-market-1",
+        "signatures": 1,
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "entries": 9
+      }
+    },
+    {
+      "event": "market.tamper.armed",
+      "match": {
+        "via": "control-endpoint",
+        "target": "/dsh-fs@0.1.0.tgz"
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
+      }
+    },
+    {
+      "event": "install.fetch.start",
+      "match": {
+        "url": "/dsh-fs@0.1.0.tgz"
+      }
+    },
+    {
+      "event": "install.fetch.status",
+      "match": {
+        "status": 200
+      }
+    },
+    {
+      "event": "install.fetch.body",
+      "match": {
+        "chunks": 2
+      }
+    },
+    {
+      "event": "install.blob.stored",
+      "match": {
+        "sha256": "9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036"
+      }
+    },
+    {
+      "event": "market.tamper.rejected",
+      "match": {
+        "case": "blob-mismatch",
+        "code": "integrity"
+      }
+    },
+    {
+      "event": "market.tamper.disarmed"
+    },
+    {
+      "event": "market.index.fetch.start",
+      "match": {
+        "urlPath": "/index-manifest-mismatch.json"
+      }
+    },
+    {
+      "event": "market.index.fetched",
+      "match": {
+        "urlPath": "/index-manifest-mismatch.json"
+      }
+    },
+    {
+      "event": "market.index.verified",
+      "match": {
+        "key": "dsh-market-1",
+        "signatures": 1,
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "entries": 9
+      }
+    },
+    {
+      "event": "market.tamper.catalog-verified",
+      "match": {
+        "case": "manifest-mismatch",
+        "key": "dsh-market-1"
+      }
+    },
+    {
+      "event": "market.lookup.found",
+      "match": {
+        "spec": "dsh-fs@^0.1.0",
+        "id": "dsh-fs",
+        "version": "0.1.0",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+        "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"
+      }
+    },
+    {
+      "event": "install.fetch.start",
+      "match": {
+        "url": "/dsh-fs@0.1.0.tgz"
+      }
+    },
+    {
+      "event": "install.fetch.status",
+      "match": {
+        "status": 200
+      }
+    },
+    {
+      "event": "install.fetch.body",
+      "match": {
+        "chunks": 2
+      }
+    },
+    {
+      "event": "install.blob.stored",
+      "match": {
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
+      }
+    },
+    {
+      "event": "install.digest.verified",
+      "match": {
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
+      }
+    },
+    {
+      "event": "install.manifest.validated",
+      "match": {
+        "id": "dsh-fs",
+        "version": "0.1.0"
+      }
+    },
+    {
+      "event": "market.tamper.rejected",
+      "match": {
+        "case": "manifest-mismatch",
+        "code": "integrity"
+      }
+    },
+    {
+      "event": "market.tamper.zero-staging",
+      "match": {
+        "rungs": 4,
+        "stagingProbed": 2,
+        "journalLines": 2,
+        "installedTreeIntact": true,
+        "happyBlobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
+      }
+    },
+    {
+      "event": "market.completed",
+      "match": {
+        "status": "pass",
+        "rungs": 4,
+        "rotationLegs": 3,
+        "committed": 1
+      }
+    }
+  ]
+}

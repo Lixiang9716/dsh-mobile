@@ -1,6 +1,10 @@
 # 提案:插件市场 —— 冻结包格式之上的一层签名目录(data-protocols v1.1.0 candidate)
 
-> **状态:DRAFT(D5 提案 —— 未冻结、未实现)。**
+> **状态:ADOPTED(2026-10-01,owner 拍板:手机侧 dsh 插件市场,包格式就是既有 DSH
+> 包格式)——以可加性方式冻结为 data-protocols v1.1.0 §7。**与草案形状的一处差异:单个
+> `signature` 对象改为 `signatures` 数组(平时一条,轮换窗口期两条),使双签在同一个冻结
+> 形状内可表达。冻结的规则见 [data-protocols.zh.md](../data-protocols.zh.md) §7;机器
+> schema 见 [schemas/marketplace-index.schema.json](../schemas/marketplace-index.schema.json)。
 > [English](2026-10-01-plugin-marketplace.md) | 简体中文
 
 ## 动机
