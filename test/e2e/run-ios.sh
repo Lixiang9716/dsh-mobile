@@ -384,11 +384,12 @@ fi
 # the file-provider's re-index pass surfaces it — measured twice: a 04:52
 # staging surfaced at 04:55 (2026-09-21), and the release regression's final
 # run starved exactly here (staged 19:37, searched 19:38, 未找到相关结果;
-# 2026-09-30) — the matrix's earlier restage does not survive to this point
-# because the harness install can migrate the data container and take the
-# staged file with it. This paces that physics (rules.md rule 8: a sleep may
-# pace real wall-clock physics, and the condition is asserted after the
-# wait); when the target was already staged and settled the cost is zero.
+# 2026-09-30). One more invalidator lives APP-side: the session boot rewrote
+# the target at every launch (GatewaySession.stageE2ETarget, now stage-once
+# too), so the settle window matters whenever a fresh copy had to be made.
+# This paces that physics (rules.md rule 8: a sleep may pace real wall-clock
+# physics, and the condition is asserted after the wait); when the target
+# was already staged and settled the cost is zero.
 if [ "$STAGED_FRESH" -eq 1 ]; then
   log "fresh staging — pacing the file-provider index settle (~180s, the measured surfacing window)"
   sleep 180

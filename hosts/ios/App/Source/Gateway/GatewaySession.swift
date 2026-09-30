@@ -281,8 +281,17 @@ final class GatewaySession {
             for: .documentDirectory, in: .userDomainMask)[0]
         let dir = documents.appendingPathComponent("gateway-e2e", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let target = dir.appendingPathComponent("notes.txt")
+        // STAGE ONCE (run-ios.sh's recipe, mirrored app-side): rewriting the
+        // target at EVERY launch knocked it out of the file-provider search
+        // index right before the drive searched for it — measured 2026-09-30
+        // (release regression final run): the launch rewrite invalidated the
+        // index inside the picker's search window and the binding watchdog
+        // starved at `ui-wait picker` (未找到相关结果), on a freshly erased
+        // simulator with a settled copy. Only a MISSING target is created.
+        guard !FileManager.default.fileExists(atPath: target.path) else { return }
         let notes = Data("gateway e2e target file — dsh-mobile m2\n".utf8)
-        try notes.write(to: dir.appendingPathComponent("notes.txt"))
+        try notes.write(to: target)
     }
 
     /// RuntimeDescriptor pre-eval: the full serving table available, the
