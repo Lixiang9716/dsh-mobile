@@ -161,7 +161,7 @@
     },
     "ed25519Public": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9+/]{43}[AEIMQUYcgkosw048]=$",
+      "pattern": "^[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$",
       "description": "32-byte ed25519 public key, standard base64 (padded) — the 4-bit tail constrains the last data character."
     },
     "ed25519Signature": {
