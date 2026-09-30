@@ -9,14 +9,14 @@
     }
   },
   "checklist": [
-    "the mic face implements the proposal's signatures verbatim (micStart/micStop, the mic.frame channel, drop-oldest ring, seq continuity)",
-    "iOS: MicPrimitives.swift + NSMicrophoneUsageDescription + gateway registration + descriptor",
-    "Android: MicPrimitives.kt + RECORD_AUDIO runtime request + gateway registration + descriptor",
-    "Harmony: MicPrimitives.ets + ohos.permission.MICROPHONE + C forward list + descriptor constants equal",
-    "JS shim micStart/micStop + mic.frame subscription over the bridge event plumbing; manifest carries the microphone grant",
-    "scenario mic-plane.js (scenario-id, __dshComplete) + per-host expected\u2194logged manifests + audit manifests",
-    "E2E drivers: run-ios-mic-plane.sh, hosts/android/ci/run-mic-plane.sh, hosts/harmony/ci/run-mic-plane.sh (D-g ready) \u2014 simulator legs really run, mic permission automation honestly recorded",
-    "staged closures synced (build/build.sh sync) and check-staging green",
+    "[x] the mic face implements the proposal's signatures verbatim (micStart/micStop, the mic.frame channel, drop-oldest ring, seq continuity)",
+    "[x] iOS: MicPrimitives.swift + NSMicrophoneUsageDescription + gateway registration + descriptor",
+    "[x] Android: MicPrimitives.kt + RECORD_AUDIO runtime request + gateway registration + descriptor",
+    "[x] Harmony: MicPrimitives.ets + ohos.permission.MICROPHONE + C forward list + descriptor constants equal",
+    "[x] JS shim micStart/micStop + mic.frame subscription over the bridge event plumbing; manifest carries the microphone grant",
+    "[x] scenario mic-plane.js (scenario-id, __dshComplete) + per-host expected\u2194logged manifests + audit manifests",
+    "[x] E2E drivers: run-ios-mic-plane.sh, hosts/android/ci/run-mic-plane.sh, hosts/harmony/ci/run-mic-plane.sh (D-g ready) \u2014 simulator legs really run, mic permission automation honestly recorded",
+    "[x] staged closures synced (build/build.sh sync) and check-staging green",
     "gov run full DAG green receipt, push, PR opened stacked on the contract PR"
   ],
   "status": "open",
