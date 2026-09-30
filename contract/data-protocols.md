@@ -1,8 +1,10 @@
-# Data Protocols — Bundle Layout, Manifest, Receipt (v1.0.0)
+# Data Protocols — Bundle Layout, Manifest, Receipt, Signed Catalog (v1.1.0)
 
-> **Status: FROZEN at the contract freeze** (2026-09-19, decision D5). These are the three data protocols
-> every host and every plugin build must honor. Machine-readable schemas live in
-> [schemas/](schemas/). Companion to [primitives.md](primitives.md).
+> **Status: FROZEN at the contract freeze** (2026-09-19, decision D5); **additively extended to
+> v1.1.0** (2026-10-01: §7, the signed catalog — proposal
+> [2026-10-01-plugin-marketplace.md](proposals/2026-10-01-plugin-marketplace.md), ADOPTED). These
+> are the four data protocols every host and every plugin build must honor. Machine-readable
+> schemas live in [schemas/](schemas/). Companion to [primitives.md](primitives.md).
 > English | [简体中文](data-protocols.zh.md)
 
 ## 1. Bundle layout
@@ -104,8 +106,87 @@ primitive permission flag of [primitives.md](primitives.md) is a valid capabilit
 
 ## 6. Versioning
 
-- The three schemas are versioned **independently of the primitive contract**: manifest
-  carries `schemaVersion: 1`, receipt carries `receiptVersion: 1` (integrity `ledgerVersion: 1`).
+- The four schemas are versioned **independently of the primitive contract**: manifest
+  carries `schemaVersion: 1`, receipt carries `receiptVersion: 1` (integrity `ledgerVersion: 1`),
+  the catalog index carries its own `schemaVersion: 1` (§7).
 - Additive optional fields = minor; any removal, retype, or required-field addition = major
-  with a migration note. Hosts reject manifests/receipts whose major version they do not
-  understand — loudly (fail-loud rule), never by best-effort parsing.
+  with a migration note. Hosts reject manifests/receipts/catalogs whose major version they do
+  not understand — loudly (fail-loud rule), never by best-effort parsing.
+
+## 7. The signed catalog (v1.1.0 — the plugin marketplace)
+
+The registry half of the product identity is **a signed static `index.json` plus package
+tarballs on plain file hosting** (object storage / GitHub Releases). The catalog is data, not a
+service: no resident server process, no database, no accounts; it is reproducible from the
+repository (authored by CI, the same discipline as the vendor pin table). Discovery and install
+both ride the frozen `httpFetch` primitive; nothing here invents a package format — packages on
+the catalog are exactly the §1–§4 format. Proposal:
+[2026-10-01-plugin-marketplace.md](proposals/2026-10-01-plugin-marketplace.md) (ADOPTED,
+owner decision 2026-10-01: the mobile-side dsh plugin marketplace, one format for upstream
+plugins, this repo's `system-plugins/`, and web-client skins). Schema:
+[schemas/marketplace-index.schema.json](schemas/marketplace-index.schema.json).
+
+```json
+{
+  "schemaVersion": 1,
+  "marketplace": "dsh",
+  "generatedAt": "2026-10-01T00:00:00Z",
+  "keys": { "dsh-market-1": "ed25519-public-key, base64 (32 bytes)" },
+  "entries": [
+    {
+      "id": "dsh-office", "version": "0.1.0", "type": "service",
+      "tgzUrl": "https://…/packages/dsh-office@0.1.0.tgz",
+      "blobSha256": "…", "manifestSha256": "…",
+      "capabilities": { "required": ["fsRead"], "optional": [] },
+      "summary": { "en": "…", "zh": "…" }
+    }
+  ],
+  "signatures": [ { "key": "dsh-market-1", "value": "ed25519-signature, base64 (64 bytes)" } ]
+}
+```
+
+- `entries[]` mirrors the frozen manifest fields a consumer needs **before download**;
+  everything else is read from the package's own `manifest.json` after fetch.
+  `capabilities` here is ADVISORY DISPLAY DATA — the package manifest (§2) stays the single
+  source of truth, and grants happen only at install time through the §2 negotiation in the
+  frozen pipeline. `blobSha256`/`manifestSha256` ARE the §4 transaction's trust record.
+- `keys` carries the CURRENT verification key set. `signatures` carries ONE ed25519 signature
+  (PureEdDSA per RFC 8032) normally, TWO during a rotation window (below).
+
+### 7.1 Signature rules
+
+- The signature covers the **canonical JSON** of everything except `signatures` itself:
+  UTF-8 of the JSON encoding with object keys recursively sorted (lexicographic by code unit),
+  arrays in order, no insignificant whitespace.
+- **The signature is the trust.** A consumer refuses a catalog it cannot verify, and trusts no
+  key it did not pin or learn per §7.2. Verification failure, an unknown signing key, a
+  malformed catalog, and a missing entry are all loud refusals in the installer's existing
+  `InstallRejected` vocabulary — each auditable, nothing staged.
+- The verification public key is pinned host-side, out-of-band, by the same discipline as the
+  vendor pin table (a key rollover is an index event, not an app update). The initial pin is
+  repo configuration; private keys live only in the signing CI environment — never in the
+  repository.
+
+### 7.2 Key rotation
+
+A rotation publishes, for one rotation window, an index signed by BOTH the outgoing and the
+incoming key. A host verifies it under a key it already trusts, then LEARNS the incoming key —
+but only from such a dual-signed, verified index: a key a host has not pinned and has not seen
+co-sign a verified index is an unknown key, and a catalog signed only by it is refused. The
+window then closes: the published index drops the outgoing signature, and hosts that observed
+the window continue; hosts that never did (a stale pin) refuse the post-window catalog until
+they observe a dual-signed index. Learning is session state, not persistence — a restarted
+host falls back to its pin, so a compromised host cannot shortcut the window discipline.
+
+### 7.3 Consumer flow (the resolver seam)
+
+```
+marketplace.lookup(id@range?)   → verified catalog entry
+  → installFromFetch({ url: entry.tgzUrl, id: entry.id,
+      trust: { blobSha256, manifestSha256 }, … })     // §4, EXISTING and unchanged
+```
+
+The resolver (index fetch over `httpFetch` + §7.1 verification + §7.2 rotation state + entry
+lookup) is the ONE new seam; the §4 install transaction is unchanged — the resolver passes the
+signed trust record through untouched, so tampered hosting can never produce an installable
+package (the signature covers the digests; the transaction re-derives them from bytes).

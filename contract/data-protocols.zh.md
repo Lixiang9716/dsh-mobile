@@ -1,6 +1,9 @@
-# 数据协议 — Bundle 布局、Manifest、Receipt(v1.0.0)
+# 数据协议 — Bundle 布局、Manifest、Receipt、签名目录(v1.1.0)
 
-> **状态:契约冻结阶段冻结**(2026-09-19,决策 D5)。这是每个宿主、每个插件构建都必须遵守的三份数据协议。
+> **状态:契约冻结阶段冻结**(2026-09-19,决策 D5);**以可加性方式扩展到 v1.1.0**
+> (2026-10-01:§7 签名目录——提案
+> [2026-10-01-plugin-marketplace.zh.md](proposals/2026-10-01-plugin-marketplace.zh.md),ADOPTED)。
+> 这是每个宿主、每个插件构建都必须遵守的四份数据协议。
 > 机器可读 schema 见 [schemas/](schemas/)。配套文档:[primitives.md](primitives.zh.md)。
 > [English](data-protocols.md) | 简体中文
 
@@ -95,7 +98,75 @@ receipt 是记录性日志;schema:[schemas/receipt.schema.json](schemas/receipt.
 
 ## 6. 版本化
 
-- 三份 schema **独立于原语契约版本化**:manifest 携带 `schemaVersion: 1`,receipt 携带
-  `receiptVersion: 1`(integrity 为 `ledgerVersion: 1`)。
+- 四份 schema **独立于原语契约版本化**:manifest 携带 `schemaVersion: 1`,receipt 携带
+  `receiptVersion: 1`(integrity 为 `ledgerVersion: 1`),目录索引携带自己的 `schemaVersion: 1`
+  (§7)。
 - 增补可选字段 = 次版本;任何移除、改型、必填字段新增 = 主版本,并附迁移说明。宿主对
-  不理解的主版本的 manifest/receipt —— 响亮地拒绝(fail-loud 规则),绝不尽力解析。
+  不理解的主版本的 manifest/receipt/目录 —— 响亮地拒绝(fail-loud 规则),绝不尽力解析。
+
+## 7. 签名目录(v1.1.0 —— 插件市场)
+
+产品身份中的注册表一半是**一份签名的静态 `index.json` 加上托管在普通文件服务(对象存储 /
+GitHub Releases)上的包 tarball**。目录是数据,不是服务:无常驻服务进程、无数据库、无账号;
+它可以从仓库复现(由 CI 署名,与 vendor pin 表同一纪律)。发现与安装都走冻结的 `httpFetch`
+原语;这里不发明任何包格式——目录上的包就是 §1–§4 的格式。提案:
+[2026-10-01-plugin-marketplace.zh.md](proposals/2026-10-01-plugin-marketplace.zh.md)(ADOPTED,
+owner 2026-10-01 拍板:手机侧 dsh 插件市场,上游插件、本仓库 `system-plugins/` 与 web-client
+皮肤同属一种格式)。Schema:
+[schemas/marketplace-index.schema.json](schemas/marketplace-index.schema.json)。
+
+```json
+{
+  "schemaVersion": 1,
+  "marketplace": "dsh",
+  "generatedAt": "2026-10-01T00:00:00Z",
+  "keys": { "dsh-market-1": "ed25519 公钥,base64(32 字节)" },
+  "entries": [
+    {
+      "id": "dsh-office", "version": "0.1.0", "type": "service",
+      "tgzUrl": "https://…/packages/dsh-office@0.1.0.tgz",
+      "blobSha256": "…", "manifestSha256": "…",
+      "capabilities": { "required": ["fsRead"], "optional": [] },
+      "summary": { "en": "…", "zh": "…" }
+    }
+  ],
+  "signatures": [ { "key": "dsh-market-1", "value": "ed25519 签名,base64(64 字节)" } ]
+}
+```
+
+- `entries[]` 只镜像消费方在**下载之前**需要的冻结 manifest 字段;其余都在取包之后从包自带的
+  `manifest.json` 读取。这里的 `capabilities` 只是**建议性的展示数据**——包 manifest(§2)
+  仍是唯一事实源,授权只发生在安装期、经冻结管线里的 §2 协商。
+  `blobSha256`/`manifestSha256` 就是 §4 事务的信任记录。
+- `keys` 携带**当前**验证密钥集。`signatures` 平时携带一条 ed25519 签名(RFC 8032
+  PureEdDSA),轮换窗口期内携带两条(见下)。
+
+### 7.1 签名规则
+
+- 签名覆盖除 `signatures` 之外全部内容的**规范 JSON**:UTF-8 编码,对象键递归排序(按码元
+  字典序),数组保持顺序,无无意义空白。
+- **签名即信任。**消费方拒绝一切无法验证的目录,且只信任它钉住过的、或按 §7.2 学到的密钥。
+  验签失败、未知签名密钥、目录畸形、条目缺失,全部走安装器既有的 `InstallRejected` 词表
+  响亮拒绝——每一条可审计,零暂存。
+- 验证公钥由宿主侧钉住,带外进行,与 vendor pin 表同一纪律(密钥轮换是索引事件,不是应用
+  升级)。初始钉扎是仓库配置;私钥只存在于签名 CI 环境——绝不入库。
+
+### 7.2 密钥轮换
+
+一次轮换会在一个轮换窗口期内发布由新旧两把密钥共同签名的索引。宿主用它已信任的密钥验证,
+然后**学到**新密钥——但只从这种双签且验证通过的索引学:宿主既没钉过、也没见过在已验证索引
+上联署的密钥就是未知密钥,仅由它签名的目录会被拒绝。窗口随后关闭:发布的索引去掉旧签名;
+观察过窗口的宿主继续工作,从未观察过的宿主(陈旧钉扎)在观察到双签索引之前拒绝窗口后的
+目录。学习是会话态,不持久化——重启的宿主回落到钉扎,被攻破的宿主因此无法绕过窗口纪律。
+
+### 7.3 消费流(resolver 缝)
+
+```
+marketplace.lookup(id@range?)   → 验证过的目录条目
+  → installFromFetch({ url: entry.tgzUrl, id: entry.id,
+      trust: { blobSha256, manifestSha256 }, … })     // §4,既有且不改
+```
+
+resolver(经 `httpFetch` 取索引 + §7.1 验签 + §7.2 轮换状态 + 条目查找)是唯一的新缝;
+§4 安装事务零改动——resolver 把签名的信任记录原样透传,因此被篡改的托管永远产不出可安装的
+包(签名覆盖摘要;事务从字节重新推导它们)。

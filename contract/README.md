@@ -2,7 +2,7 @@
 
 > English | [简体中文](README.zh.md)
 
-**The contract-freeze deliverable — the first priority of the entire project. Status: FROZEN v1.0.0 (2026-09-19, D5), additively extended to v1.8.0 (2026-09-30).**
+**The contract-freeze deliverable — the first priority of the entire project. Status: FROZEN v1.0.0 (2026-09-19, D5), additively extended (primitives v1.8.0, 2026-09-30; data-protocols v1.1.0 — the signed catalog, 2026-10-01).**
 
 No implementation code lands before this directory is frozen (D5: contract first). It is now.
 
@@ -12,11 +12,12 @@ No implementation code lands before this directory is frozen (D5: contract first
 | --- | --- |
 | [primitives.md](primitives.md) | Capability gateway primitive table v1.8.0 — 26 primitives (v1.1.0–v1.5.0, v1.8.0 additive), typed, permission-flagged, versioned; event channels; audit; conformance (`gateway@1`) · [简体中文](primitives.zh.md) |
 | [primitives.d.ts](primitives.d.ts) | Machine-readable primitive surface (TS declarations) |
-| [data-protocols.md](data-protocols.md) | Bundle layout · plugin manifest · integrity ledger · install receipt transaction · capability string grammar · [简体中文](data-protocols.zh.md) |
+| [data-protocols.md](data-protocols.md) | Bundle layout · plugin manifest · integrity ledger · install receipt transaction · capability string grammar · the signed catalog (§7, v1.1.0) · [简体中文](data-protocols.zh.md) |
 | [schemas/manifest.schema.json](schemas/manifest.schema.json) | Plugin manifest, `schemaVersion: 1` (JSON Schema 2020-12) |
 | [schemas/integrity.schema.json](schemas/integrity.schema.json) | Installed-tree digest ledger, `ledgerVersion: 1` |
 | [schemas/receipt.schema.json](schemas/receipt.schema.json) | Install/remove transaction receipt, `receiptVersion: 1` |
-| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented; ADOPTED proposals fold into [primitives.md](primitives.md) — latest: the socket seam, v1.8.0) · current: [the event channel](proposals/2026-09-26-event-channel.md) (a v1.6.0 candidate), [the render surface](proposals/2026-09-26-render-surface.md) (a v1.7.0 candidate), [the forkpty face](proposals/2026-09-29-forkpty-face.md) (a v1.9.0 candidate), [the system capability plane](proposals/2026-09-30-system-capability-plane.md) (a v1.10.0 candidate), and [the plugin marketplace](proposals/2026-10-01-plugin-marketplace.md) (a data-protocols v1.1.0 candidate) |
+| [schemas/marketplace-index.schema.json](schemas/marketplace-index.schema.json) | Marketplace signed catalog index, `schemaVersion: 1` (data-protocols §7) |
+| [proposals/](proposals/) | Draft additions under debate (D5 proposals — nothing frozen, nothing implemented; ADOPTED proposals fold into their contract doc — the socket seam → [primitives.md](primitives.md) v1.8.0, the plugin marketplace → [data-protocols.md](data-protocols.md) v1.1.0 §7) · current: [the event channel](proposals/2026-09-26-event-channel.md) (a v1.6.0 candidate), [the render surface](proposals/2026-09-26-render-surface.md) (a v1.7.0 candidate), [the forkpty face](proposals/2026-09-29-forkpty-face.md) (a v1.9.0 candidate), and [the system capability plane](proposals/2026-09-30-system-capability-plane.md) (a v1.10.0 candidate) |
 
 ## Reading order
 

@@ -1,0 +1,21 @@
+{
+  "title": "The plugin marketplace core \u2014 signed catalog lands as code (data-protocols v1.1.0)",
+  "created": "2026-09-30T20:19:13+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "docs: data-protocols.md + zh land \u00a77 the signed catalog (v1.1.0, proposal ADOPTED) with schemas/marketplace-index.schema.json + contract/README row sync",
+    "resolver: runtime/spike/marketplace.js \u2014 index fetch over httpFetch, pure-JS ed25519 verify (sha512.js + ed25519.js, zero new gateway primitives), id@range lookup, trust passthrough to the UNCHANGED installFromFetch",
+    "generator: tools/gen-marketplace-index.mjs \u2014 packages system-plugins into deterministic tgzs, signs the index (key via env/file, private key never committed)",
+    "e2e leg marketplace.install \u2014 loopback-hosted index+tgz, happy path to committed receipt; tamper ladder (bad signature / unknown key / out-of-window rotated key / blob mismatch / manifest mismatch) each InstallRejected + audited + zero staging; key rotation drill (dual-signed accepted / post-window single-signed rejected by the stale pin)",
+    "Agent Note (feature) + artifacts (receipt/verdict/logs/scenario.jsonl) + gov run green + PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0082"
+}
