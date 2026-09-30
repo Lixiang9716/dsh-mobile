@@ -1,0 +1,40 @@
+# PocketBase — the resource-constrained FALLBACK (standby package).
+#
+# Honest scope note: PocketBase is an OIDC *client*, not a native OIDC
+# issuer (https://pocketbase.io/docs/authentication — it consumes
+# external providers; see also pocketbase discussions #4861/#6016). In
+# this package it serves as the identity store + auth API when the host
+# cannot run Docker; if the marketplace-v2 integration MUST speak OIDC,
+# land Logto instead (or a dedicated lightweight IdP). See README
+# "Selection rationale".
+#
+# PATHS ARE TEMPLATED: @REMOTE_DIR@ is substituted by deploy.sh at
+# install time (sed) with the actual --remote-dir value. Installing this
+# unit by hand? Substitute the placeholder yourself, e.g.
+#   sed "s|@REMOTE_DIR@|/opt/dsh-idp/pocketbase|g" pocketbase.service
+#
+# Secrets: none here. The superuser is created at FIRST BOOT through the
+# web installer (https://<host>/_/) — the password is typed once, in the
+# browser, and never enters git, shell history, or this unit file.
+
+[Unit]
+Description=PocketBase identity store (dsh IdP standby, fallback target)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pocketbase
+Group=pocketbase
+WorkingDirectory=@REMOTE_DIR@
+ExecStart=@REMOTE_DIR@/pocketbase serve --http=127.0.0.1:8090
+Restart=on-failure
+RestartSec=5
+LimitNOFILE=4096
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=@REMOTE_DIR@
+
+[Install]
+WantedBy=multi-user.target
