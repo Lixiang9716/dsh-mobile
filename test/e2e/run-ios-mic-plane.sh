@@ -117,6 +117,10 @@ fi
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
+mkdir -p "$ART/screens"
+xcrun simctl io "$UDID" screenshot "$ART/screens/01-final.png" >/dev/null 2>&1 || true
+grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
+grep '^dsh.gateway.audit:' "$LOG" > "$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0
 run_check() { # MANIFEST OUT
   rm -f "$2"

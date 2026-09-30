@@ -61,10 +61,19 @@ per-host expected↔logged manifests, and real simulator legs.
   touch never returns. The fence bounds the arm at 8 s and answers the
   honest `unavailable` (a capability gap, the emulator posture); the
   winner of the fence settles, the loser tears the half-open graph down.
-  The iOS SIMULATOR leg on this machine therefore pins the refused shape
-  (`mic.refused { resolved: "unavailable" }` + the unknown-id leg) — real
-  PCM frames need a host whose mic route opens, which the real-device leg
-  (D-g script ready) carries.
+  The fence stands regardless: when the route is wedged micStart answers
+  the honest `unavailable` (the manifest re-pins to whichever shape the
+  run produced — the pasteboard posture). In the event, this Mac's route
+  healed between runs and the iOS SIMULATOR leg now pins the full ARMED
+  ladder with real PCM frames; the real-device leg (D-g script ready)
+  carries the same ladder onto hardware.
+- **The bare-runtime timer surface**: the scenario's bounded waits use
+  setTimeout WITHOUT clearTimeout — the host's bare runtime exposes
+  setTimeout with no clearTimeout pairing (the dsh-timeout shim's pairing
+  loads with the upstream modules, not for a bare scenario; measured: the
+  pairing's absence threw mid-await and the drive hung silently until the
+  watchdog). Losing timeout promises are orphaned on purpose — harmless
+  after completion.
 - **Audit honesty**: one record per CALL (micStart's format/rate/frameMs/
   tag, micStop's duration+bytes); frames are never per-frame audited (the
   proposal's honesty note). A pre-existing iOS-core bug surfaced and is

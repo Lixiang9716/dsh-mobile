@@ -1,0 +1,4 @@
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","outcome":"ok","detail":{"sampleRate":16000,"format":"pcm-s16le","tag":"mic.plane","frameMs":100},"verdict":"granted","ts":"2026-09-30T00:12:33Z","primitive":"micStart"}
+dsh.gateway.audit: {"detail":{"bytes":10912,"durationMs":959},"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T00:12:33Z","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario"}

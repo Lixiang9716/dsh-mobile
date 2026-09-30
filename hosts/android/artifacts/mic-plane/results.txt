@@ -1,2 +1,2 @@
-09-30 08:09:27.580 16618 16678 I dsh.spike.result: android.mic-plane PASS | quickjs-ng 0.17.0
-09-30 08:09:27.580 16618 16678 I dsh.spike.result: ALL PASS
+09-30 08:10:39.367 16743 16806 I dsh.spike.result: android.mic-plane PASS | quickjs-ng 0.17.0
+09-30 08:10:39.367 16743 16806 I dsh.spike.result: ALL PASS

@@ -8,7 +8,17 @@
     {
       "primitive": "micStart",
       "verdict": "granted",
-      "outcome": "unavailable"
+      "outcome": "ok"
+    },
+    {
+      "primitive": "micStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "micStop",
+      "verdict": "granted",
+      "outcome": "ok"
     },
     {
       "primitive": "micStop",
