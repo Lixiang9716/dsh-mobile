@@ -24,20 +24,35 @@ standby package plus an honest probe record, never a fabricated deployment.
   no identities. Verdict: **unreachable: missing credentials**. The
   unreachable branch was taken, per instruction.
 - **`deploy/idp/` is the one-click standby package (config-as-data):**
-  - `logto/docker-compose.yml` — Logto (`svhd/logto`) + Postgres 16,
-    loopback-only ports, `TRUST_PROXY_HEADER=1`, official seed/alteration
-    entrypoint; placeholders come from `.env` created **on the host**
+  - `logto/docker-compose.yml` — Logto (`ghcr.io/logto-io/logto:1.44.0`,
+    pinned to the verified release tag — the repo's pin discipline applies
+    to the IdP's own image too) + Postgres 16, loopback-only ports,
+    `TRUST_PROXY_HEADER=1`, official seed/alteration entrypoint;
+    placeholders come from `.env` created **on the host**
     (`logto/env.example` carries `CHANGE_ME` callback-domain markers).
   - `pocketbase/pocketbase.service` — the fallback: single pinned binary
-    (`v0.40.4`) behind a hardened systemd unit, loopback-only `:8090`.
-  - `deploy.sh` — parameterized (`--host/--port/--proxy/--target/
-    --check-only`), BatchMode-only; probe → fail-loud exit 3 with raw ssh
-    stderr; syncs the target; generates the Postgres password **on the
-    remote host** into a mode-600 `.env` if absent; health check polls the
-    OIDC discovery document (logto) or `/api/health` (pocketbase) with a
-    deadline, never a blind sleep. The proxy path auto-appends `%h %p`
-    when the caller omits them (a bug the shipped script's own first probe
-    run caught — nc usage error, fixed, re-run).
+    (`v0.40.4`) behind a hardened systemd unit TEMPLATE (paths are
+    `@REMOTE_DIR@` placeholders baked in by `deploy.sh` at install time,
+    so the unit always points where the script actually installed),
+    loopback-only `:8090`.
+  - `deploy.sh` — parameterized (`--host/--port/--proxy/--remote-dir/
+    --target/--check-only`), BatchMode-only; probe → fail-loud exit 3 with
+    raw ssh stderr; syncs the target from a local tarball that EXCLUDES
+    `.env` (built to a temp file first — a local tar failure aborts instead
+    of being masked by the remote side of a pipeline); generates the
+    Postgres password **on the remote host** into a mode-600 `.env` if
+    absent — hex, because base64's `/` would corrupt the `postgresql://`
+    URL; honors `--remote-dir` on BOTH branches (the logto branch passes
+    it as `$1` into the quoted heredoc, keeping the remote-side `$(...)`
+    expansion); health check polls the OIDC discovery document (logto) or
+    `/api/health` (pocketbase) with a deadline, never a blind sleep. The
+    proxy path auto-appends `%h %p` when the caller omits them (a bug the
+    shipped script's own first probe run caught — nc usage error, fixed,
+    re-run). Five PR-review findings (unit↔script path split, ignored
+    `--remote-dir` on the logto branch, `.env` riding the sync tarball,
+    base64 `/` in the DB URL, unpinned `:latest` image) were fixed before
+    any real deployment — consistent with the honest record that nothing
+    beyond `--check-only` has ever executed.
   - `README.md` + `README.zh.md` + `README.i18n.yaml` — the bilingual pair
     with the owner checklist (host / keys / security group / domain), the
     raw probe record, the first-boot admin procedure, and the caddy HTTPS
