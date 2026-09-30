@@ -2,7 +2,7 @@
   "title": "Android user-facing boot fully integrates the DSH packages (the SessionServe seat)",
   "created": "2026-09-24T04:38:37+00:00",
   "rules": {
-    "hash": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
@@ -60,6 +60,13 @@
       "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
       "to": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "reason": "all five checklist items are ticked (the SessionServe seat landed, emulator-verified, drives unaffected); the rules baseline moved after the work landed \u2014 advancing so the done card can seal"
+    },
+    {
+      "ts": "2026-09-30T14:05:13+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
+      "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
     }
   ]
 }
