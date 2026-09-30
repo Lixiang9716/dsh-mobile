@@ -1,0 +1,38 @@
+{
+  "dsh-ble": {
+    "en": "Bluetooth LE service over the system capability plane: scan, connect, and GATT exchange with host-side consent layers and opaque device tokens.",
+    "zh": "系统能力平面上的 BLE 服务:扫描、连接与 GATT 交互,宿主侧双层用户确认,设备令牌不透明。"
+  },
+  "dsh-device-plane": {
+    "en": "Device service (clipboard, share, haptics-class surfaces) over the frozen device-plane primitives; host-side approval gates stay authoritative.",
+    "zh": "设备服务(剪贴板、分享等)走冻结的设备平面原语;审批门留在宿主侧。"
+  },
+  "dsh-fs": {
+    "en": "The fs service: scope-relative POSIX-style read/write/append/exists over the frozen fs primitives; escapes rejected with the contract's invalid code.",
+    "zh": "fs 服务:在冻结的 fs 原语上提供 scope 相对的 POSIX 风格读写;越界路径按契约 invalid 拒绝。"
+  },
+  "dsh-office": {
+    "en": "The word/excel/ppt document plane: create, read, and update documents, always offered, built on vendored fflate and the gateway fs primitives.",
+    "zh": "word/excel/ppt 文档平面:创建、读取与更新文档,基于 vendored fflate 与网关 fs 原语。"
+  },
+  "dsh-open-design": {
+    "en": "The Open Design daemon's REST surface: projects, BYOK generate, artifact save/lint; its tools appear only when a daemon is configured.",
+    "zh": "Open Design 守护进程的 REST 面:项目、BYOK 生成、产物保存与 lint;仅当配置了守护进程时提供工具。"
+  },
+  "dsh-shell-ish": {
+    "en": "A shell seam over contract ishRun: a real Linux userland emulated inside the host process; the workspace is the PATH.",
+    "zh": "基于契约 ishRun 的 shell 面:宿主进程内模拟的真实 Linux 用户态;工作区即 PATH。"
+  },
+  "dsh-shell-wasm": {
+    "en": "A shell seam over contract wasmRun: programs are .wasm files in the workspace, interpreted in-process.",
+    "zh": "基于契约 wasmRun 的 shell 面:程序即工作区里的 .wasm 文件,进程内解释执行。"
+  },
+  "dsh-subprocess-quickjs": {
+    "en": "The coroutine executor: spawn returns an event-driven handle — progress and completion arrive as events on the runtime queue, no OS processes.",
+    "zh": "协程执行器:spawn 返回事件驱动句柄——进度与完成以事件到达运行时队列,无 OS 进程。"
+  },
+  "dsh-ui": {
+    "en": "The ui service: native approval, picker, and notify composed into one session-facing surface; notify settles from a response event.",
+    "zh": "ui 服务:原生审批、选择器与通知组合为会话面;notify 由响应事件落定。"
+  }
+}
