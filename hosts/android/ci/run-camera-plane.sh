@@ -99,16 +99,17 @@ grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 FAIL=0
-# The SIMULATOR camera leg drives scenario camera.plane — the manifests are
-# camera-plane.json / camera-plane-audit.json. The capture manifests
-# (camera-plane-capture*.json, scenario ble.plane) belong to the DEVICE
-# camera leg (run-ios-camera-plane-device.sh): 62f80165 wired them in here by
-# mistake and nothing re-ran the leg until the v0.0.2 release regression
-# (2026-09-30) — the checker could never match the emulator's own scenario.
-node test/e2e/check.mjs --manifest $SCEN/camera-plane.json \
+# The SIMULATOR camera leg drives scenario camera.plane and its honest
+# posture on the emulator's virtual camera is the REAL BURST (8 events) —
+# the capture manifests as #252 landed them. #254 repurposed the
+# camera-plane-capture*.json FILE NAMES for the DEVICE leg (scenario
+# ble.plane), which silently left this runner checking a manifest that can
+# never match; the v0.0.2 release regression caught it (2026-09-30) and the
+# #252 shapes came back under non-conflicting android- names.
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-capture.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane.json" || FAIL=1
 cat "$OUT/verdict-android-camera-plane.json"
-node test/e2e/check.mjs --manifest $SCEN/camera-plane-audit.json \
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-capture-audit.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane-audit.json" || FAIL=1
 cat "$OUT/verdict-android-camera-plane-audit.json"
 [ "$FAIL" = "0" ] || die "checkers red — evidence stays unreceipted (rule: receipts only from green runs)"
