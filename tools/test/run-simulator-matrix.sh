@@ -839,7 +839,14 @@ summary() {
 }
 
 main() {
-    local platforms="ios android harmony"
+    # The no-argument default IS `all`: the default used to be the literal
+    # three-word list, which the validation case below rejects (only `all` or
+    # one platform word passes) — a bare `run-simulator-matrix.sh` died
+    # "unknown --platform value: ios android harmony" before booting anything
+    # (found by the v0.0.2 release regression's final run, 2026-09-30; every
+    # earlier run had passed --platform explicitly, so the default was never
+    # exercised).
+    local platforms="all"
     while [ $# -gt 0 ]; do
         case "$1" in
             --platform) platforms="$2"; shift 2 ;;
