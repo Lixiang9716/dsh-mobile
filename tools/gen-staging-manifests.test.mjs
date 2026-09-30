@@ -36,7 +36,7 @@ const harmonyOf = (data) => data.reports.find((r) => r.host === 'harmony');
 const androidOf = (data) => data.reports.find((r) => r.host === 'android');
 const iosOf = (data) => data.reports.find((r) => r.host === 'ios');
 
-describe('gen-staging-manifests on the green fixture (round trip holds)', () => {
+describe('gen-staging-manifests green fixture: harmony parity', () => {
   it('exit 0: no freeze-fatal rows, harmony parity clean, zod quadruple agrees', () => {
     const fx = freshFixture();
     const r = fx.json('gen-staging-manifests.mjs');
@@ -52,6 +52,15 @@ describe('gen-staging-manifests on the green fixture (round trip holds)', () => 
     expect(h.zodQuadruple.recomputed).toBe(ZOD_ROWS.length);
   });
 
+  it('the summary line says the round trip holds', () => {
+    const fx = freshFixture();
+    const r = fx.run('gen-staging-manifests.mjs');
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('staging-generate: round-trip holds · 0 freeze-fatal row(s)');
+  });
+});
+
+describe('gen-staging-manifests green fixture: android and ios surfaces', () => {
   it('the android roster reports policy twins clean and no pins absent', () => {
     const fx = freshFixture();
     const r = fx.json('gen-staging-manifests.mjs');
@@ -75,16 +84,9 @@ describe('gen-staging-manifests on the green fixture (round trip holds)', () => 
     // the comprehension followed the py name list: one mirror root per name
     expect(i.trees.mirrorRoots).toBeGreaterThanOrEqual(2);
   });
-
-  it('the summary line says the round trip holds', () => {
-    const fx = freshFixture();
-    const r = fx.run('gen-staging-manifests.mjs');
-    expect(r.status).toBe(0);
-    expect(r.stdout).toContain('staging-generate: round-trip holds · 0 freeze-fatal row(s)');
-  });
 });
 
-describe('gen-staging-manifests freeze-fatal counterexamples (exit 1)', () => {
+describe('gen-staging-manifests freeze-fatal: manifests vs reality', () => {
   it('a derived graph row missing from BUNDLE_FILES → fatal, exit 1', () => {
     const fx = freshFixture();
     // a committed manifest that forgot a scoped closure row = the
@@ -109,6 +111,9 @@ describe('gen-staging-manifests freeze-fatal counterexamples (exit 1)', () => {
     expect(harmonyOf(r.data).bundleFiles.missing).toContain('vendor/npm/@noble/hashes@2.3.0/lib/index.js');
   });
 
+});
+
+describe('gen-staging-manifests freeze-fatal: the android twins', () => {
   it('a stage/verify twin drift → fatal, exit 1', () => {
     const fx = freshFixture();
     // the verify twin forgets leg-a.js: stage would ship it, verify would
@@ -136,6 +141,9 @@ describe('gen-staging-manifests freeze-fatal counterexamples (exit 1)', () => {
     expect(r.stdout).toContain('FATAL android graph row outside mirrors: scenario/leg-c.js');
   });
 
+});
+
+describe('gen-staging-manifests freeze-fatal: the zod quadruple', () => {
   it('the zod quadruple drifting apart is surfaced honestly (copiesAgree false)', () => {
     const fx = freshFixture();
     // the ios hand copy forgets errors.js: three hand copies disagree with
@@ -207,7 +215,7 @@ describe('gen-staging-manifests classified delta (report-only extras)', () => {
   });
 });
 
-describe('gen-staging-manifests structural drift + artifacts (exit 2)', () => {
+describe('gen-staging-manifests structural drift fails loud (exit 2)', () => {
   it('a stager-named pin absent from the materialized tree fails loud (exit 2)', () => {
     const fx = freshFixture();
     // rule 5: a missing pin tree is a materialization failure, not an
@@ -235,7 +243,9 @@ describe('gen-staging-manifests structural drift + artifacts (exit 2)', () => {
     expect(r.status).toBe(2);
     expect(r.stderr).toContain('ZOD_SRC assignment not found');
   });
+});
 
+describe('gen-staging-manifests artifacts and usage (exit 2)', () => {
   it('--out writes the generated rows and the machine-readable delta', () => {
     const fx = freshFixture();
     const out = join(fx.root, 'tmp', 'gen-artifacts');
@@ -260,5 +270,22 @@ describe('gen-staging-manifests structural drift + artifacts (exit 2)', () => {
       [join(REPO_ROOT, 'tools', 'gen-staging-manifests.mjs'), '--host', 'wp81'], { encoding: 'utf8' });
     expect(real.status).toBe(2);
     expect(real.stderr).toContain("unknown host 'wp81'");
+  });
+});
+
+describe('gen-staging-manifests against the real repo (materialized pins)', () => {
+  // The vendored pins are materialized by runtime/spike/vendor/ensure*.sh
+  // (CI does the same before the gate DAG). What holds on ANY prepared
+  // checkout: the tool runs to a verdict (never a crash), three host
+  // reports parse, and the manifest-parsing legs all execute.
+  it('runs to a verdict with three parseable host reports', () => {
+    const real = spawnSync(process.execPath,
+      [join(REPO_ROOT, 'tools', 'gen-staging-manifests.mjs'), '--json'], { encoding: 'utf8' });
+    expect([0, 1]).toContain(real.status);
+    const data = JSON.parse(real.stdout);
+    expect(data.reports.map((r) => r.host)).toEqual(['harmony', 'android', 'ios']);
+    expect(Array.isArray(data.fatal)).toBe(true);
+    expect(harmonyOf(data).legs.map((l) => l.leg))
+      .toEqual(['graph', 'dshpins', 'pinfiles', 'closure-faces', 'webclient']);
   });
 });
