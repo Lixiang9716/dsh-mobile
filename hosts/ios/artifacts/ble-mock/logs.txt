@@ -1,10 +1,10 @@
 spike: app launched in ble-plane-mock mode
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"gateway.negotiated","version":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"descriptor.declared","available":31,"unavailable":2,"blePlane":8}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"descriptor.declared","available":33,"unavailable":2,"blePlane":8}]}
 dsh.spike.log: {"level":"debug","module":"dsh.ble.plane","message":"event tap armed","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStart"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T03:12:03Z","primitive":"bleScanStart","caller":"dsh.spike.scenario","detail":{"scanId":"scan:mock-1","timeoutMs":4000,"filters":0,"tag":"ble-plane-probe"},"outcome":"ok"}
+dsh.gateway.audit: {"outcome":"ok","detail":{"filters":0,"scanId":"scan:mock-1","timeoutMs":4000,"tag":"ble-plane-probe"},"primitive":"bleScanStart","ts":"2026-09-30T14:30:23Z","caller":"dsh.spike.scenario","verdict":"granted"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.radio","mode":"live"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.armed","scanIdOpaque":true,"tag":"ble-plane-probe"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":151}]}
@@ -12,21 +12,21 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Sensor","rssi":-42}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Beacon","rssi":-66}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStop"}]}
-dsh.gateway.audit: {"detail":{"scanId":"scan:mock-1","stopped":true,"durationMs":107},"caller":"dsh.spike.scenario","ts":"2026-09-30T03:12:03Z","primitive":"bleScanStop","outcome":"ok","verdict":"granted"}
+dsh.gateway.audit: {"primitive":"bleScanStop","ts":"2026-09-30T14:30:23Z","caller":"dsh.spike.scenario","verdict":"granted","detail":{"stopped":true,"scanId":"scan:mock-1","durationMs":74},"outcome":"ok"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.stopped","stopped":true,"devices":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleConnect"}]}
-dsh.gateway.audit: {"detail":{"connected":true,"deviceId":"device:mock-1"},"caller":"dsh.spike.scenario","ts":"2026-09-30T03:12:03Z","primitive":"bleConnect","outcome":"ok","verdict":"granted"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"deviceId":"device:mock-1","connected":true},"ts":"2026-09-30T14:30:23Z","primitive":"bleConnect"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.connect","connectionIdOpaque":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"bleRead","data":[{"connectionId":"conn:device:mock-1","service":"180f","characteristic":"2a19"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleRead"}]}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T03:12:03Z","primitive":"bleRead","caller":"dsh.spike.scenario","detail":{"direction":"read","characteristic":"2a19","connectionId":"conn:device:mock-1","service":"180f","bytes":1},"outcome":"ok"}
+dsh.gateway.audit: {"verdict":"granted","primitive":"bleRead","caller":"dsh.spike.scenario","outcome":"ok","detail":{"bytes":1,"direction":"read","characteristic":"2a19","connectionId":"conn:device:mock-1","service":"180f"},"ts":"2026-09-30T14:30:23Z"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.read","bytes":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleWrite"}]}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T03:12:03Z","primitive":"bleWrite","caller":"dsh.spike.scenario","detail":{"direction":"write","characteristic":"fe01","connectionId":"conn:device:mock-1","service":"fe00","bytes":3},"outcome":"ok"}
+dsh.gateway.audit: {"verdict":"granted","primitive":"bleWrite","caller":"dsh.spike.scenario","outcome":"ok","detail":{"bytes":3,"direction":"write","characteristic":"fe01","connectionId":"conn:device:mock-1","service":"fe00"},"ts":"2026-09-30T14:30:23Z"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.write","written":true,"bytes":3}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleSubscribe"}]}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T03:12:03Z","primitive":"bleSubscribe","caller":"dsh.spike.scenario","detail":{"direction":"subscribe","characteristic":"2a19","subscribed":true,"connectionId":"conn:device:mock-1","service":"180f"},"outcome":"ok"}
+dsh.gateway.audit: {"verdict":"granted","primitive":"bleSubscribe","caller":"dsh.spike.scenario","outcome":"ok","detail":{"subscribed":true,"direction":"subscribe","characteristic":"2a19","connectionId":"conn:device:mock-1","service":"180f"},"ts":"2026-09-30T14:30:23Z"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.subscribed","subscribed":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":132}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
@@ -35,10 +35,10 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.notify","seq":2,"bytes":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleUnsubscribe"}]}
-dsh.gateway.audit: {"verdict":"granted","ts":"2026-09-30T03:12:03Z","primitive":"bleUnsubscribe","caller":"dsh.spike.scenario","detail":{"direction":"unsubscribe","characteristic":"2a19","subscribed":false,"connectionId":"conn:device:mock-1","service":"180f"},"outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-09-30T14:30:23Z","detail":{"connectionId":"conn:device:mock-1","direction":"unsubscribe","service":"180f","characteristic":"2a19","subscribed":false},"verdict":"granted","primitive":"bleUnsubscribe","caller":"dsh.spike.scenario","outcome":"ok"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.unsubscribed","subscribed":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleDisconnect"}]}
-dsh.gateway.audit: {"detail":{"closed":true,"connectionId":"conn:device:mock-1"},"caller":"dsh.spike.scenario","ts":"2026-09-30T03:12:03Z","primitive":"bleDisconnect","outcome":"ok","verdict":"granted"}
+dsh.gateway.audit: {"ts":"2026-09-30T14:30:23Z","detail":{"connectionId":"conn:device:mock-1","closed":true},"verdict":"granted","primitive":"bleDisconnect","caller":"dsh.spike.scenario","outcome":"ok"}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.disconnected","closed":true,"gatt":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"event unsubscribe","data":[]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"scenario.complete","status":"pass"}]}

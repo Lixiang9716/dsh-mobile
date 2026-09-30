@@ -1,8 +1,8 @@
 {
   "scenario": "android.mic.plane.audit",
   "pass": true,
-  "expected": 4,
-  "logged": 4,
+  "expected": 6,
+  "logged": 6,
   "failures": [],
   "parseErrors": []
 }

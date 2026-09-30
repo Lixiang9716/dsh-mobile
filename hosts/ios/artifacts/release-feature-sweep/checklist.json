@@ -1,0 +1,639 @@
+[
+ {
+  "label": "横幅",
+  "type": "Other",
+  "center": [
+   229,
+   82
+  ],
+  "changed": false,
+  "evidence": [
+   "00-横幅-before.png",
+   "00-横幅-after.png"
+  ]
+ },
+ {
+  "label": "打开右侧边栏",
+  "type": "Button",
+  "center": [
+   380,
+   87
+  ],
+  "changed": true,
+  "evidence": [
+   "01-打开右侧边栏-before.png",
+   "01-打开右侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "开始",
+  "type": "Button",
+  "center": [
+   60,
+   86
+  ],
+  "changed": false,
+  "evidence": [
+   "02-开始-before.png",
+   "02-开始-after.png"
+  ]
+ },
+ {
+  "label": "分栏",
+  "type": "Button",
+  "center": [
+   310,
+   86
+  ],
+  "changed": true,
+  "evidence": [
+   "03-分栏-before.png",
+   "03-分栏-after.png"
+  ]
+ },
+ {
+  "label": "开始 关闭",
+  "type": "Button",
+  "center": [
+   60,
+   86
+  ],
+  "changed": true,
+  "evidence": [
+   "04-开始_关闭-before.png",
+   "04-开始_关闭-after.png"
+  ]
+ },
+ {
+  "label": "开始 关闭",
+  "type": "Button",
+  "center": [
+   261,
+   86
+  ],
+  "changed": true,
+  "evidence": [
+   "05-开始_关闭-before.png",
+   "05-开始_关闭-after.png"
+  ]
+ },
+ {
+  "label": "退出全屏",
+  "type": "Button",
+  "center": [
+   346,
+   86
+  ],
+  "changed": true,
+  "evidence": [
+   "06-退出全屏-before.png",
+   "06-退出全屏-after.png"
+  ]
+ },
+ {
+  "label": "打开侧边栏",
+  "type": "Button",
+  "center": [
+   28,
+   98
+  ],
+  "changed": true,
+  "evidence": [
+   "07-打开侧边栏-before.png",
+   "07-打开侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "横幅",
+  "type": "Other",
+  "center": [
+   341,
+   82
+  ],
+  "changed": true,
+  "evidence": [
+   "08-横幅-before.png",
+   "08-横幅-after.png"
+  ]
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   124,
+   98
+  ],
+  "changed": true,
+  "evidence": [
+   "09-新建会话-before.png",
+   "09-新建会话-after.png"
+  ]
+ },
+ {
+  "label": "收起侧边栏",
+  "type": "Button",
+  "center": [
+   254,
+   98
+  ],
+  "changed": true,
+  "evidence": [
+   "10-收起侧边栏-before.png",
+   "10-收起侧边栏-after.png"
+  ]
+ },
+ {
+  "label": "工具提示",
+  "type": "Other",
+  "center": [
+   96,
+   98
+  ],
+  "changed": true,
+  "evidence": [
+   "11-工具提示-before.png",
+   "11-工具提示-after.png"
+  ]
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   28,
+   146
+  ],
+  "changed": true,
+  "evidence": [
+   "12-新建会话-before.png",
+   "12-新建会话-after.png"
+  ]
+ },
+ {
+  "label": "工具提示",
+  "type": "Other",
+  "center": [
+   89,
+   146
+  ],
+  "changed": true,
+  "evidence": [
+   "13-工具提示-before.png",
+   "13-工具提示-after.png"
+  ]
+ },
+ {
+  "label": "全局面板, 导览",
+  "type": "Other",
+  "center": [
+   28,
+   194
+  ],
+  "changed": true,
+  "evidence": [
+   "14-全局面板__导览-before.png",
+   "14-全局面板__导览-after.png"
+  ]
+ },
+ {
+  "label": "插件",
+  "type": "Other",
+  "center": [
+   126,
+   104
+  ],
+  "changed": true,
+  "evidence": [
+   "15-插件-before.png",
+   "15-插件-after.png"
+  ]
+ },
+ {
+  "label": "刷新",
+  "type": "Button",
+  "center": [
+   260,
+   104
+  ],
+  "changed": false,
+  "evidence": [
+   "16-刷新-before.png",
+   "16-刷新-after.png"
+  ]
+ },
+ {
+  "label": "添加插件",
+  "type": "Button",
+  "center": [
+   334,
+   104
+  ],
+  "changed": false,
+  "evidence": [
+   "17-添加插件-before.png",
+   "17-添加插件-after.png"
+  ]
+ },
+ {
+  "label": "节标题",
+  "type": "Other",
+  "center": [
+   229,
+   116
+  ],
+  "changed": false,
+  "evidence": [
+   "18-节标题-before.png",
+   "18-节标题-after.png"
+  ]
+ },
+ {
+  "label": "插件",
+  "type": "Button",
+  "center": [
+   28,
+   194
+  ],
+  "changed": true,
+  "evidence": [
+   "19-插件-before.png",
+   "19-插件-after.png"
+  ]
+ },
+ {
+  "label": "工具提示",
+  "type": "Other",
+  "center": [
+   76,
+   194
+  ],
+  "changed": true,
+  "evidence": [
+   "20-工具提示-before.png",
+   "20-工具提示-after.png"
+  ]
+ },
+ {
+  "label": "应用程序状态",
+  "type": "Other",
+  "center": [
+   229,
+   194
+  ],
+  "changed": false,
+  "evidence": [
+   "21-应用程序状态-before.png",
+   "21-应用程序状态-after.png"
+  ]
+ },
+ {
+  "label": "搜索会话",
+  "type": "Button",
+  "center": [
+   28,
+   290
+  ],
+  "changed": true,
+  "evidence": [
+   "22-搜索会话-before.png",
+   "22-搜索会话-after.png"
+  ]
+ },
+ {
+  "label": "刷新",
+  "type": "Button",
+  "center": [
+   354,
+   104
+  ],
+  "changed": true,
+  "evidence": [
+   "23-刷新-before.png",
+   "23-刷新-after.png"
+  ]
+ },
+ {
+  "label": "添加插件",
+  "type": "Button",
+  "center": [
+   410,
+   104
+  ],
+  "changed": false,
+  "evidence": [
+   "24-添加插件-before.png",
+   "24-添加插件-after.png"
+  ]
+ },
+ {
+  "label": "插件",
+  "type": "Other",
+  "center": [
+   314,
+   118
+  ],
+  "changed": true,
+  "evidence": [
+   "25-插件-before.png",
+   "25-插件-after.png"
+  ]
+ },
+ {
+  "label": "新建会话",
+  "type": "Button",
+  "center": [
+   140,
+   155
+  ],
+  "changed": true,
+  "evidence": [
+   "26-新建会话-before.png",
+   "26-新建会话-after.png"
+  ]
+ },
+ {
+  "label": "全局面板, 导览",
+  "type": "Other",
+  "center": [
+   140,
+   204
+  ],
+  "changed": true,
+  "evidence": [
+   "27-全局面板__导览-before.png",
+   "27-全局面板__导览-after.png"
+  ]
+ },
+ {
+  "label": "节标题",
+  "type": "Other",
+  "center": [
+   370,
+   179
+  ],
+  "changed": false,
+  "evidence": [
+   "28-节标题-before.png",
+   "28-节标题-after.png"
+  ]
+ },
+ {
+  "label": "插件",
+  "type": "Button",
+  "center": [
+   140,
+   204
+  ],
+  "changed": false,
+  "evidence": [
+   "29-插件-before.png",
+   "29-插件-after.png"
+  ]
+ },
+ {
+  "label": "搜索会话",
+  "type": "Button",
+  "center": [
+   222,
+   250
+  ],
+  "changed": true,
+  "evidence": [
+   "30-搜索会话-before.png",
+   "30-搜索会话-after.png"
+  ]
+ },
+ {
+  "label": "搜索会话",
+  "type": "Button",
+  "center": [
+   28,
+   250
+  ],
+  "changed": true,
+  "evidence": [
+   "31-搜索会话-before.png",
+   "31-搜索会话-after.png"
+  ]
+ },
+ {
+  "label": "清除搜索",
+  "type": "Button",
+  "center": [
+   250,
+   250
+  ],
+  "changed": true,
+  "evidence": [
+   "32-清除搜索-before.png",
+   "32-清除搜索-after.png"
+  ]
+ },
+ {
+  "label": "视图选项",
+  "type": "Button",
+  "center": [
+   254,
+   250
+  ],
+  "changed": true,
+  "evidence": [
+   "33-视图选项-before.png",
+   "33-视图选项-after.png"
+  ]
+ },
+ {
+  "label": "工具提示",
+  "type": "Other",
+  "center": [
+   254,
+   285
+  ],
+  "changed": true,
+  "evidence": [
+   "34-工具提示-before.png",
+   "34-工具提示-after.png"
+  ]
+ },
+ {
+  "label": "按工作区",
+  "type": "MenuItem",
+  "center": [
+   159,
+   313
+  ],
+  "changed": true,
+  "evidence": [
+   "35-按工作区-before.png",
+   "35-按工作区-after.png"
+  ]
+ },
+ {
+  "label": "应用程序状态",
+  "type": "Other",
+  "center": [
+   341,
+   372
+  ],
+  "changed": true,
+  "evidence": [
+   "36-应用程序状态-before.png",
+   "36-应用程序状态-after.png"
+  ]
+ },
+ {
+  "label": "DSH 本地构建",
+  "type": "Other",
+  "center": [
+   201,
+   451
+  ],
+  "changed": false,
+  "evidence": [
+   "37-DSH_本地构建-before.png",
+   "37-DSH_本地构建-after.png"
+  ]
+ },
+ {
+  "label": "Vertical scroll bar, 1 page",
+  "type": "Other",
+  "center": [
+   384,
+   451
+  ],
+  "changed": false,
+  "evidence": [
+   "38-Vertical_scroll_bar__1_p-before.png",
+   "38-Vertical_scroll_bar__1_p-after.png"
+  ]
+ },
+ {
+  "label": "会话",
+  "type": "Other",
+  "center": [
+   143,
+   528
+  ],
+  "changed": false,
+  "evidence": [
+   "39-会话-before.png",
+   "39-会话-after.png"
+  ]
+ },
+ {
+  "label": "设置",
+  "type": "Other",
+  "center": [
+   140,
+   809
+  ],
+  "changed": true,
+  "evidence": [
+   "40-设置-before.png",
+   "40-设置-after.png"
+  ]
+ },
+ {
+  "label": "导览",
+  "type": "Other",
+  "center": [
+   201,
+   72
+  ],
+  "changed": true,
+  "evidence": [
+   "41-导览-before.png",
+   "41-导览-after.png"
+  ]
+ },
+ {
+  "label": "通用设置",
+  "type": "Button",
+  "center": [
+   108,
+   73
+  ],
+  "changed": true,
+  "evidence": [
+   "42-通用设置-before.png",
+   "42-通用设置-after.png"
+  ]
+ },
+ {
+  "label": "模型",
+  "type": "Button",
+  "center": [
+   202,
+   73
+  ],
+  "changed": true,
+  "evidence": [
+   "43-模型-before.png",
+   "43-模型-after.png"
+  ]
+ },
+ {
+  "label": "内置插件",
+  "type": "Button",
+  "center": [
+   295,
+   73
+  ],
+  "changed": true,
+  "evidence": [
+   "44-内置插件-before.png",
+   "44-内置插件-after.png"
+  ]
+ },
+ {
+  "label": "Agent 预设",
+  "type": "Button",
+  "center": [
+   410,
+   73
+  ],
+  "changed": false,
+  "evidence": [
+   "45-Agent_预设-before.png",
+   "45-Agent_预设-after.png"
+  ]
+ },
+ {
+  "label": "已归档会话",
+  "type": "Button",
+  "center": [
+   531,
+   73
+  ],
+  "changed": false,
+  "evidence": [
+   "46-已归档会话-before.png",
+   "46-已归档会话-after.png"
+  ]
+ },
+ {
+  "label": "关闭",
+  "type": "Button",
+  "center": [
+   374,
+   133
+  ],
+  "changed": true,
+  "evidence": [
+   "47-关闭-before.png",
+   "47-关闭-after.png"
+  ]
+ },
+ {
+  "label": "Horizontal scroll bar, 1 page",
+  "type": "Other",
+  "center": [
+   201,
+   856
+  ],
+  "changed": true,
+  "evidence": [
+   "48-Horizontal_scroll_bar__1-before.png",
+   "48-Horizontal_scroll_bar__1-after.png"
+  ]
+ }
+]

@@ -42,6 +42,9 @@ const demand = (cond, reason) => {
 };
 
 const PROBE = 'dsh-gateway-probe'; // exactly 17 ASCII bytes
+// The capability plane's declared-unavailable rows (GatewayCore.phasedRows —
+// the one list every full seat keeps identical).
+const PHASED_ROWS = ['cameraRecordStart', 'cameraRecordStop'];
 const probeBytes = () => Uint8Array.from([...PROBE].map((c) => c.charCodeAt(0)));
 const bytesEqual = (a, b) => a.length === b.length && [...a].every((v, i) => v === b[i]);
 
@@ -90,9 +93,16 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   emit('gateway.negotiated', { version: 'gateway@1' });
 
   const descriptor = JSON.parse(globalThis.__dshGatewayDescriptor());
+  // The capability plane's PHASED rows (contract v1.10.0-candidate: shape on
+  // record, implementation follows) are DECLARED unavailable by design — the
+  // recording rows answer `unavailable` on every host until their line lands.
+  // What this scenario still pins is that nothing UNEXPECTED is unavailable:
+  // every unavailable row must be one of the known phased rows, so a
+  // primitive that regresses to unavailable (or a face that quietly widens
+  // the list) still fails here, loudly, by name.
   demand(
-    descriptor.unavailable.length === 0,
-    `host declared unavailable primitives: ${descriptor.unavailable.join(',')}`,
+    descriptor.unavailable.every((name) => PHASED_ROWS.includes(name)),
+    `host declared unexpected unavailable primitives: ${descriptor.unavailable.join(',')}`,
   );
   emit('descriptor.declared', {
     available: descriptor.available.length,

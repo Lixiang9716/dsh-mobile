@@ -3,9 +3,9 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
 ---------  ---------- -----   ----
        56  01-01-1981 01:01   META-INF/com/android/build/gradle/app-metadata.properties
        46  01-01-1981 01:01   META-INF/version-control-info.textproto
-  2400264  01-01-1981 01:01   classes.dex
-  1612432  01-01-1981 01:01   lib/arm64-v8a/libdsh_spike.so
-  1839872  01-01-1981 01:01   lib/x86_64/libdsh_spike.so
+  2499008  01-01-1981 01:01   classes.dex
+  1623648  01-01-1981 01:01   lib/arm64-v8a/libdsh_spike.so
+  1852192  01-01-1981 01:01   lib/x86_64/libdsh_spike.so
     28076  01-01-1981 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-BQhdFMY1.woff2
     33516  01-01-1981 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-DMm9YOAa.woff
     63632  01-01-1981 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-DRggAlZN.ttf
@@ -97,11 +97,11 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
       267  01-01-1981 01:01   assets/official-web/dist/manifest.webmanifest
      1701  01-01-1981 01:01   assets/spike/fixtures/dsh-notes-source.js
      1991  01-01-1981 01:01   assets/spike/fixtures/dsh-notes.js
-    10100  01-01-1981 01:01   assets/spike/gateway.js
+    19019  01-01-1981 01:01   assets/spike/gateway.js
     17251  01-01-1981 01:01   assets/spike/install-pipeline.js
     11109  01-01-1981 01:01   assets/spike/llm.js
      2929  01-01-1981 01:01   assets/spike/logger.js
-      437  01-01-1981 01:01   assets/spike/manifest.json
+      464  01-01-1981 01:01   assets/spike/manifest.json
      2872  01-01-1981 01:01   assets/spike/registry.js
     14133  01-01-1981 01:01   assets/spike/scenario/agent-flow.js
    258831  01-01-1981 01:01   assets/spike/scenario/agent-presets-probe-seed.js
@@ -109,11 +109,14 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      9696  01-01-1981 01:01   assets/spike/scenario/android-composer-live-write.js
      3848  01-01-1981 01:01   assets/spike/scenario/android-officialweb-web-live.js
     10588  01-01-1981 01:01   assets/spike/scenario/android-session-live-read.js
+    12380  01-01-1981 01:01   assets/spike/scenario/ble-plane.js
      4329  01-01-1981 01:01   assets/spike/scenario/boot-verification.js
-    22301  01-01-1981 01:01   assets/spike/scenario/composer-web-live.js
+     5910  01-01-1981 01:01   assets/spike/scenario/camera-plane.js
+    22591  01-01-1981 01:01   assets/spike/scenario/composer-web-live.js
      7871  01-01-1981 01:01   assets/spike/scenario/device-plane.js
      2305  01-01-1981 01:01   assets/spike/scenario/gateway-bridge-smoke.js
     12287  01-01-1981 01:01   assets/spike/scenario/llm-live-stream.js
+     8099  01-01-1981 01:01   assets/spike/scenario/mic-plane.js
      4331  01-01-1981 01:01   assets/spike/scenario/parity-projector.js
      9152  01-01-1981 01:01   assets/spike/scenario/session-mock-llm.js
      8484  01-01-1981 01:01   assets/spike/scenario/upstream-fake-timers.js
@@ -125,6 +128,8 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      5951  01-01-1981 01:01   assets/spike/scenario/upstream-suite-type-world.js
     18389  01-01-1981 01:01   assets/spike/scenario/upstream-test-harness.js
      3719  01-01-1981 01:01   assets/spike/sha256.js
+     4998  01-01-1981 01:01   assets/spike/system-plugins/dsh-ble/index.js
+      218  01-01-1981 01:01   assets/spike/system-plugins/dsh-ble/manifest.json
      4072  01-01-1981 01:01   assets/spike/system-plugins/dsh-device-plane/index.js
       308  01-01-1981 01:01   assets/spike/system-plugins/dsh-device-plane/manifest.json
      3676  01-01-1981 01:01   assets/spike/system-plugins/dsh-fs/index.js
@@ -160,7 +165,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      2527  01-01-1981 01:01   assets/spike/upstream/shims/boot-tail-url-mutators.js
     10387  01-01-1981 01:01   assets/spike/upstream/shims/buffer-codecs.js
     18220  01-01-1981 01:01   assets/spike/upstream/shims/buffer.js
-    10360  01-01-1981 01:01   assets/spike/upstream/shims/cjs-loader.js
+    10806  01-01-1981 01:01   assets/spike/upstream/shims/cjs-loader.js
      8782  01-01-1981 01:01   assets/spike/upstream/shims/cordis-loader-failure-face.js
     10736  01-01-1981 01:01   assets/spike/upstream/shims/crypto.js
      4425  01-01-1981 01:01   assets/spike/upstream/shims/describe-each.js
@@ -191,11 +196,12 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
     13323  01-01-1981 01:01   assets/spike/upstream/shims/node-child-process.js
     18400  01-01-1981 01:01   assets/spike/upstream/shims/node-http-loopback-client.js
     17371  01-01-1981 01:01   assets/spike/upstream/shims/node-http-loopback-dispatch.js
-    11817  01-01-1981 01:01   assets/spike/upstream/shims/node-http-loopback-net.js
+    13060  01-01-1981 01:01   assets/spike/upstream/shims/node-http-loopback-net.js
     19987  01-01-1981 01:01   assets/spike/upstream/shims/node-http-loopback.js
      7179  01-01-1981 01:01   assets/spike/upstream/shims/node-module.js
       532  01-01-1981 01:01   assets/spike/upstream/shims/node-perf-hooks.js
      7148  01-01-1981 01:01   assets/spike/upstream/shims/node-pty.js
+    15895  01-01-1981 01:01   assets/spike/upstream/shims/node-socket-tcp.js
      3472  01-01-1981 01:01   assets/spike/upstream/shims/node-sqlite.js
     12003  01-01-1981 01:01   assets/spike/upstream/shims/node-stream-duplex.js
     14570  01-01-1981 01:01   assets/spike/upstream/shims/node-stream-writable.js
@@ -205,16 +211,26 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      4136  01-01-1981 01:01   assets/spike/upstream/shims/node-zlib-xxh64.js
     22566  01-01-1981 01:01   assets/spike/upstream/shims/node-zlib.js
     21381  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-b.js
-    20275  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-c.js
-    17275  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-c2.js
-    27943  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-pi-ai.js
-    24733  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges.js
+    20475  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-c.js
+    18219  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-c2.js
+    25503  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-pi-ai-all.js
+     4153  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges-pi-ai.js
+    24791  01-01-1981 01:01   assets/spike/upstream/shims/npm-bridges.js
      6399  01-01-1981 01:01   assets/spike/upstream/shims/openai-client.js
      6109  01-01-1981 01:01   assets/spike/upstream/shims/os.js
      3396  01-01-1981 01:01   assets/spike/upstream/shims/partial-json.js
     16061  01-01-1981 01:01   assets/spike/upstream/shims/path.js
     11187  01-01-1981 01:01   assets/spike/upstream/shims/process.js
     25208  01-01-1981 01:01   assets/spike/upstream/shims/runtime-modules.js
+     2215  01-01-1981 01:01   assets/spike/upstream/shims/sharp/bytes.js
+    13351  01-01-1981 01:01   assets/spike/upstream/shims/sharp/gif-codec.js
+    16761  01-01-1981 01:01   assets/spike/upstream/shims/sharp/index.js
+     8594  01-01-1981 01:01   assets/spike/upstream/shims/sharp/jpeg-codec.js
+     6086  01-01-1981 01:01   assets/spike/upstream/shims/sharp/ops.js
+      472  01-01-1981 01:01   assets/spike/upstream/shims/sharp/package.json
+    12258  01-01-1981 01:01   assets/spike/upstream/shims/sharp/png-codec.js
+    10685  01-01-1981 01:01   assets/spike/upstream/shims/sharp/svg-face.js
+    14402  01-01-1981 01:01   assets/spike/upstream/shims/sharp/webp-codec.js
     15937  01-01-1981 01:01   assets/spike/upstream/shims/slot-registry.js
      7480  01-01-1981 01:01   assets/spike/upstream/shims/source-bootstrap-ipc.js
      6285  01-01-1981 01:01   assets/spike/upstream/shims/source-bootstrap-loader-smoke.js
@@ -1284,7 +1300,6 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      1051  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-stream.js
       708  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-workers-ai.js
       418  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-workers-ai.models.js
-     3536  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/.manifest.json
     49094  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/amazon-bedrock.json
      1557  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/ant-ling.json
      5953  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/anthropic.json
@@ -1301,6 +1316,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      2748  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/groq.json
     27948  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/huggingface.json
      1664  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/kimi-coding.json
+     3536  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/manifest.json
       963  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/minimax-cn.json
       948  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/minimax.json
      9827  01-01-1981 01:01   assets/spike/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/mistral.json
@@ -1488,7 +1504,33 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
     89198  01-01-1981 01:01   assets/spike/vendor/npm/fflate@0.8.2/esm/browser.js
     50889  01-01-1981 01:01   assets/spike/vendor/npm/fflate@0.8.2/esm/index.d.mts
     89811  01-01-1981 01:01   assets/spike/vendor/npm/fflate@0.8.2/esm/index.mjs
+    89235  01-01-1981 01:01   assets/spike/vendor/npm/fflate@0.8.2/lib/index.cjs
+      136  01-01-1981 01:01   assets/spike/vendor/npm/jpeg-js@0.4.4/index.js
+    40593  01-01-1981 01:01   assets/spike/vendor/npm/jpeg-js@0.4.4/lib/decoder.js
+    22120  01-01-1981 01:01   assets/spike/vendor/npm/jpeg-js@0.4.4/lib/encoder.js
    107533  01-01-1981 01:01   assets/spike/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs
+     6477  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/bitmapper.js
+     4670  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/bitpacker.js
+     4249  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/chunkstream.js
+      662  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/constants.js
+      853  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/crc.js
+     4279  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/filter-pack.js
+      558  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/filter-parse-async.js
+      483  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/filter-parse-sync.js
+     4798  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/filter-parse.js
+     2329  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/format-normaliser.js
+     2004  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/interlace.js
+     1162  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/packer-async.js
+     1193  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/packer-sync.js
+     3723  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/packer.js
+      372  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/paeth-predictor.js
+     4317  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/parser-async.js
+     2543  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/parser-sync.js
+     7720  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/parser.js
+      252  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/png-sync.js
+     4418  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/png.js
+     3751  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/sync-inflate.js
+     1116  01-01-1981 01:01   assets/spike/vendor/npm/pngjs@5.0.0/lib/sync-reader.js
      1071  01-01-1981 01:01   assets/spike/vendor/npm/schemastery@3.18.2/LICENSE
     21845  01-01-1981 01:01   assets/spike/vendor/npm/schemastery@3.18.2/lib/index.cjs
     21065  01-01-1981 01:01   assets/spike/vendor/npm/schemastery@3.18.2/lib/index.mjs
@@ -1806,7 +1848,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
     18661  01-01-1981 01:01   kotlin/kotlin.kotlin_builtins
      3399  01-01-1981 01:01   kotlin/ranges/ranges.kotlin_builtins
      2426  01-01-1981 01:01   kotlin/reflect/reflect.kotlin_builtins
-     3024  01-01-1981 01:01   AndroidManifest.xml
+     4072  01-01-1981 01:01   AndroidManifest.xml
       572  01-01-1981 01:01   resources.arsc
 ---------                     -------
- 32612431                     1807 files
+ 33095936                     1849 files

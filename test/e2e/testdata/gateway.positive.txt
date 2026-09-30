@@ -18,7 +18,7 @@ dsh.spike.log: {"level":"info","module":"m1.carrier","message":"e2e","data":[{"s
 spike: carrier drive finished verdict=PASS
 spike: verdict PASS (carrier.loopback, events logged: 7)
 dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.binding","event":"gateway.negotiated","version":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.binding","event":"descriptor.declared","available":9,"unavailable":0}]}
+dsh.spike.log: {"level":"info","module":"m2.spike","message":"e2e","data":[{"scenario":"gateway.binding","event":"descriptor.declared","available":33,"unavailable":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.gateway.audit: {"ts":"2026-09-19T22:23:04Z","caller":"dsh.spike.scenario","primitive":"fsWrite","verdict":"granted","outcome":"ok"}

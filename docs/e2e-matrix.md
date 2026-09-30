@@ -60,8 +60,11 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > `llm.live-stream.carrier` 7/7, commit `64889c54`) and closed gaps 8/9,
 > but the notes and cells below still carried the red state until now;
 > (b) the register's eighth row — the Android camera audit's
-> self-inconsistent verdict, found by the BLE line's rebase — is documented
-> below. The notes below are the previous currency records.
+> self-inconsistent verdict, found by the BLE line's rebase — was documented
+> below and has since CLOSED (the v0.0.2 release regression, 2026-09-30:
+> the runner had been checking the device-leg manifests; fixed, the leg
+> re-run green, the row struck). The notes below are the previous currency
+> records.
 >
 > **Currency**: this matrix reflects the mic-face change (2026-09-30):
 > the capability plane's microphone face is live on the mobile hosts — one
@@ -294,7 +297,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8 (the deterministic mock radio's two-device GATT db — 180f/2a19 read+notify, fe00/fe01 write — riding the same gateway enforcement, consent layers, and audit as a real radio) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4 (the honest no-radio posture: the emulator's virtual controller with ungranted runtime permissions) | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8, camera.plane.audit 5/6 (drift — the register's eighth row: the audit verdict records pass=true with expected=5 logged=6, inherited red) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8 (the REAL virtual-camera burst), camera.plane.audit 5-pin/6-logged (the audit manifest declares `repeat` — legitimate) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9 (drift), android.mic.plane.audit 4/4 (drift) — the armed ladder with real PCM frames | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
@@ -399,15 +402,14 @@ missing or malformed is a finding of its own, never a silent pass.
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
-| VERDICT_MALFORMED | hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json | camera work stream (#252) | rerun DSH_ANDROID_SERIAL=<emulator> hosts/android/ci/run-camera-plane.sh to regenerate a self-consistent verdict (the committed file records pass=true with expected=5 logged=6 — inherited red, found by the BLE line's rebase) |
 
-### Why none of these eight is closed here (the honest reason)
+### Why the remaining seven are not closed here (the honest reason)
 
 Seven of them need a `receipt.json` only the owning host work stream's next
-device/emulator run can produce; the eighth is a self-inconsistent verdict
-inherited from the camera landing, owned by the camera work stream's next
-emulator run. Writing those receipts from this branch would mean
-inventing them:
+device/emulator run can produce. (The eighth — the Android camera audit's
+self-inconsistent verdict — was closed by the v0.0.2 release regression,
+2026-09-30; see the closed section below.) Writing those receipts from
+this branch would mean inventing them:
 
 - **The receipt certifies a run, and the run's device is not in the
   committed artifacts.** `host` names the machine a run happened on — the
@@ -427,16 +429,20 @@ inventing them:
   runners have no such step yet, so those rows close as a runner change
   (adopt the same green-path emission) *plus* the re-run named in the row —
   both owned by the work stream that landed the dir.
-- **The eighth is a verdict that contradicts itself, not a missing run.**
-  `hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
-  records `pass: true` with `expected=5, logged=6` — an inherited red
-  committed by the camera landing (#252) and found by the BLE line's
-  rebase (#254). The register row exists precisely so this class is
-  named, owned and closable: the camera work stream's next Android
-  emulator run regenerates a self-consistent verdict. This close-out
-  documents it; it does not regenerate device evidence (no emulator is
-  attached here, and synthesizing a verdict is the one move the
-  acceptance bar forbids).
+- **The eighth was a verdict that contradicted itself, not a missing run —
+  CLOSED 2026-09-30.** The camera landing's
+  `verdict-camera-plane-capture-audit.json` recorded `pass: true` with
+  `expected=5, logged=6`, and the closure the register row named ("rerun
+  the runner — no code change") turned out to be impossible as written:
+  the runner had been pointed at the DEVICE-leg manifests
+  (camera-plane-capture*.json, scenario `ble.plane`) since 62f80165, so no
+  rerun could ever produce a self-consistent verdict for this leg's own
+  scenario. The v0.0.2 release regression fixed the wiring and restored
+  the burst manifests under the verdict-stem names
+  (`android-camera-plane*.json`, repeat-aware), re-ran the leg GREEN on
+  the emulator (the real virtual-camera burst, 8/8 + the audit now
+  self-consistent under `repeat`), and struck the row. The evidence dir
+  carries the refreshed receipt naming the renamed verdicts.
 
 The gaps in detail (the numbering the `rcpt` column of the inventory above
 cites, and the register's rows in order):
@@ -481,18 +487,20 @@ cites, and the register's rows in order):
    green
    `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
    plus the same runner emission.
-8. **`hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
-   is self-inconsistent** — `pass: true` with `expected=5, logged=6`. The
-   dir landed with #252 (the camera face); the malformed verdict was
-   inherited red and found by the BLE line's rebase (#254), which added
-   the register row. Unlike the repeat-aware audit manifests
-   (`device.plane.audit`'s `14/23`), this manifest declares no
-   `repeat` expectation, so the differing counts on a `pass: true`
-   record are a genuine contradiction — the exact shape the checker's
-   count-consistency notice exists for. **Closure (owned by the camera
-   work stream):** rerun
-   `DSH_ANDROID_SERIAL=<emulator> hosts/android/ci/run-camera-plane.sh`
-   to regenerate a self-consistent verdict — no code change.
+### Closed by the v0.0.2 release regression (2026-09-30)
+
+- **Gap 8 (the Android camera audit's self-inconsistent verdict)** —
+  closed for real, and not the way the row guessed. The malformed verdict
+  was a SYMPTOM: since 62f80165 the simulator camera runner had been
+  checking the device-leg manifests (scenario `ble.plane`) against this
+  leg's scenario (`camera.plane`), so the counts could never agree and the
+  closure recipe ("rerun — no code change") was unachievable. The release
+  regression fixed the runner wiring and restored the #252 burst manifests
+  under the verdict-stem names (`android-camera-plane.json` /
+  `android-camera-plane-audit.json`, the audit declaring `repeat`), then
+  re-ran the leg GREEN on the emulator — camera.plane 8/8 (the real
+  virtual-camera burst) with a self-consistent repeat-aware audit
+  (expected=5, logged=6, `pass: true` legitimate) — and struck the row.
 
 ### Closed by the 2026-09-28 quota-reset re-run (the upstream-suite follow-up, commit `64889c54`)
 

@@ -329,28 +329,19 @@ with open(os.path.join(art, "release-proof.json"), "w") as f:
 PY
     [ -f "$art/release-proof.json" ] || mx_die "the release-proof.json writer lied (file absent) — refusing to record"
     record ios release PASS "0 drive markers / 0 debug+info; audit=$audit_n warn=$warn_n (product planes, recorded); refusal by name; proof in $art/release-proof.json"
-    ios_restage_picker_target
 }
 
-# ios_restage_picker_target — the release leg UNINSTALLS the app (its plain
-# launch needs an empty container), which wipes the Files-picker target the
-# gateway drive later searches for. A copy staged AFTER that, minutes before
-# the drive, loses the race against the file-provider search index — measured
-# 2026-09-30: the fresh staging stayed invisible ("未找到相关结果") and the
-# binding watchdog died waiting for `ui-done picker`. Staging HERE gives the
-# index the whole harness build + reboot to settle, so run-ios.sh finds the
-# target present and leaves it untouched (its stage-once recipe).
-ios_restage_picker_target() {
-    local container
-    container="$(xcrun simctl get_app_container "$IOS_UDID" "$IOS_BUNDLE" data 2>/dev/null)" \
-        || mx_die "cannot read the app container to re-stage the picker target"
-    mkdir -p "$container/Documents/gateway-e2e"
-    if [ ! -f "$container/Documents/gateway-e2e/notes.txt" ]; then
-        printf 'gateway e2e target file — dsh-mobile m2\n' \
-            > "$container/Documents/gateway-e2e/notes.txt"
-        mx "re-staged the picker target (the release uninstall wiped it) — index settles while the harness builds"
-    fi
-}
+# (The picker-target restage that used to live here is GONE, on measured
+# evidence: its premise — "staging here gives the index the whole harness
+# build + reboot to settle" — is false in exactly the case it exists for.
+# run-ios.sh REBOOTS the simulator in step 3/6, AFTER the build, and the
+# reboot restarts the file-provider indexing from scratch: a target staged
+# here reads as "already staged — untouched" in run-ios.sh while its index
+# visibility is post-reboot fresh, and the gateway drive's picker search
+# starved on exactly that shape (2026-09-30, matrix attempt 6: staged 20:34,
+# reboot ~20:36, searched ~20:39, 未找到相关结果). run-ios.sh now owns the
+# whole lifecycle: create-if-missing after its own reboot, and pace the
+# measured settle window whenever the staged file predates that reboot.)
 
 # ios_idb_present — THE idb probe, one definition (ios_platform's
 # capability-skips write and the harness leg's skip decision must never
@@ -839,7 +830,14 @@ summary() {
 }
 
 main() {
-    local platforms="ios android harmony"
+    # The no-argument default IS `all`: the default used to be the literal
+    # three-word list, which the validation case below rejects (only `all` or
+    # one platform word passes) — a bare `run-simulator-matrix.sh` died
+    # "unknown --platform value: ios android harmony" before booting anything
+    # (found by the v0.0.2 release regression's final run, 2026-09-30; every
+    # earlier run had passed --platform explicitly, so the default was never
+    # exercised).
+    local platforms="all"
     while [ $# -gt 0 ]; do
         case "$1" in
             --platform) platforms="$2"; shift 2 ;;

@@ -211,43 +211,70 @@ wda_tap() { local x=$1 y=$2 d=${3:-0.1} sid; sid=$(wda_session);   curl -s -X PO
 # remote-view sheets AND system alerts — idb cannot reach any of those)
 wda_click() { local sid label=$1 eid; sid=$(wda_session);   eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json'     -d "{\"using\":\"xpath\",\"value\":\"//*[@label=\\\"$label\\\"]\"}"     | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else (v[0]['ELEMENT'] if v else ''))" 2>/dev/null);   [ -n "$eid" ] && curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/click" >/dev/null; }
 
-# wda_field_type TEXT: focus the Files sheet search field through WDA and type
-# into it. Verified live 2026-09-21 on the iOS 26.5 picker sheet: idb
-# coordinate taps NEVER focus this field (no keyboard, placeholder intact —
-# even at the exactly-derived px), while a WDA element click does (caret +
-# keyboard up); wda/keys returns success but types nothing into the sheet
-# field, the element /value endpoint delivers (surprise
-# drivepicker-can-focus-the). The field is looked up by TYPE
-# (XCUIElementTypeSearchField), not label, so the drive is locale-independent.
-wda_field_type() { # TEXT
-  local sid eid text=$1
-  sid=$(wda_session)
-  eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json' \
-    -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
-    | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
-  [ -n "$eid" ] || return 1
-  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/click" >/dev/null
-  sleep 1    # focus animation before keys
-  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
-    -d "{\"text\":\"$text\"}" >/dev/null
+# wda_source_tree: the sheet's accessibility tree as JSON (one call, ~1s) —
+# the picker's remote view IS exposed by WDA (search-field probes confirmed
+# that on 2026-09-21; the browse cells confirmed it again on 2026-09-30).
+wda_source_tree() {
+  local sid; sid=$(wda_session) || return 1
+  curl -s --max-time 20 "localhost:$WDA_PORT/session/$sid/source?format=json"
 }
 
-# wda_submit_search: the typed query alone NEVER executes the search on the
-# iOS 26.5 sheet — typing renders only the 名称包含 suggestion row (observed
-# live 2026-09-21: field focused, 'notes' delivered, caret + keyboard up, yet
-# no result tile; the blind tile press then hit blank space and the watchdog
-# expired). Appending "\n" through the SAME element /value endpoint delivers
-# the keyboard return = submit — verified live: the results view rendered
-# immediately. Lookup stays by TYPE, so the drive remains locale-independent.
-wda_submit_search() {
-  local sid eid
-  sid=$(wda_session)
-  eid=$(curl -s -X POST "localhost:$WDA_PORT/session/$sid/element" -H 'Content-Type: application/json' \
-    -d '{"using":"xpath","value":"//XCUIElementTypeSearchField"}' \
-    | python3 -c "import json,sys; v=json.load(sys.stdin).get('value',{}); print(v.get('ELEMENT','') if isinstance(v,dict) else '')" 2>/dev/null)
-  [ -n "$eid" ] || return 1
-  curl -s -X POST "localhost:$WDA_PORT/session/$sid/element/$eid/value" -H 'Content-Type: application/json' \
-    -d '{"text":"\n"}' >/dev/null
+# wda_find_cell SUBSTR: first Cell/Button whose label contains SUBSTR
+# (case-insensitive), printed as "X Y" — its frame center in POINTS, the same
+# space the WDA drag endpoint taps in. The document-order first match is the
+# visible row (the tree lists the viewport first).
+wda_find_cell() { # SUBSTR   (the tree arrives on STDIN; the script rides -c —
+  # a heredoc would REPLACE the piped stdin and the walk would find nothing)
+  python3 -c '
+import json, sys, re
+sub = sys.argv[1].lower()
+try:
+    t = json.load(sys.stdin)["value"]
+except Exception:
+    raise SystemExit(1)
+def frame_center(n):
+    m = re.match(r"\{\{(-?[\d.]+), (-?[\d.]+)\}, \{([\d.]+), ([\d.]+)\}\}", n.get("frame") or "")
+    if not m:
+        return None
+    x, y, w, h = map(float, m.groups())
+    return int(x + w / 2), int(y + h / 2)
+hit = None
+def walk(n):
+    global hit
+    if hit:
+        return
+    typ = n.get("type", "")
+    label = (n.get("label") or "").lower()
+    if sub in label and typ in ("Cell", "Button", "StaticText"):
+        hit = frame_center(n)
+        if hit:
+            return
+    for c in n.get("children") or []:
+        walk(c)
+walk(t)
+if hit:
+    print(hit[0], hit[1])
+else:
+    raise SystemExit(1)
+' "$1"
+}
+
+# wda_tap_at X Y [DURATION]: the press backend the probe verified — WDA's
+# dragfromtoforduration (a ~0.15s press on a Files tile = select+confirm in
+# one gesture; plain zero-duration taps never select).
+wda_tap_at() { # X Y [DURATION]
+  local sid; sid=$(wda_session) || return 1
+  curl -s -X POST "localhost:$WDA_PORT/session/$sid/wda/dragfromtoforduration" \
+    -H 'Content-Type: application/json' \
+    -d "{\"fromX\":$1,\"fromY\":$2,\"toX\":$1,\"toY\":$2,\"duration\":${3:-0.1}}" >/dev/null
+}
+
+# wda_find_tap SUBSTR [DURATION]: find the cell by label and tap it. 0 = the
+# walk advanced, 1 = no such cell on this screen.
+wda_find_tap() { # SUBSTR [DURATION]
+  local c; c="$(wda_source_tree | wda_find_cell "$1")" || return 1
+  [ -n "$c" ] || return 1
+  wda_tap_at $c "${2:-0.1}"
 }
 
 # ---- UI legs ---------------------------------------------------------------
@@ -282,39 +309,52 @@ drive_banner() { # screenshot-diff gate: tap ONLY when the banner actually rende
   fail_deadline "notification banner never produced notify.response"
 }
 
-drive_picker() { # Files grid; a ~0.15s press on the tile = select+confirm in
-  # one gesture (verified live: sheet closes and the scenario proceeds) —
-  # plain zero-duration taps never select, and there is no separate 打开 to
-  # press on this runtime. The log marker ui-done picker is the verdict.
-  log "driving Files picker (wait sheet -> focus field via WDA -> search -> duration-press result)"
+drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
+  # WDA — the search path is GONE on measured evidence: the file-provider
+  # search stopped surfacing the target on this machine no matter its age
+  # (matrix attempts 4-7 + the standalone discriminators, 2026-09-30: not
+  # found at file age ~2, ~5, ~26 minutes; the one green search rode an
+  # ~11-minute-old file). The browse hierarchy reads the filesystem DIRECTLY
+  # (verified live by the probe walk: 浏览 tab → DSH Spike → gateway-e2e →
+  # the notes cell, every hop visible in WDA's tree), so there is no index
+  # to wait for and no pre-launch settle to bet. The ~0.15s press on the
+  # notes cell = select+confirm in one gesture; `spike: ui-done picker` is
+  # the verdict marker. Labels tried in the runtime's language first (浏览/
+  # 我的iPhone on this zh sim), then English — the hop CELLS (gateway-e2e,
+  # notes) are locale-neutral names.
+  log "driving Files picker (browse walk: tab -> app -> gateway-e2e -> notes)"
   shot 04-picker-sheet
   wait_sheet || true   # cold Files daemon presents the sheet late — detect, don't race
-  sleep 5      # and its CONTENT loads a beat after the frame — early taps swallow
+  sleep 5              # and its CONTENT loads a beat after the frame — early taps swallow
   idb ui tap --udid "$UDID" "${PT_ALERT_DENY[@]}" >/dev/null 2>&1 || true  # stray system alert; no-op on empty grid
-  if ! wda_field_type "notes"; then   # WDA focus+type; idb fallback (works only if focus landed)
-    log "wda_field_type unavailable — idb tap+text fallback"
-    idb ui tap --udid "$UDID" "${PT_SEARCH[@]}" >/dev/null 2>&1 || true
-    sleep 1
-    idb ui text --udid "$UDID" "notes" >/dev/null 2>&1 || true
-  fi
-  sleep 2
-  shot 05-picker-search   # typed state — suggestion row only, search not executed
-  if wda_submit_search; then
-    log "search submitted (keyboard return via /value)"
-  else
-    log "search submit unavailable — tile press will race the suggestion state"
-  fi
-  sleep 2
-  shot 05b-picker-results   # submitted state — the result row must render here
-  # the single result row sits right under the search field; a ~0.15s press
-  # selects AND confirms in one gesture (verified live earlier)
-  local i rc
+
+  local walked=0 hop
+  for hop in 1 2; do   # one clean walk; one retry after a re-grounding tap
+    wda_find_tap "浏览" 0.1 || wda_find_tap "Browse" 0.1 || true
+    sleep 3
+    if wda_find_tap "gateway-e2e" 0.1; then
+      walked=1; break
+    fi
+    # The browse root: location list (我的 iPhone / DSH Spike) OR the app's
+    # Documents (the sheet remembers its last location) — walk whichever shows.
+    wda_find_tap "我的iPhone" 0.1 || wda_find_tap "My iPhone" 0.1 || true
+    sleep 3
+    if wda_find_tap "gateway-e2e" 0.1; then walked=1; break; fi
+    wda_find_tap "DSH Spike" 0.1 || true
+    sleep 3
+    if wda_find_tap "gateway-e2e" 0.1; then walked=1; break; fi
+    sleep 4   # let the listing settle before retrying the walk
+  done
+  [ "$walked" -eq 1 ] || { shot 08-picker-done; log "browse walk could not reach gateway-e2e"; return 0; }
+  sleep 3   # the folder's content grid loads a beat after the push
+  shot 05-picker-search   # historical name: the folder-content frame (notes cell visible)
+  local i
   for i in 1 2 3; do
-    idb ui tap --udid "$UDID" "${PT_FILES_TILE[@]}" --duration 0.15; rc=$?
-    log "tile press $i rc=$rc"
-    if wait_line "spike: ui-done picker" 6; then
-      shot 06-picker-selected
-      return 0
+    if wda_find_tap "notes" 0.15; then   # duration press = select+confirm
+      if wait_line "spike: ui-done picker" 6; then
+        shot 06-picker-selected
+        return 0
+      fi
     fi
     sleep 2
   done
@@ -347,6 +387,7 @@ if [ "$NO_REBOOT" -eq 0 ]; then
   xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
 fi
 xcrun simctl bootstatus "$UDID" -b
+REBOOT_AT="$(date +%s)"   # the file-provider index clock's zero point (below)
 sleep 5   # let springboard settle before the provider indexes the container
 if [ "$SKIP_INSTALL" -eq 0 ]; then
   xcrun simctl install "$UDID" "$APP"
@@ -371,13 +412,23 @@ mkdir -p "$CONTAINER/Documents/gateway-e2e"
 # staging, then returned 未找到相关结果 at 04:58 right after a rewrite —
 # surprise run-iossh-attempt-with-correct). A settled copy must survive the
 # pre-stage untouched; only a MISSING target is created here.
+STAGED_FRESH=0
 if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
   printf 'gateway e2e target file — dsh-mobile m2\n' \
     > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+  STAGED_FRESH=1
   log "pre-staged notes.txt (was missing — fresh copy)"
 else
   log "notes.txt already staged — untouched (index-settle recipe)"
 fi
+# (The pre-launch index-settle pacing that stood here — 180s, then 720s — is
+# GONE with the search-based picker drive: the file-provider search stopped
+# surfacing the staged target on this machine at ANY age (measured 2026-09-30
+# at ~2, ~5 and ~26 minutes; the single green search rode an ~11-minute-old
+# file), so no bounded wait could be honest. The picker drive now WALKS the
+# browse hierarchy, which reads the filesystem directly and needs no index.
+# The staged target itself (create-if-missing above) is still what the walk
+# taps on.)
 
 # 3.5 WDA warm-up BEFORE the launch: the binding scenario's 180s watchdog
 # starts at eval (step 4), so a slow post-reboot WDA must not eat it.

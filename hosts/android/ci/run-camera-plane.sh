@@ -99,12 +99,19 @@ grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 FAIL=0
-node test/e2e/check.mjs --manifest $SCEN/camera-plane-capture.json \
-    --log "$OUT/logs.txt" --out "$OUT/verdict-camera-plane-capture.json" || FAIL=1
-cat "$OUT/verdict-camera-plane-capture.json"
-node test/e2e/check.mjs --manifest $SCEN/camera-plane-capture-audit.json \
-    --log "$OUT/logs.txt" --out "$OUT/verdict-camera-plane-capture-audit.json" || FAIL=1
-cat "$OUT/verdict-camera-plane-capture-audit.json"
+# The SIMULATOR camera leg drives scenario camera.plane and its honest
+# posture on the emulator's virtual camera is the REAL BURST (8 events) —
+# the capture manifests as #252 landed them. #254 repurposed the
+# camera-plane-capture*.json FILE NAMES for the DEVICE leg (scenario
+# ble.plane), which silently left this runner checking a manifest that can
+# never match; the v0.0.2 release regression caught it (2026-09-30) and the
+# #252 shapes came back under non-conflicting android- names.
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane.json \
+    --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane.json" || FAIL=1
+cat "$OUT/verdict-android-camera-plane.json"
+node test/e2e/check.mjs --manifest $SCEN/android-camera-plane-audit.json \
+    --log "$OUT/logs.txt" --out "$OUT/verdict-android-camera-plane-audit.json" || FAIL=1
+cat "$OUT/verdict-android-camera-plane-audit.json"
 [ "$FAIL" = "0" ] || die "checkers red — evidence stays unreceipted (rule: receipts only from green runs)"
 
 UDID="$(adbsh get-serialno | tr -d '\r')"
@@ -119,8 +126,8 @@ cat > "$OUT/receipt.json" <<EOF
   "tree": "$TREE_LINE",
   "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
   "scenarios": [
-    { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true },
-    { "manifest": "camera-plane-capture-audit", "verdict": "verdict-camera-plane-capture-audit.json", "pass": true }
+    { "manifest": "android-camera-plane", "verdict": "verdict-android-camera-plane.json", "pass": true },
+    { "manifest": "android-camera-plane-audit", "verdict": "verdict-android-camera-plane-audit.json", "pass": true }
   ],
   "screens": [],
   "producedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

@@ -1,0 +1,41 @@
+[
+ {
+  "label": "内测声明",
+  "type": "Other",
+  "center": [
+   201,
+   297
+  ],
+  "changed": true,
+  "evidence": [
+   "00-内测声明-before.png",
+   "00-内测声明-after.png"
+  ]
+ },
+ {
+  "label": "DSH 本地构建",
+  "type": "Other",
+  "center": [
+   201,
+   451
+  ],
+  "changed": false,
+  "evidence": [
+   "01-DSH_本地构建-before.png",
+   "01-DSH_本地构建-after.png"
+  ]
+ },
+ {
+  "label": "内测声明, 网页对话框",
+  "type": "Other",
+  "center": [
+   201,
+   451
+  ],
+  "changed": false,
+  "evidence": [
+   "02-内测声明__网页对话框-before.png",
+   "02-内测声明__网页对话框-after.png"
+  ]
+ }
+]
