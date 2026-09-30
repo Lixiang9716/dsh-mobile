@@ -138,6 +138,55 @@ passed:
   switch that is already on. (Validity checks are off; leaving them off is
   fine — enabling them is an optional extra, not part of this runbook.)
 
+## 7. Marketplace publish secrets and the `marketplace` environment
+
+- **Where**: Settings → **Secrets and variables** → **Actions** (three
+  secrets + one variable, below) and Settings → **Environments** →
+  **New environment** → name `marketplace` → **Required reviewers** → add
+  yourself → **Protect**.
+- **Why**: `.github/workflows/marketplace-publish.yml` packages
+  `system-plugins/` into the frozen DSH package format and signs the
+  catalog index with ed25519 — the signature IS the marketplace's trust
+  (the 2026-10-01 contract proposal: tampered hosting can never produce an
+  installable package). With no signing secret every run fails at the
+  signing step, by design: the catalog does not exist unsigned. The
+  deploy secrets are what turns a real publish from a loud failure into a
+  deployment; the environment is what keeps a real publish a human's
+  decision.
+- **What to add, in order**:
+  1. Generate the signing key:
+     `node tools/marketplace-rotate-key.mjs gen --key-id dsh-market-1`.
+     It prints the SEED and the raw public key. The seed is shown ONCE —
+     it is never stored in the repository; copy it now. (Rotation later:
+     the same tool's `window-index` subcommand — its header documents the
+     whole dual-sign-window runbook.)
+  2. Secret **`MARKETPLACE_SIGNING_KEY`** = the seed from step 1 (base64 of
+     the 32-byte ed25519 seed — exactly what the tool printed).
+  3. Variable **`MARKETPLACE_BASE_URL`** = the public URL prefix the
+     packages will live under (e.g. `https://dl.example.com/market`).
+     Every `tgzUrl` in the signed index is built from it; with neither the
+     variable nor the dispatch input set, the run FAILS on purpose — a
+     signed index never carries a placeholder URL.
+  4. Deploy secrets (needed only for real publishes; dry-run works without
+     them): **`MARKETPLACE_DEPLOY_HOST`** (`user@host` or an ssh alias),
+     **`MARKETPLACE_DEPLOY_PATH`** (absolute target directory),
+     **`MARKETPLACE_DEPLOY_SSH_KEY`** (a private key authorized on that
+     host), **`MARKETPLACE_DEPLOY_PORT`** (optional, default 22). A real
+     publish without them fails loud, naming each missing secret.
+  5. The `marketplace` environment with yourself as required reviewer. The
+     publish job pauses until you approve — same mechanics as the
+     `release` environment (item 3), and the same arming advice: leave
+     **Prevent self-review** OFF, the solo maintainer is the only
+     reviewer, so checking it deadlocks every publish run. Until the
+     environment is armed the workflow reference is inert — nothing waits.
+- **Done when**: a `workflow_dispatch` run of marketplace/publish with
+  `dry_run: true` (the default) ends green and carries the
+  `marketplace-dist` artifact with a signature-verified index inside; and a
+  real publish (tag `marketplace-v*`, or a dispatch with `dry_run`
+  unchecked) waits on your approval, then deploys — `deploy.sh` verifies
+  the remote index digest after upload, so the run also proves the bytes
+  that landed.
+
 ---
 
 - Bilingual counterpart: [github-owner-actions.zh.md](github-owner-actions.zh.md)

@@ -118,6 +118,46 @@
   (Validity checks 目前是关的;保持关闭没问题——打开它是可选的额外项,
   不在本清单范围内。)
 
+## 7. 市场发布密钥与 `marketplace` 环境
+
+- **入口**:Settings → **Secrets and variables** → **Actions**(下述三个
+  secret + 一个 variable),以及 Settings → **Environments** →
+  **New environment** → 名称 `marketplace` → **Required reviewers** →
+  添加你自己 → **Protect**。
+- **为什么**:`.github/workflows/marketplace-publish.yml` 把
+  `system-plugins/` 打包成冻结的 DSH 包格式,并用 ed25519 给目录索引签名
+  ——签名就是市场的信任本体(2026-10-01 契约提案:被篡改的托管永远产不出
+  一个可安装的包)。没有签名 secret 时每次运行都按设计死在签名步骤:目录
+  不存在未签名的形态。部署 secret 决定一次真发布是"响亮地失败"还是"真的
+  部署";环境则保证真发布始终是人的决定。
+- **按顺序添加**:
+  1. 生成签名密钥:
+     `node tools/marketplace-rotate-key.mjs gen --key-id dsh-market-1`。
+     它会打印 SEED(种子)和原始公钥。种子只显示一次——仓库里不会存它,
+     现在就复制。(日后轮换:同一工具的 `window-index` 子命令——其文件头
+     记录了完整的双签窗口流程。)
+  2. Secret **`MARKETPLACE_SIGNING_KEY`** = 第 1 步的种子(32 字节
+     ed25519 种子的 base64——就是工具打印的那串)。
+  3. Variable **`MARKETPLACE_BASE_URL`** = 包将来所在的公开 URL 前缀
+     (例如 `https://dl.example.com/market`)。索引里每个 `tgzUrl` 都由它
+     拼出;变量和 dispatch 输入都没设时,运行按设计失败——签名索引里
+     绝不写占位 URL。
+  4. 部署 secret(只有真发布需要;dry-run 不需要也能跑):
+     **`MARKETPLACE_DEPLOY_HOST`**(`user@host` 或 ssh 别名)、
+     **`MARKETPLACE_DEPLOY_PATH`**(目标绝对目录)、
+     **`MARKETPLACE_DEPLOY_SSH_KEY`**(在该主机上已授权的私钥)、
+     **`MARKETPLACE_DEPLOY_PORT`**(可选,默认 22)。缺了它们时真发布
+     会响亮失败,并逐一报出缺失的 secret 名字。
+  5. `marketplace` 环境,必选审核人是你自己。发布 job 会暂停等你批准
+     ——与 `release` 环境(第 3 条)同一机制,同样的配备建议:
+     **Prevent self-review 保持关闭**,solo 维护者是唯一审核人,勾上会
+     让每次发布死锁。环境未配备时 workflow 的引用是惰性的——什么也不等。
+- **完成标志**:marketplace/publish 的一次 `workflow_dispatch` 运行
+  (`dry_run: true`,默认值)收绿,并带着 `marketplace-dist` artifact,
+  里面的索引通过签名验证;真发布(推 `marketplace-v*` tag,或 dispatch
+  取消勾选 `dry_run`)先等你的批准,然后部署——`deploy.sh` 在上传后核对
+  远端 index 摘要,所以这次运行同时也证明了落地的字节。
+
 ---
 
 - 双语对侧:[github-owner-actions.md](github-owner-actions.md)
