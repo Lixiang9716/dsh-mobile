@@ -60,7 +60,35 @@ fi
 [ -f "$APK" ] || die "APK missing at $APK (build first)"
 
 say "2/5 install"
+# uninstall FIRST: a fresh install resets the runtime permissions, which is
+# what pins the skip leg's OS-refused posture deterministically (a reinstall
+# -r would KEEP grants and flip the posture to a live scan)
+adbsh uninstall $PKG >/dev/null 2>&1 || true
+
 adbsh install -r "$APK" >/dev/null || die "adb install failed"
+
+if [ "$MODE" = "skip" ]; then
+    # the unattended skip leg PINS the OS-refused posture deterministically:
+    # revoke the runtime pair so the radio layer answers the OS layer's
+    # denied (the granted variant arms a real scan whose zero-advertisement
+    # wait ends via the scan-end record — the live-empty posture — which is
+    # environment-flaky on a virtual controller; the D-g device leg is where
+    # the granted radio runs)
+    adbsh shell pm revoke $PKG android.permission.BLUETOOTH_SCAN >/dev/null 2>&1 || true
+    adbsh shell pm revoke $PKG android.permission.BLUETOOTH_CONNECT >/dev/null 2>&1 || true
+fi
+
+if [ "$MODE" != "device" ]; then
+    adbsh shell pm grant $PKG android.permission.BLUETOOTH_SCAN >/dev/null 2>&1 \
+        || say "pm grant SCAN skipped (pre-31 image — the posture decides)"
+    adbsh shell pm grant $PKG android.permission.BLUETOOTH_CONNECT >/dev/null 2>&1 \
+        || say "pm grant CONNECT skipped (pre-31 image — the posture decides)"
+fi
+# The unattended legs pre-grant the API-31+ runtime pair: a granted radio
+# arms a REAL scan whose window self-ends at the timeout — the scan-end
+# record bounds the zero-advertisement case honestly (the arm/stop
+# envelope). The in-app OS-request path (BlePrimitives.ensureRadio) is
+# what a real device exercises before any grant exists (the D-g legs).
 
 say "3/5 launch ($EXTRAS)"
 DUMP="$OUT/.ble-dump.txt"  # intermediate; never committed
@@ -97,10 +125,15 @@ grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 say "5/5 checkers"
 rm -f "$OUT"/verdict-*.json   # a prior red run's verdicts must not linger
-# the skip posture is OBSERVED (denied on this emulator: virtual radio up,
-# runtime permissions ungranted; absent where the radio truly is missing)
-if [ "$MODE" = "skip" ] && grep -q '"mode":"absent"' "$OUT/logs.txt"; then
-    SCEN="android-ble-absent"
+# the skip posture is OBSERVED (denied: virtual radio up + runtime
+# permissions ungranted; absent: no radio at all; live-empty: radio armed
+# but the RF room silent — after pm grant, the honest arm/stop envelope)
+if [ "$MODE" = "skip" ]; then
+    if grep -q '"mode":"absent"' "$OUT/logs.txt"; then
+        SCEN="android-ble-absent"
+    elif grep -q '"mode":"live"' "$OUT/logs.txt"; then
+        SCEN="android-ble-live-empty"
+    fi
 fi
 FAIL=0
 node test/e2e/check.mjs --manifest $SCEN_DIR/$SCEN.json \

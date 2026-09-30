@@ -510,7 +510,14 @@ vendor/npm/zod@4.4.3/v4/locales/zh-TW.js"
 CLOSURE="$CLOSURE
 $SPINE_OURS
 llm.js
-scenario/llm-live-stream.js"
+scenario/llm-live-stream.js
+manifest.json
+scenario/camera-plane.js
+scenario/ble-plane.js
+system-plugins/dsh-device-plane/manifest.json
+system-plugins/dsh-device-plane/index.js
+system-plugins/dsh-ble/manifest.json
+system-plugins/dsh-ble/index.js"
 if [ "$MODE" != "check" ]; then
     for rel in $CLOSURE; do
         mkdir -p "$RAW/$(dirname "$rel")"

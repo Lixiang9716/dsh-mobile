@@ -10,7 +10,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Sensor","rssi":-42}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Beacon","rssi":-66}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStop"}]}
-dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.stopped","stopped":true}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.stopped","stopped":true,"devices":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleConnect"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.connect","connectionIdOpaque":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"bleRead","data":[{"connectionId":"conn:device:mock-1","service":"180f","characteristic":"2a19"}]}
@@ -22,10 +22,10 @@ dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleSubscribe"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.subscribed","subscribed":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":132}]}
-dsh.spike.log: {"level":"debug","module":"dsh.ble.plane","message":"payload decoded","data":[{"chars":4,"bytes":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.notify","seq":1,"bytes":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":132}]}
-dsh.spike.log: {"level":"debug","module":"dsh.ble.plane","message":"payload decoded","data":[{"chars":4,"bytes":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.notify","seq":2,"bytes":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleUnsubscribe"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.unsubscribed","subscribed":false}]}

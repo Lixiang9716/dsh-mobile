@@ -78,6 +78,7 @@ const LEG_BLE: string = 'ble.plane';
 const BUNDLE_FILES: string[] = [
   'e2e-stage.js',
   'gateway.js',
+  'manifest.json',
   'install-pipeline.js',
   'llm.js',
   'logger.js',

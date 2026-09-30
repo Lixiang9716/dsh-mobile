@@ -35,6 +35,11 @@ protocol BleRadio: AnyObject {
     /// primitives fan out to every armed scan).
     var deviceSink: ((BleRadioDevice) -> Void)? { get set }
 
+    /// The scan window's own close (the host-side timeout self-end): a
+    /// terminal record on the session channel, the http.end precedent —
+    /// the consumer's bound for a live-but-silent radio.
+    var scanEndSink: ((String) -> Void)? { get set }
+
     /// Arms a scan; resolves the scanId WHEN ARMED (the micStart posture).
     /// Devices arrive through `deviceSink`; the scan ends itself at the
     /// timeout or at `scanStop`.
@@ -104,6 +109,7 @@ final class MockBleRadio: BleRadio {
 
     var consent: Result<Void, BleRadioFailure> { .success(()) }
     var deviceSink: ((BleRadioDevice) -> Void)?
+    var scanEndSink: ((String) -> Void)?
 
     func scanStart(
         filter: [String], timeoutMs: Int,
@@ -119,6 +125,12 @@ final class MockBleRadio: BleRadio {
             DispatchQueue.main.asyncAfter(
                 deadline: .now() + .milliseconds(bleScanTimeoutClamp(timeoutMs)),
                 execute: end)
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + .milliseconds(bleScanTimeoutClamp(timeoutMs))
+            ) { [weak self] in
+                if self?.liveScans[scanId] == nil { return }
+                self?.scanEndSink?(scanId)
+            }
         }
     }
 

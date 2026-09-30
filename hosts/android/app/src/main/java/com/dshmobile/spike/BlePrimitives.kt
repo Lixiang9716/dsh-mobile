@@ -44,8 +44,9 @@ class BlePrimitives(
     }
 
     private val radio: BleRadio = radio
-    /** The session-scoped gateway grant (dies with the session). */
-    private var sessionGrant = false
+    /** The consent collaborator (gateway prompt + OS prompt — BleConsent.kt):
+     * the primitives ask it before every radio-touching call. */
+    private val consent = BleConsentLayer(activity, core)
     private val armedScans = HashMap<String, Long>()
     /** Wired by the host session: delivers one bridge event (the emit seam
      * already hops onto the serial runtime queue). */
@@ -72,70 +73,14 @@ class BlePrimitives(
         primitive: String, call: GatewayCore.GatewayCall,
         done: GatewayCore.Done, body: () -> Unit,
     ) {
-        if (core.manifest.grants(primitive) || sessionGrant
-            || activity.getSharedPreferences("dsh", 0)
-                .getBoolean(STANDING_GRANT_KEY, false)
-        ) {
+        if (core.manifest.grants(primitive) || consent.holdsGrant()) {
             body()
             return
         }
-        requestPrompt(primitive, done, body)
-    }
-
-    private fun requestPrompt(
-        primitive: String, done: GatewayCore.Done, body: () -> Unit,
-    ) {
-        GatewayCore.uiMarker("ble-consent", "wait")
-        activity.runOnUiThread {
-            buildConsentDialog(primitive, done, body).show()
-        }
-    }
-
-    /** The gateway consent surface — the three answers are the approval
-     * ladder; each handler is a named method so the builder chain stays
-     * inside the indent budget. */
-    private fun buildConsentDialog(
-        primitive: String, done: GatewayCore.Done, body: () -> Unit,
-    ): android.app.AlertDialog {
-        val approve = { _: android.content.DialogInterface, _: Int ->
-            GatewayCore.uiMarker("ble-consent", "done")
-            sessionGrant = true
-            body()
-        }
-        val remember = { _: android.content.DialogInterface, _: Int ->
-            GatewayCore.uiMarker("ble-consent", "done")
-            rememberGrant()
-            body()
-        }
-        val decline = { _: android.content.DialogInterface, _: Int ->
-            GatewayCore.uiMarker("ble-consent", "done")
-            denyGateway(primitive, done)
-        }
-        return android.app.AlertDialog.Builder(activity)
-            .setTitle("Allow Bluetooth access?")
-            .setMessage(
-                "The agent wants to reach nearby BLE devices (scan, connect, "
-                    + "GATT). Approve once, always, or decline.")
-            .setPositiveButton("Approve", approve)
-            .setNeutralButton("Approve & Remember", remember)
-            .setNegativeButton("Decline", decline)
-            .create()
-    }
-
-    /** The session grant dies with the session; "remember" persists the
-     * app-scoped standing grant (the clipboardRead posture). */
-    private fun rememberGrant() {
-        activity.getSharedPreferences("dsh", 0).edit()
-            .putBoolean(STANDING_GRANT_KEY, true).apply()
-        sessionGrant = true
-    }
-
-    private fun denyGateway(primitive: String, done: GatewayCore.Done) {
-        done.settle(
-            null,
-            GatewayCore.GatewayError(
-                "denied", primitive, "the gateway consent layer refused"),
-        )
+        // unreachable while the dispatch prompter is installed (it owns the
+        // ungranted path) — belt-and-braces
+        done.settle(null, GatewayCore.GatewayError(
+            "denied", primitive, "the gateway consent layer refused"))
     }
 
     // ---- the OS consent + capability gate ------------------------------------
@@ -149,10 +94,11 @@ class BlePrimitives(
         when (val refusal = radio.consent()) {
             null -> body()
             is BleRadioFailure.OsDenied -> {
-                core.stageAuditDetail(
-                    JSONObject().put("layer", "os").put("family", "ble"))
-                done.settle(null, GatewayCore.GatewayError(
-                    "denied", primitive, refusal.reason))
+                if (consent.osPromptPossible()) {
+                    consent.requestOsPermission(primitive, done, body)
+                } else {
+                    consent.denyOs(primitive, refusal.reason, done)
+                }
             }
             is BleRadioFailure.Unsupported -> {
                 done.settle(null, GatewayCore.GatewayError(
@@ -229,6 +175,11 @@ class BlePrimitives(
         if (sinceNanos > 0) detail.put("durationMs", sinceNanos / 1_000_000)
         core.stageAuditDetail(detail)
         done.settle(JSONObject().put("stopped", stopped), null)
+    }
+
+    /** MainActivity → SpikeHostM4 route the OS prompt's verdict here. */
+    fun onPermissionResult(granted: Boolean) {
+        consent.onPermissionResult(granted)
     }
 
     /** The radio's device tap fans out to every armed scan (the proposal's

@@ -406,7 +406,7 @@ export class HostPhase {
     if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
     }
-    this.ble = new BlePrimitives(ctx, this.bleMock);
+    this.ble = new BlePrimitives(ctx, bundleRoot, this.bleMock);
     this.ble.emitFn = (eventJson: string): void => {
       this.deliverEvent(eventJson);
     };

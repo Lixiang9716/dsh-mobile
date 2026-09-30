@@ -52,6 +52,11 @@ interface BleRadio {
     /** The queue-serial advertisement tap — wired by [BlePrimitives]. */
     var deviceSink: ((BleRadioDevice) -> Unit)?
 
+    /** The scan window's own close (the timeout self-end): a terminal
+     * record on the session channel, the http.end precedent — the
+     * consumer's bound for a live-but-silent radio. */
+    var scanEndSink: ((String) -> Unit)?
+
     /** Arms a scan; resolves the scanId WHEN ARMED (the micStart posture). */
     fun scanStart(
         filter: List<String>, timeoutMs: Int,
@@ -121,6 +126,8 @@ class MockBleRadio : BleRadio {
 
     override var deviceSink: ((BleRadioDevice) -> Unit)? = null
 
+    override var scanEndSink: ((String) -> Unit)? = null
+
     override fun consent(): BleRadioFailure? = null
 
     override fun scanStart(
@@ -133,6 +140,9 @@ class MockBleRadio : BleRadio {
         liveScans[scanId] = end
         completion(BleResult.ok(scanId))
         deliverBatch(scanId, filter)
+        handler.postDelayed({
+            if (liveScans.containsKey(scanId)) scanEndSink?.invoke(scanId)
+        }, bleScanTimeoutClamp(timeoutMs).toLong())
         handler.postDelayed(end, bleScanTimeoutClamp(timeoutMs).toLong())
     }
 

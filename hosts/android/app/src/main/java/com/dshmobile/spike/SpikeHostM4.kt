@@ -162,7 +162,7 @@ class SpikeHostM4 private constructor(
             captureLabel = "upstream-suite",
         ).also { it.suiteSpec = spec }
 
-        /** The upstream-parity drive (scenario `upstream.parity`): the port leg of the differential consistency check — the same vendored upstream spine and scripted turns as the Node reference leg, compared against the committed golden. */
+        /** The upstream-parity drive (scenario `upstream.parity`): the port leg of the differential consistency check against the committed golden. */
         fun startParity(
             activity: Activity,
             webView: WebView?,
@@ -456,6 +456,11 @@ class SpikeHostM4 private constructor(
             camera.onPermissionResult(
                 grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,
             )
+        }
+        if (requestCode == BleConsentLayer.REQUEST_BLE) {
+            // the scan/connect pair: every entry must be granted to proceed
+            ble.onPermissionResult(grantResults.isNotEmpty()
+                && grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED })
         }
     }
 

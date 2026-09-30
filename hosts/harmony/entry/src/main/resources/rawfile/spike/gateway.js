@@ -363,5 +363,11 @@ export const onEvent = (fn) => {
 globalThis.__dshGatewayOnEvent = (eventJson) => {
   log.debug('gateway event', { chars: eventJson.length });
   const ev = JSON.parse(eventJson);
+  // The bridge carries GATT payloads base64 (the frozen transport
+  // convention); the §7 event shape the consumer sees is `bytes`.
+  if (ev?.event === 'ble.event' && ev.kind === 'notify' && ev.bytesB64) {
+    ev.bytes = base64ToBytes(ev.bytesB64);
+    delete ev.bytesB64;
+  }
   if (!streamEvent(ev)) listeners.forEach((fn) => fn(ev));
 };

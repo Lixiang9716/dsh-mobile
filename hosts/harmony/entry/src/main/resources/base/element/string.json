@@ -27,6 +27,8 @@
     {
       "name": "camera_reason",
       "value": "The camera capture burst (cameraCapture) lands the frames you shoot into the session's capture scope."
+    },
+    {
       "name": "bluetooth_reason",
       "value": "The BLE face scans, connects to and reads nearby devices an agent session talks to."
     }

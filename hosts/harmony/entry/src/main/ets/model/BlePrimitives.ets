@@ -27,6 +27,7 @@ import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { util } from '@kit.ArkTS';
+import { fileIo } from '@kit.CoreFileKit';
 import { SettleFn } from './PickerPrimitives';
 
 const TAG: string = 'dsh.app';
@@ -84,6 +85,7 @@ interface BytesOutcome {
 /** The radio contract both faces implement. */
 interface BleRadioLike {
   deviceSink: ((device: BleRadioDevice) => void) | null;
+  scanEndSink: ((scanId: string) => void) | null;
   consent(): BleRadioRefusal | null;
   scanStart(filter: Array<string>, timeoutMs: number,
     completion: (outcome: ScanOutcome) => void): void;
@@ -120,6 +122,7 @@ export class BleMockRadio implements BleRadioLike {
   private notifying: Set<string> = new Set();
 
   deviceSink: ((device: BleRadioDevice) => void) | null = null;
+  scanEndSink: ((scanId: string) => void) | null = null;
 
   consent(): BleRadioRefusal | null {
     return null;
@@ -132,6 +135,11 @@ export class BleMockRadio implements BleRadioLike {
     this.liveScans.set(scanId, Date.now() + bleScanTimeoutClamp(timeoutMs));
     completion({ scanId: scanId, refusal: null });
     this.deliverBatch(scanId, filter, timeoutMs);
+    setTimeout((): void => {
+      if (this.liveScans.has(scanId)) {
+        this.scanEndSink?.(scanId);
+      }
+    }, bleScanTimeoutClamp(timeoutMs));
   }
 
   /** The two-device batch, one bridge hop per advertisement (the
@@ -271,6 +279,7 @@ export class BleSystemRadio implements BleRadioLike {
   private connectionIds: Map<ble.GattClientDevice, string> = new Map();
 
   deviceSink: ((device: BleRadioDevice) => void) | null = null;
+  scanEndSink: ((scanId: string) => void) | null = null;
 
   constructor(ctx: common.UIAbilityContext) {
     this.ctx = ctx;
@@ -310,6 +319,7 @@ export class BleSystemRadio implements BleRadioLike {
       completion({ scanId: scanId, refusal: null });
       setTimeout((): void => {
         if (this.liveScan === scanId) {
+          this.scanEndSink?.(scanId);
           this.scanStop(scanId);
         }
       }, bleScanTimeoutClamp(timeoutMs));
@@ -366,23 +376,60 @@ export class BleSystemRadio implements BleRadioLike {
       // @SuppressWarnings syscap
       const client: ble.GattClientDevice = ble.createGattClientDevice(osId!);
       const connectionId: string = 'conn:' + deviceId;
-      client.on('connectionStateChange', (state: ble.BLEConnectionChangeState) => {
-        if (state.state !== constant.ProfileConnectionState.STATE_CONNECTED) {
-          const bound = this.connectionIds.get(client);
-          if (bound !== undefined) {
-            this.clients.delete(bound);
-            this.connectionIds.delete(client);
-            onDisconnect(bound);
-          }
+      // the contract's connect posture (proposal §6): the completion fires
+      // once the GATT LINK is up AND the tuple space is readable — never on
+      // the local request (the iOS/Android siblings settle the same way).
+      // The parked map is static: the callback needs a type-stable home.
+      client.on('BLEConnectionStateChange', (state: ble.BLEConnectionChangeState) => {
+        const bound = this.connectionIds.get(client);
+        if (bound === undefined) {
+          return;
+        }
+        if (state.state === constant.ProfileConnectionState.STATE_CONNECTED) {
+          // @SuppressWarnings syscap
+          client.getServices().then((_services: Array<ble.GattService>): void => {
+            BleSystemRadio.settleParked(client, connectionId);
+          }).catch((_err: BusinessError): void => {
+            BleSystemRadio.settleParked(client, null);
+          });
+        } else {
+          this.clients.delete(bound);
+          this.connectionIds.delete(client);
+          BleSystemRadio.settleParked(client, null);
+          onDisconnect(bound);
         }
       });
       client.connect();
       this.clients.set(connectionId, client);
       this.connectionIds.set(client, connectionId);
-      completion({ connectionId: connectionId, refusal: null });
+      BleSystemRadio.parkConnect(client, completion);
     } catch (e) {
       const be = e as BusinessError;
       completion({ connectionId: null, refusal: BleSystemRadio.mapError(be) });
+    }
+  }
+
+  /** The connect completions parked until the link settles — static so the
+   * connectionStateChange callback has a type-stable home. */
+  static parkedConnects: Map<ble.GattClientDevice,
+    (outcome: ConnectOutcome) => void> = new Map();
+
+  static parkConnect(client: ble.GattClientDevice,
+    completion: (outcome: ConnectOutcome) => void): void {
+    BleSystemRadio.parkedConnects.set(client, completion);
+  }
+
+  static settleParked(client: ble.GattClientDevice, connectionId: string | null): void {
+    const parked = BleSystemRadio.parkedConnects.get(client);
+    if (parked === undefined) {
+      return;
+    }
+    BleSystemRadio.parkedConnects.delete(client);
+    if (connectionId !== null) {
+      parked({ connectionId: connectionId, refusal: null });
+    } else {
+      parked({ connectionId: null,
+        refusal: new BleRadioRefusal('unsupported', 'the GATT link did not come up') });
     }
   }
 
@@ -574,6 +621,11 @@ interface GattTarget {
 export class BlePrimitives {
   private ctx: common.UIAbilityContext;
   private radio: BleRadioLike;
+  /** The staged caller manifest's required grants — the harmony gateway's
+   * enforcement point is THIS layer (the C forward has no grant table), so
+   * rule 1's "the gateway checks before dispatch" reads the manifest here:
+   * the same staged manifest.json the iOS/Android cores parse. */
+  private required: Set<string> = new Set<string>();
   /** The session-scoped gateway grant (dies with the session). */
   private sessionGrant: boolean = false;
   private presenter: ((title: string, onResult: (approved: boolean) => void) => void)
@@ -582,10 +634,48 @@ export class BlePrimitives {
   emitFn: ((eventJson: string) => void) | null = null;
   private armedScans: Map<string, boolean> = new Map();
 
-  constructor(ctx: common.UIAbilityContext, mockRadio: boolean) {
+  constructor(ctx: common.UIAbilityContext, bundleRoot: string, mockRadio: boolean) {
     this.ctx = ctx;
     this.radio = mockRadio ? new BleMockRadio() : new BleSystemRadio(ctx);
+    this.loadCallerGrants(bundleRoot);
     this.radio.deviceSink = (device: BleRadioDevice): void => this.deviceArrived(device);
+    this.radio.scanEndSink = (scanId: string): void => this.scanEnded(scanId);
+  }
+
+  /** The caller manifest's required grants (family-flag grammar, the same
+   * table the iOS/Android cores parse). A missing manifest fails LOUD
+   * (rule 5) — a bundle without its permission record has no business
+   * reaching the BLE rows. */
+  private loadCallerGrants(bundleRoot: string): void {
+    try {
+      // @SuppressWarnings syscap
+      const text: string = fileIo.readTextSync(bundleRoot + '/manifest.json');
+      const parsed: Record<string, Object> =
+        JSON.parse(text) as Record<string, Object>;
+      const caps = parsed['capabilities'] as Record<string, Object>;
+      const raw = caps['required'] as Array<string>;
+      const familyFlags: Array<Array<string>> = [
+        ['bleScanStart', 'ble'], ['bleScanStop', 'ble'],
+        ['bleConnect', 'ble'], ['bleDisconnect', 'ble'],
+        ['bleRead', 'ble'], ['bleWrite', 'ble'],
+        ['bleSubscribe', 'ble'], ['bleUnsubscribe', 'ble'],
+      ];
+      raw.forEach((entry: string): void => {
+        this.required.add(entry);
+      });
+      familyFlags.forEach((pair: Array<string>): void => {
+        if (this.required.has(pair[1])) {
+          this.required.add(pair[0]);
+        }
+      });
+      hilog.info(0x0000, TAG, 'ble: caller grants loaded (%{public}d rows)',
+        this.required.size.toString());
+    } catch (e) {
+      const be = e as BusinessError;
+      hilog.error(0x0000, TAG, 'ble: caller manifest unreadable: %{public}s',
+        be.message ?? 'unknown');
+      throw new Error('ble: bundle_root/manifest.json missing or unparseable');
+    }
   }
 
   setPresenter(presenter: (title: string, onResult: (approved: boolean) => void) => void):
@@ -600,11 +690,16 @@ export class BlePrimitives {
       message + '"}', false);
   }
 
-  /** The gateway consent layer: manifest-declared (checked by the C
-   * forward's grant table upstream of ArkTS), session-granted, or the
-   * presenter prompt. Refusal settles `denied` (layer: gateway). */
+  /** The gateway consent layer, rule 1 first: the caller manifest's grant
+   * (enforced HERE — the harmony gateway's ArkTS layer; the C forward has
+   * no grant table), then the session grant from a prior prompt approval,
+   * then the presenter prompt. Refusal settles `denied` (layer: gateway). */
   private ensureGrant(primitive: string, callId: number, settle: SettleFn,
     body: () => void): void {
+    if (this.required.has(primitive)) {
+      body();
+      return;
+    }
     if (this.sessionGrant) {
       body();
       return;
@@ -884,6 +979,12 @@ export class BlePrimitives {
         body(connectionId, service, characteristic);
       });
     });
+  }
+
+  private scanEnded(scanId: string): void {
+    this.armedScans.delete(scanId);
+    this.emitFn?.('{"event":"ble.event","kind":"scan-end","scanId":'
+      + JSON.stringify(scanId) + '}');
   }
 
   private deviceArrived(device: BleRadioDevice): void {

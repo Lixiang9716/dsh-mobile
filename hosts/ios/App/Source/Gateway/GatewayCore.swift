@@ -97,6 +97,13 @@ struct GatewayManifest {
             names.contains { $0 == grant || grant.hasPrefix($0 + "@") }
         }
     }
+
+    /// True when the primitive belongs to a capability FAMILY row (the
+    /// capability plane's promptable surface — the camera/mic lines join
+    /// with their own rows).
+    static func isCapabilityRow(_ primitive: String) -> Bool {
+        familyFlags[primitive] != nil
+    }
 }
 
 /// The capability gateway core: dispatch table name→handler, permission
@@ -183,13 +190,51 @@ final class GatewayCore {
         return detail
     }
 
+    /// The capability plane's out-of-scope rule (the socket seam's
+    /// "--prompt" posture, the proposal's rule 2): a REGISTERED capability-
+    /// family primitive the caller lacks the grant for raises the runtime
+    /// prompt instead of the flat denial. Installed by the capability
+    /// primitives at registration; grant proceeds to the handler, deny
+    /// settles exactly like the flat path. nil (every pre-capability
+    /// session) keeps the v1.5.0 behavior byte-for-byte.
+    var capabilityPrompter: ((_ primitive: String, _ grant: @escaping () -> Void,
+        _ deny: @escaping () -> Void) -> Void)?
+
     /// Entry point of the frozen bridge's on_call — invoked ON THE RUNTIME
     /// THREAD. Unknown or ungranted primitives settle denied with a "denied"
     /// audit verdict; granted calls run their handler off-thread.
     func dispatch(callId: Int, name: String, argsJSON: String) {
         if name == "httpFetch.abort" { return dispatchAbort(callId, argsJSON) }
         let base = name.split(separator: ".").first.map(String.init) ?? name
-        guard let handler = handlers[name], manifest.grants(primitive: base) else {
+        let granted = manifest.grants(primitive: base)
+        if granted || capabilityPrompter == nil || !GatewayManifest.isCapabilityRow(base) {
+            return dispatchKnown(callId: callId, name: name, argsJSON: argsJSON,
+                enforceGrant: !granted)
+        }
+        // ungranted capability row + a prompter installed: raise the
+        // prompt; the grant path re-enters with the check bypassed (the
+        // prompt layer's session grant substitutes for the manifest flag)
+        capabilityPrompter?(name, { [weak self] in
+            self?.dispatchKnown(callId: callId, name: name, argsJSON: argsJSON,
+                enforceGrant: false)
+        }, { [weak self] in
+            self?.audit(primitive: name, verdict: "denied", outcome: "denied")
+            let message = "primitive not granted to \(self?.manifest.id ?? "")"
+            let error = GatewayError(code: "denied", primitive: name, message: message)
+            self?.settle?(callId, false, Self.errorJSON(error))
+        })
+    }
+
+    /// The known-primitive continuation of dispatch; `enforceGrant` is
+    /// false only on the prompt layer's grant path (the runtime approval
+    /// substitutes for the manifest flag — session-scoped by the
+    /// prompter's own bookkeeping).
+    private func dispatchKnown(
+        callId: Int, name: String, argsJSON: String, enforceGrant: Bool
+    ) {
+        guard let handler = handlers[name],
+            !enforceGrant || manifest.grants(primitive: name.split(separator: ".").first.map(String.init) ?? name)
+        else {
             audit(primitive: name, verdict: "denied", outcome: "denied")
             let message = "primitive not granted to \(manifest.id)"
             let error = GatewayError(code: "denied", primitive: name, message: message)

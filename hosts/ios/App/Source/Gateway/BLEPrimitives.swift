@@ -43,13 +43,37 @@ final class BLEPrimitives {
         core.register(name: "bleSubscribe") { call, done in self.subscribe(call, done) }
         core.register(name: "bleUnsubscribe") { call, done in self.unsubscribe(call, done) }
         radio.deviceSink = { [weak self] device in self?.deviceArrived(device) }
+        radio.scanEndSink = { [weak self] scanId in self?.scanEnded(scanId) }
+        // the capability plane's prompt layer: BLE rows route here before
+        // the flat denial (GatewayCore.capabilityPrompter) — the runtime
+        // approval's grant is session-scoped, its decline is the denial
+        core.capabilityPrompter = { [weak self] primitive, grant, deny in
+            guard let self, primitive.hasPrefix("ble") else { return deny() }
+            self.ensurePrompt(grant, deny)
+        }
+    }
+
+    /// The prompt layer's own gate: the session/standing grants answer
+    /// without UI; otherwise the alert asks.
+    private func ensurePrompt(_ grant: @escaping () -> Void, _ deny: @escaping () -> Void) {
+        if sessionGrant || UserDefaults.standard.bool(forKey: Self.standingGrantKey) {
+            return grant()
+        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let root = self.rootViewController() else {
+                return deny()
+            }
+            root.present(self.consentAlert(grant, deny), animated: true)
+        }
     }
 
     // ---- the gateway consent layer ------------------------------------------
 
-    /// The family grant: manifest-declared, session-granted (this session's
-    /// prompt approval), or the standing grant. Missing ⇒ the runtime prompt
-    /// (rule 2) — refusal settles `denied` with audit layer "gateway".
+    /// The family grant: manifest-declared, or already granted through the
+    /// prompt layer (whose session/standing bookkeeping lives here). A
+    /// caller that is neither never reaches this handler — the dispatch
+    /// prompter intercepts ungranted capability rows before any handler
+    /// runs, so the defensive deny below is belt-and-braces.
     private func ensureGrant(
         _ primitive: String, _ call: GatewayCall, _ done: @escaping GatewayDone,
         _ body: @escaping () -> Void
@@ -62,28 +86,15 @@ final class BLEPrimitives {
             body()
             return
         }
-        requestPrompt(primitive, call, done, body)
-    }
-
-    private func requestPrompt(
-        _ primitive: String, _ call: GatewayCall,
-        _ done: @escaping GatewayDone, _ body: @escaping () -> Void
-    ) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self, let root = self.rootViewController() else {
-                return done(.failure(GatewayError(
-                    code: "unavailable", primitive: primitive,
-                    message: "no key window to present the approval on")))
-            }
-            root.present(self.consentAlert(primitive, done, body), animated: true)
-        }
+        done(.failure(GatewayError(code: "denied", primitive: primitive,
+            message: "the gateway consent layer refused")))
     }
 
     /// The gateway consent surface — the SAME alert presentApproval uses;
-    /// the three answers are the approval ladder (once / remember / decline).
+    /// the three answers are the approval ladder (once / remember / decline;
+    /// remember persists the standing grant, decline IS the denial).
     private func consentAlert(
-        _ primitive: String, _ done: @escaping GatewayDone,
-        _ body: @escaping () -> Void
+        _ grant: @escaping () -> Void, _ deny: @escaping () -> Void
     ) -> UIAlertController {
         let alert = UIAlertController(
             title: "Allow Bluetooth access?",
@@ -92,16 +103,15 @@ final class BLEPrimitives {
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Approve", style: .default) { [weak self] _ in
             self?.sessionGrant = true
-            body()
+            grant()
         })
         alert.addAction(UIAlertAction(title: "Approve & Remember", style: .default) { [weak self] _ in
             UserDefaults.standard.set(true, forKey: Self.standingGrantKey)
             self?.sessionGrant = true
-            body()
+            grant()
         })
         alert.addAction(UIAlertAction(title: "Decline", style: .cancel) { _ in
-            done(.failure(GatewayError(code: "denied", primitive: primitive,
-                message: "the gateway consent layer refused")))
+            deny()
         })
         return alert
     }
@@ -137,6 +147,19 @@ final class BLEPrimitives {
     }
 
     // ---- scan -----------------------------------------------------------------
+
+    /// The radio's scan-window close (the timeout self-end): fan out to
+    /// every armed scan, then the scan is simply over — the caller's own
+    /// stop settles idempotently afterwards.
+    private func scanEnded(_ scanId: String) {
+        scanLock.lock()
+        armedScans.removeValue(forKey: scanId)
+        scanLock.unlock()
+        let record: [String: Any] = [
+            "event": "ble.event", "kind": "scan-end", "scanId": scanId,
+        ]
+        core?.emit?(GatewayCore.jsonLine(record) ?? "{}")
+    }
 
     private func scanStart(_ call: GatewayCall, _ done: @escaping GatewayDone) {
         let filter = (call.args["serviceUuids"] as? [String]) ?? []

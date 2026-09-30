@@ -40,6 +40,9 @@ final class SystemBleRadio: NSObject, BleRadio {
     /// Wired by BLEPrimitives at registration; the queue-serial device tap.
     var deviceSink: ((BleRadioDevice) -> Void)?
 
+    /// The scan window's own close (the timeout self-end).
+    var scanEndSink: ((String) -> Void)?
+
     /// The OS consent verdict from the CURRENT authorization — a STATIC,
     /// prompt-free read; `.notDetermined` is granted-through — the first
     /// scan surfaces the system prompt and the state callback answers
@@ -119,6 +122,12 @@ final class SystemBleRadio: NSObject, BleRadio {
             DispatchQueue.main.asyncAfter(
                 deadline: .now() + .milliseconds(bleScanTimeoutClamp(timeoutMs)),
                 execute: end)
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + .milliseconds(bleScanTimeoutClamp(timeoutMs))
+            ) { [weak self] in
+                guard self?.liveScans[scanId] != nil else { return }
+                self?.scanEndSink?(scanId)
+            }
         }
     }
 

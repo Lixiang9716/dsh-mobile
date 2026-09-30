@@ -1,0 +1,19 @@
+{
+  "scenario": "ble.plane.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "bleScanStart",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleScanStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    }
+  ]
+}

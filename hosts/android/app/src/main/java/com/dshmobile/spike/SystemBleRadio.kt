@@ -49,6 +49,8 @@ class SystemBleRadio(private val context: Context) : BleRadio {
 
     override var deviceSink: ((BleRadioDevice) -> Unit)? = null
 
+    override var scanEndSink: ((String) -> Unit)? = null
+
     private val liveScans = HashMap<String, Runnable>()
     private val devicesById = HashMap<String, android.bluetooth.BluetoothDevice>()
     private val idsByDevice = HashMap<android.bluetooth.BluetoothDevice, String>()
@@ -156,6 +158,9 @@ class SystemBleRadio(private val context: Context) : BleRadio {
         try {
             scanner.startScan(scanFilters, settings, scanCallback)
             completion(BleResult.ok(scanId))
+            handler.postDelayed({
+                if (liveScans.containsKey(scanId)) scanEndSink?.invoke(scanId)
+            }, bleScanTimeoutClamp(timeoutMs).toLong())
             handler.postDelayed(end, bleScanTimeoutClamp(timeoutMs).toLong())
         } catch (e: SecurityException) {
             liveScans.remove(scanId)
@@ -319,14 +324,35 @@ class SystemBleRadio(private val context: Context) : BleRadio {
         completion: (BleResult<Boolean>) -> Unit,
     ) {
         withCharacteristic(connectionId, service, characteristic) { gatt, ch ->
-            unsubscribeWaiters[connectionId] = completion
             try {
-                gatt.setCharacteristicNotification(ch, false)
-                // the POST state (disarmed) settles from the callback
+                // the local disable is synchronous and self-describing —
+                // settle the POST state here (no CCCD write rides this
+                // path, so nothing else would ever consume the waiter)
+                unsubscribeDirect(gatt, ch, completion)
             } catch (e: SecurityException) {
-                unsubscribeWaiters.remove(connectionId)?.invoke(BleResult.err(
+                completion(BleResult.err(
                     BleRadioFailure.OsDenied("permissions revoked (${e.message})")))
             }
+        }
+    }
+
+    /** The local disable is synchronous and self-describing — settle the
+     * POST state here (no CCCD write rides this path). */
+    private fun unsubscribeDirect(
+        gatt: BluetoothGatt, ch: BluetoothGattCharacteristic,
+        completion: (BleResult<Boolean>) -> Unit,
+    ) {
+        try {
+            val ok = gatt.setCharacteristicNotification(ch, false)
+            if (ok) {
+                completion(BleResult.ok(false))
+            } else {
+                completion(BleResult.err(BleRadioFailure.Unsupported(
+                    "unsubscribe failed (the peer refused the local disable)")))
+            }
+        } catch (e: SecurityException) {
+            completion(BleResult.err(
+                BleRadioFailure.OsDenied("permissions revoked (${e.message})")))
         }
     }
 

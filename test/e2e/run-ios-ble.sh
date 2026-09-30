@@ -134,6 +134,8 @@ elif [ "$MODE" = "skip" ]; then
   # refused) on different days — each posture has its own manifest.
   if grep -q '"mode":"denied"' "$LOG"; then
     SCEN="ios-ble-denied"; AUDIT="ios-ble-denied-audit"
+  elif grep -q '"mode":"live"' "$LOG"; then
+    SCEN="ios-ble-live-empty"; AUDIT="ios-ble-live-empty-audit"
   fi
   run_check test/e2e/scenarios/$SCEN.json       "$ART/verdict-$SCEN.json"
   run_check test/e2e/scenarios/$AUDIT.json      "$ART/verdict-$AUDIT.json"

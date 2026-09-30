@@ -159,14 +159,24 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
     emit('ble.scan.armed', { scanIdOpaque: true, tag: 'ble-plane-probe' });
 
     // Devices arrive as events while the scan is armed — awaited, never
-    // polled (D8). The mock radios deliver a TWO-device batch: when the
-    // first arrival carries the mock name prefix, the scenario waits for
-    // its sibling (each bridge event is a separate serial-queue hop, so a
-    // single await can race the burst). A real peer advertises at least
-    // once (the D-g legs require it).
-    await events.waitFor((ev) => ev.kind === 'device' && ev.scanId === scanId);
-    const first = events.seen.find((ev) => ev.kind === 'device'
-      && ev.scanId === scanId);
+    // polled (D8). The window's own close (the host's timeout self-end)
+    // is the OTHER terminal: a live radio whose RF room is silent ends
+    // with the honest arm/stop envelope. The mock radios deliver a
+    // TWO-device batch: when the first arrival carries the mock name
+    // prefix, the scenario waits for its sibling (each bridge event is a
+    // separate serial-queue hop, so a single await can race the burst).
+    const first = await events.waitFor((ev) => (ev.kind === 'device'
+      || ev.kind === 'scan-end') && ev.scanId === scanId);
+    if (first.kind === 'scan-end') {
+      // the window closed with nothing to show: stop (idempotent — the
+      // host already ended it) and complete the arm/stop envelope
+      const stop = await bleScanStop(scanId);
+      emit('ble.scan.stopped', { stopped: stop.stopped, selfEnded: true });
+      emit('ble.connect.skipped', { devices: 0 });
+      events.stop();
+      emit('scenario.complete', { status: 'pass' });
+      globalThis.__dshComplete(true, 'ok');
+    } else {
     const firstIsMock = typeof first?.name === 'string'
       && first.name.startsWith(MOCK_NAME_PREFIX);
     if (firstIsMock) {
@@ -188,7 +198,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
 
     const stopped = await bleScanStop(scanId);
     demand(stopped.stopped === true, 'the live scan must stop');
-    emit('ble.scan.stopped', { stopped: true });
+    emit('ble.scan.stopped', { stopped: true, devices: devices.length });
 
     // The first-seen device is the connect target (mock order is
     // deterministic; the D-g peer is the only advertiser by contract).
@@ -250,6 +260,7 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
     events.stop();
     emit('scenario.complete', { status: 'pass' });
     globalThis.__dshComplete(true, 'ok');
+    }
   }
 }
 
