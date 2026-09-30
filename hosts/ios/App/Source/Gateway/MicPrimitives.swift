@@ -64,20 +64,33 @@ final class MicPrimitives {
                 code: "invalid", primitive: "micStart",
                 message: "unsupported format \(format) (v0 carries pcm-s16le only)")))
         }
-        let sampleRate = clamp(call.args["sampleRate"] as? Double ?? 16000,
+        let sampleRate = clamp((call.args["sampleRate"] as? Double) ?? 16000,
                                Self.sampleRateRange)
-        let channels = max(1, call.args["channels"] as? Int ?? 1)
+        let channels = max(1, (call.args["channels"] as? Int) ?? 1)
         guard channels == 1 else {
             return done(.failure(GatewayError(
                 code: "invalid", primitive: "micStart",
                 message: "channels \(channels) unsupported (v0 is mono)")))
         }
-        let frameMs = clamp(call.args["frameMs"] as? Double ?? 100, Self.frameMsRange)
+        let frameMs = clamp((call.args["frameMs"] as? Double) ?? 100, Self.frameMsRange)
         core?.stageAuditDetail([
             "format": format, "sampleRate": Int(sampleRate),
             "frameMs": Int(frameMs), "tag": call.string("tag") ?? NSNull(),
         ])
+        requestPermissionThen(done) { self.arm(sampleRate: sampleRate,
+                                               frameMs: frameMs, done) }
+    }
 
+    /// The OS consent layer (the second layer; the manifest's family grant
+    /// was the first), then the arm hop. OFF the permission-callback
+    /// thread: AVAudioSession / engine configuration inside the handler
+    /// deadlocks (the callback holds session-internal state; measured on
+    /// the dsh-iphone 26.5 simulator). The arm bound (see armFence): a
+    /// wedged host route answers the honest `unavailable` instead of
+    /// hanging micStart.
+    private func requestPermissionThen(
+        _ done: @escaping GatewayDone, then arm: @escaping () -> Void
+    ) {
         DispatchQueue.main.async {
             GatewayCore.uiMarker("mic-permission", "wait")
             AVAudioApplication.requestRecordPermission { [weak self] granted in
@@ -89,26 +102,20 @@ final class MicPrimitives {
                     self.core?.stageAuditDetail(["refused": "os"])
                     return done(.success(NSNull()))
                 }
-                // OFF the permission-callback thread: AVAudioSession /
-                // engine configuration inside the handler deadlocks (the
-                // callback holds session-internal state; measured on the
-                // dsh-iphone 26.5 simulator). The gateway handlers run
-                // off-thread anyway — this hop is the same posture.
-                DispatchQueue.global(qos: .userInitiated).async {
-                    self.arm(sampleRate: sampleRate, frameMs: frameMs, done)
-                }
-                // The arm bound (see armFence): a wedged host route answers
-                // the honest `unavailable` instead of hanging micStart.
+                DispatchQueue.global(qos: .userInitiated).async(execute: arm)
                 DispatchQueue.main.asyncAfter(deadline: .now() + Self.armTimeout) {
-                    [weak self] in
-                    guard let self, self.armFence.claim() else { return }
-                    done(.failure(GatewayError(
-                        code: "unavailable", primitive: "micStart",
-                        message: "audio input route did not open within "
-                            + "\(Int(Self.armTimeout))s (the host audio route is wedged)")))
+                    [weak self] in self?.fenceTimeout(done)
                 }
             }
         }
+    }
+
+    private func fenceTimeout(_ done: @escaping GatewayDone) {
+        guard armFence.claim() else { return }
+        done(.failure(GatewayError(
+            code: "unavailable", primitive: "micStart",
+            message: "audio input route did not open within "
+                + "\(Int(Self.armTimeout))s (the host audio route is wedged)")))
     }
 
     /// Configures the engine and resolves { streamId } once ARMED. The tap
@@ -120,22 +127,46 @@ final class MicPrimitives {
     private func arm(sampleRate: Double, frameMs: Double, _ done: @escaping GatewayDone) {
         let id = "mic:\(UUID().uuidString)"
         let stream = MicStream(id: id)
+        if let error = openInputRoute(stream, sampleRate: sampleRate,
+                                      frameMs: frameMs) {
+            return done(.failure(error))
+        }
+        // The fence is the single authority: whoever claims it settles the
+        // call.
+        guard armFence.claim() else {
+            stream.engine.inputNode.removeTap(onBus: 0)
+            stream.engine.stop()
+            return
+        }
+        lock.lock()
+        streams[id] = stream
+        lock.unlock()
+        done(.success(["streamId": id]))
+    }
+
+    /// Opens the input route and installs the tap. The session FIRST (the
+    /// native format is only meaningful once the record category is active
+    /// — before it the route is degenerate and the tap has nothing to
+    /// convert from; measured: micStart answered unavailable). The tap
+    /// installs in the node's NATIVE format — installTap raises an ObjC
+    /// exception on any format mismatch (input taps do not auto-convert) —
+    /// and converts to pcm-s16le mono through an explicit AVAudioConverter.
+    /// `inputFormat(forBus:)` OPENS the input AU — the call that can block
+    /// forever on a wedged host route (the arm fence bounds it).
+    private func openInputRoute(
+        _ stream: MicStream, sampleRate: Double, frameMs: Double
+    ) -> GatewayError? {
         do {
-            // The session FIRST: the input node's native format is only
-            // meaningful once the record category is active — before it the
-            // route is degenerate (0 Hz) and the tap would have nothing to
-            // convert from (measured: micStart answered unavailable).
             try AVAudioSession.sharedInstance().setCategory(
                 .playAndRecord, options: [.defaultToSpeaker])
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            return done(.failure(GatewayError(
+            return GatewayError(
                 code: "unavailable", primitive: "micStart",
-                message: "audio session refused: \(error.localizedDescription)")))
+                message: "audio session refused: \(error.localizedDescription)")
         }
         let input = stream.engine.inputNode
-        let native = input.inputFormat(forBus: 0)   // opens the input AU —
-        // this is the call that can block forever on a wedged host route
+        let native = input.inputFormat(forBus: 0)
         guard
             let target = AVAudioFormat(
                 commonFormat: .pcmFormatInt16, sampleRate: sampleRate,
@@ -143,9 +174,9 @@ final class MicPrimitives {
             let converter = AVAudioConverter(from: native, to: target),
             native.sampleRate > 0
         else {
-            return done(.failure(GatewayError(
+            return GatewayError(
                 code: "unavailable", primitive: "micStart",
-                message: "no convertible input route (native format \(native))")))
+                message: "no convertible input route (native format \(native))")
         }
         stream.converter = converter
         let frames = AVAudioFrameCount(native.sampleRate * frameMs / 1000)
@@ -158,22 +189,11 @@ final class MicPrimitives {
             try stream.engine.start()
         } catch {
             input.removeTap(onBus: 0)
-            return done(.failure(GatewayError(
+            return GatewayError(
                 code: "unavailable", primitive: "micStart",
-                message: "audio engine refused: \(error.localizedDescription)")))
+                message: "audio engine refused: \(error.localizedDescription)")
         }
-        // The fence is the single authority: whoever claims it settles the
-        // call. The arm work losing to the timeout tears the half-open
-        // graph down (no zombie stream, no orphan frames).
-        guard armFence.claim() else {
-            input.removeTap(onBus: 0)
-            stream.engine.stop()
-            return
-        }
-        lock.lock()
-        streams[id] = stream
-        lock.unlock()
-        done(.success(["streamId": id]))
+        return nil
     }
 
     /// The arm fence: the input AU open (inputFormat -> installTap -> engine
