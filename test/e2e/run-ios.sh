@@ -223,16 +223,17 @@ wda_source_tree() {
 # (case-insensitive), printed as "X Y" — its frame center in POINTS, the same
 # space the WDA drag endpoint taps in. The document-order first match is the
 # visible row (the tree lists the viewport first).
-wda_find_cell() { # SUBSTR
-  python3 - "$1" <<'PY'
+wda_find_cell() { # SUBSTR   (the tree arrives on STDIN; the script rides -c —
+  # a heredoc would REPLACE the piped stdin and the walk would find nothing)
+  python3 -c '
 import json, sys, re
 sub = sys.argv[1].lower()
 try:
-    t = json.load(sys.stdin)['value']
+    t = json.load(sys.stdin)["value"]
 except Exception:
     raise SystemExit(1)
 def frame_center(n):
-    m = re.match(r'\{\{(-?[\d.]+), (-?[\d.]+)\}, \{([\d.]+), ([\d.]+)\}\}', n.get('frame') or '')
+    m = re.match(r"\{\{(-?[\d.]+), (-?[\d.]+)\}, \{([\d.]+), ([\d.]+)\}\}", n.get("frame") or "")
     if not m:
         return None
     x, y, w, h = map(float, m.groups())
@@ -242,20 +243,20 @@ def walk(n):
     global hit
     if hit:
         return
-    typ = n.get('type', '')
-    label = (n.get('label') or '').lower()
-    if sub in label and typ in ('Cell', 'Button', 'StaticText'):
+    typ = n.get("type", "")
+    label = (n.get("label") or "").lower()
+    if sub in label and typ in ("Cell", "Button", "StaticText"):
         hit = frame_center(n)
         if hit:
             return
-    for c in n.get('children') or []:
+    for c in n.get("children") or []:
         walk(c)
 walk(t)
 if hit:
     print(hit[0], hit[1])
 else:
     raise SystemExit(1)
-PY
+' "$1"
 }
 
 # wda_tap_at X Y [DURATION]: the press backend the probe verified — WDA's
