@@ -131,13 +131,35 @@ const ustarWrite = (members) => {
 // ---------------------------------------------------------------------------
 // Manifest validation — mirrors install-pipeline.js validateManifest
 // (schemaVersion 1, unknown fields rejected) so a broken manifest fails at
-// GENERATION time, not at install time on a phone.
+// GENERATION time, not at install time on a phone. The mirror is EXACT,
+// field for field, including the REL_PATH guard (no absolute paths, no `..`
+// escapes — install-pipeline.js applies it to entry/web) and the hooks
+// content check: anything the installer rejects here must never be packed,
+// signed, and published.
 // ---------------------------------------------------------------------------
 
 const capsProblem = (list, where) => {
   if (!Array.isArray(list)) return `${where}: capabilities entries must be an array`;
   const bad = list.find((c) => typeof c !== 'string' || !CAPABILITY.test(c));
   return bad ? `${where}: bad capability string ${JSON.stringify(bad)}` : null;
+};
+
+// install-pipeline.js's REL_PATH, verbatim: not absolute, no `..` segment.
+const REL_PATH = /^(?!\/)(?!(^|\/)\.\.($|\/)).+$/;
+
+const relPathProblem = (value, what, where) => {
+  if (typeof value !== 'string' || !REL_PATH.test(value)) {
+    return `${where}: ${what} must be a relative path without '..' segments`;
+  }
+  return null;
+};
+
+const hooksProblem = (hooks, where) => {
+  const badKey = Object.keys(hooks).find((k) => k !== 'activate' && k !== 'deactivate');
+  if (badKey) return `${where}: unknown hooks field: ${badKey}`;
+  const badValue = [hooks.activate, hooks.deactivate]
+    .some((v) => v !== undefined && typeof v !== 'string');
+  return badValue ? `${where}: hooks must name exports (strings)` : null;
 };
 
 const validateManifest = (m, where) => {
@@ -148,15 +170,24 @@ const validateManifest = (m, where) => {
   if (typeof m.id !== 'string' || !PKG_ID.test(m.id) || m.id.length < 3) return `${where}: bad manifest id`;
   if (typeof m.version !== 'string' || !SEMVER.test(m.version)) return `${where}: bad manifest version`;
   if (m.type !== 'service' && m.type !== 'web-client') return `${where}: type must be service|web-client`;
-  if (m.type === 'service' && !(typeof m.entry === 'string' && m.entry.length > 0)) {
-    return `${where}: service manifests need an entry path`;
+  if (m.type === 'service') {
+    const entryProblem = relPathProblem(m.entry, 'entry', where);
+    if (entryProblem) return entryProblem;
   }
-  if (m.type === 'web-client' && !(typeof m.web === 'string' && m.web.length > 0)) {
-    return `${where}: web-client manifests need a web dir`;
+  if (m.type === 'web-client') {
+    const webProblem = relPathProblem(m.web, 'web', where);
+    if (webProblem) return webProblem;
   }
   if (!m.capabilities || typeof m.capabilities !== 'object') return `${where}: capabilities missing`;
   const badKey = Object.keys(m.capabilities).find((k) => k !== 'required' && k !== 'optional');
   if (badKey) return `${where}: unknown capabilities field: ${badKey}`;
+  if (m.hooks !== undefined) {
+    if (!m.hooks || typeof m.hooks !== 'object' || Array.isArray(m.hooks)) {
+      return `${where}: hooks must be an object`;
+    }
+    const hookProblem = hooksProblem(m.hooks, where);
+    if (hookProblem) return hookProblem;
+  }
   return capsProblem(m.capabilities.required, where)
     ?? capsProblem(m.capabilities.optional ?? [], where);
 };
@@ -304,9 +335,11 @@ const USAGE = `usage:
   node tools/gen-marketplace-index.mjs --base-url <url> [options]
 
 required:
-  --base-url <url>       public URL prefix for every tgzUrl (env
-                         MARKETPLACE_BASE_URL). No placeholder is ever
-                         written into a signed index — missing = abort.
+  --base-url <url>       public URL prefix for every tgzUrl. Falls back to
+                         the MARKETPLACE_BASE_URL env variable; empty or
+                         whitespace-only counts as MISSING either way — a
+                         signed index never carries a placeholder URL,
+                         missing = abort.
 options:
   --system-plugins <dir> plugin tree to pack (default: system-plugins)
   --out <dir>            dist directory (default: dist/marketplace)
@@ -345,7 +378,18 @@ const loadSeed = (opts) => {
 };
 
 const resolveInput = (opts) => {
-  if (opts.baseUrl === undefined) {
+  // Resolution order: --base-url, then MARKETPLACE_BASE_URL, then fail.
+  // Empty or whitespace-only counts as MISSING in both places — a caller
+  // that passes an unset variable as "" (exactly what a workflow's
+  // `--base-url "$VAR"` does when VAR is empty) must hit the same loud
+  // failure as a missing flag: a signed index never carries a placeholder
+  // or relative URL.
+  let rawUrl = opts.baseUrl;
+  if (rawUrl === undefined && process.env.MARKETPLACE_BASE_URL) {
+    rawUrl = process.env.MARKETPLACE_BASE_URL;
+  }
+  const baseUrl = (rawUrl ?? '').trim();
+  if (baseUrl === '') {
     return fail('no --base-url and no MARKETPLACE_BASE_URL — a signed index never ' +
       'carries a placeholder URL; configure the public catalog URL first');
   }
@@ -356,7 +400,7 @@ const resolveInput = (opts) => {
   } catch (err) {
     return fail(`cannot read ${summariesPath}: ${err}`);
   }
-  return { summaries, baseUrl: opts.baseUrl.replace(/\/+$/, '') };
+  return { summaries, baseUrl: baseUrl.replace(/\/+$/, '') };
 };
 
 /** Write the publish unit — per-plugin packages + index.json — and print

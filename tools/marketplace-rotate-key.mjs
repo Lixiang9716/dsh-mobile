@@ -131,8 +131,13 @@ const loadPacked = (opts) => {
 };
 
 const windowIndex = (opts) => {
-  if (opts.baseUrl === undefined) {
-    return fail('no --base-url — a signed index never carries a placeholder URL');
+  // Same contract as the generator's resolveInput: empty/whitespace-only
+  // counts as missing — `--base-url "$VAR"` with an unset VAR must fail
+  // loud, never publish a signed index of relative URLs.
+  const baseUrl = (opts.baseUrl ?? '').trim();
+  if (baseUrl === '') {
+    return fail('no --base-url (or it is empty) — a signed index never ' +
+      'carries a placeholder URL');
   }
   const currentId = opts.keyId ?? 'dsh-market-1';
   const newId = resolveNewKeyId(opts, currentId);
@@ -146,7 +151,7 @@ const windowIndex = (opts) => {
   const index = buildIndex({
     packed,
     summaries: readSummaries(),
-    baseUrl: opts.baseUrl.replace(/\/+$/, ''),
+    baseUrl: baseUrl.replace(/\/+$/, ''),
     keys: { [currentId]: pubRawB64(oldKey), [newId]: pubRawB64(newKey) },
     generatedAt: opts.generatedAt ?? new Date().toISOString(),
   });

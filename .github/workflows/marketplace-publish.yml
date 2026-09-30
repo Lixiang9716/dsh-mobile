@@ -90,9 +90,18 @@ jobs:
         run: |
           set -euo pipefail
           BASE_URL="${{ inputs.base_url }}"
-          if [ -z "$BASE_URL" ]; then BASE_URL="$MARKETPLACE_BASE_URL"; fi
-          node tools/gen-marketplace-index.mjs \
-            --base-url "$BASE_URL" --out dist/marketplace
+          # An empty input or variable reaches the generator as a MISSING
+          # flag, never as --base-url "" — an empty string is not a value,
+          # and passing it would let a signed index carry relative
+          # placeholder URLs. The generator independently treats an
+          # empty/whitespace --base-url or MARKETPLACE_BASE_URL as missing
+          # (fail loud naming it), so both layers hold on their own.
+          if [ -n "$BASE_URL" ]; then
+            node tools/gen-marketplace-index.mjs \
+              --base-url "$BASE_URL" --out dist/marketplace
+          else
+            node tools/gen-marketplace-index.mjs --out dist/marketplace
+          fi
           # The published index is auditable in the run log: key ids, entry
           # digests, and the signed digest table were printed by the
           # generator above.
