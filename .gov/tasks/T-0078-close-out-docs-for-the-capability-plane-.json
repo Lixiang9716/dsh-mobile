@@ -14,7 +14,7 @@
     "[x] docs/ARCHITECTURE.md(+.zh): capability table pointer updated",
     "[x] docs/e2e-matrix.md(+.zh): missing mic/ble rows filled, totals re-run on this tree",
     "[x] gov verify pairing --write for every touched pair",
-    "gov run full DAG green + receipt, push, PR opened"
+    "[x] gov run full DAG green + receipt, push, PR opened"
   ],
   "status": "open",
   "receipt": null,
