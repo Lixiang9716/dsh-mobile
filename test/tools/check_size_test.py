@@ -205,8 +205,8 @@ class CliEndToEnd(unittest.TestCase):
 
     def run_tool(self):
         cmd = [sys.executable, TOOL]
-        r = subprocess.run(cmd, cwd=self.tmp, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
+        opts = dict(cwd=self.tmp, capture_output=True, text=True)
+        r = subprocess.run(cmd, encoding="utf-8", errors="replace", **opts)
         return r.returncode, r.stdout
 
     def test_tracked_oversized_file_exits_1(self):
@@ -238,8 +238,8 @@ class CliEndToEnd(unittest.TestCase):
 
     def test_self_test_leg_exits_zero(self):
         cmd = [sys.executable, TOOL, "--self-test"]
-        r = subprocess.run(cmd, capture_output=True, text=True,
-                           encoding="utf-8", errors="replace")
+        opts = dict(capture_output=True, text=True, timeout=120)
+        r = subprocess.run(cmd, encoding="utf-8", errors="replace", **opts)
         self.assertEqual(r.returncode, 0)
         self.assertIn("case(s) ok", r.stdout)
 
