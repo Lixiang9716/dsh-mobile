@@ -15,6 +15,9 @@
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
+    ".gov/rejections/case-coverage-floor.sh": {
+      "sha256": "1d90fb738c55def710e1f5e3f8a81e105232b5c47dd478356b6dfae4356e8f18"
+    },
     ".gov/rejections/case-e2e-matrix.sh": {
       "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
     },
@@ -34,13 +37,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "a82c30b2f1860753367dc467147d2074b62d9fab2ff29423352331e09ecaac7b"
+      "sha256": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T10:54:50+00:00",
+    "ts": "2026-09-30T14:03:28+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "T-0078 follow-up: case-staging-check walks one blocked host (harmony) instead of three \u2014 the case's assertion lives entirely on harmony's BUNDLE_FILES, and the three-host walk stretched the case past its 10s budget under the full DAG's gate concurrency (measured: zombie case shells from an earlier timed-out batch held the case lock for an hour \u2014 the harness abandons the process tree on case timeout, filed as govrail feedback)"
+    "reason": "rebase onto main (10ac8fbe): union of #280's reviewed seal (BYOK panel-tests gate) and #274's reviewed seal (coverage-floor warn-tier gate + case) \u2014 gates.json auto-merged to the 21-gate union; seal recomputed over the merged tree during the PR #274 rebase"
   }
 }
