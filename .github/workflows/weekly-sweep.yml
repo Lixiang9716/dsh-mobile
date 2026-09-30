@@ -1,0 +1,213 @@
+name: weekly-sweep
+# The FULL upstream dsh-tests sweep as a standing drift net: every transpiled
+# spec runs under the QuickJS CLI AND the plain-Node differential reference
+# (runtime/spike/ci/run-upstream-suite-sweep.sh), weekly plus on demand.
+#
+# This is an INSPECTION, not a gate: the sweep step is continue-on-error by
+# design — a non-green result means the inspection FOUND something (shim or
+# runtime drift vs the pinned dsh-v0.1.6-alpha.2 suite), and the report is
+# the deliverable, uploaded even when the findings are red. Only an
+# infrastructure failure (the report never got written) fails the run, so a
+# silently-broken inspection cannot masquerade as a clean one.
+#
+# The arm64 runner is not a preference: the desktop CLI's link embeds the iSH
+# static libs — AArch64 assembly an x86_64 runner cannot assemble (the same
+# constraint that puts the quickjs-boot-parse gate on ubuntu-24.04-arm).
+on:
+  schedule:
+    - cron: "17 3 * * 0" # Sundays 03:17 UTC — weekend, off the hour, off the rush
+  workflow_dispatch:
+concurrency:
+  group: weekly-sweep-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  sweep:
+    runs-on: ubuntu-24.04-arm
+    # The 90s per-leg cap (with one retry, run_to in the sweep script)
+    # bounds every spec, so the run cannot hang open-ended. The measured
+    # full sweep is ~8 minutes for 645 specs at --paral 4 on an arm64 dev
+    # machine (2026-09-30); a CI arm runner's slower cores, the cold iSH +
+    # CLI build (the quickjs-boot-parse job's 15-minute budget is the
+    # measured ceiling), and a cold ~25 MB tarball + ~190 npm-face
+    # materialization fit inside 40 minutes with room to spare — 240 keeps
+    # ~3x headroom on that estimate under GitHub's 360 cap.
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Cache the vendored trees
+        # Same pattern as gov.yml: the vendored trees are untracked by design
+        # (D6), materialized by sha256-pinned ensure scripts, cached keyed on
+        # the pin tables themselves. Every ensure script is pin-stamped and
+        # self-healing, so a cache row that outlives a pin change refetches
+        # exactly what moved — the cache is an accelerator, never a source of
+        # truth. dsh-tests (the ~25 MB codeload tarball) and the ~190 npm
+        # test faces are the cold-start cost worth caching.
+        uses: actions/cache@v5
+        with:
+          path: |
+            runtime/spike/vendor/quickjs-ng
+            runtime/spike/vendor/zstd
+            runtime/spike/vendor/wasm3
+            runtime/spike/vendor/ish
+            runtime/spike/vendor/dsh
+            runtime/spike/vendor/npm
+            runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2
+          key: weekly-sweep-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-ish.sh', 'runtime/spike/vendor/ensure-dsh.sh', 'runtime/spike/vendor/ensure-dsh-tests.sh') }}
+      - name: Materialize the vendored trees
+        # ensure.sh: engine + zstd + wasm3. ensure-ish.sh: the iSH sources the
+        # CLI links — NOT covered by ensure.sh (the gap the 2026-09-29 CI run
+        # hit: 'vendored iSH-arm64 sources not found'). ensure-dsh.sh: the
+        # runtime closure the boot serves. ensure-dsh-tests.sh: the upstream
+        # test tree + the pinned npm test faces the transpiled specs import.
+        run: |
+          runtime/spike/vendor/ensure.sh
+          runtime/spike/vendor/ensure-ish.sh
+          runtime/spike/vendor/ensure-dsh.sh
+          runtime/spike/vendor/ensure-dsh-tests.sh
+      - name: Materialize the node-side test tooling
+        # npm ci: the transpiler's esbuild (+ the test faces' node-side
+        # devDeps). transpile.mjs: every upstream spec -> plain ESM under
+        # runtime/spike/upstream-tests/ (gitignored; fresh every run).
+        # parity-node-modules.sh: the Node resolution layout the reference
+        # leg resolves bare imports through (vendor/node_modules + the
+        # runtime/spike/node_modules link).
+        run: |
+          npm ci --prefix test/upstream-suite --no-fund --no-audit
+          node test/upstream-suite/transpile.mjs
+          sh runtime/spike/ci/parity-node-modules.sh
+      - name: Build the desktop CLI
+        # host/build.sh compiles the iSH static libs (cmake) then the CLI
+        # (cc); the quickjs-boot-parse job's 15-minute budget on the same
+        # runner image is the measured ceiling for the cold build.
+        run: sh runtime/spike/host/build.sh
+      - name: Run the full upstream-suite sweep
+        # --paral 4: the sweep script's own default, kept explicit. The step
+        # is continue-on-error ON PURPOSE (see the header): red findings are
+        # the inspection working, and the report must still reach the
+        # artifacts. Infrastructure failures still surface — the summary
+        # step below fails loud on a missing/empty report.
+        continue-on-error: true
+        run: runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4
+      - name: Summarize the report
+        # Renders the human-readable verdict into the run summary (green /
+        # failed / NOSUM buckets with the offending spec names) and writes
+        # the JSON twin of the TSV next to it. A missing or empty report is
+        # an INFRASTRUCTURE failure and fails loud (rule 5) — a broken
+        # inspection must never read as a clean one. Drift findings keep
+        # this step green: the summary is the readable record, not a verdict.
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import json, os, shutil, time
+          root = os.getcwd()
+          report = os.path.join(root, 'tmp', 'upstream-suite-report.tsv')
+          if not os.path.exists(report):
+              raise SystemExit('weekly-sweep: tmp/upstream-suite-report.tsv missing — the sweep step never wrote a report (infrastructure failure, not a drift finding)')
+          rows = []
+          with open(report, encoding='utf-8', errors='replace') as fh:
+              header = fh.readline().rstrip('\n').split('\t')
+              if header[:4] != ['spec', 'qjs', 'node', 'agree']:
+                  raise SystemExit(f'weekly-sweep: unexpected report header {header[:4]}')
+              for line in fh:
+                  parts = line.rstrip('\n').split('\t')
+                  if len(parts) < 4:
+                      continue
+                  rows.append(parts[:4])
+          if not rows:
+              raise SystemExit('weekly-sweep: report has zero spec rows — materialization broke before any spec ran (infrastructure failure)')
+
+          def counts(summary):
+              # A summary is the suite/summary JSON tail or the literal
+              # TIMEOUT-OR-ERROR; both legs use the same vocabulary.
+              if summary == 'TIMEOUT-OR-ERROR' or '"failed":' not in summary:
+                  return None
+              import re
+              def grab(key):
+                  m = re.search(r'"' + key + r'":(\d+)', summary)
+                  return int(m.group(1)) if m else None
+              return {'passed': grab('passed'), 'failed': grab('failed'), 'skipped': grab('skipped')}
+
+          green, failed_rows, nosum, disagree = [], [], [], []
+          parsed = []
+          for spec, qjs, node, agree in rows:
+              q = counts(qjs)
+              n = counts(node)
+              parsed.append({'spec': spec, 'qjs': q, 'node': n, 'agree': agree})
+              if q is None:
+                  nosum.append(spec)
+              elif (q['failed'] or 0) > 0:
+                  failed_rows.append((spec, q['failed']))
+              else:
+                  green.append(spec)
+              if agree == 'NO':
+                  disagree.append(spec)
+
+          # Failure logs: the diagnostics behind every non-green row, copied
+          # out so the artifact stays bounded (all-spec logs would be ~645
+          # files every week).
+          logdir = os.path.join(root, 'tmp', 'upstream-suite-logs')
+          outlogs = os.path.join(root, 'tmp', 'sweep-failure-logs')
+          shutil.rmtree(outlogs, ignore_errors=True)
+          os.makedirs(outlogs, exist_ok=True)
+          interesting = set(nosum) | {spec for spec, _ in failed_rows} | set(disagree)
+          for stem in sorted(interesting):
+              for suffix in ('.qjs.log', '.qjs.retry.log', '.node.log'):
+                  src = os.path.join(logdir, stem + suffix)
+                  if os.path.exists(src):
+                      shutil.copy2(src, os.path.join(outlogs, stem + suffix))
+
+          # JSON twin of the TSV (the machine-readable artifact).
+          doc = {
+              'generatedAt': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+              'specs': len(rows),
+              'qjsGreen': len(green),
+              'qjsFailed': len(failed_rows),
+              'qjsNoSummary': len(nosum),
+              'failedCountDisagreements': len(disagree),
+              'rows': parsed,
+          }
+          with open(os.path.join(root, 'tmp', 'upstream-suite-report.json'), 'w', encoding='utf-8') as fh:
+              json.dump(doc, fh, indent=1)
+
+          def bucket(title, entries, cap=40):
+              lines = [f'### {title} ({len(entries)})', '']
+              for item in entries[:cap]:
+                  lines.append(f'- `{item}`')
+              if len(entries) > cap:
+                  lines.append(f'- …and {len(entries) - cap} more (see the TSV/JSON artifact)')
+              return lines + ['']
+
+          summary_path = os.environ['GITHUB_STEP_SUMMARY']
+          with open(summary_path, 'a', encoding='utf-8') as fh:
+              fh.write('# Weekly upstream-suite sweep\n\n')
+              fh.write(f'{len(rows)} specs · qjs green **{len(green)}** · qjs failed **{len(failed_rows)}** · '
+                       f'no summary **{len(nosum)}** · qjs/node failed-count disagreements **{len(disagree)}**\n\n')
+              fh.write('Inspection, not a gate: a red bucket is a drift finding recorded in the '
+                       'report, not a broken CI leg.\n\n')
+              if failed_rows:
+                  fh.write('\n'.join(bucket('qjs failed', [f'{spec} (failed: {n})' for spec, n in sorted(failed_rows)])))
+              if nosum:
+                  fh.write('\n'.join(bucket('qjs no summary (NOSUM: cap timeout or harness error, one retry already spent)', sorted(nosum))))
+              if disagree:
+                  fh.write('\n'.join(bucket('qjs vs node failed-count disagreements', sorted(disagree))))
+              fh.write('\n### Artifacts\n\n')
+              fh.write('- `upstream-suite-report.tsv` / `upstream-suite-report.json` — the full two-leg report\n')
+              fh.write('- `upstream-suite-report-totals.txt` — the sweep script\'s own totals\n')
+              fh.write('- `sweep-failure-logs/` — per-spec logs behind every non-green row\n')
+          print(f'weekly-sweep: {len(rows)} specs, qjs green {len(green)}, failed {len(failed_rows)}, '
+                f'nosum {len(nosum)}, disagreements {len(disagree)}')
+          PY
+      - name: Upload the sweep report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: upstream-suite-sweep
+          retention-days: 28
+          path: |
+            tmp/upstream-suite-report.tsv
+            tmp/upstream-suite-report.json
+            tmp/upstream-suite-report-totals.txt
+            tmp/sweep-failure-logs/
