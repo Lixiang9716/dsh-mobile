@@ -11,6 +11,7 @@
  */
 import {
   PI_AI_DIST,
+  PI_AI_MODEL_SHADOWS,
   PI_AI_PROVIDER_EXPORTS,
   PI_AI_PROVIDER_IDS,
 } from 'upstream/shims/npm-bridges-pi-ai.js';
