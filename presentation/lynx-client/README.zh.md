@@ -45,7 +45,8 @@ npm run theme:check           # token 单源同步
   vitest 用例,跑同一条真 mock 环路,并补上流错误 / 无 sessionId /
   not-found / busy 的边界腿)与 `tests/{wire-edge,mux}.js`(信封的坏答案
   边界、mux 的 generation 化重连契约,全部真 socket)。两套套件都跑在
-  `presentation-tests` 门里(gates.json)。`npm test --
+  CI(`gates` workflow 的 presentation 步骤,.github/workflows/gov.yml)。
+  `npm test --
   --coverage` 如实报告 driver 面(runner 文件除外:它们的检查已由
   driver-loop 套件接管)。
 

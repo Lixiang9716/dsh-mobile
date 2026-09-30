@@ -37,13 +37,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "ccf5f06cd4a6951afc9a81c136f2a0a9cfec7987729b9beeda752654a8c1be85"
+      "sha256": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T15:12:36+00:00",
+    "ts": "2026-09-30T15:14:24+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "rebase onto main (89277ed4): gates.json auto-unioned to coverage-floor (main #274) + presentation-tests (this branch) \u2014 seal recomputed over the merged tree"
+    "reason": "rebase onto main (89277ed4), commit bcb51165 replay: presentation-tests gate leaves the sealed DAG (branch's own revert \u2014 suites run as a CI workflow step); coverage-floor (main #274) stays \u2014 seal recomputed over the merged tree"
   }
 }

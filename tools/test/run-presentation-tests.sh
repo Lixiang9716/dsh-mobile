@@ -1,7 +1,7 @@
 #!/bin/sh
-# run-presentation-tests.sh — the presentation-tests gate's runner: the two
-# Node-testable presentation suites, sequentially, first failure fails the
-# gate naming the package:
+# run-presentation-tests.sh — the CI gates workflow's presentation step
+# (.github/workflows/gov.yml): the two Node-testable presentation suites,
+# sequentially, first failure fails the job naming the package:
 #   1. presentation/lynx-client        (driver loop, wire envelope, mux — 71 tests)
 #   2. test/web-client-next-suite      (envelope, mux over real sockets, journal fold — 45 tests)
 #

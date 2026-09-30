@@ -50,10 +50,10 @@ Two evidence channels, both green (acceptance round):
   over the same real mock loop, with the stream-error / no-sessionId /
   not-found / busy edge legs) and `tests/{wire-edge,mux}.js` for the
   envelope's malformed-answer legs and the mux's generation-tracked
-  reconnect contract over real sockets. Both suites run in the
-  `presentation-tests` gate (gates.json). `npm test -- --coverage`
-  reports the driver face honestly (the runners are excluded: their
-  checks ARE the driver-loop suite now).
+  reconnect contract over real sockets. Both suites run in CI (the
+  `gates` workflow's presentation step, `.github/workflows/gov.yml`).
+  `npm test -- --coverage` reports the driver face honestly (the runners
+  are excluded: their checks ARE the driver-loop suite now).
 
 **Pilot boundary:** device pixels need a Lynx engine (LynxExplorer /
 on-device LynxView). On the CLI host the lynx face drives the bundle's seam

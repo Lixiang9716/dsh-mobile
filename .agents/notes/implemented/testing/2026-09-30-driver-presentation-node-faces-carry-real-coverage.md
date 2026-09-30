@@ -121,10 +121,14 @@ there ships to the browser.
 line-coverage surface; the numbers live in PR descriptions and this note,
 the raw report stays a local artifact (coverage/ is gitignored in all
 three locations, including a belt-and-braces entry for the staged product
-directory). **Both suites are wired into the gates DAG as the
-`presentation-tests` gate** (`gates.json` → `tools/test/run-presentation-tests.sh`,
-scoped to the three directories plus the runner itself), so the port-bug
-class this note records now fails `gov run` locally AND the CI `gates` job
-— the runner re-asserts on every run that the staged product tree holds
-exactly its 12 shipped files. `tests/mux.test.js` on both sides is the
-contract that pins it.
+directory). **Both suites are wired into CI as a step of the `gates`
+workflow** (`.github/workflows/gov.yml` →
+`tools/test/run-presentation-tests.sh`), so the port-bug class this note
+records now fails the CI `gates` job — the runner re-asserts on every run
+that the staged product tree holds exactly its 12 shipped files.
+`tests/mux.test.js` on both sides is the contract that pins it. (The
+suites deliberately did NOT become a sealed-DAG gate: adding one moves the
+plane seal's rules hash, which staled every other work stream's open task
+cards fleet-wide — observed live, then reverted; a workflow step needs no
+seal churn. Local pre-push does not run the suites; `npm test` in each
+package remains the fast inner check.)
