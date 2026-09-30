@@ -1,0 +1,31 @@
+{
+  "title": "Wire real line coverage over the Node-testable surface + honest warn-tier coverage-floor gate",
+  "created": "2026-09-30T06:14:06+00:00",
+  "rules": {
+    "hash": "75bf4e58853ce6c232be0681d0101bd3072bb115cafbf36e8ab94a747ad8ddb1",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "survey vitest-runnable surfaces (presentation/lynx-client, test/upstream-suite harness self-tests, web-client node-runability probe)",
+    "wire vitest coverage-v8 per runnable surface (include/exclude, text+lcov+json-summary reporters) + aggregator tools/test/run-coverage.sh",
+    "real coverage run with measured per-surface numbers captured",
+    "coverage-floor warn gate (PR #244 precedent: gates.json fields, rejection case, re-seal) + falsification proof (floor=100% red, restore)",
+    "bilingual docs pair + Agent Note (testing)",
+    "gov run green + push + gh pr create"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078",
+  "repins": [
+    {
+      "ts": "2026-09-30T07:34:48+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+      "to": "75bf4e58853ce6c232be0681d0101bd3072bb115cafbf36e8ab94a747ad8ddb1",
+      "reason": "This card's own round re-sealed the constitution (the coverage-floor gate wiring it tracks); the brief is unchanged and still describes the work."
+    }
+  ]
+}
