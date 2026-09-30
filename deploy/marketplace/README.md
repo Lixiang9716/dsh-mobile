@@ -8,7 +8,7 @@ model rule 1: the catalog is data, not a service). This directory is the
 hosting kit for that site on the owner's server: the nginx site config, the
 one-command publisher, the catalog generator/signer, and a SAMPLE payload
 (a really-signed index over the repo's real `system-plugins/`, signed with a
-committed TEST keypair).
+throwaway TEST keypair that is generated on demand and never committed).
 
 ## Layout
 
@@ -19,7 +19,6 @@ deploy/marketplace/
 ├── catalog.json               per-plugin bilingual summaries (authored, fail-loud on drift)
 ├── nginx.conf.example         the static site (content types + cache headers, no listings)
 ├── deploy.sh                  rsync publish + ATOMIC index swap (DEPLOY_HOST required)
-├── test-keys/                 TEST ed25519 keypair — test only, see "Keys" below
 └── site/                      the webroot: index.json + packages/*.tgz (SAMPLE payload)
 ```
 
@@ -61,6 +60,7 @@ without an answering sshd there is nothing to deploy with.
 ## Publish (once the server exists)
 
 ```sh
+node generate-index.mjs --keygen test-keys/test-ed25519   # once, LOCAL only — no key is ever committed
 node generate-index.mjs --build --plugins ../../system-plugins \
   --catalog catalog.json --key test-keys/test-ed25519.pem \
   --key-id dsh-market-test-1 --base-url https://<your-domain> --out site
@@ -77,10 +77,15 @@ state by design, not an error to work around.
 
 ## Keys — read this before publishing anything real
 
-- **`test-keys/` is a TEST pair, committed on purpose.** It exists so the
-  sample payload in `site/` is a REAL signature (not a placeholder) and so
-  the generator/verifier round-trip is reproducible by anyone. It guards
-  nothing. Do not point production traffic at it.
+- **No key lives in this repo — not even the test pair.** The sample payload
+  in `site/` is a REAL signature (not a placeholder), made by a throwaway
+  TEST pair (`dsh-market-test-1`) that stays out of the tree on purpose:
+  the repo's standing rule is that no key is ever committed
+  (`.gitignore` `*.pem` — "any token/key stays out"). Reproduce the flow
+  yourself with `--keygen` + `--build` above; verifying the COMMITTED sample
+  needs no key at all — the public key rides inside `index.json`'s `keys{}`,
+  so `--verify` works on a fresh clone. Test keys guard nothing; never point
+  production traffic at them.
 - **The production signing key lives in CI secrets** (GitHub Actions
   environment secret; file-style secret written to disk at build time).
   It is NEVER committed to the repo and NEVER copied to the hosting

@@ -34,8 +34,10 @@ as the authored bilingual summaries source (fail-loud on drift with the
 packaged set); `nginx.conf.example` (index.json short-cache JSON, tgz
 immutable long-cache, no listings, nosniff); and a SAMPLE payload in
 `site/` — the repo's nine real `system-plugins/` packed and really-signed
-by the committed TEST keypair `test-keys/` (production key: CI secrets
-only, never the repo, never the server).
+by a throwaway TEST keypair (`dsh-market-test-1`) that is generated on
+demand via `--keygen` and never committed — the repo's `.gitignore` keeps
+every key out (production key: CI secrets only, never the repo, never the
+server).
 
 ## Alternatives considered
 
@@ -45,8 +47,16 @@ only, never the repo, never the server).
 - Ship an unsigned sample index (or a fake signature string): rejected —
   the signature is the marketplace's entire trust model; a fabricated one
   would rehearse the generator against a lie and make the sample
-  unverifiable. The committed TEST keypair keeps the sample real and the
+  unverifiable. The throwaway TEST keypair keeps the sample real and the
   production key discipline loud.
+- Commit the test keypair so anyone can re-sign the exact sample: rejected —
+  the repo's own no-keys rule (`.gitignore` `*.pem`, "any token/key stays
+  out") outranks the convenience, and re-signing needs no shared key: a
+  fresh `--keygen` + `--build` reproduces the FLOW, while the committed
+  sample stays verifiable by anyone through the public key embedded in its
+  `keys{}`. (Review #284 caught the original text claiming the pair was
+  committed while `.gitignore` silently excluded it — the narrative now
+  matches the tree.)
 - Put summaries inside each plugin's manifest: rejected — the manifest
   format is FROZEN (D5) with no summary field, and catalog display data is
   advisory per the proposal; `catalog.json` keeps the freeze intact.

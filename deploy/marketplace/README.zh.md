@@ -6,7 +6,8 @@
 contract/proposals/2026-10-01-plugin-marketplace.md 模型规则 1:目录是数据,
 不是服务)。本目录是该站点在 owner 服务器上的托管套件:nginx 站点配置、
 一条命令的发布器、目录生成/签名器,以及一份样例载荷(对仓库真实
-`system-plugins/` 产出的**真签名** index,用仓库内提交的**测试**密钥对签名)。
+`system-plugins/` 产出的**真签名** index,签名用一次性**测试**密钥对——按需
+生成、绝不入库)。
 
 ## 布局
 
@@ -17,7 +18,6 @@ deploy/marketplace/
 ├── catalog.json               每插件的双语摘要(人工维护,漂移即响亮失败)
 ├── nginx.conf.example         静态站点(内容类型+缓存头,无目录列表)
 ├── deploy.sh                  rsync 发布 + 原子替换 index(必须给 DEPLOY_HOST)
-├── test-keys/                 测试 ed25519 密钥对——仅测试用,见下"密钥"
 └── site/                      站点根:index.json + packages/*.tgz(样例载荷)
 ```
 
@@ -55,6 +55,7 @@ shell 历史显示 owner 此前用过 `ssh root@1.1.1.1 -o Proxycommand="nc -x
 ## 发布(等服务器就绪后)
 
 ```sh
+node generate-index.mjs --keygen test-keys/test-ed25519   # 一次,仅本地——任何密钥都不入库
 node generate-index.mjs --build --plugins ../../system-plugins \
   --catalog catalog.json --key test-keys/test-ed25519.pem \
   --key-id dsh-market-test-1 --base-url https://<你的域名> --out site
@@ -70,9 +71,13 @@ index 是**生成的**,绝不手改:每个 `tgzUrl` 都被签名进目录,换域
 
 ## 密钥——发布任何真实内容前必读
 
-- **`test-keys/` 是测试密钥对,有意入库。** 它存在的意义:让 `site/` 里的
-  样例载荷是真签名(而非占位),并让生成/验证的往返任何人可复现。它不保护
-  任何东西;生产流量绝不要指到它。
+- **本仓库不存任何密钥——测试对也不存。** `site/` 里的样例载荷是真签名
+  (而非占位),出自一次性测试密钥对(`dsh-market-test-1`),它有意不入树:
+  仓库的既定纪律是任何密钥绝不提交(`.gitignore` 的 `*.pem`——"任何 token、
+  密钥不入库")。用上面的 `--keygen` + `--build` 可本地复现完整流程;验证
+  **已提交的样例**完全不需要钥——公钥就在 `index.json` 的 `keys{}` 里,
+  新克隆上直接跑 `--verify` 即可。测试钥不保护任何东西;生产流量绝不要
+  指到它们。
 - **生产签名密钥放 CI secrets**(GitHub Actions 环境级 secret,构建时以
   文件形式落盘)。绝不提交进仓库,也绝不拷贝到托管服务器——服务器在设计上
   就是不可信托管(提案正是为了"被攻破的服务器也伪造不了目录"才拒绝纯传输
