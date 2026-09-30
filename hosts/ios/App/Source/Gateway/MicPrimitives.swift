@@ -64,8 +64,7 @@ final class MicPrimitives {
                 code: "invalid", primitive: "micStart",
                 message: "unsupported format \(format) (v0 carries pcm-s16le only)")))
         }
-        let sampleRate = clamp((call.args["sampleRate"] as? Double) ?? 16000,
-                               Self.sampleRateRange)
+        let sampleRate = clamp((call.args["sampleRate"] as? Double) ?? 16000, Self.sampleRateRange)
         let channels = max(1, (call.args["channels"] as? Int) ?? 1)
         guard channels == 1 else {
             return done(.failure(GatewayError(
@@ -77,8 +76,8 @@ final class MicPrimitives {
             "format": format, "sampleRate": Int(sampleRate),
             "frameMs": Int(frameMs), "tag": call.string("tag") ?? NSNull(),
         ])
-        requestPermissionThen(done) { self.arm(sampleRate: sampleRate,
-                                               frameMs: frameMs, done) }
+        let arm: () -> Void = { self.arm(sampleRate: sampleRate, frameMs: frameMs, done) }
+        requestPermissionThen(done, then: arm)
     }
 
     /// The OS consent layer (the second layer; the manifest's family grant
@@ -94,19 +93,26 @@ final class MicPrimitives {
         DispatchQueue.main.async {
             GatewayCore.uiMarker("mic-permission", "wait")
             AVAudioApplication.requestRecordPermission { [weak self] granted in
-                GatewayCore.uiMarker("mic-permission", "done")
-                guard let self else { return }
-                guard granted else {
-                    // The OS layer refused: a value, not an error; the audit
-                    // detail names the refusing layer (rule 2).
-                    self.core?.stageAuditDetail(["refused": "os"])
-                    return done(.success(NSNull()))
-                }
-                DispatchQueue.global(qos: .userInitiated).async(execute: arm)
-                DispatchQueue.main.asyncAfter(deadline: .now() + Self.armTimeout) {
-                    [weak self] in self?.fenceTimeout(done)
-                }
+                self?.handlePermission(granted, done: done, arm: arm)
             }
+        }
+    }
+
+    /// The permission answer, on its own method so the closure nesting stays
+    /// inside the indent budget.
+    private func handlePermission(
+        _ granted: Bool, done: @escaping GatewayDone, arm: @escaping () -> Void
+    ) {
+        GatewayCore.uiMarker("mic-permission", "done")
+        guard granted else {
+            // The OS layer refused: a value, not an error; the audit
+            // detail names the refusing layer (rule 2).
+            core?.stageAuditDetail(["refused": "os"])
+            return done(.success(NSNull()))
+        }
+        DispatchQueue.global(qos: .userInitiated).async(execute: arm)
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.armTimeout) { [weak self] in
+            self?.fenceTimeout(done)
         }
     }
 
@@ -127,8 +133,8 @@ final class MicPrimitives {
     private func arm(sampleRate: Double, frameMs: Double, _ done: @escaping GatewayDone) {
         let id = "mic:\(UUID().uuidString)"
         let stream = MicStream(id: id)
-        if let error = openInputRoute(stream, sampleRate: sampleRate,
-                                      frameMs: frameMs) {
+        let error = openInputRoute(stream, sampleRate: sampleRate, frameMs: frameMs)
+        if let error {
             return done(.failure(error))
         }
         // The fence is the single authority: whoever claims it settles the

@@ -46,6 +46,7 @@ const MIN_FRAMES = 4;
  * when the window closed first). A mic that never delivers a frame and
  * never ends fails loud below with its own reason, not the watchdog's. */
 const collectWindow = async (streamId) => {
+  log.debug('frame window open', { streamId });
   const frames = [];
   let end = null;
   const deadline = Date.now() + WINDOW_MS;
@@ -63,6 +64,7 @@ const collectWindow = async (streamId) => {
 /** Bounded wait for the end event when the frame window closed before it
  * (micStop publishes it once — it may land after the stop resolves). */
 const awaitEnd = async (streamId, already) => {
+  log.debug('awaiting the end event', { streamId, already: already !== null });
   if (already) return already;
   const it = micFrames(streamId)[Symbol.asyncIterator]();
   const deadline = Date.now() + WINDOW_MS;

@@ -202,17 +202,20 @@ class MicPrimitives(private val activity: android.app.Activity) {
             }
             if (item == null) return
             s.bytes += item.second.size
-            emitFn?.invoke(
-                JSONObject()
-                    .put("event", "mic.frame")
-                    .put("streamId", s.id)
-                    .put("seq", item.first)
-                    .put("bytesB64", android.util.Base64.encodeToString(
-                        item.second, android.util.Base64.NO_WRAP))
-                    .toString(),
-            )
+            emitFn?.invoke(frameEvent(s.id, item.first, item.second))
         }
     }
+
+    /** One mic.frame bridge event (payload bytes base64 — the frozen
+     * bridge convention). */
+    private fun frameEvent(streamId: String, seq: Int, bytes: ByteArray): String =
+        JSONObject()
+            .put("event", "mic.frame")
+            .put("streamId", streamId)
+            .put("seq", seq)
+            .put("bytesB64", android.util.Base64.encodeToString(
+                bytes, android.util.Base64.NO_WRAP))
+            .toString()
 
     // ---- micStop (idempotent, the record that carries duration + bytes) ------
 

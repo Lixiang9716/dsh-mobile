@@ -389,6 +389,7 @@ const micStreams = new Map();
  * Uint8Array here, so the consumer sees the proposal's shapes verbatim. */
 const micEvent = (ev) => {
   if (ev.event !== 'mic.frame' && ev.event !== 'mic.end') return false;
+  log.debug('mic channel event', { event: ev.event, streamId: ev.streamId });
   const st = micStreams.get(ev.streamId);
   if (!st) return false;
   if (ev.event === 'mic.frame') {
@@ -410,6 +411,7 @@ const micEvent = (ev) => {
  * then the single `{ streamId, kind: "end", reason }` event as the last
  * value (delivered once; the iteration completes after it). */
 export const micFrames = (streamId) => {
+  log.debug('micFrames subscribe', { streamId });
   const st = micStreams.get(streamId);
   if (!st) throw new GatewayError('invalid', 'mic.frame', `unknown stream ${streamId}`);
   const next = async () => {
