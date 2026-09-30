@@ -3,7 +3,7 @@
 English | [简体中文](release-notes-v0.0.2.zh.md)
 
 > Draft for the v0.0.2 release notes, cut 2026-09-30. Scope: every PR merged
-> since #240 (2026-09-29 → 2026-09-30, #240–#254). Facts come from the merged
+> since #240 (2026-09-29 → 2026-09-30, #240–#255). Facts come from the merged
 > PRs only; work still in review is named as such. Where a number would need
 > the not-yet-merged regression report, we point at that PR instead of
 > guessing.
@@ -46,8 +46,10 @@ English | [简体中文](release-notes-v0.0.2.zh.md)
   `ble.event` channel on three hosts, one radio seam with a deterministic
   mock radio beside the real platform radios; the posture-selective
   `ble.plane` scenario.
-- The microphone face (capability line 2) is **in review as #255** — not in
-  this release.
+- #255 — the **microphone face** (capability line 2): `micStart`/`micStop` +
+  the `mic.frame` channel on three hosts — AVAudioEngine / AudioRecord /
+  AudioCapturer behind the same two-layer consent and drop-oldest ring with
+  honest seq gaps.
 
 ## UI & plugins
 
