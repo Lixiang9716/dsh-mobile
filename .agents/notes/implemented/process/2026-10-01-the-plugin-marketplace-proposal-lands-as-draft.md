@@ -1,4 +1,6 @@
-# The plugin marketplace proposal lands as a draft
+# Agent Note: The plugin marketplace proposal lands as a draft
+
+Status: implemented
 
 ## Problem
 
