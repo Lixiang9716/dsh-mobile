@@ -17,7 +17,8 @@ deploy/marketplace/
 ├── generate-index.mjs         目录工具:--keygen / --build / --verify
 ├── catalog.json               每插件的双语摘要(人工维护,漂移即响亮失败)
 ├── nginx.conf.example         静态站点(内容类型+缓存头,无目录列表)
-├── deploy.sh                  rsync 发布 + 原子替换 index(必须给 DEPLOY_HOST)
+├── deploy-local.sh            owner 侧一键发布(rsync + 原子替换 index,必须给 DEPLOY_HOST)
+├── deploy.sh                  CI 发布管线的步骤(GHA secrets MARKETPLACE_DEPLOY_*——#283 那一半)
 └── site/                      站点根:index.json + packages/*.tgz(样例载荷)
 ```
 
@@ -34,7 +35,7 @@ deploy/marketplace/
 | 凭据 | `~/.ssh` 无任何私钥(无 `id_*`),无 `config`;`known_hosts` 只有 `github.com`——本机从未与该主机完成过 SSH 握手 |
 
 shell 历史显示 owner 此前用过 `ssh root@1.1.1.1 -o Proxycommand="nc -x
-127.0.0.1:7890 %h %p"`(本地 Clash 7890)——该路线已保留为 deploy.sh 的
+127.0.0.1:7890 %h %p"`(本地 Clash 7890)——该路线已保留为 deploy-local.sh 的
 `DEPLOY_PROXY`,但没有密钥、对端也没有 sshd 应答,无从部署。
 
 ## Owner 需要提供的事(待机清单)
@@ -60,13 +61,13 @@ node generate-index.mjs --build --plugins ../../system-plugins \
   --catalog catalog.json --key test-keys/test-ed25519.pem \
   --key-id dsh-market-test-1 --base-url https://<你的域名> --out site
 node generate-index.mjs --verify site/index.json   # 签名+摘要
-DEPLOY_HOST=<host> ./deploy.sh                     # rsync + 原子替换 index
-DEPLOY_HOST=<host> ./deploy.sh --dry-run           # 先预演
+DEPLOY_HOST=<host> ./deploy-local.sh                     # rsync + 原子替换 index
+DEPLOY_HOST=<host> ./deploy-local.sh --dry-run           # 先预演
 curl -fsSL https://<你的域名>/index.json | head    # 发布后检查
 ```
 
 index 是**生成的**,绝不手改:每个 `tgzUrl` 都被签名进目录,换域名(或换
-钥)意味着重新生成 + 重签 + 重新发布。没有 `DEPLOY_HOST` 时 deploy.sh 一键
+钥)意味着重新生成 + 重签 + 重新发布。没有 `DEPLOY_HOST` 时 deploy-local.sh 一键
 待机、响亮失败——这是设计,不是要绕过的错误。
 
 ## 密钥——发布任何真实内容前必读

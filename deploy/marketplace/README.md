@@ -18,7 +18,8 @@ deploy/marketplace/
 ├── generate-index.mjs         catalog tool: --keygen / --build / --verify
 ├── catalog.json               per-plugin bilingual summaries (authored, fail-loud on drift)
 ├── nginx.conf.example         the static site (content types + cache headers, no listings)
-├── deploy.sh                  rsync publish + ATOMIC index swap (DEPLOY_HOST required)
+├── deploy-local.sh            the OWNER-side one-click publish (rsync + ATOMIC index swap, DEPLOY_HOST required)
+├── deploy.sh                  the CI publish pipeline's step (GHA secrets MARKETPLACE_DEPLOY_* — #283's half)
 └── site/                      the webroot: index.json + packages/*.tgz (SAMPLE payload)
 ```
 
@@ -37,7 +38,7 @@ Nothing was deployed; no deployment is claimed.
 
 Shell history shows the owner previously used `ssh root@1.1.1.1 -o
 Proxycommand="nc -x 127.0.0.1:7890 %h %p"` (local Clash on 7890) — that
-route is preserved as `DEPLOY_PROXY` in deploy.sh, but without a key and
+route is preserved as `DEPLOY_PROXY` in deploy-local.sh, but without a key and
 without an answering sshd there is nothing to deploy with.
 
 ## What the owner provides (the standby checklist)
@@ -65,14 +66,14 @@ node generate-index.mjs --build --plugins ../../system-plugins \
   --catalog catalog.json --key test-keys/test-ed25519.pem \
   --key-id dsh-market-test-1 --base-url https://<your-domain> --out site
 node generate-index.mjs --verify site/index.json   # signature + digests
-DEPLOY_HOST=<host> ./deploy.sh                     # rsync + atomic index swap
-DEPLOY_HOST=<host> ./deploy.sh --dry-run           # preview first
+DEPLOY_HOST=<host> ./deploy-local.sh                     # rsync + atomic index swap
+DEPLOY_HOST=<host> ./deploy-local.sh --dry-run           # preview first
 curl -fsSL https://<your-domain>/index.json | head # post-check
 ```
 
 The index is GENERATED, never hand-edited: every `tgzUrl` is signed into the
 catalog, so a new domain (or new key) means regenerate + re-sign + redeploy.
-`deploy.sh` fails loud until `DEPLOY_HOST` exists — that is the standby
+`deploy-local.sh` fails loud until `DEPLOY_HOST` exists — that is the standby
 state by design, not an error to work around.
 
 ## Keys — read this before publishing anything real
