@@ -1,5 +1,7 @@
 # Release notes v0.0.2 — draft
 
+English | [简体中文](release-notes-v0.0.2.zh.md)
+
 > Draft for the v0.0.2 release notes, cut 2026-09-30. Scope: every PR merged
 > since #240 (2026-09-29 → 2026-09-30, #240–#254). Facts come from the merged
 > PRs only; work still in review is named as such. Where a number would need
