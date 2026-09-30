@@ -48,11 +48,21 @@ The catalog is code now, exactly per the frozen §7 (v1.1.0):
   `catalog`/`network`), each auditable. Learning is session state — a
   restart falls back to the pin, so a stale pin can never shortcut the
   rotation window.
-- **The authoring tool** (`tools/gen-marketplace-index.mjs`): packages
-  `system-plugins/` into deterministic ustar tarballs (the tar-mini wire
-  format mirrored byte-for-byte — two runs byte-identical), signs the index
-  (keys via `--seed`/`--key-file`; key material is only ever READ, never
-  written or committed; production keys live in the signing CI).
+- **The authoring tool is the LANDED publisher tooling, reconciled to the
+  frozen shape** (PR #287 review round 1): main's #283
+  `tools/gen-marketplace-index.mjs` (the one marketplace-publish.yml
+  drives) had attached a singular `signature` object for single-signed
+  publishes — the frozen contract's required 1..2 `signatures` ARRAY and
+  the resolver's hand validator both refuse that shape, so the two
+  generators' add/add conflict was the visible symptom of a real shape
+  war. The reconciliation keeps MAIN's generator (this PR's thinner
+  duplicate is deleted), makes `attachSignatures` always emit the array,
+  aligns `marketplace-rotate-key.mjs`'s header and
+  `deploy/marketplace/generate-index.mjs` (--build writes the array,
+  --verify refuses the dead object loudly), and the e2e leg now authors
+  its catalog with those landed tools — honest index from the generator,
+  §7.2 window document from `marketplace-rotate-key.mjs window-index` —
+  so the leg proves the CI-facing pipeline end to end.
 - **The proof** (`marketplace.install`, 71/71 one-to-one ×3 consecutive
   runs, evidence `runtime/spike/artifacts/macos-cli-marketplace-install/`):
   loopback file hosting (the proposal's "plain file hosting") serves a
@@ -95,3 +105,8 @@ The catalog is code now, exactly per the frozen §7 (v1.1.0):
   committing port-dependent bytes would churn on every run, so the runner
   keeps the catalog in a temp dir and the receipt records the pinned
   digests.
+- **Keeping this PR's own generator alongside main's** (the pre-review
+  state): rejected — two tools producing one contract's document is the
+  drift the contract exists to prevent; the landed tool is the one the
+  publish workflow drives, so the resolver leg must consume ITS output
+  (and now does).

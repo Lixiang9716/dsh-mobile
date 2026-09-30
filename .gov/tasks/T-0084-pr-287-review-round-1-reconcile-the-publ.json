@@ -1,0 +1,20 @@
+{
+  "title": "PR #287 review round 1 \u2014 reconcile the publisher tooling with the frozen signatures array + fresh-checkout repro",
+  "created": "2026-09-30T22:31:15+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] rebase onto origin/main; the add/add conflict resolves to MAIN's generator; attachSignatures always emits the frozen signatures array; rotate-key + deploy generate-index.mjs aligned (build writes the array, verify refuses the dead object)",
+    "[x] the e2e leg authors its catalog with the landed publisher tools (gen + rotate-key window-index); manifest re-authored; 71/71 green x3 on the reconciled pipeline",
+    "[x] runner runs vendor/ensure-ish.sh explicitly; a FRESH worktree at the fixed head cold-runs the leg green (the reviewer's own repro)",
+    "Agent Note + PR body reflect the reconciliation; gov run green; pushed; CI green on the final head"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0084"
+}
