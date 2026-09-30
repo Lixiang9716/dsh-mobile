@@ -137,6 +137,15 @@ scenarios negotiate `unavailable` through the capability plane, never assume
 the hardware). The matrix is deliberately NOT wired into the gate DAG —
 running it is a release ritual; gating it is a later decision.
 
+## Node-surface line coverage
+
+`tools/test/run-coverage.sh` measures real line coverage over the
+Node-testable surface we own (vitest + v8 provider, per-surface
+include/exclude with the boundaries named) and prints one aggregate table;
+`--check` enforces the warn-tier floors the `coverage-floor` gate watches.
+Full contract — measured baseline, the honest not-counted list, how to add
+a surface: [docs/test-coverage.md](docs/test-coverage.md).
+
 ## CI mapping
 
 The facade's per-platform steps are the verbatim commands of the matching

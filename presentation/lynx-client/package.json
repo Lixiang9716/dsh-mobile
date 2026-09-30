@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Lynx render-surface client pilot \u2014 a self-contained, wholly replaceable render surface: ReactLynx bundle (pure presentation) + host-side driver (wire + state), joined by the RenderSurfaceClient seam.",
+  "description": "Lynx render-surface client pilot — a self-contained, wholly replaceable render surface: ReactLynx bundle (pure presentation) + host-side driver (wire + state), joined by the RenderSurfaceClient seam.",
   "scripts": {
     "build": "npm --prefix bundle run build",
     "typecheck": "npm --prefix bundle run typecheck",
@@ -11,9 +11,11 @@
     "theme:check": "node theme/gen.mjs --check",
     "mock-loop": "node driver/run-mock.mjs",
     "lynx-mode": "node driver/run-lynx.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
     "vitest": "^4.1.8"
   }
 }

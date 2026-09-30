@@ -19,7 +19,8 @@
       "vendoring-repro",
       "bundle-files",
       "quickjs-boot-parse",
-      "staging-check"
+      "staging-check",
+      "coverage-floor"
     ],
     "quick": [
       "notes"
@@ -281,6 +282,25 @@
         "runtime/spike/system-plugins/**"
       ],
       "timeoutMs": 120000
+    },
+    {
+      "id": "coverage-floor",
+      "command": [
+        "sh",
+        "tools/test/run-coverage.sh",
+        "--check"
+      ],
+      "description": "per-surface line/branch coverage floors (warn-tier): vitest v8 measurement vs tools/test/coverage-floors.json floors",
+      "allowFailure": true,
+      "paths": [
+        "presentation/lynx-client/**",
+        "tools/test/**",
+        "tools/check-coverage-floor.mjs"
+      ],
+      "needs": [
+        "self-test"
+      ],
+      "timeoutMs": 300000
     }
   ]
 }

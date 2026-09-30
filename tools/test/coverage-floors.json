@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "unit": "percent",
+    "policy": "floor = per-surface measured value minus 5 points — an honest floor that flags real regressions (anything beyond normal drift) while never blocking: the gate is warn-tier (allowFailure) by decision of this PR",
+    "measured": "tools/test/run-coverage.sh on feat/cov-infra, 2026-09-30, vitest 4.1.11 + @vitest/coverage-v8 4.1.11",
+    "measuredLines": { "presentation/lynx-client": 84.2 },
+    "measuredBranches": { "presentation/lynx-client": 66.5 }
+  },
+  "surfaces": {
+    "presentation/lynx-client": {
+      "lines": 79.2,
+      "branches": 61.5
+    }
+  }
+}

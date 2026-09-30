@@ -2,7 +2,7 @@
   "title": "Close the HarmonyOS m5-m2-llm leg and the platform check gates",
   "created": "2026-09-21T17:34:17+00:00",
   "rules": {
-    "hash": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -79,6 +79,13 @@
       "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
       "to": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "reason": "the brief still describes pending owner/quota actions (harmony m2-llm evidence run, ci-verdict required check, known-gaps register audit); advancing the pin to the current rules baseline so the card can keep blocking for its real owners"
+    },
+    {
+      "ts": "2026-09-30T14:05:13+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
+      "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
     }
   ]
 }

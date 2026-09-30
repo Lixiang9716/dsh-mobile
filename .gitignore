@@ -270,3 +270,6 @@ runtime/spike/subprocess/
 presentation/lynx-client/artifacts/screens/
 presentation/lynx-client/bundle/dist-web/
 runtime/spike/logs-shim-exposure-probe.txt
+
+# vitest coverage reports (tools/test/run-coverage.sh)
+coverage/
