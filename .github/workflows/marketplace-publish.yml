@@ -1,0 +1,144 @@
+name: marketplace/publish
+# The PLUGIN MARKETPLACE publish pipeline: package system-plugins/ into the
+# frozen DSH package format, sign the catalog index with the owner's ed25519
+# key, and (on a real publish) rsync it to the marketplace host.
+#
+# The marketplace is DATA, not a service (contract/proposals/
+# 2026-10-01-plugin-marketplace.md): a signed static index.json plus package
+# tarballs on plain file hosting. This workflow is how the catalog gets from
+# the repository to that hosting — reproducibly, and with the signature made
+# in CI so the trust lives in the repo/CI, out of any server.
+#
+# TWO TRIGGERS, two paths, one packaging job:
+#
+#   workflow_dispatch — DRY RUN by default (the input defaults to true):
+#       package + sign + upload the publish unit as a run ARTIFACT. Nothing
+#       is deployed; the artifact is what you would deploy. Use it to
+#       preview the index, verify the signing secret works, and rehearse a
+#       rotation. No marketplace credentials beyond MARKETPLACE_SIGNING_KEY
+#       are needed.
+#     Setting dry_run to false flows into the publish job below — the same
+#     environment gate as a tag.
+#
+#   push: tags marketplace-v* — a REAL publish. The tag is the human's
+#       decision (D12), the publish job targets the `marketplace`
+#       environment (below). The prefix is deliberately NOT `v*`: that is
+#       the release pipeline's trigger (release/ios, release/android,
+#       release/harmony) and a marketplace publish is a CATALOG event — any
+#       content change can warrant one, independent of app versions.
+#     `release: published` is deliberately NOT a trigger, same reason as
+#     release/ios: the tag push is the one trigger, and listening to the
+#     Release event would double-fire.
+
+on:
+  push:
+    tags: ['marketplace-v*']
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: >-
+          Package + sign + upload as an artifact only, deploy nothing
+          (recommended). Uncheck to deploy for real — that run waits on the
+          `marketplace` environment approval.
+        type: boolean
+        default: true
+      base_url:
+        description: >-
+          Public URL prefix for every tgzUrl in the signed index (e.g.
+          https://dl.example.com/market). Defaults to the
+          MARKETPLACE_BASE_URL repository variable, which must be configured
+          before the first publish: a signed index never carries a
+          placeholder URL, so with neither set the run FAILS on purpose.
+        type: string
+        required: false
+        default: ''
+
+# Read-only over the repository: the catalog's trust is the ed25519
+# signature, not the pusher's identity.
+permissions:
+  contents: read
+
+# A real publish rsyncs; cancelling mid-deploy could leave a half-updated
+# catalog. Re-dispatches for the same ref queue behind the running one.
+concurrency:
+  group: marketplace-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    # Package + sign. Runs on BOTH paths (a dry run IS the rehearsal).
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Package system-plugins and sign the catalog index
+        # gen-marketplace-index.mjs fails loud naming any missing input: no
+        # MARKETPLACE_SIGNING_KEY secret, or no base URL from the input /
+        # MARKETPLACE_BASE_URL variable — a signed index never carries a
+        # placeholder URL. The signature covers the canonical JSON of the
+        # index minus the signature; packages use the same deterministic
+        # ustar byte profile install-pipeline.js consumes, so the digests in
+        # the index are exactly the installer's trust record.
+        env:
+          MARKETPLACE_SIGNING_KEY: ${{ secrets.MARKETPLACE_SIGNING_KEY }}
+          MARKETPLACE_BASE_URL: ${{ vars.MARKETPLACE_BASE_URL }}
+        run: |
+          set -euo pipefail
+          BASE_URL="${{ inputs.base_url }}"
+          if [ -z "$BASE_URL" ]; then BASE_URL="$MARKETPLACE_BASE_URL"; fi
+          node tools/gen-marketplace-index.mjs \
+            --base-url "$BASE_URL" --out dist/marketplace
+          # The published index is auditable in the run log: key ids, entry
+          # digests, and the signed digest table were printed by the
+          # generator above.
+
+      - name: Upload the publish unit
+        uses: actions/upload-artifact@v7
+        with:
+          name: marketplace-dist
+          path: dist/marketplace
+          if-no-files-found: error
+
+  publish:
+    # The REAL deploy. A dry-run dispatch never reaches this job.
+    needs: package
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && inputs.dry_run == false)
+    runs-on: ubuntu-latest
+    # The go gate, mirroring the `release` environment (#271): a publish is a
+    # human's decision, so this job targets the `marketplace` environment.
+    # The owner arms it by creating the environment with a required reviewer
+    # in the repository settings; until then the reference is inert — GitHub
+    # creates the environment with no protection rules, so nothing waits.
+    # Leave "Prevent self-review" OFF when arming it: the solo maintainer is
+    # the only reviewer, so checking it deadlocks every publish run;
+    # unchecked, the recorded — if self-given — approval still stands before
+    # any deploy. (docs/github-owner-actions.md names the whole setup.)
+    environment: marketplace
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v7
+        with:
+          name: marketplace-dist
+          path: dist/marketplace
+
+      - name: Deploy the catalog to the marketplace host
+        # deploy.sh fails loud naming every missing secret and reports an
+        # unreachable server with the ssh diagnostics plus the same pointer
+        # — the step goes red with the reason instead of half-deploying.
+        # It verifies the remote index digest after upload, so a silent
+        # hosting corruption fails the run too.
+        env:
+          MARKETPLACE_DEPLOY_HOST: ${{ secrets.MARKETPLACE_DEPLOY_HOST }}
+          MARKETPLACE_DEPLOY_PATH: ${{ secrets.MARKETPLACE_DEPLOY_PATH }}
+          MARKETPLACE_DEPLOY_SSH_KEY: ${{ secrets.MARKETPLACE_DEPLOY_SSH_KEY }}
+          MARKETPLACE_DEPLOY_PORT: ${{ secrets.MARKETPLACE_DEPLOY_PORT }}
+        run: sh deploy/marketplace/deploy.sh dist/marketplace
