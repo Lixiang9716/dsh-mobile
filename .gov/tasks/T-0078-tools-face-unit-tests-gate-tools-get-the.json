@@ -1,0 +1,20 @@
+{
+  "title": "tools-face unit tests: gate tools get their own net",
+  "created": "2026-09-30T06:37:06+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "unit tests for tools/check-staging.mjs (+graph/hosts), tools/gen-staging-manifests.mjs, tools/check-size.py, tools/dev-web-carrier plugins-route mux \u2014 happy path + known counterexamples (gap detection, size violation, round-trip drift), runner standalone (vitest / pytest)",
+    "every test falsified first: break the subject, watch the test go red, restore",
+    "real coverage run (vitest --coverage), before/after numbers recorded as 'tools face X% -> Y%'",
+    "no behavior change to the tools under test; Agent Note (testing); gov run full DAG green with receipt; push + PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
