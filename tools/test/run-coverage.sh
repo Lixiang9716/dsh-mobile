@@ -53,7 +53,11 @@ fi
 for surface in $SURFACES; do
   if [ ! -x "$surface/node_modules/.bin/vitest" ]; then
     echo "run-coverage: installing dev deps for $surface"
-    npm --prefix "$surface" install --no-audit --no-fund
+    # cd-form on purpose: `npm --prefix <dir> install` with no lockfile
+    # crashes on some npm majors ("Cannot read properties of null
+    # (reading 'edgesOut')" — seen on the ubuntu runner, CI run
+    # 36693625526); installing from inside the surface is the stable shape.
+    (cd "$surface" && npm install --no-audit --no-fund)
   fi
   echo "run-coverage: measuring $surface"
   (cd "$surface" && ./node_modules/.bin/vitest run --coverage)
