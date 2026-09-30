@@ -21,6 +21,31 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > green-covered / 66 manifests), which also absorbs the BLE + camera + mic +
 > parity dirs landed since the previous note re-ran them.
 >
+> **Currency**: this matrix reflects the capability-plane + simulator-matrix
+> close-out (2026-09-30, rule 12 — PRs #249 / #250 / #252 / #254 / #255, all
+> merged): the camera, microphone, and BLE faces and the release-grade
+> simulator matrix are on the books with their committed evidence —
+> `mic.plane` (iOS 11/11 + audit 6/6; Android 9/9 + the
+> `android.mic.plane.audit` 4/4 leg), `ble.plane` / `ble.plane.audit`
+> (deterministic mock radio 16/16 + honest radio-skip 8/8 per host — no
+> simulator has a usable radio, so the mock rides the same gateway
+> enforcement/consent/audit; the real-device leg is the D-g one-click
+> contract), the `simulator-matrix/*` dirs (device.plane 16/16 iOS / 15/15
+> Android + the audit legs, the regression / gateway-drive legs, and
+> `release-proof.json` per host; harmony's honest
+> `matrix-skip-receipt.json` — D-g standby), and the `device.plane` rows the
+> tables below never carried (16/16 iOS, 15/15 Android, 13/13 HarmonyOS).
+> The totals as re-run against that tree (72 dirs / 148 verdicts / 72 of 72
+> scenario ids green-covered / 65 manifests) — **every committed verdict is
+> green**. Two drift records ride the same change: (a) the quota-blocked
+> `m5-m2-llm` dir is GONE — the 2026-09-28 re-run landed the served turn
+> green as `m5-llm-live-stream` (`llm.live-stream` 14/130 +
+> `llm.live-stream.carrier` 7/7, commit `64889c54`) and closed gaps 8/9,
+> but the notes and cells below still carried the red state until now;
+> (b) the register's eighth row — the Android camera audit's
+> self-inconsistent verdict, found by the BLE line's rebase — is documented
+> below. The notes below are the previous currency records.
+>
 > **Currency**: this matrix reflects the mic-face change (2026-09-30):
 > the capability plane's microphone face is live on the mobile hosts — one
 > platform-neutral scenario `mic.plane` driven per host (descriptor 25 iOS /
@@ -149,20 +174,24 @@ evidence on that platform.
 | `b-harmony.write.live` | — | — | 33/33, 33/33 | — |
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
-| `b4.write.live` | 43/43 | — | — | — |
+| `b4.write.live` | 46/46 | — | — | — |
 | `ble.plane` | 16/16, 8/8 | 16/16, 8/8 | — | — |
 | `ble.plane.audit` | 8/8, 4/4 | 8/8, 4/4 | — | — |
+| `boot.verification` | 8/8, 8/8 | 8/8 | 8/8 | — |
 | `camera.plane` | 6/6 | 8/8 | — | — |
-| `camera.plane.audit` | 3/3 | 5/6 | — | — |
+| `camera.plane.audit` | 3/3 | 5/6 (drift) | — | — |
 | `device.plane` | 16/16, 16/16 | 15/15, 15/15 | 13/13 | — |
 | `device.plane.audit` | 14/23, 14/23 | 13/22, 13/22 | — | — |
 | `m1.spike.boot` | 9/9 (drift), 7/7 | 9/9 (drift), 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9 (drift), 7/7, 7/7 | 9/9 (drift) |
-| `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
+| `m1.carrier.loopback` | 7/7, 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
-| `m2.gateway.audit` | 16/16 | 16/16 | — | — |
-| `m2.gateway.binding` | 19/19 | — | — | — |
-| `m2.llm` | 14/148 | 14/171 | 14/8 **FAIL** (quota) | 19/19 |
-| `m2.llm.carrier` | 7/7 | 7/7 | 7/4 **FAIL** (quota) | — |
+| `gateway.bridge-smoke` | — | 6/6 | 6/6 | — |
+| `m2.gateway.audit` | 16/16, 16/16 | 16/16 | — | — |
+| `m2.gateway.binding` | 19/19, 19/19 | — | — | — |
+| `m2.llm` | 14/148 | 14/171 | — | 19/19 |
+| `m2.llm.carrier` | 7/7 | 7/7 | — | — |
+| `llm.live-stream` | 14/67 | — | 14/130 | — |
+| `llm.live-stream.carrier` | 7/7 | — | 7/7 | — |
 | `m2.session` | 23/23, 23/23 | 23/23, 22/22 (drift) | 23/23, 23/23, 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
 | `m2.upstream-session` | — | — | — | 31/31 |
@@ -174,19 +203,20 @@ evidence on that platform.
 | `m3.fetch-carrier` | 11/11 | — | — | — |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20 (drift), 20/20 (drift), 20/20 (drift), 20/20 (drift), 27/27 | — |
+| `mic.plane` | 11/11 | 9/9 (drift) | — | — |
+| `mic.plane.audit` | 6/6 | — | — | — |
+| `android.mic.plane.audit` | — | 4/4 (drift) | — | — |
 | `models.directory` | — | — | — | 6/6 |
+| `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `nextweb.mount` | 24/24 | — | — | — |
-| `whale.mount` | 16/16 | — | — | — |
+| `whale.mount` | 7/7 | — | — | — |
 | `android.whale.mount` | — | 7/7 | — | — |
 | `android.nextweb.mount` | — | 24/24 | — | — |
 | `harmony.whale.mount` | — | — | 7/7 | — |
 | `harmony.nextweb.mount` | — | — | 24/24 | — |
-| `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
-| `socket.seam` | — | — | — | 17/17 |
+| `upstream.parity` | 12/37 (drift) + 25/25 diff | 13/13 + 25/25 | — | 12/37 (drift) + 25/25 diff |
+| `socket.seam` | — | — | — | 19/19 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
-| `mic.plane` | 11/11 | 9/9 (drift) | — | — |
-| `mic.plane.audit` | 6/6 | — | — | — |
-| `android.mic.plane.audit` | — | 4/4 (drift) | — | — |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
@@ -196,14 +226,19 @@ All 73 distinct scenario ids (66 manifests — `m2.llm` has two: the
 one green committed evidence dir; `m2.session` runs green on all four
 hosts, and the models 设置页's `models.directory` rides the macOS CLI
 column (the coverage-plane assertions the api-coverage-probe carries, now
-declared one-to-one and machine-checked). Every verdict on main is green except the two quota-blocked
-`hosts/harmony/artifacts/m5-m2-llm/` verdicts (gaps 8/9, deliberate).
+declared one-to-one and machine-checked). Every verdict on main is green:
+the two quota-blocked `m5-m2-llm` verdicts were re-run GREEN on 2026-09-28
+as `m5-llm-live-stream` (`llm.live-stream` 14/130 + `llm.live-stream.carrier`
+7/7, commit `64889c54`) and the red dirs struck — the served turn is claimed.
 
 The `m2.llm` device legs are **repeat-aware**: their manifests match the
 delta stream greedily with one `repeat: true` expectation, so the
 verdict's `logged` is the whole capture's record count and not the matched
 count — `14/171` (Android) and `14/148` (iOS) are both `pass: true` with
 `drift: false`, and the checker prints `14/14 events, in order` on PASS.
+The same convention explains the `device.plane.audit` cells (`14/23` iOS,
+`13/22` Android, both `pass: true`): the audit manifests repeat-match too,
+so `logged` is the capture's record count, not the matched count.
 
 ## Evidence-dir inventory
 
@@ -223,10 +258,16 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane.audit 13/22, device.plane 15/15 (the simulator matrix's drive leg) | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8 (the deterministic mock radio's two-device GATT db — 180f/2a19 read+notify, fe00/fe01 write — riding the same gateway enforcement, consent layers, and audit as a real radio) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4 (the honest no-radio posture: the emulator's virtual controller with ungranted runtime permissions) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8, camera.plane.audit 5/6 (drift — the register's eighth row: the audit verdict records pass=true with expected=5 logged=6, inherited red) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9 (drift), android.mic.plane.audit 4/4 (drift) — the armed ladder with real PCM frames | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
+| `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
 | `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
-| `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -236,17 +277,12 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗ (gap 6) | 9 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
-| `hosts/harmony/artifacts/m5-m2-llm` | HarmonyOS | m2.llm.carrier 7/4 **FAIL**, m2.llm 14/8 **FAIL** (quota-blocked, deliberate — gaps 8/9) | ✓ | ✓ | ✓ (`blocked-on-quota`) | 1 |
-| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/m5-llm-live-stream` | HarmonyOS | llm.live-stream 14/130, llm.live-stream.carrier 7/7 — the quota-blocked `m5-m2-llm` dir re-run GREEN on 2026-09-28 (commit `64889c54`); the served turn is claimed | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
-| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗ (gap 1) | 3 |
-| `hosts/ios/artifacts/ble-mock` | iOS | ble.plane.audit 8/8, ble.plane 16/16 | ✓ | ✓ | ✓ | 0 |
-| `hosts/ios/artifacts/ble-skip` | iOS | ble.plane.audit 4/4, ble.plane 8/8 (the radio-absent skip face) | ✓ | ✓ | ✓ | 0 |
-| `hosts/ios/artifacts/camera-plane` | iOS | camera.plane.audit 3/3, camera.plane 6/6 (the simulator's honest capture-unavailable posture) | ✓ | ✓ | ✓ | 0 |
-| `hosts/ios/artifacts/device-plane` | iOS | device.plane.audit 14/23 (repeat-aware), device.plane 16/16 | ✓ | ✓ | ✓ | 6 |
-| `hosts/ios/artifacts/simulator-matrix/device-plane` | iOS | device.plane.audit 14/23, device.plane 16/16 (the simulator matrix's drive leg) | ✓ | ✓ | ✓ | 5 |
+| `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 46/46 | ✓ | ✓ | ✗ (gap 1) | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
@@ -255,7 +291,13 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
-| `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 16/16, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/ble-mock` | iOS | ble.plane 16/16, ble.plane.audit 8/8 (the same deterministic mock radio, the same enforcement) | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/ble-skip` | iOS | ble.plane 8/8, ble.plane.audit 4/4 (the honest radio-absent posture) | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/camera-plane` | iOS | camera.plane 6/6, camera.plane.audit 3/3 (the simulator's honest capture-unavailable posture) | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11, mic.plane.audit 6/6 — the armed ladder with real PCM frames | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/simulator-matrix/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 5 |
+| `hosts/ios/artifacts/simulator-matrix/gateway-drive` | iOS | boot.verification 8/8, carrier.loopback 7/7, gateway.audit 16/16, gateway.binding 19/19 | ✓ | ✓ | ✓ | 7 |
+| `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 7/7, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
@@ -264,16 +306,14 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=2 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=3 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9 (drift), android.mic.plane.audit 4/4 (drift) | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11, mic.plane.audit 6/6 | ✓ | ✓ | ✓ | 1 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs
@@ -282,8 +322,8 @@ are headless, and `hosts/android/artifacts/m2-llm/` carries its capture as
 
 ## Known gaps (honest list)
 
-Seven findings are open on this tree, and **every one of them is owned**. The
-checker reports all nine and exits non-zero by default; the table below is
+Eight findings are open on this tree, and **every one of them is owned**. The
+checker reports all eight and exits non-zero by default; the table below is
 the **known-gaps register** that makes the very same run wireable as a gate.
 
 - `node test/e2e/matrix.mjs` — prints every finding, registered or not, and
@@ -312,11 +352,12 @@ missing or malformed is a finding of its own, never a silent pass.
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
 | VERDICT_MALFORMED | hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json | camera work stream (#252) | rerun DSH_ANDROID_SERIAL=<emulator> hosts/android/ci/run-camera-plane.sh to regenerate a self-consistent verdict (the committed file records pass=true with expected=5 logged=6 — inherited red, found by the BLE line's rebase) |
 
-### Why none of these nine is closed here (the honest reason)
+### Why none of these eight is closed here (the honest reason)
 
 Seven of them need a `receipt.json` only the owning host work stream's next
-device/emulator run can produce; the other two are a deliberate record of a
-real backend refusal. Writing those receipts from this branch would mean
+device/emulator run can produce; the eighth is a self-inconsistent verdict
+inherited from the camera landing, owned by the camera work stream's next
+emulator run. Writing those receipts from this branch would mean
 inventing them:
 
 - **The receipt certifies a run, and the run's device is not in the
@@ -337,11 +378,16 @@ inventing them:
   runners have no such step yet, so those rows close as a runner change
   (adopt the same green-path emission) *plus* the re-run named in the row —
   both owned by the work stream that landed the dir.
-- **The two harmony verdicts are the diagnosis, not a green claim.** The
-  request left the emulator over the host's real `httpFetch` and the backend
-  refused it (`HTTP 429`, code `1310`, weekly/monthly limit exhausted). No
-  change in this repository can serve that turn; the harmony re-run can,
-  once the quota returns.
+- **The eighth is a verdict that contradicts itself, not a missing run.**
+  `hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
+  records `pass: true` with `expected=5, logged=6` — an inherited red
+  committed by the camera landing (#252) and found by the BLE line's
+  rebase (#254). The register row exists precisely so this class is
+  named, owned and closable: the camera work stream's next Android
+  emulator run regenerates a self-consistent verdict. This close-out
+  documents it; it does not regenerate device evidence (no emulator is
+  attached here, and synthesizing a verdict is the one move the
+  acceptance bar forbids).
 
 The gaps in detail (the numbering the `rcpt` column of the inventory above
 cites, and the register's rows in order):
@@ -386,39 +432,35 @@ cites, and the register's rows in order):
    green
    `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
    plus the same runner emission.
-8. **`hosts/harmony/artifacts/m5-m2-llm/` — the `m2.llm` device verdict is
-   RED (14/8) and intentionally committed.** The dir landed with #79 (the
-   harmony real-LLM leg). The leg ran exactly as designed and the request
-   left the emulator through this host's real `httpFetch`, but the z.ai
-   backend REFUSED it — `HTTP 429`, code `1310`, "Weekly/Monthly Limit
-   Exhausted. Your limit will reset at 2026-09-22 14:43:53" (reproduced
-   off-device with the same key by `curl`, so the blocker is the account,
-   not the host). The served-turn records therefore never happened and the
-   checker FAILs by design: **the committed verdict JSONs are the precise
-   diagnosis, not a green claim.** What this run DOES prove, one-to-one and
-   in order: the manifest's first seven device records
-   (`gateway.negotiated` → `host.ready` → `llm.leg` real over
-   `gateway.httpFetch` — capability negotiation, never a `hostType` branch
-   → `llm.config.loaded` app-scope → `session.created` →
-   `agent.started` → `llm.stream.started`), the real transport round trip
-   (the request crossed the device's network stack and a real server
-   answered it — a 429 from the real backend is itself evidence), and the
-   full credential handshake this platform forces (runtime-written 0666
-   placeholder → runner overwrite → app import + validation → honest seal
-   report → removal after the run), with a key-leak audit clean over both
-   raw streams. The served turn is explicitly NOT claimed — README.md's M5
-   row says so in both languages. `receipt.json` records
-   `status: blocked-on-quota` and `exitCode: 1`. **Closure (owned by the
-   harmony work stream):** `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-live-llm.sh`
-   once the quota returns — no code change; it must exit 0 with both
-   verdict JSONs green, the evidence refreshed here, and the README clause
-   flipped.
-9. **`hosts/harmony/artifacts/m5-m2-llm/` — the `m2.llm.carrier` verdict is
-   RED (7/4), same run, same cause.** The carrier mount chain
-   (`client.selected` → `webclient.mounted` → `ws.connected` →
-   `slot.registered`) is logged and matched; `ws.token-delta`
-   first/last and `ws.session-complete` await the served deltas the
-   refused turn never produced. Same closure as gap 8.
+8. **`hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
+   is self-inconsistent** — `pass: true` with `expected=5, logged=6`. The
+   dir landed with #252 (the camera face); the malformed verdict was
+   inherited red and found by the BLE line's rebase (#254), which added
+   the register row. Unlike the repeat-aware audit manifests
+   (`device.plane.audit`'s `14/23`), this manifest declares no
+   `repeat` expectation, so the differing counts on a `pass: true`
+   record are a genuine contradiction — the exact shape the checker's
+   count-consistency notice exists for. **Closure (owned by the camera
+   work stream):** rerun
+   `DSH_ANDROID_SERIAL=<emulator> hosts/android/ci/run-camera-plane.sh`
+   to regenerate a self-consistent verdict — no code change.
+
+### Closed by the 2026-09-28 quota-reset re-run (the upstream-suite follow-up, commit `64889c54`)
+
+- **Gaps 8 and 9 (the quota-blocked `m5-m2-llm` verdicts)** — closed by
+  the real re-run the register named: once the coding-plan quota reset,
+  `hosts/harmony/ci/run-live-llm.sh` ran GREEN on the emulator and the
+  evidence landed as `hosts/harmony/artifacts/m5-llm-live-stream/` —
+  `llm.live-stream` 14/130 and `llm.live-stream.carrier` 7/7, both
+  `pass: true, drift: false`, `receipt.json` machine-authored
+  (producedAt 2026-09-28T05:36:49Z). The served turn the old entries
+  refused to claim is now claimed; the red `m5-m2-llm` dir was struck and
+  the register rows removed in the same change. The follow-up did not
+  update this document's cells and notes, though — they kept carrying the
+  red state until the capability-plane close-out (2026-09-30) re-ran the
+  totals and reconciled every surface. That trailing status flip is the
+  exact failure rule 12 exists to prevent, recorded here so the pattern
+  is visible.
 
 ### Closed by the 2026-09-21 gateability change (docs/e2e-matrix-gateable)
 
@@ -505,22 +547,30 @@ cites, and the register's rows in order):
 
 ## Informational, not failures
 
-- **Manifest-revision drift** (9 verdicts): `m1.spike.boot` was captured
+- **Manifest-revision drift** (25 verdicts): `m1.spike.boot` was captured
   at 9 events in `hosts/{ios,android,harmony}/artifacts/m1-spike/` and
   `runtime/spike/artifacts/macos-cli/`, but the current manifest declares
   7; `hosts/android/artifacts/m4-host/` captured `m2.session` at 22
   events vs the current 23; `m5.host-binding` was captured at 20 events in
   `hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live,m5-host}/`
   before #76 grew the manifest to 27 (`m5-primitives` is the 27/27
-  re-capture). Verdicts are capture-time records; older logs are not
-  guaranteed to re-verify against a grown manifest. The checker reports
-  `drift: true` and does not fail on it.
+  re-capture). Since the last currency re-run, the same class grew:
+  `b-harmony.write.live` 33/33 (d9-write-live, m5-primitives),
+  `upstream.parity` 12/37 (iOS simulator, macOS CLI), the Android
+  `mic.plane` pair and the camera `5/6` audit leg (the honest postures
+  re-pinned per host), `b4.write.live` 43/43 (wasm-shell-e2e), and the
+  `m1.spike.boot` 7/7 re-captures (m4-complete, m4-host, m2-gateway,
+  m5-host, m5-primitives, the d9 dirs). Verdicts are capture-time records;
+  older logs are not guaranteed to re-verify against a grown manifest. The
+  checker reports `drift: true` and does not fail on it.
 - **The three dirs previously listed here as "in flight" have resolved.**
   `runtime/spike/artifacts/macos-cli-m2-llm/` landed with #74 and is a
   green table row (the scripted-SSE CLI leg, `m2.llm` 19/19); the M5
   close-out evidence landed instead as
   `hosts/harmony/artifacts/m5-primitives/` (#76, descriptor 9/0) and
-  `hosts/harmony/artifacts/m5-m2-llm/` (#79, quota-blocked — gaps 8/9).
+  `hosts/harmony/artifacts/m5-m2-llm/` (#79, quota-blocked — gaps 8/9,
+  since closed: that dir re-ran green on 2026-09-28 as
+  `m5-llm-live-stream`, commit `64889c54`).
   `hosts/android/artifacts/m3-android-install/` and
   `hosts/harmony/artifacts/m5-complete/` were never committed by any
   branch (`git log --all` is empty for both paths) — no such evidence
@@ -553,7 +603,7 @@ The checker is **still not wired into `gates.json`**: that file is inside
 the plane seal, and re-sealing is a recorded governance ritual, not a side
 effect of a docs change. What this change makes true is that the wiring is
 now *possible and small* — the gate invocation is green on this tree with
-**0 blocking findings**, the nine gaps it accepts are named, owned and
+**0 blocking findings**, the eight gaps it accepts are named, owned and
 closable in the register above, and the first new finding turns the very
 same command red. The wiring is one gate plus the seal:
 
