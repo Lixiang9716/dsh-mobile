@@ -14,9 +14,14 @@ English | [简体中文](release-regression-v0.0.2.zh.md)
 - **Base**: `origin/main@4f1677ad` at run time — this INCLUDES the camera
   family (#252), the socket seam (#251), the BLE face (#254), and **the
   microphone face (#255)**; the package therefore contains the microphone.
-  #256/#271/#272 (governance/CI/docs) were also in. #278 (gate-tool tests,
-  tools-only) landed on main while this run was in flight — after the runs
-  below; it touches no product or suite surface this package measured.
+  #256/#271/#272 (governance/CI/docs) were also in. While the runs were in
+  flight main moved again: #274 (presentation test coverage, tools), #278
+  (gate-tool tests, tools) — neither touches a surface this package
+  measured — and **#280 (BYOK first-run credential panel, a product
+  feature) landed after the runs** and is therefore NOT covered by this
+  package's simulator measurements; it rides CI's dev legs and the next
+  regression window. Named here so the cut line is the owner's informed
+  go.
 - **Branch**: `feat/release-regression-final`, this PR. The regression ran
   on `origin/main` plus the fixes this PR carries (nine commits, listed
   below) — every fix was found BY this run, which is the net working.
