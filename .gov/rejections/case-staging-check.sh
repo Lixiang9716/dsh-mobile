@@ -74,7 +74,11 @@ trap 'release_tree_lock; rm -f "$OUT"; restore' EXIT
 acquire_tree_lock
 grep -v "^\s*'upstream/boot\.js',$" "$IDX" > "$IDX.case-tmp.2" && mv "$IDX.case-tmp.2" "$IDX"
 
-if node "$REPO/tools/check-staging.mjs" --json --block harmony,android,ios > "$OUT" 2>&1; then
+# Harmony-only: the case's assertion lives entirely on harmony's
+# BUNDLE_FILES (the vehicle row IS harmony's), and under the full DAG's
+# gate concurrency the three-host walk stretched the case past its 10s
+# budget (measured 2026-09-30, T-0078). One host, same proof.
+if node "$REPO/tools/check-staging.mjs" --json --block harmony > "$OUT" 2>&1; then
   echo "case-staging-check: FAIL — a boot entry missing from BUNDLE_FILES passed the gate" >&2
   exit 1
 fi
@@ -86,7 +90,7 @@ grep -q '"file": "upstream/boot.js"' "$OUT" || {
 }
 
 restore
-if ! node "$REPO/tools/check-staging.mjs" --json --block harmony,android,ios >/dev/null 2>&1; then
+if ! node "$REPO/tools/check-staging.mjs" --json --block harmony >/dev/null 2>&1; then
   echo "case-staging-check: FAIL — the restored tree still fails" >&2
   exit 1
 fi
