@@ -91,12 +91,8 @@ class SpikeHostM4 private constructor(
             return host
         }
 
-        /** The M2 real-LLM drive (scenario `llm.live-stream`): one real chat completion through the gateway httpFetch; credentials ride fs scope "app". */
-        fun startLlm(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 = spawn(
+        /** The M2 real-LLM drive (scenario `llm.live-stream`): one real completion via the gateway httpFetch. */
+        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
             activity, webView, onFinished,
                 scenarioId = LLM_SCENARIO,
                 entryPath = LLM_ENTRY,
@@ -104,11 +100,7 @@ class SpikeHostM4 private constructor(
         )
 
         /** The v1.5.0 device-plane drive (scenario `android.device-plane`). */
-        fun startDevicePlane(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 = spawn(
+        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
             activity, webView, onFinished,
                 scenarioId = DEVICE_PLANE_SCENARIO,
                 entryPath = DEVICE_PLANE_ENTRY,
@@ -118,11 +110,7 @@ class SpikeHostM4 private constructor(
         /** The capability plane's camera drive (scenario
          * `android.camera-plane`, v1.10.0): the capture burst against the
          * emulator's virtual camera, the phased rows' honest `unavailable`. */
-        fun startCameraPlane(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 = spawn(
+        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
             activity, webView, onFinished,
             scenarioId = CAMERA_PLANE_SCENARIO,
             entryPath = CAMERA_PLANE_ENTRY,
@@ -162,12 +150,8 @@ class SpikeHostM4 private constructor(
             captureLabel = "upstream-suite",
         ).also { it.suiteSpec = spec }
 
-        /** The upstream-parity drive (scenario `upstream.parity`): the port leg of the differential consistency check against the committed golden. */
-        fun startParity(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 = spawn(
+        /** The upstream-parity drive (scenario `upstream.parity`): the port leg against the committed golden. */
+        fun startParity(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
             activity, webView, onFinished,
                 scenarioId = PARITY_SCENARIO,
                 entryPath = PARITY_ENTRY,
@@ -176,11 +160,7 @@ class SpikeHostM4 private constructor(
         )
 
         /** The whale creation-client drive (scenario `android.whale.mount`). */
-        fun startWhale(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 = spawn(
+        fun startWhale(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
             activity, webView, onFinished,
                 scenarioId = WHALE_SCENARIO,
                 entryPath = WHALE_ENTRY,
