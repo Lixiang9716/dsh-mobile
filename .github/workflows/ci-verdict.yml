@@ -79,9 +79,13 @@ jobs:
           # expected check (or from the start, when nothing was ever seen).
           ABSENT_GRACE_SECONDS="${ABSENT_GRACE_SECONDS:-120}"
           # `gates` always runs; the three platform legs are path-filtered and
-          # may legitimately be absent. `ci-verdict` itself is deliberately NOT
-          # in this list: it is in_progress while it judges.
-          EXPECTED="gates ios-e2e android-e2e harmonyos-build"
+          # may legitimately be absent, and so is `pages-demo` (pages.yml's
+          # path filter: the demo chain runs only when the lynx client or the
+          # workflow itself moves — review round on #277: the leg shipped
+          # without a line here, so its absence could never be named).
+          # `ci-verdict` itself is deliberately NOT in this list: it is
+          # in_progress while it judges.
+          EXPECTED="gates ios-e2e android-e2e harmonyos-build pages-demo"
           SNAP="$(mktemp)"
           RAW="$(mktemp)"
           trap 'rm -f "$SNAP" "$RAW"' EXIT

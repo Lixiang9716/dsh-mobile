@@ -19,8 +19,13 @@ name: pages/demo
 # expected and documented, not a workflow defect. The build steps before it
 # prove the pipeline green either way.
 #
-# Triggers mirror the dev-* workflows: manual dispatch + main-push scoped to
-# the surfaces this deploys (the client and demo page it renders, this file).
+# Triggers genuinely mirror the dev-* workflows (review round on #277: the
+# first draft claimed the mirror but shipped no pull_request leg, so the
+# install->build->stage chain would have first executed on a GitHub runner
+# only after merge): pull_request with the same path filter validates that
+# chain BEFORE landing, with the three Pages steps guarded off (they are the
+# only ones that touch the Pages deployment); workflow_dispatch + main-push
+# with the same paths deploy.
 
 on:
   workflow_dispatch:
@@ -29,13 +34,18 @@ on:
     paths:
       - "presentation/lynx-client/**"
       - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "presentation/lynx-client/**"
+      - ".github/workflows/pages.yml"
 
-# One Pages deployment at a time. The official Pages pattern deliberately
-# does NOT cancel in-progress runs — a production deploy finishes; queued
-# duplicates behind it are skipped.
+# Deploy legs (push/dispatch) share the official single-flight "pages" group:
+# one deployment at a time, never cancelling an in-progress production deploy.
+# pull_request legs get their own per-PR group where superseded runs cancel —
+# a PR validation run is disposable, a production deploy is not.
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -44,6 +54,7 @@ permissions:
 
 jobs:
   deploy:
+    name: pages-demo
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
@@ -77,14 +88,20 @@ jobs:
       - name: Stage the Pages artifact (same script locally and in CI)
         run: sh presentation/lynx-client/demo/stage-pages.sh "$GITHUB_WORKSPACE" pages-dist
 
+      # The three Pages steps are deploy-only: on pull_request the leg proves
+      # the install->build->pin->stage chain and stops — no deployment is
+      # created, nothing touches the (owner-gated) Pages integration.
       - name: Setup Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v6
 
       - name: Upload the Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v5
         with:
           path: pages-dist
 
       - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
         id: deployment
         uses: actions/deploy-pages@v5

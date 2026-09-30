@@ -27,7 +27,13 @@ build-time only — the product dependency set is unchanged), and stages
 `demo/index.html` + the generated `theme/web.tokens.css` (dark face, light
 media block mechanically dropped — the bundle is a dark-fixed pilot face) +
 the bundle + the web-core static client into the Pages artifact via
-`demo/stage-pages.sh` — the same script verified locally and in CI. The page
+`demo/stage-pages.sh` — the same script verified locally and in CI. A
+`pull_request` leg with the same path filter runs the install→build→pin→stage
+chain on a GitHub runner BEFORE landing (review round on #277: the first draft
+shipped no PR leg, so the chain's first CI execution would have followed the
+merge), with the three Pages steps guarded by
+`if: github.event_name != 'pull_request'`; `ci-verdict`'s EXPECTED list names
+`pages-demo` so the leg's absence can never silently pass for verified. The page
 is the official static recipe (client.js + client.css + `<lynx-view
 url="./main.web.bundle">`, all paths relative for subpath hosting), carries
 zero palette of its own (every color is a token custom property from the
