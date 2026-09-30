@@ -273,7 +273,10 @@ final class GatewayCore {
     }
 
     /// The wrapper's one audit line + settle hop (extracted so the closure
-    /// stays inside the indent budget).
+    /// stays inside the indent budget). BOTH branches drain the staged
+    /// detail — a failure settle that left it pending would leak into the
+    /// NEXT call's audit line (measured: micStart's unavailable left its
+    /// staged detail on micStop's row).
     private func settleResult(
         _ callId: Int, name: String, result: Result<Any, GatewayError>
     ) {
@@ -283,7 +286,8 @@ final class GatewayCore {
                   detail: takeAuditDetail())
             settle?(callId, true, Self.encode(payload))
         case .failure(let error):
-            audit(primitive: name, verdict: "granted", outcome: error.code)
+            audit(primitive: name, verdict: "granted", outcome: error.code,
+                  detail: takeAuditDetail())
             settle?(callId, false, Self.errorJSON(error))
         }
     }

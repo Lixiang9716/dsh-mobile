@@ -97,6 +97,16 @@ final class MicPrimitives {
                 DispatchQueue.global(qos: .userInitiated).async {
                     self.arm(sampleRate: sampleRate, frameMs: frameMs, done)
                 }
+                // The arm bound (see armFence): a wedged host route answers
+                // the honest `unavailable` instead of hanging micStart.
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.armTimeout) {
+                    [weak self] in
+                    guard let self, self.armFence.claim() else { return }
+                    done(.failure(GatewayError(
+                        code: "unavailable", primitive: "micStart",
+                        message: "audio input route did not open within "
+                            + "\(Int(Self.armTimeout))s (the host audio route is wedged)")))
+                }
             }
         }
     }
@@ -124,7 +134,8 @@ final class MicPrimitives {
                 message: "audio session refused: \(error.localizedDescription)")))
         }
         let input = stream.engine.inputNode
-        let native = input.inputFormat(forBus: 0)
+        let native = input.inputFormat(forBus: 0)   // opens the input AU —
+        // this is the call that can block forever on a wedged host route
         guard
             let target = AVAudioFormat(
                 commonFormat: .pcmFormatInt16, sampleRate: sampleRate,
@@ -151,10 +162,42 @@ final class MicPrimitives {
                 code: "unavailable", primitive: "micStart",
                 message: "audio engine refused: \(error.localizedDescription)")))
         }
+        // The fence is the single authority: whoever claims it settles the
+        // call. The arm work losing to the timeout tears the half-open
+        // graph down (no zombie stream, no orphan frames).
+        guard armFence.claim() else {
+            input.removeTap(onBus: 0)
+            stream.engine.stop()
+            return
+        }
         lock.lock()
         streams[id] = stream
         lock.unlock()
         done(.success(["streamId": id]))
+    }
+
+    /// The arm fence: the input AU open (inputFormat -> installTap -> engine
+    /// start) can block INDEFINITELY where the host audio route is wedged
+    /// (measured on the dsh-iphone 26.5 simulator: with the Mac-side
+    /// Simulator microphone grant absent, `inputFormat(forBus:)` never
+    /// returns). The fence bounds the wait and answers the honest
+    /// `unavailable` — micStart never hangs the scenario; the capability
+    /// gap is a value (the emulator posture), and a healthy host arms
+    /// well inside the window.
+    private let armFence = Once()
+    static let armTimeout: TimeInterval = 8
+
+    private final class Once {
+        private let lock = NSLock()
+        private var fired = false
+        /// True for exactly one caller — the winner runs its settle.
+        func claim() -> Bool {
+            lock.lock()
+            defer { lock.unlock() }
+            if fired { return false }
+            fired = true
+            return true
+        }
     }
 
     /// One tap buffer -> convert to s16le mono -> one ring entry (runs on
