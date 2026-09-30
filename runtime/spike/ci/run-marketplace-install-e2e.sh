@@ -1,7 +1,7 @@
 #!/bin/sh
 # runtime/spike/ci/run-marketplace-install-e2e.sh — the CLI proof run for the
 # plugin marketplace (data-protocols.md §7, the signed catalog): boots the
-# loopback FILE HOSTING (mock-market-server.mjs — the "plain file hosting" of
+# loopback FILE HOSTING (mock-market-hosting.mjs — the "plain file hosting" of
 # the adopted proposal's v0 model), authors the catalog from system-plugins/
 # with the LANDED publisher tooling — tools/gen-marketplace-index.mjs for the
 # honest single-signed index and tools/marketplace-rotate-key.mjs
@@ -53,7 +53,7 @@ sh vendor/ensure-ish.sh
 #    ladder / rotation drill variants against the same packages.
 CATALOG="$(mktemp -d /tmp/dsh-market-catalog.XXXXXX)"
 MARKET_LOG="$(mktemp /tmp/dsh-market-server.XXXXXX)"
-node ci/mock-market-server.mjs "$CATALOG" > "$MARKET_LOG" 2>&1 &
+node ci/mock-market-hosting.mjs "$CATALOG" > "$MARKET_LOG" 2>&1 &
 SERVER_PID=$!
 cleanup() {
     kill "$SERVER_PID" 2>/dev/null || true

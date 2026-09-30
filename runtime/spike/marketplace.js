@@ -42,13 +42,20 @@
  * Shape note: the resolver is a flat module-scope state bag (`env`) with
  * free functions — no closure factory — so every function stays under the
  * size gate's span and the state transitions stay readable top to bottom.
+ *
+ * Sibling note: marketplace-resolver.js (the marketplace-UI face's cached
+ * fetch/lookup, merged in #288) and THIS module are deliberately separate:
+ * the UI face needs browse-with-cache; the contract face needs the §7.2
+ * rotation trust set, the pinned-key SET, and the §7.3 install passthrough.
+ * They share ed25519.js + canonical-json.js — one verifier, one codec — so
+ * the trust core cannot drift; folding the two resolvers is the named
+ * simplification once the UI face needs rotation.
  */
 import { createLogger } from 'logger.js';
 import { InstallRejected } from 'install-pipeline.js';
-import { canonicalJson } from 'canonical-json.js';
+import { canonicalJson, utf8Bytes, utf8Text } from 'canonical-json.js';
 import { ed25519Verify } from 'ed25519.js';
 import { installFromFetch } from 'install-fetch.js';
-import { utf8Encode, utf8Decode } from 'utf8.js';
 import { satisfies, versionLess } from 'semver-range.js';
 
 const log = createLogger('dsh.marketplace');
@@ -66,24 +73,6 @@ const ENTRY_FIELDS = ['id', 'version', 'type', 'tgzUrl', 'blobSha256', 'manifest
   'capabilities', 'summary'];
 const INDEX_FIELDS = ['schemaVersion', 'marketplace', 'generatedAt', 'keys', 'entries',
   'signatures'];
-
-/** base64 → bytes (the index carries keys/signatures base64; upstream ships
- * encode only — same inline decode as gateway.js). */
-const base64ToBytes = (text) => {
-  log.debug('base64 decode', { chars: String(text).length });
-  const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  const clean = String(text).replace(/=+$/, '');
-  const out = [];
-  for (let i = 0; i < clean.length; i += 4) {
-    const rem = clean.length - i;
-    const n = (B64.indexOf(clean[i]) << 18) | (B64.indexOf(clean[i + 1]) << 12)
-      | (B64.indexOf(clean[i + 2] ?? 'A') << 6) | B64.indexOf(clean[i + 3] ?? 'A');
-    out.push((n >> 16) & 255);
-    if (rem > 2) out.push((n >> 8) & 255);
-    if (rem > 3) out.push(n & 255);
-  }
-  return Uint8Array.from(out);
-};
 
 /** One catalog entry's shape (marketplace-index.schema.json, mirrored by
  * hand the way validateManifest mirrors manifest.schema.json — no schema
@@ -204,7 +193,7 @@ const urlPathOf = (url) => {
 const verifyPrimarySignature = (idx, env) => {
   log.debug('verify primary signature', { candidates: idx.signatures.length });
   const { signatures: _drop, ...doc } = idx;
-  const message = utf8Encode(canonicalJson(doc));
+  const message = utf8Bytes(canonicalJson(doc));
   env.message = message; // reused by the rotation learner below
   const known = idx.signatures.filter((s) => env.trusted.has(s.key));
   if (known.length === 0) {
@@ -213,8 +202,7 @@ const verifyPrimarySignature = (idx, env) => {
       { signedBy: idx.signatures.map((s) => s.key), trusted: [...env.trusted.keys()] });
   }
   const primary = known[0];
-  const pubBytes = base64ToBytes(env.trusted.get(primary.key));
-  if (!ed25519Verify(pubBytes, base64ToBytes(primary.value), message)) {
+  if (!ed25519Verify(env.trusted.get(primary.key), message, primary.value)) {
     throw new InstallRejected('signature', `catalog signature failed verification under ${primary.key}`,
       { key: primary.key });
   }
@@ -228,8 +216,7 @@ const verifyPrimarySignature = (idx, env) => {
 const learnRotationKeys = (idx, env) => {
   for (const sig of idx.signatures) {
     if (env.trusted.has(sig.key)) continue;
-    const published = base64ToBytes(idx.keys[sig.key]);
-    if (!ed25519Verify(published, base64ToBytes(sig.value), env.message)) {
+    if (!ed25519Verify(idx.keys[sig.key], env.message, sig.value)) {
       throw new InstallRejected('signature',
         `rotation signature failed verification under ${sig.key}`, { key: sig.key });
     }
@@ -254,7 +241,7 @@ const fetchAndVerify = async (env, url) => {
   log.debug('catalog fetched', { bytes: bytes.length });
   let idx;
   try {
-    idx = JSON.parse(utf8Decode(bytes));
+    idx = JSON.parse(utf8Text(bytes));
   } catch (err) {
     throw new InstallRejected('catalog', `catalog is not valid JSON: ${err}`);
   }
