@@ -1,0 +1,21 @@
+{
+  "title": "release regression final run \u2014 the v0.0.2 evidence package (matrix + sweep + release feature pass)",
+  "created": "2026-09-30T10:00:52+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] run 1: tools/test/run-simulator-matrix.sh full (ios+android+harmony honest skip) green with the camera/mic/BLE simulator-testable capability legs driven",
+    "[x] run 2: runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4 \u2014 v0.0.2 authoritative specs-green/NOSUM counts vs the #243 614/681 baseline",
+    "[x] run 3: iOS simulator Release-configuration feature pass per the ui-sweep/release-test precedent; device parts stay script-standby",
+    "[x] docs/release-checks/ bilingual regression report (pairing verified) + receipts into the evidence dirs in the committed shape",
+    "Agent Note (testing) + incremental commits + gov run full DAG green + push + PR (no bump/tag/release actions)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0080"
+}
