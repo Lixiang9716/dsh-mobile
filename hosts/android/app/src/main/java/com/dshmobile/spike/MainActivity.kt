@@ -60,9 +60,7 @@ class MainActivity : Activity() {
         } else if (intent.getBooleanExtra(EXTRA_CAMERA_PLANE, false)) {
             startM4(savedInstanceState, cameraPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_BLE, false)) {
-            startM4(
-                savedInstanceState, ble = true,
-                bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
+            startM4(savedInstanceState, ble = true, bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
         } else if (intent.getBooleanExtra(EXTRA_MIC_PLANE, false)) {
             startM4(savedInstanceState, micPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {

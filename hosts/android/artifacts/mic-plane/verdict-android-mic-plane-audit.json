@@ -1,65 +1,8 @@
 {
   "scenario": "android.mic.plane.audit",
-  "pass": false,
-  "expected": 6,
+  "pass": true,
+  "expected": 4,
   "logged": 4,
-  "failures": [
-    {
-      "index": 1,
-      "expected": {
-        "primitive": "micStop"
-      },
-      "logged": {
-        "line": 13,
-        "payload": {
-          "ts": "2026-09-30T03:43:18.891461Z",
-          "primitive": "micStart",
-          "caller": "dsh.spike.scenario",
-          "verdict": "granted",
-          "outcome": "ok",
-          "detail": {
-            "format": "pcm-s16le",
-            "sampleRate": 16000,
-            "frameMs": 100,
-            "tag": "mic.plane"
-          }
-        }
-      }
-    },
-    {
-      "index": 3,
-      "expected": {
-        "primitive": "micStart"
-      },
-      "logged": {
-        "line": 49,
-        "payload": {
-          "ts": "2026-09-30T03:43:19.456412Z",
-          "primitive": "micStop",
-          "caller": "dsh.spike.scenario",
-          "verdict": "granted",
-          "outcome": "ok",
-          "detail": {
-            "durationMs": 734,
-            "bytes": 19200
-          }
-        }
-      }
-    },
-    {
-      "index": 4,
-      "expected": {
-        "primitive": "micStop"
-      },
-      "logged": null
-    },
-    {
-      "index": 5,
-      "expected": {
-        "primitive": "micStop"
-      },
-      "logged": null
-    }
-  ],
+  "failures": [],
   "parseErrors": []
 }

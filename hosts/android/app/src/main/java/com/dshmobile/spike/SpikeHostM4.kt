@@ -106,26 +106,13 @@ class SpikeHostM4 private constructor(
         fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
             drive("device-plane", DEVICE_PLANE_SCENARIO, DEVICE_PLANE_ENTRY, activity, webView, onFinished)
         /** The capability plane's BLE drive (scenario `android.ble-plane`):
-         * the real radio by default (an emulator answers `unavailable`
-         * honestly — the CI skip leg), the deterministic mock on the mock
-         * extra (the envelope + audit CI leg). */
-        fun startBle(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-            mockRadio: Boolean,
-        ): SpikeHostM4 = spawn(
-            activity, webView, onFinished,
-            scenarioId = BLE_SCENARIO,
-            entryPath = BLE_ENTRY,
-            captureLabel = "ble-plane",
-            mockRadio = mockRadio,
-        )
+         * the real radio by default (an emulator answers `unavailable` honestly
+         * — the CI skip leg), the deterministic mock on the mock extra. */
+        fun startBle(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, mockRadio: Boolean): SpikeHostM4 =
+            drive("ble-plane", BLE_SCENARIO, BLE_ENTRY, activity, webView, onFinished, mockRadio)
 
-
-        /** One scenario drive factory: the binding machinery with the leg's
-         * scenario id, entry and capture label. The whale/parity/suite legs
-         * keep their own factories (they add per-leg config on top). */
+        /** One scenario drive factory: the binding machinery with the leg's scenario
+         * id, entry and capture label. The whale/parity/suite legs keep their own factories. */
         private fun drive(
             captureLabel: String,
             scenarioId: String,
@@ -133,26 +120,26 @@ class SpikeHostM4 private constructor(
             activity: Activity,
             webView: WebView?,
             onFinished: (String) -> Unit,
+            mockRadio: Boolean = false,
         ): SpikeHostM4 {
             val host = SpikeHostM4(
                 activity,
                 scenarioId = scenarioId,
                 entryPath = entryPath,
                 captureLabel = captureLabel,
+                mockRadio = mockRadio,
             )
             host.pump.attach(webView)
             instance = host
             host.start(onFinished)
             return host
         }
-        /** The mic drive (`android.mic-plane`): micStart/micStop + the
-         * mic.frame channel; the OS prompt pre-granted in automation. */
+        /** The mic drive (`android.mic-plane`): micStart/micStop + the mic.frame channel; the OS prompt pre-granted in automation. */
         fun startMicPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
             drive("mic-plane", MIC_PLANE_SCENARIO, MIC_PLANE_ENTRY, activity, webView, onFinished)
 
-        /** The camera drive (`android.camera-plane`, v1.10.0): the capture
-         * burst against the emulator's virtual camera, the phased rows'
-         * honest `unavailable`. */
+        /** The camera drive (`android.camera-plane`, v1.10.0): the capture burst
+         * against the emulator's virtual camera, the phased rows' honest `unavailable`. */
         fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
             drive("camera-plane", CAMERA_PLANE_SCENARIO, CAMERA_PLANE_ENTRY, activity, webView, onFinished)
 
@@ -160,12 +147,7 @@ class SpikeHostM4 private constructor(
          * upstream spec executed by the quickjs-shaped harness inside our
          * runtime — per-test verdicts stream as scenario records; the spec
          * name rides the runtime.config bus delivery. */
-        fun startSuite(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-            spec: String,
-        ): SpikeHostM4 = spawn(
+        fun startSuite(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, spec: String): SpikeHostM4 = spawn(
             activity, webView, onFinished,
             scenarioId = SUITE_SCENARIO,
             entryPath = SUITE_ENTRY,

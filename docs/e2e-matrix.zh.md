@@ -16,6 +16,15 @@
 > receipt）。iOS 的 arm 由 8 秒围栏兜底：宿主音频路由卡死时诚实回答
 > `unavailable`（manifest 按当次实跑形状重钉 —— pasteboard 姿态）。
 
+> **时效性**：本矩阵反映能力面相机变更（2026-09-30）：`camera.plane` +
+> `camera.plane.audit` 在 iOS（模拟器的如实 capture-unavailable 姿态，目录
+> `hosts/ios/artifacts/camera-plane/`）与 Android（模拟器虚拟相机真实连拍
+> —— 2 帧 / 44157 字节 / 457 ms —— 加 maxBytes 丢弃腿，目录
+> `hosts/android/artifacts/camera-plane/`）双绿；总量对本树重跑（59 目录 /
+> 122 verdict / 65 of 65 scenario id 绿覆盖 / 51 manifest；harmony 真机腿与
+> iOS 真机腿待真机——一键脚本已备好，绝不合成证据）。下面的注记是历史的
+> 时效记录。
+>
 > **时效性**：本矩阵反映 models 页 e2e 变更（2026-09-25）：官方客户端的
 > models 设置页有了独立 CLI 证明 —— scenario `models.directory` 6/6，目录
 > `runtime/spike/artifacts/macos-cli-models-directory/` —— 且总量对本树重跑
