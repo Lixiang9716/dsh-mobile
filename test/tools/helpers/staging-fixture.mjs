@@ -95,8 +95,7 @@ export function derivedBundleRows() {
  * the $() span is stripped from the row list by design. */
 function vendorOfficialSh() {
   const rows = [
-    'upstream/boot.js',
-    'upstream/web-boot.js',
+    ...SCOPED_REACHED,
     'vendor/npm/@noble/hashes@2.3.0/lib/index.js',
     'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/index.js',
     `vendor/dsh/agent@$PIN/package.json`,
@@ -280,6 +279,30 @@ export class StagingFixture {
     const r = this.run(tool, [...args, '--json']);
     return { ...r, data: JSON.parse(r.stdout) };
   }
+
+  /** Add rows to Index.ets BUNDLE_FILES and materialize their rawfile/spike
+   * copies (the stale check's root) — rows arrive covered by the primary
+   * harmony surface. Spike rows copy from the spike tree. */
+  addBundleRows(rows) {
+    const ets = join('hosts/harmony/entry/src/main/ets/pages/Index.ets');
+    const src = this.read(ets);
+    const at = src.indexOf('const BUNDLE_FILES: string[] = [');
+    const end = src.indexOf('];', at);
+    const added = rows.map((r) => `  '${r}',`).join('\n');
+    this.write(ets, `${src.slice(0, end)}${added}\n${src.slice(end)}`);
+    for (const row of rows) this.mirrorRawfileRow(row);
+  }
+
+  /** The harmony rawfile/spike copy of one BUNDLE_FILES row: spike rows
+   * byte-copy; webclient rows map to their presentation sources. */
+  mirrorRawfileRow(row) {
+    const stagedPrefix = row.split('/').slice(0, 2).join('/');
+    const staged = WEBCLIENT_TREES.find((t) => `webclient/${t.staged}` === stagedPrefix);
+    const source = staged
+      ? join(this.root, staged.dir, row.split('/').slice(2).join('/'))
+      : join(this.spike, row);
+    this.write(join('hosts/harmony/entry/src/main/resources/rawfile/spike', row), readFileSync(source, 'utf8'));
+  }
 }
 
 /** Assemble the green fixture: every manifest agrees with reality, so both
@@ -307,13 +330,5 @@ export function buildGreenFixture() {
  * check's root): spike rows byte-copy; webclient rows map to their
  * presentation sources. */
 function mirrorRawfileBundle(fx) {
-  const stagedBySource = new Map(WEBCLIENT_TREES.map((t) => [`webclient/${t.staged}`, t.dir]));
-  for (const row of derivedBundleRows()) {
-    const stagedPrefix = row.split('/').slice(0, 2).join('/');
-    const source = stagedBySource.has(stagedPrefix)
-      ? join(fx.root, stagedBySource.get(stagedPrefix), row.split('/').slice(2).join('/'))
-      : join(fx.spike, row);
-    const raw = join('hosts/harmony/entry/src/main/resources/rawfile/spike', row);
-    fx.write(raw, readFileSync(source, 'utf8'));
-  }
+  for (const row of derivedBundleRows()) fx.mirrorRawfileRow(row);
 }
