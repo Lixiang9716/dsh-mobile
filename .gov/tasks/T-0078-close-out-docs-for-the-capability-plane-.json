@@ -1,0 +1,22 @@
+{
+  "title": "Close-out docs for the capability plane + simulator matrix (rule 12)",
+  "created": "2026-09-30T07:03:23+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] Inventory the five merged PRs (#249 #250 #252 #254 #255) from gh pr list",
+    "[x] README.md + README.zh.md: milestone table gains the system capability plane row and the simulator matrix row",
+    "[x] docs/ARCHITECTURE.md(+.zh): capability table pointer updated",
+    "[x] docs/e2e-matrix.md(+.zh): missing mic/ble rows filled, totals re-run on this tree",
+    "[x] gov verify pairing --write for every touched pair",
+    "gov run full DAG green + receipt, push, PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
