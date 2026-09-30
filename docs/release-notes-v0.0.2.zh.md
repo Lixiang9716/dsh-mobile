@@ -79,6 +79,7 @@
 - **socket ssh 族的 TLS 墙**:13 条 ssh spec 在 `node:tls: createServer is not
   served` 处大声失败——TLS 终结是 socket 提案的**具名非目标**;下一步是 TLS 设计
   轮,不是更多 socket 管道(#251)。
-- **v1.9.0(forkpty)已实现但未冻结**:面已落地并在 darwin CLI 上验证,而
-  `contract/primitives.md` 仍冻结在 v1.5.0——冻结走 owner 流程;v1.6.0(事件通道)
-  与 v1.7.0(渲染面)草案同样未冻(#243)。
+- **v1.9.0(forkpty)已实现但未冻结**:面已落地并在 darwin CLI 上验证,而契约的
+  冻结基线是 v1.8.0(socket 接缝,2026-09-30 经 #251 加法折入)——forkpty 面作为
+  v1.9.0 草案候选在基线之外等冻结,冻结走 owner 流程;v1.6.0(事件通道)与
+  v1.7.0(渲染面)草案等待同样的折入(#243)。

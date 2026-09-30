@@ -109,6 +109,8 @@ Honest at cut time:
   proposal's named non-goal; the next step is the TLS design round, not more
   socket plumbing (#251).
 - **v1.9.0 (forkpty) is implemented but not frozen**: the face landed and is
-  verified on the darwin CLI, while `contract/primitives.md` still freezes
-  at v1.5.0 — the freeze follows the owner's process; the v1.6.0 (event
-  channel) and v1.7.0 (render surface) drafts are likewise unfrozen (#243).
+  verified on the darwin CLI, while the contract's frozen base is v1.8.0
+  (the socket seam, folded additively on 2026-09-30 by #251) — the forkpty
+  face waits beyond that base as a v1.9.0 draft candidate, and the freeze
+  follows the owner's process; the v1.6.0 (event channel) and v1.7.0
+  (render surface) drafts await the same fold (#243).
