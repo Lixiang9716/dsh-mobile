@@ -38,12 +38,14 @@ npm run theme:check           # token 单源同步
   每面 34/34 条结构化日志事件,与 `test/e2e/scenarios/lynx-mount{,-stub}.json`
   一一对应;verdict + receipt 入库在 `artifacts/cli-lynx-mount-{lynx,stub}/`。
   `npm run mock-loop` 保留为快速内层断言环路(18/18)。
-- vitest(`npm test`,116 个用例):缝契约、fold、adapter 映射表、wire
-  客户端(本地起真服务器、真 ws-lite 升级)——外加
+- vitest(`npm test`,本包 71 个用例;两套 presentation 套件合计 116——
+  web-client-next 的 45 个在 `test/web-client-next-suite/`):缝契约、fold、
+  adapter 映射表、wire 客户端(本地起真服务器、真 ws-lite 升级)——外加
   `tests/driver-loop.test.js`(run-mock 的 18 项检查 1:1 formalize 成
   vitest 用例,跑同一条真 mock 环路,并补上流错误 / 无 sessionId /
   not-found / busy 的边界腿)与 `tests/{wire-edge,mux}.js`(信封的坏答案
-  边界、mux 的 generation 化重连契约,全部真 socket)。`npm test --
+  边界、mux 的 generation 化重连契约,全部真 socket)。两套套件都跑在
+  `presentation-tests` 门里(gates.json)。`npm test --
   --coverage` 如实报告 driver 面(runner 文件除外:它们的检查已由
   driver-loop 套件接管)。
 

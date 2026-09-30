@@ -58,8 +58,12 @@ there ships to the browser.
   for `webclient/dsh-web-client-next/node_modules/.vite/...`). The suite's
   vitest config pins the product directory as root (coverage can only
   include files under root) while pinning BOTH artifact sinks — the vite
-  cache and the coverage report — back into the suite's own directory, so
-  a test run leaves the product tree byte-identical.
+  cache and `coverage.reportsDirectory` — back into the suite's own
+  directory, so a test run, plain or `--coverage`, leaves the product
+  tree at its 12 shipped files (asserted by the gate runner on every
+  run). The v4 key is `reportsDirectory`; an earlier draft used
+  `outputDir`, which vitest silently ignores — observed live as an HTML
+  report inside the staged product directory.
 - **Falsify-then-restore discipline** held for every new suite: the mock's
   cancelled turn/end dropped → cancel leg red; api.js's rpcId guard
   removed → wire-edge leg red; the fold's cancelled-tail drop removed →
@@ -115,7 +119,12 @@ there ships to the browser.
 
 `npm test -- --coverage` in each package is now the honest driver/presentation
 line-coverage surface; the numbers live in PR descriptions and this note,
-the raw report stays a local artifact (coverage/ is gitignored). Porting
-code between web-client-next and lynx-client now has a contract test to
-violating which fails CI (`tests/mux.test.js` both sides) — the port bug
-class this note records is exactly what those legs defend against.
+the raw report stays a local artifact (coverage/ is gitignored in all
+three locations, including a belt-and-braces entry for the staged product
+directory). **Both suites are wired into the gates DAG as the
+`presentation-tests` gate** (`gates.json` → `tools/test/run-presentation-tests.sh`,
+scoped to the three directories plus the runner itself), so the port-bug
+class this note records now fails `gov run` locally AND the CI `gates` job
+— the runner re-asserts on every run that the staged product tree holds
+exactly its 12 shipped files. `tests/mux.test.js` on both sides is the
+contract that pins it.

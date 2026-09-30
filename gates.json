@@ -20,7 +20,8 @@
       "bundle-files",
       "quickjs-boot-parse",
       "staging-check",
-      "coverage-floor"
+      "coverage-floor",
+      "presentation-tests"
     ],
     "quick": [
       "notes"
@@ -301,6 +302,21 @@
         "self-test"
       ],
       "timeoutMs": 300000
+    },
+    {
+      "id": "presentation-tests",
+      "label": "the presentation Node-testable faces' vitest suites: lynx-client (driver loop / wire envelope / mux) + web-client-next (envelope / mux over real sockets / journal fold)",
+      "command": [
+        "sh",
+        "tools/test/run-presentation-tests.sh"
+      ],
+      "paths": [
+        "presentation/lynx-client/**",
+        "presentation/web-client-next/**",
+        "test/web-client-next-suite/**",
+        "tools/test/run-presentation-tests.sh"
+      ],
+      "timeoutMs": 420000
     }
   ]
 }
