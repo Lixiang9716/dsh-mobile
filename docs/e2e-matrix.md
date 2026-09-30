@@ -17,8 +17,8 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > those five faces on the real engine (8/8, dir
 > `runtime/spike/artifacts/macos-cli-shim-exposure-probe/`; falsified
 > first — a broken string-decoder tail-hold goes red). The totals are
-> re-run against this tree (71 dirs / 145 verdicts / 70 of 70 scenario ids
-> green-covered / 62 manifests), which also absorbs the BLE + camera +
+> re-run against this tree (73 dirs / 149 verdicts / 73 of 73 scenario ids
+> green-covered / 66 manifests), which also absorbs the BLE + camera + mic +
 > parity dirs landed since the previous note re-ran them.
 >
 > **Currency**: this matrix reflects the mic-face change (2026-09-30):
@@ -126,10 +126,10 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 71 |
-| Verdicts committed (145 green) | 145 |
-| Scenarios with at least one committed evidence dir | 70 of 70 distinct scenario ids (62 manifests) |
-| Screenshots verified PNG | 158 |
+| Evidence dirs | 73 |
+| Verdicts committed (149 green) | 149 |
+| Scenarios with at least one committed evidence dir | 73 of 73 distinct scenario ids (66 manifests) |
+| Screenshots verified PNG | 160 |
 | Acceptance-bar findings | 8 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -184,11 +184,14 @@ evidence on that platform.
 | `upstream.parity` | 12/37 + 25/25 diff | 13/13 + 25/25 | — | 12/37 + 25/25 |
 | `socket.seam` | — | — | — | 17/17 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
+| `mic.plane` | 11/11 | 9/9 (drift) | — | — |
+| `mic.plane.audit` | 6/6 | — | — | — |
+| `android.mic.plane.audit` | — | 4/4 (drift) | — | — |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
 
-All 70 distinct scenario ids (62 manifests — `m2.llm` has two: the
+All 73 distinct scenario ids (66 manifests — `m2.llm` has two: the
 19-event scripted-SSE CLI leg and the 14-event device leg) have at least
 one green committed evidence dir; `m2.session` runs green on all four
 hosts, and the models 设置页's `models.directory` rides the macOS CLI
@@ -269,6 +272,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=2 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9 (drift), android.mic.plane.audit 4/4 (drift) | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11, mic.plane.audit 6/6 | ✓ | ✓ | ✓ | 1 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs

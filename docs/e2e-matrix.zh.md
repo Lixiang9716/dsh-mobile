@@ -14,9 +14,9 @@
 > openai-client/partial-json/slot-registry 各 5/648、string-decoder 7/648；
 > 新 CLI 腿 `shim.exposure-probe` 在真实引擎上压这五张脸（8/8，目录
 > `runtime/spike/artifacts/macos-cli-shim-exposure-probe/`；先证伪——
-> 打断 string-decoder 的尾字节持有即变红）。总量对本树重跑（71 目录 /
-> 145 verdict / 70 of 70 scenario id 绿覆盖 / 62 manifest），同时并入
-> 自上一条注记重跑之后落地的 BLE + 相机 + parity 目录。
+> 打断 string-decoder 的尾字节持有即变红）。总量对本树重跑（73 目录 /
+> 149 verdict / 73 of 73 scenario id 绿覆盖 / 66 manifest），同时并入
+> 自上一条注记重跑之后落地的 BLE + 相机 + 麦克风 + parity 目录。
 >
 > **时效性**：本矩阵反映麦克风面变更（2026-09-30）：能力面的 microphone
 > 面在移动宿主上落地 —— 一个平台中立 scenario `mic.plane` 逐宿主驱动
@@ -87,10 +87,10 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 71 |
-| 已提交 verdict（145 绿） | 145 |
-| 至少有一份已提交证据的 scenario | 70 / 70 个不同的 scenario id（62 个 manifest） |
-| 已验证 PNG 的截图 | 158 |
+| 证据目录 | 73 |
+| 已提交 verdict（149 绿） | 149 |
+| 至少有一份已提交证据的 scenario | 73 / 73 个不同的 scenario id（66 个 manifest） |
+| 已验证 PNG 的截图 | 160 |
 | 验收标准缺口 | 8 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
@@ -140,11 +140,14 @@
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
 | `socket.seam` | — | — | — | 17/17 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
+| `mic.plane` | 11/11 | 9/9（漂移） | — | — |
+| `mic.plane.audit` | 6/6 | — | — | — |
+| `android.mic.plane.audit` | — | 4/4（漂移） | — | — |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
 
-70 个不同的 scenario id（62 个 manifest——`m2.llm` 有两个：19 事件的
+73 个不同的 scenario id（66 个 manifest——`m2.llm` 有两个：19 事件的
 scripted-SSE CLI 分支与 14 事件的设备分支）全部至少有一份绿色已提交证据；
 `m2.session` 在全部四个主机上绿色，models 设置页的 `models.directory` 由
 macOS CLI 列承载（api-coverage-probe 所带的 coverage 面断言，现已一对一
@@ -218,6 +221,8 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17（回环缝：真 TCP echo + 半关闭、生成的 /bin/bash 子进程经 /dev/tcp 拨测在测服务器、两条越权拒绝腿；审计门钉住 listen=3 connect=2 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9（漂移）、android.mic.plane.audit 4/4（漂移） | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11、mic.plane.audit 6/6 | ✓ | ✓ | ✓ | 1 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，
 既非交付物也非输入）：CLI 主机目录本就无头，
