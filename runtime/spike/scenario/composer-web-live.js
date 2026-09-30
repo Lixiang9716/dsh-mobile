@@ -377,6 +377,15 @@ const probeSettingsPlugins = async () => {
     clientEntries: stagedIds.length,
     presets: snapshot.agentPresets.length,
     presetRows: snapshot.agentPresets.reduce((sum, p) => sum + (p.rows?.length ?? 0), 0),
+    // The tool rows' on-device mount proof (T-0048 item 3): the composed
+    // compositions' rows whose module is one of the staged tool packages,
+    // by name — a row exists here only if its preset composed, which fails
+    // loud (broken) when the package is not staged/resolvable.
+    toolRows: [...new Set(snapshot.agentPresets
+      .flatMap((p) => p.rows ?? [])
+      .map((r) => r.moduleName ?? r.name ?? r.id)
+      .filter((n) => typeof n === 'string' && n.startsWith('@deepseek-ai/dsh-tool-')))]
+      .sort(),
     spineSample: snapshot.entries
       .filter((e) => ['agent-loop', 'llm', 'shell-wasm', 'shell-ish'].includes(e.entryId))
       .map((e) => ({ id: e.entryId, enabled: e.enabled, fiberPhase: e.fiberPhase })),

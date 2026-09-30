@@ -570,6 +570,14 @@ napi_value host_eval(napi_env env, napi_callback_info info) {
     }
     int rc = dsh_spike_eval(g_phase.spike, entry, source);
     free(source);
+    if (rc != 0) {
+        // The eval exception text dies with dsh_spike_error unless someone
+        // reads it — an eval failure with no named cause starves the leg's
+        // whole deadline looking like a hang (the parity leg's 2026-09-30
+        // lesson: "scenario eval failed" and nothing else).
+        OH_LOG_ERROR(LOG_APP, "phase: eval %{public}s failed: %{public}s",
+            entry, dsh_spike_error(g_phase.spike));
+    }
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     napi_value out;
     napi_create_int32(env, status, &out);

@@ -76,6 +76,14 @@ const ENTRY_LLM: string = 'scenario/llm-live-stream.js';
  * runtime.config bus delivery to the driver. */
 const SCENARIO_SUITE: string = 'upstream.suite';
 const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
+/** The upstream-parity leg (upstream.parity): the canonical parity scenario
+ * (already staged in the rawfile closure) boots the vendored spine against
+ * the leg's in-app scripted mock route — the runtime.config bus delivery
+ * carries {mockLlmUrl, apiKey, containerRoot}, the exact handoff the
+ * scenario's hostFacts() awaits (the Android host's armed-MockLlmRoute
+ * shape). No web client mounts: the scenario drives the spine only. */
+const SCENARIO_PARITY: string = 'upstream.parity';
+const ENTRY_PARITY: string = 'scenario/upstream-parity.js';
 
 const SCENARIO_DEVICE_PLANE: string = 'harmony.device-plane';
 const ENTRY_DEVICE_PLANE: string = 'scenario/device-plane.js';
@@ -160,6 +168,7 @@ export class HostPhase {
   private llmLeg: boolean = false;
   private devicePlaneLeg: boolean = false;
   private cameraPlaneLeg: boolean = false;
+  private parityLeg: boolean = false;
   /** The whale creation-client leg: session-mock-llm over the whale page —
    * the client id in the mount records, host.info on page connect (the
    * scenario never reads host.seed), and the slot.ack record this leg
@@ -204,6 +213,7 @@ export class HostPhase {
     this.entry = ENTRY_BINDING;
     this.llmLeg = false;
     this.whaleLeg = false;
+    this.parityLeg = false;
     this.slotAcked = false;
     this.connectedLogged = false;
     this.hostInfoDelivered = false;
@@ -257,6 +267,7 @@ export class HostPhase {
     this.entry = ENTRY_DEVICE_PLANE;
     this.llmLeg = false;
     this.whaleLeg = false;
+    this.parityLeg = false;
     this.devicePlaneLeg = true;
     this.slotAcked = false;
     this.connectedLogged = false;
@@ -303,6 +314,34 @@ export class HostPhase {
       'type': 'runtime.config',
       'spec': `upstream-tests/${spec}`,
       'containerRoot': bundleRoot,
+    }));
+  }
+
+  /** The upstream-parity leg: the canonical parity scenario as the entry,
+   * then the runtime.config bus delivery the scenario's hostFacts() awaits —
+   * the in-app scripted mock route (ParityMockRoute) as {mockLlmUrl, apiKey}
+   * plus the profile container root. The delivery lands after hostEval
+   * returns (the driver installs its bus subscription during eval — the
+   * beginSuite ordering). */
+  beginParity(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string, mockLlmUrl: string,
+    mockLlmKey: string): void {
+    this.scenario = SCENARIO_PARITY;
+    this.carrierScenario = SCENARIO_PARITY;
+    this.entry = ENTRY_PARITY;
+    this.llmLeg = false;
+    this.parityLeg = true;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+    const status = hostEval(PHASE_ID, ENTRY_PARITY);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'parity leg: scenario eval failed');
+      return;
+    }
+    hostBusDeliver(PHASE_ID, JSON.stringify({
+      'type': 'runtime.config',
+      'mockLlmUrl': mockLlmUrl,
+      'apiKey': mockLlmKey,
+      'containerRoot': fsRoot + '/parity',
     }));
   }
 
@@ -354,7 +393,7 @@ export class HostPhase {
 
   onCarrierListening(port: number): void {
     this.carrierPort = port;
-    if (this.devicePlaneLeg || this.cameraPlaneLeg) {
+    if (this.devicePlaneLeg || this.cameraPlaneLeg || this.parityLeg) {
       // No web client mounts on this leg (the scenario drives primitives
       // only) — carrier-side selection records would pin records no page
       // produces; the manifest carries the scenario's own records alone.

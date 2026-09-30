@@ -1,0 +1,25 @@
+{"seq":0,"type":"agent/inbox/spliced"}
+{"seq":1,"type":"turn/start","turn":1}
+{"seq":2,"type":"agent/inbox/spliced"}
+{"seq":3,"type":"step/start","turn":1,"step":1}
+{"seq":4,"type":"system/message","plugin":"@deepseek-ai/dsh-system-prompt"}
+{"seq":5,"type":"user/message","blocks":[{"type":"text","text":"Say hello"}],"source":"user"}
+{"seq":6,"type":"request/header","reason":"initial"}
+{"seq":7,"type":"request/context"}
+{"seq":8,"type":"assistant/message","role":"assistant","blocks":[{"type":"text","text":"Hello from upstream"}],"provider":"mock","model":"mock-1"}
+{"seq":9,"type":"step/end","turn":1,"step":1}
+{"seq":10,"type":"turn/end","turn":1,"reason":"completed"}
+{"seq":11,"type":"agent/inbox/spliced"}
+{"seq":12,"type":"turn/start","turn":2}
+{"seq":13,"type":"agent/inbox/spliced"}
+{"seq":14,"type":"step/start","turn":2,"step":1}
+{"seq":15,"type":"user/message","blocks":[{"type":"text","text":"Track the parity check"}],"source":"user"}
+{"seq":16,"type":"assistant/message","role":"assistant","blocks":[{"type":"tool-call","id":"mock-call-1","name":"todo_write","arguments":"{\"todos\":[{\"content\":\"Track the parity check\",\"status\":\"in_progress\"}]}"}],"provider":"mock","model":"mock-1"}
+{"seq":17,"type":"tool/call","tool":"todo_write","arguments":"{\"todos\":[{\"content\":\"Track the parity check\",\"status\":\"in_progress\"}]}"}
+{"seq":18,"type":"todo/write","todos":[{"content":"Track the parity check","status":"in_progress"}]}
+{"seq":19,"type":"tool/result","role":"user","blocks":[{"type":"tool-result","toolCallId":"mock-call-1","text":"Updated todo list: 0 pending, 1 in progress, 0 completed."}]}
+{"seq":20,"type":"step/end","turn":2,"step":1}
+{"seq":21,"type":"step/start","turn":2,"step":2}
+{"seq":22,"type":"assistant/message","role":"assistant","blocks":[{"type":"text","text":"Hello from upstream"}],"provider":"mock","model":"mock-1"}
+{"seq":23,"type":"step/end","turn":2,"step":2}
+{"seq":24,"type":"turn/end","turn":2,"reason":"completed"}
