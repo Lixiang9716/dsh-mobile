@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Full cold vendor proof (fresh clone, CI invocation shapes)
         # The proof clones the checked-out commit itself (vendor trees are
         # untracked by design, so its scratch clone is genuinely cold) and

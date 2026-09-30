@@ -59,13 +59,13 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Same unpacked-cache pattern as dev/harmonyos: xcodebuild uses
       # -derivedDataPath hosts/ios/DerivedData so incremental builds restore
       # from this cache (SwiftPM + module cache).
       - name: Cache DerivedData
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: hosts/ios/DerivedData
           # Keyed on the SOURCES, not a frozen literal. `dev-ios-deriveddata-v2`
@@ -160,7 +160,7 @@ jobs:
         # re-verify sha256 over whatever lands: a restored tree is verified, not
         # trusted. Single-line key on purpose — a folded scalar can resolve to a
         # literal and give a cache that never hits.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -415,7 +415,7 @@ jobs:
 
       - name: Upload artifacts
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: m1-spike-ios
           path: |

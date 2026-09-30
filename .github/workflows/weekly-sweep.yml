@@ -33,8 +33,8 @@ jobs:
     # ~3x headroom on that estimate under GitHub's 360 cap.
     timeout-minutes: 240
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Cache the vendored trees
@@ -45,7 +45,7 @@ jobs:
         # exactly what moved — the cache is an accelerator, never a source of
         # truth. dsh-tests (the ~25 MB codeload tarball) and the ~190 npm
         # test faces are the cold-start cost worth caching.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -202,7 +202,7 @@ jobs:
           PY
       - name: Upload the sweep report
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: upstream-suite-sweep
           retention-days: 28

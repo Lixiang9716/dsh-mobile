@@ -23,12 +23,12 @@ jobs:
     # A hung gate dies in minutes, not in GitHub's 6-hour default.
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # Full history: note-presence's auto base walks back from HEAD
           # (upstream..HEAD, else HEAD~1) and needs the commits present.
           fetch-depth: 0
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install govrail
@@ -42,7 +42,7 @@ jobs:
         # ensure scripts — cached the same way the platform workflows do,
         # keyed on the pin tables themselves. v5: v4 is forced onto Node 24
         # and annotates every run with a deprecation warning.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -87,14 +87,14 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install govrail
         run: pip install govrail==0.48.0
       - name: Cache the engine + ish vendor trees
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
