@@ -30,11 +30,25 @@ sh vendor/ensure-dsh.sh
 # 2. build the spike host when the binary is missing.
 [ -x build/dsh-spike-cli ] || sh host/build.sh
 
-# 3. run the scenario and verify one-to-one.
-./build/dsh-spike-cli . scenario/shim-exposure-probe.js > logs-shim-exposure-probe.txt
+# 3. run the scenario and verify one-to-one. DSH_MODULE_MANIFEST rides the
+#    SAME run on purpose (default-off switch; the env only opens the
+#    side-channel file — the log is unchanged): the committed manifest.txt is
+#    the survey mechanism's standing in-repo proof, every line a shim load.
 mkdir -p "$ART_DIR"
+DSH_MODULE_MANIFEST="$ART_DIR/manifest.txt" \
+    ./build/dsh-spike-cli . scenario/shim-exposure-probe.js > logs-shim-exposure-probe.txt
 cp logs-shim-exposure-probe.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-shim-exposure-probe.txt > "$ART_DIR/scenario.jsonl"
+# The manifest must be real (rule 5): non-empty, every line a shim load.
+[ -s "$ART_DIR/manifest.txt" ] || {
+    echo "e2e: FAIL — DSH_MODULE_MANIFEST produced no manifest (switch broken?)" >&2
+    exit 1
+}
+if grep -qv '^upstream/shims/' "$ART_DIR/manifest.txt"; then
+    echo "e2e: FAIL — manifest carries a non-shim line:" >&2
+    grep -v '^upstream/shims/' "$ART_DIR/manifest.txt" | head -3 >&2
+    exit 1
+fi
 node "$ROOT/test/e2e/check.mjs" \
     --manifest "$ROOT/test/e2e/scenarios/shim-exposure-probe.json" \
     --log logs-shim-exposure-probe.txt \
@@ -57,7 +71,8 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "node:sqlite round-trips over :memory: through the host sqlite3 seam: create/insert/get/iterate with node's no-row-is-undefined face (the W6-V distinction), the suite pressing this shim only 3/648 runs",
     "node:string_decoder holds a multi-byte sequence split 2/1 across chunk writes (no U+FFFD for a merely-split char), decodes a stray continuation byte to U+FFFD, and rejects non-utf8 labels loud — 7/648 spec runs",
     "partial-json completes truncated LLM wire JSON at four truncation shapes (object/array/escaped-quote/dangling-escape) and passes literals through; openai-client streams an SSE body with a frame split mid-JSON into parsed chunks ending at [DONE] and throws the SDK's status/error shape on 401 — 5/648 spec runs each",
-    "slot-registry mounts through cordis (ctx.slots live), rejects the second install() boot-once, refuses child keys at ctx-level renderSlot, and refuses an unregistered root — the UI mount's guard faces, 5/648 spec runs"
+    "slot-registry mounts through cordis (ctx.slots live), rejects the second install() boot-once, refuses child keys at ctx-level renderSlot, and refuses an unregistered root — the UI mount's guard faces, 5/648 spec runs",
+    "the survey mechanism itself, with this very run: DSH_MODULE_MANIFEST=<artifacts>/manifest.txt makes the loader record every resolved shim load (the file is committed beside this receipt; every line matches upstream/shims/)"
   ],
   "checker": "test/e2e/scenarios/shim-exposure-probe.json",
   "events": $EVENTS,
