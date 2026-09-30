@@ -1,0 +1,19 @@
+{
+  "title": "Re-reconcile e2e-matrix totals after main moved (#273) and land PR 276 green",
+  "created": "2026-09-30T11:31:58+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "Rebase onto origin/main, conflicts resolved taking both sides",
+    "Totals/currency/README counts reconciled to the new checker inventory; shim-exposure-probe row added both languages; cell verifier 0 mismatches",
+    "Push, dispatch, gates green on final head sha, mergeable"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0080"
+}
