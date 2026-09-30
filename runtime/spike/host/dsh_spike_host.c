@@ -776,6 +776,25 @@ static int dsh_require_resolve(const char *rel, const char *request, char *out, 
     return 1;
 }
 
+/* Shim-exposure manifest (DIAGNOSTIC, default OFF): when the process env
+ * names DSH_MODULE_MANIFEST, every resolved load under upstream/shims/
+ * appends one path line to that file — the raw evidence the shim exposure
+ * survey aggregates (tools/shim-exposure.mjs). Called from BOTH load
+ * channels the shims ride: the ESM loader (dsh_module_loader, the 86
+ * top-level shim modules) and the CJS bundle-read seam (js_bundle_require,
+ * the shims/sharp package internals the userland CJS loader evaluates).
+ * Append failures are swallowed on purpose: a diagnostic must never fail a
+ * load, and an unset or empty DSH_MODULE_MANIFEST costs one getenv. */
+static void dsh_manifest_shim(const char *rel) {
+    if (strncmp(rel, "upstream/shims/", 15) != 0) return;
+    const char *path = getenv("DSH_MODULE_MANIFEST");
+    if (!path || *path == 0) return;
+    FILE *f = fopen(path, "a");
+    if (!f) return;
+    fprintf(f, "%s\n", rel);
+    fclose(f);
+}
+
 /* JS global __dshBundleRequire(base, request): the node:module seam's file
  * read. `base` is the importing module's name (a bare specifier — resolved
  * through the same bare map the loader owns, so the specifier→vendor mapping
@@ -852,6 +871,7 @@ static JSValue js_bundle_require(JSContext *ctx, JSValueConst this_val,
         JS_ThrowOutOfMemory(ctx);
         goto fail;
     }
+    dsh_manifest_shim(resolved);
     size_t len = 0;
     char *text = dsh_read_file(abs, &len);
     free(abs);
@@ -1410,6 +1430,7 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
         JS_ThrowOutOfMemory(ctx);
         return NULL;
     }
+    dsh_manifest_shim(rel);
     JSModuleDef *m = dsh_load_module(ctx, abs, name, rel);
     free(abs);
     return m;

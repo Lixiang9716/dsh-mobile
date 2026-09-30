@@ -6,6 +6,18 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 shim 曝光测绘 + 探针腿（2026-09-30，T-0078）：
+> 加载器现在能点名每一次 shim 加载（`DSH_MODULE_MANIFEST`，默认关闭），
+> 对全部 648 个转译上游 spec 的 sweep 测绘发现：86 个 shim 的零曝光集合
+> 恰好是 1 个（`dsh-session-persistence.js`——被 vendored 包收割 orphan 掉
+> 的加载映射），基线之外的薄尾巴是 node-sqlite 3/648、
+> openai-client/partial-json/slot-registry 各 5/648、string-decoder 7/648；
+> 新 CLI 腿 `shim.exposure-probe` 在真实引擎上压这五张脸（8/8，目录
+> `runtime/spike/artifacts/macos-cli-shim-exposure-probe/`；先证伪——
+> 打断 string-decoder 的尾字节持有即变红）。总量对本树重跑（73 目录 /
+> 149 verdict / 73 of 73 scenario id 绿覆盖 / 66 manifest），同时并入
+> 自上一条注记重跑之后落地的 BLE + 相机 + 麦克风 + parity 目录。
+>
 > **时效性**：本矩阵反映麦克风面变更（2026-09-30）：能力面的 microphone
 > 面在移动宿主上落地 —— 一个平台中立 scenario `mic.plane` 逐宿主驱动
 > （描述符 iOS 25 / Android 26 / HarmonyOS 18；iOS 与 Android 真跑 armed
@@ -75,11 +87,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 66 |
-| 已提交 verdict（136 绿） | 136 |
-| 至少有一份已提交证据的 scenario | 67 / 67 个不同的 scenario id（53 个 manifest） |
-| 已验证 PNG 的截图 | 158 |
-| 验收标准缺口 | 9 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
+| 证据目录 | 73 |
+| 已提交 verdict（149 绿） | 149 |
+| 至少有一份已提交证据的 scenario | 73 / 73 个不同的 scenario id（66 个 manifest） |
+| 已验证 PNG 的截图 | 160 |
+| 验收标准缺口 | 8 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -98,8 +110,12 @@
 | `b1.official-web.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
 | `b4.write.live` | 43/43 | — | — | — |
+| `ble.plane` | 16/16, 8/8 | 16/16, 8/8 | — | — |
+| `ble.plane.audit` | 8/8, 4/4 | 8/8, 4/4 | — | — |
 | `camera.plane` | 6/6 | 8/8 | — | — |
 | `camera.plane.audit` | 3/3 | 5/6 | — | — |
+| `device.plane` | 16/16, 16/16 | 15/15, 15/15 | 13/13 | — |
+| `device.plane.audit` | 14/23, 14/23 | 13/22, 13/22 | — | — |
 | `m1.spike.boot` | 9/9（漂移）, 7/7 | 9/9（漂移）, 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9（漂移）, 7/7, 7/7 | 9/9（漂移） |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
@@ -122,11 +138,16 @@
 | `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 16/16 | — | — | — |
 | `upstream.parity` | 12/37 + 差分 25/25 | 13/13 + 25/25 | — | 12/37 + 25/25 |
+| `socket.seam` | — | — | — | 17/17 |
+| `shim.exposure-probe` | — | — | — | 8/8 |
+| `mic.plane` | 11/11 | 9/9（漂移） | — | — |
+| `mic.plane.audit` | 6/6 | — | — | — |
+| `android.mic.plane.audit` | — | 4/4（漂移） | — | — |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
 
-43 个不同的 scenario id（35 个 manifest——`m2.llm` 有两个：19 事件的
+73 个不同的 scenario id（66 个 manifest——`m2.llm` 有两个：19 事件的
 scripted-SSE CLI 分支与 14 事件的设备分支）全部至少有一份绿色已提交证据；
 `m2.session` 在全部四个主机上绿色，models 设置页的 `models.directory` 由
 macOS CLI 列承载（api-coverage-probe 所带的 coverage 面断言，现已一对一
@@ -151,6 +172,11 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（模拟器腿，设备内 MockLlmRoute） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
+| `hosts/android/artifacts/ble-mock` | Android | ble.plane.audit 8/8, ble.plane 16/16 | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/ble-skip` | Android | ble.plane.audit 4/4, ble.plane 8/8（radio-absent 跳过面） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/camera-plane` | Android | camera.plane.audit 5/6（repeat 感知），camera.plane 8/8（虚拟相机真实连拍） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/device-plane` | Android | device.plane.audit 13/22（repeat 感知），device.plane 15/15 | ✓ | ✓ | ✓ | 4 |
+| `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane.audit 13/22, device.plane 15/15（模拟器矩阵的驱动腿） | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -162,9 +188,15 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 | ✓ | ✓ | ✓ | 2 |
 | `hosts/harmony/artifacts/m5-m2-llm` | HarmonyOS | m2.llm.carrier 7/4 **FAIL**, m2.llm 14/8 **FAIL**（配额阻塞，属有意提交——缺口 8/9） | ✓ | ✓ | ✓（`blocked-on-quota`） | 1 |
 | `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
+| `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 43/43 | ✓ | ✓ | ✗（缺口 1） | 3 |
+| `hosts/ios/artifacts/ble-mock` | iOS | ble.plane.audit 8/8, ble.plane 16/16 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/ble-skip` | iOS | ble.plane.audit 4/4, ble.plane 8/8（radio-absent 跳过面） | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/camera-plane` | iOS | camera.plane.audit 3/3, camera.plane 6/6（模拟器如实 capture-unavailable 姿态） | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/device-plane` | iOS | device.plane.audit 14/23（repeat 感知），device.plane 16/16 | ✓ | ✓ | ✓ | 6 |
+| `hosts/ios/artifacts/simulator-matrix/device-plane` | iOS | device.plane.audit 14/23, device.plane 16/16（模拟器矩阵的驱动腿） | ✓ | ✓ | ✓ | 5 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
@@ -187,6 +219,10 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 17/17（回环缝：真 TCP echo + 半关闭、生成的 /bin/bash 子进程经 /dev/tcp 拨测在测服务器、两条越权拒绝腿；审计门钉住 listen=3 connect=2 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9（漂移）、android.mic.plane.audit 4/4（漂移） | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11、mic.plane.audit 6/6 | ✓ | ✓ | ✓ | 1 |
 
 零截图在任何目录都是合规的（标准第 2 条使截图只是可选的调试辅助，
 既非交付物也非输入）：CLI 主机目录本就无头，
@@ -195,7 +231,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 
 ## 已知缺口（如实列出）
 
-本树上有九项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
+本树上有八项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
 非零码退出；下方这张表就是**已知缺口登记表（known-gaps register）**，
 它让同一次运行可以被接成门禁。
 
@@ -221,6 +257,7 @@ capture 的记录条数、而非匹配条数——`14/171`（Android）与 `14/1
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android 工作流（#72） | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
+| VERDICT_MALFORMED | hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json | 相机工作流（#252） | 重跑 DSH_ANDROID_SERIAL=<模拟器> hosts/android/ci/run-camera-plane.sh 以再生成自洽的 verdict（已提交文件记录 pass=true expected=5 logged=6——BLE 线变基时发现的继承红） |
 
 （检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
 是源；本表为读者保留等价的中文渲染。）

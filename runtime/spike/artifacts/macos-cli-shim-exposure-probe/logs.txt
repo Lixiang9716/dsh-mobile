@@ -1,0 +1,16 @@
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"main begin","data":[{"legs":5}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/start","legs":5,"survey":"DSH_MODULE_MANIFEST + tools/shim-exposure.mjs"}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"session-persistence leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/session-persistence","errorClasses":4,"verdict":"carry name+sessionId+message"}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"sqlite leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/sqlite","transport":":memory:","roundtrip":"insert+get+iterate ok","noRowIsUndefined":true}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"string-decoder leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/string-decoder","splitChar":"你","headHeld":true,"invalidByte":"\"�\"","labelWall":"non-utf8 rejected"}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"partial-json leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/partial-json","truncatedObject":"{\"text\":\"he\"}","truncatedArray":"{\"items\":[1,2]}","escapedQuote":"{\"text\":\"he\\\"llo\"}","danglingEscape":"{\"text\":\"he\"}","literalPassThrough":true,"wholePassThrough":true}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"openai-client leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/openai-client","sseChunks":2,"midFrameSplitJoined":true,"withResponseStatus":200,"errorStatus":401,"errorBodyCarried":true}]}
+dsh.spike.log: {"level":"debug","module":"probe.shim-exposure","message":"slot-registry leg begin","data":[{}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/slots","serviceProvided":"ctx.slots live","installBootOnce":"second install rejected","ctxLevelOnly":"child key rejected","registrationGuard":"unregistered root rejected"}]}
+dsh.spike.log: {"level":"info","module":"probe.shim-exposure","message":"e2e","data":[{"scenario":"shim.exposure-probe","event":"probe/complete","status":"pass","legs":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}

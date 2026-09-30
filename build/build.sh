@@ -185,7 +185,8 @@ stage_test() {
             runtime/spike/ci/run-upstream-boot-e2e.sh
             runtime/spike/ci/run-settings-surfaces-e2e.sh
             runtime/spike/ci/run-open-design-e2e.sh
-            runtime/spike/ci/run-office-e2e.sh ;;
+            runtime/spike/ci/run-office-e2e.sh
+            runtime/spike/ci/run-shim-exposure-probe.sh ;;
         *)
             echo "::error::build: test: unknown platform '$1' (want ios|android|harmony|core)" >&2
             return 1 ;;
