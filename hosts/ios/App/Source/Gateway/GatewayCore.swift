@@ -72,7 +72,8 @@ struct GatewayManifest {
     /// holds the flag when any required entry names the primitive exactly,
     /// with a major suffix, or through the primitive's capability FAMILY
     /// flag (v1.5.0: one flag may gate two primitives — `clipboard` gates
-    /// both clipboard rows).
+    /// both clipboard rows; the capability plane's `microphone` gates the
+    /// mic pair, v1.10.0 candidate).
     private static let familyFlags: [String: String] = [
         "clipboardRead": "clipboard",
         "clipboardWrite": "clipboard",
@@ -89,6 +90,8 @@ struct GatewayManifest {
         "bleWrite": "ble",
         "bleSubscribe": "ble",
         "bleUnsubscribe": "ble",
+        "micStart": "microphone",
+        "micStop": "microphone",
     ]
 
     func grants(primitive: String) -> Bool {
@@ -126,6 +129,7 @@ final class GatewayCore {
         "cameraCapture",
         "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
         "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
+        "micStart", "micStop",
     ]
     /// The capability plane's PHASED rows (proposal v1.10.0): shapes on
     /// record, implementations follow as their own changes — declared
@@ -147,6 +151,7 @@ final class GatewayCore {
         _ = ClipboardPrimitives(core: self)
         _ = CameraPrimitives(core: self, fs: fs)
         _ = BLEPrimitives(core: self, radio: bleRadio ?? SystemBleRadio())
+        _ = MicPrimitives(core: self)
         return NotifyPrimitive(core: self)
     }
 
@@ -268,7 +273,10 @@ final class GatewayCore {
     }
 
     /// The wrapper's one audit line + settle hop (extracted so the closure
-    /// stays inside the indent budget).
+    /// stays inside the indent budget). BOTH branches drain the staged
+    /// detail — a failure settle that left it pending would leak into the
+    /// NEXT call's audit line (measured: micStart's unavailable left its
+    /// staged detail on micStop's row).
     private func settleResult(
         _ callId: Int, name: String, result: Result<Any, GatewayError>
     ) {
@@ -278,7 +286,8 @@ final class GatewayCore {
                   detail: takeAuditDetail())
             settle?(callId, true, Self.encode(payload))
         case .failure(let error):
-            audit(primitive: name, verdict: "granted", outcome: error.code)
+            audit(primitive: name, verdict: "granted", outcome: error.code,
+                  detail: takeAuditDetail())
             settle?(callId, false, Self.errorJSON(error))
         }
     }

@@ -6,6 +6,19 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the mic-face change (2026-09-30):
+> the capability plane's microphone face is live on the mobile hosts — one
+> platform-neutral scenario `mic.plane` driven per host (descriptor 25 iOS /
+> 26 Android / 18 HarmonyOS declared; the armed ladder with real PCM frames
+> ran on iOS and Android — arm, frames, the stop record's duration/bytes,
+> the exactly-once end, idempotence, the unknown-id leg), with receipts in
+> `hosts/{ios,android}/artifacts/mic-plane/`; the HarmonyOS leg is D-g (the
+> runner + drive are ready; this machine's emulator never attaches a hdc
+> target, so no harmony receipt is claimed). The iOS arm is bounded by an
+> 8 s fence that answers the honest `unavailable` where the host audio
+> route is wedged (the manifest re-pins to whichever shape the run
+> produced — the pasteboard posture).
+>
 > **Currency**: this matrix reflects the device-plane change (2026-09-27):
 > the v1.5.0 platform-SDK surface is live on all three mobile hosts — one
 > platform-neutral scenario `device.plane` driven per host (descriptor 22

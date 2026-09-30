@@ -6,6 +6,16 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映麦克风面变更（2026-09-30）：能力面的 microphone
+> 面在移动宿主上落地 —— 一个平台中立 scenario `mic.plane` 逐宿主驱动
+> （描述符 iOS 25 / Android 26 / HarmonyOS 18；iOS 与 Android 真跑 armed
+> 阶梯、带真实 PCM 帧 —— arm、帧流、stop 记录的时长/字节数、恰好一次的
+> end、幂等与未知 id 腿），receipt 在
+> `hosts/{ios,android}/artifacts/mic-plane/`；HarmonyOS 腿走 D-g（runner
+> 与 drive 已备好；本机的模拟器从未挂上 hdc target，故不声明 harmony
+> receipt）。iOS 的 arm 由 8 秒围栏兜底：宿主音频路由卡死时诚实回答
+> `unavailable`（manifest 按当次实跑形状重钉 —— pasteboard 姿态）。
+
 > **时效性**：本矩阵反映能力面相机变更（2026-09-30）：`camera.plane` +
 > `camera.plane.audit` 在 iOS（模拟器的如实 capture-unavailable 姿态，目录
 > `hosts/ios/artifacts/camera-plane/`）与 Android（模拟器虚拟相机真实连拍

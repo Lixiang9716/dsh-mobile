@@ -1,0 +1,4 @@
+09-30 11:02:19.763  4886  4948 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T03:02:19.761132Z","primitive":"micStart","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"}}
+09-30 11:02:20.324  4886  4948 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T03:02:20.323922Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"durationMs":590,"bytes":12800}}
+09-30 11:02:20.371  4886  4948 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T03:02:20.371442Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}
+09-30 11:02:20.373  4886  4948 I dsh.spike.audit: dsh.gateway.audit: {"ts":"2026-09-30T03:02:20.373365Z","primitive":"micStop","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok"}

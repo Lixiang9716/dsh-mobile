@@ -60,9 +60,13 @@ import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
 import { CameraPrimitives } from './CameraPrimitives';
 import { BlePrimitives } from './BlePrimitives';
+import { MicPrimitives } from './MicPrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
+/** The spike bundle's caller identity (the manifest.json id) — the audit
+ * records' caller field. */
+const CALLER_ID: string = 'dsh.spike.scenario';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'harmony.capability-binding';
 const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';
@@ -94,6 +98,11 @@ const SCENARIO_CAMERA_PLANE: string = 'harmony.camera-plane';
 const ENTRY_CAMERA_PLANE: string = 'scenario/camera-plane.js';
 const SCENARIO_BLE: string = 'harmony.ble.plane';
 const ENTRY_BLE: string = 'scenario/ble-plane.js';
+/** The capability plane's microphone leg (v1.10.0 candidate, ONE launch,
+ * its own scenario id): micStart/micStop + the mic.frame channel over the
+ * binding machinery — the device-plane leg's shape (no web client mounts). */
+const SCENARIO_MIC_PLANE: string = 'harmony.mic-plane';
+const ENTRY_MIC_PLANE: string = 'scenario/mic-plane.js';
 /** The whale creation-client mount (the iOS session-mock-llm drive's
  * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
  * web-client-whale page — the session-mock scenario (notes slot, two
@@ -108,18 +117,18 @@ export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-whale/web';
  * E2E glue; see the file's header for why the C side must create it). */
 const ENTRY_STAGE: string = 'e2e-stage.js';
 
-/** Binding RuntimeDescriptor: the full serving table (nine v0 primitives
- * plus the six v1.5.0 device-plane rows), none unavailable (conformance §7 —
- * keep in sync with the C fallback in gateway_smoke.cpp). */
+/** Binding RuntimeDescriptor: the full serving table (nine v0 primitives,
+ * the six v1.5.0 device-plane rows, and the capability plane's mic pair —
+ * v1.10.0 candidate), none unavailable (conformance §7 — keep in sync with
+ * the C fallback in gateway_smoke.cpp). */
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
   '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
-  '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
+  '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe",' +
+  '"micStart","micStop"],' +
   '"unavailable":["cameraRecordStart","cameraRecordStop"]}';
-  '"keepAwake","bleScanStart","bleScanStop","bleConnect","bleDisconnect",' +
-  '"bleRead","bleWrite","bleSubscribe","bleUnsubscribe"],' +
   '"unavailable":[]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
@@ -194,6 +203,7 @@ export class HostPhase {
   private device: DevicePlanePrimitives | null = null;
   private cameraKit: CameraPrimitives | null = null;
   private ble: BlePrimitives | null = null;
+  private mic: MicPrimitives | null = null;
 
   static getInstance(): HostPhase {
     if (HostPhase.instance === null) {
@@ -248,7 +258,7 @@ export class HostPhase {
     this.entry = ENTRY_LLM;
     this.llmLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_STAGE);
+    const status: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'llm leg: staging eval failed');
     }
@@ -258,7 +268,7 @@ export class HostPhase {
    * scenario drives primitives only), so the hello-gated eval never fires —
    * the runner calls this directly once the carrier is up. */
   evalEntryDirect(): void {
-    const status = hostEval(PHASE_ID, this.entry);
+    const status: number = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed (device-plane leg)');
     }
@@ -324,6 +334,24 @@ export class HostPhase {
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
+  /** The capability plane's microphone leg (ONE launch, its own scenario
+   * id): the device-plane leg's shape — no web client mounts (the scenario
+   * drives primitives only), the runner calls evalEntryDirect once the
+   * carrier is up. */
+  beginMicPlane(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_MIC_PLANE;
+    this.carrierScenario = SCENARIO_MIC_PLANE;
+    this.entry = ENTRY_MIC_PLANE;
+    this.llmLeg = false;
+    this.whaleLeg = false;
+    this.devicePlaneLeg = true;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   /** The upstream-suite leg: the driver scenario plus the runtime.config
    * bus delivery carrying the spec selection (bundle-root-relative) and the
    * container root. The delivery lands after hostEval returns — the driver
@@ -336,7 +364,7 @@ export class HostPhase {
     this.entry = ENTRY_SUITE;
     this.llmLeg = false;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_SUITE);
+    const status: number = hostEval(PHASE_ID, ENTRY_SUITE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'suite leg: driver eval failed');
       return;
@@ -403,6 +431,10 @@ export class HostPhase {
     if (this.approvalPresenter !== null) {
       this.cameraKit.setApprovalPresenter(this.approvalPresenter);
     }
+    this.mic = new MicPrimitives(ctx);
+    this.mic.setEmitter((eventJson: string): void => {
+      this.deliverEvent(eventJson);
+    });
     if (this.approvalPresenter !== null) {
       this.device.setApprovalPresenter(this.approvalPresenter);
     }
@@ -480,7 +512,7 @@ export class HostPhase {
   onPageHello(protocol: string): void {
     this.carrierLine('ws.connected', { 'protocol': protocol });
     this.connectedLogged = true;
-    const status = hostEval(PHASE_ID, this.entry);
+    const status: number = hostEval(PHASE_ID, this.entry);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: eval failed');
       return;
@@ -533,7 +565,7 @@ export class HostPhase {
       this.onSlotAck(msg);
       return;
     }
-    const status = hostBusDeliver(PHASE_ID, text);
+    const status: number = hostBusDeliver(PHASE_ID, text);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: bus deliver failed');
     }
@@ -602,7 +634,7 @@ export class HostPhase {
     if (!this.started) {
       return;
     }
-    const status = hostEvent(PHASE_ID, eventJson);
+    const status: number = hostEvent(PHASE_ID, eventJson);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: event failed: %{public}s', eventJson);
     }
@@ -621,7 +653,7 @@ export class HostPhase {
   }
 
   private settleCall(callId: number, payloadJson: string, ok: boolean): void {
-    const status = hostSettle(PHASE_ID, callId, ok, payloadJson);
+    const status: number = hostSettle(PHASE_ID, callId, ok, payloadJson);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'phase: settle failed for call %{public}d', callId);
     }
@@ -754,6 +786,10 @@ export class HostPhase {
       this.ble?.subscribe(callId, args, this.settleFn());
     } else if (name === 'bleUnsubscribe') {
       this.ble?.unsubscribe(callId, args, this.settleFn());
+    } else if (name === 'micStart') {
+      this.mic?.micStart(callId, args, this.settleFn());
+    } else if (name === 'micStop') {
+      this.mic?.micStop(callId, args, this.settleFn());
     } else {
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);
@@ -783,6 +819,70 @@ export class HostPhase {
     return (callId: number, payloadJson: string, ok: boolean): void => {
       this.settleCall(callId, payloadJson, ok);
     };
+  }
+
+  /** The mic rows' settle, audited (contract rule 4: every call carries ONE
+   * record — verdict granted, outcome ok | the error code, detail from the
+   * closed vocabulary: format/rate/frameMs/tag on start, refused / duration
+   * + bytes on stop — never payload contents). Emitted through the same
+   * carrier line the capture pulls, under the audit prefix. */
+  private auditSettleFn(name: string, args: string):
+    (callId: number, payloadJson: string, ok: boolean) => void {
+    return (callId: number, payloadJson: string, ok: boolean): void => {
+      this.micAuditLine(name, args, payloadJson, ok);
+      this.settleCall(callId, payloadJson, ok);
+    };
+  }
+
+  /** Builds the one audit record for a settled mic call. */
+  private micAuditLine(name: string, args: string, payloadJson: string,
+    ok: boolean): void {
+    let outcome: string = 'ok';
+    if (!ok) {
+      outcome = this.jsonField(payloadJson, 'code') ?? 'invalid';
+    }
+    let detail = '';
+    if (name === 'micStart') {
+      detail = '"detail":{"format":"' + (this.jsonField(args, 'format') ?? 'pcm-s16le')
+        + '","sampleRate":' + (this.jsonField(args, 'sampleRate') ?? '16000')
+        + ',"frameMs":' + (this.jsonField(args, 'frameMs') ?? '100')
+        + ',"tag":"' + (this.jsonField(args, 'tag') ?? '') + '"}';
+      if (payloadJson === 'null') {
+        detail = '"detail":{"refused":"os"}';
+      }
+    } else {
+      if (payloadJson.indexOf('"stopped":true') >= 0) {
+        detail = '"detail":{"durationMs":' + (this.jsonField(payloadJson, 'durationMs') ?? '0')
+          + ',"bytes":' + (this.jsonField(payloadJson, 'bytes') ?? '0') + '}';
+      }
+    }
+    const record = '{"ts":"' + new Date().toISOString() + '","primitive":"' + name
+      + '","caller":"' + CALLER_ID + '","verdict":"'
+      + (ok ? 'granted' : 'denied') + '","outcome":"' + outcome + '"'
+      + (detail === '' ? '' : ',' + detail) + '}';
+    hostCarrierLine(PHASE_ID, 'dsh.gateway.audit: ' + record);
+  }
+
+  /** One string field out of a flat JSON object (best effort — audit
+   * details never gate behavior). */
+  private jsonField(json: string, key: string): string | null {
+    const probe = '"' + key + '":';
+    const at = json.indexOf(probe);
+    if (at < 0) {
+      return null;
+    }
+    const rest = json.substring(at + probe.length);
+    const comma = rest.indexOf(',');
+    const brace = rest.indexOf('}');
+    let end = comma >= 0 && brace >= 0 ? Math.min(comma, brace) : (comma >= 0 ? comma : brace);
+    if (end < 0) {
+      end = rest.length;
+    }
+    let v = rest.substring(0, end).trim();
+    if (v.startsWith('"') && v.endsWith('"') && v.length >= 2) {
+      v = v.substring(1, v.length - 1);
+    }
+    return v === '' ? null : v;
   }
 
   private handleApproval(callId: number, title: string): void {

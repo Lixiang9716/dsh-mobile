@@ -325,7 +325,7 @@ export class OfficialServe {
     // deliveries ride the bus (the runtime's answers come back as
     // api.respond / mux.item|error|end posts).
     this.bridge.deliverToRuntime = (jsonText: string): void => {
-      const status = hostBusDeliver(2, jsonText);
+      const status: number = hostBusDeliver(2, jsonText);
       if (status < 0) {
         hilog.error(0x0000, TAG, 'official: bus deliver failed');
       }
@@ -421,13 +421,13 @@ export class OfficialServe {
       }, scenario);
     this.started = true;
     this.http.settle = (callId: number, ok: boolean, json: string): void => {
-      const status = hostSettle(2, callId, ok, json);
+      const status: number = hostSettle(2, callId, ok, json);
       if (status < 0) {
         hilog.error(0x0000, TAG, 'official: http settle failed');
       }
     };
     this.http.emit = (json: string): void => {
-      const status = hostEvent(2, json);
+      const status: number = hostEvent(2, json);
       if (status < 0) {
         hilog.error(0x0000, TAG, 'official: http event failed');
       }
@@ -438,7 +438,7 @@ export class OfficialServe {
    * official boot wire and posts `web.boot`). The caller owns what the leg
    * delivers around it (runtime.config, the staged web-plugins). */
   evalEntry(entryRel: string): void {
-    const status = hostEval(2, entryRel);
+    const status: number = hostEval(2, entryRel);
     if (status !== 0) {
       hilog.error(0x0000, TAG, 'official: eval %{public}s status %{public}d',
         entryRel, status);
@@ -547,7 +547,7 @@ export class OfficialServe {
         'official: delivering web.plugins (%{public}d packages in %{public}d chunks)',
         packages.length, Math.ceil(packages.length / 4));
     }
-    const status = hostBusDeliver(2, line);
+    const status: number = hostBusDeliver(2, line);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'official: compose failed at chunk %{public}d', at);
       return;
@@ -685,7 +685,7 @@ export class OfficialServe {
     if (!this.started) {
       return;
     }
-    const status = hostBusDeliver(2, jsonText);
+    const status: number = hostBusDeliver(2, jsonText);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'official: bus deliver failed');
     }
@@ -696,7 +696,7 @@ export class OfficialServe {
     if (!this.started) {
       return;
     }
-    const status = hostEvent(2, eventJson);
+    const status: number = hostEvent(2, eventJson);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'official: event failed: %{public}s', eventJson);
     }
@@ -975,7 +975,7 @@ export class OfficialServe {
     }
     // The official-web legs never touch notify/approval; anything else here
     // is a wiring bug — fail loud through a structured rejection.
-    const status = hostSettle(2, callId, false,
+    const status: number = hostSettle(2, callId, false,
       '{"code":"invalid","primitive":' + JSON.stringify(name) +
       ',"message":"not forwarded"}');
     if (status < 0) {

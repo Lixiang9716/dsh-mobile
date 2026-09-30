@@ -22,7 +22,7 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
 
         /** The frozen primitive table (contract v1.4.0: nine + fs additions
          * + wasmRun + ishRun-unavailable-on-android + the timer seam; the
-         * capability plane adds cameraCapture, v1.10.0). */
+         * capability plane adds the mic pair + cameraCapture, v1.10.0). */
         val PRIMITIVES = listOf(
             "fsRead", "fsWrite", "fsScope", "httpFetch", "notify",
             "presentApproval", "presentPicker", "keychainGet", "keychainSet",
@@ -33,7 +33,7 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "cameraCapture",
             "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
             "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
-        )
+            "micStart", "micStop",        )
 
         /** The capability plane's PHASED rows (proposal v1.10.0): shapes on
          * record, implementations follow as their own changes — declared
@@ -81,7 +81,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         /** `<name>` or `<name>@<major>` grammar (contract §6). */
         /** v1.5.0: one flag may gate two primitives — `clipboard` gates both
          * clipboard rows (contract/primitives.md §2, v1.5.0 additions); the
-         * capability plane adds the `camera` family (v1.10.0). */
+         * capability plane's `microphone` gates the mic pair and its
+         * `camera` family gates the three camera rows (v1.10.0). */
         private val familyFlags = mapOf(
             "clipboardRead" to "clipboard",
             "clipboardWrite" to "clipboard",
@@ -98,7 +99,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "bleWrite" to "ble",
             "bleSubscribe" to "ble",
             "bleUnsubscribe" to "ble",
-        )
+            "micStart" to "microphone",
+            "micStop" to "microphone",        )
 
         /** True when the primitive belongs to a capability FAMILY row (the
          * capability plane's promptable surface). */

@@ -98,6 +98,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             startCameraMode()
         case "ble-plane", "ble-plane-mock":
             startBleMode()
+        case "mic-plane":
+            MicPlaneDrive.launch(self)
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -130,12 +132,17 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      line: "spike: app launched in serve mode", web: true)
             runServingBoot()
         default:
-            print("spike: app launched, driving boot.verification then carrier.loopback")
-            fflush(stdout)
-            SpikeRuntime().run { [weak self] boot in
-                self?.show(boot, phase: "boot.verification") { self?.bootVerdict = $0 }
-                self?.runCarrier()
-            }
+            runDefaultChain()
+        }
+    }
+
+    /// The historical launch sequence: boot verification, then the carrier.
+    private func runDefaultChain() {
+        print("spike: app launched, driving boot.verification then carrier.loopback")
+        fflush(stdout)
+        SpikeRuntime().run { [weak self] boot in
+            self?.show(boot, phase: "boot.verification") { self?.bootVerdict = $0 }
+            self?.runCarrier()
         }
     }
 

@@ -59,7 +59,8 @@ class SpikeHostM4 private constructor(
         const val CAMERA_PLANE_ENTRY = "scenario/camera-plane.js"
         const val BLE_SCENARIO = "android.ble-plane"
         const val BLE_ENTRY = "scenario/ble-plane.js"
-
+        const val MIC_PLANE_SCENARIO = "android.mic-plane"
+        const val MIC_PLANE_ENTRY = "scenario/mic-plane.js"
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -91,59 +92,62 @@ class SpikeHostM4 private constructor(
             return host
         }
 
-        /** The M2 real-LLM drive (scenario `llm.live-stream`): one real completion via the gateway httpFetch. */
-        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
-            activity, webView, onFinished,
-                scenarioId = LLM_SCENARIO,
-                entryPath = LLM_ENTRY,
-                captureLabel = "llm-live-stream",
-        )
+        /** The M2 real-LLM drive (scenario `llm.live-stream`): same carrier + WebView
+         * + gateway flow, but the JS entry streams one real chat completion
+         * through the gateway httpFetch. Credentials ride fs scope "app"
+         * (files/profiles/default/llm-live-stream/config.json), staged by the E2E
+         * runner before launch. */
+        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+            drive("llm-live-stream", LLM_SCENARIO, LLM_ENTRY, activity, webView, onFinished)
 
-        /** The v1.5.0 device-plane drive (scenario `android.device-plane`). */
-        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
-            activity, webView, onFinished,
-                scenarioId = DEVICE_PLANE_SCENARIO,
-                entryPath = DEVICE_PLANE_ENTRY,
-                captureLabel = "device-plane",
-        )
-
-        /** The capability plane's camera drive (scenario
-         * `android.camera-plane`, v1.10.0): the capture burst against the
-         * emulator's virtual camera, the phased rows' honest `unavailable`. */
-        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
-            activity, webView, onFinished,
-            scenarioId = CAMERA_PLANE_SCENARIO,
-            entryPath = CAMERA_PLANE_ENTRY,
-            captureLabel = "camera-plane",
-        )
-
+        /** The v1.5.0 device-plane drive (scenario `android.device-plane`):
+         * the six SDK primitives + the media picker, driven marker-by-marker
+         * from the runner. */
+        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+            drive("device-plane", DEVICE_PLANE_SCENARIO, DEVICE_PLANE_ENTRY, activity, webView, onFinished)
         /** The capability plane's BLE drive (scenario `android.ble-plane`):
-         * the real radio by default (an emulator answers `unavailable`
-         * honestly — the CI skip leg), the deterministic mock on the mock
-         * extra (the envelope + audit CI leg). */
-        fun startBle(
+         * the real radio by default (an emulator answers `unavailable` honestly
+         * — the CI skip leg), the deterministic mock on the mock extra. */
+        fun startBle(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, mockRadio: Boolean): SpikeHostM4 =
+            drive("ble-plane", BLE_SCENARIO, BLE_ENTRY, activity, webView, onFinished, mockRadio)
+
+        /** One scenario drive factory: the binding machinery with the leg's scenario
+         * id, entry and capture label. The whale/parity/suite legs keep their own factories. */
+        private fun drive(
+            captureLabel: String,
+            scenarioId: String,
+            entryPath: String,
             activity: Activity,
             webView: WebView?,
             onFinished: (String) -> Unit,
-            mockRadio: Boolean,
-        ): SpikeHostM4 = spawn(
-            activity, webView, onFinished,
-            scenarioId = BLE_SCENARIO,
-            entryPath = BLE_ENTRY,
-            captureLabel = "ble-plane",
-            mockRadio = mockRadio,
-        )
+            mockRadio: Boolean = false,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = scenarioId,
+                entryPath = entryPath,
+                captureLabel = captureLabel,
+                mockRadio = mockRadio,
+            )
+            host.pump.attach(webView)
+            instance = host
+            host.start(onFinished)
+            return host
+        }
+        /** The mic drive (`android.mic-plane`): micStart/micStop + the mic.frame channel; the OS prompt pre-granted in automation. */
+        fun startMicPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+            drive("mic-plane", MIC_PLANE_SCENARIO, MIC_PLANE_ENTRY, activity, webView, onFinished)
+
+        /** The camera drive (`android.camera-plane`, v1.10.0): the capture burst
+         * against the emulator's virtual camera, the phased rows' honest `unavailable`. */
+        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+            drive("camera-plane", CAMERA_PLANE_SCENARIO, CAMERA_PLANE_ENTRY, activity, webView, onFinished)
 
         /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
          * upstream spec executed by the quickjs-shaped harness inside our
          * runtime — per-test verdicts stream as scenario records; the spec
          * name rides the runtime.config bus delivery. */
-        fun startSuite(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-            spec: String,
-        ): SpikeHostM4 = spawn(
+        fun startSuite(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, spec: String): SpikeHostM4 = spawn(
             activity, webView, onFinished,
             scenarioId = SUITE_SCENARIO,
             entryPath = SUITE_ENTRY,
@@ -225,6 +229,7 @@ class SpikeHostM4 private constructor(
     private val clipboard = ClipboardPrimitives(activity)
     private val camera = CameraPrimitives(activity, fs)
     private val ble = BlePrimitives(activity, core, if (mockRadio) MockBleRadio() else SystemBleRadio(activity))
+    val mic = MicPrimitives(activity)
 
     private var handle: Long = 0
 
@@ -333,6 +338,7 @@ class SpikeHostM4 private constructor(
         camera.register(core)
         ble.register(core)
 
+        mic.register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -343,6 +349,7 @@ class SpikeHostM4 private constructor(
         notify.emitFn = { json -> event(json) }
         timer.emitFn = { json -> event(json) }
         ble.emitFn = { json -> event(json) }
+        mic.emitFn = { json -> event(json) }
         timer.register(core)
     }
 
@@ -429,12 +436,13 @@ class SpikeHostM4 private constructor(
         if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
     }
 
-    /** The camera runtime-permission resume (MainActivity routes it here):
-     * the burst starts on grant; an OS refusal settles null (a value). */
+    /** The capability planes' OS permission answers (mic + camera). */
     fun onRequestPermissionsResult(requestCode: Int, grantResults: IntArray) {
+        mic.onPermissionResult(requestCode, grantResults)
         if (requestCode == CameraPrimitives.REQUEST_CAMERA) {
             camera.onPermissionResult(
-                grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,
+                grantResults.isNotEmpty()
+                    && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,
             )
         }
         if (requestCode == BleConsentLayer.REQUEST_BLE) {
@@ -442,6 +450,7 @@ class SpikeHostM4 private constructor(
             ble.onPermissionResult(grantResults.isNotEmpty()
                 && grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED })
         }
+        mic.onPermissionResult(requestCode, grantResults)
     }
 
     // ---- settling ---------------------------------------------------------------
@@ -483,3 +492,6 @@ class SpikeHostM4 private constructor(
         Log.i(TAG, "dsh.spike.log: $record")
     }
 }
+
+private const val MIC_PLANE_SCENARIO = "android.mic-plane"
+private const val MIC_PLANE_ENTRY = "scenario/mic-plane.js"
