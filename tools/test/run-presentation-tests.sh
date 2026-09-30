@@ -23,7 +23,11 @@ set -eu
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$ROOT"
 
-PRODUCT_FILES=14
+# The shipped set: 14 through the BYOK onboarding leg (#280), 16 since the
+# marketplace panel (marketplace-core.js + marketplace.js, PR #288) — both
+# shipped files the harmony HAP stages; the count moves only with a reviewed
+# product change, never with tooling leakage.
+PRODUCT_FILES=16
 run_suite() {
     suite_dir="$1"
     name="$2"
