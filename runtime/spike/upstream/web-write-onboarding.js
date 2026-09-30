@@ -33,7 +33,6 @@
  */
 import { keychainSet, httpFetch } from '../gateway.js';
 import { streamChat } from '../llm.js';
-import { errorOf } from 'upstream/web-write.js';
 import {
   BYOK_REF, BYOK_PROVIDERS, decodeCredential, encodeCredential,
   validateCredential, rebindLlmRoute,
@@ -41,6 +40,21 @@ import {
 
 const badRequest = (message) => (
   { remote: true, code: 'gateway/bad-request', message, details: {} });
+
+/** The wire error triple for an arbitrary thrown value. The web-write.js
+ * errorOf does exactly this, but importing it here would close the module
+ * cycle web-write → web-write-coverage → HERE → web-write — and the error
+ * legs would touch an uninitialized binding (measured: an unhandled
+ * rejection the engine reports as an empty error). Local copy, same shape. */
+const wireOf = (error) => (
+  error !== null && typeof error === 'object'
+  && (error.remote === true || error.isDSHRemoteError === true)
+    ? { code: error.code, message: error.message, details: error.details ?? {} }
+    : {
+      code: 'gateway/unavailable',
+      message: error instanceof Error ? error.message : String(error),
+      details: {},
+    });
 
 /** One status row: the keychain is the source of truth for 已配过 (a saved
  * credential outlives boots); the route kind answers for staged/mock. */
@@ -104,7 +118,7 @@ const runProbe = async (post, msg, args) => {
     });
     post({ type: 'mux.end', streamId: msg.streamId });
   } catch (error) {
-    const wire = errorOf(error);
+    const wire = wireOf(error);
     post({ type: 'mux.error', streamId: msg.streamId,
       code: wire.code, message: wire.message, details: wire.details });
   }
@@ -123,7 +137,7 @@ export const buildOnboardingApi = (ctx, deps) => ({
 export const openOnboardingStream = (ctx, deps, post, msg) => {
   if (msg.endpoint !== 'onboarding/test') return undefined;
   runProbe(post, msg, msg.payload?.args).catch((error) => {
-    const wire = errorOf(error);
+    const wire = wireOf(error);
     post({ type: 'mux.error', streamId: msg.streamId,
       code: wire.code, message: wire.message, details: wire.details });
   });

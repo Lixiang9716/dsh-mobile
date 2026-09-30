@@ -185,24 +185,30 @@ const foldLine = (st, line) => {
 /** Drains the streaming body through the SSE parser (D8: one callback per
  * delta as its bytes arrive, never a blocking whole-result). A caller
  * abort surfaces as finishReason 'aborted' (gateway code `cancelled`);
- * anything else rejects. A trailing partial line is flushed at EOF. */
+ * anything else rejects. A trailing partial line is flushed at EOF.
+ * The [DONE] fold stops FOLDING, not draining: an early return would
+ * orphan a pending next(), whose continuation fires on the trailing
+ * bytes and hard-aborts the CLI engine with an empty error (measured
+ * 2026-09-30, the onboarding round). Servers close right after [DONE],
+ * so draining to EOF reads at most a no-op trailing chunk. */
 const drainSse = async (st, res) => {
   log.debug('sse drain begin');
   const dec = makeUtf8();
   const splitter = makeLineSplitter();
+  let done = false;
   try {
     for await (const chunk of res.body) {
-      let done = false;
+      if (done) continue;
       for (const line of splitter.push(dec.feed(chunk))) {
         if (!foldLine(st, line)) { done = true; break; }
       }
-      if (done) return;
     }
   } catch (err) {
     if (!(st.aborted && err?.code === 'cancelled')) throw err;
     st.finishReason = 'aborted';
     log.debug('sse drain aborted by caller');
   }
+  if (done) return;
   for (const line of splitter.push(splitter.flush() + dec.end())) {
     if (!foldLine(st, line)) return;
   }
@@ -216,8 +222,9 @@ const statusError = async (res) => {
   let detail = '';
   try {
     for await (const chunk of res.body) {
-      detail += dec.feed(chunk);
-      if (detail.length >= 200) { detail = detail.slice(0, 200); break; }
+      if (detail.length < 200) detail = (detail + dec.feed(chunk)).slice(0, 200);
+      // No bounded break: an early exit orphans a pending next() (the
+      // drainSse note) — drain to EOF, cap the accumulated text only.
     }
   } catch (err) {
     log.debug('error body drain failed', { code: err?.code ?? 'unknown' });
