@@ -150,7 +150,7 @@ export class PluginsRoute {
     if (pieces.length !== 3 || pieces[0] !== 'plugins') return respond(404, 'text/plain', '');
     const entry = this.byId.get(pieces[1]);
     if (entry === undefined) return respond(404, 'text/plain', '');
-    if (request.query !== `rev=${entry.rev}`) return respond(404, 'text/plain', '');
+    if (request.query !== `?rev=${entry.rev}`) return respond(404, 'text/plain', '');
     if (pieces[2] === 'client.js') {
       const mapURL = `/plugins/??${entry.id}/client.js.map&rev=${entry.rev}`;
       const body = `${entry.source};\n//# sourceMappingURL=${mapURL}\n`;
