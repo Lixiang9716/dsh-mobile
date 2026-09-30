@@ -15,7 +15,7 @@
     "[x] web-client-next: package+vitest; api.js envelope, mux.js real-socket, timeline.js fold suites",
     "[x] falsify-then-restore every new suite (red proof)",
     "[x] coverage after numbers real (vitest --coverage)",
-    "gov run full DAG green + receipt; push; PR opened"
+    "[x] gov run full DAG green + receipt; push; PR opened"
   ],
   "status": "open",
   "receipt": null,
