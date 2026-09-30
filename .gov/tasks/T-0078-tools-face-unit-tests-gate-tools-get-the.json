@@ -9,10 +9,10 @@
     }
   },
   "checklist": [
-    "unit tests for tools/check-staging.mjs (+graph/hosts), tools/gen-staging-manifests.mjs, tools/check-size.py, tools/dev-web-carrier plugins-route mux \u2014 happy path + known counterexamples (gap detection, size violation, round-trip drift), runner standalone (vitest / pytest)",
-    "every test falsified first: break the subject, watch the test go red, restore",
-    "real coverage run (vitest --coverage), before/after numbers recorded as 'tools face X% -> Y%'",
-    "no behavior change to the tools under test; Agent Note (testing); gov run full DAG green with receipt; push + PR"
+    "[x] unit tests for tools/check-staging.mjs (+graph/hosts), tools/gen-staging-manifests.mjs, tools/check-size.py, tools/dev-web-carrier plugins-route mux \u2014 happy path + known counterexamples (gap detection, size violation, round-trip drift), runner standalone (vitest / pytest)",
+    "[x] every test falsified first: break the subject, watch the test go red, restore",
+    "[x] real coverage run (vitest --coverage), before/after numbers recorded as 'tools face X% -> Y%'",
+    "[x] no behavior change to the tools under test; Agent Note (testing); gov run full DAG green with receipt; push + PR"
   ],
   "status": "open",
   "receipt": null,
