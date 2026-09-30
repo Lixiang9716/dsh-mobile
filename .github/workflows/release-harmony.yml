@@ -112,7 +112,7 @@ jobs:
       # tag otherwise — the event's own tag, or the one a dispatch asked for.
       RELEASE_TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.release_tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Verify the tag agrees with every version file
         # The tag is the human's decision (D12); this is what keeps that from
@@ -121,13 +121,13 @@ jobs:
         if: env.RELEASE_TAG != ''
         run: sh packages/release/check-tag-version.sh "$RELEASE_TAG"
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: '20'
 
       - name: Cache the unpacked HarmonyOS CLT
         id: clt-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: clt
           key: hos-clt-linux-unpacked-26.0.0.821
@@ -159,7 +159,7 @@ jobs:
         # re-verify sha256 over whatever lands: a restored tree is verified, not
         # trusted. Single-line key on purpose — a folded scalar can resolve to a
         # literal and give a cache that never hits.
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             runtime/spike/vendor/quickjs-ng
@@ -205,7 +205,7 @@ jobs:
           PY
 
       - name: Upload dsh-harmony
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dsh-harmony
           path: hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
@@ -261,7 +261,7 @@ jobs:
 
       - name: Upload dsh-harmony-harness
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dsh-harmony-harness
           path: /tmp/entry-default-debug-unsigned.hap
