@@ -38,14 +38,24 @@ scenario ids, 65 manifests, checker `--accept-known-gaps` exit 0):
   branch), §10 gains the capability-plane and simulator-matrix bullets,
   the harmony served-turn clause flips, and the decision-log range is
   corrected to D0–D18.
-- e2e-matrix + zh: a new currency block, totals re-run, the missing
-  coverage rows (ble/boot/device/mic/session.mock-llm/gateway.bridge-smoke/
-  llm.live-stream) and inventory rows (14), the m2.llm harmony FAIL cells
-  struck, the known-gaps section made coherent with the register's actual
-  eight rows (the quota gaps moved to a dated closed subsection; the
-  Android camera audit's self-inconsistent verdict documented as gap 8),
-  and the zh twin brought to the same tree state instead of staying
-  phases behind.
+- e2e-matrix + zh: a new currency block, totals re-run, and the tables
+  made FULLY coextensive with the checker's inventory — the coverage
+  matrix enumerates all 72 scenario ids (the review round added the 23
+  rows the tables never carried, and renamed the stale
+  `m2.upstream-session`/`m2.upstream-boot` rows to the ids the re-captured
+  dirs actually declare: `upstream.session`/`upstream.web-boot`), the
+  evidence-dir inventory lists every one of the 72 checker dirs in both
+  languages (the review round also fixed the en `m5-host` row to the
+  12 green verdicts / 11 screenshots the tree carries — the zh row had
+  been updated while en kept the old 4-verdict line, a divergence this
+  change created and then closed), and every coverage cell is now
+  machine-checked against the verdict JSONs (568 cells, 0 mismatches;
+  the `upstream.parity` "+ differential" cells are the documented
+  differential-prose convention, not verdict data). The m2.llm harmony
+  FAIL cells are struck, and the known-gaps section is coherent with the
+  register's actual eight rows (the quota gaps moved to a dated closed
+  subsection; the Android camera audit's self-inconsistent verdict
+  documented as gap 8).
 
 Scope discipline: only merged work with committed evidence is written
 down. The harmony legs of all three faces are stated as implemented
@@ -67,9 +77,16 @@ awaiting real hardware (D-g scripts staged), never as run.
   contract/README.md's proposals cell still says "nothing implemented",
   which is now loose — left as the contract owner's deliberate state,
   flagged in the PR description.
-- **Hand-write only the mic/ble rows the ask literally names** —
-  rejected: the totals re-run this PR performs contradicts every stale
-  cell it sits above (socket.seam 17/17, whale.mount 16/16, b4 43/43,
-  the quota FAIL cells); a status table that disagrees with its own
-  totals line is the drift rule 12 exists to kill. All cell fixes are
-  backed by the committed verdicts, enumerated in the PR body.
+- **Hand-write only the mic/ble rows the ask literally names** (the first
+  round's actual scope) or **declare the tables an intentional partial
+  enumeration** — both rejected after the review round: the totals line
+  asserts "72 of 72", so a partially enumerated table underneath it is
+  the exact self-disagreement rule 12 kills, and a declaration would have
+  frozen the ambiguity the document's own "REGENERATED" label denies.
+  Full enumeration won because it is mechanical (every cell is derived
+  from the committed verdict JSONs and re-verified programmatically), it
+  ended the curated-subset ambiguity, and it caught a real conflation in
+  the first round: the simulator-matrix gateway-drive dir declares NEW
+  scenario ids (`carrier.loopback` / `gateway.audit` / `gateway.binding`),
+  whose cells had briefly been appended to the OLD ids' rows
+  (`m1.carrier.loopback` / `m2.gateway.audit` / `m2.gateway.binding`).

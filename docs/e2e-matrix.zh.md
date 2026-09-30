@@ -126,46 +126,71 @@
 | `b-harmony.httpfetch-v2` | — | — | 6/6, 6/6, 6/6, 6/6 | — |
 | `b-harmony.official-web-mount` | — | — | 17/17, 17/17, 17/17, 17/17 | — |
 | `b-harmony.session.live` | — | — | 43/43, 43/43, 43/43 | — |
-| `b-harmony.write.live` | — | — | 33/33, 33/33 | — |
+| `b-harmony.write.live` | — | — | 33/33（漂移）, 33/33（漂移） | — |
 | `b1.official-web.mount` | 14/14 | — | — | — |
+| `officialweb.mount` | 14/14 | — | — | — |
 | `b3.session.live` | 46/46 | — | — | — |
-| `b4.write.live` | 46/46 | — | — | — |
+| `session.live-read` | 46/46 | — | — | — |
+| `b4.write.live` | 46/46, 43/43（漂移） | — | — | — |
+| `agent.flow` | 17/17 | — | — | — |
 | `ble.plane` | 16/16, 8/8 | 16/16, 8/8 | — | — |
 | `ble.plane.audit` | 8/8, 4/4 | 8/8, 4/4 | — | — |
 | `boot.verification` | 8/8, 8/8 | 8/8 | 8/8 | — |
+| `carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `camera.plane` | 6/6 | 8/8 | — | — |
 | `camera.plane.audit` | 3/3 | 5/6（漂移） | — | — |
+| `composer.live-write` | 46/46 | — | — | — |
 | `device.plane` | 16/16, 16/16 | 15/15, 15/15 | 13/13 | — |
 | `device.plane.audit` | 14/23, 14/23 | 13/22, 13/22 | — | — |
-| `m1.spike.boot` | 9/9（漂移）, 7/7 | 9/9（漂移）, 7/7, 7/7 | 7/7, 7/7, 7/7, 9/9（漂移）, 7/7, 7/7 | 9/9（漂移） |
-| `m1.carrier.loopback` | 7/7, 7/7, 7/7 | — | — | — |
+| `m1.spike.boot` | 9/9（漂移）, 7/7（漂移） | 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 7/7（漂移）, 7/7（漂移）, 7/7（漂移）, 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 9/9（漂移） |
+| `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
 | `gateway.bridge-smoke` | — | 6/6 | 6/6 | — |
-| `m2.gateway.audit` | 16/16, 16/16 | 16/16 | — | — |
-| `m2.gateway.binding` | 19/19, 19/19 | — | — | — |
+| `gateway.audit` | 16/16, 16/16 | — | — | — |
+| `gateway.binding` | 19/19, 19/19 | — | — | — |
+| `m2.gateway.audit` | 16/16 | 16/16 | — | — |
+| `m2.gateway.binding` | 19/19 | — | — | — |
+| `install.carrier-evidence` | 11/11 | — | — | — |
+| `install.from-http` | 46/46 | — | — | — |
 | `m2.llm` | 14/148 | 14/171 | — | 19/19 |
 | `m2.llm.carrier` | 7/7 | 7/7 | — | — |
 | `llm.live-stream` | 14/67 | — | 14/130 | — |
 | `llm.live-stream.carrier` | 7/7 | — | 7/7 | — |
 | `m2.session` | 23/23, 23/23 | 23/23, 22/22（漂移） | 23/23, 23/23, 23/23, 23/23, 23/23 | 23/23 |
 | `m2.webclient.mount` | 7/7 | — | — | — |
-| `m2.upstream-session` | — | — | — | 31/31 |
-| `m2.upstream-boot` | — | — | — | 12/12 |
+| `webclient.mount` | 7/7 | — | — | — |
+| `upstream.session` | — | — | — | 31/31 |
+| `upstream.web-boot` | — | — | — | 12/12 |
 | `m3.ui-swap` | 7/7 | — | — | — |
 | `m3.install` | — | — | — | 22/22 |
 | `m3.complete` | — | — | — | 41/41 |
 | `m3.fetch-install` | 46/46 | — | — | — |
 | `m3.fetch-carrier` | 11/11 | — | — | — |
+| `ish.shell` | — | — | — | 11/11 |
 | `m4.host-binding` | — | 35/35 | — | — |
 | `m5.host-binding` | — | — | 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 20/20（漂移）, 27/27 | — |
+| `harmony.capability-binding` | — | — | 27/27 | — |
+| `harmony.composer.live-write` | — | — | 36/36 | — |
+| `harmony.httpfetch-streaming` | — | — | 6/6 | — |
+| `harmony.officialweb.mount` | — | — | 17/17 | — |
+| `harmony.session.live-read` | — | — | 43/43 | — |
 | `mic.plane` | 11/11 | 9/9（漂移） | — | — |
 | `mic.plane.audit` | 6/6 | — | — | — |
 | `android.mic.plane.audit` | — | 4/4（漂移） | — | — |
 | `models.directory` | — | — | — | 6/6 |
+| `office` | — | — | — | 19/19 |
+| `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
+| `settings.surfaces.cli` | — | — | — | 12/12 |
 | `nextweb.mount` | 24/24 | — | — | — |
 | `whale.mount` | 7/7 | — | — | — |
+| `android.whale.mount` | — | 7/7 | — | — |
+| `android.nextweb.mount` | — | 24/24 | — | — |
+| `harmony.whale.mount` | — | — | 7/7 | — |
+| `harmony.nextweb.mount` | — | — | 24/24 | — |
 | `upstream.parity` | 12/37（漂移） + 差分 25/25 | 13/13 + 25/25 | — | 12/37（漂移） + 25/25 |
+| `userland.shell` | — | — | — | 11/11 |
+| `lynx.mount` | — | — | — | 34/34, 34/34 |
 | `socket.seam` | — | — | — | 19/19 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
 
@@ -200,11 +225,9 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（模拟器腿，设备内 MockLlmRoute） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
-| `hosts/android/artifacts/ble-mock` | Android | ble.plane.audit 8/8, ble.plane 16/16 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/ble-skip` | Android | ble.plane.audit 4/4, ble.plane 8/8（radio-absent 跳过面） | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/camera-plane` | Android | camera.plane.audit 5/6（repeat 感知），camera.plane 8/8（虚拟相机真实连拍） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/device-plane` | Android | device.plane.audit 13/22（repeat 感知），device.plane 15/15 | ✓ | ✓ | ✓ | 4 |
-| `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane.audit 13/22, device.plane 15/15（模拟器矩阵的驱动腿） | ✓ | ✓ | ✓ | 4 |
+| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
@@ -215,9 +238,12 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9（漂移）, android.mic.plane.audit 4/4（漂移）——武装梯带真实 PCM 帧 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗（缺口 2） | 4 |
 | `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗（缺口 5） | 6 |
 | `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗（缺口 6） | 9 |
+| `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20（漂移）, harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
@@ -236,6 +262,15 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（模拟器腿；gateway httpFetch → 宿主机侧 mock） | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/agent-flow` | iOS | agent.flow 17/17 | ✓ | ✓ | ✓ | 4 |
+| `hosts/ios/artifacts/composer-live-write` | iOS | composer.live-write 46/46 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 6 |
+| `hosts/ios/artifacts/gateway` | iOS | boot.verification 8/8, carrier.loopback 7/7, gateway.audit 16/16, gateway.binding 19/19 | ✓ | ✓ | ✓ | 7 |
+| `hosts/ios/artifacts/install-full-cycle` | iOS | install.carrier-evidence 11/11, install.from-http 46/46 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/llm-live-stream` | iOS | llm.live-stream 14/67, llm.live-stream.carrier 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/session-live-read` | iOS | session.live-read 46/46 | ✓ | ✓ | ✓ | 2 |
+| `hosts/ios/artifacts/session-mock-llm` | iOS | session.mock-llm 23/23, webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
+| `hosts/ios/artifacts/wasm-shell-e2e` | iOS | b4.write.live 43/43（漂移） | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/ble-mock` | iOS | ble.plane 16/16, ble.plane.audit 8/8（同一台确定性 mock 电台、同一套强制） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/ble-skip` | iOS | ble.plane 8/8, ble.plane.audit 4/4（如实电台缺席姿态） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/camera-plane` | iOS | camera.plane 6/6, camera.plane.audit 3/3（模拟器如实回答 capture-unavailable 的姿态） | ✓ | ✓ | ✓ | 0 |
@@ -249,12 +284,16 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | m2.upstream-session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | m2.upstream-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-ish-shell` | macOS CLI | ish.shell 11/11 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-office` | macOS CLI | office 19/19 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19（回环缝：带半关闭的真实 TCP echo、一个经 /dev/tcp 拨接测试服务器的 /bin/bash 子进程、两条越界拒绝腿；审计门钉 listen=3 connect=3 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | ——（仅人看证据；机器断言在 `b4-write-live`） | ✓（app-stdout） | ✗（设计使然） | ✗（设计使然） | 2 |
