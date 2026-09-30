@@ -42,9 +42,18 @@ Two evidence channels, both green (acceptance round):
   one-to-one against `test/e2e/scenarios/lynx-mount{,-stub}.json`; verdicts
   + receipts committed under `artifacts/cli-lynx-mount-{lynx,stub}/`.
   `npm run mock-loop` stays as the fast inner assert loop (18/18).
-- vitest (`npm test`, 36 tests): the seam contract, the fold, the adapter
-  mapping table, and the wire client (live local server, real ws-lite
-  upgrade).
+- vitest (`npm test`, 71 tests here; 116 across both presentation suites
+  once web-client-next's 45 at `test/web-client-next-suite/` are counted):
+  the seam contract, the fold, the adapter mapping table, and the wire
+  client (live local server, real ws-lite upgrade) — plus
+  `tests/driver-loop.test.js` (run-mock's 18 checks 1:1 as vitest cases
+  over the same real mock loop, with the stream-error / no-sessionId /
+  not-found / busy edge legs) and `tests/{wire-edge,mux}.js` for the
+  envelope's malformed-answer legs and the mux's generation-tracked
+  reconnect contract over real sockets. Both suites run in CI (the
+  `gates` workflow's presentation step, `.github/workflows/gov.yml`).
+  `npm test -- --coverage` reports the driver face honestly (the runners
+  are excluded: their checks ARE the driver-loop suite now).
 
 **Pilot boundary:** device pixels need a Lynx engine (LynxExplorer /
 on-device LynxView). On the CLI host the lynx face drives the bundle's seam

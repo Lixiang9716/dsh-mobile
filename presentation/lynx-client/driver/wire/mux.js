@@ -46,7 +46,12 @@ export class Mux {
     diag.generation += 1;
     const ws = new WebSocket(this.wsUrl);
     this.ws = ws;
-    const generation = this.generation;
+    // Per-connect instance generation — the port MUST keep the page
+    // original's `++` (web-client-next/web/js/mux.js). Without it the
+    // generation guard is dead: a superseded socket's late close passes
+    // the check, emits a spurious 'closed' and dials a duplicate socket
+    // (both then re-open every live stream).
+    const generation = ++this.generation;
     this.emit('connecting');
     ws.onopen = () => {
       if (generation !== this.generation) return;
@@ -71,7 +76,15 @@ export class Mux {
         if (!this.closedByUser && generation === this.generation) this.connect();
       }, delay);
     };
-    ws.onerror = () => ws.close();
+    ws.onerror = () => {
+      // Node's undici WebSocket re-enters onerror SYNCHRONOUSLY when
+      // close() is called during CONNECTING (the browser builtin does
+      // not) — an unconditional close here recursed to stack overflow on
+      // the runner (observed live: RangeError from mux.js:79). Only an
+      // OPEN socket needs an explicit close; a failed CONNECTING one
+      // drives its own onclose.
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+    };
   }
 
   close() {
