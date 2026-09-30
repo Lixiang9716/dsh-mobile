@@ -1,0 +1,19 @@
+{
+  "title": "v0.0.2 release notes draft + known-gaps public register",
+  "created": "2026-09-30T06:47:23+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "Write docs/release-notes-v0.0.2.md + .zh.md + .i18n.yaml, pairing confirmed",
+    "Create known-gap label and file the known-gap issues (deduped), list verified",
+    "Agent Note (process), incremental commits, gov run green, push, PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
