@@ -2,13 +2,13 @@ dsh.spike.log: {"level":"debug","module":"m3.spike","message":"main begin","data
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.ed25519.selftest","positives":2,"negatives":3,"standard":"RFC 8032"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"happy phase begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.resolver.built","pinnedKeys":["dsh-market-1"],"indexUrlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
@@ -18,17 +18,17 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3442}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4622}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":1}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -47,21 +47,21 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"base64 dec
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.verified","key":"dsh-market-1","signatures":1,"generatedAt":"2026-10-01T00:00:00Z","entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-office@*"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-office@*","id":"dsh-office","version":"0.1.0","blobSha256":"9a957729f607c4a460e749052d8381028cb9e982a158ca02f998a67ba6aedfd0","manifestSha256":"0d4f1f520aa902bdeb753831a7550427de85114cbbc02b7f89ede856d0949205"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-office@*","id":"dsh-office","version":"0.1.0","blobSha256":"fd8a94d814580c16eff3593a9d315ad8a7a3718dcdff416f8e21ec74e71bcd76","manifestSha256":"0d4f1f520aa902bdeb753831a7550427de85114cbbc02b7f89ede856d0949205"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-office@*","version":"0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.range","spec":"dsh-office@*","matched":"0.1.0"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace install begin","data":[{"spec":"dsh-fs@^0.1.0","txId":"mkt-c001","journal":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c001"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c001"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
@@ -71,37 +71,35 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4998}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3634}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":2}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4952}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3588}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:2","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.body"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c001","bytes":7680,"journal":true}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c001","bytes":6656,"journal":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":10240}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":8876}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"blob.stored"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","bytes":7680}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","bytes":6656}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"digest.verified"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.digest.verified","sha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":248}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.digest.verified","sha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":6656}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":3676}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":248}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-fs"}]}
@@ -109,9 +107,9 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capab
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"manifest.validated"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.manifest.validated","id":"dsh-fs","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"integrity.computed"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.integrity.computed","files":3,"manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.integrity.computed","files":2,"manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"negotiated"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.negotiated","required":3,"skipped":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal pending","data":[{"txId":"mkt-c001"}]}
@@ -120,56 +118,45 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"receipt.pending"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.receipt.pending","txId":"mkt-c001","journal":"receipts/journal.jsonl"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-mkt-c001","files":3}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-mkt-c001","files":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-c001/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":332}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-c001/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4904}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-c001/bundle/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-c001/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":332}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-c001/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":576}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"staged.verified"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.staged.verified","files":4}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-fs@0.1.0","files":4}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":332}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.staged.verified","files":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-fs@0.1.0","files":3}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4904}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":332}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-c001/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":576}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"promoted"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.promoted","dir":"plugins/dsh-fs@0.1.0","files":4}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.promoted","dir":"plugins/dsh-fs@0.1.0","files":3}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/mkt-c001.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/mkt-c001.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -177,12 +164,12 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal append
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"committed"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.committed","status":"committed","previousVersion":null,"treeSha256":"acf19dcea9601a78608e3443fdf2f9a1e6e4fd59657fc703bf202334696215dc"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.committed","status":"committed","previousVersion":null,"treeSha256":"7797c8bf55b80945c6e208f75cc9847775b0e8d699fcd5d7a316a66b4958ff49"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-fs@0.1.0","receiptPath":"receipts/mkt-c001.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"receipts/mkt-c001.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":532}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.install.receipt.asserted","status":"committed","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","trustMatched":true}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.install.receipt.asserted","status":"committed","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","trustMatched":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"registry created","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"install","data":[{"id":"dsh-fs"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.registry","message":"manifest check","data":[{"id":"dsh-fs"}]}
@@ -205,31 +192,31 @@ dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data"
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.fs.read.ok","text":"installed from the signed catalog"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.happy.completed","spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"rotation drill begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index-rotation-window.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index-rotation-window.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotation-window.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-rotation-window.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-rotation-window.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:23","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":27}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":23}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3731}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":27}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3684}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:23","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4911}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":23}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4864}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:23","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":27}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":23}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotation-window.json","bytes":6727}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6727}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotation-window.json","bytes":7613}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7613}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -252,30 +239,30 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"rotation k
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.key.learned","key":"dsh-market-2"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.window.accepted","dualSigned":true,"under":"dsh-market-1","learned":"dsh-market-2"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:24","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":28}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3443}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":28}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:24","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4623}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:24","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":28}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -294,35 +281,35 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"base64 dec
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.verified","key":"dsh-market-2","signatures":1,"generatedAt":"2026-10-01T00:00:00Z","entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.completed","acceptedUnder":"dsh-market-2"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index-rotated-final.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index-rotated-final.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:25","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":29}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":25}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3443}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":29}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:25","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4623}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":25}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:25","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":29}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":25}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -338,33 +325,33 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate c
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify primary signature","data":[{"candidates":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"unknown-key","message":"no catalog signature from a trusted key (signed by: dsh-market-2)"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.stale-pin-rejected","key":"dsh-market-2","code":"unknown-key"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"tamper ladder begin","data":[{"happyBlob":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index-bad-signature.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"tamper ladder begin","data":[{"happyBlob":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index-bad-signature.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-bad-signature.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-bad-signature.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-bad-signature.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:26","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":26}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3443}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":30}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:26","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4623}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":26}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:26","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":26}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-bad-signature.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-bad-signature.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -382,32 +369,32 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"base64 dec
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"base64 decode","data":[{"chars":88}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"signature","message":"catalog signature failed verification under dsh-market-1"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"bad-signature","code":"signature"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index-unknown-key.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index-unknown-key.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-unknown-key.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-unknown-key.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-unknown-key.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:31","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":27}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:31","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3447}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":31}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3400}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4627}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":27}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4580}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:31","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":27}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-unknown-key.json","bytes":6515}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6515}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-unknown-key.json","bytes":7401}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7401}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -423,31 +410,31 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate c
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify primary signature","data":[{"candidates":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"unknown-key","message":"no catalog signature from a trusted key (signed by: attacker-key-9)"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"unknown-key","code":"unknown-key","signedBy":"attacker-key-9"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:32","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":28}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:32","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3443}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4623}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":28}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:32","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":28}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -466,99 +453,99 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"base64 dec
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.verified","key":"dsh-market-1","signatures":1,"generatedAt":"2026-10-01T00:00:00Z","entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"control endpoint","data":[{"path":"/_tamper/blob"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/_tamper/blob","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/_tamper/blob","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":79}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":29}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":29}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.armed","via":"control-endpoint","target":"/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace install begin","data":[{"spec":"dsh-fs@^0.1.0","txId":"mkt-c010","journal":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c010"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3635}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3588}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:30","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.body"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c010","bytes":6656,"journal":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036","bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":8876}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"blob.stored"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036","bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"integrity","message":"package digest mismatches the trust record"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"blob-mismatch","code":"integrity"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"control endpoint","data":[{"path":"/_tamper/none"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/_tamper/none","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:33","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":79}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":83}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":33}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":32}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":36}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:33","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":33}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.armed","via":"control-endpoint","target":"/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace install begin","data":[{"spec":"dsh-fs@^0.1.0","txId":"mkt-c010","journal":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c010"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.disarmed"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64973/index-manifest-mismatch.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64973/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64973/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/index-manifest-mismatch.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:34","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":34}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:34","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4999}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4623}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":34}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4952}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4576}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:34","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":34}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.body"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c010","bytes":7680,"journal":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd","bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":10240}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"blob.stored"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd","bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"integrity","message":"package digest mismatches the trust record"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"blob-mismatch","code":"integrity"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"control endpoint","data":[{"path":"/_tamper/none"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/_tamper/none","method":"GET"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:37","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":83}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":37}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":36}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:37","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":37}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.disarmed"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:56352/index-manifest-mismatch.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:56352/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:56352/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/index-manifest-mismatch.json","method":"GET"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:38","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":38}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:38","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3443}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":38}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3396}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:38","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":38}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:56352/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-manifest-mismatch.json","bytes":6511}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":6511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64973/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-manifest-mismatch.json","bytes":7397}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog keys","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog entry","data":[{"id":"dsh-ble"}]}
@@ -580,53 +567,51 @@ dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"sce
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace install begin","data":[{"spec":"dsh-fs@^0.1.0","txId":"mkt-c011","journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c011"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c011"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/packages/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:56352/packages/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64973/dsh-fs@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:39","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:35","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":5335}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":39}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":35}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":5288}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:39","buffered":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":4999}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":39}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4952}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:35","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3635}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":35}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3588}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:39","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:35","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":39}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":35}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.body"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c011","bytes":7680,"journal":false}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.body","chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":2,"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-fs","txId":"mkt-c011","bytes":6656,"journal":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"cache/blobs/bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":10240}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":8876}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"blob.stored"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97","bytes":7680}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.blob.stored","sha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","bytes":6656}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust record","data":[]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"digest.verified"}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.digest.verified","sha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":7680}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":248}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.digest.verified","sha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"open package","data":[{"bytes":6656}]}
+dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar read","data":[{"bytes":6656}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":3676}]}
-dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"bundle/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"member path check","data":[{"path":"manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.tar-mini","message":"tar pad block","data":[{"bytes":248}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"parse package document","data":[{"what":"manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manifest","data":[{"id":"dsh-fs"}]}
@@ -634,7 +619,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capab
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"manifest.validated"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.manifest.validated","id":"dsh-fs","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"integrity","message":"manifest digest mismatches the trust record"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"manifest-mismatch","code":"integrity"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"zero-staging audit begin","data":[{"txIds":2}]}
@@ -651,5 +636,5 @@ dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journa
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/dsh-fs@0.1.0/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":332}]}
-dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.zero-staging","rungs":4,"stagingProbed":2,"journalLines":2,"installedTreeIntact":true,"happyBlobSha256":"977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"}]}
+dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.zero-staging","rungs":4,"stagingProbed":2,"journalLines":2,"installedTreeIntact":true,"happyBlobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.completed","status":"pass","rungs":4,"rotationLegs":3,"committed":1}]}

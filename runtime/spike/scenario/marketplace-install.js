@@ -216,7 +216,7 @@ const tamperPhase = async (happyEntry) => {
   const mirror = makeResolver('/index.json');
   await mirror.refresh();
   await controlFetch('/_tamper/blob');
-  emit('market.tamper.armed', { via: 'control-endpoint', target: '/packages/dsh-fs@0.1.0.tgz' });
+  emit('market.tamper.armed', { via: 'control-endpoint', target: '/dsh-fs@0.1.0.tgz' });
   const errBlob = await rejectionOf(() => mirror.install({ spec: ENTRY_SPEC, txId: 'mkt-c010', on: onInstall }));
   demand(errBlob?.code === 'integrity', `blob rung: expected integrity, got ${errBlob?.code}`);
   emit('market.tamper.rejected', { case: 'blob-mismatch', code: errBlob.code });

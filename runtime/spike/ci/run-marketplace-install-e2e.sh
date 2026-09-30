@@ -3,9 +3,12 @@
 # plugin marketplace (data-protocols.md §7, the signed catalog): boots the
 # loopback FILE HOSTING (mock-market-server.mjs — the "plain file hosting" of
 # the adopted proposal's v0 model), authors the catalog from system-plugins/
-# with tools/gen-marketplace-index.mjs (fixed TEST seeds — the production
-# marketplace keys live only in the signing CI), derives the tamper-ladder +
-# rotation-drill variants (market-test-indexes.mjs), and drives
+# with the LANDED publisher tooling — tools/gen-marketplace-index.mjs for the
+# honest single-signed index and tools/marketplace-rotate-key.mjs
+# window-index for the §7.2 dual-signed window (the same tools the
+# marketplace-publish workflow drives; fixed TEST seeds — the production
+# marketplace keys live only in the signing CI) — derives the tamper-ladder +
+# rotation variants (market-test-indexes.mjs), and drives
 # scenario/marketplace-install.js through the REAL gateway httpFetch
 # (--http, loopback-only): pure-JS ed25519 verification, resolver lookup,
 # the UNCHANGED installFromFetch, the §7.2 rotation drill, and the §7.1
@@ -33,9 +36,14 @@ SEED_2="d2e3f405162738495a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b"
 SEED_ATK="e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6"
 WAIT_DEADLINE_SECONDS=15
 
-# 1. vendored upstream closure: pinned + sha256-verified.
+# 1. vendored upstream closure: pinned + sha256-verified. ensure-ish.sh is
+#    named EXPLICITLY (siblings run-upstream-parity.sh / check-quickjs-boot-
+#    parse.sh do the same): the spike host links the iSH engine, ensure.sh
+#    does not materialize it, and a fresh checkout has no build/ binary —
+#    without this line the leg is unreproducible there.
 sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
+sh vendor/ensure-ish.sh
 
 # 2. build the spike host when the binary is missing.
 [ -x build/dsh-spike-cli ] || sh host/build.sh
@@ -72,13 +80,41 @@ done
 MARKET_URL="$(sed -n 's/^MARKET_BASE_URL=//p' "$MARKET_LOG" | head -1)"
 echo "mock market server: $MARKET_URL" >&2
 
-node "$ROOT/tools/gen-marketplace-index.mjs" \
-    --plugins-dir system-plugins \
-    --out-dir "$CATALOG" \
+# The seeds reach the publisher tools in their b64 form (the tools take
+# MARKETPLACE_SIGNING_KEY-style base64; the variant tool below keeps hex).
+hex2b64() { node -e 'process.stdout.write(Buffer.from(process.argv[1], "hex").toString("base64"))' "$1"; }
+SEED_1_B64="$(hex2b64 "$SEED_1")"
+SEED_2_B64="$(hex2b64 "$SEED_2")"
+
+# The HONEST catalog: single-signed by dsh-market-1 — the same invocation
+# shape the marketplace-publish workflow drives (its --out/--key-seed flags),
+# with a FIXED generatedAt so the bytes are reproducible run to run.
+gen_honest() {
+    node "$ROOT/tools/gen-marketplace-index.mjs" \
+        --system-plugins "$ROOT/runtime/spike/system-plugins" \
+        --out "$CATALOG" \
+        --base-url "$MARKET_URL" \
+        --generated-at "$GENERATED_AT" \
+        --key-id dsh-market-1 \
+        --key-seed "$SEED_1_B64"
+}
+gen_honest
+
+# The §7.2 rotation WINDOW document (dual-signed outgoing + incoming) from
+# the landed runbook tool — then moved aside so the honest index.json keeps
+# its name (the drill serves both documents side by side).
+node "$ROOT/tools/marketplace-rotate-key.mjs" window-index \
+    --system-plugins "$ROOT/runtime/spike/system-plugins" \
+    --out "$CATALOG" \
     --base-url "$MARKET_URL" \
     --generated-at "$GENERATED_AT" \
     --key-id dsh-market-1 \
-    --seed "$SEED_1"
+    --current-seed "$SEED_1_B64" \
+    --new-seed "$SEED_2_B64" \
+    --new-key-id dsh-market-2
+mv "$CATALOG/index.json" "$CATALOG/index-rotation-window.json"
+gen_honest
+
 node ci/market-test-indexes.mjs "$CATALOG" "$MARKET_URL" "$SEED_1" "$SEED_2" "$SEED_ATK"
 
 # 4. run the scenario (--http: loopback httpFetch; --env: the catalog URL)
@@ -113,7 +149,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
     "the §7.1 tamper ladder, each rung InstallRejected with its own code, audited, ZERO staging trees, journal growth untouched, installed tree intact: bad-signature (hosting flips a signature byte), unknown-key (a self-consistent catalog under attacker-key-9 — trust is the pin, not the document), blob-mismatch (the honest catalog against a hostile mirror — served bytes flipped behind a control endpoint; the signed trust record catches what the transport cannot), manifest-mismatch (publisher metadata error, catalog honestly re-signed — the §4 trust-record cross-check refuses what the signature alone cannot)"
   ],
   "catalog": {
-    "authoring": "tools/gen-marketplace-index.mjs --plugins-dir system-plugins (deterministic ustar, mtime 0; fixed seeds — TEST keys only)",
+    "authoring": "tools/gen-marketplace-index.mjs --system-plugins runtime/spike/system-plugins (the landed publisher tool; deterministic ustar, mtime 0) + tools/marketplace-rotate-key.mjs window-index for the §7.2 document; fixed seeds — TEST keys only",
     "entries": 9,
     "dsh-fs-blobSha256": "$FS_BLOB",
     "generatedAt": "$GENERATED_AT",

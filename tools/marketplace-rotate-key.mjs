@@ -34,9 +34,10 @@
  *      rotation drill makes that rejection an audited InstallRejected, not
  *      a silent failure.
  *
- * Signing shape: a single signature is `signature: {key, value}` (the
- * proposal's example); the dual-sign window is `signatures: [...]` — the
- * one additive extension the rotation rule needs (see the generator header).
+ * Signing shape (FROZEN, data-protocols.md §7 v1.1.0): `signatures` is an
+ * ARRAY of one or two {key, value} objects — the window index carries two
+ * (outgoing + incoming), the regular publish one. There is no singular
+ * `signature` shape in the contract; see the generator header.
  */
 import { generateKeyPairSync } from 'node:crypto';
 import { readFileSync, readdirSync } from 'node:fs';

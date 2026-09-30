@@ -54,7 +54,7 @@
         "spec": "dsh-fs@^0.1.0",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
       }
     },
@@ -64,7 +64,7 @@
         "spec": "dsh-office@*",
         "id": "dsh-office",
         "version": "0.1.0",
-        "blobSha256": "9a957729f607c4a460e749052d8381028cb9e982a158ca02f998a67ba6aedfd0",
+        "blobSha256": "fd8a94d814580c16eff3593a9d315ad8a7a3718dcdff416f8e21ec74e71bcd76",
         "manifestSha256": "0d4f1f520aa902bdeb753831a7550427de85114cbbc02b7f89ede856d0949205"
       }
     },
@@ -81,14 +81,14 @@
         "spec": "dsh-fs@^0.1.0",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
       }
     },
     {
       "event": "install.fetch.start",
       "match": {
-        "url": "/packages/dsh-fs@0.1.0.tgz"
+        "url": "/dsh-fs@0.1.0.tgz"
       }
     },
     {
@@ -106,13 +106,13 @@
     {
       "event": "install.blob.stored",
       "match": {
-        "sha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
       }
     },
     {
       "event": "install.digest.verified",
       "match": {
-        "sha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
       }
     },
     {
@@ -125,7 +125,7 @@
     {
       "event": "install.integrity.computed",
       "match": {
-        "files": 3,
+        "files": 2,
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
       }
     },
@@ -146,14 +146,14 @@
     {
       "event": "install.staged.verified",
       "match": {
-        "files": 4
+        "files": 3
       }
     },
     {
       "event": "install.promoted",
       "match": {
         "dir": "plugins/dsh-fs@0.1.0",
-        "files": 4
+        "files": 3
       }
     },
     {
@@ -161,7 +161,7 @@
       "match": {
         "status": "committed",
         "previousVersion": null,
-        "treeSha256": "acf19dcea9601a78608e3443fdf2f9a1e6e4fd59657fc703bf202334696215dc"
+        "treeSha256": "7797c8bf55b80945c6e208f75cc9847775b0e8d699fcd5d7a316a66b4958ff49"
       }
     },
     {
@@ -170,7 +170,7 @@
         "status": "committed",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "trustMatched": true
       }
     },
@@ -262,7 +262,7 @@
         "spec": "dsh-fs@^0.1.0",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"
       }
     },
@@ -355,7 +355,7 @@
       "event": "market.tamper.armed",
       "match": {
         "via": "control-endpoint",
-        "target": "/packages/dsh-fs@0.1.0.tgz"
+        "target": "/dsh-fs@0.1.0.tgz"
       }
     },
     {
@@ -364,14 +364,14 @@
         "spec": "dsh-fs@^0.1.0",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"
       }
     },
     {
       "event": "install.fetch.start",
       "match": {
-        "url": "/packages/dsh-fs@0.1.0.tgz"
+        "url": "/dsh-fs@0.1.0.tgz"
       }
     },
     {
@@ -389,7 +389,7 @@
     {
       "event": "install.blob.stored",
       "match": {
-        "sha256": "3da54cb4e65bc262b5ab9608bdcf3bbfa13d5d7b9512fd8d3fa87e1dc0fe22fd"
+        "sha256": "9af4c73d1b836974b8702bff2712850928bccb8fb3d492eb1e4430d70d21b036"
       }
     },
     {
@@ -436,14 +436,14 @@
         "spec": "dsh-fs@^0.1.0",
         "id": "dsh-fs",
         "version": "0.1.0",
-        "blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+        "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
         "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"
       }
     },
     {
       "event": "install.fetch.start",
       "match": {
-        "url": "/packages/dsh-fs@0.1.0.tgz"
+        "url": "/dsh-fs@0.1.0.tgz"
       }
     },
     {
@@ -461,13 +461,13 @@
     {
       "event": "install.blob.stored",
       "match": {
-        "sha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
       }
     },
     {
       "event": "install.digest.verified",
       "match": {
-        "sha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"
+        "sha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
       }
     },
     {
@@ -491,7 +491,7 @@
         "stagingProbed": 2,
         "journalLines": 2,
         "installedTreeIntact": true,
-        "happyBlobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97"
+        "happyBlobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"
       }
     },
     {
