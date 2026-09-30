@@ -1,0 +1,21 @@
+{
+  "title": "Marketplace v0 static hosting: the one-click standby package for the owner's server",
+  "created": "2026-09-30T20:14:46+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] Probe the owner server's reachability over SSH (direct + Clash proxy + ssh -G) and record the verdict with evidence",
+    "[x] Land deploy/marketplace/ \u2014 nginx static-site config (index.json + tgz dir, content types + cache headers) and a parameterized deploy.sh (rsync upload, atomic index swap)",
+    "[x] Bilingual README pair documenting owner prerequisites (host/key, security group 80/443, domain/TLS via caddy or certbot) and the key discipline (test pair in repo, real key in CI secrets)",
+    "[x] Sample payload: pack existing system-plugins into deterministic tgz, generate a really-signed index.json with the TEST ed25519 keypair, verify the signature round-trip",
+    "[x] Agent Note (process), gov run green receipt, push, PR open"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0082"
+}
