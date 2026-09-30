@@ -16,20 +16,19 @@ const SCRIPT_MIME = 'text/javascript; charset=utf-8';
 const MAP_MIME = 'application/json; charset=utf-8';
 const CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
+// Upstream's trailer regexes verbatim (dsh-client-modules@0.1.6-alpha.2
+// lib/index.js:165-167): anchored at $, tolerant of the preceding newline —
+// a file ending with \n (the normal build output) still has its trailers
+// stripped. Quote-free literals; the new RegExp indirection (govrail#411)
+// is only needed for quote-bearing patterns.
+const SOURCE_MAP_TRAILER = /(?:\r?\n)?\/\/# sourceMappingURL=[^\r\n]*(?:\r?\n)?$/;
+const SOURCE_URL_TRAILER = /(?:\r?\n)?\/\/# sourceURL=[^\r\n]*(?:\r?\n)?$/;
+
 /** Strips bundle-local debug trailers and keeps a trailing newline
  * (upstream prepareSource). */
 export const prepareSource = (raw) => {
-  const lines = raw.split('\n');
-  while (lines.length > 0) {
-    const last = lines[lines.length - 1].replace(/\r$/, '');
-    if (last.startsWith('//# sourceMappingURL=') || last.startsWith('//# sourceURL=')) {
-      lines.pop();
-      continue;
-    }
-    break;
-  }
-  let source = lines.join('\n');
-  if (source.length > 0 && !source.endsWith('\n')) source += '\n';
+  let source = raw.replace(SOURCE_URL_TRAILER, '').replace(SOURCE_MAP_TRAILER, '');
+  if (!source.endsWith('\n')) source += '\n';
   return source;
 };
 
@@ -143,7 +142,9 @@ export class PluginsRoute {
   }
 
   /** Single-resource forms: `/plugins/<id>/client.js?rev=` and the
-   * `.map` identity map. */
+   * `.map` identity map. The rev comparison carries the '?' — the carrier
+   * passes `url.search` (upstream compares `pathname + search` against the
+   * same `?rev=` spelling, dsh-client-modules lib/index.js:894-906, 202). */
   serveSingle(request, respond) {
     const pieces = request.path.split('/').filter((s) => s.length > 0);
     if (pieces.length !== 3 || pieces[0] !== 'plugins') return respond(404, 'text/plain', '');
