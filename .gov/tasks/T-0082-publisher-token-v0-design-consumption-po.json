@@ -1,0 +1,20 @@
+{
+  "title": "Publisher token v0: design + consumption points, mock validator groundwork",
+  "created": "2026-09-30T20:12:16+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] Bilingual design doc pair docs/marketplace-publisher-auth.md (+zh, i18n.yaml): v0 publisher=owner (GH credentials/CI), v1 token model (short-lived PAT shape, IdP issuance, publish-API-side validation), consumption=publish flow only, end users stay on the vendored anonymous device ID, no coupling with #268 profile-manifest",
+    "[x] Gateway-primitive survey recorded in the doc: verdict whether any new gateway primitive is required (expected none; D5 stop if one is)",
+    "[x] Mock validator: pure-function publisher-token check + colocated vitest unit test (falsify-then-restore), v1 groundwork only, no real service wiring",
+    "Agent Note (process, Status: implemented) + gov verify pairing + full gov run green with receipt \u2192 push \u2192 PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0082"
+}
