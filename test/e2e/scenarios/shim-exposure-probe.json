@@ -1,0 +1,37 @@
+{
+  "scenario": "shim.exposure-probe",
+  "extract": { "prefix": "dsh.spike.log:" },
+  "expect": [
+    { "event": "probe/start", "match": { "legs": 5, "survey": "DSH_MODULE_MANIFEST + tools/shim-exposure.mjs" } },
+    { "event": "probe/session-persistence", "match": { "errorClasses": 4, "verdict": "carry name+sessionId+message" } },
+    { "event": "probe/sqlite", "match": { "transport": ":memory:", "roundtrip": "insert+get+iterate ok", "noRowIsUndefined": true } },
+    { "event": "probe/string-decoder", "match": {
+      "splitChar": "你",
+      "headHeld": true,
+      "invalidByte": "\"\uFFFD\"",
+      "labelWall": "non-utf8 rejected"
+    } },
+    { "event": "probe/partial-json", "match": {
+      "truncatedObject": "{\"text\":\"he\"}",
+      "truncatedArray": "{\"items\":[1,2]}",
+      "escapedQuote": "{\"text\":\"he\\\"llo\"}",
+      "danglingEscape": "{\"text\":\"he\"}",
+      "literalPassThrough": true,
+      "wholePassThrough": true
+    } },
+    { "event": "probe/openai-client", "match": {
+      "sseChunks": 2,
+      "midFrameSplitJoined": true,
+      "withResponseStatus": 200,
+      "errorStatus": 401,
+      "errorBodyCarried": true
+    } },
+    { "event": "probe/slots", "match": {
+      "serviceProvided": "ctx.slots live",
+      "installBootOnce": "second install rejected",
+      "ctxLevelOnly": "child key rejected",
+      "registrationGuard": "unregistered root rejected"
+    } },
+    { "event": "probe/complete", "match": { "status": "pass", "legs": 5 } }
+  ]
+}
