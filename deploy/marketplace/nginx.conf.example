@@ -1,0 +1,53 @@
+# nginx static site for the DSH marketplace v0 — the catalog is data, not a
+# service (contract/proposals/2026-10-01-plugin-marketplace.md, rule 1).
+# One webroot: index.json (the signed catalog) + packages/*.tgz (frozen DSH
+# packages). No application process, no database, nothing to attack beyond
+# file serving itself.
+#
+# Install: copy to /etc/nginx/sites-available/dsh-marketplace.conf, edit
+# server_name, `ln -s` into sites-enabled/, `nginx -t && systemctl reload
+# nginx`. TLS (443) is deliberately NOT configured here — see README.md
+# "TLS": caddy or certbot owns it (either terminates 443 and proxies to this
+# server block, or certbot amends it in place).
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name marketplace.example.invalid;   # the owner's domain goes here
+
+    # Webroot — deploy.sh publishes here (DEPLOY_PATH default).
+    root /srv/www/dsh-marketplace;
+
+    # The one entry point is the signed catalog.
+    index index.json;
+
+    # Never serve directory listings: the site layout is a contract
+    # (index.json + packages/), not a browse target.
+    autoindex off;
+
+    # A file host must not guess content types.
+    add_header X-Content-Type-Options nosniff always;
+
+    # The catalog: short cache so key rotations and new entries propagate in
+    # minutes (the resolver adds its own cache policy client-side).
+    location = /index.json {
+        default_type application/json;
+        add_header Cache-Control "public, max-age=60";
+        add_header X-Content-Type-Options nosniff always;
+    }
+
+    # Packages: versioned and immutable — a <pkg>@<semver>.tgz never changes
+    # (a new version is a new file), so cache forever. blobSha256 in the
+    # index is the real integrity anchor; the cache header is only about
+    # transport efficiency.
+    location ~* ^/packages/.+\.tgz$ {
+        default_type application/gzip;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+        add_header X-Content-Type-Options nosniff always;
+    }
+
+    # Everything else 404s — no html, no fallback pages, no listings.
+    location / {
+        return 404;
+    }
+}
