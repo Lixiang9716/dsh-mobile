@@ -34,6 +34,14 @@ is more than prose.
   pure function, offline, signature check injected, no gate or service
   wiring (v0 wires nothing). 15/15 green.
 
+Review outcome (PR #285, same day): the reviewer was right that a
+manually-runnable net protects nothing — the suite ran in NO gate and NO
+CI job. Fixed by wiring the whole test/tools face as a CI step in the
+`gates` workflow's job (`tools/test/run-tools-tests.sh`, after the gate
+DAG, on the job-materialized tree), the T-0078 convention: suites run as
+workflow steps, not sealed-DAG gates. The validator itself still has no
+runtime caller and no gate command invokes it.
+
 Falsify-then-restore was executed for real: the suite ran first against a
 deliberately rule-less stub (14–15/15 RED), then against the real
 validator. The restore leg then caught TWO genuine bugs the suite was

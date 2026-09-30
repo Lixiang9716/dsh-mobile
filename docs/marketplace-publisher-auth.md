@@ -145,9 +145,9 @@ polling loop, consistent with D8; no component polls another's state.
 
 ## 7. Groundwork shipped with this document: the mock validator
 
-[v1 groundwork only — v0 wires nothing.] A pure-function validator for the
-v1 token envelope ships alongside this document as design evidence, with
-no service, network, or gate wiring:
+[v1 groundwork only — nothing calls the validator: no service, no gate
+command, no runtime caller.] A pure-function validator for the v1 token
+envelope ships alongside this document as design evidence:
 
 - `tools/publisher-token.mjs` — `validatePublisherToken(token, options)`:
   format, claims schema, audience/scope/expiry rules (with an injected
@@ -160,6 +160,10 @@ no service, network, or gate wiring:
   restore: a deliberately rule-less implementation was run against the
   suite first (RED), then the real validator restored it (GREEN) — the
   committed counterexamples are the permanent record of that falsification.
+  The suite runs continuously as a CI step in the `gates` workflow's job
+  (`tools/test/run-tools-tests.sh`, after the gate DAG, on the
+  materialized tree) — the PR #285 review flagged that a manually-runnable
+  net protects nothing, so a validator regression now turns CI red.
 
 ## 8. Security notes
 

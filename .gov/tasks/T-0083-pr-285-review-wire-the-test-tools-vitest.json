@@ -1,0 +1,20 @@
+{
+  "title": "PR 285 review: wire the test/tools vitest face into CI so the publisher-token counterexample net runs continuously",
+  "created": "2026-09-30T21:03:12+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] Runner script tools/test/run-tools-tests.sh (mirrors run-presentation-tests.sh: npm ci when node_modules absent, committed lockfile, registry honored) + a step in .github/workflows/gov.yml's gates job after gov run",
+    "[x] Local proof: fresh-install path (node_modules removed, script npm ci's) runs the whole face green (4 files / 67 tests) on the CI-equivalent materialized tree; reviewer's exact command reproduced",
+    "[x] Truthfulness updates: docs/marketplace-publisher-auth.md +zh \u00a77 (suite now CI-run, validator still wires to no gate command / no service) + pairing re-confirmed; Agent Note updated, gov note verify green",
+    "gov task close full DAG green receipt \u2192 push \u2192 PR checks green \u2192 review reply"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0083"
+}

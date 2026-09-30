@@ -112,8 +112,8 @@ profile-manifest 提案(#268)回答**消费侧**问题:某个 profile 想要哪�
 
 ## 7. 随本文交付的地基:mock 校验器
 
-[仅为 v1 备地基——v0 不接任何东西。] v1 token 信封的纯函数校验器随本文一并
-交付,作为设计证据;不接服务、不接网络、不接门禁:
+[仅为 v1 备地基——没有任何东西调用校验器:不接服务、不接门禁命令、无运行时
+调用方。] v1 token 信封的纯函数校验器随本文一并交付,作为设计证据:
 
 - `tools/publisher-token.mjs` —— `validatePublisherToken(token, options)`:
   格式、claims 模式、受众/scope/过期规则(注入 `now`)、一条拒绝长时 token 的
@@ -121,7 +121,10 @@ profile-manifest 提案(#268)回答**消费侧**问题:某个 profile 想要哪�
 - `tools/publisher-token.test.mjs` —— 同址 vitest 套件,含反例腿:过期、
   错受众、缺 scope、超上限生命周期、坏签名、畸形信封。先证伪再还原:先让
   一个刻意无规则的实现对套件运行(RED),再由真校验器还原(GREEN)——
-  提交在库里的反例就是那次证伪的永久记录。
+  提交在库里的反例就是那次证伪的永久记录。该套件作为 `gates` 工作流
+  job 里的一道 CI step 持续运行(`tools/test/run-tools-tests.sh`,在门禁
+  DAG 之后、物料化后的树上)——PR #285 评审指出手动可跑的网保护不了任何
+  东西,此后校验器回归会让 CI 变红。
 
 ## 8. 安全注记
 

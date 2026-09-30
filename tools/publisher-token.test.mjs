@@ -11,8 +11,10 @@
  * reopens a named failure instead of a silent pass (rules.md rule 6).
  *
  * Offline by construction: tokens are minted in-process with an HMAC
- * signer over a test secret; no network, no IdP, no publish API — v0
- * wires nothing (the validator is v1 groundwork only).
+ * signer over a test secret; no network, no IdP, no publish API. Nothing
+ * calls the validator (v1 groundwork only) — but the suite itself runs
+ * continuously as a CI step (tools/test/run-tools-tests.sh in the gates
+ * workflow), so a validator regression turns CI red (PR #285 review).
  */
 import { describe, expect, it } from 'vitest';
 import { createHmac } from 'node:crypto';
