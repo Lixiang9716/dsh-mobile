@@ -1,0 +1,15 @@
+{
+  "name": "dsh-mobile-tools-suite",
+  "private": true,
+  "type": "module",
+  "description": "Unit tests for the repo's own gate tools (tools/) — the tools that gate everything else, now gated themselves. Runner: test/tools/run.sh (vitest for the .mjs faces, pytest/unittest for tools/check-size.py). Coverage: vitest --coverage over tools/**.",
+  "scripts": {
+    "test": "vitest run",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.8",
+    "c8": "^12.0.0",
+    "vitest": "^4.1.8"
+  }
+}

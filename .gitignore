@@ -273,3 +273,5 @@ runtime/spike/logs-shim-exposure-probe.txt
 
 # vitest coverage reports (tools/test/run-coverage.sh)
 coverage/
+# the tools-face suite's coverage artifacts (test/tools vitest runs)
+test/tools/coverage/
