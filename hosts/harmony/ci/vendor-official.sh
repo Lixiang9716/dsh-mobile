@@ -374,6 +374,7 @@ upstream/shims/describe-each.js
 upstream/shims/npm-bridges-b.js
 upstream/shims/npm-bridges-c.js
 upstream/shims/npm-bridges-pi-ai.js
+upstream/shims/npm-bridges-pi-ai-all.js
 upstream/shims/url-file.js
 upstream/shims/util-errors.js
 upstream/shims/util-parse-args.js

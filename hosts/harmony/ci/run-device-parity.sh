@@ -145,11 +145,20 @@ launch_leg() {
     while :; do
         wake_unlock
         hdc shell aa start -b "$BUNDLE" -a EntryAbility $1 >/dev/null 2>&1 || true
+        # ONE start, then poll before re-firing: a slow spawn (a tired
+        # emulator, a cold real device) takes re-fires onto a warming app
+        # whose boot chain re-enters — four interleaved web.plugins trains
+        # jammed the interactive seat's afterCompose (measured 2026-09-30).
+        # Poll 20s per attempt; re-fire only on a real no-show.
+        spawn_deadline=$(( $(date +%s) + 20 ))
+        until [ -n "$(hdc shell pidof "$BUNDLE" 2>/dev/null | tr -d '[:space:]')" ]; do
+            [ "$(date +%s)" -ge "$launch_deadline" ] && die "$BUNDLE process never appeared within 120s"
+            [ "$(date +%s)" -ge "$spawn_deadline" ] && break
+            sleep 2
+        done
         if [ -n "$(hdc shell pidof "$BUNDLE" 2>/dev/null | tr -d '[:space:]')" ]; then
             break
         fi
-        [ "$(date +%s)" -ge "$launch_deadline" ] && die "$BUNDLE process never appeared within 120s"
-        sleep 3
     done
 }
 
