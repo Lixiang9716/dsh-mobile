@@ -6,7 +6,8 @@
     { "event": "fs.write.ok", "match": { "written": 17 } },
     { "event": "fs.read.ok", "match": { "bytes": 17, "matches": true } },
     { "event": "fs.read.invalid", "match": { "code": "invalid" } },
-    { "event": "keychain.unavailable", "match": { "name": "keychainGet", "code": "unavailable" } },
+    { "event": "keychain.roundtrip", "match": { "set": true, "match": true } },
+    { "event": "keychain.deleted", "match": { "gone": true } },
     { "event": "scenario.complete", "match": { "status": "pass" } }
   ]
 }

@@ -117,6 +117,7 @@ RESOURCES = [
     # set (async-hooks, util, util/types, os, process, the
     # session-persistence errors shim).
     ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
+    ("upstream_llm_route_js", SPIKE / "upstream" / "llm-route.js"),
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
     # the REAL spine — the write adapter + its booting scenario.
@@ -124,8 +125,8 @@ RESOURCES = [
     ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
-    # api-full-coverage (D9): coverage adapters + llm/credential legs + the
-    # preset mobile-row transform (claimed under fullCoverage — byte-identical base).
+    # api-full-coverage (D9): coverage adapters + llm/credential legs + the preset
+    # mobile-row transform (claimed under fullCoverage — byte-identical base).
     ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
     ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
     ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
@@ -136,8 +137,7 @@ RESOURCES = [
     ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),
     ("shims_os_js", SPIKE / "upstream" / "shims" / "os.js"),
     ("shims_process_js", SPIKE / "upstream" / "shims" / "process.js"),
-    ("shims_dsh_session_persistence_js",
-     SPIKE / "upstream" / "shims" / "dsh-session-persistence.js"),
+    ("shims_dsh_session_persistence_js", SPIKE / "upstream" / "shims" / "dsh-session-persistence.js"),
     # The outboard WebAssembly tool plugin (contract v1.2.0): a service plugin
     # that registers the model-facing `wasm_run` tool into the spine.
     ("plugin_shell_wasm_manifest",
@@ -192,6 +192,7 @@ RESOURCES = [
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
+    ("upstream_web_write_onboarding_js", SPIKE / "upstream" / "web-write-onboarding.js"),
 ]
 # Directory trees embedded whole and staged back under the same
 # bundle-relative paths: the vendored upstream spine packages (verbatim
@@ -270,8 +271,7 @@ TREES = [
      SPIKE / "system-plugins" / "dsh-office"),
     # The upstream shims ride the WHOLE DIRECTORY (the android stager's
     # convention): a shim joins the embed by existing, not by list edit.
-    ("upstream/shims",
-     SPIKE / "upstream" / "shims"),
+    ("upstream/shims", SPIKE / "upstream" / "shims"),
     # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims).
     ("scenario",
      SPIKE / "scenario"),

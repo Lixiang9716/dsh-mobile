@@ -13,6 +13,7 @@
       "archive",
       "task",
       "plane",
+      "panel-tests",
       "e2e-matrix",
       "closures",
       "vendoring-repro",
@@ -185,6 +186,19 @@
         ".gov/plane-seal.json"
       ],
       "timeoutMs": 60000
+    },
+    {
+      "id": "panel-tests",
+      "label": "web-client-next panel unit suite (vitest over the page's pure logic)",
+      "command": [
+        "sh",
+        "test/panel/run.sh"
+      ],
+      "paths": [
+        "test/panel/**",
+        "presentation/web-client-next/**"
+      ],
+      "timeoutMs": 300000
     },
     {
       "id": "e2e-matrix",

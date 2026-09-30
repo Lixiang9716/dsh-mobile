@@ -25,7 +25,24 @@ grep -q "^\s*'upstream/boot\.js',$" "$IDX" || {
 }
 
 # --- the live-tree case lock (shared with case-bundle-files.sh) -----------
-LOCKDIR="${TMPDIR:-/tmp}/dsh-gov-live-tree-case.lock"
+# Repo-scoped: the mutated tree (Index.ets) is THIS worktree's, so the
+# serialization window is per-worktree too — a global /tmp lock made
+# parallel fleet agents' cases contend (and the 10s case budget SIGKILL
+# leaks the lock, cascading timeouts; measured 2026-09-30, T-0078).
+# Worktree-scoped: the mutated tree (Index.ets) is THIS worktree's, so the
+# serialization window is per-worktree too — a global /tmp lock made parallel
+# fleet agents' cases contend (and the 10s case budget SIGKILL leaks the
+# lock, cascading timeouts; measured 2026-09-30, T-0078). The per-worktree
+# git dir is the one per-worktree, always-writable, never-tracked home (a
+# linked worktree's .git is a FILE — measured: mkdir .git/... fails fast and
+# the acquire loop burned its whole deadline).
+GITDIR="$(git -C "$REPO" rev-parse --git-dir 2>/dev/null || true)"
+case "$GITDIR" in
+  /*) ;;                       # already absolute
+  "") GITDIR="$TMPDIR" ;;      # no git — fall back to the shared tmp lock
+  *) GITDIR="$REPO/$GITDIR" ;;
+esac
+LOCKDIR="$GITDIR/dsh-gov-live-tree-case.lock"
 TREE_LOCK_HELD=0
 acquire_tree_lock() {
   local deadline=$(( SECONDS + 60 ))
@@ -57,7 +74,11 @@ trap 'release_tree_lock; rm -f "$OUT"; restore' EXIT
 acquire_tree_lock
 grep -v "^\s*'upstream/boot\.js',$" "$IDX" > "$IDX.case-tmp.2" && mv "$IDX.case-tmp.2" "$IDX"
 
-if node "$REPO/tools/check-staging.mjs" --json --block harmony,android,ios > "$OUT" 2>&1; then
+# Harmony-only: the case's assertion lives entirely on harmony's
+# BUNDLE_FILES (the vehicle row IS harmony's), and under the full DAG's
+# gate concurrency the three-host walk stretched the case past its 10s
+# budget (measured 2026-09-30, T-0078). One host, same proof.
+if node "$REPO/tools/check-staging.mjs" --json --block harmony > "$OUT" 2>&1; then
   echo "case-staging-check: FAIL — a boot entry missing from BUNDLE_FILES passed the gate" >&2
   exit 1
 fi
@@ -69,7 +90,7 @@ grep -q '"file": "upstream/boot.js"' "$OUT" || {
 }
 
 restore
-if ! node "$REPO/tools/check-staging.mjs" --json --block harmony,android,ios >/dev/null 2>&1; then
+if ! node "$REPO/tools/check-staging.mjs" --json --block harmony >/dev/null 2>&1; then
   echo "case-staging-check: FAIL — the restored tree still fails" >&2
   exit 1
 fi

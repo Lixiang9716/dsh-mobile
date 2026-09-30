@@ -4,9 +4,10 @@
  * The platform twin of the desktop CLI driver's smoke backend
  * (runtime/spike/host/main_cli.c): it answers scenario gateway.bridge-smoke
  * over the REAL dsh_spike dispatch bridge — fs primitives on a
- * host-app directory exposed as scope "app", keychain honestly
- * "unavailable" (declared so in the descriptor), unknown primitives
- * "invalid". Calls are only QUEUED in the dispatch callback; settlement
+ * host-app directory exposed as scope "app", the keychain primitives as
+ * app-private files under the same root (the desktop CLI twin's shape),
+ * unknown primitives "invalid". Calls are only QUEUED in the dispatch
+ * callback; settlement
  * is deferred to the post-pump drain pass (the later-tick pattern the
  * scenario exists to prove). All calls run on the single JS runtime
  * thread (ARCHITECTURE.md §6) — no locking.
@@ -22,8 +23,8 @@
 
 typedef struct dsh_smoke_backend dsh_smoke_backend_t;
 
-/* RuntimeDescriptor served to JS via __dshGatewayDescriptor(): fs on the
- * app dir, everything else declared unavailable. */
+/* RuntimeDescriptor served to JS via __dshGatewayDescriptor(): fs and the
+ * keychain primitives on the app dir, the rest declared unavailable. */
 extern const char *DSH_SMOKE_DESCRIPTOR;
 
 /* Create the backend and its scope-"app" root directory. Returns NULL

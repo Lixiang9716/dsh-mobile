@@ -447,7 +447,13 @@ export const createWriteSurface = (ctx, post, options) => {
   const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
   const deps = {
     streams, root, workspaces, seeded, archived,
-    llmRoute: { provider: options.provider, model: options.model, baseURL: options.baseURL },
+    llmRoute: {
+      provider: options.provider, model: options.model, baseURL: options.baseURL,
+      // The honest source fact (upstream/llm-route.js): 'staged' | 'byok' |
+      // 'mock' | undefined (surfaces built without the route's provenance —
+      // the CLI probes). The onboarding status answers from it.
+      kind: options.routeKind,
+    },
     mintId: mintUUID,
     publish: streams.publish,
   };

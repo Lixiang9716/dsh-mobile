@@ -22,9 +22,11 @@ extern "C" {
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
 
 struct dsh_smoke_req {
     int call_id;
@@ -46,10 +48,16 @@ struct dsh_smoke_backend {
     char *descriptor_json;
 };
 
+/* Regression (smoke) descriptor — matches the desktop CLI twin (main_cli.c):
+ * fs ON and the keychain primitives IMPLEMENTED as app-private files
+ * (contract v1.0.0 rows 8-9 — the BYOK onboarding flow stores credentials
+ * there), the rest declared unavailable (contract §2). Binding mode serves
+ * keychain for real through the ArkTS capability layer instead. */
 const char *DSH_SMOKE_DESCRIPTOR =
-    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\"],"
+    "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\","
+    "\"keychainGet\",\"keychainSet\"],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
-    "\"presentPicker\",\"keychainGet\",\"keychainSet\"]}";
+    "\"presentPicker\"]}";
 
 /* Binding descriptor: all nine contract primitives are served for real —
  * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
@@ -331,6 +339,120 @@ static int smoke_arg_differs(const char *json, const char *key,
     return differs;
 }
 
+/* ---- the keychain primitives (contract v1.0.0 §4, rows 8-9) --------------
+ * The regression-mode implementation, mirroring the desktop CLI twin
+ * (main_cli.c): one file per ref under <fs_root>/keychain/, bytes base64
+ * (the same encoding the bridge speaks), the file created mode 0600 and the
+ * store directory mode 0700 at creation. The directory is app-private — the
+ * same trust domain as the fs "app" scope. Binding mode never reaches these:
+ * keychain rides the forward hook to the ArkTS capability layer above.
+ * `keychainSet(ref, null)` is the documented delete; an unset ref reads
+ * back as JSON null. */
+
+static const size_t KEYCHAIN_REF_MAX = 128;
+static const size_t KEYCHAIN_SECRET_B64_MAX = 16384;
+
+static int keychain_ref_ok(const char *ref) {
+    if (!ref) return 0;
+    size_t n = 0;
+    for (; ref[n]; n++) {
+        char c = ref[n];
+        if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+              || (c >= '0' && c <= '9') || c == '.' || c == '_'
+              || c == '-' || c == '/')) return 0;
+        if (n >= KEYCHAIN_REF_MAX) return 0;
+    }
+    return n > 0;
+}
+
+/* One file per ref; '/' inside a ref is hex-escaped so the ref namespace
+ * stays flat and reversible (a literal %XX byte sequence cannot collide:
+ * every escape begins with '%' and '%' never passes keychain_ref_ok). */
+static void keychain_path(dsh_smoke_backend *b, const char *ref, char *out,
+                          size_t outsz) {
+    size_t o = static_cast<size_t>(snprintf(out, outsz, "%s/keychain/", b->fs_root));
+    for (const char *p = ref; *p && o + 4 < outsz; p++) {
+        if (*p == '/') o += static_cast<size_t>(snprintf(out + o, outsz - o, "%%2F"));
+        else out[o++] = *p;
+    }
+    out[o] = 0;
+}
+
+static void smoke_keychain_get(dsh_smoke_backend *b, int call_id,
+                               const char *args) {
+    char *ref = json_str_dup(args, "ref");
+    if (!keychain_ref_ok(ref)) {
+        free(ref);
+        return smoke_reject(b, call_id, "keychainGet", "invalid",
+                            "ref must be 1..128 chars of [A-Za-z0-9._/-]");
+    }
+    char path[1024];
+    keychain_path(b, ref, path, sizeof(path));
+    free(ref);
+    FILE *f = fopen(path, "rb");
+    if (!f) return smoke_settle(b, call_id, 1, "null");
+    char b64[KEYCHAIN_SECRET_B64_MAX + 1];
+    size_t n = fread(b64, 1, KEYCHAIN_SECRET_B64_MAX, f);
+    fclose(f);
+    while (n > 0 && (b64[n - 1] == '\n' || b64[n - 1] == '\r')) n--;
+    if (n >= KEYCHAIN_SECRET_B64_MAX) {
+        return smoke_reject(b, call_id, "keychainGet", "io",
+                            "stored secret exceeds the dev-host cap");
+    }
+    b64[n] = 0;
+    char payload[KEYCHAIN_SECRET_B64_MAX + 32];
+    snprintf(payload, sizeof(payload), "{\"secretB64\":\"%s\"}", b64);
+    return smoke_settle(b, call_id, 1, payload);
+}
+
+static void smoke_keychain_set(dsh_smoke_backend *b, int call_id,
+                               const char *args) {
+    char *ref = json_str_dup(args, "ref");
+    if (!keychain_ref_ok(ref)) {
+        free(ref);
+        return smoke_reject(b, call_id, "keychainSet", "invalid",
+                            "ref must be 1..128 chars of [A-Za-z0-9._/-]");
+    }
+    char path[1024];
+    keychain_path(b, ref, path, sizeof(path));
+    free(ref);
+    char *b64 = json_str_dup(args, "secretB64");
+    if (!b64) { /* null secret = the documented delete */
+        unlink(path);
+        return smoke_settle(b, call_id, 1, "{\"ok\":true}");
+    }
+    if (strlen(b64) > KEYCHAIN_SECRET_B64_MAX) {
+        free(b64);
+        return smoke_reject(b, call_id, "keychainSet", "invalid",
+                            "secret exceeds the dev-host cap");
+    }
+    /* The store's directory is tightened to 0700 FIRST — smoke_mkdirs below
+     * builds parents at 0755 and its mkdir on this existing dir is an
+     * ignored EEXIST, so without this the comment's promise would be 0755
+     * (review finding, PR #280 — same fix as main_cli.c). */
+    {
+        char dir[1024];
+        snprintf(dir, sizeof(dir), "%s/keychain", b->fs_root);
+        mkdir(dir, 0700); /* EEXIST fine — the mode applies at creation only */
+    }
+    smoke_mkdirs(path);
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd < 0) {
+        free(b64);
+        return smoke_reject(b, call_id, "keychainSet", "io",
+                            "cannot open the credential file");
+    }
+    ssize_t rc = write(fd, b64, strlen(b64));
+    rc += write(fd, "\n", 1);
+    close(fd);
+    free(b64);
+    if (rc < 0) {
+        return smoke_reject(b, call_id, "keychainSet", "io",
+                            "cannot write the credential file");
+    }
+    return smoke_settle(b, call_id, 1, "{\"ok\":true}");
+}
+
 /* ---- primitive table ------------------------------------------------------ */
 
 /* Binding mode reaches the table only for the C-served app-scope fs (and
@@ -417,8 +539,14 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
         return smoke_settle(b, call_id, 1, "{\"scope\":\"app\"}");
     }
     if (strncmp(name, "keychain", 8) == 0) {
-        return smoke_reject(b, call_id, name, "unavailable",
-                            "keychain is declared unavailable by the host");
+        /* regression mode: served as app-private files (above); binding
+         * mode forwarded these to the capability layer earlier. */
+        if (strcmp(name, "keychainGet") == 0) {
+            return smoke_keychain_get(b, call_id, args);
+        }
+        if (strcmp(name, "keychainSet") == 0) {
+            return smoke_keychain_set(b, call_id, args);
+        }
     }
     smoke_reject(b, call_id, name, "invalid", "unknown primitive");
 }

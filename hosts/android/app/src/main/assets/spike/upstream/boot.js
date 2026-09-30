@@ -36,6 +36,7 @@ import { SettingsMemory } from 'upstream/settings-memory.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
+import { registerRouteDisposer } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 // The FIRST ported tool package (D9). It exports `{Config, apply, inject,
 // name}` and no default, so the namespace object IS the cordis plugin (it
@@ -387,28 +388,26 @@ const mountSpine = async (ctx, identity) => {
  * @param options.agentId - configured agent id (created by AgentLoop at mount).
  * @param options.sessionId - exact session identity for the configured agent.
  * @param options.cwd - session cwd (mobile-honest: a gateway fs scope label).
- * @param options.llm - the llm route: {baseURL, apiKey, provider, model,
- *   onWire?, onSse?} — required; the profile has no transport-free fallback.
+ * @param options.llm - the llm route {baseURL, apiKey, provider, model,
+ *   onWire?, onSse?}; required, no transport-free fallback.
  * @param options.systemPrompt - optional override seam: {personaPrefix} —
  *   the vendored SystemPrompt's own config (the prompt's persona section),
  *   mounted verbatim; default '' (the historical boot shape).
- * @param options.commands - optional COMMAND-row flag (true mounts the
- * upstream commands registry + the command-defining plugins vendored so far).
+ * @param options.commands - optional COMMAND-row flag (true mounts the upstream
+ * commands registry + the command-defining plugins vendored so far).
  * @param options.goals - optional GOAL-row flag (true mounts the vendored
  * dsh-goal GoalService under `goals`; the api-full-coverage work stream's
  * wire claims ride it). Absent = the historical spine.
- * @param options.fileReferences - optional FILE-REFERENCE-row flag (true
- * mounts the vendored dsh-file-reference-local service under
- * `fileReferences`, the composer's @-mention lexicon). Absent = the
- * historical spine.
+ * @param options.fileReferences - optional FILE-REFERENCE-row flag (true mounts
+ * the vendored dsh-file-reference-local service under `fileReferences`, the
+ * composer's @-mention lexicon). Absent = the historical spine.
  * @param options.creation - optional CREATION-row flag (true mounts the
- * present tool — the model declares workspace files as on-screen
- * deliverables, journaled as deliverables/presented). Absent = the
- * historical spine.
+ * present tool — workspace files as on-screen deliverables, journaled as
+ * deliverables/presented). Absent = the historical spine.
  * @param options.skills - optional SKILL-row configuration: {dshHome,
- *   agentsHome, customSkillDirs?} — mounting the vendored skill family
- *   (registry + filesystem provider + the `skill` tool). Absent = the
- *   historical spine (the parity/session manifests pin that shape).
+ *   agentsHome, customSkillDirs?} — the vendored skill family (registry +
+ *   filesystem provider + the `skill` tool). Absent = the historical spine
+ *   (the parity/session manifests pin that shape).
  * @param options.onEvent - observability hook: (event, fields) => void; boot
  *   emits `upstream.profile`, `llm/runtime`, `upstream.services`.
  */
@@ -422,7 +421,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
   await ctx.plugin(LlmRuntime);
   const runtime = ctx.get('llm');
   if (runtime === undefined) throw new Error('boot: the LlmRuntime failed to mount under "llm"');
-  runtime.registerAdapter([llm.provider], createGatewayLlmAdapter({
+  const routeDisposer = runtime.registerAdapter([llm.provider], createGatewayLlmAdapter({
     baseURL: llm.baseURL,
     apiKey: llm.apiKey,
     provider: llm.provider,
@@ -432,6 +431,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     onSse: llm.onSse,
     onRequestBody: llm.onRequestBody,
   }));
+  registerRouteDisposer(runtime, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
   runtime.registerConfigurableProviders([{
     provider: llm.provider,
     displayName: llm.displayName ?? 'OpenAI 兼容',
