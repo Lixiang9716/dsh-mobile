@@ -15,7 +15,7 @@
     "[x] deploy/marketplace/deploy.sh: rsync-over-ssh; unreachable server / missing secrets fail loud with the names; dry-run never deploys",
     "[x] docs/github-owner-actions.md + .zh.md: MARKETPLACE_SIGNING_KEY + deploy SSH secrets + optional marketplace environment; pairing --write",
     "[x] actionlint/yaml validation green; no tag pushed, no real publish triggered",
-    "Agent Note (process, Status: implemented) + full gov DAG green with receipt + PR"
+    "[x] Agent Note (process, Status: implemented) + full gov DAG green with receipt + PR"
   ],
   "status": "open",
   "receipt": null,
