@@ -1,10 +1,11 @@
 #!/bin/sh
 # test/panel/run.sh — the panel unit-suite runner (vitest over the
 # web-client-next page's pure logic). Node resolves through nvm like
-# test/e2e/matrix.sh; the deps come from npm install in this dir on a fresh
-# tree (test/upstream-suite pins the same vitest version). The suite's own
-# config scopes collection to THIS dir — a repo-root run would sweep the
-# vendored corpus (measured: 173 files, 3 failures that are not ours).
+# test/e2e/matrix.sh. The suite SELF-PROVISIONS its deps: node_modules/ is
+# gitignored, so a fresh checkout (and CI) lands without it — review finding
+# on PR #280: the gate must not be red-by-construction there. With the
+# committed package-lock.json the install is `npm ci`; the fallback covers a
+# tree where the lockfile cannot resolve (registry drift).
 set -eu
 NODE=$(command -v node 2>/dev/null || true)
 if [ -z "$NODE" ]; then
@@ -17,9 +18,18 @@ if [ -z "$NODE" ]; then
   exit 2
 fi
 DIR=$(cd "$(dirname "$0")" && pwd)
-[ -x "$DIR/node_modules/.bin/vitest" ] || {
-  echo "panel-tests: node_modules missing — run npm install in test/panel" >&2
+cd "$DIR"
+NPM="$DIR/node_modules/.bin/vitest"
+if [ ! -x "$NPM" ]; then
+  echo "panel-tests: node_modules missing — provisioning (npm install; CI has network)" >&2
+  if [ -f package-lock.json ]; then
+    npm ci --no-audit --no-fund || npm install --no-audit --no-fund
+  else
+    npm install --no-audit --no-fund
+  fi
+fi
+[ -x "$NPM" ] || {
+  echo "panel-tests: vitest still missing after provisioning — npm install failed" >&2
   exit 2
 }
-cd "$DIR"
 exec "$NODE" ./node_modules/.bin/vitest run

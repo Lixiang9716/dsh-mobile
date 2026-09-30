@@ -238,6 +238,7 @@ hosts/ios/Pods/
 node_modules/
 out/
 package-lock.json
+!test/panel/package-lock.json
 presentation/official-web/client-bundles/MANIFEST.sha256.computed
 presentation/official-web/client-bundles/npm/
 runtime/spike/logs-models-directory.txt
