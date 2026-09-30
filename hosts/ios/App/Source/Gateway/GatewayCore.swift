@@ -81,6 +81,14 @@ struct GatewayManifest {
         "cameraCapture": "camera",
         "cameraRecordStart": "camera",
         "cameraRecordStop": "camera",
+        "bleScanStart": "ble",
+        "bleScanStop": "ble",
+        "bleConnect": "ble",
+        "bleDisconnect": "ble",
+        "bleRead": "ble",
+        "bleWrite": "ble",
+        "bleSubscribe": "ble",
+        "bleUnsubscribe": "ble",
     ]
 
     func grants(primitive: String) -> Bool {
@@ -109,6 +117,8 @@ final class GatewayCore {
         "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
         "presentShare", "keepAwake",
         "cameraCapture",
+        "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
+        "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
     ]
     /// The capability plane's PHASED rows (proposal v1.10.0): shapes on
     /// record, implementations follow as their own changes — declared
@@ -120,7 +130,7 @@ final class GatewayCore {
     /// full seat keeps identical to `primitives`. Returns the notify
     /// primitive so a session can keep a strong ref for its app.state
     /// forwarding (the center's delegate is weak).
-    func registerStandardPrimitives() -> NotifyPrimitive {
+    func registerStandardPrimitives(bleRadio: BleRadio? = nil) -> NotifyPrimitive {
         let fs = FSPrimitives()
         fs.register(on: self)
         _ = HTTPPrimitive(core: self)
@@ -129,6 +139,7 @@ final class GatewayCore {
         _ = DevicePlanePrimitives(core: self, fs: fs)
         _ = ClipboardPrimitives(core: self)
         _ = CameraPrimitives(core: self, fs: fs)
+        _ = BLEPrimitives(core: self, radio: bleRadio ?? SystemBleRadio())
         return NotifyPrimitive(core: self)
     }
 

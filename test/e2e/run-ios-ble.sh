@@ -127,6 +127,15 @@ run_check() { # MANIFEST OUT
 }
 if [ "$MODE" = "device" ]; then
   run_check test/e2e/scenarios/ios-ble-device.json "$ART/verdict-ios-ble-device.json"
+elif [ "$MODE" = "skip" ]; then
+  # the posture is OBSERVED, not assumed: the same simulator can answer
+  # `unavailable` (no radio) or `denied` (radio up, TCC authorization
+  # refused) on different days — each posture has its own manifest.
+  if grep -q '"mode":"denied"' "$LOG"; then
+    SCEN="ios-ble-denied"; AUDIT="ios-ble-denied-audit"
+  fi
+  run_check test/e2e/scenarios/$SCEN.json       "$ART/verdict-$SCEN.json"
+  run_check test/e2e/scenarios/$AUDIT.json      "$ART/verdict-$AUDIT.json"
 else
   run_check test/e2e/scenarios/$SCEN.json       "$ART/verdict-$SCEN.json"
   run_check test/e2e/scenarios/$AUDIT.json      "$ART/verdict-$AUDIT.json"

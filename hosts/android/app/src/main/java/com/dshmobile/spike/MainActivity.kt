@@ -170,10 +170,12 @@ class MainActivity : Activity() {
         webView = view
         // The gateway core reads filesDir/spike at construction: materialize
         // the bundle FIRST (runtime thread), then construct the host.
+        SpikeRuntime.post {
+            materializeBundle()
+            runOnUiThread {
                 spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane, ble, bleMock)
-
-
             }
+        }
         view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
     }
 

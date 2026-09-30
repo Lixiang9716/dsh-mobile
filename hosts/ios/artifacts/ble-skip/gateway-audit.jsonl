@@ -1,4 +1,4 @@
-dsh.gateway.audit: {"verdict":"granted","primitive":"bleScanStart","ts":"2026-09-29T23:47:37Z","caller":"dsh.spike.scenario","outcome":"unavailable"}
-dsh.gateway.audit: {"verdict":"granted","primitive":"bleScanStop","detail":{"stopped":false,"scanId":"scan:none"},"ts":"2026-09-29T23:47:37Z","caller":"dsh.spike.scenario","outcome":"ok"}
-dsh.gateway.audit: {"verdict":"granted","primitive":"bleConnect","ts":"2026-09-29T23:47:37Z","caller":"dsh.spike.scenario","outcome":"unavailable"}
-dsh.gateway.audit: {"verdict":"granted","primitive":"bleDisconnect","detail":{"closed":false,"connectionId":"conn:none"},"ts":"2026-09-29T23:47:37Z","caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.gateway.audit: {"primitive":"bleScanStart","verdict":"granted","ts":"2026-09-30T01:02:22Z","caller":"dsh.spike.scenario","outcome":"unavailable"}
+dsh.gateway.audit: {"primitive":"bleScanStop","verdict":"granted","ts":"2026-09-30T01:02:22Z","caller":"dsh.spike.scenario","outcome":"ok","detail":{"scanId":"scan:none","stopped":false}}
+dsh.gateway.audit: {"primitive":"bleConnect","verdict":"granted","ts":"2026-09-30T01:02:22Z","caller":"dsh.spike.scenario","outcome":"unavailable"}
+dsh.gateway.audit: {"primitive":"bleDisconnect","verdict":"granted","ts":"2026-09-30T01:02:22Z","caller":"dsh.spike.scenario","outcome":"ok","detail":{"closed":false,"connectionId":"conn:none"}}

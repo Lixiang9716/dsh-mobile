@@ -95,9 +95,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      line: "spike: app launched in device-plane mode", web: false)
             runDevicePlane()
         case "camera-plane":
-            announce("DSH camera plane — camera.plane, the capability plane's capture burst live…",
-                     line: "spike: app launched in camera-plane mode", web: false)
-            runCameraPlane()
+            startCameraMode()
         case "ble-plane", "ble-plane-mock":
             startBleMode()
         case "session":

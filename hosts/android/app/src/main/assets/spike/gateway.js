@@ -311,6 +311,14 @@ export const cameraRecordStart = async (request = {}) => await call('cameraRecor
 export const cameraRecordStop = async (recordingId) =>
   await call('cameraRecordStop', { recordingId });
 
+export const bleScanStart = async (request = {}) => await call('bleScanStart', {
+  serviceUuids: request.serviceUuids,
+  timeoutMs: request.timeoutMs,
+  tag: request.tag,
+});
+
+export const bleScanStop = async (scanId) => await call('bleScanStop', { scanId });
+
 export const bleConnect = async (deviceId) => await call('bleConnect', { deviceId });
 
 export const bleDisconnect = async (connectionId) =>
@@ -342,9 +350,6 @@ export const bleUnsubscribe = async (connectionId, service, characteristic) =>
 const listeners = new Set();
 
 /** Subscribe to non-stream bridge events (app.state, notify.response,
- * host.info, ...). httpFetch body traffic is consumed by the shim itself. */
-export const onEvent = (fn) => listeners.add(fn);
-
  * host.info, ble.event, ...). httpFetch body traffic is consumed by the
  * shim itself. Returns the unsubscribe function. */
 export const onEvent = (fn) => {

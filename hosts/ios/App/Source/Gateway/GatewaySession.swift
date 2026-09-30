@@ -18,14 +18,20 @@ final class GatewaySession {
     private let entryModule: String
     private let sourceProvider: () -> String
 
+    /// The BLE face's radio (nil = the real CoreBluetooth radio; the
+    /// ble-plane-mock drive passes the deterministic mock).
+    private let bleRadio: BleRadio?
+
     init(
         entryModule: String = GatewaySession.defaultEntry,
         sourceProvider: @escaping () -> String = {
             String(cString: dsh_spike_res_scenario_m2_js(nil))
-        }
+        },
+        bleRadio: BleRadio? = nil
     ) {
         self.entryModule = entryModule
         self.sourceProvider = sourceProvider
+        self.bleRadio = bleRadio
     }
 
     private let runtimeThread = RuntimeThread(name: "org.dsh.spike.gateway")
@@ -109,7 +115,7 @@ final class GatewaySession {
     /// primitive needs a stored ref (the center's delegate is weak).
     private func wireCore() {
         guard let core else { return }
-        notifyPrimitive = core.registerStandardPrimitives()
+        notifyPrimitive = core.registerStandardPrimitives(bleRadio: bleRadio)
         core.settle = { [weak self] callId, ok, json in
             self?.runtimeThread.async { self?.settle(callId: callId, ok: ok, json: json) }
         }

@@ -1,0 +1,49 @@
+{
+  "scenario": "ble.plane",
+  "pass": false,
+  "expected": 8,
+  "logged": 4,
+  "failures": [
+    {
+      "index": 4,
+      "expected": {
+        "event": "ble.stop.idempotent",
+        "match": {
+          "stopped": false
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 5,
+      "expected": {
+        "event": "ble.connect.denied",
+        "match": {
+          "code": "denied"
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 6,
+      "expected": {
+        "event": "ble.disconnect.idempotent",
+        "match": {
+          "closed": false
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 7,
+      "expected": {
+        "event": "scenario.complete",
+        "match": {
+          "status": "pass"
+        }
+      },
+      "logged": null
+    }
+  ],
+  "parseErrors": []
+}

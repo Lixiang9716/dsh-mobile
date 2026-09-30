@@ -90,7 +90,6 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "cameraCapture" to "camera",
             "cameraRecordStart" to "camera",
             "cameraRecordStop" to "camera",
-=======
             "bleScanStart" to "ble",
             "bleScanStop" to "ble",
             "bleConnect" to "ble",

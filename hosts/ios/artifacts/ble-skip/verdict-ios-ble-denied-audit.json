@@ -1,0 +1,23 @@
+{
+  "scenario": "ble.plane.audit",
+  "pass": false,
+  "expected": 4,
+  "logged": 2,
+  "failures": [
+    {
+      "index": 2,
+      "expected": {
+        "primitive": "bleConnect"
+      },
+      "logged": null
+    },
+    {
+      "index": 3,
+      "expected": {
+        "primitive": "bleDisconnect"
+      },
+      "logged": null
+    }
+  ],
+  "parseErrors": []
+}

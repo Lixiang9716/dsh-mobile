@@ -96,6 +96,11 @@ grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 say "5/5 checkers"
+# the skip posture is OBSERVED (denied on this emulator: virtual radio up,
+# runtime permissions ungranted; absent where the radio truly is missing)
+if [ "$MODE" = "skip" ] && grep -q '"mode":"absent"' "$OUT/logs.txt"; then
+    SCEN="android-ble-absent"
+fi
 FAIL=0
 node test/e2e/check.mjs --manifest $SCEN_DIR/$SCEN.json \
     --log "$OUT/logs.txt" --out "$OUT/verdict-$SCEN.json" || FAIL=1

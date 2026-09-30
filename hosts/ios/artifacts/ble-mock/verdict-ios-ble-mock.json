@@ -1,5 +1,5 @@
 {
-  "scenario": "device.plane",
+  "scenario": "ble.plane",
   "pass": true,
   "expected": 16,
   "logged": 16,

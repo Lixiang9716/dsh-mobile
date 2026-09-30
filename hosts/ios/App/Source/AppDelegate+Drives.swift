@@ -5,6 +5,14 @@ import Foundation
 /// slot, the verdict panel) stays on the main class.
 
 extension AppDelegate {
+    /// Announces + launches the capability plane's camera drive (the
+    /// camera sibling of startBleMode).
+    func startCameraMode() {
+        announce("DSH camera plane — camera.plane, the capability plane's capture burst live…",
+                 line: "spike: app launched in camera-plane mode", web: false)
+        runCameraPlane()
+    }
+
     /// Announces + launches the capability plane's BLE drive: the real
     /// CoreBluetooth radio by default (a simulator answers `unavailable`
     /// honestly — the CI skip leg), the deterministic mock on the -mock
@@ -16,20 +24,6 @@ extension AppDelegate {
                 + (mock ? "over the deterministic mock radio…" : "over the real radio…"),
             line: "spike: app launched in \(launchMode) mode", web: false)
         runBlePlane(mockRadio: mock)
-    }
-
-    /// The v1.5.0 device-plane drive over the device.plane scenario.
-    func runDevicePlane() {
-        let session = GatewaySession(
-            entryModule: "scenario/device-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_device_plane_js(nil)) })
-        self.gateway = session
-        session.run { [weak self] outcome in
-            self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
-            self?.gateway = nil
-            print("spike: device-plane drive finished verdict=\(outcome.verdict)")
-            fflush(stdout)
-        }
     }
 
     /// The capability plane's BLE drive over the ble.plane scenario (see
@@ -47,4 +41,5 @@ extension AppDelegate {
             fflush(stdout)
         }
     }
+
 }
