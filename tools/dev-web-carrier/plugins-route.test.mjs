@@ -164,7 +164,7 @@ describe('PluginsRoute combo forms', () => {
   });
 });
 
-describe('PluginsRoute single forms', () => {
+describe('PluginsRoute single forms: the client.js face', () => {
   it('/plugins/<id>/client.js?rev=<content-hash> serves body + map URL', () => {
     const { route, revs } = stagedRoute();
     const r = serve(route, {
@@ -185,7 +185,9 @@ describe('PluginsRoute single forms', () => {
     });
     expect(r.status).toBe(404);
   });
+});
 
+describe('PluginsRoute single forms: the .map face and statuses', () => {
   it('/plugins/<id>/client.js.map?rev= serves the identity map', () => {
     const { route, revs } = stagedRoute();
     const r = serve(route, {

@@ -79,7 +79,7 @@ describe('check-staging on the green fixture (happy path)', () => {
   });
 });
 
-describe('check-staging counterexamples (the teeth)', () => {
+describe('check-staging counterexamples: manifest verdicts', () => {
   it('a gap: new closure file not in the manifest → GAP, exit 1 blocked, warn counted', () => {
     const fx = freshFixture();
     // The 2026-09 shims/-splits failure class: a new file joins the closure,
@@ -107,7 +107,9 @@ describe('check-staging counterexamples (the teeth)', () => {
     expect(r.status).toBe(1);
     expect(r.stdout).toContain('STALE scenario/leg-a.js — no such file');
   });
+});
 
+describe('check-staging counterexamples: graph and surface verdicts', () => {
   it('a broken edge: first-party import resolving nowhere → BROKEN EDGE, exit 1', () => {
     const fx = freshFixture();
     fx.writeSpike('upstream/helper.js', "export { x } from './ghost.js';\n");

@@ -204,8 +204,8 @@ class CliEndToEnd(unittest.TestCase):
             self.run_git(["add", rel])
 
     def run_tool(self):
-        r = subprocess.run([sys.executable, TOOL], cwd=self.tmp,
-                           capture_output=True, text=True)
+        cmd = [sys.executable, TOOL]
+        r = subprocess.run(cmd, cwd=self.tmp, capture_output=True, text=True)
         return r.returncode, r.stdout
 
     def test_tracked_oversized_file_exits_1(self):
@@ -236,8 +236,8 @@ class CliEndToEnd(unittest.TestCase):
         self.assertIn("1 untracked;", out)
 
     def test_self_test_leg_exits_zero(self):
-        r = subprocess.run([sys.executable, TOOL, "--self-test"],
-                           capture_output=True, text=True)
+        cmd = [sys.executable, TOOL, "--self-test"]
+        r = subprocess.run(cmd, capture_output=True, text=True)
         self.assertEqual(r.returncode, 0)
         self.assertIn("case(s) ok", r.stdout)
 
