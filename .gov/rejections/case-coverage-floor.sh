@@ -1,60 +1,65 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # gate: coverage-floor
-# Rule-6 proof that the coverage-floor comparison has teeth: a surface
-# below its floor FAILS --enforce with the surface named (exit 1), the
-# identical state stays advisory without --enforce (exit 0, the warn-tier
-# contract), and a state above its floors passes. Self-contained: forges
-# the per-surface summary report and bumps the floors, never runs vitest.
-set -euo pipefail
+# Rule-6 proof that the coverage-floor comparison has teeth. Fully
+# sandboxed: the floors registry is COPIED to a temp dir and the forged
+# measurement summaries live under a temp measurements root (the checker's
+# --floors / --measurements-root flags), so this case never opens a
+# mutation window on the real tree — a SIGKILLed case leaves no residue by
+# construction, and no live-tree lock is needed. Proves: floors at 100%
+# fail --enforce naming the surface, the identical state stays advisory
+# without --enforce (the warn-tier contract), the real floors bite a low
+# measurement, and an above-floor state passes.
+set -eu
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-FLOORS="$REPO/tools/test/coverage-floors.json"
 SURFACE="presentation/lynx-client"
-SUMMARY="$REPO/$SURFACE/coverage/coverage-summary.json"
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
 
-FLOORS_ORIG="$(mktemp)"
-SUMMARY_ORIG="$(mktemp)"
-OUT="$(mktemp)"
-HAD_SUMMARY=0
-[ -f "$SUMMARY" ] && HAD_SUMMARY=1
-cp "$FLOORS" "$FLOORS_ORIG"
-[ "$HAD_SUMMARY" -eq 1 ] && cp "$SUMMARY" "$SUMMARY_ORIG"
-
-RESTORED=0
-restore() {
-  [ "$RESTORED" -eq 1 ] && return 0
-  cp "$FLOORS_ORIG" "$FLOORS"
-  if [ "$HAD_SUMMARY" -eq 1 ]; then cp "$SUMMARY_ORIG" "$SUMMARY"; else rm -f "$SUMMARY"; fi
-  rm -f "$FLOORS_ORIG" "$SUMMARY_ORIG" "$OUT"
-  RESTORED=1
-}
-trap restore EXIT
+# The base registry is the REAL one — reading it also proves it parses.
+cp "$REPO/tools/test/coverage-floors.json" "$TMP/floors.json"
+MEASURE_ROOT="$TMP/tree"
+SUMMARY_DIR="$MEASURE_ROOT/$SURFACE/coverage/coverage-summary.json"
 
 forge_summary() { # $1 = lines pct, $2 = branches pct
-  node -e 'const fs=require("fs");const p=process.argv[1];
-fs.mkdirSync(require("path").dirname(p),{recursive:true});
-fs.writeFileSync(p,JSON.stringify({total:{lines:{pct:Number(process.argv[2])},branches:{pct:Number(process.argv[3])}}}))' \
-    "$SUMMARY" "$1" "$2"
+  mkdir -p "$(dirname "$SUMMARY_DIR")"
+  printf '{"total":{"lines":{"pct":%s},"branches":{"pct":%s}}}' "$1" "$2" \
+    > "$SUMMARY_DIR"
 }
 bump_floors_to() { # $1 lines, $2 branches
   node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
 for(const s of Object.values(j.surfaces)){s.lines=Number(process.argv[2]);s.branches=Number(process.argv[3]);}
 fs.writeFileSync(process.argv[1],JSON.stringify(j,null,2)+"\n")' \
-    "$FLOORS" "$1" "$2"
+    "$TMP/floors.json" "$1" "$2"
 }
 enforce_red() { # the gate must refuse, naming the surface
-  if node "$REPO/tools/check-coverage-floor.mjs" --enforce >"$OUT" 2>&1; then
-    echo "case-coverage-floor: FAIL — below-floor surface passed --enforce" >&2; exit 1
+  if node "$REPO/tools/check-coverage-floor.mjs" --enforce \
+       --floors "$TMP/floors.json" --measurements-root "$MEASURE_ROOT" >"$TMP/out" 2>&1
+  then
+    echo "case-coverage-floor: FAIL — below-floor surface passed --enforce" >&2
+    exit 1
   fi
-  grep -q "$SURFACE" "$OUT" || { echo "case-coverage-floor: red but does not name $SURFACE" >&2; exit 1; }
+  grep -q "$SURFACE" "$TMP/out" || {
+    echo "case-coverage-floor: red but does not name $SURFACE" >&2
+    exit 1
+  }
 }
 warn_green() { # the same state must stay advisory without --enforce
-  node "$REPO/tools/check-coverage-floor.mjs" >"$OUT" 2>&1 || {
-    echo "case-coverage-floor: FAIL — plain mode blocked (warn-tier broken)" >&2; exit 1; }
-  grep -q "warn-tier" "$OUT" || { echo "case-coverage-floor: plain mode not advisory" >&2; exit 1; }
+  node "$REPO/tools/check-coverage-floor.mjs" \
+       --floors "$TMP/floors.json" --measurements-root "$MEASURE_ROOT" >"$TMP/out" 2>&1 || {
+    echo "case-coverage-floor: FAIL — plain mode blocked (warn-tier broken)" >&2
+    exit 1
+  }
+  grep -q "warn-tier" "$TMP/out" || {
+    echo "case-coverage-floor: plain mode not advisory" >&2
+    exit 1
+  }
 }
 green() {
-  node "$REPO/tools/check-coverage-floor.mjs" --enforce >"$OUT" 2>&1 || {
-    echo "case-coverage-floor: FAIL — above-floor surface rejected" >&2; exit 1; }
+  node "$REPO/tools/check-coverage-floor.mjs" --enforce \
+       --floors "$TMP/floors.json" --measurements-root "$MEASURE_ROOT" >"$TMP/out" 2>&1 || {
+    echo "case-coverage-floor: FAIL — above-floor surface rejected" >&2
+    exit 1
+  }
 }
 
 # 1. the falsification shape: floors at 100% → even the measured baseline red
@@ -72,5 +77,4 @@ enforce_red
 forge_summary 84.2 66.5
 green
 
-restore
-echo "case-coverage-floor: below-floor red (floor=100 and real floors), warn-tier advisory, above-floor green — floors restored"
+echo "case-coverage-floor: below-floor red (floor=100 and real floors), warn-tier advisory, above-floor green — sandbox only, real tree untouched"

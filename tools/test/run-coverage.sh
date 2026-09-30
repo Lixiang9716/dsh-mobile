@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # tools/test/run-coverage.sh — real line coverage over the Node-testable
 # surface, one command. usage: run-coverage.sh [--check]
 #
@@ -10,6 +10,11 @@
 # it runs each registered surface's vitest suite with the v8 provider and
 # aggregates one table (surface / lines% / branches%) from the
 # json-summary reports.
+#
+# POSIX sh on purpose: the gate argv invokes this through `sh` (gates.json),
+# and govrail execs that argv without a shell — CI's /bin/sh is dash, where
+# `set -o pipefail` and arrays are syntax errors. Every sh-invoked gate
+# script in this repo is dash-safe; this one obeys the same constraint.
 #
 # Honest boundaries — surfaces deliberately NOT registered here, by name:
 #   - test/upstream-suite  its vitest config runs the UPSTREAM harness's own
@@ -27,17 +32,16 @@
 # tools/test/coverage-floors.json (exit 1 below floor). This is the exact
 # argv of the `coverage-floor` gate in gates.json (warn-tier: the gate
 # carries allowFailure, so a red floor is recorded without blocking).
-set -euo pipefail
+set -eu
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO"
 
 # The registered surfaces: a surface is a directory holding a vitest config
 # whose `coverage.include` names that surface's Node-testable product code.
 # Reports land at <surface>/coverage/coverage-summary.json (json-summary
-# reporter), which tools/check-coverage-floor.mjs reads.
-SURFACES=(
-  presentation/lynx-client
-)
+# reporter), which tools/check-coverage-floor.mjs reads. A plain,
+# whitespace-separated list — dash-safe where arrays are not.
+SURFACES="presentation/lynx-client"
 
 CHECK=0
 [ "${1:-}" = "--check" ] && CHECK=1
@@ -46,7 +50,7 @@ if [ "${1:-}" != "" ] && [ "$CHECK" -eq 0 ]; then
   exit 2
 fi
 
-for surface in "${SURFACES[@]}"; do
+for surface in $SURFACES; do
   if [ ! -x "$surface/node_modules/.bin/vitest" ]; then
     echo "run-coverage: installing dev deps for $surface"
     npm --prefix "$surface" install --no-audit --no-fund

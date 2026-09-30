@@ -23,6 +23,15 @@ const floorsArgIdx = process.argv.indexOf('--floors');
 const FLOORS_PATH = floorsArgIdx > -1
   ? resolve(process.argv[floorsArgIdx + 1])
   : resolve(REPO, 'tools/test/coverage-floors.json');
+// --measurements-root DIR: where <surface>/coverage/coverage-summary.json
+// lives. Defaults to the repo — the shape every real run has. The rule-6
+// case passes a sandbox root instead, so its proof never opens a mutation
+// window on the real tree (a SIGKILLed case leaves no residue by
+// construction).
+const measArgIdx = process.argv.indexOf('--measurements-root');
+const MEASURE_ROOT = measArgIdx > -1
+  ? resolve(process.argv[measArgIdx + 1])
+  : REPO;
 const EPSILON = 1e-9;
 
 const registry = JSON.parse(readFileSync(FLOORS_PATH, 'utf8'));
@@ -37,7 +46,7 @@ const rows = [];
 const violations = [];
 
 for (const [surface, floor] of Object.entries(surfaces)) {
-  const summaryPath = resolve(REPO, surface, 'coverage', 'coverage-summary.json');
+  const summaryPath = resolve(MEASURE_ROOT, surface, 'coverage', 'coverage-summary.json');
   let summary;
   try {
     summary = JSON.parse(readFileSync(summaryPath, 'utf8'));

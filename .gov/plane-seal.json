@@ -16,7 +16,7 @@
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
     },
     ".gov/rejections/case-coverage-floor.sh": {
-      "sha256": "1d90fb738c55def710e1f5e3f8a81e105232b5c47dd478356b6dfae4356e8f18"
+      "sha256": "1df18469ac010e51e8ef6ada54010300e26ce6beac55c3294f7abe08c940de03"
     },
     ".gov/rejections/case-e2e-matrix.sh": {
       "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
@@ -41,9 +41,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T14:03:28+00:00",
+    "ts": "2026-09-30T14:04:20+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "rebase onto main (10ac8fbe): union of #280's reviewed seal (BYOK panel-tests gate) and #274's reviewed seal (coverage-floor warn-tier gate + case) \u2014 gates.json auto-merged to the 21-gate union; seal recomputed over the merged tree during the PR #274 rebase"
+    "reason": "rebase onto main (10ac8fbe), commit 6/10 replay: #274 review-round seal (sandboxed case-coverage-floor) unioned with #280's reviewed seal \u2014 seal recomputed over the merged tree"
   }
 }

@@ -34,10 +34,20 @@ Node-testable faces and give the numbers an honest, non-blocking floor.
   **warn-tier**: `allowFailure: true`, red is recorded, never blocking.
   Rule-6 case `.gov/rejections/case-coverage-floor.sh` proves the teeth
   (floors at 100% → red naming the surface; identical state advisory
-  without `--enforce`; above-floor green; restore byte-identical). Before
-  sealing, the falsification was run for real: `run-coverage.sh --check`
-  with floors at 100 exited 1; floors restored (cmp byte-identical), exit 0.
-  Plane re-sealed with the reviewed-change reason in the ritual ledger.
+  without `--enforce`; real floors bite a low measurement; above-floor
+  green). Before sealing, the falsification was run for real:
+  `run-coverage.sh --check` with floors at 100 exited 1; floors restored
+  (cmp byte-identical), exit 0. Plane re-sealed with the reviewed-change
+  reason in the ritual ledger. **Review round (PR #274):** the case was
+  redesigned fully sandboxed — the checker grew `--floors` /
+  `--measurements-root`, and the case now proves everything against a
+  copied registry + forged summaries in a temp dir, never a real-tree
+  mutation window (the original trap/restore shape could go sticky if the
+  10s self-test budget SIGKILLed it mid-window, and it held no live-tree
+  lock). The runner was rewritten POSIX sh: the gate argv invokes it via
+  `sh` with no shell in between, CI's dash dies on `set -o pipefail` and
+  arrays (reproduced locally: `dash tools/test/run-coverage.sh` → "Illegal
+  option -o pipefail"); the whole chain re-verified green under real dash.
 - **The honest boundary is part of the deliverable** (docs/test-coverage.md,
   bilingual): `bundle/` (Lynx-engine face), the CLI/e2e face
   (`driver.js`, `skin-*.js`, `run-*.mjs`, `mock-serve.mjs` — e2e-covered by

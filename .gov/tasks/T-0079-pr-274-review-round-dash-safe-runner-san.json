@@ -1,0 +1,20 @@
+{
+  "title": "PR #274 review round: dash-safe runner, sandboxed rule-6 case, real CI evidence",
+  "created": "2026-09-30T08:50:25+00:00",
+  "rules": {
+    "hash": "75bf4e58853ce6c232be0681d0101bd3072bb115cafbf36e8ab94a747ad8ddb1",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "09ffc1f40710e360d3cbd842ea855d0c5c9bd777ca5ca90fd2e6cfcefd93b159"
+    }
+  },
+  "checklist": [
+    "de-bashism tools/test/run-coverage.sh (set -eu, no array) \u2014 dash-safe under the sh gate argv; docs stay accurate",
+    "checker --measurements-root + rewrite case-coverage-floor.sh fully sandboxed (no real-tree mutation window, SIGKILL-proof by construction)",
+    "refresh docs pair + Agent Note wording; pairing re-stamped",
+    "gov run green + self-test + push + workflow_dispatch CI run + paste coverage-floor leg output back on PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0079"
+}

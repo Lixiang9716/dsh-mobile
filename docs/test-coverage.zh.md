@@ -35,8 +35,13 @@ npm --prefix presentation/lynx-client run test:coverage
 抖动不扰。`gates.json` 的 `coverage-floor` 门跑
 `sh tools/test/run-coverage.sh --check`,按面所在目录树 scoping,带
 `allowFailure: true`——**warn 档:红只记录,不阻断**。它的 rule-6 反证
-用例(`.gov/rejections/case-coverage-floor.sh`)证明门有牙:地板临时抬到
-100% 会红且具名,同一状态在无 `--enforce` 时保持 advisory,高于地板则绿。
+用例(`.gov/rejections/case-coverage-floor.sh`)全沙箱地证明门有牙——
+地板注册表拷贝到临时目录、伪造的度量放在临时 measurements 根下
+(`--floors` / `--measurements-root`),真实树永远不会被开变更窗(用例被杀
+也零残留):地板临时抬到 100% 会红且具名,同一状态在无 `--enforce` 时保持
+advisory,真实地板能咬住低度量,高于地板则绿。runner 本身刻意写成 POSIX
+sh——门的 argv 经 `sh` 调用,而 govrail 无 shell 直 exec 该 argv,CI 的
+dash 必须能跑(数组与 `pipefail` 在那里是语法错误)。
 
 正当降地板的方式:重测,把地板移到新实测 − 5,并在 PR 里说明理由
 (没有实测依据的地板改动是漂移,不是维护)。

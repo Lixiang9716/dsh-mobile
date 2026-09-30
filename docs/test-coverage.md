@@ -40,9 +40,17 @@ The `coverage-floor` gate in `gates.json` runs
 `sh tools/test/run-coverage.sh --check`, scoped to the surface tree, with
 `allowFailure: true` — **warn-tier: a red floor is recorded, never
 blocking**. Its rule-6 rejection case
-(`.gov/rejections/case-coverage-floor.sh`) proves the teeth: floors bumped
-to 100% go red with the surface named, the same state stays advisory
-without `--enforce`, and an above-floor state passes.
+(`.gov/rejections/case-coverage-floor.sh`) proves the teeth fully
+sandboxed — the floors registry is copied to a temp dir and the forged
+summaries live under a temp measurements root (`--floors` /
+`--measurements-root`), so no mutation window ever opens on the real tree
+(a killed case leaves no residue by construction): floors bumped to 100%
+go red with the surface named, the same state stays advisory without
+`--enforce`, the real floors bite a low measurement, and an above-floor
+state passes. The runner itself is POSIX sh on purpose — the gate argv
+invokes it through `sh`, and govrail execs that argv without a shell, so
+CI's dash must be able to run it (arrays and `pipefail` would be syntax
+errors there).
 
 To lower a floor legitimately: re-measure, move the floor to
 new-measured − 5, and say why in the PR (a floor moved without a measured
