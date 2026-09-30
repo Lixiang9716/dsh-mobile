@@ -11,25 +11,25 @@ Five capability/CI PRs (#251–#255, #271–#272) landed after the matrix did,
 and nothing structural re-runs it — exactly the hole the office-plane lesson
 names. The final run existed to catch what slipped through. It caught:
 
-1. **The matrix's no-argument default never worked** (`f361d009`): the
+1. **The matrix's no-argument default never worked** (`7fe20dc1`): the
    default initialized the literal three-word list, which the validator
    rejects — a bare `run-simulator-matrix.sh` (the usage line's bracket
    form) died before booting anything. Every earlier run passed
    `--platform` explicitly, so the default shipped unexercised in #250.
-2. **gateway.binding demanded an all-available descriptor** (`3b7f08d4`):
+2. **gateway.binding demanded an all-available descriptor** (`015c6adf`):
    the camera family (#252) honestly declares the phased recording rows
    unavailable by contract, so the scenario died on every host before
    emitting a single event. The scenario now pins what it meant — every
    unavailable row must be a KNOWN phased row — and the manifest pins the
    session seat's true descriptor 33/2.
-3. **The selftest boot fixture never gained `shims.selftest`** (`3b7f08d4`):
+3. **The selftest boot fixture never gained `shims.selftest`** (`015c6adf`):
    #210 added the expectation to the manifest without regenerating the
    fixture; `selftest.sh` failed on clean HEAD.
-4. **The iOS device-plane descriptor pin read 31** (`86abcf58`):
+4. **The iOS device-plane descriptor pin read 31** (`a1407601`):
    #255's microphone rows completed the serving table; the seat emits 33
    now. The pin followed the measured payload.
 5. **The gateway picker drive's SEARCH path is dead on this machine**
-   (`e30361bc`, `26c15cc8`, plus the stdin fix): the app rewrote the staged
+   (`770bc013`, `aee95c5d`, plus the stdin fix): the app rewrote the staged
    target at every launch (knocking it out of the file-provider search
    index), and even after that was fixed stage-once, the search never
    surfaced the file again — not at file age ~2, ~5 or ~26 minutes, through

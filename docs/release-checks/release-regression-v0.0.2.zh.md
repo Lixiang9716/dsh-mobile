@@ -109,7 +109,7 @@ diff 不可复原。本跑能背书的首行事实是:v0.0.2 处,每个能转译
 GNU tar 1.35 在后一个 `--wildcards` 模式的成员已被前面跨斜杠模式吞没时以
 非零退出("*/packages/*/*/package.json: Not found in archive",实际 303 个
 package.json 全抽出来了),脚本 `set -e` 在 55 个 test-face npm vendoring
-之前中止,转译在残树上进行。本 PR 已修(`14922042`):gtar 退出非零时先
+之前中止,转译在残树上进行。本 PR 已修(`e8ff4668`):gtar 退出非零时先
 验证抽取完整(≥ 200 个 package.json)再放行。不修的话,任何新鲜 worktree
 的 sweep——包括将来的发布回归——都在静默测量套件的一小角。
 
@@ -137,15 +137,15 @@ test/e2e/ios-ui.py sweep hosts/ios/artifacts/release-feature-sweep
 
 | 提交 | 重跑抓到的 |
 | --- | --- |
-| `f361d009` | 矩阵无参默认档从未可用(什么都还没起就死) |
-| `3b7f08d4` | gateway.binding 要求 descriptor 全可用,与 #252 的诚实 phased 行冲突;selftest 的 boot fixture 没跟上 `shims.selftest` |
-| `e24b595b`/`2eba4d98`/`44dd9191` | picker 搜索沉降三部曲(被浏览路径取代;过程提交留在历史里) |
-| `e30361bc` | app 每次启动重写 E2E picker 目标,把文件踢出文件提供器索引 |
-| `26c15cc8` | picker drive 改走 BROWSE 层级——搜索路径在本机上对任何文件龄都不再浮现目标 |
-| `34644967` | wda_find_cell 的 heredoc 吞掉了管道树(首次 walk 即发现) |
-| `86abcf58`/`afe3e739` | iOS/Android device-plane descriptor 钉值落后于 #255 补全的全表(31→33、32→34) |
-| `877e2ca0` 等 | Android **模拟器**相机腿错检设备线 manifest;mic/ble/skip 钉值同轮落后(26/32→34);#252 真拍 manifest 以 `android-` 名回归 |
-| `14922042` | gtar 模式吞没退出饿死新鲜 worktree 的套件物化 |
+| `7fe20dc1` | 矩阵无参默认档从未可用(什么都还没起就死) |
+| `015c6adf` | gateway.binding 要求 descriptor 全可用,与 #252 的诚实 phased 行冲突;selftest 的 boot fixture 没跟上 `shims.selftest` |
+| `38318931`/`c5af4e49`/`706426c9` | picker 搜索沉降三部曲(被浏览路径取代;过程提交留在历史里) |
+| `770bc013` | app 每次启动重写 E2E picker 目标,把文件踢出文件提供器索引 |
+| `aee95c5d` | picker drive 改走 BROWSE 层级——搜索路径在本机上对任何文件龄都不再浮现目标 |
+| `afeaabd0` | wda_find_cell 的 heredoc 吞掉了管道树(首次 walk 即发现) |
+| `a1407601`/`fd7ca562` | iOS/Android device-plane descriptor 钉值落后于 #255 补全的全表(31→33、32→34) |
+| `2d2073ca` 等 | Android **模拟器**相机腿错检设备线 manifest;mic/ble/skip 钉值同轮落后(26/32→34);#252 真拍 manifest 以 `android-` 名回归 |
+| `e8ff4668` | gtar 模式吞没退出饿死新鲜 worktree 的套件物化 |
 
 Agent Note:`.agents/notes/implemented/testing/2026-09-30-the-release-
 regression-final-run-is-the-net-that-caught.md`。

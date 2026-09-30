@@ -126,8 +126,8 @@ cat > "$OUT/receipt.json" <<EOF
   "tree": "$TREE_LINE",
   "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
   "scenarios": [
-    { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true },
-    { "manifest": "camera-plane-capture-audit", "verdict": "verdict-camera-plane-capture-audit.json", "pass": true }
+    { "manifest": "android-camera-plane", "verdict": "verdict-android-camera-plane.json", "pass": true },
+    { "manifest": "android-camera-plane-audit", "verdict": "verdict-android-camera-plane-audit.json", "pass": true }
   ],
   "screens": [],
   "producedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

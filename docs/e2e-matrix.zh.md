@@ -48,8 +48,10 @@
 > `m5-llm-live-stream` 落地绿色被服务轮次（`llm.live-stream` 14/130 +
 > `llm.live-stream.carrier` 7/7，提交 `64889c54`），缺口 8/9 闭合，但
 > 下方注记与单元格直到本次才不再携带红色状态；(b) 登记表第八行——
-> Android 相机审计的自相矛盾 verdict（由 BLE 线的变基发现）——已在下方
-> 说明。下面的注记是历史的时效记录。
+> Android 相机审计的自相矛盾 verdict（由 BLE 线的变基发现）——曾在下方
+> 说明，并已由此闭合（v0.0.2 发布回归，2026-09-30：runner 一直错检设备线
+> manifest；已修复接线、真跑转绿、登记表行划掉）。下面的注记是历史的时效
+> 记录。
 >
 > **时效性**：本矩阵反映麦克风面变更（2026-09-30）：能力面的 microphone
 > 面在移动宿主上落地 —— 一个平台中立 scenario `mic.plane` 逐宿主驱动
@@ -247,7 +249,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8（确定性 mock 电台的双设备 GATT 库——180f/2a19 read+notify、fe00/fe01 write——与真实电台共用同一套 gateway 强制、同意层与审计） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4（如实无电台姿态：模拟器的虚拟控制器带未授予的运行时权限） | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8, camera.plane.audit 5/6（漂移——登记表第八行：该审计 verdict 记录 pass=true 且 expected=5 logged=6，属继承红） | ✓ | ✓ | ✓ | 0 |
+| `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8（虚拟相机真实拍摄），camera.plane.audit 5 钉/6 记（审计 manifest 已声明 `repeat`——合法） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/mic-plane` | Android | mic.plane 9/9（漂移）, android.mic.plane.audit 4/4（漂移）——武装梯带真实 PCM 帧 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
@@ -346,7 +348,6 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android 工作流（#72） | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
-| VERDICT_MALFORMED | hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json | 相机工作流（#252） | 重跑 DSH_ANDROID_SERIAL=<模拟器> hosts/android/ci/run-camera-plane.sh 以再生成自洽的 verdict（已提交文件记录 pass=true 且 expected=5 logged=6——继承红，由 BLE 线的变基发现） |
 
 （检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
 是源；本表为读者保留等价的中文渲染。）
@@ -354,9 +355,9 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 ### 为什么这八项都不在本分支闭合（如实说明）
 
 其中七项需要一份 `receipt.json`，而它只能由各自主机工作流下一次在
-设备/模拟器上的运行产出；第八项是相机落地时继承的一份自相矛盾
-verdict，归相机工作流下一次模拟器运行所有。在本分支
-里补写这些 receipt 就等于凭空编造：
+设备/模拟器上的运行产出。（第八项——Android 相机审计的自相矛盾
+verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小节。）
+在本分支里补写这些 receipt 就等于凭空编造：
 
 - **receipt 证明的是一次运行，而该运行的设备不在已提交工件里。** `host`
   字段记的是运行发生在哪台机器上——iOS 模拟器 UDID 与运行时版本、android
@@ -375,13 +376,18 @@ verdict，归相机工作流下一次模拟器运行所有。在本分支
   harmony 与 `run-ios-b4.sh` 的 runner 尚无该步骤，因此这些行需先做 runner
   变更（照搬同样的绿色路径落盘）**再**执行该行点名的重跑——两件事都归目录
   落地的工作流所有。
-- **第八项是一条自我矛盾的 verdict，不是缺失的运行。**
-  `hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
-  记录 `pass: true` 且 `expected=5, logged=6`——相机落地（#252）提交的
-  继承红，由 BLE 线的变基（#254）发现。登记表行存在的意义正是让这一类
-  缺口被点名、有主、可收口：相机工作流下一次 Android 模拟器运行会再生成
-  自洽的 verdict。本次收编只做记录，不再生成设备证据（本机没有挂着的
-  模拟器，而合成 verdict 是验收标准唯一禁止的动作）。
+- **第八项曾是一条自我矛盾的 verdict，不是缺失的运行——2026-09-30 已
+  闭合。** 相机落地时的
+  `verdict-camera-plane-capture-audit.json` 记录 `pass: true` 且
+  `expected=5, logged=6`，而登记行点名的收口配方（"重跑 runner——无需改
+  代码"）事后证明照写不可达：自 62f80165 起模拟器相机 runner 一直错检
+  设备线 manifest（camera-plane-capture*.json，场景 `ble.plane`），无论
+  重跑多少次都不可能为本腿自己的场景产出自洽 verdict。v0.0.2 发布回归
+  修复接线、把 #252 真拍 manifest 以 verdict 词干名归还
+  （`android-camera-plane*.json`，审计声明 `repeat`），并在模拟器上真跑
+  转绿（真实虚拟相机拍摄 8/8，repeat 感知审计自洽：expected=5,
+  logged=6，`pass: true` 合法），登记表行划掉。证据目录的收据已刷新并
+  指向改名后的 verdict。
 
 按缺口编号的细节（与本清单上方 `rcpt` 列引用的编号一致，也即登记表各行的
 顺序）：
@@ -421,15 +427,17 @@ verdict，归相机工作流下一次模拟器运行所有。在本分支
    绿色）落地。归 android 工作流所有：一次绿色的
    `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
    加上同样的 runner 落盘。
-8. **`hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json`
-   自相矛盾** —— `pass: true` 却 `expected=5, logged=6`。目录随 #252
-   （相机面）落地；该畸形 verdict 属继承红，由 BLE 线的变基（#254）发现，
-   正是那次变基补上了登记表行。与 repeat 感知的审计 manifest
-   （`device.plane.audit` 的 `14/23`）不同，这份 manifest 没有声明
-   `repeat` 期望，因此 `pass: true` 记录上的计数分歧是真实矛盾——正是
-   检查器计数一致性提示为之存在的形状。**收口（归相机工作流所有）：**
-   重跑 `DSH_ANDROID_SERIAL=<模拟器> hosts/android/ci/run-camera-plane.sh`
-   以再生成自洽的 verdict——无需改代码。
+### 由 v0.0.2 发布回归闭合（2026-09-30）
+
+- **缺口 8（Android 相机审计的自相矛盾 verdict）** —— 真实闭合，且方式
+  与登记行猜测的不同：畸形 verdict 只是症状——自 62f80165 起，模拟器相机
+  runner 一直在拿设备线 manifest（场景 `ble.plane`）去检查本腿自己的场景
+  （`camera.plane`），计数永远对不齐，登记行的收口配方（"重跑——无需改
+  代码"）不可达成。发布回归修复了 runner 接线，把 #252 真拍 manifest 以
+  verdict 词干名归还（`android-camera-plane.json` /
+  `android-camera-plane-audit.json`，审计声明 `repeat`），随后在模拟器上
+  真跑转绿——camera.plane 8/8（虚拟相机真实拍摄），repeat 感知审计自洽
+  （expected=5, logged=6，`pass: true` 合法）——并划掉了登记行。
 
 ### 由 2026-09-28 配额重置重跑闭合（上游套件跟进，提交 `64889c54`）
 

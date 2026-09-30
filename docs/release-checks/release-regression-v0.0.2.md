@@ -129,7 +129,7 @@ nonzero when a later `--wildcards` pattern's members were already consumed
 by an earlier slash-crossing one ("*/packages/*/*/package.json: Not found
 in archive", 303 package.json files extracted), the script's `set -e`
 aborted before the 55 test-face npm vendoring calls, and the transpile ran
-on the partial tree. Fixed in this PR (`14922042`): the gtar pass verifies
+on the partial tree. Fixed in this PR (`e8ff4668`): the gtar pass verifies
 the extraction (≥ 200 package.json files) before accepting a nonzero exit.
 Without this fix every fresh worktree's sweep — including any future
 release regression — silently measures a fraction of the suite.
@@ -161,15 +161,15 @@ test/e2e/ios-ui.py sweep hosts/ios/artifacts/release-feature-sweep
 
 | Commit | What the rerun caught |
 | --- | --- |
-| `f361d009` | the matrix's no-argument default never worked (died before booting anything) |
-| `3b7f08d4` | gateway.binding demanded an all-available descriptor against #252's honest phased rows; the selftest boot fixture never gained `shims.selftest` |
-| `e24b595b`/`2eba4d98`/`44dd9191` | the picker-search settle saga (superseded by the browse walk; the interim pacing commits remain honest history) |
-| `e30361bc` | the app rewrote the E2E picker target at every launch, knocking it out of the file-provider index |
-| `26c15cc8` | the picker drive now walks the BROWSE hierarchy — the search path stopped surfacing the target at any age on this machine |
-| `34644967` | wda_find_cell's heredoc swallowed the piped tree (found in the first walk attempt) |
-| `86abcf58`/`afe3e739` | the iOS/Android device-plane descriptor pins lagged #255's completed table (31→33, 32→34) |
-| `877e2ca0`+`the manifests commit` | the Android SIMULATOR camera leg checked the DEVICE-leg manifests; mic/ble/skip pins lagged the same resync (26/32→34); the #252 burst manifests came back under `android-` names |
-| `14922042` | the gtar pattern-consumption exit starved fresh-worktree suite materialization |
+| `7fe20dc1` | the matrix's no-argument default never worked (died before booting anything) |
+| `015c6adf` | gateway.binding demanded an all-available descriptor against #252's honest phased rows; the selftest boot fixture never gained `shims.selftest` |
+| `38318931`/`c5af4e49`/`706426c9` | the picker-search settle saga (superseded by the browse walk; the interim pacing commits remain honest history) |
+| `770bc013` | the app rewrote the E2E picker target at every launch, knocking it out of the file-provider index |
+| `aee95c5d` | the picker drive now walks the BROWSE hierarchy — the search path stopped surfacing the target at any age on this machine |
+| `afeaabd0` | wda_find_cell's heredoc swallowed the piped tree (found in the first walk attempt) |
+| `a1407601`/`fd7ca562` | the iOS/Android device-plane descriptor pins lagged #255's completed table (31→33, 32→34) |
+| `2d2073ca`/`dd4d78ae` | the Android SIMULATOR camera leg checked the DEVICE-leg manifests; mic/ble/skip pins lagged the same resync (26/32→34); the #252 burst manifests came back under `android-` names |
+| `e8ff4668` | the gtar pattern-consumption exit starved fresh-worktree suite materialization |
 
 Agent Note: `.agents/notes/implemented/testing/2026-09-30-the-release-
 regression-final-run-is-the-net-that-caught.md`.
