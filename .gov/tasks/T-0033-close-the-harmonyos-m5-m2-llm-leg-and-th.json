@@ -2,7 +2,7 @@
   "title": "Close the HarmonyOS m5-m2-llm leg and the platform check gates",
   "created": "2026-09-21T17:34:17+00:00",
   "rules": {
-    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "hash": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -72,6 +72,13 @@
       "from": "34016fe0b89f179646ee7ba90b7a3da6285d75144c348cf31da5e457fa5076e5",
       "to": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
       "reason": "constitution advanced (the staging-check gate's needs edge + rule-6 rejection case, plane re-sealed; the same move that staled these pins began with wave-1's gates.json change); briefs unchanged"
+    },
+    {
+      "ts": "2026-09-30T09:21:55+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+      "to": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
+      "reason": "the brief still describes pending owner/quota actions (harmony m2-llm evidence run, ci-verdict required check, known-gaps register audit); advancing the pin to the current rules baseline so the card can keep blocking for its real owners"
     }
   ]
 }
