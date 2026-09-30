@@ -97,25 +97,36 @@ if [ "$CHECK_ONLY" = "1" ]; then
 fi
 
 # --- phase 2: sync the target's files -----------------------------------
-say "sync: $TARGET -> $HOST:$REMOTE_DIR/$TARGET"
-rssh "mkdir -p '$REMOTE_DIR/$TARGET'"
-tar -czf - -C "$(dirname "$0")" "$TARGET" | rssh "tar -xzf - -C '$REMOTE_DIR'"
+# Tarball locally first — no shell pipeline, so a local tar failure aborts
+# (set -e) instead of being masked by the remote's success — and .env is
+# EXCLUDED: it belongs to the deployment host only; a local copy (even a
+# leftover experiment) must never overwrite the host-generated one.
+say "sync: $TARGET -> $HOST:$REMOTE_DIR/$TARGET (.env excluded)"
+TARBALL="$(mktemp "${TMPDIR:-/tmp}/dsh-idp-sync.XXXXXX.tar.gz")"
+tar --exclude="$TARGET/.env" -czf "$TARBALL" -C "$(dirname "$0")" "$TARGET"
+rssh "tar -xzf - -C '$REMOTE_DIR'" < "$TARBALL"
+rm -f "$TARBALL"
 
 # --- phase 3: install ----------------------------------------------------
 case "$TARGET" in
   logto)
     # .env lives on the host only; generate the DB password THERE if absent.
-    rssh bash -s <<'REMOTE'
-cd /opt/dsh-idp/logto
+    # The remote dir travels as $1: the heredoc stays quoted (the $(...)
+    # inside must expand on the REMOTE, never locally) while --remote-dir
+    # is still honored.
+    rssh bash -s "$REMOTE_DIR" <<'REMOTE'
+set -eu
+cd "$1/logto"
 if [ ! -f .env ]; then
   umask 077
   {
-    echo "POSTGRES_PASSWORD=$(head -c 32 /dev/urandom | base64 | tr -d '\n')"
+    # hex only: base64's '/' would corrupt the postgresql:// URL in compose
+    echo "POSTGRES_PASSWORD=$(head -c 24 /dev/urandom | od -An -tx1 | tr -d ' \n')"
     echo "POSTGRES_DB=logto"
     echo "ENDPOINT=https://idp.CHANGE_ME.example.com"
     echo "ADMIN_ENDPOINT=https://idp-admin.CHANGE_ME.example.com"
   } > .env
-  echo "[deploy-idp] generated .env on the host (DB password random, mode 600)."
+  echo "[deploy-idp] generated .env on the host (DB password random hex, mode 600)."
   echo "[deploy-idp] EDIT .env: set ENDPOINT / ADMIN_ENDPOINT to your domains"
   echo "[deploy-idp] BEFORE pointing DNS at this host."
 else
@@ -131,15 +142,25 @@ REMOTE
   pocketbase)
     # heredoc is unquoted: $REMOTE_DIR / $PB_VERSION expand locally
     rssh bash -s <<REMOTE
+set -eu
 id pocketbase >/dev/null 2>&1 || useradd --system --home-dir '$REMOTE_DIR/pocketbase' --shell /usr/sbin/nologin pocketbase
 mkdir -p '$REMOTE_DIR/pocketbase/pb_data'
 cd '$REMOTE_DIR/pocketbase'
 if [ ! -x pocketbase ]; then
-  curl -fsSL -o pb.zip "https://github.com/pocketbase/pocketbase/releases/download/$PB_VERSION/pocketbase_linux_amd64.zip"
+  # release assets embed the version: pocketbase_0.40.4_linux_amd64.zip
+  case "$(uname -m)" in
+    aarch64|arm64) PB_ARCH=arm64 ;;
+    *) PB_ARCH=amd64 ;;
+  esac
+  PB_VER="${PB_VERSION#v}"
+  curl -fsSL -o pb.zip "https://github.com/pocketbase/pocketbase/releases/download/$PB_VERSION/pocketbase_${PB_VER}_linux_${PB_ARCH}.zip"
   unzip -o pb.zip pocketbase && rm pb.zip && chmod +x pocketbase
 fi
 chown -R pocketbase:pocketbase '$REMOTE_DIR/pocketbase'
-cp '$REMOTE_DIR/pocketbase/pocketbase.service' /etc/systemd/system/pocketbase.service
+# the unit is a TEMPLATE: bake the real install dir in at install time,
+# so ExecStart points where this script actually put the binary
+sed "s|@REMOTE_DIR@|$REMOTE_DIR/pocketbase|g" '$REMOTE_DIR/pocketbase/pocketbase.service' > /etc/systemd/system/pocketbase.service
+chmod 644 /etc/systemd/system/pocketbase.service
 systemctl daemon-reload
 systemctl enable --now pocketbase
 REMOTE
