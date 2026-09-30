@@ -1,0 +1,112 @@
+<!doctype html>
+<!--
+  The GitHub Pages demo: what the DSH client looks like, in a browser tab.
+  Static shell only — the <lynx-view> renders the real ReactLynx bundle
+  (main.web.bundle, the `npm run build:web` output, staged beside this page)
+  through @lynx-js/web-core's static client — the package README's official
+  recipe (client.js + client.css + <lynx-view url=...>). No session backend is
+  connected: visitors see the product's UI shell, not a live session.
+  Every color, radius and gradient on this page comes from the generated
+  token face (web.tokens.css — single-sourced from theme/tokens.json, the
+  same file that renders the Lynx bundle's typed style constants); this page
+  carries no palette of its own. All paths relative: Pages serves project
+  pages from a subpath (https://<owner>.github.io/<repo>/).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>DSH — the mobile face of the DeepSeek Harness</title>
+  <link rel="stylesheet" href="./web.tokens.css">
+  <!-- The web-core platform stylesheet — the other half of the official
+       recipe (the [lynx-computed-display] layout rules live here). -->
+  <link rel="stylesheet" href="./web-core/static/css/client.css">
+  <style>
+    /* Layout only — no colors here; the tokens own the palette. */
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+    /* The aurora backdrop: the client's three translucent blobs over the deep
+       base — colors are the aurora tokens, geometry is this page's own. */
+    .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .aurora i { position: absolute; display: block; border-radius: 50%; filter: blur(72px); }
+    .aurora .ocean  { width: 64vmax; height: 64vmax; left: -20vmax; top: -24vmax;
+                      background: radial-gradient(circle, var(--blob-ocean), transparent 65%); }
+    .aurora .haze   { width: 74vmax; height: 74vmax; right: -28vmax; bottom: -32vmax;
+                      background: radial-gradient(circle, var(--blob-haze), transparent 65%); }
+    .aurora .purple { width: 46vmax; height: 46vmax; right: 6vmax; top: -20vmax;
+                      background: radial-gradient(circle, var(--blob-purple), transparent 65%); }
+    .shell {
+      position: relative; z-index: 1;
+      height: 100%;
+      max-width: 480px; margin: 0 auto;
+      display: flex; flex-direction: column; align-items: stretch;
+      gap: 12px; padding: 20px 16px 14px;
+    }
+    header { text-align: center; }
+    h1 { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 3px; }
+    #tagline { margin: 4px 0 0; font-size: 13.5px; color: var(--text2); }
+    #hint { margin: 3px 0 0; font-size: 11.5px; color: var(--text3); }
+    .frame {
+      flex: 1 1 auto; min-height: 0;
+      border-radius: var(--r-composer);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-stroke);
+      overflow: hidden;
+    }
+    lynx-view { display: block; width: 100%; height: 100%; }
+    footer { text-align: center; }
+    footer p { margin: 0; font-size: 10.5px; color: var(--text3); }
+  </style>
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"><i class="ocean"></i><i class="haze"></i><i class="purple"></i></div>
+  <main class="shell">
+    <header>
+      <h1 id="brand">DSH</h1>
+      <p id="tagline">A mobile host for the DeepSeek Harness ecosystem — its client, rendered live.</p>
+      <p id="hint">Static preview: the UI shell runs; no session backend is connected.</p>
+    </header>
+    <section class="frame" id="frame" aria-label="Live client render">
+      <lynx-view id="client" url="./main.web.bundle"></lynx-view>
+    </section>
+    <footer>
+      <p>ReactLynx bundle (presentation/lynx-client) &middot; mounted by @lynx-js/web-core &middot; dark aurora tokens from theme/tokens.json</p>
+    </footer>
+  </main>
+  <script type="module" src="./web-core/static/js/client.js"></script>
+  <script>
+    // The web platform hosts the client tree in a plain block <div> inside
+    // lynx-view's shadow root; the bundle's root view carries flex:1 (the
+    // native engine sizes it against its page root, a flex container). Make
+    // that host div the flex parent so the client fills the frame instead of
+    // collapsing to content height. Demo-side compensation only — the bundle
+    // (the product payload) is untouched. Polls briefly: the shadow root
+    // appears once the runtime chunk mounts.
+    (() => {
+      const client = document.getElementById('client');
+      let tries = 0;
+      const timer = setInterval(() => {
+        tries += 1;
+        const box = client.shadowRoot && client.shadowRoot.querySelector('div');
+        if (box && box.firstElementChild) {
+          box.style.display = 'flex';
+          box.style.flexDirection = 'column';
+          clearInterval(timer);
+        } else if (tries > 120) { // 30 s, then say so in the console
+          clearInterval(timer);
+          console.warn('dsh-demo: lynx-view shadow container not found; client not compensated');
+        }
+      }, 250);
+    })();
+  </script>
+</body>
+</html>

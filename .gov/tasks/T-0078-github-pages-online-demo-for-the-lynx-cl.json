@@ -1,0 +1,20 @@
+{
+  "title": "GitHub Pages online demo for the lynx-client web render (P2 early preview)",
+  "created": "2026-09-30T06:19:03+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "workflow: .github/workflows/pages.yml \u2014 workflow_dispatch + main-push path-filtered, node setup, pinned npm ci (npmmirror fallback), build:web, static index + pages artifact + deploy-pages (pages:write + id-token:write)",
+    "demo page: static index.html wrapping the bundle's web render container (lynx-view over dist-web/main.web.bundle), DSH landing + dark aurora tokens reused, zero new deps",
+    "local acceptance: npm ci + npm run build:web real output + headless page verification (CDP screenshot per #248 precedent, else DOM assertions, honestly labeled)",
+    "landing: gov run full DAG green with receipt, push, PR opened (first-run failure expected until owner flips Settings\u2192Pages, stated in PR body)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
