@@ -69,6 +69,7 @@ const ENTRY_SPEC = 'dsh-fs@^0.1.0';
 /** Events carry PATHS, never the ephemeral port — the runner-local base URL
  * must not enter the deterministic log. */
 const urlPath = (url) => {
+  log.debug('normalize url to path', { url: String(url) });
   const s = String(url);
   const at = s.indexOf('://');
   const slash = s.indexOf('/', at + 3);
@@ -77,6 +78,7 @@ const urlPath = (url) => {
 const onMarket = (name, fields) => emit(`market.${name}`, fields);
 /** The installer's lifecycle events, port-normalized. */
 const onInstall = (name, fields) => {
+  log.debug('installer step', { name });
   const out = { ...fields };
   if (typeof out.url === 'string') out.url = urlPath(out.url);
   emit(`install.${name}`, out);
@@ -94,6 +96,7 @@ const makeResolver = (docPath) => createResolver({
 
 /** InstallAttempt → InstallRejected, or null when nothing was rejected. */
 const rejectionOf = async (attempt) => {
+  log.debug('expecting a rejection');
   try {
     await attempt();
   } catch (err) {
@@ -105,6 +108,7 @@ const rejectionOf = async (attempt) => {
 
 /** Fetch a control endpoint through the same real httpFetch and drain it. */
 const controlFetch = async (path) => {
+  log.debug('control endpoint', { path });
   const res = await fetchGet(`${INDEX_URL}${path}`);
   demand(res.status === 200, `control ${path} status ${res.status}`);
   for await (const chunk of res.body) void chunk.length; // drain (D8 deltas)
@@ -113,6 +117,7 @@ const controlFetch = async (path) => {
 /** Every rejected install must leave zero staging and the installed tree
  * byte-identical; the journal only ever grew by the happy path's two lines. */
 const zeroStaging = async (txIds, happyDigest) => {
+  log.debug('zero-staging audit begin', { txIds: txIds.length });
   for (const txId of txIds) {
     try {
       await fsRead('app', `plugins/.staging-${txId}/manifest.json`);
@@ -131,16 +136,11 @@ const zeroStaging = async (txIds, happyDigest) => {
   });
 };
 
-const main = async () => {
-  log.debug('main begin');
-  emit('gateway.negotiated', { version: 'gateway@1' });
-
-  // 0. The verifier proves itself BEFORE any catalog is trusted (rule 6).
-  demand(ed25519SelfTest(), 'ed25519 self-test (RFC 8032 vectors) failed');
-  emit('market.ed25519.selftest', { positives: 2, negatives: 3, standard: 'RFC 8032' });
-
-  // 1. HAPPY PATH — fetch + verify + lookup + install through the UNCHANGED
-  //    installer with the signed trust record passed through untouched.
+/** Phase 1 — HAPPY PATH: verify (self-test already ran), lookup, install
+ * through the UNCHANGED installer with the signed trust record passed
+ * through untouched, then load the installed plugin and exercise its fs. */
+const happyPhase = async () => {
+  log.debug('happy phase begin');
   const resolver = makeResolver('/index.json');
   emit('market.resolver.built', { pinnedKeys: ['dsh-market-1'], indexUrlPath: '/index.json' });
   const index = await resolver.refresh();
@@ -157,8 +157,6 @@ const main = async () => {
     status: receipt.status, id: receipt.id, version: receipt.version,
     blobSha256: receipt.blobSha256, trustMatched: true,
   });
-
-  // The catalog-installed plugin is a REAL plugin: load + exercise fs.
   const registry = createRegistry();
   globalThis.__dshModuleDefine(result.moduleId, toText(result.entrySource));
   registry.install({ manifest: result.manifest, module: await import(result.moduleId) });
@@ -172,13 +170,20 @@ const main = async () => {
   demand(got.text === NOTE, 'market plugin roundtrip drifted');
   emit('market.fs.read.ok', { text: got.text });
   emit('market.happy.completed', { spec: ENTRY_SPEC, version: entry.version });
+  return entry;
+};
 
-  // 2. KEY ROTATION DRILL (§7.2) — window → learn → completed → stale pin.
+/** Phase 2 — KEY ROTATION DRILL (§7.2): the dual-signed window index is
+ * accepted under the pinned outgoing key and the incoming key is LEARNED;
+ * the post-window single-signed index is accepted by the SAME resolver
+ * (rotation completed) and refused by a fresh stale pin. */
+const rotationPhase = async () => {
+  log.debug('rotation drill begin');
   const rotating = makeResolver('/index-rotation-window.json');
   await rotating.refresh(); // dual-signed: verified under the pinned K1, K2 learned
   demand(rotating.trustedKeyIds().includes('dsh-market-2'), 'rotation key not learned');
   emit('market.rotation.window.accepted', { dualSigned: true, under: 'dsh-market-1', learned: 'dsh-market-2' });
-  await rotating.refresh(`${INDEX_URL}/index-rotated-final.json`); // single-signed K2 — accepted under the LEARNED key
+  await rotating.refresh(`${INDEX_URL}/index-rotated-final.json`); // single-signed K2
   demand(rotating.lookup(ENTRY_SPEC).id === 'dsh-fs', 'post-window catalog not usable');
   emit('market.rotation.completed', { acceptedUnder: 'dsh-market-2' });
   const stale = makeResolver('/index-rotated-final.json');
@@ -186,8 +191,13 @@ const main = async () => {
   demand(staleErr?.code === 'unknown-key',
     `stale pin must refuse the post-window catalog with unknown-key, got ${staleErr?.code}`);
   emit('market.rotation.stale-pin-rejected', { key: 'dsh-market-2', code: staleErr.code });
+};
 
-  // 3. TAMPER LADDER (§7.1) — each rung a different broken trust story.
+/** Phase 3 — TAMPER LADDER (§7.1): each rung a different broken trust
+ * story; every rung InstallRejected with its own code, audited, and (for
+ * the installing rungs) nothing staged. */
+const tamperPhase = async (happyEntry) => {
+  log.debug('tamper ladder begin', { happyBlob: happyEntry.blobSha256 });
   // rung a: bad signature — the hosting flipped a signature byte.
   const badSig = makeResolver('/index-bad-signature.json');
   const errSig = await rejectionOf(() => badSig.refresh());
@@ -223,7 +233,18 @@ const main = async () => {
   demand(errMan?.code === 'integrity', `manifest rung: expected integrity, got ${errMan?.code}`);
   emit('market.tamper.rejected', { case: 'manifest-mismatch', code: errMan.code });
 
-  await zeroStaging(['mkt-c010', 'mkt-c011'], entry.blobSha256);
+  await zeroStaging(['mkt-c010', 'mkt-c011'], happyEntry.blobSha256);
+};
+
+const main = async () => {
+  log.debug('main begin');
+  emit('gateway.negotiated', { version: 'gateway@1' });
+  // 0. The verifier proves itself BEFORE any catalog is trusted (rule 6).
+  demand(ed25519SelfTest(), 'ed25519 self-test (RFC 8032 vectors) failed');
+  emit('market.ed25519.selftest', { positives: 2, negatives: 3, standard: 'RFC 8032' });
+  const entry = await happyPhase();
+  await rotationPhase();
+  await tamperPhase(entry);
   emit('market.completed', { status: 'pass', rungs: 4, rotationLegs: 3, committed: 1 });
   globalThis.__dshComplete(true, 'ok');
 };
