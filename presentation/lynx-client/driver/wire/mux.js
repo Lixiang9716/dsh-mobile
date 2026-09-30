@@ -46,7 +46,12 @@ export class Mux {
     diag.generation += 1;
     const ws = new WebSocket(this.wsUrl);
     this.ws = ws;
-    const generation = this.generation;
+    // Per-connect instance generation — the port MUST keep the page
+    // original's `++` (web-client-next/web/js/mux.js). Without it the
+    // generation guard is dead: a superseded socket's late close passes
+    // the check, emits a spurious 'closed' and dials a duplicate socket
+    // (both then re-open every live stream).
+    const generation = ++this.generation;
     this.emit('connecting');
     ws.onopen = () => {
       if (generation !== this.generation) return;
