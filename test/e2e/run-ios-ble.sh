@@ -114,6 +114,7 @@ while true; do
   sleep 2
 done
 
+rm -f "$ART"/verdict-*.json   # a prior red run's verdicts must not linger
 grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 FAIL=0

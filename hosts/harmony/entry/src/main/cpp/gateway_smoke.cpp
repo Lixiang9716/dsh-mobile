@@ -348,7 +348,7 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
             strcmp(name, "deviceInfo") == 0 || strcmp(name, "haptic") == 0 ||
             strcmp(name, "clipboardRead") == 0 || strcmp(name, "clipboardWrite") == 0 ||
             strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0 ||
-            strcmp(name, "cameraCapture") == 0) {
+            strcmp(name, "cameraCapture") == 0 ||
             strcmp(name, "bleScanStart") == 0 || strcmp(name, "bleScanStop") == 0 ||
             strcmp(name, "bleConnect") == 0 || strcmp(name, "bleDisconnect") == 0 ||
             strcmp(name, "bleRead") == 0 || strcmp(name, "bleWrite") == 0 ||

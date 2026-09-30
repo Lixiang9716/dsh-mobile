@@ -96,6 +96,7 @@ grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 say "5/5 checkers"
+rm -f "$OUT"/verdict-*.json   # a prior red run's verdicts must not linger
 # the skip posture is OBSERVED (denied on this emulator: virtual radio up,
 # runtime permissions ungranted; absent where the radio truly is missing)
 if [ "$MODE" = "skip" ] && grep -q '"mode":"absent"' "$OUT/logs.txt"; then
