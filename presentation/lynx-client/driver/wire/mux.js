@@ -76,7 +76,15 @@ export class Mux {
         if (!this.closedByUser && generation === this.generation) this.connect();
       }, delay);
     };
-    ws.onerror = () => ws.close();
+    ws.onerror = () => {
+      // Node's undici WebSocket re-enters onerror SYNCHRONOUSLY when
+      // close() is called during CONNECTING (the browser builtin does
+      // not) — an unconditional close here recursed to stack overflow on
+      // the runner (observed live: RangeError from mux.js:79). Only an
+      // OPEN socket needs an explicit close; a failed CONNECTING one
+      // drives its own onclose.
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+    };
   }
 
   close() {

@@ -163,3 +163,23 @@ describe('reconnect: generation-tracked', () => {
     expect(mux.streams.has(streamId)).toBe(true); // the stream survives on socket 2
   });
 });
+
+describe('handshake failure: killed during CONNECTING', () => {
+  it('surfaces one honest close, never an onerror recursion', async () => {
+    const raw = createServer();
+    const kills = [];
+    raw.on('connection', (socket) => kills.push(socket));
+    await new Promise((r) => raw.listen(0, '127.0.0.1', r));
+    const url = `ws://127.0.0.1:${raw.address().port}/api/remote.mux`;
+    const mux = track(new Mux(url));
+    const statuses = [];
+    mux.onStatus((s) => statuses.push(s));
+    mux.connect();
+    await waitFor('socket destroyed under the handshake', () => kills.length >= 1);
+    for (const socket of kills) socket.destroy();
+    await waitFor('closed status surfaced', () => statuses.includes('closed'), 3000);
+    mux.close(); // user close on top: stays closed, throws nothing
+    expect(statuses[0]).toBe('connecting');
+    await new Promise((r) => raw.close(r));
+  });
+});
