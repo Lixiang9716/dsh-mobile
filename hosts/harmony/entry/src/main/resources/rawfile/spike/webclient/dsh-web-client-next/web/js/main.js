@@ -13,6 +13,7 @@ import { createTimeline } from './timeline.js';
 import { createChatRenderer } from './render-chat.js';
 import { renderConnection, renderSessionList } from './render-home.js';
 import { createComposer } from './composer.js';
+import { setupOnboarding } from './onboarding.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -210,6 +211,10 @@ window.__dshTimelineDebug = () => ({
   notify: timeline?.notifyDebug ?? null,
 });
 window.__dshForceRender = () => renderer?.renderStructure(timeline);
+
+// The BYOK first-run panel: detects the no-credential boot and onboards
+// (provider + key + test + keychain save); configured users never see it.
+setupOnboarding({ mux, rpc, toast, onReady: refreshSessions });
 
 showView('home');
 mux.connect();

@@ -24,6 +24,7 @@ import { makeSkillsHandlers,
   makeCommandHandlers,
 } from 'upstream/web-write-catalog.js';
 import { buildLlmCoverageApi } from 'upstream/web-write-llm.js';
+import { buildOnboardingApi, openOnboardingStream } from 'upstream/web-write-onboarding.js';
 import { errorOf } from 'upstream/web-write.js';
 
 /**
@@ -64,10 +65,15 @@ export const COVERAGE_ENDPOINTS = [
   'llm/listProviders', 'llm/listConfigurableProviders',
   'credentials/set', 'credentials/unset',
   'settings/canOpenAgentPresetDirectory',
+  // The BYOK onboarding panel's legs (web-write-onboarding.js): first-run
+  // credential detect/test/save over the frozen keychain + httpFetch
+  // primitives — no new gateway primitive (the round's red line held).
+  'onboarding/status', 'onboarding/save',
 ];
 
-/** The COVERAGE streams: the workspace file change feed. */
-export const COVERAGE_STREAMS = ['workspaceFiles/changes'];
+/** The COVERAGE streams: the workspace file change feed + the onboarding
+ * connection test (one probe turn, event-streamed, D8). */
+export const COVERAGE_STREAMS = ['workspaceFiles/changes', 'onboarding/test'];
 
 /**
  * The coverage api map: every COVERAGE endpoint's handler, each backed by
@@ -84,6 +90,7 @@ export const buildCoverageApi = (ctx, deps) => ({
   ...makeGoalHandlers(ctx),
   ...makeCommandHandlers(ctx),
   ...buildLlmCoverageApi(ctx, deps),
+  ...buildOnboardingApi(ctx, deps),
 });
 
 /**
@@ -95,6 +102,8 @@ export const buildCoverageApi = (ctx, deps) => ({
  * resolves attaches nothing.
  */
 export const openCoverageStream = (ctx, deps, changeFeed, post, msg) => {
+  const onboarding = openOnboardingStream(ctx, deps, post, msg);
+  if (onboarding !== undefined) return onboarding;
   if (msg.endpoint !== 'workspaceFiles/changes') return undefined;
   const attach = async () => {
     const unsubscribe = await changeFeed.follow(

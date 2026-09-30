@@ -36,6 +36,7 @@ import { SettingsMemory } from 'upstream/settings-memory.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
+import { registerRouteDisposer } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 // The FIRST ported tool package (D9). It exports `{Config, apply, inject,
 // name}` and no default, so the namespace object IS the cordis plugin (it
@@ -422,7 +423,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
   await ctx.plugin(LlmRuntime);
   const runtime = ctx.get('llm');
   if (runtime === undefined) throw new Error('boot: the LlmRuntime failed to mount under "llm"');
-  runtime.registerAdapter([llm.provider], createGatewayLlmAdapter({
+  const routeDisposer = runtime.registerAdapter([llm.provider], createGatewayLlmAdapter({
     baseURL: llm.baseURL,
     apiKey: llm.apiKey,
     provider: llm.provider,
@@ -432,6 +433,11 @@ const mountLlm = async (ctx, llm, onEvent) => {
     onSse: llm.onSse,
     onRequestBody: llm.onRequestBody,
   }));
+  // The BYOK rebind seam (upstream/llm-route.js): onboarding/save swaps the
+  // live transport through this disposer — the vendored registry rejects a
+  // plain second registration with DUPLICATE_ADAPTER. No behavior change for
+  // boots that never save.
+  registerRouteDisposer(runtime, routeDisposer);
   runtime.registerConfigurableProviders([{
     provider: llm.provider,
     displayName: llm.displayName ?? 'OpenAI 兼容',

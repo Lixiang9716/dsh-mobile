@@ -1323,6 +1323,8 @@ const BUNDLE_FILES: string[] = [
     'webclient/dsh-web-client-next/web/js/api.js',
     'webclient/dsh-web-client-next/web/js/composer.js',
     'webclient/dsh-web-client-next/web/js/main.js',
+    'webclient/dsh-web-client-next/web/js/onboarding-core.js',
+    'webclient/dsh-web-client-next/web/js/onboarding.js',
     'webclient/dsh-web-client-next/web/js/markdown.js',
     'webclient/dsh-web-client-next/web/js/mux.js',
     'webclient/dsh-web-client-next/web/js/render-chat.js',

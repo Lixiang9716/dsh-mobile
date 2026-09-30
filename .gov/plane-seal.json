@@ -34,13 +34,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+      "sha256": "a82c30b2f1860753367dc467147d2074b62d9fab2ff29423352331e09ecaac7b"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T00:33:06+00:00",
+    "ts": "2026-09-30T09:14:19+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "case-bundle-files-dotfile: the bundle-files gate's new rejection case proves the HAP-packer dotfile class; plane re-seal per rules rule 6 (D-g work, PR to review)"
+    "reason": "BYOK onboarding (T-0078, feat/byok-onboarding): adds the panel-tests gate (vitest over presentation/web-client-next pure logic) to the default DAG \u2014 the change and its scope are reviewed in the open PR diff; rule 2's Agent Note records the decision"
   }
 }

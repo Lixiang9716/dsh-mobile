@@ -6,6 +6,21 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the BYOK onboarding change (2026-09-30):
+> a first-run credential panel for beta users with no API key — the CLI leg
+> `onboarding.flow` 9/9 (no-credential detect → the connection test's success
+> and 401 paths over the REAL gateway httpFetch transport → the keychain save
+> → the 已配过 re-detect → the relaunch route resolution → the first turn over
+> the rebound route), dir
+> `runtime/spike/artifacts/macos-cli-onboarding/`; the CLI dev host now
+> implements the frozen keychain primitives (one 0600 file per ref —
+> `gateway.bridge-smoke` re-pinned to the roundtrip, 7/7) and `llm.js`'s SSE
+> drain no longer orphans a pending `next()` at the [DONE] fold (measured:
+> the orphan hard-aborted the CLI engine). Totals below re-run against this
+> tree (71 dirs / 145 verdicts / 70 of 70 scenario ids green-covered / 62
+> manifests resolved by the checker). The notes below are the previous
+> currency records.
+>
 > **Currency**: this matrix reflects the shim exposure survey + probe leg
 > (2026-09-30, T-0078): the loader can now name every shim load
 > (`DSH_MODULE_MANIFEST`, default off), the survey sweep over all 648
@@ -224,6 +239,7 @@ evidence on that platform.
 | `android.mic.plane.audit` | — | 4/4 (drift) | — | — |
 | `models.directory` | — | — | — | 6/6 |
 | `office` | — | — | — | 19/19 |
+| `onboarding.flow` | — | — | — | 9/9 |
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
@@ -338,6 +354,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |

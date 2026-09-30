@@ -72,6 +72,42 @@
     <iframe id="creation-frame" sandbox="allow-scripts"
       title="创作内容"></iframe>
   </div>
+  <!-- BYOK first-run onboarding: shown only when no usable credential is
+       configured (onboarding/status answers mode=mock). Bilingual copy. -->
+  <section id="onboarding" class="onboarding-overlay" hidden>
+    <div class="glass onboarding-card">
+      <h1 class="onboarding-title">配置你的模型密钥<span class="onboarding-title-en">Set up your model key</span></h1>
+      <p class="onboarding-sub">使用你自己的 API key,数据直接发往你选择的厂商。
+        <span class="onboarding-sub-en">Bring your own key — requests go straight to the provider you choose.</span></p>
+
+      <label class="onboarding-label" for="onboarding-provider">提供商 <span class="onboarding-en">Provider</span></label>
+      <select id="onboarding-provider" class="onboarding-input"></select>
+
+      <label class="onboarding-label" for="onboarding-baseurl">API 地址 <span class="onboarding-en">Base URL</span></label>
+      <input id="onboarding-baseurl" class="onboarding-input" type="url"
+        placeholder="https://api.example.com" autocomplete="off" spellcheck="false">
+
+      <label class="onboarding-label" for="onboarding-key">API Key</label>
+      <div class="onboarding-key-row">
+        <input id="onboarding-key" class="onboarding-input" type="password"
+          placeholder="sk-…" autocomplete="off" spellcheck="false">
+        <button id="onboarding-key-toggle" class="onboarding-toggle" type="button"
+          aria-label="显示/隐藏 Show/hide">👁</button>
+      </div>
+
+      <label class="onboarding-label" for="onboarding-model">模型 <span class="onboarding-en">Model</span></label>
+      <input id="onboarding-model" class="onboarding-input" type="text"
+        placeholder="deepseek-chat" autocomplete="off" spellcheck="false">
+
+      <div class="onboarding-actions">
+        <button id="onboarding-test" class="onboarding-btn onboarding-secondary" type="button">测试连接 · Test</button>
+        <button id="onboarding-save" class="onboarding-btn onboarding-primary" type="button" disabled>保存并开始 · Save &amp; start</button>
+      </div>
+      <p id="onboarding-probe-line" class="onboarding-probe-line" role="status"></p>
+      <p class="onboarding-note">密钥仅存入系统钥匙串,不进入日志或代码仓库。
+        <span class="onboarding-note-en">The key is stored in the system keychain only — never logged, never committed.</span></p>
+    </div>
+  </section>
   <div id="toast" role="status"></div>
   <script type="module" src="js/main.js"></script>
 </body>

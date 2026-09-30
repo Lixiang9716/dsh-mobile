@@ -6,6 +6,18 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 BYOK 引导变更（2026-09-30）：为没有现成 API key
+> 的内测用户提供首启凭证面板 —— CLI 腿 `onboarding.flow` 9/9（无凭证检测 →
+> 连接测试的成功与 401 两路，走真实 gateway httpFetch 传输 → keychain 存入
+> → 已配过再检测 → 重启路由解析 → 重绑定路由上的首回合），目录
+> `runtime/spike/artifacts/macos-cli-onboarding/`；CLI 开发宿主自此实现冻结
+> 的 keychain 原语（每 ref 一个 0600 文件 —— `gateway.bridge-smoke` 重钉为
+> roundtrip，7/7）；`llm.js` 的 SSE 排空不再在 [DONE] 折叠处遗留挂起的
+> `next()`（实测：该孤儿续体会令 CLI 引擎硬中止）。总量对本树重跑（71 个
+> 目录 / 145 条 verdict / 70 个 scenario id 全部有绿证 / 校验器解析到 62 个
+> manifest）。下面的注记是历史的时效记录。
+>
+>
 > **时效性**：本矩阵反映 shim 曝光测绘 + 探针腿（2026-09-30，T-0078）：
 > 加载器现在能点名每一次 shim 加载（`DSH_MODULE_MANIFEST`，默认关闭），
 > 对全部 648 个转译上游 spec 的 sweep 测绘发现：86 个 shim 的零曝光集合
@@ -179,6 +191,7 @@
 | `android.mic.plane.audit` | — | 4/4（漂移） | — | — |
 | `models.directory` | — | — | — | 6/6 |
 | `office` | — | — | — | 19/19 |
+| `onboarding.flow` | — | — | — | 9/9 |
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
@@ -285,6 +298,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 9/9 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
