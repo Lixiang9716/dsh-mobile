@@ -1,0 +1,21 @@
+{
+  "title": "shim exposure map: which of the 86 shims the 681 upstream specs really press",
+  "created": "2026-09-30T06:31:50+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "[x] loader manifest switch: default-off DSH_MODULE_MANIFEST in the C host loader, single-spec mechanism proof",
+    "[x] suite sweep with the switch on; sample size stated honestly",
+    "[x] tools/shim-exposure.mjs aggregates the manifests into a per-shim exposure table + zero-exposure list",
+    "[x] probe tests for the 5 riskiest zero-exposure shims (spike scenario leg, __dshComplete)",
+    "Agent Note (testing) + gov run green + push + PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
