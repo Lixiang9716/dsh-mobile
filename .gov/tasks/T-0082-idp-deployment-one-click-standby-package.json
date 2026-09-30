@@ -1,0 +1,22 @@
+{
+  "title": "IdP deployment: one-click standby package for the marketplace-v2 publisher identity service",
+  "created": "2026-09-30T20:12:46+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] Probe the deployment target honestly (direct + proxy, BatchMode, several rounds); record raw output in acceptance",
+    "[x] Land deploy/idp/ standby package: Logto docker-compose (callback-domain placeholders) + PocketBase fallback (systemd unit) + parameterized deploy.sh with health check",
+    "[x] Document initial-admin first-boot password flow; no password/token/credential enters git",
+    "[x] README bilingual pair stating owner prerequisites (host/keys/security-group/domain); gov verify pairing passes",
+    "[x] Agent Note with selection rationale (Logto preferred, PocketBase fallback, Keycloak/Zitadel rejected, sources cited) and Status: implemented header",
+    "[x] gov run full DAG green with receipt, then push and open PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0082"
+}
