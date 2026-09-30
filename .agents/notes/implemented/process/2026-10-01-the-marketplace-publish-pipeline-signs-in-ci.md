@@ -73,10 +73,17 @@ The decisions the proposal left open, made and load-bearing:
    `additionalProperties: false`, and the generator validates manifests with
    the same strict rules as install-pipeline.js — a `summary` field in a
    manifest would be rejected at install time.
-5. **A signed index never carries a placeholder URL**: with neither
-   `MARKETPLACE_BASE_URL` nor the dispatch input set, generation fails loud.
-   Dry-run still requires the signing secret — the artifact IS the signed
-   catalog, and rehearsing the signature is the point of a dry run.
+5. **A signed index never carries a placeholder URL**: base-url resolution
+   is `--base-url`, then the `MARKETPLACE_BASE_URL` env variable, then a
+   loud failure naming both — and EMPTY or whitespace-only counts as
+   missing in both places. (Review fix on this PR: the workflow passed
+   `--base-url "$VAR"` unconditionally, so an unset variable arrived as ""
+   and slipped past an `undefined`-only guard, letting a signed index ship
+   with relative placeholder URLs; the workflow now omits the flag when
+   empty AND the generator treats empty/whitespace as missing, so each
+   layer holds on its own.) Dry-run still requires the signing secret —
+   the artifact IS the signed catalog, and rehearsing the signature is the
+   point of a dry run.
 
 ## Alternatives considered
 
