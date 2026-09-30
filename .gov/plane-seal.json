@@ -7,10 +7,10 @@
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
-      "sha256": "b64da26dd61b05d29cc4cb006a1ba403d6eda51cbdae0274d1b3a41cbb82a57d"
+      "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
     },
     ".gov/rejections/case-bundle-files.sh": {
-      "sha256": "32e5989c7340eb828564a8aec4fbbf9311bf159636b73bdd85a7fa92d18ef107"
+      "sha256": "14c498cbf3a9631b1de2fd6fc1ee4d2970660073b14fd0f9cb3271a7456586b2"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
@@ -28,7 +28,7 @@
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
     ".gov/rejections/case-staging-check.sh": {
-      "sha256": "8a52786089ec229a9d331749b456d650a0b2f144a9ef2c878c67a6b764851e7a"
+      "sha256": "240545ad5d75e768a955062d1be2f1366b89c2684e4c5347f9d14fab9879f904"
     },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
@@ -38,9 +38,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T09:14:19+00:00",
+    "ts": "2026-09-30T09:52:15+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "BYOK onboarding (T-0078, feat/byok-onboarding): adds the panel-tests gate (vitest over presentation/web-client-next pure logic) to the default DAG \u2014 the change and its scope are reviewed in the open PR diff; rule 2's Agent Note records the decision"
+    "reason": "T-0078 follow-up: the live-tree case lock moved from the global /tmp dir to the per-worktree git dir (git rev-parse --git-dir) \u2014 the mutated Index.ets is per-worktree; under parallel fleet agents the global lock serialized unrelated cases past their 10s budget and the SIGKILL leak cascaded (measured 60s waits \u2192 sub-second after the move)"
   }
 }
