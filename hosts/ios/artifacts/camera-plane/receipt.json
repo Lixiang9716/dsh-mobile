@@ -1,10 +1,10 @@
 {
-  "host": "iOS iPhone Air simulator (DA449843-609F-4941-9866-D2B76C6B12D5, iOS 26.5)",
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "camera.plane",
   "launchConfiguration": "ios camera-plane drive (Debug, -dsh-mode camera-plane; simulator: capture honestly unavailable)",
-  "tree": "origin/main fe6dd066cfac (dirty working tree at receipt time)",
+  "tree": "origin/main afe3e739fb2b (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "camera.plane",
@@ -21,6 +21,6 @@
   ],
   "runner": "test/e2e/run-ios-camera-plane.sh",
   "screens": [],
-  "timestamp": "2026-09-30T07:37:11+08:00",
+  "timestamp": "2026-09-30T22:28:44+08:00",
   "exitCode": 0
 }

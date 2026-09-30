@@ -1,7 +1,7 @@
 {
   "platform": "android",
-  "target": "emulator-5554",
-  "generatedAt": "2026-09-30T04:21:36+08:00",
+  "target": "emulator-5556",
+  "generatedAt": "2026-09-30T22:27:21+08:00",
   "probed": [
     {
       "driver": "uiautomator",

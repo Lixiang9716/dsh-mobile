@@ -1,22 +1,22 @@
 spike: app launched in ble-plane mode
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"gateway.negotiated","version":"gateway@1"}]}
-dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"descriptor.declared","available":31,"unavailable":2,"blePlane":8}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"descriptor.declared","available":33,"unavailable":2,"blePlane":8}]}
 dsh.spike.log: {"level":"debug","module":"dsh.ble.plane","message":"event tap armed","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStart"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
-dsh.gateway.audit: {"ts":"2026-09-30T03:03:25Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"bleScanStart","outcome":"unavailable"}
+dsh.gateway.audit: {"primitive":"bleScanStart","caller":"dsh.spike.scenario","ts":"2026-09-30T14:30:27Z","outcome":"unavailable","verdict":"granted"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"bleScanStart"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.radio","mode":"absent"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.unavailable","code":"unavailable"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStop"}]}
-dsh.gateway.audit: {"detail":{"scanId":"scan:none","stopped":false},"ts":"2026-09-30T03:03:25Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"bleScanStop","outcome":"ok"}
+dsh.gateway.audit: {"primitive":"bleScanStop","caller":"dsh.spike.scenario","ts":"2026-09-30T14:30:27Z","outcome":"ok","verdict":"granted","detail":{"stopped":false,"scanId":"scan:none"}}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.stop.idempotent","stopped":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleConnect"}]}
-dsh.gateway.audit: {"ts":"2026-09-30T03:03:25Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"bleConnect","outcome":"unavailable"}
+dsh.gateway.audit: {"primitive":"bleConnect","caller":"dsh.spike.scenario","ts":"2026-09-30T14:30:27Z","outcome":"unavailable","verdict":"granted"}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"unavailable","primitive":"bleConnect"}]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.connect.unavailable","code":"unavailable"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleDisconnect"}]}
-dsh.gateway.audit: {"detail":{"connectionId":"conn:none","closed":false},"ts":"2026-09-30T03:03:25Z","caller":"dsh.spike.scenario","verdict":"granted","primitive":"bleDisconnect","outcome":"ok"}
+dsh.gateway.audit: {"primitive":"bleDisconnect","caller":"dsh.spike.scenario","ts":"2026-09-30T14:30:27Z","outcome":"ok","verdict":"granted","detail":{"connectionId":"conn:none","closed":false}}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.disconnect.idempotent","closed":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"event unsubscribe","data":[]}
 dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"scenario.complete","status":"pass"}]}
