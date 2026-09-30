@@ -57,7 +57,10 @@ for surface in $SURFACES; do
     # crashes on some npm majors ("Cannot read properties of null
     # (reading 'edgesOut')" — seen on the ubuntu runner, CI run
     # 36693625526); installing from inside the surface is the stable shape.
-    (cd "$surface" && npm install --no-audit --no-fund)
+    # --legacy-peer-deps works around the npm 10 arborist #loadPeerSet
+    # crash on vitest's peer set (same edgesOut error — reproduced locally
+    # with npm@10.8.2 on a fresh copy; npm 11 unaffected, flag harmless).
+    (cd "$surface" && npm install --no-audit --no-fund --legacy-peer-deps)
   fi
   echo "run-coverage: measuring $surface"
   (cd "$surface" && ./node_modules/.bin/vitest run --coverage)
