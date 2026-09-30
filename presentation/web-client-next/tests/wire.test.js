@@ -39,19 +39,20 @@ const realFetch = globalThis.fetch;
 let fetchBase = null;
 // the shim: same contract as the browser's same-origin fetch, plus a base
 const shimmedFetch = (url, init) => realFetch(`${fetchBase}${url}`, init);
+const onShim = () => { globalThis.fetch = shimmedFetch; };
 afterAll(async () => {
   globalThis.fetch = realFetch;
   for (const server of servers) await new Promise((r) => server.close(r));
 });
 
-describe('api.js: the envelope roundtrip over real HTTP', () => {
-  it('sends the frozen request envelope and resolves the ok value', async () => {
+describe('api.js: the request envelope over real HTTP', () => {
+  it('sends the frozen envelope shape and hits /api/<method>', async () => {
     const seen = [];
     fetchBase = await listen((req, res, raw) => {
       seen.push({ url: req.url, body: JSON.parse(raw) });
       respond(res, 200, { type: 'server-response', rpcId: seen[0].body.rpcId, result: { ok: true, value: { items: [] } } });
     });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     const value = await rpc('session/list');
     expect(value).toEqual({ items: [] });
     expect(seen[0].url).toBe('/api/session/list');
@@ -60,26 +61,28 @@ describe('api.js: the envelope roundtrip over real HTTP', () => {
     expect(seen[0].body.type).toBe('client-request');
   });
 
-  it('rpcId is minted fresh per call and the response rpcId is validated present', async () => {
+  it('rpcId is minted fresh per call', async () => {
     const seen = [];
     fetchBase = await listen((req, res, raw) => {
       const body = JSON.parse(raw);
       seen.push(body.rpcId);
       respond(res, 200, { type: 'server-response', rpcId: body.rpcId, result: { ok: true, value: {} } });
     });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await rpc('session/list');
     await rpc('session/list');
     expect(seen[0]).not.toBe(seen[1]);
   });
+});
 
+describe('api.js: the payload rides verbatim', () => {
   it('the payload KEY ships even when the caller passes nothing', async () => {
     let seen;
     fetchBase = await listen((req, res, raw) => {
       seen = JSON.parse(raw);
       respond(res, 200, { type: 'server-response', rpcId: seen.rpcId, result: { ok: true, value: {} } });
     });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await rpc('session/list'); // no payload argument at all
     expect(seen.payload).toEqual({}); // present, not undefined-dropped by JSON.stringify
     expect(Object.keys(seen)).toEqual(['type', 'rpcId', 'method', 'payload']);
@@ -92,7 +95,7 @@ describe('api.js: the envelope roundtrip over real HTTP', () => {
       seen.push(body);
       respond(res, 200, { type: 'server-response', rpcId: body.rpcId, result: { ok: true, value: { accepted: true } } });
     });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     const payload = {
       args: { request: {
         requestId: 'req-1', sessionId: 's-9', mode: 'steer',
@@ -104,10 +107,10 @@ describe('api.js: the envelope roundtrip over real HTTP', () => {
   });
 });
 
-describe('api.js: error decoding', () => {
+describe('api.js: error decoding — the ok/error arms', () => {
   it('ok:false resolves to the thrown RemoteError triple, details included', async () => {
     fetchBase = await answerWith({ ok: false, error: { code: 'session/busy', message: 'busy', details: { retryAfter: 3 } } });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     const error = await rpc('session/prompt', { args: { request: { sessionId: 's-9' } } }).catch((e) => e);
     expect(isRemoteError(error)).toBe(true);
     expect(error instanceof Error).toBe(true);
@@ -116,37 +119,39 @@ describe('api.js: error decoding', () => {
 
   it('a result with no ok arm lands on gateway/unknown', async () => {
     fetchBase = await answerWith({});
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await expect(rpc('session/list')).rejects
       .toMatchObject({ code: 'gateway/unknown', message: 'unknown error' });
   });
 
   it('ok:false with no error object still fails structured', async () => {
     fetchBase = await answerWith({ ok: false });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await expect(rpc('session/list')).rejects
       .toMatchObject({ code: 'gateway/unknown', details: {} });
   });
+});
 
+describe('api.js: error decoding — shape and transport failures', () => {
   it('a reply missing rpcId is gateway/bad-response (unexpected envelope shape)', async () => {
-    fetchBase = await listen((req, res, raw) => {
+    fetchBase = await listen((req, res) => {
       respond(res, 200, { type: 'server-response', result: { ok: true, value: {} } }); // rpcId dropped
     });
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await expect(rpc('session/list')).rejects
       .toMatchObject({ code: 'gateway/bad-response', message: 'unexpected envelope shape' });
   });
 
   it('a non-JSON 200 body is gateway/bad-response (malformed body)', async () => {
     fetchBase = await listen((req, res) => respond(res, 200, '<html>not json</html>'));
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await expect(rpc('session/list')).rejects
       .toMatchObject({ code: 'gateway/bad-response' });
   });
 
   it('HTTP 500 is gateway/unavailable naming the status', async () => {
     fetchBase = await listen((req, res) => respond(res, 500, {}));
-    globalThis.fetch = shimmedFetch;
+    onShim();
     await expect(rpc('session/list')).rejects
       .toMatchObject({ code: 'gateway/unavailable', message: 'HTTP 500' });
   });

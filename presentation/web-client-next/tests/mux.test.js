@@ -77,6 +77,19 @@ const openFollow = (mux, handlers = {}) =>
     onEnd: () => handlers.ends?.push(1),
   });
 
+/** Boot + connect + one follow stream, resolved once the socket serves.
+ * The reconnect describes share this. */
+const bootServing = async ({ onOpen } = {}) => {
+  const srv = await bootWs({ onOpen });
+  setLocation(srv.url);
+  const mux = track(new Mux(srv.url));
+  mux.connect();
+  const items = [];
+  const streamId = openFollow(mux, { items });
+  await waitFor('socket 1 serving', () => srv.state.upgrades === 1 && items.length >= 1);
+  return { srv, mux, items, streamId };
+};
+
 const waitFor = async (what, fn, ms = 4000) => {
   const deadline = Date.now() + ms;
   while (Date.now() < deadline) {
@@ -202,15 +215,9 @@ describe('reconnect: generation-tracked', () => {
   });
 
   it("a superseded socket's late close triggers NO duplicate reconnect", async () => {
-    const srv = await bootWs();
-    setLocation(srv.url);
-    const mux = track(new Mux(srv.url));
+    const { srv, mux, items, streamId } = await bootServing();
     const statuses = [];
     mux.onStatus((s) => statuses.push(s));
-    mux.connect();
-    const items = [];
-    const streamId = openFollow(mux, { items });
-    await waitFor('socket 1 serving', () => items.length >= 1);
     mux.connect(); // reconnect on demand: socket 1 is now superseded
     await waitFor('socket 2 serving', () => srv.state.upgrades === 2 && items.length >= 3);
     const statusesAtReplacement = statuses.length;

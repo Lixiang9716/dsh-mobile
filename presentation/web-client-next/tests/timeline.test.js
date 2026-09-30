@@ -12,8 +12,20 @@ import { createFold, createTimeline } from '../web/js/timeline.js';
 
 const event = (type, data, seq = 1) => ({ type: 'event', event: { type, seq, time: 0, data } });
 const stream = (frame) => frame;
+const userSays = (text) => event('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text }] });
 
-describe('durable journal events', () => {
+// the seed fixture for the snapshot describe: one durable user row, one
+// tool call, and a live attempt resuming mid-stream
+const resumeFrame = { type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: '恢复中' } };
+const resumeSnapshot = () => ({
+  records: [
+    userSays('新话'),
+    event('tool/call', { callId: 'c1', name: 'bash' }, 2),
+  ],
+  assistantStream: { activeAttempt: { attemptId: 'a1', turn: 1, step: 1, stream: [resumeFrame] } },
+});
+
+describe('durable events: user bubbles', () => {
   it('user/message with source user folds to a user bubble with images', () => {
     const fold = createFold();
     fold.applyRecord(event('user/message', {
@@ -25,15 +37,13 @@ describe('durable journal events', () => {
     ]);
   });
 
-  it('user/message from an injected source folds to a context notice; non-text only says so', () => {
+  it('injected sources fold to context notices; non-text content says so honestly', () => {
     const fold = createFold();
     fold.applyRecord(event('user/message', {
-      source: { kind: 'system' },
-      content: [{ type: 'text', text: '注入的上下文' }],
+      source: { kind: 'system' }, content: [{ type: 'text', text: '注入的上下文' }],
     }));
     fold.applyRecord(event('user/message', {
-      source: { kind: 'tool' },
-      content: [{ type: 'image', url: 'y.png' }],
+      source: { kind: 'tool' }, content: [{ type: 'image', url: 'y.png' }],
     }));
     expect(fold.state.items).toEqual([
       { kind: 'notice', label: '上下文', text: '注入的上下文' },
@@ -46,8 +56,10 @@ describe('durable journal events', () => {
     fold.applyRecord(event('user/message', { source: { kind: 'user' } }));
     expect(fold.state.items[0]).toMatchObject({ kind: 'user', text: '' });
   });
+});
 
-  it('assistant/message folds reasoning + markdown; streamed reasoning is not duplicated', () => {
+describe('durable events: assistant messages', () => {
+  it('the streamed tail promotes: reasoning + markdown, no duplicates, tail gone', () => {
     const fold = createFold();
     fold.applyRecord(stream({ type: 'start', attemptId: 'a1', turn: 1, step: 1 }));
     fold.applyRecord(stream({ type: 'chunk', attemptId: 'a1', chunk: { type: 'reasoning-delta', text: '想一遍' } }));
@@ -57,7 +69,6 @@ describe('durable journal events', () => {
       turn: 1, step: 1,
       message: { content: [{ type: 'reasoning', text: '想一遍' }, { type: 'text', text: '回声' }] },
     }));
-    // the streamed tail promotes: reasoning row + assistant row, tail gone
     expect(fold.state.items).toEqual([
       { kind: 'reasoning', text: '想一遍', turn: 1, step: 1 },
       { kind: 'assistant', markdown: '回声', interrupted: false, turn: 1, step: 1 },
@@ -74,8 +85,10 @@ describe('durable journal events', () => {
     expect(fold.state.items[0]).toEqual({ kind: 'reasoning', text: '悄悄想', turn: 2, step: 1 });
     expect(fold.state.items[1]).toMatchObject({ kind: 'assistant', markdown: '答' });
   });
+});
 
-  it('an interrupted assistant/message marks the item and fails its unanswered tool calls', () => {
+describe('durable events: interrupted assistant messages', () => {
+  it('marks the item and fails its unanswered tool calls', () => {
     const fold = createFold();
     fold.applyRecord(event('assistant/message', {
       turn: 3, step: 1, interrupted: true,
@@ -85,22 +98,23 @@ describe('durable journal events', () => {
         { type: 'tool-call', id: 'c2', name: 'read' },
       ] },
     }));
-    fold.applyRecord(event('assistant/message', { // second interrupted message, c1 already known
+    fold.applyRecord(event('assistant/message', { // c1 already known: not duplicated
       turn: 3, step: 2, interrupted: true,
       message: { content: [{ type: 'tool-call', id: 'c1', name: 'bash' }] },
     }));
     const tools = fold.state.items.filter((i) => i.kind === 'tool');
-    expect(tools).toHaveLength(2); // c2 new; c1 not duplicated
-    // args normalizes to '' like every other path (a missing arguments
-    // field must not leak undefined into the fold — the renderer's
-    // `item.args !== ''` branch would render a ghost args row)
+    expect(tools).toHaveLength(2);
+    // args normalizes to '' like every other path — a missing arguments
+    // field must not leak undefined into the renderer's args branch
     expect(tools.find((t) => t.callId === 'c2')).toMatchObject({
       status: 'fail', output: '已中断', name: 'read', args: '',
     });
-    expect(fold.state.items[0]).toMatchObject({ kind: 'assistant', interrupted: true, markdown: '说到一半' });
+    expect(fold.state.items[0]).toMatchObject({ kind: 'assistant', interrupted: true });
   });
+});
 
-  it('tool/call makes a waiting card; a streamed builder is named by the durable call', () => {
+describe('durable events: tool cards', () => {
+  it('a streamed builder is named by the durable call; promotion does not duplicate', () => {
     const fold = createFold();
     fold.applyRecord(stream({ type: 'start', attemptId: 'a1', turn: 1, step: 1 }));
     fold.applyRecord(stream({ type: 'chunk', attemptId: 'a1', chunk: { type: 'tool-call-delta', id: 'c1', argumentsDelta: '{"co' } }));
@@ -114,9 +128,7 @@ describe('durable journal events', () => {
     fold.applyRecord(event('assistant/message', { turn: 1, step: 1, message: { content: [] } }));
     const toolsAfter = fold.state.items.filter((i) => i.kind === 'tool');
     expect(toolsAfter).toHaveLength(1); // promotion did NOT duplicate the card
-    expect(toolsAfter[0]).toMatchObject({
-      kind: 'tool', callId: 'c1', name: 'bash', args: '{"command":"ls"}', status: 'waiting',
-    });
+    expect(toolsAfter[0]).toMatchObject({ kind: 'tool', callId: 'c1', name: 'bash', args: '{"command":"ls"}', status: 'waiting' });
     expect(fold.state.items.at(-1)).toMatchObject({ kind: 'assistant' }); // the promoting row landed
   });
 
@@ -145,8 +157,10 @@ describe('durable journal events', () => {
     }));
     expect(fold.state.items[0]).toMatchObject({ kind: 'tool', callId: 'c-late', status: 'ok', output: 'out' });
   });
+});
 
-  it('turn/end: normal reasons are silent; aborted/cancelled drop the tail with 已停止', () => {
+describe('durable events: turn ends', () => {
+  it('normal reasons are silent; cancelled/aborted drop the tail with 已停止', () => {
     const fold = createFold();
     fold.applyRecord(stream({ type: 'start', attemptId: 'a1', turn: 1, step: 1 }));
     fold.applyRecord(stream({ type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: '流到一半' } }));
@@ -159,7 +173,7 @@ describe('durable journal events', () => {
     expect(fold.state.tail).toBe(null); // a cancelled turn gets no promoting message: dropped HERE
   });
 
-  it('turn/end abnormal reasons surface as warn rows naming the reason', () => {
+  it('abnormal reasons surface as warn rows naming the reason', () => {
     const fold = createFold();
     fold.applyRecord(event('turn/end', { turn: 1, reason: { kind: 'overflow' } }));
     fold.applyRecord(event('turn/end', { turn: 2 }));
@@ -168,7 +182,9 @@ describe('durable journal events', () => {
       { kind: 'status', text: '回合结束（未知）', tone: 'warn' },
     ]);
   });
+});
 
+describe('durable events: the status and system families', () => {
   it('the status family folds to its honest rows', () => {
     const fold = createFold();
     fold.applyRecord(event('llm/retry', {}));
@@ -201,7 +217,9 @@ describe('durable journal events', () => {
       { kind: 'system', label: 'approval', types: ['approval/asked'] },
     ]);
   });
+});
 
+describe('durable events: creation and title', () => {
   it('deliverables/presented folds to a creation card (missing files -> [])', () => {
     const fold = createFold();
     fold.applyRecord(event('deliverables/presented', { files: [{ path: 'p', description: 'd' }] }));
@@ -224,7 +242,7 @@ describe('durable journal events', () => {
 });
 
 describe('assistant-stream frames (the live tail)', () => {
-  it('one tail accumulates text + reasoning + tools across chunks; end freezes it', () => {
+  it('one tail accumulates text + reasoning + tools; end freezes it for promotion', () => {
     const fold = createFold();
     fold.applyRecord(stream({ type: 'start', attemptId: 'a1', turn: 1, step: 1 }));
     fold.applyRecord(stream({ type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: '你' } }));
@@ -265,24 +283,11 @@ describe('assistant-stream frames (the live tail)', () => {
 });
 
 describe('snapshot (the seed replay)', () => {
-  it('setSnapshot rebuilds from records, preserves the title, resumes the active attempt', () => {
+  it('rebuilds from records, preserves the title, resumes the active attempt', () => {
     const fold = createFold();
     fold.applyRecord(event('session/title', { title: '极光' }));
-    fold.applyRecord(event('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: '旧话' }] }));
-    fold.setSnapshot({
-      records: [
-        event('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: '新话' }] }, 1),
-        event('tool/call', { callId: 'c1', name: 'bash' }, 2),
-      ],
-      assistantStream: {
-        activeAttempt: {
-          attemptId: 'a1', turn: 1, step: 1,
-          stream: [
-            { type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: '恢复中' } },
-          ],
-        },
-      },
-    });
+    fold.applyRecord(userSays('旧话'));
+    fold.setSnapshot(resumeSnapshot());
     expect(fold.state.title).toBe('极光'); // preserved across the rebuild
     expect(fold.state.items).toEqual([
       { kind: 'user', text: '新话', images: [] },
@@ -293,7 +298,7 @@ describe('snapshot (the seed replay)', () => {
 
   it('an empty snapshot resets to a blank thread (the seed-start reset)', () => {
     const fold = createFold();
-    fold.applyRecord(event('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: '旧话' }] }));
+    fold.applyRecord(userSays('旧话'));
     fold.setSnapshot({ records: [], assistantStream: { revision: 0 } });
     expect(fold.state.items).toEqual([]);
     expect(fold.state.tail).toBe(null);
@@ -307,12 +312,12 @@ describe('snapshot (the seed replay)', () => {
 });
 
 describe('createTimeline: the two-tier notification machinery', () => {
-  it('subscribes with an initial structure, then structure for records, tail for stream frames', () => {
+  it('initial structure, then structure for records, tail for stream frames', () => {
     const timeline = createTimeline();
     const seen = [];
     const unsubscribe = timeline.subscribe((kind, version) => seen.push([kind, version]));
     expect(seen).toEqual([['structure', 0]]);
-    timeline.applyRecord(event('user/message', { source: { kind: 'user' }, content: [{ type: 'text', text: 'hi' }] }));
+    timeline.applyRecord(userSays('hi'));
     timeline.applyStreamFrame({ type: 'start', attemptId: 'a1', turn: 1, step: 1 });
     timeline.applyStreamFrame({ type: 'chunk', attemptId: 'a1', chunk: { type: 'text-delta', text: 'x' } });
     timeline.setSnapshot({ records: [], assistantStream: { revision: 0 } });
