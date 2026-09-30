@@ -12,7 +12,7 @@
     "[x] rebase onto origin/main; the add/add conflict resolves to MAIN's generator; attachSignatures always emits the frozen signatures array; rotate-key + deploy generate-index.mjs aligned (build writes the array, verify refuses the dead object)",
     "[x] the e2e leg authors its catalog with the landed publisher tools (gen + rotate-key window-index); manifest re-authored; 71/71 green x3 on the reconciled pipeline",
     "[x] runner runs vendor/ensure-ish.sh explicitly; a FRESH worktree at the fixed head cold-runs the leg green (the reviewer's own repro)",
-    "Agent Note + PR body reflect the reconciliation; gov run green; pushed; CI green on the final head"
+    "[x] Agent Note + PR body reflect the reconciliation; gov run green; pushed; CI green on the final head"
   ],
   "status": "open",
   "receipt": null,
