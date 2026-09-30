@@ -1,0 +1,20 @@
+{
+  "title": "harmony device one-click parity runner (D-g): upstream.parity leg + tool-rows on-device markers",
+  "created": "2026-09-29T23:20:37+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "host: the upstream.parity leg lands (HostPhase.beginParity + ParityMockRoute + Index dispatch) and the parity scenario boots on-device against the in-app scripted route",
+    "runner: hosts/harmony/ci/run-device-parity.sh \u2014 one click: parity 25-golden leg + nextweb-seat tool-rows marker probe, parameterized hdc/target/artifacts, standby report when no device, fail-fast everywhere",
+    "scenario: composer-web-live.js settings.plugin.inventory names the tool rows (toolRows) and the synced host copies refresh",
+    "verification: hvigor build green + (device present: receipts; absent: standby behavior proven) + gov run full DAG green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0077"
+}

@@ -56,9 +56,20 @@ export const PI_AI_PROVIDER_EXPORTS = {
   'zai-coding-cn': 'zaiCodingCnProvider',
 };
 const piAiUpperSnake = (id) => `${id.toUpperCase().replace(/-/g, '_')}_MODELS`;
-export const PI_AI_PROVIDER_IDS = Object.keys(JSON.parse(globalThis.__dshBundleRequire(
-  `${PI_AI_DIST}/providers/all.js`, './data/.manifest.json',
-)).files).map((file) => file.replace(/\.json$/, ''));
+// The manifest read with the packer fallback (see PI_AI_PROVIDERS_ALL): the
+// literal dot name on the desktop/iOS embeds, the staged non-hidden alias
+// where the HAP/APK packers dropped the hidden file.
+const piAiManifestText = (() => {
+  try {
+    return globalThis.__dshBundleRequire(
+      `${PI_AI_DIST}/providers/all.js`, './data/.manifest.json');
+  } catch {
+    return globalThis.__dshBundleRequire(
+      `${PI_AI_DIST}/providers/all.js`, './data/manifest.json');
+  }
+})();
+export const PI_AI_PROVIDER_IDS = Object.keys(JSON.parse(piAiManifestText)
+  .files).map((file) => file.replace(/\.json$/, ''));
 
 /** Loader-shadow modules for the 39 unparseable generated .models.js files.
  * TWO names per file: the absolute vendor path AND the bundle-relative one
@@ -84,8 +95,18 @@ const PI_AI_PROVIDERS_ALL = [
   `import { createModels } from '${PI_AI_DIST}/models.js';`,
   `import { createImagesModels } from '${PI_AI_DIST}/images-models.js';`,
   `import { MODELS } from '${PI_AI_DIST}/models.generated.js';`,
-  `const manifest = JSON.parse(globalThis.__dshBundleRequire(`,
-  `  '${PI_AI_DIST}/providers/all.js', './data/.manifest.json'));`,
+  // The manifest's literal dot name cannot ride the mobile HAP/APK packers
+  // (both drop hidden files — the harmony device legs died at
+  // materializeBundle on exactly this, 2026-09-30): the staged closure
+  // carries the SAME bytes under the non-hidden alias, and the seam reads
+  // the literal name where it exists (the desktop/iOS embeds), else the
+  // alias.
+  `let manifestText;`,
+  `try { manifestText = globalThis.__dshBundleRequire(`,
+  `  '${PI_AI_DIST}/providers/all.js', './data/.manifest.json'); }`,
+  `catch { manifestText = globalThis.__dshBundleRequire(`,
+  `  '${PI_AI_DIST}/providers/all.js', './data/manifest.json'); }`,
+  `const manifest = JSON.parse(manifestText);`,
   ...PI_AI_PROVIDER_IDS.map((id) => `import { ${PI_AI_PROVIDER_EXPORTS[id]} } from '${PI_AI_DIST}/providers/${id}.js';`),
   "/** Typed read of the generated built-in catalog. */",
   "export function getBuiltinModel(provider, modelId) {",

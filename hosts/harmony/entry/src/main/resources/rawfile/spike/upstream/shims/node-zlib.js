@@ -3,7 +3,10 @@
  * node:zlib shim — the Zstandard surface the vendored session-persistence
  * family reads (session-persistence-jsonl's concatenated-frame session log:
  * named imports in lib/{zstd,zstd-public-decoder,zstd-private-decoder,
- * generation,index}.js plus `require("node:zlib")` in worker.cjs).
+ * generation,index}.js plus `require("node:zlib")` in worker.cjs), and —
+ * since the 2026-09-27 suite round — the gzip one-shot face the
+ * webworker-runtime image loader imports (`gzipSync`), bridged over the
+ * vendored fflate (see the import note below).
  *
  * Everything rides the host intrinsics, read LAZILY AT CALL TIME (never at
  * import time — the intrinsics may not exist under plain Node):
@@ -26,17 +29,20 @@
  *     'data'/'end' events and async iteration.
  *
  * Node-semantic judgment calls (deltas, stated up front):
- *   - ZSTD_c_checksumFlag is accepted but not expressed: the intrinsic ABI
- *     exposes only the level, so frames carry no XXH64 checksum. The corpus
- *     scanner reads the checksum bit from each frame descriptor and decoders
- *     validate only when present, so the container stays well-formed; what is
- *     lost vs Node is that extra integrity check. Any OTHER param name fails
- *     loud (rule 5).
- *   - finishFlush is validated against the ZSTD_e_* table but the one-shot
- *     intrinsic cannot surface partial plaintext from a torn frame: where
- *     Node's ZSTD_e_flush recovers a prefix, this shim rejects — and the
- *     corpus's torn-tail recovery already treats rejection as "no
- *     recoverable prefix" (decodeStreamingMigration swallows it).
+ *   - ZSTD_c_checksumFlag is expressed STRUCTURALLY: the flag sets the
+ *     descriptor bit and appends the 4-byte frame trailer (zeros — no
+ *     intrinsic computes XXH64), and the decompress route strips that
+ *     trailer instead of validating it. The container's byte layout
+ *     matches Node's (the corpus scanner and its torn-tail truncations
+ *     walk the trailer); what is lost vs Node is the integrity CHECK
+ *     itself. Any OTHER param name fails loud (rule 5).
+ *   - finishFlush:ZSTD_e_flush recovers a torn frame's complete-block
+ *     prefix WITHOUT a streaming decoder: the shim walks the frame's block
+ *     headers (RFC 8878 layout, same walk the vendored scanZstdFrames
+ *     validates), drops the incomplete tail, clears the checksum
+ *     descriptor bit, and closes the copy with a synthetic 0-byte Raw
+ *     Last_Block so the one-shot intrinsic accepts it. E_continue/E_end
+ *     keep the plain full-frame decode.
  *   - Results are DshBuffer (a Uint8Array subclass from shims/buffer.js), so
  *     consumers get Node-Buffer encodings (`toString('utf8')`) on decompressed
  *     plaintext — exactly what the corpus calls on it.
@@ -44,6 +50,15 @@
  *     argument/option validation stays synchronous, as in Node.
  */
 import { DshBuffer, encodeUtf8 } from 'upstream/shims/buffer.js';
+// The gzip family rides the VERBATIM vendored fflate tree (the office row's
+// pinned 0.8.2; zero deps, ESM) — the same no-second-hand-rolled-copy
+// discipline as sha256. The zstd face stays on the host intrinsics: the
+// gateway has no zstd primitive the JS layer could substitute, and gzip has
+// no host intrinsic at all (checked against gateway.js before bridging).
+import {
+  gzipSync as fflateGzipSync,
+  gunzipSync as fflateGunzipSync,
+} from '/vendor/npm/fflate@0.8.2/esm/browser.js';
 
 /** Node 24 zlib.constants, Zstandard + flush faces (values verbatim). */
 export const constants = {
@@ -82,7 +97,7 @@ const PARAM_CHECKSUM = String(constants.ZSTD_c_checksumFlag);
 const PARAM_LEVEL = String(constants.ZSTD_c_compressionLevel);
 
 /** Look up a host intrinsic at CALL time; a missing seam fails loud (rule 5). */
-const intrinsic = (name) => {
+export const intrinsic = (name) => {
   const fn = globalThis[name];
   if (typeof fn !== 'function') {
     throw new Error(`zlib shim: host intrinsic ${name} is not available on this runtime`);
@@ -95,7 +110,7 @@ const describe = (value) => (value === null ? 'null' : typeof value);
 /** Node's zlib convenience face accepts Buffer/typed arrays AND strings
  * (utf8-encoded). The corpus hands the jsonl spine's event-line strings to
  * zstdCompress; anything else non-bytes stays loud. */
-const asBytes = (input, caller) => {
+export const asBytes = (input, caller) => {
   if (typeof input === 'string') return encodeUtf8(input);
   if (!(input instanceof Uint8Array)) {
     throw new TypeError(`zlib shim: ${caller} expects a Uint8Array/Buffer/string, got ${describe(input)}`);
@@ -104,7 +119,7 @@ const asBytes = (input, caller) => {
 };
 
 /** Uint8Array -> base64: binary string in 32 KiB slices, one btoa (O(n)). */
-const bytesToB64 = (bytes) => {
+export const bytesToB64 = (bytes) => {
   const slices = [];
   for (let at = 0; at < bytes.length; at += B64_SLICE_BYTES) {
     const end = Math.min(at + B64_SLICE_BYTES, bytes.length);
@@ -114,7 +129,7 @@ const bytesToB64 = (bytes) => {
 };
 
 /** base64 -> Uint8Array: one atob, one charCodeAt loop (O(n)). */
-const b64ToBytes = (b64) => {
+export const b64ToBytes = (b64) => {
   const binary = atob(b64);
   const out = new Uint8Array(binary.length);
   for (let at = 0; at < binary.length; at++) out[at] = binary.charCodeAt(at);
@@ -122,29 +137,35 @@ const b64ToBytes = (b64) => {
 };
 
 /** Level from options.level or params[ZSTD_c_compressionLevel]; the checksum
- * param is the one accepted-but-unexpressible name (module header); rest loud. */
-const compressLevel = (options) => {
+ * param is EXPRESSED (structurally — see compressBytes); the rest fail loud. */
+export const compressOptions = (options) => {
   const params = options?.params;
   if (params !== undefined && (typeof params !== 'object' || params === null)) {
     throw new TypeError(`zlib shim: options.params must be an object, got ${describe(params)}`);
   }
   let level = options?.level;
+  let checksum = false;
   if (level !== undefined && (!Number.isInteger(level) || level < 1 || level > 22)) {
     throw new RangeError(`zlib shim: zstd level must be an integer in [1, 22], got ${String(level)}`);
   }
   for (const key of Object.keys(params ?? {})) {
-    if (key === PARAM_CHECKSUM) continue;
-    if (key === PARAM_LEVEL && level === undefined) level = params[key];
-    else if (key !== PARAM_LEVEL) {
+    if (key === PARAM_CHECKSUM) {
+      if (params[key] !== 0 && params[key] !== 1) {
+        throw new RangeError(`zlib shim: zstd params[ZSTD_c_checksumFlag] must be 0 or 1, got ${String(params[key])}`);
+      }
+      checksum = params[key] === 1;
+    } else if (key === PARAM_LEVEL && level === undefined) {
+      level = params[key];
+    } else if (key !== PARAM_LEVEL) {
       throw new Error(`zlib shim: unsupported zstd params[${key}] — the host intrinsic exposes only the compression level`);
     }
   }
-  return level;
+  return { level, checksum };
 };
 
-/** finishFlush must name a real ZSTD_e_* flush mode; partial recovery of torn
- * frames is not expressible through the one-shot intrinsic (module header). */
-const checkFinishFlush = (options) => {
+/** finishFlush must name a real ZSTD_e_* flush mode; the E_flush face is
+ * served by the prefix-recovery walk below (module header note). */
+export const checkFinishFlush = (options) => {
   const flag = options?.finishFlush;
   if (flag === undefined) return;
   const known = [constants.ZSTD_e_continue, constants.ZSTD_e_flush, constants.ZSTD_e_end];
@@ -153,8 +174,129 @@ const checkFinishFlush = (options) => {
   }
 };
 
+/** Walk one frame's RFC 8878 layout (magic, descriptor, header fields, block
+ * sequence) — the same structure the vendored scanZstdFrames validates.
+ * Returns null when not even magic+descriptor are present; otherwise
+ * { blocksEnd, frameEnd, hasChecksum, lastSeen }: blocksEnd = end of the
+ * last COMPLETE block (or end of header), frameEnd = end of the whole frame
+ * including the checksum trailer when present, or null when the frame is
+ * torn, lastSeen = whether the frame's own Last_Block was reached. */
+export const walkZstdFrame = (bytes) => {
+  if (bytes.length < 5) return null;
+  const descriptor = bytes[4];
+  const contentSizeFlag = descriptor >>> 6;
+  const singleSegment = (descriptor & 0x20) !== 0;
+  const hasChecksum = (descriptor & 0x04) !== 0;
+  const dictionaryFlag = descriptor & 0x03;
+  const dictionaryBytes = dictionaryFlag === 3 ? 4 : dictionaryFlag;
+  const contentSizeBytes = contentSizeFlag === 0 ? (singleSegment ? 1 : 0) : 1 << contentSizeFlag;
+  const headerEnd = 5 + (singleSegment ? 0 : 1) + dictionaryBytes + contentSizeBytes;
+  if (bytes.length < headerEnd) {
+    return { blocksEnd: bytes.length, frameEnd: null, hasChecksum };
+  }
+  // Field offsets for header re-serialization (W6-V torn recovery): the
+  // window descriptor (only when !singleSegment) sits right after the
+  // descriptor byte, then the dictionary id, then the content size.
+  const windowDescriptorAt = singleSegment ? -1 : 5;
+  const dictIdAt = singleSegment ? 5 : 6;
+  const contentSizeAt = dictIdAt + dictionaryBytes;
+  let at = headerEnd;
+  let lastSeen = false;
+  while (!lastSeen) {
+    if (bytes.length - at < 3) break; // torn block header
+    const blockHeader = bytes[at] | (bytes[at + 1] << 8) | (bytes[at + 2] << 16);
+    const blockType = (blockHeader >>> 1) & 0x03;
+    const payloadBytes = blockType === 0x01 ? 1 : blockHeader >>> 3;
+    if (bytes.length - at - 3 < payloadBytes) break; // torn payload
+    lastSeen = (blockHeader & 1) !== 0;
+    at += 3 + payloadBytes;
+  }
+  const blocksEnd = at;
+  let frameEnd = null;
+  if (lastSeen) {
+    const trailer = hasChecksum ? 4 : 0;
+    frameEnd = bytes.length - blocksEnd >= trailer ? blocksEnd + trailer : null;
+  }
+  return {
+    headerEnd,
+    blocksEnd, frameEnd, hasChecksum, lastSeen,
+    descriptor, singleSegment, dictionaryFlag, dictionaryBytes, contentSizeBytes,
+    windowDescriptor: windowDescriptorAt >= 0 ? bytes[windowDescriptorAt] : null,
+    dictIdBytes: dictionaryBytes > 0 ? bytes.slice(dictIdAt, dictIdAt + dictionaryBytes) : null,
+  };
+};
+
+/** Re-serialize a frame header with the content-size field DROPPED (flag 0)
+ * and the checksum bit cleared: a torn-frame recovery decodes FEWER blocks
+ * than the original header declares, and the one-shot intrinsic enforces
+ * the declared size ("Data corruption detected", measured W6-V). Layout per
+ * RFC 8878: descriptor, [window descriptor], [dictionary id], [content
+ * size]. A singleSegment original carries no window descriptor byte; the
+ * replacement derives one from the declared content size so the decode
+ * window still spans every backward reference the kept blocks can make. */
+const rebuildPrefixHeader = (frame, bytes) => {
+  const newDescriptor = frame.dictionaryFlag; // flag 0, checksum 0, singleSegment 0
+  let windowDescriptor = frame.windowDescriptor;
+  if (windowDescriptor === null || windowDescriptor === undefined) {
+    // Single-segment original: window size was implied by the content size
+    // (RFC 8878: min(contentSize, window)). Re-derive a windowLog that
+    // covers the declared size, clamped to the zstd range [10, 27].
+    let log = 10;
+    if (frame.contentSizeBytes > 0) {
+      let declared = 0;
+      for (let i = 0; i < frame.contentSizeBytes; i++) declared = declared * 256 + bytes[5 + (frame.singleSegment ? 0 : 1) + frame.dictionaryBytes + i];
+      while (log < 27 && (1 << log) < declared) log += 1;
+    }
+    windowDescriptor = (log - 10) << 3;
+  }
+  const parts = [DshBuffer.fromBytes(Uint8Array.of(0x28, 0xB5, 0x2F, 0xFD, newDescriptor, windowDescriptor))];
+  if (frame.dictIdBytes !== null) parts.push(DshBuffer.fromBytes(frame.dictIdBytes));
+  return parts;
+};
+
+/** Node's finishFlush:ZSTD_e_flush over a one-shot decoder: recover the
+ * plaintext of every COMPLETE block of a (possibly torn) frame. The
+ * intrinsic runs ZSTD_decompress, which requires a frame-complete input —
+ * but the frame is self-describing, so walkZstdFrame finds the truncation
+ * point, the incomplete tail is dropped, and a synthetic 0-byte Raw block
+ * with the Last_Block bit closes the copy. The header is RE-SERIALIZED with
+ * the content-size field dropped (flag 0) and the checksum bit cleared:
+ * the kept blocks decode fewer bytes than the original header declares and
+ * the one-shot intrinsic enforces the declared size (W6-V: "zstd: Data
+ * corruption detected" on every mid-block cut of a multi-block frame before
+ * the rebuild). Mirrors Node's ZSTD_decompressStream flush semantics:
+ * complete blocks out, no frame completion required. */
+export const decompressFlushPrefix = (bytes, maxOutputBytes) => {
+  const frame = walkZstdFrame(bytes);
+  if (frame === null || frame.headerEnd === undefined) return decompressBytes(bytes, maxOutputBytes);
+  if (frame.frameEnd !== null) {
+    // Frame-complete input: E_flush decodes it whole (original header — its
+    // declared size still matches).
+    return decompressBytes(bytes, maxOutputBytes);
+  }
+  const parts = [];
+  if (frame.lastSeen) {
+    // Every block survived (the tear hit the checksum trailer): keep the
+    // ORIGINAL header but clear the checksum bit — the body alone is a
+    // valid frame whose declared content size still matches its output.
+    const body = bytes.slice(0, frame.blocksEnd);
+    body[4] = bytes[4] & ~0x04;
+    parts.push(body);
+  } else {
+    // Blocks were dropped: rebuild the header without the content-size
+    // field (the declared size no longer matches the kept blocks' output),
+    // then close the copy with a synthetic last block — Last_Block=1, type
+    // Raw(0), size 0 → header 0x000001 LE.
+    parts.push(...rebuildPrefixHeader(frame, bytes));
+    parts.push(bytes.slice(frame.headerEnd, frame.blocksEnd));
+    parts.push(DshBuffer.fromBytes(Uint8Array.of(0x01, 0x00, 0x00)));
+  }
+  const rebuilt = parts.length === 1 ? parts[0] : DshBuffer.concat(parts);
+  return decompressBytes(rebuilt, maxOutputBytes);
+};
+
 /** maxOutputLength -> the intrinsic's maxOutputBytes (0 = unlimited, Node's default). */
-const decompressLimit = (options) => {
+export const decompressLimit = (options) => {
   const max = options?.maxOutputLength;
   if (max === undefined) return 0;
   if (!Number.isInteger(max) || max < 0) {
@@ -163,23 +305,94 @@ const decompressLimit = (options) => {
   return max;
 };
 
-/** Sync codec cores; intrinsic failures ("zstd: ...") propagate unchanged. */
-const compressBytes = (bytes, level) => (
-  b64ToBytes(intrinsic(COMPRESS_INTRINSIC)(bytesToB64(bytes), level ?? constants.ZSTD_CLEVEL_DEFAULT))
-);
-const decompressBytes = (bytes, maxOutputBytes) => (
-  b64ToBytes(intrinsic(DECOMPRESS_INTRINSIC)(bytesToB64(bytes), maxOutputBytes ?? 0))
-);
+/** XXH64 (seed 0) — the Zstandard frame checksum digest (RFC 8878 §3.1.1:
+ * frame checksum = low 32 bits of XXH64 over the ORIGINAL content). Pure-JS
+ * BigInt form; the host intrinsic family has no digest face. Vector-checked
+ * against the canonical set ("" → 0xEF46DB3751D8E999). */
+export const compressBytes = (bytes, level, checksum) => {
+  const frame = b64ToBytes(intrinsic(COMPRESS_INTRINSIC)(bytesToB64(bytes), level ?? constants.ZSTD_CLEVEL_DEFAULT));
+  if (checksum !== true) return frame;
+  const out = new Uint8Array(frame.length + 4);
+  out.set(frame, 0);
+  out[4] |= 0x04; // Frame_Header_Descriptor bit 2: Content_Checksum_flag
+  out.set(zstdChecksumTrailer(bytes), frame.length);
+  return out;
+};
+
+/** Sync codec core (decompress): a checksum-flagged frame is first stripped
+ * to its block body with the descriptor bit cleared (the intrinsic WOULD
+ * natively enforce the XXH64 trailer; the shim owns the comparison because
+ * it owns the stripped decode) and validated against the decoded plaintext —
+ * real digest since W6-V, so corrupt trailers fail loud. Non-checksum frames
+ * pass through byte-identical. */
+export const decompressBytes = (bytes, maxOutputBytes) => {
+  const frame = walkZstdFrame(bytes);
+  if (frame !== null && frame.hasChecksum && frame.frameEnd === bytes.length) {
+    const body = bytes.slice(0, frame.blocksEnd);
+    body[4] = bytes[4] & ~0x04;
+    const plain = decompressBytes(body, maxOutputBytes);
+    validateFrameChecksum(bytes, plain);
+    return plain;
+  }
+  return b64ToBytes(intrinsic(DECOMPRESS_INTRINSIC)(bytesToB64(bytes), maxOutputBytes ?? 0));
+};
+
+// The XXH64 checksum machinery lives in node-zlib-xxh64.js and the stream
+// face in node-zlib-stream.js (the file crossed the size budget); the faces
+// are re-exported below, so bare 'node:zlib' and bundle-path imports keep
+// their shape (the siblings' imports back are call-time only).
+import { zstdChecksumTrailer, validateFrameChecksum } from 'upstream/shims/node-zlib-xxh64.js';
+import { createZstdCompress, createZstdDecompress } from 'upstream/shims/node-zlib-stream.js';
+export { createZstdCompress, createZstdDecompress };
 
 /** One-shot forms; results are DshBuffer (Uint8Array subclass with encodings). */
 export const zstdCompressSync = (buffer, options) => (
-  DshBuffer.fromBytes(compressBytes(asBytes(buffer, 'zstdCompressSync'), compressLevel(options)))
+  DshBuffer.fromBytes((() => {
+    const bytes = asBytes(buffer, 'zstdCompressSync');
+    const { level, checksum } = compressOptions(options);
+    return compressBytes(bytes, level, checksum);
+  })())
+);
+
+/** gzip/gunzip — the one-shot face the webworker-runtime image loader drives
+ * (`gzipSync(tar)` builds the fixture; the product decoder walks the gzip
+ * member). Options: fflate's `{ level, mtime }` subset; node's memLevel/
+ * strategy names fail loud. Results are DshBuffer like the zstd face. */
+export const gzipSync = (buffer, options) => {
+  if (options !== undefined && options !== null
+      && typeof options !== 'object') {
+    throw new TypeError(`zlib shim: gzipSync options must be an object, got ${describe(options)}`);
+  }
+  for (const key of Object.keys(options ?? {})) {
+    if (key !== 'level' && key !== 'mtime' && key !== 'finishFlush') {
+      throw new Error(`zlib shim: unsupported gzipSync options[${key}] — the fflate bridge exposes level/mtime only`);
+    }
+  }
+  return DshBuffer.fromBytes(fflateGzipSync(asBytes(buffer, 'gzipSync'), options));
+};
+
+export const gunzipSync = (buffer, options) => {
+  const limit = decompressLimit(options);
+  const out = fflateGunzipSync(asBytes(buffer, 'gunzipSync'));
+  if (limit > 0 && out.length > limit) {
+    throw new RangeError(`zlib shim: gunzipSync output exceeds maxOutputLength ${limit}`);
+  }
+  return DshBuffer.fromBytes(out);
+};
+
+
+/** The decode route options take: ZSTD_e_flush recovers complete-block
+ * plaintext (the prefix walk); everything else is the plain one-shot. */
+const decompressWithOptions = (bytes, options) => (
+  options?.finishFlush === constants.ZSTD_e_flush
+    ? decompressFlushPrefix(bytes, decompressLimit(options))
+    : decompressBytes(bytes, decompressLimit(options))
 );
 
 export const zstdDecompressSync = (buffer, options) => {
   const bytes = asBytes(buffer, 'zstdDecompressSync');
   checkFinishFlush(options);
-  return DshBuffer.fromBytes(decompressBytes(bytes, decompressLimit(options)));
+  return DshBuffer.fromBytes(decompressWithOptions(bytes, options));
 };
 
 /** Split (buffer, options, callback) vs (buffer, callback); Node validates the
@@ -197,10 +410,10 @@ const splitArguments = (options, callback, caller) => {
 export const zstdCompress = (buffer, options, callback) => {
   const [opts, cb] = splitArguments(options, callback, 'zstdCompress');
   const bytes = asBytes(buffer, 'zstdCompress');
-  const level = compressLevel(opts);
+  const { level, checksum } = compressOptions(opts);
   Promise.resolve().then(() => {
     try {
-      cb(null, DshBuffer.fromBytes(compressBytes(bytes, level)));
+      cb(null, DshBuffer.fromBytes(compressBytes(bytes, level, checksum)));
     } catch (error) {
       cb(error);
     }
@@ -211,17 +424,16 @@ export const zstdDecompress = (buffer, options, callback) => {
   const [opts, cb] = splitArguments(options, callback, 'zstdDecompress');
   const bytes = asBytes(buffer, 'zstdDecompress');
   checkFinishFlush(opts);
-  const maxOutputBytes = decompressLimit(opts);
   Promise.resolve().then(() => {
     try {
-      cb(null, DshBuffer.fromBytes(decompressBytes(bytes, maxOutputBytes)));
+      cb(null, DshBuffer.fromBytes(decompressWithOptions(bytes, opts)));
     } catch (error) {
       cb(error);
     }
   });
 };
 
-const concatBytes = (chunks, total) => {
+export const concatBytes = (chunks, total) => {
   const out = new Uint8Array(total);
   let at = 0;
   for (const chunk of chunks) {
@@ -231,188 +443,6 @@ const concatBytes = (chunks, total) => {
   return out;
 };
 
-/** Minimal stream face: buffers writes, one-shot codec on end(), then serves
- * the single result frame via 'data'/'end'/'close' events, read(), thenable,
- * and async iteration (the pipeline sink does `for await`). Deliberately has
- * NO `_handle`/`_writeState`/`kError` symbol so the corpus's private-stream
- * probe declines and it falls back to the public one-shot decoder. */
-class ZstdShimStream {
-  constructor(codec, options) {
-    this.codec = codec;
-    this.level = compressLevel(options);
-    this.maxOutputBytes = decompressLimit(options);
-    checkFinishFlush(options);
-    this.chunks = [];
-    this.pendingBytes = 0;
-    this.result = null;
-    this.finishError = null;
-    this.ended = false;
-    this.finished = false;
-    this.destroyed = false;
-    this.readConsumed = false;
-    this.iterated = false;
-    this.settled = null;
-    this.listeners = new Map();
-  }
-
-  on(name, listener) {
-    const list = this.listeners.get(name) ?? [];
-    list.push(listener);
-    this.listeners.set(name, list);
-    return this;
-  }
-
-  once(name, listener) {
-    const fire = (...args) => {
-      this.off(name, fire);
-      listener(...args);
-    };
-    return this.on(name, fire);
-  }
-
-  off(name, listener) {
-    const list = this.listeners.get(name);
-    if (list !== undefined) {
-      this.listeners.set(name, list.filter((entry) => entry !== listener));
-    }
-    return this;
-  }
-
-  emit(name, ...args) {
-    const list = this.listeners.get(name);
-    if (list === undefined) {
-      if (name === 'error') throw args[0];
-      return this;
-    }
-    for (const listener of [...list]) listener(...args);
-    return this;
-  }
-
-  write(chunk) {
-    if (this.destroyed) throw new Error('zlib shim: cannot write to a destroyed zstd stream');
-    if (this.ended) throw new Error('zlib shim: write after end');
-    const bytes = asBytes(chunk, 'createZstd*().write');
-    this.chunks.push(bytes);
-    this.pendingBytes += bytes.length;
-    return true;
-  }
-
-  /** Optional trailing chunk and/or callback, Node's `end(chunk, cb)` shape. */
-  end(chunk, callback) {
-    if (typeof chunk === 'function') {
-      callback = chunk;
-      chunk = undefined;
-    }
-    const cb = callback === undefined ? undefined : requireCallback(callback);
-    if (chunk !== undefined && chunk !== null) this.write(chunk);
-    if (this.ended || this.destroyed) {
-      if (cb) cb(new Error('zlib shim: zstd stream already finished'));
-      return this;
-    }
-    this.ended = true;
-    const input = concatBytes(this.chunks, this.pendingBytes);
-    let error = null;
-    let result = null;
-    try {
-      result = this.codec === 'compress'
-        ? compressBytes(input, this.level)
-        : decompressBytes(input, this.maxOutputBytes);
-    } catch (failure) {
-      error = failure;
-    }
-    this.finish(error, result, cb);
-    return this;
-  }
-
-  finish(error, result, cb) {
-    this.finished = true;
-    this.finishError = error;
-    this.result = error === null ? DshBuffer.fromBytes(result) : null;
-    if (error === null) {
-      if (this.settled !== null) this.settled.resolve(this.result);
-      this.emit('data', this.result);
-      this.emit('end');
-      if (cb) cb(null);
-    } else {
-      if (this.settled !== null) this.settled.reject(error);
-      this.emit('error', error);
-      if (cb) cb(error);
-    }
-    this.emit('close');
-  }
-
-  read() {
-    if (this.readConsumed || !this.finished || this.finishError !== null) return null;
-    this.readConsumed = true;
-    return this.result;
-  }
-
-  /** Await the settled result (pipeline sinks may `await` the stream). */
-  then(onFulfilled, onRejected) {
-    return this.whenSettled().then(() => this.result).then(onFulfilled, onRejected);
-  }
-
-  whenSettled() {
-    if (this.finished) {
-      return this.finishError === null ? Promise.resolve(this.result) : Promise.reject(this.finishError);
-    }
-    if (this.settled === null) {
-      this.settled = {};
-      this.settled.promise = new Promise((resolve, reject) => {
-        this.settled.resolve = resolve;
-        this.settled.reject = reject;
-      });
-    }
-    return this.settled.promise;
-  }
-
-  [Symbol.asyncIterator]() {
-    return {
-      next: async () => {
-        if (this.iterated) return { done: true, value: undefined };
-        const value = await this.whenSettled();
-        this.iterated = true;
-        return { done: false, value };
-      },
-    };
-  }
-
-  /** Release without a codec run (the private-probe decline path calls this). */
-  close() {
-    if (this.destroyed) return this;
-    this.destroyed = true;
-    this.ended = true;
-    this.emit('close');
-    return this;
-  }
-
-  destroy(error) {
-    if (this.destroyed) return this;
-    if (!this.finished) {
-      this.finished = true;
-      this.finishError = error ?? new Error('zlib shim: zstd stream destroyed before end');
-      if (this.settled !== null) this.settled.reject(this.finishError);
-    }
-    if (error !== undefined && error !== null) this.emit('error', error);
-    this.destroyed = true;
-    this.ended = true;
-    this.emit('close');
-    return this;
-  }
-}
-
-const requireCallback = (callback) => {
-  if (typeof callback !== 'function') {
-    throw new TypeError('zlib shim: end() callback must be a function');
-  }
-  return callback;
-};
-
-/** Streaming factories (options validated up front, like Node's constructors). */
-export const createZstdCompress = (options) => new ZstdShimStream('compress', options);
-export const createZstdDecompress = (options) => new ZstdShimStream('decompress', options);
-
-/** CommonJS interop marker (worker.cjs require()s this module; see npm-bridges). */
 export const __esModule = true;
 
 /** Default export: the full face for `import zlib from 'node:zlib'` callers. */
@@ -422,7 +452,11 @@ export default {
   zstdDecompress,
   zstdCompressSync,
   zstdDecompressSync,
-  createZstdCompress,
-  createZstdDecompress,
+  gzipSync,
+  gunzipSync,
+  // The stream faces come from node-zlib-stream.js (an ESM cycle under the
+  // bare 'node:zlib' entry) — getters defer the binding reads past the cycle.
+  get createZstdCompress() { return createZstdCompress; },
+  get createZstdDecompress() { return createZstdDecompress; },
   __esModule,
 };

@@ -6,6 +6,9 @@
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
+    ".gov/rejections/case-bundle-files-dotfile.sh": {
+      "sha256": "b64da26dd61b05d29cc4cb006a1ba403d6eda51cbdae0274d1b3a41cbb82a57d"
+    },
     ".gov/rejections/case-bundle-files.sh": {
       "sha256": "32e5989c7340eb828564a8aec4fbbf9311bf159636b73bdd85a7fa92d18ef107"
     },
@@ -35,9 +38,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-29T19:20:20+00:00",
+    "ts": "2026-09-30T00:33:06+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "PR #249 independent review (medium finding): the pairing gate's include list omitted contract/**/*.md, leaving the contract bilingual pairs outside gate jurisdiction; the extension + socket-seam record backfill + data-protocols re-confirmation + contract/README.zh.md translation were reviewed on the PR thread and are landed as the review fix"
+    "reason": "case-bundle-files-dotfile: the bundle-files gate's new rejection case proves the HAP-packer dotfile class; plane re-seal per rules rule 6 (D-g work, PR to review)"
   }
 }

@@ -280,37 +280,6 @@ export const socketClose = async (ref) =>
     ? { id: ref.connectionId }
     : ref);
 
-// ---- the system capability plane: camera (proposal v1.10.0) ---------------
-// The capture burst is the v1 implementation face; photos land in the host's
-// capture scope (the v1.5.0 media-picker read-through posture) and ride the
-// fs primitives like any file. The recording shape is specified and PHASED:
-// its implementation follows as its own change, so hosts register the two
-// control rows to answer `unavailable` (the honest declaration — contract
-// §1), and the descriptor's unavailable array names them. User refusal at
-// either consent layer resolves null; a device without a camera rejects
-// `unavailable`.
-
-/** One capture burst: `{ photos: CapturedPhoto[] }`, or null on refusal. */
-export const cameraCapture = async (request = {}) => await call('cameraCapture', {
-  count: request.count,
-  format: request.format,
-  flash: request.flash,
-  maxBytes: request.maxBytes,
-  tag: request.tag,
-});
-
-/** Phased shape: `{ recordingId }`, or null on refusal — answers
- * `unavailable` until the recording line lands. */
-export const cameraRecordStart = async (request = {}) => await call('cameraRecordStart', {
-  maxDurationMs: request.maxDurationMs,
-  withAudio: request.withAudio,
-});
-
-/** Phased shape: `{ recording: CapturedPhoto }` — answers `unavailable`
- * until the recording line lands. */
-export const cameraRecordStop = async (recordingId) =>
-  await call('cameraRecordStop', { recordingId });
-
 // ---- bridge event plumbing ------------------------------------------------
 
 const listeners = new Set();

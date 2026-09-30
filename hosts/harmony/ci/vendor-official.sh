@@ -177,7 +177,10 @@ fi
 # The web-boot closure (officialweb-web-live drive): the adapter, its shims, and the
 # vendored npm libs the client-modules composition imports — the exact
 # bundle-root relative paths the C loader's bare map resolves.
-CLOSURE="scenario/officialweb-web-live.js
+CLOSURE="gateway.js
+logger.js
+registry.js
+scenario/officialweb-web-live.js
 scenario/composer-web-live.js
 upstream/web-boot.js
 upstream/web-shims.js
@@ -334,6 +337,7 @@ scenario/upstream-suite-leg.js
 scenario/upstream-suite-flatmap.js
 scenario/upstream-suite-type-world.js
 scenario/upstream-fake-timers.js
+scenario/upstream-test-harness.js
 scenario/agent-presets-probe-seed.js
 upstream/shims/fs-seeded.js
 upstream/shims/node-child-process-tables.js
@@ -351,6 +355,7 @@ upstream/shims/fs-readdir.js
 upstream/shims/fs-stat.js
 upstream/shims/fs-workspace-rename.js
 upstream/shims/fs-workspace-write.js
+upstream/shims/fs-workspace.js
 upstream/shims/fs-write-stream.js
 upstream/shims/fs-writes.js
 upstream/shims/node-child-process-exec.js
@@ -358,8 +363,14 @@ upstream/shims/node-http-loopback-client.js
 upstream/shims/node-http-loopback-dispatch.js
 upstream/shims/node-stream-duplex.js
 upstream/shims/node-stream-writable.js
+upstream/shims/node-stream.js
+upstream/shims/node-worker-threads.js
+upstream/shims/node-zlib.js
 upstream/shims/node-zlib-stream.js
 upstream/shims/node-zlib-xxh64.js
+upstream/shims/timers.js
+upstream/shims/expect-poll.js
+upstream/shims/describe-each.js
 upstream/shims/npm-bridges-b.js
 upstream/shims/npm-bridges-c.js
 upstream/shims/npm-bridges-pi-ai.js
@@ -544,11 +555,18 @@ if [ "$MODE" != "check" ] && [ ! -d "runtime/spike/$PIAI_DIR" ]; then
     exit 1
 fi
 if [ "$MODE" != "check" ]; then
-    (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
+    (cd "runtime/spike/$PIAI_DIR" && find . -type f \( -name '*.js' -o -name '*.json' \) ! -name '.*') |
         while IFS= read -r rel; do
             mkdir -p "$RAW/$PIAI_DIR/$(dirname "$rel")"
             cp "runtime/spike/$PIAI_DIR/$rel" "$RAW/$PIAI_DIR/$rel"
         done
+    # The providers barrel's data/.manifest.json cannot ride the HAP: the
+    # packer drops hidden files (check-bundle-files rejects them — the
+    # 2026-09-30 device-leg deaths at materializeBundle). Its bytes ride
+    # under the NON-hidden alias the npm-bridges-pi-ai.js seam falls back to.
+    mkdir -p "$RAW/$PIAI_DIR/dist/providers/data"
+    cp "runtime/spike/$PIAI_DIR/dist/providers/data/.manifest.json" \
+        "$RAW/$PIAI_DIR/dist/providers/data/manifest.json"
 fi
 webclient_files() {
     (cd "presentation/web-client-$1" && find . -type f) |

@@ -33,7 +33,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, relative } from 'node:path';
+import { join, dirname, relative, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -77,6 +77,24 @@ const diskFiles = () => {
 
 const listed = new Set(bundleFiles());
 const onDisk = diskFiles();
+
+// A hidden file can never reach the materialized bundle: the HAP packer
+// drops dotfiles at packaging (measured 2026-09-30 — the pi-ai providers
+// manifest's dot name died at materializeBundle on every device leg after
+// #251 staged it), so listing one is a launch-time death and staging one is
+// dead weight the both-directions check below would have to exempt. The
+// seam (npm-bridges-pi-ai.js) reads such bytes through their non-hidden
+// alias instead.
+const hidden = onDisk.filter((rel) => basename(rel).startsWith('.')).sort();
+if (hidden.length > 0) {
+  console.error('check-bundle-files: FAIL — hidden files cannot ride the HAP (the packer drops dotfiles);'
+    + ' stage their bytes under a non-hidden alias and read that from the seam:');
+  for (const rel of hidden) {
+    console.error(`  hidden rawfile file: ${rel}`);
+  }
+  process.exit(1);
+}
+
 const missingFromList = onDisk.filter((rel) => !listed.has(rel)).sort();
 const missingOnDisk = [...listed].filter((rel) => !onDisk.includes(rel)).sort();
 
