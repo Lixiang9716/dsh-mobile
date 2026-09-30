@@ -9,8 +9,8 @@
     }
   },
   "checklist": [
-    "Write docs/release-notes-v0.0.2.md + .zh.md + .i18n.yaml, pairing confirmed",
-    "Create known-gap label and file the known-gap issues (deduped), list verified",
+    "[x] Write docs/release-notes-v0.0.2.md + .zh.md + .i18n.yaml, pairing confirmed",
+    "[x] Create known-gap label and file the known-gap issues (deduped), list verified",
     "Agent Note (process), incremental commits, gov run green, push, PR opened"
   ],
   "status": "open",
