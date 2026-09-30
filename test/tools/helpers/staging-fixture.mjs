@@ -266,6 +266,8 @@ export class StagingFixture {
 
   remove(rel) { rmSync(join(this.root, rel)); }
 
+  removeTree(rel) { rmSync(join(this.root, rel), { recursive: true, force: true }); }
+
   /** Run one of the copied tools; node CLI semantics verbatim (exit codes
    * 0/1/2, stdout/stderr text). */
   run(tool, args = []) {
