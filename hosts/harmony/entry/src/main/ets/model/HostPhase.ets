@@ -328,6 +328,12 @@ export class HostPhase {
     this.devicePlaneLeg = false;
     this.bleLeg = true;
     this.bleMock = mockRadio;
+    this.slotAcked = false;
+    this.connectedLogged = false;
+    this.hostInfoDelivered = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
   /** The capability plane's microphone leg (ONE launch, its own scenario
    * id): the device-plane leg's shape — no web client mounts (the scenario
    * drives primitives only), the runner calls evalEntryDirect once the
