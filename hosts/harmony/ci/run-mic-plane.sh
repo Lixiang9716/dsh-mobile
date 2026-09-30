@@ -105,12 +105,15 @@ grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
 "$HDC" file recv "$BASE/dsh-mic-plane-capture.log" "$OUT/mic-plane-capture.txt" >/dev/null
 grep -h '^dsh.spike.log:' "$OUT/mic-plane-capture.txt" > "$OUT/scenario.jsonl" || true
 
-if node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-mic-plane.json \
+FAIL=0
+node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-mic-plane.json \
     --log "$OUT/mic-plane-capture.txt" \
-    --out "$OUT/verdict-harmony-mic-plane.json"; then
-    :
-else
-    echo "::error::harmony-mic-plane checker failed" >&2
+    --out "$OUT/verdict-harmony-mic-plane.json" || FAIL=1
+node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-mic-plane-audit.json \
+    --log "$OUT/mic-plane-capture.txt" \
+    --out "$OUT/verdict-harmony-mic-plane-audit.json" || FAIL=1
+if [ "$FAIL" != "0" ]; then
+    echo "::error::harmony-mic-plane checkers failed" >&2
     exit 1
 fi
 
@@ -125,7 +128,8 @@ cat > "$OUT/receipt.json" <<EOF
   "tree": "$TREE_LINE",
   "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
   "scenarios": [
-    { "manifest": "harmony-mic-plane", "verdict": "verdict-harmony-mic-plane.json", "pass": true }
+    { "manifest": "harmony-mic-plane", "verdict": "verdict-harmony-mic-plane.json", "pass": true },
+    { "manifest": "harmony-mic-plane-audit", "verdict": "verdict-harmony-mic-plane-audit.json", "pass": true }
   ],
   "screens": ["screens/mic-plane-complete.png"],
   "producedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"

@@ -8,8 +8,8 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
 > **Currency**: this matrix reflects the mic-face change (2026-09-30):
 > the capability plane's microphone face is live on the mobile hosts — one
-> platform-neutral scenario `mic.plane` driven per host (descriptor 24 iOS /
-> 25 Android / 17 HarmonyOS declared; the armed ladder with real PCM frames
+> platform-neutral scenario `mic.plane` driven per host (descriptor 25 iOS /
+> 26 Android / 18 HarmonyOS declared; the armed ladder with real PCM frames
 > ran on iOS and Android — arm, frames, the stop record's duration/bytes,
 > the exactly-once end, idempotence, the unknown-id leg), with receipts in
 > `hosts/{ios,android}/artifacts/mic-plane/`; the HarmonyOS leg is D-g (the

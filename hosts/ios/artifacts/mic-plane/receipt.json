@@ -4,18 +4,18 @@
   "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "phase": "mic.plane",
   "launchConfiguration": "ios mic-plane drive (Debug, -dsh-mode mic-plane)",
-  "tree": "origin/main 726bd13b77c9 (dirty working tree at receipt time)",
+  "tree": "origin/main 9c7855da6b3f (dirty working tree at receipt time)",
   "scenarios": [
     {
       "id": "mic.plane",
       "checker": "test/e2e/scenarios/mic-plane.json",
-      "events": 9,
+      "events": 11,
       "result": "pass"
     },
     {
       "id": "mic.plane.audit",
       "checker": "test/e2e/scenarios/mic-plane-audit.json",
-      "events": 4,
+      "events": 6,
       "result": "pass"
     }
   ],
@@ -23,6 +23,6 @@
   "screens": [
     "screens/01-final.png"
   ],
-  "timestamp": "2026-09-30T11:04:19+08:00",
+  "timestamp": "2026-09-30T11:40:55+08:00",
   "exitCode": 0
 }

@@ -157,6 +157,20 @@ if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
     const again = await micStop(armed.streamId);
     demand(again !== null && again.stopped === false, 'micStop re-stop answered stopped');
     emit('mic.stop.idempotent', { stopped: false });
+
+    // ---- the repeat leg: micStart is an ordinary repeatable primitive — a
+    // SECOND full arm/stop cycle must settle with a fresh stream (an
+    // arm fence burned on the first call would hang right here) ----
+    const rearmed = await micStart({
+      format: FORMAT, sampleRate: SAMPLE_RATE, frameMs: FRAME_MS, tag: 'mic.plane',
+    });
+    demand(rearmed !== null && rearmed.streamId !== armed.streamId,
+      'the second micStart did not arm a fresh stream');
+    emit('mic.rearmed', { format: FORMAT });
+    const restopped = await micStop(rearmed.streamId);
+    demand(restopped !== null && restopped.stopped === true,
+      'the second cycle stop answered not-stopped');
+    emit('mic.restopped', { stopped: true });
   }
 
   // ---- the unknown-id leg (the timerCancel shape) runs on BOTH paths ----

@@ -53,6 +53,18 @@
       }
     },
     {
+      "event": "mic.rearmed",
+      "match": {
+        "format": "pcm-s16le"
+      }
+    },
+    {
+      "event": "mic.restopped",
+      "match": {
+        "stopped": true
+      }
+    },
+    {
       "event": "mic.stop.unknown",
       "match": {
         "stopped": false

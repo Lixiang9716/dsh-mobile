@@ -76,8 +76,10 @@ final class MicPrimitives {
             "format": format, "sampleRate": Int(sampleRate),
             "frameMs": Int(frameMs), "tag": call.string("tag") ?? NSNull(),
         ])
-        let arm: () -> Void = { self.arm(sampleRate: sampleRate, frameMs: frameMs, done) }
-        requestPermissionThen(done, then: arm)
+        let fence = Once()
+        requestPermissionThen(done, fence: fence, then: {
+            self.arm(sampleRate: sampleRate, frameMs: frameMs, fence: fence, done)
+        })
     }
 
     /// The OS consent layer (the second layer; the manifest's family grant
@@ -86,14 +88,18 @@ final class MicPrimitives {
     /// deadlocks (the callback holds session-internal state; measured on
     /// the dsh-iphone 26.5 simulator). The arm bound (see armFence): a
     /// wedged host route answers the honest `unavailable` instead of
-    /// hanging micStart.
+    /// hanging micStart. The fence is PER CALL: micStart is an ordinary
+    /// repeatable primitive, and a call-level Once is the only shape that
+    /// keeps later starts settleable (an instance-level one burned on the
+    /// first arm — measured in review).
     private func requestPermissionThen(
-        _ done: @escaping GatewayDone, then arm: @escaping () -> Void
+        _ done: @escaping GatewayDone, fence: Once,
+        then arm: @escaping () -> Void
     ) {
         DispatchQueue.main.async {
             GatewayCore.uiMarker("mic-permission", "wait")
             AVAudioApplication.requestRecordPermission { [weak self] granted in
-                self?.handlePermission(granted, done: done, arm: arm)
+                self?.handlePermission(granted, done: done, fence: fence, arm: arm)
             }
         }
     }
@@ -101,7 +107,8 @@ final class MicPrimitives {
     /// The permission answer, on its own method so the closure nesting stays
     /// inside the indent budget.
     private func handlePermission(
-        _ granted: Bool, done: @escaping GatewayDone, arm: @escaping () -> Void
+        _ granted: Bool, done: @escaping GatewayDone, fence: Once,
+        arm: @escaping () -> Void
     ) {
         GatewayCore.uiMarker("mic-permission", "done")
         guard granted else {
@@ -112,12 +119,12 @@ final class MicPrimitives {
         }
         DispatchQueue.global(qos: .userInitiated).async(execute: arm)
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.armTimeout) { [weak self] in
-            self?.fenceTimeout(done)
+            self?.fenceTimeout(fence, done)
         }
     }
 
-    private func fenceTimeout(_ done: @escaping GatewayDone) {
-        guard armFence.claim() else { return }
+    private func fenceTimeout(_ fence: Once, _ done: @escaping GatewayDone) {
+        guard fence.claim() else { return }
         done(.failure(GatewayError(
             code: "unavailable", primitive: "micStart",
             message: "audio input route did not open within "
@@ -130,16 +137,18 @@ final class MicPrimitives {
     /// convert, measured on the dsh-iphone 26.5 simulator) — and each
     /// buffer converts to pcm-s16le mono at the clamped rate through an
     /// explicit AVAudioConverter.
-    private func arm(sampleRate: Double, frameMs: Double, _ done: @escaping GatewayDone) {
+    private func arm(
+        sampleRate: Double, frameMs: Double, fence: Once, _ done: @escaping GatewayDone
+    ) {
         let id = "mic:\(UUID().uuidString)"
         let stream = MicStream(id: id)
         let error = openInputRoute(stream, sampleRate: sampleRate, frameMs: frameMs)
         if let error {
             return done(.failure(error))
         }
-        // The fence is the single authority: whoever claims it settles the
-        // call.
-        guard armFence.claim() else {
+        // The call's fence is the single authority: whoever claims it
+        // settles the call.
+        guard fence.claim() else {
             stream.engine.inputNode.removeTap(onBus: 0)
             stream.engine.stop()
             return

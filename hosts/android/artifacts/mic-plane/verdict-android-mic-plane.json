@@ -1,8 +1,158 @@
 {
   "scenario": "mic.plane",
-  "pass": true,
-  "expected": 9,
+  "pass": false,
+  "expected": 11,
   "logged": 9,
-  "failures": [],
+  "failures": [
+    {
+      "index": 2,
+      "expected": {
+        "event": "mic.armed",
+        "match": {
+          "format": "pcm-s16le"
+        }
+      },
+      "logged": {
+        "line": 9,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "gateway.negotiated",
+          "version": "gateway@1"
+        }
+      }
+    },
+    {
+      "index": 3,
+      "expected": {
+        "event": "mic.frames",
+        "match": {
+          "consumed": true,
+          "monotonic": true,
+          "samples": true
+        }
+      },
+      "logged": {
+        "line": 10,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "descriptor.declared",
+          "available": 26,
+          "unavailable": 2,
+          "micPlane": 2
+        }
+      }
+    },
+    {
+      "index": 4,
+      "expected": {
+        "event": "mic.stopped",
+        "match": {
+          "stopped": true,
+          "duration": true,
+          "bytes": true
+        }
+      },
+      "logged": {
+        "line": 14,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "mic.armed",
+          "format": "pcm-s16le"
+        }
+      }
+    },
+    {
+      "index": 5,
+      "expected": {
+        "event": "mic.end",
+        "match": {
+          "reason": "stopped"
+        }
+      },
+      "logged": {
+        "line": 17,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "mic.armed",
+          "format": "pcm-s16le"
+        }
+      }
+    },
+    {
+      "index": 6,
+      "expected": {
+        "event": "mic.stop.idempotent",
+        "match": {
+          "stopped": false
+        }
+      },
+      "logged": {
+        "line": 41,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "mic.frames",
+          "consumed": true,
+          "monotonic": true,
+          "samples": true
+        }
+      }
+    },
+    {
+      "index": 7,
+      "expected": {
+        "event": "mic.rearmed",
+        "match": {
+          "format": "pcm-s16le"
+        }
+      },
+      "logged": {
+        "line": 47,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "mic.frames",
+          "consumed": true,
+          "monotonic": true,
+          "samples": true
+        }
+      }
+    },
+    {
+      "index": 8,
+      "expected": {
+        "event": "mic.restopped",
+        "match": {
+          "stopped": true
+        }
+      },
+      "logged": {
+        "line": 61,
+        "payload": {
+          "scenario": "mic.plane",
+          "event": "scenario.failed",
+          "reason": "micStop live stream answered not-stopped"
+        }
+      }
+    },
+    {
+      "index": 9,
+      "expected": {
+        "event": "mic.stop.unknown",
+        "match": {
+          "stopped": false
+        }
+      },
+      "logged": null
+    },
+    {
+      "index": 10,
+      "expected": {
+        "event": "scenario.complete",
+        "match": {
+          "status": "pass"
+        }
+      },
+      "logged": null
+    }
+  ],
   "parseErrors": []
 }

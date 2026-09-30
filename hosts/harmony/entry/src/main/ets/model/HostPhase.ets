@@ -64,6 +64,9 @@ import { MicPrimitives } from './MicPrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
+/** The spike bundle's caller identity (the manifest.json id) — the audit
+ * records' caller field. */
+const CALLER_ID: string = 'dsh.spike.scenario';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'harmony.capability-binding';
 const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';
@@ -810,6 +813,70 @@ export class HostPhase {
     return (callId: number, payloadJson: string, ok: boolean): void => {
       this.settleCall(callId, payloadJson, ok);
     };
+  }
+
+  /** The mic rows' settle, audited (contract rule 4: every call carries ONE
+   * record — verdict granted, outcome ok | the error code, detail from the
+   * closed vocabulary: format/rate/frameMs/tag on start, refused / duration
+   * + bytes on stop — never payload contents). Emitted through the same
+   * carrier line the capture pulls, under the audit prefix. */
+  private auditSettleFn(name: string, args: string):
+    (callId: number, payloadJson: string, ok: boolean) => void {
+    return (callId: number, payloadJson: string, ok: boolean): void => {
+      this.micAuditLine(name, args, payloadJson, ok);
+      this.settleCall(callId, payloadJson, ok);
+    };
+  }
+
+  /** Builds the one audit record for a settled mic call. */
+  private micAuditLine(name: string, args: string, payloadJson: string,
+    ok: boolean): void {
+    let outcome: string = 'ok';
+    if (!ok) {
+      outcome = this.jsonField(payloadJson, 'code') ?? 'invalid';
+    }
+    let detail = '';
+    if (name === 'micStart') {
+      detail = '"detail":{"format":"' + (this.jsonField(args, 'format') ?? 'pcm-s16le')
+        + '","sampleRate":' + (this.jsonField(args, 'sampleRate') ?? '16000')
+        + ',"frameMs":' + (this.jsonField(args, 'frameMs') ?? '100')
+        + ',"tag":"' + (this.jsonField(args, 'tag') ?? '') + '"}';
+      if (payloadJson === 'null') {
+        detail = '"detail":{"refused":"os"}';
+      }
+    } else {
+      if (payloadJson.indexOf('"stopped":true') >= 0) {
+        detail = '"detail":{"durationMs":' + (this.jsonField(payloadJson, 'durationMs') ?? '0')
+          + ',"bytes":' + (this.jsonField(payloadJson, 'bytes') ?? '0') + '}';
+      }
+    }
+    const record = '{"ts":"' + new Date().toISOString() + '","primitive":"' + name
+      + '","caller":"' + CALLER_ID + '","verdict":"'
+      + (ok ? 'granted' : 'denied') + '","outcome":"' + outcome + '"'
+      + (detail === '' ? '' : ',' + detail) + '}';
+    hostCarrierLine(PHASE_ID, 'dsh.gateway.audit: ' + record);
+  }
+
+  /** One string field out of a flat JSON object (best effort — audit
+   * details never gate behavior). */
+  private jsonField(json: string, key: string): string | null {
+    const probe = '"' + key + '":';
+    const at = json.indexOf(probe);
+    if (at < 0) {
+      return null;
+    }
+    const rest = json.substring(at + probe.length);
+    const comma = rest.indexOf(',');
+    const brace = rest.indexOf('}');
+    let end = comma >= 0 && brace >= 0 ? Math.min(comma, brace) : (comma >= 0 ? comma : brace);
+    if (end < 0) {
+      end = rest.length;
+    }
+    let v = rest.substring(0, end).trim();
+    if (v.startsWith('"') && v.endsWith('"') && v.length >= 2) {
+      v = v.substring(1, v.length - 1);
+    }
+    return v === '' ? null : v;
   }
 
   private handleApproval(callId: number, title: string): void {

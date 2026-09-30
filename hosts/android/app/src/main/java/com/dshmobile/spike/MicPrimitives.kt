@@ -41,7 +41,7 @@ class MicPrimitives(private val activity: android.app.Activity) {
     var emitFn: ((json: String) -> Unit)? = null
 
     private val lock = Object()
-    private var stream: MicStream? = null
+    private val streams = HashMap<String, MicStream>()
 
     private class MicStream(val id: String) {
         var record: AudioRecord? = null
@@ -154,7 +154,7 @@ class MicPrimitives(private val activity: android.app.Activity) {
         val id = "mic:" + java.util.UUID.randomUUID().toString()
         val s = MicStream(id)
         s.record = record
-        synchronized(lock) { stream = s }
+        synchronized(lock) { streams[id] = s }
         record.startRecording()
         val chunkBytes = (sampleRate * 2 * frameMs / 1000.0).toInt().coerceAtLeast(2)
         val reader = Thread {
@@ -225,15 +225,7 @@ class MicPrimitives(private val activity: android.app.Activity) {
             return done.settle(null, GatewayCore.GatewayError(
                 "invalid", "micStop", "streamId missing"))
         }
-        val s: MicStream? = synchronized(lock) {
-            val cur = stream
-            if (cur?.id == id) {
-                stream = null
-                cur
-            } else {
-                null
-            }
-        }
+        val s: MicStream? = synchronized(lock) { streams.remove(id) }
         if (s == null || s.stopped) {
             // unknown or already-stopped id: the timerCancel shape
             return done.settle(

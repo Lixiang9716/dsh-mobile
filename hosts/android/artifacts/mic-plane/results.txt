@@ -1,2 +1,2 @@
-09-30 11:02:20.374  4886  4948 I dsh.spike.result: android.mic-plane PASS | quickjs-ng 0.17.0
-09-30 11:02:20.374  4886  4948 I dsh.spike.result: ALL PASS
+09-30 11:43:19.780  1709  1853 I dsh.spike.result: android.mic-plane FAIL | quickjs-ng 0.17.0 | error: scenario completed with pass=false
+09-30 11:43:19.780  1709  1853 I dsh.spike.result: ALL FAIL

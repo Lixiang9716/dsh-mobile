@@ -119,7 +119,7 @@ function reject(callId: number, settle: SettleFn, code: string, primitive: strin
 export class MicPrimitives {
   private ctx: common.UIAbilityContext;
   private emit: ((eventJson: string) => void) | null = null;
-  private stream: MicStream | null = null;
+  private streams: Map<string, MicStream> = new Map<string, MicStream>();
 
   constructor(ctx: common.UIAbilityContext) {
     this.ctx = ctx;
@@ -233,7 +233,7 @@ export class MicPrimitives {
       return created.start();
     }).then((): void => {
       s.startedAt = Date.now();
-      this.stream = s;
+      this.streams.set(id, s);
       // settle FIRST, then install readData: the hostSettle enters the
       // runtime queue ahead of any frame event, so the consumer's
       // micStart promise (which registers the channel state) always
@@ -299,13 +299,14 @@ export class MicPrimitives {
       return;
     }
     const id = args.streamId ?? '';
-    const s = this.stream;
-    if (s === null || s.id !== id || s.stopped) {
+    const s = this.streams.get(id);
+    if (s === undefined || s.stopped) {
       // unknown or already-stopped id: the timerCancel shape
       const answer: StopAnswer = { stopped: false, durationMs: 0, bytes: 0 };
       settle(callId, JSON.stringify(answer), true);
       return;
     }
+    this.streams.delete(id);
     // The later-tick posture (the dispatch must never re-enter the runtime
     // synchronously): halt's drain emits bridge events, so the stop settles
     // from an independent event-loop tick.

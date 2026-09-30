@@ -8,7 +8,7 @@
 
 > **时效性**：本矩阵反映麦克风面变更（2026-09-30）：能力面的 microphone
 > 面在移动宿主上落地 —— 一个平台中立 scenario `mic.plane` 逐宿主驱动
-> （描述符 iOS 24 / Android 25 / HarmonyOS 17；iOS 与 Android 真跑 armed
+> （描述符 iOS 25 / Android 26 / HarmonyOS 18；iOS 与 Android 真跑 armed
 > 阶梯、带真实 PCM 帧 —— arm、帧流、stop 记录的时长/字节数、恰好一次的
 > end、幂等与未知 id 腿），receipt 在
 > `hosts/{ios,android}/artifacts/mic-plane/`；HarmonyOS 腿走 D-g（runner

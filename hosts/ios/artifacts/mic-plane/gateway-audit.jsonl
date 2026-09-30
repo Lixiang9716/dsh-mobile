@@ -1,4 +1,6 @@
-dsh.gateway.audit: {"primitive":"micStart","ts":"2026-09-30T03:04:11Z","caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","detail":{"tag":"mic.plane","sampleRate":16000,"format":"pcm-s16le","frameMs":100}}
-dsh.gateway.audit: {"outcome":"ok","primitive":"micStop","detail":{"durationMs":1774,"bytes":13642},"verdict":"granted","ts":"2026-09-30T03:04:12Z","caller":"dsh.spike.scenario"}
-dsh.gateway.audit: {"ts":"2026-09-30T03:04:12Z","verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario","primitive":"micStop"}
-dsh.gateway.audit: {"ts":"2026-09-30T03:04:12Z","verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario","primitive":"micStop"}
+dsh.gateway.audit: {"ts":"2026-09-30T03:40:51Z","verdict":"granted","outcome":"ok","detail":{"sampleRate":16000,"tag":"mic.plane","format":"pcm-s16le","frameMs":100},"caller":"dsh.spike.scenario","primitive":"micStart"}
+dsh.gateway.audit: {"ts":"2026-09-30T03:40:51Z","verdict":"granted","outcome":"ok","detail":{"durationMs":1178,"bytes":10912},"caller":"dsh.spike.scenario","primitive":"micStop"}
+dsh.gateway.audit: {"ts":"2026-09-30T03:40:51Z","verdict":"granted","outcome":"ok","caller":"dsh.spike.scenario","primitive":"micStop"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"},"ts":"2026-09-30T03:40:51Z","verdict":"granted","outcome":"ok","primitive":"micStart"}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","primitive":"micStop","detail":{"bytes":0,"durationMs":223},"caller":"dsh.spike.scenario","ts":"2026-09-30T03:40:51Z"}
+dsh.gateway.audit: {"verdict":"granted","outcome":"ok","primitive":"micStop","caller":"dsh.spike.scenario","ts":"2026-09-30T03:40:51Z"}

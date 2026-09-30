@@ -1,8 +1,8 @@
 {
   "scenario": "mic.plane",
   "pass": true,
-  "expected": 9,
-  "logged": 9,
+  "expected": 11,
+  "logged": 11,
   "failures": [],
   "parseErrors": []
 }
