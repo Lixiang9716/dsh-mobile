@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "marketplace": "dsh",
+  "generatedAt": "2026-10-01T00:00:00Z",
+  "keys": {
+    "dsh-market-test-1": "17gBDN0WP/qhhFZbp3SAXxuc6Cdx6SUpvzOtXxl2i4c="
+  },
+  "entries": [
+    {
+      "id": "dsh-ble",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-ble@0.1.0.tgz",
+      "blobSha256": "33c70463abeb953f615d1733645876f1b76c9167d4f29eeb461db5af489eb77a",
+      "manifestSha256": "c1ab6e5c645d544467398cb68e54c94f84c8e1b4a4f075f06e211924fc9837a5",
+      "capabilities": {
+        "required": [
+          "ble"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "BLE service over the system capability plane: scan, connect, GATT — consent and audit live host-side.",
+        "zh": "系统能力面上的 BLE 服务：扫描、连接、GATT——同意与审计由宿主侧承担。"
+      }
+    },
+    {
+      "id": "dsh-device-plane",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-device-plane@0.1.0.tgz",
+      "blobSha256": "075e2be95ea181a3b1a76bffe9bed9185efba3f5d25920e681af67b43df0fdc7",
+      "manifestSha256": "e126711756df5c629f230c3ee39f53a1c2e049d93fc729e79b36cd4277531375",
+      "capabilities": {
+        "required": [
+          "deviceInfo",
+          "haptic",
+          "clipboardRead",
+          "clipboardWrite",
+          "presentShare",
+          "keepAwake"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "Device service plane: device info, haptics, clipboard, share sheet, keep-awake over frozen primitives.",
+        "zh": "设备服务面：设备信息、震动、剪贴板、分享面板、保持唤醒，全部走冻结原语。"
+      }
+    },
+    {
+      "id": "dsh-fs",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-fs@0.1.0.tgz",
+      "blobSha256": "2aba944dd24aa7589b3f4ad220568fb74ee0ece827fe6e02dc1dc0271c8781e2",
+      "manifestSha256": "635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156",
+      "capabilities": {
+        "required": [
+          "fsRead",
+          "fsWrite",
+          "fsScope"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "The fs service (read/write/append/exists/stat) over fsRead/fsWrite/fsScope; scope-relative paths, escapes rejected.",
+        "zh": "fs 服务(读/写/追加/存在/状态)，基于 fsRead/fsWrite/fsScope;作用域相对路径，越界即拒。"
+      }
+    },
+    {
+      "id": "dsh-office",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-office@0.1.0.tgz",
+      "blobSha256": "e694f21d83a56542aea12efb5815f7d46687ac5b581d1c25f0c25c89a7e77c8e",
+      "manifestSha256": "0d4f1f520aa902bdeb753831a7550427de85114cbbc02b7f89ede856d0949205",
+      "capabilities": {
+        "required": [
+          "fsRead",
+          "fsWrite",
+          "fsStat"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "The word/excel/ppt document plane: create/read/update documents and create/read presentations.",
+        "zh": "word/excel/ppt 文档面：创建/读取/更新文档，创建/读取演示文稿。"
+      }
+    },
+    {
+      "id": "dsh-open-design",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-open-design@0.1.0.tgz",
+      "blobSha256": "3802c33991b1e3ddc74be144381d994a2c5d2c6ed493d6f828e69efbcf70e97f",
+      "manifestSha256": "356e9644b6f30495ed4d47c4fa84d7210a698218323fca502e98e4145de267f0",
+      "capabilities": {
+        "required": [
+          "httpFetch"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "Open Design daemon REST surface (projects, BYOK generate, artifact save/lint) over httpFetch.",
+        "zh": "Open Design 守护进程 REST 面(项目、BYOK 生成、产物保存与 lint),走 httpFetch。"
+      }
+    },
+    {
+      "id": "dsh-shell-ish",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-shell-ish@0.1.0.tgz",
+      "blobSha256": "1693a7fd4ebfdae53ec99d8e7751d77d55e5352f2f2ee14ed89319344efb2957",
+      "manifestSha256": "f4aa9db9885a4902fde14a62eef4f3c680a7b253317060bff14b7f99b03ca51a",
+      "capabilities": {
+        "required": [
+          "ishRun",
+          "fsRead"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "The shell capability over contract ishRun: a real Linux userland emulated in-process.",
+        "zh": "shell 能力走契约 ishRun:进程内模拟的真实 Linux 用户态。"
+      }
+    },
+    {
+      "id": "dsh-shell-wasm",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-shell-wasm@0.1.0.tgz",
+      "blobSha256": "5a7a01b2e1b82f9842060f960eee9c1e0d36a43df1034bf800298cb2d06509f1",
+      "manifestSha256": "18e92dfba2b5229f048ebf81350dc708b268eea29e8eafd32fdadef7a253932c",
+      "capabilities": {
+        "required": [
+          "wasmRun",
+          "fsRead",
+          "fsWrite"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "The shell capability over contract wasmRun: the workspace is the PATH, programs are .wasm, interpreted in-process.",
+        "zh": "shell 能力走契约 wasmRun:工作区即 PATH,程序即 .wasm,进程内解释执行。"
+      }
+    },
+    {
+      "id": "dsh-subprocess-quickjs",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-subprocess-quickjs@0.1.0.tgz",
+      "blobSha256": "0d4399a9daa7b9eaf2a4b2b64ec12c9e89743ba964031875af7ba47b7000c83d",
+      "manifestSha256": "62e890f443f24bdbe6b410ffa18a0aa174e0efe83e20afe7414ec34dd9669a22",
+      "capabilities": {
+        "required": [],
+        "optional": []
+      },
+      "summary": {
+        "en": "ctx.subprocess — the coroutine executor: event-driven spawn handles, no OS processes, nothing blocking.",
+        "zh": "ctx.subprocess——协程执行器：事件驱动的 spawn 句柄，无 OS 进程，无阻塞。"
+      }
+    },
+    {
+      "id": "dsh-ui",
+      "version": "0.1.0",
+      "type": "service",
+      "tgzUrl": "https://marketplace.example.invalid/packages/dsh-ui@0.1.0.tgz",
+      "blobSha256": "62a318fca0a3881330ed07d6a51abab260b8ae03967a9e297cdfbe8cc4de9de7",
+      "manifestSha256": "1cc2acc9ecc574ac88123c8a9b8a150d7c83eb745fba6e6cd480e7eb0d8d39df",
+      "capabilities": {
+        "required": [
+          "notify",
+          "presentApproval",
+          "presentPicker"
+        ],
+        "optional": []
+      },
+      "summary": {
+        "en": "The ui service: approval dialogs, pickers and notifications composed from the presentation primitives.",
+        "zh": "ui 服务：由展示原语组合出的审批对话框、选择器与通知。"
+      }
+    }
+  ],
+  "signature": {
+    "key": "dsh-market-test-1",
+    "value": "PBS3jYdSiPiC0xjZGefB1Tho+lFt/arTNIZhBaRbozNl/xYJCOnTsKh0712cbU5pzp7h6rDbgTQJFpr4mq8iDw=="
+  }
+}

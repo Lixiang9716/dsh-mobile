@@ -1,0 +1,38 @@
+{
+  "dsh-ble": {
+    "en": "BLE service over the system capability plane: scan, connect, GATT — consent and audit live host-side.",
+    "zh": "系统能力面上的 BLE 服务：扫描、连接、GATT——同意与审计由宿主侧承担。"
+  },
+  "dsh-device-plane": {
+    "en": "Device service plane: device info, haptics, clipboard, share sheet, keep-awake over frozen primitives.",
+    "zh": "设备服务面：设备信息、震动、剪贴板、分享面板、保持唤醒，全部走冻结原语。"
+  },
+  "dsh-fs": {
+    "en": "The fs service (read/write/append/exists/stat) over fsRead/fsWrite/fsScope; scope-relative paths, escapes rejected.",
+    "zh": "fs 服务(读/写/追加/存在/状态)，基于 fsRead/fsWrite/fsScope;作用域相对路径，越界即拒。"
+  },
+  "dsh-office": {
+    "en": "The word/excel/ppt document plane: create/read/update documents and create/read presentations.",
+    "zh": "word/excel/ppt 文档面：创建/读取/更新文档，创建/读取演示文稿。"
+  },
+  "dsh-open-design": {
+    "en": "Open Design daemon REST surface (projects, BYOK generate, artifact save/lint) over httpFetch.",
+    "zh": "Open Design 守护进程 REST 面(项目、BYOK 生成、产物保存与 lint),走 httpFetch。"
+  },
+  "dsh-shell-ish": {
+    "en": "The shell capability over contract ishRun: a real Linux userland emulated in-process.",
+    "zh": "shell 能力走契约 ishRun:进程内模拟的真实 Linux 用户态。"
+  },
+  "dsh-shell-wasm": {
+    "en": "The shell capability over contract wasmRun: the workspace is the PATH, programs are .wasm, interpreted in-process.",
+    "zh": "shell 能力走契约 wasmRun:工作区即 PATH,程序即 .wasm,进程内解释执行。"
+  },
+  "dsh-subprocess-quickjs": {
+    "en": "ctx.subprocess — the coroutine executor: event-driven spawn handles, no OS processes, nothing blocking.",
+    "zh": "ctx.subprocess——协程执行器：事件驱动的 spawn 句柄，无 OS 进程，无阻塞。"
+  },
+  "dsh-ui": {
+    "en": "The ui service: approval dialogs, pickers and notifications composed from the presentation primitives.",
+    "zh": "ui 服务：由展示原语组合出的审批对话框、选择器与通知。"
+  }
+}
