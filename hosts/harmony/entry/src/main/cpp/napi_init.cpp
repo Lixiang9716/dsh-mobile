@@ -9,8 +9,9 @@
  * One launch drives ALL THREE spike scenarios:
  *   - boot.verification (regression): loader + seams + gateway negotiation;
  *   - gateway.bridge-smoke: the real gateway bridge, served by the smoke backend
- *     in gateway_smoke.cpp (fs on the app dir as scope "app", keychain
- *     honestly unavailable, unknown primitives invalid), with deferred
+ *     in gateway_smoke.cpp (fs on the app dir as scope "app", the keychain
+ *     primitives as app-private files under the same root, unknown
+ *     primitives invalid), with deferred
  *     settlement — calls queue in the dispatch callback and settle on the
  *     post-pump drain pass, exactly like the desktop CLI twin;
  *   - session.mock-llm: the mini agent session over the three system plugins
