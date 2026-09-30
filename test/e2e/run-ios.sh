@@ -382,20 +382,21 @@ else
   log "notes.txt already staged — untouched (index-settle recipe)"
 fi
 # A staged target is invisible to the picker's search until the file-provider's
-# re-index pass surfaces it — measured ~3 minutes (a 04:52 staging surfaced at
-# 04:55, 2026-09-21; the release regression's final run starved exactly inside
-# that window, 2026-09-30). TWO shapes need the pacing here, and BOTH were
-# measured red: a FRESHLY-created target (mtime now), and a target that
-# predates THIS RUN's reboot — the reboot restarts the indexing from scratch,
-# so a pre-reboot file's visibility is post-boot fresh no matter how long it
-# has existed (matrix attempt 6: staged 20:34, reboot ~20:36, searched ~20:39,
-# starved). The wait is rule-8 physics pacing with the file's existence
-# asserted after it; a target staged AFTER the reboot and already settled
-# costs nothing.
+# re-index pass surfaces it. Measured window on this machine, 2026-09-30: a
+# target searched at age ~5 min was still invisible (未找到相关结果, matrix
+# attempts 6 and 7) while a target searched at age ~11 min surfaced (the
+# verify2 green run) — the 2026-09-21 record's ~3 min rode a heavily loaded
+# machine. The pacing must run BEFORE the app launches: the binding scenario's
+# own watchdog is 180s from eval, so surfacing DURING the drive is too late.
+# Whenever the staged target was just created OR predates this run's reboot
+# (the reboot restarts the indexing from scratch — attempt 6: staged 20:34,
+# reboot ~20:36, searched ~20:39, starved), pace 720s and assert the file
+# still exists after (rule-8 physics pacing); a target staged after the
+# reboot and already past the window costs nothing.
 STAGED_MTIME="$(stat -f %m "$CONTAINER/Documents/gateway-e2e/notes.txt" 2>/dev/null || echo 0)"
 if [ "$STAGED_FRESH" -eq 1 ] || [ "$STAGED_MTIME" -lt "$REBOOT_AT" ]; then
-  log "picker target is fresh-created or predates this run's reboot — pacing the file-provider index settle (~180s, the measured surfacing window)"
-  sleep 180
+  log "picker target is fresh-created or predates this run's reboot — pacing the file-provider index settle (~720s; measured surfacing 5–11 min, and the scenario watchdog forbids surfacing during the drive)"
+  sleep 720
   [ -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ] \
     || { log "FAIL: the staged target vanished during the settle window"; exit 1; }
 fi
