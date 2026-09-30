@@ -48,6 +48,7 @@ import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
 import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
 import { NextWebPhase } from '../model/NextWebPhase';
+import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
 
@@ -60,6 +61,7 @@ const LEG_NEXTWEB: string = 'nextweb.mount';
 const LEG_DEVICE_PLANE: string = 'device.plane';
 /** The capability plane's camera leg (`--ps dsh.e2e.leg camera.plane`). */
 const LEG_CAMERA_PLANE: string = 'camera.plane';
+const LEG_PARITY: string = 'upstream.parity';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -138,6 +140,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/shims/npm-bridges-b.js',
   'upstream/shims/npm-bridges-c.js',
   'upstream/shims/npm-bridges-pi-ai.js',
+  'upstream/shims/npm-bridges-pi-ai-all.js',
   'upstream/shims/url-file.js',
   'upstream/shims/util-errors.js',
   'upstream/shims/util-parse-args.js',
@@ -179,6 +182,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/shims/npm-bridges-b.js',
   'upstream/shims/npm-bridges-c.js',
   'upstream/shims/npm-bridges-pi-ai.js',
+  'upstream/shims/npm-bridges-pi-ai-all.js',
   'upstream/shims/url-file.js',
   'upstream/shims/util-errors.js',
   'upstream/shims/util-parse-args.js',
@@ -437,7 +441,7 @@ const BUNDLE_FILES: string[] = [
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-stream.js',
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-workers-ai.js',
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/cloudflare-workers-ai.models.js',
-  'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/.manifest.json',
+  'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/manifest.json',
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/amazon-bedrock.json',
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/ant-ling.json',
   'vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/anthropic.json',
@@ -1404,6 +1408,9 @@ struct Index {
     } else if (leg === LEG_CAMERA_PLANE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runCameraPlaneLeg();
+    } else if (leg === LEG_PARITY) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runParityLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1758,9 +1765,59 @@ struct Index {
       .then((port: number): void => {
         this.verdict = 'device-plane leg: running on 127.0.0.1:' + port;
       })
+    .catch((err: BusinessError): void => {
+      this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+      hilog.error(0x0000, TAG, 'device-plane leg failed: %{public}s',
+        err.message ?? 'unknown');
+    });
+  }
+
+  /** The upstream-parity leg (`upstream.parity`, ONE launch; ci/
+   * run-device-parity.sh): the leg's carrier carries ONLY the scripted
+   * parity mock route (ParityMockRoute — no web client mounts, the
+   * device-plane leg's shape); the canonical parity scenario boots the
+   * vendored spine against it through the runtime.config handoff, and the
+   * comparator diffs the projected session log against the committed
+   * golden (the runner pulls the capture). */
+  private runParityLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') +
+        ' upstream.parity (the comparator reads the capture)';
+    };
+    let bundleRoot: string = '';
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        bundleRoot = root;
+        this.verdict = 'parity leg: arming the scripted route...';
+        new ParityMockRoute(this.carrier).register();
+        // NO phase.onCarrierListening here: the mockLlmUrl needs the bound
+        // port, so it would run BEFORE beginParity — and the carrier-side
+        // record it emits needs the phase runtime, which does not exist yet
+        // (the "binding phase is not active" death, measured 2026-09-30).
+        // The parity leg carries no carrier-side records at all: its
+        // evidence is the scenario's own stream, compared against the golden.
+        return this.carrier.start(CARRIER_BASE_PORT);
+      })
+      .then((port: number): void => {
+        this.verdict = 'parity leg: running the parity scenario...';
+        // The profile container the runtime.config names — created HERE
+        // (recursive) because bootUpstream only pins the paths, it never
+        // mkdirs them. accessSync-gated: mkdirSync throws on an existing
+        // dir even with recursion (a relaunch would die on its own
+        // previous container — measured 2026-09-30).
+        if (!fs.accessSync(fsRoot + '/parity')) {
+          fs.mkdirSync(fsRoot + '/parity', true);
+        }
+        phase.beginParity(ctx, bundleRoot,
+          ctx.cacheDir + '/dsh-parity-capture.log',
+          fsRoot, ParityMockRoute.baseUrl(port), PARITY_MOCK_KEY);
+      })
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
-        hilog.error(0x0000, TAG, 'device-plane leg failed: %{public}s',
+        hilog.error(0x0000, TAG, 'parity leg failed: %{public}s',
           err.message ?? 'unknown');
       });
   }
@@ -1810,7 +1867,7 @@ struct Index {
   }
 
   /** Phase 2: seed the user store (E2E bootstrap, see PickerPrimitives.
-   * seedUserFile) → carrier up → page mounts → scenario runs (see HostPhase).
+ * seedUserFile) → carrier up → page mounts → scenario runs (see HostPhase).
    * The seeding gates the phase start so the save dialog is done before the
    * scenario's own picker presentations open. The m5 verdict chains into the
    * D9 official-web phase on a later tick — the completion callback fires

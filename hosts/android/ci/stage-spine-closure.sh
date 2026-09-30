@@ -187,11 +187,18 @@ if [ ! -d "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" ]; then
     exit 1
 fi
 mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1"
-(cd "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" && find . -type f \( -name '*.js' -o -name '*.json' \)) |
+(cd "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1" && find . -type f \( -name '*.js' -o -name '*.json' \) ! -name '.*') |
     while IFS= read -r rel; do
         mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/$(dirname "$rel")"
         cp "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1/$rel" "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/$rel"
     done
+# The providers barrel's data/.manifest.json cannot ride the APK (aapt drops
+# hidden files, same as the HAP packer — the harmony twin of this fix,
+# 2026-09-30): its bytes ride under the NON-hidden alias the
+# npm-bridges-pi-ai.js seam falls back to.
+mkdir -p "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data"
+cp "$SPIKE/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/.manifest.json" \
+    "$ASSETS/vendor/npm/@earendil-works/pi-ai@0.85.1/dist/providers/data/manifest.json"
 
 # The pinned zod's runtime closure (the iOS embedder's ZOD_FILES list).
 say "staging vendor/npm/zod@4.4.3 (classic runtime closure)"

@@ -239,8 +239,19 @@ export class OfficialServe {
     this.servesNext = distRoot !== OFFICIAL_DIST_ROOT;
     const workspace: string = fsRoot + '/workspace';
     try {
-      fs.mkdirSync(workspace + '/home/agents', true);
-      fs.mkdirSync(workspace + '/skills', true);
+      // accessSync-gated: mkdirSync throws on an existing dir even with
+      // recursion, so a RE-RUN against persistent app data (the tool-rows
+      // marker probe's second launch, measured 2026-09-30) died here and
+      // the interactive boot lost its container.
+      if (!fs.accessSync(workspace)) {
+        fs.mkdirSync(workspace, true);
+      }
+      if (!fs.accessSync(workspace + '/home/agents')) {
+        fs.mkdirSync(workspace + '/home/agents', true);
+      }
+      if (!fs.accessSync(workspace + '/skills')) {
+        fs.mkdirSync(workspace + '/skills', true);
+      }
     } catch (e) {
       hilog.error(0x0000, TAG, 'interactive: workspace mkdir failed');
     }

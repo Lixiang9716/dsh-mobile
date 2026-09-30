@@ -1,0 +1,1 @@
+parity: 25 record(s) identical (reference /Users/lixiang/workspace/dsh-mobile/test/e2e/fixtures/upstream-parity-reference.jsonl == port hosts/harmony/artifacts/device-parity/parity/port.jsonl)

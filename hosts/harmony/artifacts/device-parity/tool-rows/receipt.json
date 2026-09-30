@@ -1,0 +1,14 @@
+{
+  "host": "harmony (127.0.0.1:5555, emulator)",
+  "runner": "hosts/harmony/ci/run-device-parity.sh",
+  "phase": "harmony.tool-rows (T-0048 item 3)",
+  "launch": "--ps dsh.e2e.leg nextweb.mount (Debug, interactive seat)",
+  "tree": "1466763e63d1 (dirty working tree at receipt time)",
+  "scenario": "composer.live-write",
+  "proves": [
+    "the preset roster composes all-healthy on-device (healthy 4/4) — a composition breaks loud when a row's package is missing",
+    "the bash/pwsh/present/ralph tool rows are NAMED in the composed inventory: each resolves through its agentPresets.seed node_modules marker onto the staged vendored package"
+  ],
+  "checker": "run-device-parity.sh ASSERT block vs the pulled capture (settings.preset.roster + settings.plugin.inventory.toolRows)",
+  "exitCode": 0
+}

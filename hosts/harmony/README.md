@@ -193,6 +193,25 @@ hosts/harmony/ci/run-host-e2e.sh [artifacts-dir]
 # DSH_SKIP_BUILD=1 skips hvigor
 ```
 
+The device-facing one-click leg (decision D-g: ready on standby — checked
+ONCE for an online target, reports standby and exits 0 when none, never
+waits for a device; with one attached it runs the full parity differential
+plus the tool-rows mount proof):
+
+```sh
+hosts/harmony/ci/run-device-parity.sh [artifacts-dir]
+# parity    — the canonical upstream.parity scenario against the in-app
+#             scripted route (ParityMockRoute), compared record-for-record
+#             against the 25-record golden (the iOS/Android parity bar);
+# tool-rows — the interactive seat's probes must name the composed
+#             bash/pwsh/present/ralph rows (T-0048 item 3);
+# evidence: <out>/parity/ + <out>/tool-rows/ (logs.txt + scenario.jsonl +
+# receipt.json faces). `hdc list targets` selects the device; DSH_HDC_TARGET
+# pins one on a multi-device farm. The unsigned debug HAP installs on the
+# emulator as-is; a REAL device needs the signed build
+# (docs/troubleshooting.md).
+```
+
 Manual flow, step by step:
 
 ```sh

@@ -60,7 +60,8 @@
 // npm-bridges-pi-ai-all.js), the openai/CJS/otel/mime rows in
 // npm-bridges-b.js, the partial-json/undici/typescript rows in
 // npm-bridges-c.js.
-import { PI_AI_BRIDGES, PI_AI_MODEL_SHADOWS } from 'upstream/shims/npm-bridges-pi-ai.js';
+import { PI_AI_MODEL_SHADOWS } from 'upstream/shims/npm-bridges-pi-ai.js';
+import { PI_AI_BRIDGES } from 'upstream/shims/npm-bridges-pi-ai-all.js';
 import { BRIDGES_B } from 'upstream/shims/npm-bridges-b.js';
 import { BRIDGES_C } from 'upstream/shims/npm-bridges-c.js';
 const BRIDGES = [
