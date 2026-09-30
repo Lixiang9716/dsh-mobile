@@ -17,7 +17,7 @@
     "[x] scenario mic-plane.js (scenario-id, __dshComplete) + per-host expected\u2194logged manifests + audit manifests",
     "[x] E2E drivers: run-ios-mic-plane.sh, hosts/android/ci/run-mic-plane.sh, hosts/harmony/ci/run-mic-plane.sh (D-g ready) \u2014 simulator legs really run, mic permission automation honestly recorded",
     "[x] staged closures synced (build/build.sh sync) and check-staging green",
-    "gov run full DAG green receipt, push, PR opened stacked on the contract PR"
+    "[x] gov run full DAG green receipt, push, PR opened stacked on the contract PR"
   ],
   "status": "open",
   "receipt": null,
