@@ -19,7 +19,9 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > the orphan hard-aborted the CLI engine). Totals below re-run against this
 > tree (71 dirs / 145 verdicts / 70 of 70 scenario ids green-covered / 62
 > manifests resolved by the checker). The notes below are the previous
-> currency records.
+> currency records. Rebased onto main (#275): the checker re-ran on the
+> merged tree — 74 dirs / 150 verdicts, PASS with 8 owned gaps
+> (`test/e2e/matrix.mjs --accept-known-gaps`).
 >
 > **Currency**: this matrix reflects the shim exposure survey + probe leg
 > (2026-09-30, T-0078): the loader can now name every shim load

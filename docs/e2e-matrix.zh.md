@@ -15,8 +15,9 @@
 > roundtrip，7/7）；`llm.js` 的 SSE 排空不再在 [DONE] 折叠处遗留挂起的
 > `next()`（实测：该孤儿续体会令 CLI 引擎硬中止）。总量对本树重跑（71 个
 > 目录 / 145 条 verdict / 70 个 scenario id 全部有绿证 / 校验器解析到 62 个
-> manifest）。下面的注记是历史的时效记录。
->
+> manifest）。下面的注记是历史的时效记录。变基到 main（#275）后校验器对
+> 合并树重跑：74 目录 / 150 verdict，PASS，8 个已认领 gap
+> （`test/e2e/matrix.mjs --accept-known-gaps`）。
 >
 > **时效性**：本矩阵反映 shim 曝光测绘 + 探针腿（2026-09-30，T-0078）：
 > 加载器现在能点名每一次 shim 加载（`DSH_MODULE_MANIFEST`，默认关闭），
