@@ -6,6 +6,14 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映插件市场核心（2026-10-01）：签名目录
+> （data-protocols §7）的 CLI 腿 `marketplace.install` 71/71 —— 纯 JS
+> ed25519 验签（零新增网关原语），目录由生成器从 `system-plugins/` 署名并
+> 经回环文件托管伺服，信任记录原样透传给零改动的安装器，§7.2 密钥轮换演练
+> 与 §7.1 篡改阶梯（四档，每档 `InstallRejected` + 审计 + 零暂存），目录
+> `runtime/spike/artifacts/macos-cli-marketplace-install/`。校验器对本树
+> （含新目录）重跑：75 目录 / 151 verdict，PASS。
+>
 > **时效性**：本矩阵反映 BYOK 引导变更（2026-09-30）：为没有现成 API key
 > 的内测用户提供首启凭证面板 —— CLI 腿 `onboarding.flow` 9/9（无凭证检测 →
 > 连接测试的成功与 401 两路，走真实 gateway httpFetch 传输 → keychain 存入
@@ -310,6 +318,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `runtime/spike/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19（回环缝：带半关闭的真实 TCP echo、一个经 /dev/tcp 拨接测试服务器的 /bin/bash 子进程、两条越界拒绝腿；审计门钉 listen=3 connect=3 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71（签名目录：纯 JS ed25519 验签、信任记录透传给零改动安装器、密钥轮换演练、四档篡改阶梯——每次拒绝零暂存） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | ——（仅人看证据；机器断言在 `b4-write-live`） | ✓（app-stdout） | ✗（设计使然） | ✗（设计使然） | 2 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 皮肤：bundle 的缝核心 + 工件 sha256 校验） | ✓ | ✓ | ✓ | 0 |

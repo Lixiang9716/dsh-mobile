@@ -1,0 +1,26 @@
+{
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsTag": "v0.17.0",
+  "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
+  "scenario": "marketplace.install",
+  "proves": [
+    "the signed catalog over the FROZEN package format (data-protocols.md §7, proposal 2026-10-01-plugin-marketplace ADOPTED): the loopback file hosting serves the index + package tarballs CI authored from system-plugins/ — 9 entries, generatedAt pinned for reproducible bytes, catalog reproducible from the repo (temp dir, not committed)",
+    "PURE-JS ed25519 verification with ZERO new gateway primitives: ed25519.js (RFC 8032 verify-only, BigInt over quickjs-ng) self-tests against the RFC vectors (2 positives + 3 negatives) before any catalog is trusted, then verifies the catalog signature node-crypto-side signed (tools/gen-marketplace-index.mjs signs the canonical JSON via the SHARED canonical-json.js — signer and verifier cannot drift)",
+    "the resolver seam: index fetch over the REAL gateway httpFetch (loopback), §7.1 signature verification, id@range lookup (^0.1.0 and * both exercised), and the entry's signed trust record {blobSha256, manifestSha256} passed THROUGH to the UNCHANGED installFromFetch — the committed receipt's blobSha256 equals the catalog entry's (the passthrough proof); the catalog-installed dsh-fs is a REAL plugin (loaded via the registry, fs write/read round-trips)",
+    "the §7.2 key rotation drill: the dual-signed window index is accepted under the pinned outgoing key and dsh-market-2 is LEARNED (only through a verified dual signature); the post-window single-signed index is accepted by the window-observing resolver (rotation completed) and REFUSED unknown-key by a fresh stale pin (rotated-key-outside-window)",
+    "the §7.1 tamper ladder, each rung InstallRejected with its own code, audited, ZERO staging trees, journal growth untouched, installed tree intact: bad-signature (hosting flips a signature byte), unknown-key (a self-consistent catalog under attacker-key-9 — trust is the pin, not the document), blob-mismatch (the honest catalog against a hostile mirror — served bytes flipped behind a control endpoint; the signed trust record catches what the transport cannot), manifest-mismatch (publisher metadata error, catalog honestly re-signed — the §4 trust-record cross-check refuses what the signature alone cannot)"
+  ],
+  "catalog": {
+    "authoring": "tools/gen-marketplace-index.mjs --plugins-dir system-plugins (deterministic ustar, mtime 0; fixed seeds — TEST keys only)",
+    "entries": 9,
+    "dsh-fs-blobSha256": "977b6cb35b19a4769d647c6d9b48696040d61dba1658acb6fc0549596401da97",
+    "generatedAt": "2026-10-01T00:00:00Z",
+    "pinnedKey": "dsh-market-1 (repo-config stand-in hardcoded in the scenario; production key lives in the signing CI, never in the repo)"
+  },
+  "checker": "test/e2e/scenarios/marketplace-install.json",
+  "events": 71,
+  "determinism": "fixed seeds + fixed generatedAt + deterministic ustar + ephemeral-port URLs normalized to paths in the log; catalog bytes reproducible from the repo",
+  "exitCode": 0
+}
