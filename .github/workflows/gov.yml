@@ -88,6 +88,17 @@ jobs:
         # exactly its shipped files (see the Agent Note
         # 2026-09-30-driver-presentation-node-faces-carry-real-coverage).
         run: sh tools/test/run-presentation-tests.sh
+      - name: Run the tools-face vitest suite
+        # The repo's own gate-tool net (test/tools): the staging
+        # verifier/generator pair's hermetic counterexamples, the
+        # code-size gate tests, and the publisher-token validator's
+        # counterexample net (tools/publisher-token.test.mjs — PR #285
+        # review: the suite was manually-runnable only, so a future
+        # validator regression turned nothing red). Runs after `gov run`,
+        # when this job has materialized the vendored closure and staged
+        # the harmony rawfile — the gen-staging real-repo leg's
+        # precondition; see tools/test/run-tools-tests.sh.
+        run: sh tools/test/run-tools-tests.sh
 
   # The quickjs-boot-parse gate builds the desktop CLI, whose link embeds
   # the iSH static libs — AArch64 assembly an x86_64 runner cannot
