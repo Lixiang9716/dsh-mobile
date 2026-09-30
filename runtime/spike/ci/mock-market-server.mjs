@@ -81,6 +81,14 @@ const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 const blobSha256 = sha256(tgz);
 const manifestSha256 = sha256(manifestBytes);
 
+// A SECOND, FOREIGN keypair — the tamper ladder's attacker (an attacker
+// controlling the hosting can replace keys + index + signature wholesale;
+// the host-side pin is what refuses them).
+const foreignSeed = Buffer.from('0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c4b5a69788796a5b4c3d2e1f0', 'hex');
+const foreignKey = createPrivateKey({ key: Buffer.concat([PKCS8_PREFIX, foreignSeed]), format: 'der', type: 'pkcs8' });
+const FOREIGN_PUB_B64 = Buffer.from(
+  createPublicKey(foreignKey).export({ format: 'jwk' }).x, 'base64url').toString('base64');
+
 const index = {
   schemaVersion: 1,
   marketplace: 'dsh',
@@ -105,6 +113,8 @@ const index = {
 // ---- the server ------------------------------------------------------------
 
 let indexBody = null;
+let tamperedBody = null;
+let foreignBody = null;
 const start = createServer((req, res) => {
   const url = req.url ?? '';
   console.log(JSON.stringify({ served: url }));
@@ -115,6 +125,24 @@ const start = createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'application/json',
       'content-length': Buffer.byteLength(indexBody) });
     res.end(indexBody);
+    return;
+  }
+  // The tamper ladder (the proposal's verification plan): a flipped summary
+  // under the REAL key's signature — the canonical form no longer matches,
+  // so the signature check must refuse it.
+  if (url === '/index-tampered.json') {
+    res.writeHead(200, { 'content-type': 'application/json',
+      'content-length': Buffer.byteLength(tamperedBody) });
+    res.end(tamperedBody);
+    return;
+  }
+  // A WHOLESALE swap: foreign keys map + foreign signature — well-formed and
+  // self-consistent, and exactly what a hosting attacker ships. Only the
+  // host-side pin refuses it.
+  if (url === '/index-foreign.json') {
+    res.writeHead(200, { 'content-type': 'application/json',
+      'content-length': Buffer.byteLength(foreignBody) });
+    res.end(foreignBody);
     return;
   }
   if (url === `/packages/${PKG.id}@${PKG.version}.tgz`) {
@@ -132,10 +160,27 @@ start.listen(0, '127.0.0.1', () => {
   // The tgzUrl is the announce's own loopback base — the catalog is
   // reproducible from the repository, the hosting is wherever this points.
   index.entries[0].tgzUrl = `${base}/packages/${PKG.id}@${PKG.version}.tgz`;
-  const { signature, ...rest } = index;
-  const value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), key);
-  index.signature.value = value.toString('base64');
-  indexBody = JSON.stringify(index, null, 2);
+  const signIndex = (doc, signingKey) => {
+    const { signature, ...rest } = doc;
+    doc.signature.value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), signingKey)
+      .toString('base64');
+    return JSON.stringify(doc, null, 2);
+  };
+  indexBody = signIndex(index, key);
+  // The tamper ladder's bodies (built once at startup, served above).
+  // TAMPERED = the signed catalog with one content byte flipped and the
+  // ORIGINAL signature kept — an attacker edits the hosting, they cannot
+  // re-sign — so the canonical form no longer matches and the signature
+  // check must refuse it.
+  const tampered = JSON.parse(JSON.stringify(index));
+  tampered.entries[0].summary.en = 'TAMPERED — an attacker edited this summary';
+  tamperedBody = JSON.stringify(tampered, null, 2);
+  // FOREIGN = a wholesale keys+index+signature swap: well-formed and
+  // self-consistent under the attacker's key — exactly what a hosting
+  // attacker ships. Only the host-side pin refuses it.
+  const foreign = JSON.parse(JSON.stringify(index));
+  foreign.keys = { 'dsh-market-1': FOREIGN_PUB_B64 };
+  foreignBody = signIndex(foreign, foreignKey);
   console.log(`MARKET_BASE_URL=${base}`);
 });
 

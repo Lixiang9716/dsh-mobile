@@ -6,15 +6,20 @@
  * exactly crypto.getRandomValues + btoa, the gateway has no signature
  * primitive, and the frozen package closure carries no ed25519 (dsh-util-crypto
  * ships base64/uuid only). The marketplace catalog (contract proposal
- * 2026-10-01: data-protocols v1.1.0 candidate) is a SIGNED index — ed25519,
- * verification public key pinned host-side — and trust verification is a pure
- * data operation: no secret key is ever handled here, only public material.
+ * 2026-10-01: data-protocols v1.1.0 candidate) is a SIGNED index; the
+ * proposal REQUIRES its verification public key to be pinned HOST-SIDE — a
+ * policy this module neither implements nor replaces (the pin lives in the
+ * resolver/host, rule 2). What lives here is only the curve: trust
+ * verification as a pure data operation — no secret key is ever handled,
+ * only public material.
  *
  * Provable-correctness posture: verify-only (nothing here can sign), the
- * field arithmetic is plain BigInt mod p = 2^255-19, and the module is pinned
- * by the RFC 8032 §7.1 test vectors plus tamper rejections (test/panel and
- * the e2e leg both exercise real signatures produced by an INDEPENDENT
- * implementation — node:crypto/OpenSSL — so the two must agree).
+ * field arithmetic is plain BigInt mod p = 2^255-19, and the module is
+ * pinned IN THE TREE by test/panel/ed25519.test.js — the RFC 8032 §7.1 test
+ * vectors as fixed data plus fresh signatures from an INDEPENDENT
+ * implementation (node:crypto/OpenSSL) that this verifier must agree with,
+ * including tamper refusals (flipped message/signature/key bits, the s ≥ L
+ * malleability case, non-canonical encodings).
  *
  *   verify(publicKeyB64, messageBytes, signatureB64) → true | false
  *

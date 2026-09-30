@@ -1,0 +1,20 @@
+{
+  "title": "review round: the trust anchor honesty + the verification evidence committed",
+  "created": "2026-09-30T22:21:18+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] trust anchor: the three misattributed comment sites corrected to a DECLARED GAP (ed25519.js header, resolver header + cache bullet); fetchIndex grows the pinnedKey seam and the e2e exercises it",
+    "[x] evidence committed: test/panel pins the RFC \u00a77.1 vectors + node:crypto cross-check + tamper refusals (ed25519) and the resolver's rejection ladder incl. the pin (marketplace-resolver.test.js)",
+    "[x] e2e tamper legs: bad-signature + foreign-key(against the pin) legs ride the loopback catalog; manifest + receipt updated",
+    "[x] wording: Agent Note + receipt proves[] state exactly what the tree now runs; host closures re-synced; gov run all green; pushed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0083"
+}

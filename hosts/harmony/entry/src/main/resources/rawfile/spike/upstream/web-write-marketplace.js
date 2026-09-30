@@ -30,9 +30,12 @@
  *                            is gone.
  *
  * The face is claimed ONLY when the write options carry a
- * `marketplace: {indexUrl}` (a boot without one stays byte-identical and
- * answers gateway/unimplemented — the panel treats it as a capability gap,
- * the onboarding precedent).
+ * `marketplace: {indexUrl, publicKey}` (a boot without one stays
+ * byte-identical and answers gateway/unimplemented — the panel treats it as
+ * a capability gap, the onboarding precedent). `publicKey` is the HOST-SIDE
+ * trust anchor the proposal's rule 2 requires; a boot that opts in without
+ * it runs the resolver's DECLARED GAP (transport-plus-format trust, logged
+ * per fetch) — real embeds must pin.
  */
 import { httpFetch, fsRemove } from '../gateway.js';
 import { installFromFetch } from '../install-fetch.js';
@@ -104,6 +107,7 @@ export const installedFromJournal = (entries) => {
 const makeIndexHandler = (deps) => async (args) => {
   const doc = await fetchIndex({
     url: deps.marketplace.indexUrl, fetchImpl: fetchGet,
+    pinnedKey: deps.marketplace.publicKey,
     force: args?.force === true,
   });
   const installed = installedFromJournal(await readJournal());
@@ -187,7 +191,8 @@ const runInstall = async (post, msg, deps, args) => {
   if (typeof id !== 'string' || !/^[a-z0-9][a-z0-9.-]*$/.test(id)) {
     throw badRequest('marketplace/install needs the package id');
   }
-  const doc = await fetchIndex({ url: deps.marketplace.indexUrl, fetchImpl: fetchGet });
+  const doc = await fetchIndex({ url: deps.marketplace.indexUrl, fetchImpl: fetchGet,
+    pinnedKey: deps.marketplace.publicKey });
   post({ type: 'mux.item', streamId: msg.streamId,
     value: { kind: 'index.verified', key: doc.signature.key, entries: doc.entries.length } });
   const entry = lookupEntry(doc, id);

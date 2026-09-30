@@ -6,11 +6,11 @@
  * tarballs on plain hosting. The resolver is the marketplace's only
  * authority:
  *
- *   fetchIndex({url, fetchImpl, now})  → the VERIFIED index document
- *     (GET over the caller's fetch impl — the gateway httpFetch in every
- *     real embed — canonical-JSON re-serialization, signature verify against
- *     the index's OWN pinned keys map, shape validation that fails loud).
- *   lookupEntry(document, id)          → the catalog entry, verbatim.
+ *   fetchIndex({url, fetchImpl, pinnedKey, now}) → the VERIFIED index
+ *     document (GET over the caller's fetch impl — the gateway httpFetch in
+ *     every real embed — canonical-JSON re-serialization, signature verify,
+ *     shape validation that fails loud).
+ *   lookupEntry(document, id)                    → the entry, verbatim.
  *
  * The entries' blobSha256/manifestSha256 ARE the install pipeline's trust
  * record and are passed through UNTOUCHED (installFromFetch/install-pipeline
@@ -18,12 +18,24 @@
  * the proposal's auditable vocabulary: network, format, unknown-key,
  * signature.
  *
+ * TRUST ANCHOR (proposal rule 2): "the verification public key is pinned
+ * host-side"; hosts pin the initial key out-of-band and learn rotations only
+ * from dual-signed indexes. This seam takes the pin as `pinnedKey` and, when
+ * it is set, requires the index to sign with EXACTLY that key — the keys
+ * map entry must equal the pin and the signature must verify against it, so
+ * an attacker controlling the hosting can swap neither key nor index.
+ * DECLARED GAP: when the caller passes NO pin, verification runs against
+ * the index's own keys map — transport-plus-format trust only, exactly the
+ * alternative the proposal REJECTS (the hosting account becomes the single
+ * point of compromise). No production key exists yet to pin; wiring the
+ * out-of-band pin into every real embed (repo config) and the rotation
+ * drill is the named resolver follow-up. The gap is loud, never silent:
+ * every unpinned fetch logs its disclosure.
+ *
  * CACHE POLICY (v0): the last verified document per URL is reused for
  * CACHE_TTL_MS, then refetched; `force: true` bypasses it (the panel's
  * refresh). The cache holds only VERIFIED documents — a failed verify never
- * poisons it. Keys map policy: the index carries its own current key set and
- * the signature must name one of THEM (a rotation is an index event, the
- * proposal's rule — no host-side pin to rotate in v0).
+ * poisons it.
  */
 import { createLogger } from 'logger.js';
 import { ed25519Verify } from 'ed25519.js';
@@ -128,13 +140,15 @@ const drainBody = async (res, url) => {
 };
 
 /**
- * Fetch + verify one index document. Args: {url, fetchImpl, force, now}.
- * fetchImpl defaults to the gateway httpFetch; it must return
- * `{status, body: AsyncIterable}`. Resolves the VERIFIED document (cached
- * per url for CACHE_TTL_MS unless force). Rejects MarketplaceRejected with
- * the audit code: network | format | unknown-key | signature.
+ * Fetch + verify one index document. Args: {url, fetchImpl, pinnedKey,
+ * force, now}. fetchImpl defaults to the gateway httpFetch; it must return
+ * `{status, body: AsyncIterable}`. `pinnedKey` is the HOST-SIDE trust anchor
+ * (proposal rule 2 — see the module header): when set, the index must sign
+ * with exactly that key. Resolves the VERIFIED document (cached per url for
+ * CACHE_TTL_MS unless force). Rejects MarketplaceRejected with the audit
+ * code: network | format | unknown-key | signature.
  */
-export const fetchIndex = async ({ url, fetchImpl, force = false, now = Date.now }) => {
+export const fetchIndex = async ({ url, fetchImpl, pinnedKey, force = false, now = Date.now }) => {
   if (!isStr(url) || !/^https?:\/\//.test(url)) {
     throw new MarketplaceRejected('format', `index url must be http(s): ${JSON.stringify(url)}`);
   }
@@ -157,7 +171,7 @@ export const fetchIndex = async ({ url, fetchImpl, force = false, now = Date.now
     throw new MarketplaceRejected('network', `index fetch status ${res.status}`, { status: res.status });
   }
   const doc = parseDocument(await drainBody(res, url), url);
-  verifySignature(doc, url);
+  verifySignature(doc, url, pinnedKey);
   cache.set(url, { document: doc, fetchedAt: now() });
   return doc;
 };
@@ -178,14 +192,26 @@ const parseDocument = (bytes, url) => {
   return doc;
 };
 
-/** The signature IS the trust (proposal rule 2): the named key must be one
- * the index itself publishes, and ed25519 must verify the canonical bytes. */
-const verifySignature = (doc, url) => {
-  log.debug('verify index signature', { url, key: doc.signature.key });
+/** Verify one index's signature. WITH a host-side pin (proposal rule 2):
+ * the signing key must BE the pin and the signature must verify against it.
+ * WITHOUT one — the DECLARED GAP (module header): the index's own keys map
+ * is the only anchor, which is transport-plus-format trust; the disclosure
+ * is logged on every such fetch. */
+const verifySignature = (doc, url, pinnedKey) => {
+  log.debug('verify index signature', { url, key: doc.signature.key,
+    pinned: pinnedKey !== undefined });
+  if (pinnedKey === undefined) {
+    log.debug('NO HOST-SIDE PIN — transport-plus-format trust only'
+      + ' (declared gap; proposal rule 2 pins the initial key out-of-band)',
+    { url });
+  }
   const publicKey = doc.keys[doc.signature.key];
-  if (publicKey === undefined) {
+  if (publicKey === undefined
+    || (pinnedKey !== undefined && publicKey !== pinnedKey)) {
     throw new MarketplaceRejected('unknown-key',
-      `index signs with unknown key "${doc.signature.key}"`, { url });
+      pinnedKey !== undefined && publicKey !== pinnedKey
+        ? `index does not sign with the pinned key`
+        : `index signs with unknown key "${doc.signature.key}"`, { url });
   }
   const message = utf8Bytes(canonicalJson(docWithoutSignature(doc)));
   let ok = false;

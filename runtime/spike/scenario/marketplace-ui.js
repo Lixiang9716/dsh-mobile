@@ -26,9 +26,10 @@
  * runtime/spike/artifacts/macos-cli-marketplace-ui/.
  */
 import { createLogger } from 'logger.js';
-import { keychainGet } from 'gateway.js';
+import { httpFetch, keychainGet } from 'gateway.js';
 import { bootUpstream } from 'upstream/boot.js';
 import { createWriteSurface } from 'upstream/web-write.js';
+import { fetchIndex, MarketplaceRejected } from 'marketplace-resolver.js';
 
 const SCENARIO = 'marketplace.ui.flow';
 const log = createLogger(SCENARIO);
@@ -51,6 +52,7 @@ const launchEnv = () => {
 };
 const ENV = launchEnv();
 const MARKET_URL = ENV.DSH_MARKET_URL;
+const MARKET_PUBKEY = ENV.DSH_MARKET_PUBKEY_B64;
 
 /** The mobile profile boot — the shape a marketplace user's launch delivers. */
 const boot = async () => {
@@ -100,6 +102,38 @@ const runInstallStream = async (surface, hub, streamId, id) => {
     await settleYield();
   }
   fail(`install stream ${streamId} never ended`);
+};
+
+/** The tamper ladder's signature family (the proposal's verification plan),
+ * driven through the SAME resolver the face uses: a flipped-summary index
+ * under the real key's signature must refuse as `signature`, and a foreign
+ * keys+index+signature wholesale swap — self-consistent, exactly what a
+ * hosting attacker ships — must refuse against the HOST-SIDE PIN as
+ * `unknown-key`. The digest-mismatch half of the ladder is the pipeline's
+ * own trust-record enforcement (install.full-cycle's tampered leg). */
+const tamperPhase = async () => {
+  const fetchGet = (url) => httpFetch(url, { method: 'GET' });
+  const attempts = [
+    { url: `${MARKET_URL}/index-tampered.json`, want: 'signature',
+      event: 'marketplace.tamper.signature' },
+    { url: `${MARKET_URL}/index-foreign.json`, want: 'unknown-key',
+      event: 'marketplace.tamper.foreign-key' },
+  ];
+  for (const attempt of attempts) {
+    let rejected;
+    try {
+      await fetchIndex({ url: attempt.url, fetchImpl: fetchGet,
+        pinnedKey: MARKET_PUBKEY, force: true });
+      rejected = null;
+    } catch (err) {
+      rejected = err;
+    }
+    demand(rejected instanceof MarketplaceRejected
+      && rejected.code === attempt.want,
+      `the tamper leg ${attempt.url} did not refuse as ${attempt.want}:`
+      + ` ${JSON.stringify(rejected?.code ?? 'accepted')}`);
+    emit(attempt.event, { code: rejected.code, url: attempt.url.slice(MARKET_URL.length) });
+  }
 };
 
 /** Browse: the resolver's verified index, annotated with install state. */
@@ -173,16 +207,19 @@ const lifecyclePhase = async (api) => {
 try {
   demand(typeof MARKET_URL === 'string' && MARKET_URL.startsWith('http://127.0.0.1:'),
     'DSH_MARKET_URL must be the runner\'s loopback catalog');
+  demand(typeof MARKET_PUBKEY === 'string' && MARKET_PUBKEY.length >= 43,
+    'DSH_MARKET_PUBKEY_B64 must carry the host-side pin (proposal rule 2)');
   const ctx = await boot();
   const hub = makeFrameHub();
   const surface = createWriteSurface(ctx, hub.post, {
     root: ROOT, provider: 'mock', model: 'mock-1',
     baseURL: 'http://127.0.0.1:1', routeKind: 'mock',
     spine: () => [], stagedPlugins: () => [], fullCoverage: true,
-    marketplace: { indexUrl: `${MARKET_URL}/index.json` },
+    marketplace: { indexUrl: `${MARKET_URL}/index.json`, publicKey: MARKET_PUBKEY },
   });
   const { api, dispose } = surface;
   await browsePhase(api, '');
+  await tamperPhase();
   await installPhase(surface, hub);
   await lifecyclePhase(api);
   dispose?.();

@@ -25,23 +25,41 @@ proposal names — plus the coverage-plane legs that serve it:
    The sha256.js precedent: the runtime's crypto seams are
    getRandomValues+btoa and no vendored package carries ed25519, so the
    signature layer needs it NOW. Nothing here can sign (no secret path);
-   correctness is pinned by the RFC §7.1 vectors and 500 cross-check cases
-   against node:crypto/OpenSSL (valid sigs accept; flipped message/signature/
-   key bits all refuse). BigInt field arithmetic, derived addition formula
-   (documented in-file), canonical base64, cofactorless [s]B = R + [k]A with
-   the s < L malleability check.
+   the curve is a pure data operation — the TRUST POLICY (which key to
+   trust) lives in the resolver/host, not here. Correctness is pinned IN THE
+   TREE by test/panel/ed25519.test.js: the RFC §7.1 test-1/test-2 vectors as
+   fixed data, 128 fresh keypairs signed by node:crypto/OpenSSL (an
+   independent implementation) that must agree, and the tamper refusals —
+   flipped message/signature/public-key bits, the s ≥ L malleability class,
+   non-canonical base64 pad bits, non-canonical y. BigInt field arithmetic,
+   derived addition formula (documented in-file), canonical base64,
+   cofactorless [s]B = R + [k]A with the s < L check.
 2. **`runtime/spike/marketplace-resolver.js` — the one new seam.** Index
    fetch over an injected fetch impl (the gateway httpFetch in every real
    embed), canonical-JSON re-serialization (sorted keys, `signature`
-   excluded), shape validation that fails loud, ed25519 verification against
-   the index's OWN keys map, entry lookup passing the trust record through
-   UNTOUCHED, and a verified-documents-only cache (TTL + force bypass).
-   Rejections speak the proposal's audit vocabulary: network | format |
-   unknown-key | signature.
+   excluded, via runtime/spike/canonical-json.js), shape validation that
+   fails loud, entry lookup passing the trust record through UNTOUCHED, and
+   a verified-documents-only cache (TTL + force bypass). TRUST ANCHOR
+   (proposal rule 2): `fetchIndex` takes a HOST-SIDE PIN (`pinnedKey`) and,
+   when set, requires the index to sign with exactly that key — keys-map
+   entry equal to the pin AND the signature verifying against it. DECLARED
+   GAP, stated where the code is: with no pin, verification runs against
+   the index's own keys map — transport-plus-format trust, the alternative
+   the proposal REJECTS — and every unpinned fetch logs the disclosure. No
+   production key exists yet to pin; wiring the out-of-band pin into every
+   real embed and the rotation drill is the named resolver follow-up. The
+   ladder is pinned in the tree by test/panel/marketplace-resolver.test.js
+   (node-signed honest catalog; flipped-content → `signature`; unknown
+   signing key → `unknown-key`; the wholesale keys+index+signature swap
+   passing WITHOUT a pin — asserted as the honest fact it is — and refusing
+   as `unknown-key` WITH the pin; network/format/missing-entry; the cache's
+   verified-only policy). Rejections speak the proposal's audit vocabulary:
+   network | format | unknown-key | signature.
 3. **`upstream/web-write-marketplace.js` — the coverage-plane legs** (the
    onboarding legs' pattern; claimed only when the boot opts in with
-   `marketplace: {indexUrl}`): `marketplace/index` (the browse view, entries
-   verbatim + the journal-derived installed annotation, never the tgzUrl),
+   `marketplace: {indexUrl, publicKey}` — the publicKey IS the host-side
+   pin, rule 2): `marketplace/index` (the browse view, entries verbatim +
+   the journal-derived installed annotation, never the tgzUrl),
    `marketplace/install` (a mux STREAM of one real transaction — the
    pipeline's own steps folded: index.verified → resolved → fetch.start → …
    → committed → receipt), `marketplace/installed` (the receipts journal is
@@ -58,18 +76,40 @@ proposal names — plus the coverage-plane legs that serve it:
    siblings. The BYOK leg set this precedent: the CLI dev host implements the
    frozen primitives the flow needs rather than standing the flow down.
 6. **The e2e leg `marketplace.ui.flow`** (run-marketplace-ui-e2e.sh, artifacts
-   `macos-cli-marketplace-ui/`, 10/10 one-to-one): a node-side loopback
+   `macos-cli-marketplace-ui/`, 12/12 one-to-one): a node-side loopback
    catalog (mock-market-server.mjs — plain file hosting with a FIXED test-only
    key) signs the index with node:crypto/OpenSSL, and the runtime's pure-JS
    verifier must agree — two independent implementations meeting at the one
-   new seam. The install streams the REAL transaction over real loopback
-   HTTP; remove exercises the §4 symmetric receipt.
+   new seam. The runner derives the HOST-SIDE PIN out-of-band from the
+   fixture key and passes it through the boot options, so the browse runs
+   pinned (rule 2), and the leg carries the tamper ladder's signature
+   family: a flipped-summary index under the real key's signature refuses as
+   `marketplace/signature`, and a wholesale keys+index+signature swap by a
+   foreign key — self-consistent, exactly what a hosting attacker ships —
+   refuses against the pin as `marketplace/unknown-key` (the digest-mismatch
+   half of the ladder is the pipeline's own trust-record enforcement,
+   already proven by install.full-cycle). The install streams the REAL
+   transaction over real loopback HTTP; remove exercises the §4 symmetric
+   receipt.
 
-Evidence: `marketplace.ui.flow` 10/10; vitest 40/40 (test/panel, 20 new);
-closures green (android assets, harmony rawfile, ios generator); staging-check
-0 findings. The api-coverage-probe's coverage-streams assertion, stale at
-`length === 1` since the onboarding stream landed, is restored to enumerate
-reality (three streams).
+Evidence: `marketplace.ui.flow` 12/12 (with the tamper legs); vitest 67/67
+(test/panel — 20 onboarding + 20 marketplace page + 16 ed25519 + 11
+resolver); closures green (android assets, harmony rawfile, ios generator);
+staging-check 0 findings. The api-coverage-probe's coverage-streams
+assertion, stale at `length === 1` since the onboarding stream landed, is
+restored to enumerate reality (three streams).
+
+REVIEW ROUND (2026-10-01, pre-merge): two catches, both fixed in the same
+PR. (1) The trust anchor contradicted proposal rule 2 — the resolver
+verified against the index's own keys map while three comment sites
+misattributed the deviation to "the proposal's rule"; the pin (`pinnedKey`
+through `fetchIndex` and the face's `publicKey`) is now the seam, the gap is
+a loud declared one, and the comments state the rule as the rule. (2) The
+verification evidence the note and module headers claimed did not exist in
+the tree — the vectors and cross-check cases had run only in a scratch
+harness. Both claims are now backed by committed suites (test/panel), and
+the e2e carries the tamper legs; nothing in this note cites evidence that is
+not a command CI runs.
 
 ## Alternatives considered
 
