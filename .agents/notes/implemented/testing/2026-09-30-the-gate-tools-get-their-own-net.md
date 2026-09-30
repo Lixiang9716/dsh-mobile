@@ -50,15 +50,15 @@ against the vendored upstream (D6 parity):
 1. gen-staging-manifests' zod `copiesAgree` was subset-only — a hand copy
    MISSING a row passed the agreement check (union size never notices a
    removal). Verdict-neutral on today's repo; the sibling-copy drift class
-   is now visible. (69bb6847)
+   is now visible. (d93f2ce2)
 2. plugins-route's prepareSource could not strip trailers behind a trailing
    newline — the normal build output — diverging from the vendored
    dsh-client-modules' $-anchored trailer regexes on every real bundle.
-   (0986893a)
+   (449faa52)
 3. plugins-route's serveSingle dropped the leading '?' of `?rev=` while its
    only caller passes url.search — the contract-2.5 single face and .map
    identity map answered 404 to EVERY request in the dev carrier. Upstream
-   compares pathname+search against the same '?rev=' spelling. (fd70be8e)
+   compares pathname+search against the same '?rev=' spelling. (a4d038bd)
 
 ## Alternatives considered
 
