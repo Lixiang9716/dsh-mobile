@@ -8,9 +8,9 @@
 # last_confirmed is the UTC ISO-8601 instant of the confirmation
 # (datetime.isoformat(), +00:00).
 pair:
-  en: 4962ff0c36eddd28ec7a4ab800782b4d7c39aa77
+  en: 2c0b526b648eb70291db8cfcf04c20c7aa7f672d
   zh: 7d10a18b6868c0fb5dfcfdc346e82eaf4e632974
 counterpart: github-owner-actions.zh.md
-last_confirmed: 2026-09-30T20:26:33+00:00
-en_commit: 11d3e99d
-zh_commit: 11d3e99d
+last_confirmed: 2026-09-30T20:32:54+00:00
+en_commit: efdef5cb
+zh_commit: efdef5cb

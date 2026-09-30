@@ -188,3 +188,7 @@ passed:
   that landed.
 
 ---
+
+- Bilingual counterpart: [github-owner-actions.zh.md](github-owner-actions.zh.md)
+- Related: [release.md](release.md) (the tag-push release model the `release`
+  environment gates)
