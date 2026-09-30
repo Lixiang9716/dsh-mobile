@@ -371,12 +371,29 @@ mkdir -p "$CONTAINER/Documents/gateway-e2e"
 # staging, then returned 未找到相关结果 at 04:58 right after a rewrite —
 # surprise run-iossh-attempt-with-correct). A settled copy must survive the
 # pre-stage untouched; only a MISSING target is created here.
+STAGED_FRESH=0
 if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
   printf 'gateway e2e target file — dsh-mobile m2\n' \
     > "$CONTAINER/Documents/gateway-e2e/notes.txt"
+  STAGED_FRESH=1
   log "pre-staged notes.txt (was missing — fresh copy)"
 else
   log "notes.txt already staged — untouched (index-settle recipe)"
+fi
+# A FRESHLY-created staged target is invisible to the picker's search until
+# the file-provider's re-index pass surfaces it — measured twice: a 04:52
+# staging surfaced at 04:55 (2026-09-21), and the release regression's final
+# run starved exactly here (staged 19:37, searched 19:38, 未找到相关结果;
+# 2026-09-30) — the matrix's earlier restage does not survive to this point
+# because the harness install can migrate the data container and take the
+# staged file with it. This paces that physics (rules.md rule 8: a sleep may
+# pace real wall-clock physics, and the condition is asserted after the
+# wait); when the target was already staged and settled the cost is zero.
+if [ "$STAGED_FRESH" -eq 1 ]; then
+  log "fresh staging — pacing the file-provider index settle (~180s, the measured surfacing window)"
+  sleep 180
+  [ -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ] \
+    || { log "FAIL: the staged target vanished during the settle window"; exit 1; }
 fi
 
 # 3.5 WDA warm-up BEFORE the launch: the binding scenario's 180s watchdog
