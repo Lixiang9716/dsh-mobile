@@ -17,8 +17,11 @@ opening it.
 `release: published` event, and not a bot finishing: a release that depends on
 something else completing has exactly the failure mode this pipeline spent days
 in, where a credential, a repository setting or a suppressed event stops the
-release at a step that reports nothing. Cutting a release needs nothing but
-`contents: write`, and a failed attempt is retried by pushing again.
+release at a step that reports nothing. Cutting a release needs no credential
+beyond the workflows' own `GITHUB_TOKEN` — `contents: write` to create the
+Release and upload, plus `id-token: write` + `attestations: write` so each
+package's build provenance is signed (below) — and a failed attempt is retried
+by pushing again.
 
 Two ways in, one build path:
 
@@ -68,6 +71,21 @@ Two ways in, one build path:
    mismatch — the drift that a human-triggered release would otherwise
    reintroduce, since nothing downstream would notice a package installed
    under the wrong number.
+
+   Two hardenings ride along with the builds. Each package job targets the
+   **`release` environment** — once the owner arms it with a required reviewer
+   (Settings → Environments → `release`), a job waits for that one approval
+   before it builds: the go gate on cutting a release. Until then the
+   reference is inert — GitHub creates the environment with no protection
+   rules, so nothing waits. **One checkbox decides what the gate is worth on a
+   single-maintainer repo:** "Prevent self-review" left off, the reviewer can
+   approve the run they triggered — a recorded go, but your own; left on,
+   the user who pushed the tag cannot approve it at all ("users who initiate a
+   deployment cannot approve the deployment job"), which on a solo repo waits
+   forever and parks the queued release runs. Leave it off here, and treat the
+   recorded approval as a deliberate second look by your future self, not a
+   second pair of eyes. And each package's **build provenance is signed** —
+   see "Provenance: verify what you downloaded" below.
 5. **Recovery — a release shipped a bad package.** Do not delete the release.
    Dispatch that host's workflow (e.g. `release/harmony`) with **`release_tag:
    vX.Y.Z`**: the package builds from the current `main` and replaces that
@@ -112,13 +130,24 @@ Build numbers are **not** versioned here: `CFBundleVersion`, the Android
 `versionCode` and the HarmonyOS `versionCode` are monotonic integers that
 semver cannot express, so they stay hand-set.
 
-### Setup: none
+### Setup: nothing required
 
-There is no token to configure, no repository setting to remember and no bot to
-configure, because **no step of the release depends on one**. The version bump
-is a normal pull request authored by a person or an agent, so it gets the
-ordinary `gates` check like any other change; the release is the tag push, and
-the package workflows need only `contents: write`.
+There is no token to configure and no bot to configure, because **no step of
+the release depends on one**. The version bump is a normal pull request
+authored by a person or an agent, so it gets the ordinary `gates` check like
+any other change; the release is the tag push, and the package workflows need
+only their own `GITHUB_TOKEN` — `contents: write` to create the Release and
+upload the asset, `id-token: write` + `attestations: write` to sign the
+provenance attestation.
+
+The one optional setting is the `release` environment above — the go gate. It
+is owner web-UI work (create the environment, add a required reviewer); until
+it is armed, the workflows' reference creates it empty and the release runs
+ungated. Leave "Prevent self-review" unchecked when arming it: on a
+single-maintainer repo the only reviewer is the person pushing the tag, so
+checking it would deadlock every release run (they can never approve their
+own), while leaving it off keeps a recorded — if self-given — go before any
+package builds.
 
 That is deliberate, and it is what the pipeline's history converged on: a
 release PR opened by `GITHUB_TOKEN` cannot receive the required check — its
@@ -151,6 +180,19 @@ internal output path (`entry-default-unsigned.hap`, `app-release-unsigned.apk`).
 The workflow renames each build output before uploading: `gh release upload`'s
 `file#text` form sets only the display *label*, which a download ignores, so the
 filename itself is what has to change.
+
+### Provenance: verify what you downloaded
+
+Every release asset is attested. The build job signs SLSA build provenance for
+the exact bytes it attaches to the release (`actions/attest-build-provenance`:
+the subject digest is computed from the built file, the subject name is the
+release asset name), and the signed attestation is persisted to the
+repository's attestation store — free on a public repo. Verify a download:
+
+    gh attestation verify dsh-android.apk --owner Lixiang9716
+
+A plain manual run's package stays on the workflow run and is not attested:
+attestation follows the release attachment, exactly like the asset itself.
 
 A release offers **one package per host** — three assets, matching the three
 platforms. Anything a release page should not carry ships on the run instead:
