@@ -1,0 +1,14 @@
+{
+  "host": "android",
+  "udid": "emulator-5580",
+  "runner": "hosts/android/ci/run-ble.sh",
+  "phase": "android.ble-plane (skip)",
+  "launch": "emulator/device, --ez dsh.ble true (Debug)",
+  "tree": "origin/main d7838262b40f (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "android-ble", "verdict": "verdict-android-ble.json", "pass": true },
+    { "manifest": "android-ble-audit", "verdict": "verdict-android-ble-audit.json", "pass": true }
+  ],
+  "producedAt": "2026-09-30T01:31:26Z"
+}

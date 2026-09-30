@@ -74,6 +74,29 @@ opt in with `"extract": { "prefix": "dsh.gateway.audit:", "envelope":
 `match` fields applied at the top level. Behavior for existing (logger
 envelope) manifests is unchanged.
 
+## The BLE face (the system capability plane)
+
+`ble.plane` runs on all three hosts in three honest postures, selected by
+what the radio layer ANSWERS (never by a host-type branch); one manifest
+per host × posture pins the expected stream:
+
+| Manifest | Posture | Runs on | The ladder |
+| --- | --- | --- | --- |
+| `ios-ble.json` (+ `-audit`) | `absent` — the simulator has no radio, the primitives answer `unavailable` | dsh-iphone (CI-runnable, headless) | denial legs as values |
+| `android-ble.json` (+ `-audit`) | `denied` — the emulator's virtual controller is up but the runtime permissions are not: the OS layer refuses | emulator-5554 (local; CI runs the mock leg) | denial legs as values |
+| `harmony-ble.json` | `absent` — the emulator image's kit answers capability error 801 | dsh_phone (prepared; local build blocked — see the PR) | denial legs as values |
+| `ios-ble-mock.json` (+ `-audit`), `android-ble-mock.json` (+ `-audit`), `harmony-ble-mock.json` | `live` over the DETERMINISTIC MOCK radio (names pinned to the `DSH Mock BLE` prefix) — the full GATT ladder through the REAL gateway enforcement and audit | iOS hosted simulator (best-effort) + Android emulator (hard gate) | scan → devices → connect → read → write → subscribe → 2 notifies → unsubscribe → disconnect |
+| `ios-ble-device.json`, `android-ble-device.json`, `harmony-ble-device.json` | `live` over REAL hardware (D-g) | a real device beside a peer serving the test db (180f/2a19 read+notify, fe00/fe01 write) | the full ladder against hardware; refuses emulators / unsigned builds — never faked |
+
+Runners: `test/e2e/run-ios-ble.sh --mode skip|mock|device`,
+`hosts/android/ci/run-ble.sh skip|mock|device` (DSH_ANDROID_SERIAL pins a
+device), `hosts/harmony/ci/run-ble.sh skip|mock|device` (DSH_SIGNED_HAP
+for the device leg). Event delivery (`ble.event`: device batches, GATT
+notifications, disconnects) is not per-call audited — the audit trail is
+the open/close/start/stop/connect/subscribe records with direction,
+duration and byte counts; the grants gate the capability, every CALL
+carries a record.
+
 ## Simulator runner (local first-session E2E)
 
 `run-ios.sh` is the full local driver for `gateway.binding` — CI cannot

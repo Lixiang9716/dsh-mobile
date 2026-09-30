@@ -4,8 +4,7 @@
 The spike host loads ESM imports from disk under a bundle_root; compiling
 the JS into the binary and staging it to a writable sandbox at launch keeps
 the bytes the simulator runs byte-identical to the checkout. Outputs are
-committed (App/Generated/) so a fresh clone builds without this script; the
-Xcode pre-build phase re-runs it whenever an input changes.
+committed (App/Generated/) so a fresh clone builds without this script.
 """
 
 from pathlib import Path
@@ -51,9 +50,9 @@ RESOURCES = [
     ("plugin_ui_manifest", REPO / "system-plugins" / "dsh-ui" / "manifest.json"),
     ("plugin_ui_js", REPO / "system-plugins" / "dsh-ui" / "index.js"),
     ("plugin_device_plane_manifest",
-     REPO / "system-plugins" / "dsh-device-plane" / "manifest.json"),
-    ("plugin_device_plane_js",
+     REPO / "system-plugins" / "dsh-device-plane" / "manifest.json"), ("plugin_device_plane_js",
      REPO / "system-plugins" / "dsh-device-plane" / "index.js"),
+    ("plugin_ble_manifest", REPO / "system-plugins" / "dsh-ble" / "manifest.json"), ("plugin_ble_js", REPO / "system-plugins" / "dsh-ble" / "index.js"),
     # the dsh-notes fixture (M3 install pipeline: builder + plugin source data)
     ("fixture_notes_js", SPIKE / "fixtures" / "dsh-notes.js"),
     ("fixture_notes_source_js", SPIKE / "fixtures" / "dsh-notes-source.js"),
@@ -166,6 +165,7 @@ RESOURCES = [
     ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
     ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
+    ("scenario_ble_plane_js", SPIKE / "scenario" / "ble-plane.js"),
     ("scenario_camera_plane_js", SPIKE / "scenario" / "camera-plane.js"),
     ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
     ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),

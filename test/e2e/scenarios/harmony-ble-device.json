@@ -1,0 +1,91 @@
+{
+  "scenario": "harmony.ble.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "blePlane": 8
+      }
+    },
+    {
+      "event": "ble.radio",
+      "match": {
+        "mode": "live"
+      }
+    },
+    {
+      "event": "ble.scan.armed",
+      "match": {
+        "tag": "ble-plane-probe"
+      }
+    },
+    {
+      "event": "ble.device",
+      "match": {
+        "deviceIdOpaque": true,
+        "namePresent": true
+      },
+      "repeat": true
+    },
+    {
+      "event": "ble.scan.stopped",
+      "match": {
+        "stopped": true
+      }
+    },
+    {
+      "event": "ble.connect",
+      "match": {
+        "connectionIdOpaque": true
+      }
+    },
+    {
+      "event": "ble.read",
+      "match": {}
+    },
+    {
+      "event": "ble.write",
+      "match": {
+        "written": true
+      }
+    },
+    {
+      "event": "ble.subscribed",
+      "match": {
+        "subscribed": true
+      }
+    },
+    {
+      "event": "ble.notify",
+      "match": {},
+      "repeat": true
+    },
+    {
+      "event": "ble.unsubscribed",
+      "match": {
+        "subscribed": false
+      }
+    },
+    {
+      "event": "ble.disconnected",
+      "match": {
+        "closed": true
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

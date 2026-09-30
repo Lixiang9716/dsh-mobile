@@ -55,14 +55,17 @@ const char *DSH_SMOKE_DESCRIPTOR =
  * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
  * presentPicker (and user-scope fs) forwarded to the ArkTS capability layer
  * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets). The
- * capability plane (v1.10.0) adds cameraCapture (CameraPrimitives.ets);
- * the recording rows are PHASED — declared unavailable, their handlers
- * answer exactly that (conformance §7). */
+ * capability plane (v1.10.0) adds cameraCapture (CameraPrimitives.ets) and
+ * the eight BLE rows (BlePrimitives.ets); the camera recording rows are
+ * PHASED — declared unavailable, their handlers answer exactly that
+ * (conformance §7). */
 const char *DSH_BINDING_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
     "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
     "\"keychainSet\",\"deviceInfo\",\"haptic\",\"clipboardRead\","
-    "\"clipboardWrite\",\"presentShare\",\"keepAwake\",\"cameraCapture\"],"
+    "\"clipboardWrite\",\"presentShare\",\"keepAwake\",\"cameraCapture\","
+    "\"bleScanStart\",\"bleScanStop\",\"bleConnect\",\"bleDisconnect\","
+    "\"bleRead\",\"bleWrite\",\"bleSubscribe\",\"bleUnsubscribe\"],"
     "\"unavailable\":[\"cameraRecordStart\",\"cameraRecordStop\"]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
@@ -345,7 +348,11 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
             strcmp(name, "deviceInfo") == 0 || strcmp(name, "haptic") == 0 ||
             strcmp(name, "clipboardRead") == 0 || strcmp(name, "clipboardWrite") == 0 ||
             strcmp(name, "presentShare") == 0 || strcmp(name, "keepAwake") == 0 ||
-            strcmp(name, "cameraCapture") == 0) {
+            strcmp(name, "cameraCapture") == 0 ||
+            strcmp(name, "bleScanStart") == 0 || strcmp(name, "bleScanStop") == 0 ||
+            strcmp(name, "bleConnect") == 0 || strcmp(name, "bleDisconnect") == 0 ||
+            strcmp(name, "bleRead") == 0 || strcmp(name, "bleWrite") == 0 ||
+            strcmp(name, "bleSubscribe") == 0 || strcmp(name, "bleUnsubscribe") == 0) {
             b->forward_fn(b->forward_ud, call_id, name, args);
             return;
         }

@@ -31,6 +31,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "deviceInfo", "haptic", "clipboardRead", "clipboardWrite",
             "presentShare", "keepAwake",
             "cameraCapture",
+            "bleScanStart", "bleScanStop", "bleConnect", "bleDisconnect",
+            "bleRead", "bleWrite", "bleSubscribe", "bleUnsubscribe",
         )
 
         /** The capability plane's PHASED rows (proposal v1.10.0): shapes on
@@ -88,7 +90,20 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
             "cameraCapture" to "camera",
             "cameraRecordStart" to "camera",
             "cameraRecordStop" to "camera",
+            "bleScanStart" to "ble",
+            "bleScanStop" to "ble",
+            "bleConnect" to "ble",
+            "bleDisconnect" to "ble",
+            "bleRead" to "ble",
+            "bleWrite" to "ble",
+            "bleSubscribe" to "ble",
+            "bleUnsubscribe" to "ble",
         )
+
+        /** True when the primitive belongs to a capability FAMILY row (the
+         * capability plane's promptable surface). */
+        fun isCapabilityRow(primitive: String): Boolean =
+            familyFlags[primitive] != null
 
         fun grants(primitive: String): Boolean {
             val names = listOfNotNull(primitive, familyFlags[primitive])
@@ -96,6 +111,7 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
                 names.any { it == grant || grant.startsWith("$it@") }
             }
         }
+
     }
 
     /** One settled primitive call; args is the bridge's parsed JSON object. */
@@ -121,6 +137,13 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         handlers[name] = handler
     }
 
+    /** The capability plane's prompt layer (the socket seam's "--prompt"
+     * posture, the proposal's rule 2): a REGISTERED capability-family row
+     * the caller lacks the grant for raises the runtime prompt instead of
+     * the flat denial. Installed by the capability primitives; nil keeps
+     * the v1.5.0 flat-denial behavior byte-for-byte. */
+    var capabilityPrompter: ((primitive: String, grant: () -> Unit, deny: () -> Unit) -> Unit)? = null
+
     /** Entry point of the frozen bridge's on_call — RUNTIME THREAD. Unknown
      * or ungranted primitives settle denied with a "denied" audit verdict;
      * granted calls run their handler (which settles off-thread). */
@@ -128,7 +151,37 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         if (name == "httpFetch.abort") return dispatchAbort(name, argsJSON)
         val base = name.substringBefore('.')
         val handler = handlers[name]
-        if (handler == null || !manifest.grants(base)) {
+        if (handler != null && !manifest.grants(base)
+            && capabilityPrompter != null && manifest.isCapabilityRow(base)
+        ) {
+            // ungranted capability row + a prompter: raise the prompt; the
+            // grant path re-enters with the check bypassed (the prompt
+            // layer's session grant substitutes for the manifest flag)
+            capabilityPrompter?.invoke(name,
+                { dispatchKnown(callId, name, argsJSON, enforceGrant = false) },
+                { denyFlat(name, callId) })
+            return
+        }
+        dispatchKnown(callId, name, argsJSON, enforceGrant = !manifest.grants(base))
+    }
+
+    /** The flat denial the prompt layer's decline settles through. */
+    private fun denyFlat(name: String, callId: Int) {
+        audit(name, "denied", "denied")
+        settleFn?.invoke(
+            callId, false,
+            errorJSON("denied", name, "primitive not granted to ${manifest.id}"),
+        )
+    }
+
+    /** The known-primitive continuation of dispatch; `enforceGrant` is
+     * false only on the prompt layer's grant path (the runtime approval
+     * substitutes for the manifest flag). */
+    private fun dispatchKnown(
+        callId: Int, name: String, argsJSON: String, enforceGrant: Boolean,
+    ) {
+        val handler = handlers[name]
+        if (handler == null || (enforceGrant && !manifest.grants(name.substringBefore('.')))) {
             audit(name, "denied", "denied")
             settleFn?.invoke(
                 callId, false,

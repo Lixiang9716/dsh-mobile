@@ -1,0 +1,8 @@
+{
+  "scenario": "ble.plane.audit",
+  "pass": true,
+  "expected": 4,
+  "logged": 4,
+  "failures": [],
+  "parseErrors": []
+}

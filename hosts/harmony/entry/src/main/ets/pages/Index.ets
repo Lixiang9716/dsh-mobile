@@ -62,6 +62,7 @@ const LEG_DEVICE_PLANE: string = 'device.plane';
 /** The capability plane's camera leg (`--ps dsh.e2e.leg camera.plane`). */
 const LEG_CAMERA_PLANE: string = 'camera.plane';
 const LEG_PARITY: string = 'upstream.parity';
+const LEG_BLE: string = 'ble.plane';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -77,6 +78,7 @@ const LEG_PARITY: string = 'upstream.parity';
 const BUNDLE_FILES: string[] = [
   'e2e-stage.js',
   'gateway.js',
+  'manifest.json',
   'install-pipeline.js',
   'llm.js',
   'logger.js',
@@ -153,6 +155,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/harmony-capability-binding.js',
   'scenario/device-plane.js',
   'scenario/camera-plane.js',
+  'scenario/ble-plane.js',
   'scenario/upstream-parity.js',
   'scenario/parity-projector.js',
   'scenario/upstream-suite-leg.js',
@@ -199,6 +202,8 @@ const BUNDLE_FILES: string[] = [
   'system-plugins/dsh-ui/manifest.json',
   'system-plugins/dsh-device-plane/index.js',
   'system-plugins/dsh-device-plane/manifest.json',
+  'system-plugins/dsh-ble/index.js',
+  'system-plugins/dsh-ble/manifest.json',
     'system-plugins/dsh-office/ppt-write.js',
     'system-plugins/dsh-office/shared.js',
     'system-plugins/dsh-office/word.js',
@@ -1411,6 +1416,9 @@ struct Index {
     } else if (leg === LEG_PARITY) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runParityLeg();
+    } else if (leg === LEG_BLE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runBleLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1862,6 +1870,49 @@ struct Index {
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
         hilog.error(0x0000, TAG, 'camera-plane leg failed: %{public}s',
+          err.message ?? 'unknown');
+      });
+  }
+
+  /** The BLE face's leg (ONE launch): the binding machinery with the
+   * ble.plane scenario as the entry — no page mounts, so the drive needs
+   * no taps. The radio rides `--ps dsh.e2e.ble.mock` (E2eLeg.getBleMock). */
+  private runBleLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const phase = HostPhase.getInstance();
+    phase.setApprovalPresenter((title: string, resolve: (approved: boolean) => void): void => {
+      this.showApproval(title, resolve);
+    });
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.ble.plane (logs are the verdict)';
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        this.verdict = 'ble leg: running...';
+        phase.beginBle(ctx, root, ctx.cacheDir + '/dsh-ble-capture.log', fsRoot,
+          E2eLeg.getBleMock());
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          phase.evalEntryDirect();
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'ble leg: running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'ble leg failed: %{public}s',
           err.message ?? 'unknown');
       });
   }

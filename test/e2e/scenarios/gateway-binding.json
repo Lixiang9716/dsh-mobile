@@ -13,7 +13,7 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 22,
+        "available": 30,
         "unavailable": 0
       }
     },

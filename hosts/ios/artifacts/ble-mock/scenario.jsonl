@@ -1,0 +1,35 @@
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"descriptor.declared","available":31,"unavailable":2,"blePlane":8}]}
+dsh.spike.log: {"level":"debug","module":"dsh.ble.plane","message":"event tap armed","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStart"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.radio","mode":"live"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.armed","scanIdOpaque":true,"tag":"ble-plane-probe"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":151}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":145}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Sensor","rssi":-42}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.device","deviceIdOpaque":true,"namePresent":true,"name":"DSH Mock BLE Beacon","rssi":-66}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleScanStop"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.scan.stopped","stopped":true,"devices":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleConnect"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.connect","connectionIdOpaque":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"bleRead","data":[{"connectionId":"conn:device:mock-1","service":"180f","characteristic":"2a19"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.read","bytes":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleWrite"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.write","written":true,"bytes":3}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleSubscribe"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.subscribed","subscribed":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":132}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.notify","seq":1,"bytes":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":132}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":4}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.notify","seq":2,"bytes":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleUnsubscribe"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.unsubscribed","subscribed":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"bleDisconnect"}]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"ble.disconnected","closed":true,"gatt":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"event unsubscribe","data":[]}
+dsh.spike.log: {"level":"info","module":"dsh.ble.plane","message":"e2e","data":[{"scenario":"ble.plane","event":"scenario.complete","status":"pass"}]}

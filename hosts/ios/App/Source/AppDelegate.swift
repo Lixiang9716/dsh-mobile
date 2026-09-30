@@ -95,9 +95,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      line: "spike: app launched in device-plane mode", web: false)
             runDevicePlane()
         case "camera-plane":
-            announce("DSH camera plane — camera.plane, the capability plane's capture burst live…",
-                     line: "spike: app launched in camera-plane mode", web: false)
-            runCameraPlane()
+            startCameraMode()
+        case "ble-plane", "ble-plane-mock":
+            startBleMode()
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
@@ -141,7 +141,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// Console banner + stdout line for one drive; `web` marks drives that
     /// own the web view's navigation delegate.
-    private func announce(_ banner: String, line: String, web: Bool) {
+    func announce(_ banner: String, line: String, web: Bool) {
         console?.text = banner
         print(line)
         fflush(stdout)
@@ -161,12 +161,12 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// Launch mode from the launch arguments ("-dsh-mode session"): the
     /// default keeps the historical boot → carrier → gateway sequence.
-    private var launchMode: String {
+    var launchMode: String {
         requestedLaunchMode ?? "spikes"
     }
 
     /// The `-dsh-mode` value, or nil when the flag is absent.
-    private var requestedLaunchMode: String? {
+    var requestedLaunchMode: String? {
         let args = ProcessInfo.processInfo.arguments
         guard let at = args.firstIndex(of: "-dsh-mode"), at + 1 < args.count else {
             return nil
@@ -422,8 +422,6 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.runGateway()
         }
     }
-
-
 
     /// The m2 phase: the real nine-primitive gateway binding. Its outcome
     /// completes the launch sequence — this is where the final marker prints.

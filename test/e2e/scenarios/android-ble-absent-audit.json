@@ -1,0 +1,29 @@
+{
+  "scenario": "ble.plane.audit",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "bleScanStart",
+      "verdict": "granted",
+      "outcome": "unavailable"
+    },
+    {
+      "primitive": "bleScanStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "bleConnect",
+      "verdict": "granted",
+      "outcome": "unavailable"
+    },
+    {
+      "primitive": "bleDisconnect",
+      "verdict": "granted",
+      "outcome": "ok"
+    }
+  ]
+}

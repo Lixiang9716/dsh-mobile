@@ -10,6 +10,8 @@
       { "name": "ohos.permission.READ_PASTEBOARD", "reason": "$string:pasteboard_reason",
         "usedScene": { "abilities": ["EntryAbility"], "when": "inuse" } },
       { "name": "ohos.permission.CAMERA", "reason": "$string:camera_reason",
+        "usedScene": { "abilities": ["EntryAbility"], "when": "inuse" } },
+      { "name": "ohos.permission.ACCESS_BLUETOOTH", "reason": "$string:bluetooth_reason",
         "usedScene": { "abilities": ["EntryAbility"], "when": "inuse" } }
     ],
     "deviceTypes": [

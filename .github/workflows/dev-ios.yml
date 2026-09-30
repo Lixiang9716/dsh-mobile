@@ -368,6 +368,16 @@ jobs:
       # What gates in this workflow: the build, and (below) the m1 scenarios —
       # which are log-driven and DO run on a hosted simulator.
 
+
+      # The capability plane's BLE face (mock radio): headless launch +
+      # log-verify — no UI driver needed, so this CAN run on a hosted
+      # runner. Same best-effort posture as the stage above: the build is
+      # the hard gate; a runner without a bootable simulator reports, not
+      # hides.
+      - name: Run the BLE mock-radio leg on simulator and verify (logs only)
+        if: steps.spike-run.outcome == 'success' || steps.spike-run.outcome == 'failure'
+        run: sh test/e2e/run-ios-ble.sh --mode mock --skip-build
+        continue-on-error: true
       - name: Report verdict
         if: always()
         run: |

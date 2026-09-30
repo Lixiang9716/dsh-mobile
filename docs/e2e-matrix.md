@@ -260,6 +260,7 @@ missing or malformed is a finding of its own, never a silent pass.
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
 | MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
+| VERDICT_MALFORMED | hosts/android/artifacts/camera-plane/verdict-camera-plane-capture-audit.json | camera work stream (#252) | rerun DSH_ANDROID_SERIAL=<emulator> hosts/android/ci/run-camera-plane.sh to regenerate a self-consistent verdict (the committed file records pass=true with expected=5 logged=6 — inherited red, found by the BLE line's rebase) |
 
 ### Why none of these nine is closed here (the honest reason)
 

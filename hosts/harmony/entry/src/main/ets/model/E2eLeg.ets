@@ -20,6 +20,17 @@ export class E2eLeg {
   private static leg: string = '';
   private static spec: string = '';
   private static webClient: string = '';
+  private static bleMock: boolean = false;
+
+  /** EntryAbility.onCreate: the BLE face's mock-radio launch parameter
+   * (`--ps dsh.e2e.ble.mock true`) — the CI leg's radio choice. */
+  static setBleMock(mock: boolean): void {
+    E2eLeg.bleMock = mock;
+  }
+
+  static getBleMock(): boolean {
+    return E2eLeg.bleMock;
+  }
 
   /** EntryAbility.onCreate: the raw want parameter ('' when absent). */
   static set(leg: string): void {

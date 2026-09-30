@@ -1,0 +1,58 @@
+{
+  "scenario": "ble.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 32,
+        "unavailable": 2,
+        "blePlane": 8
+      }
+    },
+    {
+      "event": "ble.radio",
+      "match": {
+        "mode": "absent"
+      }
+    },
+    {
+      "event": "ble.scan.unavailable",
+      "match": {
+        "code": "denied"
+      }
+    },
+    {
+      "event": "ble.stop.idempotent",
+      "match": {
+        "stopped": false
+      }
+    },
+    {
+      "event": "ble.connect.unavailable",
+      "match": {
+        "code": "denied"
+      }
+    },
+    {
+      "event": "ble.disconnect.idempotent",
+      "match": {
+        "closed": false
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

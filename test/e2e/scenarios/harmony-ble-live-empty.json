@@ -1,0 +1,54 @@
+{
+  "scenario": "harmony.ble.plane",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "gateway.negotiated",
+      "match": {
+        "version": "gateway@1"
+      }
+    },
+    {
+      "event": "descriptor.declared",
+      "match": {
+        "available": 24,
+        "unavailable": 2,
+        "blePlane": 8
+      }
+    },
+    {
+      "event": "ble.radio",
+      "match": {
+        "mode": "live"
+      }
+    },
+    {
+      "event": "ble.scan.armed",
+      "match": {
+        "scanIdOpaque": true,
+        "tag": "ble-plane-probe"
+      }
+    },
+    {
+      "event": "ble.scan.stopped",
+      "match": {
+        "stopped": false,
+        "selfEnded": true
+      }
+    },
+    {
+      "event": "ble.connect.skipped",
+      "match": {
+        "devices": 0
+      }
+    },
+    {
+      "event": "scenario.complete",
+      "match": {
+        "status": "pass"
+      }
+    }
+  ]
+}

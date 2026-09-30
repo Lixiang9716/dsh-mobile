@@ -19,10 +19,8 @@ import org.json.JSONObject
  * exactly once: scenario completion or watchdog (180 s — the UI
  * choreography takes time). JS runs ONLY on the runtime thread; primitive
  * handlers run off it (UI thread / fetch threads); every settle/event hops
- * back via SpikeRuntime.post (ARCHITECTURE.md §6 thread rules). Carrier-side
- * evidence rides the canonical `dsh.spike.log: ` envelope as scenario
- * `android.capability-binding` so one checker manifest covers the whole flow.
- */
+ * back via SpikeRuntime.post (ARCHITECTURE.md §6 thread rules); carrier-side
+ * evidence rides the canonical envelope under its scenario id. */
 class SpikeHostM4 private constructor(
     private val activity: Activity,
     /** Carrier-side evidence scenario id + JS entry + capture label for this
@@ -40,6 +38,8 @@ class SpikeHostM4 private constructor(
     private val clientId: String = "dsh-web-client",
     private val webRootDir: String = "webclient/web",
     private val whaleLeg: Boolean = false,
+    /** The BLE face's radio choice (the launch extras decide). */
+    private val mockRadio: Boolean = false,
 ) {
 
     companion object {
@@ -57,6 +57,9 @@ class SpikeHostM4 private constructor(
         const val DEVICE_PLANE_ENTRY = "scenario/device-plane.js"
         const val CAMERA_PLANE_SCENARIO = "android.camera-plane"
         const val CAMERA_PLANE_ENTRY = "scenario/camera-plane.js"
+        const val BLE_SCENARIO = "android.ble-plane"
+        const val BLE_ENTRY = "scenario/ble-plane.js"
+
         const val WHALE_CLIENT_ID = "dsh-web-client-whale"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
@@ -88,137 +91,111 @@ class SpikeHostM4 private constructor(
             return host
         }
 
-        /** The M2 real-LLM drive (scenario `llm.live-stream`): same carrier + WebView
-         * + gateway flow, but the JS entry streams one real chat completion
-         * through the gateway httpFetch. Credentials ride fs scope "app"
-         * (files/profiles/default/llm-live-stream/config.json), staged by the E2E
-         * runner before launch. */
-        fun startLlm(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
+        /** The M2 real-LLM drive (scenario `llm.live-stream`): one real completion via the gateway httpFetch. */
+        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
                 scenarioId = LLM_SCENARIO,
                 entryPath = LLM_ENTRY,
                 captureLabel = "llm-live-stream",
-            )
-            host.pump.attach(webView)
-            instance = host
-            host.start(onFinished)
-            return host
-        }
+        )
 
-        /** The v1.5.0 device-plane drive (scenario `android.device-plane`):
-         * the six SDK primitives + the media picker, driven marker-by-marker
-         * from the runner. */
-        fun startDevicePlane(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
+        /** The v1.5.0 device-plane drive (scenario `android.device-plane`). */
+        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
                 scenarioId = DEVICE_PLANE_SCENARIO,
                 entryPath = DEVICE_PLANE_ENTRY,
                 captureLabel = "device-plane",
-            )
-            host.pump.attach(webView)
-            instance = host
-            host.start(onFinished)
-            return host
-        }
+        )
 
         /** The capability plane's camera drive (scenario
          * `android.camera-plane`, v1.10.0): the capture burst against the
          * emulator's virtual camera, the phased rows' honest `unavailable`. */
-        fun startCameraPlane(
+        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
+            scenarioId = CAMERA_PLANE_SCENARIO,
+            entryPath = CAMERA_PLANE_ENTRY,
+            captureLabel = "camera-plane",
+        )
+
+        /** The capability plane's BLE drive (scenario `android.ble-plane`):
+         * the real radio by default (an emulator answers `unavailable`
+         * honestly — the CI skip leg), the deterministic mock on the mock
+         * extra (the envelope + audit CI leg). */
+        fun startBle(
             activity: Activity,
             webView: WebView?,
             onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
-                scenarioId = CAMERA_PLANE_SCENARIO,
-                entryPath = CAMERA_PLANE_ENTRY,
-                captureLabel = "camera-plane",
-            )
-            host.pump.attach(webView)
-            instance = host
-            host.start(onFinished)
-            return host
-        }
+            mockRadio: Boolean,
+        ): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
+            scenarioId = BLE_SCENARIO,
+            entryPath = BLE_ENTRY,
+            captureLabel = "ble-plane",
+            mockRadio = mockRadio,
+        )
 
         /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
-         * upstream spec (the runner stages the corpus under
-         * filesDir/spike/upstream-tests/) executed by the quickjs-shaped
-         * harness inside our runtime — per-test verdicts stream as
-         * scenario records. The spec name rides the launch extras into the
-         * runtime.config bus delivery. */
+         * upstream spec executed by the quickjs-shaped harness inside our
+         * runtime — per-test verdicts stream as scenario records; the spec
+         * name rides the runtime.config bus delivery. */
         fun startSuite(
             activity: Activity,
             webView: WebView?,
             onFinished: (String) -> Unit,
             spec: String,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
-                scenarioId = SUITE_SCENARIO,
-                entryPath = SUITE_ENTRY,
-                captureLabel = "upstream-suite",
-            )
-            host.suiteSpec = spec
-            host.pump.attach(webView)
-            instance = host
-            host.start(onFinished)
-            return host
-        }
+        ): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
+            scenarioId = SUITE_SCENARIO,
+            entryPath = SUITE_ENTRY,
+            captureLabel = "upstream-suite",
+        ).also { it.suiteSpec = spec }
 
-        /** The upstream-parity drive (scenario `upstream.parity`): the port leg
-         * of the differential consistency check — the same vendored upstream
-         * spine, the same scripted turns (success → todo_write tool round →
-         * closing success → 401) the Node reference leg runs, compared
-         * against the committed golden. The mock route is armed with the
-         * parity script and the endpoint facts ride the runtime.config bus
-         * delivery (the session-live handoff shape). */
-        fun startParity(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
+        /** The upstream-parity drive (scenario `upstream.parity`): the port leg against the committed golden. */
+        fun startParity(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
                 scenarioId = PARITY_SCENARIO,
                 entryPath = PARITY_ENTRY,
                 captureLabel = "upstream-parity",
-            )
-            host.parityMode = true
-            host.pump.attach(webView)
-            instance = host
-            host.start(onFinished)
-            return host
-        }
+                parityMode = true,
+        )
 
-        /** The whale creation-client drive (scenario `android.whale.mount`):
-         * the same v0 /ws session flow as the M4 binding, but the staged
-         * web-client-whale page rides the carrier — the creation-mode client
-         * mount evidence (the iOS session-mock-llm drive's `--client whale`
-         * leg, mirrored). */
-        fun startWhale(
-            activity: Activity,
-            webView: WebView?,
-            onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
-                activity,
+        /** The whale creation-client drive (scenario `android.whale.mount`). */
+        fun startWhale(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+            activity, webView, onFinished,
                 scenarioId = WHALE_SCENARIO,
                 entryPath = WHALE_ENTRY,
                 captureLabel = "android-whale-mount",
                 clientId = WHALE_CLIENT_ID,
                 webRootDir = "webclient-whale/web",
                 whaleLeg = true,
+        )
+
+        /** The shared factory tail of the scenario-swap drives (the
+         * device/camera/BLE siblings): construct, attach, park, start. */
+        private fun spawn(
+            activity: Activity,
+            webView: WebView?,
+            onFinished: (String) -> Unit,
+            scenarioId: String,
+            entryPath: String,
+            captureLabel: String,
+            mockRadio: Boolean = false,
+            clientId: String = "dsh-web-client",
+            webRootDir: String = "webclient/web",
+            whaleLeg: Boolean = false,
+            parityMode: Boolean = false,
+        ): SpikeHostM4 {
+            val host = SpikeHostM4(
+                activity,
+                scenarioId = scenarioId,
+                entryPath = entryPath,
+                captureLabel = captureLabel,
+                clientId = clientId,
+                webRootDir = webRootDir,
+                whaleLeg = whaleLeg,
+                mockRadio = mockRadio,
             )
+            if (parityMode) host.parityMode = true
             host.pump.attach(webView)
             instance = host
             host.start(onFinished)
@@ -247,6 +224,7 @@ class SpikeHostM4 private constructor(
     private val device = DevicePlanePrimitives(activity, fs)
     private val clipboard = ClipboardPrimitives(activity)
     private val camera = CameraPrimitives(activity, fs)
+    private val ble = BlePrimitives(activity, core, if (mockRadio) MockBleRadio() else SystemBleRadio(activity))
 
     private var handle: Long = 0
 
@@ -353,6 +331,8 @@ class SpikeHostM4 private constructor(
         device.register(core)
         clipboard.register(core)
         camera.register(core)
+        ble.register(core)
+
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
@@ -362,6 +342,7 @@ class SpikeHostM4 private constructor(
         http.eventFn = { json -> event(json) }
         notify.emitFn = { json -> event(json) }
         timer.emitFn = { json -> event(json) }
+        ble.emitFn = { json -> event(json) }
         timer.register(core)
     }
 
@@ -455,6 +436,11 @@ class SpikeHostM4 private constructor(
             camera.onPermissionResult(
                 grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED,
             )
+        }
+        if (requestCode == BleConsentLayer.REQUEST_BLE) {
+            // the scan/connect pair: every entry must be granted to proceed
+            ble.onPermissionResult(grantResults.isNotEmpty()
+                && grantResults.all { it == android.content.pm.PackageManager.PERMISSION_GRANTED })
         }
     }
 

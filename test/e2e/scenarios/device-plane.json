@@ -13,7 +13,7 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 23,
+        "available": 31,
         "unavailable": 2,
         "devicePlane": 6
       }
