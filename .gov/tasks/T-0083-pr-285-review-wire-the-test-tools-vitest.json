@@ -12,7 +12,7 @@
     "[x] Runner script tools/test/run-tools-tests.sh (mirrors run-presentation-tests.sh: npm ci when node_modules absent, committed lockfile, registry honored) + a step in .github/workflows/gov.yml's gates job after gov run",
     "[x] Local proof: fresh-install path (node_modules removed, script npm ci's) runs the whole face green (4 files / 67 tests) on the CI-equivalent materialized tree; reviewer's exact command reproduced",
     "[x] Truthfulness updates: docs/marketplace-publisher-auth.md +zh \u00a77 (suite now CI-run, validator still wires to no gate command / no service) + pairing re-confirmed; Agent Note updated, gov note verify green",
-    "gov task close full DAG green receipt \u2192 push \u2192 PR checks green \u2192 review reply"
+    "[x] gov task close full DAG green receipt \u2192 push \u2192 PR checks green \u2192 review reply"
   ],
   "status": "open",
   "receipt": null,
