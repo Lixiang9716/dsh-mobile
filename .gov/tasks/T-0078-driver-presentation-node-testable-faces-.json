@@ -1,0 +1,23 @@
+{
+  "title": "driver/presentation Node-testable faces: formalize run-mock's 18 checks as vitest, add web-client-next wire/envelope+fold suites",
+  "created": "2026-09-30T06:35:28+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    "lynx-client: vitest.config with coverage=all, before/after numbers captured",
+    "lynx-client: run-mock's 18 checks formalized in tests/driver-loop.test.js over real mock-serve+ws",
+    "lynx-client: wire envelope edge legs (missing rpcId, missing ok, HTTP 404)",
+    "web-client-next: package+vitest; api.js envelope, mux.js real-socket, timeline.js fold suites",
+    "falsify-then-restore every new suite (red proof)",
+    "coverage after numbers real (vitest --coverage)",
+    "gov run full DAG green + receipt; push; PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0078"
+}
