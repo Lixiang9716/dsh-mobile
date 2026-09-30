@@ -31,10 +31,10 @@ Connection timed out during banner exchange                    (proxy, exit 3)
 
 | Path | Role |
 | --- | --- |
-| `logto/docker-compose.yml` | **Preferred target** — Logto (OIDC) + Postgres, loopback-only ports, placeholders from `.env` |
+| `logto/docker-compose.yml` | **Preferred target** — Logto `1.44.0` (pinned) + Postgres, loopback-only ports, placeholders from `.env` |
 | `logto/env.example` | Placeholder template — copy to `.env` **on the host**, never commit it |
-| `pocketbase/pocketbase.service` | **Fallback target** — single-binary systemd unit (resource-constrained hosts) |
-| `deploy.sh` | Parameterized deploy + health check (`--host`, `--port`, `--proxy`, `--target logto\|pocketbase`, `--check-only`) |
+| `pocketbase/pocketbase.service` | **Fallback target** — single-binary systemd unit TEMPLATE (paths baked in by `deploy.sh` at install; resource-constrained hosts) |
+| `deploy.sh` | Parameterized deploy + health check (`--host`, `--port`, `--proxy`, `--remote-dir`, `--target logto\|pocketbase`, `--check-only`) |
 
 ## Selection rationale (summary — full version in the Agent Note)
 
@@ -93,7 +93,9 @@ Connection timed out during banner exchange                    (proxy, exit 3)
 ```
 
 `deploy.sh` generates the Postgres password **on the host** (mode-600
-`.env`) if absent; an existing `.env` is never overwritten.
+`.env`, hex — safe inside the `postgresql://` URL) if absent; an existing
+`.env` is never overwritten, and the file sync excludes `.env` entirely,
+so even a local leftover copy cannot reach the host.
 
 ## First boot — initial admin (passwords never enter git)
 

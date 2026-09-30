@@ -28,10 +28,10 @@ Connection timed out during banner exchange                    (代理,exit 3)
 
 | 路径 | 角色 |
 | --- | --- |
-| `logto/docker-compose.yml` | **首选目标** —— Logto(OIDC)+ Postgres,端口仅绑回环,占位符来自 `.env` |
+| `logto/docker-compose.yml` | **首选目标** —— Logto `1.44.0`(已钉版)+ Postgres,端口仅绑回环,占位符来自 `.env` |
 | `logto/env.example` | 占位符模板 —— 在**主机上**复制为 `.env`,绝不入库 |
-| `pocketbase/pocketbase.service` | **备选目标** —— 单二进制 systemd 单元(资源紧张主机) |
-| `deploy.sh` | 参数化部署 + 健康检查(`--host`、`--port`、`--proxy`、`--target logto\|pocketbase`、`--check-only`) |
+| `pocketbase/pocketbase.service` | **备选目标** —— 单二进制 systemd 单元模板(路径由 `deploy.sh` 安装时烘焙;资源紧张主机) |
+| `deploy.sh` | 参数化部署 + 健康检查(`--host`、`--port`、`--proxy`、`--remote-dir`、`--target logto\|pocketbase`、`--check-only`) |
 
 ## 选型说明(摘要 —— 完整版见 Agent Note)
 
@@ -83,7 +83,8 @@ Connection timed out during banner exchange                    (代理,exit 3)
 ```
 
 `deploy.sh` 若发现 `.env` 缺失,会在**主机上**生成 Postgres 口令(600 权限
-的 `.env`);已存在的 `.env` 绝不覆盖。
+的 `.env`,hex 编码——在 `postgresql://` URL 内安全);已存在的 `.env`
+绝不覆盖,且文件同步整体排除 `.env`——即使本地残留副本也到不了主机。
 
 ## 首启 —— 初始管理员(口令绝不入 git)
 
