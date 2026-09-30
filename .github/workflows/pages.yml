@@ -1,0 +1,107 @@
+name: pages/demo
+# GitHub Pages: the ONLINE DEMO of the lynx-client web render — what the
+# product looks like, for early reviewers, before any install.
+#
+# The recipe is the #248 acceptance probe, productized:
+#   npm ci (committed lockfile) -> npm run build:web -> dist-web/main.web.bundle,
+#   mounted by <lynx-view> on a static landing page via @lynx-js/web-core's
+#   static client (the package README's official recipe: client.js +
+#   client.css + <lynx-view url=...>). staging is demo/stage-pages.sh — the
+#   same script verified locally is what deploys.
+#
+# The web runtime (@lynx-js/web-core) is a BUILD-TIME-ONLY pin: installed into
+# a scratch prefix and copied verbatim into the artifact; it never enters the
+# product dependency set of presentation/lynx-client.
+#
+# KNOWN FIRST-RUN FAILURE: GitHub Pages is OFF until the owner flips
+# Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+# Until that lands, configure-pages/deploy-pages fails ("Pages not enabled") —
+# expected and documented, not a workflow defect. The build steps before it
+# prove the pipeline green either way.
+#
+# Triggers genuinely mirror the dev-* workflows (review round on #277: the
+# first draft claimed the mirror but shipped no pull_request leg, so the
+# install->build->stage chain would have first executed on a GitHub runner
+# only after merge): pull_request with the same path filter validates that
+# chain BEFORE landing, with the three Pages steps guarded off (they are the
+# only ones that touch the Pages deployment); workflow_dispatch + main-push
+# with the same paths deploy.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "presentation/lynx-client/**"
+      - ".github/workflows/pages.yml"
+  pull_request:
+    paths:
+      - "presentation/lynx-client/**"
+      - ".github/workflows/pages.yml"
+
+# Deploy legs (push/dispatch) share the official single-flight "pages" group:
+# one deployment at a time, never cancelling an in-progress production deploy.
+# pull_request legs get their own per-PR group where superseded runs cancel —
+# a PR validation run is disposable, a production deploy is not.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.number) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    name: pages-demo
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: Install the client bundle (pinned lockfile; npmmirror fallback)
+        run: |
+          npm ci --prefix presentation/lynx-client/bundle --no-fund --no-audit \
+            || npm ci --prefix presentation/lynx-client/bundle --no-fund --no-audit \
+                 --registry=https://registry.npmmirror.com
+
+      - name: Build the web-target bundle
+        run: npm run build:web --prefix presentation/lynx-client/bundle
+
+      - name: Pin the Lynx web runtime (build-time only, never a product dep)
+        run: |
+          npm install --prefix .pages-runtime --no-fund --no-audit \
+            @lynx-js/web-core@0.26.2 \
+            || npm install --prefix .pages-runtime --no-fund --no-audit \
+                 @lynx-js/web-core@0.26.2 --registry=https://registry.npmmirror.com
+          test -f .pages-runtime/node_modules/@lynx-js/web-core/dist/client_prod/static/js/client.js \
+            || { echo "::error::web-core static client missing after install"; exit 1; }
+
+      - name: Stage the Pages artifact (same script locally and in CI)
+        run: sh presentation/lynx-client/demo/stage-pages.sh "$GITHUB_WORKSPACE" pages-dist
+
+      # The three Pages steps are deploy-only: on pull_request the leg proves
+      # the install->build->pin->stage chain and stops — no deployment is
+      # created, nothing touches the (owner-gated) Pages integration.
+      - name: Setup Pages
+        if: github.event_name != 'pull_request'
+        uses: actions/configure-pages@v6
+
+      - name: Upload the Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: pages-dist
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name != 'pull_request'
+        id: deployment
+        uses: actions/deploy-pages@v5
