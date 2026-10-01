@@ -1,18 +1,17 @@
 // dsh:logging-exempt (boot module; logging happens through the mounted logger)
 /**
  * composer-web-live.js — the ON-DEVICE SESSION-WRITE runtime half behind
- * composer.live-write (decision D9, the W-RPC leg): the upstream spine answers the
- * official app's WRITE surface. The composer send is `POST /api/session/prompt`
- * (frozen envelope, args.request {requestId, sessionId, mode, content}); the
- * reply streams back over the mux `session/follow` journal (snapshot opening
- * frame → live event entries → assistant-stream notification frames with
- * monotonic revisions). This scenario boots the FULL spine, mounts the
- * web-boot producer COMPOSED WITH THE WRITE SURFACE (upstream/web-write.js —
+ * composer.live-write (decision D9, the W-RPC leg): the upstream spine answers
+ * the official app's WRITE surface. The composer send is `POST
+ * /api/session/prompt` (frozen envelope, args.request {requestId, sessionId,
+ * mode, content}); the reply streams back over the mux `session/follow` journal
+ * (snapshot opening frame → live event entries → assistant-stream notification
+ * frames with monotonic revisions). This scenario boots the FULL spine, mounts
+ * the web-boot producer COMPOSED WITH THE WRITE SURFACE (upstream/web-write.js —
  * real session/create + prompt admission + the follow streams + the settings
  * describe + the workspace feed over the profile container), and then goes
  * RESIDENT: the page's own composer message drives a REAL upstream agent-loop
  * turn — nothing here pre-plays it.
- *
  * LLM boundary (determinism): the transport is the REAL gateway adapter over
  * gateway httpFetch, pointed at the carrier's loopback SCRIPTED
  * chat-completions endpoint (real HTTP + SSE, scripted model output) — same
@@ -232,6 +231,10 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       model: route.model,
       baseURL: route.baseURL,
       routeKind: route.kind,
+      // The plugin marketplace's opt-in (web-write-marketplace.js), relayed
+      // verbatim when the seat stages it (SessionServe
+      // `loadMarketplaceCatalog`); absent → legs unclaimed, unchanged.
+      ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
     },
@@ -429,10 +432,9 @@ const probeFsPrimitives = async () => {
 };
 
 
-/** TEMPORARY DIAGNOSTIC (removed before landing): the contract v1.2.0 `wasmRun`
- * path end to end — a real WebAssembly module written into the app scope, then
- * executed in-process, its output collected through the host-linked `dsh.emit`
- * import. log.debug, so no canonical record is added. */
+/** The wasmRun probe (contract v1.2.0): a real WebAssembly module written into
+ * the app scope, executed in-process, output through the host-linked `dsh.emit`.
+ * log.debug, so no canonical record is added. */
 const WASM_PROBE_MODULE = [0,97,115,109,1,0,0,0,1,12,2,96,2,127,127,0,96,2,127,127,1,127,2,12,1,3,100,115,104,4,101,109,105,116,0,0,3,2,1,1,5,3,1,0,1,7,16,2,6,109,101,109,111,114,121,2,0,3,114,117,110,0,1,10,12,1,10,0,32,0,32,1,16,0,32,1,11];
 
 const probeWasmRun = async () => {
@@ -461,6 +463,24 @@ const probeWasmRun = async () => {
   log.debug('wasm probe', out);
 };
 
+/** The in-process Linux guest (contract v1.3.0 `ishRun`): one REAL `/bin/sh -c`
+ * line in the emulated aarch64 Alpine userland. log.debug only, like the fs/
+ * wasm probes; a host without the userland records the honest `unavailable`.
+ * The EMPTY path is the scope root (IshPrimitive's deliberate difference). */
+const probeIshRun = async () => {
+  const gw = await import('gateway.js');
+  const out = { stage: 'start' };
+  try {
+    const run = await gw.ishRun('app', '', ['/bin/sh', '-c', 'echo hello-from-guest']);
+    out.run = `exit=${run.exitCode} stdout=${JSON.stringify(run.stdout)} timedOut=${run.timedOut} truncated=${run.truncated}`;
+  } catch (error) {
+    out.unavailable = (error && error.code ? error.code : '?') + ': ' +
+      (error && error.message ? error.message : String(error));
+  }
+  out.stage = 'done';
+  log.debug('ish probe', out);
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = await take('runtime.config');
@@ -472,6 +492,7 @@ const main = async () => {
   registerBootRouteFactory(ctx, () => bootRouteOf(cfg));
   await probeFsPrimitives();
   await probeWasmRun();
+  await probeIshRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route, cfg);
   installRuntimeHalf(ctx, cfg, route);

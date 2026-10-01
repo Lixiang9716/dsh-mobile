@@ -279,27 +279,35 @@ final class SessionServe {
             config["fullCoverage"] = true
             config["goals"] = true
             config["fileReferences"] = true
-            // The CREATION row: the present tool — the model declares
-            // workspace files as deliverables, journaled as
-            // deliverables/presented for the clients to render on screen.
-            config["creation"] = true
-            config["skills"] = [
-                "dshHome": "\(Self.workspaceRoot.path)/home",
-                "agentsHome": "\(Self.workspaceRoot.path)/home/agents",
-                "customSkillDirs": ["\(Self.workspaceRoot.path)/skills"],
-            ]
-            // The plugin marketplace's opt-in (web-write-marketplace.js):
-            // staged exactly like the llm credential — the container file is
-            // the deployment surface, the seat only relays it. Absent file →
-            // no option → the panel opens with the honest capability-gap note.
-            if let catalog = Self.loadMarketplaceCatalog() {
-                config["marketplace"] = [
-                    "indexUrl": catalog.indexUrl,
-                    "publicKey": catalog.publicKey,
-                ]
-            }
+            config.merge(Self.interactiveExtras()) { _, new in new }
         }
         return config
+    }
+
+    /// The interactive boot's remaining config rows: the CREATION row (the
+    /// present tool — the model declares workspace files as deliverables,
+    /// journaled as deliverables/presented for the clients to render), the
+    /// skills plane's directories, and the plugin marketplace's opt-in
+    /// (web-write-marketplace.js), staged exactly like the llm credential —
+    /// the container file is the deployment surface, the seat only relays it.
+    /// Absent file → no option → the panel opens with the honest
+    /// capability-gap note.
+    private static func interactiveExtras() -> [String: Any] {
+        var extras: [String: Any] = [
+            "creation": true,
+            "skills": [
+                "dshHome": "\(workspaceRoot.path)/home",
+                "agentsHome": "\(workspaceRoot.path)/home/agents",
+                "customSkillDirs": ["\(workspaceRoot.path)/skills"],
+            ],
+        ]
+        if let catalog = loadMarketplaceCatalog() {
+            extras["marketplace"] = [
+                "indexUrl": catalog.indexUrl,
+                "publicKey": catalog.publicKey,
+            ]
+        }
+        return extras
     }
 
     /// One user-supplied model endpoint: an OpenAI-compatible base URL, its

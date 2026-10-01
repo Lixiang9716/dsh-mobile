@@ -1,5 +1,7 @@
 # iOS live test — four dimensions on the dsh-iphone simulator
 
+[中文](ios-live-test-summary.zh.md)
+
 Status: 10 of 14 legs green with receipts; 4 legs blocked by a machine-level
 CoreSimulator XPC deadlock (see [BLOCKED-LEGS.md](../hosts/ios/artifacts/ios-live-test/BLOCKED-LEGS.md)).
 

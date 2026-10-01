@@ -1,5 +1,7 @@
 # iOS 实测——dsh-iphone 模拟器上的四个维度
 
+[English](ios-live-test-summary.md)
+
 状态:14 条腿中 10 条绿且有 receipts;4 条腿被机器级 CoreSimulator XPC 死锁
 阻塞(见 [BLOCKED-LEGS.md](../hosts/ios/artifacts/ios-live-test/BLOCKED-LEGS.md))。
 

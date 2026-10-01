@@ -14,5 +14,5 @@
 set -e
 cd "$(dirname "$0")"
 python3 Tools/gen_bundle_header.py
-../runtime/spike/vendor/ensure-ish-rootfs.sh Generated
+../../runtime/spike/vendor/ensure-ish-rootfs.sh App/Generated
 xcodegen generate
