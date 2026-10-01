@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "family": [
+    "next",
+    "whale"
+  ],
+  "hosts": [
+    {
+      "tree": "web-client-next",
+      "mirrors": [
+        {
+          "host": "android",
+          "files": 16,
+          "stale": [],
+          "missing": [],
+          "extra": []
+        },
+        {
+          "host": "harmony",
+          "files": 16,
+          "stale": [],
+          "missing": [],
+          "extra": []
+        }
+      ]
+    },
+    {
+      "tree": "web-client-whale",
+      "mirrors": [
+        {
+          "host": "android",
+          "files": 4,
+          "stale": [],
+          "missing": [],
+          "extra": []
+        },
+        {
+          "host": "harmony",
+          "files": 4,
+          "stale": [],
+          "missing": [],
+          "extra": []
+        }
+      ]
+    }
+  ],
+  "findings": [],
+  "outsideFamily": [
+    "web-client-mini"
+  ]
+}

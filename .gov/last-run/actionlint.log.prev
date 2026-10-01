@@ -1,0 +1,1 @@
+actionlint: SKIP — actionlint binary not found (PATH, /opt/homebrew/bin, /usr/local/bin); CI installs the pinned v1.7.12 release (gov.yml)

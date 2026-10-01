@@ -632,7 +632,9 @@ llm.js
 ed25519.js
 marketplace-resolver.js
 canonical-json.js
-install-pipeline.js"
+install-pipeline.js
+install-fetch.js
+receipt-journal.js"
 for f in $SPIKE_ROOT; do
     if [ "$MODE" != "check" ] && [ -f "runtime/spike/$f" ]; then
         cmp -s "runtime/spike/$f" "$RAW/$f" || cp "runtime/spike/$f" "$RAW/$f"

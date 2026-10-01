@@ -1,0 +1,1 @@
+shellcheck-warn: SKIP — shellcheck binary not found (PATH, /opt/homebrew/bin, /usr/local/bin); install it (brew install shellcheck) so the gate can judge
