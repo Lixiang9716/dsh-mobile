@@ -1,4 +1,4 @@
-e2e: PASS matrix (92 dirs, 178 verdicts, 180 pngs; 7 findings under --accept-known-gaps: 7 accepted (owned) gaps, 0 unregistered, 0 register defects)
+e2e: PASS matrix (92 dirs, 178 verdicts, 184 pngs; 7 findings under --accept-known-gaps: 7 accepted (owned) gaps, 0 unregistered, 0 register defects)
 e2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-session-live/receipt.json — receipt.json
 e2e:          owner: android work stream (#66) | closes with: DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step
 e2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-upstream/receipt.json — receipt.json
