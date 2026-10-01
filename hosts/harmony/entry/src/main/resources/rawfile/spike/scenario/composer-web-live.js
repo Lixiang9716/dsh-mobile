@@ -231,12 +231,9 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       model: route.model,
       baseURL: route.baseURL,
       routeKind: route.kind,
-      // The plugin marketplace's opt-in (web-write-marketplace.js), relayed
-      // verbatim when the seat stages it (SessionServe
-      // `loadMarketplaceCatalog`); absent → legs unclaimed, unchanged.
+      // Marketplace opt-in (web-write-marketplace.js), relayed verbatim when the seat stages it; absent → unclaimed.
       ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
-      // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
-      spine: () => spineInventory(ctx),
+      spine: () => spineInventory(ctx), // the 插件 inventory's spine plane: REAL mounts from ctx
     },
   });
   const busHandler = (msg) => {
