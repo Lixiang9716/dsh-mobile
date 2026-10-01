@@ -36,17 +36,20 @@
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
     },
+    ".gov/rejections/case-webclient-staged-tree.sh": {
+      "sha256": "fa4084c9beae97e2c0e4c22347dd40de78fbf68e9062f37782d2edb442aa2ea9"
+    },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "3547ed46a4eddcbc26498ab0b6ccdfccba502b957d4cf415b4586a591d90a527"
+      "sha256": "47f1d2094113f34767fd5a1a5516f191689e59a6aa2b28d137d8a03da50a1513"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T07:29:01+00:00",
+    "ts": "2026-10-01T07:46:11+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "PR #292 review round: BUILD.md/BUILD.zh.md join .gov/pairing.json (rules.md rule 7 \u2014 the new asset-mirror section had landed EN-only; the pairing gate's include list did not cover root-level BUILD, a gate-adoption gap the review named) and the Agent Note's skip-count figure is corrected to the measured 20 (16+4; 331\u2192311)"
+    "reason": "A12 re-seal after rebase over #290/#292: the webclient-staged-tree gate joins the sealed DAG on the current main; authority = T-0087 + Agent Note 2026-10-01-ci-honesty-two-moves.md (supersedes the not-a-gate decision in the 2026-09-30 note)"
   }
 }
