@@ -201,6 +201,15 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_web_write_marketplace_js), under: root)
         try write("upstream/web-write-onboarding.js",
                   data: resData(dsh_spike_res_upstream_web_write_onboarding_js), under: root)
+        // The marketplace resolver seam and its crypto pair (the second live
+        // measurement, same leg): web-write-marketplace.js imports
+        // marketplace-resolver.js, which imports canonical-json.js + ed25519.js.
+        try write("marketplace-resolver.js",
+                  data: resData(dsh_spike_res_marketplace_resolver_js), under: root)
+        try write("canonical-json.js",
+                  data: resData(dsh_spike_res_canonical_json_js), under: root)
+        try write("ed25519.js",
+                  data: resData(dsh_spike_res_ed25519_js), under: root)
         // The W-RPC write surface (b4): the composer-send adapter + scenario.
         try writeWriteSurface(root)
         try write("upstream/web-write-streams.js",
