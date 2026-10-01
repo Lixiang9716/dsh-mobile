@@ -115,6 +115,12 @@ const REGISTRATIONS = [
   // failure — this row pins the real file under that spelling too.
   ['@deepseek-ai/dsh-session/types', "export * from '/vendor/dsh/session@0.1.6-alpha.2/lib/types/types.js';"],
   ['@deepseek-ai/dsh-workflow/types', "export * from '/vendor/dsh/workflow@0.1.6-alpha.2/lib/types/types.js';"],
+  // dsh-command-goal (the /goal row, mounted after the goal plane) imports
+  // the commands brand outlet — lib/types/brand.js — under the package's
+  // exports subpath; both spellings pin the real file (the dsh-session/types
+  // precedent).
+  ['@deepseek-ai/dsh-commands/brand.js', "export * from '/vendor/dsh/commands@0.1.6-alpha.2/lib/types/brand.js';"],
+  ['@deepseek-ai/dsh-commands/brand', "export * from '/vendor/dsh/commands@0.1.6-alpha.2/lib/types/brand.js';"],
   // The client-web exports map spells the apply-injections face under a
   // DIFFERENT subpath than the file name ('./injections' →
   // ./lib/apply-injections.js): the vendored-package probe's lib/ + lib/types/
