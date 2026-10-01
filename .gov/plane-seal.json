@@ -6,8 +6,11 @@
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
+    ".gov/rejections/case-actionlint.sh": {
+      "sha256": "230fa8a429212578cd16658c5ac824476164da72e56dca61e4edda64f8e0ec3a"
+    },
     ".gov/rejections/case-asset-mirrors.sh": {
-      "sha256": "cb141c4a40ab674b2a24e74b76bd94bc8a42d476f8f01f724590a3ff8b82aace"
+      "sha256": "adfc73c00864280b3b9b6b757c351ce56d2466cb4a41a636469fc171652b38f9"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
       "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
@@ -36,6 +39,9 @@
     ".gov/rejections/case-quickjs-boot-parse.sh": {
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
+    ".gov/rejections/case-shellcheck-warn.sh": {
+      "sha256": "229080a05f57561a9eef151c7fae29dcbc0e01127523accc6d8359093156d364"
+    },
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
     },
@@ -46,13 +52,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "77204ab21c51b4a796ccecd7989f0f41b74b0ee82daa4d67d29a31d619d5c22e"
+      "sha256": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T10:01:11+00:00",
+    "ts": "2026-10-01T10:31:48+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "Review-fix round for #297: the branch rebased onto #291 (canonical-json single-source) + #293 (CI honesty gates), the seal re-baselined over that constitution plus the perf-budget gate; the review's three findings are fixed in 201a56fe (the canary's leaked branch returns, the runner's RED branch is reachable, the note's baselines paragraph matches the committed receipts) and re-falsified live"
+    "reason": "Review-fix round 2 for #297: rebased onto #294 (shellcheck-warn + actionlint join); gates.json is the 26-gate union (object-level merge \u2014 perf-budget appended with its needs/allowFailure intact); the eight swept cards restored from main's ledger and re-pinned onto ee4951678e7c; the review's three fixes (201a56fe) unchanged"
   }
 }

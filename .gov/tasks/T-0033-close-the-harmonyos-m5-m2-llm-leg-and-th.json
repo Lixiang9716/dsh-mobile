@@ -2,11 +2,7 @@
   "title": "Close the HarmonyOS m5-m2-llm leg and the platform check gates",
   "created": "2026-09-21T17:34:17+00:00",
   "rules": {
-<<<<<<< HEAD
-    "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
-=======
-    "hash": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
->>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
@@ -99,13 +95,6 @@
       "reason": "Constitution moved again since #274's re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); the brief is unchanged \u2014 both owner actions (ci-verdict required check, e2e-matrix known-gaps register) remain the owner's."
     },
     {
-      "ts": "2026-10-01T07:19:15+00:00",
-      "by": "lixiang@MacBookAir.mshome.net",
-      "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
-      "to": "4433189e08b846ebb6afd53975bdfbf50720a74e611237eca4e800ccbe6fe4c0",
-      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). The brief still describes open work \u2014 item 1 waits on the z.ai quota reset, items 2-3 remain owner actions \u2014 so it is re-pinned current, the same sweep PRs #244/#274 performed; no brief change."
-    },
-    {
       "ts": "2026-10-01T07:46:29+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
@@ -113,19 +102,18 @@
       "reason": "rules moved again after the rebase over #290/#292 (their seal + repins landed first): A12's webclient-staged-tree gate re-sealed on the current main; brief unchanged"
     },
     {
-<<<<<<< HEAD
       "ts": "2026-10-01T09:20:02+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
       "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
-=======
-      "ts": "2026-10-01T10:01:05+00:00",
+    },
+    {
+      "ts": "2026-10-01T10:31:42+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
-      "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
-      "to": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
-      "reason": "Post-#291/#293 rebase constitution sweep onto 1b352d1a5880 (canonical-json single-source + the CI-honesty gates): the repin ledgers were re-merged across the rebase and the briefs are unchanged \u2014 the same recorded sweep shape as PRs #244/#274."
->>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
+      "from": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+      "to": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+      "reason": "Post-#294 rebase constitution sweep onto ee4951678e7c (the lint gates join; the cards were restored from main's ledger after a conflicted rebase and re-pinned current) \u2014 briefs unchanged, the same recorded sweep shape as PRs #244/#274."
     }
   ]
 }
