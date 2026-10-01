@@ -1,0 +1,34 @@
+{
+  "title": "the upstream full test suite runs against our vendored closure \u2014 the quickjs harness and transpile pipeline",
+  "created": "2026-09-23T04:49:32+00:00",
+  "rules": {
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "22c0f4ca451b710c2ba1b4ab8d54b24f871d55ce1b63c4ca4573002608e47818"
+    }
+  },
+  "checklist": [
+    "[x] materialize the upstream test assets at the same tag (codeload tarball + npm test closure, sha256-pinned)",
+    "[x] pipeline proof: the flagship loop.spec passes 65/65 through the harness (verdicts identical to vitest)",
+    "[x] fan out the full corpus landscape + the emulator leg (staging, launch selection, per-test verdicts)",
+    "[x] CI wiring and the harness-iteration tail (known: two spot-smoke failures) closed, landed via PR"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0114",
+  "repins": [
+    {
+      "ts": "2026-09-23T18:47:54+00:00",
+      "by": "ws-b",
+      "from": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
+    }
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:40+00:00",
+    "by": "ci-fix-206",
+    "reason": "The upstream full suite runs green against the vendored closure (389/0 after #173; the suite legs ride CI). The brief's ask is the steady state now."
+  }
+}
