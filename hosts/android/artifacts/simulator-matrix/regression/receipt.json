@@ -1,9 +1,9 @@
 {
-  "host": "android emulator-5556",
+  "host": "android emulator-5554",
   "runner": "hosts/android/ci/run-spike-e2e.sh (assembled by tools/test/run-simulator-matrix.sh)",
   "phase": "three-scenario regression (boot.verification + gateway.bridge-smoke + session.mock-llm)",
   "launch": "emulator, plain am start (Debug harness)",
-  "tree": "origin/main afe3e739fb2b (dirty working tree at receipt time)",
+  "tree": "origin/main f9caa9abcae3",
   "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
   "scenarios": [
     {
@@ -28,5 +28,5 @@
   "screens": [
     "screens/final.png"
   ],
-  "producedAt": "2026-09-30T22:25:41+08:00"
+  "producedAt": "2026-10-01T20:41:06+08:00"
 }
