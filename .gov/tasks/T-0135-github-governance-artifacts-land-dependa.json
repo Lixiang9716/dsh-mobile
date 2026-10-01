@@ -1,0 +1,28 @@
+{
+  "title": "GitHub governance artifacts land: dependabot, code owners, PR/issue templates, owner-actions runbook",
+  "created": "2026-09-30T06:19:36+00:00",
+  "rules": {
+    "hash": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "de751e1ce2b43a64a97309583a0a7e5ee3608d7cc538d0f0cb65a39302ea8582"
+    }
+  },
+  "checklist": [
+    ".github/dependabot.yml \u2014 two ecosystems (github-actions weekly, npm on the minimal lockfile-backed surface), each grouped to keep the weekly cadence from flooding the PR queue",
+    ".github/CODEOWNERS \u2014 owner for the whole repository plus an explicit /contract/ emphasis line",
+    ".github/PULL_REQUEST_TEMPLATE.md \u2014 English, embedding the repo's actual landing discipline (conventional title, gov task card, agent note, evidence = command + output, pairing)",
+    ".github/ISSUE_TEMPLATE/bug.md + feature.md (+config) \u2014 English, repro-steps-first bug form, label defaults",
+    "docs/github-owner-actions.md + .zh.md + .i18n.yaml \u2014 owner web-action runbook pair, gov verify pairing --write green",
+    "process Agent Note + incremental conventional commits",
+    "gov run green with receipt, task closed, pushed, PR opened"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0135",
+  "void": {
+    "ts": "2026-09-30T06:24:29+00:00",
+    "by": "lixiang@MacBookAir.mshome.net",
+    "reason": "checklist item 7 (gov run green, pushed, PR opened) conflates the card's own closure precondition with a work item \u2014 rule 9 closes the card before the push, so the card could never truthfully complete; recreating with the six work items only"
+  }
+}

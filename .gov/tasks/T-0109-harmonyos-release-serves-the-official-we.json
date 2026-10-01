@@ -1,0 +1,52 @@
+{
+  "title": "HarmonyOS release serves the official Web UI (serving/evidence split)",
+  "created": "2026-09-21T06:42:42+00:00",
+  "rules": {
+    "hash": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "2043e43fa8e71454d7ff848e50f7bc52e8c1ff5c2b519262d143219c7370aff0"
+    }
+  },
+  "checklist": [
+    "Read hosts/harmony README + ci/run-host-e2e.sh + drive-official.mjs; map the serving stack vs the evidence plumbing in OfficialPhase.ets/Index.ets",
+    "Split the serving path (carrier + WebDist/WebPlugins/ApiBridge + web-boot runtime + origin open) from the evidence path (wire hooks, probes, D9 legs, verdicts) behind a file boundary; no hostType branching, rawfile copies stay byte-identical",
+    "dsh-harmony (release) plain launch: no --ps leg, no staged files -> official DSH Web UI renders in ArkWeb, ZERO dsh.spike.log: records, ZERO debug/info records",
+    "dsh-harmony (release) asked for an E2E leg refuses LOUDLY by name (rule 5)",
+    "dsh-harmony-harness (debug) unchanged: re-run ci/run-host-e2e.sh, all 8 checker verdicts green, artifacts/d9-*/ intact",
+    "Evidence hosts/harmony/artifacts/release-logging/ (run.sh re-runs both configurations + asserts, real PNG screenshot, log captures, refusal capture, MANIFEST.md in the ios/spike house style)",
+    "docs/release.md + release.zh.md tell the truth about the harmony release; gov verify pairing --write release",
+    "Agent Note (class feature) all three sections; gov run green (12 gates); PR -> gh pr checks --watch -> squash merge"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0109",
+  "repins": [
+    {
+      "ts": "2026-09-21T18:10:21+00:00",
+      "by": "lixiang@lixiangdeMacBook-Air.local",
+      "from": "cd0ebdaa68ca35a22236429581f20b5026f164a7fe2f37c57afee459b2ed5bac",
+      "to": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+      "reason": "The constitution moved (govrail 0.48.0 upgrade + the e2e-matrix gate wired, seal re-baselined over 8 files); the brief is unchanged."
+    },
+    {
+      "ts": "2026-09-22T17:29:54+00:00",
+      "by": "lx@DESKTOP-AOFQD6F",
+      "from": "ba664b412b3d5004ebebe2d438767f728b3ec4bcca078b19444f354d14943edb",
+      "to": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "reason": "stale pin sweep 2026-09-23: the brief predates the govrail 0.48.0 rules adoption; the work state is unchanged"
+    },
+    {
+      "ts": "2026-09-23T18:47:53+00:00",
+      "by": "ws-b",
+      "from": "dde1f6a984122430e5ba837c746beba27a4e9682b1a932f36868a8e491f9fcfe",
+      "to": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
+      "reason": "the rule set moved when gates.json gained the vendoring-repro gate (T-0044's landing change); this brief is unchanged and still describes its work"
+    }
+  ],
+  "void": {
+    "ts": "2026-09-24T12:04:26+00:00",
+    "by": "ci-fix-206",
+    "reason": "The harmony user-facing boot serves the official web interactively \u2014 closed done as T-0047 (#203); the serving/evidence split this brief asked for is the shipped shape."
+  }
+}
