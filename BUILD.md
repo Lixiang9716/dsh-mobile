@@ -54,6 +54,26 @@ that hole: it byte-verifies every committed copy against the canonical source
 (android and harmony stagers in `--check` mode; iOS by deterministic regen +
 `git diff --quiet`). If it goes red: `build/build.sh sync <platform>`.
 
+## The asset-mirror family (the web clients)
+
+The self-hosted web clients are a second mirror family: the product trees
+`presentation/web-client-{next,whale}` ship bytes through three host faces —
+android `assets/spike/webclient-*/`, harmony
+`rawfile/spike/webclient/dsh-web-client-*/`, and the iOS embedder's
+`WEBCLIENT_TREES` declaration (its bundle regenerates from the product tree
+at build time, so the declaration is the committed claim). A product edit
+that skips the mirrors is the #286 class (timeline.js rode a vacuous
+android `--check` loop for two PRs). Two surfaces own it now:
+
+- the per-host byte-verify inside the `closures` gate (the stagers'
+  `--check` loops — the android webclient loop's `./`-prefix SKIP hole is
+  fixed, so this direction bites again);
+- `node tools/check-asset-mirrors.mjs [--json]` — the cross-host comparator
+  (warn-grade `asset-mirrors` gate): every family mirror compared in BOTH
+  directions (stale, missing, extra) plus the iOS embedder declaration vs
+  the family; its rejection case lives at
+  `.gov/rejections/case-asset-mirrors.sh`.
+
 ## The CMake layer (the same graph, one more face)
 
 A top-level `CMakeLists.txt` + `CMakePresets.json` express the build as a

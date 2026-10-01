@@ -1,0 +1,19 @@
+{
+  "title": "asset-mirror drift triple: ble-plane twin, three-host timeline sync, the comparator",
+  "created": "2026-10-01T06:28:21+00:00",
+  "rules": {
+    "hash": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "3547ed46a4eddcbc26498ab0b6ccdfccba502b957d4cf415b4586a591d90a527"
+    }
+  },
+  "checklist": [
+    "[x] gen-staging exits 0 on the tree (android scenario stage/verify twins aligned: ble-plane.js + mic-plane.js)",
+    "[x] three-host mirrors fresh via build/build.sh sync android/harmony/ios \u2014 zero committed-mirror diff",
+    "[x] the comparator exists, its gate is wired warn-grade, and the injected-drift falsification (stale/missing/extra/declaration) is red-then-restored"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0087"
+}
