@@ -59,15 +59,19 @@ done
 MOCK_URL="$(sed -n 's/^MOCK_BASE_URL=//p' "$MOCK_LOG" | head -1)"
 echo "leak-canary: mock llm server $MOCK_URL (rounds=100, pinned with the manifest)" >&2
 
-# 4. run the canary and verify one-to-one. The verdict.json EXISTS check
-#    below guards the red path: a tripped canary exits nonzero BEFORE
-#    check.mjs (the scenario's own verdict is the leak), so the runner
-#    surfaces the leak loudly instead of masking it with a checker error.
+# 4. run the canary and verify one-to-one. A tripped canary exits nonzero
+#    BEFORE check.mjs (the scenario's own verdict is the leak), so the
+#    runner surfaces the leak loudly — the RED branch below copies the log,
+#    writes the checker verdict for the record, and exits 1. The `|| ...`
+#    capture is LOAD-BEARING under `set -eu`: a bare failing command would
+#    kill the script on the spot and the whole RED branch would be
+#    unreachable dead code (review #297 — proven with a minimal /bin/sh
+#    repro before this fix).
+CLI_RC=0
 ./build/dsh-spike-cli . scenario/leak-canary.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
-    --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-leak-canary.txt
-CLI_RC=$?
+    --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-leak-canary.txt || CLI_RC=$?
 
 mkdir -p "$ART_DIR"
 cp logs-leak-canary.txt "$ART_DIR/logs.txt"

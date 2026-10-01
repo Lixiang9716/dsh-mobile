@@ -6,7 +6,7 @@
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim)",
   "scenario": "leak.canary",
   "rounds": 100,
-  "heap": {"beforeMemoryUsedSize":9438098,"afterMemoryUsedSize":17785748,"growthBytes":8347650,"toleranceBytes":16777216},
+  "heap": {"beforeMemoryUsedSize":9438489,"afterMemoryUsedSize":17786139,"growthBytes":8347650,"toleranceBytes":16777216},
   "method": "both watermarks are gc-mode readings (JS_RunGC then JS_ComputeMemoryUsage via the __dshPerfProbe host test hook — not a gateway primitive); red = post-GC watermark above the pre-GC one by more than the tolerance",
   "falsification": "a deliberately retained 1MB array per round trips this leg red (the Agent Note records the red output); the committed shape is the restored, green one",
   "checker": "test/e2e/scenarios/leak-canary.json",

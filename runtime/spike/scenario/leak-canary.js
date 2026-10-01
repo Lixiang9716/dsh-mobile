@@ -156,6 +156,12 @@ const main = async () => {
   if (leaked) {
     fail(`heap did not fall back after forced GC: +${growth} bytes over baseline `
       + `(tolerance ${LEAK_TOLERANCE_BYTES})`);
+    /* fail() emits the failed event and completes the scenario FALSE but
+     * does not throw (demand() is the throwing form) — without this return
+     * the leaked branch FELL THROUGH to __dshComplete(true,'ok') below: the
+     * CLI printed PASS and exited 0 on a tripped canary (review #297, the
+     * falsification rerun proved it live). Return is the red path. */
+    return;
   }
   globalThis.__dshComplete(true, 'ok');
 };

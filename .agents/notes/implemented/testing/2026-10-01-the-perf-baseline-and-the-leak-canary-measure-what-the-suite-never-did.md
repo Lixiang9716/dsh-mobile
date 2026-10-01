@@ -33,19 +33,21 @@ Three pieces land together (T-0087):
      shell-side facts (spawn→PASS wall clock; SpikeBundle.c regenerated —
      gitignored build output since the D9 flip; dsh-fs tgz, fixed TEST
      seeds, deterministic bytes). Wall-clock numbers are FLEET-NOISY on this
-     shared box — coldBoot measured 28/190/99ms and turnMs 18/252/137
-     across three runs — which is exactly why the budgets are warn-tier
+     shared box — coldBoot measured 28/190/99/452ms and turnMs 18/252/137/180
+     across four runs — which is exactly why the budgets are warn-tier
      with order-of-magnitude margins; the recorded baselines are the final
-     committed run (coldBoot 99ms, turn 137ms, refresh 5052ms, install
-     47ms, spawn→PASS 5613ms, bundle 68,052,388B, tgz 6,656B).
+     committed run (coldBoot 452ms, turn 180ms, refresh 5207ms, install
+     626ms, spawn→PASS 7612ms, bundle 68,052,388B, tgz 6,656B) — the same
+     numbers baselines/perf-baseline.json and the committed receipt hold.
    - `leak.canary`: 100 mock session rounds, heap watermarks BEFORE and
      AFTER a forced collection, collected-vs-collected. MEASURED natural
-     growth: **+8,347,650B** (byte-identical across THREE independent runs) (session records are lifetime maps BY DESIGN —
+     growth: **+8,347,650B** (byte-identical across FOUR independent runs)
+     (session records are lifetime maps BY DESIGN —
      `ctx.sessions`/`ctx.agents` keep a session's log outlives its turn —
      plus engine atom/shape ratchet). Tolerance = 16 MiB ≈ 2x natural, and
      the first canary draft's guessed 1 MiB tolerance went red on this exact
      lesson: the honest number came from running, not estimating. Jitter is
-     tiny: two independent runs measured the SAME growth to the byte.
+     tiny: every independent run measured the SAME growth to the byte.
 3. **The trend gate**: `tools/check-perf-budget.mjs` audits the two
    committed receipts against `baselines/perf-baseline.json` (8 metrics,
    each {receipt, path, baseline, warnAbove}); missing receipt/number fails
@@ -101,5 +103,5 @@ The baselines file is now a status surface: re-record it only together with
 fresh receipts (both sides in one change), and note the machine. The
 canary's tolerance carries its provenance comment in-scenario; a future
 engine re-pin MUST re-run both legs before landing. Known residue, honest:
-the growth number's stability is measured on ONE machine (two runs, byte-
+the growth number's stability is measured on ONE machine (four runs, byte-
 identical); cross-machine margins are exactly what the warn tier waits for.

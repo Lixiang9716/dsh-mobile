@@ -9,10 +9,10 @@ dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word tools
 dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel tools registering","data":[{}]}
 dsh.spike.log: {"level":"info","module":"dsh.office","message":"office tools registered","data":[{"count":8}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"heap probe (gc)","data":[]}
-dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.begin","rounds":100,"mode":"gc","beforeMemoryUsedSize":9438098}]}
+dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.begin","rounds":100,"mode":"gc","beforeMemoryUsedSize":9438489}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":1}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d70ac0c4-c83d-4c17-9084-7712f364b16e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-02907164-a31e-4f04-8ced-0b4cc12ea675\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
@@ -21,8 +21,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":2}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a9029640-7fd1-496f-8861-6c7a3ef16c3f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f5b39d73-3f54-48fe-9220-dd3cf29420a3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":1}]}
@@ -33,8 +33,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":3}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-210480f6-a48e-4d0f-8787-f0162345eba7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-31069157-12fe-4aa6-b220-2e864ce5cc1a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":2}]}
@@ -45,8 +45,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":4}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ea13b38b-648c-4525-86ac-5683a11fc8cb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ea44e507-2268-4e68-b961-f9f859bd8b3e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":3}]}
@@ -57,8 +57,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":5}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d5dacef9-0a0c-4871-88a3-7d355ab4a1b3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c0d1f1e0-6735-43c1-af34-6ff2d0c558fc\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
@@ -69,8 +69,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":6}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1b461dcf-27af-4d7d-8052-92f02203692f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5ce054bb-4a57-44db-81f6-2f8049e2aa0d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
@@ -81,8 +81,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":7}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-832cec82-1285-4ac1-827b-438314c2755f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fb7c613a-a408-45ed-8455-1cfbe2dc0a0c\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":6}]}
@@ -93,8 +93,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":8}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ba4c6c84-548d-4178-ab9f-4fbd563b8c7f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4cb7ee28-c5d2-4183-9c77-943fbef23b58\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":7}]}
@@ -105,8 +105,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":9}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-37266009-9672-4ce7-a7d2-836dfd4cbd7e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-0fbe102b-00ac-469e-b622-9073f4d97129\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":8}]}
@@ -117,8 +117,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":10}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6734e44c-12ff-47a0-8599-b2f8fa5e87e1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f161a597-35c2-4386-9777-4723d74ddf35\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":9}]}
@@ -129,8 +129,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":11}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-bc0b861b-0353-4b45-b60e-22f0d41bd8f1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-996d6a5c-8d69-401d-85c7-d2bdf58da39d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":10}]}
@@ -141,8 +141,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":12}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-87882516-7c48-480b-babe-b9273757237a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-647dc17f-a44f-439c-8567-a6bd07323ef8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":11}]}
@@ -153,8 +153,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":13}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fd116b19-0332-4c09-a3c0-120f418e7ed8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-44ba2a6a-8bba-4dca-9ff5-1f7f917b5fc7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":12}]}
@@ -165,8 +165,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":14}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-b2ee9193-7126-4419-a18e-6648d70892e1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-48af2e4e-a217-4173-8661-8d3551742da9\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":13}]}
@@ -177,8 +177,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":15}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-57f09c96-11ce-4e20-812f-88d3fb108029\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-b2ebc46c-f0c9-4612-92b3-0a3aa087f4f4\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":14}]}
@@ -189,8 +189,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":16}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ba48ea85-0267-4f5c-84d6-44d7f2633704\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5f8202a0-b53e-4253-804c-5938b280c135\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":15}]}
@@ -201,8 +201,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":17}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c6ba9f64-95dc-4494-859b-181de58253a5\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-568720f5-831f-4d76-8a26-fd45ad2433a5\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":16}]}
@@ -213,8 +213,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":18}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5333682d-0612-4ac9-a076-650f2a3ae256\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-bbb23c4c-feb1-4b89-a8ac-3eb6a2c2e7e7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":17}]}
@@ -225,8 +225,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":19}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7e5cbeb6-fec0-4d45-aac3-db8133b9f79b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-90658e40-505f-49ea-9ac5-b6763da8b3b6\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":18}]}
@@ -237,8 +237,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":20}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-77b2a846-a8d0-454c-9438-7fdbfc50086d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ebf4775c-3c1a-43f2-8356-8b17313af38f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":19}]}
@@ -249,8 +249,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":21}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-426e49ae-effc-4e4c-b94f-680fad570e44\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-085a576e-bc71-4cf3-a91d-37c485692064\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":20}]}
@@ -261,8 +261,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":22}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f990cb94-69a4-4c97-aa71-ab8bb6032ce4\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c9326e0f-b075-46c1-9f17-5924e433e803\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":21}]}
@@ -273,8 +273,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":23}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-59346c1c-609a-4c2c-be2b-63dcd10f0a22\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d2aa1f9b-2988-4af4-9133-a6ffffc0ef65\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":22}]}
@@ -285,8 +285,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":24}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-71a35666-8824-46e1-8c89-554832641755\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d3692658-cdb9-4e12-a0a1-d92676246f4a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":23}]}
@@ -297,8 +297,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":25}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e3f67939-af8e-4425-af69-42220d70557f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-68c93cf1-02eb-43c6-96b5-60a929d4cff7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":24}]}
@@ -310,8 +310,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.progress","round":25,"of":100}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":26}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-38e3b220-5f62-47c8-a94b-1a81fe6f682e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c36c257f-8e98-4ea4-8a33-47162aae4f6a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":25}]}
@@ -322,8 +322,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":27}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6acce7a9-6ef0-4a5f-9d71-54616aa7637a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-649b5572-1bde-4c55-b12a-14acdef47d14\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":26}]}
@@ -334,8 +334,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":28}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-369dbf6d-b27c-4810-815b-55159edd6629\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-bcb43e4d-5f18-4386-97db-412dcf5d143f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":27}]}
@@ -346,8 +346,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":29}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-13bbaae2-c4a6-47b7-b5e5-5e1092bc86b1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-791db57c-388c-44d4-8012-37ca951c413b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":28}]}
@@ -358,8 +358,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":30}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7bfc7df3-c8fc-4465-9386-3d8f87131b8a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9b0f87ee-e4a6-44e8-9f84-1d2fa0c8c839\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":29}]}
@@ -370,8 +370,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":31}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7ac01542-5d98-4ccc-b954-b29667c35b80\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7c6e2f07-48a9-4d56-9bcb-b07e82079a58\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":30}]}
@@ -382,8 +382,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":32}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6c402ca3-a348-4e57-bb58-99ee154a916f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-0a00c5e5-891e-43f7-b1c4-524068280885\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":31}]}
@@ -394,8 +394,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":33}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a87ed05c-46cb-4d7d-9bb7-ce49139ab7fc\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e9b5ed03-8105-438e-a7af-5627fbe785ea\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":32}]}
@@ -406,8 +406,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":34}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-651d1def-9149-4615-835d-b5f15646778d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-713d1b8c-c476-47e2-9bf5-97e28c458a08\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":33}]}
@@ -418,8 +418,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":35}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f8093aad-2688-4e80-9ac5-8c295a2f26c3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2901c3be-4c0f-4d54-85a4-c09e86906b0f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":34}]}
@@ -430,8 +430,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":36}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-82ab7a22-8b64-41b2-b0ae-661f4857c9cc\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-994c6c66-3c71-4bee-8bd2-88e25b5b21e2\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":35}]}
@@ -442,8 +442,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":37}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-863bf98c-1de1-471a-9b15-815cb2ce395c\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-efd4e350-f386-46ff-a3ad-60d6dd43a237\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":36}]}
@@ -454,8 +454,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":38}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4d722a14-cbd3-42d8-8d67-585cb29cc498\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7432ef22-6768-4451-b7d1-b01f298b0a01\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":37}]}
@@ -466,8 +466,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":39}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ec14f144-5bd7-4968-92ec-91213fa28c03\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7849518e-dafe-451b-af04-8a898f88862a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":38}]}
@@ -478,8 +478,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":40}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ba182904-9914-4176-8355-cae50ae0b273\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-135bd0f8-d839-41d4-ab03-5fc0c4d79766\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":39}]}
@@ -490,8 +490,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":41}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-82729131-0836-4ce4-8408-d1c6a9d8713f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7890a4cb-a336-49be-a9b4-55c6cc3469d8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":40}]}
@@ -502,8 +502,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":42}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-54ec52b3-ba76-44b3-ac3e-f6d57f388cb8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8450cc77-8dc9-48e6-a251-e7b6caf9dab6\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":41}]}
@@ -514,8 +514,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":43}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-660838b7-5ac9-4c7b-8932-636455764ef0\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-24b7f173-bb32-4235-9516-90f9a6035be3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":42}]}
@@ -526,8 +526,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":44}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ead60b22-be79-4ab6-af0d-0a353432beeb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-443f4daa-0c56-4074-bce1-ae3facf416c6\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":43}]}
@@ -538,8 +538,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":45}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f7ee3515-4240-423a-8770-800981be55a3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f8bc82f6-5eea-462f-9598-5c8934fbfc97\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":44}]}
@@ -550,8 +550,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":46}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c6652fba-fad3-4723-b02b-0ff9d98208c2\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4f03a6a8-0a97-4611-ab8a-9db9451455ee\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":45}]}
@@ -562,8 +562,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":47}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-897a6dde-2f6e-4879-88c7-ca6ef4333564\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a59a53a7-9c52-4a78-8205-64d5ae43a40f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":46}]}
@@ -574,8 +574,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":48}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-20f01932-2045-483a-94e4-d22ad429c850\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-eddbb2be-d41a-499e-a2f6-2ce35830d172\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":47}]}
@@ -586,8 +586,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":49}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1c165aa9-5808-4a0f-9b0c-3fdf1a3d0009\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fe41598e-d689-4f5d-994a-8c088bebc84b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":48}]}
@@ -598,8 +598,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":50}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1c08d194-a7d6-443f-981c-1c598a771031\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-bcf944e4-adeb-4c8c-aa46-d1eda1fa9f55\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":49}]}
@@ -611,8 +611,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.progress","round":50,"of":100}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":51}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d76f1a67-0839-4cc3-8dde-332cb3689a30\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6989f929-8990-474a-8da3-8d705be83f17\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":50}]}
@@ -623,8 +623,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":52}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-70f624d5-13c9-4217-96d7-cae8bfed25be\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9c30fa2d-c337-4088-ba1b-ee31aac3b2a1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":51}]}
@@ -635,8 +635,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":53}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4d2b5a1d-836b-4b26-9a0c-8167290e0319\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d28816e2-e383-4666-b229-85428cdb8185\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":52}]}
@@ -647,8 +647,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":54}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2cab74db-1659-4c12-b005-6f1396743f47\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2864eda1-a2e7-44dc-a9d8-779eaa2934b8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":53}]}
@@ -659,8 +659,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":55}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-3caeeb8e-571a-43fa-bd1e-46b37929fea0\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2f1c533f-b295-4531-abd7-bdb5433ff16b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":54}]}
@@ -671,8 +671,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":56}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-63e5946b-0fa1-454d-81c3-a2ead6e9d8cf\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-57a76227-e769-49a3-b132-88224f6d990c\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":55}]}
@@ -683,8 +683,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":57}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9df1b537-a08d-453b-9411-9e411d65078e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-eb304d8c-2385-4afd-bec5-3042c37796a0\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":56}]}
@@ -695,8 +695,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":58}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-138dbb80-5d90-4364-bbcc-325b6e05ddcf\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-20db6e21-e06a-42cf-8e68-ef89520ec8fb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":57}]}
@@ -707,8 +707,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":59}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8882c58c-3325-4af5-92be-f9355b4cc150\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6b2cbf72-8681-4f2f-ab9b-73d66a250c38\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":58}]}
@@ -719,8 +719,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":60}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e7b4dd7a-4376-47e0-bc13-25fd64ceb37d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8f0c0e41-a037-4690-aff0-a777f095c149\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":59}]}
@@ -731,8 +731,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":61}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6eec88be-c8a2-4465-a5e3-31a330eb6ae3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-56ccc08f-bd4f-4428-ba29-0e22f4309858\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":60}]}
@@ -743,8 +743,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":62}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9963af24-b80f-4c9b-be8c-dd61379502ff\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-b71d491c-50a3-4d02-a7ed-2742ef85ad59\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":61}]}
@@ -755,8 +755,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":63}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5dd631a5-1dcb-438f-a35b-c343520fbc69\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d045ef2a-0d11-4f41-8cb7-b64d0fbc6274\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":62}]}
@@ -767,8 +767,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":64}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1bcc8930-6f0d-43d3-8845-d51cbb37bab5\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c7eb4203-1c1e-43f9-863b-a9964e459c70\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":63}]}
@@ -779,8 +779,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":65}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-11e98167-e09a-4d98-9b70-3d823f32dd85\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-04e1c939-2ad1-42b3-93d7-51ad90710499\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":64}]}
@@ -791,8 +791,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":66}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-21420d86-1032-49d0-b720-e15740162464\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7d174d4f-ff6c-4f37-8624-29058ab1f3eb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":65}]}
@@ -803,8 +803,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":67}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-16fccb73-b16e-45f9-8629-a314098b3168\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5eeccf4e-65bd-4cf5-a9ad-9f1a82fac046\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":66}]}
@@ -815,8 +815,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":68}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-05225c96-5ada-476d-b915-1e5f74d73391\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-729fc061-8ccd-415b-a8cd-f30ec08044dd\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":67}]}
@@ -827,8 +827,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":69}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-60439b8d-c829-4d74-bdd9-a1c53e3cc790\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-cafff0d9-0d52-4ac1-b415-6450819d9496\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":68}]}
@@ -839,8 +839,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":70}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-eb89530f-88cd-488c-b78e-99983bf62d71\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-86e4e858-ab2c-49be-84ca-06ed4e43c58c\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":69}]}
@@ -851,8 +851,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":71}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d056b2ea-02eb-4e10-8c2c-d57d7cb5142a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1d7f66ae-1330-4deb-8abe-6efb2eaaf2b6\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":70}]}
@@ -863,8 +863,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":72}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-045ede81-b55d-4286-96fc-fee509260202\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-64e575c5-69d4-45dd-92aa-a1151a2a4e49\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":71}]}
@@ -875,8 +875,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":73}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a5ebeb02-fd95-44db-b019-c18aec1acd4d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-bc437652-d133-46a2-816a-d0e3228394b8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":72}]}
@@ -887,8 +887,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":74}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e3ca3665-3405-4a49-9ec5-156acb148ec8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a797884e-326f-4053-a11d-d1965c131c85\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":73}]}
@@ -899,8 +899,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":75}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1d1a696b-4e30-4d95-8ee2-3061fed65f10\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-226343d3-6605-438a-a3e7-299dfe511dda\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":74}]}
@@ -912,8 +912,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.progress","round":75,"of":100}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":76}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-02fa8b00-548c-40ab-859c-18cd1dfc87b3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9b4055e0-114e-4a20-a72c-56dc40cd1680\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":75}]}
@@ -924,8 +924,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":77}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-3cf7c31e-11b8-4996-b4a8-1725d652893f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-25cb3482-31a0-4137-bb62-71db5988ffc8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":76}]}
@@ -936,8 +936,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":78}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-92b04768-c2ab-44f2-a87d-2c7ab6c16d07\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-cd3bc73b-5590-4af4-ace8-ce7a8d5a6c60\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":77}]}
@@ -948,8 +948,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":79}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-67d9af08-d4da-4454-aeb5-149fd4b81ca3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8ddd7062-5216-450a-ae11-dfdf3f78a06b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":78}]}
@@ -960,8 +960,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":80}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e21d5576-1d14-44da-bffd-c7ed6e635de4\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9ff158f6-f079-4246-aabf-f4efd0cb6170\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":79}]}
@@ -972,8 +972,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":81}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2661ec81-1473-4b8a-b5eb-7b1f60f8e5a8\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1874bb57-6a64-41be-a345-4ab2982e9d21\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":80}]}
@@ -984,8 +984,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":82}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-0e601dc1-eb7a-44ab-b807-3c69a9283251\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-35beaa0b-146e-4622-a7c3-829964ec072a\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":81}]}
@@ -996,8 +996,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":83}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-cffdaada-6ca5-4868-b1fe-7c97cdaabb15\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-1bf5bfdf-f791-44ae-acfe-8e0833d5598b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":82}]}
@@ -1008,8 +1008,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":84}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-aeae4bb2-5896-4e22-9068-81683bc63b9f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f0b660fb-3eb2-49c5-b147-c454539861c7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":83}]}
@@ -1020,8 +1020,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":85}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e8c21a56-806d-4bea-b0d1-a1d4ea1dfc90\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-c638479b-8c9b-48fb-9c41-55661bf41e35\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":84}]}
@@ -1032,8 +1032,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":86}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-82542134-cca2-4733-9982-acb8596588ab\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-04224f53-3868-4536-8d15-4263d2113f88\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":85}]}
@@ -1044,8 +1044,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":87}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-3dea3bb0-36ec-472d-bd57-7779695f2852\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-e867b172-a6e9-4bf8-953d-5c50da2985ce\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":86}]}
@@ -1056,8 +1056,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":88}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8fa8df6a-5dc5-4b24-b115-07839add8bfe\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fe3775c1-b02c-45de-84e6-3179f34db27b\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":87}]}
@@ -1068,8 +1068,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":89}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5f907822-bcbb-4833-b79f-197d8295e6d1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-937979d4-b24e-4eeb-8e2b-fcb13e4e69a4\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":88}]}
@@ -1080,8 +1080,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":90}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2447681a-9b7d-456d-a8ad-0e651ad56872\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-9945c409-357b-4a7f-917a-fb556a64bb74\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":89}]}
@@ -1092,8 +1092,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":91}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8ed0d56a-bc80-4506-8408-ee09a82590ba\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-7298189d-de31-4995-9b8c-4c5af5b6fe58\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":90}]}
@@ -1104,8 +1104,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":92}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-2df1e304-6332-45fc-a63d-4d07e694bc04\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a3288434-c801-4b34-a3f0-c4bd15ccbfdf\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":91}]}
@@ -1116,8 +1116,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":93}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-a553e0df-51d0-4d17-94bc-aa520ed826fa\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fcefb329-fd46-46e6-b2da-d30347ef5f4e\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":92}]}
@@ -1128,8 +1128,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":94}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d036aa04-b42a-4322-86b4-1db61b206293\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-be76a36f-d036-4ff8-bffc-7b5fa5e10498\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":93}]}
@@ -1140,8 +1140,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":95}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-468050f8-7f71-437d-93ac-6e036e00db8d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-417b1ec8-90ef-46eb-9263-19a188ba58ed\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":94}]}
@@ -1152,8 +1152,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":96}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-8b2728e3-4934-4ee2-9d09-3ef7c396d7f7\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-d3a0da13-8409-40a9-a878-0c2f4eb76ef5\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":95}]}
@@ -1164,8 +1164,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":97}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-ff65bc7f-f8ff-48d3-9d88-f98933c7f7ca\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-558a203c-34dd-47a0-8e0f-2d859d61a4b1\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":96}]}
@@ -1176,8 +1176,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":98}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f2f16a57-089a-4eec-81e9-82aa0a927684\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-6e5969c0-81b6-4c52-ae86-231d877a86b2\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":97}]}
@@ -1188,8 +1188,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":99}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-5708495f-ce55-45bf-9ba8-d70f92a39dd3\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-f04d6f2d-893f-4d05-a42b-9b3419225d98\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":98}]}
@@ -1200,8 +1200,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream ev
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"round begin","data":[{"round":100}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4ae3de5d-a4de-4fad-81c9-b8ed6cc8bedb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57886/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-fa8ecf67-95e7-4f25-9f3f-1d735b792bec\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:62093/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":99}]}
@@ -1213,7 +1213,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.progress","round":100,"of":100}]}
 dsh.spike.log: {"level":"debug","module":"leak.canary","message":"heap probe (gc)","data":[]}
-dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.verdict","status":"pass","rounds":100,"beforeMemoryUsedSize":9438098,"afterMemoryUsedSize":17785748,"growthBytes":8347650,"toleranceBytes":16777216}]}
+dsh.spike.log: {"level":"info","module":"leak.canary","message":"e2e","data":[{"scenario":"leak.canary","event":"leak.canary.verdict","status":"pass","rounds":100,"beforeMemoryUsedSize":9438489,"afterMemoryUsedSize":17786139,"growthBytes":8347650,"toleranceBytes":16777216}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":33}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":100}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
