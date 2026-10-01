@@ -1,0 +1,27 @@
+{
+  "title": "\u5b8c\u6210\u529f\u80fd\u7ea7\u5b8c\u6574\u6d4b\u8bd5 (caller verbatim: \u4e3b\u8981\u662f\u5728\u529f\u80fd\u4e0a\u8fdb\u884c\u5b8c\u6574\u7684\u6d4b\u8bd5\uff0c\u5305\u62ec\u5404\u79cd\u5de5\u5177 \u63d2\u4ef6 ui\u7b49\u7b49\u3002\u6d4b\u8bd5\u9700\u8981\u4ee5\u65e5\u5fd7\u3001\u622a\u56fe\uff0c\u4ea4\u4ed8\u7269\u4e3a\u51c6\u3002\u6d4b\u8bd5\u6700\u4e3b\u8981\u7684\u529f\u80fd\u662f\u4e00\u53e5\u8bdd\u751f\u6210\u63d2\u4ef6\uff0c\u5e76\u4f7f\u7528) \u2014 interactive functional battery on the android release seat over adb-forward + playwright, real LLM gpm-5.3-flash",
+  "created": "2026-10-01T13:44:28+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] LLM endpoint verified (curl) and credential staged on-device (BYOK file route); boot evidence: logcat + screenshot",
+    "[x] UI + session: composer send drives a REAL streaming LLM turn (gpm-5.3-flash) \u2014 journal/logs + screenshots",
+    "[x] tools: agent-driven tool rows exercise on-device (bash/present creation card at minimum) \u2014 logs + screenshots",
+    "[x] plugins + settings UI: marketplace/installed/settings/models surfaces driven \u2014 screenshots + logs",
+    "centerpiece: ONE composer sentence generates a plugin, installs it, and the plugin is used on-screen \u2014 full chain evidence",
+    "[x] key-leak audit over every captured log/screenshot; deliverables assembled and reported"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0157",
+  "void": {
+    "ts": "2026-10-01T14:56:18+00:00",
+    "by": "lx@DESKTOP-AOFQD6F",
+    "reason": "4 of 6 items verified and evidenced (hosts/android/artifacts/interactive-functional-2026-10-01/); item 5's install-and-use half is a VERIFIED PRODUCT GAP, not unfinished work: the mobile interactive seat mounts no plugin_manager tool and the client Plugins surface is honest-disabled \u2014 filed as issue #303. The checklist cannot be satisfied by this product version; a fresh card should re-run the full chain once #303 lands. Evidence is audit-clean (no credential material) and lands with the next evidence PR."
+  }
+}

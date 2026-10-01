@@ -12,7 +12,7 @@
       "roots": 27,
       "reached": 135,
       "scopedReached": 120,
-      "skippedBare": 27,
+      "skippedBare": 28,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
@@ -84,7 +84,7 @@
             },
             {
               "file": "system-plugins/dsh-office/index.js",
-              "via": "upstream/boot.js:322",
+              "via": "upstream/boot.js:335",
               "kind": "dynamic-import"
             },
             {
@@ -144,7 +144,7 @@
             },
             {
               "file": "upstream/tool-present.js",
-              "via": "upstream/boot.js:339",
+              "via": "upstream/boot.js:353",
               "kind": "dynamic-import"
             },
             {
@@ -302,7 +302,7 @@
       "roots": 22,
       "reached": 130,
       "scopedReached": 115,
-      "skippedBare": 27,
+      "skippedBare": 28,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [

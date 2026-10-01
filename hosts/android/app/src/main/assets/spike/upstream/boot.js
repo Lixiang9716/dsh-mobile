@@ -244,6 +244,19 @@ const mountGoalPlane = async (ctx) => {
   await ctx.plugin(Goal.default ?? Goal.GoalService, {});
 };
 
+/** The /goal row (the desktop composition's agent.cordis.yml carries the
+ * same plugin): dsh-command-goal injects ["commands", "goals"], so it can
+ * only apply once BOTH services exist — the command plane mounts before
+ * the goal plane. Mounted only on the interactive boot (the same flags the
+ * user-facing seat sends), so drive legs stay byte-identical.
+ * command-compact (the desktop's other command plugin) injects the
+ * compaction service, which the mobile composition does not mount — it
+ * stays out until that plane lands. */
+const mountGoalCommand = async (ctx) => {
+  const CommandGoal = await import('@deepseek-ai/dsh-command-goal');
+  await ctx.plugin(CommandGoal.default ?? CommandGoal, {});
+};
+
 /** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
  * file-reference discovery service (`ctx.fileReferences`, dsh-file-reference-local)
  * — the @-mention lexicon the official composer reads (`fileReferences/list`).
@@ -331,6 +344,7 @@ const mountSpine = async (ctx, identity) => {
   // vendored goal service and file-reference discovery service, each AFTER
   // agent-loop (both inject `agents`; goals also reads `sessionProjections`).
   if (identity.goals) await mountGoalPlane(ctx);
+  if (identity.goals && identity.commands) await mountGoalCommand(ctx);
   if (identity.fileReferences) await mountFileReferencePlane(ctx);
   // The CREATION row (the creation-mode plugin, 2026-09-26): the present
   // tool registers into `tools` at apply time, so it mounts with the other

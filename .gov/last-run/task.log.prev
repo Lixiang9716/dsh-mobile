@@ -160,6 +160,8 @@ done  T-0153 review round: the trust anchor honesty + the verification evidence 
 done  T-0154 asset-mirror drift triple: ble-plane twin, three-host timeline sync, the comparator
 done  T-0155 A12+C34: CI honesty — the staged-tree invariant becomes a real gate; the vendor ensure path fails loud
 done  T-0155 lint 防回潮:shellcheck-warn + actionlint 两门守住 #289,38 条 info 清零
-open  T-0156 完成鸿蒙系统和android系统的模拟器测试 (caller verbatim) — run the simulator matrix locally: android full (release + regression + device-plane) on AVD dsh_test, harmony leg (honest skip receipt — no DevEco/hdc on this WSL2 box) (obey rules@ee4951678e7c)
+done  T-0156 完成鸿蒙系统和android系统的模拟器测试 (caller verbatim) — run the simulator matrix locally: android full (release + regression + device-plane) on AVD dsh_test, harmony leg (honest skip receipt — no DevEco/hdc on this WSL2 box)
 done  T-0156 Fix HIGH catalog-replay: client-side freshness anchor (monotonic generatedAt floor)
-task: 164 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 91 done, 64 voided
+voided T-0157 完成功能级完整测试 (caller verbatim: 主要是在功能上进行完整的测试，包括各种工具 插件 ui等等。测试需要以日志、截图，交付物为准。测试最主要的功能是一句话生成插件，并使用) — interactive functional battery on the android release seat over adb-forward + playwright, real LLM gpm-5.3-flash
+open  T-0158 继续功能测试 (caller verbatim: 继续测试，不要停) — battery round 2 on the android release seat: slash commands + @ files, document tools (word/ppt/excel) end-to-end with deliverable validation, same-session memory continuation, subagent, dark mode/trajectory/relaunch persistence, marketplace add-plugin probe (obey rules@ee4951678e7c)
+task: 166 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 92 done, 65 voided
