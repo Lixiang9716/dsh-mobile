@@ -234,7 +234,7 @@
       }
     ]
   },
-  "id": "T-0154",
+  "id": "T-0155",
   "repins": [
     {
       "ts": "2026-10-01T06:53:03+00:00",
@@ -244,5 +244,5 @@
       "reason": "Constitution advanced (T-0087: shellcheck-warn + actionlint joined gates.json) — pin went stale by adoption, not drift; brief unchanged"
     }
   ],
-  "renumbered_from": "T-0087"
+  "renumbered_from": "T-0087 (T-0154 taken on main by #292)"
 }

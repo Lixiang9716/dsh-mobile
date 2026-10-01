@@ -1,13 +1,16 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "e14c7f053ddff9776fdf3d9d7b343f0c12431eeaa7c8b2649ec8d1e569634e4f"
+      "sha256": "723fe843b95096c65763a62315ff9d85a6e21dccfb072effebc0544c0db667fa"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
     },
     ".gov/rejections/case-actionlint.sh": {
       "sha256": "230fa8a429212578cd16658c5ac824476164da72e56dca61e4edda64f8e0ec3a"
+    },
+    ".gov/rejections/case-asset-mirrors.sh": {
+      "sha256": "cb141c4a40ab674b2a24e74b76bd94bc8a42d476f8f01f724590a3ff8b82aace"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
       "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
@@ -43,13 +46,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "edeacafb11adfb4bcc02bd1b22b94e84acf5be77b516d61fc8098b369c2fe73e"
+      "sha256": "dacf9093817ea6b0b8e8a329f23f9e6d7b54ea495e6fea872ecd7112c845e165"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T06:38:16+00:00",
+    "ts": "2026-10-01T07:57:05+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "lint-gates: two new gates (shellcheck-warn, actionlint) + their rejection cases join the plane (task T-0087)"
+    "reason": "rebase onto #292's main: gates.json merged (asset-mirrors + shellcheck-warn + actionlint), seal re-baselined"
   }
 }
