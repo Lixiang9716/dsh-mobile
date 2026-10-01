@@ -1,10 +1,13 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "e14c7f053ddff9776fdf3d9d7b343f0c12431eeaa7c8b2649ec8d1e569634e4f"
+      "sha256": "723fe843b95096c65763a62315ff9d85a6e21dccfb072effebc0544c0db667fa"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
+    },
+    ".gov/rejections/case-asset-mirrors.sh": {
+      "sha256": "cb141c4a40ab674b2a24e74b76bd94bc8a42d476f8f01f724590a3ff8b82aace"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
       "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
@@ -40,13 +43,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "4d6991dca61380ac4efa1714c47ae1e113c8efab139522c0a30a52069b0a153d"
+      "sha256": "92efb5a5b2de80a2b029981e2b9b083eff2560c3950cc1f5cea742fec92f4e65"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T07:36:32+00:00",
+    "ts": "2026-10-01T08:01:30+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "feat(perf): baselines re-recorded from the rebased-HEAD runs (closure grew 44KB through #290's renumber; wall-clock margins widened to fleet-load jitter \u2014 coldBoot 28/190/99ms observed) and the rule-6 case de-hardcoded (derives expected red from the budgets file it copies); the seal follows the evidence, reviewed in this change"
+    "reason": "Post-rebase plane re-seal: gates.json = the asset-mirrors + perf-budget union after resolving #292's rebase conflict (both gates kept, perf-budget warn-tier with needs:[self-test]); the perf legs and budgets are unchanged from the reviewed state \u2014 only the union and the sweep re-pins are new"
   }
 }
