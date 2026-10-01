@@ -1,0 +1,16 @@
+{
+ "host": "macOS arm64 (the desktop CLI, no simulator)",
+ "phase": "security adversarial leg 2/4 — the install pipeline under a manifest forgery ladder + a stale-catalog replay (docs/security-threat-model.md)",
+ "launchConfiguration": "./build/dsh-spike-cli . scenario/security-manifest-forgery.js --http --env DSH_MARKET_URL=<loopback, ephemeral>",
+ "scenarios": [
+  {
+   "id": "security.manifest-forgery",
+   "checker": "test/e2e/scenarios/security-manifest-forgery.json",
+   "result": "pass",
+   "note": "5/5 pipeline forgeries rejected (capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — codes integrity/capability/integrity/manifest/integrity) with zero staging and no journal; the control honest package installed after the whole ladder"
+  }
+ ],
+ "audit": "one forge.case record per attack (codes pinned by the checker); staging absence asserted by the scenario per transaction; journal absence asserted after the ladder",
+ "freshness": "HIGH FINDING (recorded, not hidden): the stale-but-valid catalog REPLAYED into an install — dsh-echo@0.9.0 landed through the resolver (the pinned key's own old signature verifies; the catalog carries no freshness anchor). See docs/security-threat-model.md, surface 'marketplace supply chain (freshness)'.",
+ "notes": "The §7.1 signed-catalog ladder (bad signature / unknown key / hostile mirror / metadata error) is NOT duplicated here — it lives in marketplace.install. This leg owns the package face and the freshness face."
+}

@@ -32,6 +32,11 @@ import { startMockLlmServer } from '../vendor/dsh/llm-mock-server@0.1.6-alpha.2/
 // with schema-valid arguments); defaults keep the upstream mock's own.
 const sequence = (process.env.DSH_MOCK_SEQUENCE ?? 'success auth_error').split(/\s+/);
 const repeatLast = process.env.DSH_MOCK_REPEAT_LAST === '1';
+// The expected bearer (the wire-evidence check). Drivers that audit a
+// credential's leak surface (security.byok-leak) point this at THEIR canary
+// so the real value is the one the mock demands; the default keeps every
+// existing leg byte-compatible.
+const apiKey = process.env.DSH_MOCK_LLM_KEY ?? 'mock-key-0001';
 
 const handle = await startMockLlmServer({
   host: '127.0.0.1',
@@ -41,7 +46,7 @@ const handle = await startMockLlmServer({
   successText: 'Hello from upstream',
   chunkSize: 5,
   chunkDelayMs: 0,
-  apiKey: 'mock-key-0001',
+  apiKey,
   requestId: 'mock-req-1',
   ...(process.env.DSH_MOCK_TOOL_NAME !== undefined ? { toolName: process.env.DSH_MOCK_TOOL_NAME } : {}),
   ...(process.env.DSH_MOCK_TOOL_ARGS !== undefined ? { toolArguments: process.env.DSH_MOCK_TOOL_ARGS } : {}),

@@ -36,6 +36,16 @@ VENDOR=vendor/quickjs-ng/0.17.0
 # platform build must pass when it compiles these same host sources).
 ZSTD=vendor/zstd/1.5.7
 ZSTD_SRC="$ZSTD/common/*.c $ZSTD/compress/*.c $ZSTD/decompress/*.c"
+# Vendored wasm3 (vendor/ensure-wasm3.sh is the pin record): the wasm seam's
+# interpreter, the same 11 TUs the CMake dsh-core target and the iOS app
+# compile (host/CMakeLists.txt). Compiled into the CLI so contract v1.2.0
+# wasmRun is SERVED here (main_cli.c smoke_wasm_run) — the security.jail leg
+# attacks the import surface on the cheapest host instead of declaring it
+# untestable.
+WASM3=vendor/wasm3/0.9.0/source
+WASM3_SRC="$WASM3/m3_bind.c $WASM3/m3_code.c $WASM3/m3_compile.c $WASM3/m3_core.c \
+ $WASM3/m3_env.c $WASM3/m3_exec.c $WASM3/m3_function.c $WASM3/m3_info.c \
+ $WASM3/m3_module.c $WASM3/m3_parse.c $WASM3/m3_validate.c"
 RELEASE=0
 [ "${1:-}" = "--release" ] && RELEASE=1
 mkdir -p build
@@ -45,18 +55,20 @@ mkdir -p build
 # define every platform build passes.
 if [ "$RELEASE" -eq 1 ]; then
     cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
-       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
+       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
        -o build/dsh-spike-cli-release \
-       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c \
+       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
+       $WASM3_SRC \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm
     echo "built build/dsh-spike-cli-release (-DDSH_RELEASE)"
 else
     cc -std=c11 -O1 -D_GNU_SOURCE -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
-       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" \
+       -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
        -o build/dsh-spike-cli \
-       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c \
+       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
+       $WASM3_SRC \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm

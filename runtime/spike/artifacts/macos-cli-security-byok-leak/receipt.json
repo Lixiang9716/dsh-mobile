@@ -1,0 +1,15 @@
+{
+ "host": "macOS darwin-cli (Darwin 27.0.0 arm64)",
+ "phase": "security adversarial leg 4/4 — the BYOK credential's leak surface under a canary audit (docs/security-threat-model.md)",
+ "launchConfiguration": "./build/dsh-spike-cli . scenario/security-byok-leak.js --http --env DSH_BYOK_CANARY=<canary, not reproduced here>",
+ "scenarios": [
+  {
+   "id": "security.byok-leak",
+   "checker": "test/e2e/scenarios/security-byok-leak.json",
+   "result": "pass",
+   "note": "the canary rode the frozen keychain (0600 dev-host file), the in-memory route resolution, and the Authorization header of one REAL transport turn; the 401 error face asserted key-free IN RUNTIME; the relaunch resolution emitted kind/provider only"
+  }
+ ],
+ "audit": "the raw log (stdout + stderr, every debug line) carries NEITHER secret value; the audit matcher was first proven to fire on a seeded line (the receipt's own self-check rung, this run)",
+ "notes": "The keychain face's persistence here is the CLI dev host's 0600 file under the smoke tmpdir (the BYOK note's disclosed dev-host storage); the values are cleared at scenario end. Screenshot capture is host/OS-side and has no runtime surface — the leak faces a plugin code can reach (logs, errors, route facts) are the ones this leg audits."
+}

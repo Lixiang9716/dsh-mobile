@@ -87,7 +87,12 @@ const crossCheckCase = (i) => {
 };
 
 describe('cross-check vs node:crypto/OpenSSL — fresh signatures each run', () => {
-  it('128 generated keypairs: valid accepts, every tamper class refuses', () => {
+  // Explicit timeout: 128 rounds of pure-JS BigInt ed25519 (keygen + sign +
+  // verify + three tamper refusals each) runs ~6-16 s wall on a loaded
+  // desktop — vitest's 5 s default made this gate machine-load-dependent
+  // (it passed on the CI runner and timed out locally, 3/3). The work is
+  // deterministic; the budget just has to cover the slowest honest host.
+  it('128 generated keypairs: valid accepts, every tamper class refuses', { timeout: 60_000 }, () => {
     let ok = 0;
     for (let i = 0; i < 128; i++) {
       const r = crossCheckCase(i);

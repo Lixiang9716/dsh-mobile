@@ -1,0 +1,15 @@
+{
+ "host": "macOS arm64 (the desktop CLI, no simulator)",
+ "phase": "security adversarial leg 3/4 — the wasm jail's import surface + the socket loopback boundary (docs/security-threat-model.md); the CLI now SERVES contract v1.2.0 wasmRun through the portable spine (dsh_wasm.c + wasm3, the iOS code path)",
+ "launchConfiguration": "./build/dsh-spike-cli . scenario/security-jail.js",
+ "scenarios": [
+  {
+   "id": "security.jail",
+   "checker": "test/e2e/scenarios/security-jail.json",
+   "result": "pass",
+   "note": "8/8 wasm attacks + 6/6 socket attacks rejected with structured codes; the honest echo module (dsh.emit, result 15) runs before AND after the battery — the jail serves sanctioned callers and survives the whole battery"
+  }
+ ],
+ "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: host-not-loopback=4 scope-not-loopback=2 — one record per denied attempt, fixed reason codes (artifacts/macos-cli-security-jail/socket-audit.jsonl)",
+ "notes": "The import surface a wasm module can reach is exactly {dsh.emit(ptr,len)}: an unlinked import traps when called, a wrong-signature dsh.emit refuses to link, an out-of-bounds emit traps in the host-side bounds check, and stack exhaustion is an interpreter trap — none of them crashed the process. A module importing anything else has nothing to link to: the rejection IS the jail."
+}

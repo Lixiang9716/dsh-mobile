@@ -1,0 +1,8 @@
+{
+  "scenario": "security.manifest-forgery",
+  "pass": true,
+  "expected": 11,
+  "logged": 11,
+  "failures": [],
+  "parseErrors": []
+}

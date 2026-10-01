@@ -1,0 +1,15 @@
+{
+ "host": "macOS arm64 (the desktop CLI, no simulator)",
+ "phase": "security adversarial leg 1/4 — the gateway validation face under a malformed-primitive battery (docs/security-threat-model.md)",
+ "launchConfiguration": "./build/dsh-spike-cli . scenario/security-gateway-fuzz.js --http",
+ "scenarios": [
+  {
+   "id": "security.gateway-fuzz",
+   "checker": "test/e2e/scenarios/security-gateway-fuzz.json",
+   "result": "pass",
+   "note": "21/21 one-to-one: wrong types, missing fields, ../ and absolute escapes, unknown scopes (denied), a 1MB path, an over-128-char keychain ref, negative/missing timer bounds, three must-not-exist primitive names, two malformed args-JSON bodies, and the two socket-boundary attacks — every one a structured contract-§3 rejection; the benign post-battery roundtrip proves the process survived"
+  }
+ ],
+ "audit": "counts quoted FROM THIS RUN's gate above, generated not hardcoded: denied=2 — one record per denied socket attempt, fixed reason codes (artifacts/macos-cli-security-gateway-fuzz/gateway-audit.jsonl)",
+ "notes": "A case that resolves instead of rejecting fails the scenario itself (the high-severity path); the survival face is fuzz.survived + a zero exit code, asserted by this script."
+}

@@ -1,0 +1,19 @@
+{
+ "scenario": "security.manifest-forgery",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  { "event": "forge.started", "match": { "pipeline": 5, "freshness": 1 } },
+  { "event": "forge.case", "match": { "attack": "forge.capability.stale-manifest", "code": "integrity" } },
+  { "event": "forge.case", "match": { "attack": "forge.capability.self-consistent", "code": "capability" } },
+  { "event": "forge.case", "match": { "attack": "forge.entry-replaced", "code": "integrity" } },
+  { "event": "forge.case", "match": { "attack": "forge.manifest-id-swap", "code": "manifest" } },
+  { "event": "forge.case", "match": { "attack": "forge.version-rollback.pipeline", "code": "integrity" } },
+  { "event": "forge.pipeline.rejected", "match": { "cases": 5 } },
+  { "event": "forge.rollback.catalog", "match": { "outcome": "installed", "version": "0.9.0", "via": "catalog-replay" } },
+  { "event": "forge.survived", "match": { "installed": "dsh-echo@1.0.1" } },
+  { "event": "forge.finding", "match": { "severity": "high", "outcome": "catalog-replay-installed" } },
+  { "event": "scenario.complete", "match": { "status": "pass" } }
+ ]
+}

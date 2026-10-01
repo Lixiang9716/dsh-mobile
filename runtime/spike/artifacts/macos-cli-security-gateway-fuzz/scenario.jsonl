@@ -1,0 +1,31 @@
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.started","cases":21}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"type.scope-number","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"type.path-object","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"type.bytes-number","primitive":"fsWrite","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"type.ref-number","primitive":"keychainGet","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"missing.fsread","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"missing.httpfetch.url","primitive":"httpFetch","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"escape.dotdot","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"escape.absolute","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"auth.scope-unknown","primitive":"fsRead","expect":"denied","code":"denied"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"auth.scope-case","primitive":"fsRead","expect":"denied","code":"denied"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"overlong.path-1m","primitive":"fsRead","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"overlong.keychain-ref","primitive":"keychainGet","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"timer.negative","primitive":"timerSchedule","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"timer.missing","primitive":"timerSchedule","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"unknown.fschmod","primitive":"fsChmod","expect":"unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"unknown.spawn","primitive":"processSpawn","expect":"unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"unknown.empty-name","primitive":"","expect":"unavailable","code":"unavailable"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"malformed.not-json","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"malformed.truncated","primitive":"fsRead","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"socket.scope-lan","primitive":"socketListen","expect":"denied","code":"denied"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.case","attack":"socket.host-metadata","primitive":"socketConnect","expect":"denied","code":"denied"}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.battery.rejected","cases":21}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe-fuzz/after.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"probe-fuzz/after.txt"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":8}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"fuzz.survived","benignWrite":true,"benignRead":true}]}
+dsh.spike.log: {"level":"info","module":"security.fuzz","message":"e2e","data":[{"scenario":"security.gateway-fuzz","event":"scenario.complete","status":"pass"}]}

@@ -1,0 +1,37 @@
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"jail/echo.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"jail/hostile-import-called.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"jail/wrong-signature.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"jail/emit-out-of-bounds.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"jail/stack-exhaustion.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.control","result":15,"output":"hello from jail"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.started","wasm":8,"socket":6}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.hostile-import-called","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.wrong-signature","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.emit-out-of-bounds","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.stack-exhaustion","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.missing-export","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.absent-module","primitive":"wasmRun","expect":"io","code":"io"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.path-escape","primitive":"wasmRun","expect":"invalid","code":"invalid"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"wasm.scope-unknown","primitive":"wasmRun","expect":"denied","code":"denied"}]}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.connect.ipv6-loopback","primitive":"socketConnect","expect":"denied","code":"denied"}]}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.connect.unspecified","primitive":"socketConnect","expect":"denied","code":"denied"}]}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.connect.name-localhost","primitive":"socketConnect","expect":"denied","code":"denied"}]}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.connect.adjacent","primitive":"socketConnect","expect":"denied","code":"denied"}]}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","outcome":"denied","reason":"scope-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.listen.mesh","primitive":"socketListen","expect":"denied","code":"denied"}]}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","outcome":"denied","reason":"scope-not-loopback"}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.case","attack":"socket.listen.no-scope","primitive":"socketListen","expect":"denied","code":"denied"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.battery.rejected","wasm":8,"socket":6}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"jail.survived","result":15,"output":"hello from jail"}]}
+dsh.spike.log: {"level":"info","module":"security.jail","message":"e2e","data":[{"scenario":"security.jail","event":"scenario.complete","status":"pass"}]}
+spike: PASS (complete=1 pass=1)

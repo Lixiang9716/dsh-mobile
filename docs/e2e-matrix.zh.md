@@ -6,6 +6,18 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映安全对抗证据网（2026-10-01）：围绕
+> [威胁模型](security-threat-model.md) 各面的四条攻击腿——
+> `security.gateway-fuzz` 25/25（21 案例畸形参数电池打裸网关缝：每次攻击
+> 都是结构化 §3 拒绝、进程存活、两起 socket 攻击以固定 reason 码审计）、
+> `security.jail` 19/19（8 个手工构造的 wasm 模块打导入面——CLI 宿主经
+> 可移植 spine 新增服务契约 v1.2.0 `wasmRun`——外加 6 个越界 socket 拨号；
+> 诚实 echo 模块在电池前后各跑一次）、`security.manifest-forgery` 11/11
+> （五档管线伪造全拒且零暂存，以及真实落地的目录新鲜度重放——威胁模型的
+> HIGH 发现）、`security.byok-leak` 7/7（金丝雀走钥匙串 → 路由解析 →
+> 真实传输回合 → 401 面；裸日志审计前先做匹配器自检）。下表总数为本树
+> 重跑：80 目录 / 156 verdict / 156 绿 / 7 缺口，全部有主。
+
 > **时效性**：本矩阵反映插件市场核心（2026-10-01）：签名目录
 > （data-protocols §7）的 CLI 腿 `marketplace.install` 71/71 —— 纯 JS
 > ed25519 验签（零新增网关原语），目录由生成器从 `system-plugins/` 署名并
@@ -130,11 +142,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 73 |
-| 已提交 verdict（149 绿） | 149 |
-| 至少有一份已提交证据的 scenario | 73 / 73 个不同的 scenario id（66 个 manifest） |
-| 已验证 PNG 的截图 | 160 |
-| 验收标准缺口 | 8 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
+| 证据目录 | 80 |
+| 已提交 verdict（156 绿） | 156 |
+| 至少有一份已提交证据的 scenario | 80 / 80 个不同的 scenario id（73 个 manifest） |
+| 已验证 PNG 的截图 | 157 |
+| 验收标准缺口 | 7 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -217,6 +229,10 @@
 | `lynx.mount` | — | — | — | 34/34, 34/34 |
 | `socket.seam` | — | — | — | 19/19 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
+| `security.gateway-fuzz` | — | — | — | 25/25 |
+| `security.jail` | — | — | — | 19/19 |
+| `security.manifest-forgery` | — | — | — | 11/11 |
+| `security.byok-leak` | — | — | — | 7/7 |
 
 `（漂移）` = 该 verdict 是在更早的 manifest 版本上捕获的
 （见[信息性说明](#信息性说明不算失败)）。
@@ -319,6 +335,10 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `runtime/spike/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19（回环缝：带半关闭的真实 TCP echo、一个经 /dev/tcp 拨接测试服务器的 /bin/bash 子进程、两条越界拒绝腿；审计门钉 listen=3 connect=3 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71（签名目录：纯 JS ed25519 验签、信任记录透传给零改动安装器、密钥轮换演练、四档篡改阶梯——每次拒绝零暂存） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25（21 案例畸形参数电池打裸网关缝——错型、缺字段、路径逃逸、未知 scope、超长值、必须不存在的原语名、畸形 args JSON——每次攻击都是结构化 §3 拒绝；电池后的良性往返证明进程存活；两起 socket 攻击以固定 reason 码审计） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19（8 个手工 wasm 模块打 jail——被调用的敌意导入、错签名 emit、越界 emit 指针、栈耗尽、缺导出、缺模块、路径逃逸、未授予 scope——外加 6 个越界 socket 拨号，逐条审计 host-not-loopback=4 / scope-not-loopback=2；诚实 echo 模块在电池前后各跑一次） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11（五档管线伪造全拒——能力抬升越过过期锚与重算信任、入口替换、id 换牌、旧包回退——零暂存、无 journal；阶梯之后诚实包照常安装；目录新鲜度重放档记录 HIGH 发现：过期但签名有效的目录会装进来，dsh-echo@0.9.0） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7（金丝雀走过钥匙串保存、重启路由解析、一次真实传输回合与 401 面——错误消息在运行时内断言无密钥；runner 在匹配器自检之后审计裸日志中的两个秘密值） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | ——（仅人看证据；机器断言在 `b4-write-live`） | ✓（app-stdout） | ✗（设计使然） | ✗（设计使然） | 2 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 皮肤：bundle 的缝核心 + 工件 sha256 校验） | ✓ | ✓ | ✓ | 0 |

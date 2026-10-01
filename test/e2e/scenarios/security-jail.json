@@ -1,0 +1,27 @@
+{
+ "scenario": "security.jail",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  { "event": "jail.control", "match": { "result": 15, "output": "hello from jail" } },
+  { "event": "jail.started", "match": { "wasm": 8, "socket": 6 } },
+  { "event": "jail.case", "match": { "attack": "wasm.hostile-import-called", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.wrong-signature", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.emit-out-of-bounds", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.stack-exhaustion", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.missing-export", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.absent-module", "code": "io" } },
+  { "event": "jail.case", "match": { "attack": "wasm.path-escape", "code": "invalid" } },
+  { "event": "jail.case", "match": { "attack": "wasm.scope-unknown", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.connect.ipv6-loopback", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.connect.unspecified", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.connect.name-localhost", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.connect.adjacent", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.listen.mesh", "code": "denied" } },
+  { "event": "jail.case", "match": { "attack": "socket.listen.no-scope", "code": "denied" } },
+  { "event": "jail.battery.rejected", "match": { "wasm": 8, "socket": 6 } },
+  { "event": "jail.survived", "match": { "result": 15, "output": "hello from jail" } },
+  { "event": "scenario.complete", "match": { "status": "pass" } }
+ ]
+}
