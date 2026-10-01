@@ -70,6 +70,25 @@ jobs:
           hosts/harmony/ci/vendor-official.sh --closure-only
           git diff --exit-code -- hosts/harmony/entry/src/main/resources/rawfile \
             || { echo "::error::the committed harmony rawfile drifted from runtime/spike — run build/build.sh sync harmony and commit" >&2; exit 1; }
+      # The actionlint gate skip-louds on an absent binary by design (agent
+      # machines vary) — here the pinned release is installed so the gate is
+      # never vacuous: v1.7.12, verified against the release's own
+      # checksums.txt before it lands on PATH. shellcheck is preinstalled on
+      # the runner image; the assert keeps that assumption loud instead of
+      # silent — if the image ever drops it, this step fails, not the gate.
+      - name: Install actionlint (pinned v1.7.12) + assert shellcheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "$(mktemp -d)"
+          gh release download v1.7.12 -R rhysd/actionlint \
+            -p 'actionlint_1.7.12_checksums.txt' \
+            -p 'actionlint_1.7.12_linux_amd64.tar.gz'
+          grep 'actionlint_1.7.12_linux_amd64.tar.gz' actionlint_1.7.12_checksums.txt | sha256sum -c -
+          tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
+          sudo mv actionlint /usr/local/bin/actionlint
+          actionlint --version | grep -qx '1.7.12' || { echo "::error::actionlint pin drift: $(actionlint --version)" >&2; exit 1; }
+          command -v shellcheck || { echo "::error::shellcheck absent on the runner image — the shellcheck-warn gate would skip" >&2; exit 1; }
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an

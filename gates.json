@@ -22,7 +22,9 @@
       "quickjs-boot-parse",
       "staging-check",
       "coverage-floor",
-      "asset-mirrors"
+      "asset-mirrors",
+      "shellcheck-warn",
+      "actionlint"
     ],
     "quick": [
       "notes"
@@ -337,6 +339,46 @@
       "needs": [
         "self-test"
       ]
+    },
+    {
+      "id": "shellcheck-warn",
+      "label": "shellcheck threshold 0 at warning grade over the CI-reachable shell scripts (#289's zeroed surface)",
+      "command": [
+        "sh",
+        "tools/check-shellcheck-warn.sh"
+      ],
+      "description": "any warning/error-grade shellcheck finding in the rule-enumerated CI script surface goes red; info/style out of scope by design (#289); skip-loud when the binary is absent (CI asserts it)",
+      "paths": [
+        "build/**",
+        "tools/**",
+        "hosts/android/**",
+        "hosts/harmony/**",
+        "hosts/ios/**",
+        "test/e2e/**",
+        "test/tools/**",
+        "test/panel/**",
+        "packages/release/**",
+        "deploy/marketplace/**",
+        "presentation/**",
+        "runtime/spike/ci/**",
+        "runtime/spike/vendor/**",
+        "runtime/spike/host/**"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "actionlint",
+      "label": "actionlint over every .github/workflows/*.yml (run: blocks shell-linted when shellcheck is present)",
+      "command": [
+        "sh",
+        "tools/check-actionlint.sh"
+      ],
+      "description": "the workflow lint stops being a local ritual (#289 found its last finding that way); skip-loud when the binary is absent, pinned checksum-verified install in gov.yml",
+      "paths": [
+        ".github/workflows/**",
+        "tools/check-actionlint.sh"
+      ],
+      "timeoutMs": 120000
     }
   ]
 }
