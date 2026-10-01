@@ -288,6 +288,16 @@ final class SessionServe {
                 "agentsHome": "\(Self.workspaceRoot.path)/home/agents",
                 "customSkillDirs": ["\(Self.workspaceRoot.path)/skills"],
             ]
+            // The plugin marketplace's opt-in (web-write-marketplace.js):
+            // staged exactly like the llm credential — the container file is
+            // the deployment surface, the seat only relays it. Absent file →
+            // no option → the panel opens with the honest capability-gap note.
+            if let catalog = Self.loadMarketplaceCatalog() {
+                config["marketplace"] = [
+                    "indexUrl": catalog.indexUrl,
+                    "publicKey": catalog.publicKey,
+                ]
+            }
         }
         return config
     }
@@ -299,6 +309,17 @@ final class SessionServe {
         var apiKey: String
         var model: String
         var provider: String
+    }
+
+    /// The plugin marketplace's trust anchor, as the write surface's
+    /// `marketplace` option carries it (`web-write-marketplace.js`): the
+    /// catalog's index URL and the HOST-SIDE pin — the ed25519 verification
+    /// public key (base64) the resolver checks every fetched index against.
+    /// Absent → the marketplace legs stay unclaimed (a capability gap the
+    /// page answers honestly), exactly as a boot without the option always has.
+    struct MarketplaceCatalog {
+        var indexUrl: String
+        var publicKey: String
     }
 
     /// Where the credential comes from: `<Documents>/profiles/default/llm/
@@ -331,6 +352,28 @@ final class SessionServe {
         } ?? "openai-compatible"
         return LlmCredential(
             baseUrl: baseUrl, apiKey: apiKey, model: model, provider: provider)
+    }
+
+    /// Where the marketplace catalog config comes from:
+    /// `<Documents>/profiles/default/marketplace/config.json` — the reserved
+    /// app scope, the same staging location and shape the llm credential uses
+    /// (`loadCredential`), mode 0600. `{indexUrl, publicKey}`; a malformed or
+    /// partial file yields nil rather than a half-pinned resolver (the pin is
+    /// the trust anchor — `marketplace-resolver.js` — so it must never be
+    /// guessed). Nothing here logs either field: a pin that never reaches a
+    /// record cannot leak into one.
+    static func loadMarketplaceCatalog() -> MarketplaceCatalog? {
+        let documents = FileManager.default.urls(
+            for: .documentDirectory, in: .userDomainMask)[0]
+        let file = documents.appendingPathComponent(
+            "profiles/default/marketplace/config.json", isDirectory: false)
+        guard let data = try? Data(contentsOf: file),
+              let object = try? JSONSerialization.jsonObject(with: data),
+              let fields = object as? [String: Any],
+              let indexUrl = fields["indexUrl"] as? String, !indexUrl.isEmpty,
+              let publicKey = fields["publicKey"] as? String, !publicKey.isEmpty
+        else { return nil }
+        return MarketplaceCatalog(indexUrl: indexUrl, publicKey: publicKey)
     }
 
     // ---- bus seam (runtime → carrier claims + answers) ------------------------

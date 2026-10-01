@@ -232,6 +232,11 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       model: route.model,
       baseURL: route.baseURL,
       routeKind: route.kind,
+      // The plugin marketplace's opt-in (web-write-marketplace.js), relayed
+      // verbatim when the seat stages it (hosts/ios SessionServe
+      // `loadMarketplaceCatalog`); absent → the legs stay unclaimed, the
+      // panel answers the capability gap, and nothing here changes.
+      ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
     },
