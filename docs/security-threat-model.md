@@ -76,30 +76,53 @@ zero staging
 ([run-marketplace-install-e2e.sh](../runtime/spike/ci/run-marketplace-install-e2e.sh),
 evidence `runtime/spike/artifacts/macos-cli-marketplace-install/`).
 
-### 3. Marketplace supply chain — catalog freshness (**HIGH finding, open**)
+### 3. Marketplace supply chain — catalog freshness (defended: the freshness anchor; #295 HIGH closed)
 
-**Defense today**: NONE on the client. The pin anchors the signing KEY, not
-an epoch; `generatedAt` is validated for presence only
-([runtime/spike/marketplace.js](../runtime/spike/marketplace.js)); the
-pipeline anchors bytes against the trust record it was handed — and a
-replayed OLD catalog comes with its own internally consistent, correctly
-signed trust record.
+**Defense today**: the client-side freshness anchor — a monotonic
+`generatedAt` floor ([runtime/spike/marketplace.js](../runtime/spike/marketplace.js),
+persisted by [runtime/spike/freshness-store.js](../runtime/spike/freshness-store.js)):
+every refresh verifies the signature FIRST, then compares the catalog's
+publication time against the newest one this client has ever ACCEPTED —
+the floor, persisted through the caller's data plane (one app-scope file;
+not the keychain, no new gateway primitive). Older than the floor →
+`catalog` rejection BEFORE the resolver holds the document as state and
+BEFORE rotation learning (a rejected document teaches nothing and moves
+nothing); equal passes (a republished identical catalog must not brick);
+newer advances the floor; first contact (no floor) accepts and anchors —
+a fresh client is never bricked. The floor is keyed to the MARKETPLACE,
+not a key: key rotation neither resets nor bypasses it, and only a catalog
+that verified under the trusted set can advance it (an attacker cannot
+poison the floor forward — their catalog never verifies). The anchor is
+REQUIRED at resolver construction: a resolver without one fails loud
+(rule 5).
 
-**This leg's attack — and the finding**: [security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
-replays a stale-but-VALID catalog (an honestly signed old index authored by
-the landed publisher tooling under the test pin — the model for a
-compromised mirror serving what the publisher once published). **The
-replay installs**: `dsh-echo@0.9.0` lands through the resolver, receipt and
-staged tree and all
-(`"event":"forge.rollback.catalog","outcome":"installed","version":"0.9.0"`,
-evidence `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`).
-Severity HIGH within this architecture's own adversary model (a hostile
-mirror is in scope by construction — that is why the catalog is signed at
-all). Named follow-up: a client-side freshness anchor — a monotonic
-`generatedAt` floor or a publish epoch carried in the pin — after which
-this rung's pinned expectation flips to `rejected` in the same change that
-lands the guard. Until then this leg holds the gap open as a regression-
-observable fact, honestly.
+**This leg's attack — and the flip**: [security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+hosts the CURRENT catalog (generatedAt 2026-10-01) beside a stale-but-VALID
+one (an honestly signed old index, generatedAt 2026-09-01 — the model for
+a compromised mirror serving what the publisher once published). The rung
+anchors the floor on the current catalog (first contact), then replays
+the stale one: **the replay refuses at refresh** —
+`"event":"forge.rollback.catalog","outcome":"rejected","code":"catalog","via":"catalog-replay"`
+(evidence `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`)
+— nothing stages, and the current catalog still refreshes afterward (the
+equal floor passes; the guard holds no grudge). The rung previously pinned
+today's-truth-as-HIGH-finding: the replay INSTALLED (#295 — the pin
+anchored the signing key, not an epoch, and `generatedAt` was validated
+for presence only). The checker flipped to `rejected` in the same change
+that landed the guard, per the maintenance contract below; the
+falsify-first proof keeps the flip honest — with the floor check neutered
+the replay lands again and this checker reddens.
+
+**Remaining face (declared, not absorbed)**: the panel's install stream
+([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
+resolves through [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js),
+whose rejection vocabulary (network/format/unknown-key/signature) has no
+stale code — guarding that face is a wire-vocabulary decision, the named
+follow-up. The contract face this leg attacks is the one the §7.3 install
+passthrough rides. Consequence carried honestly: a publisher clock error
+that publishes a FUTURE `generatedAt` advances clients' floors past the
+correct present — catalogs then fail loud until the publisher republishes
+with the corrected time. Fail-loud beats silent rollback.
 
 ### 4. QuickJS sandbox (no native surface)
 
@@ -200,7 +223,7 @@ wire. Evidence:
 | --- | --- | --- | --- | --- |
 | gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/spike/artifacts/macos-cli-security-gateway-fuzz/` | a primitive that stops validating (an attack case resolves, or a code drifts) |
 | jail (wasm + socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/spike/artifacts/macos-cli-security-jail/` | a wider wasm import surface, a missing emit bounds check, or a leakier loopback boundary |
-| manifest forgery | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | a weaker pipeline anchor/negotiation — and (pinned, until the freshness guard lands) the replay rung documents today's HIGH gap |
+| manifest forgery | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | a weaker pipeline anchor/negotiation, or a freshness anchor that stops refusing the replayed catalog (falsify-first: neuter the floor check and this checker reddens) |
 | byok leak | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/spike/artifacts/macos-cli-security-byok-leak/` | a credential value reaching any log sink, or an error face that echoes secrets |
 
 ## Maintenance contract
