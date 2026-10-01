@@ -1,0 +1,33 @@
+{
+ "scenario": "security.gateway-fuzz",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  { "event": "fuzz.started", "match": { "cases": 21 } },
+  { "event": "fuzz.case", "match": { "attack": "type.scope-number", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "type.path-object", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "type.bytes-number", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "type.ref-number", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "missing.fsread", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "missing.httpfetch.url", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "escape.dotdot", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "escape.absolute", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "auth.scope-unknown", "code": "denied" } },
+  { "event": "fuzz.case", "match": { "attack": "auth.scope-case", "code": "denied" } },
+  { "event": "fuzz.case", "match": { "attack": "overlong.path-1m", "code": "io" } },
+  { "event": "fuzz.case", "match": { "attack": "overlong.keychain-ref", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "timer.negative", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "timer.missing", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "unknown.fschmod", "code": "unavailable" } },
+  { "event": "fuzz.case", "match": { "attack": "unknown.spawn", "code": "unavailable" } },
+  { "event": "fuzz.case", "match": { "attack": "unknown.empty-name", "code": "unavailable" } },
+  { "event": "fuzz.case", "match": { "attack": "malformed.not-json", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "malformed.truncated", "code": "invalid" } },
+  { "event": "fuzz.case", "match": { "attack": "socket.scope-lan", "code": "denied" } },
+  { "event": "fuzz.case", "match": { "attack": "socket.host-metadata", "code": "denied" } },
+  { "event": "fuzz.battery.rejected", "match": { "cases": 21 } },
+  { "event": "fuzz.survived", "match": { "benignWrite": true, "benignRead": true } },
+  { "event": "scenario.complete", "match": { "status": "pass" } }
+ ]
+}
