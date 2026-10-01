@@ -33,6 +33,9 @@
     ".gov/rejections/case-logging.sh": {
       "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
     },
+    ".gov/rejections/case-perf-budget.sh": {
+      "sha256": "224b76b2a1f2e7d29d07cfb703d5c3dcefaf4b15f7d738c49a591587b92f91c9"
+    },
     ".gov/rejections/case-quickjs-boot-parse.sh": {
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
@@ -49,13 +52,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "52584f12758b194f4a5c9b20368654d55d25b19ac55fa844c75ca9dc0471d549"
+      "sha256": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T09:36:10+00:00",
+    "ts": "2026-10-01T10:31:48+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "review round 2: case-asset-mirrors backup moved inside the lock window \u2014 the pre-acquire .case-tmp raced every live-tree case's green leg"
+    "reason": "Review-fix round 2 for #297: rebased onto #294 (shellcheck-warn + actionlint join); gates.json is the 26-gate union (object-level merge \u2014 perf-budget appended with its needs/allowFailure intact); the eight swept cards restored from main's ledger and re-pinned onto ee4951678e7c; the review's three fixes (201a56fe) unchanged"
   }
 }

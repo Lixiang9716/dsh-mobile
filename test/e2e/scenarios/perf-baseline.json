@@ -1,0 +1,51 @@
+{
+ "scenario": "perf.baseline",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  {
+   "event": "perf.baseline.begin",
+   "match": {
+    "legs": 3,
+    "host": "macos-cli"
+   }
+  },
+  {
+   "event": "perf.cold.boot",
+   "match": {
+    "profile": "mobile",
+    "provider": "mock"
+   }
+  },
+  {
+   "event": "perf.session.turn",
+   "match": {
+    "textLen": 19
+   }
+  },
+  {
+   "event": "perf.catalog.refresh",
+   "match": {
+    "entries": 9,
+    "key": "dsh-market-1"
+   }
+  },
+  {
+   "event": "perf.install.commit",
+   "match": {
+    "spec": "dsh-fs@^0.1.0",
+    "version": "0.1.0",
+    "blobSha256": "bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107",
+    "trustMatched": true
+   }
+  },
+  {
+   "event": "perf.baseline.completed",
+   "match": {
+    "status": "pass",
+    "legs": 3
+   }
+  }
+ ]
+}

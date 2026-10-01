@@ -289,6 +289,41 @@ static JSValue js_engine_info(JSContext *ctx, JSValueConst this_val,
     return info;
 }
 
+/* js_perf_probe(mode) — the perf legs' measurement hook over the engine's
+ * own accounting (JS_ComputeMemoryUsage; 'gc' runs JS_RunGC first, so a
+ * scenario can assert a heap watermark falls back after collection).
+ * TEST INFRASTRUCTURE ONLY — it never enters a gateway descriptor, the
+ * contract/ freeze, or any capability table (the perf-baseline review's
+ * explicit check): scenarios call it directly as a host global, exactly
+ * like __dshComplete/__dshLaunchEnv. Unknown modes fail loud (rule 5). */
+static JSValue js_perf_probe(JSContext *ctx, JSValueConst this_val,
+                             int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1)
+        return JS_ThrowTypeError(ctx, "__dshPerfProbe needs a mode ('heap' or 'gc')");
+    const char *mode = JS_ToCString(ctx, argv[0]);
+    if (!mode) return JS_EXCEPTION;
+    int run_gc = strcmp(mode, "gc") == 0;
+    if (!run_gc && strcmp(mode, "heap") != 0) {
+        JS_FreeCString(ctx, mode);
+        return JS_ThrowTypeError(ctx, "__dshPerfProbe: unknown mode (want 'heap' or 'gc')");
+    }
+    JS_FreeCString(ctx, mode);
+    JSRuntime *rt = JS_GetRuntime(ctx);
+    if (run_gc) JS_RunGC(rt);
+    JSMemoryUsage mu;
+    JS_ComputeMemoryUsage(rt, &mu);
+    JSValue info = JS_NewObject(ctx);
+    JS_SetPropertyStr(ctx, info, "mode", JS_NewString(ctx, run_gc ? "gc" : "heap"));
+    JS_SetPropertyStr(ctx, info, "memoryUsedSize", JS_NewInt64(ctx, mu.memory_used_size));
+    JS_SetPropertyStr(ctx, info, "mallocCount", JS_NewInt64(ctx, mu.malloc_count));
+    JS_SetPropertyStr(ctx, info, "objCount", JS_NewInt64(ctx, mu.obj_count));
+    JS_SetPropertyStr(ctx, info, "strCount", JS_NewInt64(ctx, mu.str_count));
+    JS_SetPropertyStr(ctx, info, "shapeCount", JS_NewInt64(ctx, mu.shape_count));
+    JS_SetPropertyStr(ctx, info, "jsFuncCount", JS_NewInt64(ctx, mu.js_func_count));
+    return info;
+}
+
 static JSValue js_gateway_negotiate(JSContext *ctx, JSValueConst this_val,
                                     int argc, JSValueConst *argv) {
     (void)this_val;
@@ -3710,6 +3745,8 @@ static void dsh_bind_globals(dsh_spike_t *s) {
                       JS_NewCFunction(ctx, js_bus_post, "__dshBusPost", 1));
     JS_SetPropertyStr(ctx, global, "__dshEngineInfo",
                       JS_NewCFunction(ctx, js_engine_info, "__dshEngineInfo", 0));
+    JS_SetPropertyStr(ctx, global, "__dshPerfProbe",
+                      JS_NewCFunction(ctx, js_perf_probe, "__dshPerfProbe", 1));
     JS_SetPropertyStr(ctx, global, "__dshGatewayNegotiate",
                       JS_NewCFunction(ctx, js_gateway_negotiate, "__dshGatewayNegotiate", 1));
     JS_SetPropertyStr(ctx, global, "__dshGatewayCall",

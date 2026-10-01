@@ -2,7 +2,7 @@
   "title": "Android user-facing boot fully integrates the DSH packages (the SessionServe seat)",
   "created": "2026-09-24T04:38:37+00:00",
   "rules": {
-    "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
@@ -88,6 +88,13 @@
       "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
       "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
+    },
+    {
+      "ts": "2026-10-01T10:31:42+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+      "to": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+      "reason": "Post-#294 rebase constitution sweep onto ee4951678e7c (the lint gates join; the cards were restored from main's ledger after a conflicted rebase and re-pinned current) \u2014 briefs unchanged, the same recorded sweep shape as PRs #244/#274."
     }
   ]
 }
