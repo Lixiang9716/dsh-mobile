@@ -135,4 +135,20 @@ The `plane` gate's seal moved once, deliberately, with the reason in the
 ritual ledger; future gate additions owe the same two recorded acts
 (re-seal + repins). A govrail UX bug was hit en route: `gov task check`
 prescribes `gov task re-pin <id>` but the parser only accepts `gov task
-repin` — filed as field feedback with this task's report.
+repin` — upstream #401.
+
+**Review round 1 (PR #293): the card id collided, and the machine gate
+could not see it.** This card was minted as `T-0087` — locally correct
+(the base tree held no T-0087 card), but #290 and #295 minted the same id
+in parallel; main itself carried two done `T-0087` cards at review time.
+`gov task check` over the collided tree exited 0 with `155 card(s) — 8
+open, 0 stale, 84 done` — no duplicate-id finding (the check-level false
+negative is the new evidence added upstream). Fixed here by renumbering
+this card past the high-water mark (T-0154 was the max): file + `id`
+field → `T-0155`; the receipt's captured check-output snapshot and the
+recorded repin/seal consent reasons still cite the mint-time id — they
+are dated records, not live pointers, and rewriting them would falsify
+the receipt. The allocation race itself was already upstream (#393
+local-sequence-only minting, #352 permanent same-number ambiguity); the
+measured check false-negative was added as a comment on #393 rather than
+a duplicate issue.
