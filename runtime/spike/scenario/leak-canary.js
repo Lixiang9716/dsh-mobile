@@ -93,6 +93,7 @@ const boot = async () => {
  * round's locals go out of scope on return — what leaks is what GC cannot
  * reach, which is exactly what the after-watermark measures. */
 const oneRound = async (ctx, api, i) => {
+  log.debug('round begin', { round: i });
   const created = await api['session/create']({ request: {} });
   const sessionId = created?.sessionId;
   demand(typeof sessionId === 'string' && sessionId.length > 0, `round ${i}: no session minted`);

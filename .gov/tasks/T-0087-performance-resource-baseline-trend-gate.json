@@ -1,0 +1,21 @@
+{
+  "title": "Performance & resource baseline + trend gate + leak canary (A1+A2)",
+  "created": "2026-10-01T06:13:01+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "measurement hooks: C-side __dshPerfProbe (heap read + forced GC) in the spike host \u2014 test infrastructure only, never a gateway primitive or contract row",
+    "perf.baseline leg: cold boot + mock session turn + marketplace install, per-item numbers emitted into the event stream (D8), written into the receipt + baseline json with machine notes",
+    "leak.canary leg: N=100 mock session rounds, heap watermark before vs after forced GC, red when it does not fall back \u2014 falsified first (a deliberately retained array turns it red), then restored green",
+    "trend gate: tools/check-perf-budget.mjs + baselines/perf-baseline.json (real measured numbers, warn-tier margins), falsification case .gov/rejections/case-perf-budget.sh, plane re-sealed",
+    "both legs' scenario-id logs reconcile one-to-one via test/e2e/check.mjs; gov run full DAG green with receipt"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0087"
+}
