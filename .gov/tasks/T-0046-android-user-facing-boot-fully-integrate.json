@@ -2,7 +2,11 @@
   "title": "Android user-facing boot fully integrates the DSH packages (the SessionServe seat)",
   "created": "2026-09-24T04:38:37+00:00",
   "rules": {
+<<<<<<< HEAD
     "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+=======
+    "hash": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
+>>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "fd9e61fcf87fcae50af20c6f777e1b7768dd6aedc7df215a7fcd113b061d78bb"
@@ -24,7 +28,7 @@
       "by": "ci-fix-206",
       "from": "c6062b8cdc3ba8206267a3d48fc98d3e7ef556ae246f10062117fafb858988b8",
       "to": "974f3cdb03e31ec40a24ebe6254c2ee77e1cb4e03e035455bfd217e644873ec3",
-      "reason": "Rules moved (the bundle-files gate + its seal rounds, #202-#204); the brief still describes open work — the android user-facing SessionServe seat still owes its on-device verification pass (the harmony sibling T-0047 closed, android lags it)."
+      "reason": "Rules moved (the bundle-files gate + its seal rounds, #202-#204); the brief still describes open work \u2014 the android user-facing SessionServe seat still owes its on-device verification pass (the harmony sibling T-0047 closed, android lags it)."
     },
     {
       "ts": "2026-09-26T13:28:07+00:00",
@@ -59,28 +63,28 @@
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
       "to": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
-      "reason": "all five checklist items are ticked (the SessionServe seat landed, emulator-verified, drives unaffected); the rules baseline moved after the work landed — advancing so the done card can seal"
+      "reason": "all five checklist items are ticked (the SessionServe seat landed, emulator-verified, drives unaffected); the rules baseline moved after the work landed \u2014 advancing so the done card can seal"
     },
     {
       "ts": "2026-09-30T14:05:13+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
-      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged — same recorded sweep shape as PR #244"
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
     },
     {
       "ts": "2026-10-01T06:40:42+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
-      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction — the brief itself is unchanged and remains the owner's to close or void."
+      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction \u2014 the brief itself is unchanged and remains the owner's to close or void."
     },
     {
       "ts": "2026-10-01T07:36:50+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "4433189e08b846ebb6afd53975bdfbf50720a74e611237eca4e800ccbe6fe4c0",
-      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). The brief still describes open work (T-0046's completion items remain owner actions) — re-pinned current, the same sweep PRs #244/#274 performed; no brief change."
+      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). The brief still describes open work (T-0046's completion items remain owner actions) \u2014 re-pinned current, the same sweep PRs #244/#274 performed; no brief change."
     },
     {
       "ts": "2026-10-01T07:46:30+00:00",
@@ -90,11 +94,19 @@
       "reason": "rules moved again after the rebase over #290/#292 (their seal + repins landed first): A12's webclient-staged-tree gate re-sealed on the current main; brief unchanged"
     },
     {
+<<<<<<< HEAD
       "ts": "2026-10-01T09:20:03+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
       "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
+=======
+      "ts": "2026-10-01T10:01:05+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
+      "to": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
+      "reason": "Post-#291/#293 rebase constitution sweep onto 1b352d1a5880 (canonical-json single-source + the CI-honesty gates): the repin ledgers were re-merged across the rebase and the briefs are unchanged \u2014 the same recorded sweep shape as PRs #244/#274."
+>>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
     }
   ]
 }

@@ -1,17 +1,21 @@
 {
-  "title": "the upstream dsh-tests suite goes fully green — every transpiled spec fixed or excluded with reason (3-attempt rule per spec, quickjs fork edits in scope)",
+  "title": "the upstream dsh-tests suite goes fully green \u2014 every transpiled spec fixed or excluded with reason (3-attempt rule per spec, quickjs fork edits in scope)",
   "created": "2026-09-27T17:48:18+00:00",
   "rules": {
+<<<<<<< HEAD
     "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+=======
+    "hash": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
+>>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "aeb6a65fd4f504fd674c15a56645118a70016450c646166b9dff6bcc9bf42eb0"
     }
   },
   "checklist": [
-    "[x] baseline sweep on current main: every transpiled spec × QuickJS CLI + Node reference legs, TSV under tmp/",
+    "[x] baseline sweep on current main: every transpiled spec \u00d7 QuickJS CLI + Node reference legs, TSV under tmp/",
     "[x] triage: every red spec assigned a family (missing vendor / missing shim / engine limit / by-design impossible) with counts",
-    "[x] fix loop per family; each spec gets ≤3 distinct fix attempts (quickjs fork edits allowed); failures after 3 attempts excluded with named reason",
+    "[x] fix loop per family; each spec gets \u22643 distinct fix attempts (quickjs fork edits allowed); failures after 3 attempts excluded with named reason",
     "[x] final sweep: green count + exclusion register recorded in the note; no silent reds"
   ],
   "status": "open",
@@ -44,28 +48,28 @@
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "f7fb190470a156885470006798c1067824035e593b707c5342e61b2991fcc204",
       "to": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
-      "reason": "all four checklist items are ticked and the round's note records the green count + exclusion register; the rules baseline moved after the work landed — advancing the pin so the done card can close"
+      "reason": "all four checklist items are ticked and the round's note records the green count + exclusion register; the rules baseline moved after the work landed \u2014 advancing the pin so the done card can close"
     },
     {
       "ts": "2026-09-30T14:05:14+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
-      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged — same recorded sweep shape as PR #244"
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
     },
     {
       "ts": "2026-10-01T06:40:43+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
-      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction — the brief itself is unchanged and remains the owner's to close or void."
+      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction \u2014 the brief itself is unchanged and remains the owner's to close or void."
     },
     {
       "ts": "2026-10-01T07:41:35+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "4433189e08b846ebb6afd53975bdfbf50720a74e611237eca4e800ccbe6fe4c0",
-      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). All items ticked — the close (with its receipt) belongs to the owning session; re-pinned current so the constitution hash follows the plane; no brief change."
+      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). All items ticked \u2014 the close (with its receipt) belongs to the owning session; re-pinned current so the constitution hash follows the plane; no brief change."
     },
     {
       "ts": "2026-10-01T07:46:31+00:00",
@@ -75,11 +79,19 @@
       "reason": "rules moved again after the rebase over #290/#292 (their seal + repins landed first): A12's webclient-staged-tree gate re-sealed on the current main; brief unchanged"
     },
     {
+<<<<<<< HEAD
       "ts": "2026-10-01T09:20:03+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
       "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
+=======
+      "ts": "2026-10-01T10:01:05+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
+      "to": "1b352d1a5880b365d9f3f18cda74e979647b1f8fbc3326c0152596bd79e94bcb",
+      "reason": "Post-#291/#293 rebase constitution sweep onto 1b352d1a5880 (canonical-json single-source + the CI-honesty gates): the repin ledgers were re-merged across the rebase and the briefs are unchanged \u2014 the same recorded sweep shape as PRs #244/#274."
+>>>>>>> a37e8743 (chore(gov): the branch settles onto the #291/#293 constitution — eight cards re-pinned, the plane re-sealed)
     }
   ]
 }

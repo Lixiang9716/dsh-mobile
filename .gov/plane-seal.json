@@ -39,17 +39,20 @@
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
     },
+    ".gov/rejections/case-webclient-staged-tree.sh": {
+      "sha256": "fa4084c9beae97e2c0e4c22347dd40de78fbf68e9062f37782d2edb442aa2ea9"
+    },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "92efb5a5b2de80a2b029981e2b9b083eff2560c3950cc1f5cea742fec92f4e65"
+      "sha256": "77204ab21c51b4a796ccecd7989f0f41b74b0ee82daa4d67d29a31d619d5c22e"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T08:01:30+00:00",
+    "ts": "2026-10-01T10:01:11+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "Post-rebase plane re-seal: gates.json = the asset-mirrors + perf-budget union after resolving #292's rebase conflict (both gates kept, perf-budget warn-tier with needs:[self-test]); the perf legs and budgets are unchanged from the reviewed state \u2014 only the union and the sweep re-pins are new"
+    "reason": "Review-fix round for #297: the branch rebased onto #291 (canonical-json single-source) + #293 (CI honesty gates), the seal re-baselined over that constitution plus the perf-budget gate; the review's three findings are fixed in 201a56fe (the canary's leaked branch returns, the runner's RED branch is reachable, the note's baselines paragraph matches the committed receipts) and re-falsified live"
   }
 }
