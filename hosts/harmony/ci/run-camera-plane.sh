@@ -107,7 +107,7 @@ const t = JSON.parse(require("fs").readFileSync("/tmp/dsh-cp-layout.json", "utf8
 const walk = (n) => {
   if (n === null || typeof n !== "object") return null;
   const a = n.attributes ?? n;
-  const text = `${a.text ?? ""} ${a["content-desc"] ?? ""}`.trim();
+  const text = [(a.text ?? ""), (a["content-desc"] ?? "")].join(" ").trim();
   if (/^(Approve|批准)$/i.test(text)) {
     const m = (a.bounds ?? "").match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
     if (m) return [Math.round((+m[1] + +m[3]) / 2), Math.round((+m[2] + +m[4]) / 2)];
@@ -118,6 +118,8 @@ const walk = (n) => {
 const hit = walk(t);
 process.exit(hit ? (console.log(hit[0] + " " + hit[1]), 0) : 1);' 2>/dev/null || true)
             if [ -n "$HIT" ]; then
+                # HIT is "x y" — two integers from the probe above; uitest takes them as two args
+                # shellcheck disable=SC2086 # intentional word split
                 "$HDC" shell uitest uiInput click $HIT >/dev/null 2>&1 || true
                 approve_tapped=1
                 say "tapped Approve at ($HIT)"
@@ -134,7 +136,7 @@ const t = JSON.parse(require("fs").readFileSync("/tmp/dsh-cp-layout.json", "utf8
 const walk = (n) => {
   if (n === null || typeof n !== "object") return null;
   const a = n.attributes ?? n;
-  const text = `${a.text ?? ""} ${a["content-desc"] ?? ""}`.trim();
+  const text = [(a.text ?? ""), (a["content-desc"] ?? "")].join(" ").trim();
   if (/^(Allow|允许)$/i.test(text)) {
     const m = (a.bounds ?? "").match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
     if (m) return [Math.round((+m[1] + +m[3]) / 2), Math.round((+m[2] + +m[4]) / 2)];
@@ -145,6 +147,8 @@ const walk = (n) => {
 const hit = walk(t);
 process.exit(hit ? (console.log(hit[0] + " " + hit[1]), 0) : 1);' 2>/dev/null || true)
             if [ -n "$HIT" ]; then
+                # HIT is "x y" — two integers from the probe above; uitest takes them as two args
+                # shellcheck disable=SC2086 # intentional word split
                 "$HDC" shell uitest uiInput click $HIT >/dev/null 2>&1 || true
                 allow_tapped=1
                 say "tapped Allow at ($HIT)"

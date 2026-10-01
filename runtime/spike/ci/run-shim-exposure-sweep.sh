@@ -56,6 +56,7 @@ worker() {
 export -f worker run_to
 export OUT LOGDIR SPIKE
 
-ls "$SPIKE"/upstream-tests/*.spec.mjs | xargs -P "$PARAL" -I{} bash -c 'worker "$@"' _ {}
+find "$SPIKE/upstream-tests" -maxdepth 1 -name '*.spec.mjs' -print0 | sort -z | \
+    xargs -0 -P "$PARAL" -I{} bash -c 'worker "$@"' _ {}
 
-echo "sweep: $(ls "$OUT"/*.txt 2>/dev/null | wc -l | tr -d ' ') manifests under $OUT"
+echo "sweep: $(find "$OUT" -maxdepth 1 -name '*.txt' 2>/dev/null | wc -l | tr -d ' ') manifests under $OUT"

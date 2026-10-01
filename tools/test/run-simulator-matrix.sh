@@ -482,7 +482,7 @@ android_release_leg() {
     local art="hosts/android/artifacts/simulator-matrix/release"
     CURRENT_ART="$art"
     mkdir -p "$art"
-    local bt="${DSH_BUILD_TOOLS:-$(ls -d "$ANDROID_HOME"/build-tools/* 2>/dev/null | sort -V | tail -1)}"
+    local bt="${DSH_BUILD_TOOLS:-$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort -V | tail -1)}"
     [ -x "$bt/apksigner" ] || mx_die "apksigner missing under $bt"
     local apk="hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk"
 
@@ -829,7 +829,7 @@ summary() {
         printf '%-10s %-14s %-8s %s\n' "$p" "$l" "$s" "$d"
     done < "$STATE"
     echo "==================================================================="
-    [ "$OVERALL" -eq 0 ] && mx "matrix GREEN" || mx "matrix RED"
+    if [ "$OVERALL" -eq 0 ]; then mx "matrix GREEN"; else mx "matrix RED"; fi
     return "$OVERALL"
 }
 

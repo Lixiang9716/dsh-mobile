@@ -64,7 +64,11 @@ fail_deadline() {
 
 # ---- 0. credentials (fail loud when missing — rule 5; never echo them) ------
 if [ -z "${ZAI_API_KEY:-}" ] && [ -f "$ROOT/.env" ]; then
-  set -a; . "$ROOT/.env"; set +a
+  # dev-provided .env, absent in CI — shellcheck cannot follow it by design
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT/.env"
+  set +a
 fi
 : "${ZAI_BASE_URL:?run-ios-live-llm: ZAI_BASE_URL missing (env or .env)}"
 : "${ZAI_API_KEY:?run-ios-live-llm: ZAI_API_KEY missing (env or .env)}"

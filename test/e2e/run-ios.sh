@@ -269,6 +269,8 @@ wda_tap_at() { # X Y [DURATION]
 wda_find_tap() { # SUBSTR [DURATION]
   local c; c="$(wda_source_tree | wda_find_cell "$1")" || return 1
   [ -n "$c" ] || return 1
+  # c is "x y" (two floats from the finder) — wda_tap_at takes them as two args
+  # shellcheck disable=SC2086 # intentional word split
   wda_tap_at $c "${2:-0.1}"
 }
 

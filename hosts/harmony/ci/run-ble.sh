@@ -82,7 +82,10 @@ until [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; do
     [ "$(date +%s)" -ge "$deadline" ] && { echo "::error::$BUNDLE never appeared" >&2; exit 1; }
     "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
     "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
-    "$HDC" shell aa start -b $BUNDLE -a EntryAbility \
+    # MOCK_PS is an aa flag bundle ("--ps k v") and empty in skip mode — the
+    # split (and the vanish) is the contract; quoting would pass an empty arg
+    # shellcheck disable=SC2086 # intentional word split
+    "$HDC" shell aa start -b "$BUNDLE" -a EntryAbility \
         --ps dsh.e2e.leg ble.plane $MOCK_PS >/dev/null 2>&1 || true
     sleep 3
 done

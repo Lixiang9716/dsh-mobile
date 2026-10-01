@@ -32,6 +32,8 @@ die() { echo "::error::run-live-llm: $*" >&2; exit 1; }
 
 # ---- credentials (env or repo-root .env; fail loud, never print) -----------
 if [ -z "${ZAI_API_KEY:-}" ] && [ -f .env ]; then
+    # dev-provided .env, absent in CI — shellcheck cannot follow it by design
+    # shellcheck disable=SC1091
     . ./.env
 fi
 [ -n "${ZAI_BASE_URL:-}" ] || die "ZAI_BASE_URL missing (env or .env)"

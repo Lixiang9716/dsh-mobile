@@ -83,6 +83,8 @@ command -v node >/dev/null 2>&1 || die "node not on PATH (the E2E checkers need 
 
 # ---- credentials (env or repo-root .env; fail loud, never print) -----------
 if [ -z "${ZAI_API_KEY:-}" ] && [ -f .env ]; then
+    # dev-provided .env, absent in CI — shellcheck cannot follow it by design
+    # shellcheck disable=SC1091
     . ./.env
 fi
 [ -n "${ZAI_BASE_URL:-}" ] || die "ZAI_BASE_URL missing (env or .env)"

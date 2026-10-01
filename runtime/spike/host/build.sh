@@ -54,6 +54,9 @@ mkdir -p build
 # reference undefined HUF_*_fast_asm_loop symbols at link time — the same
 # define every platform build passes.
 if [ "$RELEASE" -eq 1 ]; then
+    # ZSTD_SRC / ISH_LIBS are path/flag lists — word splitting is how each
+    # entry becomes its own argv element for the compiler.
+    # shellcheck disable=SC2086 # intentional word split
     cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
        -o build/dsh-spike-cli-release \
@@ -64,6 +67,7 @@ if [ "$RELEASE" -eq 1 ]; then
        $ISH_LIBS -lm
     echo "built build/dsh-spike-cli-release (-DDSH_RELEASE)"
 else
+    # shellcheck disable=SC2086 # intentional word split (see the release leg above)
     cc -std=c11 -O1 -D_GNU_SOURCE -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
        -o build/dsh-spike-cli \

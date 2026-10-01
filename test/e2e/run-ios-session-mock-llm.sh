@@ -167,6 +167,8 @@ log "ALL CHECKERS PASS"
 RECEIPT_STEMS="session-mock-llm webclient-mount"
 [ "$CLIENT" = "mini" ] && RECEIPT_STEMS="$RECEIPT_STEMS ui-client-swap"
 [ "$CLIENT" = "whale" ] && RECEIPT_STEMS="$RECEIPT_STEMS whale-mount"
+# RECEIPT_STEMS is a whitespace-separated stem list — each becomes its own argv entry
+# shellcheck disable=SC2086 # intentional word split
 sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-session-mock-llm.sh" \
   "M2 first on-device session: registry boots and installs the system plugins, the mock-LLM streams token deltas as an event sequence, one tool call routes through the subprocess plugin, and the session completes with the transcript — asserted one-to-one against the session manifests" \
   "-dsh-mode session${DSH_CLIENT:+ (client variant: $DSH_CLIENT)}" \

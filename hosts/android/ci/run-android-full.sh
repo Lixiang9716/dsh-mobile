@@ -72,7 +72,7 @@ tap_text() {
       | grep -E "(text|content-desc)=\"($1)\"" | head -1 \
       | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p' \
       | {
-        read x1 y1 x2 y2 || exit 0
+        read -r x1 y1 x2 y2 || exit 0
         adb shell input tap $(( (x1 + x2) / 2 )) $(( (y1 + y2) / 2 ))
         echo tapped
       } | grep -q tapped

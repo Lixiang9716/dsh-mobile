@@ -52,12 +52,17 @@ release_tree_lock() {
 }
 # --------------------------------------------------------------------------
 
-cp "$MIRROR" "$MIRROR.case-tmp"
 restore() { mv "$MIRROR.case-tmp" "$MIRROR" 2>/dev/null || true; }
 OUT="$(mktemp)"
 trap 'release_tree_lock; rm -f "$OUT"; restore' EXIT
 
 acquire_tree_lock
+# The .case-tmp backup is a NEW rawfile file the checker would reject — it
+# may only exist INSIDE the lock window. Created before acquire, it sat in
+# the tree for the whole blocked-acquire duration and turned every other
+# live-tree case's green leg red (PR #294 review round 2: dotfile 2/2 red
+# concurrent with this case).
+cp "$MIRROR" "$MIRROR.case-tmp"
 printf '\n// asset-mirror drift probe\n' >> "$MIRROR"
 
 if node "$REPO/tools/check-asset-mirrors.mjs" --json > "$OUT" 2>&1; then

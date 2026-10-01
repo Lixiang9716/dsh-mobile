@@ -106,7 +106,11 @@ SEED_JPG="$ART/screens/.media-seed.jpg"
 xcrun simctl io "$UDID" screenshot /tmp/.dsh-media-seed.png >/dev/null 2>&1 \
   && sips -s format jpeg -Z 128 /tmp/.dsh-media-seed.png --out "$SEED_JPG" >/dev/null 2>&1 || true
 if [ -s "$SEED_JPG" ]; then
-  xcrun simctl addmedia "$UDID" "$SEED_JPG" 2>/dev/null && log "media seed added to the library" || log "WARNING: addmedia failed — media leg will drive cancellation"
+  if xcrun simctl addmedia "$UDID" "$SEED_JPG" 2>/dev/null; then
+    log "media seed added to the library"
+  else
+    log "WARNING: addmedia failed — media leg will drive cancellation"
+  fi
 fi
 
 # ---- 3. launch --------------------------------------------------------------

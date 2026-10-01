@@ -63,7 +63,10 @@ DRY=()
 TARGET="${DEPLOY_USER}@${DEPLOY_HOST}"
 
 echo "== preparing remote webroot ${TARGET}:${DEPLOY_PATH} ==" >&2
-ssh "${SSH_OPTS[@]}" "${TARGET}" "mkdir -p '${DEPLOY_PATH}/packages'"
+# DEPLOY_PATH is deploy config: it expands on the CLIENT side by design (the
+# remote has no such variable); the inner single quotes guard the remote side.
+  # shellcheck disable=SC2029 # client-side expansion is the contract here
+  ssh "${SSH_OPTS[@]}" "${TARGET}" "mkdir -p '${DEPLOY_PATH}/packages'"
 
 # 1) packages: additive, never clobber (no --delete on purpose — see header).
 rsync -av -e "${RSYNC_RSH[*]}" "${DRY[@]}" --ignore-existing \
@@ -76,6 +79,7 @@ rsync -av -e "${RSYNC_RSH[*]}" "${DRY[@]}" "${INDEX}" "${TARGET}:${DEPLOY_PATH}/
 if [ "${DRY_RUN}" = "1" ]; then
   echo "== dry run: would now mv ${TMP_NAME} → index.json =="
 else
+  # shellcheck disable=SC2029 # client-side expansion is the contract here
   ssh "${SSH_OPTS[@]}" "${TARGET}" "mv '${DEPLOY_PATH}/${TMP_NAME}' '${DEPLOY_PATH}/index.json'"
   echo "deployed: ${TARGET}:${DEPLOY_PATH} (packages additive, index swapped atomically)"
   echo "verify:   curl -fsSL https://<your-domain>/index.json | head -5"

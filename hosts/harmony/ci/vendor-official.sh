@@ -593,7 +593,7 @@ if [ "$MODE" != "check" ]; then
     for dir in $WEBCLIENT_DIRS; do
         webclient_files "$dir" | while IFS= read -r rel; do
             mkdir -p "$RAW/$(dirname "$rel")"
-            cp "presentation/web-client-$dir/${rel#webclient/dsh-web-client-$dir/}" "$RAW/$rel"
+            cp "presentation/web-client-$dir/${rel#"webclient/dsh-web-client-$dir/"}" "$RAW/$rel"
         done
     done
 fi
@@ -678,7 +678,7 @@ for dir in $WEBCLIENT_DIRS; do
             echo skip >> "$SKIPS_FILE"
             continue
         fi
-        src="presentation/web-client-$dir/${rel#webclient/dsh-web-client-$dir/}"
+        src="presentation/web-client-$dir/${rel#"webclient/dsh-web-client-$dir/"}"
         cmp -s "$src" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
     done
 done

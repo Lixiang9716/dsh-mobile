@@ -24,7 +24,7 @@ SKIP_BUILD=0
 
 say() { echo "run-device-plane: $*"; }
 die() { echo "run-device-plane: FAIL: $*" >&2; exit 1; }
-shot() { adb $SERIAL shell screencap -p /sdcard/dsh-shot.png >/dev/null 2>&1 && adb $SERIAL pull /sdcard/dsh-shot.png "$OUT/screens/$1.png" >/dev/null 2>&1 || true; }
+shot() { adbsh shell screencap -p /sdcard/dsh-shot.png >/dev/null 2>&1 && adbsh pull /sdcard/dsh-shot.png "$OUT/screens/$1.png" >/dev/null 2>&1 || true; }
 adbsh() { if [ -n "$SERIAL" ]; then adb -s "$SERIAL" "$@"; else adb "$@"; fi; }
 
 mkdir -p "$OUT/screens"
@@ -52,7 +52,7 @@ adbsh install -r "$APK" >/dev/null || die "adb install failed"
 # ---- 3. fixtures: one photo in the media store -------------------------------
 say "3/6 seeding the media-store photo"
 SEED_JPG="$OUT/screens/.media-seed.jpg"
-PNG_SRC=$(ls hosts/ios/artifacts/gateway/screens/*.png 2>/dev/null | head -1 || true)
+PNG_SRC=$(find hosts/ios/artifacts/gateway/screens -maxdepth 1 -name '*.png' 2>/dev/null | sort | head -1 || true)
 if [ -n "$PNG_SRC" ] && command -v sips >/dev/null 2>&1; then
     sips -s format jpeg -Z 128 "$PNG_SRC" --out "$SEED_JPG" >/dev/null 2>&1 || true
 fi

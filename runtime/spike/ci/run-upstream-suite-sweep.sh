@@ -91,7 +91,7 @@ export ROOT SPIKE LOGDIR FRAGS
         && node transpile.mjs >/dev/null)
 }
 
-ls "$SPIKE/upstream-tests/"*.spec.mjs | sort | \
+find "$SPIKE/upstream-tests" -maxdepth 1 -name '*.spec.mjs' | sort | \
     xargs -P "$PARAL" -I{} bash -c 'worker "$@"' _ {}
 
 {
