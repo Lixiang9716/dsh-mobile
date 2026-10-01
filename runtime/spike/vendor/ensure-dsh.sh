@@ -87,31 +87,58 @@ cd "$(dirname "$0")"
 DSH_BASE="https://raw.githubusercontent.com/anywhere-labs/dsh-desktop/master/vendor/dsh-runtime/0.1.6-alpha.2"
 NPM_BASE="https://registry.npmjs.org"
 
-# fetch_retry <url> <out> — bounded retries around a TRANSIENT download failure.
-#
-# Measured: one upstream `curl: (56) The requested URL returned error: 504`
-# failed an entire CI job (run 35614651794, the iOS "Vendor quickjs-ng + the
-# pinned upstream DSH closure" step) and did not recur — transient, not
-# systemic. `--retry` alone does not cover it: that retries connection blips,
-# while a 504 from the origin or a proxy is not reliably in its retry set.
-#
-# The integrity check is deliberately NOT part of this: every caller still
-# verifies sha256 over what lands, so a retry can never turn a corrupt or
-# truncated download into an accepted one. Bounded at 3 attempts, and it fails
-# loud naming the URL.
+# fetch_retry <url> <out> — bounded retries around a TRANSIENT download
+# failure, with the window sized for CI's cold materialization: when neither
+# the CI cache nor the tracked mirror has the bytes, the runner's network is
+# the ONLY path, and a blip there must not sink the job (measured: one
+# upstream `curl: (56) ... 504` failed an entire CI job, run 35614651794,
+# and did not recur). 5 outer attempts, inner curl --retry 2, waits of
+# 5/10/20/40 between them — ~75s of pacing plus up to 15 dials worst case,
+# still bounded. `--retry` alone does not cover a 504; that is why the outer
+# loop states the policy where it can be read.
 fetch_retry() {
-  _url="$1"; _out="$2"; _n=0
-  while [ "$_n" -lt 3 ]; do
+  _url="$1"; _out="$2"; _n=0; _wait=5
+  while [ "$_n" -lt 5 ]; do
     _n=$((_n + 1))
-    if curl -fL --retry 3 --retry-delay 5 --connect-timeout 20 \
-         "$_url" -o "$_out" 2>/dev/null; then
+    if curl -fsSL --retry 2 --retry-delay 3 --connect-timeout 20 --max-time 300 \
+         "$_url" -o "$_out"; then
       return 0
     fi
-    echo "vendor: download attempt $_n/3 failed: $_url" >&2
-    [ "$_n" -lt 3 ] && sleep 5
+    echo "vendor: download attempt $_n/5 failed: $_url" >&2
+    if [ "$_n" -lt 5 ]; then sleep "$_wait"; _wait=$((_wait * 2)); fi
   done
-  echo "vendor: download FAILED after 3 attempts: $_url" >&2
+  echo "vendor: download FAILED after 5 attempts: $_url" >&2
   return 1
+}
+
+# fetch_verified <label> <url> <out> <sha256> — the download WITH its
+# integrity check, retried as one bounded unit. A 200 with a truncated or
+# corrupt body passes curl's exit code, so the digest check sits inside the
+# retry window (a retry policy ABOVE verification would just accept a bad
+# artifact more persistently): a digest mismatch refetches, and three
+# mismatches fail loud naming the package, the source URL, and the expected
+# digest — never a bare shasum line on a mktemp filename (that cryptic death
+# is what a swallowed failure looked like downstream, #289 feedback: the
+# ensure script gave no name and the gap surfaced only at a later gate).
+fetch_verified() {
+  _label="$1"; _url="$2"; _out="$3"; _sha="$4"; _d=0
+  while :; do
+    fetch_retry "$_url" "$_out" || {
+      echo "vendor: $_label — download FAILED after retries from $_url" >&2
+      exit 1
+    }
+    if echo "$_sha  $_out" | shasum -a 256 -c - >/dev/null 2>&1; then
+      return 0
+    fi
+    _d=$((_d + 1))
+    if [ "$_d" -ge 3 ]; then
+      echo "vendor: $_label — sha256 MISMATCH after 3 fetches from $_url (expected $_sha) — refusing to continue" >&2
+      rm -f "$_out"
+      exit 1
+    fi
+    echo "vendor: $_label — digest mismatch (fetch $_d) — refetching from $_url" >&2
+    rm -f "$_out"
+  done
 }
 
 
@@ -258,9 +285,8 @@ fetch_dsh() {
             || echo "vendor: mirror digest mismatch for $tgz — falling through to network" >&2
     fi
     if [ ! -s "$tmp" ]; then
-        fetch_retry "$DSH_BASE/$tgz" "$tmp"
+        fetch_verified "dsh/$dir" "$DSH_BASE/$tgz" "$tmp" "$sha"
     fi
-    echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "$dir"
     mkdir -p "$dir"
     tar xzf "$tmp" -C "$dir" --strip-components=1
@@ -290,9 +316,8 @@ fetch_npm() {
             || echo "vendor: mirror digest mismatch for $dir — falling through to network" >&2
     fi
     if [ ! -s "$tmp" ]; then
-        fetch_retry "$NPM_BASE/$suffix" "$tmp"
+        fetch_verified "npm/$dir" "$NPM_BASE/$suffix" "$tmp" "$sha"
     fi
-    echo "$sha  $tmp" | shasum -a 256 -c - >/dev/null
     rm -rf "npm/$dir"
     mkdir -p "npm/$dir"
     # Directory modes ride the tarball verbatim, and some registry tarballs
@@ -330,5 +355,34 @@ echo "$NPM_PACKAGES" | while IFS='|' read -r dir suffix sha; do
     [ -z "$dir" ] && continue
     fetch_npm "$dir" "$suffix" "$sha"
 done
+
+# FINAL VERIFICATION — the script is its own gate, not a later gate's prey
+# (#289 feedback: a materialization gap surfaced only when a downstream gate
+# tripped over the missing tree). Every pin row must sit on disk with
+# package.json AND a stamp naming ITS digest; anything else is a named,
+# non-zero failure here, at top level (outside the fetch pipelines above, so
+# the verdict cannot be lost to a subshell boundary).
+miss=0
+for row in $DSH_PACKAGES; do
+    name=${row%%|*}; rest=${row#*|}; ver=${rest%%|*}; sha=${rest##*|}
+    dir="dsh/$name@$ver"
+    if ! [ -f "$dir/package.json" ] || ! [ -f "$dir/.vendor-pin" ] \
+        || [ "$(cat "$dir/.vendor-pin")" != "$sha" ]; then
+        echo "vendor: MISSING/UNSTAMPED $dir — pin $sha, source $DSH_BASE/deepseek-ai-dsh-$name-$ver.tgz" >&2
+        miss=1
+    fi
+done
+for row in $NPM_PACKAGES; do
+    dir=${row%%|*}; rest=${row#*|}; sha=${rest##*|}
+    if ! [ -f "npm/$dir/package.json" ] || ! [ -f "npm/$dir/.vendor-pin" ] \
+        || [ "$(cat "npm/$dir/.vendor-pin")" != "$sha" ]; then
+        echo "vendor: MISSING/UNSTAMPED npm/$dir — pin $sha, source $NPM_BASE/${rest%%|*}" >&2
+        miss=1
+    fi
+done
+[ "$miss" -eq 0 ] || {
+    echo "vendor: upstream DSH closure INCOMPLETE — see the MISSING/UNSTAMPED rows above; refusing to report ready" >&2
+    exit 1
+}
 
 echo "vendor: upstream DSH closure ready"

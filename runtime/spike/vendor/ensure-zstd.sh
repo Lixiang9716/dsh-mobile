@@ -50,10 +50,55 @@ if [ -f "$DIR/.vendor-pin" ] && [ "$(cat "$DIR/.vendor-pin")" = "$TARBALL_SHA256
     exit 0
 fi
 
+# fetch_retry <url> <out> — bounded retries around a TRANSIENT download
+# failure, window sized for CI's cold materialization (see ensure.sh for the
+# measured 504 that cost a CI job): 5 outer attempts, inner curl --retry 2,
+# waits 5/10/20/40. This script was the one download site the 2026-09-21
+# retry fix missed — it rode bare curl flags alone.
+fetch_retry() {
+  _url="$1"; _out="$2"; _n=0; _wait=5
+  while [ "$_n" -lt 5 ]; do
+    _n=$((_n + 1))
+    if curl -fsSL --retry 2 --retry-delay 3 --connect-timeout 20 --max-time 300 \
+         "$_url" -o "$_out"; then
+      return 0
+    fi
+    echo "vendor: download attempt $_n/5 failed: $_url" >&2
+    if [ "$_n" -lt 5 ]; then sleep "$_wait"; _wait=$((_wait * 2)); fi
+  done
+  echo "vendor: download FAILED after 5 attempts: $_url" >&2
+  return 1
+}
+
+# fetch_verified <label> <url> <out> <sha256> — download + integrity as ONE
+# bounded unit: a 200 with a truncated/corrupt body passes curl's exit, so a
+# digest mismatch REFETCHES; three mismatches fail loud naming label, source,
+# and expected digest (a bare shasum death names neither — #289 feedback).
+fetch_verified() {
+  _label="$1"; _url="$2"; _out="$3"; _sha="$4"; _d=0
+  while :; do
+    fetch_retry "$_url" "$_out" || {
+      echo "vendor: $_label — download FAILED after retries from $_url" >&2
+      exit 1
+    }
+    if echo "$_sha  $_out" | shasum -a 256 -c - >/dev/null 2>&1; then
+      return 0
+    fi
+    _d=$((_d + 1))
+    if [ "$_d" -ge 3 ]; then
+      echo "vendor: $_label — sha256 MISMATCH after 3 fetches from $_url (expected $_sha) — refusing to continue" >&2
+      rm -f "$_out"
+      exit 1
+    fi
+    echo "vendor: $_label — digest mismatch (fetch $_d) — refetching from $_url" >&2
+    rm -f "$_out"
+  done
+}
+
 TMP=$(mktemp /tmp/dsh-zstd.XXXXXX)
-curl -fsSL --retry 3 --retry-delay 5 --connect-timeout 20 \
-    "https://github.com/facebook/zstd/archive/refs/tags/v$VERSION.tar.gz" -o "$TMP"
-echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
+fetch_verified "zstd $VERSION" \
+    "https://github.com/facebook/zstd/archive/refs/tags/v$VERSION.tar.gz" \
+    "$TMP" "$TARBALL_SHA256"
 
 rm -rf "$DIR"
 mkdir -p "$DIR"
