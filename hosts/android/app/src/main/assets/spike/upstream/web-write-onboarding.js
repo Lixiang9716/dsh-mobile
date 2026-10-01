@@ -26,16 +26,28 @@
  *                        without a keychain fails loud (gateway/unavailable)
  *                        — the CLI's honest pre-2026-09-30 shape, never a
  *                        plaintext fallback.
- *
- * Removal (unset) is deliberately absent in v1: the boot adapter's key is
- * not reachable from the surface, so an in-process un-rebind would be a
- * lie. Named follow-up in the Agent Note.
+ *   onboarding/clear  → the inverse (the B29 round, 2026-10-01): keychainSet
+ *                        (BYOK_REF, null) — the frozen delete half — THEN
+ *                        restoreBootRoute (dispose the byok adapter,
+ *                        re-derive the boot route through the registered
+ *                        factory) THEN the surface's llmRoute mutation back.
+ *                        The #280-era stance ("an in-process un-rebind would
+ *                        be a lie") named the SURFACE's route view, which
+ *                        deliberately carries no credential facts; the leg
+ *                        lives RUNTIME-side like save does, so the honest
+ *                        shape is the installer handing the boot-route
+ *                        factory to upstream/llm-route.js — no key crosses
+ *                        the wire in either direction (the call takes NO
+ *                        arguments, returns {}). A surface whose installer
+ *                        registered no factory fails loud at the call
+ *                        (restoreBootRoute throws; the save leg's own
+ *                        fail-loud precedent), never a silent fake restore.
  */
 import { keychainSet, httpFetch } from '../gateway.js';
 import { streamChat } from '../llm.js';
 import {
   BYOK_REF, BYOK_PROVIDERS, decodeCredential, encodeCredential,
-  validateCredential, rebindLlmRoute,
+  validateCredential, rebindLlmRoute, restoreBootRoute,
 } from 'upstream/llm-route.js';
 
 const badRequest = (message) => (
@@ -91,6 +103,25 @@ const makeSaveHandler = (ctx, llmRoute) => async (args) => {
   return {};
 };
 
+/** The clear leg: delete the keychain ref (the frozen delete half), then
+ * restore the boot route through the registered factory, then point the
+ * surface's route back. Idempotent by construction — clearing an unset ref
+ * deletes nothing and the restored route IS the boot route. The key never
+ * crosses the wire: the call takes no arguments and the answer is {}.
+ * Sessions created while the byok route was live keep their provider
+ * binding (session/CREATE reads the route then); their next turn fails loud
+ * on the disposed adapter — the same live-session semantics a save's
+ * rebind has always had, in reverse. */
+const makeClearHandler = (ctx, llmRoute) => async () => {
+  await keychainSet(BYOK_REF, null);
+  const route = restoreBootRoute(ctx);
+  llmRoute.provider = route.provider;
+  llmRoute.model = route.model;
+  llmRoute.baseURL = route.baseURL;
+  llmRoute.kind = route.kind;
+  return {};
+};
+
 /** The connection test: ONE minimal real request over the gateway transport
  * (streamChat), streamed as mux items. A 24-token cap keeps the probe cheap;
  * the mock server's script answers in full either way. */
@@ -128,6 +159,7 @@ const runProbe = async (post, msg, args) => {
 export const buildOnboardingApi = (ctx, deps) => ({
   'onboarding/status': makeStatusHandler(deps.llmRoute),
   'onboarding/save': makeSaveHandler(ctx, deps.llmRoute),
+  'onboarding/clear': makeClearHandler(ctx, deps.llmRoute),
 });
 
 /** The onboarding mux stream open leg (one endpoint: onboarding/test). The

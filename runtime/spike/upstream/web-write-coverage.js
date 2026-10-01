@@ -70,8 +70,10 @@ export const COVERAGE_ENDPOINTS = [
   'settings/canOpenAgentPresetDirectory',
   // The BYOK onboarding panel's legs (web-write-onboarding.js): first-run
   // credential detect/test/save over the frozen keychain + httpFetch
-  // primitives — no new gateway primitive (the round's red line held).
-  'onboarding/status', 'onboarding/save',
+  // primitives — no new gateway primitive (the round's red line held) — and
+  // the clear leg (the B29 round): keychain delete + boot-route restore,
+  // fail-loud when the installer registered no factory.
+  'onboarding/status', 'onboarding/save', 'onboarding/clear',
   // The plugin marketplace's legs (web-write-marketplace.js): browse over
   // the SIGNED catalog (the resolver's ed25519 verify — the proposal's one
   // new seam), the install stream over the UNCHANGED installFromFetch, and

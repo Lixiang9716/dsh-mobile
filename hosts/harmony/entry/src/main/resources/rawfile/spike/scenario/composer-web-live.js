@@ -28,7 +28,7 @@ import { createLogger } from 'logger.js';
 import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
-import { resolveLlmRoute as sharedResolveLlmRoute } from 'upstream/llm-route.js';
+import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -467,6 +467,9 @@ const main = async () => {
   const route = await resolveLlmRoute(cfg);
 
   const ctx = await bootPhase(cfg, route);
+  // The unbind seam's factory: the boot route re-derived from the SAME cfg
+  // this boot resolved its route from (onboarding/clear's restore leg).
+  registerBootRouteFactory(ctx, () => bootRouteOf(cfg));
   await probeFsPrimitives();
   await probeWasmRun();
   await awaitAgent(ctx);

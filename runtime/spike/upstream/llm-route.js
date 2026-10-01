@@ -26,11 +26,26 @@
  * write surface's llmRoute — new sessions then route to the user's
  * endpoint. All through the vendored LlmRuntime's own registry API; no
  * gateway primitive is touched beyond the frozen set.
+ *
+ * The UNBIND seam (the B29 clear round, 2026-10-01): the inverse. The
+ * #280-era stance — "an in-process un-rebind would be a lie" — was true of
+ * the SURFACE's route view (web-write.js deps.llmRoute carries no credential
+ * facts by design), but the onboarding legs live RUNTIME-side with ctx, the
+ * same trust domain boot itself runs in: the boot route is a pure function
+ * of runtime.config (bootRouteOf), so the installer registers that factory
+ * here (registerBootRouteFactory) exactly as boot.js hands over the adapter
+ * disposer, and onboarding/clear re-derives the boot adapter from it. No key
+ * crosses the wire in either direction: the clear wire call takes NO
+ * arguments and returns {}. The registry also hands its configurable-provider
+ * DIRECTORY handle over (registerDirectoryHandle), so a rebind/restore swaps
+ * the models 设置页 row in the same breath — the display follows the live
+ * route instead of answering the boot row forever.
  */
 import { encodeUtf8, decodeUtf8 } from 'node:buffer';
 import { keychainGet } from '../gateway.js';
 import { createLogger } from '../logger.js';
 import { createGatewayLlmAdapter } from './llm-transport.js';
+import { providerSettingsNs } from './web-write-settings.js';
 
 const log = createLogger('dsh.llm-route');
 
@@ -39,10 +54,12 @@ export const BYOK_REF = 'dsh.llm/byok-route';
 
 /** The panel's provider rows (mirrored in the page bundle — see
  * presentation/web-client-next/web/js/onboarding-core.js; this repo mirrors
- * page-side vocabulary deliberately, it never imports runtime code). */
+ * page-side vocabulary deliberately, it never imports runtime code).
+ * `displayName` is the models-directory row label — the same strings the
+ * page's PROVIDERS render. */
 export const BYOK_PROVIDERS = {
-  deepseek: { baseURL: 'https://api.deepseek.com', model: 'deepseek-chat' },
-  'openai-compatible': { baseURL: '', model: '' },
+  deepseek: { displayName: 'DeepSeek', baseURL: 'https://api.deepseek.com', model: 'deepseek-chat' },
+  'openai-compatible': { displayName: 'OpenAI 兼容', baseURL: '', model: '' },
 };
 
 const PROVIDER_PATTERN = /^[a-z0-9][a-z0-9-]{0,40}$/;
@@ -166,6 +183,7 @@ export const byokRoute = (credential) => {
     kind: 'byok',
     baseURL: credential.baseURL, apiKey: credential.apiKey, provider: credential.provider,
     model: credential.model, scripted: false, userEndpoint: true,
+    displayName: BYOK_PROVIDERS[credential.provider]?.displayName,
     adapterName: `BYOK onboarding endpoint (${credential.provider})`,
     transportLabel: `gateway httpFetch → ${host} (BYOK onboarding credential)`,
   };
@@ -177,35 +195,85 @@ export const byokRoute = (credential) => {
 export const resolveLlmRoute = async (cfg) =>
   stagedRoute(cfg) ?? byokOrMock(cfg);
 
+/** The BOOT route without the byok leg: staged → mock — the route the seat
+ * would boot had no BYOK credential ever been stored. The unbind seam's
+ * factory wraps this; a clear restores exactly these facts. */
+export const bootRouteOf = (cfg) => stagedRoute(cfg) ?? mockRoute(cfg);
+
 const byokOrMock = async (cfg) => {
   const credential = await decodeCredential();
   return credential === null ? mockRoute(cfg) : byokRoute(credential);
 };
 
-// ---- the rebind seam -------------------------------------------------------
+// ---- the rebind / unbind seams ---------------------------------------------
 
-const routeDisposers = new WeakMap();
+/** The seam registries, keyed by the boot CONTEXT — never by the llm
+ * runtime service object: `ctx.get('llm')` hands out a FRESH wrapper per
+ * access (measured 2026-10-01 on the CLI spike host: two gets of the same
+ * mounted service fail `===` while carrying the same target state), so a
+ * runtime-keyed map misses every lookup made through a later get. The ctx
+ * is the one object every seam site holds by reference — bootUpstream's
+ * return value, handed to the write surface and the installers unchanged.
+ * Deliberately STRONG Maps: a process holds ONE boot context and a handful
+ * of seam entries, so references for the process lifetime are the honest
+ * shape. */
+const routeDisposers = new Map();
+/** The boot-route factories: the ONE registration the installer
+ * (composer-web-live, the scenario legs) makes with the runtime.config it
+ * resolved the boot route from. */
+const bootRouteFactories = new Map();
+/** The vendored configurable-provider DIRECTORY handles (boot.js hands its
+ * registration over; a rebind/restore atomically replaces the row — the
+ * vendored handle's own `.replace`). */
+const directoryHandles = new Map();
 
 /** boot.js hands its adapter registration's disposer over at mount, so a
  * rebind can replace the boot route's adapter (the vendored registry throws
  * DUPLICATE_ADAPTER on a plain second registration). */
-export const registerRouteDisposer = (runtime, disposer) => {
-  routeDisposers.set(runtime, disposer);
+export const registerRouteDisposer = (ctx, disposer) => {
+  routeDisposers.set(ctx, disposer);
 };
+
+/** The installer registers how to re-derive the BOOT route (staged → mock,
+ * never byok) from the runtime.config it holds. Absent, an onboarding/clear
+ * call fails loud — a surface whose installer never registered the factory
+ * cannot honestly claim the clear leg. */
+export const registerBootRouteFactory = (ctx, factory) => {
+  bootRouteFactories.set(ctx, factory);
+};
+
+/** boot.js hands its configurable-provider directory registration over, so a
+ * route swap moves the models 设置页 row with it (display-only; the turn
+ * path reads the adapter registry, not the directory). */
+export const registerDirectoryHandle = (ctx, handle) => {
+  directoryHandles.set(ctx, handle);
+};
+
+/** The directory row for one route — the exact shape boot.js declares at
+ * mount (provider/displayName/settingsNs/settingsPath). */
+export const directoryRowFor = (route) => ({
+  provider: route.provider,
+  displayName: route.displayName
+    ?? BYOK_PROVIDERS[route.provider]?.displayName
+    ?? 'OpenAI 兼容',
+  settingsNs: providerSettingsNs(route.provider),
+  settingsPath: ['providers', 'default'],
+});
 
 /** Swap the live transport to one user credential. Returns the adapter
  * labels the caller may emit; NEVER the credential. Throws (fail loud) when
  * no llm runtime is mounted or the vendored registry rejects — a save that
- * cannot rebind must not report success. */
+ * cannot rebind must not report success. The directory row swaps in the same
+ * breath (the models 设置页 row follows the live route). */
 export const rebindLlmRoute = (ctx, credential) => {
   const runtime = ctx.get('llm');
   if (runtime === undefined) {
     throw new Error('llm-route: no llm runtime is mounted — cannot rebind');
   }
   const route = byokRoute(credential);
-  const previous = routeDisposers.get(runtime);
+  const previous = routeDisposers.get(ctx);
   if (previous !== undefined) previous();
-  routeDisposers.set(runtime, runtime.registerAdapter([route.provider], createGatewayLlmAdapter({
+  routeDisposers.set(ctx, runtime.registerAdapter([route.provider], createGatewayLlmAdapter({
     baseURL: route.baseURL,
     apiKey: route.apiKey,
     provider: route.provider,
@@ -215,5 +283,39 @@ export const rebindLlmRoute = (ctx, credential) => {
     onSse: route.onSse,
     onRequestBody: route.onRequestBody,
   })));
+  directoryHandles.get(ctx)?.replace([directoryRowFor(route)]);
+  return route;
+};
+
+/** The UNBIND: dispose the current adapter and re-derive the BOOT route from
+ * the registered factory (staged → mock — the byok leg is never restored;
+ * its credential was just deleted). Mirrors rebindLlmRoute exactly, down to
+ * the fail-loud contract: no runtime, no factory, or a registry rejection
+ * throws — a clear that cannot unbind must not report success. Returns the
+ * restored route (the caller mutates its surface view from it); NEVER the
+ * credential. */
+export const restoreBootRoute = (ctx) => {
+  const runtime = ctx.get('llm');
+  if (runtime === undefined) {
+    throw new Error('llm-route: no llm runtime is mounted — cannot restore');
+  }
+  const factory = bootRouteFactories.get(ctx);
+  if (typeof factory !== 'function') {
+    throw new Error('llm-route: no boot-route factory registered — cannot restore');
+  }
+  const route = factory();
+  const previous = routeDisposers.get(ctx);
+  if (previous !== undefined) previous();
+  routeDisposers.set(ctx, runtime.registerAdapter([route.provider], createGatewayLlmAdapter({
+    baseURL: route.baseURL,
+    apiKey: route.apiKey,
+    provider: route.provider,
+    name: route.adapterName,
+    userEndpoint: route.userEndpoint,
+    onWire: route.onWire,
+    onSse: route.onSse,
+    onRequestBody: route.onRequestBody,
+  })));
+  directoryHandles.get(ctx)?.replace([directoryRowFor(route)]);
   return route;
 };

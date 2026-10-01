@@ -34,10 +34,15 @@ export const providerSettingsNs = (provider) => `llm-${String(provider)}`;
 /** The models 设置页 renders a provider row only when its settingsNs
  * resolves in the settings mirror; an unregistered route is invisible. The
  * MOBILE COMPOSITION therefore registers the configured route's namespace
- * with the STAGED ROUTE as its base layer — the truthful topology (one
- * profile `default`, backed by the staged credential, base-owned so the
- * page cannot offer 移除 on a route the host staged). The user layer stays
- * free for the page's writes. */
+ * with the LIVE ROUTE as its base layer — the truthful topology (one profile
+ * `default`, backed by whatever the route currently is: the staged
+ * credential, or the BYOK credential a save rebound — base-owned so the page
+ * cannot offer 移除 on a route the host staged). The user layer stays free
+ * for the page's writes. A route swap (BYOK save/clear) lands under a NEW
+ * provider name, so the guard top-ups the registration per provider as the
+ * live route's provider changes; the superseded namespace stays registered
+ * (the settings service has no unregister) but names no directory row
+ * anymore — the directory handle swap (llm-route.js) is what delists it. */
 const registerProviderNamespace = (settings, llmRoute) => {
   settings.register(providerSettingsNs(llmRoute.provider), Schema.object({
     providers: Schema.object({
@@ -58,8 +63,12 @@ const registerProviderNamespace = (settings, llmRoute) => {
 
 /** Memoized registration of the namespaces the OFFICIAL web composition
  * registers host side. The acknowledgement write lands only after this
- * resolves, so every settings call awaits it first. */
+ * resolves, so every settings call awaits it first. The provider-route
+ * namespace re-checks per call: a BYOK save/clear swaps the live route's
+ * provider, and the FIRST settings call after that registers the new
+ * provider's namespace with the route's current facts as its base layer. */
 export const makeNamespaceGuard = (ctx, llmRoute) => {
+  const registered = new Set();
   let ready = null;
   const register = () => ctx.plugin({
     name: 'mobile web composition settings namespaces (ui-onboarding + provider route)',
@@ -68,13 +77,19 @@ export const makeNamespaceGuard = (ctx, llmRoute) => {
       settings?.register('ui-onboarding',
         Schema.object({ welcomeNoticeVersion: Schema.string() }));
       if (settings !== undefined && llmRoute !== undefined) {
+        registered.add(llmRoute.provider);
         registerProviderNamespace(settings, llmRoute);
       }
     },
   }).then(() => undefined);
   return () => {
     ready ??= register();
-    return ready;
+    return ready.then(() => {
+      if (ctx.get('settings') === undefined || llmRoute === undefined) return;
+      if (registered.has(llmRoute.provider)) return;
+      registered.add(llmRoute.provider);
+      registerProviderNamespace(ctx.get('settings'), llmRoute);
+    });
   };
 };
 

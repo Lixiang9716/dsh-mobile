@@ -8,8 +8,12 @@
     { "event": "onboarding.probe.failed", "match": { "code": "gateway/unavailable", "httpStatus": 401 } },
     { "event": "onboarding.saved", "match": { "mode": "byok", "provider": "deepseek" } },
     { "event": "onboarding.detect.after", "match": { "mode": "byok", "configured": true } },
+    { "event": "onboarding.directory.byok", "match": { "provider": "deepseek", "settingsNs": "llm-deepseek" } },
     { "event": "onboarding.relaunch.route", "match": { "kind": "byok", "scripted": false, "provider": "deepseek", "model": "mock-1" } },
     { "event": "onboarding.first.turn", "match": { "text": "Hello from upstream", "provider": "deepseek" } },
+    { "event": "onboarding.clear", "match": { "mode": "mock", "provider": "mock" } },
+    { "event": "onboarding.directory.restored", "match": { "provider": "mock", "settingsNs": "llm-mock" } },
+    { "event": "onboarding.second.turn", "match": { "text": "Hello from upstream", "provider": "mock" } },
     { "event": "onboarding.flow/completed", "match": { "status": "pass" } }
   ]
 }

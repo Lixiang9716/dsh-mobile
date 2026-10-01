@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   PROVIDERS, PROVIDER_IDS, validateDraft, shouldShowPanel, statusLine,
   readableProbeError, probeLine, saveEnabled, draftFingerprint,
+  canClear, manageLine, clearedLine,
 } from '../../presentation/web-client-next/web/js/onboarding-core.js';
 
 const validDraft = () => ({
@@ -73,6 +74,39 @@ describe('statusLine — bilingual', () => {
       expect(line.en.length).toBeGreaterThan(0);
       expect(line.zh.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe('canClear + manageLine — the saved-key manage face (the B29 clear round)', () => {
+  it('offers removal for a saved byok key only', () => {
+    expect(canClear({ mode: 'byok', provider: 'deepseek' })).toBe(true);
+    expect(canClear({ mode: 'staged' })).toBe(false);
+    expect(canClear({ mode: 'mock' })).toBe(false);
+    expect(canClear(undefined)).toBe(false);
+  });
+
+  it('the byok summary names provider + endpoint and never key material', () => {
+    const line = manageLine({
+      mode: 'byok', provider: 'deepseek',
+      baseURL: 'https://api.deepseek.com', model: 'deepseek-chat',
+    });
+    expect(line.en).toContain('deepseek');
+    expect(line.en).toContain('https://api.deepseek.com');
+    expect(line.zh).toContain('deepseek');
+    expect(JSON.stringify(line)).not.toContain('apiKey');
+  });
+
+  it('a staged credential reads as not-removable (the host seat owns it)', () => {
+    const line = manageLine({ mode: 'staged', provider: 'mock' });
+    expect(line.en).toContain('not removable');
+    expect(line.zh.length).toBeGreaterThan(0);
+  });
+
+  it('mock reads as nothing-yet, and the cleared line is honest about new sessions', () => {
+    expect(manageLine({ mode: 'mock' }).en).toContain('No model credential');
+    const line = clearedLine();
+    expect(line.en).toContain('new sessions');
+    expect(line.zh).toContain('新会话');
   });
 });
 

@@ -62,6 +62,44 @@ export function shouldShowPanel(status) {
   return status?.mode === 'mock';
 }
 
+/** Whether the saved credential is removable through onboarding/clear: only
+ * the panel's OWN keychain ref (mode byok). A staged credential belongs to
+ * the host seat — removal is not this panel's to offer; mock has nothing to
+ * remove. */
+export function canClear(status) {
+  return status?.mode === 'byok';
+}
+
+/** The manage view's one-line summary (a configured user who opens the
+ * panel from the home button sees this, not the setup form). Carries the
+ * same facts onboarding/status does — never key material. */
+export function manageLine(status) {
+  switch (status?.mode) {
+    case 'byok':
+      return {
+        en: `Your ${status.provider} key is saved — requests go to ${status.baseURL}`,
+        zh: `已保存你的 ${status.provider} 密钥 — 请求发往 ${status.baseURL}`,
+      };
+    case 'staged':
+      return {
+        en: 'This device uses the pre-configured endpoint (not removable here)',
+        zh: '本机使用预配置端点(此处不可移除)',
+      };
+    default:
+      return { en: 'No model credential yet', zh: '尚未配置模型密钥' };
+  }
+}
+
+/** The confirmation line after onboarding/clear succeeds. Honest about the
+ * live-session semantics: sessions created under the removed route keep
+ * their binding; NEW sessions take the restored default route. */
+export function clearedLine() {
+  return {
+    en: 'Saved key removed — new sessions take the default route',
+    zh: '已移除保存的密钥 — 新会话走默认路由',
+  };
+}
+
 /** The panel's one-line status subtitle for a status answer. */
 export function statusLine(status) {
   switch (status?.mode) {
