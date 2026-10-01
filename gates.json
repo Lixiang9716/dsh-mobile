@@ -18,6 +18,7 @@
       "closures",
       "vendoring-repro",
       "bundle-files",
+      "webclient-staged-tree",
       "quickjs-boot-parse",
       "staging-check",
       "coverage-floor",
@@ -244,6 +245,18 @@
         "self-test"
       ],
       "timeoutMs": 120000
+    },
+    {
+      "id": "webclient-staged-tree",
+      "command": [
+        "sh",
+        "tools/check-webclient-staged-tree.sh"
+      ],
+      "description": "presentation/web-client-next holds exactly its shipped files — the whole-tree-staged harmony HAP directory admits no tooling leakage (the #288 CI-only invariant, now a real gate; A12)",
+      "needs": [
+        "self-test"
+      ],
+      "timeoutMs": 60000
     },
     {
       "id": "quickjs-boot-parse",
