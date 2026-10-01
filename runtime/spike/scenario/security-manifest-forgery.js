@@ -28,16 +28,23 @@
  * Every rejection is audited (one event each) and leaves zero staging and
  * no receipt/journal — the transaction never reached its commit point.
  *
- * The freshness rung — forge.rollback.catalog — replays a STALE BUT VALID
- * catalog: an honestly signed old index (0.9.0, signed by the pinned test
- * key, served by the runner's loopback hosting — the model for a compromised
- * mirror serving content the publisher once published). The resolver's
- * signature discipline verifies it; the rung records what the installer
- * then does. TODAY it installs: the catalog carries no freshness anchor
- * (no monotonic generatedAt floor, no epoch in the pin), so a replayed
- * catalog is a version-rollback channel — recorded in the threat model as
- * the supply-chain face's named HIGH finding. The event pins today's truth;
- * a freshness guard landing flips this manifest.
+ * The freshness rung — forge.rollback.catalog — attacks the CATALOG'S
+ * FRESHNESS: a stale-but-VALID catalog (an honestly signed old index,
+ * served by the runner's loopback hosting — the model for a compromised
+ * mirror serving content the publisher once published). The rung's shape:
+ * the CURRENT catalog is refreshed FIRST (forge.freshness.anchor — first
+ * contact anchors the monotonic generatedAt floor through the app-scope
+ * freshness store; a fresh client is never bricked), THEN the stale
+ * catalog replays: the freshness anchor refuses it at REFRESH — before
+ * the resolver holds it as state and before any install — as
+ * `catalog`/stale (forge.rollback.catalog outcome=rejected), nothing
+ * stages, and the current catalog still refreshes afterward (equal floor
+ * passes — the guard does not brick honest refreshes). This rung used to
+ * pin the HIGH finding (the replay installed, #295); the freshness anchor
+ * landing flipped the pinned expectation to `rejected` in the same
+ * change, per the threat model's maintenance contract. Falsify-first
+ * keeps the flip honest: with the floor check neutered the replay lands
+ * again and this checker reddens.
  *
  * The control face: after the whole ladder an HONEST package installs
  * (forge.survived) — the pipeline still serves honest publishers.
@@ -46,6 +53,7 @@ import { createLogger } from 'logger.js';
 import { fsRead, httpFetch } from 'gateway.js';
 import { installPackage, InstallRejected } from 'install-pipeline.js';
 import { createResolver } from 'marketplace.js';
+import { createFreshnessAnchor } from 'freshness-store.js';
 import { tarWrite } from 'tar-mini.js';
 import { sha256Hex } from 'sha256.js';
 
@@ -230,25 +238,40 @@ const pipelineLadder = async () => {
   emit('forge.pipeline.rejected', { cases: rejectedCount });
 };
 
-/** Rung 6: the freshness face — refresh against the stale-but-VALID catalog
- * and record what the installer then does (fetchImpl is the typed
- * httpFetch — install-fetch drains the body stream). */
+/** Rung 6: the freshness face — the CURRENT catalog anchors the monotonic
+ * generatedAt floor on first contact (never a brick), then the
+ * stale-but-VALID catalog replays against the SAME anchor store: the floor
+ * refuses it at refresh, before any install. After the rejection the
+ * current catalog refreshes again — equal floor passes, the guard holds
+ * no grudge. (fetchImpl is the typed httpFetch — install-fetch drains the
+ * body stream.) */
 const freshnessRung = async () => {
-  const resolver = createResolver({
-    fetchImpl: (url) => httpFetch(url, { method: 'GET' }),
-    indexUrl: `${INDEX_URL}/index-rollback.json`,
-    pinnedKeys: PINNED_KEYS,
-    on: (name, fields) => {
+  // One anchor per device, not per resolver: BOTH resolvers share the same
+  // app-scope floor — that shared floor IS the replay defense.
+  const anchor = createFreshnessAnchor();
+  const makeWith = (indexUrl) => {
+    const fetchGet = (url) => httpFetch(url, { method: 'GET' });
+    const on = (name, fields) => {
       const out = { ...fields };
       if (typeof out.url === 'string') out.url = urlPath(out.url);
       log.debug('resolver step', { name, ...out });
-    },
-  });
-  const catalog = await resolver.refresh();
-  log.debug('rollback catalog verified', { entries: catalog.entries, generatedAt: catalog.generatedAt });
+    };
+    return createResolver({
+      fetchImpl: fetchGet, indexUrl, pinnedKeys: PINNED_KEYS, anchor, on,
+    });
+  };
+  const current = makeWith(`${INDEX_URL}/index.json`);
+  const stale = makeWith(`${INDEX_URL}/index-rollback.json`);
+
+  // First contact: no floor yet — the current catalog anchors it.
+  const cur = await current.refresh();
+  emit('forge.freshness.anchor', { anchored: cur.generatedAt, via: 'first-contact' });
+
+  // The replay: older than the floor, honestly signed — refused at refresh.
   let rollbackLanded = false;
   try {
-    const done = await resolver.install({ spec: 'dsh-echo@*', txId: 'sec-f006', on: onInstall });
+    await stale.refresh();
+    const done = await stale.install({ spec: 'dsh-echo@*', txId: 'sec-f006', on: onInstall });
     const staged = await fsRead('app', 'plugins/dsh-echo@0.9.0/manifest.json');
     demand(toText(staged.bytes).includes('"version": "0.9.0"')
       || toText(staged.bytes).includes('"version":"0.9.0"'),
@@ -260,6 +283,21 @@ const freshnessRung = async () => {
   } catch (err) {
     emit('forge.rollback.catalog', {
       outcome: 'rejected', code: err.code ?? 'unknown', via: 'catalog-replay',
+    });
+  }
+  if (!rollbackLanded) {
+    // the refused replay staged nothing
+    try {
+      await fsRead('app', 'plugins/.staging-sec-f006/manifest.json');
+      demand(false, 'the rejected replay staged a tree: sec-f006');
+    } catch (err) {
+      demand(err.code === 'io', `expected io for staging-sec-f006, got ${err.code}`);
+    }
+    // and the guard does not brick: the current catalog still refreshes
+    const again = await current.refresh();
+    demand(again.generatedAt === cur.generatedAt, 'the current catalog drifted mid-rung');
+    emit('forge.freshness.honest-refresh', {
+      generatedAt: again.generatedAt, outcome: 'accepted',
     });
   }
   return rollbackLanded;

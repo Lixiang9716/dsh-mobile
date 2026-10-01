@@ -20,7 +20,7 @@
     "pinnedKey": "dsh-market-1 (repo-config stand-in hardcoded in the scenario; production key lives in the signing CI, never in the repo)"
   },
   "checker": "test/e2e/scenarios/marketplace-install.json",
-  "events": 71,
+  "events": 72,
   "determinism": "fixed seeds + fixed generatedAt + deterministic ustar + ephemeral-port URLs normalized to paths in the log; catalog bytes reproducible from the repo",
   "exitCode": 0
 }

@@ -1,8 +1,8 @@
 {
   "scenario": "marketplace.install",
   "pass": true,
-  "expected": 71,
-  "logged": 71,
+  "expected": 72,
+  "logged": 72,
   "failures": [],
   "parseErrors": []
 }

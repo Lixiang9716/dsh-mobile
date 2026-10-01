@@ -32,6 +32,7 @@ import { httpFetch } from 'gateway.js';
 import { bootUpstream } from 'upstream/boot.js';
 import { createWriteSurface } from 'upstream/web-write.js';
 import { createResolver } from 'marketplace.js';
+import { createFreshnessAnchor } from 'freshness-store.js';
 import { ed25519SelfTest } from 'ed25519.js';
 
 const SCENARIO = 'perf.baseline';
@@ -122,9 +123,10 @@ const turnPhase = async (ctx) => {
   emit('perf.session.turn', { turnMs, textLen: text.length, sessionIdPrefix: sessionId.slice(0, 8) });
 };
 
-/** Phase 3 — SIGNED-CATALOG INSTALL: refresh (fetch + ed25519 verify) and
- * install (fetch → extract → verify → commit), each timed. The resolver's
- * own lifecycle events stay silent here (marketplace.install owns their
+/** Phase 3 — SIGNED-CATALOG INSTALL: refresh (fetch + ed25519 verify + the
+ * freshness anchor — the resolver is REQUIRED to carry one) and install
+ * (fetch → extract → verify → commit), each timed. The resolver's own
+ * lifecycle events stay silent here (marketplace.install owns their
  * one-to-one audit); this leg carries only the numbers. */
 const installPhase = async () => {
   log.debug('install phase begin');
@@ -133,6 +135,7 @@ const installPhase = async () => {
     fetchImpl: (url) => httpFetch(url, { method: 'GET' }),
     indexUrl: `${MARKET_URL}/index.json`,
     pinnedKeys: PINNED_KEYS,
+    anchor: createFreshnessAnchor(),
   });
   const tRefresh = Date.now();
   const index = await resolver.refresh();
