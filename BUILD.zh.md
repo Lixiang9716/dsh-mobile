@@ -51,6 +51,24 @@ bundle 都是规范 `runtime/spike` 闭包的**已提交副本**——这是刻�
 iOS 走确定性重生成 + `git diff --quiet`）。如果它红了：
 `build/build.sh sync <platform>`。
 
+## 资产镜像族（web 客户端）
+
+自托管 web 客户端是第二个镜像族：产品树
+`presentation/web-client-{next,whale}` 的字节经由三张宿主面孔出货——
+android 的 `assets/spike/webclient-*/`、harmony 的
+`rawfile/spike/webclient/dsh-web-client-*/`，以及 iOS 嵌入器的
+`WEBCLIENT_TREES` 声明（其 bundle 在构建时从产品树重新生成，所以声明
+才是那一份已提交的主张）。绕开镜像的产品改动就是 #286 那一类
+（timeline.js 在 android 一道空转的 `--check` 循环里活了两个 PR）。
+现在有两张面管着它：
+
+- `closures` 门禁内部的逐宿主字节校验（stager 的 `--check` 循环——
+  android webclient 循环的 `./` 前缀 SKIP 缺口已修，这个方向重新咬人）；
+- `node tools/check-asset-mirrors.mjs [--json]`——跨宿主比较器
+  （warn 级 `asset-mirrors` 门）：族内每个镜像双向比对（stale、
+  missing、extra），外加 iOS 嵌入器声明对族；其拒绝用例在
+  `.gov/rejections/case-asset-mirrors.sh`。
+
 ## CMake 层（同一张图，多一张面孔）
 
 顶层 `CMakeLists.txt` + `CMakePresets.json` 把构建表达成一张带统一入口的

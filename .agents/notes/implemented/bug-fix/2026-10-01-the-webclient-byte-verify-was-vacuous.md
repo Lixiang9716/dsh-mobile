@@ -76,7 +76,9 @@ Three moves, one change.
 
 ## Consequences
 
-The `untracked-but-staged` skip count drops by the webclient tree (~70
-files), so the count finally means what it says. The known-residual class:
+The `untracked-but-staged` skip count drops by the webclient family's 20
+files (16 next + 4 whale — measured 331 → 311 between base aec34d49's
+vacuous run and this tree's fixed run), so the count finally means what it
+says. The known-residual class:
 a product tree OUTSIDE the declared family still mirrors nothing — named
 informationally, not gated.

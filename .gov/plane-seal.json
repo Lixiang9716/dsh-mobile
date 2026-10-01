@@ -1,7 +1,7 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "e14c7f053ddff9776fdf3d9d7b343f0c12431eeaa7c8b2649ec8d1e569634e4f"
+      "sha256": "723fe843b95096c65763a62315ff9d85a6e21dccfb072effebc0544c0db667fa"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
@@ -44,9 +44,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T06:26:19+00:00",
+    "ts": "2026-10-01T07:29:01+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "asset-mirror drift triple (A11): gates.json gains the warn-grade asset-mirrors gate (tools/check-asset-mirrors.mjs + .gov/rejections/case-asset-mirrors.sh) per the orchestrator brief item 3; the #286 timeline.js mirror class measured escaping the android stager's vacuous webclient --check (./-prefix SKIP hole)"
+    "reason": "PR #292 review round: BUILD.md/BUILD.zh.md join .gov/pairing.json (rules.md rule 7 \u2014 the new asset-mirror section had landed EN-only; the pairing gate's include list did not cover root-level BUILD, a gate-adoption gap the review named) and the Agent Note's skip-count figure is corrected to the measured 20 (16+4; 331\u2192311)"
   }
 }

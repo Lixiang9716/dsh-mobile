@@ -3,7 +3,8 @@
     "docs/**/*.md",
     "contract/**/*.md",
     "deploy/**/*.md",
-    "README.md"
+    "README.md",
+    "BUILD.md"
   ],
   "counterparts": [
     "{stem}.zh.md"
