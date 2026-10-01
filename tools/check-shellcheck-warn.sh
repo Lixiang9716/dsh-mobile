@@ -72,16 +72,30 @@ COUNT=$(printf '%s\n' "$SCRIPTS" | wc -l | tr -d ' ')
 
 # 3. The judgment: severity floor at warning — error + warning count, threshold 0.
 # SCRIPTS is a whitespace-separated path list — each path is its own shellcheck argv
+ERRFILE=$(mktemp)
+trap 'rm -f "$ERRFILE"' EXIT
+RC=0
 # shellcheck disable=SC2086 # intentional word split
-OUT="$("$SHELLCHECK_BIN" -S warning --format=json1 $SCRIPTS 2>/dev/null || true)"
+OUT="$("$SHELLCHECK_BIN" -S warning --format=json1 $SCRIPTS 2>"$ERRFILE")" || RC=$?
+# rc 0 = clean, 1 = findings — both are judgments this gate reads. rc >= 2
+# means shellcheck could NOT judge (an unreadable surface file, bad usage,
+# an internal error): reading that as zero findings is exactly the fake
+# green this gate exists to kill (PR #294 review), so it fails loud.
+if [ "$RC" -ge 2 ]; then
+    sed 's/^/shellcheck-warn: shellcheck: /' "$ERRFILE" >&2
+    echo "shellcheck-warn: FAIL — shellcheck could not judge the surface (rc=$RC over $COUNT scripts); refusing a vacuous pass" >&2
+    exit 1
+fi
+[ ! -s "$ERRFILE" ] || sed 's/^/shellcheck-warn: shellcheck: /' "$ERRFILE" >&2
 N=$(printf '%s' "$OUT" | python3 -c '
 import json, sys
 try:
     comments = json.load(sys.stdin).get("comments", [])
 except Exception:
-    comments = []
+    sys.stderr.write("shellcheck-warn: shellcheck emitted unparseable output; reading it as zero findings would be a fake green\n")
+    sys.exit(3)
 print(len(comments))
-')
+') || { echo "shellcheck-warn: FAIL — unparseable shellcheck output (python rc=$?); refusing a vacuous pass" >&2; exit 1; }
 if [ "$N" -gt 0 ]; then
     printf '%s' "$OUT" | python3 -c '
 import json, sys

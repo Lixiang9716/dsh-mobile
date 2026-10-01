@@ -37,7 +37,7 @@
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
     ".gov/rejections/case-shellcheck-warn.sh": {
-      "sha256": "36812c86cc4267d1097f1e810f5eda5a047d4b2e6e286cc94f3b151b3fa70d77"
+      "sha256": "eaaba88fcae2fe17a21fcc85b9cc96ba145a8d2806730e37101771c432a8fc98"
     },
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
@@ -50,9 +50,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T07:57:05+00:00",
+    "ts": "2026-10-01T08:59:56+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "rebase onto #292's main: gates.json merged (asset-mirrors + shellcheck-warn + actionlint), seal re-baselined"
+    "reason": "PR #294 review round: the shellcheck-warn rejection case grows the unjudgeable-file leg; the gate gains the rc>=2 / unparseable-JSON fail-loud contract"
   }
 }
