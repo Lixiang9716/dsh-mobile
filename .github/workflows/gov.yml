@@ -73,10 +73,13 @@ jobs:
       # The actionlint gate skip-louds on an absent binary by design (agent
       # machines vary) — here the pinned release is installed so the gate is
       # never vacuous: v1.7.12, verified against the release's own
-      # checksums.txt before it lands on PATH. shellcheck is preinstalled on
-      # the runner image; the assert keeps that assumption loud instead of
-      # silent — if the image ever drops it, this step fails, not the gate.
-      - name: Install actionlint (pinned v1.7.12) + assert shellcheck
+      # checksums.txt before it lands on PATH. shellcheck is PINNED too
+      # (v0.11.0, sha256 verified): the runner image ships 0.9.0, and the
+      # actionlint gate's run:-block linting is version-sensitive — the first
+      # CI run of this workflow red'd on an SC2002 that shellcheck 0.11.0
+      # (every dev machine here) does not emit for the same bytes. One
+      # version everywhere, gate verdicts reproducible.
+      - name: Install actionlint (pinned v1.7.12) + shellcheck (pinned v0.11.0)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -88,7 +91,12 @@ jobs:
           tar -xzf actionlint_1.7.12_linux_amd64.tar.gz actionlint
           sudo mv actionlint /usr/local/bin/actionlint
           actionlint --version | grep -qx '1.7.12' || { echo "::error::actionlint pin drift: $(actionlint --version)" >&2; exit 1; }
-          command -v shellcheck || { echo "::error::shellcheck absent on the runner image — the shellcheck-warn gate would skip" >&2; exit 1; }
+          curl -fsSL --retry 3 -o sc.tar.xz \
+            https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
+          echo '8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  sc.tar.xz' | sha256sum -c -
+          tar -xJf sc.tar.xz
+          sudo mv shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
+          shellcheck --version | grep -qx 'version: 0.11.0' || { echo "::error::shellcheck pin drift: $(shellcheck --version | head -2 | tail -1)" >&2; exit 1; }
       # tree-sitter grammars need no separate install: govrail already
       # depends on tree_sitter 0.26 + tree-sitter-typescript 0.23.2, which the
       # code-size gate reuses for exact TS/JS spans. Do NOT pip-install an

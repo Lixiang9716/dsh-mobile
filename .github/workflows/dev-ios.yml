@@ -407,7 +407,7 @@ jobs:
               echo "$(dirname "$f" | xargs basename)/$name: STALE — produced by run $rid, not this one" | tee -a "$GITHUB_STEP_SUMMARY"
               continue
             fi
-            cat "$f" | tee -a "$GITHUB_STEP_SUMMARY"
+            tee -a "$GITHUB_STEP_SUMMARY" < "$f"
             reported=$((reported + 1))
           done
           echo "" | tee -a "$GITHUB_STEP_SUMMARY"
