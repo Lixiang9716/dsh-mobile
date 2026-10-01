@@ -466,6 +466,30 @@ const probeWasmRun = async () => {
   log.debug('wasm probe', out);
 };
 
+/** The in-process Linux guest (contract v1.3.0 `ishRun`): one REAL `/bin/sh -c`
+ * line in the emulated aarch64 Alpine userland, cwd = the app scope mount.
+ * log.debug, so no canonical record is added — the same probe posture as the
+ * fs/wasm probes above. A host without the userland answers the primitive's
+ * honest `unavailable`, which this probe records as the mount's state. */
+const probeIshRun = async () => {
+  const gw = await import('gateway.js');
+  const out = { stage: 'start' };
+  try {
+    // The EMPTY path is the scope root (IshPrimitive's one deliberate
+    // difference from the fs primitives — the workspace IS the mount root).
+    const run = await gw.ishRun('app', '', ['/bin/sh', '-c', 'echo hello-from-guest']);
+    out.run = `exit=${run.exitCode} stdout=${JSON.stringify(run.stdout)}`
+      + ` timedOut=${run.timedOut} truncated=${run.truncated}`;
+  } catch (error) {
+    // Structured refusal (the rootfs not staged, the primitive declared
+    // unavailable) is a recorded state, not a probe failure.
+    out.unavailable = (error && error.code ? error.code : '?') + ': ' +
+      (error && error.message ? error.message : String(error));
+  }
+  out.stage = 'done';
+  log.debug('ish probe', out);
+};
+
 const main = async () => {
   log.debug('main begin', {});
   const cfg = await take('runtime.config');
@@ -477,6 +501,7 @@ const main = async () => {
   registerBootRouteFactory(ctx, () => bootRouteOf(cfg));
   await probeFsPrimitives();
   await probeWasmRun();
+  await probeIshRun();
   await awaitAgent(ctx);
   installTurnEvidence(ctx, route, cfg);
   installRuntimeHalf(ctx, cfg, route);
