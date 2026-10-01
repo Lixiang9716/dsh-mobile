@@ -416,8 +416,10 @@ ios_platform() {
     ios_boot
     materialize
     ios_generate
-    export DSH_MATRIX_ENGINE_PIN="$(engine_pin)"
-    export DSH_MATRIX_TREE="$(tree_line)"
+    DSH_MATRIX_ENGINE_PIN=$(engine_pin)
+    export DSH_MATRIX_ENGINE_PIN
+    DSH_MATRIX_TREE=$(tree_line)
+    export DSH_MATRIX_TREE
     if [ "${SKIP_RELEASE:-0}" -ne 1 ]; then
         leg_or_stop ios release ios_release_leg
     fi
@@ -722,8 +724,10 @@ android_platform() {
     mx "=== Android matrix (AVD $ANDROID_AVD / $ADB_SERIAL) ==="
     android_preflight
     materialize
-    export DSH_MATRIX_ENGINE_PIN="$(engine_pin)"
-    export DSH_MATRIX_TREE="$(tree_line)"
+    DSH_MATRIX_ENGINE_PIN=$(engine_pin)
+    export DSH_MATRIX_ENGINE_PIN
+    DSH_MATRIX_TREE=$(tree_line)
+    export DSH_MATRIX_TREE
     if [ "${SKIP_RELEASE:-0}" -ne 1 ]; then
         leg_or_stop android release android_release_leg
     fi

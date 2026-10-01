@@ -85,7 +85,7 @@ fi
 # pulled file missing the tail the device already showed). Verify the pull
 # carries the terminal marker; one bounded re-pull otherwise.
 pull_verified=0
-for attempt in 1 2 3; do
+for _ in 1 2 3; do
     "$HDC" file recv "$CAPTURE" "$OUT/logs.txt" >/dev/null 2>&1 \
         || die "capture file $CAPTURE never landed"
     if grep -q "creation.opened" "$OUT/logs.txt" && grep -q "dsh.spike.verdict" "$OUT/logs.txt"; then

@@ -19,7 +19,7 @@
 #          UUIDs). Refuses an emulator serial — never fakes evidence.
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-cd "$ROOT"
+cd "$ROOT" || exit 1
 PKG=com.dshmobile.spike
 MODE="${1:-skip}"
 SKIP_BUILD=0

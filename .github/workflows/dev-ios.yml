@@ -248,7 +248,7 @@ jobs:
           # SpringBoard is up — the launch is then denied (SBMainWorkspace,
           # code=1). Poll a real readiness condition with a deadline; never a
           # fixed sleep.
-          for i in $(seq 1 30); do
+          for _ in $(seq 1 30); do
             xcrun simctl spawn "$UDID" launchctl print system >/dev/null 2>&1 && break
             sleep 1
           done
@@ -307,7 +307,7 @@ jobs:
           # disk went unverified and every green run carried a red annotation.
           # Idle is asserted (no new bytes for 8 x 2 s), never a blind sleep.
           last=-1; idle=0
-          for i in $(seq 1 90); do
+          for _ in $(seq 1 90); do
             grep -qE "spike: (sequence|ui-wait)" "$ART/logs.txt" 2>/dev/null && break
             now=$(wc -c < "$ART/logs.txt" 2>/dev/null || echo 0)
             if [ "$now" = "$last" ] && [ "$now" -gt 0 ]; then

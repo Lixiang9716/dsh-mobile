@@ -185,7 +185,7 @@ until grep -q 'upstream/completed\|scenario\.failed' "$STREAM" 2>/dev/null; do
     sleep 1
 done
 if grep -q 'upstream/completed' "$STREAM" 2>/dev/null; then
-    status=done
+    status='done'
 fi
 sleep 1   # let the terminal record flush into the stream
 stop_streamer

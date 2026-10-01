@@ -150,7 +150,6 @@ trap 'kill $TAIL_PID 2>/dev/null || true; [ -n "${WDA_PID:-}" ] && kill "$WDA_PI
 exec 3<"$FIFO"
 READS=0
 SHARES=0
-DONE=0
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
@@ -203,7 +202,7 @@ while true; do
           log "media picker -> cell tapped by label"
         fi ;;
       *"spike: device-plane drive finished"*)
-        log "terminal marker: $line"; DONE=1; break ;;
+        log "terminal marker: $line"; break ;;
     esac
   fi
   if [ "$SECONDS" -ge "$DEADLINE" ]; then

@@ -66,7 +66,7 @@ shot() { adb exec-out screencap -p > "$OUT/dsh-m4-$1.png" 2>/dev/null || true; }
 # Best effort: nonzero when no node matches this round.
 tap_text() {
     adb shell uiautomator dump /sdcard/dsh-ui.xml >/dev/null 2>&1 || return 1
-    local xml
+    # POSIX sh on purpose: `local` is undefined in dash (the workflow's sh).
     xml=$(adb shell cat /sdcard/dsh-ui.xml 2>/dev/null) || return 1
     printf '%s' "$xml" | sed 's/></>\n</g' | grep 'enabled="true"' \
       | grep -E "(text|content-desc)=\"($1)\"" | head -1 \

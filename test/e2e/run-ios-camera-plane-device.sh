@@ -77,7 +77,6 @@ fi
 # ---- 3. launch --------------------------------------------------------------
 log "3/4 launch (-dsh-mode camera-plane)"
 rm -f "$LOG"
-LOG_ABS="$PWD/$LOG"
 xcrun devicectl device process launch --device "$UDID" \
   --console-pty 2>/dev/null || true
 # devicectl's console does not tee to a file reliably across OS versions; the

@@ -210,7 +210,10 @@ jobs:
             case "$state" in
               absent)
                 echo "  ABSENT   $name — no check run exists on this commit: its workflow is path-filtered out by this PR's diff, so the leg did not run."
-                echo "::warning::$name did not run on $HEAD_SHA (path-filtered). Not a failure — and NOT a verification: nothing was tested there." ;;
+                # notice, not warning: an absence here is the DESIGNED state for a
+                # path-filtered leg, not something to look at — the name still
+                # ships as an annotation, but it must not count as a CI warning.
+                echo "::notice::$name did not run on $HEAD_SHA (path-filtered). Not a failure — and NOT a verification: nothing was tested there." ;;
               pending:*)
                 echo "  RUNNING  $name=${state#pending:} (incomplete at the deadline)" ;;
               done:*) if passes "${state#done:}"; then

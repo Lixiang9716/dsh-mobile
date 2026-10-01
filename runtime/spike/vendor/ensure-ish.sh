@@ -80,7 +80,7 @@ echo "$TARBALL_SHA256  $TMP" | shasum -a 256 -c - >/dev/null
 # excluded trees — the exception list above is the provenance record.
 STAGE=$(mktemp -d /tmp/dsh-ish-stage.XXXXXX)
 tar xzf "$TMP" -C "$STAGE" --strip-components=1
-for p in $EXCLUDE; do rm -rf "$STAGE/$p"; done
+for p in $EXCLUDE; do rm -rf "${STAGE:?}/$p"; done
 rm -rf "$DIR"
 mkdir -p "$DIR"
 (cd "$STAGE" && tar cf - .) | (cd "$DIR" && tar xf -)
