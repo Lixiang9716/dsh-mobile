@@ -3,7 +3,7 @@
   "marketplace": "dsh",
   "generatedAt": "2026-10-01T00:00:00Z",
   "keys": {
-    "dsh-market-test-1": "17gBDN0WP/qhhFZbp3SAXxuc6Cdx6SUpvzOtXxl2i4c="
+    "dsh-market-test-1": "/N+f25lfa324yOUOQAQW/eZKIaWTXdbKEkDkRMksZ3c="
   },
   "entries": [
     {
@@ -181,8 +181,10 @@
       }
     }
   ],
-  "signature": {
-    "key": "dsh-market-test-1",
-    "value": "PBS3jYdSiPiC0xjZGefB1Tho+lFt/arTNIZhBaRbozNl/xYJCOnTsKh0712cbU5pzp7h6rDbgTQJFpr4mq8iDw=="
-  }
+  "signatures": [
+    {
+      "key": "dsh-market-test-1",
+      "value": "IGeqptrA0scTPdz+8no2fzdLlAD9qiJQ866oYnYBe5SZlDOxD60VSIZ4iB5bFEFXR15NEDGUhYYhjebiki53Cg=="
+    }
+  ]
 }
