@@ -1,0 +1,8 @@
+{
+  "scenario": "security.jail",
+  "pass": true,
+  "expected": 19,
+  "logged": 19,
+  "failures": [],
+  "parseErrors": []
+}

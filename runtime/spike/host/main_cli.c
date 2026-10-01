@@ -22,6 +22,7 @@
  */
 #include "dsh_spike_host.h"
 #include "dsh_ish.h"
+#include "dsh_wasm.h" /* the wasm seam (contract v1.2.0): dsh_wasm_run */
 #include "dsh_socket.h" /* the loopback socket seam (contract v1.8.0) */
 
 #include <arpa/inet.h>
@@ -130,10 +131,20 @@ typedef struct smoke_backend {
  * it is disclosed as such wherever the flow is documented. */
 #define SMOKE_KEYCHAIN_AVAILABLE "\"keychainGet\",\"keychainSet\""
 
+/* The wasm seam (contract v1.2.0) is IMPLEMENTED on this dev host through the
+ * portable spine (dsh_wasm.c + the vendored wasm3, the exact sources the iOS
+ * app compiles): the module runs interpreted IN-PROCESS, its only host
+ * callback is the imported dsh.emit(ptr, len), and a trap / missing export /
+ * import the host never linked is an `io` rejection — the jail surface the
+ * security.jail leg attacks. Serving it here (instead of answering
+ * `unavailable`) is what makes that leg runnable on the cheapest host. */
+#define SMOKE_WASM_AVAILABLE "\"wasmRun\""
+
 static const char *SMOKE_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"timerSchedule\",\"timerCancel\","
     SMOKE_SOCKET_AVAILABLE ","
-    SMOKE_KEYCHAIN_AVAILABLE "],"
+    SMOKE_KEYCHAIN_AVAILABLE ","
+    SMOKE_WASM_AVAILABLE "],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
     "\"presentPicker\","
     "\"deviceInfo\",\"haptic\",\"clipboardRead\",\"clipboardWrite\","
@@ -1172,6 +1183,59 @@ static void smoke_keychain_set(smoke_backend *b, int call_id,
     return smoke_settle(b, call_id, 1, "{\"ok\":true}");
 }
 
+/* wasmRun (contract v1.2.0): one export of one module from the app scope,
+ * run by the portable spine (dsh_wasm_run — the code path the iOS app ships).
+ * The scope/path discipline is the fs primitives' (smoke_path_ok); a trap,
+ * a missing export, or an import the host never linked is an `io` rejection
+ * carrying the interpreter's message. The message is sanitized before it
+ * enters the rejection JSON: the interpreter echoes attacker-controlled
+ * names (the export it refused), and a quote in the payload would break the
+ * settle parse — a hung caller, the one outcome a jail must never produce. */
+static void smoke_wasm_run(smoke_backend *b, int call_id, const char *args) {
+    smoke_fs_args a = {
+        json_str_dup(args, "scope"), json_str_dup(args, "path"),
+        NULL, 0, 1,
+    };
+    char *func = json_str_dup(args, "func");
+    char *input = json_str_dup(args, "input");
+    if (!a.scope || !a.path || !func) {
+        smoke_reject(b, call_id, "wasmRun", "invalid", "missing scope/path/func");
+    } else if (strcmp(a.scope, "app") != 0) {
+        smoke_reject(b, call_id, "wasmRun", "denied", "scope not granted");
+    } else if (!smoke_path_ok(a.path)) {
+        smoke_reject(b, call_id, "wasmRun", "invalid", "path escapes its scope");
+    } else {
+        char *full = smoke_path(b, a.path);
+        size_t n = 0;
+        unsigned char *bytes = full ? (unsigned char *)slurp(full, &n) : NULL;
+        if (!bytes) {
+            smoke_reject(b, call_id, "wasmRun", "io", "cannot read module");
+        } else {
+            char *error = NULL;
+            char *json = dsh_wasm_run(bytes, n, func, input, &error);
+            if (!json) {
+                char clean[200];
+                size_t o = 0;
+                const char *msg = error ? error : "wasm run failed";
+                for (const char *p = msg; *p && o + 1 < sizeof(clean); p++) {
+                    if (*p != '"' && *p != '\\') clean[o++] = *p;
+                }
+                clean[o] = 0;
+                smoke_reject(b, call_id, "wasmRun", "io", clean);
+            } else {
+                smoke_settle(b, call_id, 1, json);
+            }
+            free(json);
+            free(error);
+        }
+        free(full);
+        free(bytes);
+    }
+    smoke_fs_args_free(&a);
+    free(func);
+    free(input);
+}
+
 static void smoke_serve(smoke_backend *b, int call_id, const char *name,
                         const char *args) {
     if (strcmp(name, "fsWrite") == 0) return smoke_fs_write(b, call_id, args);
@@ -1354,6 +1418,9 @@ static void smoke_serve(smoke_backend *b, int call_id, const char *name,
     }
     if (strcmp(name, "keychainSet") == 0) {
         return smoke_keychain_set(b, call_id, args);
+    }
+    if (strcmp(name, "wasmRun") == 0) {
+        return smoke_wasm_run(b, call_id, args);
     }
     smoke_reject(b, call_id, name, "unavailable",
                  "declared unavailable by the smoke backend");

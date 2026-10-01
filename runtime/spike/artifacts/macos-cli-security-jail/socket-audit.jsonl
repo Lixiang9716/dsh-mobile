@@ -1,0 +1,6 @@
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+{"audit":"socket.connect","direction":"outbound","grant":"socket.connect.loopback","outcome":"denied","reason":"host-not-loopback"}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","outcome":"denied","reason":"scope-not-loopback"}
+{"audit":"socket.listen","direction":"inbound","grant":"socket.listen.loopback","outcome":"denied","reason":"scope-not-loopback"}
