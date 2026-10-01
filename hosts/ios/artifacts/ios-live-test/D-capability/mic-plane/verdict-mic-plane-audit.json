@@ -1,0 +1,8 @@
+{
+  "scenario": "mic.plane.audit",
+  "pass": true,
+  "expected": 6,
+  "logged": 6,
+  "failures": [],
+  "parseErrors": []
+}

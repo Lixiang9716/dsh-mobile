@@ -1,0 +1,28 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "mic.plane",
+  "launchConfiguration": "ios mic-plane drive (Debug, -dsh-mode mic-plane)",
+  "tree": "origin/main 18ba643e9b94",
+  "scenarios": [
+    {
+      "id": "mic.plane",
+      "checker": "test/e2e/scenarios/mic-plane.json",
+      "events": 11,
+      "result": "pass"
+    },
+    {
+      "id": "mic.plane.audit",
+      "checker": "test/e2e/scenarios/mic-plane-audit.json",
+      "events": 6,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-mic-plane.sh",
+  "screens": [
+    "screens/01-final.png"
+  ],
+  "timestamp": "2026-10-01T13:09:22+08:00",
+  "exitCode": 0
+}

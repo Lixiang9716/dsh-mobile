@@ -1,0 +1,8 @@
+{
+  "scenario": "composer.live-write",
+  "pass": true,
+  "expected": 46,
+  "logged": 46,
+  "failures": [],
+  "parseErrors": []
+}

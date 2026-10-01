@@ -1,0 +1,28 @@
+{
+  "title": "iOS live test: four dimensions on dsh-iphone (A UI scan, B backend, C tools, D capabilities+marketplace)",
+  "created": "2026-10-01T04:14:02+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] sim-preflight dsh-iphone iOS 26.5 booted",
+    "[x] A: Debug+Release control sweeps + official/nextweb session surfaces",
+    "[x] B: boot/carrier/gateway/audit + session.mock-llm + BYOK onboarding + real LLM turn",
+    "[x] C: tool-rows probe + todo turn + wasm echo + ish + office",
+    "D: device-plane + camera + mic + ble + marketplace real install",
+    "deliverables screenshots + bilingual summary + agent note",
+    "gov task close + gov run green + PR opened"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0085",
+  "void": {
+    "ts": "2026-10-01T09:07:00+00:00",
+    "by": "lixiang@MacBookAir.mshome.net",
+    "reason": "Delivered mid-flight per owner escalation answer: ten of fourteen legs green with receipts (gateway family 4 manifests, session.mock-llm official+whale, nextweb.mount, composer.live-write 46/46 with tool-rows/wasm-echo/real-ish-guest, device-plane, camera, mic, ble mock+skip) \u2014 all in the PR. Four legs (marketplace real install, BYOK onboarding flow, real-LLM turn Debug+Release, Debug/Release control sweeps) are blocked by a machine-level CoreSimulator XPC deadlock (every xcrun/simctl call hangs incl. 'simctl help'; full process-stack kill, kickstart and lock inspection did not recover); the drive scripts are committed and the container staging is done, so each is one command after the host recovers \u2014 see hosts/ios/artifacts/ios-live-test/BLOCKED-LEGS.md. dsh-office is unmounted on iOS (honest platform gap, disclosed). A follow-up card should re-run the four legs on a healthy simulator."
+  }
+}

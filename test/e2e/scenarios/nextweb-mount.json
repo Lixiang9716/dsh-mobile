@@ -31,6 +31,13 @@
       }
     },
     {
+      "event": "rpc.observed",
+      "match": {
+        "endpoint": "onboarding/status",
+        "answered": "forwarded"
+      }
+    },
+    {
       "event": "upgrade.accepted",
       "match": {
         "path": "/api/remote.mux"

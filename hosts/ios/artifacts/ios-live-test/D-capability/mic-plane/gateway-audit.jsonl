@@ -1,0 +1,6 @@
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"micStart","ts":"2026-10-01T05:09:19Z","outcome":"ok","verdict":"granted","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"}}
+dsh.gateway.audit: {"verdict":"granted","primitive":"micStop","ts":"2026-10-01T05:09:20Z","detail":{"durationMs":1124,"bytes":10912},"caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.gateway.audit: {"verdict":"granted","primitive":"micStop","ts":"2026-10-01T05:09:20Z","caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","detail":{"format":"pcm-s16le","frameMs":100,"tag":"mic.plane","sampleRate":16000},"primitive":"micStart","ts":"2026-10-01T05:09:20Z","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"verdict":"granted","primitive":"micStop","ts":"2026-10-01T05:09:20Z","detail":{"durationMs":381,"bytes":0},"caller":"dsh.spike.scenario","outcome":"ok"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","verdict":"granted","outcome":"ok","ts":"2026-10-01T05:09:20Z","primitive":"micStop"}

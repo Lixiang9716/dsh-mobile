@@ -1,0 +1,40 @@
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"gateway.negotiated","version":"gateway@1"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"descriptor.declared","available":33,"unavailable":2,"micPlane":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"micStart","data":[{"format":"pcm-s16le","sampleRate":16000}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":34}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.armed","format":"pcm-s16le"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.mic.plane","message":"frame window open","data":[{"streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"micFrames subscribe","data":[{"streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3725}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3628}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3737}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3640}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3737}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3640}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":3741}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.frame","streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":3644}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.frames","consumed":true,"monotonic":true,"samples":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":92}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.end","streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stopped","stopped":true,"duration":true,"bytes":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.mic.plane","message":"awaiting the end event","data":[{"streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79","already":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"micFrames subscribe","data":[{"streamId":"mic:2A6617C3-DA4F-4EB2-9AF0-F579435FAA79"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.end","reason":"stopped"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.idempotent","stopped":false}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"micStart","data":[{"format":"pcm-s16le","sampleRate":16000}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStart"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.rearmed","format":"pcm-s16le"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":92}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"mic channel event","data":[{"event":"mic.end","streamId":"mic:F23CE80A-C1EC-42F1-96B5-A032FD55ACBB"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.restopped","stopped":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"micStop"}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"mic.stop.unknown","stopped":false}]}
+dsh.spike.log: {"level":"info","module":"dsh.mic.plane","message":"e2e","data":[{"scenario":"mic.plane","event":"scenario.complete","status":"pass"}]}

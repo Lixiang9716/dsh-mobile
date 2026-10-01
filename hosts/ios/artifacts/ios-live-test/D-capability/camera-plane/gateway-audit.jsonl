@@ -1,0 +1,3 @@
+dsh.gateway.audit: {"detail":{"phased":true},"primitive":"cameraRecordStart","outcome":"unavailable","caller":"dsh.spike.scenario","ts":"2026-10-01T05:09:12Z","verdict":"granted"}
+dsh.gateway.audit: {"verdict":"granted","ts":"2026-10-01T05:09:12Z","detail":{"phased":true},"outcome":"unavailable","primitive":"cameraRecordStop","caller":"dsh.spike.scenario"}
+dsh.gateway.audit: {"caller":"dsh.spike.scenario","primitive":"cameraCapture","ts":"2026-10-01T05:09:12Z","verdict":"granted","outcome":"unavailable"}
