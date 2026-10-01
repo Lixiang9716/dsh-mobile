@@ -1,0 +1,30 @@
+{
+  "title": "A12+C34: CI honesty \u2014 the staged-tree invariant becomes a real gate; the vendor ensure path fails loud",
+  "created": "2026-10-01T06:25:37+00:00",
+  "rules": {
+    "hash": "b51e2d06e5a0e7524567051e22e99a22576a72f229cc9c0f384fb57b799756f7",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] A12: hand-compile the webclient-staged-tree gate into gates.json (shared checker script; the CI runner reuses it; rejection case; re-seal + repin stale cards)",
+    "[x] A12 counter-proof: a temporary unsynced file in presentation/web-client-next turns the gate red (captured), restored tree green",
+    "[x] C34: ensure scripts fail loud \u2014 generous retry window, digest-mismatch retry, failures name package+source, final pin-row verification",
+    "[x] C34 counter-proof: simulated download failure + wrong-bytes failure produce non-zero exits with named errors (captured), materialization restored",
+    "gov run green, push, PR opened, gates check watched"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0087",
+  "repins": [
+    {
+      "ts": "2026-10-01T07:01:34+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "to": "b51e2d06e5a0e7524567051e22e99a22576a72f229cc9c0f384fb57b799756f7",
+      "reason": "rules moved: A12 (T-0087) added the webclient-staged-tree gate to the sealed DAG \u2014 the #288 CI-only invariant is now a real gate; brief unchanged"
+    }
+  ]
+}

@@ -8,9 +8,12 @@
 # The web-client-next suite lives OUTSIDE the product directory on purpose
 # (presentation/web-client-next is whole-tree staged into the harmony HAP
 # rawfile — vendor-official.sh webclient_files; see the Agent Note
-# 2026-09-30-driver-presentation-node-faces-carry-real-coverage.md). This
-# runner re-asserts that invariant on every run: the product tree must hold
-# exactly its shipped files before AND after each suite.
+# 2026-09-30-driver-presentation-node-faces-carry-real-coverage.md). The
+# tree-count invariant is a REAL gate now (`webclient-staged-tree` in
+# gates.json → tools/check-webclient-staged-tree.sh — it used to live only
+# here, a CI-workflow step, which is how #288 passed a local `gov run`
+# green while CI went red); this runner re-asserts it before AND after each
+# suite by calling the same script, so the count has one home.
 #
 # Dependencies: each suite installs its own devDependencies when absent.
 # Both suites carry COMMITTED lockfiles (gitignore-exempt like
@@ -23,11 +26,8 @@ set -eu
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 cd "$ROOT"
 
-# The shipped set: 14 through the BYOK onboarding leg (#280), 16 since the
-# marketplace panel (marketplace-core.js + marketplace.js, PR #288) — both
-# shipped files the harmony HAP stages; the count moves only with a reviewed
-# product change, never with tooling leakage.
-PRODUCT_FILES=16
+# The shipped-set count lives in tools/check-webclient-staged-tree.sh (the
+# gate's own home) — the runner does not carry a second copy.
 run_suite() {
     suite_dir="$1"
     name="$2"
@@ -40,11 +40,7 @@ run_suite() {
     npm test
 }
 assert_product_tree() {
-    count=$(find "$ROOT/presentation/web-client-next" -type f | wc -l | tr -d ' ')
-    if [ "$count" -ne "$PRODUCT_FILES" ]; then
-        echo "presentation-tests: FAIL — presentation/web-client-next holds $count files, expected exactly $PRODUCT_FILES; test tooling artifacts leaked into the whole-tree-staged HAP directory" >&2
-        exit 1
-    fi
+    sh "$ROOT/tools/check-webclient-staged-tree.sh"
 }
 
 assert_product_tree
