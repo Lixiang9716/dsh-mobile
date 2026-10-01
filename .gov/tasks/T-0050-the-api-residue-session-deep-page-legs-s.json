@@ -2,7 +2,7 @@
   "title": "The API residue: session deep-page legs, subagents, feedback, permissionPresets, uploads",
   "created": "2026-09-24T13:51:32+00:00",
   "rules": {
-    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "hash": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -59,6 +59,13 @@
       "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
+    },
+    {
+      "ts": "2026-10-01T06:40:43+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "to": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
+      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction \u2014 the brief itself is unchanged and remains the owner's to close or void."
     }
   ]
 }
