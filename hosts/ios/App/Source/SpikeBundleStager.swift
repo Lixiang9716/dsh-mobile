@@ -188,6 +188,19 @@ enum SpikeBundleStager {
                   data: resData(dsh_spike_res_upstream_settings_memory_js), under: root)
         try write("upstream/llm-transport.js",
                   data: resData(dsh_spike_res_upstream_llm_transport_js), under: root)
+        // The BYOK route seam (upstream/boot.js imports it at the top level):
+        // missing here made every boot.js drive die with `cannot load module
+        // 'upstream/llm-route.js'` — measured live on the nextweb.mount leg,
+        // 2026-10-01. Android stages the same file in its assets.
+        try write("upstream/llm-route.js",
+                  data: resData(dsh_spike_res_upstream_llm_route_js), under: root)
+        // The coverage plane's two late rounds (web-write-coverage.js imports
+        // both; the same live measurement caught the gap): the plugin
+        // marketplace face and the BYOK onboarding runtime legs.
+        try write("upstream/web-write-marketplace.js",
+                  data: resData(dsh_spike_res_upstream_web_write_marketplace_js), under: root)
+        try write("upstream/web-write-onboarding.js",
+                  data: resData(dsh_spike_res_upstream_web_write_onboarding_js), under: root)
         // The W-RPC write surface (b4): the composer-send adapter + scenario.
         try writeWriteSurface(root)
         try write("upstream/web-write-streams.js",
