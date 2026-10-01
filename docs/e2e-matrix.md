@@ -6,6 +6,24 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the security adversarial net
+> (2026-10-01): four attack legs over the surfaces of
+> [the threat model](security-threat-model.md) — `security.gateway-fuzz`
+> 25/25 (a 21-case malformed-primitive battery through the RAW gateway
+> seam: every attack a structured §3 rejection, the process survives, both
+> socket attacks audited with fixed reason codes), `security.jail` 19/19
+> (8 crafted wasm modules against the import surface — the CLI host now
+> serves contract v1.2.0 `wasmRun` through the portable spine — plus 6
+> out-of-boundary socket dials; the honest echo module runs before and
+> after the battery), `security.manifest-forgery` 11/11 (five pipeline
+> forgery rungs rejected with zero staging, and the catalog-freshness
+> replay that LANDS — the threat model's HIGH finding),
+> `security.byok-leak` 7/7 (a canary through keychain → route resolution →
+> a real transport turn → the 401 face; the raw-log audit behind a matcher
+> self-check). Totals below re-run against this tree: 80 dirs / 156
+> verdicts / 156 green / 7 findings, every one owned.
+>
+
 > **Currency**: this matrix reflects the plugin marketplace core (2026-10-01):
 > the signed catalog (data-protocols §7) CLI leg `marketplace.install` 71/71
 > — pure-JS ed25519 verify (zero new gateway primitives) over a loopback
@@ -181,11 +199,11 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 73 |
-| Verdicts committed (149 green) | 149 |
-| Scenarios with at least one committed evidence dir | 73 of 73 distinct scenario ids (66 manifests) |
-| Screenshots verified PNG | 160 |
-| Acceptance-bar findings | 8 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
+| Evidence dirs | 80 |
+| Verdicts committed (156 green) | 156 |
+| Scenarios with at least one committed evidence dir | 80 of 80 distinct scenario ids (73 manifests) |
+| Screenshots verified PNG | 157 |
+| Acceptance-bar findings | 7 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
 
@@ -269,6 +287,10 @@ evidence on that platform.
 | `lynx.mount` | — | — | — | 34/34, 34/34 |
 | `socket.seam` | — | — | — | 19/19 |
 | `shim.exposure-probe` | — | — | — | 8/8 |
+| `security.gateway-fuzz` | — | — | — | 25/25 |
+| `security.jail` | — | — | — | 19/19 |
+| `security.manifest-forgery` | — | — | — | 11/11 |
+| `security.byok-leak` | — | — | — | 7/7 |
 
 `(drift)` = the verdict was captured against an older manifest revision
 (see [Manifest-revision drift](#informational-not-failures)).
@@ -376,6 +398,10 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=3 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71 (the signed catalog: pure-JS ed25519 verify, trust passthrough to the unchanged installer, the rotation drill, the four-rung tamper ladder — zero staging on every rejection) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25 (the 21-case malformed-primitive battery through the RAW gateway seam — wrong types, missing fields, path escapes, unknown scopes, overlong values, must-not-exist primitive names, malformed args JSON — every attack a structured §3 rejection; the benign post-battery roundtrip proves the process survived; both socket attacks audited, fixed reason codes) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19 (8 crafted wasm modules against the jail — hostile import called, wrong-signature emit, out-of-bounds emit pointer, stack exhaustion, missing export, absent module, path escape, ungranted scope — plus 6 out-of-boundary socket dials, each audited host-not-loopback=4 / scope-not-loopback=2; the honest echo module runs before AND after the battery) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11 (five pipeline forgery rungs rejected — capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — zero staging, no journal; the control honest package installs after the ladder; the catalog-freshness replay rung records the HIGH finding: the stale-but-valid catalog INSTALLS, dsh-echo@0.9.0) | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7 (a canary through the keychain save, the relaunch route resolution, one REAL transport turn, and the 401 face — the error message asserted key-free IN RUNTIME; the runner audits the raw log for both secret values behind a matcher self-check) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
