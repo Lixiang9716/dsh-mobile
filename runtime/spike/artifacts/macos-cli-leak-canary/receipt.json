@@ -1,0 +1,15 @@
+{
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0",
+  "quickjsPin": "0.17.0+fork-tostring+async-context+tc39+promise-mark (63b33ea5)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim)",
+  "scenario": "leak.canary",
+  "rounds": 100,
+  "heap": {"beforeMemoryUsedSize":9437966,"afterMemoryUsedSize":17785616,"growthBytes":8347650,"toleranceBytes":16777216},
+  "method": "both watermarks are gc-mode readings (JS_RunGC then JS_ComputeMemoryUsage via the __dshPerfProbe host test hook — not a gateway primitive); red = post-GC watermark above the pre-GC one by more than the tolerance",
+  "falsification": "a deliberately retained 1MB array per round trips this leg red (the Agent Note records the red output); the committed shape is the restored, green one",
+  "checker": "test/e2e/scenarios/leak-canary.json",
+  "events": 6,
+  "exitCode": 0
+}

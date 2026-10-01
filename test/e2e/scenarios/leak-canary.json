@@ -1,0 +1,50 @@
+{
+ "scenario": "leak.canary",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  {
+   "event": "leak.canary.begin",
+   "match": {
+    "rounds": 100,
+    "mode": "gc"
+   }
+  },
+  {
+   "event": "leak.canary.progress",
+   "match": {
+    "round": 25,
+    "of": 100
+   }
+  },
+  {
+   "event": "leak.canary.progress",
+   "match": {
+    "round": 50,
+    "of": 100
+   }
+  },
+  {
+   "event": "leak.canary.progress",
+   "match": {
+    "round": 75,
+    "of": 100
+   }
+  },
+  {
+   "event": "leak.canary.progress",
+   "match": {
+    "round": 100,
+    "of": 100
+   }
+  },
+  {
+   "event": "leak.canary.verdict",
+   "match": {
+    "status": "pass",
+    "rounds": 100
+   }
+  }
+ ]
+}

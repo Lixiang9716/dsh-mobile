@@ -1,0 +1,8 @@
+{
+  "scenario": "leak.canary",
+  "pass": true,
+  "expected": 6,
+  "logged": 6,
+  "failures": [],
+  "parseErrors": []
+}
