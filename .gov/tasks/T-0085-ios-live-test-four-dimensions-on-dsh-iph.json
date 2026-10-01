@@ -17,7 +17,12 @@
     "deliverables screenshots + bilingual summary + agent note",
     "gov task close + gov run green + PR opened"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0085"
+  "id": "T-0085",
+  "void": {
+    "ts": "2026-10-01T09:07:00+00:00",
+    "by": "lixiang@MacBookAir.mshome.net",
+    "reason": "Delivered mid-flight per owner escalation answer: ten of fourteen legs green with receipts (gateway family 4 manifests, session.mock-llm official+whale, nextweb.mount, composer.live-write 46/46 with tool-rows/wasm-echo/real-ish-guest, device-plane, camera, mic, ble mock+skip) \u2014 all in the PR. Four legs (marketplace real install, BYOK onboarding flow, real-LLM turn Debug+Release, Debug/Release control sweeps) are blocked by a machine-level CoreSimulator XPC deadlock (every xcrun/simctl call hangs incl. 'simctl help'; full process-stack kill, kickstart and lock inspection did not recover); the drive scripts are committed and the container staging is done, so each is one command after the host recovers \u2014 see hosts/ios/artifacts/ios-live-test/BLOCKED-LEGS.md. dsh-office is unmounted on iOS (honest platform gap, disclosed). A follow-up card should re-run the four legs on a healthy simulator."
+  }
 }
