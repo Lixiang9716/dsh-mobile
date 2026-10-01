@@ -6,6 +6,15 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 BYOK 两条尾巴（2026-10-01）：上轮引导变更点名的
+> 两个后续 —— `onboarding/clear`（keychain 删除 + 热恢复 boot 路由；清除后
+> 第二回合由恢复的 mock 适配器应答，无需重启）与 models 设置页目录跟随
+> 实时路由（保存后 byok 行替换 boot 行）—— CLI 腿 `onboarding.flow`
+> 13/13，目录 `runtime/spike/artifacts/macos-cli-onboarding/`；
+> `models.directory` 6/6 重跑绿；api-coverage 探针重跑（37 个 coverage
+> 端点 —— `onboarding/clear` 加入声明集）。校验器对本树重跑：80 目录 /
+> 156 verdict，PASS（7 项已归属的已知缺口）。
+>
 > **时效性**：本矩阵反映安全对抗证据网（2026-10-01）：围绕
 > [威胁模型](security-threat-model.md) 各面的四条攻击腿——
 > `security.gateway-fuzz` 25/25（21 案例畸形参数电池打裸网关缝：每次攻击
@@ -214,7 +223,7 @@
 | `android.mic.plane.audit` | — | 4/4（漂移） | — | — |
 | `models.directory` | — | — | — | 6/6 |
 | `office` | — | — | — | 19/19 |
-| `onboarding.flow` | — | — | — | 9/9 |
+| `onboarding.flow` | — | — | — | 13/13 |
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
@@ -325,7 +334,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |

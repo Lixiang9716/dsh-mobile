@@ -1,5 +1,5 @@
 {
-  "host": "darwin-cli (Darwin 25.5.0 arm64)",
+  "host": "darwin-cli (Darwin 27.0.0 arm64)",
   "engine": "quickjs-ng",
   "engineVersion": "0.17.0",
   "quickjsTag": "v0.17.0",

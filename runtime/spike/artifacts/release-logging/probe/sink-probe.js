@@ -27,13 +27,16 @@
  * Runs on the desktop CLI from the bundle root (host/build.sh + --release):
  *   build/dsh-spike-cli [--release] . <this file>
  * The bundle root is runtime/spike, so the probe imports the CANONICAL
- * logger/shims/boot — no staged copy can drift. Records pass through
- * unchanged (tee), so the raw capture is the stream the host itself printed.
+ * logger/shims/upstream modules — no staged copy can drift. Records pass
+ * through unchanged (tee), so the raw capture is the stream the host itself
+ * printed.
  */
 import { Context } from '@deepseek-ai/cordis';
 import { createLogger, RELEASE_CRITICAL_LEVELS, releaseKeeps } from 'logger.js';
 import 'upstream/web-shims.js';
-import { wireLogger } from 'upstream/boot.js';
+// wireLogger moved out of boot.js at the file-size gate (PR #296 review):
+// the canonical home is upstream/wire-logger.js — the boot export is gone.
+import { wireLogger } from 'upstream/wire-logger.js';
 
 const ROUTES = [
   // createLogger: one call per level.

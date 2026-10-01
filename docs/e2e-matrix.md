@@ -6,6 +6,17 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the BYOK tails (2026-10-01): the two
+> named follow-ups of the onboarding round — `onboarding/clear` (the
+> keychain delete + the LIVE boot-route restore; the second turn answers
+> from the restored mock adapter with no relaunch) and the models 设置页
+> directory following the live route (the byok row replaces the boot row on
+> save) — the CLI leg `onboarding.flow` 13/13, dir
+> `runtime/spike/artifacts/macos-cli-onboarding/`; `models.directory` 6/6
+> re-run green; the api-coverage probe re-run (37 coverage endpoints —
+> `onboarding/clear` joined the claim set). Checker on this tree: 80 dirs /
+> 156 verdicts, PASS (7 accepted owned gaps).
+>
 > **Currency**: this matrix reflects the security adversarial net
 > (2026-10-01): four attack legs over the surfaces of
 > [the threat model](security-threat-model.md) — `security.gateway-fuzz`
@@ -272,7 +283,7 @@ evidence on that platform.
 | `android.mic.plane.audit` | — | 4/4 (drift) | — | — |
 | `models.directory` | — | — | — | 6/6 |
 | `office` | — | — | — | 19/19 |
-| `onboarding.flow` | — | — | — | 9/9 |
+| `onboarding.flow` | — | — | — | 13/13 |
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
@@ -391,7 +402,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
 | `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |

@@ -117,6 +117,7 @@ RESOURCES = [
     # set (async-hooks, util, util/types, os, process, the
     # session-persistence errors shim).
     ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
+    ("upstream_wire_logger_js", SPIKE / "upstream" / "wire-logger.js"),
     ("upstream_llm_route_js", SPIKE / "upstream" / "llm-route.js"),
     ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from

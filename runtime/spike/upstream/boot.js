@@ -25,7 +25,6 @@
  */
 import './web-shims.js';
 import process from 'node:process';
-import { releaseKeeps } from 'logger.js';
 import { Context } from '@deepseek-ai/cordis';
 import { SessionStore } from '@deepseek-ai/dsh-session';
 import { AgentRegistry } from '@deepseek-ai/dsh-agent';
@@ -36,7 +35,7 @@ import { SettingsMemory } from 'upstream/settings-memory.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
-import { registerRouteDisposer } from 'upstream/llm-route.js';
+import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
 // The FIRST ported tool package (D9). It exports `{Config, apply, inject,
 // name}` and no default, so the namespace object IS the cordis plugin (it
@@ -77,34 +76,9 @@ import { mountWorkspace } from 'upstream/shims/fs.js';
 // conflict that kept this mount off is resolved in upstream/web-boot.js).
 import { Loader } from '@deepseek-ai/cordis-plugin-loader';
 import { AgentPresets } from '@deepseek-ai/dsh-agent-presets';
-
-/** cordis logger records ride the unified sink as diagnostics (module prefix
- * distinguishes them from scenario events; they carry no scenario tag, so the
- * E2E checker's one-to-one match ignores them).
- *
- * These records are stripped under the logger's release policy, through the
- * SAME releaseKeeps() the forwarding console uses: a release build keeps the
- * critical set (mapped type → warn/error) and drops the debug/info stream.
- * Exported so the release-logging evidence can drive this route (the sink
- * probe wires it to a real cordis Context) without booting the whole spine. */
-export const wireLogger = (ctx) => {
-  ctx.logger.exporter({
-    levels: { default: 4 },
-    export: ({ name, type, args }) => {
-      const level = type === 'success' || type === 'info' ? 'info' : type;
-      if (!releaseKeeps(level)) return;
-      globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
-        level,
-        module: `cordis:${name ?? 'root'}`,
-        message: args.map((a) => {
-          if (typeof a === 'string') return a;
-          try { return JSON.stringify(a) ?? String(a); } catch { return String(a); }
-        }).join(' '),
-        data: [],
-      }));
-    },
-  });
-};
+// The cordis logger bridge (split from this file at the file-size gate,
+// 2026-10-01 — unchanged behavior; see wire-logger.js for the strip policy).
+import { wireLogger } from 'upstream/wire-logger.js';
 
 /** Pin the profile container (the $DSH_HOME / cwd / tmpdir equivalents). */
 const pinProfileContainer = (container) => {
@@ -431,13 +405,17 @@ const mountLlm = async (ctx, llm, onEvent) => {
     onSse: llm.onSse,
     onRequestBody: llm.onRequestBody,
   }));
-  registerRouteDisposer(runtime, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
-  runtime.registerConfigurableProviders([{
+  registerRouteDisposer(ctx, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
+  // The directory registration's handle rides the same seam: a route rebind/
+  // restore atomically replaces the models 设置页 row (llm-route.js). Both
+  // registries key on the boot CONTEXT — ctx.get('llm') hands out a fresh
+  // wrapper per access, so the service object is not an identity.
+  registerDirectoryHandle(ctx, runtime.registerConfigurableProviders([{
     provider: llm.provider,
     displayName: llm.displayName ?? 'OpenAI 兼容',
     settingsNs: providerSettingsNs(llm.provider),
     settingsPath: ['providers', 'default'],
-  }]);
+  }]));
   onEvent('llm/runtime', {
     provider: llm.provider,
     model: llm.model,

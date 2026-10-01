@@ -3,11 +3,15 @@
  * `onboarding.flow`): the no-credential detect, the connection test's two
  * paths over the REAL gateway transport (one minimal chat-completions
  * against the vendored mock LLM server — the scripted success and the 401
- * auth leg), the keychain save, the 已配过 re-detect, the RELAUNCH route
- * resolution (boot #2 reads the keychain through the same resolver
- * composer-web-live boots with), and the FIRST TURN over the rebound route
- * through the page's own wire (session/create → session/prompt → the
- * assistant text the mock server scripts).
+ * auth leg), the keychain save, the 已配过 re-detect, the models 设置页
+ * directory following the live route (the B29 round: the byok row replaces
+ * the boot row on save), the RELAUNCH route resolution (boot #2 reads the
+ * keychain through the same resolver composer-web-live boots with), the
+ * FIRST TURN over the rebound route through the page's own wire
+ * (session/create → session/prompt → the assistant text the mock server
+ * scripts), and the CLEAR leg — onboarding/clear deletes the keychain ref
+ * and restores the boot route LIVE (the second turn answers from the mock
+ * adapter again, no relaunch).
  *
  * Everything rides the write surface exactly as the page drives it
  * (fullCoverage: true — the onboarding legs are coverage rows). The key
@@ -21,7 +25,7 @@
 import { createLogger } from 'logger.js';
 import { bootUpstream } from 'upstream/boot.js';
 import { createWriteSurface } from 'upstream/web-write.js';
-import { resolveLlmRoute } from 'upstream/llm-route.js';
+import { resolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
 import { keychainGet } from 'gateway.js';
 
 const SCENARIO = 'onboarding.flow';
@@ -163,6 +167,31 @@ const savePhase = async (api) => {
   emit('onboarding.detect.after', { mode: status.mode, configured: true });
 };
 
+/** The models 设置页 directory follows the live route (the B29 round): the
+ * DECLARED row is the byok provider after a save (settingsNs llm-deepseek,
+ * the row the page renders), and the settings mirror gained the matching
+ * namespace with the byok facts as its base layer — never the key. */
+const directoryByokPhase = async (api) => {
+  const directory = await api['llm/listConfigurableProviders']({});
+  demand(Array.isArray(directory) && directory.length === 1
+    && directory[0].provider === 'deepseek' && directory[0].settingsNs === 'llm-deepseek'
+    && JSON.stringify(directory[0].settingsPath) === '["providers","default"]',
+    `directory after save: ${JSON.stringify(directory)}`);
+  const described = await api['settings/describe']({});
+  const ns = described.namespaces.find((n) => n.ns === 'llm-deepseek');
+  demand(ns !== undefined,
+    `llm-deepseek namespace missing: ${JSON.stringify(described.namespaces.map((n) => n.ns))}`);
+  demand(ns.base?.providers?.default?.baseURL === MOCK_URL
+    && ns.base?.providers?.default?.model === 'mock-1'
+    && ns.base?.providers?.default?.apiKeyEnv === 'DEEPSEEK_API_KEY',
+    `byok mirror base: ${JSON.stringify(ns.base)}`);
+  demand(JSON.stringify(ns).includes(MOCK_KEY) === false,
+    'the namespace mirror leaked the key');
+  emit('onboarding.directory.byok', {
+    provider: directory[0].provider, settingsNs: directory[0].settingsNs,
+  });
+};
+
 /** Boot #2: the route resolver composer-web-live boots with, against the
  * runtime.config a RELAUNCH delivers (no staged credential — the keychain
  * is the only source). The byok route must win, still never naming the key. */
@@ -183,13 +212,13 @@ const relaunchPhase = async () => {
 
 /** The FIRST TURN on the rebound route, through the page's own wire: create
  * (the mutated route binds the new session to the byok provider) → prompt →
- * the scripted assistant text. */
-const firstTurnPhase = async (ctx, api) => {
+ * the scripted assistant text. Returns the sessionId. */
+const runTurn = async (ctx, api, requestId) => {
   const created = await api['session/create']({ request: {} });
   const sessionId = created?.sessionId;
   demand(typeof sessionId === 'string' && sessionId.length > 0, 'no session minted');
   await api['session/prompt']({ request: {
-    sessionId, requestId: 'onb-turn-1', mode: 'queue',
+    sessionId, requestId, mode: 'queue',
     content: [{ type: 'text', text: 'ping' }],
   } });
   let guard = 0;
@@ -202,16 +231,50 @@ const firstTurnPhase = async (ctx, api) => {
   demand(assistant !== undefined, 'no assistant/message in the onboarding session log');
   const text = assistant.data?.message?.content
     ?.filter((block) => block.type === 'text').map((block) => block.text).join('') ?? '';
-  demand(text === 'Hello from upstream', `the first turn answered "${text}"`);
-  emit('onboarding.first.turn', { sessionId: sessionId.slice(0, 8), text, provider: 'deepseek' });
+  demand(text === 'Hello from upstream', `the turn answered "${text}"`);
+  return sessionId;
 };
 
-/** Main: boot → detect → probes (two paths) → save → re-detect → relaunch
- * route → first turn → complete. */
+const firstTurnPhase = async (ctx, api) => {
+  const sessionId = await runTurn(ctx, api, 'onb-turn-1');
+  emit('onboarding.first.turn', { sessionId: sessionId.slice(0, 8), text: 'Hello from upstream', provider: 'deepseek' });
+};
+
+/** The CLEAR leg (the B29 round): onboarding/clear takes NO arguments — the
+ * runtime deletes the keychain ref and restores the boot route LIVE. The
+ * status answers mock again, the directory row swaps back to the boot
+ * provider, and a SECOND TURN answers from the restored mock adapter with
+ * no relaunch. */
+const clearPhase = async (ctx, api) => {
+  await api['onboarding/clear']({});
+  const status = await api['onboarding/status']({});
+  like(status, { mode: 'mock', provider: 'mock' }, 'status after clear');
+  const directory = await api['llm/listConfigurableProviders']({});
+  demand(Array.isArray(directory) && directory.length === 1
+    && directory[0].provider === 'mock' && directory[0].settingsNs === 'llm-mock',
+    `directory after clear: ${JSON.stringify(directory)}`);
+  emit('onboarding.clear', { mode: status.mode, provider: status.provider });
+  emit('onboarding.directory.restored', {
+    provider: directory[0].provider, settingsNs: directory[0].settingsNs,
+  });
+  const sessionId = await runTurn(ctx, api, 'onb-turn-2');
+  emit('onboarding.second.turn', {
+    sessionId: sessionId.slice(0, 8), text: 'Hello from upstream', provider: 'mock',
+  });
+};
+
+/** Main: boot → detect → probes (two paths) → save → directory follows →
+ * relaunch route → first turn → clear (live restore) → second turn →
+ * complete. */
 try {
   demand(typeof MOCK_URL === 'string' && MOCK_URL.startsWith('http://127.0.0.1:'),
     'DSH_MOCK_LLM_URL must be the runner\'s loopback mock');
   const ctx = await boot();
+  // The unbind seam's factory: the boot route re-derived from this boot's
+  // runtime.config (composer-web-live registers the same shape).
+  registerBootRouteFactory(ctx, () => bootRouteOf({
+    mockLlmUrl: MOCK_URL, apiKey: MOCK_KEY,
+  }));
   const hub = makeFrameHub();
   const surface = createWriteSurface(ctx, hub.post, {
     root: ROOT, provider: 'mock', model: 'mock-1', baseURL: MOCK_URL,
@@ -222,12 +285,14 @@ try {
   await detectPhase(api);
   await probePhase(surface, hub);
   await savePhase(api);
+  await directoryByokPhase(api);
   await relaunchPhase();
   await firstTurnPhase(ctx, api);
+  await clearPhase(ctx, api);
   dispose?.();
   emit('onboarding.flow/completed', {
     status: 'pass',
-    surface: 'BYOK onboarding: detect → test (success+401) → keychain save → relaunch route → first turn',
+    surface: 'BYOK onboarding: detect → test (success+401) → keychain save → directory follows → relaunch route → first turn → clear (live restore) → second turn',
   });
   if (!verdict) { verdict = true; globalThis.__dshComplete(true, 'onboarding flow verified'); }
 } catch (e) {
