@@ -167,6 +167,21 @@ const main = async () => {
   }
   emit('forge.started', { pipeline: 5, freshness: 1 });
 
+  await pipelineLadder();
+  const rollbackLanded = await freshnessRung();
+  await controlInstall();
+  emit('forge.finding', {
+    severity: rollbackLanded ? 'high' : 'none',
+    surface: 'catalog freshness',
+    outcome: rollbackLanded ? 'catalog-replay-installed' : 'catalog-replay-rejected',
+  });
+  emit('scenario.complete', { status: 'pass' });
+  globalThis.__dshComplete(true, 'ok');
+};
+
+/** Rungs 1–5: the pipeline forgery ladder, each rejection audited and each
+ * transaction proven to have staged nothing; the journal must not exist. */
+const pipelineLadder = async () => {
   // 1. escalated capability requirement + the honest (stale) trust record
   const escPkg = buildPackage(ESCALATED_MANIFEST, entrySource('v1.0.1'));
   await rung('forge.capability.stale-manifest', 'integrity', () => installPackage({
@@ -213,9 +228,12 @@ const main = async () => {
     demand(err.code === 'io', `expected io for the journal, got ${err.code}`);
   }
   emit('forge.pipeline.rejected', { cases: rejectedCount });
+};
 
-  // 6. the freshness rung: a stale-but-VALID catalog, replayed
-  // (fetchImpl is the typed httpFetch — install-fetch drains the body stream)
+/** Rung 6: the freshness face — refresh against the stale-but-VALID catalog
+ * and record what the installer then does (fetchImpl is the typed
+ * httpFetch — install-fetch drains the body stream). */
+const freshnessRung = async () => {
   const resolver = createResolver({
     fetchImpl: (url) => httpFetch(url, { method: 'GET' }),
     indexUrl: `${INDEX_URL}/index-rollback.json`,
@@ -244,20 +262,16 @@ const main = async () => {
       outcome: 'rejected', code: err.code ?? 'unknown', via: 'catalog-replay',
     });
   }
+  return rollbackLanded;
+};
 
-  // 7. the control face: honest bytes, honest trust — the pipeline serves
+/** The control face: honest bytes, honest trust — the pipeline serves. */
+const controlInstall = async () => {
   const honest = await installPackage({
     id: 'dsh-echo', bytes: HONEST_PKG, trust: HONEST_TRUST,
     txId: 'sec-f007', on: onInstall,
   });
   emit('forge.survived', { installed: `${honest.manifest.id}@${honest.manifest.version}` });
-  emit('forge.finding', {
-    severity: rollbackLanded ? 'high' : 'none',
-    surface: 'catalog freshness',
-    outcome: rollbackLanded ? 'catalog-replay-installed' : 'catalog-replay-rejected',
-  });
-  emit('scenario.complete', { status: 'pass' });
-  globalThis.__dshComplete(true, 'ok');
 };
 
 await main();

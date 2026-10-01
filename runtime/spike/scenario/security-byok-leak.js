@@ -80,33 +80,48 @@ const main = async () => {
     fail('gateway negotiation failed');
     return;
   }
+  await savePhase();
+  const route = await routePhase();
+  await turnPhase(route);
+  await authPhase(route);
+  await cleanupPhase();
+  emit('scenario.complete', { status: 'pass' });
+  globalThis.__dshComplete(true, 'ok');
+};
 
-  // 1. the save: the frozen keychain primitive, the frozen ref. The event
-  //    carries the REF, never the value.
+/** 1. the save: the frozen keychain primitive, the frozen ref. The event
+ *    carries the REF, never the value. */
+const savePhase = async () => {
   await keychainSet(BYOK_REF, encodeCredential(CREDENTIAL));
   emit('leak.saved', { ref: BYOK_REF });
-
   const stored = await keychainGet(BYOK_REF);
   demand(stored !== null, 'the keychain lost the credential immediately');
   const roundtrip = bytesEqual(stored.secret, encodeCredential(CREDENTIAL));
   demand(roundtrip, 'the keychain roundtrip drifted');
   emit('leak.keychain.roundtrip', { match: true });
+};
 
-  // 2. the relaunch resolution: no staged credential in the config → byok.
-  //    The route carries the canary IN MEMORY; the event carries the kind.
+/** 2. the relaunch resolution: no staged credential in the config → byok.
+ *    The route carries the canary IN MEMORY; the event carries the kind. */
+const routePhase = async () => {
   const route = await resolveLlmRoute({});
   demand(route.kind === 'byok', `route resolution ignored the credential: ${route.kind}`);
   demand(route.apiKey === CANARY, 'the resolved route lost the credential');
   emit('leak.route.resolved', { route: route.kind, provider: route.provider });
+  return route;
+};
 
-  // 3. one real turn: the canary rides the Authorization header — wire-only.
+/** 3. one real turn: the canary rides the Authorization header — wire-only. */
+const turnPhase = async (route) => {
   const done = await turn(route);
   demand(typeof done?.text === 'string' && done.text.length > 0,
     'the byok turn produced nothing');
   emit('leak.turn.completed', { chars: done.text.length, deltas: done.deltas });
+};
 
-  // 4. the auth-failure face: the mock scripts the 401; the error message
-  //    must carry neither credential value.
+/** 4. the auth-failure face: the mock scripts the 401; the error message
+ *    must carry neither credential value. */
+const authPhase = async (route) => {
   let authError = null;
   try {
     await turn({ ...route, apiKey: WRONG_KEY });
@@ -120,15 +135,14 @@ const main = async () => {
   emit('leak.auth-error.redacted', {
     code: authError.code ?? 'unknown', keyInMessage: false, chars: message.length,
   });
+};
 
-  // cleanup: the ref is cleared so the dev host's tmpdir carries no canary.
+/** cleanup: the ref is cleared so the dev host's tmpdir carries no canary. */
+const cleanupPhase = async () => {
   await keychainSet(BYOK_REF, null);
   const gone = await keychainGet(BYOK_REF);
   demand(gone === null, 'the cleanup did not clear the ref');
   emit('leak.cleanup', { cleared: true });
-
-  emit('scenario.complete', { status: 'pass' });
-  globalThis.__dshComplete(true, 'ok');
 };
 
 await main();

@@ -288,12 +288,12 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
 dsh.spike.log: {"level":"info","module":"security.forge","message":"e2e","data":[{"scenario":"security.manifest-forgery","event":"forge.pipeline.rejected","cases":5}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:52941/index-rollback.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:52941/index-rollback.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:52941/index-rollback.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:52941/index-rollback.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:50497/index-rollback.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:50497/index-rollback.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:50497/index-rollback.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:50497/index-rollback.json"}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"resolver step","data":[{"name":"index.fetch.start","urlPath":"/index-rollback.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:52941/index-rollback.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50497/index-rollback.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:17","buffered":0}]}
@@ -305,7 +305,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":17}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:52941/index-rollback.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:50497/index-rollback.json"}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"resolver step","data":[{"name":"index.fetched","urlPath":"/index-rollback.json","bytes":1012}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":1012}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":1}]}
@@ -315,14 +315,14 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate c
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify primary signature","data":[{"candidates":1}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"resolver step","data":[{"name":"index.verified","key":"dsh-market-1","signatures":1,"generatedAt":"2026-09-01T00:00:00Z","entries":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":1}]}
-dsh.spike.log: {"level":"debug","module":"security.forge","message":"rollback catalog verified","data":[{"entries":[{"id":"dsh-echo","version":"0.9.0","type":"service","tgzUrl":"http://127.0.0.1:52941/dsh-echo@0.9.0.tgz","blobSha256":"4bcbea5ea6f2f13a4b7a28aafc68418593c7f3fb55fdf4526245a7d6fb5bba29","manifestSha256":"5f435984a895ae1fe7bd82a8c7235d11db7e021f2ed36f4c71dfd5d12531485a","capabilities":{"required":["fsRead","fsWrite"],"optional":[]},"summary":{"en":"TEST-ONLY stale catalog entry (the security.manifest-forgery leg)","zh":"仅测试用的过期目录条目(security.manifest-forgery 腿)"}}],"generatedAt":"2026-09-01T00:00:00Z"}]}
+dsh.spike.log: {"level":"debug","module":"security.forge","message":"rollback catalog verified","data":[{"entries":[{"id":"dsh-echo","version":"0.9.0","type":"service","tgzUrl":"http://127.0.0.1:50497/dsh-echo@0.9.0.tgz","blobSha256":"4bcbea5ea6f2f13a4b7a28aafc68418593c7f3fb55fdf4526245a7d6fb5bba29","manifestSha256":"5f435984a895ae1fe7bd82a8c7235d11db7e021f2ed36f4c71dfd5d12531485a","capabilities":{"required":["fsRead","fsWrite"],"optional":[]},"summary":{"en":"TEST-ONLY stale catalog entry (the security.manifest-forgery leg)","zh":"仅测试用的过期目录条目(security.manifest-forgery 腿)"}}],"generatedAt":"2026-09-01T00:00:00Z"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace install begin","data":[{"spec":"dsh-echo@*","txId":"sec-f006","journal":false}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-echo@*"}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"resolver step","data":[{"name":"lookup.found","spec":"dsh-echo@*","id":"dsh-echo","version":"0.9.0","blobSha256":"4bcbea5ea6f2f13a4b7a28aafc68418593c7f3fb55fdf4526245a7d6fb5bba29","manifestSha256":"5f435984a895ae1fe7bd82a8c7235d11db7e021f2ed36f4c71dfd5d12531485a"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-echo@*","version":"0.9.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:52941/dsh-echo@0.9.0.tgz","id":"dsh-echo","txId":"sec-f006"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:50497/dsh-echo@0.9.0.tgz","id":"dsh-echo","txId":"sec-f006"}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"installer step","data":[{"name":"fetch.start","url":"/dsh-echo@0.9.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:52941/dsh-echo@0.9.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50497/dsh-echo@0.9.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"security.forge","message":"installer step","data":[{"name":"fetch.status","status":200}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:18","buffered":0}]}

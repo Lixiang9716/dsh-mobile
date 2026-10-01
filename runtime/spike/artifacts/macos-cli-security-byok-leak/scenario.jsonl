@@ -11,8 +11,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode"
 dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.route.resolved","route":"byok","provider":"deepseek"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":116}]}
-dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:57674/chat/completions","bytes":116}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57674/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:50507/chat/completions","bytes":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50507/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":200}]}
 dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"open","status":200}]}
@@ -66,8 +66,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat done","
 dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.turn.completed","chars":19,"deltas":4}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":116}]}
-dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:57674/chat/completions","bytes":116}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57674/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:50507/chat/completions","bytes":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:50507/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":401}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"status error drain","data":[{"status":401}]}
