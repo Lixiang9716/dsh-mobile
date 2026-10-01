@@ -24,7 +24,8 @@
       "coverage-floor",
       "asset-mirrors",
       "shellcheck-warn",
-      "actionlint"
+      "actionlint",
+      "perf-budget"
     ],
     "quick": [
       "notes"
@@ -377,6 +378,30 @@
       "paths": [
         ".github/workflows/**",
         "tools/check-actionlint.sh"
+      ],
+      "timeoutMs": 120000
+    },
+    {
+      "id": "perf-budget",
+      "command": [
+        "node",
+        "tools/check-perf-budget.mjs"
+      ],
+      "description": "performance trend gate (warn-tier): the committed perf receipts vs baselines/perf-baseline.json budgets",
+      "allowFailure": true,
+      "paths": [
+        "baselines/**",
+        "tools/check-perf-budget.mjs",
+        "runtime/spike/scenario/perf-baseline.js",
+        "runtime/spike/scenario/leak-canary.js",
+        "runtime/spike/ci/run-perf-baseline.sh",
+        "runtime/spike/ci/run-leak-canary.sh",
+        "runtime/spike/artifacts/macos-cli-perf-baseline/**",
+        "runtime/spike/artifacts/macos-cli-leak-canary/**",
+        "runtime/spike/host/dsh_spike_host.c"
+      ],
+      "needs": [
+        "self-test"
       ],
       "timeoutMs": 120000
     }
