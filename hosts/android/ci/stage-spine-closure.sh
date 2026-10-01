@@ -398,9 +398,15 @@ for f in gateway.js logger.js registry.js ed25519.js marketplace-resolver.js can
 done
 # The staged web-client trees (tracked asset copies, judged both ways the
 # script already covers: present files must match the presentation/ source).
+# The `./` strip is load-bearing: find emits ./-prefixed paths, and a ./ in
+# the is_tracked needle matches nothing — every row became a counted SKIP
+# and the whole webclient byte-verify was vacuous in check mode (the #286
+# timeline.js mirror drift rode exactly this hole past two PRs, measured
+# 2026-10-01: an injected mirror drift exited 0).
 for client in next whale; do
     (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
         while IFS= read -r rel; do
+            rel=${rel#./}
             if [ "$MODE" = "check" ] && ! is_tracked "webclient-$client/$rel"; then note_skip; continue; fi
             cmp -s "$ROOT/presentation/web-client-$client/$rel" "$ASSETS/webclient-$client/$rel" ||
                 note_drift "webclient-$client/$rel"
@@ -411,7 +417,7 @@ done
 # 2026-09-23 round-two chase hit).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js device-plane.js camera-plane.js \
+         composer-web-live.js device-plane.js camera-plane.js ble-plane.js mic-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
          upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do

@@ -20,7 +20,8 @@
       "bundle-files",
       "quickjs-boot-parse",
       "staging-check",
-      "coverage-floor"
+      "coverage-floor",
+      "asset-mirrors"
     ],
     "quick": [
       "notes"
@@ -301,6 +302,28 @@
         "self-test"
       ],
       "timeoutMs": 300000
+    },
+    {
+      "id": "asset-mirrors",
+      "command": [
+        "node",
+        "tools/check-asset-mirrors.mjs",
+        "--json"
+      ],
+      "description": "product trees vs host mirrors byte-identical both ways, iOS embedder declaration aligned (check-asset-mirrors; the #286 timeline.js class)",
+      "allowFailure": true,
+      "paths": [
+        "presentation/web-client-next/**",
+        "presentation/web-client-whale/**",
+        "hosts/android/app/src/main/assets/spike/webclient-*/**",
+        "hosts/harmony/entry/src/main/resources/rawfile/spike/webclient/**",
+        "hosts/ios/Tools/gen_bundle_header.py",
+        "tools/check-asset-mirrors.mjs"
+      ],
+      "timeoutMs": 120000,
+      "needs": [
+        "self-test"
+      ]
     }
   ]
 }

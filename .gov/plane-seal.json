@@ -1,10 +1,13 @@
 {
   "files": {
     ".gov/pairing.json": {
-      "sha256": "e14c7f053ddff9776fdf3d9d7b343f0c12431eeaa7c8b2649ec8d1e569634e4f"
+      "sha256": "723fe843b95096c65763a62315ff9d85a6e21dccfb072effebc0544c0db667fa"
     },
     ".gov/rejections/README.md": {
       "sha256": "b6cf8158221e72e763cd355362d53ff0a56a0cd7400f6e55c53ae1e46ee8b419"
+    },
+    ".gov/rejections/case-asset-mirrors.sh": {
+      "sha256": "cb141c4a40ab674b2a24e74b76bd94bc8a42d476f8f01f724590a3ff8b82aace"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
       "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
@@ -37,13 +40,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+      "sha256": "3547ed46a4eddcbc26498ab0b6ccdfccba502b957d4cf415b4586a591d90a527"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-09-30T20:23:27+00:00",
+    "ts": "2026-10-01T07:29:01+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "Owner instruction (2026-10-01, user-management service deployment): the IdP deploy README must be a bilingual pair that passes the pairing gate; precedent .agents/notes/implemented/process/2026-09-30-the-pairing-gate-covers-the-contract-dir.md"
+    "reason": "PR #292 review round: BUILD.md/BUILD.zh.md join .gov/pairing.json (rules.md rule 7 \u2014 the new asset-mirror section had landed EN-only; the pairing gate's include list did not cover root-level BUILD, a gate-adoption gap the review named) and the Agent Note's skip-count figure is corrected to the measured 20 (16+4; 331\u2192311)"
   }
 }
