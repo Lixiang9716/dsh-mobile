@@ -1,5 +1,5 @@
 {
-  "title": "the present/ralph/bash/pwsh tool rows join the harmony closure \u2014 vendor-official.sh's BUNDLE_FILES list + the preset markers on-device",
+  "title": "the present/ralph/bash/pwsh tool rows join the harmony closure — vendor-official.sh's BUNDLE_FILES list + the preset markers on-device",
   "created": "2026-09-24T12:05:03+00:00",
   "rules": {
     "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
@@ -10,7 +10,7 @@
   },
   "checklist": [
     "[x] vendor-official.sh stages the four npm-face packages (they are NOT in SPINE_PKG_DSH nor the CLOSURE list today) and Index.ets's BUNDLE_FILES follows",
-    "[x] preset health on-device resolves the four mobile-preset roster rows on harmony (the markers seed from vendor/dsh/ \u2014 mirror the iOS embed shape)",
+    "[x] preset health on-device resolves the four mobile-preset roster rows on harmony (the markers seed from vendor/dsh/ — mirror the iOS embed shape)",
     "harmony user-facing boot E2E shows the bash/pwsh/present/ralph tools mounted"
   ],
   "status": "open",
@@ -57,14 +57,21 @@
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
-      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged — same recorded sweep shape as PR #244"
     },
     {
       "ts": "2026-10-01T06:40:42+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
-      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction \u2014 the brief itself is unchanged and remains the owner's to close or void."
+      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction — the brief itself is unchanged and remains the owner's to close or void."
+    },
+    {
+      "ts": "2026-10-01T07:38:50+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "to": "4433189e08b846ebb6afd53975bdfbf50720a74e611237eca4e800ccbe6fe4c0",
+      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). Item 3 remains open (on-device harmony boot E2E for the tool rows — an owner/device run), so the card is re-pinned current, the same sweep PRs #244/#274 performed; no brief change."
     },
     {
       "ts": "2026-10-01T07:46:30+00:00",
@@ -74,11 +81,25 @@
       "reason": "rules moved again after the rebase over #290/#292 (their seal + repins landed first): A12's webclient-staged-tree gate re-sealed on the current main; brief unchanged"
     },
     {
+      "ts": "2026-10-01T08:01:23+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
+      "to": "f96f31771c355e8b832311c3f616c3782e4a92e4d7b17636256cd25df8a24cd9",
+      "reason": "Post-rebase constitution sweep onto f96f31771c35 (gates.json = the asset-mirrors + perf-budget union after resolving #292's rebase); the brief is unchanged — the same recorded sweep shape as PRs #244/#274. Item 3 remains a device run."
+    },
+    {
+      "ts": "2026-10-01T08:36:55+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
+      "to": "f96f31771c355e8b832311c3f616c3782e4a92e4d7b17636256cd25df8a24cd9",
+      "reason": "The merge conflict resolution of T-0048's repin ledger during the #295 rebase settled on an older hash — re-pinned onto the settled constitution f96f31771c35; the brief is unchanged (item 3 remains a device run)."
+    },
+    {
       "ts": "2026-10-01T09:20:03+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
-      "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
+      "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) — pin stale by adoption, not drift; brief unchanged"
     }
   ]
 }
