@@ -6,7 +6,7 @@
 # choice. Zero is a place, not an event: without a gate the surface re-
 # accumulates one `for i in $(seq ...)` at a time, exactly the way it did
 # before #289. This gate freezes the victory — any warning/error-grade
-# shellcheck finding in the surface goes red HERE, at the plane, instead of
+# finding in the surface goes red HERE, at the plane, instead of
 # red in a CI run three days later (or never).
 #
 # Threshold: 0 at warning grade and above. Info/style findings are OUT of
@@ -71,6 +71,8 @@ fi
 COUNT=$(printf '%s\n' "$SCRIPTS" | wc -l | tr -d ' ')
 
 # 3. The judgment: severity floor at warning — error + warning count, threshold 0.
+# SCRIPTS is a whitespace-separated path list — each path is its own shellcheck argv
+# shellcheck disable=SC2086 # intentional word split
 OUT="$("$SHELLCHECK_BIN" -S warning --format=json1 $SCRIPTS 2>/dev/null || true)"
 N=$(printf '%s' "$OUT" | python3 -c '
 import json, sys

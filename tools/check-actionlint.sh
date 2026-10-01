@@ -59,6 +59,9 @@ else
     MODE="actionlint only (shellcheck absent — run: blocks not shell-linted here; the shellcheck-warn gate covers the entry scripts)"
 fi
 
+# SHELLCHECK_FLAG is flag-or-empty, WORKFLOWS a whitespace-separated list —
+# both splits are the contract (an empty flag must vanish from argv)
+# shellcheck disable=SC2086 # intentional word splits
 if ! OUT="$("$ACTIONLINT_BIN" -no-color $SHELLCHECK_FLAG $WORKFLOWS 2>&1)"; then
     printf '%s\n' "$OUT"
     echo "actionlint: FAIL — $COUNT workflows, findings above (threshold 0)"

@@ -9,13 +9,13 @@
     }
   },
   "checklist": [
-    "\u91cd\u5efa 69 \u811a\u672c\u6e05\u5355,before \u4e09\u7ea7\u8ba1\u6570",
-    "shellcheck-warn \u95e8\u811a\u672c(\u9608\u503c 0 @ warn/error)",
-    "actionlint \u95e8\u811a\u672c(\u9489\u7248\u672c\u4e0b\u8f7d;\u672c\u5730\u7f3a\u5931 skip-loud)",
-    "gates.json \u624b\u7f16\u4e24\u95e8,needs \u6446\u5bf9",
-    "\u53cd\u8bc1\u7528\u4f8b:\u6ce8\u5165 SC2034 \u7ea2\u2192\u8fd8\u539f\u7eff;actionlint \u540c\u7406",
-    "38 \u6761 info \u6e05\u96f6,shellcheck -S style \u5168\u7eff",
-    "plane \u91cd\u5c01",
+    "[x] \u91cd\u5efa 69 \u811a\u672c\u6e05\u5355,before \u4e09\u7ea7\u8ba1\u6570",
+    "[x] shellcheck-warn \u95e8\u811a\u672c(\u9608\u503c 0 @ warn/error)",
+    "[x] actionlint \u95e8\u811a\u672c(\u9489\u7248\u672c\u4e0b\u8f7d;\u672c\u5730\u7f3a\u5931 skip-loud)",
+    "[x] gates.json \u624b\u7f16\u4e24\u95e8,needs \u6446\u5bf9",
+    "[x] \u53cd\u8bc1\u7528\u4f8b:\u6ce8\u5165 SC2034 \u7ea2\u2192\u8fd8\u539f\u7eff;actionlint \u540c\u7406",
+    "[x] 38 \u6761 info \u6e05\u96f6,shellcheck -S style \u5168\u7eff",
+    "[x] plane \u91cd\u5c01",
     "self-test \u7eff + gov run \u5168 DAG \u7eff\u62ff receipt"
   ],
   "status": "open",
