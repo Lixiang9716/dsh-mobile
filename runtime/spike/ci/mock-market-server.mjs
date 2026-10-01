@@ -23,7 +23,7 @@
  */
 import { createServer } from 'node:http';
 import { createHash, createPrivateKey, createPublicKey, sign } from 'node:crypto';
-import { canonicalJson } from './marketplace-canonical.mjs';
+import { canonicalJson } from '../canonical-json.js';
 
 // The fixed test-only seed (this file is its only home; never a secret).
 const SEED = Buffer.from('3a6b7d0f1e2c3b4a5968778695a4b3c2d1e0f1a2b3c4d5e6f708192a3b4c5d6e', 'hex');

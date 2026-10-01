@@ -51,6 +51,12 @@ import { createHash, createPrivateKey, createPublicKey, sign } from 'node:crypto
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// The canonical form is ONE module repo-wide (the §7.1 signature covers
+// runtime/spike/canonical-json.js and nothing else) — this generator signs
+// with the same file the runtime resolver verifies with, so signer and
+// verifier cannot drift; the marketplace e2e's signature check stays as the
+// cross-implementation detector (node:crypto here, pure-JS ed25519 there).
+import { canonicalJson } from '../runtime/spike/canonical-json.js';
 
 // Catalog display summaries live beside the deploy tooling; resolved from
 // THIS file's location so the generator runs from any working directory.
@@ -250,18 +256,10 @@ const packPlugin = (pkgDir, name) => {
 };
 
 // ---------------------------------------------------------------------------
-// Canonical JSON + ed25519 (raw 32-byte seed → PKCS8; SPKI DER tail → raw
-// public key).
+// ed25519 (raw 32-byte seed → PKCS8; SPKI DER tail → raw public key).
+// canonicalJson is imported from runtime/spike/canonical-json.js — the one
+// canonical form, one module (see the import block).
 // ---------------------------------------------------------------------------
-
-const canonicalJson = (value) => {
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  if (value && typeof value === 'object') {
-    const keys = Object.keys(value).sort();
-    return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`).join(',')}}`;
-  }
-  return JSON.stringify(value);
-};
 
 const keyFromSeedB64 = (seedB64, where) => {
   let seed;

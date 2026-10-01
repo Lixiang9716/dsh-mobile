@@ -2,13 +2,13 @@ dsh.spike.log: {"level":"debug","module":"m3.spike","message":"main begin","data
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.ed25519.selftest","positives":2,"negatives":3,"standard":"RFC 8032"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"happy phase begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.resolver.built","pinnedKeys":["dsh-market-1"],"indexUrlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
@@ -26,7 +26,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -55,11 +55,11 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplac
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c001"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c001"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
@@ -190,12 +190,12 @@ dsh.spike.log: {"level":"debug","module":"dsh.fs","message":"fs.readText","data"
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.fs.read.ok","text":"installed from the signed catalog"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.happy.completed","spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"rotation drill begin","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index-rotation-window.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index-rotation-window.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotation-window.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotation-window.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-rotation-window.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-rotation-window.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:23","buffered":0}]}
@@ -212,7 +212,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":23}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotation-window.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotation-window.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotation-window.json","bytes":7613}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7613}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -233,11 +233,11 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"rotation k
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.key.learned","key":"dsh-market-2"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.window.accepted","dualSigned":true,"under":"dsh-market-1","learned":"dsh-market-2"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:24","buffered":0}]}
@@ -254,7 +254,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -276,13 +276,13 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse look
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.completed","acceptedUnder":"dsh-market-2"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index-rotated-final.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index-rotated-final.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-rotated-final.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:25","buffered":0}]}
@@ -299,7 +299,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":25}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-rotated-final.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-rotated-final.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-rotated-final.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -318,13 +318,13 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify pri
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"unknown-key","message":"no catalog signature from a trusted key (signed by: dsh-market-2)"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.rotation.stale-pin-rejected","key":"dsh-market-2","code":"unknown-key"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"tamper ladder begin","data":[{"happyBlob":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index-bad-signature.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index-bad-signature.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-bad-signature.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-bad-signature.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-bad-signature.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-bad-signature.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:26","buffered":0}]}
@@ -341,7 +341,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":26}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-bad-signature.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-bad-signature.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-bad-signature.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -359,13 +359,13 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate c
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify primary signature","data":[{"candidates":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"signature","message":"catalog signature failed verification under dsh-market-1"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"bad-signature","code":"signature"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index-unknown-key.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index-unknown-key.json","pinned":["dsh-market-1"]}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"expecting a rejection","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-unknown-key.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-unknown-key.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-unknown-key.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-unknown-key.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:27","buffered":0}]}
@@ -382,7 +382,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":27}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-unknown-key.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-unknown-key.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-unknown-key.json","bytes":7401}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7401}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -400,12 +400,12 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate c
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify primary signature","data":[{"candidates":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"unknown-key","message":"no catalog signature from a trusted key (signed by: attacker-key-9)"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"unknown-key","code":"unknown-key","signedBy":"attacker-key-9"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:28","buffered":0}]}
@@ -422,7 +422,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":28}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -441,7 +441,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify pri
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.verified","key":"dsh-market-1","signatures":1,"generatedAt":"2026-10-01T00:00:00Z","entries":9}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index entries by id","data":[{"entries":9}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"control endpoint","data":[{"path":"/_tamper/blob"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/_tamper/blob","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/_tamper/blob","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:29","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":79}]}
@@ -458,11 +458,11 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplac
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09156"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c010"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c010"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}
@@ -497,7 +497,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"verify trust r
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install rejected","data":[{"code":"integrity","message":"package digest mismatches the trust record"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.rejected","case":"blob-mismatch","code":"integrity"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"control endpoint","data":[{"path":"/_tamper/none"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/_tamper/none","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/_tamper/none","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:33","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":83}]}
@@ -509,12 +509,12 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":33}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.tamper.disarmed"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:64815/index-manifest-mismatch.json","pinned":["dsh-market-1"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:64815/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:64815/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"resolver built","data":[{"indexUrl":"http://127.0.0.1:59904/index-manifest-mismatch.json","pinned":["dsh-market-1"]}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"refresh begin","data":[{"url":"http://127.0.0.1:59904/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetch begin","data":[{"url":"http://127.0.0.1:59904/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-manifest-mismatch.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetch.start","urlPath":"/index-manifest-mismatch.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/index-manifest-mismatch.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/index-manifest-mismatch.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog body drain begin","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:34","buffered":0}]}
@@ -531,7 +531,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":32}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":34}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:64815/index-manifest-mismatch.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"url path projection","data":[{"url":"http://127.0.0.1:59904/index-manifest-mismatch.json"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.index.fetched","urlPath":"/index-manifest-mismatch.json","bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"catalog fetched","data":[{"bytes":7397}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate catalog","data":[{"entries":9}]}
@@ -555,11 +555,11 @@ dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplac
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse lookup spec","data":[{"spec":"dsh-fs@^0.1.0"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"market.lookup.found","spec":"dsh-fs@^0.1.0","id":"dsh-fs","version":"0.1.0","blobSha256":"bf4df0116b4e7dac5b9b76ac31df2b2d285a9255342518243bfa15f21cbd0107","manifestSha256":"635617cc08f68944cfb520afee664c9ddfadf8e802d4d6cebb0ac2d950d09100"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup resolved","data":[{"spec":"dsh-fs@^0.1.0","version":"0.1.0"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c011"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","id":"dsh-fs","txId":"mkt-c011"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.start"}]}
-dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz"}]}
+dsh.spike.log: {"level":"debug","module":"m3.spike","message":"normalize url to path","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.start","url":"/dsh-fs@0.1.0.tgz"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:64815/dsh-fs@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59904/dsh-fs@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"m3.spike","message":"installer step","data":[{"name":"fetch.status"}]}
 dsh.spike.log: {"level":"info","module":"m3.spike","message":"e2e","data":[{"scenario":"marketplace.install","event":"install.fetch.status","status":200}]}

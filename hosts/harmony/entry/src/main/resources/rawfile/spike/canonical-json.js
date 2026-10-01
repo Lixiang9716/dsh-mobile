@@ -1,23 +1,40 @@
 // dsh:logging-exempt (pure function module — a codec takes no policy decisions)
 /**
- * Pure wire codecs for the marketplace resolver (the sha256.js precedent):
+ * Pure wire codecs for the marketplace signature plane (the sha256.js precedent):
  * canonical JSON serialization and UTF-8 encode/decode that do not lean on
  * TextEncoder/TextDecoder (absent in some embeds).
  *
- * canonicalJson is the byte form the catalog's ed25519 signature covers
- * ("canonical JSON of everything except signature"): recursively sorted
- * object keys, no whitespace. The node-side test vehicles keep a copy
- * (runtime/spike/ci/marketplace-canonical.mjs — node cannot resolve this
- * module's bare imports); drift between the two is DETECTED by the
- * signature check in the e2e leg, never assumed away.
+ * canonicalJson is THE canonical form the catalog's ed25519 signature covers
+ * (data-protocols.md §7.1: recursively sorted object keys, arrays in order, no
+ * whitespace) — one canonical form, one module. Every signer and verifier in
+ * the repo consumes THIS file and no other copy:
+ *   - runtime embeds import it bare (`canonical-json.js`, host-loader resolved):
+ *     marketplace-resolver.js, marketplace.js;
+ *   - node-side signers/verifiers import it by relative path: the publisher
+ *     tool (tools/gen-marketplace-index.mjs, re-exported to
+ *     tools/marketplace-rotate-key.mjs), the hosting kit
+ *     (deploy/marketplace/generate-index.mjs), the e2e vehicles
+ *     (ci/mock-market-server.mjs, ci/market-test-indexes.mjs), and the panel
+ *     suite (test/panel via vitest alias).
+ * Drift between node:crypto-signed and pure-JS-verified bytes is therefore a
+ * code defect, not a copy drift — and the cross legs stay as the detector:
+ * test/panel (node:crypto signs, the resolver verifies) plus the marketplace
+ * e2e legs would go red at the signature check if this form ever moved.
+ *
+ * A document that is not representable in JSON fails loud (an `undefined`
+ * member value would otherwise silently corrupt the signed bytes — rule 5).
  */
 
-/** Canonical JSON: recursively sorted keys, no whitespace. */
+/** Canonical JSON: recursively sorted keys, no whitespace; undefined member
+ * values are a loud error, not silent corruption. */
 export const canonicalJson = (value) => {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
-  const keys = Object.keys(value).sort();
-  return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`).join(',')}}`;
+  if (value && typeof value === 'object') {
+    const keys = Object.keys(value).sort();
+    for (const k of keys) if (value[k] === undefined) throw new Error(`canonical JSON: key ${k} is undefined`);
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
 };
 
 /** UTF-8 text → bytes (surrogate pairs consumed; same output the Web
