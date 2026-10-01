@@ -1,0 +1,13 @@
+metric                  | measured | baseline | warn above | verdict
+------------------------+---------+---------+-----------+-------
+boot.coldBootMs         |      452 |      452 |       2000 | PASS
+boot.processColdStartMs |     7612 |     7612 |      20000 | PASS
+session.turnMs          |      180 |      180 |       3000 | PASS
+market.catalogRefreshMs |     5207 |     5207 |      15000 | PASS
+market.installCommitMs  |      626 |      626 |       1000 | PASS
+bytes.spikeBundleC      | 68052388 | 68052388 |   85000000 | PASS
+bytes.marketTgz         |     6656 |     6656 |      10000 | PASS
+leak.growthBytes        |  8347650 |  8347650 |   16777216 | PASS
+
+machine: Darwin 27.0.0 Apple M1 (v24.14.0) — numbers are machine-local; recorded 2026-10-01
+perf-budget: all measured numbers within their warn margins

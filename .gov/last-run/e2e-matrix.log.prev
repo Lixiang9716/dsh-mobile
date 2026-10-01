@@ -1,0 +1,15 @@
+e2e: PASS matrix (92 dirs, 178 verdicts, 180 pngs; 7 findings under --accept-known-gaps: 7 accepted (owned) gaps, 0 unregistered, 0 register defects)
+e2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-session-live/receipt.json — receipt.json
+e2e:          owner: android work stream (#66) | closes with: DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-upstream/receipt.json — receipt.json
+e2e:          owner: android work stream (#63) | closes with: DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/android/artifacts/android-write-live/receipt.json — receipt.json
+e2e:          owner: android work stream (#72) | closes with: DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-official-web/receipt.json — receipt.json
+e2e:          owner: harmony work stream (#64) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-session-live/receipt.json — receipt.json
+e2e:          owner: harmony work stream (#67) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/harmony/artifacts/d9-write-live/receipt.json — receipt.json
+e2e:          owner: harmony work stream (#70) | closes with: DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step
+e2e: accepted MISSING_DELIVERABLE hosts/ios/artifacts/b4-write-live/receipt.json — receipt.json
+e2e:          owner: iOS b4 work stream (#65) | closes with: run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step

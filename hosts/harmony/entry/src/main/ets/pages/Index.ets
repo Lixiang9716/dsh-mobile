@@ -81,6 +81,8 @@ const BUNDLE_FILES: string[] = [
   'gateway.js',
   'manifest.json',
   'install-pipeline.js',
+  'install-fetch.js',
+  'receipt-journal.js',
   'llm.js',
   'ed25519.js',
   'marketplace-resolver.js',

@@ -1,0 +1,13 @@
+code-size: note — skipped hosts/ios/App/Source/CarrierAPIBridge.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/Gateway/BLERadio.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/Gateway/CameraPrimitives.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/Gateway/FSPrimitives.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/Gateway/GatewayCore.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/Gateway/SystemBleRadio.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/NextWebGameDrive.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/OfficialWebProbe.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/SessionLiveProbe.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/SessionLiveRuntime.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/SessionServe.swift: parse errors — falling back
+code-size: note — skipped hosts/ios/App/Source/SessionWriteRuntime.swift: parse errors — falling back
+code-size: 442 source file(s) checked (430 via gov parse, 12 fallback; file<=500, func<=50, indent<=5); 0 violation(s)

@@ -1,0 +1,19 @@
+{
+  "title": "\u5b8c\u6210\u9e3f\u8499\u7cfb\u7edf\u548candroid\u7cfb\u7edf\u7684\u6a21\u62df\u5668\u6d4b\u8bd5 (caller verbatim) \u2014 run the simulator matrix locally: android full (release + regression + device-plane) on AVD dsh_test, harmony leg (honest skip receipt \u2014 no DevEco/hdc on this WSL2 box)",
+  "created": "2026-10-01T11:51:00+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "android matrix GREEN: release, regression (3-scenario), device-plane legs all PASS with receipts under hosts/android/artifacts/simulator-matrix/",
+    "harmony matrix leg recorded: matrix-skip-receipt.json written (no DevEco toolchain / hdc target on this machine \u2014 by design, never a fake pass)",
+    "results reported to the caller (leg table + evidence paths + CI cross-check)"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0156"
+}

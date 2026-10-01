@@ -1,0 +1,2 @@
+verify_note_presence: base=HEAD (dirty worktree — reviewing the working tree)
+verify_note_presence: 8 non-trivial file(s), 1 note file(s) — ok
