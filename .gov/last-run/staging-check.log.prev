@@ -452,7 +452,7 @@
     {
       "host": "ios",
       "roots": 63,
-      "reached": 181,
+      "reached": 182,
       "scopedReached": 160,
       "skippedBare": 34,
       "brokenEdges": [],
@@ -474,6 +474,7 @@
         "fixtures/dsh-badge.js",
         "fixtures/dsh-notes-source.js",
         "fixtures/dsh-notes.js",
+        "freshness-store.js",
         "gateway.js",
         "install-fetch.js",
         "install-pipeline.js",

@@ -3,7 +3,7 @@ stage-spine-closure: assets verified in place (check mode, no writes, 311 untrac
 
 closures: harmony (rawfile vs runtime/spike pins)
 vendor-official: byte-verifying the closure copies
-vendor-official: closure verified in place (check mode, no writes, 155 untracked-but-closure file(s) skipped — materialized at build time)
+vendor-official: closure verified in place (check mode, no writes, 153 untracked-but-closure file(s) skipped — materialized at build time)
 
 closures: ios (generate; the claim is gen.sh exits 0, not bytes in the index)
 

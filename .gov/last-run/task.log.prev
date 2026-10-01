@@ -161,4 +161,5 @@ done  T-0154 asset-mirror drift triple: ble-plane twin, three-host timeline sync
 done  T-0155 A12+C34: CI honesty — the staged-tree invariant becomes a real gate; the vendor ensure path fails loud
 done  T-0155 lint 防回潮:shellcheck-warn + actionlint 两门守住 #289,38 条 info 清零
 open  T-0156 完成鸿蒙系统和android系统的模拟器测试 (caller verbatim) — run the simulator matrix locally: android full (release + regression + device-plane) on AVD dsh_test, harmony leg (honest skip receipt — no DevEco/hdc on this WSL2 box) (obey rules@ee4951678e7c)
-task: 163 card(s) — 9 open (11 unticked item(s); --strict blocks on them), 0 stale, 90 done, 64 voided
+done  T-0156 Fix HIGH catalog-replay: client-side freshness anchor (monotonic generatedAt floor)
+task: 164 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 91 done, 64 voided

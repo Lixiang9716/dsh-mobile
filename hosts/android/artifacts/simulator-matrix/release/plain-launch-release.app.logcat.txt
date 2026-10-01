@@ -1,136 +1,79 @@
 --------- beginning of main
-09-30 22:24:19.793  3024  3024 I dshmobile.spike: Using CollectorTypeCMC GC.
-09-30 22:24:20.092  3024  3024 E dshmobile.spike: Not starting debugger since process cannot load the jdwp agent.
-09-30 22:24:20.353  3024  3024 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
-09-30 22:24:22.226  3024  3024 W ziparchive: Unable to open '/data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.dm': No such file or directory
-09-30 22:24:22.230  3024  3024 W ziparchive: Unable to open '/data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.dm': No such file or directory
-09-30 22:24:23.083  3024  3024 D nativeloader: Configuring clns-7 for other apk /data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/lib/arm64:/data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.apk!/lib/arm64-v8a, permitted_path=/data:/mnt/expand:/data/user/0/com.dshmobile.spike
-09-30 22:24:23.099  3024  3024 D CompatChangeReporter: Compat change id reported: 202956589; UID 10150; state: ENABLED
-09-30 22:24:23.507  3024  3024 V GraphicsEnvironment: Currently set values for:
-09-30 22:24:23.550  3024  3024 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
-09-30 22:24:23.550  3024  3024 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
-09-30 22:24:23.550  3024  3024 V GraphicsEnvironment: Global.Settings values are invalid: number of packages: 0, number of values: 0
-09-30 22:24:23.623  3024  3024 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
-09-30 22:24:24.494  3024  3024 I WebViewFactory: Loading com.android.webview version 124.0.6367.219 (code 636771901)
+10-01 20:40:10.606  5177  5177 I dshmobile.spike: Using CollectorTypeCMC GC.
+10-01 20:40:10.607  5177  5177 W dshmobile.spike: Unexpected CPU variant for x86: x86_64.
+10-01 20:40:10.607  5177  5177 W dshmobile.spike: Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, default
+10-01 20:40:10.618  5177  5177 E dshmobile.spike: Not starting debugger since process cannot load the jdwp agent.
+10-01 20:40:10.619  5177  5177 D nativeloader: Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+10-01 20:40:10.708  5177  5177 W ziparchive: Unable to open '/data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.dm': No such file or directory
+10-01 20:40:10.708  5177  5177 W ziparchive: Unable to open '/data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.dm': No such file or directory
+10-01 20:40:10.742  5177  5177 D nativeloader: Configuring clns-7 for other apk /data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.apk. target_sdk_version=35, uses_libraries=, library_path=/data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/lib/x86_64:/data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.dshmobile.spike
+10-01 20:40:10.744  5177  5177 D CompatChangeReporter: Compat change id reported: 202956589; UID 10213; state: ENABLED
+10-01 20:40:10.769  5177  5177 V GraphicsEnvironment: Currently set values for:
+10-01 20:40:10.769  5177  5177 V GraphicsEnvironment:   angle_gl_driver_selection_pkgs=[]
+10-01 20:40:10.769  5177  5177 V GraphicsEnvironment:   angle_gl_driver_selection_values=[]
+10-01 20:40:10.769  5177  5177 V GraphicsEnvironment: Global.Settings values are invalid: number of packages: 0, number of values: 0
+10-01 20:40:10.769  5177  5177 V GraphicsEnvironment: Neither updatable production driver nor prerelease driver is supported.
+10-01 20:40:10.868  5177  5177 I WebViewFactory: Loading com.google.android.webview version 124.0.6367.219 (code 636771938)
 --------- beginning of system
-09-30 22:24:24.501  3024  3024 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=36c20d72 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/EmulationPixel7/EmulationPixel7Overlay.apk,/data/resource-cache/com.android.systemui-neutral-fRCb.frro,/data/resource-cache/com.android.systemui-accent-ESA1.frro,/data/resource-cache/com.android.systemui-dynamic-mh5L.frro] mLibDirs=[/product/app/webview/webview.apk,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
-09-30 22:24:24.505  3024  3024 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
-09-30 22:24:24.518  3024  3024 D nativeloader: InitLlndkLibrariesProduct: libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libRS.so:libandroid_net.so:libapexsupport.so:libbinder_ndk.so:libc.so:libcgrouprc.so:libclang_rt.asan-aarch64-android.so:libclang_rt.hwasan-aarch64-android.so:libcom.android.tethering.connectivity_native.so:libdl.so:libft2.so:liblog.so:libm.so:libmediandk.so:libnativewindow.so:libneuralnetworks.so:libselinux.so:libsync.so:libvendorsupport.so:libvndksupport.so:libvulkan.so
-09-30 22:24:24.519  3024  3024 D nativeloader: Configuring product-clns-8 for unbundled product apk /product/app/webview/webview.apk. target_sdk_version=34, uses_libraries=, library_path=/product/app/webview/lib/arm64:/product/app/webview/webview.apk!/lib/arm64-v8a:/product/lib64:/system/product/lib64, permitted_path=/data:/mnt/expand:/product/lib64:/system/product/lib64
-09-30 22:24:24.529  3024  3024 D nativeloader: InitVndkspLibrariesProduct: VNDK is deprecated with product
-09-30 22:24:24.655  3024  3024 I cr_WVCFactoryProvider: Loaded version=124.0.6367.219 minSdkVersion=1 isBundle=false multiprocess=true packageId=2
-09-30 22:24:24.669  3024  3024 D nativeloader: Load /product/app/webview/webview.apk!/lib/arm64-v8a/libwebviewchromium.so using ns product-clns-8 from class loader (caller=/product/app/webview/webview.apk): ok
-09-30 22:24:24.683  3024  3024 D nativeloader: Load /system/lib64/libwebviewchromium_plat_support.so using ns product-clns-8 from class loader (caller=/product/app/webview/webview.apk): ok
-09-30 22:24:24.705  3024  3053 I chromium: [0930/222424.702807:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
-09-30 22:24:24.706  3024  3053 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.dshmobile.spike/app_webview/variations_seed_new"
-09-30 22:24:24.706  3024  3053 I chromium: [0930/222424.706234:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
-09-30 22:24:24.706  3024  3053 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.dshmobile.spike/app_webview/variations_seed"
-09-30 22:24:24.708  3024  3054 I cr_VariationsUtils: Requesting new seed from IVariationsSeedServer
-09-30 22:24:24.715  3024  3024 D CompatChangeReporter: Compat change id reported: 279646685; UID 10150; state: ENABLED
-09-30 22:24:24.781  3024  3024 I cr_LibraryLoader: Successfully loaded native library
-09-30 22:24:24.790  3024  3024 I cr_CachingUmaRecorder: Flushed 6 samples from 6 histograms, 0 samples were dropped.
-09-30 22:24:24.824  3024  3024 I cr_CombinedPProvider: #registerProvider() provider:WV.o7@980946e isPolicyCacheEnabled:false policyProvidersSize:0
-09-30 22:24:24.855  3024  3024 I cr_PolicyProvider: #setManagerAndSource() 0
-09-30 22:24:24.966  3024  3024 I cr_CombinedPProvider: #linkNativeInternal() 1
-09-30 22:24:24.972  3024  3024 I cr_AppResProvider: #getApplicationRestrictionsFromUserManager() Bundle[EMPTY_PARCEL]
-09-30 22:24:24.972  3024  3024 I cr_PolicyProvider: #notifySettingsAvailable() 0
-09-30 22:24:24.972  3024  3024 I cr_CombinedPProvider: #onSettingsAvailable() 0
-09-30 22:24:24.972  3024  3024 I cr_CombinedPProvider: #flushPolicies()
-09-30 22:24:25.232  3024  3079 W chromium: [WARNING:dns_config_service_android.cc(81)] Failed to read DnsConfig.
-09-30 22:24:25.695  3024  3024 D CompatChangeReporter: Compat change id reported: 309578419; UID 10150; state: ENABLED
-09-30 22:24:25.841  3024  3024 D nativeloader: Load /data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.apk!/lib/arm64-v8a/libdsh_spike.so using ns clns-7 from class loader (caller=/data/app/~~uox4WcnE5pzpJ-mMuPvf6w==/com.dshmobile.spike-9P5aeBqQ3jqI7-Y2K26Ieg==/base.apk): ok
-09-30 22:24:25.948  3024  3024 W HWUI    : Unknown dataspace 0
-09-30 22:24:26.775  3024  3042 I EGL_emulation: Opening libGLESv1_CM_emulation.so
-09-30 22:24:26.781  3024  3042 I EGL_emulation: Opening libGLESv2_emulation.so
-09-30 22:24:26.958  3024  3042 W HWUI    : Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
-09-30 22:24:26.961  3024  3042 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
-09-30 22:24:27.145  3024  3042 I Gralloc4: mapper 4.x is not supported
-09-30 22:24:27.269  3024  3024 E EGL_emulation: eglCreateContext: EGL_BAD_CONFIG: no ES 3.2 support
-09-30 22:24:27.270  3024  3024 E EGL_emulation: tid 3024: eglCreateContext(1830): error 0x3005 (EGL_BAD_CONFIG)
-09-30 22:24:27.559  3024  3024 I Choreographer: Skipped 87 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:28.659  3024  3024 W dshmobile.spike: Long monitor contention with owner dsh-spike-js (3102) at java.lang.String[] android.content.res.AssetManager.list(java.lang.String)(AssetManager.java:1033) waiters=0 in boolean android.content.res.AssetManager.getResourceValue(int, int, android.util.TypedValue, boolean) for 412ms
-09-30 22:24:28.716  3024  3033 I HWUI    : Davey! duration=1562ms; Flags=1, FrameTimelineVsyncId=30488, IntendedVsync=1177557004830, Vsync=1177640338160, InputEventId=0, HandleInputStart=1177640583477, AnimationStart=1177640584436, PerformTraversalsStart=1177640584644, DrawStart=1178745201353, FrameDeadline=1177573671496, FrameInterval=1177640564686, FrameStartTime=16666666, SyncQueued=1178999554978, SyncStart=1179004959228, IssueDrawCommandsStart=1179015292978, SwapBuffers=1179055279311, FrameCompleted=1179124943186, DequeueBufferDuration=15250, QueueBufferDuration=2582709, GpuCompleted=1179124943186, SwapBuffersCompleted=1179101520395, DisplayPresentTime=0, CommandSubmissionCompleted=1179055279311, 
-09-30 22:24:28.739  3024  3033 I HWUI    : Davey! duration=2199ms; Flags=0, FrameTimelineVsyncId=30517, IntendedVsync=1177673671492, Vsync=1179123671434, InputEventId=0, HandleInputStart=1179136484561, AnimationStart=1179136485853, PerformTraversalsStart=1179136549436, DrawStart=1179137702353, FrameDeadline=1179157004766, FrameInterval=1179132654728, FrameStartTime=16666666, SyncQueued=1179138237728, SyncStart=1179194639270, IssueDrawCommandsStart=1179194991353, SwapBuffers=1179365895228, FrameCompleted=1179929787937, DequeueBufferDuration=37292, QueueBufferDuration=2275500, GpuCompleted=1179929787937, SwapBuffersCompleted=1179909642145, DisplayPresentTime=0, CommandSubmissionCompleted=1179365895228, 
-09-30 22:24:29.780  3024  3042 D EGL_emulation: app_time_stats: avg=750.91ms min=574.43ms max=870.17ms count=3
-09-30 22:24:30.158  3024  3035 I HWUI    : Davey! duration=1040ms; Flags=0, FrameTimelineVsyncId=30628, IntendedVsync=1180307004720, Vsync=1180573671376, InputEventId=0, HandleInputStart=1180590269812, AnimationStart=1180590270854, PerformTraversalsStart=1180590271104, DrawStart=1180590730062, FrameDeadline=1180323671386, FrameInterval=1180590093270, FrameStartTime=16666666, SyncQueued=1180597332020, SyncStart=1180603665562, IssueDrawCommandsStart=1180603846145, SwapBuffers=1180773368354, FrameCompleted=1181354121271, DequeueBufferDuration=12458, QueueBufferDuration=796916, GpuCompleted=1181354121271, SwapBuffersCompleted=1180779845937, DisplayPresentTime=0, CommandSubmissionCompleted=1180773368354, 
-09-30 22:24:30.349  3024  3035 I HWUI    : Davey! duration=987ms; Flags=0, FrameTimelineVsyncId=30649, IntendedVsync=1180607004708, Vsync=1180640338040, InputEventId=0, HandleInputStart=1180643048354, AnimationStart=1180643049062, PerformTraversalsStart=1180643049270, DrawStart=1180643121062, FrameDeadline=1181373671344, FrameInterval=1180643044520, FrameStartTime=16666666, SyncQueued=1180643258895, SyncStart=1180779999062, IssueDrawCommandsStart=1180785466312, SwapBuffers=1180859649437, FrameCompleted=1181730958021, DequeueBufferDuration=336302084, QueueBufferDuration=808584, GpuCompleted=1181692701146, SwapBuffersCompleted=1181730958021, DisplayPresentTime=0, CommandSubmissionCompleted=1180859649437, 
-09-30 22:24:30.661  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 4962KB AllocSpace bytes, 4(144KB) LOS objects, 49% free, 2778KB/5557KB, paused 375us,3.379ms total 210.645ms
-09-30 22:24:30.668  3024  3031 W dshmobile.spike: ApkAssets: Deleting an ApkAssets object '<empty> and /product/app/webview/webview.apk' with 2 weak references
-09-30 22:24:34.563  3024  3102 D CompatChangeReporter: Compat change id reported: 312399441; UID 10150; state: ENABLED
-09-30 22:24:35.160  3024  3123 D TrafficStats: tagSocket(5) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:35.262  3024  3102 I SessionServe: serving dsh-web-official on 127.0.0.1:39685
-09-30 22:24:40.854  3024  3081 W cr_media: BLUETOOTH_CONNECT permission is missing.
-09-30 22:24:40.860  3024  3081 W cr_media: registerBluetoothIntentsIfNeeded: Requires BLUETOOTH permission
-09-30 22:24:41.078  3024  3123 D TrafficStats: tagSocket(205) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.115  3024  3123 D TrafficStats: tagSocket(206) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.371  3024  3123 D TrafficStats: tagSocket(217) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.380  3024  3123 D TrafficStats: tagSocket(220) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.391  3024  3123 D TrafficStats: tagSocket(223) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.402  3024  3123 D TrafficStats: tagSocket(226) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.413  3024  3123 D TrafficStats: tagSocket(229) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.417  3024  3123 D TrafficStats: tagSocket(232) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:41.594  3024  3029 W dshmobile.spike: Suspending all threads took: 7.079ms
-09-30 22:24:41.653  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 2221KB AllocSpace bytes, 132(45MB) LOS objects, 40% free, 34MB/58MB, paused 8.564ms,11.980ms total 121.524ms
-09-30 22:24:41.720  3024  3029 W dshmobile.spike: Suspending all threads took: 8.678ms
-09-30 22:24:41.739  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 68KB AllocSpace bytes, 29(46MB) LOS objects, 37% free, 39MB/63MB, paused 9.818ms,3.332ms total 45.034ms
-09-30 22:24:41.819  3024  3029 W dshmobile.spike: Suspending all threads took: 21.888ms
-09-30 22:24:41.854  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 64KB AllocSpace bytes, 23(50MB) LOS objects, 33% free, 48MB/72MB, paused 22.706ms,9.708ms total 88.139ms
-09-30 22:24:42.153  3024  3100 W chromium: [WARNING:display_webview.cc(32)] WebView overlays are enabled!
-09-30 22:24:42.223  3024  3029 W dshmobile.spike: Suspending all threads took: 71.591ms
-09-30 22:24:42.281  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 96KB AllocSpace bytes, 15(73MB) LOS objects, 25% free, 68MB/92MB, paused 81.887ms,5.641ms total 270.087ms
-09-30 22:24:42.399  3024  3042 D EGL_emulation: app_time_stats: avg=12242.53ms min=12242.53ms max=12242.53ms count=1
-09-30 22:24:42.509  3024  3024 I Choreographer: Skipped 36 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:43.163  3024  3029 W dshmobile.spike: Suspending all threads took: 150.061ms
-09-30 22:24:43.260  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 17(87MB) LOS objects, 29% free, 57MB/81MB, paused 153.365ms,19.387ms total 888.854ms
-09-30 22:24:43.393  3024  3029 W dshmobile.spike: Suspending all threads took: 44.951ms
-09-30 22:24:43.417  3024  3042 W chromium: [WARNING:angle_platform_impl.cc(49)] ProgramGL.cpp:666 (checkLinkStatus): Program link or binary loading failed with no info log.
-09-30 22:24:43.432  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 64KB AllocSpace bytes, 12(65MB) LOS objects, 25% free, 71MB/95MB, paused 49.362ms,5.755ms total 117.316ms
-09-30 22:24:43.495  3024  3042 D EGL_emulation: app_time_stats: avg=546.84ms min=349.57ms max=744.10ms count=2
-09-30 22:24:43.497  3024  3024 I Choreographer: Skipped 37 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:43.770  3024  3033 I HWUI    : Davey! duration=1402ms; Flags=0, FrameTimelineVsyncId=30972, IntendedVsync=1193473670860, Vsync=1194073670836, InputEventId=0, HandleInputStart=1194086643527, AnimationStart=1194086644569, PerformTraversalsStart=1194089959152, DrawStart=1194090128902, FrameDeadline=1194407004156, FrameInterval=1194082663277, FrameStartTime=16666666, SyncQueued=1194091016902, SyncStart=1194325649944, IssueDrawCommandsStart=1194326013819, SwapBuffers=1195015278986, FrameCompleted=1195110430194, DequeueBufferDuration=15375, QueueBufferDuration=44173292, GpuCompleted=1195110430194, SwapBuffersCompleted=1195069207611, DisplayPresentTime=0, CommandSubmissionCompleted=1195015278986, 
-09-30 22:24:43.867  3024  3029 W dshmobile.spike: Suspending all threads took: 13.565ms
-09-30 22:24:43.935  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 13(74MB) LOS objects, 25% free, 68MB/92MB, paused 14.501ms,11.526ms total 318.558ms
-09-30 22:24:44.280  3024  3033 I HWUI    : Davey! duration=876ms; Flags=0, FrameTimelineVsyncId=30987, IntendedVsync=1194123670834, Vsync=1194390337490, InputEventId=0, HandleInputStart=1194397132319, AnimationStart=1194397133152, PerformTraversalsStart=1194422010985, DrawStart=1194422358485, FrameDeadline=1195140337460, FrameInterval=1194396737985, FrameStartTime=16666666, SyncQueued=1194474564569, SyncStart=1195069609527, IssueDrawCommandsStart=1195112455944, SwapBuffers=1195505549319, FrameCompleted=1195595083903, DequeueBufferDuration=14625, QueueBufferDuration=512916, GpuCompleted=1195595083903, SwapBuffersCompleted=1195511183319, DisplayPresentTime=0, CommandSubmissionCompleted=1195505549319, 
-09-30 22:24:44.380  3024  3029 W dshmobile.spike: Suspending all threads took: 6.912ms
-09-30 22:24:44.532  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 11(68MB) LOS objects, 23% free, 78MB/102MB, paused 11.435ms,61.194ms total 246.999ms
-09-30 22:24:44.685  3024  3042 D EGL_emulation: app_time_stats: avg=594.90ms min=442.02ms max=747.77ms count=2
-09-30 22:24:44.879  3024  3033 I HWUI    : Davey! duration=1418ms; Flags=0, FrameTimelineVsyncId=31002, IntendedVsync=1194440337488, Vsync=1195057004130, InputEventId=0, HandleInputStart=1195097548027, AnimationStart=1195097550444, PerformTraversalsStart=1195107338902, DrawStart=1195109901861, FrameDeadline=1195623670774, FrameInterval=1195070928652, FrameStartTime=16666666, SyncQueued=1195110687569, SyncStart=1195511575319, IssueDrawCommandsStart=1195511883944, SwapBuffers=1196109983486, FrameCompleted=1196259637236, DequeueBufferDuration=48208, QueueBufferDuration=121939083, GpuCompleted=1196247583861, SwapBuffersCompleted=1196259637236, DisplayPresentTime=0, CommandSubmissionCompleted=1196109983486, 
-09-30 22:24:44.880  3024  3123 D TrafficStats: tagSocket(168) with statsTag=0xffffffff, statsUid=-1
-09-30 22:24:45.381  3024  3033 I HWUI    : Davey! duration=1168ms; Flags=0, FrameTimelineVsyncId=31017, IntendedVsync=1195123670794, Vsync=1195573670776, InputEventId=0, HandleInputStart=1195591751153, AnimationStart=1195591752903, PerformTraversalsStart=1195851403278, DrawStart=1195851773569, FrameDeadline=1196273670748, FrameInterval=1195582352111, FrameStartTime=16666666, SyncQueued=1195857815903, SyncStart=1196260911153, IssueDrawCommandsStart=1196261621736, SwapBuffers=1196609694403, FrameCompleted=1196695509611, DequeueBufferDuration=7375, QueueBufferDuration=7764084, GpuCompleted=1196695509611, SwapBuffersCompleted=1196619336361, DisplayPresentTime=0, CommandSubmissionCompleted=1196609694403, 
-09-30 22:24:45.540  3024  3029 W dshmobile.spike: Suspending all threads took: 71.616ms
-09-30 22:24:45.687  3024  3024 I Choreographer: Skipped 36 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:45.906  3024  3033 I HWUI    : Davey! duration=1240ms; Flags=0, FrameTimelineVsyncId=31032, IntendedVsync=1195857004098, Vsync=1196257004082, InputEventId=0, HandleInputStart=1196276374903, AnimationStart=1196276376653, PerformTraversalsStart=1196453032736, DrawStart=1196453346945, FrameDeadline=1196723670730, FrameInterval=1196271436403, FrameStartTime=16666666, SyncQueued=1196458930986, SyncStart=1196619542403, IssueDrawCommandsStart=1196619653361, SwapBuffers=1197132673445, FrameCompleted=1197258096195, DequeueBufferDuration=12542, QueueBufferDuration=1228542, GpuCompleted=1197258096195, SwapBuffersCompleted=1197182114403, DisplayPresentTime=0, CommandSubmissionCompleted=1197132673445, 
-09-30 22:24:46.012  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 192KB AllocSpace bytes, 15(99MB) LOS objects, 21% free, 89MB/113MB, paused 73.186ms,20.026ms total 1.076s
-09-30 22:24:46.239  3024  3042 D EGL_emulation: app_time_stats: avg=517.80ms min=359.86ms max=664.62ms count=3
-09-30 22:24:46.647  3024  3033 I HWUI    : Davey! duration=915ms; Flags=0, FrameTimelineVsyncId=31047, IntendedVsync=1196457004074, Vsync=1196623670734, InputEventId=0, HandleInputStart=1196638228403, AnimationStart=1196638229403, PerformTraversalsStart=1196653920570, DrawStart=1196654109903, FrameDeadline=1197290337374, FrameInterval=1196634054653, FrameStartTime=16666666, SyncQueued=1196654933486, SyncStart=1197186091028, IssueDrawCommandsStart=1197226716862, SwapBuffers=1197738566195, FrameCompleted=1197903447195, DequeueBufferDuration=41500, QueueBufferDuration=41591542, GpuCompleted=1197903447195, SwapBuffersCompleted=1197814194154, DisplayPresentTime=0, CommandSubmissionCompleted=1197738566195, 
-09-30 22:24:46.689  3024  3029 W dshmobile.spike: Suspending all threads took: 36.813ms
-09-30 22:24:46.769  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 160KB AllocSpace bytes, 13(91MB) LOS objects, 28% free, 60MB/84MB, paused 44.482ms,13.635ms total 578.203ms
-09-30 22:24:46.853  3024  3024 I Choreographer: Skipped 30 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:47.151  3024  3033 I HWUI    : Davey! duration=1495ms; Flags=0, FrameTimelineVsyncId=31062, IntendedVsync=1196657004066, Vsync=1197257004042, InputEventId=0, HandleInputStart=1197265261362, AnimationStart=1197265269028, PerformTraversalsStart=1197417618487, DrawStart=1197418031320, FrameDeadline=1197923670682, FrameInterval=1197260971237, FrameStartTime=16666666, SyncQueued=1197476781987, SyncStart=1197815300695, IssueDrawCommandsStart=1197817377362, SwapBuffers=1198399804487, FrameCompleted=1198491497987, DequeueBufferDuration=11750, QueueBufferDuration=7467625, GpuCompleted=1198491497987, SwapBuffersCompleted=1198419109779, DisplayPresentTime=0, CommandSubmissionCompleted=1198399804487, 
-09-30 22:24:47.217  3024  3029 W dshmobile.spike: Suspending all threads took: 141.389ms
-09-30 22:24:47.307  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 8(62MB) LOS objects, 28% free, 61MB/85MB, paused 160.074ms,6.250ms total 488.370ms
-09-30 22:24:47.805  3024  3029 W dshmobile.spike: Suspending all threads took: 51.977ms
-09-30 22:24:47.839  3024  3042 D EGL_emulation: app_time_stats: avg=799.76ms min=605.02ms max=994.51ms count=2
-09-30 22:24:48.064  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 64KB AllocSpace bytes, 8(63MB) LOS objects, 27% free, 62MB/86MB, paused 58.504ms,93.130ms total 720.889ms
-09-30 22:24:48.130  3024  3024 I Choreographer: Skipped 68 frames!  The application may be doing too much work on its main thread.
-09-30 22:24:48.158  3024  3033 I HWUI    : Davey! duration=1577ms; Flags=0, FrameTimelineVsyncId=31077, IntendedVsync=1197423670702, Vsync=1197873670684, InputEventId=0, HandleInputStart=1197897664695, AnimationStart=1197897666487, PerformTraversalsStart=1197907988529, DrawStart=1197909283279, FrameDeadline=1198523670658, FrameInterval=1197882949487, FrameStartTime=16666666, SyncQueued=1197910308362, SyncStart=1198421086362, IssueDrawCommandsStart=1198431290404, SwapBuffers=1199283770904, FrameCompleted=1199511625321, DequeueBufferDuration=27375, QueueBufferDuration=20414667, GpuCompleted=1199511625321, SwapBuffersCompleted=1199415257279, DisplayPresentTime=0, CommandSubmissionCompleted=1199283770904, 
-09-30 22:24:48.354  3024  3029 W dshmobile.spike: Suspending all threads took: 11.259ms
-09-30 22:24:48.427  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 8(66MB) LOS objects, 21% free, 88MB/112MB, paused 12.004ms,27.950ms total 142.337ms
-09-30 22:24:48.913  3024  3035 I HWUI    : Davey! duration=1362ms; Flags=0, FrameTimelineVsyncId=31092, IntendedVsync=1197923670682, Vsync=1198423670662, InputEventId=0, HandleInputStart=1198491542196, AnimationStart=1198491543737, PerformTraversalsStart=1198540959112, DrawStart=1198550730487, FrameDeadline=1199540337284, FrameInterval=1198427218779, FrameStartTime=16666666, SyncQueued=1198610232779, SyncStart=1199453856779, IssueDrawCommandsStart=1199485723446, SwapBuffers=1199979352280, FrameCompleted=1200129837988, DequeueBufferDuration=21042, QueueBufferDuration=10483709, GpuCompleted=1200129837988, SwapBuffersCompleted=1200037274446, DisplayPresentTime=0, CommandSubmissionCompleted=1199979352280, 
-09-30 22:24:49.032  3024  3042 D EGL_emulation: app_time_stats: avg=595.98ms min=569.15ms max=622.82ms count=2
-09-30 22:24:49.248  3024  3035 I HWUI    : Davey! duration=1826ms; Flags=0, FrameTimelineVsyncId=31107, IntendedVsync=1198557003990, Vsync=1199690337278, InputEventId=0, HandleInputStart=1199714875780, AnimationStart=1199714877780, PerformTraversalsStart=1199737894238, DrawStart=1199739999571, FrameDeadline=1200157003926, FrameInterval=1199703559821, FrameStartTime=16666666, SyncQueued=1199750813321, SyncStart=1200038094071, IssueDrawCommandsStart=1200046342613, SwapBuffers=1200601963822, FrameCompleted=1200670751113, DequeueBufferDuration=19042, QueueBufferDuration=1274584, GpuCompleted=1200670751113, SwapBuffersCompleted=1200623129863, DisplayPresentTime=0, CommandSubmissionCompleted=1200601963822, 
-09-30 22:24:49.358  3024  3029 W dshmobile.spike: Suspending all threads took: 81.524ms
-09-30 22:24:49.444  3024  3143 I dshmobile.spike: Waiting for a blocking GC Alloc
-09-30 22:24:49.672  3024  3035 I HWUI    : Davey! duration=907ms; Flags=0, FrameTimelineVsyncId=31122, IntendedVsync=1199740337276, Vsync=1200107003928, InputEventId=0, HandleInputStart=1200123565030, AnimationStart=1200123565821, PerformTraversalsStart=1200195775280, DrawStart=1200255483655, FrameDeadline=1200690337238, FrameInterval=1200123019863, FrameStartTime=16666666, SyncQueued=1200256917905, SyncStart=1200623634947, IssueDrawCommandsStart=1200624877572, SwapBuffers=1200896674155, FrameCompleted=1201014702280, DequeueBufferDuration=44417, QueueBufferDuration=2520459, GpuCompleted=1201014702280, SwapBuffersCompleted=1200906844280, DisplayPresentTime=0, CommandSubmissionCompleted=1200896674155, 
-09-30 22:24:49.674  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 10(97MB) LOS objects, 28% free, 58MB/82MB, paused 84.729ms,4.917ms total 675.834ms
-09-30 22:24:49.674  3024  3143 I dshmobile.spike: WaitForGcToComplete blocked Alloc on Background for 230.602ms
-09-30 22:24:49.674  3024  3143 I dshmobile.spike: Starting a blocking GC Alloc
-09-30 22:24:50.134  3024  3029 W dshmobile.spike: Suspending all threads took: 129.023ms
-09-30 22:24:50.144  3024  3035 I HWUI    : Davey! duration=1130ms; Flags=0, FrameTimelineVsyncId=31137, IntendedVsync=1200207003924, Vsync=1200623670574, InputEventId=0, HandleInputStart=1200628444905, AnimationStart=1200628446113, PerformTraversalsStart=1200709750613, DrawStart=1200727134030, FrameDeadline=1201040337224, FrameInterval=1200624663905, FrameStartTime=16666666, SyncQueued=1200727756697, SyncStart=1200944367572, IssueDrawCommandsStart=1200947779113, SwapBuffers=1201431104405, FrameCompleted=1201553829405, DequeueBufferDuration=9084, QueueBufferDuration=606625, GpuCompleted=1201553829405, SwapBuffersCompleted=1201435292322, DisplayPresentTime=0, CommandSubmissionCompleted=1201431104405, 
-09-30 22:24:50.250  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 6(51MB) LOS objects, 24% free, 75MB/99MB, paused 132.030ms,52.259ms total 518.274ms
-09-30 22:24:50.355  3024  3042 D EGL_emulation: app_time_stats: avg=437.64ms min=290.34ms max=528.57ms count=3
-09-30 22:24:50.475  3024  3143 I dshmobile.spike: Waiting for a blocking GC Alloc
-09-30 22:24:50.627  3024  3033 I HWUI    : Davey! duration=1088ms; Flags=0, FrameTimelineVsyncId=31152, IntendedVsync=1200723670570, Vsync=1201023670558, InputEventId=0, HandleInputStart=1201037552155, AnimationStart=1201037552947, PerformTraversalsStart=1201229513239, DrawStart=1201229790989, FrameDeadline=1201573670536, FrameInterval=1201035685613, FrameStartTime=16666666, SyncQueued=1201231560280, SyncStart=1201435621322, IssueDrawCommandsStart=1201435746655, SwapBuffers=1201914404031, FrameCompleted=1202016383114, DequeueBufferDuration=30208, QueueBufferDuration=1803500, GpuCompleted=1202016383114, SwapBuffersCompleted=1201930040656, DisplayPresentTime=0, CommandSubmissionCompleted=1201914404031, 
-09-30 22:24:50.647  3024  3029 I dshmobile.spike: Background concurrent mark compact GC freed 120KB AllocSpace bytes, 8(81MB) LOS objects, 28% free, 58MB/82MB, paused 2.635ms,3.376ms total 330.745ms
-09-30 22:24:50.649  3024  3143 I dshmobile.spike: WaitForGcToComplete blocked Alloc on Background for 174.393ms
-09-30 22:24:50.649  3024  3143 I dshmobile.spike: Starting a blocking GC Alloc
+10-01 20:40:10.871  5177  5177 V ResourcesManager: The following library key has been added: ResourcesKey{ mHash=91743823 mResDir=null mSplitDirs=[] mOverlayDirs=[/product/overlay/EmulationPixel6/EmulationPixel6Overlay.apk,/product/overlay/NavigationBarModeGestural/NavigationBarModeGesturalOverlay.apk,/data/resource-cache/com.android.systemui-neutral-XVDH.frro,/data/resource-cache/com.android.systemui-accent-SIum.frro,/data/resource-cache/com.android.systemui-dynamic-Yocx.frro] mLibDirs=[/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk,/data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.apk,/system_ext/framework/androidx.window.extensions.jar] mDisplayId=0 mOverrideConfig=v35 mCompatInfo={420dpi always-compat} mLoaders=[]}
+10-01 20:40:10.874  5177  5177 W ziparchive: Unable to open '/data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.dm': No such file or directory
+10-01 20:40:10.874  5177  5177 W ziparchive: Unable to open '/data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.dm': No such file or directory
+10-01 20:40:10.874  5177  5177 W dshmobile.spike: Entry not found
+10-01 20:40:10.875  5177  5177 D nativeloader: Configuring clns-8 for other apk /data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.apk. target_sdk_version=34, uses_libraries=ALL, library_path=/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/lib/x86_64:/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk!/lib/x86_64:/data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+10-01 20:40:10.875  5177  5177 D ApplicationLoaders: Returning zygote-cached class loader: /system_ext/framework/androidx.window.extensions.jar
+10-01 20:40:10.876  5177  5177 D nativeloader: Configuring clns-9 for other apk /data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/lib/x86_64:/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk!/lib/x86_64:/data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.apk!/lib/x86_64, permitted_path=/data:/mnt/expand
+10-01 20:40:10.983  5177  5177 I cr_WVCFactoryProvider: Loaded version=124.0.6367.219 minSdkVersion=29 isBundle=false multiprocess=true packageId=2
+10-01 20:40:10.987  5177  5177 D nativeloader: Load /data/app/~~HKApSRz40MU3_tDr3Uv2vw==/com.google.android.trichromelibrary_636771938-JfyL3oq1I2MsC_8IIGap8w==/TrichromeLibrary.apk!/lib/x86_64/libmonochrome_64.so using ns clns-9 from class loader (caller=/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk): ok
+10-01 20:40:10.989  5177  5177 D nativeloader: Load /system/lib64/libwebviewchromium_plat_support.so using ns clns-9 from class loader (caller=/data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk): ok
+10-01 20:40:10.997  5177  5207 I chromium: [1001/204010.996764:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+10-01 20:40:10.997  5177  5207 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.dshmobile.spike/app_webview/variations_seed_new"
+10-01 20:40:10.997  5177  5207 I chromium: [1001/204010.997245:INFO:variations_seed_loader.cc(66)] Failed to open file for reading.: No such file or directory (2)
+10-01 20:40:10.997  5177  5207 I cr_VariationsUtils: Failed reading seed file "/data/user/0/com.dshmobile.spike/app_webview/variations_seed"
+10-01 20:40:11.011  5177  5208 I cr_VariationsUtils: Requesting new seed from IVariationsSeedServer
+10-01 20:40:11.019  5177  5177 D CompatChangeReporter: Compat change id reported: 279646685; UID 10213; state: ENABLED
+10-01 20:40:11.029  5177  5177 I cr_LibraryLoader: Successfully loaded native library
+10-01 20:40:11.030  5177  5177 I cr_CachingUmaRecorder: Flushed 6 samples from 6 histograms, 0 samples were dropped.
+10-01 20:40:11.034  5177  5177 I cr_CombinedPProvider: #registerProvider() provider:WV.V7@a2229ec isPolicyCacheEnabled:false policyProvidersSize:0
+10-01 20:40:11.043  5177  5177 I cr_PolicyProvider: #setManagerAndSource() 0
+10-01 20:40:11.052  5177  5177 I cr_CombinedPProvider: #linkNativeInternal() 1
+10-01 20:40:11.052  5177  5177 I cr_AppResProvider: #getApplicationRestrictionsFromUserManager() Bundle[EMPTY_PARCEL]
+10-01 20:40:11.053  5177  5177 I cr_PolicyProvider: #notifySettingsAvailable() 0
+10-01 20:40:11.053  5177  5177 I cr_CombinedPProvider: #onSettingsAvailable() 0
+10-01 20:40:11.053  5177  5177 I cr_CombinedPProvider: #flushPolicies()
+10-01 20:40:11.096  5177  5219 W chromium: [WARNING:dns_config_service_android.cc(81)] Failed to read DnsConfig.
+10-01 20:40:11.155  5177  5177 D CompatChangeReporter: Compat change id reported: 309578419; UID 10213; state: ENABLED
+10-01 20:40:11.169  5177  5177 D nativeloader: Load /data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.apk!/lib/x86_64/libdsh_spike.so using ns clns-7 from class loader (caller=/data/app/~~MAMedKVw1EBMlyhSPOBFIg==/com.dshmobile.spike-fGrjp8RKFUn9Ig08LWFD2A==/base.apk): ok
+10-01 20:40:11.199  5177  5177 W HWUI    : Unknown dataspace 0
+10-01 20:40:11.239  5177  5199 I EGL_emulation: Opening libGLESv1_CM_emulation.so
+10-01 20:40:11.240  5177  5199 I EGL_emulation: Opening libGLESv2_emulation.so
+10-01 20:40:11.251  5177  5199 W HWUI    : Failed to initialize 101010-2 format, error = EGL_SUCCESS
+10-01 20:40:11.275  5177  5199 I Gralloc4: mapper 4.x is not supported
+10-01 20:40:12.843  5177  5199 D EGL_emulation: app_time_stats: avg=483.23ms min=18.63ms max=1345.75ms count=3
+10-01 20:40:13.511  5177  5186 W dshmobile.spike: ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ArFChpMR2GYL37bwADM3MA==/com.google.android.webview-HC2uo5XU0UnPwiGAPO5LaA==/WebViewGoogle.apk' with 2 weak references
+10-01 20:40:13.516  5177  5248 D CompatChangeReporter: Compat change id reported: 312399441; UID 10213; state: ENABLED
+10-01 20:40:13.723  5177  5271 D TrafficStats: tagSocket(6) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:13.728  5177  5248 I SessionServe: serving dsh-web-official on 127.0.0.1:45067
+10-01 20:40:15.132  5177  5225 W cr_media: BLUETOOTH_CONNECT permission is missing.
+10-01 20:40:15.142  5177  5225 W cr_media: registerBluetoothIntentsIfNeeded: Requires BLUETOOTH permission
+10-01 20:40:15.203  5177  5271 D TrafficStats: tagSocket(231) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.219  5177  5271 D TrafficStats: tagSocket(236) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.246  5177  5271 D TrafficStats: tagSocket(246) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.248  5177  5271 D TrafficStats: tagSocket(249) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.249  5177  5271 D TrafficStats: tagSocket(252) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.278  5177  5271 D TrafficStats: tagSocket(255) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.281  5177  5271 D TrafficStats: tagSocket(258) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.286  5177  5271 D TrafficStats: tagSocket(261) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:15.719  5177  5184 W dshmobile.spike: Suspending all threads took: 68.943ms
+10-01 20:40:15.740  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 2294KB AllocSpace bytes, 151(62MB) LOS objects, 42% free, 31MB/55MB, paused 70.147ms,3.595ms total 112.517ms
+10-01 20:40:15.752  5177  5199 D EGL_emulation: app_time_stats: avg=172.75ms min=3.30ms max=2644.53ms count=16
+10-01 20:40:15.876  5177  5184 W dshmobile.spike: Suspending all threads took: 19.528ms
+10-01 20:40:15.900  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 144KB AllocSpace bytes, 22(40MB) LOS objects, 33% free, 46MB/70MB, paused 21.806ms,1.593ms total 128.854ms
+10-01 20:40:15.954  5177  5271 D TrafficStats: tagSocket(192) with statsTag=0xffffffff, statsUid=-1
+10-01 20:40:16.191  5177  5184 W dshmobile.spike: Suspending all threads took: 137.665ms
+10-01 20:40:16.237  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 124KB AllocSpace bytes, 19(62MB) LOS objects, 29% free, 58MB/82MB, paused 139.513ms,4.369ms total 207.395ms
+10-01 20:40:16.784  5177  5199 D EGL_emulation: app_time_stats: avg=42.03ms min=9.18ms max=451.15ms count=21
+10-01 20:40:17.026  5177  5184 W dshmobile.spike: Suspending all threads took: 107.797ms
+10-01 20:40:17.066  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 164KB AllocSpace bytes, 14(68MB) LOS objects, 32% free, 50MB/74MB, paused 109.371ms,7.472ms total 342.415ms
+10-01 20:40:17.231  5177  5184 W dshmobile.spike: Suspending all threads took: 36.980ms
+10-01 20:40:17.240  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 132KB AllocSpace bytes, 13(62MB) LOS objects, 32% free, 49MB/73MB, paused 39.166ms,1.234ms total 132.182ms
+10-01 20:40:17.362  5177  5184 I dshmobile.spike: Background concurrent mark compact GC freed 128KB AllocSpace bytes, 11(60MB) LOS objects, 30% free, 53MB/77MB, paused 3.549ms,5.721ms total 88.325ms
