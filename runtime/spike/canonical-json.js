@@ -21,12 +21,18 @@
  * test/panel (node:crypto signs, the resolver verifies) plus the marketplace
  * e2e legs would go red at the signature check if this form ever moved.
  *
- * A document that is not representable in JSON fails loud (an `undefined`
- * member value would otherwise silently corrupt the signed bytes — rule 5).
+ * A document that is not representable in JSON fails loud — `undefined`
+ * in ANY position (member value or array element), function and symbol
+ * values (JSON.stringify yields no bytes for them), and non-finite numbers
+ * (JSON.stringify would silently rewrite them to `null`); BigInt already
+ * throws from JSON.stringify itself. Any of these would otherwise silently
+ * corrupt the signed bytes — the worst failure mode a signer can have, and
+ * one a signature cross-check cannot detect (signer and verifier agree on
+ * the corrupted bytes). Rule 5.
  */
 
-/** Canonical JSON: recursively sorted keys, no whitespace; undefined member
- * values are a loud error, not silent corruption. */
+/** Canonical JSON: recursively sorted keys, no whitespace; any value JSON
+ * cannot represent is a loud error, not silent corruption. */
 export const canonicalJson = (value) => {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
   if (value && typeof value === 'object') {
@@ -34,7 +40,12 @@ export const canonicalJson = (value) => {
     for (const k of keys) if (value[k] === undefined) throw new Error(`canonical JSON: key ${k} is undefined`);
     return `{${keys.map((k) => `${JSON.stringify(k)}:${canonicalJson(value[k])}`).join(',')}}`;
   }
-  return JSON.stringify(value);
+  if (typeof value === 'number' && !Number.isFinite(value)) {
+    throw new Error(`canonical JSON: ${value} is not representable in JSON`);
+  }
+  const scalar = JSON.stringify(value);
+  if (scalar === undefined) throw new Error(`canonical JSON: a ${typeof value} is not representable in JSON`);
+  return scalar;
 };
 
 /** UTF-8 text → bytes (surrogate pairs consumed; same output the Web

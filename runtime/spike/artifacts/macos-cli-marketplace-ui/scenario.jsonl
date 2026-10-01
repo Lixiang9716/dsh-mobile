@@ -6,8 +6,8 @@ dsh.spike.log: {"level":"info","module":"dsh.openDesign","message":"no Open Desi
 dsh.spike.log: {"level":"debug","module":"dsh.office.word","message":"word tools registering","data":[{}]}
 dsh.spike.log: {"level":"debug","module":"dsh.office.excel","message":"excel tools registering","data":[{}]}
 dsh.spike.log: {"level":"info","module":"dsh.office","message":"office tools registered","data":[{"count":8}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:59974/index.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59974/index.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:58980/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58980/index.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:1","buffered":0}]}
@@ -19,20 +19,20 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:59974/index.json","chunks":1,"bytes":978}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":978,"url":"http://127.0.0.1:59974/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:58980/index.json","chunks":1,"bytes":978}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":978,"url":"http://127.0.0.1:58980/index.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate index","data":[{"fields":6}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate entry","data":[{"id":"dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:59974/index.json","key":"dsh-market-1","pinned":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:58980/index.json","key":"dsh-market-1","pinned":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"canonical form input","data":[{"excluded":"signature"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index signature verified","data":[{"url":"http://127.0.0.1:59974/index.json","key":"dsh-market-1"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index signature verified","data":[{"url":"http://127.0.0.1:58980/index.json","key":"dsh-market-1"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journal absent — fresh install","data":[{"code":"io"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.browse","entries":1,"id":"dsh-market-demo","version":"0.1.0","key":"dsh-market-1","installed":null}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:59974/index-tampered.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59974/index-tampered.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:58980/index-tampered.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58980/index-tampered.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:3","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":1334}]}
@@ -43,16 +43,16 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":3}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:59974/index-tampered.json","chunks":1,"bytes":964}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":964,"url":"http://127.0.0.1:59974/index-tampered.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:58980/index-tampered.json","chunks":1,"bytes":964}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":964,"url":"http://127.0.0.1:58980/index-tampered.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate index","data":[{"fields":6}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate entry","data":[{"id":"dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:59974/index-tampered.json","key":"dsh-market-1","pinned":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:58980/index-tampered.json","key":"dsh-market-1","pinned":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"canonical form input","data":[{"excluded":"signature"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace rejected","data":[{"code":"signature","message":"index signature does not verify against its published keys"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.tamper.signature","code":"signature","url":"/index-tampered.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:59974/index-foreign.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59974/index-foreign.json","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index fetch begin","data":[{"url":"http://127.0.0.1:58980/index-foreign.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58980/index-foreign.json","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":1350}]}
@@ -63,20 +63,20 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wai
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:59974/index-foreign.json","chunks":1,"bytes":978}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":978,"url":"http://127.0.0.1:59974/index-foreign.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index body drained","data":[{"url":"http://127.0.0.1:58980/index-foreign.json","chunks":1,"bytes":978}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"parse index document","data":[{"bytes":978,"url":"http://127.0.0.1:58980/index-foreign.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate index","data":[{"fields":6}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"validate entry","data":[{"id":"dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:59974/index-foreign.json","key":"dsh-market-1","pinned":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"verify index signature","data":[{"url":"http://127.0.0.1:58980/index-foreign.json","key":"dsh-market-1","pinned":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"marketplace rejected","data":[{"code":"unknown-key","message":"index does not sign with the pinned key"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.tamper.foreign-key","code":"unknown-key","url":"/index-foreign.json"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.install.start","id":"dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index cache hit","data":[{"url":"http://127.0.0.1:59974/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index cache hit","data":[{"url":"http://127.0.0.1:58980/index.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"lookup entry","data":[{"id":"dsh-market-demo","entries":1}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:59974/packages/dsh-market-demo@0.1.0.tgz","id":"dsh-market-demo","txId":"mkt-1790835901546-dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:59974/packages/dsh-market-demo@0.1.0.tgz","method":"GET"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch install begin","data":[{"url":"http://127.0.0.1:58980/packages/dsh-market-demo@0.1.0.tgz","id":"dsh-market-demo","txId":"mkt-1790837454381-dsh-market-demo"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:58980/packages/dsh-market-demo@0.1.0.tgz","method":"GET"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -90,7 +90,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":6}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
 dsh.spike.log: {"level":"debug","module":"dsh.install-fetch","message":"fetch body drained","data":[{"chunks":1,"bytes":3072}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-market-demo","txId":"mkt-1790835901546-dsh-market-demo","bytes":3072,"journal":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install begin","data":[{"id":"dsh-market-demo","txId":"mkt-1790837454381-dsh-market-demo","bytes":3072,"journal":true}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"store blob","data":[{"blobPath":"cache/blobs/8f54fbdf194371af1ac9c91709ee7e2c4f0db07b51a3b7178532dc8710ff093c","bytes":3072}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"cache/blobs/8f54fbdf194371af1ac9c91709ee7e2c4f0db07b51a3b7178532dc8710ff093c"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -114,45 +114,45 @@ dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate manif
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":1}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"validate capabilities","data":[{"count":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"build ledger","data":[{"files":2}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal pending","data":[{"txId":"mkt-1790835901546-dsh-market-demo"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal append","data":[{"txId":"mkt-1790835901546-dsh-market-demo","status":"pending"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal pending","data":[{"txId":"mkt-1790837454381-dsh-market-demo"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal append","data":[{"txId":"mkt-1790837454381-dsh-market-demo","status":"pending"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-mkt-1790835901546-dsh-market-demo","files":2}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"stage tree","data":[{"staging":"plugins/.staging-mkt-1790837454381-dsh-market-demo","files":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/bundle/index.js"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/integrity.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/manifest.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":276}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/bundle/index.js"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/bundle/index.js"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/bundle/index.js"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":168}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/integrity.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/integrity.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"read back","data":[{"path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/integrity.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":448}]}
 dsh.spike.log: {"level":"debug","module":"dsh.install","message":"promote tree","data":[{"pkgDir":"plugins/dsh-market-demo@0.1.0","files":3}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/manifest.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/manifest.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -161,7 +161,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/bundle/index.js"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/bundle/index.js"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -170,7 +170,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790835901546-dsh-market-demo/integrity.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"plugins/.staging-mkt-1790837454381-dsh-market-demo/integrity.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -179,17 +179,17 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/mkt-1790835901546-dsh-market-demo.json"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/mkt-1790835901546-dsh-market-demo.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"commit receipt","data":[{"receiptPath":"receipts/mkt-1790837454381-dsh-market-demo.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/mkt-1790837454381-dsh-market-demo.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal append","data":[{"txId":"mkt-1790835901546-dsh-market-demo","status":"committed"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"journal append","data":[{"txId":"mkt-1790837454381-dsh-market-demo","status":"committed"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.marketplace/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-market-demo@0.1.0","receiptPath":"receipts/mkt-1790835901546-dsh-market-demo.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.install","message":"install committed","data":[{"pkgDir":"plugins/dsh-market-demo@0.1.0","receiptPath":"receipts/mkt-1790837454381-dsh-market-demo.json"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.install.progress","steps":15}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.install.committed","id":"dsh-market-demo","version":"0.1.0","status":"committed"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.install.receipt","status":"committed"}]}
@@ -203,7 +203,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call",
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1088}]}
 dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journal read","data":[{"entries":2}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRemove"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journal append","data":[{"txId":"rm-1790835901563-dsh-market-demo","status":"committed"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journal append","data":[{"txId":"rm-1790837454395-dsh-market-demo","status":"committed"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.removed","id":"dsh-market-demo","version":"0.1.0"}]}
@@ -212,7 +212,7 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call",
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1568}]}
 dsh.spike.log: {"level":"debug","module":"dsh.receipt-journal","message":"journal read","data":[{"entries":3}]}
 dsh.spike.log: {"level":"info","module":"marketplace.ui.flow","message":"e2e","data":[{"scenario":"marketplace.ui.flow","event":"marketplace.installed.empty","items":0}]}
-dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index cache hit","data":[{"url":"http://127.0.0.1:59974/index.json"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.marketplace","message":"index cache hit","data":[{"url":"http://127.0.0.1:58980/index.json"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"receipts/journal.jsonl"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":1568}]}

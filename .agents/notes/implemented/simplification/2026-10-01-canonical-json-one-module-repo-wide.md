@@ -85,7 +85,9 @@ detector; what changed is that drift now requires editing the one module.
 
 - A stray `undefined` in any signing path now throws where it used to be
   silently encoded (deploy/tools/e2e signers) or produced invalid JSON
-  (tools copy).
+  (tools copy) — and since the review round below, the same holds for
+  `undefined` array elements, function/symbol values, and non-finite
+  numbers, in every position.
 - The #288 note's copy rationale ("node cannot resolve the runtime's bare
   `logger.js` import") is superseded for this module: `canonical-json.js`
   imports nothing; only the resolver-grade modules need a loader shim
@@ -97,3 +99,22 @@ detector; what changed is that drift now requires editing the one module.
   separate corrective commit (deterministic tarballs reproduce
   byte-identically; only index.json moves; the throwaway TEST key stays in
   /tmp, never committed).
+
+REVIEW ROUND (2026-10-01, pre-merge, PR #291): the reviewer's probe caught
+the Decision's fail-loud claim over-delivering — the object-branch-only
+guard left `canonicalJson([undefined])` → `[]`,
+`{a:[undefined]}` → `{"a":[]}`, `{f:()=>1}` → `{"f":undefined}` (invalid
+JSON bytes), `{n:NaN}` → `{"n":null}` all silent (reproduced on this
+branch before the fix). The guard is now TOTAL at one chokepoint: the
+scalar fallthrough throws when `JSON.stringify` yields no bytes
+(`undefined`, functions, symbols — array elements reach it through
+recursion, so no separate array guard exists) and non-finite numbers are
+refused explicitly (they would be silently rewritten to `null`; BigInt
+already throws from `JSON.stringify` itself). Valid-JSON bytes are
+unchanged: 0 diffs over an 11-case battery (nesting, zh/emoji, escapes,
+`-0`, `1e21`, `5e-7`, `JSON.parse` docs) against the previous body, and
+the cross legs re-ran green (panel vitest 67/67 ×17 runs, install 71/71,
+ui 12/12, deploy `--verify` 9/9). The alternative — narrowing the header
+to enumerate the holes — was rejected: on the repo's only canonical
+signing surface, the honest fix is code that keeps the promise, not a
+smaller promise.
