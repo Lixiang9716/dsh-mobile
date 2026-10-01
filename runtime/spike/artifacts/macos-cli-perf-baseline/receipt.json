@@ -5,8 +5,8 @@
   "quickjsPin": "0.17.0+fork-tostring+async-context+tc39+promise-mark (63b33ea5)",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim)",
   "scenario": "perf.baseline",
-  "measured": {"coldBootMs":99,"sessionTurnMs":137,"catalogRefreshMs":5052,"installCommitMs":47},
-  "processColdStartMs": 5613,
+  "measured": {"coldBootMs":452,"sessionTurnMs":180,"catalogRefreshMs":5207,"installCommitMs":626},
+  "processColdStartMs": 7612,
   "bundle": {
     "spikeBundleCBytes": 68052388,
     "marketTgzBytes": 6656,

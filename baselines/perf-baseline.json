@@ -18,35 +18,35 @@
     "boot.coldBootMs": {
       "receipt": "perf",
       "path": "measured.coldBootMs",
-      "baseline": 99,
+      "baseline": 452,
       "warnAbove": 2000,
       "what": "eval start → bootUpstream's agent registered (in-runtime cold boot, mobile profile, mock route)"
     },
     "boot.processColdStartMs": {
       "receipt": "perf",
       "path": "processColdStartMs",
-      "baseline": 5613,
+      "baseline": 7612,
       "warnAbove": 20000,
       "what": "process spawn → PASS (shell-side wall clock; includes runtime init + eval + pump loop)"
     },
     "session.turnMs": {
       "receipt": "perf",
       "path": "measured.sessionTurnMs",
-      "baseline": 137,
+      "baseline": 180,
       "warnAbove": 3000,
       "what": "session/create → session/prompt → whenIdle, one scripted mock-LLM turn over the page's wire"
     },
     "market.catalogRefreshMs": {
       "receipt": "perf",
       "path": "measured.catalogRefreshMs",
-      "baseline": 5052,
+      "baseline": 5207,
       "warnAbove": 15000,
       "what": "catalog fetch + PURE-JS ed25519 verify over 9 entries (BigInt verify dominates; the known cost)"
     },
     "market.installCommitMs": {
       "receipt": "perf",
       "path": "measured.installCommitMs",
-      "baseline": 47,
+      "baseline": 626,
       "warnAbove": 1000,
       "what": "installFromFetch over the signed entry: tgz fetch → extract → trust-record verify → commit"
     },
