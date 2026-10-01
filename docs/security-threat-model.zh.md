@@ -73,7 +73,12 @@ canonical-JSON ed25519,密钥带外钉扎,§7.2 双签窗口轮换,签名信任�
 首次接触(还没有下限)接受并锚定——新客户端永不 brick。下限锚定的是
 市场而非密钥:密钥轮换既不重置也不绕过它,且只有通过了信任集验证的目录
 才能推进下限(攻击者无法把下限向前投毒——其目录根本过不了验证)。锚在
-resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)。
+resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)。锚
+存储对文件系统的读取也是诚实的:gateway 的 `io` 码同时覆盖"不存在"与
+"存在但不可读"(contract/primitives.md,v1.1.0 文件系统补充——没有第二
+个码),因此读失败绝不直接当首次接触——存储先问宿主的 `fsStat`
+(stat 证明不存在 = 首次接触;文件在但读不了 = 响亮失败,绝不无声重置
+下限;无法证明不存在的宿主形态只在 WARN 级重置,从不出声)。
 
 **本腿怎么攻——即翻转**:[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
 在宿主上同时放置当前目录(generatedAt 2026-10-01)与一份过期但**签名
@@ -88,7 +93,15 @@ resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)�
 在落地防护的同一变更里翻转为 `rejected`;证伪先行保持翻转的诚实——
 把下限检查临时废掉,重放重新落地,checker 随之变红。
 
-**剩余面(如实声明,未吸收)**:面板的安装流
+**剩余面(如实声明,未吸收)**:第一,首接即劫持——这是该防护自身
+设计携带的边界条件:下限防的是**至少诚实接触过一次市场**的客户端。
+一台第一次 refresh 就落在被攻陷镜像上的设备还没有下限——过期但签名
+有效的目录照样装进来,并把下限锚定在旧值(此后一切 ≥ 旧值的目录都
+过)。这是客户端侧下限固有的:能约束首接的"发布纪元进钉扎"替代方案
+已被评估并否决(Agent Note"the freshness anchor lands"——纪元是第二个
+需要带外分发与轮换的信任工件)。因此 #295 的 HIGH 对**已建立连接的**
+客户端闭合;首次接触仍是一次诚实的信任引导,与带外钉扎自身同一类
+(钉扎的分发也是这么被信任的)。第二,面板的安装流
 ([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
 经 [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js)
 解析,其拒绝词汇(network/format/unknown-key/signature)没有 stale 码——

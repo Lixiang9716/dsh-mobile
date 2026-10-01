@@ -33,6 +33,14 @@ the contract resolver ([runtime/spike/marketplace.js](../../../../runtime/spike/
   not the keychain (the floor is a publication watermark, not a secret)
   and zero new gateway/contract primitives. The resolver stays
   carrier-neutral: the anchor is a parameter exactly like `fetchImpl`.
+  The store also reads the filesystem honestly (review finding, PR #299):
+  the gateway's `io` code covers BOTH absent and present-but-unreadable
+  (contract/primitives.md v1.1.0 — no second code, message-only), so a
+  failed read is never first contact on faith — the store consults the
+  host's `fsStat`: stat-proven absence is first contact, a file present
+  but unreadable throws LOUD (a silent null would reopen the replay
+  window), and the host shape that cannot prove absence resets only at
+  WARN level (warn survives release builds — never silent).
 - `fetchAndVerify` verifies the signature FIRST, then compares: older than
   the floor → `InstallRejected('catalog')` (the existing rejection
   vocabulary, message names the replay) BEFORE the state commit and BEFORE
@@ -91,6 +99,16 @@ the contract resolver ([runtime/spike/marketplace.js](../../../../runtime/spike/
 
 ## Consequences
 
+- The floor defends a client that has contacted the marketplace honestly
+  at least once (review finding, PR #299 — the boundary condition of the
+  whole design): a device whose FIRST refresh lands on the compromised
+  mirror has no floor yet — the stale-but-valid catalog installs and
+  anchors the floor at the stale value. Inherent to the client-side
+  floor; the epoch-in-the-pin alternative that would bound even the first
+  contact is rejected above. The #295 HIGH closes for ESTABLISHED
+  clients; the first contact stays an honest trust bootstrap, in the same
+  class as the out-of-band pin's own distribution. Declared in threat
+  model §3 ("Remaining faces").
 - On the CLI the app scope is a fresh temp dir per run, so every CLI leg
   exercises first contact; the cross-restart replay defense shows on real
   hosts, whose app scope persists (the anchor file lives beside the
@@ -100,4 +118,6 @@ the contract resolver ([runtime/spike/marketplace.js](../../../../runtime/spike/
   the publisher republishes with the corrected time. Fail-loud beats
   silent rollback (the threat model carries this consequence).
 - Corrupt anchor files abort loud (a silently dropped floor would reopen
-  the replay window); a missing file is the null (first contact) case.
+  the replay window); a missing file is the null (first contact) case;
+  a present-but-unreadable file throws where the host's stat can prove
+  presence, and resets at WARN where it cannot (never silent).

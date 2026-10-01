@@ -94,7 +94,14 @@ not a key: key rotation neither resets nor bypasses it, and only a catalog
 that verified under the trusted set can advance it (an attacker cannot
 poison the floor forward — their catalog never verifies). The anchor is
 REQUIRED at resolver construction: a resolver without one fails loud
-(rule 5).
+(rule 5). The anchor store reads the filesystem honestly: the gateway's
+`io` code covers BOTH "absent" and "present but unreadable"
+(contract/primitives.md, filesystem additions v1.1.0 — no second code),
+so a failed read is never taken as first contact on faith — the store
+consults the host's `fsStat` (stat-proven absence = first contact; a
+file present but unreadable fails LOUD rather than silently resetting
+the floor; the host shape that cannot prove absence resets only at WARN
+level, never silent).
 
 **This leg's attack — and the flip**: [security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
 hosts the CURRENT catalog (generatedAt 2026-10-01) beside a stale-but-VALID
@@ -113,7 +120,19 @@ that landed the guard, per the maintenance contract below; the
 falsify-first proof keeps the flip honest — with the floor check neutered
 the replay lands again and this checker reddens.
 
-**Remaining face (declared, not absorbed)**: the panel's install stream
+**Remaining faces (declared, not absorbed)**: FIRST, the first-contact
+hijack — the boundary condition this defense's own design carries: the
+floor defends a client that has contacted the marketplace honestly at
+least once. A device whose FIRST refresh lands on the compromised mirror
+has no floor yet — the stale-but-valid catalog installs and anchors the
+floor at the stale value (everything ≥ it then passes). That is inherent
+to the client-side floor: the epoch-in-the-pin alternative that would
+bound even the first contact was considered and rejected (the Agent Note
+"the freshness anchor lands" — an epoch is a second out-of-band artifact
+to distribute and rotate). The #295 HIGH therefore closes for ESTABLISHED
+clients; the first contact remains an honest trust bootstrap, in the same
+class as the out-of-band pin itself (the pin's distribution is trusted
+the same way). SECOND, the panel's install stream
 ([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
 resolves through [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js),
 whose rejection vocabulary (network/format/unknown-key/signature) has no
