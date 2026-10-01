@@ -266,7 +266,7 @@ for pkg_dir in "$SPIKE"/vendor/dsh/*@0.1.6-alpha.2; do
         cp "$pkg_dir/package.json" "$ASSETS/vendor/dsh/$pkg/package.json" 2>/dev/null || true
     fi
 done
-say "staged the test closure ($(ls "$ASSETS/vendor/dsh" | wc -l | tr -d ' ') packages total)"
+say "staged the test closure ($(find "$ASSETS/vendor/dsh" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ') packages total)"
 
 say "staging system-plugins (whole directories — a plugin joins by existing)"
 for src in "$SPIKE"/system-plugins/*/; do

@@ -1,0 +1,24 @@
+{
+  "title": "lint \u9632\u56de\u6f6e:shellcheck-warn + actionlint \u4e24\u95e8\u5b88\u4f4f #289,38 \u6761 info \u6e05\u96f6",
+  "created": "2026-10-01T06:07:07+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "\u91cd\u5efa 69 \u811a\u672c\u6e05\u5355,before \u4e09\u7ea7\u8ba1\u6570",
+    "shellcheck-warn \u95e8\u811a\u672c(\u9608\u503c 0 @ warn/error)",
+    "actionlint \u95e8\u811a\u672c(\u9489\u7248\u672c\u4e0b\u8f7d;\u672c\u5730\u7f3a\u5931 skip-loud)",
+    "gates.json \u624b\u7f16\u4e24\u95e8,needs \u6446\u5bf9",
+    "\u53cd\u8bc1\u7528\u4f8b:\u6ce8\u5165 SC2034 \u7ea2\u2192\u8fd8\u539f\u7eff;actionlint \u540c\u7406",
+    "38 \u6761 info \u6e05\u96f6,shellcheck -S style \u5168\u7eff",
+    "plane \u91cd\u5c01",
+    "self-test \u7eff + gov run \u5168 DAG \u7eff\u62ff receipt"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0087"
+}

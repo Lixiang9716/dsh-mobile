@@ -63,9 +63,11 @@ if command -v python3 >/dev/null 2>&1; then
     done
     if [ "$IOS_INPUTS" = "1" ]; then
         if command -v xcodegen >/dev/null 2>&1; then
-            sh hosts/ios/gen.sh >/dev/null 2>&1 && IOS_OK=1 || {
+            if sh hosts/ios/gen.sh >/dev/null 2>&1; then
+                IOS_OK=1
+            else
                 echo "::error::closures: hosts/ios/gen.sh failed — the generator must succeed on this tree (run it without output suppression for the traceback)" >&2
-            }
+            fi
             [ "$IOS_OK" = "1" ] && echo "closures: ios generation green (bundle + project, gen.sh exit 0)"
         else
             # No xcodegen on this host (the Linux gates job): the bundle half
@@ -73,9 +75,11 @@ if command -v python3 >/dev/null 2>&1; then
             # whose freshness "closures" is about. The project half is
             # enforced on every macOS build (dev/ios installs xcodegen and
             # runs gen.sh ahead of xcodebuild). Loud, never silent.
-            python3 hosts/ios/Tools/gen_bundle_header.py >/dev/null 2>&1 && IOS_OK=1 || {
+            if python3 hosts/ios/Tools/gen_bundle_header.py >/dev/null 2>&1; then
+                IOS_OK=1
+            else
                 echo "::error::closures: gen_bundle_header.py failed on this tree" >&2
-            }
+            fi
             [ "$IOS_OK" = "1" ] && echo "closures: ios bundle generation green; project half (xcodegen) absent on this host — enforced on the macOS builds that run gen.sh before xcodebuild" >&2
         fi
     fi

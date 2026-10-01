@@ -25,7 +25,7 @@ SKIP_BUILD=0
 
 say() { echo "run-mic-plane: $*"; }
 die() { echo "run-mic-plane: FAIL: $*" >&2; exit 1; }
-shot() { adb $SERIAL shell screencap -p /sdcard/dsh-shot.png >/dev/null 2>&1 && adb $SERIAL pull /sdcard/dsh-shot.png "$OUT/screens/$1.png" >/dev/null 2>&1 || true; }
+shot() { adbsh shell screencap -p /sdcard/dsh-shot.png >/dev/null 2>&1 && adbsh pull /sdcard/dsh-shot.png "$OUT/screens/$1.png" >/dev/null 2>&1 || true; }
 adbsh() { if [ -n "$SERIAL" ]; then adb -s "$SERIAL" "$@"; else adb "$@"; fi; }
 
 mkdir -p "$OUT/screens"

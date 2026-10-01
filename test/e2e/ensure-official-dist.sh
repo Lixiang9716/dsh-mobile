@@ -26,7 +26,7 @@ if [ "$FORCE" -eq 1 ]; then
 fi
 
 if [ -f "$DIST/index.html" ] && ok; then
-  echo "ensure-official-dist: dist verified ($(ls "$DIST" | wc -l | tr -d ' ') top-level entries)"
+  echo "ensure-official-dist: dist verified ($(find "$DIST" -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ') top-level entries)"
   exit 0
 fi
 

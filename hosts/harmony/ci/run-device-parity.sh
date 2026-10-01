@@ -144,6 +144,8 @@ launch_leg() {
     launch_deadline=$(( $(date +%s) + 120 ))
     while :; do
         wake_unlock
+        # $1 is the caller's extra-args string (e.g. "--ps k v") — the split is the contract
+        # shellcheck disable=SC2086 # intentional word split
         hdc shell aa start -b "$BUNDLE" -a EntryAbility $1 >/dev/null 2>&1 || true
         # ONE start, then poll before re-firing: a slow spawn (a tired
         # emulator, a cold real device) takes re-fires onto a warming app
@@ -276,6 +278,8 @@ grep -h '^dsh.spike.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.
 # The assertion: the roster all-healthy + the four tool rows NAMED in the
 # composed inventory (a row exists only when its preset composed — which
 # breaks loud when the package is missing from the closure/markers).
+# TOOL_ROW_NAMES is a whitespace-separated roster — each name becomes its own argv entry
+# shellcheck disable=SC2086 # intentional word split
 node - "$TOOLROWS_OUT" $TOOL_ROW_NAMES <<'ASSERT'
 const fs = require('fs');
 const out = process.argv[2];

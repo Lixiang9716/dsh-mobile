@@ -47,6 +47,8 @@ if [ "$MISSING" != "" ]; then
   deployed; until they exist, run the publish workflow with dry-run: true."
 fi
 
+# SSH_OPTS is an options STRING by contract: word splitting on use is how the
+# separate -o/-p options reach ssh. Never quote it at the call sites below.
 SSH_OPTS="-o BatchMode=yes -o ConnectTimeout=10 -p ${MARKETPLACE_DEPLOY_PORT:-22}"
 
 # --- ssh key: temp file, 0600, always cleaned up ----------------------------
@@ -63,6 +65,7 @@ if [ "${MARKETPLACE_DEPLOY_SSH_KEY:-}" != "" ]; then
 fi
 
 # --- connectivity preflight: fail HERE, with the pointer, not mid-rsync ----
+# shellcheck disable=SC2086 # options string: the split IS the interface
 if ! ssh $SSH_OPTS "$MARKETPLACE_DEPLOY_HOST" true 2>/tmp/mkt-deploy-ssh-err.$$; then
     sed 's/^/  ssh: /' /tmp/mkt-deploy-ssh-err.$$ >&2 || true
     rm -f /tmp/mkt-deploy-ssh-err.$$
@@ -76,6 +79,10 @@ rm -f /tmp/mkt-deploy-ssh-err.$$
 
 # --- deploy: checksum comparison, not mtime trust ---------------------------
 echo "deploying $DIST -> $MARKETPLACE_DEPLOY_HOST:$MARKETPLACE_DEPLOY_PATH ($TGZ_COUNT package(s) + index.json)"
+# MARKETPLACE_DEPLOY_PATH is deploy config: it must expand on the CLIENT side
+# (the remote has no such variable); the inner single quotes guard the remote
+# side against spaces in the already-expanded value.
+# shellcheck disable=SC2086,SC2029 # options-string split + client-side path
 ssh $SSH_OPTS "$MARKETPLACE_DEPLOY_HOST" "mkdir -p '$MARKETPLACE_DEPLOY_PATH'"
 rsync -rc --delete-after \
     --include='index.json' --include='*.tgz' --exclude='*' \
@@ -83,6 +90,7 @@ rsync -rc --delete-after \
 
 # --- post-upload verification: the remote index IS the local index ----------
 LOCAL_DIGEST=$(shasum -a 256 "$DIST/index.json" | awk '{print $1}')
+# shellcheck disable=SC2086,SC2029 # options-string split + client-side path
 REMOTE_DIGEST=$(ssh $SSH_OPTS "$MARKETPLACE_DEPLOY_HOST" \
     "sha256sum '$MARKETPLACE_DEPLOY_PATH/index.json' 2>/dev/null || shasum -a 256 '$MARKETPLACE_DEPLOY_PATH/index.json'" \
     | awk '{print $1}')
