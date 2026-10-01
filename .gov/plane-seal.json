@@ -37,7 +37,7 @@
       "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
     },
     ".gov/rejections/case-shellcheck-warn.sh": {
-      "sha256": "eaaba88fcae2fe17a21fcc85b9cc96ba145a8d2806730e37101771c432a8fc98"
+      "sha256": "229080a05f57561a9eef151c7fae29dcbc0e01127523accc6d8359093156d364"
     },
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
@@ -53,9 +53,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T09:12:17+00:00",
+    "ts": "2026-10-01T09:31:54+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "rebase onto #293/#291 main: three-gate gates.json merge sealed (asset-mirrors + #293's staged-tree case + shellcheck-warn + actionlint)"
+    "reason": "review round 2: the shellcheck-warn rejection case becomes a /tmp-probe case (zero tree mutation) after the CI concurrency finding"
   }
 }
