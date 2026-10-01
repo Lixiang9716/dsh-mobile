@@ -10,7 +10,7 @@
       "sha256": "230fa8a429212578cd16658c5ac824476164da72e56dca61e4edda64f8e0ec3a"
     },
     ".gov/rejections/case-asset-mirrors.sh": {
-      "sha256": "cb141c4a40ab674b2a24e74b76bd94bc8a42d476f8f01f724590a3ff8b82aace"
+      "sha256": "adfc73c00864280b3b9b6b757c351ce56d2466cb4a41a636469fc171652b38f9"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
       "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
@@ -53,9 +53,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-01T09:31:54+00:00",
+    "ts": "2026-10-01T09:36:10+00:00",
     "caller": "lixiang@MacBookAir.mshome.net",
     "unattended": true,
-    "reason": "review round 2: the shellcheck-warn rejection case becomes a /tmp-probe case (zero tree mutation) after the CI concurrency finding"
+    "reason": "review round 2: case-asset-mirrors backup moved inside the lock window \u2014 the pre-acquire .case-tmp raced every live-tree case's green leg"
   }
 }
