@@ -80,7 +80,7 @@ say "corpus staged (driver + harness come from the APK assets)"
 
 # ---- one launch per spec ---------------------------------------------------
 : > "$OUT/aggregate.jsonl"
-PASS_TOTAL=0; FAIL_TOTAL=0; FILES_PASS=0; FILES_FAIL=0; FILES_ERROR=0
+FILES_PASS=0; FILES_FAIL=0; FILES_ERROR=0
 for spec in $SPECS; do
     STREAM="$OUT/stream-$(echo "$spec" | tr '/' '_').txt"
     adb shell am force-stop $PKG >/dev/null 2>&1 || true

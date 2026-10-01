@@ -151,7 +151,7 @@ for spec in $SPECS; do
     # hilog stream (polled with a deadline, rule 8). The VERDICT comes from
     # the pulled capture below, never from this stream.
     deadline=$(( $(date +%s) + LAUNCH_DEADLINE_SECONDS ))
-    status=done
+    status='done'
     until grep -q 'suite/summary' "$STREAM" 2>/dev/null; do
         if [ "$(date +%s)" -ge "$deadline" ]; then
             status=timeout

@@ -411,7 +411,6 @@ vendor/dsh/agent-presets@0.1.6-alpha.2/presets/ptc/preset.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/agent.cordis.yml
 vendor/dsh/agent-presets@0.1.6-alpha.2/presets/standard/preset.yml
 vendor/dsh/session-persistence@0.1.6-alpha.2/package.json"
-SPINE_PKG_DSH="agent agent-instructions agent-loop agent-presets atomic-write attachment brand chunked-list command-compact command-feedback command-goal commands compaction compaction-basic compaction-tool-result-pruner credentials fs fs-local goal home-paths jobs llm output-retention persona plan-mode sandbox scope session session-persistence session-projection settings skill skill-filesystem subagent system-prompt terminal timeout token-meter tool-ask-user tool-bash tool-fs tool-goal tool-jobs tool-present tool-pwsh tool-ralph tool-skill tool-str-replace-editor tool-subagent tool-subagent-control tool-todo tool-workflow tools typert-protocol user-questions util-time util-values workflow"
 SPINE_OURS="$SPINE_OURS
 vendor/npm/cordis@4.0.2/package.json
 vendor/npm/cosmokit@1.8.3/package.json
@@ -639,7 +638,8 @@ for f in $SPIKE_ROOT; do
     fi
     cmp -s "runtime/spike/$f" "$RAW/$f" || echo "spike/$f" >> "$DRIFT"
 done
-for s in $(ls "$RAW/scenario" 2>/dev/null); do
+for s in "$RAW"/scenario/*; do
+    s="${s##*/}"
     if [ ! -f "runtime/spike/scenario/$s" ]; then
         continue  # a rawfile-only scenario (harmony-*.js) has no runtime twin
     fi

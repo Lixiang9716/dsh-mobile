@@ -13,7 +13,7 @@
 #        the evidence dir; DSH_ANDROID_SERIAL pins a booted emulator)
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
-cd "$ROOT"
+cd "$ROOT" || exit 1
 PKG=com.dshmobile.spike
 OUT="${DSH_ANDROID_ART:-hosts/android/artifacts/camera-plane}"
 SCEN=test/e2e/scenarios

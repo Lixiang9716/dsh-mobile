@@ -69,7 +69,8 @@ start_mock() {
     DSH_MOCK_TOOL_ARGS='{"todos":[{"content":"Track the parity check","status":"in_progress"}]}' \
         node ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
     MOCK_PID=$!
-    local polled=0
+    # POSIX sh on purpose (workflow invokes `sh`): `local` is undefined there.
+    polled=0
     until grep -s '^MOCK_BASE_URL=' "$MOCK_LOG" > /dev/null; do
         if ! kill -0 "$MOCK_PID" 2>/dev/null; then
             echo "mock llm server died before announcing its endpoint:" >&2

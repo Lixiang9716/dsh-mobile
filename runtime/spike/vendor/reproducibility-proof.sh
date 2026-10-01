@@ -107,7 +107,7 @@ say "dsh closure: $DSH_ROWS pin rows verified (mirror-served, sha-stamped)"
 NPM_RX='\|[^|]*\.tgz\|[0-9a-f]{64}$'
 NPM_ROWS=$(grep -cE "$NPM_RX" "$ENSURE_DSH" || true)
 [ "$NPM_ROWS" -gt 0 ] || die "parsed 0 npm pin rows from $ENSURE_DSH — the proof's table parse rotted"
-grep -E "$NPM_RX" "$ENSURE_DSH" | while IFS='|' read -r dir suffix sha; do
+grep -E "$NPM_RX" "$ENSURE_DSH" | while IFS='|' read -r dir _ sha; do
     stamp="$V/npm/$dir/.vendor-pin"
     [ -f "$stamp" ] || die "npm row $dir: missing pin stamp $stamp"
     [ "$(cat "$stamp")" = "$sha" ] || die "npm row $dir: stamp does not name the pinned sha (drift)"

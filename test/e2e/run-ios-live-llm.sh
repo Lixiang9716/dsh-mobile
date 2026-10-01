@@ -30,7 +30,6 @@ ART="hosts/ios/artifacts/llm-live-stream"
 SKIP_BUILD=0
 APP_BUNDLE_ID=org.dsh.DSHSpike
 APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
-DEADLINE=$((SECONDS + 300))
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;

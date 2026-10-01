@@ -130,14 +130,19 @@ stage_compile() {
         ios)
             ios_toolchain
             echo "build: compile ios (xcodebuild, the dev-ios.yml command)"
+            # POSIX sh on purpose (this script is dash-safe): `set -o pipefail`
+            # is undefined there, so xcodebuild's status is carried explicitly —
+            # the last 30 log lines still print on both paths.
             (cd hosts/ios
-             set -o pipefail
+             xb_log=$(mktemp /tmp/dsh-xcodebuild.XXXXXX)
              xcodebuild build \
                  -project DSHSpike.xcodeproj \
                  -scheme DSHSpike \
                  -destination 'generic/platform=iOS Simulator' \
                  -derivedDataPath DerivedData \
-                 | tail -30) ;;
+                 >"$xb_log" 2>&1 || { xb_st=$?; tail -30 "$xb_log"; rm -f "$xb_log"; exit "$xb_st"; }
+             tail -30 "$xb_log"
+             rm -f "$xb_log") ;;
         android)
             android_toolchain
             echo "build: compile android (gradlew assembleDebug, the dev-android.yml command)"

@@ -33,12 +33,7 @@ cd "$ROOT"
 # path stays wired as the first choice for runtimes where it works.
 PT_ALLOW=(320 570)             # notification permission alert: 允许/Allow (px 641,1140 / 2)
 PT_APPROVE=(300 720)           # in-app approval dialog: "Approve" (check 03-*.png)
-PT_BANNER=(150 130)            # notification banner body (top of screen)
-SWIPE_PULL=(150 60 150 600)    # pull-down gesture when banner is collapsed
-PT_SEARCH=(298 248)           # Files sheet search field (re-derived 2026-09-21 from screens/05-picker-search.png per the coordinate law: field at px ~(596,496) / 2; the old (201,126) mapped to the sheet TITLE row — tap missed, typing never landed, empty Recents left zero rows for the tile press — surprise drivepickers-ptsearch-calibration-201126)
-PT_FILES_TILE=(81 356)        # search-result grid cell (re-derived 2026-09-21 from 05b-picker-results.png after the search-submission fix: single "notes" tile thumbnail spans px (92..233, 617..807), center ~(163,712) / 2 per the coordinate law — the old (102,447) mapped to px (204,894), the label row BELOW the thumbnail, and the press never selected; wda_session element probes confirm WDA's AX tree does NOT expose result cells, so the press stays coordinate-based)
 PT_ALERT_DENY=(146 570)        # system alert left button 不允许 (px 293,1140 / 2); harmless on empty grid
-BANNER_LABEL="DSH E2E"         # notify() title — locale-independent, banner carries it
 
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/gateway"
@@ -328,8 +323,8 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   sleep 5              # and its CONTENT loads a beat after the frame — early taps swallow
   idb ui tap --udid "$UDID" "${PT_ALERT_DENY[@]}" >/dev/null 2>&1 || true  # stray system alert; no-op on empty grid
 
-  local walked=0 hop
-  for hop in 1 2; do   # one clean walk; one retry after a re-grounding tap
+  local walked=0
+  for _ in 1 2; do   # one clean walk; one retry after a re-grounding tap
     wda_find_tap "浏览" 0.1 || wda_find_tap "Browse" 0.1 || true
     sleep 3
     if wda_find_tap "gateway-e2e" 0.1; then
@@ -348,8 +343,7 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   [ "$walked" -eq 1 ] || { shot 08-picker-done; log "browse walk could not reach gateway-e2e"; return 0; }
   sleep 3   # the folder's content grid loads a beat after the push
   shot 05-picker-search   # historical name: the folder-content frame (notes cell visible)
-  local i
-  for i in 1 2 3; do
+  for _ in 1 2 3; do
     if wda_find_tap "notes" 0.15; then   # duration press = select+confirm
       if wait_line "spike: ui-done picker" 6; then
         shot 06-picker-selected
@@ -387,7 +381,6 @@ if [ "$NO_REBOOT" -eq 0 ]; then
   xcrun simctl boot "$UDID" 2>/dev/null || true   # already booted is fine
 fi
 xcrun simctl bootstatus "$UDID" -b
-REBOOT_AT="$(date +%s)"   # the file-provider index clock's zero point (below)
 sleep 5   # let springboard settle before the provider indexes the container
 if [ "$SKIP_INSTALL" -eq 0 ]; then
   xcrun simctl install "$UDID" "$APP"
@@ -412,11 +405,9 @@ mkdir -p "$CONTAINER/Documents/gateway-e2e"
 # staging, then returned 未找到相关结果 at 04:58 right after a rewrite —
 # surprise run-iossh-attempt-with-correct). A settled copy must survive the
 # pre-stage untouched; only a MISSING target is created here.
-STAGED_FRESH=0
 if [ ! -f "$CONTAINER/Documents/gateway-e2e/notes.txt" ]; then
   printf 'gateway e2e target file — dsh-mobile m2\n' \
     > "$CONTAINER/Documents/gateway-e2e/notes.txt"
-  STAGED_FRESH=1
   log "pre-staged notes.txt (was missing — fresh copy)"
 else
   log "notes.txt already staged — untouched (index-settle recipe)"
@@ -479,7 +470,6 @@ TAIL_PID=$!
 # SIGKILLed runner skips it — that is exactly what the lock catches next run).
 trap 'kill $TAIL_PID 2>/dev/null || true; [ -n "${WDA_PID:-}" ] && kill "$WDA_PID" 2>/dev/null; exec 3<&- 2>/dev/null || true; rm -f "$FIFO" "$ART/.ax.json" "$LOCK"' EXIT
 exec 3<"$FIFO"
-DONE=0
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
@@ -495,7 +485,7 @@ while true; do
         wda_click "Approve" || tap_label "Approve" "${PT_APPROVE[@]}" ;;
       *"spike: ui-wait picker"*) drive_picker ;;
       *"spike: sequence"*)
-        log "terminal marker: $line"; DONE=1; break ;;
+        log "terminal marker: $line"; break ;;
     esac
   fi
   if [ "$SECONDS" -ge "$DEADLINE" ]; then
