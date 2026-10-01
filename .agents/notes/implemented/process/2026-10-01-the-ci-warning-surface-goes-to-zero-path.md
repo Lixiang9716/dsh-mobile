@@ -41,6 +41,17 @@ xcodebuild's status explicitly through a temp log instead of `set -o pipefail`,
 which dash does not define). The 38 info/style findings are deliberately
 untouched — style is not a CI warning.
 
+Review correction (PR #289 round 1): one of those "dead" variables was not
+dead — `SPINE_PKG_DSH` in `hosts/harmony/ci/vendor-official.sh` is machine-read
+by `tools/gen-staging-manifests.mjs` (`SHELL_ASSIGN('SPINE_PKG_DSH')`, fail
+loud at :132); deleting it red'd CI's tools-face vitest leg (exit 2, the one
+status the test rejects). It is restored byte-identical with a scoped
+`# shellcheck disable=SC2034` and a comment naming the reader — SC2034's
+"verify use (or export if used externally)" includes parsers that read the
+script's text, and the correct silence for such an interface is a documented
+disable, never deletion. Every other removed name was audited against
+`SHELL_ASSIGN` readers and repo-wide greps: no other external consumer.
+
 ## Alternatives considered
 
 - Dropping the absent legs from `EXPECTED` — lost: it guts hazard (b); the
@@ -55,7 +66,10 @@ untouched — style is not a CI warning.
   where a human should look.
 - `# shellcheck disable` comments over the script findings — lost: hides real
   defects; almost every fix here hardens the script (cd guards, `${STAGE:?}`,
-  explicit status propagation), which a suppression would not.
+  explicit status propagation), which a suppression would not. The one
+  exception is the machine-read interface above: there the disable IS the
+  honest fix, because the "finding" is shellcheck's in-file view missing an
+  out-of-file reader.
 
 ## Consequences
 
@@ -64,4 +78,8 @@ reporting is unchanged in wording and visibility. The shellcheck sweep over CI
 entry scripts is clean at warning grade and above (38 info findings remain, by
 choice). `build/build.sh`'s ios leg is now dash-safe without weakening failure
 detection — xcodebuild's exit status propagates on every POSIX shell, with the
-last 30 log lines printed on both paths.
+last 30 log lines printed on both paths. The evidence lesson from the review
+round: the local `gov run` DAG does not run CI's tools-face vitest suite
+(`gov.yml` "Run the tools-face vitest suite", `tools/test/run-tools-tests.sh`
+— the gen-staging real-repo leg), so a shell-interface break slipped past a
+green local receipt; that suite now runs locally before any CI-warnings claim.
