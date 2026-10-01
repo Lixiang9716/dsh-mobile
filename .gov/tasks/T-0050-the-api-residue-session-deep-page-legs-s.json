@@ -2,7 +2,7 @@
   "title": "The API residue: session deep-page legs, subagents, feedback, permissionPresets, uploads",
   "created": "2026-09-24T13:51:32+00:00",
   "rules": {
-    "hash": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
+    "hash": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -73,6 +73,13 @@
       "from": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
       "to": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
       "reason": "rules moved again after the rebase over #290/#292 (their seal + repins landed first): A12's webclient-staged-tree gate re-sealed on the current main; brief unchanged"
+    },
+    {
+      "ts": "2026-10-01T09:20:03+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "d94bfbdd7cf245ecfb29b77db26cba60c5b90af39f8b01b78d3de91b9d3a2187",
+      "to": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
+      "reason": "Constitution advanced (review-fix rebase: #293/#291 gates merged with shellcheck-warn + actionlint, rules@c3c8fdd1) \u2014 pin stale by adoption, not drift; brief unchanged"
     }
   ]
 }
