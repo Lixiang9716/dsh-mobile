@@ -5,16 +5,19 @@
 # forgery ladder (capability escalation past a stale trust record and past
 # fully recomputed trust, entry replacement, an id swap, an old package
 # against the current anchor — every one rejected with zero staging), then
-# the FRESHNESS rung: a stale-but-VALID catalog (honestly signed old index,
-# served by this runner's loopback hosting — the model for a compromised
-# mirror serving what the publisher once published) replayed through the
-# resolver, and the control face (an honest package still installs).
+# the FRESHNESS rung — the catalog-replay defense under attack: the runner
+# hosts the CURRENT catalog (index.json) beside a stale-but-VALID one
+# (index-rollback.json — an honestly signed old index, the model for a
+# compromised mirror serving what the publisher once published). The
+# scenario anchors the monotonic generatedAt floor on the current catalog
+# (first contact) and the replay must then refuse at refresh; the control
+# face (an honest package still installs) closes the run.
 #
-# The catalog is authored with the LANDED publisher tooling
-# (tools/gen-marketplace-index.mjs) over a staged dsh-echo@0.9.0 tree — a
-# genuinely honest, correctly signed OLD index, fixed TEST seed (the same
-# dsh-market-1 test key the marketplace.install leg pins). The production
-# keys live only in the signing CI.
+# Both catalogs are authored with the LANDED publisher tooling
+# (tools/gen-marketplace-index.mjs via market-rollback-index.mjs) over a
+# staged dsh-echo@0.9.0 tree — genuinely honest, correctly signed indexes,
+# fixed TEST seed (the same dsh-market-1 test key the marketplace.install
+# leg pins). The production keys live only in the signing CI.
 #
 # usage: run-security-manifest-forgery.sh [--art-dir DIR] [--skip-build]
 set -eu
@@ -23,6 +26,9 @@ cd "$ROOT/runtime/spike"
 
 ART_DIR="$ROOT/runtime/spike/artifacts/macos-cli-security-manifest-forgery"
 GENERATED_AT="2026-09-01T00:00:00Z"
+# The CURRENT catalog's publication time — the same fixed value the
+# marketplace.install leg pins, so every leg's floor story agrees.
+GENERATED_AT_CURRENT="2026-10-01T00:00:00Z"
 # The dsh-market-1 TEST seed — byte-identical to run-marketplace-install-e2e.sh's.
 SEED_1="a7b0c9d1e3f24506718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8"
 WAIT_DEADLINE_SECONDS=15
@@ -35,9 +41,13 @@ sh vendor/ensure-ish.sh
 # 2. build the spike host when the binary is missing.
 [ -x build/dsh-spike-cli ] || sh host/build.sh
 
-# 3. loopback file hosting + the STALE-BUT-VALID catalog: one honestly signed
-#    dsh-echo@0.9.0 entry (an OLD version of the honest package the scenario
-#    also builds in memory), written as index-rollback.json.
+# 3. loopback file hosting + TWO catalogs over the same staged tree:
+#    - index-rollback.json: the STALE-BUT-VALID catalog (generatedAt
+#      GENERATED_AT — an honestly signed OLD index, the replay-attack
+#      model), and
+#    - index.json: the CURRENT catalog (generatedAt GENERATED_AT_CURRENT —
+#      the fresh publication a real client would have seen first; the
+#      freshness rung anchors the monotonic floor on it).
 CATALOG="$(mktemp -d /tmp/dsh-forge-catalog.XXXXXX)"
 HOST_LOG="$(mktemp /tmp/dsh-forge-host.XXXXXX)"
 cleanup() {
@@ -86,7 +96,8 @@ EOF
 SEED_1_B64="$(node -e 'process.stdout.write(Buffer.from(process.argv[1], "hex").toString("base64"))' "$SEED_1")"
 node ci/market-rollback-index.mjs "$CATALOG" "$MARKET_URL" "$SEED_1_B64" "$GENERATED_AT"
 mv "$CATALOG/index.json" "$CATALOG/index-rollback.json"
-echo "forge: stale-but-valid catalog staged (generatedAt $GENERATED_AT)" >&2
+node ci/market-rollback-index.mjs "$CATALOG" "$MARKET_URL" "$SEED_1_B64" "$GENERATED_AT_CURRENT"
+echo "forge: stale catalog staged (generatedAt $GENERATED_AT); current catalog staged (generatedAt $GENERATED_AT_CURRENT)" >&2
 
 # 4. run the scenario and verify one-to-one.
 mkdir -p "$ART_DIR"
@@ -126,7 +137,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
    "id": "security.manifest-forgery",
    "checker": "test/e2e/scenarios/security-manifest-forgery.json",
    "result": "pass",
-   "note": "5/5 pipeline forgeries rejected (capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — codes integrity/capability/integrity/manifest/integrity) with zero staging and no journal; the control honest package installed after the whole ladder"
+   "note": "5/5 pipeline forgeries rejected (capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — codes integrity/capability/integrity/manifest/integrity) with zero staging and no journal; the replayed stale catalog refused by the freshness anchor (the checker pins outcome=rejected); the control honest package installed after the whole ladder"
   }
  ],
  "audit": "one forge.case record per attack (codes pinned by the checker); staging absence asserted by the scenario per transaction; journal absence asserted after the ladder",

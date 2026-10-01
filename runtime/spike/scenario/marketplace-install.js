@@ -40,6 +40,7 @@ import { createRegistry } from 'registry.js';
 import { InstallRejected } from 'install-pipeline.js';
 import { readJournal } from 'receipt-journal.js';
 import { createResolver } from 'marketplace.js';
+import { createFreshnessAnchor } from 'freshness-store.js';
 import { ed25519SelfTest } from 'ed25519.js';
 
 const SCENARIO = 'marketplace.install';
@@ -87,10 +88,18 @@ const onInstall = (name, fields) => {
  * the fetchImpl-as-parameter discipline (install-fetch.js) — the gateway
  * shim and the installer stay untouched. */
 const fetchGet = (url) => httpFetch(url, { method: 'GET' });
+/** ONE freshness anchor per device (not per resolver): the monotonic
+ * generatedAt floor is the device's replay defense (marketplace.js's
+ * freshness anchor; the app-scope store — freshness-store.js). Every test
+ * catalog here carries the same fixed generatedAt, so the floor anchors
+ * once on the happy phase's first contact and every later verified
+ * refresh passes equal — exactly the honest-client shape. */
+const FRESHNESS_ANCHOR = createFreshnessAnchor();
 const makeResolver = (docPath) => createResolver({
   fetchImpl: fetchGet,
   indexUrl: `${INDEX_URL}${docPath}`,
   pinnedKeys: PINNED_KEYS,
+  anchor: FRESHNESS_ANCHOR,
   on: onMarket,
 });
 

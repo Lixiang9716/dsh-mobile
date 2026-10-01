@@ -49,6 +49,13 @@
       }
     },
     {
+      "event": "market.freshness.anchored",
+      "match": {
+        "generatedAt": "2026-10-01T00:00:00Z",
+        "previous": null
+      }
+    },
+    {
       "event": "market.lookup.found",
       "match": {
         "spec": "dsh-fs@^0.1.0",

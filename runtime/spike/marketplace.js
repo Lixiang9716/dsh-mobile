@@ -3,8 +3,10 @@
  * §7, proposal 2026-10-01-plugin-marketplace.md ADOPTED): signed-catalog
  * lookup feeding the UNCHANGED install transaction.
  *
- *   createResolver({ fetchImpl, indexUrl, pinnedKeys, on })
+ *   createResolver({ fetchImpl, indexUrl, pinnedKeys, anchor, on })
  *     .refresh()               → fetch index over httpFetch + ed25519 verify
+ *                                + the freshness anchor (a replayed catalog
+ *                                refuses BEFORE it becomes state)
  *     .lookup("id@range")      → the verified entry (highest version in range)
  *     .install("id", {…})      → entry's {tgzUrl, blobSha256, manifestSha256}
  *                                passed THROUGH to the existing installFromFetch
@@ -27,9 +29,31 @@
  *   'unknown-key'  no signature from a trusted key (a self-consistent catalog
  *                  signed by an attacker key; a rotation completed outside the
  *                  observed window against a stale pin — §7.2)
- *   'catalog'      malformed index, or no entry for the requested id@range
+ *   'catalog'      malformed index, a STALE (replayed) index behind the
+ *                  freshness floor, or no entry for the requested id@range
  *   'network'      non-200 from the catalog host
  *   'integrity'    (from the pipeline) served bytes ≠ the signed trust record
+ *
+ * FRESHNESS ANCHOR (the catalog-replay defense — threat model surface
+ * "marketplace supply chain — catalog freshness", the HIGH finding the
+ * security.manifest-forgery leg pinned before this existed): the signature
+ * anchors WHO published a catalog, not WHEN — a mirror can replay an old,
+ * honestly signed index and its internally consistent trust record lands
+ * old packages. The anchor closes the when: `anchor` = {load, save} (the
+ * caller's data-plane store — freshness-store.js over the app scope; not
+ * the keychain, no new gateway primitive) persists the newest verified
+ * `generatedAt` the client has ever ACCEPTED from this marketplace. Every
+ * refresh verifies the signature FIRST, then compares: older than the
+ * floor → InstallRejected('catalog') BEFORE the state commit and BEFORE
+ * rotation learning (a rejected document teaches nothing and moves
+ * nothing); equal passes (a republished identical catalog must not brick);
+ * newer advances the floor. First contact (no floor) accepts and anchors —
+ * the guard never bricks a fresh client. The floor is keyed to the
+ * MARKETPLACE, not a key: rotation neither resets nor bypasses it, and
+ * only a catalog that verified under the trusted set can advance it (an
+ * attacker cannot poison the floor forward — their catalog never verifies).
+ * The anchor is REQUIRED (fail loud, rule 5): a resolver without one is
+ * the replay hole this closes.
  *
  * The fetchImpl is a PARAMETER (D5/D8 — no hostType branching), same
  * discipline as install-fetch.js: a carrier host passes the real gateway
@@ -252,8 +276,33 @@ const fetchAndVerify = async (env, url) => {
     key: primary.key, signatures: idx.signatures.length, generatedAt: idx.generatedAt,
     entries: idx.entries.length,
   });
+  await enforceFreshness(idx, env); // before rotation learning: a rejected
+  // (stale) document teaches nothing and advances nothing.
   learnRotationKeys(idx, env);
   return idx;
+};
+
+/** The freshness anchor's check (module header, "FRESHNESS ANCHOR"): runs
+ * ONLY on a catalog that just verified under the trusted set — the floor
+ * judges what the signature has already vouched for, never before. */
+const enforceFreshness = async (idx, env) => {
+  log.debug('enforce freshness', { generatedAt: idx.generatedAt });
+  const published = Date.parse(idx.generatedAt);
+  if (Number.isNaN(published)) {
+    throw new InstallRejected('catalog',
+      `catalog generatedAt is not an ISO timestamp: ${JSON.stringify(idx.generatedAt)}`);
+  }
+  const floor = await env.anchor.load();
+  if (floor !== null && published < Date.parse(floor)) {
+    throw new InstallRejected('catalog',
+      `catalog is stale: generatedAt ${idx.generatedAt} predates the freshness`
+      + ` floor ${floor} (a replayed index?)`,
+      { generatedAt: idx.generatedAt, floor });
+  }
+  if (floor === null || published > Date.parse(floor)) {
+    await env.anchor.save(idx.generatedAt);
+    env.on('freshness.anchored', { generatedAt: idx.generatedAt, previous: floor });
+  }
 };
 
 const parseSpec = (spec) => {
@@ -282,14 +331,16 @@ const lookupEntry = (env, spec) => {
 };
 
 /**
- * Build a resolver. Args: {fetchImpl, indexUrl, pinnedKeys, on} —
+ * Build a resolver. Args: {fetchImpl, indexUrl, pinnedKeys, anchor, on} —
  * pinnedKeys = { keyId: base64PublicKey } (the host's out-of-band pin
- * record, repo config); on = (step, fields) => void progress callback.
+ * record, repo config); anchor = {load, save} (the freshness floor's
+ * data-plane store — freshness-store.js; REQUIRED, see the module header);
+ * on = (step, fields) => void progress callback.
  * Returns {refresh, lookup, install, trustedKeyIds}.
  */
 /** The resolver's session state bag (buildEnv + the api below keep every
  * span small; the state transitions read top to bottom at module scope). */
-const buildEnv = ({ fetchImpl, indexUrl, pinnedKeys, on }) => ({
+const buildEnv = ({ fetchImpl, indexUrl, pinnedKeys, anchor, on }) => ({
   fetchImpl,
   indexUrl,
   on,
@@ -298,6 +349,7 @@ const buildEnv = ({ fetchImpl, indexUrl, pinnedKeys, on }) => ({
   trusted: new Map(Object.entries(pinnedKeys)),
   state: null, // { index, byId } after a successful refresh
   message: null, // the verified document's canonical bytes (rotation)
+  anchor, // the freshness floor's {load, save} — caller-owned, data-plane
 });
 
 /** refresh(): fetch + verify the catalog, replacing the cached state only
@@ -328,7 +380,7 @@ const installResolved = async (env, { spec, txId, journal = false, on: onInstall
   });
 };
 
-export const createResolver = ({ fetchImpl, indexUrl, pinnedKeys, on = () => {} }) => {
+export const createResolver = ({ fetchImpl, indexUrl, pinnedKeys, anchor, on = () => {} }) => {
   if (typeof fetchImpl !== 'function') {
     throw new InstallRejected('invalid', 'createResolver needs a fetchImpl');
   }
@@ -338,8 +390,14 @@ export const createResolver = ({ fetchImpl, indexUrl, pinnedKeys, on = () => {} 
   if (!pinnedKeys || typeof pinnedKeys !== 'object' || Object.keys(pinnedKeys).length === 0) {
     throw new InstallRejected('invalid', 'createResolver needs pinnedKeys (the host pin record)');
   }
+  if (!anchor || typeof anchor !== 'object'
+    || typeof anchor.load !== 'function' || typeof anchor.save !== 'function') {
+    throw new InstallRejected('invalid',
+      'createResolver needs a freshness anchor {load, save} (the catalog-replay'
+      + ' defense — freshness-store.js wires it to the app data plane)');
+  }
   log.debug('resolver built', { indexUrl, pinned: Object.keys(pinnedKeys) });
-  const env = buildEnv({ fetchImpl, indexUrl, pinnedKeys, on });
+  const env = buildEnv({ fetchImpl, indexUrl, pinnedKeys, anchor, on });
   return {
     refresh: (url) => refresh(env, url),
     lookup: (spec) => lookupEntry(env, spec),

@@ -11,9 +11,11 @@
   { "event": "forge.case", "match": { "attack": "forge.manifest-id-swap", "code": "manifest" } },
   { "event": "forge.case", "match": { "attack": "forge.version-rollback.pipeline", "code": "integrity" } },
   { "event": "forge.pipeline.rejected", "match": { "cases": 5 } },
-  { "event": "forge.rollback.catalog", "match": { "outcome": "installed", "version": "0.9.0", "via": "catalog-replay" } },
+  { "event": "forge.freshness.anchor", "match": { "anchored": "2026-10-01T00:00:00Z", "via": "first-contact" } },
+  { "event": "forge.rollback.catalog", "match": { "outcome": "rejected", "code": "catalog", "via": "catalog-replay" } },
+  { "event": "forge.freshness.honest-refresh", "match": { "generatedAt": "2026-10-01T00:00:00Z", "outcome": "accepted" } },
   { "event": "forge.survived", "match": { "installed": "dsh-echo@1.0.1" } },
-  { "event": "forge.finding", "match": { "severity": "high", "outcome": "catalog-replay-installed" } },
+  { "event": "forge.finding", "match": { "severity": "none", "outcome": "catalog-replay-rejected" } },
   { "event": "scenario.complete", "match": { "status": "pass" } }
  ]
 }

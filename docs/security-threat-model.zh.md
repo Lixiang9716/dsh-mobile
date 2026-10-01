@@ -60,23 +60,55 @@ canonical-JSON ed25519,密钥带外钉扎,§7.2 双签窗口轮换,签名信任�
 ([run-marketplace-install-e2e.sh](../runtime/spike/ci/run-marketplace-install-e2e.sh),
 证据 `runtime/spike/artifacts/macos-cli-marketplace-install/`)。
 
-### 3. 市场供应链——目录新鲜度(**HIGH 发现,未闭合**)
+### 3. 市场供应链——目录新鲜度(已防:新鲜度锚;#295 HIGH 已闭合)
 
-**现有防线**:客户端侧没有。钉扎锚定的是签名密钥而非纪元;`generatedAt`
-只验存在([runtime/spike/marketplace.js](../runtime/spike/marketplace.js));
-管线拿到的信任记录锚定字节——而一份重放的旧目录自带内部一致、签名正确
-的信任记录。
+**现有防线**:客户端新鲜度锚——单调 `generatedAt` 下限
+([runtime/spike/marketplace.js](../runtime/spike/marketplace.js),由
+[runtime/spike/freshness-store.js](../runtime/spike/freshness-store.js)
+持久化):每次 refresh 先验签名,再把目录的发布时间与客户端**曾经接受过的
+最新**发布时间(下限)比较——下限经调用方的数据面持久化(app scope 一个
+文件;不进 keychain、零新 gateway 原语)。早于下限 → 在 resolver 把文档
+纳为状态之前、在轮换学习之前就以 `catalog` 拒绝(被拒文档不教任何东西、
+不动任何状态);等于放行(重发的相同目录不得 brick);更晚则推进下限;
+首次接触(还没有下限)接受并锚定——新客户端永不 brick。下限锚定的是
+市场而非密钥:密钥轮换既不重置也不绕过它,且只有通过了信任集验证的目录
+才能推进下限(攻击者无法把下限向前投毒——其目录根本过不了验证)。锚在
+resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)。锚
+存储对文件系统的读取也是诚实的:gateway 的 `io` 码同时覆盖"不存在"与
+"存在但不可读"(contract/primitives.md,v1.1.0 文件系统补充——没有第二
+个码),因此读失败绝不直接当首次接触——存储先问宿主的 `fsStat`
+(stat 证明不存在 = 首次接触;文件在但读不了 = 响亮失败,绝不无声重置
+下限;无法证明不存在的宿主形态只在 WARN 级重置,从不出声)。
 
-**本腿怎么攻——即发现**:[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
-重放一份过期但**签名有效**的目录(由在库发布工具在测试钉扎下诚实签出的
-旧索引——敌意镜像提供发布者曾发布过内容的模型)。**重放装进来了**:
-`dsh-echo@0.9.0` 经 resolver 落地,收据、暂存树俱全
-(`"event":"forge.rollback.catalog","outcome":"installed","version":"0.9.0"`,
-证据 `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`)。
-在本架构自设的对手模型内严重度 HIGH(敌意镜像天然在范围内——目录签名
-本就是为此而生)。已命名后续:客户端新鲜度锚——单调 `generatedAt` 下限
-或进钉扎的发布纪元;落地该防护的同一变更里,本腿钉住的期望翻转为
-`rejected`。在此之前,这条腿把缺口按可回归观察的事实如实敞着。
+**本腿怎么攻——即翻转**:[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+在宿主上同时放置当前目录(generatedAt 2026-10-01)与一份过期但**签名
+有效**的目录(诚实签出的旧索引,generatedAt 2026-09-01——敌意镜像提供
+发布者曾发布过内容的模型)。本腿先在当前目录上锚定下限(首次接触),
+再重放过期目录:**重放在 refresh 即被拒**——
+`"event":"forge.rollback.catalog","outcome":"rejected","code":"catalog","via":"catalog-replay"`
+(证据 `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`)
+——零暂存,且当前目录此后仍可刷新(等于下限放行;防线不记仇)。本腿
+此前钉住的是当时的真话——HIGH 发现:重放装了进来(#295——钉扎锚定
+签名密钥而非纪元,`generatedAt` 只验存在)。按下方维护契约,checker
+在落地防护的同一变更里翻转为 `rejected`;证伪先行保持翻转的诚实——
+把下限检查临时废掉,重放重新落地,checker 随之变红。
+
+**剩余面(如实声明,未吸收)**:第一,首接即劫持——这是该防护自身
+设计携带的边界条件:下限防的是**至少诚实接触过一次市场**的客户端。
+一台第一次 refresh 就落在被攻陷镜像上的设备还没有下限——过期但签名
+有效的目录照样装进来,并把下限锚定在旧值(此后一切 ≥ 旧值的目录都
+过)。这是客户端侧下限固有的:能约束首接的"发布纪元进钉扎"替代方案
+已被评估并否决(Agent Note"the freshness anchor lands"——纪元是第二个
+需要带外分发与轮换的信任工件)。因此 #295 的 HIGH 对**已建立连接的**
+客户端闭合;首次接触仍是一次诚实的信任引导,与带外钉扎自身同一类
+(钉扎的分发也是这么被信任的)。第二,面板的安装流
+([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
+经 [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js)
+解析,其拒绝词汇(network/format/unknown-key/signature)没有 stale 码——
+守住那个面是一次线级词汇决策,为已命名后续。本腿攻击的契约面才是 §7.3
+安装直通所骑的面。还有一个如实携带的后果:发布方时钟错误若发布了
+**未来**的 `generatedAt`,会把客户端下限推过正确的当下——目录将响亮
+失败,直到发布方以修正时间重发。响亮失败胜过静默回滚。
 
 ### 4. QuickJS 沙箱(无原生面)
 
@@ -155,7 +187,7 @@ mock 现在接受本腿金丝雀作为期望 bearer,让真实值走上网络。�
 | --- | --- | --- | --- | --- |
 | gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/spike/artifacts/macos-cli-security-gateway-fuzz/` | 原语停止校验(攻击案例得手,或拒绝码漂移) |
 | jail(wasm+socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/spike/artifacts/macos-cli-security-jail/` | wasm 导入面变宽、emit 边界检查缺失、回环边界漏风 |
-| 清单伪造 | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | 管线锚/协商变弱——以及(钉住,直到新鲜度防护落地)重放档如实记录今天的 HIGH 缺口 |
+| 清单伪造 | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | 管线锚/协商变弱,或新鲜度锚停止拒绝重放目录(证伪先行:废掉下限检查,checker 随之变红) |
 | BYOK 泄漏 | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/spike/artifacts/macos-cli-security-byok-leak/` | 凭据值摸到任何日志汇,或错误面回显秘密 |
 
 ## 维护契约

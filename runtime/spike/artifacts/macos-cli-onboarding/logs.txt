@@ -12,8 +12,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event"
 dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data":[{"scenario":"onboarding.flow","event":"onboarding.detect","mode":"mock","provider":"mock"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":94}]}
-dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:51971/chat/completions","bytes":94}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:51971/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:65193/chat/completions","bytes":94}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:65193/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.onboarding/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -64,8 +64,8 @@ dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data"
 dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data":[{"scenario":"onboarding.flow","event":"onboarding.probe.passed","chars":19,"deltas":4}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
 dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":94}]}
-dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:51971/chat/completions","bytes":94}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:51971/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:65193/chat/completions","bytes":94}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:65193/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.onboarding/poll"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
@@ -95,8 +95,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":136}]}
 dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data":[{"scenario":"onboarding.flow","event":"onboarding.relaunch.route","kind":"byok","scripted":false,"provider":"deepseek","model":"mock-1"}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4a5f6763-672b-4cbe-adfb-dabeed8375c0\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:51971/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-602f0c9c-5054-44b3-ba16-b3a48995fc93\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:65193/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:9","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":730}]}
@@ -112,8 +112,8 @@ dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
 dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data":[{"scenario":"onboarding.flow","event":"onboarding.clear","mode":"mock","provider":"mock"}]}
 dsh.spike.log: {"level":"info","module":"onboarding.flow","message":"e2e","data":[{"scenario":"onboarding.flow","event":"onboarding.directory.restored","provider":"mock","settingsNs":"llm-mock"}]}
-dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-670a97d6-5524-465b-8f11-27fa6103c3fb\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:51971/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4b671a74-fe93-4a61-ac7b-75d6a5dd228f\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:65193/chat/completions","method":"POST"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:12","buffered":0}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":731}]}
