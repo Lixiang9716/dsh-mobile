@@ -41,15 +41,22 @@ green() {
 ART_ROOT="$REPO"
 
 # 1. the falsification shape: every margin pressed BELOW its recorded
-#    baseline → all 8 metrics red, the first one named by name.
+#    baseline → all metrics red, the first one named by name (the expected
+#    detail is derived from the budgets file — the case must not hardcode
+#    numbers the baselines file owns).
+FIRST_ID="$(node -e 'const j=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));const [id,b]=Object.entries(j.metrics)[0];console.log(id+"|"+b.baseline+"|"+(b.baseline-1))' "$TMP/budgets.json")"
+FIRST_METRIC="${FIRST_ID%%|*}"
+FIRST_BASE="${FIRST_ID#*|}"; FIRST_BASE="${FIRST_BASE%%|*}"
+FIRST_MARGIN="${FIRST_ID##*|}"
 node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
 for(const m of Object.values(j.metrics)){m.warnAbove=m.baseline-1;}
 fs.writeFileSync(process.argv[1],JSON.stringify(j,null,2)+"\n")' \
   "$TMP/budgets.json"
-must_refuse_naming "boot.coldBootMs: measured 28 > margin 27 (baseline 28)"
+must_refuse_naming "$FIRST_METRIC: measured $FIRST_BASE > margin $FIRST_MARGIN (baseline $FIRST_BASE)"
 RED_COUNT="$(grep -c 'FAIL: ' "$TMP/out")"
-[ "$RED_COUNT" -eq 8 ] || {
-  echo "case-perf-budget: FAIL — expected all 8 metrics red, got $RED_COUNT" >&2
+EXPECTED_RED="$(node -e 'const j=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));console.log(Object.keys(j.metrics).length)' "$TMP/budgets.json")"
+[ "$RED_COUNT" -eq "$EXPECTED_RED" ] || {
+  echo "case-perf-budget: FAIL — expected all $EXPECTED_RED metrics red, got $RED_COUNT" >&2
   exit 1
 }
 
@@ -70,4 +77,4 @@ grep -q "no receipt at" "$TMP/out" || {
 ART_ROOT="$REPO"
 green
 
-echo "case-perf-budget: below-margin red (all 8 named), missing-receipt red (fail loud), real receipts green — sandboxed budgets, real tree untouched"
+echo "case-perf-budget: below-margin red (all metrics named), missing-receipt red (fail loud), real receipts green — sandboxed budgets, real tree untouched"

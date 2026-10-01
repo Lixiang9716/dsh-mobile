@@ -26,16 +26,21 @@ Three pieces land together (T-0087):
    INFRASTRUCTURE, review-checked.
 2. **Two CLI legs** (each its own runner + one-to-one manifest + committed
    receipt, the house E2E shape):
-   - `perf.baseline`: one cold boot (28ms eval→agent), one mock session turn
-     over the page's wire (18ms), the catalog refresh (5042ms — the PURE-JS
-     ed25519 verify's known cost) and install commit (29ms). D8: every
-     number rides the scenario's own event stream; the runner extracts them
-     into the receipt and adds the shell-side facts (spawn→PASS 5263ms;
-     SpikeBundle.c 68,007,914B regenerated — gitignored build output since
-     the D9 flip; dsh-fs tgz 6,656B, fixed TEST seeds, deterministic bytes).
+   - `perf.baseline`: one cold boot, one mock session turn over the page's
+     wire, the catalog refresh (the PURE-JS ed25519 verify's known cost,
+     ~5s) and install commit. D8: every number rides the scenario's own
+     event stream; the runner extracts them into the receipt and adds the
+     shell-side facts (spawn→PASS wall clock; SpikeBundle.c regenerated —
+     gitignored build output since the D9 flip; dsh-fs tgz, fixed TEST
+     seeds, deterministic bytes). Wall-clock numbers are FLEET-NOISY on this
+     shared box — coldBoot measured 28/190/99ms and turnMs 18/252/137
+     across three runs — which is exactly why the budgets are warn-tier
+     with order-of-magnitude margins; the recorded baselines are the final
+     committed run (coldBoot 99ms, turn 137ms, refresh 5052ms, install
+     47ms, spawn→PASS 5613ms, bundle 68,052,388B, tgz 6,656B).
    - `leak.canary`: 100 mock session rounds, heap watermarks BEFORE and
      AFTER a forced collection, collected-vs-collected. MEASURED natural
-     growth: **+8,347,650B** (session records are lifetime maps BY DESIGN —
+     growth: **+8,347,650B** (byte-identical across THREE independent runs) (session records are lifetime maps BY DESIGN —
      `ctx.sessions`/`ctx.agents` keep a session's log outlives its turn —
      plus engine atom/shape ratchet). Tolerance = 16 MiB ≈ 2x natural, and
      the first canary draft's guessed 1 MiB tolerance went red on this exact
