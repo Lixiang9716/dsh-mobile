@@ -1,0 +1,23 @@
+{
+  "title": "iOS live test: four dimensions on dsh-iphone (A UI scan, B backend, C tools, D capabilities+marketplace)",
+  "created": "2026-10-01T04:14:02+00:00",
+  "rules": {
+    "hash": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "d986f0b2c361597b8a893fdd96c5210a5d7694accfa8df3b81db3f6f82c55751"
+    }
+  },
+  "checklist": [
+    "[x] sim-preflight dsh-iphone iOS 26.5 booted",
+    "[x] A: Debug+Release control sweeps + official/nextweb session surfaces",
+    "[x] B: boot/carrier/gateway/audit + session.mock-llm + BYOK onboarding + real LLM turn",
+    "[x] C: tool-rows probe + todo turn + wasm echo + ish + office",
+    "D: device-plane + camera + mic + ble + marketplace real install",
+    "deliverables screenshots + bilingual summary + agent note",
+    "gov task close + gov run green + PR opened"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0085"
+}

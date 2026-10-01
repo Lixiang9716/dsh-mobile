@@ -1,0 +1,24 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "W-RPC b4.write.live, full-capability run: the official app's write surface on-device with the guest userland staged \u2014 real session/create + prompt admission + the follow streams, a typed composer turn through the scripted transport (15 tools incl. the ish shell), the reply rendering live; the tool-rows probe (bash/pwsh/present/ralph composed), the wasm echo probe (hello from wasm, exit 15), and the ish probe running a REAL /bin/sh -c in the emulated Alpine guest (exit=0, stdout hello-from-guest); asserted one-to-one against the refreshed composer-live-write manifest",
+  "launchConfiguration": "-dsh-mode session-write (the b4 verification drive; ish-rootfs staged)",
+  "tree": "origin/main 90a1188e1f34 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "composer.live-write",
+      "checker": "test/e2e/scenarios/composer-live-write.json",
+      "events": 46,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-live-write.sh",
+  "screens": [
+    "screens/01-write-boot-screen.png",
+    "screens/02-composer-typed.png",
+    "screens/03-reply-rendered.png"
+  ],
+  "timestamp": "2026-10-01T13:07:55+08:00",
+  "exitCode": 0
+}

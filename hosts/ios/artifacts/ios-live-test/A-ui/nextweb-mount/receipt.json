@@ -1,0 +1,23 @@
+{
+  "host": "iOS dsh-iphone simulator (A4AE41BF-026A-441E-85DF-F53522996073, iOS 26.5)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "W-NEXT nextweb.mount: the self-hosted web-client-next mounts over the same serving seat \u2014 boot, the /api + mux surface, the settings surfaces and the mock-LLM streaming session, asserted one-to-one against the refreshed nextweb-mount manifest (the BYOK boot probe rpc is now part of the page's wire)",
+  "launchConfiguration": "-dsh-mode next-web -dsh-web-client dsh-web-client-next",
+  "tree": "origin/main b23123fbfc9a (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "nextweb.mount",
+      "checker": "test/e2e/scenarios/nextweb-mount.json",
+      "events": 25,
+      "result": "pass"
+    }
+  ],
+  "runner": "test/e2e/run-ios-next-web-mount.sh",
+  "screens": [
+    "screens/01-next-boot-screen.png",
+    "screens/02-final-state.png"
+  ],
+  "timestamp": "2026-10-01T13:01:03+08:00",
+  "exitCode": 0
+}
