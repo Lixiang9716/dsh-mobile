@@ -30,7 +30,7 @@
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "8bf4b280552337841c830674f4892d7f037bf8a5568ec2ff51567eb7a1c12ce2",
       "to": "4c44b4f7eba83c1573d45c73b249a5b6db443580b00555d8250a932c249e7123",
-      "reason": "the API residue remains open future work; item 4 (consolidate the four hand-maintained closure manifests into one generated list) gained its verifier tonight (tools/check-staging.mjs) \u2014 the generator itself is Phase 2"
+      "reason": "the API residue remains open future work; item 4 (consolidate the four hand-maintained closure manifests into one generated list) gained its verifier tonight (tools/check-staging.mjs) — the generator itself is Phase 2"
     },
     {
       "ts": "2026-09-29T08:36:42+00:00",
@@ -58,14 +58,21 @@
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "02a08d047500ef1cbbf9f47d551140d24f187acb1542c0d3ed9980c3712b194a",
       "to": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
-      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged \u2014 same recorded sweep shape as PR #244"
+      "reason": "constitution moved under this standing card during the PR #274 rebase onto main (10ac8fbe): the merged constitution (21-gate gates.json union of #280 + #274) re-sealed at the tip; the brief still describes its work unchanged — same recorded sweep shape as PR #244"
     },
     {
       "ts": "2026-10-01T06:40:43+00:00",
       "by": "lixiang@MacBookAir.mshome.net",
       "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
       "to": "ad0e95a2619cfd163f9bffa17c02634f542b62f7ef87c981cf26d07e86a94943",
-      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction \u2014 the brief itself is unchanged and remains the owner's to close or void."
+      "reason": "Constitution moved since the #274-era re-pin (gates.json gains the warn-grade asset-mirrors gate, plane re-sealed 2026-10-01 by the asset-mirror-drift brief); advancing per the task gate's own instruction — the brief itself is unchanged and remains the owner's to close or void."
+    },
+    {
+      "ts": "2026-10-01T07:41:35+00:00",
+      "by": "lixiang@MacBookAir.mshome.net",
+      "from": "3450271d8d134adc4c03417db2f15e1bae6ef8e509733a9441fbf7bbb1fcb882",
+      "to": "4433189e08b846ebb6afd53975bdfbf50720a74e611237eca4e800ccbe6fe4c0",
+      "reason": "Constitution sweep during T-0087's gov run: the card pins rules@3450271d but the plane is at rules@4433189e (the perf-budget adoption). Items 1-3 remain open (session page legs, subagents mount, feedback backing); re-pinned current, the same sweep PRs #244/#274 performed; no brief change."
     },
     {
       "ts": "2026-10-01T07:46:30+00:00",
