@@ -1,0 +1,15 @@
+{
+ "scenario": "security.byok-leak",
+ "extract": {
+  "prefix": "dsh.spike.log:"
+ },
+ "expect": [
+  { "event": "leak.saved", "match": { "ref": "dsh.llm/byok-route" } },
+  { "event": "leak.keychain.roundtrip", "match": { "match": true } },
+  { "event": "leak.route.resolved", "match": { "route": "byok", "provider": "deepseek" } },
+  { "event": "leak.turn.completed", "repeat": true },
+  { "event": "leak.auth-error.redacted", "match": { "keyInMessage": false } },
+  { "event": "leak.cleanup", "match": { "cleared": true } },
+  { "event": "scenario.complete", "match": { "status": "pass" } }
+ ]
+}

@@ -1,0 +1,92 @@
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":30}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.saved","ref":"dsh.llm/byok-route"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.llm/byok-route"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":156}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.keychain.roundtrip","match":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.llm/byok-route"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":156}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.route.resolved","route":"byok","provider":"deepseek"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:57674/chat/completions","bytes":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57674/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":200}]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"open","status":200}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse drain begin","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse splitter created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":730}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":684}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse feed","data":[{"chars":511}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":80}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"delta","index":0,"text":"Hello"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":80}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"delta","index":1,"text":" from"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":80}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"delta","index":2,"text":" upst"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":79}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"delta","index":3,"text":"ream"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":2}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":128}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse chunk fold","data":[{"hasChoices":true}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":1}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"sse line","data":[{"chars":12}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:4","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"security.byok","message":"stream step","data":[{"name":"done","deltas":4,"reasoningDeltas":0,"chars":19,"finishReason":"stop","served":null}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat done","data":[{"deltas":4,"chars":19}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.turn.completed","chars":19,"deltas":4}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"streamChat begin","data":[{"model":"mock-1","messages":1,"maxTokens":24}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 encode","data":[{"chars":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm request","data":[{"url":"http://127.0.0.1:57674/chat/completions","bytes":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"httpFetch","data":[{"url":"http://127.0.0.1:57674/chat/completions","method":"POST"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"httpFetch"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm response","data":[{"status":401}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"status error drain","data":[{"status":401}]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 decoder created","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:5","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":162}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.body","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"base64 decode","data":[{"chars":116}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"utf8 feed","data":[{"bytes":85}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body chunk wait","data":[{"bodyId":"body:5","buffered":0}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway event","data":[{"chars":31}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"body stream event","data":[{"event":"http.end","bodyId":5}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"stream wake","data":[]}
+dsh.spike.log: {"level":"debug","module":"dsh.llm","message":"llm error","data":[{"code":"network"}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.auth-error.redacted","code":"network","keyInMessage":false,"chars":110}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainSet"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"keychainGet","data":[{"ref":"dsh.llm/byok-route"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"keychainGet"}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"leak.cleanup","cleared":true}]}
+dsh.spike.log: {"level":"info","module":"security.byok","message":"e2e","data":[{"scenario":"security.byok-leak","event":"scenario.complete","status":"pass"}]}
+spike: PASS (complete=1 pass=1)
