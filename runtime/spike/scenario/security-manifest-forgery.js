@@ -238,6 +238,29 @@ const pipelineLadder = async () => {
   emit('forge.pipeline.rejected', { cases: rejectedCount });
 };
 
+/** The replay attempt against one already-built stale resolver: installs
+ * (and proves the 0.9.0 tree) when the guard is absent, emits the
+ * rejection code when the floor refuses it. Returns whether it landed. */
+const replayAttempt = async (stale) => {
+  try {
+    await stale.refresh();
+    const done = await stale.install({ spec: 'dsh-echo@*', txId: 'sec-f006', on: onInstall });
+    const staged = await fsRead('app', 'plugins/dsh-echo@0.9.0/manifest.json');
+    demand(toText(staged.bytes).includes('"version": "0.9.0"')
+      || toText(staged.bytes).includes('"version":"0.9.0"'),
+    'the rollback receipt names a different tree');
+    emit('forge.rollback.catalog', {
+      outcome: 'installed', version: done.manifest.version, via: 'catalog-replay',
+    });
+    return true;
+  } catch (err) {
+    emit('forge.rollback.catalog', {
+      outcome: 'rejected', code: err.code ?? 'unknown', via: 'catalog-replay',
+    });
+    return false;
+  }
+};
+
 /** Rung 6: the freshness face — the CURRENT catalog anchors the monotonic
  * generatedAt floor on first contact (never a brick), then the
  * stale-but-VALID catalog replays against the SAME anchor store: the floor
@@ -268,31 +291,9 @@ const freshnessRung = async () => {
   emit('forge.freshness.anchor', { anchored: cur.generatedAt, via: 'first-contact' });
 
   // The replay: older than the floor, honestly signed — refused at refresh.
-  let rollbackLanded = false;
-  try {
-    await stale.refresh();
-    const done = await stale.install({ spec: 'dsh-echo@*', txId: 'sec-f006', on: onInstall });
-    const staged = await fsRead('app', 'plugins/dsh-echo@0.9.0/manifest.json');
-    demand(toText(staged.bytes).includes('"version": "0.9.0"')
-      || toText(staged.bytes).includes('"version":"0.9.0"'),
-    'the rollback receipt names a different tree');
-    rollbackLanded = true;
-    emit('forge.rollback.catalog', {
-      outcome: 'installed', version: done.manifest.version, via: 'catalog-replay',
-    });
-  } catch (err) {
-    emit('forge.rollback.catalog', {
-      outcome: 'rejected', code: err.code ?? 'unknown', via: 'catalog-replay',
-    });
-  }
+  const rollbackLanded = await replayAttempt(stale);
   if (!rollbackLanded) {
-    // the refused replay staged nothing
-    try {
-      await fsRead('app', 'plugins/.staging-sec-f006/manifest.json');
-      demand(false, 'the rejected replay staged a tree: sec-f006');
-    } catch (err) {
-      demand(err.code === 'io', `expected io for staging-sec-f006, got ${err.code}`);
-    }
+    await stagingAbsent('sec-f006'); // the refused replay staged nothing
     // and the guard does not brick: the current catalog still refreshes
     const again = await current.refresh();
     demand(again.generatedAt === cur.generatedAt, 'the current catalog drifted mid-rung');
