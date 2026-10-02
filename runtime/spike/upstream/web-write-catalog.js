@@ -164,15 +164,24 @@ export const shellLoadHandlers = (llmRoute) => ({
  * with the upstream vocabulary (`session/model-unavailable`, the code
  * commands.selectModel itself throws). A routable selection commits exactly
  * like the controller's selectForNextRequest: the `model/selection` intent
- * rides the live session journal AND the boot-installed selection holder's
- * `current` (upstream/model-selection-holder.js, the vendored
+ * rides the live session journal AND the session's installed selection
+ * holder's `current` (upstream/model-selection-holder.js, the vendored
  * installModelSelection's coupling) takes the pick — the next turn's
  * request/header carries it and the modelSelection projection folds
  * `lastUsed` from that header. The holder is reached through a DYNAMIC
  * import (this file's header note: a static @deepseek-ai/dsh-agent edge
- * would drag the spine into the compose-only embed's bundle); a boot that
- * installed none refuses the pick fail-loud instead of journaling an intent
- * nothing will ever honor. Returns the desktop's `{selected}` envelope. */
+ * would drag the spine into the compose-only embed's bundle). Like the
+ * controller's selectionFor, the lookup is INSTALL-OR-RETURN per agent: the
+ * dialog names ANY live session — the boot-configured agent whose holder
+ * boot.js installed AND the sessions the page created through
+ * session/create, whose agents mount nothing at boot. The lazy install's
+ * fallback is the agent's own creation route (the write surface's llm route,
+ * effort omitted — makeCreateSession passed exactly {provider, model}), so a
+ * created session's first request stays byte-identical whether or not a
+ * holder was installed. Refusing here instead would kill the interactive
+ * spine on the first dialog commit (measured 2026-10-02: the configured
+ * agent's holder left every page-created session unanswered and the spine
+ * dead). Returns the desktop's `{selected}` envelope. */
 export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
   'session/selectModel': async (args) => {
     const agent = liveAgent(ctx, args?.sessionId);
@@ -201,12 +210,10 @@ export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
       ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
     };
     const Holder = await import('upstream/model-selection-holder.js');
-    const holder = Holder.sessionModelSelection(agent);
-    if (holder === undefined) {
-      throw remoteError('gateway/internal',
-        'model-selection holder is not installed for this session '
-          + '(boot without the apply leg?)', { sessionId: args?.sessionId ?? null });
-    }
+    const holder = Holder.sessionModelSelection(agent)
+      ?? Holder.installSessionModelSelection(ctx, agent, {
+        provider: llmRoute.provider, model: llmRoute.model,
+      });
     agent.session.append('model/selection', selection);
     holder.current = selection;
     return { selected: selection };

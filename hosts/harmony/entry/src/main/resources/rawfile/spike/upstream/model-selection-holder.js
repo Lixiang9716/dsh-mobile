@@ -105,8 +105,10 @@ export const installSessionModelSelection = (ctx, agent, bootRoute) => {
   return holder;
 };
 
-/** The holder one live agent carries, or undefined when its boot installed
- * none (the selectModel handler refuses such sessions — fail loud). */
+/** The holder one live agent carries, or undefined when none is installed
+ * yet (the selectModel handler install-or-returns like the controller's
+ * selectionFor — the configured agent's holder comes from the boot mount,
+ * every other live session's is installed on first pick). */
 export const sessionModelSelection = (agent) => holders.get(agent.session);
 
 /** The boot mount: register the modelSelection projection unit (issue #306,

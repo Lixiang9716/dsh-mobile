@@ -424,11 +424,13 @@ class SessionServe private constructor(
     /** 0 = running, 1 = pass, 2 = fail, -1 = error. The scenario stays
      * RESIDENT on success (1 is normal life); a failure still opens the
      * origin so the page renders its own honest state instead of a dead
-     * screen, next to the failure line in the log. */
+     * screen, next to the failure line in the log. On 2 the scenario's own
+     * reason rides m4LastError (js_complete keeps the __dshComplete(false,
+     * reason) string in the host's error slot) — the FAIL line names WHY. */
     private fun onRuntimeStatus(status: Int) {
         when (status) {
             0, 1 -> {}
-            2 -> fail("the spine scenario failed")
+            2 -> fail("the spine scenario failed: ${SpikeRuntime.m4LastError()}")
             else -> fail("serve runtime: ${SpikeRuntime.m4LastError()}")
         }
     }

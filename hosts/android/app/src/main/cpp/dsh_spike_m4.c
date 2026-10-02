@@ -199,14 +199,21 @@ jlong Java_com_dshmobile_spike_SpikeRuntime_nativeM4Begin(
 }
 
 /* Shared pump+completion check after settle/event/bus deliveries.
- * 0 = running, 1 = complete pass, 2 = complete fail, -1 = error. */
+ * 0 = running, 1 = complete pass, 2 = complete fail, -1 = error. On a
+ * complete-fail the scenario's own reason (js_complete keeps it in
+ * dsh_spike_error) rides g_m4_err — the embedder's status-2 branch reads it
+ * back through nativeM4Last. */
 static jint m4_status(dsh_spike_t *spike) {
     if (dsh_spike_pump(spike) != 0) {
         snprintf(g_m4_err, M4_ERR_MAX, "%s", dsh_spike_error(spike));
         return -1;
     }
     if (!dsh_spike_complete(spike)) return 0;
-    return dsh_spike_pass(spike) ? 1 : 2;
+    if (!dsh_spike_pass(spike)) {
+        snprintf(g_m4_err, M4_ERR_MAX, "%s", dsh_spike_error(spike));
+        return 2;
+    }
+    return 1;
 }
 
 __attribute__((visibility("default")))
