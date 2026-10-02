@@ -75,7 +75,7 @@ const tgz = Buffer.concat([
   Buffer.alloc(1024),
 ]);
 
-// ---- the signed index (canonical JSON of everything but `signature`) ------
+// ---- the signed index (canonical JSON of everything but `signatures`) -----
 
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex');
 const blobSha256 = sha256(tgz);
@@ -107,7 +107,7 @@ const index = {
       zh: '市场演示插件 — 一个无害的服务示例',
     },
   }],
-  signature: { key: 'dsh-market-1', value: '' },
+  signatures: [{ key: 'dsh-market-1', value: '' }],
 };
 
 // ---- the server ------------------------------------------------------------
@@ -161,8 +161,8 @@ start.listen(0, '127.0.0.1', () => {
   // reproducible from the repository, the hosting is wherever this points.
   index.entries[0].tgzUrl = `${base}/packages/${PKG.id}@${PKG.version}.tgz`;
   const signIndex = (doc, signingKey) => {
-    const { signature, ...rest } = doc;
-    doc.signature.value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), signingKey)
+    const { signatures, ...rest } = doc;
+    doc.signatures[0].value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), signingKey)
       .toString('base64');
     return JSON.stringify(doc, null, 2);
   };
