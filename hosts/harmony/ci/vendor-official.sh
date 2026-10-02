@@ -314,6 +314,7 @@ upstream/settings-memory.js
 upstream/llm-route.js
 upstream/llm-transport.js
 upstream/model-selection-projection.js
+upstream/model-selection-holder.js
 upstream/web-write.js
 upstream/web-write-settings.js
 upstream/web-write-streams.js

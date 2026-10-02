@@ -162,11 +162,17 @@ export const shellLoadHandlers = (llmRoute) => ({
  * equal it and the model must be one the route serves (the staged roster
  * when present, else the single configured model) — an unroutable pick fails
  * with the upstream vocabulary (`session/model-unavailable`, the code
- * commands.selectModel itself throws). A routable selection appends the
- * `model/selection` intent to the live session journal exactly as
- * selectForNextRequest does — the modelSelection projection folds it into
- * `pending` and the next request header honors it — and returns the
- * desktop's `{selected}` envelope. */
+ * commands.selectModel itself throws). A routable selection commits exactly
+ * like the controller's selectForNextRequest: the `model/selection` intent
+ * rides the live session journal AND the boot-installed selection holder's
+ * `current` (upstream/model-selection-holder.js, the vendored
+ * installModelSelection's coupling) takes the pick — the next turn's
+ * request/header carries it and the modelSelection projection folds
+ * `lastUsed` from that header. The holder is reached through a DYNAMIC
+ * import (this file's header note: a static @deepseek-ai/dsh-agent edge
+ * would drag the spine into the compose-only embed's bundle); a boot that
+ * installed none refuses the pick fail-loud instead of journaling an intent
+ * nothing will ever honor. Returns the desktop's `{selected}` envelope. */
 export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
   'session/selectModel': async (args) => {
     const agent = liveAgent(ctx, args?.sessionId);
@@ -194,7 +200,15 @@ export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
       provider, model,
       ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
     };
+    const Holder = await import('upstream/model-selection-holder.js');
+    const holder = Holder.sessionModelSelection(agent);
+    if (holder === undefined) {
+      throw remoteError('gateway/internal',
+        'model-selection holder is not installed for this session '
+          + '(boot without the apply leg?)', { sessionId: args?.sessionId ?? null });
+    }
     agent.session.append('model/selection', selection);
+    holder.current = selection;
     return { selected: selection };
   },
 });
