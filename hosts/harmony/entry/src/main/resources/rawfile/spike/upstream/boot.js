@@ -254,16 +254,6 @@ const mountGoalCommand = async (ctx) => {
   await ctx.plugin(CommandGoal.default ?? CommandGoal, {});
 };
 
-/** The modelSelection projection (issue #306): the desktop registers this
- * unit via dsh-api-session-controller, which the Phase-B composition does
- * not apply — the first-party unit rides the registry's extension seam so
- * the journal carries `projections.modelSelection` and the model dialog
- * resolves (the registry folds lazily; late registration sees all events). */
-const mountModelSelectionProjection = async (ctx) => {
-  const ModelSelectionProjection = await import('upstream/model-selection-projection.js');
-  ctx.sessionProjections.register(ModelSelectionProjection.modelSelectionUnit);
-};
-
 /** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
  * file-reference discovery service (`ctx.fileReferences`, dsh-file-reference-local)
  * — the @-mention lexicon the official composer reads (`fileReferences/list`).
@@ -369,7 +359,7 @@ const mountSpine = async (ctx, identity) => {
       sessionId: identity.sessionId,
       provider: identity.provider,
       model: identity.model,
-      reasoningEffort: 'off',
+      reasoningEffort: identity.reasoningEffort,
       cwd: identity.cwd,
     }],
   });
@@ -447,6 +437,16 @@ const mountLlm = async (ctx, llm, onEvent) => {
   });
 };
 
+/** The post-spine leg (split from bootUpstream at the function-size gate):
+ * fail loud on missing mounts, then mount the modelSelection plane (the
+ * projection unit + the selection holder, upstream/model-selection-holder.js). */
+const mountModelSelectionPlane = async (ctx, agentRoute, sessionId) => {
+  await demandServices(ctx);
+  demandPresetServices(ctx);
+  const Holder = await import('upstream/model-selection-holder.js');
+  await Holder.mountModelSelectionHolder(ctx, agentRoute, sessionId);
+};
+
 /**
  * Boot the mobile profile: empty root, the dsh-base-equivalent spine mounted
  * over the pinned vendored packages, the vendored LlmRuntime under `llm`.
@@ -457,12 +457,14 @@ export async function bootUpstream(options) {
   if (!llm.baseURL || !llm.apiKey || !llm.provider || !llm.model) {
     throw new Error('boot: options.llm {baseURL, apiKey, provider, model} is required — the profile boots the vendored LlmRuntime over the gateway transport');
   }
+  // The loop agent's route as ONE fact: mountSpine's config row and the
+  // holder's boot-route fallback both read it (it must reproduce the seed).
+  const agentRoute = { provider: llm.provider, model: llm.model, reasoningEffort: 'off' };
   pinProfileContainer(container);
 
   const ctx = new Context();
   wireLogger(ctx);
-  // Lifecycle listeners registered BEFORE the spine mounts, so boot-time
-  // creation events (session/created, agent/created) are observable.
+  // Lifecycle listeners first, so boot-time creation events are observable.
   for (const [type, fn] of Object.entries(options.listeners ?? {})) {
     ctx.on(type, fn);
   }
@@ -478,7 +480,7 @@ export async function bootUpstream(options) {
 
   await mountSpine(ctx, {
     agentId, sessionId, cwd,
-    provider: llm.provider, model: llm.model,
+    ...agentRoute,
     personaPrefix: options.systemPrompt?.personaPrefix,
     skills: options.skills,
     commands: options.commands,
@@ -486,9 +488,7 @@ export async function bootUpstream(options) {
     fileReferences: options.fileReferences,
     creation: options.creation,
   });
-  await demandServices(ctx);
-  demandPresetServices(ctx);
-  await mountModelSelectionProjection(ctx);
+  await mountModelSelectionPlane(ctx, agentRoute, sessionId);
 
   onEvent('upstream/services', {
     kernel: '@deepseek-ai/cordis@4.0.2',

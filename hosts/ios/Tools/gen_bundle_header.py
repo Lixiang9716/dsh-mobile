@@ -196,6 +196,7 @@ RESOURCES = [
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_model_selection_projection_js", SPIKE / "upstream" / "model-selection-projection.js"),
+    ("upstream_model_selection_holder_js", SPIKE / "upstream" / "model-selection-holder.js"),
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("upstream_web_write_onboarding_js", SPIKE / "upstream" / "web-write-onboarding.js"),
     ("upstream_web_write_marketplace_js", SPIKE / "upstream" / "web-write-marketplace.js"),
