@@ -150,7 +150,9 @@ describe('the tamper ladder (the proposal verification plan, signature family)',
       fetchIndex({ url: 'https://m.test/f.json', fetchImpl, pinnedKey: PUB_B64, force: true }),
       'unknown-key');
   });
+});
 
+describe('the frozen §7 signatures shape (the T-0166 device round)', () => {
   it('a PRE-FROZEN singular-signature index refuses as `format`', async () => {
     // The resolver once shipped still on the pre-§7 singular `signature`
     // field and rejected every real catalog ("unknown index field:
