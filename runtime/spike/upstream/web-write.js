@@ -42,7 +42,7 @@ import {
 // web-write-catalog.js; the selection handler rides the HISTORICAL claim set
 // (the composer model dialog commits through it even on non-coverage boots).
 import {
-  makeModelSelectionHandlers, shellLoadHandlers,
+  makeModelSelectionHandlers, makeSessionFeedbackHandlers, shellLoadHandlers,
 } from 'upstream/web-write-catalog.js';
 
 export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
@@ -57,6 +57,9 @@ export const WRITE_ENDPOINTS = [
   // The composer model dialog's selection leg (the staged credential's
   // roster makes the catalog multi-model; this commits one session's pick).
   'session/selectModel',
+  // The composer feedback dialog's record leg (the journal keeps the
+  // session's feedback records — the `feedback/record` journal event).
+  'sessionFeedback/record',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -383,6 +386,7 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // the boot route and appends the model/selection intent to the live
       // session journal (the desktop controller's selectModel semantics).
       ...makeModelSelectionHandlers(ctx, deps.llmRoute),
+      ...makeSessionFeedbackHandlers(ctx),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(

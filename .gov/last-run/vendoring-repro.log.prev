@@ -1,4 +1,4 @@
-vend-repro: scope=gate — fresh clone of 5c35c976d365ffd5e0b050cbb74b4e4c773b6db6 -> /tmp/dsh-vend-repro.Tr71d2/clone
+vend-repro: scope=gate — fresh clone of 84e9af1550157beb80c16f439b75b5b21f257757 -> /tmp/dsh-vend-repro.HU8nQC/clone
 vend-repro: materializing from cold (clone root, CI shapes)
 vendor: wasm3 0.9.0 fetched and verified
 vendor: zstd 1.5.7 fetched and verified (BSD-3-Clause, single-thread)

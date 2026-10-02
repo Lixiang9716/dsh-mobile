@@ -219,3 +219,22 @@ export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
     return { selected: selection };
   },
 });
+
+/** sessionFeedback/*: the composer feedback dialog's record leg
+ * (dsh-command-feedback's wire face). The mobile seat records the feedback
+ * into the live session journal — the `feedback/record` event type is in
+ * the session vocabulary — and answers the wire's `{recorded: true}`
+ * envelope. liveAgent throws `session/not-found` for unknown sessions (the
+ * wire's own error code for this face). */
+export const makeSessionFeedbackHandlers = (ctx) => ({
+  'sessionFeedback/record': (args) => {
+    const agent = liveAgent(ctx, args?.sessionId);
+    const category = args?.category === undefined ? 'other' : String(args.category);
+    const record = {
+      category,
+      ...(args?.text === undefined ? {} : { text: String(args.text) }),
+    };
+    agent.session.append('feedback/record', record);
+    return { recorded: true };
+  },
+});
