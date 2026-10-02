@@ -95,8 +95,10 @@ class SessionServe private constructor(
          * `<filesDir>/profiles/default/llm/config.json` — the reserved app
          * scope, the same shape and location the `llm.live-stream` runner
          * stages credentials at. A malformed or partial file yields null
-         * rather than a half-configured transport. Nothing here logs the key:
-         * a credential that never reaches a record cannot leak into one. */
+         * rather than a half-configured transport (the optional `models`
+         * roster counts as part of the file: a malformed row voids the
+         * credential). Nothing here logs the key: a credential that never
+         * reaches a record cannot leak into one. */
         fun loadCredential(activity: Activity): Credential? {
             val file = File(appScopeRoot(activity), "llm/config.json")
             val obj = try {
@@ -109,13 +111,38 @@ class SessionServe private constructor(
             val model = obj.optString("model")
             if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) return null
             val provider = obj.optString("provider").ifEmpty { "openai-compatible" }
-            return Credential(baseUrl, apiKey, model, provider)
+            val models = readModels(obj) ?: return null
+            return Credential(baseUrl, apiKey, model, provider, models)
+        }
+
+        /** The optional `models` roster (entries `{id, name}`) beside the
+         * default model — the composer model dialog's selectable rows. Absent
+         * → empty; present-but-malformed → null (the partial-file precedent:
+         * never a half-configured transport). */
+        private fun readModels(obj: JSONObject): List<Pair<String, String>>? {
+            val rows = obj.optJSONArray("models") ?: return emptyList()
+            val models = ArrayList<Pair<String, String>>(rows.length())
+            for (i in 0 until rows.length()) {
+                val row = rows.optJSONObject(i) ?: return null
+                val id = row.optString("id")
+                val name = row.optString("name")
+                if (id.isEmpty() || name.isEmpty()) return null
+                models.add(id to name)
+            }
+            return models
         }
     }
 
     /** One user-supplied model endpoint: an OpenAI-compatible base URL, its
-     * key and the model id. */
-    data class Credential(val baseUrl: String, val apiKey: String, val model: String, val provider: String)
+     * key and the model id. `models` is the optional multi-model roster
+     * staged beside it (empty when config.json carries none). */
+    data class Credential(
+        val baseUrl: String,
+        val apiKey: String,
+        val model: String,
+        val provider: String,
+        val models: List<Pair<String, String>> = emptyList(),
+    )
 
     private val carrier = CarrierServer()
     private lateinit var plugins: CarrierPlugins
@@ -294,6 +321,7 @@ class SessionServe private constructor(
                 .put("llmApiKey", credential.apiKey)
                 .put("llmModel", credential.model)
                 .put("llmProvider", credential.provider)
+            if (credential.models.isNotEmpty()) config.put("llmModels", modelsJSON(credential.models))
         }
         if (interactive) {
             config
@@ -317,6 +345,13 @@ class SessionServe private constructor(
         .put("dshHome", "${workspace.absolutePath}/home")
         .put("agentsHome", "${workspace.absolutePath}/home/agents")
         .put("customSkillDirs", JSONArray().put("${workspace.absolutePath}/skills"))
+
+    /** The staged roster as the `runtime.config llmModels` row (entries
+     * `{id, name}`) — the multi-model catalog the composer's model dialog
+     * lists for the staged credential (upstream/llm-route.js consumes it). */
+    private fun modelsJSON(models: List<Pair<String, String>>): JSONArray = JSONArray().apply {
+        for ((id, name) in models) put(JSONObject().put("id", id).put("name", name))
+    }
 
     /** The full primitive table — the spine and its tools use the real
      * gateway (fs scopes, httpFetch for the llm transport, timers, the

@@ -1,0 +1,21 @@
+{
+  "title": "Per-conversation model switching: stage multi-model roster + wire session/selectModel",
+  "created": "2026-10-02T01:34:54+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] SessionServe.kt: loadCredential reads optional models JSONArray into Credential (malformed yields null); runtimeConfig delivers llmModels when present",
+    "[x] llm-route.js: stagedRoute validates optional cfg.llmModels (fail loud on malformed) and carries models on the staged route",
+    "[x] web-write.js: session/modelCatalog emits llmRoute.models when non-empty; session/selectModel claimed in WRITE_ENDPOINTS and api map",
+    "[x] web-write-catalog.js: makeModelSelectionHandlers answers session/selectModel (routable validation + model/selection append + selected envelope)",
+    "[x] gates: node --check touched js; stage-spine-closure; code-size, staging-check, closures, logging, check all green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0160"
+}

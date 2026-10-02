@@ -38,8 +38,10 @@ import { errorOf } from 'upstream/web-write.js';
  * openSettingsDocument|openAgentPresetDirectory (desktop OS/document
  * surfaces; canOpenAgentPresetDirectory answers `false` so the page hides
  * the opener), and the session/* legs this profile does not serve
- * (page/search/fork/attachment/cancel/updateQueue/rename/selectModel/
- * openWorkspacePath). The LLM + credential rows live in web-write-llm.js:
+ * (page/search/fork/attachment/cancel/updateQueue/rename/openWorkspacePath —
+ * selectModel LEFT this list for the historical claim set when the staged
+ * credential grew its model roster, 2026-10-01). The LLM + credential rows
+ * live in web-write-llm.js:
  * the provider directory off the mounted LlmRuntime, the credential store
  * in the profile container (the superseded not-writable stance), and the
  * opener gate.
