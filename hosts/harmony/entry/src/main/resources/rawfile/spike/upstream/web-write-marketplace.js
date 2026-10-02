@@ -122,6 +122,15 @@ export const installedFromJournal = (entries) => {
   return items;
 };
 
+/** The signing key id to report for a verified index: the §7 signatures
+ * entry anchored at the host-side pin when there is one, else the first
+ * entry (the declared-gap case). */
+const signingKeyId = (doc, pinnedKey) => {
+  const hit = doc.signatures.find((s) => pinnedKey !== undefined && doc.keys[s.key] === pinnedKey)
+    ?? doc.signatures[0];
+  return hit.key;
+};
+
 /** The marketplace/index handler: the verified index's browse view, each
  * entry annotated with its installed version (never the tgzUrl — the page
  * installs by id; the resolver owns the URL). `args.force` bypasses the
@@ -137,7 +146,7 @@ const makeIndexHandler = (deps) => async (args) => {
   return {
     marketplace: doc.marketplace,
     generatedAt: doc.generatedAt,
-    signature: { key: doc.signature.key },
+    signature: { key: signingKeyId(doc, deps.marketplace.publicKey) },
     entries: doc.entries.map((e) => ({
       id: e.id,
       version: e.version,
@@ -231,7 +240,8 @@ const runInstall = async (post, msg, deps, args) => {
   const doc = await fetchIndex({ url: deps.marketplace.indexUrl, fetchImpl: fetchGet,
     pinnedKey: deps.marketplace.publicKey });
   post({ type: 'mux.item', streamId: msg.streamId,
-    value: { kind: 'index.verified', key: doc.signature.key, entries: doc.entries.length } });
+    value: { kind: 'index.verified', key: signingKeyId(doc, deps.marketplace.publicKey),
+      entries: doc.entries.length } });
   const entry = lookupEntry(doc, id);
   post({ type: 'mux.item', streamId: msg.streamId,
     value: { kind: 'resolved', id: entry.id, version: entry.version, type: entry.type } });

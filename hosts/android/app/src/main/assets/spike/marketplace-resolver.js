@@ -1,9 +1,9 @@
 /**
  * marketplace-resolver — THE ONE NEW SEAM of the plugin marketplace
- * (contract proposal 2026-10-01: data-protocols v1.1.0 candidate). The
+ * (contract proposal 2026-10-01: data-protocols v1.1.0 §7, FROZEN). The
  * catalog is DATA, not a service: a signed static index.json (ed25519 over
- * the canonical JSON of everything but `signature` itself) plus package
- * tarballs on plain hosting. The resolver is the marketplace's only
+ * the canonical JSON of everything but the `signatures` array itself) plus
+ * package tarballs on plain hosting. The resolver is the marketplace's only
  * authority:
  *
  *   fetchIndex({url, fetchImpl, pinnedKey, now}) → the VERIFIED index
@@ -68,7 +68,7 @@ export const validateIndex = (doc) => {
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
     return 'index must be an object';
   }
-  const KNOWN = ['schemaVersion', 'marketplace', 'generatedAt', 'keys', 'entries', 'signature'];
+  const KNOWN = ['schemaVersion', 'marketplace', 'generatedAt', 'keys', 'entries', 'signatures'];
   const unknown = Object.keys(doc).find((k) => !KNOWN.includes(k));
   if (unknown) return `unknown index field: ${unknown}`;
   if (doc.schemaVersion !== 1) return 'schemaVersion must be 1';
@@ -88,9 +88,14 @@ export const validateIndex = (doc) => {
     const problem = entryProblem(e);
     if (problem) return problem;
   }
-  if (doc.signature === null || typeof doc.signature !== 'object'
-    || !isStr(doc.signature.key) || !isStr(doc.signature.value)) {
-    return 'signature must be {key, value}';
+  if (!Array.isArray(doc.signatures) || doc.signatures.length < 1 || doc.signatures.length > 2) {
+    return 'signatures must carry one or two entries';
+  }
+  for (const s of doc.signatures) {
+    if (s === null || typeof s !== 'object'
+      || !isStr(s.key) || !isStr(s.value)) {
+      return 'each signature must be {key, value}';
+    }
   }
   return null;
 };
@@ -192,45 +197,52 @@ const parseDocument = (bytes, url) => {
   return doc;
 };
 
-/** Verify one index's signature. WITH a host-side pin (proposal rule 2):
- * the signing key must BE the pin and the signature must verify against it.
- * WITHOUT one — the DECLARED GAP (module header): the index's own keys map
- * is the only anchor, which is transport-plus-format trust; the disclosure
- * is logged on every such fetch. */
+/** Verify one index's signatures (§7.1/§7.2). WITH a host-side pin
+ * (proposal rule 2): ONE signature entry must name the pinned key — the keys
+ * map entry equal to the pin — and verify against it. WITHOUT one — the
+ * DECLARED GAP (module header): the index's own keys map is the only anchor,
+ * which is transport-plus-format trust; the disclosure is logged on every
+ * such fetch. */
 const verifySignature = (doc, url, pinnedKey) => {
-  log.debug('verify index signature', { url, key: doc.signature.key,
+  log.debug('verify index signature', { url, keys: doc.signatures.map((s) => s.key),
     pinned: pinnedKey !== undefined });
   if (pinnedKey === undefined) {
     log.debug('NO HOST-SIDE PIN — transport-plus-format trust only'
       + ' (declared gap; proposal rule 2 pins the initial key out-of-band)',
     { url });
   }
-  const publicKey = doc.keys[doc.signature.key];
-  if (publicKey === undefined
-    || (pinnedKey !== undefined && publicKey !== pinnedKey)) {
+  const candidates = doc.signatures.filter((s) =>
+    (pinnedKey === undefined || doc.keys[s.key] === pinnedKey)
+    && doc.keys[s.key] !== undefined);
+  if (candidates.length === 0) {
     throw new MarketplaceRejected('unknown-key',
-      pinnedKey !== undefined && publicKey !== pinnedKey
-        ? `index does not sign with the pinned key`
-        : `index signs with unknown key "${doc.signature.key}"`, { url });
+      pinnedKey !== undefined
+        ? 'index does not sign with the pinned key'
+        : 'index signs only with keys outside its own keys map', { url });
   }
-  const message = utf8Bytes(canonicalJson(docWithoutSignature(doc)));
-  let ok = false;
-  try {
-    ok = ed25519Verify(publicKey, message, doc.signature.value);
-  } catch {
-    ok = false;
+  const message = utf8Bytes(canonicalJson(docWithoutSignatures(doc)));
+  let verifiedKey;
+  for (const s of candidates) {
+    try {
+      if (ed25519Verify(doc.keys[s.key], message, s.value)) {
+        verifiedKey = s.key;
+        break;
+      }
+    } catch {
+      // a malformed signature value is not a crash — the ladder keeps looking
+    }
   }
-  if (!ok) {
+  if (verifiedKey === undefined) {
     throw new MarketplaceRejected('signature',
       'index signature does not verify against its published keys', { url });
   }
-  log.debug('index signature verified', { url, key: doc.signature.key });
+  log.debug('index signature verified', { url, key: verifiedKey });
 };
 
-/** The signature field is NOT input to the canonical form. */
-const docWithoutSignature = (doc) => {
-  log.debug('canonical form input', { excluded: 'signature' });
-  const { signature, ...rest } = doc;
+/** The signatures array is NOT input to the canonical form (§7.1). */
+const docWithoutSignatures = (doc) => {
+  log.debug('canonical form input', { excluded: 'signatures' });
+  const { signatures, ...rest } = doc;
   return rest;
 };
 

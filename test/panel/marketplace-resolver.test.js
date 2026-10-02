@@ -40,9 +40,9 @@ const buildIndex = (over = {}) => ({
 });
 
 const signIndex = (doc, key = TRUSTED) => {
-  const { signature, ...rest } = doc;
-  doc.signature = { key: Object.keys(doc.keys)[0], value: '' };
-  doc.signature.value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), key)
+  const { signatures, ...rest } = doc;
+  doc.signatures = [{ key: Object.keys(doc.keys)[0], value: '' }];
+  doc.signatures[0].value = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), key)
     .toString('base64');
   return doc;
 };
@@ -100,11 +100,11 @@ const wholesaleSwap = () => {
   const foreign = buildIndex();
   foreign.keys = { 'dsh-market-1': Buffer.from(
     privateKey.export({ type: 'pkcs8', format: 'jwk' }).x, 'base64url').toString('base64') };
-  const { signature, ...rest } = foreign;
-  foreign.signature = {
+  const { signatures, ...rest } = foreign;
+  foreign.signatures = [{
     key: 'dsh-market-1',
     value: sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), privateKey).toString('base64'),
-  };
+  }];
   return foreign;
 };
 
@@ -128,7 +128,7 @@ describe('the tamper ladder (the proposal verification plan, signature family)',
     const { signature, ...rest } = doc;
     const body = sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), privateKey)
       .toString('base64');
-    doc.signature = { key: 'stranger', value: body };
+    doc.signatures = [{ key: 'stranger', value: body }];
     const { fetchImpl } = serve({ 'https://m.test/u.json': doc });
     await rejects(
       fetchIndex({ url: 'https://m.test/u.json', fetchImpl, force: true }),
@@ -149,6 +149,40 @@ describe('the tamper ladder (the proposal verification plan, signature family)',
     await rejects(
       fetchIndex({ url: 'https://m.test/f.json', fetchImpl, pinnedKey: PUB_B64, force: true }),
       'unknown-key');
+  });
+
+  it('a PRE-FROZEN singular-signature index refuses as `format`', async () => {
+    // The resolver once shipped still on the pre-§7 singular `signature`
+    // field and rejected every real catalog ("unknown index field:
+    // signatures"); this pins the plural rule from the refusing side.
+    const doc = buildIndex();
+    const { signatures, ...rest } = doc;
+    doc.signature = {
+      key: 'dsh-market-1',
+      value: sign(null, Buffer.from(canonicalJson(rest), 'utf-8'), TRUSTED).toString('base64'),
+    };
+    const { fetchImpl } = serve({ 'https://m.test/s.json': doc });
+    await rejects(
+      fetchIndex({ url: 'https://m.test/s.json', fetchImpl, pinnedKey: PUB_B64, force: true }),
+      'format');
+  });
+
+  it('a rotation-window dual signature verifies when the pin matches ONE entry (§7.2)', async () => {
+    const { privateKey } = generateKeyPairSync('ed25519');
+    const incomingPub = Buffer.from(
+      privateKey.export({ type: 'pkcs8', format: 'jwk' }).x, 'base64url').toString('base64');
+    const doc = buildIndex();
+    doc.keys['dsh-market-2'] = incomingPub;
+    const { signatures, ...rest } = doc;
+    const message = Buffer.from(canonicalJson(rest), 'utf-8');
+    doc.signatures = [
+      { key: 'dsh-market-1', value: sign(null, message, TRUSTED).toString('base64') },
+      { key: 'dsh-market-2', value: sign(null, message, privateKey).toString('base64') },
+    ];
+    const { fetchImpl } = serve({ 'https://m.test/r.json': doc });
+    const verified = await fetchIndex(
+      { url: 'https://m.test/r.json', fetchImpl, pinnedKey: PUB_B64, force: true });
+    expect(verified.entries).toHaveLength(1);
   });
 });
 
