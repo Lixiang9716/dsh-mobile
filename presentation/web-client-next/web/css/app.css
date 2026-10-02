@@ -577,6 +577,22 @@
 #creation-frame { flex: 1; border: none; background: #fff; }
 
 /* ---- BYOK first-run onboarding (bilingual overlay) ---- */
+/* The overlay CONTAINER as a class: any panel that mounts as an overlay
+   shares these rules — #marketplace carried the class in markup but only
+   the #onboarding ID carried the styles, so the panel rendered in document
+   flow below the fold (T-0167 device round). The [hidden] guard is load-
+   bearing: an author display rule beats the UA's [hidden] default. */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
+}
+.onboarding-overlay[hidden] { display: none; }
 #onboarding {
   position: fixed;
   inset: 0;
