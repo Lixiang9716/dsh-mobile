@@ -134,8 +134,9 @@ materialize() {
     mx "materializing the untracked build trees (engine, dsh closure, dist, bundles)"
     sh runtime/spike/vendor/ensure.sh || mx_die "runtime/spike/vendor/ensure.sh failed"
     sh runtime/spike/vendor/ensure-dsh.sh || mx_die "runtime/spike/vendor/ensure-dsh.sh failed"
-    sh test/e2e/ensure-official-dist.sh || mx_die "test/e2e/ensure-official-dist.sh failed"
-    sh test/e2e/ensure-client-bundles.sh || mx_die "test/e2e/ensure-client-bundles.sh failed"
+    # these two are bash-only (set -o pipefail, BASH_SOURCE) — sh(1) here is dash
+    bash test/e2e/ensure-official-dist.sh || mx_die "test/e2e/ensure-official-dist.sh failed"
+    bash test/e2e/ensure-client-bundles.sh || mx_die "test/e2e/ensure-client-bundles.sh failed"
 }
 
 # ---- iOS --------------------------------------------------------------------
@@ -147,7 +148,7 @@ ios_boot() { # boot once, conditionally: bootstatus + a real readiness probe
     xcrun simctl bootstatus "$IOS_UDID" -b >/dev/null
     poll_until 60 xcrun simctl spawn "$IOS_UDID" launchctl print system \
         || mx_die "simulator $IOS_UDID never reached launchd readiness (60s)"
-    sh hosts/ios/Tools/sim-preflight.sh "$IOS_UDID" \
+    bash hosts/ios/Tools/sim-preflight.sh "$IOS_UDID" \
         || mx_die "simulator preflight failed (the 18.5 dyld trap is real — see the script)"
 }
 
