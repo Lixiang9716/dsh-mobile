@@ -45,7 +45,14 @@ class CarrierServer {
     private val lock = Object()
     private var webRoot: File = File("/nonexistent")
     private val servedPaths = ArrayList<String>()
-    private val seats = HashMap<String, OutputStream>()
+
+    /** Open WebSocket seats, keyed by path. A path may hold SEVERAL live
+     * seats (one per connection — the iOS sibling's §3.3 semantics, keyed
+     * by connection identity there): the official mux client opens one
+     * physical socket per page, and a second page must not tear the first
+     * page's socket down (last-connection-wins was the flapping history
+     * panel and the mid-session silent frame loss). */
+    private val seats = HashMap<String, MutableList<OutputStream>>()
     private val exactRoutes = HashMap<String, (CarrierRequest, OutputStream) -> Unit>()
     private val prefixRoutes = HashMap<String, (CarrierRequest, OutputStream) -> Unit>()
     private var fallback: ((CarrierRequest, OutputStream) -> Unit)? = null
@@ -99,20 +106,26 @@ class CarrierServer {
             acceptThread.interrupt()
         } catch (_: Exception) {}
         synchronized(lock) {
-            for (seat in seats.values) try { seat.close() } catch (_: Exception) {}
+            for (seatList in seats.values) for (seat in seatList) try { seat.close() } catch (_: Exception) {}
             seats.clear()
         }
     }
 
-    /** Sends one WS text frame to the seat opened on [path] (no-op when closed). */
+    /** Sends one WS text frame to every live seat opened on [path] (no-op
+     * when the path holds no seat). A failed write evicts that seat only —
+     * the other pages on the path keep streaming. */
     fun send(text: String, path: String) {
-        val out = synchronized(lock) { seats[path] } ?: return
-        synchronized(out) {
+        val snapshot = synchronized(lock) { seats[path]?.toList() } ?: return
+        for (out in snapshot) {
             try {
-                out.write(frame(0x1, text.toByteArray(Charsets.UTF_8)))
-                out.flush()
+                synchronized(out) {
+                    out.write(frame(0x1, text.toByteArray(Charsets.UTF_8)))
+                    out.flush()
+                }
             } catch (e: Exception) {
                 Log.i(TAG, "carrier ws send failed: ${e.message}")
+                synchronized(lock) { seats[path]?.remove(out) }
+                try { out.close() } catch (_: Exception) {}
             }
         }
     }
@@ -318,17 +331,24 @@ class CarrierServer {
         val head = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\n" +
             "Connection: Upgrade\r\nSec-WebSocket-Accept: $accept\r\n\r\n"
         val buffered = BufferedOutputStream(rawOut)
-        synchronized(lock) {
-            seats[path]?.let { try { it.close() } catch (_: Exception) {} } // one seat per path
-            seats[path] = buffered
-        }
+        synchronized(lock) { seats.getOrPut(path) { ArrayList() }.add(buffered) }
         buffered.write(head.toByteArray(Charsets.UTF_8))
         buffered.flush()
         drainWsFrames(path, input, buffered)
+        var lastForPath = false
         synchronized(lock) {
-            if (seats[path] === buffered) seats.remove(path)
+            seats[path]?.let { list ->
+                list.remove(buffered)
+                if (list.isEmpty()) {
+                    seats.remove(path)
+                    lastForPath = true
+                }
+            }
         }
-        onWSClosed?.invoke()
+        // The closed callback answers "the path has no seats left" — a
+        // superseded connection must not report the path closed (the
+        // identity guard at the removal above already keeps the list honest).
+        if (lastForPath) onWSClosed?.invoke()
     }
 
     private fun wsAccept(key: String): String {
