@@ -170,5 +170,7 @@ done  T-0161 apply session/selectModel to the next turn — install the vendored
 done  T-0162 Root-cause and fix the sessionFeedback/record Phase-B-carrier envelope (interactive seat)
 done  T-0163 session/fork: the composer Fork session leg forks the journal server-side
 done  T-0164 Marketplace opt-in: the seat's config-file route claims the resolver legs
-open  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); repair the matrix Android leg (obey rules@ee4951678e7c)
-task: 173 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 99 done, 65 voided
+done  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); repair the matrix Android leg
+done  T-0166 Batched emulator+surface testing via workflow (T-0166): build, host, web, device legs + independent confirmation
+open  T-0167 Overnight test-fix loop until 09:00 (T-0167): Android full, then HarmonyOS (obey rules@ee4951678e7c)
+task: 175 card(s) — 9 open (15 unticked item(s); --strict blocks on them), 0 stale, 101 done, 65 voided
