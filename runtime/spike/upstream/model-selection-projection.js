@@ -52,4 +52,5 @@ export const modelSelectionUnit = {
       next: state.pending ?? state.lastUsed,
     }),
   },
+  stateVersion: 2,
 };

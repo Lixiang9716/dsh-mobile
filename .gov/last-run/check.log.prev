@@ -1,5 +1,6 @@
 gov check: clean
-gov check: base=HEAD (dirty worktree — reviewing the working tree) — 13 changed file(s) in scope
+gov check: base=HEAD (dirty worktree — reviewing the working tree) — 15 changed file(s) in scope
 gov check: SKIP(excluded: test/upstream-suite/node_modules/** — 0 file(s) — the upstream-suite transpile pipeline's npm install (esbuild/vitest, 174 packages) — third-party tooling, not our syntax surface; gitignored for the same reason)
 gov check: SKIP(excluded: hosts/ios/App/Generated/** — 0 file(s) — machine-generated C (the embedded spike bundle, 23.5 MB) — byte-verified deterministically by the closures gate, which regenerates and diffs it; syntax-checking generated output only burns the check gate's entire timeout (measured: gov parse alone takes 62 s on this file))
-gov check: SKIP(excluded: hosts/android/app/src/main/assets/spike/** — 0 file(s) — byte-identical staged copy of the canonical runtime/spike closure — the closures gate verifies every copy in --check mode, so size/syntax judgment on the copy is double judgment of already-reviewed bytes)
+gov check: SKIP(excluded: hosts/android/app/src/main/assets/spike/** — 2 file(s) — byte-identical staged copy of the canonical runtime/spike closure — the closures gate verifies every copy in --check mode, so size/syntax judgment on the copy is double judgment of already-reviewed bytes)
+gov check: SKIP(nolang: arkts (1)) — no rules for these language(s); those file(s) pass UNCHECKED by this gate (add .gov/checks/<lang>.json, or wire your own test gate: gov gate add)

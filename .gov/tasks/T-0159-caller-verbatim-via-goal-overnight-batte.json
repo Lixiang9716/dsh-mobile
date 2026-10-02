@@ -9,13 +9,13 @@
     }
   },
   "checklist": [
-    "goal lifecycle: create \u2192 pause \u2192 edit \u2192 clear all evidenced in one session context",
-    "excel_create and ppt_create deliverables created on device, format-validated, pulled",
-    "@ file mention in a real turn answered with the file's content",
-    "feedback flow + settings tabs (agent presets / built-in plugins / archived sessions) + session rename menu evidenced",
-    "models selector defect root-caused; fix landed via PR and verified on device if the fix is in our code",
-    "follow-stream gateway/internal root-caused; fix landed via PR and verified on device if the fix is in our code",
-    "each round: leak audit CLEAN + report updated"
+    "[x] goal lifecycle: create \u2192 pause \u2192 edit \u2192 clear all evidenced in one session context",
+    "[x] excel_create and ppt_create deliverables created on device, format-validated, pulled",
+    "[x] @ file mention in a real turn answered with the file's content",
+    "[x] feedback flow + settings tabs (agent presets / built-in plugins / archived sessions) + session rename menu evidenced",
+    "[x] models selector defect root-caused; fix landed via PR and verified on device if the fix is in our code",
+    "[x] follow-stream gateway/internal root-caused; fix landed via PR and verified on device if the fix is in our code",
+    "[x] each round: leak audit CLEAN + report updated"
   ],
   "status": "open",
   "receipt": null,
