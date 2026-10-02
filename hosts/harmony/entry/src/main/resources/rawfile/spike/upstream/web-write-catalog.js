@@ -154,6 +154,13 @@ export const shellLoadHandlers = (llmRoute) => ({
       name: llmRoute.provider,
       models: routeModelRows(llmRoute),
     }],
+    // The desktop controller's buildModelCatalog ALWAYS carries the
+    // per-provider failures array (dsh-api-session-controller
+    // index.js buildModelCatalog); this single-route seat has none to
+    // report, but omitting the field crashes the model-selection slot's
+    // menu outright — it renders state.failures.map(...) unconditionally
+    // (T-0167 device round: TypeError reading 'map', 3× reproduced).
+    failures: [],
   }),
 });
 
