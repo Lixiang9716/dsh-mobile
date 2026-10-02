@@ -45,7 +45,9 @@ class SessionWriteSeam(private val bridge: CarrierAPIBridge) {
      * for unknown types (the caller fails its drive loudly). */
     fun onBusMessage(msg: JSONObject): Boolean = when (msg.optString("type")) {
         "api.claim" -> {
-            bridge.claim(toStringList(msg.optJSONArray("endpoints")))
+            val list = toStringList(msg.optJSONArray("endpoints"))
+            android.util.Log.i("SessionWriteSeam", "TRACE api.claim: ${list.size} endpoints: $list")
+            bridge.claim(list)
             true
         }
         "mux.claim" -> {

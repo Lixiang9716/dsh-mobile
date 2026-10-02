@@ -17,7 +17,7 @@
  * spellings, and the live agent each catalog handler addresses resolves
  * exactly like agentPresets/select does (ctx.agents.get).
  */
-import { remoteError, mintUUID } from 'upstream/web-write.js';
+import { remoteError, mintUUID, errorOf } from 'upstream/web-write.js';
 
 /** The registry's own user-invocation filter, linked HERE only (a dynamic
  * import, the boot.js pattern): web-write.js composes on the bare
@@ -185,52 +185,60 @@ export const shellLoadHandlers = (llmRoute) => ({
  * agent's holder left every page-created session unanswered and the spine
  * dead). Returns the desktop's `{selected}` envelope. */
 export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
+  // In-band errors (the #312 feedback-handler precedent): a thrown
+  // RemoteError escalates through the interactive seat's fail-loud contract
+  // and kills the whole spine — measured 2026-10-02 (a probe's unknown
+  // sessionId took the seat down). The handler answers the wire's error
+  // union instead.
   'session/selectModel': async (args) => {
-    // The generated remote's ONE parameter is wire-named `request`
-    // (dsh-api-gateway prepareInvocation keys args by parameter.wire), so
-    // the page's frozen envelope nests the fields: `{args: {request:
-    // {...}}}` — the session/prompt convention. The bare `?? args` leg
-    // keeps a top-level synthesized probe answerable (measured 2026-10-02:
-    // the top-level read left every REAL dialog commit unanswered — the
-    // runtime half threw session/not-found and never posted api.respond,
-    // so the carrier parked 30s and answered its own unimplemented
-    // envelope).
-    const request = args?.request ?? args ?? {};
-    const agent = liveAgent(ctx, request.sessionId);
-    const provider = request.provider;
-    const model = request.model;
-    const reasoningEffort = request.reasoningEffort;
-    if (typeof provider !== 'string' || provider.length === 0
-      || typeof model !== 'string' || model.length === 0) {
-      throw remoteError('gateway/bad-request',
-        'selectModel needs a provider and a model', {});
+    try {
+      return await selectModelOnce(ctx, llmRoute, args);
+    } catch (error) {
+      const wire = errorOf(error);
+      return { ok: false, error: { code: wire.code, message: wire.message,
+        details: wire.details ?? {} } };
     }
-    if (reasoningEffort !== undefined
-      && (typeof reasoningEffort !== 'string' || reasoningEffort.length === 0)) {
-      throw remoteError('gateway/bad-request',
-        'reasoningEffort must be a non-empty string when given', {});
-    }
-    const routable = routeModelRows(llmRoute).some((row) => row.id === model);
-    if (provider !== llmRoute.provider || !routable) {
-      throw remoteError('session/model-unavailable',
-        `model ${JSON.stringify(model)} is not routable on this host `
-          + `(provider ${JSON.stringify(llmRoute.provider)})`,
-        { provider, model });
-    }
-    const selection = {
-      provider, model,
-      ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
-    };
-    const Holder = await import('upstream/model-selection-holder.js');
-    const holder = Holder.sessionModelSelection(agent)
-      ?? Holder.installSessionModelSelection(ctx, agent, {
-        provider: llmRoute.provider, model: llmRoute.model,
-      });
-    agent.session.append('model/selection', selection);
-    holder.current = selection;
-    return { selected: selection };
   },
 });
+
+/** One validated selectModel commit (the body of the in-band-wrapped
+ * handler). */
+const selectModelOnce = async (ctx, llmRoute, args) => {
+  const request = args?.request ?? args ?? {};
+  const agent = liveAgent(ctx, request.sessionId);
+  const provider = request.provider;
+  const model = request.model;
+  const reasoningEffort = request.reasoningEffort;
+  if (typeof provider !== 'string' || provider.length === 0
+    || typeof model !== 'string' || model.length === 0) {
+    throw remoteError('gateway/bad-request',
+      'selectModel needs a provider and a model', {});
+  }
+  if (reasoningEffort !== undefined
+    && (typeof reasoningEffort !== 'string' || reasoningEffort.length === 0)) {
+    throw remoteError('gateway/bad-request',
+      'reasoningEffort must be a non-empty string when given', {});
+  }
+  const routable = routeModelRows(llmRoute).some((row) => row.id === model);
+  if (provider !== llmRoute.provider || !routable) {
+    throw remoteError('session/model-unavailable',
+      `model ${JSON.stringify(model)} is not routable on this host `
+        + `(provider ${JSON.stringify(llmRoute.provider)})`,
+      { provider, model });
+  }
+  const selection = {
+    provider, model,
+    ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
+  };
+  const Holder = await import('upstream/model-selection-holder.js');
+  const holder = Holder.sessionModelSelection(agent)
+    ?? Holder.installSessionModelSelection(ctx, agent, {
+      provider: llmRoute.provider, model: llmRoute.model,
+    });
+  agent.session.append('model/selection', selection);
+  holder.current = selection;
+  return selection;
+};
 
 /** sessionFeedback/*: the composer feedback dialog's record leg
  * (dsh-command-feedback's wire face). The mobile seat records the feedback

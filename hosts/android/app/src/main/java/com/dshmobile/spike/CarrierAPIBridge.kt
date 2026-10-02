@@ -127,6 +127,7 @@ class CarrierAPIBridge(private val sessionToken: String) {
             .put("payload", payload)
         val waiter = RpcWaiter()
         synchronized(lock) {
+            android.util.Log.i("CarrierAPIBridge", "TRACE tryForward $endpoint: claimed=${claimedEndpoints.contains(endpoint)} set=${claimedEndpoints.size}")
             if (!claimedEndpoints.contains(endpoint)) {
                 answerUnavailable(rpcId, endpoint, out)
                 return false
@@ -174,7 +175,9 @@ class CarrierAPIBridge(private val sessionToken: String) {
 
     /** Bus-seam claim: the runtime answers these endpoints from now on. */
     fun claim(endpoints: List<String>) {
+        android.util.Log.i("CarrierAPIBridge", "TRACE claim: +${endpoints.size} → set=${synchronized(lock) { claimedEndpoints.size }} containsFB=${synchronized(lock) { claimedEndpoints.contains("sessionFeedback/record") }} containsMI=${synchronized(lock) { claimedEndpoints.contains("marketplace/index") }}")
         synchronized(lock) { claimedEndpoints.addAll(endpoints) }
+        android.util.Log.i("CarrierAPIBridge", "TRACE claim post-add: set=${synchronized(lock) { claimedEndpoints.size }} containsFB=${synchronized(lock) { claimedEndpoints.contains("sessionFeedback/record") }} containsMI=${synchronized(lock) { claimedEndpoints.contains("marketplace/index") }}")
     }
 
     // ---- WS /api/remote.mux (§2.4) ------------------------------------------------

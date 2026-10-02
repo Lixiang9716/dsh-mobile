@@ -166,5 +166,8 @@ voided T-0157 完成功能级完整测试 (caller verbatim: 主要是在功能�
 done  T-0158 继续功能测试 (caller verbatim: 继续测试，不要停) — battery round 2 on the android release seat: slash commands + @ files, document tools (word/ppt/excel) end-to-end with deliverable validation, same-session memory continuation, subagent, dark mode/trajectory/relaunch persistence, marketplace add-plugin probe
 done  T-0159 继续测试，直到明天早上九点 (caller verbatim via /goal) — overnight battery round 4/5: goal lifecycle, excel+ppt deliverables, @ mentions, feedback, settings depth, session menu; then fix the two test-blocking defects (models selector loading, follow-stream gateway/internal) with PR + device verification each
 done  T-0160 Per-conversation model switching: stage multi-model roster + wire session/selectModel
-open  T-0161 apply session/selectModel to the next turn — install the vendored model-selection holder (caller verbatim: branch feat/apply-model-selection from main, no push) (obey rules@ee4951678e7c)
-task: 169 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 95 done, 65 voided
+done  T-0161 apply session/selectModel to the next turn — install the vendored model-selection holder (caller verbatim: branch feat/apply-model-selection from main, no push)
+done  T-0162 Root-cause and fix the sessionFeedback/record Phase-B-carrier envelope (interactive seat)
+done  T-0163 session/fork: the composer Fork session leg forks the journal server-side
+open  T-0164 Marketplace opt-in: the seat's config-file route claims the resolver legs (obey rules@ee4951678e7c)
+task: 172 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 98 done, 65 voided
