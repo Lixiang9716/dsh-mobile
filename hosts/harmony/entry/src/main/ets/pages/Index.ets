@@ -223,6 +223,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/wire-logger.js',
   'upstream/web-boot.js',
   'upstream/web-shims.js',
+  'upstream/model-selection-projection.js',
   'upstream/web-write-settings.js',
   'upstream/web-write-streams.js',
   'upstream/web-write.js',

@@ -10,22 +10,22 @@
     {
       "host": "harmony",
       "roots": 27,
-      "reached": 135,
-      "scopedReached": 120,
+      "reached": 136,
+      "scopedReached": 121,
       "skippedBare": 28,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Index.ets BUNDLE_FILES",
-          "rows": 951,
+          "rows": 952,
           "gaps": [],
           "stale": [],
           "advisory": false
         },
         {
           "label": "ci/vendor-official.sh CLOSURE/SPINE_OURS",
-          "rows": 318,
+          "rows": 319,
           "gaps": [
             {
               "file": "scenario/device-plane.js",
@@ -84,7 +84,7 @@
             },
             {
               "file": "system-plugins/dsh-office/index.js",
-              "via": "upstream/boot.js:335",
+              "via": "upstream/boot.js:342",
               "kind": "dynamic-import"
             },
             {
@@ -144,7 +144,7 @@
             },
             {
               "file": "upstream/tool-present.js",
-              "via": "upstream/boot.js:353",
+              "via": "upstream/boot.js:360",
               "kind": "dynamic-import"
             },
             {
@@ -215,6 +215,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
         "upstream/shims/async-hooks.js",
@@ -300,8 +301,8 @@
     {
       "host": "android",
       "roots": 22,
-      "reached": 130,
-      "scopedReached": 115,
+      "reached": 131,
+      "scopedReached": 116,
       "skippedBare": 28,
       "brokenEdges": [],
       "missingRoots": [],
@@ -367,6 +368,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
         "upstream/shims/async-hooks.js",
@@ -452,15 +454,15 @@
     {
       "host": "ios",
       "roots": 63,
-      "reached": 182,
-      "scopedReached": 160,
+      "reached": 183,
+      "scopedReached": 161,
       "skippedBare": 34,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Tools/gen_bundle_header.py RESOURCES+TREES",
-          "rows": 79,
+          "rows": 80,
           "gaps": [],
           "stale": [],
           "advisory": false
@@ -566,6 +568,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
         "upstream/shims/async-hooks.js",
