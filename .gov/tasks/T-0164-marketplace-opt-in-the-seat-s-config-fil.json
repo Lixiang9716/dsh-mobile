@@ -1,0 +1,20 @@
+{
+  "title": "Marketplace opt-in: the seat's config-file route claims the resolver legs",
+  "created": "2026-10-02T07:09:22+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "SessionServe.kt: loadMarketplaceIndex reads profiles/default/marketplace/config.json {indexUrl} (malformed \u2192 null) and runtimeConfig delivers marketplaceIndex when present",
+    "composer-web-live maps cfg.marketplaceIndex \u2192 write options marketplace {indexUrl} (explicit cfg.marketplace object wins); web-write-marketplace marketplaceOf validates {indexUrl: http(s)} fail loud into deps",
+    "api legs rethrow wireOf triples (unreachable index answers marketplace/network, not gateway/unavailable); smoke proves claim/unclaimed/validation/failure shapes",
+    "mirrors synced + code-size, staging-check, closures, logging, check all green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0164"
+}

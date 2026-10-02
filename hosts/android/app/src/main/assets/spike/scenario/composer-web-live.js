@@ -228,6 +228,8 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       models: route.models, // the staged roster (llm-route.js); absent on mock/byok routes
       baseURL: route.baseURL,
       routeKind: route.kind,
+      // The seat's config-file opt-in (profiles/default/marketplace/config.json): marketplaceIndex names the resolver index — the same {indexUrl} option, no host-side key pin (the resolver's declared-gap trust mode). An explicit cfg.marketplace object (below) wins over it.
+      ...(cfg.marketplaceIndex === undefined ? {} : { marketplace: { indexUrl: cfg.marketplaceIndex } }),
       // Marketplace opt-in (web-write-marketplace.js), relayed verbatim when the seat stages it; absent → unclaimed.
       ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
       spine: () => spineInventory(ctx), // the 插件 inventory's spine plane: REAL mounts from ctx

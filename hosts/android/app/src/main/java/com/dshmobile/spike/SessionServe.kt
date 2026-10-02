@@ -131,6 +131,26 @@ class SessionServe private constructor(
             }
             return models
         }
+
+        /** The marketplace opt-in from
+         * `<filesDir>/profiles/default/marketplace/config.json` — the
+         * reserved app scope, `{indexUrl: string}`: the plugin marketplace
+         * resolver index the coverage plane's browse/install legs serve. A
+         * malformed or missing file yields null — the boot stays unclaimed
+         * (the loadCredential precedent: never a half-configured opt-in);
+         * a present-but-shape-wrong url fails loud runtime-side, naming the
+         * offender (upstream/web-write.js's marketplaceOf). */
+        fun loadMarketplaceIndex(activity: Activity): String? {
+            val file = File(appScopeRoot(activity), "marketplace/config.json")
+            val obj = try {
+                JSONObject(file.readText())
+            } catch (_: Exception) {
+                return null
+            }
+            val indexUrl = obj.optString("indexUrl")
+            if (indexUrl.isEmpty()) return null
+            return indexUrl
+        }
     }
 
     /** One user-supplied model endpoint: an OpenAI-compatible base URL, its
@@ -335,6 +355,11 @@ class SessionServe private constructor(
                 .put("creation", true)
                 .put("skills", skillsConfig(workspace))
         }
+        // The marketplace opt-in (the plugin marketplace panel's browse/
+        // install legs): present exactly when the user staged the resolver
+        // config — the scenario relays it as the write surface's
+        // marketplace {indexUrl} option (absent → the legs stay unclaimed).
+        loadMarketplaceIndex(activity)?.let { config.put("marketplaceIndex", it) }
         return config
     }
 
