@@ -1,12 +1,12 @@
 RUN  v4.1.11 /home/lx/dsh-mobile/test/panel
 
- ✓ onboarding-core.test.js (24 tests) 9ms
- ✓ marketplace-core.test.js (20 tests) 11ms
- ✓ marketplace-resolver.test.js (11 tests) 45ms
- ✓ ed25519.test.js (16 tests) 1073ms
-     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1039ms
+ ✓ onboarding-core.test.js (24 tests) 8ms
+ ✓ marketplace-core.test.js (20 tests) 12ms
+ ✓ marketplace-resolver.test.js (13 tests) 51ms
+ ✓ ed25519.test.js (16 tests) 1065ms
+     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1029ms
 
  Test Files  4 passed (4)
-      Tests  71 passed (71)
-   Start at  17:33:58
-   Duration  1.26s (transform 186ms, setup 0ms, import 261ms, tests 1.14s, environment 0ms)
+      Tests  73 passed (73)
+   Start at  21:14:19
+   Duration  1.26s (transform 266ms, setup 0ms, import 344ms, tests 1.14s, environment 0ms)

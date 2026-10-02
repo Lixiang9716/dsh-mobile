@@ -3,9 +3,9 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
 ---------  ---------- -----   ----
        56  1981-01-01 01:01   META-INF/com/android/build/gradle/app-metadata.properties
        46  1981-01-01 01:01   META-INF/version-control-info.textproto
-  2499008  1981-01-01 01:01   classes.dex
-  1626760  1981-01-01 01:01   lib/arm64-v8a/libdsh_spike.so
-  1855760  1981-01-01 01:01   lib/x86_64/libdsh_spike.so
+  2502128  1981-01-01 01:01   classes.dex
+  1626968  1981-01-01 01:01   lib/arm64-v8a/libdsh_spike.so
+  1855888  1981-01-01 01:01   lib/x86_64/libdsh_spike.so
     28076  1981-01-01 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-BQhdFMY1.woff2
     33516  1981-01-01 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-DMm9YOAa.woff
     63632  1981-01-01 01:01   assets/official-web/dist/assets/fonts/KaTeX_AMS-Regular-DRggAlZN.ttf
@@ -105,7 +105,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
     11109  1981-01-01 01:01   assets/spike/llm.js
      2929  1981-01-01 01:01   assets/spike/logger.js
       464  1981-01-01 01:01   assets/spike/manifest.json
-    10550  1981-01-01 01:01   assets/spike/marketplace-resolver.js
+    11000  1981-01-01 01:01   assets/spike/marketplace-resolver.js
      9242  1981-01-01 01:01   assets/spike/receipt-journal.js
      2872  1981-01-01 01:01   assets/spike/registry.js
     14133  1981-01-01 01:01   assets/spike/scenario/agent-flow.js
@@ -117,7 +117,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
     12380  1981-01-01 01:01   assets/spike/scenario/ble-plane.js
      4329  1981-01-01 01:01   assets/spike/scenario/boot-verification.js
      5910  1981-01-01 01:01   assets/spike/scenario/camera-plane.js
-    22743  1981-01-01 01:01   assets/spike/scenario/composer-web-live.js
+    23212  1981-01-01 01:01   assets/spike/scenario/composer-web-live.js
      7871  1981-01-01 01:01   assets/spike/scenario/device-plane.js
      2871  1981-01-01 01:01   assets/spike/scenario/gateway-bridge-smoke.js
     12287  1981-01-01 01:01   assets/spike/scenario/llm-live-stream.js
@@ -161,9 +161,11 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      2582  1981-01-01 01:01   assets/spike/system-plugins/dsh-ui/index.js
       262  1981-01-01 01:01   assets/spike/system-plugins/dsh-ui/manifest.json
      4907  1981-01-01 01:01   assets/spike/tar-mini.js
-    25691  1981-01-01 01:01   assets/spike/upstream/boot.js
-    15351  1981-01-01 01:01   assets/spike/upstream/llm-route.js
+    26950  1981-01-01 01:01   assets/spike/upstream/boot.js
+    16627  1981-01-01 01:01   assets/spike/upstream/llm-route.js
     19558  1981-01-01 01:01   assets/spike/upstream/llm-transport.js
+     6518  1981-01-01 01:01   assets/spike/upstream/model-selection-holder.js
+     2850  1981-01-01 01:01   assets/spike/upstream/model-selection-projection.js
      5129  1981-01-01 01:01   assets/spike/upstream/preset-mobile-rows.js
      1461  1981-01-01 01:01   assets/spike/upstream/settings-memory.js
      3921  1981-01-01 01:01   assets/spike/upstream/shims/async-hooks.js
@@ -227,7 +229,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      3396  1981-01-01 01:01   assets/spike/upstream/shims/partial-json.js
     16061  1981-01-01 01:01   assets/spike/upstream/shims/path.js
     11187  1981-01-01 01:01   assets/spike/upstream/shims/process.js
-    25208  1981-01-01 01:01   assets/spike/upstream/shims/runtime-modules.js
+    25686  1981-01-01 01:01   assets/spike/upstream/shims/runtime-modules.js
      2215  1981-01-01 01:01   assets/spike/upstream/shims/sharp/bytes.js
     13351  1981-01-01 01:01   assets/spike/upstream/shims/sharp/gif-codec.js
     16761  1981-01-01 01:01   assets/spike/upstream/shims/sharp/index.js
@@ -265,18 +267,18 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      6216  1981-01-01 01:01   assets/spike/upstream/tool-present.js
     20491  1981-01-01 01:01   assets/spike/upstream/web-boot.js
     20207  1981-01-01 01:01   assets/spike/upstream/web-shims.js
-     5485  1981-01-01 01:01   assets/spike/upstream/web-write-catalog.js
-     7445  1981-01-01 01:01   assets/spike/upstream/web-write-coverage.js
+    19453  1981-01-01 01:01   assets/spike/upstream/web-write-catalog.js
+     7661  1981-01-01 01:01   assets/spike/upstream/web-write-coverage.js
     15867  1981-01-01 01:01   assets/spike/upstream/web-write-files.js
      8357  1981-01-01 01:01   assets/spike/upstream/web-write-inventory.js
      6613  1981-01-01 01:01   assets/spike/upstream/web-write-llm.js
-     9842  1981-01-01 01:01   assets/spike/upstream/web-write-marketplace.js
+    12134  1981-01-01 01:01   assets/spike/upstream/web-write-marketplace.js
      9100  1981-01-01 01:01   assets/spike/upstream/web-write-onboarding.js
      5279  1981-01-01 01:01   assets/spike/upstream/web-write-picker.js
      5806  1981-01-01 01:01   assets/spike/upstream/web-write-settings.js
-    13336  1981-01-01 01:01   assets/spike/upstream/web-write-streams.js
+    13345  1981-01-01 01:01   assets/spike/upstream/web-write-streams.js
      8641  1981-01-01 01:01   assets/spike/upstream/web-write-workspace.js
-    21584  1981-01-01 01:01   assets/spike/upstream/web-write.js
+    22649  1981-01-01 01:01   assets/spike/upstream/web-write.js
      1570  1981-01-01 01:01   assets/spike/upstream/wire-logger.js
     53296  1981-01-01 01:01   assets/spike/vendor/dsh/agent-instructions@0.1.6-alpha.2/lib/index.js
      2056  1981-01-01 01:01   assets/spike/vendor/dsh/agent-instructions@0.1.6-alpha.2/package.json
@@ -2493,7 +2495,7 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      4452  1981-01-01 01:01   assets/spike/vendor/npm/zod@4.4.3/v4/locales/zh-CN.js
      4498  1981-01-01 01:01   assets/spike/vendor/npm/zod@4.4.3/v4/locales/zh-TW.js
       172  1981-01-01 01:01   assets/spike/webclient-next/manifest.json
-    18012  1981-01-01 01:01   assets/spike/webclient-next/web/css/app.css
+    18645  1981-01-01 01:01   assets/spike/webclient-next/web/css/app.css
      3255  1981-01-01 01:01   assets/spike/webclient-next/web/css/theme.css
      8401  1981-01-01 01:01   assets/spike/webclient-next/web/index.html
      2210  1981-01-01 01:01   assets/spike/webclient-next/web/js/api.js
@@ -2656,4 +2658,4 @@ Archive:  hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk
      4072  1981-01-01 01:01   AndroidManifest.xml
       572  1981-01-01 01:01   resources.arsc
 ---------                     -------
- 53504096                     2654 files
+ 53539035                     2656 files

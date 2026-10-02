@@ -1,0 +1,2 @@
+--------- beginning of main
+10-02 21:33:35.601  8808  8876 I dsh.spike: dsh.spike.log: {"level":"warn","module":"cordis:agent-presets","message":"agent \"session-4dce3f53-622d-44bb-afe4-2faaceac839d\" was published without joining an agent preset; its tools, prompt sections, and skill catalog resolve against the empty global layer (join through AgentPresets.mount() or composeFrom() in the agent factory setup)","data":[]}
