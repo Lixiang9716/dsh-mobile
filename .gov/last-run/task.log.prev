@@ -169,5 +169,6 @@ done  T-0160 Per-conversation model switching: stage multi-model roster + wire s
 done  T-0161 apply session/selectModel to the next turn — install the vendored model-selection holder (caller verbatim: branch feat/apply-model-selection from main, no push)
 done  T-0162 Root-cause and fix the sessionFeedback/record Phase-B-carrier envelope (interactive seat)
 done  T-0163 session/fork: the composer Fork session leg forks the journal server-side
-open  T-0164 Marketplace opt-in: the seat's config-file route claims the resolver legs (obey rules@ee4951678e7c)
-task: 172 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 98 done, 65 voided
+done  T-0164 Marketplace opt-in: the seat's config-file route claims the resolver legs
+open  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); repair the matrix Android leg (obey rules@ee4951678e7c)
+task: 173 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 99 done, 65 voided
