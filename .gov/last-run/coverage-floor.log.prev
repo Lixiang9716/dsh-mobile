@@ -3,24 +3,24 @@ run-coverage: measuring presentation/lynx-client
  RUN  v4.1.11 /home/lx/dsh-mobile/presentation/lynx-client
       Coverage enabled with v8
 
- ✓ tests/fold.test.js (10 tests) 15ms
- ✓ tests/adapter.test.js (10 tests) 8ms
- ✓ tests/seam.test.js (11 tests) 11ms
- ✓ tests/wire.test.js (5 tests) 260ms
- ✓ tests/wire-edge.test.js (8 tests) 267ms
- ✓ tests/driver-loop.test.js (22 tests) 1376ms
-     ✓ turn settles: reply, tool card, creation, title — all through the fold  649ms
-     ✓ 已停止 status, no hung tail, cancelled reply never settles  314ms
- ✓ tests/mux.test.js (7 tests) 5916ms
-     ✓ a socket drop re-opens every live stream on the fresh socket  663ms
+ ✓ tests/adapter.test.js (10 tests) 13ms
+ ✓ tests/fold.test.js (10 tests) 13ms
+ ✓ tests/seam.test.js (11 tests) 10ms
+ ✓ tests/wire-edge.test.js (8 tests) 269ms
+ ✓ tests/wire.test.js (5 tests) 472ms
+ ✓ tests/driver-loop.test.js (22 tests) 1357ms
+     ✓ turn settles: reply, tool card, creation, title — all through the fold  651ms
+     ✓ 已停止 status, no hung tail, cancelled reply never settles  308ms
+ ✓ tests/mux.test.js (7 tests) 6138ms
+     ✓ a socket drop re-opens every live stream on the fresh socket  881ms
      ✓ a user close stays closed  1234ms
-     ✓ a superseded socket's late close triggers NO duplicate reconnect  1255ms
-     ✓ a server refusing the upgrade loops bounded, process alive  2514ms
+     ✓ a superseded socket's late close triggers NO duplicate reconnect  1256ms
+     ✓ a server refusing the upgrade loops bounded, process alive  2515ms
 
  Test Files  7 passed (7)
       Tests  73 passed (73)
-   Start at  11:03:32
-   Duration  6.26s (transform 549ms, setup 0ms, import 815ms, tests 7.85s, environment 1ms)
+   Start at  15:10:14
+   Duration  6.50s (transform 497ms, setup 0ms, import 801ms, tests 8.27s, environment 1ms)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------
