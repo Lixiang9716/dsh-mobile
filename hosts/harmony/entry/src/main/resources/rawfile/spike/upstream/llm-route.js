@@ -136,10 +136,35 @@ export const decodeCredential = async () => {
   }
 };
 
+/** The staged multi-model roster (runtime.config `llmModels` — the seat's
+ * config.json `models` rows, entries `{id, name}`): validated fail loud —
+ * a present-but-malformed roster aborts naming the offending shape (rules
+ * rule 5: never silently skip), so a bad entry surfaces at boot, not as an
+ * empty dialog weeks later. Returns undefined when the config stages none. */
+const stagedModels = (cfg) => {
+  if (cfg.llmModels === undefined) return undefined;
+  if (!Array.isArray(cfg.llmModels)) {
+    throw new Error(`runtime.config llmModels must be an array of {id, name}: `
+      + `${JSON.stringify(cfg.llmModels)}`);
+  }
+  for (const row of cfg.llmModels) {
+    if (row === null || typeof row !== 'object' || Array.isArray(row)
+      || typeof row.id !== 'string' || row.id.length === 0
+      || typeof row.name !== 'string' || row.name.length === 0) {
+      throw new Error(`runtime.config llmModels entry must be {id: string, `
+        + `name: string}: ${JSON.stringify(row)}`);
+    }
+  }
+  return cfg.llmModels;
+};
+
 /** One resolution outcome: the route fields boot.js's mountLlm consumes plus
  * `kind` (the honest source fact the onboarding status answers from) and the
- * scripted flag composer.live-write pins its determinism on. */
+ * scripted flag composer.live-write pins its determinism on. `models` rides
+ * only the staged route (the credential's roster — the composer model
+ * dialog's rows; web-write.js's session/modelCatalog emits it). */
 export const stagedRoute = (cfg) => {
+  const models = stagedModels(cfg);
   if (typeof cfg.llmBaseUrl === 'string' && cfg.llmBaseUrl.length > 0) {
     if (typeof cfg.llmApiKey !== 'string' || cfg.llmApiKey.length === 0) {
       throw new Error('runtime.config llmBaseUrl given without llmApiKey');
@@ -155,6 +180,7 @@ export const stagedRoute = (cfg) => {
       kind: 'staged',
       baseURL: cfg.llmBaseUrl, apiKey: cfg.llmApiKey, provider,
       model: cfg.llmModel, scripted: false, userEndpoint: true,
+      ...(models === undefined ? {} : { models }),
       adapterName: `user-supplied OpenAI-compatible endpoint (${provider})`,
       transportLabel: `gateway httpFetch → ${host} (user-supplied endpoint)`,
     };

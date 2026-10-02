@@ -4,12 +4,16 @@
  * api-full-coverage work stream): the session-scoped catalog faces the
  * official page drives — skills/list (the composer's "/" skill candidates),
  * fileReferences/list (the @-mention lexicon), goals/* (the goal panel), and
- * commands/list + commands/execute (the "/" command palette). Each handler
- * FORWARDS to the real vendored service boot.js mounted (ctx.skills /
- * fileReferences / goals / commands) — they do not reimplement; the wire
- * argument names are the generated TypertRemoteMap spellings, and the live
- * agent each catalog addresses resolves exactly like agentPresets/select
- * does (ctx.agents.get).
+ * commands/list + commands/execute (the "/" command palette) — plus the
+ * MODEL-CATALOG plane that rides the HISTORICAL claim set (web-write.js
+ * spreads it on every boot): session/modelCatalog (the settings 内置插件
+ * shell's load, from the boot's llm route) and session/selectModel (the
+ * composer model dialog's commit leg). Each handler FORWARDS to the real
+ * vendored service boot.js mounted (ctx.skills / fileReferences / goals /
+ * commands) or answers the boot route's honest facts — they do not
+ * reimplement; the wire argument names are the generated TypertRemoteMap
+ * spellings, and the live agent each catalog handler addresses resolves
+ * exactly like agentPresets/select does (ctx.agents.get).
  */
 import { remoteError } from 'upstream/web-write.js';
 
@@ -111,4 +115,86 @@ export const makeCommandHandlers = (ctx) => ({
   'commands/execute': (args) => forward(ctx, 'commands', 'execute',
     [liveAgent(ctx, args?.agentId), String(args?.line ?? ''),
       args?.submittedAttachments ?? [], liveSignal()]),
+});
+
+/** The model rows one llm route serves: the staged credential's roster
+ * (`llmRoute.models`, entries `{id, name}`) when it carries one, else the
+ * single configured model. Both the session/modelCatalog group and
+ * session/selectModel's routability check read this ONE shape
+ * (ModelCatalogModel — the generated wire type dsh-client-ui-model-selection
+ * renders). */
+const routeModelRows = (llmRoute) => (
+  Array.isArray(llmRoute.models) && llmRoute.models.length > 0
+    ? llmRoute.models
+    : [{ id: llmRoute.model, name: llmRoute.model }]);
+
+/** The settings 内置插件 SHELL's loads, from the boot's llm route: ONE
+ * provider with the staged credential's model roster (the single configured
+ * model when no roster is staged). The catalog's `default` IS the route the
+ * agent loop uses; nothing is invented. `credentials/describe` here answers
+ * the staged route only — the coverage plane (web-write-llm.js) OVERRIDES it
+ * with the ref-keyed store-backed answer and claims the set/unset write
+ * half; this historical row stays for the non-coverage boots whose delivered
+ * manifests pin it byte-identical. */
+export const shellLoadHandlers = (llmRoute) => ({
+  'credentials/describe': async () => ({
+    [llmRoute.provider]: {
+      configured: true,
+      source: 'staged profile credential (profiles/default/llm)',
+      writable: false,
+    },
+  }),
+  'session/modelCatalog': async () => ({
+    default: { provider: llmRoute.provider, model: llmRoute.model },
+    routableProviders: [llmRoute.provider],
+    groups: [{
+      id: llmRoute.provider,
+      name: llmRoute.provider,
+      models: routeModelRows(llmRoute),
+    }],
+  }),
+});
+
+/** session/selectModel: the composer model dialog's commit leg
+ * (dsh-client-ui-model-selection calls sessions.selectModel). The desktop
+ * controller's semantics at the pin, narrowed to this host's ONE routable
+ * route (the boot route the write surface was built from): the provider must
+ * equal it and the model must be one the route serves (the staged roster
+ * when present, else the single configured model) — an unroutable pick fails
+ * with the upstream vocabulary (`session/model-unavailable`, the code
+ * commands.selectModel itself throws). A routable selection appends the
+ * `model/selection` intent to the live session journal exactly as
+ * selectForNextRequest does — the modelSelection projection folds it into
+ * `pending` and the next request header honors it — and returns the
+ * desktop's `{selected}` envelope. */
+export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
+  'session/selectModel': async (args) => {
+    const agent = liveAgent(ctx, args?.sessionId);
+    const provider = args?.provider;
+    const model = args?.model;
+    const reasoningEffort = args?.reasoningEffort;
+    if (typeof provider !== 'string' || provider.length === 0
+      || typeof model !== 'string' || model.length === 0) {
+      throw remoteError('gateway/bad-request',
+        'selectModel needs a provider and a model', {});
+    }
+    if (reasoningEffort !== undefined
+      && (typeof reasoningEffort !== 'string' || reasoningEffort.length === 0)) {
+      throw remoteError('gateway/bad-request',
+        'reasoningEffort must be a non-empty string when given', {});
+    }
+    const routable = routeModelRows(llmRoute).some((row) => row.id === model);
+    if (provider !== llmRoute.provider || !routable) {
+      throw remoteError('session/model-unavailable',
+        `model ${JSON.stringify(model)} is not routable on this host `
+          + `(provider ${JSON.stringify(llmRoute.provider)})`,
+        { provider, model });
+    }
+    const selection = {
+      provider, model,
+      ...(reasoningEffort === undefined ? {} : { reasoningEffort }),
+    };
+    agent.session.append('model/selection', selection);
+    return { selected: selection };
+  },
 });

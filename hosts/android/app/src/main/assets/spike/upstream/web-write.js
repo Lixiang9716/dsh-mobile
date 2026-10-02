@@ -37,6 +37,13 @@ import {
   COVERAGE_ENDPOINTS, COVERAGE_STREAMS,
   buildCoverageApi, openCoverageStream, createChangeFeed,
 } from 'upstream/web-write-coverage.js';
+// The catalog adapters (skills/goals/commands) and the MODEL-CATALOG plane
+// (session/modelCatalog's shell loads + session/selectModel) live in
+// web-write-catalog.js; the selection handler rides the HISTORICAL claim set
+// (the composer model dialog commits through it even on non-coverage boots).
+import {
+  makeModelSelectionHandlers, shellLoadHandlers,
+} from 'upstream/web-write-catalog.js';
 
 export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
 
@@ -47,6 +54,9 @@ export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
 export const WRITE_ENDPOINTS = [
   'session.list', 'session/list', 'session/create', 'session/prompt',
   'session/cancel',
+  // The composer model dialog's selection leg (the staged credential's
+  // roster makes the catalog multi-model; this commits one session's pick).
+  'session/selectModel',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -361,32 +371,6 @@ const makeCancelSession = (ctx) => async (args) => {
  * @returns {api, openStream, dispose}
  */
 
-/** The settings 内置插件 SHELL's loads, from the boot's llm route: ONE
- * provider with ONE configured model (the staged credential). The catalog's
- * `default` IS the route the agent loop uses; nothing is invented.
- * `credentials/describe` here answers the staged route only — the coverage
- * plane (web-write-llm.js) OVERRIDES it with the ref-keyed store-backed
- * answer and claims the set/unset write half; this historical row stays for
- * the non-coverage boots whose delivered manifests pin it byte-identical. */
-const shellLoadHandlers = (llmRoute) => ({
-  'credentials/describe': async () => ({
-    [llmRoute.provider]: {
-      configured: true,
-      source: 'staged profile credential (profiles/default/llm)',
-      writable: false,
-    },
-  }),
-  'session/modelCatalog': async () => ({
-    default: { provider: llmRoute.provider, model: llmRoute.model },
-    routableProviders: [llmRoute.provider],
-    groups: [{
-      id: llmRoute.provider,
-      name: llmRoute.provider,
-      models: [{ id: llmRoute.model, name: llmRoute.model }],
-    }],
-  }),
-});
-
 /** The /api handler map (split from createWriteSurface at the file-size
  * gate): every claimed endpoint's handler, keyed by wire name. */
 const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
@@ -395,6 +379,10 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       'session/create': makeCreateSession(ctx, deps),
       'session/prompt': makePromptSession(ctx),
       'session/cancel': makeCancelSession(ctx),
+      // The composer model dialog's commit leg: validates the pick against
+      // the boot route and appends the model/selection intent to the live
+      // session journal (the desktop controller's selectModel semantics).
+      ...makeModelSelectionHandlers(ctx, deps.llmRoute),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(
@@ -449,6 +437,10 @@ export const createWriteSurface = (ctx, post, options) => {
     streams, root, workspaces, seeded, archived,
     llmRoute: {
       provider: options.provider, model: options.model, baseURL: options.baseURL,
+      // The staged credential's multi-model roster ({id, name} rows; absent
+      // on mock/byok routes) — session/modelCatalog lists it and
+      // session/selectModel validates against it.
+      models: options.models,
       // The honest source fact (upstream/llm-route.js): 'staged' | 'byok' |
       // 'mock' | undefined (surfaces built without the route's provenance —
       // the CLI probes). The onboarding status answers from it.

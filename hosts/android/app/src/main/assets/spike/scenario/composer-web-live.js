@@ -65,11 +65,7 @@ const fail = (reason) => {
   emit('scenario.failed', { reason: withStack });
   globalThis.__dshComplete(false, withStack);
 };
-const demand = (cond, reason) => {
-  if (cond) return;
-  fail(reason);
-  throw new Error(reason);
-};
+const demand = (cond, reason) => { if (cond) return; fail(reason); throw new Error(reason); };
 
 /** Bus deliveries may arrive before the awaiting half exists (the drive
  * injects right after eval), so the subscription is module-scope, buffers,
@@ -229,6 +225,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
       fullCoverage: cfg.fullCoverage === true,
       provider: route.provider,
       model: route.model,
+      models: route.models, // the staged roster (llm-route.js); absent on mock/byok routes
       baseURL: route.baseURL,
       routeKind: route.kind,
       // Marketplace opt-in (web-write-marketplace.js), relayed verbatim when the seat stages it; absent → unclaimed.
