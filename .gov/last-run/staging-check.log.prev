@@ -10,22 +10,22 @@
     {
       "host": "harmony",
       "roots": 27,
-      "reached": 136,
-      "scopedReached": 121,
+      "reached": 137,
+      "scopedReached": 122,
       "skippedBare": 29,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Index.ets BUNDLE_FILES",
-          "rows": 952,
+          "rows": 953,
           "gaps": [],
           "stale": [],
           "advisory": false
         },
         {
           "label": "ci/vendor-official.sh CLOSURE/SPINE_OURS",
-          "rows": 319,
+          "rows": 320,
           "gaps": [
             {
               "file": "scenario/device-plane.js",
@@ -84,7 +84,7 @@
             },
             {
               "file": "system-plugins/dsh-office/index.js",
-              "via": "upstream/boot.js:342",
+              "via": "upstream/boot.js:332",
               "kind": "dynamic-import"
             },
             {
@@ -144,7 +144,7 @@
             },
             {
               "file": "upstream/tool-present.js",
-              "via": "upstream/boot.js:360",
+              "via": "upstream/boot.js:350",
               "kind": "dynamic-import"
             },
             {
@@ -215,6 +215,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-holder.js",
         "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
@@ -301,8 +302,8 @@
     {
       "host": "android",
       "roots": 22,
-      "reached": 131,
-      "scopedReached": 116,
+      "reached": 132,
+      "scopedReached": 117,
       "skippedBare": 29,
       "brokenEdges": [],
       "missingRoots": [],
@@ -368,6 +369,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-holder.js",
         "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
@@ -454,15 +456,15 @@
     {
       "host": "ios",
       "roots": 63,
-      "reached": 183,
-      "scopedReached": 161,
+      "reached": 184,
+      "scopedReached": 162,
       "skippedBare": 35,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Tools/gen_bundle_header.py RESOURCES+TREES",
-          "rows": 80,
+          "rows": 81,
           "gaps": [],
           "stale": [],
           "advisory": false
@@ -568,6 +570,7 @@
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
+        "upstream/model-selection-holder.js",
         "upstream/model-selection-projection.js",
         "upstream/preset-mobile-rows.js",
         "upstream/settings-memory.js",
