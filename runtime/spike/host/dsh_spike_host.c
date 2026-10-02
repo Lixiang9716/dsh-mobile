@@ -448,11 +448,23 @@ static JSValue js_launch_env(JSContext *ctx, JSValueConst this_val,
 static JSValue js_complete(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
-    (void)argc;
     dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
     int pass = JS_ToBool(ctx, argv[0]); /* -1 on exception; anything falsy = fail */
     s->completed = 1;
     s->passed = pass > 0;
+    /* A failing scenario hands its reason (message + short stack) as the
+     * second argument. Keep it in s->err so embedders reading
+     * dsh_spike_error() at completion — the m4 status-2 branch, the harmony
+     * napi !pass legs, the iOS drive's onComplete message — report WHY the
+     * scenario failed instead of an empty string. */
+    if (pass <= 0 && argc >= 2 && JS_IsString(argv[1])) {
+        size_t len = 0;
+        const char *reason = JS_ToCStringLen(ctx, &len, argv[1]);
+        if (reason) {
+            dsh_seterr(s, "%s", reason);
+            JS_FreeCString(ctx, reason);
+        }
+    }
     return JS_UNDEFINED;
 }
 
