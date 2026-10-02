@@ -244,17 +244,24 @@ const mountGoalPlane = async (ctx) => {
   await ctx.plugin(Goal.default ?? Goal.GoalService, {});
 };
 
-/** The /goal row (the desktop composition's agent.cordis.yml carries the
- * same plugin): dsh-command-goal injects ["commands", "goals"], so it can
- * only apply once BOTH services exist — the command plane mounts before
- * the goal plane. Mounted only on the interactive boot (the same flags the
- * user-facing seat sends), so drive legs stay byte-identical.
- * command-compact (the desktop's other command plugin) injects the
- * compaction service, which the mobile composition does not mount — it
- * stays out until that plane lands. */
+/** The /goal row (agent.cordis.yml row 91): dsh-command-goal injects
+ * ["commands", "goals"] — it mounts AFTER the goal plane for that inject
+ * order (command plane runs first above), on the interactive flags only so
+ * drive legs stay byte-identical. command-compact stays out until the
+ * compaction plane lands (its inject). */
 const mountGoalCommand = async (ctx) => {
   const CommandGoal = await import('@deepseek-ai/dsh-command-goal');
   await ctx.plugin(CommandGoal.default ?? CommandGoal, {});
+};
+
+/** The modelSelection projection (issue #306): the desktop registers this
+ * unit via dsh-api-session-controller, which the Phase-B composition does
+ * not apply — the first-party unit rides the registry's extension seam so
+ * the journal carries `projections.modelSelection` and the model dialog
+ * resolves (the registry folds lazily; late registration sees all events). */
+const mountModelSelectionProjection = async (ctx) => {
+  const ModelSelectionProjection = await import('upstream/model-selection-projection.js');
+  ctx.sessionProjections.register(ModelSelectionProjection.modelSelectionUnit);
 };
 
 /** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
@@ -481,6 +488,7 @@ export async function bootUpstream(options) {
   });
   await demandServices(ctx);
   demandPresetServices(ctx);
+  await mountModelSelectionProjection(ctx);
 
   onEvent('upstream/services', {
     kernel: '@deepseek-ai/cordis@4.0.2',
