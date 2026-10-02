@@ -99,7 +99,7 @@ const followSnapshot = (ctx, assistantState, sessionId) => {
     cursor,
     records,
     hasMore: false,
-    projections: { asOfSeq: cursor, values: {} },
+    projections: ctx.sessionProjections.snapshot(session),
     assistantStream: state.active === null
       ? { revision: state.revision }
       : {

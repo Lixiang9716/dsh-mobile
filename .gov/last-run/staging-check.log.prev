@@ -12,7 +12,7 @@
       "roots": 27,
       "reached": 136,
       "scopedReached": 121,
-      "skippedBare": 28,
+      "skippedBare": 29,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
@@ -303,7 +303,7 @@
       "roots": 22,
       "reached": 131,
       "scopedReached": 116,
-      "skippedBare": 28,
+      "skippedBare": 29,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
@@ -456,7 +456,7 @@
       "roots": 63,
       "reached": 183,
       "scopedReached": 161,
-      "skippedBare": 34,
+      "skippedBare": 35,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [

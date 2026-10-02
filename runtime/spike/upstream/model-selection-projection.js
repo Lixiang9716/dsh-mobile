@@ -19,13 +19,25 @@
 //     served selection clears (it has been honored).
 // View: `{lastUsed, next: pending ?? lastUsed}`.
 
+import { z } from 'zod';
+
 const sameSelection = (left, right) =>
   left === right || (left !== null && right !== null &&
     left.provider === right.provider && left.model === right.model &&
     left.reasoningEffort === right.reasoningEffort);
 
+const selectionSchema = z.object({
+  provider: z.string().min(1),
+  model: z.string().min(1),
+  reasoningEffort: z.string().min(1).optional(),
+});
+
 export const modelSelectionUnit = {
   key: 'modelSelection',
+  stateSchema: z.object({
+    lastUsed: selectionSchema.nullable(),
+    pending: selectionSchema.nullable(),
+  }),
   init: () => ({ lastUsed: null, pending: null }),
   apply: (state, event) => {
     if (event.type === 'model/selection') {
@@ -47,6 +59,10 @@ export const modelSelectionUnit = {
     };
   },
   wire: {
+    viewSchema: z.object({
+      lastUsed: selectionSchema.nullable(),
+      next: selectionSchema.nullable(),
+    }),
     view: (state) => ({
       lastUsed: state.lastUsed,
       next: state.pending ?? state.lastUsed,
