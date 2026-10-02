@@ -303,17 +303,23 @@ const gapsPhase = async (ctx, s) => {
     'terminal/shells', 'directoryPicker/pick', 'settings/replace',
     'settings/openSettingsDocument', 'settings/openAgentPresetDirectory',
     'llm/discoverModels', 'subagents/list', 'subagents/prompt',
-    'sessionFeedback/record', 'permissionPresets/catalog',
+    'permissionPresets/catalog',
     'fileUploads/upload', 'officeToPdf/render',
-    'session/page', 'session/fork', 'session/search', 'session/rename',
+    'session/page', 'session/search', 'session/rename',
     'session/updateQueue', 'session/attachment']) {
     demand(s.api[endpoint] === undefined, `${endpoint} must stay unclaimed`);
   }
   // session/cancel LEFT the gap list (the stop-button claim, 2026-09-25):
   // the shape demand moves to the claimed side; its live semantics are
-  // proven on-device by nextweb.mount's cancel leg.
+  // proven on-device by nextweb.mount's cancel leg. sessionFeedback/record
+  // followed (#312, the feedback dialog's journal record) and session/fork
+  // (the composer dialog's server-side fork half, 2026-10-02).
   demand(typeof s.api['session/cancel'] === 'function',
     'session/cancel is claimed (the stop button)');
+  demand(typeof s.api['sessionFeedback/record'] === 'function',
+    'sessionFeedback/record is claimed (the feedback dialog)');
+  demand(typeof s.api['session/fork'] === 'function',
+    'session/fork is claimed (the composer Fork session leg)');
   demand(new Set(COVERAGE_ENDPOINTS.filter((e) => WRITE_ENDPOINTS.includes(e))).size === 0,
     'coverage endpoints overlap the historical claim set');
   const bare = createWriteSurface(ctx, () => {}, {

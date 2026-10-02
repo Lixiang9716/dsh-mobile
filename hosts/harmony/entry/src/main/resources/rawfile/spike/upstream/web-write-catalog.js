@@ -7,15 +7,17 @@
  * commands/list + commands/execute (the "/" command palette) — plus the
  * MODEL-CATALOG plane that rides the HISTORICAL claim set (web-write.js
  * spreads it on every boot): session/modelCatalog (the settings 内置插件
- * shell's load, from the boot's llm route) and session/selectModel (the
- * composer model dialog's commit leg). Each handler FORWARDS to the real
+ * shell's load, from the boot's llm route), session/selectModel (the
+ * composer model dialog's commit leg), and session/fork (the Fork E2E's
+ * server-side half — the child session the dialog's "Fork session" posts
+ * for). Each handler FORWARDS to the real
  * vendored service boot.js mounted (ctx.skills / fileReferences / goals /
  * commands) or answers the boot route's honest facts — they do not
  * reimplement; the wire argument names are the generated TypertRemoteMap
  * spellings, and the live agent each catalog handler addresses resolves
  * exactly like agentPresets/select does (ctx.agents.get).
  */
-import { remoteError } from 'upstream/web-write.js';
+import { remoteError, mintUUID } from 'upstream/web-write.js';
 
 /** The registry's own user-invocation filter, linked HERE only (a dynamic
  * import, the boot.js pattern): web-write.js composes on the bare
@@ -268,5 +270,108 @@ export const makeSessionFeedbackHandlers = (ctx) => ({
     };
     agent.session.append('feedback/record', record);
     return { ok: true, value: { recorded: true } };
+  },
+});
+
+/** The fork boundary scans, in plain loops (the desktop controller's
+ * compiled `findLast`/`at(-1)` are not a given on the embedded engine for
+ * adapter-authored code): the LAST completed turn's end, and the FIRST
+ * turn/end at or after a sequence position. */
+const lastTurnEnd = (events) => {
+  for (let i = events.length - 1; i >= 0; i -= 1) {
+    if (events[i].type === 'turn/end') return events[i];
+  }
+  return undefined;
+};
+const nextTurnEndFrom = (events, atSeq) => {
+  for (let i = 0; i < events.length; i += 1) {
+    if (events[i].type === 'turn/end' && events[i].seq >= atSeq) return events[i];
+  }
+  return undefined;
+};
+
+/** The next event's sequence number on a snapshot (the log-end offset; -1
+ * on an empty journal — the desktop controller's `lastSeq` convention). */
+const lastSeqOf = (events) =>
+  (events.length > 0 ? events[events.length - 1].seq : -1);
+
+/** The desktop controller's fork boundary: with `atSeq`, the first
+ * turn/end at or after it; a position past the journal's end falls back to
+ * the LAST completed turn; without `atSeq`, the last completed turn.
+ * Undefined when the ask has no completed turn covering it. */
+const forkBoundary = (events, atSeq) => {
+  const covering = atSeq === undefined ? undefined : nextTurnEndFrom(events, atSeq);
+  if (covering !== undefined) return covering;
+  return atSeq === undefined || atSeq > lastSeqOf(events)
+    ? lastTurnEnd(events) : undefined;
+};
+
+/** The desktop controller's fork-unavailable message: a position inside a
+ * still-open turn names the event; a journal with no completed turn says
+ * so. Both carry the wire details' sessionId. */
+const forkUnavailable = (sessionId, atSeq, lastSeq) => remoteError(
+  'session/fork-unavailable',
+  atSeq !== undefined && atSeq <= lastSeq
+    ? `session ${JSON.stringify(sessionId)} has not completed `
+      + `the turn containing event ${String(atSeq)}`
+    : `session ${JSON.stringify(sessionId)} has no completed `
+      + 'turn to fork from',
+  { sessionId });
+
+/** session/fork: the Fork E2E's server-side half — the composer dialog's
+ * "Fork session" POSTs `{args: {request: {sessionId, atSeq?}}}` and this
+ * handler answers `{sessionId: childId}`. The desktop controller's commands
+ * .fork semantics at the pin, narrowed to v0 per-conversation fork: resolve
+ * the source like every session-addressing handler (ctx.agents.get), cut at
+ * the LAST completed turn's end — or, when `atSeq` names a position, the
+ * first turn/end at or after it (a position past the log's end falls back
+ * to the last; one inside an uncompleted turn refuses with the wire's
+ * `session/fork-unavailable`, the controller's own code and message
+ * shapes) — then create the child as a LIVE agent seeded with that exact
+ * prefix: `agents.create({sessionId, seed, inheritedEventCount, meta:
+ * {cwd?, parentSession, isSeeded: true}, agentOptions})`, the same
+ * prepare() facts the session store's own fork primitive writes (the
+ * isSeeded/inherited-prefix equality the store validates holds by
+ * construction: seed = events.slice(0, cut), cut = boundary.seq + 1). The
+ * child inherits the parent's cwd and the boot route's {provider, model}
+ * (the facts session/create gives every new session; the replayed
+ * request/header events keep the dialog's model view honest). The child
+ * shares the parent's registry workspace (the profile's ONE seeded
+ * workspace, session/create's attach) — NO desktop forkWorkspace copy
+ * orchestration. The event scans read `snapshotEvents()` (the live
+ * session's frozen log; the same read the store's fork primitive takes). */
+export const makeSessionForkHandlers = (ctx, deps) => ({
+  'session/fork': async (args) => {
+    const request = args?.request ?? args ?? {};
+    if (request.atSeq !== undefined && (typeof request.atSeq !== 'number'
+      || !Number.isSafeInteger(request.atSeq) || request.atSeq < 0)) {
+      throw remoteError('gateway/bad-request',
+        'atSeq must be a non-negative safe integer', {});
+    }
+    const agent = liveAgent(ctx, request.sessionId);
+    const events = agent.session.snapshotEvents();
+    const boundary = forkBoundary(events, request.atSeq);
+    if (boundary === undefined) {
+      throw forkUnavailable(request.sessionId, request.atSeq, lastSeqOf(events));
+    }
+    const cut = boundary.seq + 1;
+    const childId = `session-${mintUUID()}`;
+    const cwd = agent.session?.header?.cwd;
+    await ctx.agents.create({
+      sessionId: childId,
+      seed: events.slice(0, cut),
+      inheritedEventCount: cut,
+      meta: {
+        ...(cwd === undefined ? {} : { cwd }),
+        parentSession: agent.session.header.id,
+        isSeeded: true,
+      },
+      agentOptions: {
+        provider: deps.llmRoute.provider, model: deps.llmRoute.model,
+      },
+    });
+    deps.streams.attachWorkspace(
+      deps.workspaces.get(deps.seeded.workspaceId), childId);
+    return { sessionId: childId };
   },
 });
