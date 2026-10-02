@@ -38,11 +38,13 @@ import {
   buildCoverageApi, openCoverageStream, createChangeFeed,
 } from 'upstream/web-write-coverage.js';
 // The catalog adapters (skills/goals/commands) and the MODEL-CATALOG plane
-// (session/modelCatalog's shell loads + session/selectModel) live in
-// web-write-catalog.js; the selection handler rides the HISTORICAL claim set
-// (the composer model dialog commits through it even on non-coverage boots).
+// (session/modelCatalog's shell loads, session/selectModel, session/fork)
+// live in web-write-catalog.js; these ride the HISTORICAL claim set (the
+// composer model dialog commits and forks through them even on
+// non-coverage boots).
 import {
-  makeModelSelectionHandlers, makeSessionFeedbackHandlers, shellLoadHandlers,
+  makeModelSelectionHandlers, makeSessionForkHandlers,
+  makeSessionFeedbackHandlers, shellLoadHandlers,
 } from 'upstream/web-write-catalog.js';
 
 export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
@@ -60,6 +62,10 @@ export const WRITE_ENDPOINTS = [
   // The composer feedback dialog's record leg (the journal keeps the
   // session's feedback records — the `feedback/record` journal event).
   'sessionFeedback/record',
+  // The composer dialog's Fork session leg: the child session the seat
+  // forks server-side from one completed-turn prefix (the #306 thread's
+  // design; the desktop controller's commands.fork semantics, narrowed).
+  'session/fork',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -387,6 +393,9 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // session journal (the desktop controller's selectModel semantics).
       ...makeModelSelectionHandlers(ctx, deps.llmRoute),
       ...makeSessionFeedbackHandlers(ctx),
+      // The composer dialog's Fork session leg: seeds the child from one
+      // completed-turn prefix and attaches it to the profile's workspace.
+      ...makeSessionForkHandlers(ctx, deps),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(

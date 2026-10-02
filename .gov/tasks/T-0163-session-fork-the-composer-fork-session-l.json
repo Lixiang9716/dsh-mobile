@@ -1,0 +1,20 @@
+{
+  "title": "session/fork: the composer Fork session leg forks the journal server-side",
+  "created": "2026-10-02T06:24:43+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "web-write-catalog.js: makeSessionForkHandlers resolves the source like prompt, cuts at the desktop turn/end boundary (atSeq + fallback), creates the child as a live seeded agent, attaches the seeded workspace, returns {sessionId}",
+    "web-write.js: session/fork claimed in WRITE_ENDPOINTS and spread into the api map; coverage comment + api-coverage-probe gap pins updated (fork and the stale sessionFeedback/record row)",
+    "scratch smoke: cut/atSeq/fallback/fork-unavailable/not-found/bad-request all verified against the real modules",
+    "mirrors synced (android stage-spine-closure, harmony vendor-official) and code-size, staging-check, closures, logging, check all green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0163"
+}
