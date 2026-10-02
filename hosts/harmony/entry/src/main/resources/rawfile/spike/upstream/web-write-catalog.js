@@ -184,10 +184,20 @@ export const shellLoadHandlers = (llmRoute) => ({
  * dead). Returns the desktop's `{selected}` envelope. */
 export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
   'session/selectModel': async (args) => {
-    const agent = liveAgent(ctx, args?.sessionId);
-    const provider = args?.provider;
-    const model = args?.model;
-    const reasoningEffort = args?.reasoningEffort;
+    // The generated remote's ONE parameter is wire-named `request`
+    // (dsh-api-gateway prepareInvocation keys args by parameter.wire), so
+    // the page's frozen envelope nests the fields: `{args: {request:
+    // {...}}}` — the session/prompt convention. The bare `?? args` leg
+    // keeps a top-level synthesized probe answerable (measured 2026-10-02:
+    // the top-level read left every REAL dialog commit unanswered — the
+    // runtime half threw session/not-found and never posted api.respond,
+    // so the carrier parked 30s and answered its own unimplemented
+    // envelope).
+    const request = args?.request ?? args ?? {};
+    const agent = liveAgent(ctx, request.sessionId);
+    const provider = request.provider;
+    const model = request.model;
+    const reasoningEffort = request.reasoningEffort;
     if (typeof provider !== 'string' || provider.length === 0
       || typeof model !== 'string' || model.length === 0) {
       throw remoteError('gateway/bad-request',
@@ -223,18 +233,40 @@ export const makeModelSelectionHandlers = (ctx, llmRoute) => ({
 /** sessionFeedback/*: the composer feedback dialog's record leg
  * (dsh-command-feedback's wire face). The mobile seat records the feedback
  * into the live session journal — the `feedback/record` event type is in
- * the session vocabulary — and answers the wire's `{recorded: true}`
- * envelope. liveAgent throws `session/not-found` for unknown sessions (the
- * wire's own error code for this face). */
+ * the session vocabulary — and answers the vendored service's OWN result
+ * union (dsh-command-feedback SessionFeedbackService.record at the pin):
+ * `{ok: true, value: {recorded: true}}` on success, the IN-BAND
+ * `{ok: false, error: {code: 'session-not-found', sessionId}}` for an
+ * unknown session (resolved, never thrown — the page's recordSession reads
+ * `carried.value.ok` / `carried.value.error.code`, so a thrown remoteError
+ * or a bare `{recorded: true}` both leave the dialog's submit path
+ * unanswered; measured 2026-10-02). The handler is ASYNC — every handler
+ * in the surface's map must return a thenable (the seats' onHandler does
+ * `outcome.run().then(...)`); this row shipped sync once and the seat died
+ * on `TypeError: not a function` before any api.respond, answered 30s
+ * later by the carrier's unimplemented envelope. The generated remote's
+ * ONE parameter is wire-named `request`, so the page's frozen envelope
+ * nests the fields (`{args: {request: {sessionId, text?, category?}}}`) —
+ * the same unwrap session/selectModel takes (the top-level read answered
+ * the synthesized probes and refused every REAL dialog submit). The
+ * text/category projection is recordFeedback's own (trim, blank text
+ * absent, category absent when undefined). */
 export const makeSessionFeedbackHandlers = (ctx) => ({
-  'sessionFeedback/record': (args) => {
-    const agent = liveAgent(ctx, args?.sessionId);
-    const category = args?.category === undefined ? 'other' : String(args.category);
+  'sessionFeedback/record': async (args) => {
+    const request = args?.request ?? args ?? {};
+    const agent = ctx.agents.get(request.sessionId);
+    if (agent === undefined) {
+      return {
+        ok: false,
+        error: { code: 'session-not-found', sessionId: request.sessionId },
+      };
+    }
+    const text = typeof request.text === 'string' ? request.text.trim() : '';
     const record = {
-      category,
-      ...(args?.text === undefined ? {} : { text: String(args.text) }),
+      ...(text.length === 0 ? {} : { text }),
+      ...(request.category === undefined ? {} : { category: request.category }),
     };
     agent.session.append('feedback/record', record);
-    return { recorded: true };
+    return { ok: true, value: { recorded: true } };
   },
 });
