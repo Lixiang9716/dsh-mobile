@@ -1,0 +1,23 @@
+{
+  "title": "\u7ee7\u7eed\u6d4b\u8bd5\uff0c\u76f4\u5230\u660e\u5929\u65e9\u4e0a\u4e5d\u70b9 (caller verbatim via /goal) \u2014 overnight battery round 4/5: goal lifecycle, excel+ppt deliverables, @ mentions, feedback, settings depth, session menu; then fix the two test-blocking defects (models selector loading, follow-stream gateway/internal) with PR + device verification each",
+  "created": "2026-10-02T00:01:05+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "goal lifecycle: create \u2192 pause \u2192 edit \u2192 clear all evidenced in one session context",
+    "excel_create and ppt_create deliverables created on device, format-validated, pulled",
+    "@ file mention in a real turn answered with the file's content",
+    "feedback flow + settings tabs (agent presets / built-in plugins / archived sessions) + session rename menu evidenced",
+    "models selector defect root-caused; fix landed via PR and verified on device if the fix is in our code",
+    "follow-stream gateway/internal root-caused; fix landed via PR and verified on device if the fix is in our code",
+    "each round: leak audit CLEAN + report updated"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0159"
+}
