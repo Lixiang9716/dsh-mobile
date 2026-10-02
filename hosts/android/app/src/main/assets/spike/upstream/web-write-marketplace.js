@@ -48,6 +48,28 @@ import {
 const badRequest = (message) => (
   { remote: true, code: 'gateway/bad-request', message, details: {} });
 
+/** The marketplace opt-in, validated fail loud (the llm-route stagedModels
+ * pattern): `{indexUrl}` with an http(s) URL — `publicKey` (the host-side
+ * trust anchor) may ride beside it; a boot that opts in without one runs
+ * the resolver's DECLARED GAP (logged per fetch). A malformed opt-in aborts
+ * the surface naming the offender instead of claiming legs that could only
+ * fail later (rules.md rule 5). Undefined stays undefined — absent → the
+ * marketplace legs stay unclaimed, the byte-identical historical boot.
+ * Lives HERE (the module owning the shape it validates), imported by
+ * web-write.js's deps assembly; this module never imports web-write.js
+ * (the local wireOf keeps the module cycle closed). */
+export const marketplaceOf = (options) => {
+  const marketplace = options.marketplace;
+  if (marketplace === undefined) return undefined;
+  if (marketplace === null || typeof marketplace !== 'object'
+    || Array.isArray(marketplace) || typeof marketplace.indexUrl !== 'string'
+    || !/^https?:\/\/[^\s]+$/.test(marketplace.indexUrl)) {
+    throw new Error(`web-write: marketplace opt-in must be `
+      + `{indexUrl: http(s) url}: ${JSON.stringify(marketplace)}`);
+  }
+  return marketplace;
+};
+
 /** The marketplace's GET transport: the gateway httpFetch with the method
  * spelled out (the CLI smoke backend validates url+method; real hosts take
  * the same explicit GET). Both the resolver's index fetch and the
@@ -163,11 +185,26 @@ const makeRemoveHandler = () => async (args) => {
   return { removed: item.version };
 };
 
-/** The coverage api rows this module owns (spread into buildCoverageApi). */
+/** The coverage api rows this module owns (spread into buildCoverageApi).
+ * Each leg's rejection is rethrown as the remoteError triple wireOf
+ * produces, so the surface's errorOf passes the resolver's AUDIT code
+ * through verbatim — an unreachable index answers
+ * `marketplace/network` ("index fetch failed: …", details {status} on an
+ * HTTP status), a bad document `marketplace/format`, a wrong key
+ * `marketplace/signature` — never a generic gateway/unavailable. (The mux
+ * stream leg already frames wireOf directly.) */
+const wired = (run) => async (args) => {
+  try {
+    return await run(args);
+  } catch (error) {
+    throw { remote: true, ...wireOf(error) };
+  }
+};
+
 export const buildMarketplaceApi = (deps) => ({
-  'marketplace/index': makeIndexHandler(deps),
-  'marketplace/installed': makeInstalledHandler(deps),
-  'marketplace/remove': makeRemoveHandler(deps),
+  'marketplace/index': wired(makeIndexHandler(deps)),
+  'marketplace/installed': wired(makeInstalledHandler(deps)),
+  'marketplace/remove': wired(makeRemoveHandler(deps)),
 });
 
 /** The install stream: resolve from the verified index, then the REAL

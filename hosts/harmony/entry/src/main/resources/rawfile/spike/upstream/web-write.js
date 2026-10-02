@@ -29,6 +29,10 @@ import {
   makeSettingsWrite,
 } from 'upstream/web-write-settings.js';
 import { makePluginInventoryHandler, makePluginManagerHandlers } from 'upstream/web-write-inventory.js';
+// The marketplace opt-in's VALIDATION (marketplaceOf) lives with the shape's
+// consumer (web-write-marketplace.js); the handlers themselves spread only
+// under the coverage plane's marketplace flag.
+import { marketplaceOf } from 'upstream/web-write-marketplace.js';
 // The COVERAGE plane (api-full-coverage): its endpoint lists, api-map
 // assembly, and stream-open leg live in web-write-coverage.js (split at the
 // code-size gate); the lists are re-exported here so the surface's public
@@ -460,8 +464,9 @@ export const createWriteSurface = (ctx, post, options) => {
       kind: options.routeKind,
     },
     // The plugin marketplace's opt-in (web-write-marketplace.js): the
-    // resolver's index url. Absent → the marketplace legs stay unclaimed.
-    marketplace: options.marketplace,
+    // validated {indexUrl} (publicKey optional — the resolver's declared
+    // gap without it). Absent → the marketplace legs stay unclaimed.
+    marketplace: marketplaceOf(options),
     mintId: mintUUID,
     publish: streams.publish,
   };
