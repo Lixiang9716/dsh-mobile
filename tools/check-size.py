@@ -58,6 +58,14 @@ STAGED_CLOSURE_DIRS = (
     "hosts/harmony/entry/src/main/resources/rawfile/spike/",
 )
 
+# Pinned vendored agent skills (.agents/skills/*/ORIGIN.md carries the pin):
+# upstream files are kept verbatim, so the size contract cannot apply without
+# forking the upstream tool. The upstream repo of record ships the review
+# workflow; ORIGIN.md is the provenance and refresh record.
+VENDORED_AGENT_SKILL_DIRS = (
+    ".agents/skills/apple-design/",
+)
+
 # Bare-method signature: `name(args) {` — exclude control-flow keywords so
 # `if (...) {` is not counted as a function start.
 CTRL = r"(?!(if|for|while|switch|catch|else|try|do|match|when|with|return|function)\b)"
@@ -361,7 +369,8 @@ def main():
     # the canonical file carries the violation, the copy is byte-verified by
     # the closures gate.
     files = [f for f in files if VENDOR_SEGMENT not in f
-             and not f.startswith(STAGED_CLOSURE_DIRS)]
+             and not f.startswith(STAGED_CLOSURE_DIRS)
+             and not f.startswith(VENDORED_AGENT_SKILL_DIRS)]
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0
