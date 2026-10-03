@@ -785,6 +785,7 @@ const BUNDLE_FILES: string[] = [
     'system-plugins/dsh-shell-ish/manifest.json',
     'system-plugins/dsh-shell-wasm/index.js',
     'system-plugins/dsh-shell-wasm/manifest.json',
+    'system-plugins/dsh-shell-wasm/programs.js',
     'vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js',
     'vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js',
     'vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs',
