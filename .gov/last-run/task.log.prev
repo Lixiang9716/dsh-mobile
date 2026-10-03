@@ -173,5 +173,7 @@ done  T-0164 Marketplace opt-in: the seat's config-file route claims the resolve
 done  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); repair the matrix Android leg
 done  T-0166 Batched emulator+surface testing via workflow (T-0166): build, host, web, device legs + independent confirmation
 done  T-0167 Overnight test-fix loop until 09:00 (T-0167): Android full, then HarmonyOS
-open  T-0168 T-0169/#323: tool-run deadline + turn watchdog on the mobile seat (obey rules@ee4951678e7c)
-task: 176 card(s) — 9 open (9 unticked item(s); --strict blocks on them), 0 stale, 102 done, 65 voided
+done  T-0168 T-0169/#323: tool-run deadline + turn watchdog on the mobile seat
+open  T-0168 Workflow all-fix round (T-0168): #324 preset cards, #323 runtime wedge, #321 upstream-suite deps (obey rules@ee4951678e7c)
+voided T-0169 fix the raw upstream-suite vitest face's Cannot-find-package failures (issue 321)
+task: 178 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 103 done, 66 voided
