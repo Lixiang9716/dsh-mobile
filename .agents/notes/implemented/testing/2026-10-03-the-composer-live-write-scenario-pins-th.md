@@ -64,7 +64,12 @@ in walk order (60 expects): selection seq 11, notice seq 17, header seq
 (system + history + prompt + notice — the parity fact rides the real
 request), turn B's scripted deltas, the fold `{lastUsed: mock-2,
 pending: null}`, and the sorted-flush `rpc.observed` row for
-session/selectModel. The drive's acks are checked only to fail early on
+session/selectModel. The one deliberately UNPINNED field is the wire
+request's `tools` count: #343's web-plane tool joins the loop's roster
+around the first turn, and the mount races the composer drive (measured
+both orders — CI's merge ref ran 14/15, a warm local run 15/15), so a
+pinned count would flake; the routing/parity facts the row exists for
+are all deterministic. The drive's acks are checked only to fail early on
 a structured refusal — the journal rows are the evidence. Mirrors:
 runtime/spike + android assets + harmony rawfile (`llm-route.js` rides
 all three; the scenario is android-only).
