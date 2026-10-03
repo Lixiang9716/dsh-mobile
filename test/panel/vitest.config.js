@@ -13,6 +13,10 @@ export default defineConfig({
   test: {
     include: ['*.test.js'],
     environment: 'node',
+    // The #323 deadline suite exercises the vendored @deepseek-ai/dsh-timeout;
+    // the vendor trees are untracked, so globalSetup stages the pinned
+    // package into .vendored/ from the tracked mirror (see provision-vendor.mjs).
+    globalSetup: ['./provision-vendor.mjs'],
   },
   resolve: {
     alias: {
@@ -20,6 +24,7 @@ export default defineConfig({
       'ed25519.js': fileURLToPath(new URL('../../runtime/spike/ed25519.js', import.meta.url)),
       'canonical-json.js': fileURLToPath(new URL('../../runtime/spike/canonical-json.js', import.meta.url)),
       'marketplace-resolver.js': fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)),
+      '@deepseek-ai/dsh-timeout': fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)),
     },
   },
 });

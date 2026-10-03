@@ -10,22 +10,22 @@
     {
       "host": "harmony",
       "roots": 27,
-      "reached": 137,
-      "scopedReached": 122,
-      "skippedBare": 29,
+      "reached": 140,
+      "scopedReached": 125,
+      "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Index.ets BUNDLE_FILES",
-          "rows": 953,
+          "rows": 956,
           "gaps": [],
           "stale": [],
           "advisory": false
         },
         {
           "label": "ci/vendor-official.sh CLOSURE/SPINE_OURS",
-          "rows": 320,
+          "rows": 323,
           "gaps": [
             {
               "file": "scenario/device-plane.js",
@@ -84,7 +84,7 @@
             },
             {
               "file": "system-plugins/dsh-office/index.js",
-              "via": "upstream/boot.js:332",
+              "via": "upstream/boot.js:300",
               "kind": "dynamic-import"
             },
             {
@@ -119,17 +119,17 @@
             },
             {
               "file": "system-plugins/dsh-open-design/index.js",
-              "via": "upstream/boot.js:58",
+              "via": "upstream/boot.js:72",
               "kind": "import-from"
             },
             {
               "file": "system-plugins/dsh-shell-ish/index.js",
-              "via": "upstream/boot.js:54",
+              "via": "upstream/boot.js:68",
               "kind": "import-from"
             },
             {
               "file": "system-plugins/dsh-shell-wasm/index.js",
-              "via": "upstream/boot.js:49",
+              "via": "upstream/boot.js:63",
               "kind": "import-from"
             },
             {
@@ -144,7 +144,7 @@
             },
             {
               "file": "upstream/tool-present.js",
-              "via": "upstream/boot.js:350",
+              "via": "upstream/boot-coverage-rows.js:74",
               "kind": "dynamic-import"
             },
             {
@@ -212,6 +212,7 @@
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",
+        "upstream/boot-coverage-rows.js",
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
@@ -278,7 +279,9 @@
         "upstream/shims/web-multipart.js",
         "upstream/shims/web-storage.js",
         "upstream/shims/web-streams.js",
+        "upstream/tool-deadline.js",
         "upstream/tool-present.js",
+        "upstream/turn-watchdog.js",
         "upstream/web-boot.js",
         "upstream/web-shims.js",
         "upstream/web-write-catalog.js",
@@ -302,9 +305,9 @@
     {
       "host": "android",
       "roots": 22,
-      "reached": 132,
-      "scopedReached": 117,
-      "skippedBare": 29,
+      "reached": 135,
+      "scopedReached": 120,
+      "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
@@ -366,6 +369,7 @@
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",
+        "upstream/boot-coverage-rows.js",
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
@@ -432,7 +436,9 @@
         "upstream/shims/web-multipart.js",
         "upstream/shims/web-storage.js",
         "upstream/shims/web-streams.js",
+        "upstream/tool-deadline.js",
         "upstream/tool-present.js",
+        "upstream/turn-watchdog.js",
         "upstream/web-boot.js",
         "upstream/web-shims.js",
         "upstream/web-write-catalog.js",
@@ -456,15 +462,15 @@
     {
       "host": "ios",
       "roots": 63,
-      "reached": 184,
-      "scopedReached": 162,
-      "skippedBare": 35,
+      "reached": 187,
+      "scopedReached": 165,
+      "skippedBare": 36,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Tools/gen_bundle_header.py RESOURCES+TREES",
-          "rows": 81,
+          "rows": 84,
           "gaps": [],
           "stale": [],
           "advisory": false
@@ -567,6 +573,7 @@
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",
+        "upstream/boot-coverage-rows.js",
         "upstream/boot.js",
         "upstream/llm-route.js",
         "upstream/llm-transport.js",
@@ -637,7 +644,9 @@
         "upstream/shims/web-multipart.js",
         "upstream/shims/web-storage.js",
         "upstream/shims/web-streams.js",
+        "upstream/tool-deadline.js",
         "upstream/tool-present.js",
+        "upstream/turn-watchdog.js",
         "upstream/web-boot.js",
         "upstream/web-shims.js",
         "upstream/web-write-catalog.js",

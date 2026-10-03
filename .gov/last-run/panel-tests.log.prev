@@ -1,12 +1,18 @@
-RUN  v4.1.11 /home/lx/dsh-mobile/test/panel
+RUN  v4.1.11 /tmp/fix-323/test/panel
 
- ✓ onboarding-core.test.js (24 tests) 8ms
- ✓ marketplace-core.test.js (20 tests) 12ms
- ✓ marketplace-resolver.test.js (13 tests) 51ms
- ✓ ed25519.test.js (16 tests) 1065ms
-     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1029ms
+provision-vendor: dsh-timeout already staged
+ ✓ marketplace-core.test.js (20 tests) 14ms
+ ✓ onboarding-core.test.js (24 tests) 11ms
+ ✓ marketplace-resolver.test.js (13 tests) 53ms
+ ✓ tool-deadline.test.js (9 tests) 678ms
+ ✓ ed25519.test.js (16 tests) 1170ms
+     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1127ms
+ ✓ turn-watchdog.test.js (6 tests) 1515ms
+     ✓ a silent running turn is cancelled within the budget, never wedged  403ms
+     ✓ the cancel carries the watchdog cause and keeps the inbox  301ms
+     ✓ a turn that keeps making progress is never cancelled  606ms
 
- Test Files  4 passed (4)
-      Tests  73 passed (73)
-   Start at  21:14:19
-   Duration  1.26s (transform 266ms, setup 0ms, import 344ms, tests 1.14s, environment 0ms)
+ Test Files  6 passed (6)
+      Tests  88 passed (88)
+   Start at  08:59:55
+   Duration  1.73s (transform 291ms, setup 0ms, import 423ms, tests 3.44s, environment 1ms)
