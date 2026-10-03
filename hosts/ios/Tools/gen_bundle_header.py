@@ -181,6 +181,7 @@ RESOURCES = [
     ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
     ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
+    ("scenario_manager_legs_probe_js", SPIKE / "scenario" / "manager-legs-probe.js"),
     # The spike-root runtime files + upstream adapters Swift stages by name
     # (SpikeBundleStager / SessionServe / SessionRuntime) — same provenance
     # as the scenario block above: pre-refactor RESOURCES rows, restored.
@@ -202,6 +203,11 @@ RESOURCES = [
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("upstream_web_write_onboarding_js", SPIKE / "upstream" / "web-write-onboarding.js"),
     ("upstream_web_write_marketplace_js", SPIKE / "upstream" / "web-write-marketplace.js"),
+    # issue #335 A1+B3: the pluginManager WRITE legs (§4 pipeline + receipts
+    # journal + workspace registry) and the dynamicCordisRunner runtime-side
+    # legs (the honest mobile cordis answers).
+    ("upstream_web_write_plugin_manager_js", SPIKE / "upstream" / "web-write-plugin-manager.js"),
+    ("upstream_web_write_cordis_js", SPIKE / "upstream" / "web-write-cordis.js"),
     # the #323 guard rings (boot.js mounts both): the per-tool deadline and
     # the turn-level watchdog
     ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),

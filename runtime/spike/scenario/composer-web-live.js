@@ -29,6 +29,7 @@ import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
 import { writeSurfaceOptions } from 'scenario/write-surface-options.js';
+import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -251,9 +252,10 @@ const installRuntimeHalf = (ctx, cfg, route) => {
  * same wire boundary the page uses: a synthesized `api.request` answered by
  * the resident runtime half, the api.respond asserted on the bus frames.
  * Runs BEFORE the page loads — the record order is deterministic (page
- * traffic cannot interleave). The 插件 snapshot must be the honest read-only
- * one (managementAvailable false), and a plugin-manager write endpoint must
- * stay UNCLAIMED (the carrier's structured unimplemented, not a handler). */
+ * traffic cannot interleave). The 插件 snapshot's managementAvailable stays
+ * false (the desktop panel's machinery); the pluginManager LIST legs answer
+ * the honest per-tier disposition (read-only spine/staged, patchId
+ * workspace rows). */
 const SETTINGS_PROBES = [
   { rpcId: 'probe/agentPresets-list-1', endpoint: 'agentPresets/list' },
   { rpcId: 'probe/pluginInventory-list-1', endpoint: 'pluginInventory/list' },
@@ -294,30 +296,10 @@ const probeSettingsRoster = async () => {
 /** The 插件 inventory + manager-legs probes and the probe-done bus line
  * (split from probeSettingsSurfaces at the file-size gate). */
 
-/** The manager LIST-legs probe (split out at the file-size gate). */
-const probeManagerLegs = async () => {
-  // The manager LIST legs answer READ-ONLY rows (the wire's own
-  // `readOnlyReason: 'management-required'`); the write legs stay unclaimed.
-  const manager = await awaitRespond('probe/pluginManager-listBundles-1');
-  demand(manager.ok === true,
-    `pluginManager/listBundles did not answer ok: ${JSON.stringify(manager.error ?? manager)}`);
-  const bundles = manager.value ?? [];
-  demand(bundles.length >= 1 && bundles.every((b) => b.readOnlyReason === 'management-required'
-    && Array.isArray(b.rows) && b.rows.length > 0),
-    `the read-only bundles are misshaped: ${JSON.stringify(bundles).slice(0, 160)}`);
-  emit('settings.pluginManager.readonly', {
-    bundles: bundles.length,
-    bundleRows: bundles.reduce((sum, b) => sum + b.rows.length, 0),
-    readOnlyReason: 'management-required',
-  });
-  // Tell the carrier seat the probes are done: it gates the page open on
-  // this line, so the settings.* records are always on the log BEFORE the
-  // page-serve records — the manifest order is deterministic, never a race
-  // (measured 2026-09-22: without the gate the two orderings alternated
-  // between runs).
-  post({ type: 'settings.probes.done' });
-  log.debug('settings probes done', {});
-};
+/** The manager LIST-legs probe: the shared two-tier demand + record
+ * (scenario/manager-legs-probe.js, #335 A1). */
+const probeManagerLegs = () =>
+  probeManagerLegsShared({ awaitRespond, emit });
 
 const probeSettingsPlugins = async () => {
   // 插件 inventory: the honest read-only snapshot (spine + staged bundles +

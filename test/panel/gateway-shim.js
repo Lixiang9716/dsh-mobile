@@ -76,6 +76,9 @@ export const __httpRoute = (url, bodyBytes, status = 200) => {
 
 export const __httpReset = () => httpRoutes.clear();
 
+/** Test-side read of one stored file (the full `scope/path` key). */
+export const __dump = (key) => workspace.get(key);
+
 export const httpFetch = async (url, opts = {}) => {
   const route = httpRoutes.get(url);
   if (route === undefined) throw new GatewayError('network', 'httpFetch', `no route: ${url}`);
