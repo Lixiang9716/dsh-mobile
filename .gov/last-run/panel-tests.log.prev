@@ -1,18 +1,18 @@
 RUN  v4.1.11 /tmp/fix-323/test/panel
 
 provision-vendor: dsh-timeout already staged
- ✓ onboarding-core.test.js (24 tests) 9ms
- ✓ marketplace-core.test.js (20 tests) 9ms
- ✓ marketplace-resolver.test.js (13 tests) 62ms
- ✓ tool-deadline.test.js (7 tests) 332ms
+ ✓ marketplace-core.test.js (20 tests) 14ms
+ ✓ onboarding-core.test.js (24 tests) 11ms
+ ✓ marketplace-resolver.test.js (13 tests) 53ms
+ ✓ tool-deadline.test.js (9 tests) 678ms
  ✓ ed25519.test.js (16 tests) 1170ms
-     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1128ms
- ✓ turn-watchdog.test.js (5 tests) 1513ms
-     ✓ fails a silent running turn in-band within the budget (cancel with the watchdog cause, inbox kept)  403ms
+     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1127ms
+ ✓ turn-watchdog.test.js (6 tests) 1515ms
+     ✓ a silent running turn is cancelled within the budget, never wedged  403ms
      ✓ the cancel carries the watchdog cause and keeps the inbox  301ms
-     ✓ re-arms on progress: a turn that keeps making progress is never cancelled  604ms
+     ✓ a turn that keeps making progress is never cancelled  606ms
 
  Test Files  6 passed (6)
-      Tests  85 passed (85)
-   Start at  08:58:21
-   Duration  1.73s (transform 319ms, setup 0ms, import 479ms, tests 3.09s, environment 1ms)
+      Tests  88 passed (88)
+   Start at  08:59:55
+   Duration  1.73s (transform 291ms, setup 0ms, import 423ms, tests 3.44s, environment 1ms)

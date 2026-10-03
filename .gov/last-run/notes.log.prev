@@ -1,2 +1,2 @@
-.agents/notes/implemented/bug-fix/2026-10-03-tool-run-deadline.md: Status must be exactly 'implemented' (the lifecycle is the directory; got '')
-verify_notes: 1 violation(s) in 222 note(s)
+note: .agents/notes/implemented/process/2026-09-21-the-release-token-probe-tests-the-write-.md is superseded by 2026-09-21-the-release-pr-gets-its-required-check-b.md — the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.
+verify_notes: 222 note(s) ok

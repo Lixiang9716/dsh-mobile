@@ -10,6 +10,4 @@ code-size: note — skipped hosts/ios/App/Source/SessionLiveProbe.swift: parse e
 code-size: note — skipped hosts/ios/App/Source/SessionLiveRuntime.swift: parse errors — falling back
 code-size: note — skipped hosts/ios/App/Source/SessionServe.swift: parse errors — falling back
 code-size: note — skipped hosts/ios/App/Source/SessionWriteRuntime.swift: parse errors — falling back
-test/panel/tool-deadline.test.js:32: FUNC 85 lines > 50
-test/panel/turn-watchdog.test.js:26: FUNC 75 lines > 50
-code-size: 451 source file(s) checked (439 via gov parse, 12 fallback; file<=500, func<=50, indent<=5); 2 violation(s)
+code-size: 451 source file(s) checked (439 via gov parse, 12 fallback; file<=500, func<=50, indent<=5); 0 violation(s)
