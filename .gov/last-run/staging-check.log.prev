@@ -9,23 +9,23 @@
   "results": [
     {
       "host": "harmony",
-      "roots": 27,
-      "reached": 140,
-      "scopedReached": 125,
+      "roots": 28,
+      "reached": 141,
+      "scopedReached": 126,
       "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Index.ets BUNDLE_FILES",
-          "rows": 956,
+          "rows": 957,
           "gaps": [],
           "stale": [],
           "advisory": false
         },
         {
           "label": "ci/vendor-official.sh CLOSURE/SPINE_OURS",
-          "rows": 323,
+          "rows": 324,
           "gaps": [
             {
               "file": "scenario/device-plane.js",
@@ -194,6 +194,7 @@
         "scenario/upstream-suite-leg.js",
         "scenario/upstream-suite-type-world.js",
         "scenario/upstream-test-harness.js",
+        "scenario/write-surface-options.js",
         "sha256.js",
         "system-plugins/dsh-fs/index.js",
         "system-plugins/dsh-office/excel-core.js",
@@ -304,16 +305,16 @@
     },
     {
       "host": "android",
-      "roots": 22,
-      "reached": 135,
-      "scopedReached": 120,
+      "roots": 24,
+      "reached": 137,
+      "scopedReached": 122,
       "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "ci/stage-spine-closure.sh",
-          "rows": 19,
+          "rows": 21,
           "gaps": [],
           "stale": [],
           "advisory": false
@@ -334,6 +335,7 @@
         "registry.js",
         "scenario/agent-flow.js",
         "scenario/agent-presets-probe-seed.js",
+        "scenario/android-capability-binding.js",
         "scenario/android-composer-live-write.js",
         "scenario/android-session-live-read.js",
         "scenario/ble-plane.js",
@@ -351,6 +353,7 @@
         "scenario/upstream-suite-leg.js",
         "scenario/upstream-suite-type-world.js",
         "scenario/upstream-test-harness.js",
+        "scenario/write-surface-options.js",
         "sha256.js",
         "system-plugins/dsh-fs/index.js",
         "system-plugins/dsh-office/excel-core.js",
@@ -461,9 +464,9 @@
     },
     {
       "host": "ios",
-      "roots": 63,
-      "reached": 187,
-      "scopedReached": 165,
+      "roots": 64,
+      "reached": 188,
+      "scopedReached": 166,
       "skippedBare": 36,
       "brokenEdges": [],
       "missingRoots": [],
@@ -554,6 +557,7 @@
         "scenario/upstream-test-harness.js",
         "scenario/upstream-web-boot.js",
         "scenario/userland-shell.js",
+        "scenario/write-surface-options.js",
         "semver-range.js",
         "sha256.js",
         "system-plugins/dsh-fs/index.js",

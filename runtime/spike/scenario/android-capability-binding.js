@@ -99,6 +99,10 @@ const probeBytes = () => Uint8Array.from([...PROBE].map((c) => c.charCodeAt(0)))
 const bytesEqual = (a, b) => a.length === b.length && [...a].every((v, i) => v === b[i]);
 const SESSION_ID = 's-m4-0001';
 const TURN_ONE = ['Host', ' binding'];
+// The capability plane's phased rows (contract/proposals v1.10.0): shapes on
+// record, implementations follow as their own changes — the descriptor
+// declares them unavailable by design (GatewayCore PHASED_ROWS).
+const PHASED_ROWS = ['cameraRecordStart', 'cameraRecordStop'];
 
 if (!globalThis.__dshGatewayNegotiate('gateway@1')) {
   fail('gateway negotiation failed');
@@ -113,9 +117,12 @@ async function main() {
   emit('gateway.negotiated', { version: 'gateway@1' });
 
   const descriptor = JSON.parse(globalThis.__dshGatewayDescriptor());
+  // every unavailable row must be one of the known phased rows, so a
+  // primitive that regresses to unavailable (or a face that quietly widens
+  // the list) still fails here, loudly, by name (gateway-binding.js's rule).
   demand(
-    descriptor.unavailable.length === 0,
-    `host declared unavailable primitives: ${descriptor.unavailable.join(',')}`,
+    descriptor.unavailable.every((name) => PHASED_ROWS.includes(name)),
+    `host declared unexpected unavailable primitives: ${descriptor.unavailable.join(',')}`,
   );
   emit('descriptor.declared', {
     available: descriptor.available.length,
