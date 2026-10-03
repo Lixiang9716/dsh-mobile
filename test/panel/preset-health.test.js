@@ -53,11 +53,14 @@ const markerNames = () => {
     } catch { /* a dir without a package.json carries no marker — the seed rule */ }
   }
   const stager = readFileSync(join(REPO, 'hosts/android/ci/stage-spine-closure.sh'), 'utf8');
-  const rosters = [...stager.matchAll(/^for pkg in (.+); do$/gm)];
-  expect(rosters.length, 'stage-spine-closure.sh roster loops not found').toBeGreaterThanOrEqual(2);
+  const joined = stager.replace(/\\\n\s*/g, ' '); // the rosters wrap lines
+  const rosters = [...joined.matchAll(/for pkg in ([^;]+); do/g)];
+  expect(rosters.length, 'stage-spine-closure.sh roster loops not found').toBeGreaterThanOrEqual(4);
   for (const roster of rosters) {
     for (const pkg of roster[1].trim().split(/\s+/)) {
-      names.add(`@deepseek-ai/dsh-${pkg}`);
+      // dsh-face list tokens are workspace names (agent, goal, skill…);
+      // the npm-face and check loops name the published dirs (dsh-goal…).
+      names.add(pkg.startsWith('dsh-') ? `@deepseek-ai/${pkg}` : `@deepseek-ai/dsh-${pkg}`);
     }
   }
   return names;
