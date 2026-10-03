@@ -1,0 +1,23 @@
+{
+  "title": "fix/346-ws: zero-anchor non-result pages stop parsing to silent-empty success",
+  "created": "2026-10-03T23:14:23+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] Ground fixtures from live DDG fetches (results / genuine no-results / 202 challenge)",
+    "[x] parseDuckDuckGoHtml: zero anchors + no results-list DOM + no no-results DOM -> CODE_CHALLENGED with truncated HTML sample",
+    "[x] Genuine no-results structure parses to legal empty success",
+    "[x] Panel tests: variant fixture throws CODE_CHALLENGED, no-results fixture empty success, provider-level 200-variant regression",
+    "[x] bash test/panel/run.sh all green",
+    "[x] Closure sync to host copies (closures gate)",
+    "Agent Note, commit, push, PR merged"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0177"
+}
