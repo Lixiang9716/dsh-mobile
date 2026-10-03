@@ -172,6 +172,11 @@ done  T-0163 session/fork: the composer Fork session leg forks the journal serve
 done  T-0164 Marketplace opt-in: the seat's config-file route claims the resolver legs
 done  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); repair the matrix Android leg
 done  T-0166 Batched emulator+surface testing via workflow (T-0166): build, host, web, device legs + independent confirmation
+<<<<<<< Updated upstream
 done  T-0167 Overnight test-fix loop until 09:00 (T-0167): Android full, then HarmonyOS
 open  T-0168 T-0169/#323: tool-run deadline + turn watchdog on the mobile seat (obey rules@ee4951678e7c)
 task: 176 card(s) — 9 open (9 unticked item(s); --strict blocks on them), 0 stale, 102 done, 65 voided
+=======
+open  T-0167 Overnight test-fix loop until 09:00 (T-0167): Android full, then HarmonyOS (obey rules@ee4951678e7c)
+task: 175 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 101 done, 65 voided
+>>>>>>> Stashed changes

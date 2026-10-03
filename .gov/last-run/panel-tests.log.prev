@@ -1,5 +1,6 @@
 RUN  v4.1.11 /tmp/fix-323/test/panel
 
+<<<<<<< Updated upstream
 provision-vendor: dsh-timeout already staged
  ✓ marketplace-core.test.js (20 tests) 14ms
  ✓ onboarding-core.test.js (24 tests) 11ms
@@ -16,3 +17,15 @@ provision-vendor: dsh-timeout already staged
       Tests  88 passed (88)
    Start at  08:59:55
    Duration  1.73s (transform 291ms, setup 0ms, import 423ms, tests 3.44s, environment 1ms)
+=======
+ ✓ onboarding-core.test.js (24 tests) 6ms
+ ✓ marketplace-core.test.js (20 tests) 14ms
+ ✓ marketplace-resolver.test.js (13 tests) 45ms
+ ✓ ed25519.test.js (16 tests) 1113ms
+     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1070ms
+
+ Test Files  4 passed (4)
+      Tests  73 passed (73)
+   Start at  06:53:58
+   Duration  1.31s (transform 243ms, setup 0ms, import 302ms, tests 1.18s, environment 0ms)
+>>>>>>> Stashed changes
