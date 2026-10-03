@@ -95,6 +95,7 @@ const BUNDLE_FILES: string[] = [
   'fixtures/dsh-notes.js',
   'scenario/officialweb-web-live.js',
   'scenario/composer-web-live.js',
+  'scenario/write-surface-options.js',
   'scenario/harmony-httpfetch-streaming.js',
   'scenario/harmony-session-live-read.js',
   'scenario/harmony-composer-live-write.js',

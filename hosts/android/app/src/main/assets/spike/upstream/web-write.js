@@ -384,6 +384,25 @@ const makeCancelSession = (ctx) => async (args) => {
  * @returns {api, openStream, dispose}
  */
 
+/** The settings 插件 legs (web-write-inventory.js): the read-only inventory
+ * snapshot plus the manager's LIST legs — the latter carry the workspace
+ * registry tier (the plugins the agent authors and self-installs during
+ * creation turns). The manager's WRITE legs stay unclaimed (fail loud).
+ * (Split from buildApiMap at the file-size gate.) */
+const makePluginInventoryApiEntries = (ctx, options) => {
+  const deps = {
+    spine: options.spine,
+    stagedPlugins: options.stagedPlugins,
+    ...(options.workspaceRegistry === undefined ? {} : { workspaceRegistry: options.workspaceRegistry }),
+  };
+  return {
+    'pluginInventory/list': makePluginInventoryHandler(ctx, deps),
+    ...Object.fromEntries(Object.entries(
+      makePluginManagerHandlers(ctx, deps),
+    ).map(([name, handler]) => [`pluginManager/${name}`, handler])),
+  };
+};
+
 /** The /api handler map (split from createWriteSurface at the file-size
  * gate): every claimed endpoint's handler, keyed by wire name. */
 const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
@@ -415,19 +434,7 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // spine + the staged client bundles + the Agent 预设 compositions
       // (upstream/web-write-inventory.js). managementAvailable is false —
       // the plugin-manager's write machinery stays unclaimed (fail loud).
-      'pluginInventory/list': makePluginInventoryHandler(ctx, {
-        spine: options.spine,
-        stagedPlugins: options.stagedPlugins,
-      }),
-      // The manager's LIST legs: the same snapshot as read-only rows (the
-      // wire's own `readOnlyReason: 'management-required'` member). Writes
-      // stay unclaimed (fail loud).
-      ...Object.fromEntries(Object.entries(
-        makePluginManagerHandlers(ctx, {
-          spine: options.spine,
-          stagedPlugins: options.stagedPlugins,
-        }),
-      ).map(([name, handler]) => [`pluginManager/${name}`, handler])),
+      ...makePluginInventoryApiEntries(ctx, options),
       ...shellLoadHandlers(deps.llmRoute),
       // The desktop's endpointPresets service is NOT public (no npm package —
       // unlike agentPresets). The platform fact this host can honestly serve:

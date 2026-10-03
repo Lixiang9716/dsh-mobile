@@ -182,6 +182,7 @@ logger.js
 registry.js
 scenario/officialweb-web-live.js
 scenario/composer-web-live.js
+scenario/write-surface-options.js
 upstream/web-boot.js
 upstream/web-shims.js
 upstream/shims/buffer.js

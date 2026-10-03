@@ -109,11 +109,28 @@ export const makePluginInventoryHandler = (ctx, deps) => async () => {
     enabled: true, // composed into the served boot graph (this list answers post-boot)
     fiberPhase: 'active',
   }));
+  // The workspace registry tier (the agent-authored dsh.plugins/1 entries —
+  // the one-sentence-creation path). Optional provider: absent → no rows (the
+  // historical shape); malformed → reject loud (rule 5). These are
+  // session-scope file compositions: no live fiber, never host-managed.
+  let workspaceEntries = [];
+  if (typeof deps.workspaceRegistry === 'function') {
+    const entries = await deps.workspaceRegistry();
+    if (!Array.isArray(entries)) {
+      throw new Error('web-write-inventory: the workspace registry provider did not answer an array');
+    }
+    workspaceEntries = entries.map((entry) => ({
+      entryId: entry.id,
+      moduleName: entry.name ?? entry.id,
+      enabled: entry.enabled === true,
+      fiberPhase: null,
+    }));
+  }
   return {
     // Read-only host: bundle install/enable is the desktop plugin-manager's
     // machinery — the plugin-manager panel renders its unavailable state.
     managementAvailable: false,
-    entries: [...spineRows, ...clientRows],
+    entries: [...spineRows, ...clientRows, ...workspaceEntries],
     agentPresets: await presetPlane(ctx),
   };
 };
@@ -155,6 +172,46 @@ const spineReadOnlyRows = (rows, readOnly) => {
   }));
 };
 
+/** The workspace registry tier: plugins the AGENT authored and self-installed
+ * into the workspace's dsh.plugins/1 registry (the one-sentence-creation
+ * path). Read-only here — workspace-scope plugins live in the sandbox, and
+ * host management is desktop machinery; the tier exists so the panel says
+ * what actually runs. The provider is optional: without one the tier is
+ * empty (no fabricated rows); a provider that answers a malformed registry
+ * rejects loud (rule 5). */
+const workspaceRows = async (deps, readOnly) => {
+  if (typeof deps.workspaceRegistry !== 'function') return [];
+  const entries = await deps.workspaceRegistry();
+  if (!Array.isArray(entries)) {
+    throw new Error('web-write-inventory: the workspace registry provider did not answer an array');
+  }
+  return entries.map((entry) => ({
+    entryId: entry.id,
+    moduleName: entry.name ?? entry.id,
+    enabled: entry.enabled === true,
+    fiberPhase: null, // a workspace-file composition: no live fiber
+    readOnlyReason: readOnly,
+  }));
+};
+
+const workspaceBundle = async (deps, readOnly) => {
+  const rows = (await workspaceRows(deps, readOnly)).map((row) => ({
+    rowId: row.entryId,
+    moduleName: row.moduleName,
+    entryId: row.entryId,
+  }));
+  return {
+    name: 'workspace-registry',
+    enabled: true,
+    installed: rows.length > 0,
+    optional: true,
+    removable: false,
+    readOnlyReason: readOnly,
+    rows,
+    overrides: [],
+  };
+};
+
 export const makePluginManagerHandlers = (ctx, deps) => {
   if (typeof deps?.spine !== 'function' || typeof deps?.stagedPlugins !== 'function') {
     throw new Error('web-write-inventory: no spine/staged-plugin provider was wired');
@@ -192,7 +249,8 @@ export const makePluginManagerHandlers = (ctx, deps) => {
         })),
         overrides: [],
       },
+      await workspaceBundle(deps, READ_ONLY),
     ],
-    listPlugins: async () => [...spineRows(), ...stagedRows()],
+    listPlugins: async () => [...spineRows(), ...stagedRows(), ...(await workspaceRows(deps, READ_ONLY))],
   };
 };
