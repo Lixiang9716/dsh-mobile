@@ -243,6 +243,8 @@ js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff9
 @deepseek-ai/dsh-tool-bash@0.1.6-alpha.2|@deepseek-ai/dsh-tool-bash/-/dsh-tool-bash-0.1.6-alpha.2.tgz|6f170629f3762b895a079511aad1931953e3c1fd8c3e03ef6dc677ed9f2ac249
 @deepseek-ai/dsh-tool-pwsh@0.1.6-alpha.2|@deepseek-ai/dsh-tool-pwsh/-/dsh-tool-pwsh-0.1.6-alpha.2.tgz|6647a1a0c8a7fdaa4d836e6dd9aca638df02c8434c8a03be0ddf73b9c5bc71df
 @deepseek-ai/dsh-client-ui-slots@0.1.6-alpha.2|@deepseek-ai/dsh-client-ui-slots/-/dsh-client-ui-slots-0.1.6-alpha.2.tgz|90ef036a6622b027dfbcb46986122eda45e7d0f7617d9fa82aa3d444a99ac887
+@deepseek-ai/dsh-client-ui-cordis@0.1.6-alpha.2|@deepseek-ai/dsh-client-ui-cordis/-/dsh-client-ui-cordis-0.1.6-alpha.2.tgz|3992ce03a9aebae610a5f2ad38e08c5fb52ff9c2375534d28da7523379733817
+@deepseek-ai/dsh-plugin-manager@0.1.6-alpha.2|@deepseek-ai/dsh-plugin-manager/-/dsh-plugin-manager-0.1.6-alpha.2.tgz|b7ba2861980f461fe6d861c19b9e6127548c43e5f72ea08c29ba86d7b13307cd
 diff@9.0.0|diff/-/diff-9.0.0.tgz|b898bf23c95594607576e25ddd4013f1d51ed0e862aaf0732815830c87b3b58f
 yaml@2.9.0|yaml/-/yaml-2.9.0.tgz|008fa204cb1ba700e0272ba045abbf09a6ffe63456e8146ba97cac6c2ad1ef91
 zustand@4.4.7|zustand/-/zustand-4.4.7.tgz|c22d32f791abba72fc246ef1d3ca964d01da204bc73727318a5be61daa2ad66b
