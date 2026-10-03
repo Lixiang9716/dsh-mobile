@@ -9,12 +9,12 @@
     }
   },
   "checklist": [
-    "ui-probe.mjs parses uiautomator XML + WDA JSON, emits a canonical dsh.spike.log ui.probe record",
-    "#179-class synthetic fixture: probe flags the occluding action bar; clean tree passes",
-    "selftest.sh section proves pass/fail through check.mjs (rule 6)",
-    "wired into run-android-full.sh phase 3 (own dsh.ui.probe stream + verdict); ios-ui.py tree export",
-    "README section + testing agent note",
-    "gov run green; emulator leg green locally"
+    "[x] ui-probe.mjs parses uiautomator XML + WDA JSON, emits a canonical dsh.spike.log ui.probe record",
+    "[x] #179-class synthetic fixture: probe flags the occluding action bar; clean tree passes",
+    "[x] selftest.sh section proves pass/fail through check.mjs (rule 6)",
+    "[x] wired into run-android-full.sh phase 3 (own dsh.ui.probe stream + verdict); ios-ui.py tree export",
+    "[x] README section + testing agent note",
+    "[x] gov run green; emulator leg green locally"
   ],
   "status": "open",
   "receipt": null,
