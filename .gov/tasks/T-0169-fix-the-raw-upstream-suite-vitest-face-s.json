@@ -1,0 +1,21 @@
+{
+  "title": "fix the raw upstream-suite vitest face's Cannot-find-package failures (issue 321)",
+  "created": "2026-10-03T01:41:50+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] read the issue and the suite's install/layout mechanism (ensure-dsh-tests.sh, parity-node-modules.sh, vitest.config.ts, package.json)",
+    "[x] stage the missing node-side deps as sha256-pinned vendor faces at the upstream lockfile resolutions (no network installs committed)",
+    "[x] rework the layout: real-name links for every test face, per-package majors nested, vehicle link names fixed, jsdom declared in the tooling manifest",
+    "[x] verify: representative subset of the formerly Cannot-find-package files red on that class; full-run before/after numbers recorded",
+    "agent note + PR with Problem/Decision/Proof + issue 321 backlink"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0169"
+}
