@@ -9,11 +9,11 @@
     }
   },
   "checklist": [
-    "android-capability-binding.js + harmony-capability-binding.js pin the phased set (mirror gateway-binding.js)",
-    "manifests unchanged (already expect unavailable:2); no frozen evidence touched",
-    "gov run green in the worktree",
-    "full run-android-full.sh 5-phase green on the emulator (phase 2 the proof)",
-    "bug-fix agent note; PR merged; issue #332 updated"
+    "[x] android-capability-binding.js + harmony-capability-binding.js pin the phased set (mirror gateway-binding.js)",
+    "[x] manifests unchanged (already expect unavailable:2); no frozen evidence touched",
+    "[x] gov run green in the worktree",
+    "[x] full run-android-full.sh 5-phase green on the emulator (phase 2 the proof)",
+    "[x] bug-fix agent note; PR merged; issue #332 updated"
   ],
   "status": "open",
   "receipt": null,
