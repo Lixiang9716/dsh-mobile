@@ -204,7 +204,7 @@ jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmRun(
 }
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmLastError(
+jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmLast(
         JNIEnv *env, jobject thiz) {
     (void)thiz;
     return (*env)->NewStringUTF(env, g_wasm_err);

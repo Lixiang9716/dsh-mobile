@@ -1,0 +1,22 @@
+{
+  "title": "the release seat's wasm error read kills the process \u2014 nativeWasmLast has no JNI symbol",
+  "created": "2026-10-03T15:11:17+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] fix: the C export answers the Kotlin external (nativeWasmLast) \u2014 the m4LastError pattern restored",
+    "[x] test: panel suite pins the Kotlin<->C JNI closure both directions; test/panel/run.sh green",
+    "[x] note: bug-fix Agent Note with Problem/Decision/Alternatives",
+    "[x] gates: gov run scoped green; commit + push + PR",
+    "[x] device: release APK boots clean on emulator-5558 (no UnsatisfiedLinkError), carrier LISTEN + cookie",
+    "[x] proofs: four proofs collected on the release package, screenshots in .zcode/fix-ab2/"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0176"
+}
