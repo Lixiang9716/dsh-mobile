@@ -1,0 +1,15 @@
+{
+  "scenario": "ui.occlusion",
+  "extract": {
+    "prefix": "dsh.ui.probe:"
+  },
+  "expect": [
+    {
+      "event": "ui.probe",
+      "match": {
+        "probe": "occlusion",
+        "violations": []
+      }
+    }
+  ]
+}

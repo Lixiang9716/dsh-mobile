@@ -268,6 +268,33 @@ wview | sed '/dsh.spike.result: ALL/q' > "$ART/logs.txt"
 grep 'dsh.spike.result' "$ART/logs.txt" > "$ART/results.txt"
 cat "$ART/results.txt"
 grep 'dsh.spike.log:' "$ART/logs.txt" > "$ART/scenario.jsonl" || true
+
+# ---- layout-truth probe (test/e2e/ui-probe.mjs, scenario ui.occlusion) ----
+# The event stream cannot see the #179 class: a native surface painted over
+# the WebView never logs anything, and the page's own drive probes only
+# prove what the page CAN reach. The mounted shell is still foregrounded
+# here (the post-verdict screen IS the mounted-shell evidence), so its tree
+# dump is the honest geometry. The record rides the same captured log on
+# its own dsh.ui.probe: prefix and gets its own one-to-one verdict —
+# committed evidence for the existing manifests stays frozen (matrix.mjs
+# drift-checks expect counts, so a new row in android-officialweb-mount.json
+# would retro-count events the frozen captures cannot contain).
+ui_dump() { # $1 out path — bounded retries (rule 8); uiautomator can refuse
+    deadline=$(( $(date +%s) + 30 ))                        # a mid-layout tree
+    while :; do
+        adb shell uiautomator dump /sdcard/dsh-ui.xml >/dev/null 2>&1 &&
+            adb shell cat /sdcard/dsh-ui.xml > "$1" 2>/dev/null && [ -s "$1" ] && return 0
+        [ "$(date +%s)" -ge "$deadline" ] && return 1
+        sleep 1
+    done
+}
+ui_dump "$ART/ui-tree.xml" || die "official-web: uiautomator dump failed within 30s"
+node test/e2e/ui-probe.mjs --dump "$ART/ui-tree.xml" \
+    --scenario ui.occlusion --append "$ART/logs.txt" --json "$ART/ui-probe.json"
+node test/e2e/check.mjs --manifest $SCEN/ui-occlusion.json \
+    --log "$ART/logs.txt" --out "$ART/verdict-ui-occlusion.json"
+cat "$ART/verdict-ui-occlusion.json"
+
 adb pull "/data/data/$PKG/files/spike-capture-android-officialweb-mount.log" \
     "$ART/capture-android-officialweb-mount.log" >/dev/null 2>&1 \
     || say "capture file pull skipped (run-as fallback)"

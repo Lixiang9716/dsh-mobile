@@ -65,6 +65,53 @@ Proven by `selftest.sh` fixtures (`llm-live-stream-repeat*.txt`: zero deltas fai
 AT the repeat expectation, a delta straying past the next expectation is
 extra).
 
+## The layout-truth probe (`ui.occlusion`)
+
+The event stream cannot see one failure class: a native surface painted
+OVER the web surface logs nothing, and the page's own drive probes only
+prove what the page can reach — touches at occluded coordinates simply
+never arrive (issue #179: an unthemed action bar covered the WebView's top
+~228px; every scenario manifest stayed green). `test/e2e/ui-probe.mjs`
+closes that gap by turning tree GEOMETRY into the same assertion currency:
+it reads a dump of the UI tree — Android `uiautomator dump` XML or the
+WebDriverAgent source (`ios-ui.py tree <path>`, iOS) — and emits ONE
+structured record naming every violation:
+
+- `occluder` — a node outside the web host's subtree that paints content
+  (own or descendant text / interactive) and whose rectangle intersects
+  the WebView's; the #179 detector;
+- `outside` — an interactive descendant of the web host whose center
+  falls outside the host rectangle (clipped or scrolled out);
+- `untappable` — an interactive node with a zero-area rectangle.
+
+The record rides the same captured log file on its own `dsh.ui.probe:`
+prefix and is judged by the ordinary `check.mjs` against
+`scenarios/ui-occlusion.json` (`violations: []` is the pass match — any
+violation fails the scenario, and the mismatch report carries the named
+list, which is the diagnosis). The separate stream is deliberate:
+committed evidence is frozen and `matrix.mjs` drift-checks each verdict's
+expect count against its manifest, so a new row in an existing scenario
+manifest would retro-count events a frozen capture cannot contain.
+
+Wired in `run-android-full.sh` phase 3 (the mounted official shell's tree
+is dumped after the scenario verdict and probed before the phase exits).
+Local-only loop:
+
+```sh
+adb shell uiautomator dump /sdcard/dsh-ui.xml && adb shell cat /sdcard/dsh-ui.xml > tree.xml
+node test/e2e/ui-probe.mjs --dump tree.xml --scenario ui.occlusion --json probe.json
+node test/e2e/check.mjs --manifest test/e2e/scenarios/ui-occlusion.json --log <capture>
+```
+
+Known-benign overlaps (an IME, a banner a leg intentionally raises) are
+excluded by name with `--allow <substring>`, and the exclusion rides the
+record (`allowed` / `dropped`) — an allowance the record does not carry
+would be a silent skip. The probe fails loud (exit 2) on an unparsable
+dump, unparsable geometry, or a dump without any WebView: a probe that
+silently scanned nothing is a vacuous pass. Synthetic #179-class fixtures
+(`testdata/ui-probe-*.xml|json`) prove the pass/fail/loud paths through
+the checker in `selftest.sh`.
+
 ## The audit stream (flat envelope)
 
 The gateway audit log is NOT the unified logger: each record is flat JSON

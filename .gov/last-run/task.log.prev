@@ -174,6 +174,8 @@ done  T-0165 Consider + install fmagent (FM-Agent formal-methods framework); rep
 done  T-0166 Batched emulator+surface testing via workflow (T-0166): build, host, web, device legs + independent confirmation
 done  T-0167 Overnight test-fix loop until 09:00 (T-0167): Android full, then HarmonyOS
 done  T-0168 T-0169/#323: tool-run deadline + turn watchdog on the mobile seat
-open  T-0168 Workflow all-fix round (T-0168): #324 preset cards, #323 runtime wedge, #321 upstream-suite deps (obey rules@ee4951678e7c)
+done  T-0168 Workflow all-fix round (T-0168): #324 preset cards, #323 runtime wedge, #321 upstream-suite deps
 voided T-0169 fix the raw upstream-suite vitest face's Cannot-find-package failures (issue 321)
-task: 178 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 103 done, 66 voided
+done  T-0170 Creator-mode plugin-magic on the real LLM + #323 device regression (T-0169)
+open  T-0171 Layout-truth probe: native occlusion of the web surface becomes a log-asserted scenario event (obey rules@ee4951678e7c)
+task: 180 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 105 done, 66 voided

@@ -1,2 +1,2 @@
 note: .agents/notes/implemented/process/2026-09-21-the-release-token-probe-tests-the-write-.md is superseded by 2026-09-21-the-release-pr-gets-its-required-check-b.md — the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.
-verify_notes: 224 note(s) ok
+verify_notes: 225 note(s) ok
