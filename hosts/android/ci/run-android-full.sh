@@ -37,6 +37,9 @@ case "$DSH_PHASES" in
 esac
 phase_wanted() { case ",$DSH_PHASES," in *",$1,"*) return 0 ;; *) return 1 ;; esac; }
 say "phases: $DSH_PHASES"
+for p in 1 2 3 4 5; do
+    phase_wanted $p || say "phase $p: SKIPPED (DSH_PHASES=$DSH_PHASES)"
+done
 
 # ---- Build here, not "bring your own APK": a stale pre-built APK silently
 # re-proves a build that is no longer the tree (measured 2026-09-22: a
