@@ -13,9 +13,14 @@
     "[x] stage the missing node-side deps as sha256-pinned vendor faces at the upstream lockfile resolutions (no network installs committed)",
     "[x] rework the layout: real-name links for every test face, per-package majors nested, vehicle link names fixed, jsdom declared in the tooling manifest",
     "[x] verify: representative subset of the formerly Cannot-find-package files red on that class; full-run before/after numbers recorded",
-    "agent note + PR with Problem/Decision/Proof + issue 321 backlink"
+    "[x] agent note + PR with Problem/Decision/Proof + issue 321 backlink"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
-  "id": "T-0169"
+  "id": "T-0169",
+  "void": {
+    "ts": "2026-10-03T01:49:59+00:00",
+    "by": "lx@DESKTOP-AOFQD6F",
+    "reason": "all 5 items done (fix + note + PR #327 + issue backlink), but close demands a green receipt on this tree: self-test reds from the pre-existing bundle-files/staging-check drift (reproduced on the pristine base by stashing this diff) plus 8 environment skips (no android/ios/harmony toolchains in this WSL worktree) \u2014 the drift belongs to the weekly-sweep/vendor domain"
+  }
 }
