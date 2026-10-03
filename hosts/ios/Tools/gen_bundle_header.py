@@ -200,6 +200,11 @@ RESOURCES = [
     ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
     ("upstream_web_write_onboarding_js", SPIKE / "upstream" / "web-write-onboarding.js"),
     ("upstream_web_write_marketplace_js", SPIKE / "upstream" / "web-write-marketplace.js"),
+    # the #323 guard rings (boot.js mounts both): the per-tool deadline and
+    # the turn-level watchdog
+    ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
+    ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
+    ("upstream_boot_coverage_rows_js", SPIKE / "upstream" / "boot-coverage-rows.js"),
 ]
 # Directory trees embedded whole and staged back under the same
 # bundle-relative paths: the vendored upstream spine packages (verbatim

@@ -1,0 +1,22 @@
+{
+  "title": "T-0169/#323: tool-run deadline + turn watchdog on the mobile seat",
+  "created": "2026-10-03T00:52:41+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] Root cause read: issue #323 + hang evidence + the tool execution chain (vendored tools dispatchToolBody, agent-loop, gateway, dsh_wasm.c, Android GatewayCore/FsPrimitives)",
+    "[x] Ring 1: upstream/tool-deadline.js \u2014 tools/execute waterfall budget over the vendored dsh-timeout, mounted in boot.js",
+    "[x] Ring 2: upstream/turn-watchdog.js \u2014 silence budget fails the turn in-band (watchdog cause, keepInbox), mounted in boot.js",
+    "[x] Regression: test/panel/tool-deadline.test.js + turn-watchdog.test.js green under bash test/panel/run.sh (83/83)",
+    "[x] Committed closures re-staged (android assets, harmony rawfile + BUNDLE_FILES) and build/check-closures.sh green",
+    "PR opened with Problem/Decision/Proof and the issue comment back-link"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0168"
+}

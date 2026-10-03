@@ -327,6 +327,9 @@ upstream/web-write-files.js
 upstream/web-write-picker.js
 upstream/web-write-workspace.js
 upstream/web-write-catalog.js
+upstream/tool-deadline.js
+upstream/turn-watchdog.js
+upstream/boot-coverage-rows.js
 upstream/shims/async-hooks.js
 upstream/shims/util.js
 upstream/shims/fs-promises.js

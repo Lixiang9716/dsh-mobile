@@ -37,10 +37,24 @@ import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
 import { AgentLoop } from '@deepseek-ai/dsh-agent-loop';
+// The GOAL/COMMAND/FILE-REFERENCE/CREATION rows (split from this file at the
+// code-size gate, 2026-10-03 — same dynamic-import ordering constraints, see
+// the module header).
+import { mountCoverageRows } from 'upstream/boot-coverage-rows.js';
 // The FIRST ported tool package (D9). It exports `{Config, apply, inject,
 // name}` and no default, so the namespace object IS the cordis plugin (it
 // carries the apply/inject/name/Config the kernel reads).
 import * as ToolTodo from '@deepseek-ai/dsh-tool-todo';
+// The per-tool-run deadline (issue #323, ring 1): arms a wall-clock budget
+// around every native tool dispatch through the registry's `tools/execute`
+// waterfall, using the vendored @deepseek-ai/dsh-timeout deadline — a tool
+// body that never settles now fails the call in-band instead of wedging the
+// serial runtime (the T-0167 hang).
+import * as ToolDeadline from 'upstream/tool-deadline.js';
+// The turn-level watchdog (issue #323, ring 2): silence on a running agent
+// beyond the budget fails the turn in-band (agent cancel, watchdog cause) —
+// covers stalls outside tool dispatch (LLM stream, loop awaits).
+import * as TurnWatchdog from 'upstream/turn-watchdog.js';
 // The outboard WebAssembly tool (contract v1.2.0). It is a staged system
 // plugin, not a vendored upstream package: the closure has no WebAssembly tool
 // to port, and an in-house implementation package is where a host-specific
@@ -230,58 +244,9 @@ const mountSkillPlane = async (ctx, skills) => {
   await ctx.plugin(ToolSkill, {});
 };
 
-/** The GOAL row (2026-09-24, the api-full-coverage work stream): the vendored
- * event-sourced GoalService (`ctx.goals`, dsh-goal) — the service the official
- * UI's goals/* Remote namespace reads and the `goal` command family drives.
- * Its injects (`agents`, `sessionProjections`) are both mounted above, so the
- * mount is a plain plugin application; it registers its projection and arms
- * its `agent/created` listener at apply time. Mounted only when the caller
- * configures `options.goals` — the coverage work stream's flag — so every
- * existing spine leg boots byte-identically (the parity/session manifests pin
- * that shape). Dynamic import: same reason as the file-tools row. */
-const mountGoalPlane = async (ctx) => {
-  const Goal = await import('@deepseek-ai/dsh-goal');
-  await ctx.plugin(Goal.default ?? Goal.GoalService, {});
-};
-
-/** The /goal row (agent.cordis.yml row 91): dsh-command-goal injects
- * ["commands", "goals"] — it mounts AFTER the goal plane for that inject
- * order (command plane runs first above), on the interactive flags only so
- * drive legs stay byte-identical. command-compact stays out until the
- * compaction plane lands (its inject). */
-const mountGoalCommand = async (ctx) => {
-  const CommandGoal = await import('@deepseek-ai/dsh-command-goal');
-  await ctx.plugin(CommandGoal.default ?? CommandGoal, {});
-};
-
-/** The FILE-REFERENCE row (same work stream): the vendored local-filesystem
- * file-reference discovery service (`ctx.fileReferences`, dsh-file-reference-local)
- * — the @-mention lexicon the official composer reads (`fileReferences/list`).
- * Injects `agents` only; its search walks the node:fs/promises shim, i.e. the
- * SAME pinned workspace world the `fs` service serves. Mounted only when the
- * caller configures `options.fileReferences` (the coverage flag; see the goal
- * row above for the byte-identical reasoning). */
-const mountFileReferencePlane = async (ctx) => {
-  const FileRefs = await import('@deepseek-ai/dsh-file-reference-local');
-  await ctx.plugin(FileRefs.default ?? FileRefs.LocalFileReferenceService, {});
-};
-
-/** The COMMAND row (2026-09-24, the owner's "/" report): the upstream
- * interactive-command registry (dsh-commands) plus the command-defining
- * plugins the desktop composition mounts (command-feedback first — its deps
- * are already vendored). Commands are plugin-owned: the registry carries no
- * built-ins, so the surface is only as rich as the plugins mounted after it.
- * Mounted only when the caller configures `options.commands` (the user-facing
- * seat), so every existing spine leg boots byte-identically. The registry
- * must precede the command-defining plugins (they register into it). */
-const mountCommandPlane = async (ctx) => {
-  const [Commands, CommandFeedback] = await Promise.all([
-    import('@deepseek-ai/dsh-commands'),
-    import('@deepseek-ai/dsh-command-feedback'),
-  ]);
-  await ctx.plugin(Commands.default ?? Commands, {});
-  await ctx.plugin(CommandFeedback.default ?? CommandFeedback, {});
-};
+/** The GOAL/COMMAND/FILE-REFERENCE/CREATION rows: split from this file at
+ * the code-size gate (2026-10-03) — behavior carried verbatim in
+ * upstream/boot-coverage-rows.js (mountCoverageRows). */
 
 /** Mount the dsh-base bundle's spine rows over the vendored packages, in
  * base-patch order (activation is service-availability driven upstream; here
@@ -320,6 +285,9 @@ const mountSpine = async (ctx, identity) => {
   await ctx.plugin(AgentRegistry);
   await ctx.plugin(SystemPrompt, { personaPrefix: identity.personaPrefix ?? '' });
   await ctx.plugin(ToolRuntime);
+  // Ring 1 rides the registry's own waterfall extension point; mounted with
+  // the other tool-row plugins (its inject waits for `tools`).
+  await ctx.plugin(ToolDeadline, {});
   await ctx.plugin(SessionProjectionRegistry);
   await ctx.plugin(SettingsMemory);
   // The ported tool packages (D9): mounted AFTER `tools`, because a tool
@@ -336,20 +304,9 @@ const mountSpine = async (ctx, identity) => {
   // tool-skill catalog registers its `agent/pre-step` listeners on the
   // context, so every later step sees them). Only when configured.
   if (identity.skills) await mountSkillPlane(ctx, identity.skills);
-  if (identity.commands) await mountCommandPlane(ctx);
-  // The COVERAGE rows (api-full-coverage work stream): gated mounts of the
-  // vendored goal service and file-reference discovery service, each AFTER
-  // agent-loop (both inject `agents`; goals also reads `sessionProjections`).
-  if (identity.goals) await mountGoalPlane(ctx);
-  if (identity.goals && identity.commands) await mountGoalCommand(ctx);
-  if (identity.fileReferences) await mountFileReferencePlane(ctx);
-  // The CREATION row (the creation-mode plugin, 2026-09-26): the present
-  // tool registers into `tools` at apply time, so it mounts with the other
-  // tools — before the agent loop. Only when configured.
-  if (identity.creation) {
-    const Present = await import('upstream/tool-present.js');
-    await ctx.plugin(Present, { maxFiles: 8 });
-  }
+  // The COMMAND/GOAL/FILE-REFERENCE/CREATION rows (gated, see
+  // boot-coverage-rows.js) in their historical order, before the agent loop.
+  await mountCoverageRows(ctx, identity);
   // dsh-base row `agent-loop` with ONE configured agent (config.agents create
   // path — no persistence backend is mounted, matching the base default).
   await ctx.plugin(AgentLoop, {
@@ -363,6 +320,8 @@ const mountSpine = async (ctx, identity) => {
       cwd: identity.cwd,
     }],
   });
+  // Ring 2 sits after the loop it watches (its injects: agentLoop, agents).
+  await ctx.plugin(TurnWatchdog, {});
   await mountPresetPlane(ctx);
 };
 
