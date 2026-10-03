@@ -10,22 +10,22 @@
     {
       "host": "harmony",
       "roots": 28,
-      "reached": 141,
-      "scopedReached": 126,
+      "reached": 142,
+      "scopedReached": 127,
       "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Index.ets BUNDLE_FILES",
-          "rows": 957,
+          "rows": 958,
           "gaps": [],
           "stale": [],
           "advisory": false
         },
         {
           "label": "ci/vendor-official.sh CLOSURE/SPINE_OURS",
-          "rows": 324,
+          "rows": 325,
           "gaps": [
             {
               "file": "scenario/device-plane.js",
@@ -210,6 +210,7 @@
         "system-plugins/dsh-open-design/index.js",
         "system-plugins/dsh-shell-ish/index.js",
         "system-plugins/dsh-shell-wasm/index.js",
+        "system-plugins/dsh-shell-wasm/programs.js",
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",
@@ -306,8 +307,8 @@
     {
       "host": "android",
       "roots": 24,
-      "reached": 137,
-      "scopedReached": 122,
+      "reached": 138,
+      "scopedReached": 123,
       "skippedBare": 30,
       "brokenEdges": [],
       "missingRoots": [],
@@ -369,6 +370,7 @@
         "system-plugins/dsh-open-design/index.js",
         "system-plugins/dsh-shell-ish/index.js",
         "system-plugins/dsh-shell-wasm/index.js",
+        "system-plugins/dsh-shell-wasm/programs.js",
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",
@@ -465,15 +467,15 @@
     {
       "host": "ios",
       "roots": 64,
-      "reached": 188,
-      "scopedReached": 166,
+      "reached": 189,
+      "scopedReached": 167,
       "skippedBare": 36,
       "brokenEdges": [],
       "missingRoots": [],
       "surfaces": [
         {
           "label": "Tools/gen_bundle_header.py RESOURCES+TREES",
-          "rows": 84,
+          "rows": 85,
           "gaps": [],
           "stale": [],
           "advisory": false
@@ -574,6 +576,7 @@
         "system-plugins/dsh-open-design/index.js",
         "system-plugins/dsh-shell-ish/index.js",
         "system-plugins/dsh-shell-wasm/index.js",
+        "system-plugins/dsh-shell-wasm/programs.js",
         "system-plugins/dsh-subprocess-quickjs/index.js",
         "system-plugins/dsh-ui/index.js",
         "tar-mini.js",

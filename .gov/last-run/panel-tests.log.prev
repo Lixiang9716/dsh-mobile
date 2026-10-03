@@ -1,20 +1,21 @@
-RUN  v4.1.11 /home/lx/wt/phase2-fix/test/panel
+RUN  v4.1.11 /home/lx/wt/ci-phases/test/panel
 
 provision-vendor: dsh-timeout already staged
- ✓ marketplace-core.test.js (20 tests) 5ms
- ✓ onboarding-core.test.js (24 tests) 5ms
- ✓ workspace-registry-tier.test.js (8 tests) 8ms
- ✓ preset-health.test.js (4 tests) 15ms
+ ✓ marketplace-core.test.js (20 tests) 10ms
+ ✓ onboarding-core.test.js (24 tests) 6ms
+ ✓ workspace-registry-tier.test.js (8 tests) 9ms
+ ✓ shell-wasm.test.js (13 tests) 13ms
  ✓ marketplace-resolver.test.js (13 tests) 52ms
- ✓ tool-deadline.test.js (9 tests) 678ms
- ✓ ed25519.test.js (16 tests) 1046ms
-     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1010ms
- ✓ turn-watchdog.test.js (6 tests) 1515ms
-     ✓ a silent running turn is cancelled within the budget, never wedged  403ms
+ ✓ preset-health.test.js (4 tests) 16ms
+ ✓ tool-deadline.test.js (9 tests) 679ms
+ ✓ ed25519.test.js (16 tests) 1072ms
+     ✓ 128 generated keypairs: valid accepts, every tamper class refuses  1036ms
+ ✓ turn-watchdog.test.js (6 tests) 1516ms
+     ✓ a silent running turn is cancelled within the budget, never wedged  404ms
      ✓ the cancel carries the watchdog cause and keeps the inbox  302ms
-     ✓ a turn that keeps making progress is never cancelled  606ms
+     ✓ a turn that keeps making progress is never cancelled  605ms
 
- Test Files  8 passed (8)
-      Tests  100 passed (100)
-   Start at  17:48:31
-   Duration  1.74s (transform 437ms, setup 0ms, import 650ms, tests 3.32s, environment 1ms)
+ Test Files  9 passed (9)
+      Tests  113 passed (113)
+   Start at  20:13:10
+   Duration  1.76s (transform 546ms, setup 0ms, import 853ms, tests 3.37s, environment 1ms)

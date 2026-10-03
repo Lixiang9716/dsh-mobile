@@ -1,5 +1,5 @@
 verify_note_presence: base=HEAD (dirty worktree — reviewing the working tree)
-verify_note_presence: 14 non-trivial file(s) (hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@0.1.6-alpha.2/LICENSE, hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@0.1.6-alpha.2/lib/index.js, hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@0.1.6-alpha.2/lib/typert.host.js, hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@0.1.6-alpha.2/lib/typert.remote-client.js, hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@0.1.6-alpha.2/lib/types/build-approval.js …and 9 more) changed with no note under .agents/notes/implemented/
+verify_note_presence: 11 non-trivial file(s) (.gov/last-run/check.log.prev, .gov/last-run/code-size.log.prev, .gov/last-run/conflict-markers.log.prev, .gov/last-run/logging.log.prev, .gov/last-run/note-presence.log.prev …and 6 more) changed with no note under .agents/notes/implemented/
   no note file appears anywhere in this diff (not merely 'none for these paths' — any note file in the diff passes this gate)
   if the change is non-trivial, add or update a note (see .gov/rules.md rule 2 (every non-trivial change carries an Agent Note))
   if it is truly trivial (typo, format, local rename), ignore this warning

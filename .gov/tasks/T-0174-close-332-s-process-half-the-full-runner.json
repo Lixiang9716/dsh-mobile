@@ -1,0 +1,21 @@
+{
+  "title": "Close #332's process half: the full runner gains a DSH_PHASES filter and dev-android CI executes phases 2-5",
+  "created": "2026-10-03T10:06:07+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] run-android-full.sh honours DSH_PHASES (default all; junk fails loud; skipped phases announced)",
+    "[x] dev-android.yml runs phases 2-5 after the existing legs, CAMERA granted, evidence uploaded",
+    "[x] gates green (actionlint over the workflow)",
+    "[x] filtered run proven green on the emulator; junk value proven loud",
+    "process note; PR merged; #332 closed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0174"
+}
