@@ -234,6 +234,11 @@ zod@4.4.3|zod/-/zod-4.4.3.tgz|ee38f17f533fd500610685a483ae2f413c26f4eb33a5168431
 @deepseek-ai/cordis-plugin-loader@1.0.3|@deepseek-ai/cordis-plugin-loader/-/cordis-plugin-loader-1.0.3.tgz|86df86a31f58f306a4bb71c7b9bfe5d47dba8afaacf550ddc3bb654b57821e2f
 @deepseek-ai/cordis-plugin-include@1.0.7|@deepseek-ai/cordis-plugin-include/-/cordis-plugin-include-1.0.7.tgz|fb6a2b9cc4b0da51f736c4bfb281b914dc9987c7235826b0cadb5efcabfe6352
 js-yaml@4.1.0|js-yaml/-/js-yaml-4.1.0.tgz|0dae332559cf22b21c26ea70e732afd8303ff99412f9c3d9d209faa8882cf2ca
+@deepseek-ai/dsh-web@0.1.6-alpha.2|@deepseek-ai/dsh-web/-/dsh-web-0.1.6-alpha.2.tgz|a9caf68f424d3c622dc10327c7a39f28139dbf59cb9588355aa75628aeeeac79
+@deepseek-ai/dsh-tool-web@0.1.6-alpha.2|@deepseek-ai/dsh-tool-web/-/dsh-tool-web-0.1.6-alpha.2.tgz|96032606273af1d4179db1e675a4b07304b3f9deaa43fb68ab56d284fef99ab0
+turndown@7.2.4|turndown/-/turndown-7.2.4.tgz|05f61bc3f0aeca5e5cd7f1b5492e26b9040bb00708cd41fb1b0f7b216e296fa0
+@mixmark-io/domino@2.2.0|@mixmark-io/domino/-/domino-2.2.0.tgz|b829bcca09544649f6432020dd6915b6fb054154d7a77eb6f8b3fb1f4165afec
+@joplin/turndown-plugin-gfm@1.0.67|@joplin/turndown-plugin-gfm/-/turndown-plugin-gfm-1.0.67.tgz|59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5
 @deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2|@deepseek-ai/dsh-anonymous-user-id/-/dsh-anonymous-user-id-0.1.6-alpha.2.tgz|2030491f97388ac6dfa5df01811c118354fe9a6b78d3b96dda0ce429d6da5ba3
 @deepseek-ai/dsh-file-reference@0.1.6-alpha.2|@deepseek-ai/dsh-file-reference/-/dsh-file-reference-0.1.6-alpha.2.tgz|a26f311c6002f65c7aae9a40b32287d7d87352ea64a21405f1e9c070620fba5d
 @deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2|@deepseek-ai/dsh-file-reference-local/-/dsh-file-reference-local-0.1.6-alpha.2.tgz|05a17ee9e586514793078a7301c64c6c0bbcb40b48576988a9518846fe55412b

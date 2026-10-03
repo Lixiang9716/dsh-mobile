@@ -182,6 +182,11 @@ logger.js
 registry.js
 scenario/officialweb-web-live.js
 scenario/composer-web-live.js
+vendor/dsh/dsh-tool-web@0.1.6-alpha.2/lib/index.js
+vendor/dsh/dsh-tool-web@0.1.6-alpha.2/package.json
+vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js
+vendor/dsh/dsh-web@0.1.6-alpha.2/package.json
+vendor/npm/turndown@7.2.4/lib/turndown.es.js
 scenario/write-surface-options.js
 upstream/web-boot.js
 upstream/web-shims.js
@@ -432,6 +437,8 @@ vendor/npm/cosmokit@1.8.3/package.json
 vendor/npm/schemastery@3.18.2/package.json
 vendor/npm/@deepseek-ai/$PIN/package.json
 $(cd runtime/spike && find vendor/dsh/agent@0.1.6-alpha.2 \
+    vendor/dsh/dsh-plugin-manager@0.1.6-alpha.2 \
+    vendor/dsh/dsh-web@0.1.6-alpha.2 \
     vendor/dsh/agent-loop@0.1.6-alpha.2 \
     vendor/dsh/brand@0.1.6-alpha.2 \
     vendor/dsh/llm@0.1.6-alpha.2 \

@@ -1,0 +1,23 @@
+{
+  "title": "Workflow A+B round (T-0171): pluginManager write legs + cordis bridge + shell realism + tool-web",
+  "created": "2026-10-03T08:43:34+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "A1: pluginManager write legs claimed and answered (install/remove/enable/inspect) with tests",
+    "B3: dynamicCordisRunner answered runtime-side; tool-cordis state decided on evidence",
+    "B4: shell realism best-available implemented or honestly bounded",
+    "B5: tool-web keyless v1 or honest key-gap state",
+    "all PRs CI-green and merged serially",
+    "device regression: the four proofs on the release build",
+    "deliverable report published"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0172"
+}
