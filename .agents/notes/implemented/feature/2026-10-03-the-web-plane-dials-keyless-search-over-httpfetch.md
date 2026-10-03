@@ -95,6 +95,13 @@ The web plane mounts, and the row un-disables:
      313 duplicate hand rows collapsed, list re-sorted — 1051 listed =
      1051 rawfile files on disk, both directions; every row is a file the
      stagers actually stage.
+   - **The device-leg pins follow the runtime** (the #339 class): the
+     mounted `web_search` row grows the agent tool surface 14 → 15, read
+     off the failing CI run's logged `llm/request/built` payloads —
+     `android-session-live-read.json` (×2) and
+     `android-composer-live-write.json` (×1). `upstream-session.json`
+     keeps 14: the parity golden boots the stock upstream spine, which
+     this round does not touch (its leg stayed green).
 
 ## Alternatives considered
 
