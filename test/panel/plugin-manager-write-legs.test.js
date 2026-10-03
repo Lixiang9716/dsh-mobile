@@ -6,7 +6,7 @@ import { tarWrite } from 'tar-mini.js';
 import { sha256Hex } from 'sha256.js';
 import { canonicalJson } from 'canonical-json.js';
 import { clearIndexCache } from 'marketplace-resolver.js';
-import { workspace, __httpRoute, __httpReset, __dump } from 'gateway-shim.js';
+import { workspace, __httpRoute, __httpReset, __dump } from './gateway-shim.js';
 
 // The pluginManager WRITE legs battery (#335 A1 + B3): every leg answers
 // in-band — the ChangeResult refusal vocabulary on failure, never a throw
