@@ -5,22 +5,22 @@ run-coverage: measuring presentation/lynx-client
 
  ✓ tests/fold.test.js (10 tests) 9ms
  ✓ tests/adapter.test.js (10 tests) 11ms
- ✓ tests/seam.test.js (11 tests) 9ms
- ✓ tests/wire-edge.test.js (8 tests) 260ms
- ✓ tests/wire.test.js (5 tests) 272ms
- ✓ tests/driver-loop.test.js (22 tests) 1355ms
-     ✓ turn settles: reply, tool card, creation, title — all through the fold  648ms
-     ✓ 已停止 status, no hung tail, cancelled reply never settles  317ms
- ✓ tests/mux.test.js (7 tests) 5900ms
-     ✓ a socket drop re-opens every live stream on the fresh socket  666ms
-     ✓ a user close stays closed  1233ms
+ ✓ tests/seam.test.js (11 tests) 7ms
+ ✓ tests/wire.test.js (5 tests) 265ms
+ ✓ tests/wire-edge.test.js (8 tests) 273ms
+ ✓ tests/driver-loop.test.js (22 tests) 1362ms
+     ✓ turn settles: reply, tool card, creation, title — all through the fold  649ms
+     ✓ 已停止 status, no hung tail, cancelled reply never settles  316ms
+ ✓ tests/mux.test.js (7 tests) 5891ms
+     ✓ a socket drop re-opens every live stream on the fresh socket  655ms
+     ✓ a user close stays closed  1234ms
      ✓ a superseded socket's late close triggers NO duplicate reconnect  1254ms
      ✓ a server refusing the upgrade loops bounded, process alive  2514ms
 
  Test Files  7 passed (7)
       Tests  73 passed (73)
-   Start at  06:54:00
-   Duration  6.22s (transform 500ms, setup 0ms, import 784ms, tests 7.81s, environment 1ms)
+   Start at  11:03:04
+   Duration  6.24s (transform 502ms, setup 0ms, import 767ms, tests 7.82s, environment 1ms)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------

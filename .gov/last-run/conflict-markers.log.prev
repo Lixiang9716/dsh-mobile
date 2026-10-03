@@ -1,2 +1,2 @@
 verify_conflict_markers: base=HEAD (dirty worktree — reviewing the working tree)
-verify_conflict_markers: 33 changed file(s) scanned, no conflict markers
+verify_conflict_markers: 14 changed file(s) scanned, no conflict markers
