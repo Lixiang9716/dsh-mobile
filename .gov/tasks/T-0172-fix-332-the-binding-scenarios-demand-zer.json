@@ -1,0 +1,21 @@
+{
+  "title": "Fix #332: the binding scenarios demand zero unavailable primitives; pin the documented PHASED_ROWS set instead",
+  "created": "2026-10-03T08:44:16+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "android-capability-binding.js + harmony-capability-binding.js pin the phased set (mirror gateway-binding.js)",
+    "manifests unchanged (already expect unavailable:2); no frozen evidence touched",
+    "gov run green in the worktree",
+    "full run-android-full.sh 5-phase green on the emulator (phase 2 the proof)",
+    "bug-fix agent note; PR merged; issue #332 updated"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0172"
+}
