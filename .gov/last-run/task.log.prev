@@ -178,4 +178,4 @@ done  T-0168 Workflow all-fix round (T-0168): #324 preset cards, #323 runtime we
 voided T-0169 fix the raw upstream-suite vitest face's Cannot-find-package failures (issue 321)
 done  T-0170 Creator-mode plugin-magic on the real LLM + #323 device regression (T-0169)
 open  T-0171 Layout-truth probe: native occlusion of the web surface becomes a log-asserted scenario event (obey rules@ee4951678e7c)
-task: 180 card(s) — 9 open (14 unticked item(s); --strict blocks on them), 0 stale, 105 done, 66 voided
+task: 180 card(s) — 9 open (8 unticked item(s); --strict blocks on them), 0 stale, 105 done, 66 voided
