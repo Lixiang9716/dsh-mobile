@@ -11,6 +11,12 @@
 # Every wait is a polled condition with a deadline (rules.md rule 8); every
 # exhaustion is loud (rule 5). UI automation follows the same discipline:
 # uiautomator dump -> find node -> tap, re-polled until a deadline passes.
+#
+# DSH_PHASES — optional comma list of the phases to run (default "1,2,3,4,5";
+# e.g. DSH_PHASES=2,3,4,5 runs everything but the phase-1 regression that
+# run-spike-e2e.sh already covers elsewhere). Unknown values abort with the
+# offending name (rule 5); skipped phases announce themselves so a partial
+# run can never masquerade as the full sweep.
 set -eu
 
 CAPTURE="$(cd "$(dirname "$0")" && pwd)/logcat-capture.sh"
@@ -19,9 +25,21 @@ PKG=com.dshmobile.spike
 OUT=${DSH_M4_OUT:-/tmp}
 SCEN=test/e2e/scenarios
 M4_STREAM=$OUT/dsh-m4-stream.txt
+DSH_PHASES=${DSH_PHASES:-1,2,3,4,5}
 
 say() { echo "run-android-full: $*"; }
 die() { echo "::error::run-android-full: $*" >&2; exit 1; }
+
+# Validate BEFORE any side effect: only 1-5, comma-separated, no spaces.
+case "$DSH_PHASES" in
+    [1-5]|[1-5],[1-5]|[1-5],[1-5],[1-5]|[1-5],[1-5],[1-5],[1-5]|[1-5],[1-5],[1-5],[1-5],[1-5]) ;;
+    *) die "DSH_PHASES='$DSH_PHASES' is not a comma list of phases 1-5" ;;
+esac
+phase_wanted() { case ",$DSH_PHASES," in *",$1,"*) return 0 ;; *) return 1 ;; esac; }
+say "phases: $DSH_PHASES"
+for p in 1 2 3 4 5; do
+    phase_wanted $p || say "phase $p: SKIPPED (DSH_PHASES=$DSH_PHASES)"
+done
 
 # ---- Build here, not "bring your own APK": a stale pre-built APK silently
 # re-proves a build that is no longer the tree (measured 2026-09-22: a
@@ -52,10 +70,16 @@ adb shell cat /sdcard/dsh-e2e/notes.txt | grep -q "dsh-mobile m4" \
     || die "picker target /sdcard/dsh-e2e/notes.txt not staged"
 
 # ---- phase 1: the regression suite (m1 + gateway.bridge-smoke + session.mock-llm)
+# Phase bodies sit at column 0 inside their guards on purpose: the
+# guard is a mechanical wrapper (sh does not care about the indent),
+# and reindenting ~400 lines would bury the real diff of this change.
+if phase_wanted 1; then
 say "phase 1: three-scenario regression"
 bash hosts/android/ci/run-spike-e2e.sh
+fi
 
 # ---- phase 2: the M4 completion session -------------------------------
+if phase_wanted 2; then
 say "phase 2: android.capability-binding (carrier + WebView + gateway binding)"
 
 shot() { adb exec-out screencap -p > "$OUT/dsh-m4-$1.png" 2>/dev/null || true; }
@@ -202,6 +226,7 @@ node test/e2e/check.mjs --manifest $SCEN/gateway-audit.json \
 cat "$OUT/dsh-m4-verdict-audit.json"
 shot 05-final
 say "phase 2 complete — evidence under $OUT/dsh-m4-*"
+fi
 
 # ---- phase 3: the official upstream web mount (android.officialweb.mount)
 # The carrier serves the vendored official dist with the runtime-composed
@@ -209,6 +234,7 @@ say "phase 2 complete — evidence under $OUT/dsh-m4-*"
 # probe drives POST /api + the remote.mux upgrade from inside the page.
 # Same capture discipline as phase 2: a line-buffered logcat stream bounded
 # at the first `dsh.spike.result: ALL` line; screenshots are human evidence.
+if phase_wanted 3; then
 say "phase 3: android.officialweb.mount (official dist + web.boot drive + probe)"
 
 ART=${DSH_WEB_ART:-hosts/android/artifacts/android-upstream}
@@ -306,6 +332,7 @@ node test/e2e/check.mjs --manifest $SCEN/android-officialweb-mount.json \
     --log "$ART/logs.txt" --out "$ART/verdict-android-officialweb-mount.json"
 cat "$ART/verdict-android-officialweb-mount.json"
 say "phase 3 complete — evidence under $ART"
+fi
 
 # ---- phase 4: the session-live mount (android.session.live-read) -------------
 # The FULL upstream agent spine boots on-device and claims /api/session.list
@@ -315,6 +342,7 @@ say "phase 3 complete — evidence under $ART"
 # scripted /mock-llm/chat/completions carrier endpoint is the model boundary
 # (E2E determinism, logged as such by the scenario's llm/runtime record).
 # Same capture discipline as phase 3; screenshots are human evidence.
+if phase_wanted 4; then
 say "phase 4: android.session.live-read (spine boot + claims + journal probe)"
 
 SART=${DSH_SESSION_ART:-hosts/android/artifacts/android-session-live}
@@ -383,6 +411,7 @@ node test/e2e/check.mjs --manifest $SCEN/android-session-live-read.json \
     --log "$SART/logs.txt" --out "$SART/verdict-android-session-live-read.json"
 cat "$SART/verdict-android-session-live-read.json"
 say "phase 4 complete — evidence under $SART"
+fi
 
 # ---- phase 5: the session WRITE mount (android.composer.live-write) ---------------
 # The spine + the official WRITE surface over the bus seam; the probe drives
@@ -392,6 +421,7 @@ say "phase 4 complete — evidence under $SART"
 # The scripted /mock-llm/chat/completions carrier endpoint is the model
 # boundary (E2E determinism, logged as such by the llm/runtime record).
 # Same capture discipline as phases 3-4; screenshots are human evidence.
+if phase_wanted 5; then
 say "phase 5: android.composer.live-write (spine + write surface + composer probe)"
 
 WART=${DSH_WRITE_ART:-hosts/android/artifacts/android-write-live}
@@ -460,3 +490,4 @@ node test/e2e/check.mjs --manifest $SCEN/android-composer-live-write.json \
     --log "$WART/logs.txt" --out "$WART/verdict-android-composer-live-write.json"
 cat "$WART/verdict-android-composer-live-write.json"
 say "phase 5 complete — evidence under $WART"
+fi

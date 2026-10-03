@@ -10,4 +10,4 @@ code-size: note — skipped hosts/ios/App/Source/SessionLiveProbe.swift: parse e
 code-size: note — skipped hosts/ios/App/Source/SessionLiveRuntime.swift: parse errors — falling back
 code-size: note — skipped hosts/ios/App/Source/SessionServe.swift: parse errors — falling back
 code-size: note — skipped hosts/ios/App/Source/SessionWriteRuntime.swift: parse errors — falling back
-code-size: 455 source file(s) checked (443 via gov parse, 12 fallback; file<=500, func<=50, indent<=5); 0 violation(s)
+code-size: 466 source file(s) checked (454 via gov parse, 12 fallback; file<=500, func<=50, indent<=5); 0 violation(s)

@@ -51,12 +51,8 @@
 # @deepseek-ai import plus every hard cordis `inject` a plugin declares
 # (compaction-basic needs the tokenMeter service) is vendored; peers that are
 # only ctx.get()-soft stay out and are listed in upstream/README.md. Skips:
-# tool-fs-search stays out (the @vscode/ripgrep binary — unchanged); tool-web
-# stays out because its link-time dep turndown's ESM face executes a bare
-# `require('@mixmark-io/domino')` at module top (no DOMParser exists in this
-# runtime, so the native branch never applies) and domino is CJS-only — the
-# ESM-only loader has no require seam, the chokidar precedent's harder
-# sibling; dsh-web is tool-web's peer and joins that leg; workflow-ptc stays
+# tool-fs-search stays out (the @vscode/ripgrep binary — unchanged);
+# workflow-ptc stays
 # out because it imports node:vm at link time and drives createContext/
 # runInContext host-side — the confined guest realm IS the PTC execution
 # model, the subprocess-class seam; tool-workflow stays IN (it loads clean)
@@ -64,7 +60,12 @@
 # demands, mount-staged until an engine implementation exists on this side;
 # dsh-ptc-runtime is
 # the abstract PtcRuntime contract whose only concrete implementation is the
-# desktop's sandboxed Node process (subprocess class). See
+# desktop's sandboxed Node process (subprocess class). 2026-10-03 (issue #335
+# B5): tool-web JOINED the product closure — the W4-P suite round had already
+# solved its turndown→domino CJS seam (the shims' cjs-loader + the
+# npm-bridges linkage rows), and the web plane's keyless search provider
+# (upstream/web-search-keyless.js) gives it a transport over gateway
+# httpFetch; dsh-web is its seam peer and joins the same leg. See
 # runtime/spike/upstream/README.md for the shim coverage table.
 # The SKILL row (2026-09-23, the agent-flow E2E) vendors the upstream skill
 # family: dsh-skill (the ctx.skills registry), dsh-skill-filesystem (project/
@@ -223,6 +224,13 @@ terminal|0.1.6-alpha.2|cb9b07571654bcfe6877f8ff860a3ebd17564fe17994a9e905aea0ef4
 # boot through the npm-bridges seam (the bare name "fflate").
 # NOTE: rows below are pipe-delimited dir|suffix|sha — the reader loop
 # cannot skip comment lines, so prose stays HERE, never inside the string.
+# The WEB PLANE row's npm faces (issue #335 B5): the ctx.web seam + the
+# model-facing web tools (staged at the vendor/dsh/<stripped> rel path like
+# tool-present — the mirror serves no vendor/dsh tree for them), plus
+# tool-web's link-time deps: turndown's ESM face, its CJS-only HTML parser
+# domino (served through the shims' cjs-loader), and the GFM rules plugin.
+# Shas mirror the suite-side pins in ensure-dsh-tests.sh (same bytes, one
+# pin per face).
 NPM_PACKAGES="
 cordis@4.0.2|@deepseek-ai/cordis/-/cordis-4.0.2.tgz|686ca44fc6e8d217804de9062b716b7c72755dde09c2a433dd07045eea3c6a97
 @noble/hashes@2.3.0|@noble/hashes/-/hashes-2.3.0.tgz|892281f5dd25ddea8e215c740945bacdfc78aa4fca81f2c25a06876366c8beac
@@ -252,6 +260,11 @@ eventsource-parser@3.1.0|eventsource-parser/-/eventsource-parser-3.1.0.tgz|eca84
 fflate@0.8.2|fflate/-/fflate-0.8.2.tgz|61fd5061e2fc8e5e3e3129f7f2fec7bd78a313e1bf4becbf1cc1cc9998d141dc
 jpeg-js@0.4.4|jpeg-js/-/jpeg-js-0.4.4.tgz|269f988267bc71efe58baf97e8b2da064b5bbbbb8b0eab11e2149049935e1160
 pngjs@5.0.0|pngjs/-/pngjs-5.0.0.tgz|4d960bbbe078022d7a36822e2874f884c7410ead111f3603d69d70fc7af36f20
+@deepseek-ai/dsh-web@0.1.6-alpha.2|@deepseek-ai/dsh-web/-/dsh-web-0.1.6-alpha.2.tgz|a9caf68f424d3c622dc10327c7a39f28139dbf59cb9588355aa75628aeeeac79
+@deepseek-ai/dsh-tool-web@0.1.6-alpha.2|@deepseek-ai/dsh-tool-web/-/dsh-tool-web-0.1.6-alpha.2.tgz|96032606273af1d4179db1e675a4b07304b3f9deaa43fb68ab56d284fef99ab0
+turndown@7.2.4|turndown/-/turndown-7.2.4.tgz|05f61bc3f0aeca5e5cd7f1b5492e26b9040bb00708cd41fb1b0f7b216e296fa0
+@mixmark-io/domino@2.2.0|@mixmark-io/domino/-/domino-2.2.0.tgz|b829bcca09544649f6432020dd6915b6fb054154d7a77eb6f8b3fb1f4165afec
+@joplin/turndown-plugin-gfm@1.0.67|@joplin/turndown-plugin-gfm/-/turndown-plugin-gfm-1.0.67.tgz|59f5c59b28bb690bc1cb2d00c67b5e798ce5b29032989892b27a491093e6cde5
 
 "
 

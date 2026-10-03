@@ -92,6 +92,14 @@
           "pluginInventory/list",
           "pluginManager/listBundles",
           "pluginManager/listPlugins",
+          "pluginManager/installBundle",
+          "pluginManager/removeBundle",
+          "pluginManager/setBundleEnabled",
+          "pluginManager/setPluginEnabled",
+          "pluginManager/inspect",
+          "pluginManager/cancelInstall",
+          "dynamicCordisRunner/inventory",
+          "dynamicCordisRunner/syncInspectManifest",
           "credentials/describe",
           "session/modelCatalog"
         ],
@@ -276,14 +284,14 @@
       "event": "rpc.observed",
       "match": {
         "endpoint": "dynamicCordisRunner/inventory",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {
       "event": "rpc.observed",
       "match": {
         "endpoint": "dynamicCordisRunner/syncInspectManifest",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {
