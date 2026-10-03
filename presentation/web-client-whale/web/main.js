@@ -20,13 +20,31 @@ const toolbarEl = document.getElementById('toolbar');
 const bubblesEl = document.getElementById('bubbles');
 const wsUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws';
 
+// HIG Reduce Motion: the page honors the same media query the stylesheet
+// does — no bubble production, so the ambient art goes fully still.
+const motionOK = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Empty state: distinguish "waiting" from "broken" before the first event;
+// removed by the first line() call.
+const emptyEl = document.createElement('div');
+emptyEl.className = 'sys';
+emptyEl.textContent = '等待会话…';
+streamEl.appendChild(emptyEl);
+
+// Autoscroll only while the reader is already at the bottom (HIG Agency:
+// let people explore without locking them into flows) — measured BEFORE
+// the append so a reader scrolled up to re-read keeps their place.
+const nearBottom = () =>
+  streamEl.scrollTop + streamEl.clientHeight >= streamEl.scrollHeight - 40;
 const scrollDown = () => { streamEl.scrollTop = streamEl.scrollHeight; };
 const line = (cls, text) => {
+  const stick = nearBottom();
+  emptyEl.remove();
   const div = document.createElement('div');
   div.className = cls;
   div.textContent = text;
   streamEl.appendChild(div);
-  scrollDown();
+  if (stick) scrollDown();
   return div;
 };
 
@@ -46,6 +64,7 @@ const bubble = () => {
 /** Token deltas spout a small bubble burst; completion releases a pod. */
 let bubblePump = 0;
 const spoutBubbles = (count) => {
+  if (!motionOK) return;
   for (let i = 0; i < count; i++) {
     setTimeout(bubble, i * 90);
   }
@@ -60,20 +79,21 @@ const beginAssistant = () => {
 
 const apply = (ev) => {
   if (ev.kind === 'session') {
-    line('sys', `session ${ev.id}`);
+    line('sys', `会话 ${ev.id}`);
   } else if (ev.kind === 'agent') {
-    line('sys', `agent ${ev.model}`);
+    line('sys', `代理 ${ev.model}`);
     beginAssistant();
   } else if (ev.kind === 'token-delta') {
     beginAssistant();
+    const stick = nearBottom();
     session.text += ev.text;
     session.el.textContent = session.text;
-    scrollDown();
+    if (stick) scrollDown();
     if (bubblePump++ % 6 === 0) spoutBubbles(2);
   } else if (ev.kind === 'tool') {
-    line('sys', `tool ${ev.name} ${ev.phase}`);
+    line('sys', `工具 ${ev.name} ${ev.phase}`);
   } else if (ev.kind === 'complete') {
-    line('sys', `complete ${ev.status} · ${ev.deltas} deltas`);
+    line('sys', `完成 ${ev.status} · ${ev.deltas} 个增量`);
     spoutBubbles(14);
   } else if (ev.kind === 'slot.register') {
     const btn = document.createElement('button');
@@ -87,7 +107,7 @@ const apply = (ev) => {
 const ws = new WebSocket(wsUrl);
 ws.onopen = () => {
   dotEl.classList.add('on');
-  statusEl.textContent = 'live';
+  statusEl.textContent = '已连接';
   ws.send(JSON.stringify(
     { type: 'hello', href: location.href, protocol: 'session-projection@0' }));
   spoutBubbles(6);
@@ -96,7 +116,7 @@ ws.onmessage = (ev) => {
   let msg;
   try { msg = JSON.parse(ev.data); } catch { return; }
   if (msg.type === 'ws.hello') {
-    statusEl.textContent = 'session channel live';
+    statusEl.textContent = '会话通道已连接';
   } else if (msg.type === 'replay') {
     (msg.events ?? []).forEach(apply); // buffered projection from before connect
   } else if (msg.kind) {
@@ -105,8 +125,11 @@ ws.onmessage = (ev) => {
 };
 ws.onclose = () => {
   dotEl.classList.remove('on');
-  statusEl.textContent = 'disconnected';
+  dotEl.classList.add('err');
+  statusEl.textContent = '已断开';
 };
 
 // an ambient bubble now and then, even with no session running
-setInterval(() => { if (bubblesEl.childElementCount < 7) bubble(); }, 1800);
+if (motionOK) {
+  setInterval(() => { if (bubblesEl.childElementCount < 7) bubble(); }, 1800);
+}

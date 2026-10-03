@@ -9,7 +9,9 @@
 
 body {
   margin: 0;
-  font: 15px/1.5 -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
+  /* rem so the page tracks the system text-size setting (HIG: support
+   * larger text sizes); the flex column keeps the layout elastic */
+  font: 0.9375rem/1.5 -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
   color: #e8f2ff;
   height: 100dvh;
   display: flex;
@@ -43,7 +45,11 @@ body {
 }
 
 /* the FLIP wrapper cruises the screen; the whale inside mirrors itself on
- * the return leg so it always faces its direction of travel */
+ * the return leg so it always faces its direction of travel.
+ * cruise animates the `translate` property (compositable) while bob keeps
+ * `transform` — independent properties compose, so no animation can clobber
+ * another's work (the old `left` cruise was a main-thread layout animation,
+ * and a later `animation-name` override used to kill face-mirror entirely) */
 #whale-flip {
   position: absolute;
   width: min(52vw, 340px);
@@ -65,8 +71,8 @@ body {
   50%, 100% { transform: scaleX(1); }
 }
 @keyframes cruise {
-  from { left: -46%; }
-  to { left: 100%; }
+  from { translate: -46vw 0; }
+  to { translate: 100vw 0; }
 }
 @keyframes bob {
   0%, 100% { transform: translateY(0) rotate(0.6deg); }
@@ -108,10 +114,6 @@ body {
   50% { transform: rotate(9deg); }
 }
 
-/* the cruise direction flips with the alternate leg — mirror the body so
- * the whale always faces its direction of travel */
-#whale { animation-name: cruise, bob; }
-
 /* rising bubbles */
 .bubble {
   position: absolute;
@@ -149,7 +151,7 @@ header {
   gap: 8px;
   align-items: center;
   padding: calc(env(safe-area-inset-top) + 10px) 14px 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #bfd6ff;
@@ -157,21 +159,37 @@ header {
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
 }
-#dot { width: 9px; height: 9px; border-radius: 50%; background: #b3413c; }
-#dot.on { background: #3f9d63; }
-#whale-label { text-transform: none; letter-spacing: 0.02em; }
+/* connection state: WWDC25 dark system palette (hig-mcp tokens), three
+ * states so connecting ≠ connected ≠ lost, and all three clear the 3:1
+ * non-text contrast floor against the blurred header (the old idle red
+ * #b3413c measured ~2.9:1) */
+#dot { width: 9px; height: 9px; border-radius: 50%; background: #FF9F0A; }
+#dot.on { background: #30D158; }
+#dot.err { background: #FF453A; }
+#whale-label {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
 #toolbar { display: flex; gap: 6px; margin-left: auto; }
 #toolbar button {
   font: inherit;
-  font-size: 11px;
+  font-size: 0.8125rem;
   text-transform: none;
   letter-spacing: 0;
   background: rgba(46, 107, 230, 0.35);
   color: #e8f2ff;
   border: 1px solid #6f9be0;
   border-radius: 6px;
-  padding: 2px 8px;
+  /* HIG minimum control size: 44×44pt for the page's only interactive
+   * controls (11px type in a ~22px button was half the floor) */
+  min-height: 44px;
+  padding: 6px 12px;
+  transition: transform 0.12s ease;
 }
+#toolbar button:active { transform: scale(0.96); }
 
 main#stream {
   position: relative;
@@ -189,5 +207,16 @@ main#stream {
   white-space: pre-wrap;
   word-break: break-word;
 }
-.sys { color: #9db8dd; font-size: 12px; margin: 2px 0; }
+.sys { color: #9db8dd; font-size: 0.75rem; margin: 2px 0; }
 .assistant { color: #e8f2ff; }
+
+/* Reduce Motion (HIG: reduce automatic and repetitive animation): the
+ * ambient loops stop and the whale rests mid-ocean; the transcript still
+ * streams, bubbles simply stop being produced (page side gates on the
+ * same media query) */
+@media (prefers-reduced-motion: reduce) {
+  .rays, #whale-flip, #whale, #whale #spout, #flukes, .bubble {
+    animation: none;
+  }
+  #whale #spout { opacity: 0; }
+}
