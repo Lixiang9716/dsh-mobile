@@ -14,7 +14,9 @@
     <!-- The swimming blue whale: body + flukes + fin + eye, one SVG so the
          whole creature animates as a unit while the parts oscillate. -->
     <div id="whale-flip">
-    <svg id="whale" viewBox="0 0 420 200" role="img" aria-label="游动的蓝色鲸鱼">
+    <!-- decorative ambient art inside the aria-hidden ocean: no role/label,
+         assistive tech would never reach it from a hidden subtree anyway -->
+    <svg id="whale" viewBox="0 0 420 200">
       <g id="whale-body">
         <path id="flukes" d="M348 96
           C 372 74, 392 62, 414 58
@@ -46,12 +48,12 @@
   </div>
 
   <header>
-    <span id="dot"></span><span id="status">connecting…</span>
-    <span id="whale-label">🐳 DSH 鲸鱼客户端</span>
+    <span id="dot"></span><span id="status" role="status">连接中…</span>
+    <h1 id="whale-label">🐳 DSH 鲸鱼客户端</h1>
     <span id="toolbar"></span>
   </header>
 
-  <main id="stream"></main>
+  <main id="stream" aria-live="polite" aria-label="会话记录"></main>
   <script src="./main.js"></script>
 </body>
 </html>
