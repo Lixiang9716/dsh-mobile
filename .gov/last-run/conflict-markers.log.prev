@@ -1,2 +1,0 @@
-verify_conflict_markers: base=origin/feat/e2e-ci-phases...HEAD (clean tree — reviewing commits ahead of upstream)
-verify_conflict_markers: 63 changed file(s) scanned, no conflict markers

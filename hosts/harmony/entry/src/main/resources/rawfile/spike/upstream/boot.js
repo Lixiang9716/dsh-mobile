@@ -33,6 +33,7 @@ import { ToolRuntime } from '@deepseek-ai/dsh-tools';
 import { SessionProjectionRegistry } from '@deepseek-ai/dsh-session-projection';
 import { SettingsMemory } from 'upstream/settings-memory.js';
 import { providerSettingsNs } from 'upstream/web-write-settings.js';
+import { mountWebPlane } from 'upstream/web-search-keyless.js';
 import { LlmRuntime, attributionHeaders } from '@deepseek-ai/dsh-llm';
 import { createGatewayLlmAdapter } from 'upstream/llm-transport.js';
 import { registerRouteDisposer, registerDirectoryHandle } from 'upstream/llm-route.js';
@@ -194,6 +195,8 @@ export const spineInventory = (ctx) => {
     service('fs', '@deepseek-ai/dsh-fs-local', 'fs'),
     tool('tool-fs', '@deepseek-ai/dsh-tool-fs', 'read'),
     tool('tool-str-replace-editor', '@deepseek-ai/dsh-tool-str-replace-editor', 'str_replace_editor'),
+    service('web', '@deepseek-ai/dsh-web', 'web'),
+    tool('tool-web', '@deepseek-ai/dsh-tool-web', 'web_search'),
     service('loader', '@deepseek-ai/cordis-plugin-loader', 'loader'),
     service('agent-presets', '@deepseek-ai/dsh-agent-presets', 'agentPresets'),
   ];
@@ -298,6 +301,10 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
     await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
+    // The WEB row (#335 B5): the dsh-web seam + the keyless search provider +
+    // the search-only tool row. Dynamic import: the bridges must have
+    // registered turndown/domino before tool-web's static graph links.
+    await mountWebPlane(ctx);
   await mountFileTools(ctx, identity.cwd);
   // The SKILL row (the agent-flow E2E): mounted after the file tools (its
   // discovery prefers the `fs` service) and before the agent loop (the

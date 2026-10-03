@@ -28,7 +28,9 @@ import { encodeUtf8, decodeUtf8 } from 'node:buffer';
  * (the vendor header names each exclusion's reason). Row ids are stable in
  * the pinned 0.1.6-alpha.2 documents; a rename fails the seed loud.
  *
- * 2026-10-03: `tool-plugin-manager` left this set — `@deepseek-ai/dsh-plugin-manager`
+ * 2026-10-03: `tool-plugin-manager` and `tool-web` left this set —
+ * `@deepseek-ai/dsh-plugin-manager` / `@deepseek-ai/dsh-tool-web` (+ the
+ * turndown/domino/@joplin link chain)
  * is staged and embedded (its list/inspect legs answer read-only from the
  * inventory; the write legs still refuse honestly). `tool-cordis` stays
  * absent: even with the runtime-side `dynamicCordisRunner/{inventory,
@@ -40,7 +42,6 @@ import { encodeUtf8, decodeUtf8 } from 'node:buffer';
  * it lands the row's inject would park forever. */
 const MOBILE_ABSENT_ROW_IDS = new Set([
   'tool-fs-search', // @vscode/ripgrep packaged binary over OS subprocesses
-  'tool-web', // the web search provider is a host-plane network service
   'workflow-ptc', // the PTC workflow engine needs the desktop host runner
   'tool-presentation', // the registry presenter rides the PTC host runner
   'tool-cordis', // needs the cordis-host-runner inspect service, not just the two B3 legs
