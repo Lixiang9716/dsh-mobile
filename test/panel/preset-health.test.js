@@ -35,7 +35,15 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const STAGED_DSH = join(REPO, 'hosts/android/app/src/main/assets/spike/vendor/dsh');
 const PRESETS_ROOT = join(STAGED_DSH, 'agent-presets@0.1.6-alpha.2', 'presets');
 
-/** The staged marker set: every staged vendor/dsh package's own name. */
+/** The staged marker set: every staged vendor/dsh package's own name,
+ * plus the stager's declared roster. The committed assets are a partial
+ * snapshot by design (the Gradle build materializes the rest — the
+ * closures gate counts those as SKIPs), so the device truth this test
+ * models is the tracked snapshot UNION the packages
+ * stage-spine-closure.sh explicitly stages (its `for pkg in` rosters,
+ * dsh-face pins and the npm-face block alike — all pinned by
+ * ensure-dsh.sh and byte-checked by the closures gate). Parsing the
+ * stager keeps one source: a roster shape drift fails here loud. */
 const markerNames = () => {
   const names = new Set();
   for (const dir of readdirSync(STAGED_DSH)) {
@@ -43,6 +51,14 @@ const markerNames = () => {
       const manifest = JSON.parse(readFileSync(join(STAGED_DSH, dir, 'package.json'), 'utf8'));
       if (manifest.name && manifest.version) names.add(manifest.name);
     } catch { /* a dir without a package.json carries no marker — the seed rule */ }
+  }
+  const stager = readFileSync(join(REPO, 'hosts/android/ci/stage-spine-closure.sh'), 'utf8');
+  const rosters = [...stager.matchAll(/^for pkg in (.+); do$/gm)];
+  expect(rosters.length, 'stage-spine-closure.sh roster loops not found').toBeGreaterThanOrEqual(2);
+  for (const roster of rosters) {
+    for (const pkg of roster[1].trim().split(/\s+/)) {
+      names.add(`@deepseek-ai/dsh-${pkg}`);
+    }
   }
   return names;
 };
