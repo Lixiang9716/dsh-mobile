@@ -63,6 +63,14 @@ const markerNames = () => {
       names.add(pkg.startsWith('dsh-') ? `@deepseek-ai/${pkg}` : `@deepseek-ai/dsh-${pkg}`);
     }
   }
+  // the npm-face block: stage_npm_face_at_dsh_path <face> pins the npm face's
+  // bytes at the dsh rel path (the #325 shell faces; plugin-manager since the
+  // workspace-registry tier) — the marker is the dsh-prefixed package name.
+  const npmFaces = [...joined.matchAll(/stage_npm_face_at_dsh_path (\S+)/g)];
+  expect(npmFaces.length, 'stage_npm_face_at_dsh_path calls not found').toBeGreaterThanOrEqual(4);
+  for (const face of npmFaces) {
+    names.add(`@deepseek-ai/dsh-${face[1]}`);
+  }
   return names;
 };
 
