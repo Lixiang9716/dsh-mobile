@@ -20,16 +20,22 @@
  *
  * Honest limits (measured 2026-10-03 from a datacenter egress: both
  * html/lite endpoints answer HTTP 202 with the "bots use DuckDuckGo too"
- * challenge page): a keyless scraper is IP-reputation-sensitive. The
- * provider DETECTS the challenge and fails the call in-band with a coded
- * error naming the config escape hatches — it never returns a parsed
- * challenge page as if it were results. A seat whose network path is
- * challenged permanently points the endpoint at an unchallenged mirror
- * (host declaration `__dshWebSearch` or the launch environment's
- * `DSH_WEB_SEARCH_ENDPOINT` — the marketplaceIndex single-key opt-in
- * pattern); a keyed deployment mounts a keyed provider beside this one and
- * pins `searchProvider` on the seam. That owner-key follow-up is the
- * recorded gap, not a silent one.
+ * challenge page; the #346 device battery 2026-10-04 then drew a
+ * marker-LESS variant served as HTTP 200): a keyless scraper is
+ * IP-reputation-sensitive. The provider DETECTS the challenge two ways —
+ * the marker sentence / HTTP 202 leg, and structurally in the parser (a
+ * zero-anchor page wearing neither the results list nor DDG's genuine
+ * no-results structure is a block page, not a search answer) — and fails
+ * the call in-band with a coded error naming the config escape hatches.
+ * It never returns a parsed challenge page as if it were results: a
+ * silent-empty success reads to the model as "no news" where the truth is
+ * "blocked". A seat whose network path is challenged permanently points
+ * the endpoint at an unchallenged mirror (host declaration
+ * `__dshWebSearch` or the launch environment's `DSH_WEB_SEARCH_ENDPOINT`
+ * — the marketplaceIndex single-key opt-in pattern); a keyed deployment
+ * mounts a keyed provider beside this one and pins `searchProvider` on
+ * the seam. That owner-key follow-up is the recorded gap, not a silent
+ * one.
  */
 import { createLogger } from 'logger.js';
 
@@ -146,7 +152,15 @@ const snippetAfter = (html, from) => {
  * (the lite endpoint's `result-link` spelling answers the same walk);
  * `url`/`title` resolve per {@link resolveResultHref}, the snippet is the
  * row's `result__snippet`. Duplicate URLs collapse (DDG repeats cache
- * hits). `maxResults` is the seam's own cap — nothing is truncated here. */
+ * hits). `maxResults` is the seam's own cap — nothing is truncated here.
+ *
+ * A zero-source parse is only an HONEST empty when the page is a real
+ * search answer — wearing the results-list DOM (a results-shaped page the
+ * walk legitimately emptied) or DDG's genuine no-results structure. A
+ * page with neither (the anti-bot/consent variants that skip the marker
+ * sentence — the #346 device battery's silent-empty shape) is not a
+ * search answer at all: it fails in-band with {@link CODE_CHALLENGED} and
+ * a truncated page sample, never as a zero-source success. */
 export const parseDuckDuckGoHtml = (html) => {
   log.debug('parseDuckDuckGoHtml', { bytes: html?.length ?? 0 });
   if (typeof html !== 'string') {
@@ -168,12 +182,39 @@ export const parseDuckDuckGoHtml = (html) => {
       ...(snippet !== null ? { snippet } : {}),
     });
   }
+  if (sources.length === 0 && !hasResultsListDom(html) && !hasNoResultsDom(html)) {
+    log.warn('search answered a non-results page (challenge variant)', { bytes: html.length });
+    throw webSearchError(CODE_CHALLENGED, explain(
+      `web_search: the endpoint answered with a page that is neither a results page nor DDG's genuine no-results page — an anti-bot challenge variant served without the marker text. page sample: ${htmlSample(html)}`));
+  }
   return { sources, truncated: false };
 };
 
 // Whether the fetched page is DDG's anti-bot challenge (the HTTP 202 body
 // and its 200 variants carry the marker sentence).
 export const isChallengePage = (html) => typeof html === 'string' && html.toLowerCase().includes(CHALLENGE_MARKER);
+
+// The two DOM shapes a REAL DDG answer can wear (live-measured 2026-10-04
+// off html/lite.duckduckgo.com): a results page carries the results-list
+// structure the walk targets — result__a/result-link titles, their
+// result__snippet/result-snippet bodies, the links_main/web-result/
+// serp__results containers — while the genuine zero-hit answer carries its
+// own no-results structure (span.no-results inside .no-results__container,
+// the "No results found for" heading, .result--no-result). Note the
+// no-results page ALSO wears the links chrome, so either marker means
+// "this is a search answer, an empty one is honest".
+// (\x22/\x27 are the quote characters: raw ones inside a regex literal
+// poison tools/check-size.py's line-local quote state machine.)
+const RESULTS_LIST_DOM = /class\s*=\s*[\x22\x27][^\x22\x27]*(?:result__a|result-link|result__snippet|result-snippet|links_main|web-result|serp__results|result__body)/i;
+const NO_RESULTS_DOM = /class\s*=\s*[\x22\x27][^\x22\x27]*(?:no-results|result--no-result)|no results/i;
+
+export const hasResultsListDom = (html) => typeof html === 'string' && RESULTS_LIST_DOM.test(html);
+export const hasNoResultsDom = (html) => typeof html === 'string' && NO_RESULTS_DOM.test(html);
+
+// The page evidence a challenge error carries: whitespace collapsed,
+// truncated — enough to identify the block page in the trajectory, not a
+// payload.
+const htmlSample = (html) => html.replace(/\s+/g, ' ').trim().slice(0, 240);
 
 /** Build the provider: the vendored `WebSearchProvider` shape over the
  * injected transport. `httpFetch(url, init)` must answer

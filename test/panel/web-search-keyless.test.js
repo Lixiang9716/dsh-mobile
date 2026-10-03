@@ -3,6 +3,8 @@ import {
   parseDuckDuckGoHtml,
   resolveResultHref,
   isChallengePage,
+  hasResultsListDom,
+  hasNoResultsDom,
   resolveSearchConfig,
   createKeylessSearchProvider,
   webSearchError,
@@ -64,6 +66,47 @@ const LITE_HTML = `<table><tr>
 
 const CHALLENGE_HTML = '<html><body>Unfortunately, bots use DuckDuckGo too. Please complete the following challenge to confirm this search was made by a human.</body></html>';
 
+// DDG's GENUINE no-results answer for a zero-hit query (live-measured
+// 2026-10-04 off html.duckduckgo.com, issue #346 grounding): no result__a
+// anywhere, but its own no-results structure — span.no-results inside
+// .no-results__container with the "No results found for" heading — wrapped
+// in the usual links chrome. An empty success here is the honest answer.
+const NO_RESULTS_HTML = `<!DOCTYPE html>
+<html><head><title>q at DuckDuckGo</title></head><body>
+<div class="serp__results">
+<div class="result results_links results_links_deep web-result result--no-result">
+  <div class="links_main links_deep result__body">
+    <div class="no-results__container result__title"><span class='no-results'>
+      <div class="no-results__message">
+        <h1>No results found for <strong>&quot;zxqjwvbkmpffdsghtruyi&quot;</strong></h1>
+        <p><strong>Suggestions</strong>:<ul><li>Check spelling</li><li>Try related keywords</li></ul></p>
+      </div>
+    </span></div>
+  </div>
+</div>
+</div>
+</body></html>`;
+
+// The challenge VARIANT the device battery drew (issue #346): DDG's
+// anomaly-modal interstitial served as HTTP 200 WITHOUT the "bots use
+// DuckDuckGo" marker sentence — the anomaly/feedback chrome, zero result
+// anchors, and neither the results list nor the no-results structure. The
+// old parser read this shape as a zero-source SUCCESS (the model then
+// reported "no news" where the truth was "blocked"); it must fail with
+// CODE_CHALLENGED and carry a page sample in the message.
+const CHALLENGE_VARIANT_HTML = `<!DOCTYPE html>
+<html><head><title>One more thing</title></head><body>
+<div class="anomaly-modal__box">
+  <h2 class="anomaly-modal__title">Please complete the puzzle before continuing</h2>
+  <form class="anomaly-modal__puzzle" method="post">
+    <div class="anomaly-modal__check"></div>
+    <img class="anomaly-modal__image" src="/anomaly.js?p=image">
+    <button class="btn btn--primary anomaly-modal__submit js-anomaly-modal-submit" type="submit">Continue</button>
+  </form>
+</div>
+<div class="feedback-content"><p class="feedback-text">This check helps us throttle abusive automated traffic.</p></div>
+</body></html>`;
+
 const decodeUtf8 = (chunks) => new TextDecoder().decode(
   Uint8Array.from(chunks.reduce((acc, c) => [...acc, ...c], [])));
 
@@ -109,8 +152,11 @@ describe('web-search-keyless: the DDG HTML parser (fixed sample → structured r
     }]);
   });
 
-  it('returns zero sources for a page with no result rows (the formatter renders "No results found.")', () => {
-    expect(parseDuckDuckGoHtml('<html><body>nothing here</body></html>').sources).toEqual([]);
+  it("answers DDG's genuine no-results page with a legal empty success", () => {
+    // Zero hits on a real search answer: the no-results structure, not a
+    // block page — the tool answers empty and the formatter renders
+    // "No results found."
+    expect(parseDuckDuckGoHtml(NO_RESULTS_HTML)).toEqual({ sources: [], truncated: false });
   });
 });
 
@@ -128,6 +174,29 @@ describe('web-search-keyless: href + challenge helpers', () => {
     expect(isChallengePage(CHALLENGE_HTML)).toBe(true);
     expect(isChallengePage(RESULTS_HTML)).toBe(false);
     expect(isChallengePage(undefined)).toBe(false);
+  });
+
+  it('the marker misses the 200-served variant — the structural shape is what catches it', () => {
+    expect(isChallengePage(CHALLENGE_VARIANT_HTML)).toBe(false);
+    expect(hasResultsListDom(RESULTS_HTML)).toBe(true);
+    expect(hasResultsListDom(NO_RESULTS_HTML)).toBe(true); // it wears the links chrome
+    expect(hasNoResultsDom(NO_RESULTS_HTML)).toBe(true);
+    expect(hasResultsListDom(CHALLENGE_VARIANT_HTML)).toBe(false);
+    expect(hasNoResultsDom(CHALLENGE_VARIANT_HTML)).toBe(false);
+  });
+
+  it('a marker-less challenge variant fails in-band: zero anchors, neither results nor no-results DOM (#346)', () => {
+    const call = () => parseDuckDuckGoHtml(CHALLENGE_VARIANT_HTML);
+    expect(call).toThrowError(expect.objectContaining({ name: 'WebError', code: CODE_CHALLENGED }));
+    // The truncated page sample rides the message — the trajectory shows
+    // the block page, not a bare "no results".
+    expect(call).toThrow(/anomaly-modal__title/);
+    expect(call).toThrow(/__dshWebSearch\.endpoint/);
+  });
+
+  it('a page with the results-list DOM but zero anchors stays an honest empty success', () => {
+    expect(parseDuckDuckGoHtml('<div class="serp__results"><div id="links"></div></div>'))
+      .toEqual({ sources: [], truncated: false });
   });
 });
 
@@ -184,6 +253,15 @@ describe('web-search-keyless: the provider, in-band failure legs', () => {
       code: CODE_CHALLENGED,
     });
     await expect(provider.search({ query: 'x' })).rejects.toThrow(/__dshWebSearch.endpoint/);
+  });
+
+  it('regression #346: the 200-served marker-less variant fails in-band, never a silent-empty success', async () => {
+    const provider = makeProvider(async () => bodyOf(CHALLENGE_VARIANT_HTML));
+    await expect(provider.search({ query: 'DeepSeek latest news' })).rejects.toMatchObject({
+      name: 'WebError',
+      code: CODE_CHALLENGED,
+    });
+    await expect(provider.search({ query: 'DeepSeek latest news' })).rejects.toThrow(/page sample/);
   });
 
   it('a non-2xx answer fails in-band with the status code', async () => {
