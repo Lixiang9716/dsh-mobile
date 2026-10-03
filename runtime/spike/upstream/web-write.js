@@ -28,7 +28,7 @@ import {
   makeDescribeSettings,
   makeSettingsWrite,
 } from 'upstream/web-write-settings.js';
-import { makePluginInventoryHandler, makePluginManagerHandlers } from 'upstream/web-write-inventory.js';
+import { makePluginInventoryApiEntries } from 'upstream/web-write-inventory.js';
 // The marketplace opt-in's VALIDATION (marketplaceOf) lives with the shape's
 // consumer (web-write-marketplace.js); the handlers themselves spread only
 // under the coverage plane's marketplace flag.
@@ -75,10 +75,21 @@ export const WRITE_ENDPOINTS = [
   'agentPresets/deletePreset', 'agentPresets/select',
   'pluginInventory/list',
   // The settings 内置插件 section reads the manager's LIST legs directly
-  // (no managementAvailable gate there — measured on device); both answer
-  // READ-ONLY rows (`readOnlyReason: 'management-required'`). The WRITE
-  // legs stay unclaimed: management is desktop machinery.
+  // (no managementAvailable gate there — measured on device). The spine and
+  // staged tiers answer READ-ONLY rows (`readOnlyReason:
+  // 'management-required'`); the workspace tier carries patchId rows — the
+  // scope the WRITE legs manage in-band (#335 A1, over the §4 pipeline +
+  // receipts journal + the dsh.plugins/1 registry).
   'pluginManager/listBundles', 'pluginManager/listPlugins',
+  'pluginManager/installBundle', 'pluginManager/removeBundle',
+  'pluginManager/setBundleEnabled', 'pluginManager/setPluginEnabled',
+  'pluginManager/inspect', 'pluginManager/cancelInstall',
+  // The dynamicCordisRunner runtime-side legs (#335 B3): the page halves
+  // (ui-cordis panel refresh + cordis-client-runner inspect sync) called
+  // these on every load and read the structured unimplemented. The answers
+  // are the honest mobile state (an empty dynamic roster; the synced client
+  // inspect manifest recorded) — upstream/web-write-cordis.js.
+  'dynamicCordisRunner/inventory', 'dynamicCordisRunner/syncInspectManifest',
   // The settings 内置插件 SHELL's own loads: the subagent model-selection
   // card reads the model catalog and the credential state (measured on
   // device: both answering unavailable left the shell's generic
@@ -384,25 +395,6 @@ const makeCancelSession = (ctx) => async (args) => {
  * @returns {api, openStream, dispose}
  */
 
-/** The settings 插件 legs (web-write-inventory.js): the read-only inventory
- * snapshot plus the manager's LIST legs — the latter carry the workspace
- * registry tier (the plugins the agent authors and self-installs during
- * creation turns). The manager's WRITE legs stay unclaimed (fail loud).
- * (Split from buildApiMap at the file-size gate.) */
-const makePluginInventoryApiEntries = (ctx, options) => {
-  const deps = {
-    spine: options.spine,
-    stagedPlugins: options.stagedPlugins,
-    ...(options.workspaceRegistry === undefined ? {} : { workspaceRegistry: options.workspaceRegistry }),
-  };
-  return {
-    'pluginInventory/list': makePluginInventoryHandler(ctx, deps),
-    ...Object.fromEntries(Object.entries(
-      makePluginManagerHandlers(ctx, deps),
-    ).map(([name, handler]) => [`pluginManager/${name}`, handler])),
-  };
-};
-
 /** The /api handler map (split from createWriteSurface at the file-size
  * gate): every claimed endpoint's handler, keyed by wire name. */
 const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
@@ -430,11 +422,12 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // presets service is the REAL vendored @deepseek-ai/dsh-agent-presets,
       // mounted by boot.js — these handlers forward, they do not reimplement.
       ...makeAgentPresetHandlers(ctx),
-      // The settings 插件 list: an honest read-only snapshot of the mounted
-      // spine + the staged client bundles + the Agent 预设 compositions
-      // (upstream/web-write-inventory.js). managementAvailable is false —
-      // the plugin-manager's write machinery stays unclaimed (fail loud).
-      ...makePluginInventoryApiEntries(ctx, options),
+      // The settings 插件 list: an honest snapshot of the mounted spine +
+      // the staged client bundles + the Agent 预设 compositions
+      // (upstream/web-write-inventory.js). managementAvailable stays false
+      // (the desktop panel's machinery); the manager legs themselves — list
+      // AND write — answer from this surface (#335 A1).
+      ...makePluginInventoryApiEntries(ctx, options, deps),
       ...shellLoadHandlers(deps.llmRoute),
       // The desktop's endpointPresets service is NOT public (no npm package —
       // unlike agentPresets). The platform fact this host can honestly serve:

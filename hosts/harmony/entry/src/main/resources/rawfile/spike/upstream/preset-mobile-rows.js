@@ -31,14 +31,19 @@ import { encodeUtf8, decodeUtf8 } from 'node:buffer';
  * 2026-10-03: `tool-plugin-manager` left this set — `@deepseek-ai/dsh-plugin-manager`
  * is staged and embedded (its list/inspect legs answer read-only from the
  * inventory; the write legs still refuse honestly). `tool-cordis` stays
- * absent: its runtime-inspection legs (`dynamicCordisRunner/*`) are not
- * implemented by the Phase-B carrier, so the row would only ever error. */
+ * absent: even with the runtime-side `dynamicCordisRunner/{inventory,
+ * syncInspectManifest}` legs answered (#335 B3), the tool's own wire needs
+ * the `cordisInspect` HOST service — which only the vendored
+ * cordis-host-runner provides (its HostInspectRegistry), plus the
+ * `resolveInspectQuery` leg and the cordis/inspect-query event loop the
+ * runner owns. Mounting that machinery is the #335 B carrier work; until
+ * it lands the row's inject would park forever. */
 const MOBILE_ABSENT_ROW_IDS = new Set([
   'tool-fs-search', // @vscode/ripgrep packaged binary over OS subprocesses
   'tool-web', // the web search provider is a host-plane network service
   'workflow-ptc', // the PTC workflow engine needs the desktop host runner
   'tool-presentation', // the registry presenter rides the PTC host runner
-  'tool-cordis', // runtime inspection rides the unimplemented dynamicCordisRunner legs
+  'tool-cordis', // needs the cordis-host-runner inspect service, not just the two B3 legs
 ]);
 
 /** The one YAML row block carrying `- id: <id>` at any indent, as an array

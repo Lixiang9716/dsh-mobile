@@ -31,6 +31,7 @@
  * runtime/spike/artifacts/macos-cli-settings-surfaces/.
  */
 import { createLogger } from 'logger.js';
+import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
 import { fsScope } from 'gateway.js';
 import { AGENT_PRESETS_BASE_URL, bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
@@ -205,9 +206,16 @@ const assertClaimsPhase = () => {
   const SETTINGS_LEGS = [
     'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
     'agentPresets/deletePreset', 'agentPresets/select', 'pluginInventory/list',
-    // The 内置插件 section reads these directly (no managementAvailable
-    // gate there); they answer READ-ONLY rows. The WRITE legs stay unclaimed.
+    // The 内置插件 section reads the LIST legs directly (no
+    // managementAvailable gate there); the WRITE legs answer in-band from
+    // the §4 pipeline + receipts journal + registry (#335 A1), and the
+    // dynamicCordisRunner legs answer the honest mobile cordis state
+    // (#335 B3).
     'pluginManager/listBundles', 'pluginManager/listPlugins',
+    'pluginManager/installBundle', 'pluginManager/removeBundle',
+    'pluginManager/setBundleEnabled', 'pluginManager/setPluginEnabled',
+    'pluginManager/inspect', 'pluginManager/cancelInstall',
+    'dynamicCordisRunner/inventory', 'dynamicCordisRunner/syncInspectManifest',
     'credentials/describe', 'session/modelCatalog',
   ];
   const missing = SETTINGS_LEGS.filter((e) => !claim.endpoints.includes(e));
@@ -215,7 +223,7 @@ const assertClaimsPhase = () => {
   emit('settings.claims', {
     endpoints: claim.endpoints.length,
     settingsLegs: SETTINGS_LEGS.length,
-    pluginManagerReadonly: true,
+    pluginManagerWriteLegs: 6,
   });
 };
 
@@ -306,31 +314,10 @@ const emitPlaneCounts = (snapshot, ctx) => {
   });
 };
 
-/** The manager LIST legs: READ-ONLY rows over the same snapshot — the
- * wire's own `readOnlyReason: 'management-required'` disposition. The
- * write legs stay unclaimed (fail loud when the page ever calls one). */
-const probeManagerLegs = async () => {
-  const manager = await awaitRespond('probe/pluginManager-listBundles-1');
-  demand(manager.ok === true,
-    `pluginManager/listBundles did not answer ok: ${JSON.stringify(manager.error ?? manager)}`);
-  const bundles = manager.value ?? [];
-  demand(bundles.length >= 1 && bundles.every((b) => b.readOnlyReason === 'management-required'
-    && Array.isArray(b.rows) && b.rows.length > 0 && b.removable === false),
-    `the read-only bundles are misshaped: ${JSON.stringify(bundles).slice(0, 160)}`);
-  const plugins = await awaitRespond('probe/pluginManager-listPlugins-1');
-  demand(plugins.ok === true,
-    `pluginManager/listPlugins did not answer ok: ${JSON.stringify(plugins.error ?? plugins)}`);
-  const pluginRows = plugins.value ?? [];
-  demand(pluginRows.length > 0 && pluginRows.every((r) => r.readOnlyReason === 'management-required'
-    && r.patchId === undefined),
-    'the read-only plugin rows must carry readOnlyReason and no patchId');
-  emit('settings.pluginManager.readonly', {
-    bundles: bundles.length,
-    bundleRows: bundles.reduce((sum, b) => sum + b.rows.length, 0),
-    plugins: pluginRows.length,
-    readOnlyReason: 'management-required',
-  });
-};
+/** The manager LIST legs: the shared two-tier demand + record
+ * (scenario/manager-legs-probe.js, #335 A1). */
+const probeManagerLegs = () =>
+  probeManagerLegsShared({ awaitRespond, emit });
 
 /** The 插件 inventory + manager-legs probes. */
 const probePlugins = async (ctx) => {

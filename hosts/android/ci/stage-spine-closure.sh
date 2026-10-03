@@ -344,7 +344,7 @@ done
 # silently freeze on a fresh install, the embed-list trap).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js write-surface-options.js \
+         composer-web-live.js write-surface-options.js manager-legs-probe.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \

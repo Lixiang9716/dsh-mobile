@@ -308,6 +308,7 @@ $(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
 SPINE_OURS="scenario/boot-verification.js
 scenario/harmony-session-live-read.js
 scenario/harmony-composer-live-write.js
+scenario/manager-legs-probe.js
 scenario/mic-plane.js
 upstream/boot.js
 upstream/wire-logger.js
@@ -323,6 +324,8 @@ upstream/web-write-coverage.js
 upstream/web-write-llm.js
 upstream/web-write-onboarding.js
 upstream/web-write-marketplace.js
+upstream/web-write-plugin-manager.js
+upstream/web-write-cordis.js
 upstream/preset-mobile-rows.js
 upstream/web-write-files.js
 upstream/web-write-picker.js

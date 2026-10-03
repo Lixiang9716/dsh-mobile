@@ -3,10 +3,13 @@ import { makePluginManagerHandlers, makePluginInventoryHandler } from 'web-write
 
 // The workspace registry tier (the one-sentence-creation path, T-0170): the
 // agent self-installs plugins into the workspace's dsh.plugins/1 registry,
-// and the 插件 manager's LIST legs must say so — a read-only tier beside the
-// spine and staged tiers, never a fabricated host install. The provider is
-// optional (absent → the historical byte-shape) and a malformed registry
-// rejects loud (rule 5) instead of degrading to an empty list.
+// and the 插件 manager's LIST legs must say so — the tier beside the spine
+// and staged tiers, never a fabricated host install. Since #335 A1 the
+// tier is the MANAGEABLE one: its rows carry the patchId member (the
+// registry is the persistent patch target the write legs operate), the
+// spine/staged tiers stay read-only. The provider is optional (absent → no
+// rows) and a malformed registry rejects loud (rule 5) instead of
+// degrading to an empty list.
 
 const SPINE = [{ entryId: 'spine.tool', moduleName: 'spine.tool', enabled: true, fiberPhase: 'active' }];
 const STAGED = [{ loaderName: 'staged.app' }];
@@ -29,7 +32,8 @@ describe('the workspace registry tier in the pluginManager LIST legs', () => {
     const rows = await listPlugins();
     const ws = rows.filter((r) => r.entryId === 'countdown10' || r.entryId === 'silent');
     expect(ws).toHaveLength(2);
-    expect(ws[0]).toMatchObject({ entryId: 'countdown10', moduleName: '10s Countdown', enabled: true, fiberPhase: null, readOnlyReason: 'management-required' });
+    expect(ws[0]).toMatchObject({ entryId: 'countdown10', moduleName: '10s Countdown', enabled: true, fiberPhase: null, patchId: 'plugins/registry.json' });
+    expect(ws[0].readOnlyReason).toBeUndefined();
     expect(ws[1]).toMatchObject({ entryId: 'silent', enabled: false, moduleName: 'silent' });
     expect(rows.some((r) => r.entryId === 'spine.tool')).toBe(true);
   });
@@ -39,7 +43,8 @@ describe('the workspace registry tier in the pluginManager LIST legs', () => {
     const bundles = await listBundles();
     const ws = bundles.find((bnd) => bnd.name === 'workspace-registry');
     expect(ws.installed).toBe(true);
-    expect(ws.readOnlyReason).toBe('management-required');
+    expect(ws.removable).toBe(true); // removal availability rides installation
+    expect(ws.readOnlyReason).toBeUndefined();
     expect(ws.rows.map((r) => r.rowId)).toEqual(['countdown10', 'silent']);
   });
 
@@ -48,6 +53,8 @@ describe('the workspace registry tier in the pluginManager LIST legs', () => {
     expect(await listPlugins()).toHaveLength(2);
     const ws = (await listBundles()).find((bnd) => bnd.name === 'workspace-registry');
     expect(ws.installed).toBe(false);
+    expect(ws.removable).toBe(false);
+    expect(ws.readOnlyReason).toBeUndefined();
     expect(ws.rows).toEqual([]);
   });
 
