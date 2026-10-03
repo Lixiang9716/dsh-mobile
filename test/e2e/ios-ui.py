@@ -30,6 +30,7 @@ usage:
   ios-ui.py shot <path> [--check]
   ios-ui.py wait "<label>" [--secs N]
   ios-ui.py sweep <dir>               # tap every control, before/after shots
+  ios-ui.py tree <path>               # raw WDA source JSON — ui-probe.mjs input
   ios-ui.py logs [minutes] | recover | launch | status
 """
 import argparse
@@ -269,6 +270,17 @@ def cmd_scan():
     return 0
 
 
+def cmd_tree(path):
+    """Save the RAW WDA source tree — the input format test/e2e/ui-probe.mjs
+    consumes for the ui.occlusion layout-truth verdict (the flattened scan
+    rows would lose the WebView-vs-native z-relationship it judges)."""
+    payload = http("GET", "/source?format=json", timeout=40)
+    with open(path, "w") as fh:
+        json.dump(payload, fh, ensure_ascii=False, indent=1)
+    print(path)
+    return 0
+
+
 def cmd_shot(path, check):
     digest = shot(path)
     print(digest)
@@ -325,7 +337,7 @@ def cmd_launch():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["scan", "tap", "type", "shot", "wait",
-                                    "sweep", "logs", "recover", "launch", "status"])
+                                    "sweep", "tree", "logs", "recover", "launch", "status"])
     ap.add_argument("arg", nargs="?", default="")
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--secs", type=int, default=90)
@@ -337,6 +349,8 @@ def main():
         return 0
     if args.cmd == "scan":
         return cmd_scan()
+    if args.cmd == "tree":
+        return cmd_tree(args.arg or "ui-tree.wda.json")
     if args.cmd == "tap":
         return tap(args.arg, args.hold)
     if args.cmd == "type":
