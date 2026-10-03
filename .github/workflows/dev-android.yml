@@ -216,6 +216,23 @@ jobs:
       - name: Run the BLE mock-radio leg on the emulator and verify (logs only)
         run: sh hosts/android/ci/run-ble.sh mock
 
+      # The full runner's phases 2-5 on the SAME emulator (#332's process
+      # half): the capability binding, the official web mount + the
+      # ui.occlusion layout-truth probe, the live read, the composer write.
+      # These contract pins rotted twice (#176, #332) because nothing
+      # executed them between capability landings — phase 1's scenarios
+      # already ran above via run-spike-e2e.sh, so only 2-5 run here, with
+      # every artifact redirected off the committed evidence dirs into /tmp.
+      # The camera grant is the run-camera-plane.sh discipline (the binding
+      # scenario asserts the descriptor's availability rows, and a fresh CI
+      # AVD carries no grant state).
+      - name: Run the full runner's phases 2-5 (binding + official mount + occlusion probe + live read/write)
+        run: |
+          adb shell pm grant com.dshmobile.spike android.permission.CAMERA 2>/dev/null \
+            || echo "CAMERA grant skipped (already granted)"
+          DSH_PHASES=2,3,4,5 DSH_WEB_ART=/tmp/dsh-full-web DSH_SESSION_ART=/tmp/dsh-full-session DSH_WRITE_ART=/tmp/dsh-full-write \
+            bash hosts/android/ci/run-android-full.sh
+
       - name: Upload E2E evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -227,5 +244,8 @@ jobs:
             /tmp/dsh-spike-verdict-m1.json
             /tmp/dsh-spike-verdict-m2.json
             /tmp/dsh-spike-verdict-session.json
+            /tmp/dsh-full-*/logs.txt
+            /tmp/dsh-full-*/verdict-*.json
+            /tmp/dsh-m4-verdict-*.json
             /tmp/emulator.log
           if-no-files-found: ignore
