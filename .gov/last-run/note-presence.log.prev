@@ -1,6 +1,2 @@
-verify_note_presence: base=HEAD (dirty worktree — reviewing the working tree)
-verify_note_presence: 11 non-trivial file(s) (.gov/last-run/check.log.prev, .gov/last-run/code-size.log.prev, .gov/last-run/conflict-markers.log.prev, .gov/last-run/logging.log.prev, .gov/last-run/note-presence.log.prev …and 6 more) changed with no note under .agents/notes/implemented/
-  no note file appears anywhere in this diff (not merely 'none for these paths' — any note file in the diff passes this gate)
-  if the change is non-trivial, add or update a note (see .gov/rules.md rule 2 (every non-trivial change carries an Agent Note))
-  if it is truly trivial (typo, format, local rename), ignore this warning
-verify_note_presence: warning (advisory; --strict to enforce)
+verify_note_presence: base=origin/feat/e2e-ci-phases...HEAD (clean tree — reviewing commits ahead of upstream)
+verify_note_presence: 60 non-trivial file(s), 2 note file(s) — ok

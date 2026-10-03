@@ -181,4 +181,4 @@ done  T-0171 Layout-truth probe: native occlusion of the web surface becomes a l
 done  T-0172 Fix #332: the binding scenarios demand zero unavailable primitives; pin the documented PHASED_ROWS set instead
 done  T-0173 shell realism on the release seat: serve wasmRun on Android + a real starter program set (issue #335 B4)
 open  T-0174 Close #332's process half: the full runner gains a DSH_PHASES filter and dev-android CI executes phases 2-5 (obey rules@ee4951678e7c)
-task: 183 card(s) — 9 open (13 unticked item(s); --strict blocks on them), 0 stale, 108 done, 66 voided
+task: 183 card(s) — 9 open (9 unticked item(s); --strict blocks on them), 0 stale, 108 done, 66 voided

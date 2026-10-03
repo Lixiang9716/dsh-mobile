@@ -1,4 +1,4 @@
-vend-repro: scope=gate — fresh clone of ad36d0da797c5c89bf464e360576680d659ae3ec -> /tmp/dsh-vend-repro.Er6CU7/clone
+vend-repro: scope=gate — fresh clone of 71523ba236b0637c02cfbbd51af9c84e3c9529b5 -> /tmp/dsh-vend-repro.xtUYv0/clone
 vend-repro: materializing from cold (clone root, CI shapes)
 vendor: wasm3 0.9.0 fetched and verified
 vendor: zstd 1.5.7 fetched and verified (BSD-3-Clause, single-thread)
@@ -89,12 +89,17 @@ vendor: fetched npm/eventsource-parser@3.1.0 (sha256 verified, pin-stamped)
 vendor: fetched npm/fflate@0.8.2 (sha256 verified, pin-stamped)
 vendor: fetched npm/jpeg-js@0.4.4 (sha256 verified, pin-stamped)
 vendor: fetched npm/pngjs@5.0.0 (sha256 verified, pin-stamped)
+vendor: fetched npm/@deepseek-ai/dsh-web@0.1.6-alpha.2 (sha256 verified, pin-stamped)
+vendor: fetched npm/@deepseek-ai/dsh-tool-web@0.1.6-alpha.2 (sha256 verified, pin-stamped)
+vendor: fetched npm/turndown@7.2.4 (sha256 verified, pin-stamped)
+vendor: fetched npm/@mixmark-io/domino@2.2.0 (sha256 verified, pin-stamped)
+vendor: fetched npm/@joplin/turndown-plugin-gfm@1.0.67 (sha256 verified, pin-stamped)
 vendor: upstream DSH closure ready
 vend-repro: re-running (idempotency)
 vendor: wasm3 0.9.0 present
 vendor: zstd 1.5.7 present (pin-stamped)
 vendor: quickjs-ng 0.17.0+fork-tostring+async-context+tc39+promise-mark present (63b33ea5a7a53fedebd05c3413f2ee556e60f849)
 vend-repro: dsh closure: 60 pin rows verified (mirror-served, sha-stamped)
-vend-repro: npm closure: 26 pin rows verified
+vend-repro: npm closure: 31 pin rows verified
 vend-repro: engines: quickjs-ng quickjs-ng/0.17.0 + wasm3 0.9.0 + zstd 1.5.7 verified
 vend-repro: PASS (gate scope) — the vendor scripts materialize what they promise, from a fresh clone, under CI's invocation shapes
