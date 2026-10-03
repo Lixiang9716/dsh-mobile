@@ -28,6 +28,7 @@ import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
+import { writeSurfaceOptions } from 'scenario/write-surface-options.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -54,6 +55,9 @@ const EXPECTED_TEXT = 'Hello from upstream'; // the scripted endpoint's successT
 const resolveLlmRoute = (cfg) => sharedResolveLlmRoute(cfg);
 
 const log = createLogger('b4.web');
+
+
+
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   const error = reason instanceof Error ? reason : null;
@@ -220,20 +224,7 @@ const installRuntimeHalf = (ctx, cfg, route) => {
   };
   const runtime = createWebBootRuntime({
     ctx, post,
-    write: {
-      root: cfg.containerRoot,
-      fullCoverage: cfg.fullCoverage === true,
-      provider: route.provider,
-      model: route.model,
-      models: route.models, // the staged roster (llm-route.js); absent on mock/byok routes
-      baseURL: route.baseURL,
-      routeKind: route.kind,
-      // The seat's config-file opt-in (profiles/default/marketplace/config.json): marketplaceIndex names the resolver index — the same {indexUrl} option, no host-side key pin (the resolver's declared-gap trust mode). An explicit cfg.marketplace object (below) wins over it.
-      ...(cfg.marketplaceIndex === undefined ? {} : { marketplace: { indexUrl: cfg.marketplaceIndex } }),
-      // Marketplace opt-in (web-write-marketplace.js), relayed verbatim when the seat stages it; absent → unclaimed.
-      ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
-      spine: () => spineInventory(ctx), // the 插件 inventory's spine plane: REAL mounts from ctx
-    },
+    write: writeSurfaceOptions(cfg, ctx, route),
   });
   const busHandler = (msg) => {
     const outcome = runtime.deliver(msg);

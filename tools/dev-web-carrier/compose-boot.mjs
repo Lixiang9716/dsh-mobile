@@ -73,16 +73,22 @@ export const buildResolutionScope = (stageDir, repoRoot) => {
   const nm = join(stageDir, 'node_modules');
   rmSync(nm, { recursive: true, force: true });
   mkdirSync(nm, { recursive: true });
+  // Per-package version nesting means two vendored dirs can declare the SAME
+  // package name (chokidar 4 for one face, 5 for another) — the first wins,
+  // deterministic by the sorted walk, and an existing link never EEXISTs.
+  const linked = new Set();
   const link = (pkgDir) => {
     const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'));
     const at = join(nm, ...pkg.name.split('/'));
+    if (linked.has(at)) return;
+    linked.add(at);
     mkdirSync(dirname(at), { recursive: true });
     symlinkSync(pkgDir, at, 'dir');
   };
-  for (const entry of readdirSync(join(repoRoot, VENDOR_NPM), { withFileTypes: true })) {
+  for (const entry of readdirSync(join(repoRoot, VENDOR_NPM), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     if (entry.isDirectory() && !entry.name.startsWith('@')) link(join(repoRoot, VENDOR_NPM, entry.name));
   }
-  for (const entry of readdirSync(join(repoRoot, VENDOR_NPM, '@deepseek-ai'), { withFileTypes: true })) {
+  for (const entry of readdirSync(join(repoRoot, VENDOR_NPM, '@deepseek-ai'), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
     link(join(repoRoot, VENDOR_NPM, '@deepseek-ai', entry.name));
   }
   return nm;

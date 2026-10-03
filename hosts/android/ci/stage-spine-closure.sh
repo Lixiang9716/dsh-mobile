@@ -113,6 +113,10 @@ stage_npm_face_at_dsh_path tool-present
 stage_npm_face_at_dsh_path tool-ralph
 stage_npm_face_at_dsh_path tool-bash
 stage_npm_face_at_dsh_path tool-pwsh
+# The Creator composition's plugin-management row (the mobile-absent patch
+# leaves it enabled since the T-0170 round): its marker seeds from the
+# vendor/dsh rel path like every npm face above.
+stage_npm_face_at_dsh_path plugin-manager
 
 # The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
@@ -340,7 +344,8 @@ done
 # silently freeze on a fresh install, the embed-list trap).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js device-plane.js camera-plane.js ble-plane.js mic-plane.js \
+         composer-web-live.js write-surface-options.js \
+         device-plane.js camera-plane.js ble-plane.js mic-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
          upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
@@ -468,7 +473,8 @@ done
 # 2026-09-23 round-two chase hit).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js device-plane.js camera-plane.js ble-plane.js mic-plane.js \
+         composer-web-live.js write-surface-options.js \
+         device-plane.js camera-plane.js ble-plane.js mic-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \
          upstream-fake-timers.js agent-presets-probe-seed.js agent-flow.js; do
