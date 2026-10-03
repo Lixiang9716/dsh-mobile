@@ -15,9 +15,250 @@
     "[x] Panel tests: variant fixture throws CODE_CHALLENGED, no-results fixture empty success, provider-level 200-variant regression",
     "[x] bash test/panel/run.sh all green",
     "[x] Closure sync to host copies (closures gate)",
-    "Agent Note, commit, push, PR merged"
+    "[x] Agent Note, commit, push, PR merged"
   ],
-  "status": "open",
-  "receipt": null,
+  "status": "done",
+  "receipt": {
+    "ts": "2026-10-03T23:41:06+00:00",
+    "mode": "quick",
+    "rules": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "green": true,
+    "gates": [
+      {
+        "gate": "self-test",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "notes",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 159,
+        "detail": "note: .agents/notes/implemented/process/2026-09-21-the-release-token-probe-tests-the-write-.md is superseded by 2026-09-21-the-release-pr-gets-its-required-check-b.md \u2014 the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.\nverify_notes: 238 note(s) ok",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "pairing",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "note-presence",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "conflict-markers",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "check",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "code-size",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "logging",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "doc-crosslinks",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "archive",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "task",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "verify-decisions",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "plane",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "panel-tests",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "e2e-matrix",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "closures",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "vendoring-repro",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "bundle-files",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "webclient-staged-tree",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "quickjs-boot-parse",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "staging-check",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "coverage-floor",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "asset-mirrors",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "shellcheck-warn",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "actionlint",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "perf-budget",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      }
+    ]
+  },
   "id": "T-0177"
 }
