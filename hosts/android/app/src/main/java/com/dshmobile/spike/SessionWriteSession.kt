@@ -199,9 +199,8 @@ class SessionWriteSession private constructor(private val activity: Activity) {
 
     // ---- the write-live runtime half ------------------------------------------
 
-    /** Evals the scenario through the frozen bridge, wires the gateway
-     * (fs + httpFetch for the llm transport), delivers runtime.config
-     * (scripted llm endpoint + profile container) + `web.plugins`. */
+    /** Evals the scenario through the frozen bridge, wires the gateway (fs +
+     * httpFetch), delivers runtime.config (scripted llm endpoint) + `web.plugins`. */
     private fun startWriteRuntime(pluginsDelivery: JSONArray) {
         val bundle = File(activity.filesDir, "spike")
         core = GatewayCore.create(bundle)
@@ -209,6 +208,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         fs.register(core)
         val http = HttpPrimitive()
         http.register(core)
+        WasmPrimitive(fs).register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post

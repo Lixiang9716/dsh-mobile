@@ -67,6 +67,28 @@ object SpikeRuntime {
 
     fun m4End(handle: Long) = nativeM4End(handle)
 
+    // ---- the WebAssembly seam (contract v1.2.0 wasmRun) -------------------
+    // The module bytes run IN-PROCESS through the vendored wasm3 (dsh_wasm.c
+    // in libdsh_spike); no runtime handle is involved. WasmPrimitive calls
+    // this ON the runtime thread (every gateway handler runs there), which is
+    // also why the C sink needs no lock: one run at a time is the thread
+    // rule. Returns the JSON payload {"result","output"}, or null with the
+    // reason in wasmLastError() (the m4LastError pattern).
+
+    /** Runs one module export; [moduleBytes] is the raw .wasm image. */
+    fun wasmRun(moduleBytes: ByteArray, func: String, input: String): String? =
+        nativeWasmRun(moduleBytes, func, input)
+
+    fun wasmLastError(): String = nativeWasmLast()
+
+    private external fun nativeWasmRun(
+        moduleBytes: ByteArray,
+        func: String,
+        input: String,
+    ): String?
+
+    private external fun nativeWasmLast(): String
+
     private external fun nativeRunSpike(contextDir: String): String
 
     private external fun nativeM4Begin(

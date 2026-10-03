@@ -78,16 +78,10 @@ class FsPrimitives(private val context: Context) {
     private fun read(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {
         val (scope, rel) = target(call, "fsRead", done) ?: return
         try {
+            val bytes = readFor(scope, rel, "fsRead")
             if (scope == "app") {
-                val file = File(appRoot, rel)
-                if (!file.isFile) throw io("fsRead", "cannot read $rel")
-                val bytes = file.readBytes()
-                if (bytes.size > MAX_READ_BYTES) throw invalid("fsRead", "file too large")
-                settleRead(done, bytes, isoMillis(file.lastModified()))
+                settleRead(done, bytes, isoMillis(File(appRoot, rel).lastModified()))
             } else {
-                val treeUri = scopeTree(scope) ?: return done.settle(null, denied("fsRead", scope))
-                val bytes = tree.readTreeFile(treeUri, rel)
-                    ?: throw io("fsRead", "cannot read $rel in tree scope")
                 done.settle(
                     JSONObject().put("bytesB64", b64(bytes)).put("mtime", ""),
                     null,
@@ -98,6 +92,25 @@ class FsPrimitives(private val context: Context) {
         } catch (e: Exception) {
             done.settle(null, io("fsRead", "${e::class.java.simpleName}: ${e.message}"))
         }
+    }
+
+    /** The bytes behind (scope, path) — the module face the wasmRun primitive
+     * reads through (a module is an ordinary file inside the scope) beside
+     * the fsRead handler. Same scope registry, same rejections; [primitive]
+     * names the caller so the rejection's audit primitive is the call that
+     * made it. A missing file is `io "cannot read <path>"` — the exact shape
+     * the shell executor's not-found branch matches on. */
+    fun readFor(scope: String, rel: String, primitive: String): ByteArray {
+        if (scope == "app") {
+            val file = File(appRoot, rel)
+            if (!file.isFile) throw io(primitive, "cannot read $rel")
+            val bytes = file.readBytes()
+            if (bytes.size > MAX_READ_BYTES) throw invalid(primitive, "file too large")
+            return bytes
+        }
+        val treeUri = scopeTree(scope) ?: throw denied(primitive, scope)
+        return tree.readTreeFile(treeUri, rel)
+            ?: throw io(primitive, "cannot read $rel in tree scope")
     }
 
     private fun write(call: GatewayCore.GatewayCall, done: GatewayCore.Done) {

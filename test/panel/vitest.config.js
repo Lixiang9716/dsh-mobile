@@ -26,6 +26,11 @@ export default defineConfig({
       'marketplace-resolver.js': fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)),
       'web-write-inventory.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)),
       '@deepseek-ai/dsh-timeout': fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)),
+      // The shell-executor suite runs the REAL plugin over a gateway shim
+      // whose wasmRun executes on Node's own WebAssembly (the dsh_wasm.c
+      // ABI mirrored byte for byte — see gateway-shim.js).
+      'gateway.js': fileURLToPath(new URL('./gateway-shim.js', import.meta.url)),
+      '@deepseek-ai/dsh-tools': fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)),
     },
   },
 });

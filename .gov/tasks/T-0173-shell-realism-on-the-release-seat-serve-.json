@@ -1,0 +1,262 @@
+{
+  "title": "shell realism on the release seat: serve wasmRun on Android + a real starter program set (issue #335 B4)",
+  "created": "2026-10-03T09:07:27+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] Android host serves wasmRun: CMake compiles dsh_wasm.c + wasm3, JNI nativeWasmRun, Kotlin WasmPrimitive, registered in every seat",
+    "[x] starter programs wc + grep generated from tracked .wat via pinned wabt, hung off ensureStarter beside echo",
+    "[x] honest surface: not-found message and tool description name the available programs and route file ops to the fs tools",
+    "[x] panel test executes a real program through shellExecutor.run via a faithful wasmRun shim and asserts output",
+    "[x] bash test/panel/run.sh green; staged closures re-synced (android + harmony)"
+  ],
+  "status": "done",
+  "receipt": {
+    "ts": "2026-10-03T09:34:14+00:00",
+    "mode": "quick",
+    "rules": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "green": true,
+    "gates": [
+      {
+        "gate": "self-test",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "notes",
+        "outcome": "PASS",
+        "blocking": false,
+        "duration_ms": 121,
+        "detail": "note: .agents/notes/implemented/process/2026-09-21-the-release-token-probe-tests-the-write-.md is superseded by 2026-09-21-the-release-pr-gets-its-required-check-b.md \u2014 the PAT requirement and the three probes below were removed the same day, in favour of `GITHUB_TOKEN` plus an explicit `gates` dispatch (D11). The probe technique is still the reason the diagnosis was possible; the code it lived in is gone.\nverify_notes: 229 note(s) ok",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "pairing",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "note-presence",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "conflict-markers",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "check",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "code-size",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "logging",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "doc-crosslinks",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "archive",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "task",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "verify-decisions",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "plane",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "panel-tests",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "e2e-matrix",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "closures",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "vendoring-repro",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "bundle-files",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "webclient-staged-tree",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "quickjs-boot-parse",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "staging-check",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "coverage-floor",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "asset-mirrors",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "shellcheck-warn",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "actionlint",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      },
+      {
+        "gate": "perf-budget",
+        "outcome": "NOT_SELECTED",
+        "blocking": false,
+        "duration_ms": 0,
+        "detail": "",
+        "selected_by": "mode:quick",
+        "scoped_out": false
+      }
+    ]
+  },
+  "id": "T-0173"
+}
