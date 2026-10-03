@@ -275,6 +275,102 @@ ensure_npm_registry "chokidar" "5.0.0" "45d07ea7d57ee482c733ab3c547cc49edc1423bc
 ensure_npm_registry "readdirp" "4.1.2" "766ea2ba6314aefe6b939c9bbe3999cc473286578aeb1c3805338c2dbd655f5a"
 ensure_npm_registry "readdirp" "5.0.0" "01ecd9d6bf8fdb4b8c462b23d1d8f69604841050ac4316e6fe67967a62b00407"
 
+# The raw vitest face's node-side deps (issue #321, 2026-10-03): the specs
+# imported these bare and the layout had no resolution for them — the vendor
+# tree staged the dsh faces but almost none of the registry faces the tests
+# transitively need. Pinned at the dsh-v0.1.6-alpha.2 pnpm-lock resolutions
+# (each version checked against the lockfile's frozen package list; transitive
+# closures walked the same way). Deliberately NOT staged, named so the absence
+# is a decision and not an omission: koffi (tarball ships sources only — needs
+# a build step), @anthropic-ai/claude-agent-sdk (peer closure @anthropic-ai/sdk
+# + @modelcontextprotocol/sdk@1.x unresolved; its spec files sit in the known
+# real-drift buckets), @earendil-works/pi-ai (10-dep closure incl. the AWS SDK;
+# same drift buckets).
+ensure_npm_registry "js-yaml" "4.3.1" "08d6282b77a3e7242061f6dd5516c019b25c53041ad267bca3b790d79ddd5f34"
+ensure_npm_registry "picomatch" "4.0.4" "515b5ab666558ed9a117483a310892aede54a68dd78f2d8db6604513e578571c"
+ensure_npm_registry "tsx" "4.22.4" "af3ed3f8f7a536c7d304d44f1350a0c354e991fd3d68329be9e5850f426e3b02"
+ensure_npm_registry "esbuild" "0.28.1" "eb8ef756f8299d16d5c8b35678606d715ba29923f500db7b37c181310eed40a5"
+ensure_npm_registry "@esbuild/linux-x64" "0.28.1" "9ed00ab5330c94386f3273eda99a1fb0e8f37cfd6cb5270e4ad2fe3527da3546"
+ensure_npm_registry "@esbuild/linux-arm64" "0.28.1" "2145e9e686c95ee47c1181f83f272f0ff95820e52d7736fdcd9eeb106fd6456a"
+ensure_npm_registry "undici" "8.10.0" "9d72c56c17ad2b3d66f006d53945374cc0d2bc68f322439495b972269f4de6bc"
+ensure_npm_registry "fast-check" "4.8.0" "4a7a7190c09aaf071d61c35748d2475a5e64755f87da0c59ff0f4829019d472a"
+ensure_npm_registry "pure-rand" "8.4.0" "5bed0db3b14fac83c44c28989bae23d03f0c2c455261662c6de1c09891582f4f"
+# execa@10's transitive closure (13 packages): the extracted lockfile records
+# the frozen resolutions but not the edges, so every level was resolved from
+# the declared ranges and confirmed against the lockfile's package list.
+ensure_npm_registry "execa" "10.0.0" "8621f872bdb727cb3e8e01ffb061d0037d01e2cee9077e0727dbfa710cac809e"
+ensure_npm_registry "figures" "6.1.0" "30fb155c772891ddf5611d238216eab7a4b4088492abed725b3809f038e51dfc"
+ensure_npm_registry "is-unicode-supported" "2.1.0" "5926c0400ee62ff9cb7b4658e73217028aa6070799ddf5a14249e53e21fdd362"
+ensure_npm_registry "get-stream" "9.0.1" "8e676f6d730ce38f01d0772936df1b33750c38e5dec6ad18c522a6a1622124c6"
+ensure_npm_registry "@sec-ant/readable-stream" "0.4.1" "fc54d8496938e7fdf01b09719253ff3643b31a4793c5bbfd3743baca53535da6"
+ensure_npm_registry "is-stream" "4.0.1" "b8f4acd481d7324aa120b33a7a5c6784a986e3acdb670832976b9a2c5f298d19"
+ensure_npm_registry "human-signals" "8.0.1" "b2397ed9013d69c3de60256cb3a55c5a651b9c860caf8470a17e70eb7129d4f6"
+ensure_npm_registry "is-plain-obj" "4.1.0" "c71d874f7ab7cd560329b080ce790f9768dea503337fe2e2719a18e28be621f7"
+ensure_npm_registry "npm-run-path" "6.0.0" "82163aa3e3a46ef2a49f8d20f21b67af52724b5be35246d685c1180b9f918ddf"
+ensure_npm_registry "path-key" "4.0.0" "aea29a2c9a0986a2eadb6d872c4e5537995612ea9babcbd8da3c2d74b3f049a7"
+ensure_npm_registry "unicorn-magic" "0.3.0" "e4bfbbe867144ff24f73198367479378c8b6cffc798a2ec0756a81097606908e"
+ensure_npm_registry "pretty-ms" "9.3.0" "0688f2dc20fc53ff8d4a5e9ddac4b518001255c56ce58d427afa8e933f7fe508"
+ensure_npm_registry "parse-ms" "4.0.0" "abbc7e193f7bcd9d26f9fe994f846ee3fb442b0ec215e7f61fa1080a29b7fb68"
+ensure_npm_registry "signal-exit" "4.1.0" "9d3b58a811ecf6a641537387289274cd14f5bb912a27e4f1f2a74182bca8b795"
+ensure_npm_registry "strip-final-newline" "4.0.0" "5d49f6c719f4558db329b8e3a6ba5109e8fb0d52c2d2f244edf6f1e06fc39a9e"
+ensure_npm_registry "which-command" "0.1.0" "9ece3c301c82005618410fc338bde9f0e2e38f226dbeebdc3a1c79e1e55636dd"
+ensure_npm_registry "yoctocolors" "2.1.2" "3c1ba40b75fc88178ad265101da843d5405384224ddcac35ddcf67cda2ea84f0"
+ensure_npm_registry "@sindresorhus/merge-streams" "4.0.0" "56e3bbea7f98de8a58eb38b23fed68d5d4bcc29b0dd8d733d79be7622f2afebd"
+# readable-stream@4's polyfill closure (the webworker-runtime node specs).
+ensure_npm_registry "readable-stream" "4.7.0" "0997e49cb71927b91714dad852147bacfe28bf8cd2f4e1b5a99959c3d0dde5fd"
+ensure_npm_registry "abort-controller" "3.0.0" "d2e249d5d010eb18e57c12c610d63e3ca3fa9dd0a5378009c1f465e21f50ab2f"
+ensure_npm_registry "event-target-shim" "5.0.1" "f0717da2cde5c703b92e66906623724959c23ac14e9439c436b84c8a4f5b26bc"
+ensure_npm_registry "buffer" "6.0.3" "555b6f49224afcf6b2c5a9aea7cd34a7f443f395b10532bc5580022d57aa51f5"
+ensure_npm_registry "base64-js" "1.5.1" "b1b7a945b52685269083425216d6597e33d97bf21699d656e92fdb3eb5210a85"
+ensure_npm_registry "ieee754" "1.2.1" "8ef14b9b397e339db89db97881fb714f49319d8f0eb1275901f45567b28f9dac"
+ensure_npm_registry "events" "3.3.0" "2c30dd630b58299bdfaac8688f763c6f312d29779c500b1e3701a1d4fb3b534b"
+ensure_npm_registry "process" "0.11.10" "7c10569b3c9cb056152ad630d40f9f4fcc321a0013c2bb8384f036aaa674e6bb"
+ensure_npm_registry "string_decoder" "1.3.0" "7d036900940345e423538371ae45b23bfaf4b454bc398c6ba604063b0597b3ad"
+ensure_npm_registry "safe-buffer" "5.2.1" "5d181804516c4a693a384272a7bd0e42d17e0d4b301ccfbe408669ccafdcb3e8"
+# sharp@0.35.3 (attachment-local's image face) + the glibc linux platform
+# binaries it resolves through its @img/* optionalDependencies. musl, darwin
+# and win32 faces stay unstaged on purpose: hosts there fail sharp with a
+# native-load error (a real runtime face), not a Cannot-find-package one.
+ensure_npm_registry "sharp" "0.35.3" "53637f5503f81d10b02097eca6f94c44e69d92ba7ef759f268a0c4ea1d06ae54"
+ensure_npm_registry "detect-libc" "2.1.2" "270dec0fc06cff86481da8af2dd8f18dee6b602790b14ef0e1c2c18d7da39427"
+ensure_npm_registry "semver" "7.8.5" "d85045d4300d7d57c891336b95df532e73f34c22ffcd222452b6d08b9d127d5d"
+ensure_npm_registry "@img/colour" "1.1.0" "6c2df3ac33d4b8647191ad8942a579e6004be00c25846677eab85f04702d85b1"
+ensure_npm_registry "@img/sharp-linux-x64" "0.35.3" "cae825408825ff38abf66e14f368950e5bdbb00a399c13701fcac971a4739d21"
+ensure_npm_registry "@img/sharp-libvips-linux-x64" "1.3.2" "8cf0eafeaca832b68942fe1a770fb5f3b490504d3a9f2e3f56ee8784c9d65c45"
+ensure_npm_registry "@img/sharp-linux-arm64" "0.35.3" "7b2c1078df8a6d4c68946e887757f4819a2bc0f7beda8146618db141fe5304ec"
+ensure_npm_registry "@img/sharp-libvips-linux-arm64" "1.3.2" "8e57184950f004478587574f84d2b042b888ed2a4679e2c0e801ecd809a36404"
+# @deepseek-ai/node-addon-system@0.1.2 — workspace-only UPSTREAM, but the
+# registry publishes the built face (flock is lazy: importing never loads the
+# addon). Platform packages staged for both glibc linux arches the suite runs.
+ensure_npm_registry "@deepseek-ai/node-addon-system" "0.1.2" "347a0bb0cb1ea1af6eb88f2b72eb3ee41cc7703093971e6b2a58fee19191c36e"
+ensure_npm_registry "@deepseek-ai/node-addon-system-linux-x64" "0.1.2" "77fb771bee2133c3ffd1f96c7b9435ddb1ccaee72b6814f6f4391343a611cc20"
+ensure_npm_registry "@deepseek-ai/node-addon-system-linux-arm64" "0.1.2" "232089d4a7cfa2ad8565056dca76936a6430c9ee536dc6b42586e2adac7fc5ed"
+# The @deepseek-ai/dsh CLI entry — sdk/client's launch.ts resolves
+# '@deepseek-ai/dsh/package.json' (the face exports it); only the face is
+# staged, its 78-dep closure resolves when the CLI actually RUNS.
+ensure_npm_registry "@deepseek-ai/dsh" "0.1.6-alpha.2" "a3c14d175c051023dcde078fb273b287b13b4b77654ea90b52d956cbf409178d"
+# The vendored dsh-sandbox-local face declares this dependency and imports it
+# from its lib — the bash-sandbox specs load that lib through the chain.
+ensure_npm_registry "@deepseek-ai/dsh-sandbox-windows-acl" "0.1.6-alpha.2" "2ae7b593599525f4da0a697f2d284070359c15e057c8d0dc1a48575b0552683a"
+# The webserver face (compression middleware) and the MCP stdio face
+# (cross-spawn), same first full-run pass. The vendored negotiator is 1.1.0
+# and path-key 4.0.0 — compression and cross-spawn freeze the older majors,
+# which the layout nests inside their own package dirs.
+ensure_npm_registry "compression" "1.8.1" "871674d45b53482fae81687f547e4c677c5c637eaa066ec8c412178b549dd5d5"
+ensure_npm_registry "negotiator" "0.6.4" "8fc72d4030ac7b0d4c51933a19224d72bebab8d51da196cb863f754cd772b210"
+ensure_npm_registry "ms" "2.1.3" "f6616e15e530ed552f9daa2d3ce71963947c6bc7c98c9b64fd3e673fd02622c6"
+ensure_npm_registry "debug" "2.6.9" "34ae48c66698f1f81e2a2e6e322f34e8a88b0986a3fa7b74bb5ea14c0edb1c98"
+ensure_npm_registry "bytes" "3.1.2" "835e37ad5a40da45eaed6e32d99847627a15b2a4671741182521fe48dee3c581"
+ensure_npm_registry "vary" "1.1.2" "7378860671377a35e7a443ecfdca0745cfd066f595c90d581b827defea246e71"
+ensure_npm_registry "on-headers" "1.1.0" "2721477949965442f4229652bb79cc252fc5074458c40adfef12d933f156c224"
+ensure_npm_registry "compressible" "2.0.18" "a57b9d8e8224a68045384e59753cd35e455efe037e090b6ac465d30a022059d6"
+ensure_npm_registry "cross-spawn" "7.0.6" "188c320cdc413adfec03098fda72af7a9b02152ba13d3a8f87f172d93ced38ea"
+ensure_npm_registry "path-key" "3.1.1" "4b8999acb914830edcd3c5b8fec632b32c6bc759ac3edc86336f5a9e08ba7b92"
+ensure_npm_registry "shebang-command" "2.0.0" "9acba5bd18a51e9cdf5898380e4df63f803e1844def64ae1a46f88cff86d556e"
+ensure_npm_registry "shebang-regex" "3.0.0" "fedbabaa6db26c6be0183f82777dfa852d59a62f8885de93bd32ebc28758958f"
+ensure_npm_registry "which" "2.0.2" "a13adf5fddeb769655edce551e81fbb11904b9c9be76d95e41da8c4c499d4edc"
+ensure_npm_registry "isexe" "2.0.0" "47cfe872e088e28c53b736fef305324b57cc1cfc9f72a9b0f769f92731cb8359"
+
 # Pins (see the closure table in upstream/README.md for the discipline).
 ensure_npm "dsh-agent-loop-testkit" "0.1.6-alpha.2" "e38ea68a4247994cce31dbc2788eb9d3b28aae0bee2361acade3ad62234ca66b"
 ensure_npm "dsh-llm-replay" "0.1.6-alpha.2" "85850f414d26bbdac00ebcc05a81212943b92864f386e37c5c2d5818e7b0d04b"
