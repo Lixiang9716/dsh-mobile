@@ -1,10 +1,2 @@
 verify_note_presence: base=HEAD (dirty worktree — reviewing the working tree)
-<<<<<<< Updated upstream
 verify_note_presence: 31 non-trivial file(s), 1 note file(s) — ok
-=======
-verify_note_presence: 18 non-trivial file(s) and 12 data/artifact file(s) (.gov/last-run/check.log.prev, .gov/last-run/conflict-markers.log.prev, .gov/last-run/coverage-floor.log.prev, .gov/last-run/note-presence.log.prev, .gov/last-run/notes.log.prev …and 13 more) changed with no note under .agents/notes/implemented/
-  no note file appears anywhere in this diff (not merely 'none for these paths' — any note file in the diff passes this gate)
-  if the change is non-trivial, add or update a note (see .gov/rules.md rule 2 (every non-trivial change carries an Agent Note))
-  if it is truly trivial (typo, format, local rename), ignore this warning
-verify_note_presence: warning (advisory; --strict to enforce)
->>>>>>> Stashed changes
