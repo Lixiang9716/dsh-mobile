@@ -92,7 +92,10 @@ done
 # missing `present` row (tool-ralph/tool-pwsh are disabled rows today —
 # health-skipped — and tool-bash's rows are !!js-gated; they ride so the
 # three hosts stage the same surface and a mount leg finds the bytes).
-for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
+# Hand-called per package like the other npm-face blocks: the stager keeps
+# its six for-in lists (the shape gen-staging-manifests.mjs models).
+stage_npm_face_at_dsh_path() {
+    pkg=$1
     say "staging vendor/dsh/$pkg@$VER (npm-face bytes at the dsh rel path)"
     src="$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER"
     dst="$ASSETS/vendor/dsh/$pkg@$VER"
@@ -105,7 +108,11 @@ for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
         mkdir -p "$dst/$(dirname "$rel")"
         cp "$src/$rel" "$dst/$rel"
     done
-done
+}
+stage_npm_face_at_dsh_path tool-present
+stage_npm_face_at_dsh_path tool-ralph
+stage_npm_face_at_dsh_path tool-bash
+stage_npm_face_at_dsh_path tool-pwsh
 
 # The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
@@ -386,8 +393,10 @@ for pkg in agent agent-loop brand llm sandbox scope session \
 done
 # The shell-surface npm faces staged at the dsh rel paths (the block above):
 # byte-identity against their own pin — the npm face IS the pin these bytes
-# ride (the dsh face has no tree for them).
-for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
+# ride (the dsh face has no tree for them). Twin of the stage helper, called
+# per package the same way.
+verify_npm_face_at_dsh_path() {
+    pkg=$1
     (cd "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
     while IFS= read -r rel; do
         [ -f "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER/$rel" ] || continue
@@ -395,7 +404,11 @@ for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
         cmp -s "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER/$rel" "$ASSETS/vendor/dsh/$pkg@$VER/$rel" ||
             note_drift "vendor/dsh/$pkg@$VER/$rel"
     done
-done
+}
+verify_npm_face_at_dsh_path tool-present
+verify_npm_face_at_dsh_path tool-ralph
+verify_npm_face_at_dsh_path tool-bash
+verify_npm_face_at_dsh_path tool-pwsh
 (cd "$SPIKE/vendor/npm/diff@9.0.0/libesm" && find . -type f ! -name '*.d.ts') |
     while IFS= read -r rel; do
         if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/diff@9.0.0/libesm/$rel"; then note_skip; continue; fi
