@@ -145,6 +145,8 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-shell-wasm" / "manifest.json"),
     ("plugin_shell_wasm_js",
      SPIKE / "system-plugins" / "dsh-shell-wasm" / "index.js"),
+    ("plugin_shell_wasm_programs_js",
+     SPIKE / "system-plugins" / "dsh-shell-wasm" / "programs.js"),
     # The outboard in-process Linux shell (contract v1.3.0): the same shape,
     # with the guest engine's `ishRun` behind it.
     ("plugin_shell_ish_manifest",

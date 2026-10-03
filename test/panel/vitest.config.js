@@ -26,13 +26,17 @@ export default defineConfig({
       'marketplace-resolver.js': fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)),
       'web-write-inventory.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)),
       '@deepseek-ai/dsh-timeout': fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)),
+      // The shell-executor suite runs the REAL plugin over a gateway shim
+      // whose wasmRun executes on Node's own WebAssembly (the dsh_wasm.c
+      // ABI mirrored byte for byte — see gateway-shim.js).
+      'gateway.js': fileURLToPath(new URL('./gateway-shim.js', import.meta.url)),
+      '@deepseek-ai/dsh-tools': fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)),
       // The plugin-manager write-leg battery drives the REAL §4 pipeline
       // (tar bytes → digest → promote → receipt journal) over the gateway
       // shim (gateway-shim.js): the pipeline family's bare specifiers
       // resolve to the pinned runtime sources, and the marketplace face's
       // RELATIVE ../gateway.js import reaches the real spike gateway (only
       // its base64 helper runs in tests — via the util-crypto shim).
-      'gateway.js': fileURLToPath(new URL('./gateway-shim.js', import.meta.url)),
       'dsh:util-crypto': fileURLToPath(new URL('./util-crypto-shim.js', import.meta.url)),
       'sha256.js': fileURLToPath(new URL('../../runtime/spike/sha256.js', import.meta.url)),
       'tar-mini.js': fileURLToPath(new URL('../../runtime/spike/tar-mini.js', import.meta.url)),

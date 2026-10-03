@@ -1,29 +1,25 @@
-run-coverage: installing dev deps for presentation/lynx-client
-
-added 65 packages in 1s
 run-coverage: measuring presentation/lynx-client
 
- RUN  v4.1.11 /home/lx/wt/ui-probe/presentation/lynx-client
+ RUN  v4.1.11 /home/lx/wt/phase2-fix/presentation/lynx-client
       Coverage enabled with v8
 
  ✓ tests/fold.test.js (10 tests) 10ms
- ✓ tests/adapter.test.js (10 tests) 9ms
- ✓ tests/seam.test.js (11 tests) 10ms
- ✓ tests/wire.test.js (5 tests) 259ms
- ✓ tests/wire-edge.test.js (8 tests) 269ms
- ✓ tests/driver-loop.test.js (22 tests) 1157ms
-     ✓ turn settles: reply, tool card, creation, title — all through the fold  646ms
-     ✓ 已停止 status, no hung tail, cancelled reply never settles  312ms
- ✓ tests/mux.test.js (7 tests) 5894ms
-     ✓ a socket drop re-opens every live stream on the fresh socket  661ms
+ ✓ tests/adapter.test.js (10 tests) 8ms
+ ✓ tests/seam.test.js (11 tests) 9ms
+ ✓ tests/wire.test.js (5 tests) 263ms
+ ✓ tests/wire-edge.test.js (8 tests) 272ms
+ ✓ tests/driver-loop.test.js (22 tests) 1366ms
+     ✓ turn settles: reply, tool card, creation, title — all through the fold  667ms
+ ✓ tests/mux.test.js (7 tests) 5925ms
+     ✓ a socket drop re-opens every live stream on the fresh socket  665ms
      ✓ a user close stays closed  1234ms
-     ✓ a superseded socket's late close triggers NO duplicate reconnect  1254ms
-     ✓ a server refusing the upgrade loops bounded, process alive  2513ms
+     ✓ a superseded socket's late close triggers NO duplicate reconnect  1255ms
+     ✓ a server refusing the upgrade loops bounded, process alive  2514ms
 
  Test Files  7 passed (7)
       Tests  73 passed (73)
-   Start at  14:41:36
-   Duration  6.21s (transform 481ms, setup 0ms, import 771ms, tests 7.61s, environment 1ms)
+   Start at  17:48:33
+   Duration  6.21s (transform 385ms, setup 0ms, import 644ms, tests 7.85s, environment 1ms)
 
  % Coverage report from v8
 -------------------|---------|----------|---------|---------|-------------------

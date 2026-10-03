@@ -8,6 +8,7 @@ project(dsh_spike_android C)
 set(DSH_SPIKE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../runtime/spike)
 set(DSH_ENGINE_DIR ${DSH_SPIKE_DIR}/vendor/quickjs-ng/0.17.0)
 set(DSH_ZSTD_DIR ${DSH_SPIKE_DIR}/vendor/zstd/1.5.7)
+set(DSH_WASM3_DIR ${DSH_SPIKE_DIR}/vendor/wasm3/0.9.0/source)
 
 add_library(dsh_spike SHARED
         dsh_spike_jni.c
@@ -20,6 +21,27 @@ add_library(dsh_spike SHARED
         # unconditionally, so leaving it out is a link error, not a
         # negotiation (the gateway still decides what gets SERVED).
         ${DSH_SPIKE_DIR}/host/dsh_socket.c
+        # dsh_wasm.c — the WebAssembly seam (contract v1.2.0 wasmRun), served
+        # to the gateway by the Kotlin WasmPrimitive: the module is interpreted
+        # IN-PROCESS by wasm3 (no JIT, no child process — D2), the same engine
+        # and the same 11 TUs the iOS app and the portable spine compile.
+        # Pinned by runtime/spike/vendor/ensure-wasm3.sh, materialized by the
+        # same ensureSpikeVendor Gradle task as the quickjs tree. Until this
+        # landed (#335 B4) the release seat answered every shell run with a
+        # gateway denial — the shell tool could not execute even its own
+        # starter echo.wasm.
+        ${DSH_SPIKE_DIR}/host/dsh_wasm.c
+        "${DSH_WASM3_DIR}/m3_bind.c"
+        "${DSH_WASM3_DIR}/m3_code.c"
+        "${DSH_WASM3_DIR}/m3_compile.c"
+        "${DSH_WASM3_DIR}/m3_core.c"
+        "${DSH_WASM3_DIR}/m3_env.c"
+        "${DSH_WASM3_DIR}/m3_exec.c"
+        "${DSH_WASM3_DIR}/m3_function.c"
+        "${DSH_WASM3_DIR}/m3_info.c"
+        "${DSH_WASM3_DIR}/m3_module.c"
+        "${DSH_WASM3_DIR}/m3_parse.c"
+        "${DSH_WASM3_DIR}/m3_validate.c"
         ${DSH_ENGINE_DIR}/dtoa.c
         ${DSH_ENGINE_DIR}/libregexp.c
         ${DSH_ENGINE_DIR}/libunicode.c
@@ -56,6 +78,7 @@ add_library(dsh_spike SHARED
 target_include_directories(dsh_spike PRIVATE
         ${DSH_SPIKE_DIR}/host
         ${DSH_ENGINE_DIR}
+        ${DSH_WASM3_DIR}
         ${DSH_ZSTD_DIR}
         ${DSH_ZSTD_DIR}/common)
 

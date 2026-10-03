@@ -294,3 +294,5 @@ test/web-client-next-suite/coverage/
 .gov/tasks/.reminders.json
 # the panel suite's staged vendored package (provision-vendor.mjs; untracked by design)
 test/panel/.vendored/
+
+hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@*/

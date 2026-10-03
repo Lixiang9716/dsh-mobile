@@ -1,12 +1,22 @@
-// gateway-shim.js — the panel suite's gateway.js for the plugin-manager
-// write-leg battery: the fs legs carry an in-memory workspace, the http face
-// serves TEST routes. The runtime spike host serves the same primitives over
-// the C bridge; here they are a Map plus a route table, so the battery
-// drives the REAL §4 install pipeline (tar bytes → digest → store → unpack
-// → promote → receipt journal) end to end under node.
+// gateway-shim.js — the panel suite's gateway.js: the wasmRun leg EXECUTES,
+// the fs legs carry an in-memory workspace.
 //
-// Error shape: the contract's `{code: 'io'}` rejection — the gateway folds
-// missing and failed reads into io on every host (contract/primitives.md).
+// The wasmRun shim is a byte-faithful mirror of the C runner the device
+// serves (runtime/spike/host/dsh_wasm.c): the caller's input rides the LAST
+// 4096 bytes of the module's own memory as a NUL-terminated string, the
+// export `run(ptr, len)` receives (pointer, length), dsh.emit(ptr, len)
+// appends to the collected output, and the export's i32 return is the
+// result. Node's own WebAssembly plays the interpreter — the vendored wasm3
+// plays it on the device — so a program that behaves differently under this
+// shim than under dsh_wasm.c is a broken module, and the suite catches it
+// here rather than on a seat.
+//
+// The fs face is the contract's shape over one Map: fsRead answers
+// `{bytes, mtime}` and refuses a missing path with the EXACT rejection the
+// C hosts answer (`io` + "cannot read <path>") — the message the shell
+// executor's not-found branch matches on.
+import { createHash } from 'node:crypto';
+
 export class GatewayError extends Error {
   constructor(code, primitive, message) {
     super(message ?? `gateway ${primitive} failed (${code})`);
@@ -16,14 +26,14 @@ export class GatewayError extends Error {
   }
 }
 
-/** The in-memory workspace: `scope/path` → Uint8Array. Tests seed it
- * directly; the pipeline's writes land here too. */
+/** The in-memory workspace: (scope, path) → Uint8Array. Tests seed it
+ * directly; the starter writes land here too. */
 export const workspace = new Map();
 
 export const fsRead = async (scope, path) => {
   const bytes = workspace.get(`${scope}/${path}`);
   if (!bytes) throw new GatewayError('io', 'fsRead', `cannot read ${path}`);
-  return { bytes, mtime: 0 };
+  return { bytes, mtime: new Date(0).toISOString() };
 };
 
 export const fsWrite = async (scope, path, bytes, opts = {}) => {
@@ -77,3 +87,37 @@ export const httpFetch = async (url, opts = {}) => {
     body: (async function* served() { yield route.bodyBytes; })(),
   };
 };
+
+export const wasmRun = async (scope, path, func, input = '') => {
+  const bytes = workspace.get(`${scope}/${path}`);
+  if (!bytes) throw new GatewayError('io', 'wasmRun', `cannot read ${path}`);
+  const instance = new WebAssembly.Instance(
+    new WebAssembly.Module(bytes),
+    { dsh: { emit: (ptr, len) => {
+      const mem = new Uint8Array(instance.exports.memory.buffer);
+      out.push(mem.slice(ptr, ptr + len));
+    } } },
+  );
+  const out = [];
+  const mem = new Uint8Array(instance.exports.memory.buffer);
+  const RESERVE = 4096; // dsh_wasm.c's DSH_WASM_INPUT_RESERVE
+  if (mem.length <= RESERVE) throw new GatewayError('io', 'wasmRun', 'module memory too small');
+  const inPtr = mem.length - RESERVE;
+  const text = new TextEncoder().encode(input);
+  if (text.length > RESERVE - 1) throw new GatewayError('io', 'wasmRun', 'input too large');
+  mem.set(text, inPtr);
+  mem[inPtr + text.length] = 0;
+  const run = instance.exports[func];
+  if (typeof run !== 'function') {
+    throw new GatewayError('io', 'wasmRun', `no export "${func}"`);
+  }
+  const result = run(inPtr, text.length);
+  const merged = new Uint8Array(out.reduce((n, c) => n + c.length, 0));
+  let at = 0;
+  for (const chunk of out) { merged.set(chunk, at); at += chunk.length; }
+  return { result, output: new TextDecoder().decode(merged) };
+};
+
+/** The sha256 the byte pins are stated in (programs.js PINS). */
+export const sha256Hex = (bytes) =>
+  createHash('sha256').update(bytes).digest('hex');

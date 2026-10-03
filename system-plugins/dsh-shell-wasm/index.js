@@ -19,21 +19,37 @@
  *                    return value taken as the exit status.
  *
  * So "the PATH" is the workspace, and a program is an ordinary file the user,
- * the agent, or a package put there. `echo` ships as a starter program, written
- * into the workspace on activation when it is missing (a shell with no commands
- * at all would greet the model with `not found` on its first line).
+ * the agent, or a package put there. A STARTER SET ships in the plugin and is
+ * written into the workspace on activation when missing (a shell with no
+ * commands at all would greet the model with `not found` on its first line):
+ *
+ *   echo  — the argument text back, exit 0 (hand-assembled, 77 bytes)
+ *   wc    — `<lines> <words> <bytes>\n` of the argument text, exit 0
+ *   grep  — fixed-string: `<pattern> <text>` emits the text lines containing
+ *           the pattern; exits 0 matched / 1 none / 2 bad usage (the grep
+ *           convention)
+ *
+ * every module computing over the ONE input channel the wasmRun ABI carries —
+ * the argument text itself (a multi-line command is a multi-line input). The
+ * generated programs' bytes live in programs.js beside this file, produced by
+ * tools/wasm-gen from reviewable .wat sources and verified against the
+ * dsh_wasm.c ABI at generation time.
  *
  * NOT provided, and said out loud rather than faked: pipelines, redirection,
  * quoting beyond whitespace, background jobs (`start`), globbing, environment
- * variables, and exit codes above what a module returns. A command line that
- * needs any of those fails as a non-zero exit with a message naming what is
- * missing, never a silently wrong result. A real shell would be a WASM build of
- * one (busybox/ash or a clean-room shell) — the seam below is exactly where it
- * would plug in, and this file would shrink to the dispatch line.
+ * variables, exit codes above what a module returns, and FILE ACCESS — the
+ * module boundary has no filesystem (the ABI's input is one string), so file
+ * operations belong to the fs tools, and the not-found refusal names both the
+ * programs that DO exist and where files belong. A command line that needs
+ * anything else fails as a non-zero exit with a message naming what is
+ * missing, never a silently wrong result. A real shell would be a WASM build
+ * of one (busybox/ash or a clean-room shell) — the seam below is exactly
+ * where it would plug in, and this file would shrink to the dispatch line.
  */
 import { createLogger } from 'logger.js';
 import { defineTool } from '@deepseek-ai/dsh-tools';
 import { fsRead, fsWrite, wasmRun, GatewayError } from 'gateway.js';
+import { WC_BYTES, GREP_BYTES } from './programs.js';
 
 const log = createLogger('dsh.shell.wasm');
 
@@ -47,18 +63,19 @@ export const manifest = {
   hooks: { activate: 'activate' },
 };
 
-/** The starter program: `echo` — emits its argument text, exits 0.
- * Hand-assembled from echo.wat (77 bytes); it imports dsh.emit, exports its
- * memory, and `run(ptr, len)` reports the argument text back to the host.
- *
- * It returns 0 — a CONSTANT, not `local.get 1`. The first revision returned the
- * argument LENGTH, and the executor faithfully reports a module's i32 return as
- * the exit status, so `echo hi` exited 2 and `echo hello from wasm` exited 15: a
- * program that reports failure exactly when it works. (`i32.const 0` is 0x41 0x00
- * against `local.get 1`'s 0x20 0x01, so the module is the same 77 bytes and no
- * offset moves.) */
-const STARTER_ECHO = Uint8Array.from([
-  0, 97, 115, 109, 1, 0, 0, 0, 1, 12, 2, 96, 2, 127, 127, 0, 96, 2, 127, 127, 1, 127, 2, 12, 1, 3, 100, 115, 104, 4, 101, 109, 105, 116, 0, 0, 3, 2, 1, 1, 5, 3, 1, 0, 1, 7, 16, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 3, 114, 117, 110, 0, 1, 10, 12, 1, 10, 0, 32, 0, 32, 1, 16, 0, 65, 0, 11]);
+/** The starter programs, by name: the bytes written into the workspace when
+ * missing (never overwriting a copy already there). `echo` stays the
+ * hand-assembled 77 bytes it has always been; `wc` and `grep` are the
+ * generated modules in programs.js (source .wat in tools/wasm-gen). */
+const STARTERS = {
+  echo: Uint8Array.from([
+    0, 97, 115, 109, 1, 0, 0, 0, 1, 12, 2, 96, 2, 127, 127, 0, 96, 2, 127, 127, 1, 127, 2, 12, 1, 3, 100, 115, 104, 4, 101, 109, 105, 116, 0, 0, 3, 2, 1, 1, 5, 3, 1, 0, 1, 7, 16, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 3, 114, 117, 110, 0, 1, 10, 12, 1, 10, 0, 32, 0, 32, 1, 16, 0, 65, 0, 11]),
+  wc: WC_BYTES,
+  grep: GREP_BYTES,
+};
+
+/** The starter list the honest refusals name (`echo, wc, grep`). */
+const STARTER_NAMES = Object.keys(STARTERS).join(', ');
 
 /** The workspace-relative path mapped onto the gateway's (scope, path) pair;
  * the same convention the wasm tool used — both roots are pinned globals the
@@ -95,18 +112,23 @@ const parseCommand = (command) => {
   return { program: text.slice(0, at), args: text.slice(at + 1).trim() };
 };
 
-/** The starter program is written once, when the workspace does not have it. */
-const ensureStarter = async (name) => {
-  try {
+/** Every starter program is written once, when the workspace does not have
+ * it. One program's failure (a scope that refuses writes, say) is logged and
+ * does not stop the others — a shell that can echo is better than one that
+ * cannot, and the refusal messages name what actually landed. */
+const ensureStarters = async () => {
+  for (const [name, bytes] of Object.entries(STARTERS)) {
+    try {
+      const target = scopePathFor(`${name}.wasm`);
+      await fsRead(target.scope, target.path);
+      continue;                   // already there: never overwrite a user's copy
+    } catch (error) {
+      if (error?.code !== 'io') throw error;
+    }
     const target = scopePathFor(`${name}.wasm`);
-    await fsRead(target.scope, target.path);
-    return;                       // already there: never overwrite a user's copy
-  } catch (error) {
-    if (error?.code !== 'io') throw error;
+    await fsWrite(target.scope, target.path, bytes);
+    log.info('starter program written', { name, bytes: bytes.length });
   }
-  const target = scopePathFor(`${name}.wasm`);
-  await fsWrite(target.scope, target.path, STARTER_ECHO);
-  log.info('starter program written', { name, bytes: STARTER_ECHO.length });
 };
 
 /** Run one command line through the WASM program it names.
@@ -126,12 +148,19 @@ const runCommand = async (command) => {
     const run = await wasmRun(target.scope, target.path, 'run', parsed.args);
     return { exitCode: run.result, stdout: run.output, stderr: '' };
   } catch (error) {
-    // A missing program is `not found` (127), the shell convention; anything
-    // else is the host refusing the run, and it keeps its own code.
+    // A missing program is `not found` (127), the shell convention — and the
+    // refusal is SELF-DESCRIBING: it names the programs that exist and routes
+    // file work to the tools that can do it (the module boundary has no
+    // filesystem to ls or cat). Anything else is the host refusing the run,
+    // and it keeps its own code.
     const missing = error?.code === 'io' && /cannot read/.test(error?.message ?? '');
     if (missing) {
       const stderr = `${parsed.program}: not found `
-        + `(no ${parsed.program}.wasm in the workspace)`;
+        + `(no ${parsed.program}.wasm in the workspace). `
+        + `Available programs: ${STARTER_NAMES}. `
+        + 'File contents are not a shell feature here (the module boundary '
+        + 'has no filesystem) — use the fs tools (read/list/write) for files, '
+        + `or place a ${parsed.program}.wasm module in the workspace`;
       return { exitCode: 127, stdout: '', stderr };
     }
     return { exitCode: 126, stdout: '', stderr: `${parsed.program}: ${error?.message ?? error}` };
@@ -160,7 +189,7 @@ export function activate({ register }) {
     // reaches the host only through the gateway primitives, which are already
     // scope-confined and audited.
     sandboxMode: undefined,
-    ensureStarter,
+    ensureStarter: ensureStarters,
   });
 }
 
@@ -200,14 +229,22 @@ const SHELL_DESCRIPTION = 'A MINIMAL executor: one WebAssembly module per comman
   + 'Run one command line. The programs are WebAssembly '
   + 'modules in your workspace (a program named foo is foo.wasm), executed '
   + 'inside the app process — no shell binary, no child process, so NOTHING '
-  + 'from a normal PATH exists here (no ls, no cat, no sh). Write or place a '
-  + 'module first, then run it. The module prints through its dsh.emit import '
-  + 'and its i32 return value becomes the exit status. Pipelines, redirection '
+  + 'from a normal PATH exists here. Starter programs: echo (echoes its '
+  + 'argument text), wc (prints "<lines> <words> <bytes>" of the argument '
+  + 'text), grep (fixed-string: "grep <pattern> <text>" prints the text lines '
+  + 'containing the pattern, exit 0 matched / 1 none / 2 bad usage). Each '
+  + 'module computes over the command text AFTER the program name — a '
+  + 'multi-line command is multi-line input, so wc and grep work on pasted '
+  + 'text. There is NO file access (the module boundary has no filesystem): '
+  + 'use the fs tools to read, list or write files, then feed the text to wc '
+  + 'or grep in the command line itself, or place another .wasm module in the '
+  + 'workspace and run it. A module prints through its dsh.emit import and '
+  + 'its i32 return value becomes the exit status. Pipelines, redirection '
   + 'and quoting are not implemented.';
 
 export const apply = (ctx) => {
-  void ensureStarter('echo').catch((error) => {
-    log.warn('starter program not written', { reason: `${error?.message ?? error}` });
+  void ensureStarters().catch((error) => {
+    log.warn('starter programs not written', { reason: `${error?.message ?? error}` });
   });
   ctx.tools.register(defineTool({
     name: 'shell',

@@ -535,7 +535,8 @@ scenario/ble-plane.js
 system-plugins/dsh-device-plane/manifest.json
 system-plugins/dsh-device-plane/index.js
 system-plugins/dsh-ble/manifest.json
-system-plugins/dsh-ble/index.js"
+system-plugins/dsh-ble/index.js
+system-plugins/dsh-shell-wasm/programs.js"
 if [ "$MODE" != "check" ]; then
     for rel in $CLOSURE; do
         mkdir -p "$RAW/$(dirname "$rel")"

@@ -343,6 +343,7 @@ done
 # plane's microphone leg, v1.10.0 candidate — an unlisted scenario would
 # silently freeze on a fresh install, the embed-list trap).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
+         android-capability-binding.js \
          android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js write-surface-options.js manager-legs-probe.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \
@@ -472,6 +473,7 @@ done
 # a stale APK copy would shadow every runtime-side fix, the exact defect the
 # 2026-09-23 round-two chase hit).
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
+         android-capability-binding.js \
          android-session-live-read.js android-composer-live-write.js \
          composer-web-live.js write-surface-options.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \

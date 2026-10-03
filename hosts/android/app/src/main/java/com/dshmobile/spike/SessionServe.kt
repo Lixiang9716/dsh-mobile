@@ -298,6 +298,10 @@ class SessionServe private constructor(
         ClipboardPrimitives(activity).register(core)
         CameraPrimitives(activity, fs).register(core)
         TimerPrimitive().register(core)
+        // The WebAssembly seam (contract v1.2.0): the shell executor's runs
+        // land here — before #335 B4 this seat answered them all with a
+        // gateway denial and the shell tool could not execute at all.
+        WasmPrimitive(fs).register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (handle == 0L) return@post
