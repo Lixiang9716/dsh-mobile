@@ -44,10 +44,14 @@ done
 # 1. vendored upstream closure + the Node resolution layout for the reference.
 #    (ensure-ish: the C host links the vendored iSH engine even though this
 #    scenario never runs it — a fresh macOS tree needs the sources to build.)
+#    --parity-only keeps the differential's resolution surface exactly the
+#    product links: adding test-face links to the reference leg alone would
+#    manufacture divergences against the port leg (the raw vitest face and
+#    the sweep's node leg run without the flag).
 sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 sh vendor/ensure-ish.sh
-sh ci/parity-node-modules.sh
+sh ci/parity-node-modules.sh --parity-only
 
 # 2. the mock LLM server (node-side) with the parity script: success,
 #    tool_call_success (todo_write), closing success, 401.

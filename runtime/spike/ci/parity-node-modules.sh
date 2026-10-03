@@ -1,7 +1,8 @@
 #!/bin/sh
 # parity-node-modules.sh — materialize the Node resolution layout for the
-# parity reference leg (idempotent; lives INSIDE the untracked vendor tree,
-# so a vendor re-fetch wipes it and this script rebuilds it).
+# parity reference leg and the raw upstream-suite vitest face (idempotent;
+# lives INSIDE the untracked vendor tree, so a vendor re-fetch wipes it and
+# this script rebuilds it).
 #
 # Node resolves package specifiers from the REAL path of the importing file
 # (symlinks are realpath'd by default), so a node_modules beside the driver
@@ -15,11 +16,25 @@
 # (upstream/shims/dsh-session-persistence.js — the real package is koffi-bound
 # and not vendored); the same shim bytes become a Node package here, so the
 # reference spine links exactly what the port spine links.
+#
+# --parity-only keeps the reference leg's resolution surface EXACTLY as the
+# product links define it: the parity differential compares the vendored
+# spine under plain Node against the quickjs port leg, so adding resolution
+# targets to one side alone would manufacture divergences. run-upstream-parity.sh
+# passes it; the raw vitest face and the sweep's node leg run without it and
+# get every test face linked.
 set -eu
 SPIKE_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VENDOR="$SPIKE_ROOT/vendor"
 NM="$VENDOR/node_modules"
 SCOPE="$NM/@deepseek-ai"
+PARITY_ONLY=0
+for arg in "$@"; do
+    case "$arg" in
+        --parity-only) PARITY_ONLY=1 ;;
+        *) echo "usage: parity-node-modules.sh [--parity-only]" >&2; exit 2 ;;
+    esac
+done
 
 mkdir -p "$SCOPE"
 
@@ -65,6 +80,10 @@ ln -sfn "$SHIM" "$SCOPE/dsh-session-persistence"
 # taken (the closure face is what the parity leg proves). A name claimed by a
 # SECOND test-face version cannot be decided generically — it is reported and
 # left unlinked, and the per-package staging below owns the deliberate choice.
+# Skipped wholesale under --parity-only (see the header).
+if [ "$PARITY_ONLY" -eq 1 ]; then
+    echo "parity node_modules: --parity-only — the test-face links and per-package staging are skipped (the raw vitest face and the sweep's node leg run without the flag)"
+else
 TEST_LINKED="$(mktemp)"
 trap 'rm -f "$TEST_LINKED"' EXIT
 # Deliberate top-level collisions, pre-seeded so the generic loop never
@@ -144,6 +163,7 @@ stage_nested "$VENDOR/npm/@img" sharp-libvips-linux-arm64 "$VENDOR/npm/@img/shar
 # faces require.resolve at call time (importing stays addon-free).
 stage_nested "$VENDOR/npm/@deepseek-ai/node-addon-system@0.1.2/node_modules/@deepseek-ai" node-addon-system-linux-x64 "$VENDOR/npm/@deepseek-ai/node-addon-system-linux-x64@0.1.2"
 stage_nested "$VENDOR/npm/@deepseek-ai/node-addon-system@0.1.2/node_modules/@deepseek-ai" node-addon-system-linux-arm64 "$VENDOR/npm/@deepseek-ai/node-addon-system-linux-arm64@0.1.2"
+fi  # --parity-only guard around the test-face staging
 
 # The driver itself lives at runtime/spike/ci/ — OUTSIDE the vendor tree —
 # so its own specifier resolution needs one more link on ITS ancestor chain.

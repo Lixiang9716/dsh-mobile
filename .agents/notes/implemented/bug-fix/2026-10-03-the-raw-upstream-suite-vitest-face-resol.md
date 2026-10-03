@@ -54,6 +54,15 @@ entry package. `test/upstream-suite/package.json` declares jsdom 29.1.1 —
 vitest loads the jsdom environment from its own tree, so the tooling
 manifest (not the vendor chain) owns it.
 
+`--parity-only` keeps the parity differential untouched: the differential
+compares the vendored spine under plain Node against the quickjs port leg,
+so adding resolution targets to the reference side alone would manufacture
+divergences — run-upstream-parity.sh passes the flag and gets exactly the
+product links it always had. (The first CI round caught this the hard way:
+the unconditional dsh-tests guard exited 1 on the macOS runner, whose
+parity flow never materializes the test tree — ios-e2e red; the guard now
+lives inside the guarded block and the flag is the contract.)
+
 Measured on this tree (same materialization, only the fix differing): full
 run 532→424 failing files of 785→795 collected, `Cannot find package`
 264→31 occurrences; every residual is named — the `@deepseek-ai/dsh-*`
