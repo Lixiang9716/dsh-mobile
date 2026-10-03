@@ -113,6 +113,10 @@ stage_npm_face_at_dsh_path tool-present
 stage_npm_face_at_dsh_path tool-ralph
 stage_npm_face_at_dsh_path tool-bash
 stage_npm_face_at_dsh_path tool-pwsh
+# The Creator composition's plugin-management row (the mobile-absent patch
+# leaves it enabled since the T-0170 round): its marker seeds from the
+# vendor/dsh rel path like every npm face above.
+stage_npm_face_at_dsh_path plugin-manager
 
 # The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
