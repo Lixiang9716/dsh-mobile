@@ -28,12 +28,15 @@
 import { createLogger } from 'logger.js';
 import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
+import { stagedModels } from 'upstream/llm-route.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 
 const SCENARIO = 'android.composer.live-write';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-android-write-0001'; // the configured agent; the page creates its own
 const EXPECTED_TEXT = 'Hello from upstream'; // the scripted endpoint's successText
+const PICK_PROVIDER = 'mock'; // the drive's roster pick (the staged roster's provider)
+const PICK_MODEL = 'mock-2'; // the second roster row: the pick turn B must serve
 
 const log = createLogger('android.composer');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
@@ -132,15 +135,20 @@ const assistantTextOf = (event) => (event?.data?.message?.content ?? [])
   .filter((block) => block?.type === 'text').map((block) => block.text).join('');
 
 /** Turn evidence for the PAGE-driven session: the runtime never prompts —
- * the user/message event can only come from the composer's admitted prompt.
- * On turn/end the assistant text is asserted against the scripted stream. */
+ * the user/message event can only come from the composer's admitted prompt
+ * (turn A) or the drive's admitted prompt (turn B). On turn/end the
+ * assistant text is asserted against the scripted stream; the SECOND settle
+ * also reads the modelSelection projection's raw fold — `lastUsed` must have
+ * adopted the pick and the matching request/header must have retired
+ * `pending` (model-selection-projection.js's fold), the routing fact the
+ * view alone cannot separate from a still-pending intent. */
 const installTurnEvidence = (ctx) => {
-  const turns = new Map(); // sessionId → {prompt, events, text, settled}
+  const turns = new Map(); // sessionId → {prompt, events, text, settled, nextSettled}
   ctx.on('session/event', (session, event) => {
     if (session?.id === undefined || event === undefined) return;
     let turn = turns.get(session.id);
     if (turn === undefined) {
-      turn = { prompt: false, events: 0, text: '', settled: false };
+      turn = { prompt: false, events: 0, text: '', settled: false, nextSettled: false };
       turns.set(session.id, turn);
     }
     turn.events++;
@@ -156,6 +164,59 @@ const installTurnEvidence = (ctx) => {
       emit('write.turn.settled', {
         sessionId: session.id, events: turn.events, text: turn.text,
       });
+    } else if (event.type === 'turn/end' && !turn.nextSettled) {
+      turn.nextSettled = true;
+      demand(turn.text === EXPECTED_TEXT,
+        `page session "${session.id}" assistant text is "${turn.text}"`);
+      emit('write.turn.settled.next', {
+        sessionId: session.id, events: turn.events, text: turn.text,
+      });
+      const state = ctx.sessionProjections.stateOf(session, 'modelSelection');
+      demand(state !== undefined, 'the modelSelection projection never registered');
+      emit('write.projection.observed', {
+        sessionId: session.id, lastUsed: state.lastUsed, pending: state.pending,
+      });
+    }
+  });
+};
+
+/** The selection-plane evidence, straight off the live journal (the commit
+ * evidence is the JOURNAL, never the selectModel rpc ack — a refusal
+ * answers in-band and appends nothing): the `model/selection` intent, every
+ * served `request/header` route (turn A's boot-route header beside turn B's
+ * pick is the contrast that makes the routing fact readable), and the
+ * vendored model-switch notice the pre-step inserts when the route changed
+ * (the desktop-parity fact). */
+const installSelectionEvidence = (ctx) => {
+  ctx.on('session/event', (session, event) => {
+    if (session?.id === undefined || event === undefined) return;
+    if (event.type === 'model/selection') {
+      emit('write.selection.observed', {
+        sessionId: session.id, seq: event.seq,
+        provider: event.data.provider, model: event.data.model,
+      });
+      return;
+    }
+    if (event.type === 'request/header') {
+      const config = event.data?.header?.config ?? {};
+      emit('write.header.observed', {
+        sessionId: session.id, seq: event.seq,
+        provider: config.provider, model: config.model,
+      });
+      return;
+    }
+    if (event.type === 'user/message') {
+      // The journal data IS the message (agent-loop :1026 appends it bare —
+      // no .message envelope like assistant/message): content blocks joined.
+      const blocks = event.data?.content;
+      const text = Array.isArray(blocks)
+        ? blocks.filter((block) => block?.type === 'text').map((block) => block.text).join('')
+        : '';
+      if (typeof text === 'string' && text.startsWith('[model changed:')) {
+        emit('write.switch.notice.observed', {
+          sessionId: session.id, seq: event.seq, notice: text,
+        });
+      }
     }
   });
 };
@@ -163,7 +224,7 @@ const installTurnEvidence = (ctx) => {
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: a claimed endpoint failing is a defect and kills the drive. */
-const installRuntimeHalf = (ctx, cfg) => {
+const installRuntimeHalf = (ctx, cfg, roster) => {
   const onHandler = (msg, outcome) => {
     outcome.run().then(
       (value) => post({ type: 'api.respond', rpcId: msg.rpcId, result: { ok: true, value } }),
@@ -181,6 +242,10 @@ const installRuntimeHalf = (ctx, cfg) => {
       root: cfg.containerRoot,
       provider: 'mock',
       model: 'mock-1',
+      // The host-staged roster (runtime.config llmModels): the composer
+      // model dialog's rows AND session/selectModel's routability check —
+      // two rows are what make "the next turn serves the pick" expressible.
+      models: roster,
       // The 插件 inventory's spine plane: the REAL mounts, read from ctx.
       spine: () => spineInventory(ctx),
     },
@@ -214,11 +279,20 @@ const main = async () => {
   const cfg = await take('runtime.config');
   demand(typeof cfg.mockLlmUrl === 'string' && cfg.mockLlmUrl.startsWith('http://127.0.0.1:'),
     `runtime.config mock endpoint missing: ${JSON.stringify(cfg.mockLlmUrl)}`);
+  // The host-staged roster through the ONE validator (upstream/llm-route.js
+  // stagedModels — fail loud on a malformed row); the drive's pick must be
+  // on it, or "the next turn serves the pick" is not expressible here.
+  const roster = stagedModels(cfg);
+  demand(Array.isArray(roster) && roster.length >= 2
+    && roster.some((row) => row.id === PICK_MODEL && row.name.length > 0),
+    `runtime.config llmModels must stage the drive's pick `
+      + `${JSON.stringify(PICK_MODEL)} among >= 2 rows: ${JSON.stringify(roster)}`);
 
   const ctx = await bootPhase(cfg);
   await awaitAgent(ctx);
   installTurnEvidence(ctx);
-  installRuntimeHalf(ctx, cfg);
+  installSelectionEvidence(ctx);
+  installRuntimeHalf(ctx, cfg, roster);
   log.debug('b-android write-live runtime resident (write surface live; awaiting the page)', {});
 };
 

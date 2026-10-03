@@ -1,0 +1,8 @@
+{
+  "scenario": "android.composer.live-write",
+  "pass": true,
+  "expected": 60,
+  "logged": 60,
+  "failures": [],
+  "parseErrors": []
+}

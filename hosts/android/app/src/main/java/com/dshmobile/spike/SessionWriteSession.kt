@@ -30,6 +30,10 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         const val SCENARIO = "android.composer.live-write"
         const val ENTRY = "scenario/android-composer-live-write.js"
         const val CLIENT_ID = "dsh-web-official"
+        // The staged roster (runtime.config llmModels): turn A serves mock-1,
+        // turn B the pick (SessionServe's config.json `models` shape).
+        const val BOOT_MODEL = "mock-1"
+        const val PICK_MODEL = "mock-2"
         // Bound, not pacing: the drive's stages carry their own deadlines;
         // 270s sits inside the runner's 300s phase window (session-live's budget).
         const val WATCHDOG_SECONDS = 270
@@ -66,6 +70,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
 
     private val carrier = CarrierServer()
     private val eventLog = CarrierEventLog(SCENARIO)
+    private val assetOrder = SessionWriteAssetOrder { e, f -> eventLog.emit(e, f) }
     private lateinit var plugins: CarrierPlugins
     private lateinit var bridge: CarrierAPIBridge
     private lateinit var dist: CarrierWebDist
@@ -78,12 +83,6 @@ class SessionWriteSession private constructor(private val activity: Activity) {
     private var token = ""
     private var webView: WebView? = null
 
-    // once-guards for the page hooks; `comboPending` holds an early combo
-    // arrival until the asset event fixed the report order (mirrored from
-    // the session-live drive).
-    private var assetLogged = false
-    private var comboLogged = false
-    private var comboPending: Pair<String, Int>? = null
     private var originLoaded = false
 
     // the runtime's `web.boot` facts, nil until received
@@ -158,43 +157,11 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         dist.onIndexServed = {
             eventLog.emit("index.served", JSONObject().put("path", "/").put("status", 200))
         }
-        dist.onAssetServed = { path -> observeAsset(path) }
-        plugins.onComboServed = { url, bytes -> observeCombo(url, bytes) }
+        dist.onAssetServed = { path -> assetOrder.observeAsset(path) }
+        plugins.onComboServed = { url, bytes -> assetOrder.observeCombo(url, bytes) }
         bridge.onUpgradeAccepted = { path -> seam.observeUpgrade(path) }
         bridge.onAPICall = { endpoint, answered -> seam.observeRPC(endpoint, answered) }
         bridge.onMuxFrame = { direction, kind -> seam.observeMuxFrame(direction, kind) }
-    }
-
-    // ---- once-guarded asset/combo ordering (session-live's) ----
-
-    /** The entry JS chunk is the deterministic first-fetch evidence (the
-     * `.js` suffix is load-bearing; the css/js first fetch is a race). */
-    @Synchronized
-    private fun observeAsset(path: String) {
-        if (!path.startsWith("/assets/index-") || !path.endsWith(".js")) return
-        if (assetLogged) return
-        assetLogged = true
-        eventLog.emit("asset.served", JSONObject().put("path", path))
-        val combo = comboPending ?: return
-        if (comboLogged) return
-        comboLogged = true
-        eventLog.emit(
-            "plugins.served",
-            JSONObject().put("path", combo.first).put("bytes", combo.second),
-        )
-    }
-
-    /** Single-emission combo report; an early arrival waits in `comboPending`
-     * for the fixed report order. */
-    @Synchronized
-    private fun observeCombo(url: String, bytes: Int) {
-        if (comboLogged) return
-        if (!assetLogged) {
-            comboPending = url to bytes
-            return
-        }
-        comboLogged = true
-        eventLog.emit("plugins.served", JSONObject().put("path", url).put("bytes", bytes))
     }
 
     // ---- the write-live runtime half ------------------------------------------
@@ -232,6 +199,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
             .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
             .put("apiKey", MockLlmRoute.KEY)
             .put("containerRoot", bundle.absolutePath)
+            .put("llmModels", rosterJSON())
         deliverRuntime(config)
         deliverRuntime(
             JSONObject().put("type", "web.plugins").put("plugins", pluginsDelivery),
@@ -341,10 +309,10 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         Thread({
             // rule 8: poll the arrival condition with a deadline, fail loud
             val deadline = System.currentTimeMillis() + 30_000
-            while (!assetLogged && System.currentTimeMillis() < deadline) {
+            while (!assetOrder.assetSeen && System.currentTimeMillis() < deadline) {
                 Thread.sleep(100)
             }
-            if (!assetLogged) {
+            if (!assetOrder.assetSeen) {
                 fail("write-live: the entry chunk never arrived")
                 return@Thread
             }
@@ -393,6 +361,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
                 webView?.let { SessionWriteProbe.evaluate(it, "window.__b4wGo = true") }
             }
             "send" -> onSent(probe)
+            "model" -> onModelDriven(probe)
             else -> fail("write probe: unknown leg '$leg'")
         }
     }
@@ -465,6 +434,32 @@ class SessionWriteSession private constructor(private val activity: Activity) {
                 .put("moduleMode", probe.optString("moduleMode", "none"))
                 .put("bodyText", probe.optJSONObject("page")?.optString("bodyText").orEmpty()),
         )
+        // Turn A rendered: the MODEL DRIVE (leg 4) — whose journal facts are
+        // the routing evidence; witnesses flush after it (onModelDriven).
+        val view = webView ?: return fail("write-live: no WebView attached")
+        SessionWriteProbe.evaluate(view, "window.__dshWriteModel()")
+    }
+
+    /** The model drive leg's verdict: the pick committed, the second prompt
+     * admitted, turn B's REAL journal turn/end seen — the acks only fail
+     * the drive early; the runtime's journal emits are the routing proof. */
+    private fun onModelDriven(probe: JSONObject) {
+        val selected = probe.optJSONObject("selected")
+        val committed = probe.optString("error").isEmpty() &&
+            selected?.optString("model") == PICK_MODEL &&
+            selected?.optString("provider") == "mock" &&
+            probe.optBoolean("prompted") && probe.optBoolean("turnEnded")
+        if (!committed) {
+            fail("the model drive did not commit: $probe")
+            return
+        }
+        eventLog.emit(
+            "write.model.drive",
+            JSONObject()
+                .put("selected", JSONObject().put("provider", "mock").put("model", PICK_MODEL))
+                .put("prompted", true)
+                .put("turnEnded", true),
+        )
         seam.flushRpcWitnesses()
         finish(true, "")
     }
@@ -497,4 +492,9 @@ class SessionWriteSession private constructor(private val activity: Activity) {
     private fun batchURL(graphJSON: String): String? = try {
         JSONObject(graphJSON).optJSONArray("batches")?.getJSONObject(0)?.optString("url")
     } catch (_: Exception) { null }
+
+    /** The staged model roster (SessionServe.modelsJSON's shape). */
+    private fun rosterJSON() = JSONArray()
+        .put(JSONObject().put("id", BOOT_MODEL).put("name", BOOT_MODEL))
+        .put(JSONObject().put("id", PICK_MODEL).put("name", PICK_MODEL))
 }

@@ -140,8 +140,10 @@ export const decodeCredential = async () => {
  * config.json `models` rows, entries `{id, name}`): validated fail loud —
  * a present-but-malformed roster aborts naming the offending shape (rules
  * rule 5: never silently skip), so a bad entry surfaces at boot, not as an
- * empty dialog weeks later. Returns undefined when the config stages none. */
-const stagedModels = (cfg) => {
+ * empty dialog weeks later. Returns undefined when the config stages none.
+ * Exported for the scenario seats that hand the roster to the write surface
+ * directly (the android write-live drive) — one validation home. */
+export const stagedModels = (cfg) => {
   if (cfg.llmModels === undefined) return undefined;
   if (!Array.isArray(cfg.llmModels)) {
     throw new Error(`runtime.config llmModels must be an array of {id, name}: `

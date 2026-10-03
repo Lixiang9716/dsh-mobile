@@ -21,13 +21,20 @@ object SessionWriteProbe {
     const val MESSAGE_TEXT = "Say hello from the composer"
     const val EXPECTED_REPLY = "Hello from upstream"
 
+    /** The model drive (leg 4): the pick turn B must serve and the prompt
+     * that admits it. The roster row names come from the staged llmModels
+     * (SessionWriteSession.runtime.config). */
+    const val MODEL_PICK = "mock-2"
+    const val SECOND_MESSAGE_TEXT = "Say hello again"
+
     /** The seeded workspace's title: the profile container's basename (the
      * staged spike bundle directory). */
     const val WORKSPACE_TITLE = "spike"
 
     private const val FOLLOW_STREAM_ID = "bandroid-probe-follow"
+    private const val MODEL_FOLLOW_STREAM_ID = "bandroid-model-follow"
 
-    /** Defines the three page functions (each leg its own constant so every
+    /** Defines the four page functions (each leg its own constant so every
      * function stays small; the one script installs all of them). */
     fun probeScript(): String = """
         window.__b4w = {};
@@ -38,7 +45,8 @@ object SessionWriteProbe {
         $clickHelper
         $pickLeg
         $typeLeg
-        $sendLeg;
+        $sendLeg
+        $modelLeg;
         'defined';
     """.trimIndent()
 
@@ -248,6 +256,7 @@ object SessionWriteProbe {
             if (sessionId === '') await new Promise((r) => setTimeout(r, 200));
           }
           out.sessionId = sessionId;
+          window.__dshWriteSessionId = sessionId;
           out.mux = await new Promise((resolve) => {
             const ws2 = new WebSocket('ws://' + location.host + '/api/remote.mux');
             const done = (verdict) => { try { ws2.close(); } catch (e) {} resolve(verdict); };
@@ -287,6 +296,81 @@ object SessionWriteProbe {
             rootHasChild: ((document.getElementById('root') || {}).childElementCount || 0) > 0,
             bodyText: (document.body.innerText || '').replace(/\s+/g, ' ').slice(0, 400)};
           dshProbe.post(JSON.stringify(out));
+        };
+    """.trimIndent()
+
+    /** Leg 4: the MODEL DRIVE — commit the page session's pick through the
+     * REAL wire leg the composer model dialog uses (session/selectModel),
+     * then admit one more prompt on the SAME session, then wait (bounded)
+     * for that turn's REAL journal turn/end over one session/follow stream.
+     * The prompt fires only AFTER the stream's snapshot frame proves the
+     * subscription is live, so the turn/end event frame cannot be missed.
+     * The routing facts themselves live in the runtime's journal emits —
+     * the in-band selectModel ack is checked only to fail the drive EARLY
+     * on a structured refusal (a refusal appends nothing to the journal). */
+    private val modelLeg = """
+        window.__dshWriteModel = async () => {
+          const out = {leg: 'model'};
+          const sessionId = window.__dshWriteSessionId;
+          const post = () => dshProbe.post(JSON.stringify(out));
+          if (!sessionId) { out.error = 'no page session id'; post(); return; }
+          const rpc = async (method, request) => fetch('/api/' + method, {
+              method: 'POST', credentials: 'same-origin',
+              headers: {'content-type': 'application/json'},
+              body: JSON.stringify({type: 'client-request',
+                rpcId: 'bandroid-probe-model-' + Math.random().toString(36).slice(2, 8),
+                method, payload: {args: {request}}}),
+            }).then((r) => r.json());
+          const sel = await rpc('session/selectModel',
+            {sessionId, provider: 'mock', model: '$MODEL_PICK'});
+          out.selected = (sel.result && sel.result.ok === true) ? sel.result.value : null;
+          if (!out.selected || out.selected.model !== '$MODEL_PICK') {
+            out.error = (sel.result && sel.result.error) || 'selectModel refused the pick';
+            post();
+            return;
+          }
+          out.turnEnded = await new Promise((resolve) => {
+            const ws = new WebSocket('ws://' + location.host + '/api/remote.mux');
+            let live = false;
+            const seen = [];
+            const done = (v) => {
+              clearTimeout(t);
+              out.wsState = ws.readyState;
+              out.framesSeen = seen.slice(0, 8);
+              out.consoleErrors = window.__b4w.consoleErrors.slice(0, 4);
+              try { ws.close(); } catch (e) {}
+              resolve(v);
+            };
+            const t = setTimeout(() => done(false), 55000);
+            ws.onopen = () => {
+              seen.push('open');
+              ws.send(JSON.stringify({type: 'open', streamId: '$MODEL_FOLLOW_STREAM_ID',
+                endpoint: 'session/follow',
+                payload: {args: {request: {address: {kind: 'session', sessionId},
+                  assistantStream: true}}}}));
+            };
+            ws.onmessage = async (ev) => {
+              const f = JSON.parse(ev.data);
+              seen.push((f.streamId === '$MODEL_FOLLOW_STREAM_ID' ? 'mine:' : 'other:')
+                + f.type + (f.value && f.value.type ? ':' + f.value.type : ''));
+              if (f.streamId !== '$MODEL_FOLLOW_STREAM_ID') return;
+              if (f.type === 'item' && f.value && f.value.type === 'snapshot' && !live) {
+                live = true;
+                const pr = await rpc('session/prompt', {sessionId,
+                  requestId: 'bandroid-probe-model-prompt', mode: 'queue',
+                  content: [{type: 'text', text: '$SECOND_MESSAGE_TEXT'}]});
+                out.prompted = pr.result && pr.result.ok === true;
+                if (!out.prompted) out.promptAnswer = pr;
+                if (!out.prompted) done(false);
+                return;
+              }
+              if (f.type === 'item' && f.value && f.value.type === 'event'
+                && f.value.event && f.value.event.type === 'turn/end') done(true);
+              if (f.type === 'error') done(false);
+            };
+            ws.onerror = () => { seen.push('ws-error'); done(false); };
+          });
+          post();
         };
     """.trimIndent()
 
