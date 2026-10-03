@@ -118,6 +118,27 @@ stage_npm_face_at_dsh_path tool-pwsh
 # vendor/dsh rel path like every npm face above.
 stage_npm_face_at_dsh_path plugin-manager
 
+# The WEB plane's npm closure (the tool-web row, #335 B5): the dsh-web seam +
+# the search-only tool + the turndown/domino/@joplin HTML->markdown chain the
+# tool's static graph links (the per-file domino set mirrors the shims' cjs
+# loader map; each face materializes from the pinned NPM_PACKAGES rows).
+stage_npm_face_at_dsh_path tool-web
+# the dsh-web seam: the npm face's dir name (dsh-web@) IS the canonical rel
+# name — a direct stage (the helper would mint the web@ mismatch-name)
+mkdir -p "$ASSETS/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
+cp "$SPIKE/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" "$ASSETS/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"
+cp "$SPIKE/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/lib/index.js" "$ASSETS/vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js"
+mkdir -p "$ASSETS/vendor/npm/turndown@7.2.4/lib" \
+         "$ASSETS/vendor/npm/@mixmark-io/domino@2.2.0/lib" \
+         "$ASSETS/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib"
+cp "$SPIKE/vendor/npm/turndown@7.2.4/lib/turndown.es.js" "$ASSETS/vendor/npm/turndown@7.2.4/lib/turndown.es.js"
+(cd "$SPIKE/vendor/npm/@mixmark-io/domino@2.2.0" && find lib -type f) | while IFS= read -r rel; do
+    mkdir -p "$ASSETS/vendor/npm/@mixmark-io/domino@2.2.0/$(dirname "$rel")"
+    cp "$SPIKE/vendor/npm/@mixmark-io/domino@2.2.0/$rel" "$ASSETS/vendor/npm/@mixmark-io/domino@2.2.0/$rel"
+done
+cp "$SPIKE/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js" \
+   "$ASSETS/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js"
+
 # The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
 # The Agent presets closure's npm faces (boot.js imports them statically:
@@ -415,6 +436,33 @@ verify_npm_face_at_dsh_path tool-present
 verify_npm_face_at_dsh_path tool-ralph
 verify_npm_face_at_dsh_path tool-bash
 verify_npm_face_at_dsh_path tool-pwsh
+# The manager row's face (staged since the workspace-registry tier) and the
+# WEB plane's tool face (the #335 B5 block above): same twin discipline — a
+# staged face the check never cmps is a drift the closures gate is blind to.
+verify_npm_face_at_dsh_path plugin-manager
+verify_npm_face_at_dsh_path tool-web
+# The WEB plane's direct-stage twins (the dsh-web seam + the HTML→markdown
+# chain the tool's static graph links): byte-identity against their pins.
+for f in package.json lib/index.js; do
+    if [ "$MODE" = "check" ] && ! is_tracked "vendor/dsh/dsh-web@$VER/$f"; then note_skip; continue; fi
+    cmp -s "$SPIKE/vendor/npm/@deepseek-ai/dsh-web@$VER/$f" "$ASSETS/vendor/dsh/dsh-web@$VER/$f" ||
+        note_drift "vendor/dsh/dsh-web@$VER/$f"
+done
+if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/turndown@7.2.4/lib/turndown.es.js"; then note_skip
+else cmp -s "$SPIKE/vendor/npm/turndown@7.2.4/lib/turndown.es.js" "$ASSETS/vendor/npm/turndown@7.2.4/lib/turndown.es.js" ||
+    note_drift "vendor/npm/turndown@7.2.4/lib/turndown.es.js"
+fi
+(cd "$SPIKE/vendor/npm/@mixmark-io/domino@2.2.0" && find lib -type f) |
+    while IFS= read -r rel; do
+        if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/@mixmark-io/domino@2.2.0/$rel"; then note_skip; continue; fi
+        cmp -s "$SPIKE/vendor/npm/@mixmark-io/domino@2.2.0/$rel" "$ASSETS/vendor/npm/@mixmark-io/domino@2.2.0/$rel" ||
+            note_drift "vendor/npm/@mixmark-io/domino@2.2.0/$rel"
+    done
+if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js"; then note_skip
+else cmp -s "$SPIKE/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js" \
+        "$ASSETS/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js" ||
+    note_drift "vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.cjs.js"
+fi
 (cd "$SPIKE/vendor/npm/diff@9.0.0/libesm" && find . -type f ! -name '*.d.ts') |
     while IFS= read -r rel; do
         if [ "$MODE" = "check" ] && ! is_tracked "vendor/npm/diff@9.0.0/libesm/$rel"; then note_skip; continue; fi
@@ -475,7 +523,7 @@ done
 for s in boot-verification.js gateway-bridge-smoke.js session-mock-llm.js \
          android-capability-binding.js \
          android-session-live-read.js android-composer-live-write.js \
-         composer-web-live.js write-surface-options.js \
+         composer-web-live.js write-surface-options.js manager-legs-probe.js \
          device-plane.js camera-plane.js ble-plane.js mic-plane.js \
          upstream-suite-leg.js upstream-suite-flatmap.js upstream-suite-type-world.js \
          upstream-test-harness.js upstream-harness-matchers.js upstream-harness-vi.js \

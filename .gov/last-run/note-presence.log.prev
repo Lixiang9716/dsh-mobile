@@ -1,2 +1,0 @@
-verify_note_presence: base=origin/feat/e2e-ci-phases...HEAD (clean tree — reviewing commits ahead of upstream)
-verify_note_presence: 60 non-trivial file(s), 2 note file(s) — ok

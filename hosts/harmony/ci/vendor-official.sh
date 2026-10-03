@@ -182,6 +182,10 @@ logger.js
 registry.js
 scenario/officialweb-web-live.js
 scenario/composer-web-live.js
+vendor/npm/turndown@7.2.4/lib/turndown.es.js
+$(cd runtime/spike && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
+    vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib \
+    -type f | LC_ALL=C sort)
 scenario/write-surface-options.js
 upstream/web-boot.js
 upstream/web-shims.js
@@ -544,6 +548,44 @@ if [ "$MODE" != "check" ]; then
     done
 fi
 
+# The WEB plane's npm faces (#335 B5) and the enabled manager row's face,
+# staged AT the vendor/dsh rel paths the preset marker seeders walk
+# (AgentPresetsSeed.kt, harmony's OfficialServe): the bytes come from the
+# pinned NPM_PACKAGES faces (the dsh-desktop mirror serves no vendor/dsh
+# tree for them — the #325 shell-face convention). tool-web/plugin-manager
+# ride the strip convention (dsh-tool-web@ → tool-web@); the dsh-web seam's
+# own dir name (dsh-web@) IS the canonical rel — a stripped stage would mint
+# the web@ mismatch-name. The verify twin below cmps every block file
+# against its pin, so --check judges the block the same way it judges the
+# CLOSURE rows.
+stage_npm_face_at_dsh_path() {
+    face=$1
+    echo "vendor-official: staging vendor/dsh/$face@0.1.6-alpha.2 (npm-face bytes at the dsh rel path)"
+    src="runtime/spike/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
+    dst="$RAW/vendor/dsh/$face@0.1.6-alpha.2"
+    [ -d "$src" ] || {
+        echo "::error::vendor-official: the dsh-$face npm pin is absent — runtime/spike/vendor/ensure-dsh.sh materializes it" >&2
+        exit 1
+    }
+    mkdir -p "$dst/lib"
+    for f in LICENSE package.json; do
+        [ -f "$src/$f" ] && cp "$src/$f" "$dst/$f"
+    done
+    (cd "$src" && find lib -type f ! -name '*.d.ts') | while IFS= read -r rel; do
+        mkdir -p "$dst/$(dirname "$rel")"
+        cp "$src/$rel" "$dst/$rel"
+    done
+}
+if [ "$MODE" != "check" ]; then
+    stage_npm_face_at_dsh_path tool-web
+    stage_npm_face_at_dsh_path plugin-manager
+    mkdir -p "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib"
+    cp "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/package.json" \
+       "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/package.json"
+    cp "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/lib/index.js" \
+       "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js"
+fi
+
 # The self-hosted web clients (presentation/web-client-{next,whale}):
 # whole-tree copies into rawfile/spike/webclient/dsh-web-client-*, the same
 # sync+check discipline as the closure — the older v0 webclient/
@@ -680,6 +722,30 @@ for rel in $CLOSURE; do
         continue
     fi
     cmp -s "runtime/spike/$rel" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
+done
+# The WEB faces' block twin (the stage block above): the same tracked-check
+# rule — an untracked staged file SKIPs, a drifted tracked one fails the gate.
+for face in tool-web plugin-manager; do
+    src="runtime/spike/vendor/npm/@deepseek-ai/dsh-$face@0.1.6-alpha.2"
+    (cd "$src" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
+    while IFS= read -r f; do
+        [ -f "$src/$f" ] || continue
+        rel="vendor/dsh/$face@0.1.6-alpha.2/$f"
+        if [ -n "$TRACKED" ] && ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+            echo skip >> "$SKIPS_FILE"
+            continue
+        fi
+        cmp -s "$src/$f" "$RAW/$rel" || echo "$rel" >> "$DRIFT"
+    done
+done
+for f in package.json lib/index.js; do
+    rel="vendor/dsh/dsh-web@0.1.6-alpha.2/$f"
+    if [ -n "$TRACKED" ] && ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/$rel"; then
+        echo skip >> "$SKIPS_FILE"
+        continue
+    fi
+    cmp -s "runtime/spike/vendor/npm/@deepseek-ai/dsh-web@0.1.6-alpha.2/$f" "$RAW/$rel" ||
+        echo "$rel" >> "$DRIFT"
 done
 # The web-client trees byte-verify against their presentation/ source (the
 # tracked-check rule above applies: untracked staged files SKIP, never drift).

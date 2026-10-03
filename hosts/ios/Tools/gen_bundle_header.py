@@ -74,6 +74,9 @@ RESOURCES = [
     # officialweb-web-live drive composes the boot wire without runtime services.
     ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
     ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
+    # The WEB plane's mobile search provider (#335 B5): boot.js imports it
+    # statically (the mount + the inventory web tiers ride it).
+    ("upstream_web_search_keyless_js", SPIKE / "upstream" / "web-search-keyless.js"),
     ("npm_cordis_js",
      SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
     ("npm_cosmokit_js",
@@ -251,7 +254,21 @@ TREES = [
     # @ver rel path — the dir the preset-health marker seeder walks.
     *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
        SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
-      for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh")),
+      for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh",
+                "plugin-manager", "tool-web")),
+    # The WEB plane's seam + HTML→markdown chain (#335 B5): boot.js mounts
+    # the web plane unconditionally, so the embed carries the faces or the
+    # mount dies loud at its first dynamic import. dsh-web stages at its own
+    # dir name (a stripped stage would mint the web@ mismatch-name); the
+    # chain mirrors the android stager's staged set.
+    ("vendor/dsh/dsh-web@0.1.6-alpha.2",
+     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
+    ("vendor/npm/turndown@7.2.4/lib",
+     SPIKE / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
+    ("vendor/npm/@mixmark-io/domino@2.2.0/lib",
+     SPIKE / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
+    ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib",
+     SPIKE / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
 ] + [
     # api-full-coverage (D9): the vendored services the coverage rows mount —
     # the event-sourced goal service (goals/*) and the local file-reference

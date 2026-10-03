@@ -224,6 +224,9 @@ hosts/harmony/entry/src/main/resources/rawfile/spike/officialweb/
 hosts/harmony/entry/src/main/resources/rawfile/spike/upstream-tests/
 hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/sharp/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/*/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/dsh-plugin-manager@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/dsh-web@0.1.6-alpha.2/
+!hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/dsh/tool-web@0.1.6-alpha.2/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/fflate@0.8.2/lib/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/jpeg-js@0.4.4/
 hosts/harmony/entry/src/main/resources/rawfile/spike/vendor/npm/pngjs@5.0.0/
@@ -296,3 +299,4 @@ test/web-client-next-suite/coverage/
 test/panel/.vendored/
 
 hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@*/
+.gov/last-run/
