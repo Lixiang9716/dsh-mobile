@@ -81,6 +81,32 @@ for pkg in agent agent-loop brand llm sandbox scope session \
     stage_pkg "$SPIKE/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"
 done
 
+# The MOBILE PRESET'S SHELL SURFACE — the iOS embedder's npm-face block
+# (gen_bundle_header.py): these four preset rows pin on the NPM face only
+# (the mirror serves no vendor/dsh tree for them), but every preset-health
+# marker seeder walks vendor/dsh dirs ONLY (AgentPresetsSeed.kt here, the
+# iOS drive, harmony's OfficialServe) — so the bytes stage AT the vendor/
+# dsh/<pkg>@<ver> rel path and the seeder reads their package.json name.
+# Without them every preset naming the row reads broken: the #324 release
+# seat showed the Standard/PTC/Creator cards as 加载失败 on exactly the
+# missing `present` row (tool-ralph/tool-pwsh are disabled rows today —
+# health-skipped — and tool-bash's rows are !!js-gated; they ride so the
+# three hosts stage the same surface and a mount leg finds the bytes).
+for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
+    say "staging vendor/dsh/$pkg@$VER (npm-face bytes at the dsh rel path)"
+    src="$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER"
+    dst="$ASSETS/vendor/dsh/$pkg@$VER"
+    [ -d "$src" ] || die "the dsh-$pkg npm pin is absent — runtime/spike/vendor/ensure-dsh.sh materializes it"
+    mkdir -p "$dst"
+    for f in LICENSE package.json; do
+        [ -f "$src/$f" ] && cp "$src/$f" "$dst/$f"
+    done
+    (cd "$src" && find lib -type f ! -name '*.d.ts') | while IFS= read -r rel; do
+        mkdir -p "$dst/$(dirname "$rel")"
+        cp "$src/$rel" "$dst/$rel"
+    done
+done
+
 # The npm `diff` bridge target (upstream/shims/npm-bridges.js re-exports its
 # libesm/index.js behind the bare specifier vendored tool-fs imports).
 # The Agent presets closure's npm faces (boot.js imports them statically:
@@ -355,6 +381,18 @@ for pkg in agent agent-loop brand llm sandbox scope session \
         [ -f "$SPIKE/vendor/dsh/$pkg@$VER/$rel" ] || continue
         if [ "$MODE" = "check" ] && ! is_tracked "vendor/dsh/$pkg@$VER/$rel"; then note_skip; continue; fi
         cmp -s "$SPIKE/vendor/dsh/$pkg@$VER/$rel" "$ASSETS/vendor/dsh/$pkg@$VER/$rel" ||
+            note_drift "vendor/dsh/$pkg@$VER/$rel"
+    done
+done
+# The shell-surface npm faces staged at the dsh rel paths (the block above):
+# byte-identity against their own pin — the npm face IS the pin these bytes
+# ride (the dsh face has no tree for them).
+for pkg in tool-present tool-ralph tool-bash tool-pwsh; do
+    (cd "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER" && find lib -type f ! -name '*.d.ts'; echo LICENSE; echo package.json) |
+    while IFS= read -r rel; do
+        [ -f "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER/$rel" ] || continue
+        if [ "$MODE" = "check" ] && ! is_tracked "vendor/dsh/$pkg@$VER/$rel"; then note_skip; continue; fi
+        cmp -s "$SPIKE/vendor/npm/@deepseek-ai/dsh-$pkg@$VER/$rel" "$ASSETS/vendor/dsh/$pkg@$VER/$rel" ||
             note_drift "vendor/dsh/$pkg@$VER/$rel"
     done
 done
