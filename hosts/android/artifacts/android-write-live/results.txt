@@ -1,2 +1,2 @@
-09-23 02:08:51.531  5614  5735 I dsh.spike.result: b-android.write.live PASS | quickjs-ng 0.17.0
-09-23 02:08:51.531  5614  5735 I dsh.spike.result: ALL PASS
+10-03 23:23:23.431  6473  6604 I dsh.spike.result: android.composer.live-write PASS | quickjs-ng 0.17.0
+10-03 23:23:23.431  6473  6604 I dsh.spike.result: ALL PASS
