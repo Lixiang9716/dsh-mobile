@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import yaml from '../../hosts/android/app/src/main/assets/spike/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs';
+import yaml from 'js-yaml';
 
 // The BUILT-IN Agent 预设 cards' health verdict, mirrored against the REAL
 // seed data: the preset documents the `agentPresets.seed` delivery carries

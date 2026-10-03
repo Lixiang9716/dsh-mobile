@@ -6,6 +6,7 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "js-yaml": "4.1.0"
   }
 }
