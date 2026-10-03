@@ -12,7 +12,7 @@
     "[x] fix: the C export answers the Kotlin external (nativeWasmLast) \u2014 the m4LastError pattern restored",
     "[x] test: panel suite pins the Kotlin<->C JNI closure both directions; test/panel/run.sh green",
     "[x] note: bug-fix Agent Note with Problem/Decision/Alternatives",
-    "gates: gov run scoped green; commit + push + PR",
+    "[x] gates: gov run scoped green; commit + push + PR",
     "[x] device: release APK boots clean on emulator-5558 (no UnsatisfiedLinkError), carrier LISTEN + cookie",
     "[x] proofs: four proofs collected on the release package, screenshots in .zcode/fix-ab2/"
   ],
