@@ -209,6 +209,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         fs.register(core)
         val http = HttpPrimitive()
         http.register(core)
+        WasmPrimitive(fs).register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post

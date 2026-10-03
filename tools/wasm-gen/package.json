@@ -1,0 +1,12 @@
+{
+  "name": "dsh-wasm-gen",
+  "private": true,
+  "type": "module",
+  "description": "Generates the dsh-shell-wasm starter programs' WASM bytes from the .wat sources here (wabt pin), verifying each against the dsh_wasm.c ABI before anything is written.",
+  "scripts": {
+    "generate": "node gen.mjs"
+  },
+  "dependencies": {
+    "wabt": "1.0.39"
+  }
+}

@@ -23,6 +23,7 @@
 
 #include "dsh_spike_host.h"
 #include "dsh_spike_smoke.h"
+#include "dsh_wasm.h"
 
 #define DSH_LOG_TAG "dsh.spike"
 #define DSH_RESULT_TAG "dsh.spike.result"
@@ -156,6 +157,57 @@ static int dsh_prepare_fs_root(const char *context, char *err) {
     }
     free(fs_root);
     return 1;
+}
+
+/* ---- the WebAssembly seam (contract v1.2.0 wasmRun) ----------------------
+ * dsh_wasm_run is self-contained — no runtime handle, the module bytes run
+ * through the vendored wasm3 and a JSON payload comes back. Every gateway
+ * handler runs on the single runtime thread (ARCHITECTURE.md §6), so the
+ * one-run-at-a-time sink and the last-error slot need no lock; the error is
+ * read back on the same thread that produced it (the m4LastError pattern).
+ * The Kotlin side is WasmPrimitive; until this leg landed (#335 B4) the
+ * release seat answered every wasmRun with a gateway denial. */
+static char g_wasm_err[DSH_ERR_MAX];
+
+__attribute__((visibility("default")))
+jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmRun(
+        JNIEnv *env, jobject thiz, jbyteArray j_module, jstring j_func,
+        jstring j_input) {
+    (void)thiz;
+    g_wasm_err[0] = 0;
+    jsize module_len = (*env)->GetArrayLength(env, j_module);
+    jbyte *module_bytes = (*env)->GetByteArrayElements(env, j_module, NULL);
+    if (!module_bytes) {
+        snprintf(g_wasm_err, DSH_ERR_MAX, "out of memory");
+        return NULL;
+    }
+    const char *func = (*env)->GetStringUTFChars(env, j_func, NULL);
+    const char *input = j_input
+        ? (*env)->GetStringUTFChars(env, j_input, NULL) : "";
+    char *err = NULL;
+    char *json = dsh_wasm_run((const uint8_t *)module_bytes,
+                              (size_t)(module_len > 0 ? module_len : 0),
+                              func, input, &err);
+    if (err) {
+        snprintf(g_wasm_err, DSH_ERR_MAX, "%s", err);
+        free(err);
+    }
+    if (input && j_input) (*env)->ReleaseStringUTFChars(env, j_input, input);
+    if (func) (*env)->ReleaseStringUTFChars(env, j_func, func);
+    (*env)->ReleaseByteArrayElements(env, j_module, module_bytes, JNI_ABORT);
+    if (!json) {
+        return NULL;
+    }
+    jstring result = (*env)->NewStringUTF(env, json);
+    free(json);
+    return result;
+}
+
+__attribute__((visibility("default")))
+jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmLastError(
+        JNIEnv *env, jobject thiz) {
+    (void)thiz;
+    return (*env)->NewStringUTF(env, g_wasm_err);
 }
 
 /* Exported JNI symbol. JNIEXPORT/JNICALL are deliberately NOT spelled out:

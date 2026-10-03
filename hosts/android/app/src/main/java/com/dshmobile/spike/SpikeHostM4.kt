@@ -230,6 +230,7 @@ class SpikeHostM4 private constructor(
     private val camera = CameraPrimitives(activity, fs)
     private val ble = BlePrimitives(activity, core, if (mockRadio) MockBleRadio() else SystemBleRadio(activity))
     val mic = MicPrimitives(activity)
+    private val wasm = WasmPrimitive(fs)
 
     private var handle: Long = 0
 
@@ -339,6 +340,7 @@ class SpikeHostM4 private constructor(
         ble.register(core)
 
         mic.register(core)
+        wasm.register(core)
         core.settleFn = { callId, ok, json ->
             SpikeRuntime.post {
                 if (finished) return@post
