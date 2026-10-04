@@ -1,0 +1,20 @@
+{
+  "title": "Wire aoci host hooks into ZCode (pre-write guard + session-start cognition check)",
+  "created": "2026-10-04T11:40:54+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "inspect aoci --hooks generated scripts and their CLI faces",
+    "wire ZCode .zcode/config.json hooks (enabled + matchers)",
+    "test guard block/allow behavior end to end",
+    "landed (note/PR as applicable) + card closed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0191"
+}
