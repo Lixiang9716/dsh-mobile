@@ -280,5 +280,6 @@ jobs:
             /tmp/dsh-full-*/verdict-*.json
             /tmp/dsh-page-open/**
             /tmp/dsh-m4-verdict-*.json
+            hosts/android/artifacts/upstream-parity/**
             /tmp/emulator.log
           if-no-files-found: ignore
