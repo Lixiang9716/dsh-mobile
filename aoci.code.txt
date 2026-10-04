@@ -1452,6 +1452,9 @@ run-ios.sh[XO4T]: F:The local M2 real-gateway-binding E2E driver on iOS | R:code
 run-ish-local.sh[XO4T]: F:The local E2E for the in-process Linux userland (ishRun) | R:code:test/e2e/check.mjs | A:scenario userland.shell | S:Driven through the same objects the shipped app uses
 run-mic-plane-device.sh[XO4T]: F:The mic face real-device leg (D-g) | R:code:test/e2e/check.mjs | A:mic.plane on hardware | S:The one-click contract: implemented, receipt-ready, awaiting hardware
 run-socket-seam.sh[XO4T]: F:The socket seam E2E runner: server plus client plus the child-process leg | R:code:test/e2e/check.mjs | A:the socket seam scenarios | S:The child-process dialing an in-test server is the motivating shape
+selftest.sh[XQ3T]: F:The e2e suite's config or fixture | R:code:test/ | A:- | S:-
+ui-probe.mjs[XQ3T]: F:The e2e suite's config or fixture | R:code:test/ | A:- | S:-
+write-receipt.sh[XQ3T]: F:The e2e suite's config or fixture | R:code:test/ | A:- | S:-
 
 ===/home/lx/dsh-mobile/test/e2e/scenarios/===
 agent-flow.json[XQ4T]: F:The agent-flow scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list for its runner | S:Matched in order; nothing missing, nothing extra
@@ -1543,3 +1546,34 @@ shim-exposure-probe.json[XQ4T]: F:The shim-exposure-probe scenario manifest: the
 socket-seam-local.json[XQ4T]: F:The socket-seam-local scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list for its runner | S:Matched in order; nothing missing, nothing extra
 ui-client-swap.json[XQ4T]: F:The ui-client-swap scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list for its runner | S:Matched in order; nothing missing, nothing extra
 ui-occlusion.json[XQ4T]: F:The ui-occlusion scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list for its runner | S:Matched in order; nothing missing, nothing extra
+upstream-parity-cli.json[XQ4T]: F:The upstream-parity-cli scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+upstream-parity.json[XQ4T]: F:The upstream-parity scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+upstream-session.json[XQ4T]: F:The upstream-session scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+upstream-web-boot.json[XQ4T]: F:The upstream-web-boot scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+userland-shell-local.json[XQ4T]: F:The userland-shell-local scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+webclient-mount.json[XQ4T]: F:The webclient-mount scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+whale-mount.json[XQ4T]: F:The whale-mount scenario manifest: the expected event sequence the checker matches one-to-one | R:code:test/e2e/check.mjs | A:the extract prefix and expect list | S:Matched in order; nothing missing, nothing extra
+
+===/home/lx/dsh-mobile/test/panel/===
+dsh-tools-stub.js[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+gateway-shim.js[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+logger-shim.js[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+package-lock.json[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+package.json[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+provision-vendor.mjs[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+run.sh[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+util-crypto-shim.js[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+vitest.config.js[XQ3T]: F:The panel suite's config or fixture | R:code:test/ | A:- | S:-
+
+===/home/lx/dsh-mobile/test/tools/===
+coverage.sh[XQ3T]: F:The tools suite's config or fixture | R:code:test/ | A:- | S:-
+package-lock.json[XQ3T]: F:The tools suite's config or fixture | R:code:test/ | A:- | S:-
+package.json[XQ3T]: F:The tools suite's config or fixture | R:code:test/ | A:- | S:-
+vitest.config.mjs[XQ3T]: F:The tools suite's config or fixture | R:code:test/ | A:- | S:-
+
+===/home/lx/dsh-mobile/test/tools/helpers/===
+staging-fixture.mjs[XQ3T]: F:The tools suite's config or fixture | R:code:test/ | A:- | S:-
+
+===/home/lx/dsh-mobile/test/web-client-next-suite/===
+package-lock.json[XQ3T]: F:The web-client-next-suite suite's config or fixture | R:code:test/ | A:- | S:-
+package.json[XQ3T]: F:The web-client-next-suite suite's config or fixture | R:code:test/ | A:- | S:-
