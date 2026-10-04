@@ -217,6 +217,7 @@ RESOURCES = [
     ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
     ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
     ("upstream_turn_recovery_js", SPIKE / "upstream" / "turn-recovery.js"),
+    ("upstream_retry_telemetry_js", SPIKE / "upstream" / "retry-telemetry.js"),
     ("upstream_boot_coverage_rows_js", SPIKE / "upstream" / "boot-coverage-rows.js"),
 ]
 # Directory trees embedded whole and staged back under the same

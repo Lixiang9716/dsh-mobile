@@ -341,6 +341,7 @@ upstream/web-write-workspace.js
 upstream/web-write-catalog.js
 upstream/tool-deadline.js
 upstream/turn-recovery.js
+upstream/retry-telemetry.js
 upstream/turn-watchdog.js
 upstream/web-search-keyless.js
 upstream/boot-coverage-rows.js
