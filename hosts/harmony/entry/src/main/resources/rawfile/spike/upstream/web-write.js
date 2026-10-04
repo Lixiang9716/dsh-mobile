@@ -437,6 +437,37 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       ...makeEndpointPresetAdapter(options),
     });
 
+/** The write-surface deps (split from createWriteSurface at the code-size
+ * gate): everything the api map's factories read. The coverage plane is
+ * late-bound — deps.publish fans out through the streams' registry. */
+const writeDeps = (options, streams, workspaces, seeded, archived) => ({
+  streams, root: options.root, workspaces, seeded, archived,
+  llmRoute: {
+    provider: options.provider, model: options.model, baseURL: options.baseURL,
+    // The staged credential's multi-model roster ({id, name} rows; absent
+    // on mock/byok routes) — session/modelCatalog lists it and
+    // session/selectModel validates against it.
+    models: options.models,
+    // The honest source fact (upstream/llm-route.js): 'staged' | 'byok' |
+    // 'mock' | undefined (surfaces built without the route's provenance —
+    // the CLI probes). The onboarding status answers from it.
+    kind: options.routeKind,
+  },
+  // The plugin marketplace's opt-in (web-write-marketplace.js): the
+  // validated {indexUrl} (publicKey optional — the resolver's declared
+  // gap without it). Absent → the marketplace legs stay unclaimed.
+  marketplace: marketplaceOf(options),
+  // The workspace registry's gateway path (#346): the boot-derived
+  // `<containerRoot minus fsScopeRoot>/plugins/registry.json` spelling
+  // the LIST provider and the plugin_manager tool read — the write legs'
+  // roster adoption must land in the SAME document the tier lists.
+  // Absent → the legs keep their default (workspace == scope root) spelling.
+  registryPath: typeof options.registryPath === 'string'
+    ? options.registryPath : undefined,
+  mintId: mintUUID,
+  publish: streams.publish,
+});
+
 export const createWriteSurface = (ctx, post, options) => {
   const root = options.root;
   if (typeof root !== 'string' || !root.startsWith('/')) {
@@ -445,31 +476,10 @@ export const createWriteSurface = (ctx, post, options) => {
   }
   const seeded = seedWorkspace(root);
   const workspaces = new Map([[seeded.workspaceId, seeded]]);
-  // The coverage plane is late-bound: coverage.open reads deps (built after
-  // the streams), and deps.publish fans out through the streams' registry.
   const archived = [];
   const coverage = options.fullCoverage === true ? { archived: () => archived } : undefined;
   const streams = createFollowStreams(ctx, post, root, workspaces, coverage);
-  const deps = {
-    streams, root, workspaces, seeded, archived,
-    llmRoute: {
-      provider: options.provider, model: options.model, baseURL: options.baseURL,
-      // The staged credential's multi-model roster ({id, name} rows; absent
-      // on mock/byok routes) — session/modelCatalog lists it and
-      // session/selectModel validates against it.
-      models: options.models,
-      // The honest source fact (upstream/llm-route.js): 'staged' | 'byok' |
-      // 'mock' | undefined (surfaces built without the route's provenance —
-      // the CLI probes). The onboarding status answers from it.
-      kind: options.routeKind,
-    },
-    // The plugin marketplace's opt-in (web-write-marketplace.js): the
-    // validated {indexUrl} (publicKey optional — the resolver's declared
-    // gap without it). Absent → the marketplace legs stay unclaimed.
-    marketplace: marketplaceOf(options),
-    mintId: mintUUID,
-    publish: streams.publish,
-  };
+  const deps = writeDeps(options, streams, workspaces, seeded, archived);
   if (coverage !== undefined) {
     coverage.open = (msg) => openCoverageStream(ctx, deps, createChangeFeed(ctx), post, msg);
   }

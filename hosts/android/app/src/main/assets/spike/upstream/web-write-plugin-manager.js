@@ -53,11 +53,22 @@ const log = createLogger('dsh.web.plugin-manager');
 
 /** The dsh.plugins/1 document (scenario/write-surface-options.js reads the
  * same file leniently for the LIST tier; the WRITE plane reads it strict —
- * a write into a roster this host cannot parse must never silently land). */
+ * a write into a roster this host cannot parse must never silently land).
+ * DEFAULT spelling: the app-scope-root-relative `plugins/registry.json`.
+ * #346: the workspace registry lives at `<containerRoot>/plugins/
+ * registry.json`, which on a real device seat is BELOW the app scope's
+ * root — the boot relays the derived spelling as `deps.registryPath`
+ * (write-surface-options.js), and a handler family built without one keeps
+ * this default (the §4 drive seats whose workspace IS the scope root). */
 const REGISTRY_PATH = 'plugins/registry.json';
 /** The rows' persistent patch target: the workspace registry IS where the
  * enablement of this tier persists (the list legs carry it verbatim). */
 export const WORKSPACE_PATCH_ID = REGISTRY_PATH;
+
+/** The effective registry path for one handler family (the injected
+ * spelling wins; the default keeps the historical drive seats honest). */
+const registryPathOf = (deps) => (typeof deps?.registryPath === 'string'
+  && deps.registryPath.length > 0 ? deps.registryPath : REGISTRY_PATH);
 
 /** Package ids this host adopts — the same grammar the receipts and the
  * marketplace catalog use (install-pipeline.js PKG_ID). */
@@ -126,11 +137,11 @@ const specProblem = (spec) => {
 
 /** Strict dsh.plugins/1 read: a missing file is the fresh roster; anything
  * unparsable or off-version THROWS — the caller frames it in-band. */
-const readRegistryDoc = async () => {
+const readRegistryDoc = async (registryPath) => {
   const { decode } = await utf8Face();
   let raw;
   try {
-    const { bytes } = await fsRead('app', REGISTRY_PATH);
+    const { bytes } = await fsRead('app', registryPath);
     raw = decode(bytes);
   } catch (err) {
     log.debug('registry absent — fresh roster', { code: err?.code });
@@ -140,10 +151,10 @@ const readRegistryDoc = async () => {
   try {
     doc = JSON.parse(raw);
   } catch (err) {
-    throw new Error(`${REGISTRY_PATH} is not valid JSON: ${err.message}`);
+    throw new Error(`${registryPath} is not valid JSON: ${err.message}`);
   }
   if (doc?.version !== 1 || !Array.isArray(doc.plugins)) {
-    throw new Error(`not a dsh.plugins/1 document: ${REGISTRY_PATH}`);
+    throw new Error(`not a dsh.plugins/1 document: ${registryPath}`);
   }
   log.debug('registry read', { plugins: doc.plugins.length });
   return doc;
@@ -151,10 +162,10 @@ const readRegistryDoc = async () => {
 
 /** Read-modify-write of the registry document (unknown doc/entry fields are
  * preserved — agent-authored rows carry fields this plane does not own). */
-const writeRegistryDoc = async (doc) => {
+const writeRegistryDoc = async (registryPath, doc) => {
   const { encode } = await utf8Face();
   log.debug('registry write', { plugins: doc.plugins.length });
-  await fsWrite('app', REGISTRY_PATH,
+  await fsWrite('app', registryPath,
     encode(`${JSON.stringify(doc, null, 2)}\n`));
 };
 
@@ -199,7 +210,9 @@ const stagedIndex = (marketplace) => {
  * receipt journal is the install record of truth) → registry adoption.
  * An id+version already committed skips the transaction and only ensures
  * the registry row (the adopt is idempotent; `changed` says so). */
-const installBundle = (deps) => inBand('install', (a) => a?.spec, async (args) => {
+const installBundle = (deps) => {
+  const registryPath = registryPathOf(deps);
+  return inBand('install', (a) => a?.spec, async (args) => {
   const spec = args?.spec;
   const problem = specProblem(spec);
   if (problem) return changeFailed('install', String(spec ?? ''), 'invalid-spec', problem);
@@ -218,32 +231,33 @@ const installBundle = (deps) => inBand('install', (a) => a?.spec, async (args) =
     });
   }
   const enabled = args?.options?.enabled !== false;
-  const regDoc = await readRegistryDoc();
+  const regDoc = await readRegistryDoc(registryPath);
   const row = registryRow(regDoc, entry.id);
   if (row === undefined) {
     regDoc.plugins.push({ id: entry.id, name: entry.id, enabled,
       version: entry.version });
-    await writeRegistryDoc(regDoc);
+    await writeRegistryDoc(registryPath, regDoc);
   } else if (row.enabled !== enabled || row.version !== entry.version) {
     Object.assign(row, { enabled, version: entry.version });
-    await writeRegistryDoc(regDoc);
+    await writeRegistryDoc(registryPath, regDoc);
   }
   log.debug('install applied', { id: entry.id, version: entry.version,
     enabled, transaction: committed === undefined });
   return { changed: committed === undefined, application: 'applied',
     stage: 'install', target: spec, bundle: entry.id, enabled };
 });
+};
 
 /** removeBundle: the committed tree goes, THEN the §4 remove receipt (the
  * marketplace face's own ordering), then the registry row drops. Workspace
  * files an agent authored are not touched — only the roster row goes. */
-const removeBundle = inBand('remove', (a) => a?.name, async (args) => {
+const removeBundle = (registryPath) => inBand('remove', (a) => a?.name, async (args) => {
   const name = args?.name;
   const problem = specProblem(name);
   if (problem) return changeFailed('remove', String(name ?? ''), 'invalid-spec', problem);
   const installed = (await installedFromJournal(await readJournal()))
     .find((item) => item.id === name);
-  const regDoc = await readRegistryDoc();
+  const regDoc = await readRegistryDoc(registryPath);
   if (installed === undefined && registryRow(regDoc, name) === undefined) {
     return changeFailed('remove', name, 'unknown-plugin',
       `no committed install and no registry row names "${name}"`);
@@ -266,7 +280,7 @@ const removeBundle = inBand('remove', (a) => a?.name, async (args) => {
     });
   }
   regDoc.plugins = regDoc.plugins.filter((row) => row?.id !== name);
-  await writeRegistryDoc(regDoc);
+  await writeRegistryDoc(registryPath, regDoc);
   log.debug('remove applied', { id: name, tree: installed !== undefined });
   return { changed: true, application: 'applied', stage: 'remove', target: name,
     bundle: name };
@@ -274,13 +288,13 @@ const removeBundle = inBand('remove', (a) => a?.name, async (args) => {
 
 /** The shared enable leg: the registry row IS the enablement state; the
  * operation is a no-op (`changed: false`) when the row already agrees. */
-const setEnabled = (stage, keyOf) => inBand(stage, keyOf, async (args) => {
+const setEnabled = (stage, keyOf) => (registryPath) => inBand(stage, keyOf, async (args) => {
   const key = keyOf(args);
   const enabled = args?.enabled;
   const problem = specProblem(key) ?? (typeof enabled !== 'boolean'
     ? 'enabled must be a boolean' : null);
   if (problem) return changeFailed(stage, String(key ?? ''), 'invalid-spec', problem);
-  const regDoc = await readRegistryDoc();
+  const regDoc = await readRegistryDoc(registryPath);
   const row = registryRow(regDoc, key);
   if (row === undefined) {
     return changeFailed(stage, key, 'unknown-plugin',
@@ -291,7 +305,7 @@ const setEnabled = (stage, keyOf) => inBand(stage, keyOf, async (args) => {
     return { changed: false, application: 'applied', stage, target: key, enabled };
   }
   row.enabled = enabled;
-  await writeRegistryDoc(regDoc);
+  await writeRegistryDoc(registryPath, regDoc);
   log.debug('enable applied', { stage, id: key, enabled });
   return { changed: true, application: 'applied', stage, target: key, enabled };
 });
@@ -379,11 +393,12 @@ const cancelInstall = async (args) => {
  */
 export const makePluginManagerWriteHandlers = (deps) => {
   log.debug('write legs assembled', { marketplace: deps?.marketplace !== undefined });
+  const registryPath = registryPathOf(deps);
   return {
     installBundle: installBundle(deps),
-    removeBundle,
-    setBundleEnabled: setEnabled('enable', (a) => a?.name),
-    setPluginEnabled: setEnabled('enable', (a) => a?.id),
+    removeBundle: removeBundle(registryPath),
+    setBundleEnabled: setEnabled('enable', (a) => a?.name)(registryPath),
+    setPluginEnabled: setEnabled('enable', (a) => a?.id)(registryPath),
     inspect: inspect(deps),
     cancelInstall,
   };

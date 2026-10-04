@@ -79,6 +79,50 @@ const withMarket = () => makePluginManagerWriteHandlers({
   marketplace: { indexUrl: INDEX_URL, publicKey: PUB_B64 },
 });
 
+// The #346 injected registry path: the boot derives the WORKSPACE spelling
+// (`<containerRoot minus fsScopeRoot>/plugins/registry.json` — on the device
+// seat `spike/plugins/registry.json`) and relays it through the write
+// options; a handler family built with it must read/write the SAME document
+// the LIST tier's workspace provider reads, and one built without keeps the
+// app-scope-root default.
+describe('the injected registry path (#346) — the write legs land where the tier reads', () => {
+  it('setPluginEnabled flips the row in the INJECTED document, not the default one', async () => {
+    workspace.set('app/spike/plugins/registry.json', new TextEncoder().encode(JSON.stringify({
+      version: 1,
+      plugins: [{ id: 'countdown10', name: '10s Countdown', enabled: true }],
+    })));
+    const legs = makePluginManagerWriteHandlers({ registryPath: 'spike/plugins/registry.json' });
+    const res = await legs.setPluginEnabled({ id: 'countdown10', enabled: false });
+    expect(res).toMatchObject({ changed: true, application: 'applied' });
+    expect(__dump('app/spike/plugins/registry.json')).toBeDefined();
+    expect(__dump('app/plugins/registry.json')).toBeUndefined();
+    const doc = JSON.parse(new TextDecoder().decode(__dump('app/spike/plugins/registry.json')));
+    expect(doc.plugins[0].enabled).toBe(false);
+  });
+
+  it('installBundle adopts into the injected document beside the §4 trees', async () => {
+    seedHttp();
+    const legs = makePluginManagerWriteHandlers({
+      marketplace: { indexUrl: INDEX_URL, publicKey: PUB_B64 },
+      registryPath: 'spike/plugins/registry.json',
+    });
+    const res = await legs.installBundle({ spec: 'dsh-demo' });
+    expect(res).toMatchObject({ changed: true, application: 'applied', bundle: 'dsh-demo' });
+    const doc = JSON.parse(new TextDecoder().decode(__dump('app/spike/plugins/registry.json')));
+    expect(doc.plugins.find((row) => row.id === 'dsh-demo')).toMatchObject({ enabled: true, version: '1.0.0' });
+    // the §4 machinery keeps its own plane: the tree lands at the app root
+    expect(__dump('app/plugins/dsh-demo@1.0.0/manifest.json')).toBeDefined();
+  });
+
+  it('no injected path keeps the default spelling (the §4 drive seats)', async () => {
+    seedRegistry();
+    const res = await makePluginManagerWriteHandlers({})
+      .setBundleEnabled({ name: 'countdown10', enabled: false });
+    expect(res).toMatchObject({ changed: true, application: 'applied' });
+    expect(__dump('app/plugins/registry.json')).toBeDefined();
+  });
+});
+
 const journalReceipts = () => {
   const raw = __dump('app/receipts/journal.jsonl');
   if (raw === undefined) return [];

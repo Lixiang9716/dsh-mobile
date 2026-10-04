@@ -8,29 +8,35 @@
 import { createLogger } from 'logger.js';
 import { spineInventory } from 'upstream/boot.js';
 import { errorOf } from 'upstream/web-write.js';
+import {
+  workspaceRegistryPath, readWorkspaceRegistryDoc,
+} from 'workspace-registry.js';
 
 const log = createLogger('b4.web');
 
 /** The workspace registry provider for the 插件 inventory's workspace tier:
  * the dsh.plugins/1 registry the agent self-installs into during creation
- * turns. The tier is advisory: ANY failure here degrades to an empty tier
- * with a warn — a throw rides the handler into the serial runtime thread and
- * wedges the spine (the #312 lesson). warn survives the release L4 strip, so
- * the reason stays loud. */
-export const readWorkspaceRegistry = async () => {
-  const { decodeUtf8 } = await import('node:buffer');
+ * turns — read from the WORKSPACE's own file. #346: the registry lives at
+ * `<containerRoot>/plugins/registry.json`, which on a real device seat is
+ * BELOW the app scope's root (Android: `spike/plugins/registry.json`
+ * under `profiles/default/`) — the pre-#346 bare `plugins/registry.json`
+ * spelling named the app scope root and degraded the tier to empty on
+ * every real seat. The path derives from the boot config (injected: the
+ * panel suite asserts the derivation) via the shared registry module.
+ * The tier is advisory: ANY failure here degrades to an empty tier with a
+ * warn — a throw rides the handler into the serial runtime thread and
+ * wedges the spine (the #312 lesson). warn survives the release L4 strip,
+ * so the reason stays loud; a plain missing file is the fresh roster (the
+ * normal pre-creation state) and stays quiet. */
+export const readWorkspaceRegistry = async (cfg = {}) => {
+  const path = workspaceRegistryPath(cfg);
   const gw = await import('gateway.js');
-  try {
-    const raw = await gw.fsRead('app', 'plugins/registry.json');
-    const doc = JSON.parse(decodeUtf8(raw.bytes));
-    if (doc?.version !== 1 || !Array.isArray(doc.plugins)) {
-      throw new Error('not a dsh.plugins/1 document');
-    }
-    return doc.plugins;
-  } catch (err) {
-    if (err?.code !== 'io') log.warn('workspace registry tier degraded', { error: errorOf(err) });
-    return [];
+  const read = await readWorkspaceRegistryDoc({ fsRead: gw.fsRead, path });
+  if (read.ok) return read.plugins;
+  if (read.code !== 'io') {
+    log.warn('workspace registry tier degraded', { path, error: read.message });
   }
+  return [];
 };
 
 /** The `write` options object for createWebBootRuntime (web-boot.js). */
@@ -46,6 +52,18 @@ export const writeSurfaceOptions = (cfg, ctx, route) => ({
   ...(cfg.marketplaceIndex === undefined ? {} : { marketplace: { indexUrl: cfg.marketplaceIndex } }),
   // Marketplace opt-in (web-write-marketplace.js), relayed verbatim when the seat stages it; absent → unclaimed.
   ...(cfg.marketplace === undefined ? {} : { marketplace: cfg.marketplace }),
+  // The workspace registry's gateway path, derived ONCE from the boot
+  // config and injected into every face that reads the document: the LIST
+  // provider below AND the pluginManager WRITE legs (#346 — the write
+  // legs' bare spelling named the app scope root, so an install's roster
+  // adoption landed beside the §4 trees while the tier read the root).
+  registryPath: workspaceRegistryPath({
+    containerRoot: cfg.containerRoot,
+    scopeRoot: cfg.fsScopeRoot,
+  }),
   spine: () => spineInventory(ctx), // the 插件 inventory's spine plane: REAL mounts from ctx
-  workspaceRegistry: () => readWorkspaceRegistry(), // the one-sentence-creation tier (read-only)
+  workspaceRegistry: () => readWorkspaceRegistry({ // the one-sentence-creation tier (read-only)
+    containerRoot: cfg.containerRoot,
+    scopeRoot: cfg.fsScopeRoot,
+  }),
 });
