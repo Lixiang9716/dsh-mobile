@@ -1,0 +1,21 @@
+{
+  "title": "aoci full adoption: Entries bootstrap to zero + deep integration (AI layer, hooks, ui, cognition)",
+  "created": "2026-10-04T09:45:16+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] recon: guide + rules + write-path surface mapped, authoring route chosen",
+    "[x] Entries bootstrap: all batches applied to remaining=0",
+    "[x] aggregate verify + check clean; guide closure stage reached",
+    "[x] full integration: hooks/ai/ui/cognition wired and healthy",
+    "landed via PR with green gates; card closed"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0189"
+}
