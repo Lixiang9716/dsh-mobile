@@ -19,39 +19,42 @@ export default defineConfig({
     globalSetup: ['./provision-vendor.mjs'],
   },
   resolve: {
-    alias: {
-      'logger.js': fileURLToPath(new URL('./logger-shim.js', import.meta.url)),
-      'ed25519.js': fileURLToPath(new URL('../../runtime/spike/ed25519.js', import.meta.url)),
-      'canonical-json.js': fileURLToPath(new URL('../../runtime/spike/canonical-json.js', import.meta.url)),
-      'marketplace-resolver.js': fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)),
-      'web-write-inventory.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)),
-      '@deepseek-ai/dsh-timeout': fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)),
-      // The shell-executor suite runs the REAL plugin over a gateway shim
-      // whose wasmRun executes on Node's own WebAssembly (the dsh_wasm.c
-      // ABI mirrored byte for byte — see gateway-shim.js).
-      'gateway.js': fileURLToPath(new URL('./gateway-shim.js', import.meta.url)),
-      '@deepseek-ai/dsh-tools': fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)),
-      // The plugin-manager write-leg battery drives the REAL §4 pipeline
-      // (tar bytes → digest → promote → receipt journal) over the gateway
-      // shim (gateway-shim.js): the pipeline family's bare specifiers
-      // resolve to the pinned runtime sources, and the marketplace face's
-      // RELATIVE ../gateway.js import reaches the real spike gateway (only
-      // its base64 helper runs in tests — via the util-crypto shim).
-      'dsh:util-crypto': fileURLToPath(new URL('./util-crypto-shim.js', import.meta.url)),
-      'sha256.js': fileURLToPath(new URL('../../runtime/spike/sha256.js', import.meta.url)),
-      'tar-mini.js': fileURLToPath(new URL('../../runtime/spike/tar-mini.js', import.meta.url)),
-      'install-pipeline.js': fileURLToPath(new URL('../../runtime/spike/install-pipeline.js', import.meta.url)),
-      'install-fetch.js': fileURLToPath(new URL('../../runtime/spike/install-fetch.js', import.meta.url)),
-      'receipt-journal.js': fileURLToPath(new URL('../../runtime/spike/receipt-journal.js', import.meta.url)),
-      'upstream/web-write-inventory.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)),
-      'upstream/web-write-marketplace.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-marketplace.js', import.meta.url)),
-      'upstream/web-write-plugin-manager.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-plugin-manager.js', import.meta.url)),
-      'upstream/web-write-cordis.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-cordis.js', import.meta.url)),
-      // The plugin_manager tool suite (#346): the outboard plugin-manager
-      // package over the shared workspace-registry module (its gateway and
-      // dsh-tools imports alias above; the §4 validator aliases below).
-      'system-plugins/dsh-plugin-manager-tools/index.js': fileURLToPath(new URL('../../system-plugins/dsh-plugin-manager-tools/index.js', import.meta.url)),
-      'workspace-registry.js': fileURLToPath(new URL('../../runtime/spike/workspace-registry.js', import.meta.url)),
-    },
+    alias: [
+      { find: 'logger.js', replacement: fileURLToPath(new URL('./logger-shim.js', import.meta.url)) },
+      { find: 'ed25519.js', replacement: fileURLToPath(new URL('../../runtime/spike/ed25519.js', import.meta.url)) },
+      { find: 'canonical-json.js', replacement: fileURLToPath(new URL('../../runtime/spike/canonical-json.js', import.meta.url)) },
+      { find: 'marketplace-resolver.js', replacement: fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)) },
+      { find: 'web-write-inventory.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)) },
+      { find: '@deepseek-ai/dsh-timeout', replacement: fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)) },
+      { find: 'gateway.js', replacement: fileURLToPath(new URL('./gateway-shim.js', import.meta.url)) },
+      { find: '@deepseek-ai/dsh-tools', replacement: fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)) },
+      { find: 'dsh:util-crypto', replacement: fileURLToPath(new URL('./util-crypto-shim.js', import.meta.url)) },
+      { find: 'sha256.js', replacement: fileURLToPath(new URL('../../runtime/spike/sha256.js', import.meta.url)) },
+      { find: 'tar-mini.js', replacement: fileURLToPath(new URL('../../runtime/spike/tar-mini.js', import.meta.url)) },
+      { find: 'install-pipeline.js', replacement: fileURLToPath(new URL('../../runtime/spike/install-pipeline.js', import.meta.url)) },
+      { find: 'install-fetch.js', replacement: fileURLToPath(new URL('../../runtime/spike/install-fetch.js', import.meta.url)) },
+      { find: 'receipt-journal.js', replacement: fileURLToPath(new URL('../../runtime/spike/receipt-journal.js', import.meta.url)) },
+      { find: 'upstream/web-write-inventory.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)) },
+      { find: 'upstream/web-write-marketplace.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-marketplace.js', import.meta.url)) },
+      { find: 'upstream/web-write-plugin-manager.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-plugin-manager.js', import.meta.url)) },
+      { find: 'upstream/web-write-cordis.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-cordis.js', import.meta.url)) },
+      { find: 'system-plugins/dsh-plugin-manager-tools/index.js', replacement: fileURLToPath(new URL('../../system-plugins/dsh-plugin-manager-tools/index.js', import.meta.url)) },
+      { find: 'workspace-registry.js', replacement: fileURLToPath(new URL('../../runtime/spike/workspace-registry.js', import.meta.url)) },
+      // The fs-shim suite (loop-p): the spike's bare 'upstream/…' specifiers
+      // resolve through the quickjs loader on device; the regex prefix maps
+      // the whole shim family — the node:fs imports inside stay REAL, a
+      // desktop host shape, which is exactly what the readdir fallback
+      // targets.
+      {
+        find: /^upstream\/shims\//,
+        replacement: fileURLToPath(new URL('../../runtime/spike/upstream/shims/', import.meta.url)),
+      },
+      {
+        // The loader's spike-root-relative spelling ('/vendor/npm/…' in
+        // node-zlib.js and friends) — '/' IS the spike root on device.
+        find: /^\/vendor\//,
+        replacement: fileURLToPath(new URL('../../runtime/spike/vendor/', import.meta.url)),
+      },
+    ],
   },
 });
