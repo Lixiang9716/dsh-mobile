@@ -233,6 +233,38 @@ jobs:
           DSH_PHASES=2,3,4,5 DSH_WEB_ART=/tmp/dsh-full-web DSH_SESSION_ART=/tmp/dsh-full-session DSH_WRITE_ART=/tmp/dsh-full-write \
             bash hosts/android/ci/run-android-full.sh
 
+      # The official seat's page-open pin (loop-t): a fresh boot of the DEFAULT
+      # seat must navigate the app webview to the carrier origin. a3e35d72
+      # dropped the settings.probes.done bus post and the page silently never
+      # opened again — url stayed '' forever, zero FAIL lines — while every
+      # other leg above stayed green, because nothing else drives the default
+      # seat (phase 2 mounts --ez dsh.m4, the next-mount leg dsh.next). The
+      # seat is release-flavor only (MainActivity: isRelease -> bootRelease),
+      # so the release APK is built and signed here (debug keystore — the same
+      # cert the install evidence records; not a distribution signing step).
+      - name: Build + sign the release APK (debug keystore, for the page-open pin)
+        working-directory: hosts/android
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          # The hosted runner does not always carry a debug keystore (measured
+          # 2026-10-04: apksigner died on the missing file even after
+          # assembleDebug) — generate the standard one when absent. Not a
+          # distribution signature: the pin only needs an installable APK.
+          [ -f "$HOME/.android/debug.keystore" ] || \
+            keytool -genkeypair -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -keypass android -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
+            --ks "$HOME/.android/debug.keystore" --ks-pass pass:android \
+            --out app/build/outputs/apk/release/app-release-signed.apk \
+            app/build/outputs/apk/release/app-release-unsigned.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify \
+            app/build/outputs/apk/release/app-release-signed.apk
+
+      - name: Run the official seat page-open pin (fresh boot -> devtools /json/list url)
+        run: sh hosts/android/ci/run-page-open.sh
+
       - name: Upload E2E evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -246,6 +278,7 @@ jobs:
             /tmp/dsh-spike-verdict-session.json
             /tmp/dsh-full-*/logs.txt
             /tmp/dsh-full-*/verdict-*.json
+            /tmp/dsh-page-open/**
             /tmp/dsh-m4-verdict-*.json
             /tmp/emulator.log
           if-no-files-found: ignore

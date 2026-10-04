@@ -357,7 +357,15 @@ const probeSettingsPlugins = async () => {
       .map((e) => ({ id: e.entryId, enabled: e.enabled, fiberPhase: e.fiberPhase })),
   });
   await probeManagerLegs();
-
+  // Tell the carrier seat the probes are done: it gates the page open on
+  // this line, so the settings.* records are always on the log BEFORE the
+  // page-serve records — the manifest order is deterministic, never a race
+  // (measured 2026-09-22; a3e35d72 dropped this post in the split and the
+  // official seat's page never opened again on a passing boot — loop-t).
+  // The fail arm needs no line: a probe failure rides __dshComplete into
+  // the host's fail-open.
+  post({ type: 'settings.probes.done' });
+  log.debug('settings probes done', {});
 };
 
 const probeSettingsSurfaces = async () => {
