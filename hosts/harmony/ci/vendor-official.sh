@@ -313,6 +313,7 @@ SPINE_OURS="scenario/boot-verification.js
 scenario/harmony-session-live-read.js
 scenario/harmony-composer-live-write.js
 scenario/manager-legs-probe.js
+scenario/probe-respond-await.js
 scenario/mic-plane.js
 upstream/boot.js
 upstream/wire-logger.js

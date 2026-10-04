@@ -104,6 +104,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/harmony-session-live-read.js',
   'scenario/llm-live-stream.js',
   'scenario/manager-legs-probe.js',
+  'scenario/probe-respond-await.js',
   'scenario/mic-plane.js',
   'scenario/officialweb-web-live.js',
   'scenario/parity-projector.js',
