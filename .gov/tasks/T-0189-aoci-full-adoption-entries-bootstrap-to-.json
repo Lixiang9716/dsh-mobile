@@ -13,7 +13,7 @@
     "[x] Entries bootstrap: all batches applied to remaining=0",
     "[x] aggregate verify + check clean; guide closure stage reached",
     "[x] full integration: hooks/ai/ui/cognition wired and healthy",
-    "landed via PR with green gates; card closed"
+    "[x] landed via PR with green gates; card closed"
   ],
   "status": "open",
   "receipt": null,
