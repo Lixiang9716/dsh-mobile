@@ -77,3 +77,26 @@ for that job, introduced as development tooling (never a runtime dependency):
   existing breaks.
 - Whole-index delivery is budgeted at 200k target tokens
   (`cognition_budget.whole_index`), inside the configured caps.
+
+## Update (2026-10-04, later): ZCode hooks wired
+
+The bootstrap (T-0189, #365) completed the same day; afterwards the host
+lifecycle hooks were wired for ZCode, closing this note's one N/A:
+
+- **PreToolUse** (`Edit|Write|MultiEdit`) → `aoci hook pretool --stdin-json`:
+  before any tracked-file write, the target's Entry is injected as context
+  ("follow its constraints before changing"), or an un-indexed file gets a
+  record-it-after reminder. Non-blocking by default (`hook_strict: false`);
+  strict blocking stays a deliberate flip, not a default.
+- **SessionStart** → `aoci hook codex-compact`: hands every new session the
+  cognition-state mandate with a fresh `refresh_event_id`. ZCode has no
+  compaction event (its seven hook events lack one), so the managed block's
+  self-declared compaction reload remains the compaction path; this hook
+  covers the new-session case instead.
+
+Both are wired in `.zcode/config.json` (`hooks.enabled: true`) alongside the
+MCP server — machine-bound absolute paths, so the file stays gitignored like
+the MCP wiring above. Replicating on a new machine: install the binary at
+`~/tools/aoci/aoci`, then copy the `mcp` + `hooks` blocks and fix the paths.
+Verified end to end on the real index: aligned files inject (AGENTS.md,
+gateway.js), un-indexed files remind, exit codes 0 (non-blocking).
