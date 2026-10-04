@@ -87,6 +87,18 @@ runtime/spike/vendor/ensure-dsh.sh >/dev/null \
 if [ "$SCOPE" = full ]; then
     sh runtime/spike/vendor/ensure-dsh-tests.sh >/dev/null \
         || die "ensure-dsh-tests.sh is not idempotent"
+else
+    # 3b. the resolution layout from the closure alone (issue #328): the
+    # links that let the vendored families resolve bare specifiers are
+    # built by ci/parity-node-modules.sh — never by the ensure scripts
+    # before 2026-10-04, which is how a cold materialization shipped
+    # Cannot-find-package ×264 on main. The gate scope materializes no
+    # test faces, so it asserts the --parity-only shape builds; the full
+    # scope exercises the full layout through ensure-dsh-tests.sh (which
+    # now ends by rebuilding it) and asserts the named resolutions below.
+    sh runtime/spike/ci/parity-node-modules.sh --parity-only \
+        || die "parity-node-modules.sh --parity-only failed from a fresh clone"
+    say "resolution layout: --parity-only builds from the closure alone"
 fi
 
 # ---- 4. the pin tables describe the tree ------------------------------------
@@ -136,6 +148,15 @@ if [ "$SCOPE" = full ]; then
                 || die "test npm row $name@$ver: $stamp missing or does not name the pinned sha"
         done
     say "test assets: codeload + $TNPM_ROWS ensure_npm rows verified"
+
+    # 4c-bis. the resolution layout serves the named faces (issue #328): the
+    # raw vitest face's Cannot-find-package cluster must stay at zero on a
+    # cold materialization. #327's after-numbers were measured on a tree
+    # where the layout had been built by hand; this is the assertion that a
+    # FRESH one resolves them — the gate leg the issue asked for.
+    node runtime/spike/ci/check-parity-resolution.mjs \
+        || die "the materialized layout does not resolve the #328 named specifiers"
+    say "resolution: the #328 named specifiers resolve (check-parity-resolution)"
 fi
 
 # 4d. the engines (ensure.sh -> quickjs-ng/wasm3/zstd): the exact artifacts
