@@ -32,21 +32,32 @@ export const anchorModelPath = (path, root) =>
     ? `${root}/${path}`
     : path;
 
-/** Apply a vendored tool plugin with its registrations' `execute` wrapped so
- * the model-supplied `path` argument arrives anchored at `root` (see
- * anchorModelPath). The scope proxy delegates every context face to the real
- * cordis scope; only `tools.register` is intercepted, and only this plugin's
- * registrations flow through it (the vendored apply registers exactly one
- * tool). The wrapped call still runs the vendored execute — argument
- * validation included — on the anchored args. */
-export const applyWithAnchoredModelPaths = (scope, plugin, root) => {
-  const anchored = Object.create(scope);
-  anchored.tools = {
-    register: (tool) => scope.tools.register({
-      ...tool,
-      execute: (args, exec) => tool.execute(
-        { ...args, path: anchorModelPath(args?.path, root) }, exec),
-    }),
-  };
-  return plugin.apply(anchored, {});
-};
+/** The cordis plugin boot.js mounts in the vendored editor's place: same
+ * name and inject rows (the fiber identity the mount order and inventory
+ * read), an apply that hands the vendored apply a PLAIN registration
+ * delegate wrapping each registered tool's `execute` so the model-supplied
+ * `path` arrives anchored (see anchorModelPath); the vendored execute —
+ * argument validation included — still runs on the anchored args.
+ *
+ * The delegate is deliberately NOT derived from the cordis scope: a context
+ * object rejects service-property writes from another fiber (`cannot set
+ * property "tools" in multiple fibers`, measured by the iOS e2e on the
+ * first push), and the vendored apply + handlers touch exactly tools.register
+ * / fs / get / emit (the fs/observed events) — the faces the delegate serves
+ * from the real scope. */
+export const anchoredEditorPlugin = (plugin, root) => ({
+  name: plugin.name,
+  inject: plugin.inject,
+  apply: (scope) => plugin.apply({
+    tools: {
+      register: (tool) => scope.tools.register({
+        ...tool,
+        execute: (args, exec) => tool.execute(
+          { ...args, path: anchorModelPath(args?.path, root) }, exec),
+      }),
+    },
+    fs: scope.fs,
+    get: (key) => scope.get(key),
+    emit: (...argv) => scope.emit(...argv),
+  }, {}),
+});

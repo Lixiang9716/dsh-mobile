@@ -1,5 +1,6 @@
 # The editor tool face resolves in-root relative spellings like the read face
 
+Status: implemented
 Date: 2026-10-05
 Round: loop-z3 (r17 battery follow-up), card T-0200
 
@@ -58,13 +59,17 @@ existence second, matching how the read face already behaves:
   root verbatim (physical `..` kept — the exact absolute-`..` shape the r16
   battery proved resolving); absolute spellings pass byte-identical; empty
   inputs pass through so the vendored empty-path answer stands.
-  `applyWithAnchoredModelPaths(scope, plugin, root)` registers the vendored
-  plugin through an `Object.create(scope)` proxy whose only override is
-  `tools.register`, wrapping `execute` to anchor `args.path` — the vendored
-  execute (argument validation included) still runs.
-- `boot.js mountFileTools` mounts the editor through an inline cordis plugin
-  (`name`/`inject` preserved) that calls the seam; the read face and every
-  other tool row are untouched.
+  `anchoredEditorPlugin(plugin, root)` is the cordis plugin boot.js mounts
+  in the vendored one's place (same `name`/`inject`): its apply hands the
+  vendored apply a PLAIN registration delegate serving exactly the three
+  faces the vendored apply touches (`tools.register` with the execute wrap,
+  `fs`, `get`). The first push tried an `Object.create(scope)` proxy with a
+  `tools` own-property — cordis contexts reject service-property writes from
+  another fiber (`cannot set property "tools" in multiple fibers`, measured
+  by the iOS e2e) — the delegate makes the interception a plain object and
+  the wrap never writes a cordis context.
+- `boot.js mountFileTools` mounts the editor through the seam plugin; the
+  read face and every other tool row are untouched.
 - The misleading "maybe you meant /X" branch is unreachable for model input
   (no suggestion is the ask's second accepted arm). A relative spelling that
   climbs OUT of the root (e.g. `../../../../etc/passwd`) anchors first and
@@ -110,5 +115,11 @@ existence second, matching how the read face already behaves:
 - The vendored gate stays upstream-verbatim; if upstream later accepts
   relative paths itself, the anchor becomes a no-op for absolute inputs and
   can be dropped in one place.
+- Intercepting a vendored plugin's registration on a cordis context must go
+  through a plain delegate, never a derived context object — cordis's
+  service-property write guard (`cannot set property ... in multiple
+  fibers`) fires only where a real service scope exists, which the panel's
+  plain-ctx harness cannot reproduce; the device e2e is the face that
+  catches it.
 - The panel tool-face harness now drives the real vendored tool packages
   (loader map rows + stubs), available to future rounds.

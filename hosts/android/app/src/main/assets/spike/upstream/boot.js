@@ -102,7 +102,6 @@ import * as PluginManagerTools from 'system-plugins/dsh-plugin-manager-tools/ind
 // the bridge exists (measured 2026-09-22).
 import 'upstream/shims/npm-bridges.js';
 import { mountWorkspace } from 'upstream/shims/fs.js';
-import { applyWithAnchoredModelPaths } from 'upstream/tool-path-anchor.js';
 // The Agent 预设 panel's data source (contract parity with the desktop shell):
 // the REAL upstream services, verbatim — the cordis Loader service (which the
 // presets service `inject`s) and the agent-presets roster over the four shipped
@@ -227,12 +226,7 @@ export const spineInventory = (ctx) => {
 
 /** The FILE-TOOLS row's mounts (see the import note at the top of this
  * file): the workspace world, the vendored fs-local backend as the `fs`
- * service, and the file tools into the REAL ToolRuntime. The editor mounts
- * through the loop-z3 path anchor: its model-supplied `path` arrives at the
- * vendored absolute-path gate already workspace-root-anchored, so in-root
- * relative spellings resolve like the read face and the gate's device-root
- * "maybe you meant /X" suggestion stays unreachable (see
- * tool-path-anchor.js). */
+ * service, the file tools into the REAL ToolRuntime (editor via the loop-z3 path anchor). */
 const mountFileTools = async (ctx, cwd) => {
   mountWorkspace(cwd);
   const [{ LocalFileSystem }, ToolFs, StrReplaceEditor] = await Promise.all([
@@ -242,11 +236,7 @@ const mountFileTools = async (ctx, cwd) => {
   ]);
   await ctx.plugin(LocalFileSystem, { cwd });
   await ctx.plugin(ToolFs, {});
-  await ctx.plugin({
-    name: StrReplaceEditor.name,
-    inject: StrReplaceEditor.inject,
-    apply: (scope) => applyWithAnchoredModelPaths(scope, StrReplaceEditor, cwd),
-  }, {});
+  await ctx.plugin((await import('upstream/tool-path-anchor.js')).anchoredEditorPlugin(StrReplaceEditor, cwd), {});
 };
 
 /** The SKILL row (2026-09-23, the agent-flow E2E): the upstream skill family

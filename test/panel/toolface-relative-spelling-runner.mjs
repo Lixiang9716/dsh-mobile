@@ -27,7 +27,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
-import { applyWithAnchoredModelPaths } from '../../runtime/spike/upstream/tool-path-anchor.js';
+import { anchoredEditorPlugin } from '../../runtime/spike/upstream/tool-path-anchor.js';
 
 const { LocalFileSystem } = await import('@deepseek-ai/dsh-fs-local');
 const ToolFs = await import('@deepseek-ai/dsh-tool-fs');
@@ -98,10 +98,10 @@ const ctx = {
   tools: { register: (tool) => registered.push(tool) },
 };
 await ToolFs.apply(ctx, { readLimit: 2000, readMaxLineLength: 2000, readMaxBytes: 52428800, readStreamMinSize: 10485760 });
-// The PRODUCTION registration seam (boot.js mountFileTools) — not a test
-// double: the editor's execute reaches the vendored handler with the path
-// anchored at the mounted workspace root.
-await applyWithAnchoredModelPaths(ctx, StrReplaceEditor, root);
+// The PRODUCTION registration seam (boot.js mounts the same plugin object
+// via ctx.plugin) — not a test double: the editor's execute reaches the
+// vendored handler with the path anchored at the mounted workspace root.
+await anchoredEditorPlugin(StrReplaceEditor, root).apply(ctx);
 
 const readTool = registered.find((t) => t.name === 'read');
 const editor = registered.find((t) => t.name === 'str_replace_editor');
