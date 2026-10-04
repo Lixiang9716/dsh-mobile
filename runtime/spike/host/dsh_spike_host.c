@@ -2205,6 +2205,41 @@ static JSValue js_proc_read_real(JSContext *ctx, JSValueConst this_val, int argc
     return res;
 }
 
+/* __dshProcReaddirReal(path) → [name,...] | null: one REAL directory listing
+ * for the fs shim's real-disk readdir fallback (loop-p: directories the
+ * write-through mirror materialized — plugin installs, persisted workspace
+ * trees — exist on the disk the seam's children read, but the served VFS
+ * view lists only registered entries, so the model's str_replace_editor
+ * view of a real directory answered not-found). Names only, "." and ".."
+ * skipped, capped defensively; the caller sorts and shapes. */
+static JSValue js_proc_readdir_real(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+    (void)this_val;
+    if (argc < 1 || !JS_IsString(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcReaddirReal needs a path");
+    const char *path = JS_ToCString(ctx, argv[0]);
+    if (!path) return JS_EXCEPTION;
+    DIR *d = opendir(path);
+    JS_FreeCString(ctx, path);
+    if (!d) return JS_NULL;
+    JSValue arr = JS_NewArray(ctx);
+    if (JS_IsException(arr)) { closedir(d); return JS_EXCEPTION; }
+    struct dirent *ent;
+    uint32_t n = 0;
+    while ((ent = readdir(d)) != NULL) {
+        if (strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0) continue;
+        JSValue name = JS_NewStringLen(ctx, ent->d_name, strlen(ent->d_name));
+        if (JS_IsException(name) ||
+            JS_DefinePropertyValueUint32(ctx, arr, n++, name, JS_PROP_C_W_E) < 0) {
+            JS_FreeValue(ctx, name);
+            JS_FreeValue(ctx, arr);
+            closedir(d);
+            return JS_EXCEPTION;
+        }
+        if (n == 8192) break; /* defensive cap: no workspace level is this wide */
+    }
+    closedir(d);
+    return arr;
+}
+
 /* __dshProcMkdirReal(path) → bool: recursive real-disk mkdir. The
  * workspace VFS mirrors the (real) profile container in memory only;
  * directories the parent creates so a CHILD can write into them must
@@ -3811,6 +3846,8 @@ static void dsh_bind_globals(dsh_spike_t *s) {
 #endif
     JS_SetPropertyStr(ctx, global, "__dshProcReadReal",
                       JS_NewCFunction(ctx, js_proc_read_real, "__dshProcReadReal", 1));
+    JS_SetPropertyStr(ctx, global, "__dshProcReaddirReal",
+                      JS_NewCFunction(ctx, js_proc_readdir_real, "__dshProcReaddirReal", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcMkdirReal",
                       JS_NewCFunction(ctx, js_proc_mkdir_real, "__dshProcMkdirReal", 1));
     JS_SetPropertyStr(ctx, global, "__dshProcWriteFileReal",

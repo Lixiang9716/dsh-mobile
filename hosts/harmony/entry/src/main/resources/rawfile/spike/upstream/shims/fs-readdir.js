@@ -77,15 +77,29 @@ const listNames = (names, basePath, withFileTypes) => {
   return names;
 };
 
-/** The real-disk readdir fallback (module level for size; W6-V): a REAL
- * directory (the leg's staged fixtures tree, a child's scratch dir) lists
- * through the subprocess seam. Runs after every served view declined (and
- * after the in-root file check — staged real dirs live under the root). */
-const readdirRealFallback = (canonical, options) => {
-  if (typeof canonical !== 'string' || !canonical.startsWith('/')) return null;
+/** The real directory names at `canonical` when the real-disk seam sees a
+ * directory there, else null. The C host's seam (names only, "."/".."
+ * skipped) is the device face; the subprocess seam's find covers the suite
+ * leg. Sorted; the callers union/shape. */
+const realDirNames = (canonical) => {
   const real = globalThis.__dshProcStatReal?.(canonical);
   if (real?.isDirectory !== true) return null;
-  const names = realReaddirNames(canonical);
+  const names = globalThis.__dshProcReaddirReal?.(canonical)
+    ?? realReaddirNames(canonical);
+  if (names === null || !Array.isArray(names)) return null;
+  return [...new Set(names)].sort();
+};
+
+/** The real-disk readdir fallback (module level for size; W6-V): a REAL
+ * directory (the leg's staged fixtures tree, a child's scratch dir, a
+ * write-through-mirrored plugin tree) lists through the C host's readdir
+ * seam when mounted (every device seat, loop-p: the model's view of a real
+ * workspace directory answered not-found because this fallback needed the
+ * desktop-only subprocess namespace), else through the subprocess seam's
+ * find (the suite leg pins the namespace early). */
+const readdirRealFallback = (canonical, options) => {
+  if (typeof canonical !== 'string' || !canonical.startsWith('/')) return null;
+  const names = realDirNames(canonical);
   if (names === null) return null;
   return listNames(names, canonical, options?.withFileTypes === true);
 };
@@ -96,7 +110,19 @@ export const readdirSync = (path, options) => {
   // for readdir; measured 2026-09-27: the skill-filesystem suite publishes
   // skills linked as whole directories).
   const wsNames = wsReaddirAt(resolveWorkspaceSymlink(canonical));
-  if (wsNames !== null) return listNames(wsNames, canonical, options?.withFileTypes === true);
+  if (wsNames !== null) {
+    // The served view is the world of record for its REGISTERED entries,
+    // but the workspace root is a REAL directory: trees the write-through
+    // mirror materialized — or a previous run persisted — exist on the disk
+    // without registration, and the model's inventory must see them
+    // (loop-p: `plugins/<name>` listed not-found while its files read
+    // fine). Union, don't replace: registered entries the mirror has not
+    // flushed (state-only rows) must survive the merge.
+    const real = realDirNames(canonical);
+    if (real === null) return listNames(wsNames, canonical, options?.withFileTypes === true);
+    const merged = [...new Set([...wsNames, ...real])].sort();
+    return listNames(merged, canonical, options?.withFileTypes === true);
+  }
   const names = vfsReaddir(path);
   if (names !== null) {
     return listNames(names, typeof path === 'string' ? path : `${path}`, options?.withFileTypes === true);
