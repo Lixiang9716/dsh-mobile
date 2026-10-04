@@ -1,0 +1,21 @@
+{
+  "title": "loop-q: the settings probes' claimed handler never answers \u2014 the probe waiter starves embedder-backed settles",
+  "created": "2026-10-04T10:58:00+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] diagnose the probe path and the no-respond root cause with lines (awaitRespond microtask spin vs looper-queued gateway settle; #334 added the gateway await)",
+    "[x] fix: the probe waiter yields to the host (timer seam) with a wall-clock deadline; fail() once-only in the scenario; SessionServe.fail once-only (storm dampener)",
+    "[x] panel cases pin the inventory handler's union shape and the awaiter's wait/timeout semantics",
+    "[x] closures synced, scoped gates green, Agent Note landed",
+    "PR merged squash, main green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0189"
+}

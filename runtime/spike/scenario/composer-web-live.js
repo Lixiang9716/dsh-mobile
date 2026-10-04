@@ -30,6 +30,7 @@ import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
 import { writeSurfaceOptions } from 'scenario/write-surface-options.js';
 import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
+import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -60,7 +61,15 @@ const log = createLogger('b4.web');
 
 
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
+/** One verdict per scenario: the completion is terminal, and the embedder
+ * re-reports a completed-fail on every later bus crossing (dsh_spike_m4.c
+ * m4_status reads the sticky completed flag) — a second __dshComplete only
+ * multiplies the FAIL lines, never the facts (loop-q: the demand throw rode
+ * main().catch(fail) into a second emission, doubling the storm). */
+let scenarioFailed = false;
 const fail = (reason) => {
+  if (scenarioFailed) return;
+  scenarioFailed = true;
   const error = reason instanceof Error ? reason : null;
   const message = error ? error.message : String(reason);
   const withStack = error?.stack
@@ -260,17 +269,28 @@ const SETTINGS_PROBES = [
   { rpcId: 'probe/agentPresets-list-1', endpoint: 'agentPresets/list' },
   { rpcId: 'probe/pluginInventory-list-1', endpoint: 'pluginInventory/list' },
   { rpcId: 'probe/pluginManager-listBundles-1', endpoint: 'pluginManager/listBundles' },
+  // The manager-legs probe (scenario/manager-legs-probe.js) awaits this one
+  // — a probe that is awaited but never dispatched waits for a respond no
+  // handler will ever post (loop-q: the deadline named it on the first
+  // honest re-drive).
+  { rpcId: 'probe/pluginManager-listPlugins-1', endpoint: 'pluginManager/listPlugins' },
 ];
 
-const awaitRespond = async (rpcId) => {
-  let guard = 0;
-  while (!posted.some((f) => f.type === 'api.respond' && f.rpcId === rpcId) && guard++ < 10000) {
-    await Promise.resolve();
+/** The probe legs' shared response waiter (scenario/probe-respond-await.js,
+ * loop-q): each poll tick is a minimal gateway call whose settle queues on
+ * the runtime looper right behind the settles being awaited — awaiting it
+ * hands the looper its turn, so a claimed handler whose answer rides the
+ * gateway (the 插件 inventory's workspace tier since #334) settles instead
+ * of starving; the deadline keeps a genuinely dead handler fail-loud. */
+const yieldToHostLooper = async () => {
+  const gw = await import('gateway.js');
+  try {
+    await gw.fsStat('app', 'probe.txt');
+  } catch {
+    // denied/unavailable IS a settle — the looper turn is the point.
   }
-  const respond = posted.find((f) => f.type === 'api.respond' && f.rpcId === rpcId);
-  demand(respond !== undefined, `no api.respond for the ${rpcId} probe`);
-  return respond.result;
 };
+const awaitRespond = makeProbeAwaiter({ frames: posted, fail, yieldTurn: yieldToHostLooper });
 
 const probeSettingsRoster = async () => {
   log.debug('settings probes begin', {});

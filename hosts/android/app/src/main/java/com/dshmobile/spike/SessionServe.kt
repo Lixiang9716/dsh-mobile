@@ -465,6 +465,8 @@ class SessionServe private constructor(
     }
 
     private fun fail(message: String) {
+        // One verdict: a completed-fail is re-reported per crossing (loop-q storm).
+        if (runtimeFailed) return
         runtimeFailed = true
         Log.i(TAG, "FAIL $message")
         onRuntimeFailure?.invoke(message)
