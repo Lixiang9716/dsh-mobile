@@ -1,0 +1,21 @@
+{
+  "title": "loop-v2: the read tool's outside-root answers are inverted on the tool face \u2014 existing outside dir answers bare FS_NOT_REGULAR_FILE, absent outside path answers the anchor",
+  "created": "2026-10-04T20:32:42+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] diagnosis with file:line: tool face composes ctx.fs.resolve+stat (vendored tool-fs lib/index.js:266-278) over the shim faces; fs-stat.js statRealFallback answered outside-root paths and vfsRealpath anchored absent ones",
+    "[x] fix: statSync refuses outside-root paths the host holds with the #358 anchor (before any caller type check); vfsRealpath answers absent outside paths with node ENOENT; inside-root unchanged",
+    "[x] tool-face-level panel pin: vendored fs-local driven in a child process with the device loader map (a: anchor with root+maybe-you-mean+node fields; b: resolve ok + stat absent; c: inside-root dir answers and lists)",
+    "[x] shim-face pins: statSync anchor/absence/inside-root in the loop-v2 suite; loop-w realpath-absent pin flipped to ENOENT honestly",
+    "full panel suite green (236/236 x2); closures synced android+harmony; CI gates green on the PR"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0198"
+}

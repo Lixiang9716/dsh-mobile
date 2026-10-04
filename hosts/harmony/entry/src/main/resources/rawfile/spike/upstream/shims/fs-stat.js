@@ -17,6 +17,7 @@ import {
 import { underVFS, vfs, enoent, constants, readAnyBytes, asFsPath } from 'upstream/shims/fs.js';
 import { resolveWorkspaceSymlink, workspaceSymlinkTarget, vfsRealpath } from 'upstream/shims/fs-paths.js';
 import { vfsReaddir } from 'upstream/shims/fs-readdir.js';
+import { realSeamInsideRoot, wsOutsideRootError } from 'upstream/shims/fs-seam-gate.js';
 
 const statSeededVfs = (path, files, bigint) => {
   const seeded = files.get(path);
@@ -114,7 +115,23 @@ export const statSync = (path, options = {}) => {
   // containment walk stats candidate roots that were never staged and
   // classifies the ENOENT itself; the loud refusal broke that classification).
   const real = statRealFallback(path, options);
-  if (real !== null) return real;
+  if (real !== null) {
+    // loop-v2 (2026-10-05): the real-disk stat face holds the same boundary
+    // the read fallbacks drew (loop-r). An OUTSIDE-root path the host disk
+    // actually holds refuses with the #358 anchor HERE — before the caller's
+    // own type checks. The 2026-10-05 battery measured the gap on the tool
+    // face: the model's read of the real directory /system/app got this
+    // face's `directory` answer, fell through to tool-fs's own is-regular-
+    // file pre-check (resolveRegularReadTarget, vendored tool-fs
+    // lib/index.js:273) and answered the bare FS_NOT_REGULAR_FILE with no
+    // root, no maybe-you-mean — while an absent outside path took the
+    // anchor at realpath. Same seam, same order as the read faces: the
+    // anchor for what the host holds, node-ENOENT for what it doesn't
+    // (the arms below). Inside the root the real answer stands unchanged
+    // (the W6-V real-only children: sqlite -wal sidecars et al.).
+    if (!realSeamInsideRoot(canonical)) throw wsOutsideRootError('stat', canonical);
+    return real;
+  }
   if (wsAt(canonical) !== null) throw enoent('stat', canonical);
   throw enoent('stat', typeof path === 'string' ? path : String(path));
 };
