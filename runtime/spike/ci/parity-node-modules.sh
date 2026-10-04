@@ -38,22 +38,42 @@ done
 
 mkdir -p "$SCOPE"
 
-# Every vendored dsh package, symlinked under its real npm name.
-for dir in "$VENDOR"/dsh/*/; do
-    name="$(node -e "console.log(require('${dir}package.json').name)")"
-    link="$SCOPE/${name#@deepseek-ai/}"
-    mkdir -p "$(dirname "$link")"
-    ln -sfn "$dir" "$link"
-done
+# Every vendored dsh package, symlinked under its real npm name. The closure
+# tree is ensure-dsh.sh's product; a tests-only materialization
+# (ensure-dsh-tests.sh standalone) legitimately lacks it — the notice names
+# the absent face instead of leaving a silent half-layout (#328).
+if [ -d "$VENDOR/dsh" ]; then
+    for dir in "$VENDOR"/dsh/*/; do
+        name="$(node -e "console.log(require('${dir}package.json').name)")"
+        link="$SCOPE/${name#@deepseek-ai/}"
+        mkdir -p "$(dirname "$link")"
+        ln -sfn "$dir" "$link"
+    done
+else
+    echo "parity node_modules: vendor/dsh absent (tests-only materialization) — the closure face is not linked; run ensure-dsh.sh for the parity spine" >&2
+fi
 
-# The vendored npm dependencies (cordis and friends), same treatment.
-ln -sfn "$VENDOR/npm/cordis@4.0.2" "$SCOPE/cordis"
-ln -sfn "$VENDOR/npm/cosmokit@1.8.3" "$SCOPE/cosmokit"
-ln -sfn "$VENDOR/npm/schemastery@3.18.2" "$SCOPE/schemastery"
-ln -sfn "$VENDOR/npm/@deepseek-ai/cordis-plugin-loader@1.0.3" "$SCOPE/cordis-plugin-loader"
-ln -sfn "$VENDOR/npm/@deepseek-ai/cordis-plugin-include@1.0.7" "$SCOPE/cordis-plugin-include"
-ln -sfn "$VENDOR/npm/zod@4.4.3" "$NM/zod"
-ln -sfn "$VENDOR/npm/diff@9.0.0" "$NM/diff"
+# The vendored npm dependencies (cordis and friends), same treatment. Each of
+# these links CLAIMS its name at the scope level, so a face the tree does not
+# carry must leave the name UNLINKED — a dangling claim would silently block
+# the test-face loop below from ever linking a later pin of the same name
+# (the #328 rot, one level up).
+link_named() { # link_named <target-dir> <name>
+    [ -d "$1" ] || { echo "parity node_modules: face absent, name left unlinked: $2 (target $1 missing)" >&2; return 0; }
+    ln -sfn "$1" "$SCOPE/$2"
+}
+link_named "$VENDOR/npm/cordis@4.0.2" cordis
+link_named "$VENDOR/npm/cosmokit@1.8.3" cosmokit
+link_named "$VENDOR/npm/schemastery@3.18.2" schemastery
+link_named "$VENDOR/npm/@deepseek-ai/cordis-plugin-loader@1.0.3" cordis-plugin-loader
+link_named "$VENDOR/npm/@deepseek-ai/cordis-plugin-include@1.0.7" cordis-plugin-include
+# Unscoped names land at the node_modules top level — same claim discipline.
+link_named_top() { # link_named_top <target-dir> <name>
+    [ -d "$1" ] || { echo "parity node_modules: face absent, name left unlinked: $2 (target $1 missing)" >&2; return 0; }
+    ln -sfn "$1" "$NM/$2"
+}
+link_named_top "$VENDOR/npm/zod@4.4.3" zod
+link_named_top "$VENDOR/npm/diff@9.0.0" diff
 
 # The upstream test-support vehicles (same version as the closure; the
 # full-suite run resolves them like any vendored package). Linked by their
@@ -99,6 +119,13 @@ for dir in "$VENDOR"/npm/*/ "$VENDOR"/npm/@*/*/; do
     [ -f "${dir}package.json" ] || continue
     name="$(node -e "console.log(require('${dir}package.json').name)")"
     link="$NM/$name"
+    # A link whose target vanished (a re-pin moved the version dir, a row
+    # was dropped) is STALE, not present — rule 5: present-but-stale must
+    # refresh. The old skip kept every such name claimed by a dead target
+    # until someone wiped the whole layout by hand (the #328 rot).
+    if [ -L "$link" ] && [ ! -e "$link" ]; then
+        rm -f "$link"
+    fi
     # Already linked (product face above, or an explicit staged choice here).
     if [ -e "$link" ] || [ -L "$link" ]; then
         continue
@@ -132,9 +159,24 @@ stage_nested "$TESTS/packages/settings/settings-file/node_modules" chokidar "$VE
 stage_nested "$TESTS/packages/credentials/credentials-local/node_modules" chokidar "$VENDOR/npm/chokidar@4.0.3"
 stage_nested "$TESTS/packages/skill/skill-filesystem/node_modules" chokidar "$VENDOR/npm/chokidar@5.0.0"
 stage_nested "$TESTS/packages/experimental/webworker-runtime/node_modules" chokidar "$VENDOR/npm/chokidar@5.0.0"
-stage_nested "$VENDOR/dsh/dsh-settings-file@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@4.0.3"
-stage_nested "$VENDOR/dsh/dsh-credentials-local@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@4.0.3"
-stage_nested "$VENDOR/dsh/skill-filesystem@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@5.0.0"
+# The three seats whose CONSUMER lives in vendor/dsh/ exist only when
+# ensure-dsh.sh ran; a tests-only materialization has no closure face to
+# stage into — named, not silently skipped, and no dangling claim (#328).
+if [ -d "$VENDOR/dsh/dsh-settings-file@0.1.6-alpha.2" ]; then
+    stage_nested "$VENDOR/dsh/dsh-settings-file@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@4.0.3"
+else
+    echo "parity node_modules: vendor/dsh/dsh-settings-file@0.1.6-alpha.2 absent — its chokidar seat is not staged" >&2
+fi
+if [ -d "$VENDOR/dsh/dsh-credentials-local@0.1.6-alpha.2" ]; then
+    stage_nested "$VENDOR/dsh/dsh-credentials-local@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@4.0.3"
+else
+    echo "parity node_modules: vendor/dsh/dsh-credentials-local@0.1.6-alpha.2 absent — its chokidar seat is not staged" >&2
+fi
+if [ -d "$VENDOR/dsh/skill-filesystem@0.1.6-alpha.2" ]; then
+    stage_nested "$VENDOR/dsh/skill-filesystem@0.1.6-alpha.2/node_modules" chokidar "$VENDOR/npm/chokidar@5.0.0"
+else
+    echo "parity node_modules: vendor/dsh/skill-filesystem@0.1.6-alpha.2 absent — its chokidar seat is not staged" >&2
+fi
 stage_nested "$VENDOR/npm/chokidar@4.0.3/node_modules" readdirp "$VENDOR/npm/readdirp@4.1.2"
 stage_nested "$VENDOR/npm/chokidar@5.0.0/node_modules" readdirp "$VENDOR/npm/readdirp@5.0.0"
 # compression@1.8.1 (webserver middleware) froze negotiator ~0.6 while the

@@ -565,4 +565,15 @@ ensure_npm "dsh-workspace-changes" "0.1.6-alpha.2" "187830ec4f96e7f024263668729b
 ensure_npm "dsh-lazy-require" "0.1.6-alpha.2" "2c77249d5b51df9453b0c2a9665a639d89f062fee4cec7c3b228531b8b3d36a1"
 ensure_npm "dsh-session-format-v2-to-v3" "0.1.6-alpha.2" "b488cb16ecae0128f023f985bdc66423f17e6de285d15c60b44ce370d2ef83b6"
 
+# The Node resolution layout (issue #328, 2026-10-04): the links that let the
+# vendored families resolve bare specifiers exist ONLY in
+# ci/parity-node-modules.sh, and no refresh path ran it — #327's after-numbers
+# were measured on a tree where it had been built by hand, so every cold
+# re-materialization shipped the Cannot-find-package cluster (js-yaml ×63,
+# tsx ×34, flock ×24, chokidar ×16, @agentclientprotocol/sdk ×10). End by
+# rebuilding the layout: idempotent, and it refreshes links a re-pin left
+# dangling.
+sh ../ci/parity-node-modules.sh \
+    || { echo "vendor: parity-node-modules.sh FAILED — the test faces would not resolve" >&2; exit 1; }
+
 echo "vendor: upstream test assets ready"

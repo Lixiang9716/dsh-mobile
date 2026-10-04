@@ -1,0 +1,21 @@
+{
+  "title": "Flywheel round 2 (fix half): #328 the npm-family resolution layout never materializes \u2014 no refresh path builds it, and stale links never refresh",
+  "created": "2026-10-04T03:40:56+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] diagnose: which step creates the npm-family nested links, why the refresh paths miss it, what rots on re-pin",
+    "[x] fix: ensure-dsh-tests.sh ends by rebuilding the layout; parity-node-modules.sh refreshes dangling links and stops absent faces from claiming names",
+    "[x] gate assertion: check-parity-resolution.mjs resolves the #328 named specifiers; wired into reproducibility-proof.sh (gate smoke + full assert)",
+    "verify: live bug probe before, resolution check after, full fresh-clone proof green, test/panel/run.sh green",
+    "land: agent note + commit + push + PR + green checks + squash merge + queue fixed line + main synced"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0180"
+}
