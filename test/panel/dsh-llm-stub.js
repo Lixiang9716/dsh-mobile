@@ -28,8 +28,13 @@ export const errorChain = (error) => {
 // HarnessError, LlmError, LlmAdapter, attribution, call-config).
 
 /** The vendored HarnessError base: `code` beside the message, standard
- * ErrorOptions cause chaining, name = the concrete class. */
-class HarnessError extends Error {
+ * ErrorOptions cause chaining, name = the concrete class. Exported since
+ * loop-v2: the vendored @deepseek-ai/dsh-fs extends it (its FsError:
+ * `super(message, code, options)` then `this.code = code`) — the tool-face
+ * suite drives the vendored fs-local, whose module graph loads dsh-fs at
+ * import time, and this stand-in keeps that graph loadable without the full
+ * dsh-llm package (zod + schemastery). */
+export class HarnessError extends Error {
     constructor(message, code, options) {
         super(message, options);
         this.code = code;

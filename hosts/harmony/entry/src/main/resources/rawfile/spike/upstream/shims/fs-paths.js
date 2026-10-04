@@ -13,7 +13,6 @@ import {
   wsFileAt,
   wsIsDirAt,
   wsReadlinkAt,
-  wsRootHint,
   resolveSymlinkAt,
 } from 'upstream/shims/fs-workspace.js';
 import { DshBuffer } from 'upstream/shims/buffer.js';
@@ -55,25 +54,21 @@ export const workspaceSymlinkTarget = (path) => {
   return wsReadlinkAt(lexical(path));
 };
 
-const outsideEveryView = (path) => {
-  const error = new Error(
-    `node:fs: path '${path}' is outside the writable workspace root and every staged read-only view `
-    + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `
-    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)${wsRootHint(path)}`);
-  error.code = 'EACCES';
-  // loop-w: one refusal shape with fs-seam-gate's wsOutsideRootError — the
-  // node-complete fields ride every outside-root refusal (the sole caller
-  // is vfsRealpath, hence the syscall).
-  error.errno = -13;
-  error.syscall = 'realpath';
-  error.path = path;
-  return error;
-};
-
 /** The canonical spelling of an existing staged/workspace path; ENOENT
  * otherwise. Workspace paths resolve ONE symlink hop first (the realpath
  * contract; the seeded views carry no symlinks) — which is what the vendored
- * fs-local uses as its stable target key. */
+ * fs-local uses as its stable target key.
+ *
+ * loop-v2 (2026-10-05): the outside arm's seam-MISS throws node ENOENT, not
+ * the anchor — an outside-root path the host does NOT hold is ABSENT, the
+ * #373 absence symmetry the read faces already hold. The pre-fix anchor here
+ * produced the field inversion the battery measured: the absent outside path
+ * answered the full anchor (this face) while the EXISTING outside directory
+ * answered a bare not-a-regular-file (the stat face's answer fell through to
+ * tool-fs's own pre-check) — exactly backwards. fs-local's resolve
+ * classifies this ENOENT and walks the ancestors, landing the caller on the
+ * stat face, which now refuses what the host holds (fs-stat.js) and keeps
+ * absence node-shaped. */
 export const vfsRealpath = (path) => {
   if (typeof path !== 'string') throw new TypeError(`node:fs.realpath: path must be a string, got ${typeof path}`);
   const canonical = path.startsWith('/') ? lexical(path) : path;
@@ -99,11 +94,15 @@ export const vfsRealpath = (path) => {
     // lexical path (the C seam's stat already passed for statSync) — answer
     // the canonical spelling instead of ENOENT/OUTSIDE-EVERY-VIEW so the
     // vendored realPath-canonicalization walks (typert analyzer) proceed.
+    // The answering arm is also what keeps fs-local's ENOENT ancestor walk
+    // working when the walk's parent is an outside-root real directory.
     const map = globalThis.__dshFlatPathMap;
     const mapped = typeof map === 'function' ? map(canonical) : undefined;
     const real = globalThis.__dshProcStatReal?.(typeof mapped === 'string' ? mapped : canonical);
     if (real?.isFile === true || real?.isDirectory === true) return canonical;
-    throw outsideEveryView(canonical);
+    // loop-v2: the seam miss is ABSENCE — node ENOENT, not the anchor (see
+    // the vfsRealpath docblock; the stat face anchors what the host holds).
+    throw enoent('realpath', canonical);
   }
   // The workspace view knows an ANCESTOR but not this entry (the real-only
   // children case above) — same real-disk answer before the ENOENT.

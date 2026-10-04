@@ -30,6 +30,30 @@ export default defineConfig({
       // the vendored package needs zod + schemastery (outside the suite's
       // provisioned deps), so the alias doubles it (dsh-tools-stub's rule).
       { find: '@deepseek-ai/dsh-llm', replacement: fileURLToPath(new URL('./dsh-llm-stub.js', import.meta.url)) },
+      // loop-v2's tool-face suite drives the vendored fs-local (the `fs`
+      // service backend) over the shims; the package graph is the pinned
+      // 0.1.6-alpha.2 closure the hosts ship (the tracked host copies the
+      // `closures` gate keeps in sync with canonical).
+      {
+        find: '@deepseek-ai/dsh-fs-local',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/dsh/fs-local@0.1.6-alpha.2/lib/index.js', import.meta.url)),
+      },
+      {
+        find: '@deepseek-ai/dsh-fs',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/dsh/fs@0.1.6-alpha.2/lib/index.js', import.meta.url)),
+      },
+      {
+        find: '@deepseek-ai/cordis',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/npm/cordis@4.0.2/lib/index.js', import.meta.url)),
+      },
+      {
+        find: '@deepseek-ai/schemastery',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/npm/schemastery@3.18.2/lib/index.mjs', import.meta.url)),
+      },
+      {
+        find: '@deepseek-ai/cosmokit',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/npm/cosmokit@1.8.3/lib/index.js', import.meta.url)),
+      },
       { find: 'gateway.js', replacement: fileURLToPath(new URL('./gateway-shim.js', import.meta.url)) },
       { find: '@deepseek-ai/dsh-tools', replacement: fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)) },
       { find: 'dsh:util-crypto', replacement: fileURLToPath(new URL('./util-crypto-shim.js', import.meta.url)) },

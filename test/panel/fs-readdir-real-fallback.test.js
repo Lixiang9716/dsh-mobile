@@ -319,17 +319,31 @@ describe('refusal spellings are lexical (loop-w)', () => {
 });
 
 describe('the outside-root refusal carries one shape (loop-w)', () => {
-  it('realpathSync outside-root absent path refuses with the anchor and the same node fields', () => {
+  // loop-v2 (2026-10-05) flipped this face: the pre-fix pin held the anchor
+  // (EACCES) for an outside-root ABSENT path — the other half of the field
+  // inversion (the tool face answered the anchor here while an EXISTING
+  // outside directory got a bare not-a-regular-file). Absence on every face
+  // now stays the node ENOENT the #373 symmetry standardised; the anchor
+  // moved to what the host actually holds (fs-stat.js's stat face; the read
+  // faces above keep theirs).
+  it('realpathSync outside-root absent path answers node-absence (ENOENT), not the anchor', () => {
     let error;
     try {
       realpathSync(join(tmpdir(), `dsh-fs-absent-${process.pid}`, 'no-such.txt'));
-      expect.unreachable('the outside realpath must refuse');
+      expect.unreachable('the outside absent realpath must throw');
     } catch (caught) {
       error = caught;
     }
-    expect(error.message).toContain('outside the writable workspace root');
-    expect(error.code).toBe('EACCES');
-    expect(error.errno).toBe(-13);
+    expect(error.code).toBe('ENOENT');
+    expect(error.errno).toBe(-2);
     expect(error.syscall).toBe('realpath');
+    expect(error.message).not.toContain('outside the writable workspace root');
+  });
+
+  it('realpathSync outside-root path the host holds still canonicalizes (the ancestor-walk arm)', () => {
+    // The answering arm stays: fs-local's resolve ENOENT walk realpaths the
+    // nearest existing ancestor — an outside-root REAL directory — and the
+    // tool face's refusal happens one face later (stat), not here.
+    expect(realpathSync(join(tmpdir(), `dsh-fs-system-${process.pid}`))).toBe(join(tmpdir(), `dsh-fs-system-${process.pid}`));
   });
 });
