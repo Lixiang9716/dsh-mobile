@@ -15,6 +15,7 @@ README.i18n.yaml[SG4T]: F:Machine pairing record for the README.md / README.zh.m
 README.md[SG8T]: F:The repository front page: project identity, the milestone table with per-milestone receipt evidence, the D9 upstream-port summary, governance, license | R:code:docs/ARCHITECTURE.md, code:BUILD.md, code:docs/e2e-matrix.md | A:human-facing doc; bilingual pair with README.zh.md, pairing-gated | S:The milestone table doubles as the evidence index — each Done row names its receipt dirs; a status flip lands in the same PR as the work it reports (rules.md rule 12)
 README.zh.md[SG8T]: F:README.md 的简体中文对照：项目定位、里程碑证据表、D9 上游移植摘要与治理说明 | R:code:README.md | A:human-facing doc; bilingual pair with README.md, pairing-gated | S:随 README.md 同步演进；配对由 gov verify pairing --write README 再确认
 gates.json[FQ8M]: F:The govrail gate DAG definition: modes (all/quick), concurrency, and the 26 gates with their commands and skip rules | R:code:.github/workflows/gov.yml, code:tools | A:gov run executes the defaultMode DAG; CI runs the same via gov.yml | S:A gate that never fails is vacuous — each ships a rejection case (gov self-test); the merge-blocking `gates` context runs mode all. Gate additions update modes lists in the same change or scoped runs silently miss them
+version.txt[FC5T]: F:The repository-wide version file release-please maintains | R:code:packages/release/bump-version.py, code:docs/decisions.md | A:the version stream D10 chose; the tag must agree with it | S:One of the four version files check-tag-version.sh asserts on a tag push — a disagreeing tag is refused naming every mismatch
 
 ===/home/lx/dsh-mobile/.github/===
 CODEOWNERS[FQ3T]: F:Routes review requests for every path to @Lixiang9716, with /contract/ on its own explicit line | R:- | A:- | S:contract/ owned explicitly, never by inheritance
@@ -1600,6 +1601,8 @@ gen-staging-manifests.mjs[XV6L]: F:The staging-manifest GENERATOR: derives the m
 gen-staging-manifests.test.mjs[XQ5M]: F:The generator's hermetic test suite | R:code:tools/gen-staging-manifests.mjs | A:the counterexample net | S:-
 marketplace-rotate-key.mjs[XV5M]: F:The ed25519 key rotation runbook: builds the dual-signed rotation-window index | R:code:contract/data-protocols.md, code:tools/gen-marketplace-index.mjs | A:the rotation tool the §7.2 window discipline names | S:Dual-sign for one window: outgoing and incoming keys co-sign; hosts learn the incoming key only from a verified dual-signed index
 publisher-token.mjs[XQ5M]: F:The MOCK v1 publisher-token validator: the marketplace v1 API's groundwork | R:code:docs/marketplace-publisher-auth.md | A:the token face's counterexample-tested groundwork | S:Explicitly a mock — the v1 API does not exist yet; the validator's test net keeps the shape honest until it does
+publisher-token.test.mjs[XQ5M]: F:The publisher-token validator's counterexample net | R:code:tools/publisher-token.mjs | A:the validator's vitest suite (PR #285) | S:The suite was manually-runnable only once — a validator regression turned nothing red, which is why it moved into the tools-face suite
+shim-exposure.mjs[XQ5S]: F:The shim exposure survey generator: the shim table and its behavior-leg inventory | R:code:runtime/spike/upstream/README.md, code:runtime/spike/ci/run-shim-exposure-probe.sh | A:the survey's derivation face | S:Measured exposure, not guessed — the table records what the closure actually imports
 
 ===/home/lx/dsh-mobile/tools/dev-web-carrier/===
 compose-boot.mjs[XV4M]: F:Composes the boot payload the dev carrier serves | R:code:tools/dev-web-carrier/dev-carrier.mjs | A:the dev boot composer | S:Dev-only tooling — never shipped in any host
@@ -1608,3 +1611,17 @@ next-mode.mjs[XV4M]: F:The dev carrier's next mode: serves the web-client-next p
 plugins-route.mjs[XV4S]: F:The dev carrier's plugins route: the config-selected client resolution | R:code:tools/dev-web-carrier/dev-carrier.mjs | A:the plugins wire face | S:-
 plugins-route.test.mjs[XQ4S]: F:The plugins route's test suite | R:code:tools/dev-web-carrier/plugins-route.mjs | A:the route's vitest coverage | S:-
 ws-lite.mjs[RN4T]: F:The dependency-free WS client the dev carrier loop uses | R:code:presentation/lynx-client/driver/mock/ws-lite.mjs | A:the dev loop's WS face | S:-
+
+===/home/lx/dsh-mobile/tools/test/===
+coverage-floors.json[FC4T]: F:The coverage floors the coverage-floor gate watches | R:code:tools/check-coverage-floor.mjs, code:docs/test-coverage.md | A:the declared warn-tier floors | S:Warn-tier by design — floors ratchet up as the measured baseline grows, never jump
+run-coverage.sh[XO5T]: F:The aggregate line-coverage runner over the Node-testable surface | R:code:tools/check-coverage-floor.mjs, code:docs/test-coverage.md | A:run-coverage.sh with per-surface include/exclude | S:Prints one aggregate table; --check enforces the floors the gate watches — real v8 coverage, not estimates
+run-presentation-tests.sh[XO5S]: F:The presentation vitest runner: lynx-client's driver/wire/mux suites plus web-client-next's envelope/real-socket mux/journal-fold | R:code:.github/workflows/gov.yml | A:the gov workflow's presentation step | S:A port regression between the two mux copies or a fold regression fails this job — the ported copies are pinned to each other
+run-simulator-matrix.sh[XO6M]: F:The release-grade evidence net: per host, the release build's zero-drive proof plus the harness re-drive | R:code:docs/BUILD.md, code:hosts/ios/App/Source/BuildFlavor.kt | A:run-simulator-matrix.sh [--platform ios|android|harmony] | S:Fail fast with KEEP_GOING escape; receipts machine-authored on green only; honest skip receipts where no device exists — deliberately NOT gate-wired, a release ritual
+run-tools-tests.sh[XO5S]: F:The tools-face vitest suite: staging verifier counterexamples, code-size tests, publisher-token net | R:code:.github/workflows/gov.yml, code:tools/check-staging.test.mjs | A:the gov workflow's tools step | S:Runs after gov run when the closure is materialized — the gen-staging real-repo leg's precondition
+
+===/home/lx/dsh-mobile/tools/wasm-gen/===
+.gitignore[FV2T]: F:Ignores the wasm-gen build outputs | R:code:tools/wasm-gen/gen.mjs | A:- | S:-
+gen.mjs[XV5T]: F:Generates the starter programs' WASM from the .wat sources | R:code:system-plugins/dsh-shell-wasm/programs.js | A:the wat-to-wasm face the programs module embeds | S:The generated bytes land in programs.js — hand-editing either side breaks the generation contract
+grep.wat[RD4T]: F:The grep starter program's WAT source | R:code:tools/wasm-gen/gen.mjs | A:one of the shell-wasm PATH programs | S:Speaks the wasmRun ABI: memory export, last-4096-byte input window, dsh.emit output
+package.json[FV3T]: F:The wasm-gen tool's manifest | R:code:tools/wasm-gen/gen.mjs | A:- | S:-
+wc.wat[RD4T]: F:The wc starter program's WAT source | R:code:tools/wasm-gen/gen.mjs | A:one of the shell-wasm PATH programs | S:-
