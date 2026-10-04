@@ -92,6 +92,7 @@ const BUNDLE_FILES: string[] = [
   'receipt-journal.js',
   'registry.js',
   'scenario/agent-presets-probe-seed.js',
+  'scenario/api-handler-respond.js',
   'scenario/ble-plane.js',
   'scenario/boot-verification.js',
   'scenario/camera-plane.js',

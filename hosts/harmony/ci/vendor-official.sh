@@ -182,6 +182,7 @@ logger.js
 registry.js
 scenario/officialweb-web-live.js
 scenario/composer-web-live.js
+scenario/api-handler-respond.js
 scenario/scenario-verdict.js
 vendor/npm/turndown@7.2.4/lib/turndown.es.js
 $(cd runtime/spike && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
@@ -314,6 +315,7 @@ $(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
 SPINE_OURS="scenario/boot-verification.js
 scenario/harmony-session-live-read.js
 scenario/harmony-composer-live-write.js
+scenario/api-handler-respond.js
 scenario/manager-legs-probe.js
 scenario/probe-respond-await.js
 scenario/mic-plane.js
