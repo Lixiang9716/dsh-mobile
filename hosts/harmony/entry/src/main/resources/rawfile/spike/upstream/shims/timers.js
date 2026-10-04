@@ -30,6 +30,14 @@ import { captureContext, runWithCapturedContext } from './async-hooks.js';
 const pending = new Map(); // handle -> { timerId, cancelled, fn, args }
 const firing = new Map(); // timerId -> handle
 let nextHandle = 1;
+// The arm-failure report fires ONCE per runtime (the first failed arm names
+// the defect; repeats are noise). This is load-bearing, not cosmetic: a host
+// that denies every arm would otherwise emit one warn PER ARM — measured
+// 2026-10-05, android-e2e live-read: 45 denied arms (21 inside the probe
+// window) doubled the runtime thread's log writes at the exact moment the
+// session.list respond races the witness flush across two JVM threads, and
+// the extra milliseconds flipped the scenario's order-sensitive manifest.
+let armFailureWarned = false;
 
 /** Arm one timer for a setTimeout entry — extracted to keep the sync face
  * flat (the shape gate): the cancel-beat-arm race disarms the late arm, a
@@ -54,15 +62,19 @@ const armTimer = async (delayMs, handle, entry) => {
     // and never fired, and the ONLY trace was behavior that never happened.
     // The sink line IS the loudness (this file carries no logger import —
     // the shim layer runs before one; the drain's immediate/throw report
-    // below is the precedent). The entry is gone, so a cancelled handle
-    // stays a no-op and the caller sees a timer that never fires — named
-    // here, once per failed arm.
-    try {
-      globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
-        level: 'warn', scenario: 'timers', event: 'arm/failed',
-        message: `setTimeout: the gateway timer arm failed — timers cannot fire on this host: ${String(error?.message ?? error).slice(0, 260)}`,
-      }));
-    } catch { /* best-effort, like the drain report */ }
+    // below is the precedent). ONCE per runtime: see armFailureWarned above
+    // for the measured reason repeats must not log. The entry is gone, so a
+    // cancelled handle stays a no-op and the caller sees a timer that never
+    // fires — named here, at the first failure.
+    if (!armFailureWarned) {
+      armFailureWarned = true;
+      try {
+        globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
+          level: 'warn', scenario: 'timers', event: 'arm/failed',
+          message: `setTimeout: the gateway timer arm failed — timers cannot fire on this host (further failures stay silent): ${String(error?.message ?? error).slice(0, 240)}`,
+        }));
+      } catch { /* best-effort, like the drain report */ }
+    }
   }
 };
 

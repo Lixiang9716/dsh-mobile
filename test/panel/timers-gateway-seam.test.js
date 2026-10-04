@@ -162,16 +162,24 @@ describe('loop-z2: the delay contract the budgets are stated in', () => {
 });
 
 describe('loop-z2: a host that refuses the arm is a LOUD defect, not a silent starvation', () => {
-  it('a rejected timerSchedule reports through the sink naming the failure', async () => {
+  it('the FIRST refused arm reports through the sink; repeats stay silent (one report per runtime)', async () => {
+    // measured on android-e2e (loop-z2): a warn PER denied arm doubled the
+    // runtime thread's log writes inside the live-read probe window (21 in
+    // the burst second) and flipped the scenario's order-sensitive manifest.
+    // The first report names the defect; repeats must not log.
     state.armFailure = new Error('denied: primitive not granted');
     const fn = vi.fn();
     globalThis.setTimeout(fn, 5);
     await settleArm();
-    const report = sink.find((line) => line.event === 'arm/failed');
-    expect(report).toBeDefined();
-    expect(report.level).toBe('warn');
-    expect(report.scenario).toBe('timers');
-    expect(report.message).toContain('denied');
+    globalThis.setTimeout(() => {}, 6);
+    await settleArm();
+    globalThis.setTimeout(() => {}, 7);
+    await settleArm();
+    const reports = sink.filter((line) => line.event === 'arm/failed');
+    expect(reports).toHaveLength(1); // the module's once-per-runtime flag
+    expect(reports[0].level).toBe('warn');
+    expect(reports[0].scenario).toBe('timers');
+    expect(reports[0].message).toContain('denied');
     expect(fn).not.toHaveBeenCalled();
   });
 });
