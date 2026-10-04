@@ -1,0 +1,22 @@
+{
+  "title": "Iteration round (T-0174): the #346 triage fixes \u2014 zero-anchor error, think-phase watchdog, plugin-manager mount, workspace tier device path",
+  "created": "2026-10-03T23:05:19+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "web_search zero-anchor page variant fails with the coded error (fixture test)",
+    "turn watchdog covers the think/stream phase (stall fails in-band, test)",
+    "tool-plugin-manager mounts into the session toolset (mount investigation + fix + test)",
+    "workspace tier visible on device (provider path diagnosed + fixed)",
+    "all PRs CI-green, merged serially; device regression green",
+    "report published"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0177"
+}

@@ -300,3 +300,9 @@ test/panel/.vendored/
 
 hosts/android/app/src/main/assets/spike/vendor/dsh/plugin-manager@*/
 .gov/last-run/
+
+# aoci-code: the index (aoci*.txt) and .aoci formal assets stay tracked; these
+# two are machine-bound — the MCP config carries an absolute binary path, and
+# init drops a timestamped AGENTS.md backup beside the managed block.
+.zcode/config.json
+AGENTS.md.backup.*
