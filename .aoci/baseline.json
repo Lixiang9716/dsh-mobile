@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-04T11:13:18Z",
+  "updated_at": "2026-10-04T18:22:17Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -53,9 +53,9 @@
     },
     ".github/workflows/dev-android.yml": {
       "role": "index",
-      "sha256": "0a905b0c55a9e89f5998eeec0ab4ac5c1c6048d3ea378c814140acee8f3b52d9",
-      "size": 12997,
-      "normalized_sha256": "0a905b0c55a9e89f5998eeec0ab4ac5c1c6048d3ea378c814140acee8f3b52d9"
+      "sha256": "a0e2f9da75f11a5ca1a92be9c95c25137770851e1805720cb22692a25534f5ce",
+      "size": 15141,
+      "normalized_sha256": "a0e2f9da75f11a5ca1a92be9c95c25137770851e1805720cb22692a25534f5ce"
     },
     ".github/workflows/dev-harmonyos.yml": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "fdf47047baf575ce2c356832569d89efeeaaf373779a2589824e2bb8d96bc218",
-      "size": 426521,
-      "normalized_sha256": "fdf47047baf575ce2c356832569d89efeeaaf373779a2589824e2bb8d96bc218"
+      "sha256": "2f333a6ec4e67464159fdeccbb1c8470c9cd174a24f5dc076bbfa6cb894b3088",
+      "size": 433350,
+      "normalized_sha256": "2f333a6ec4e67464159fdeccbb1c8470c9cd174a24f5dc076bbfa6cb894b3088"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1063,9 +1063,9 @@
     },
     "hosts/android/app/src/main/assets/spike/scenario/composer-web-live.js": {
       "role": "index",
-      "sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603",
-      "size": 21326,
-      "normalized_sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603"
+      "sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0",
+      "size": 23082,
+      "normalized_sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0"
     },
     "hosts/android/app/src/main/assets/spike/scenario/device-plane.js": {
       "role": "index",
@@ -1102,6 +1102,18 @@
       "sha256": "553611b167228f47f398ad730b37b910910bad489b8fdeb79d3105c5783452a0",
       "size": 4331,
       "normalized_sha256": "553611b167228f47f398ad730b37b910910bad489b8fdeb79d3105c5783452a0"
+    },
+    "hosts/android/app/src/main/assets/spike/scenario/probe-respond-await.js": {
+      "role": "index",
+      "sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad",
+      "size": 3966,
+      "normalized_sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad"
+    },
+    "hosts/android/app/src/main/assets/spike/scenario/scenario-verdict.js": {
+      "role": "index",
+      "sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00",
+      "size": 2999,
+      "normalized_sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00"
     },
     "hosts/android/app/src/main/assets/spike/scenario/session-mock-llm.js": {
       "role": "index",
@@ -1363,9 +1375,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39",
-      "size": 25944,
-      "normalized_sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39"
+      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
+      "size": 27138,
+      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
     },
     "hosts/android/app/src/main/assets/spike/upstream/llm-route.js": {
       "role": "index",
@@ -1489,9 +1501,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-paths.js": {
       "role": "index",
-      "sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254",
-      "size": 5246,
-      "normalized_sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254"
+      "sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0",
+      "size": 5505,
+      "normalized_sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-promises-fh.js": {
       "role": "index",
@@ -1501,9 +1513,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
-      "size": 21737,
-      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
+      "sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e",
+      "size": 22076,
+      "normalized_sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
@@ -1513,9 +1525,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seam-gate.js": {
       "role": "index",
-      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
-      "size": 2391,
-      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
+      "sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5",
+      "size": 2328,
+      "normalized_sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -1543,9 +1555,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-workspace.js": {
       "role": "index",
-      "sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f",
-      "size": 20093,
-      "normalized_sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f"
+      "sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b",
+      "size": 20096,
+      "normalized_sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-write-stream.js": {
       "role": "index",
@@ -1561,9 +1573,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
-      "size": 18995,
-      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
+      "sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15",
+      "size": 19183,
+      "normalized_sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -1996,6 +2008,12 @@
       "sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2",
       "size": 6216,
       "normalized_sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/turn-recovery.js": {
+      "role": "index",
+      "sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07",
+      "size": 4980,
+      "normalized_sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07"
     },
     "hosts/android/app/src/main/assets/spike/upstream/turn-watchdog.js": {
       "role": "index",
@@ -2497,9 +2515,9 @@
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/SessionServe.kt": {
       "role": "index",
-      "sha256": "0150e72f1c3f27c1708c576598ca7bb5467da09b88eaa829d1b269d845aca5be",
-      "size": 23327,
-      "normalized_sha256": "0150e72f1c3f27c1708c576598ca7bb5467da09b88eaa829d1b269d845aca5be"
+      "sha256": "0a15750dae9127a8fa40075328e400fa22e11b3c87ce6d9c021dee5375f85a4a",
+      "size": 23446,
+      "normalized_sha256": "0a15750dae9127a8fa40075328e400fa22e11b3c87ce6d9c021dee5375f85a4a"
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/SessionWriteAssetOrder.kt": {
       "role": "index",
@@ -2633,6 +2651,12 @@
       "size": 5927,
       "normalized_sha256": "f17dfdf7e02cf624adf8abc7a67408546629fee0e6769f93d32acc1f88f7bd50"
     },
+    "hosts/android/ci/run-page-open.sh": {
+      "role": "index",
+      "sha256": "2a22b58907b5ec99b487a659ea951d650022d89ddf69bd3012271a5aa5b6f24b",
+      "size": 6489,
+      "normalized_sha256": "2a22b58907b5ec99b487a659ea951d650022d89ddf69bd3012271a5aa5b6f24b"
+    },
     "hosts/android/ci/run-spike-e2e.sh": {
       "role": "index",
       "sha256": "e2f4df32180e7ad1f411e0ba317f653ac370c915c344400ba1fae0dc17a412b6",
@@ -2653,9 +2677,9 @@
     },
     "hosts/android/ci/stage-spine-closure.sh": {
       "role": "index",
-      "sha256": "4e332f1e016320bfd4612acb071161e2e518d7656aa6e591771b453da500bff0",
-      "size": 30718,
-      "normalized_sha256": "4e332f1e016320bfd4612acb071161e2e518d7656aa6e591771b453da500bff0"
+      "sha256": "d0120a1d3318b2469056675102f9f2b6e2c0513ed1b7513597290fd8bed8ea87",
+      "size": 30854,
+      "normalized_sha256": "d0120a1d3318b2469056675102f9f2b6e2c0513ed1b7513597290fd8bed8ea87"
     },
     "hosts/android/gradle.properties": {
       "role": "index",
@@ -2819,9 +2843,9 @@
     },
     "hosts/harmony/ci/vendor-official.sh": {
       "role": "index",
-      "sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0",
-      "size": 36531,
-      "normalized_sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0"
+      "sha256": "e2bf6ba76efa5b08dc4ce161af9a06d244d1b28f004f4e0fd1c74401d4ce103a",
+      "size": 36708,
+      "normalized_sha256": "e2bf6ba76efa5b08dc4ce161af9a06d244d1b28f004f4e0fd1c74401d4ce103a"
     },
     "hosts/harmony/entry/build-profile.json5": {
       "role": "index",
@@ -3035,9 +3059,9 @@
     },
     "hosts/harmony/entry/src/main/ets/pages/Index.ets": {
       "role": "index",
-      "sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775",
-      "size": 100758,
-      "normalized_sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775"
+      "sha256": "72741e33606cc4432da7188f06d8527013cf6b43d533f04d05dbbc6768c72619",
+      "size": 101460,
+      "normalized_sha256": "72741e33606cc4432da7188f06d8527013cf6b43d533f04d05dbbc6768c72619"
     },
     "hosts/harmony/entry/src/main/module.json5": {
       "role": "index",
@@ -3461,9 +3485,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/composer-web-live.js": {
       "role": "index",
-      "sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603",
-      "size": 21326,
-      "normalized_sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603"
+      "sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0",
+      "size": 23082,
+      "normalized_sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/device-plane.js": {
       "role": "index",
@@ -3530,6 +3554,18 @@
       "sha256": "553611b167228f47f398ad730b37b910910bad489b8fdeb79d3105c5783452a0",
       "size": 4331,
       "normalized_sha256": "553611b167228f47f398ad730b37b910910bad489b8fdeb79d3105c5783452a0"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/probe-respond-await.js": {
+      "role": "index",
+      "sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad",
+      "size": 3966,
+      "normalized_sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/scenario-verdict.js": {
+      "role": "index",
+      "sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00",
+      "size": 2999,
+      "normalized_sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/session-mock-llm.js": {
       "role": "index",
@@ -3791,9 +3827,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39",
-      "size": 25944,
-      "normalized_sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39"
+      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
+      "size": 27138,
+      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/llm-route.js": {
       "role": "index",
@@ -3905,9 +3941,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-paths.js": {
       "role": "index",
-      "sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254",
-      "size": 5246,
-      "normalized_sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254"
+      "sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0",
+      "size": 5505,
+      "normalized_sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-promises-fh.js": {
       "role": "index",
@@ -3917,9 +3953,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
-      "size": 21737,
-      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
+      "sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e",
+      "size": 22076,
+      "normalized_sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
@@ -3929,9 +3965,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seam-gate.js": {
       "role": "index",
-      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
-      "size": 2391,
-      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
+      "sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5",
+      "size": 2328,
+      "normalized_sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -3959,9 +3995,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-workspace.js": {
       "role": "index",
-      "sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f",
-      "size": 20093,
-      "normalized_sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f"
+      "sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b",
+      "size": 20096,
+      "normalized_sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-write-stream.js": {
       "role": "index",
@@ -3977,9 +4013,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
-      "size": 18995,
-      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
+      "sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15",
+      "size": 19183,
+      "normalized_sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -4305,6 +4341,12 @@
       "size": 6216,
       "normalized_sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/turn-recovery.js": {
+      "role": "index",
+      "sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07",
+      "size": 4980,
+      "normalized_sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/turn-watchdog.js": {
       "role": "index",
       "sha256": "9f63577624dc86567e1448d449cfb7e04046bbca684161b3ff2736d91f70dd5f",
@@ -4355,9 +4397,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/web-write-inventory.js": {
       "role": "index",
-      "sha256": "69b5288f9a6458cdaacabe8012c37bcfdab0b04017c5c92fdc32fb91334c3124",
-      "size": 8357,
-      "normalized_sha256": "69b5288f9a6458cdaacabe8012c37bcfdab0b04017c5c92fdc32fb91334c3124"
+      "sha256": "c3c33bcdac762647a04942342a24da369403e3449456f77ea3cebf84b1b7d462",
+      "size": 13189,
+      "normalized_sha256": "c3c33bcdac762647a04942342a24da369403e3449456f77ea3cebf84b1b7d462"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/web-write-llm.js": {
       "role": "index",
@@ -4877,9 +4919,9 @@
     },
     "hosts/ios/Tools/gen_bundle_header.py": {
       "role": "index",
-      "sha256": "2c76db42010fdf428d43771c3b47478486b5dddbf19563d9c58094dd4ef96a8e",
-      "size": 28022,
-      "normalized_sha256": "2c76db42010fdf428d43771c3b47478486b5dddbf19563d9c58094dd4ef96a8e"
+      "sha256": "77ac4b6718fff3ede6f765e11efce1bd6db1e6057a50b1a35a04915dbf46d016",
+      "size": 27777,
+      "normalized_sha256": "77ac4b6718fff3ede6f765e11efce1bd6db1e6057a50b1a35a04915dbf46d016"
     },
     "hosts/ios/Tools/gen_bundle_trees.py": {
       "role": "index",
@@ -5974,9 +6016,9 @@
     },
     "runtime/spike/scenario/composer-web-live.js": {
       "role": "index",
-      "sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603",
-      "size": 21326,
-      "normalized_sha256": "715f4ee9c6d33f9b5beafc444095f4f940e969e76d52712e9db87299ea1eb603"
+      "sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0",
+      "size": 23082,
+      "normalized_sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0"
     },
     "runtime/spike/scenario/device-plane.js": {
       "role": "index",
@@ -6128,6 +6170,18 @@
       "size": 8250,
       "normalized_sha256": "00b4089f237eb79916bb0fd7fc7ccd458f5f9b2b0f32792a7c76badb10d4ed64"
     },
+    "runtime/spike/scenario/probe-respond-await.js": {
+      "role": "index",
+      "sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad",
+      "size": 3966,
+      "normalized_sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad"
+    },
+    "runtime/spike/scenario/scenario-verdict.js": {
+      "role": "index",
+      "sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00",
+      "size": 2999,
+      "normalized_sha256": "69092a973ca8af8e7ff77f84e58b0141d8e15983698c9a59e974e72ed479fe00"
+    },
     "runtime/spike/scenario/security-byok-leak.js": {
       "role": "index",
       "sha256": "e258dc8b62c42c470aeb301601ee659e5f118077dab5955c0cc22fc263966037",
@@ -6166,9 +6220,9 @@
     },
     "runtime/spike/scenario/settings-surfaces.js": {
       "role": "index",
-      "sha256": "df31bb4c08a88c3eb948c246b8fb1e39bcb4e6436cdc9ab9e73f793b4ed98b11",
-      "size": 16271,
-      "normalized_sha256": "df31bb4c08a88c3eb948c246b8fb1e39bcb4e6436cdc9ab9e73f793b4ed98b11"
+      "sha256": "5e917ffb85391fd2dc8c52db9278b56ea75bebb3d55daaa75f827c32cd47f773",
+      "size": 16822,
+      "normalized_sha256": "5e917ffb85391fd2dc8c52db9278b56ea75bebb3d55daaa75f827c32cd47f773"
     },
     "runtime/spike/scenario/shim-exposure-probe.js": {
       "role": "index",
@@ -6298,9 +6352,9 @@
     },
     "runtime/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39",
-      "size": 25944,
-      "normalized_sha256": "d70295c50c383c7774cb02a7098897f3029cbb91b16ff2b4b3bab9543d13de39"
+      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
+      "size": 27138,
+      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
     },
     "runtime/spike/upstream/interfaces/bare-map.json": {
       "role": "index",
@@ -6448,9 +6502,9 @@
     },
     "runtime/spike/upstream/shims/fs-paths.js": {
       "role": "index",
-      "sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254",
-      "size": 5246,
-      "normalized_sha256": "f33c0037095307f251ebb99a7e44b5afe89a4fc03e980eadd66f1aed360de254"
+      "sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0",
+      "size": 5505,
+      "normalized_sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0"
     },
     "runtime/spike/upstream/shims/fs-promises-fh.js": {
       "role": "index",
@@ -6460,9 +6514,9 @@
     },
     "runtime/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
-      "size": 21737,
-      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
+      "sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e",
+      "size": 22076,
+      "normalized_sha256": "0275b127833abe2088c293f4f6e047050b93401dfd8fb412792a84ee296a472e"
     },
     "runtime/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
@@ -6472,9 +6526,9 @@
     },
     "runtime/spike/upstream/shims/fs-seam-gate.js": {
       "role": "index",
-      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
-      "size": 2391,
-      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
+      "sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5",
+      "size": 2328,
+      "normalized_sha256": "d1d7900f595cb65c75009c0d79d53098fe7f85ef9ab7df68bbafbe7587a2d5e5"
     },
     "runtime/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -6502,9 +6556,9 @@
     },
     "runtime/spike/upstream/shims/fs-workspace.js": {
       "role": "index",
-      "sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f",
-      "size": 20093,
-      "normalized_sha256": "5dba0c0a0cd07c099f02605057a6562a84005ebb7e40baab24039e4eaccb6b7f"
+      "sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b",
+      "size": 20096,
+      "normalized_sha256": "80eb7a91e25d4b6db3cb7e3d2014be71642e31e8c7e50fa13cbf7cfb807bf85b"
     },
     "runtime/spike/upstream/shims/fs-write-stream.js": {
       "role": "index",
@@ -6520,9 +6574,9 @@
     },
     "runtime/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
-      "size": 18995,
-      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
+      "sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15",
+      "size": 19183,
+      "normalized_sha256": "174120301fa85bcac35772c2e1ab61f6af9926f67ec038669680434933b1ad15"
     },
     "runtime/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -6949,6 +7003,12 @@
       "sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2",
       "size": 6216,
       "normalized_sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2"
+    },
+    "runtime/spike/upstream/turn-recovery.js": {
+      "role": "index",
+      "sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07",
+      "size": 4980,
+      "normalized_sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07"
     },
     "runtime/spike/upstream/turn-watchdog.js": {
       "role": "index",
@@ -8054,6 +8114,12 @@
       "size": 2720,
       "normalized_sha256": "d99df3b3dbb7b304e74e574d6ebe34b531efec6610d367b1b6b1154c3a84997f"
     },
+    "test/panel/dsh-llm-stub.js": {
+      "role": "index",
+      "sha256": "5376620eab4b3bda8072cfc57bc9b950f6dc9adaec52798f3f7de0ba1f66750d",
+      "size": 1192,
+      "normalized_sha256": "5376620eab4b3bda8072cfc57bc9b950f6dc9adaec52798f3f7de0ba1f66750d"
+    },
     "test/panel/dsh-tools-stub.js": {
       "role": "index",
       "sha256": "fdb5af69eafd66b6c5b59fe9f7b81b70e6eb6466d66e97d275499d2878068897",
@@ -8068,9 +8134,9 @@
     },
     "test/panel/fs-readdir-real-fallback.test.js": {
       "role": "observe",
-      "sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b",
-      "size": 9844,
-      "normalized_sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b"
+      "sha256": "18350d06d6156f02a41169a7842b8bc6135cd93742d7da09aa6e62e1117551bc",
+      "size": 14390,
+      "normalized_sha256": "18350d06d6156f02a41169a7842b8bc6135cd93742d7da09aa6e62e1117551bc"
     },
     "test/panel/gateway-shim.js": {
       "role": "index",
@@ -8114,6 +8180,12 @@
       "size": 191,
       "normalized_sha256": "02f5ca78779bc0f8051b6d90091817ff6ea67599934ebf607dd8ae3cc58d6355"
     },
+    "test/panel/plugin-inventory-probe.test.js": {
+      "role": "observe",
+      "sha256": "a55da88f24d903b6870aeb089ee4f1a3e3d521d3a337bfff8edba31198cbf5c3",
+      "size": 8179,
+      "normalized_sha256": "a55da88f24d903b6870aeb089ee4f1a3e3d521d3a337bfff8edba31198cbf5c3"
+    },
     "test/panel/plugin-manager-tool.test.js": {
       "role": "observe",
       "sha256": "e2d104a5864e1defb97082329f27f8920f81f25cea0ec17e25f335134009e99d",
@@ -8144,6 +8216,12 @@
       "size": 1336,
       "normalized_sha256": "aa80b99529403478862cc69c8310896bb51a4817358f10793e638ade38d19603"
     },
+    "test/panel/scenario-verdict.test.js": {
+      "role": "observe",
+      "sha256": "baa4c5d335b648f0fd1159c56e54edf34cf9312b76439ff63ce12e6007b136c2",
+      "size": 4139,
+      "normalized_sha256": "baa4c5d335b648f0fd1159c56e54edf34cf9312b76439ff63ce12e6007b136c2"
+    },
     "test/panel/shell-wasm.test.js": {
       "role": "observe",
       "sha256": "70372c1c57662ffba9a4706181fdebe99b0caaf5523e6e6b2d39433cf17c78ee",
@@ -8155,6 +8233,12 @@
       "sha256": "23e4fff538352afecd3aa0fca72f6e79a3a734f74957e9a9ab2ea7b2a6707480",
       "size": 5572,
       "normalized_sha256": "23e4fff538352afecd3aa0fca72f6e79a3a734f74957e9a9ab2ea7b2a6707480"
+    },
+    "test/panel/turn-recovery.test.js": {
+      "role": "observe",
+      "sha256": "7f8c67bddb5fdd728047fd7d8e0f9400379b11f44d0effdbe20254558bf43de0",
+      "size": 5519,
+      "normalized_sha256": "7f8c67bddb5fdd728047fd7d8e0f9400379b11f44d0effdbe20254558bf43de0"
     },
     "test/panel/turn-watchdog.test.js": {
       "role": "observe",
@@ -8170,9 +8254,9 @@
     },
     "test/panel/vitest.config.js": {
       "role": "index",
-      "sha256": "41db5b21e132bc25951079d555abca0eeb9186ad282f106523d6f629581b0eb3",
-      "size": 4504,
-      "normalized_sha256": "41db5b21e132bc25951079d555abca0eeb9186ad282f106523d6f629581b0eb3"
+      "sha256": "12cefd9570adba8f68b5a508630da0b06d0cfc3f879cd2e5a5e0eb8cb06e0839",
+      "size": 5171,
+      "normalized_sha256": "12cefd9570adba8f68b5a508630da0b06d0cfc3f879cd2e5a5e0eb8cb06e0839"
     },
     "test/panel/web-search-keyless.test.js": {
       "role": "observe",
