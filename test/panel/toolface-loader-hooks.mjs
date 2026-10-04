@@ -30,6 +30,17 @@ const VENDOR_BARE = {
   '@deepseek-ai/schemastery': join(vendorRoot, 'npm/schemastery@3.18.2/lib/index.mjs'),
   '@deepseek-ai/cosmokit': join(vendorRoot, 'npm/cosmokit@1.8.3/lib/index.js'),
   '@deepseek-ai/dsh-llm': join(here, 'dsh-llm-stub.js'),
+  // loop-z3: the model-facing FILE TOOLS themselves (the read face and the
+  // str_replace_editor face whose absolute-path gate the battery measured) —
+  // the real vendored packages, with the registry/sandbox seams doubled by
+  // test stubs (the suites drive valid args; defineTool's validation is not
+  // the behavior under test).
+  '@deepseek-ai/dsh-tool-fs': join(vendorRoot, 'dsh/tool-fs@0.1.6-alpha.2/lib/index.js'),
+  '@deepseek-ai/dsh-tool-str-replace-editor': join(vendorRoot, 'dsh/tool-str-replace-editor@0.1.6-alpha.2/lib/index.js'),
+  '@deepseek-ai/dsh-tools': join(here, 'dsh-tools-stub.js'),
+  '@deepseek-ai/dsh-sandbox': join(here, 'dsh-sandbox-stub.js'),
+  '@deepseek-ai/dsh-attachment': join(vendorRoot, 'dsh/attachment@0.1.6-alpha.2/lib/index.js'),
+  diff: join(vendorRoot, 'npm/diff@9.0.0/libesm/index.js'),
 };
 
 const shimUrl = (name) => pathToFileURL(join(repoRoot, 'runtime/spike/upstream/shims', name)).href;
@@ -65,7 +76,8 @@ export function resolve(specifier, context, next) {
   // The runner module itself is exempt: its FIXTURE side (mkdtemp/mkdir of
   // the outside-root shapes) must speak real host fs, the same split the
   // vitest suites have (test file = real node, shims = mapped).
-  if (parent.includes('/toolface-fs-local-runner.mjs')
+  if ((parent.includes('/toolface-fs-local-runner.mjs')
+    || parent.includes('/toolface-relative-spelling-runner.mjs'))
     && (specifier === 'node:fs' || specifier === 'node:fs/promises')) {
     return next(specifier, context);
   }

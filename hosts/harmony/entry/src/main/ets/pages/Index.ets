@@ -240,6 +240,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/shims/web-storage.js',
   'upstream/shims/web-streams.js',
   'upstream/tool-deadline.js',
+  'upstream/tool-path-anchor.js',
   'upstream/tool-present.js',
   'upstream/turn-recovery.js',
   'upstream/retry-telemetry.js',
