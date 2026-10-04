@@ -227,7 +227,7 @@ TREES = [
     (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
      SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
     for pkg in [
-        "agent", "agent-loop", "brand", "llm", "llm-retry", "sandbox", "scope",
+        "agent", "agent-loop", "brand", "llm", "dsh-llm-retry", "sandbox", "scope",
         "agent-presets", "atomic-write", "home-paths",
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
