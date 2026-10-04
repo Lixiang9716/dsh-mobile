@@ -50,18 +50,13 @@ class SessionServe private constructor(
         const val CLIENT_ID = "dsh-web-official"
         const val NEXT_CLIENT_ID = "dsh-web-client-next"
 
-        /** The reserved app scope's root (`FsPrimitives`: what scope "app"
-         * means). The credential file and the workspace live inside it. */
-        fun appScopeRoot(activity: Activity): File =
-            File(activity.filesDir, "profiles/default")
-
         /** The one workspace the mobile profile seeds: a real directory inside
          * the app scope, so the agent always has somewhere to work and what it
          * writes survives relaunches (the staged bundle root would be neither).
          * The custom skills dir lives INSIDE it for the same reason — the fs
          * views refuse anything outside the granted scope. */
         fun workspaceRoot(activity: Activity): File =
-            File(appScopeRoot(activity), "spike").apply { mkdirs() }
+            File(SessionServeConfig.appScopeRoot(activity), "spike").apply { mkdirs() }
 
         @Volatile private var instance: SessionServe? = null
 
@@ -90,79 +85,7 @@ class SessionServe private constructor(
         /** The WebView finished a document load (no-op for the seat — there is
          * no probe; kept so MainActivity's client can dispatch uniformly). */
         fun dispatchPageFinished() = Unit
-
-        /** The user-supplied model endpoint from
-         * `<filesDir>/profiles/default/llm/config.json` — the reserved app
-         * scope, the same shape and location the `llm.live-stream` runner
-         * stages credentials at. A malformed or partial file yields null
-         * rather than a half-configured transport (the optional `models`
-         * roster counts as part of the file: a malformed row voids the
-         * credential). Nothing here logs the key: a credential that never
-         * reaches a record cannot leak into one. */
-        fun loadCredential(activity: Activity): Credential? {
-            val file = File(appScopeRoot(activity), "llm/config.json")
-            val obj = try {
-                JSONObject(file.readText())
-            } catch (_: Exception) {
-                return null
-            }
-            val baseUrl = obj.optString("baseUrl")
-            val apiKey = obj.optString("apiKey")
-            val model = obj.optString("model")
-            if (baseUrl.isEmpty() || apiKey.isEmpty() || model.isEmpty()) return null
-            val provider = obj.optString("provider").ifEmpty { "openai-compatible" }
-            val models = readModels(obj) ?: return null
-            return Credential(baseUrl, apiKey, model, provider, models)
-        }
-
-        /** The optional `models` roster (entries `{id, name}`) beside the
-         * default model — the composer model dialog's selectable rows. Absent
-         * → empty; present-but-malformed → null (the partial-file precedent:
-         * never a half-configured transport). */
-        private fun readModels(obj: JSONObject): List<Pair<String, String>>? {
-            val rows = obj.optJSONArray("models") ?: return emptyList()
-            val models = ArrayList<Pair<String, String>>(rows.length())
-            for (i in 0 until rows.length()) {
-                val row = rows.optJSONObject(i) ?: return null
-                val id = row.optString("id")
-                val name = row.optString("name")
-                if (id.isEmpty() || name.isEmpty()) return null
-                models.add(id to name)
-            }
-            return models
-        }
-
-        /** The marketplace opt-in from
-         * `<filesDir>/profiles/default/marketplace/config.json` — the
-         * reserved app scope, `{indexUrl: string}`: the plugin marketplace
-         * resolver index the coverage plane's browse/install legs serve. A
-         * malformed or missing file yields null — the boot stays unclaimed
-         * (the loadCredential precedent: never a half-configured opt-in);
-         * a present-but-shape-wrong url fails loud runtime-side, naming the
-         * offender (upstream/web-write.js's marketplaceOf). */
-        fun loadMarketplaceIndex(activity: Activity): String? {
-            val file = File(appScopeRoot(activity), "marketplace/config.json")
-            val obj = try {
-                JSONObject(file.readText())
-            } catch (_: Exception) {
-                return null
-            }
-            val indexUrl = obj.optString("indexUrl")
-            if (indexUrl.isEmpty()) return null
-            return indexUrl
-        }
     }
-
-    /** One user-supplied model endpoint: an OpenAI-compatible base URL, its
-     * key and the model id. `models` is the optional multi-model roster
-     * staged beside it (empty when config.json carries none). */
-    data class Credential(
-        val baseUrl: String,
-        val apiKey: String,
-        val model: String,
-        val provider: String,
-        val models: List<Pair<String, String>> = emptyList(),
-    )
 
     private val carrier = CarrierServer()
     private lateinit var plugins: CarrierPlugins
@@ -284,36 +207,7 @@ class SessionServe private constructor(
      * model route, the workspace, the interactive rows) + `web.plugins` +
      * the preset seed. */
     private fun startSpine(pluginsDelivery: JSONArray) {
-        val bundle = File(activity.filesDir, "spike")
-        core = GatewayCore.create(bundle)
-        val fs = FsPrimitives(activity)
-        fs.register(core)
-        val http = HttpPrimitive()
-        http.register(core)
-        KeychainPrimitives(activity).register(core)
-        NotifyPrimitive(activity).register(core)
-        ui = UiPrimitives(activity, fs)
-        ui.register(core)
-        DevicePlanePrimitives(activity, fs).register(core)
-        ClipboardPrimitives(activity).register(core)
-        CameraPrimitives(activity, fs).register(core)
-        TimerPrimitive().register(core)
-        // The WebAssembly seam (contract v1.2.0): the shell executor's runs
-        // land here — before #335 B4 this seat answered them all with a
-        // gateway denial and the shell tool could not execute at all.
-        WasmPrimitive(fs).register(core)
-        core.settleFn = { callId, ok, json ->
-            SpikeRuntime.post {
-                if (handle == 0L) return@post
-                onRuntimeStatus(SpikeRuntime.m4Settle(handle, callId, ok, json))
-            }
-        }
-        http.eventFn = { json ->
-            SpikeRuntime.post {
-                if (handle == 0L) return@post
-                onRuntimeStatus(SpikeRuntime.m4Event(handle, json))
-            }
-        }
+        val bundle = wirePrimitives()
         val entry = File(bundle, ENTRY)
         handle = SpikeRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
@@ -327,6 +221,53 @@ class SessionServe private constructor(
         AgentPresetsSeed.build(bundle)?.let { deliverRuntime(it) }
     }
 
+    /** The serving seat's gateway primitive table plus its event channels —
+     * the settle/event hops onto the serial runtime queue. EVERY emitter's
+     * channel must be wired here: inside the runtime a dropped fire is
+     * indistinguishable from a never-armed timer (loop-z2 — the read-idle
+     * watchdog armed and never fired while emitFn went unwired). Returns the
+     * spike bundle dir the spine entry loads from. */
+    private fun wirePrimitives(): File {
+        val bundle = File(activity.filesDir, "spike")
+        core = GatewayCore.create(bundle)
+        val fs = FsPrimitives(activity)
+        fs.register(core)
+        val http = HttpPrimitive()
+        http.register(core)
+        KeychainPrimitives(activity).register(core)
+        NotifyPrimitive(activity).register(core)
+        ui = UiPrimitives(activity, fs)
+        ui.register(core)
+        DevicePlanePrimitives(activity, fs).register(core)
+        ClipboardPrimitives(activity).register(core)
+        CameraPrimitives(activity, fs).register(core)
+        val timer = TimerPrimitive()
+        timer.register(core)
+        // The WebAssembly seam (contract v1.2.0): the shell executor's runs
+        // land here — before #335 B4 this seat answered them all with a
+        // gateway denial and the shell tool could not execute at all.
+        WasmPrimitive(fs).register(core)
+        core.settleFn = { callId, ok, json ->
+            SpikeRuntime.post {
+                if (handle == 0L) return@post
+                onRuntimeStatus(SpikeRuntime.m4Settle(handle, callId, ok, json))
+            }
+        }
+        http.eventFn = ::emitEvent
+        timer.emitFn = ::emitEvent
+        return bundle
+    }
+
+    /** The bridge-event hop every event emitter shares (http.body/http.error,
+     * timer.fire, …): onto the serial runtime queue, a no-op once the runtime
+     * is gone. The M4 host wires its emitters the same way. */
+    private fun emitEvent(json: String) {
+        SpikeRuntime.post {
+            if (handle == 0L) return@post
+            onRuntimeStatus(SpikeRuntime.m4Event(handle, json))
+        }
+    }
+
     /** The runtime.config delivery. `llmBaseUrl` is present exactly when the
      * user staged a credential, which is what makes turns hit a REAL model
      * instead of the carrier's scripted one. `commands`/`skills` ride only
@@ -338,7 +279,7 @@ class SessionServe private constructor(
             .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
             .put("apiKey", MockLlmRoute.KEY)
             .put("containerRoot", workspace.absolutePath)
-            .put("fsScopeRoot", appScopeRoot(activity).absolutePath)
+            .put("fsScopeRoot", SessionServeConfig.appScopeRoot(activity).absolutePath)
         if (credential != null) {
             config
                 .put("llmBaseUrl", credential.baseUrl)
@@ -363,7 +304,7 @@ class SessionServe private constructor(
         // install legs): present exactly when the user staged the resolver
         // config — the scenario relays it as the write surface's
         // marketplace {indexUrl} option (absent → the legs stay unclaimed).
-        loadMarketplaceIndex(activity)?.let { config.put("marketplaceIndex", it) }
+        SessionServeConfig.loadMarketplaceIndex(activity)?.let { config.put("marketplaceIndex", it) }
         return config
     }
 

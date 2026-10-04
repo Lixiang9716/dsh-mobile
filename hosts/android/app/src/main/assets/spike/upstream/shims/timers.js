@@ -34,8 +34,7 @@ let nextHandle = 1;
 /** Arm one timer for a setTimeout entry — extracted to keep the sync face
  * flat (the shape gate): the cancel-beat-arm race disarms the late arm, a
  * suppressed fire finds the entry already deleted (idempotent one-way), and
- * an arm failure fails loud (rule 5 — swallowing it would hang every await
- * racing the fuse; a host without the seam names the primitive). */
+ * an arm failure reports LOUD (rule 5) through the sink. */
 const armTimer = async (delayMs, handle, entry) => {
   try {
     const { timerId } = await timerSchedule(delayMs, { tag: 'shim:setTimeout' });
@@ -47,7 +46,23 @@ const armTimer = async (delayMs, handle, entry) => {
     firing.set(timerId, handle);
   } catch (error) {
     pending.delete(handle);
-    throw error;
+    // Fail loud (rule 5): setTimeout already handed back its handle, so a
+    // rethrow here reaches NOBODY — it only becomes an orphaned unhandled
+    // rejection — while a quiet return would starve every timer silently.
+    // Measured 2026-10-05, battery-r16 loop-z2: the serving seat dropped
+    // every timer.fire, the read-idle watchdog and the retry backoff armed
+    // and never fired, and the ONLY trace was behavior that never happened.
+    // The sink line IS the loudness (this file carries no logger import —
+    // the shim layer runs before one; the drain's immediate/throw report
+    // below is the precedent). The entry is gone, so a cancelled handle
+    // stays a no-op and the caller sees a timer that never fires — named
+    // here, once per failed arm.
+    try {
+      globalThis.__DSH_LOG_SINK__?.(JSON.stringify({
+        level: 'warn', scenario: 'timers', event: 'arm/failed',
+        message: `setTimeout: the gateway timer arm failed — timers cannot fire on this host: ${String(error?.message ?? error).slice(0, 260)}`,
+      }));
+    } catch { /* best-effort, like the drain report */ }
   }
 };
 

@@ -363,7 +363,7 @@ class MainActivity : Activity() {
                     ?: SessionServe.CLIENT_ID
                 serve = SessionServe.start(
                     this, view,
-                    credential = SessionServe.loadCredential(this),
+                    credential = SessionServeConfig.loadCredential(this),
                     clientID = client,
                 )
             }

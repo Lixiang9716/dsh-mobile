@@ -1,0 +1,22 @@
+{
+  "title": "loop-z2: the read-idle watchdog never fires on the release seat \u2014 the serving seat drops every timer.fire (SessionServe never wired TimerPrimitive.emitFn), so r16 saw zero TIMEOUT telemetry and a retry banner frozen at 1/5",
+  "created": "2026-10-04T23:16:18+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] diagnosis with file:line: the JS chain is sound end-to-end (boot.js:417 forwards readIdleTimeoutMs; llm-transport.js:307-348 parseSse arms the guard; gateway.js:190-198 abort wakes the parked read; shims/timers.js maps setTimeout onto gateway timerSchedule/timer.fire; web-shims.js:61 loads it in the serving boot) \u2014 the break is the Android HOST: SessionServe.kt:300 registered TimerPrimitive but never wired emitFn, so every fire died in TimerPrimitive.kt:73's emitFn?.invoke; the manual cancel that DID unwind proves the guard was armed (its caller-abort bridge rode no timer)",
+    "[x] fix: wire timer.emitFn in SessionServe.kt with the same SpikeRuntime.post m4Event hop as http.eventFn (SpikeHostM4.kt:352 precedent)",
+    "[x] fix: shims/timers.js armTimer reports a refused arm loud through __DSH_LOG_SINK__ (arm/failed warn) instead of an orphaned unhandled rethrow no caller can see",
+    "[x] panel: timers-gateway-seam.test.js (9 cases) pins the device timer seam the watchdog rides \u2014 arm\u2192timerSchedule with the delay intact, callback only on the fire event, both cancel races, delay coercion, loud arm-failure report; llm-transport-read-idle.test.js fixture verified faithful to the real httpFetch shape; full panel suite green",
+    "[x] closure sync: build/build.sh sync android + sync harmony (timers.js mirrors byte-identical)",
+    "CI gates green on the PR; squash-merged; main green after"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0200"
+}
