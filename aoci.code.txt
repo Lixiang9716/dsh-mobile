@@ -946,19 +946,51 @@ README.md[SG6T]: F:The presentation layer README: Web Client plugins shared acro
 README.i18n.yaml[SG4T]: F:Machine pairing record for the lynx-client README bilingual pair | R:code:presentation/lynx-client/README.md, code:presentation/lynx-client/README.zh.md | A:- | S:Regenerated only by gov verify pairing; hand edits fail the pairing gate
 README.md[SG7S]: F:The dsh-lynx-client pilot README: a render-surface client plugin, zero gateway calls, wholly replaceable | R:code:presentation/lynx-client/bundle/src/App.tsx, code:contract/proposals/2026-09-26-render-surface.md | A:human-facing doc; bilingual pair with README.zh.md | S:A client plugin, not a system-plugin: zero gateway calls, zero contract changes — the directory is the product and replaceability is the proof
 README.zh.md[SG7S]: F:lynx-client README 的简体中文对照：Lynx 渲染面客户端试点 | R:code:presentation/lynx-client/README.md | A:human-facing doc; bilingual pair | S:随 README.md 同步演进；配对由 gov verify pairing 再确认
+manifest.json[FC5T]: F:The lynx-client plugin manifest | R:code:presentation/lynx-client | A:schemaVersion 1; the config layer selects this client | S:A CLIENT plugin manifest — type web-client, zero gateway capabilities required
+package-lock.json[FV3M]: F:The committed lockfile of the lynx-client root | R:code:presentation/lynx-client/package.json | A:the runner's deterministic install | S:Committed for deterministic CI installs
+package.json[FV4T]: F:The lynx-client root manifest: driver dependencies and scripts | R:code:presentation/lynx-client/driver | A:the runner's npm scripts | S:Driver-side deps only — the bundle's own build lives under bundle/
 
 ===/home/lx/dsh-mobile/presentation/lynx-client/bundle/===
 lynx.config.ts[XV4T]: F:The rspeedy/Lynx bundle build config | R:code:presentation/lynx-client/bundle/package.json | A:the build the committed bundle ships from | S:The built bundle IS committed and sha256-verified at mount — rebuilds must stay byte-stable or the mount verify fails
 lynx.web.config.ts[XV4T]: F:The web-target build config for the Pages demo | R:code:.github/workflows/pages.yml | A:build:web produces the Pages artifact's bundle | S:Build-time-only web runtime pin lives in the Pages workflow — this config never adds a product dependency
 package-lock.json[FV3L]: F:The committed lockfile of the lynx bundle | R:code:presentation/lynx-client/bundle/package.json | A:npm ci installs deterministically from it | S:Committed so CI installs deterministically
 package.json[FV4T]: F:The lynx bundle's manifest: the single devDependency and the build scripts | R:code:presentation/lynx-client/bundle/lynx.config.ts | A:npm scripts build:web and friends | S:A single devDependency by design — the bundle is pure presentation with no runtime npm deps
+tsconfig.json[XV3T]: F:The bundle's TypeScript config | R:code:presentation/lynx-client/bundle/package.json | A:the compiler options rspeedy honors | S:-
 
 ===/home/lx/dsh-mobile/presentation/lynx-client/bundle/src/===
 App.tsx[RU5T]: F:The bundle root: aurora backdrop, top bar, thread, composer, drawer | R:code:presentation/lynx-client/bundle/src/bridge.ts | A:the single useSurface() subscription point | S:Pure presentation — zero gateway calls; E2E evidence flows through the driver, not page logs
 app.css[RU4T]: F:The bundle's base stylesheet | R:code:presentation/lynx-client/bundle/src/App.tsx | A:imported once at the root | S:Tokens live in theme.generated.ts — this file holds layout, not colors
 bridge.ts[RU5T]: F:The host bridge: the RenderSurfaceClient seam's bundle-side binding (mount, pushViewEvent, onIntent) | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the seam contract the host driver calls into | S:The seam is the whole integration — the bundle never reaches past it toward the gateway
+index.tsx[RU4T]: F:The bundle entry: root render of App | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the rspeedy entry | S:-
+styles.ts[RU5M]: F:The typed style constants composing the theme tokens into component styles | R:code:presentation/lynx-client/bundle/src/theme.generated.ts | A:the style layer components import | S:Imported from generated tokens — a palette change regenerates, never hand-edits
+theme.generated.ts[RD4T]: F:GENERATED typed style constants from tokens.json — the Lynx face of the token single source | R:code:presentation/lynx-client/bundle/src/styles.ts | A:GENERATED — regenerate, never hand-edit | S:Dark pilot face; light values live in the web CSS vars — one token source, two generated faces
 
 ===/home/lx/dsh-mobile/presentation/lynx-client/bundle/src/components/===
 Cards.tsx[RU5M]: F:The tool card's three states and the collapsible process group | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the tool-card surface the thread renders | S:A card is pure props — it renders whatever the fold says and never subscribes to anything (iron law #1, bundle side)
 Chrome.tsx[RU5S]: F:The top bar: neutral wordmark, connection capsule, and the drawer affordances | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the chrome surface | S:Pure props rendering per the iron law — no subscriptions in components
 Composer.tsx[RU4S]: F:The composer surface: input, send, and the intent emission | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the composer component | S:Emits intents over the seam — the bundle never calls the gateway itself
+Markdown.tsx[RU5T]: F:The bounded markdown renderer of the Lynx bundle | R:code:presentation/lynx-client/bundle/src/components/Thread.tsx | A:the transcript's markdown face | S:Bounded subset on purpose — unknown syntax renders as text, never interpreted
+Thread.tsx[RU5M]: F:The conversation thread: a scroll-view of rows built from the fold snapshot | R:code:presentation/lynx-client/bundle/src/App.tsx | A:the thread surface | S:Props only below App — no component subscribes; structure bumps re-render rows, content patches
+types.ts[RD5T]: F:Structural shapes of the fold's view state, mirroring shared/fold.js | R:code:presentation/lynx-client/driver/driver.js | A:the presentation-side view types of the fold | S:The fold is JS — these types are the bundle's view of it, never a second implementation
+
+===/home/lx/dsh-mobile/presentation/lynx-client/demo/===
+index.html[RU4T]: F:The Pages demo landing page mounting the lynx-view | R:code:presentation/lynx-client/demo/stage-pages.sh | A:the artifact index the Pages site serves | S:-
+stage-pages.sh[XO5T]: F:Assembles the GitHub Pages artifact for the web demo — the same script locally and in CI | R:code:.github/workflows/pages.yml | A:stage-pages.sh <workspace> <out-dir> | S:One script, two invocation sites — what CI deploys is exactly what was verified locally
+
+===/home/lx/dsh-mobile/presentation/lynx-client/driver/===
+adapter.js[RQ5T]: F:The drive adapter: the scenario leg the lynx faces share | R:code:presentation/lynx-client/driver/driver.js | A:the shared drive legs | S:The 34/34 acceptance ran BOTH faces over ONE flow through this adapter — that is the replaceability proof
+driver.js[RQ6M]: F:The orchestration: the one wire subscription point, the seed protocol, and the intent executor | R:code:presentation/lynx-client/driver/render-surface-client.js, code:presentation/lynx-client/driver/wire/mux.js | A:the driver both skins run under | S:The driver owns the wire and the fold — skins only render what the fold hands them
+render-surface-client.js[RI7T]: F:THE replaceable seam: mount, pushViewEvent, onIntent, teardown | R:code:presentation/lynx-client/driver/skin-lynx.js, code:presentation/lynx-client/driver/skin-stub.js | A:the four-method interface both skins implement | S:Zero gateway calls cross it — the seam is the whole integration surface the render-surface proposal generalizes
+run-lynx.mjs[XO5M]: F:The lynx MODE of the runner: real engine mount plus the full driver flow | R:code:presentation/lynx-client/driver/skin-lynx.js, code:presentation/lynx-client/driver/driver.js | A:run-lynx.mjs — the acceptance face | S:The 34/34 lynx-face evidence came from this mode over one flow
+run-mock.mjs[XO5M]: F:The mock MODE of the runner: the stub skin against the scripted feed | R:code:presentation/lynx-client/driver/skin-stub.js | A:run-mock.mjs — the CI-safe face | S:Same flow, same assertions, no engine — that symmetry is the replaceability claim's control
+skin-lynx.js[RQ6T]: F:The lynx RenderSurfaceClient: mounts the rspeedy-built ReactLynx bundle into a Lynx engine | R:code:presentation/lynx-client/driver/render-surface-client.js | A:the lynx skin behind the seam | S:Mounts the committed, sha256-verified bundle — a rebuild that changes bytes fails the mount verify
+skin-stub.js[RQ5T]: F:The minimal RenderSurfaceClient: plain-text transcription of the fold state | R:code:presentation/lynx-client/driver/render-surface-client.js | A:the stub skin behind the seam | S:Same interface as the lynx skin, zero engine — the control face proving the seam is the integration
+
+===/home/lx/dsh-mobile/presentation/lynx-client/driver/mock/===
+mock-serve.mjs[RN4T]: F:The mock serve: the scripted session backend the mock mode runs against | R:code:presentation/lynx-client/driver/run-mock.mjs | A:the mock transport | S:The scripted feed matches the wire envelope so both skins see identical bytes
+ws-lite.mjs[RN4T]: F:A minimal WS client for the mock driver, no dependencies | R:code:presentation/lynx-client/driver/mock/mock-serve.mjs | A:the WS face of the mock harness | S:-
+
+===/home/lx/dsh-mobile/presentation/lynx-client/driver/wire/===
+api.js[RN5T]: F:The POST /api envelope client of the driver | R:code:presentation/lynx-client/driver/wire/session-serve.js | A:the wire's HTTP half | S:Ported from the web clients' envelope — same shapes, one protocol
+mux.js[RN5T]: F:The driver half of WS /api/remote.mux, ported from web-client-next's mux | R:code:presentation/web-client-next/web/js/mux.js | A:the wire's WS half | S:A PORT with named provenance — drift between the two copies is a port regression the vitest suite pins
+session-serve.js[RN5T]: F:The SessionServe wire client: endpoints and exact envelope shapes | R:code:presentation/lynx-client/driver/wire/api.js | A:the session endpoints' typed face | S:Ported from web-client-next's main.js/composer.js — the envelopes must stay identical
