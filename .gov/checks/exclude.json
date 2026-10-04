@@ -11,6 +11,10 @@
     {
       "path": "hosts/android/app/src/main/assets/spike/**",
       "reason": "byte-identical staged copy of the canonical runtime/spike closure — the closures gate verifies every copy in --check mode, so size/syntax judgment on the copy is double judgment of already-reviewed bytes"
+    },
+    {
+      "path": ".zcode/**",
+      "reason": "agent scratch of the parallel flywheel sessions (worktree-local, untracked, never shipped) — the code-size gate's file set is git ls-files --cached --others, so one session's deep-indented scratch turned the gate worktree-wide red for every other session (#352's recorded surprise: 8/8 violations under .zcode, zero in any reviewed diff; CI's clean tree was green throughout)"
     }
   ]
 }
