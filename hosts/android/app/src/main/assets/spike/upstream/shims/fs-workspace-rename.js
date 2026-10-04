@@ -18,7 +18,6 @@ import {
   notifyWatches,
   resolveSymlinkAt,
   } from 'upstream/shims/fs-workspace.js';
-import { wsRootHint } from 'upstream/shims/fs-paths.js';
 import {
   wsMirrorChmodReal,
   wsResolveSymlinkChain,

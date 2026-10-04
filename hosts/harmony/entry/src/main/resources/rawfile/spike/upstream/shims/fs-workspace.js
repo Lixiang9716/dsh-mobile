@@ -8,13 +8,12 @@
  */
 
 /* The WRITABLE WORKSPACE VFS (the FILE-TOOLS row's world): one pinned root;
- * a Map of file entries and a Set of directory paths, all on the global (see
- * the multi-instance note above). Every mutation bumps a monotonic clock so
- * file versions (dev:ino:size:mtimeNs:ctimeNs — what the vendored fs-local
- * hashes into its stale-write guards) change on write and hold steady. */
+ * file entries + explicit directories on the global (multi-instance note
+ * above). Every mutation bumps a monotonic clock so file versions
+ * (dev:ino:size:mtimeNs:ctimeNs — fs-local's stale-write-guard hash) change
+ * on write and hold steady. */
 
-/** The ENOENT shape (mirrors fs.js's — this module cannot import from it
- * without a cycle: fs.js imports this module for the workspace faces). */
+/** The ENOENT shape (mirrors fs.js's — importing it here would cycle). */
 const enoent = (name, path) => {
   const error = new Error(`ENOENT: no such file or directory, ${name} '${path}'`);
   error.code = 'ENOENT';
@@ -32,18 +31,15 @@ const workspace = () => {
 };
 
 /**
- * Pin the writable workspace root. Called by the composition that mounts the
- * vendored fs-local backend (its `Config.cwd` names the same root); every
- * workspace op before the pin fails loud — a write without a world is a
- * defect, not an empty result.
+ * Pin the writable workspace root (the composition mounting fs-local passes
+ * its `Config.cwd`); every workspace op before the pin fails loud — a write
+ * without a world is a defect, not an empty result.
  *
- * When the requested root is the PROFILE CONTAINER's tmp (`<cwd>/tmp` with
+ * When the requested root is the PROFILE CONTAINER's tmp (`<cwd>/tmp`,
  * `<cwd>` pinned as __dshProfileCwd — the suite driver's spelling), the
- * CONTAINER is pinned instead: the container is the unit of writability on
- * this host, and its home subtree (the derived harness-home preset root
- * `<cwd>/home/.dsh/.agent-presets`) must be traversable too — the upstream
- * user-root suite discovers presets there. mkdtemp/tmpdir-derived paths stay
- * in-root either way.
+ * CONTAINER is pinned instead: it is the unit of writability on this host,
+ * and its home subtree (`<cwd>/home/.dsh/.agent-presets`) must be traversable
+ * — the upstream user-root suite discovers presets there.
  * @param root - absolute POSIX path prefix, e.g. `/workspace`.
  */
 export const mountWorkspace = (root) => {
@@ -60,19 +56,16 @@ export const mountWorkspace = (root) => {
     files: new Map(), // path → { bytes: Uint8Array, mode, ino, mtimeNs: bigint, ctimeNs: bigint }
     dirs: new Set(), // explicit directory paths (the root itself included)
     dirIno: new Map(), // path → stable inode
-    // path → tracked directory mode: chmod on a directory is stored (the
-    // agent-presets copy tightens a copied tree to 0700 and stats it back),
-    // though still unenforced — the VFS has no permission gate.
+    // path → tracked directory mode (the agent-presets copy stats a
+    // tightened tree back to 0700); stored, unenforced — no permission gate.
     dirModes: new Map(),
     symlinks: new Map(), // path → raw target string (readlink returns it verbatim)
     nextIno: 1,
     clock: 0,
   };
-  // The EFFECTIVE root enters the explicit dir set: when the profile pin
+  // The EFFECTIVE root joins the explicit dir set: when the profile pin
   // widens the caller's tmp spelling to the container, the container itself
-  // must stat() as a directory (the subagent cwd gate stats the profile
-  // root; with the caller's spelling in the set, statSync(root) ENOENTed —
-  // R3-G1 2026-09-28).
+  // must stat() as a directory (subagent cwd gate; else ENOENT — R3-G1).
   ws().dirs.add(effective);
   return root;
 };
@@ -98,14 +91,12 @@ const lexical = (path) => {
  * profile container (the suite driver's mount spelling) and only the exact
  * '/tmp' or '/tmp/' prefix maps (never '/tmpfoo').
  *
- * The REVERSE half (W8 cwd/tmp-fidelity round): on darwin /tmp is a symlink
- * to /private/tmp, so every answer that crosses BACK from the real-disk
- * side — a spawned child's getcwd/pwd/git rev-parse, an error path the C
- * seam resolved — spells the container `/private/tmp/<container>`. That is
- * the same single directory; the profile-container translation holds
- * END-TO-END only if the VFS re-accepts the OS-resolved spelling, so the
- * exact `/private<container>` prefix maps back onto the container (and
- * nothing else — other /private/tmp content is not ours to rename). */
+ * The REVERSE half (W8): on darwin /tmp symlinks to /private/tmp, so
+ * answers crossing BACK from the real-disk side (a child's getcwd/git
+ * rev-parse, a C-seam error path) spell the container `/private/tmp/<c>`.
+ * The translation holds END-TO-END only if the VFS re-accepts that
+ * OS-resolved spelling, so exactly the `/private<container>` prefix maps
+ * back onto the container — nothing else is ours to rename. */
 export const systemTmp = (path) => {
   if (typeof path !== 'string') return path;
   const profileCwd = globalThis.__dshProfileCwd;
@@ -113,9 +104,8 @@ export const systemTmp = (path) => {
   const container = profileCwd.replace(/\/$/, '');
   const state = workspace();
   if (state === null || state.root !== container) return path;
-  // Already inside the container: the container itself lives under /tmp on
-  // the desktop CLI, and naively translating its OWN prefix doubled it
-  // (root/tmp/root — statSync(root) ENOENTed, R3-G1 2026-09-28).
+  // Already inside: translating its OWN /tmp prefix doubled it (root/tmp/root
+  // — statSync ENOENTed, R3-G1).
   if (path === container || path.startsWith(`${container}/`)) return path;
   // The darwin OS-resolved spelling of the container itself (see above).
   const realContainer = `/private${container}`;
@@ -142,11 +132,9 @@ const wsAt = (path) => {
     throw error;
   }
   const state = workspace();
-  // Relative paths resolve against the pinned profile cwd, exactly like
-  // node resolves them against process.cwd() (W3-K, 2026-09-28: the typert
-  // generator joins `import.meta.dirname` — 'upstream-tests', the
-  // bundle-relative module directory — with its scratch dir and the join
-  // stays relative; refusing relative paths there killed the whole spec).
+  // Relative paths resolve against the pinned profile cwd, like node's
+  // process.cwd() (W3-K: the typert generator's relative join — refusing
+  // relative paths killed the spec).
   let absolute = path;
   if (typeof absolute === 'string' && !absolute.startsWith('/') && !absolute.startsWith('\\')
     && !/^[A-Za-z][A-Za-z0-9+.\-]*:/.test(absolute)) {
@@ -167,6 +155,19 @@ const ws = () => {
     throw new Error('node:fs: the writable workspace is not mounted — call mountWorkspace(root) before file operations (see runtime/spike/upstream/README.md, FILE-TOOLS row)');
   }
   return state;
+};
+
+/** The refusal suffix that teaches the anchor (loop-h): an outside-root path
+ * is recoverable in one step when the refusal names the root and the correct
+ * spelling. Lives HERE, not fs-paths.js: that import edge re-orders the shim
+ * cycle and lands fs.js's eval before mountWorkspace initializes (TDZ —
+ * measured: ios m1 boot.verification). */
+export const wsRootHint = (path) => {
+  const root = ws().root;
+  const anchored = typeof path === 'string' && path.startsWith('/')
+    ? `${root}${path.replace(/\/+$/, '')}`
+    : `${root}/file.txt`;
+  return ` — the writable workspace root is '${root}'; file paths must be absolute under it (maybe you meant '${anchored}'?)`;
 };
 
 const bumpClock = (state) => {
@@ -255,10 +256,8 @@ const wsStatAt = (path, bigint) => {
   if (file !== undefined) {
     return statFace('file', {
       size: bigint ? BigInt(file.bytes.length) : file.bytes.length,
-      // The number face carries the permission bits too (the spill/aging
-      // walks stat().mode and compare against the 0700/0644 constants), and
-      // dev/ino like node's non-bigint stat (the v2 migration asserts a
-      // rename preserved the predecessor's identity, measured 2026-09-27).
+      // The number face carries the permission bits (spill/aging stat().mode
+      // vs the 0700/0644 constants) and dev/ino (the v2 rename-identity assert).
       dev: 1,
       ino: file.ino,
       mode: file.mode,

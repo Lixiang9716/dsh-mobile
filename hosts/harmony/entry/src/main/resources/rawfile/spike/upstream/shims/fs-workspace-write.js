@@ -12,6 +12,7 @@ import {
   workspace,
   wsAt,
   lexical,
+  wsRootHint,
   DIR_MODE,
   bumpClock,
   wsCreateFile,
@@ -26,7 +27,6 @@ import {
 // The write-permission gate lives with the rename/link faces (it shipped
 // in the same W4-N round); single definition, both modules import it.
 import { wsRequireDirWrite } from 'upstream/shims/fs-workspace-rename.js';
-import { wsRootHint } from 'upstream/shims/fs-paths.js';
 
 /** Create the missing chain for recursive mkdir (module level for size):
  * the segments under the root, real-disk mirrored (W6-U r3) —
