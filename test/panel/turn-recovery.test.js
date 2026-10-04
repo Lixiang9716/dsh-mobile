@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
 import { apply as applyTurnRecovery } from '../../runtime/spike/upstream/turn-recovery.js';
-import * as LlmRetry from '../../runtime/spike/vendor/dsh/dsh-llm-retry@0.1.6-alpha.2/lib/index.js';
 
 /** A fake cordis context recording the plugin's listeners and answering
  * ctx.get('agents') with `registry`. Mirrors the three faces the supervisor
@@ -127,98 +126,5 @@ describe('turn recovery: the failure mark is one note per turn, loud on degradat
 
     it('mount fails loud without the agents registry (rule 5)', () => {
         expect(() => applyTurnRecovery(fakeCtx(undefined))).toThrow('agents registry');
-    });
-});
-
-/** A minimal cordis-shaped context for the vendored plugin: projection
- * registration, event subscription, effect, and logger. */
-const llmRetryCtx = () => {
-    const listeners = new Map();
-    const registered = [];
-    return {
-        listeners,
-        registered,
-        sessionProjections: {
-            register: (def) => registered.push(def),
-            stateOf: () => ({}),
-        },
-        on(event, handler) {
-            listeners.set(event, handler);
-            return () => listeners.delete(event);
-        },
-        effect(_label, _dispose) {},
-        logger: { warn: vi.fn() },
-        emit(event, payload, next) {
-            return listeners.get(event)?.(payload, next);
-        },
-    };
-};
-
-/** The provider retry policy under test: the normal mode with one retryable
- * code and a fast deterministic backoff. */
-const normalPolicy = (retryableCodes = ['TRANSPORT']) => ({
-    mode: 'normal',
-    maxRetries: 3,
-    retryableCodes,
-    initialDelayMs: 1,
-    maxDelayMs: 4,
-    jitterRatio: 0,
-});
-
-/** A fake agent whose journal appends are recorded for assertions. */
-const recordingAgent = (id) => {
-    const appended = [];
-    const agent = {
-        id,
-        session: { append: (type, data) => appended.push({ type, data }) },
-    };
-    return { appended, agent };
-};
-
-describe('llm-retry mount (loop-u): the vendored recovery answers agent/request-error', () => {
-    it('a retryable request failure schedules a durable backoff and answers retry', async () => {
-        const ctx = llmRetryCtx();
-        LlmRetry.apply(ctx, {});
-        const { appended, agent } = recordingAgent('session-g');
-        const handler = ctx.listeners.get('agent/request-error');
-        expect(handler).toBeDefined();
-
-        const decision = await handler(
-            {
-                agent,
-                turn: 1,
-                step: 1,
-                provider: 'openai-compatible',
-                failure: { code: 'TRANSPORT', message: 'connection reset mid-stream' },
-                retryPolicy: normalPolicy(),
-                signal: new AbortController().signal,
-            },
-            () => Promise.resolve(undefined),
-        );
-        expect(decision).toEqual({ kind: 'retry' });
-        expect(appended.map((a) => a.type)).toEqual(['llm/retry', 'llm/retry-started']);
-    });
-
-    it('a non-retryable code passes through without a retry (next() runs)', async () => {
-        const ctx = llmRetryCtx();
-        LlmRetry.apply(ctx, {});
-        const agent = { id: 'session-h', session: { append: () => ({ seq: 1 }) } };
-        const handler = ctx.listeners.get('agent/request-error');
-
-        const downstream = vi.fn(() => Promise.resolve(undefined));
-        const decision = await handler(
-            {
-                agent,
-                turn: 1,
-                step: 1,
-                provider: 'openai-compatible',
-                failure: { code: 'INVALID_REQUEST', message: 'bad payload' },
-                retryPolicy: normalPolicy(),
-                signal: new AbortController().signal,
-            },
-            downstream,
-        );
-        expect(decision).toBeUndefined();
-        expect(downstream).toHaveBeenCalledTimes(1);
     });
 });

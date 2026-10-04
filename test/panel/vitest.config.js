@@ -26,6 +26,10 @@ export default defineConfig({
       { find: 'marketplace-resolver.js', replacement: fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)) },
       { find: 'web-write-inventory.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)) },
       { find: '@deepseek-ai/dsh-timeout', replacement: fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)) },
+      // loop-u's supervisor imports two message utilities from @deepseek-ai/dsh-llm;
+      // the vendored package needs zod + schemastery (outside the suite's
+      // provisioned deps), so the alias doubles it (dsh-tools-stub's rule).
+      { find: '@deepseek-ai/dsh-llm', replacement: fileURLToPath(new URL('./dsh-llm-stub.js', import.meta.url)) },
       { find: 'gateway.js', replacement: fileURLToPath(new URL('./gateway-shim.js', import.meta.url)) },
       { find: '@deepseek-ai/dsh-tools', replacement: fileURLToPath(new URL('./dsh-tools-stub.js', import.meta.url)) },
       { find: 'dsh:util-crypto', replacement: fileURLToPath(new URL('./util-crypto-shim.js', import.meta.url)) },
