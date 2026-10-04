@@ -1,13 +1,13 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-04T08:33:26Z",
+  "updated_at": "2026-10-04T11:13:18Z",
   "files": {
     ".gitattributes": {
       "role": "index",
-      "sha256": "5768155b33784469ae87800daca645c2bd52dcf605e0b76cd3cd81c47afc562d",
-      "size": 1095,
-      "normalized_sha256": "5768155b33784469ae87800daca645c2bd52dcf605e0b76cd3cd81c47afc562d"
+      "sha256": "07519e6fe771f69a3f81e461d85b1af6c7df310de059ae28baf99676c4c34b5c",
+      "size": 1490,
+      "normalized_sha256": "07519e6fe771f69a3f81e461d85b1af6c7df310de059ae28baf99676c4c34b5c"
     },
     ".github/CODEOWNERS": {
       "role": "index",
@@ -119,9 +119,9 @@
     },
     ".gitignore": {
       "role": "index",
-      "sha256": "d27cfa87cb556697c757d2de6a2f940296bd9c5fcd5e5e44c156a1750e387526",
-      "size": 17343,
-      "normalized_sha256": "d27cfa87cb556697c757d2de6a2f940296bd9c5fcd5e5e44c156a1750e387526"
+      "sha256": "98c27dc8cc20f01d0b6c26dd29bcfc4071e8f591db8b5b3805c05b73bd2984b7",
+      "size": 17611,
+      "normalized_sha256": "98c27dc8cc20f01d0b6c26dd29bcfc4071e8f591db8b5b3805c05b73bd2984b7"
     },
     ".gitmodules": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "12cbc237b863041b3ab7b6c6330091964cb014a20e624ec1f88de6056aed56c2",
-      "size": 21,
-      "normalized_sha256": "12cbc237b863041b3ab7b6c6330091964cb014a20e624ec1f88de6056aed56c2"
+      "sha256": "fdf47047baf575ce2c356832569d89efeeaaf373779a2589824e2bb8d96bc218",
+      "size": 426521,
+      "normalized_sha256": "fdf47047baf575ce2c356832569d89efeeaaf373779a2589824e2bb8d96bc218"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1501,15 +1501,21 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2",
-      "size": 20874,
-      "normalized_sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2"
+      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
+      "size": 21737,
+      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
-      "sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0",
-      "size": 7508,
-      "normalized_sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0"
+      "sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0",
+      "size": 8848,
+      "normalized_sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seam-gate.js": {
+      "role": "index",
+      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
+      "size": 2391,
+      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -1555,9 +1561,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a",
-      "size": 17874,
-      "normalized_sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a"
+      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
+      "size": 18995,
+      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -2813,9 +2819,9 @@
     },
     "hosts/harmony/ci/vendor-official.sh": {
       "role": "index",
-      "sha256": "8374a736cddfe5cab4e476afbff40d76656c3e9c90ac304d08d3f74badc27040",
-      "size": 36500,
-      "normalized_sha256": "8374a736cddfe5cab4e476afbff40d76656c3e9c90ac304d08d3f74badc27040"
+      "sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0",
+      "size": 36531,
+      "normalized_sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0"
     },
     "hosts/harmony/entry/build-profile.json5": {
       "role": "index",
@@ -3029,9 +3035,9 @@
     },
     "hosts/harmony/entry/src/main/ets/pages/Index.ets": {
       "role": "index",
-      "sha256": "0cac2d9395d9d115917483e7bc15d0e7b3d18c7e6c7675ddc578517d9c8360d7",
-      "size": 100722,
-      "normalized_sha256": "0cac2d9395d9d115917483e7bc15d0e7b3d18c7e6c7675ddc578517d9c8360d7"
+      "sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775",
+      "size": 100758,
+      "normalized_sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775"
     },
     "hosts/harmony/entry/src/main/module.json5": {
       "role": "index",
@@ -3911,15 +3917,21 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2",
-      "size": 20874,
-      "normalized_sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2"
+      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
+      "size": 21737,
+      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
-      "sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0",
-      "size": 7508,
-      "normalized_sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0"
+      "sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0",
+      "size": 8848,
+      "normalized_sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seam-gate.js": {
+      "role": "index",
+      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
+      "size": 2391,
+      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -3965,9 +3977,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a",
-      "size": 17874,
-      "normalized_sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a"
+      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
+      "size": 18995,
+      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -6448,15 +6460,21 @@
     },
     "runtime/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2",
-      "size": 20874,
-      "normalized_sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2"
+      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
+      "size": 21737,
+      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
     },
     "runtime/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
-      "sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0",
-      "size": 7508,
-      "normalized_sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0"
+      "sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0",
+      "size": 8848,
+      "normalized_sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0"
+    },
+    "runtime/spike/upstream/shims/fs-seam-gate.js": {
+      "role": "index",
+      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
+      "size": 2391,
+      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
     },
     "runtime/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -6502,9 +6520,9 @@
     },
     "runtime/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a",
-      "size": 17874,
-      "normalized_sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a"
+      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
+      "size": 18995,
+      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
     },
     "runtime/spike/upstream/shims/globals.js": {
       "role": "index",
@@ -8050,9 +8068,9 @@
     },
     "test/panel/fs-readdir-real-fallback.test.js": {
       "role": "observe",
-      "sha256": "1bf12035350f37b281d8f3557cca466fa8ce6aa09a7099bc1c71e0ded695e581",
-      "size": 4253,
-      "normalized_sha256": "1bf12035350f37b281d8f3557cca466fa8ce6aa09a7099bc1c71e0ded695e581"
+      "sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b",
+      "size": 9844,
+      "normalized_sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b"
     },
     "test/panel/gateway-shim.js": {
       "role": "index",
