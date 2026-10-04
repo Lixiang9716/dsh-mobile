@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-04T10:22:10Z",
+  "updated_at": "2026-10-04T10:25:39Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c5deb311f4e09b6bf0dd1dc89dd0bdf5f2c7ca25057c1d4f14b13e0398247ccd",
-      "size": 81307,
-      "normalized_sha256": "c5deb311f4e09b6bf0dd1dc89dd0bdf5f2c7ca25057c1d4f14b13e0398247ccd"
+      "sha256": "8161f3f0ad31de4bfa4dd55b1aace140d18a3e054734fcb99174d9966b248b89",
+      "size": 100627,
+      "normalized_sha256": "8161f3f0ad31de4bfa4dd55b1aace140d18a3e054734fcb99174d9966b248b89"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1501,15 +1501,21 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2",
-      "size": 20874,
-      "normalized_sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2"
+      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
+      "size": 21737,
+      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
-      "sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0",
-      "size": 7508,
-      "normalized_sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0"
+      "sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0",
+      "size": 8848,
+      "normalized_sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seam-gate.js": {
+      "role": "index",
+      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
+      "size": 2391,
+      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -1555,9 +1561,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a",
-      "size": 17874,
-      "normalized_sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a"
+      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
+      "size": 18995,
+      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/globals.js": {
       "role": "index",
