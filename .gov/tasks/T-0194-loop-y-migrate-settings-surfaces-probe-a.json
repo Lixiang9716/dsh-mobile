@@ -1,0 +1,25 @@
+{
+  "title": "loop-y: migrate settings-surfaces' probe await to the shared makeProbeAwaiter",
+  "created": "2026-10-04T15:12:20+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "settings-surfaces.js awaitRespond is makeProbeAwaiter({frames: posted, fail, yieldTurn: gateway ping}) \u2014 composer-web-live's wiring, no semantic change",
+    "panel suite green (15 files), incl. the new settings-yield-shape case",
+    "build.sh sync android + sync harmony clean (settings-surfaces is CLI-only: no host-copy diff)",
+    "PR created, gates green, squash merged"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0194",
+  "void": {
+    "ts": "2026-10-04T15:13:24+00:00",
+    "by": "lx@DESKTOP-AOFQD6F",
+    "reason": "checklist included a pre-push-unverifiable item (PR merged); recreated with locally-checkable items only \u2014 the merge follow-through is the caller workflow's, not the card's"
+  }
+}

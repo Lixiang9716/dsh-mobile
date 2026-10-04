@@ -32,7 +32,8 @@
  */
 import { createLogger } from 'logger.js';
 import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
-import { fsScope } from 'gateway.js';
+import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
+import { fsScope, fsStat } from 'gateway.js';
 import { AGENT_PRESETS_BASE_URL, bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { errorOf } from 'upstream/web-write.js';
@@ -187,15 +188,22 @@ const PROBES = [
   { rpcId: 'probe/pluginManager-listPlugins-1', endpoint: 'pluginManager/listPlugins', args: {} },
 ];
 
-const awaitRespond = async (rpcId) => {
-  let guard = 0;
-  while (!posted.some((f) => f.type === 'api.respond' && f.rpcId === rpcId) && guard++ < 10000) {
-    await Promise.resolve();
+/** The probe legs' shared response waiter (scenario/probe-respond-await.js,
+ * loop-q): each poll tick is a minimal gateway call whose settle queues on
+ * the runtime looper right behind the settles being awaited — awaiting it
+ * hands the looper its turn, so a claimed handler whose answer rides the
+ * gateway (a future workspace-tier leg here) settles instead of starving;
+ * the deadline keeps a genuinely dead handler fail-loud. The pure-microtask
+ * spin this replaces was the exact shape loop-q fixed in composer-web-live
+ * (loop-y migration, no semantic change). */
+const yieldToHostLooper = async () => {
+  try {
+    await fsStat('app', 'probe.txt');
+  } catch {
+    // denied/unavailable IS a settle — the looper turn is the point.
   }
-  const respond = posted.find((f) => f.type === 'api.respond' && f.rpcId === rpcId);
-  demand(respond !== undefined, `no api.respond for the ${rpcId} probe`);
-  return respond.result;
 };
+const awaitRespond = makeProbeAwaiter({ frames: posted, fail, yieldTurn: yieldToHostLooper });
 
 /** The claims phase: the runtime's api.claim frame must cover the settings
  * legs (every claimed endpoint is asserted by a record somewhere). */

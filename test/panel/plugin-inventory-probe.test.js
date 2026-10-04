@@ -69,6 +69,37 @@ describe('the waiter yields to host turns before demanding (loop-q)', () => {
   });
 });
 
+describe('the settings yield shape survives a rejecting gateway ping (loop-y)', () => {
+  it('keeps polling across a caught fsStat rejection and finds the late respond', async () => {
+    // settings-surfaces' migrated yieldTurn (loop-y) is a fsStat ping on a
+    // path that need not exist: its rejection is caught IN the yield and the
+    // await still hands the looper its turn. The honest shape: the first ping
+    // settles as a rejection, the answer lands with the second — a yield
+    // that propagated its rejection would kill the wait before the respond
+    // is ever found.
+    const frames = [];
+    let pings = 0;
+    const fail = vi.fn();
+    const yieldTurn = async () => {
+      pings += 1;
+      try {
+        await Promise.reject(Object.assign(new Error('not-found'), { code: 'gateway/not-found' }));
+      } catch {
+        // denied/unavailable IS a settle — the looper turn is the point.
+      }
+      if (pings >= 2) {
+        frames.push({ type: 'api.respond', rpcId: 'probe/pluginInventory-list-1',
+          result: { ok: true, value: { entries: [] } } });
+      }
+    };
+    const awaitRespond = makeProbeAwaiter({ frames, fail, yieldTurn, timeoutMs: 2000 });
+    const result = await awaitRespond('probe/pluginInventory-list-1');
+    expect(result.ok).toBe(true);
+    expect(fail).not.toHaveBeenCalled();
+    expect(pings).toBe(2);
+  });
+});
+
 const bootedCtx = {
   get: (name) => name === 'agentPresets' ? {
     compositionInventory: async () => [
