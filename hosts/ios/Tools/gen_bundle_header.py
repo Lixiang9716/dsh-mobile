@@ -162,6 +162,9 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
     ("plugin_open_design_js",
      SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
+    # The plugin_manager tool row (#346); face at workspace_registry_js.
+    ("plugin_manager_tools_manifest",
+     SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "manifest.json"), ("plugin_manager_tools_js", SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "index.js"),
     # FIFTEEN scenario files keep NAMED accessors — RESOURCES rows emit the
     # dsh_spike_res_<suffix> symbols Swift links against (readers:
     # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
@@ -186,18 +189,17 @@ RESOURCES = [
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("scenario_manager_legs_probe_js", SPIKE / "scenario" / "manager-legs-probe.js"),
     # The spike-root runtime files + upstream adapters Swift stages by name
-    # (SpikeBundleStager / SessionServe / SessionRuntime) — same provenance
-    # as the scenario block above: pre-refactor RESOURCES rows, restored.
+    # (SpikeBundleStager / SessionServe / SessionRuntime) — the pre-refactor
+    # RESOURCES rows, restored.
     ("gateway_js", SPIKE / "gateway.js"),
     ("registry_js", SPIKE / "registry.js"),
     ("manifest_json", SPIKE / "manifest.json"),
     ("llm_js", SPIKE / "llm.js"),
     ("install_pipeline_js", SPIKE / "install-pipeline.js"),
-    ("ed25519_js", SPIKE / "ed25519.js"),
-    ("canonical_json_js", SPIKE / "canonical-json.js"),
+    ("ed25519_js", SPIKE / "ed25519.js"), ("canonical_json_js", SPIKE / "canonical-json.js"),
     ("marketplace_resolver_js", SPIKE / "marketplace-resolver.js"),
     ("install_fetch_js", SPIKE / "install-fetch.js"),
-    ("sha256_js", SPIKE / "sha256.js"),
+    ("workspace_registry_js", SPIKE / "workspace-registry.js"), ("sha256_js", SPIKE / "sha256.js"),
     ("tar_mini_js", SPIKE / "tar-mini.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),

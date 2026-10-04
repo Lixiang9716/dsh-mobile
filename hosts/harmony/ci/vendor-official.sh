@@ -679,6 +679,7 @@ fi
 SPIKE_ROOT="gateway.js
 logger.js
 registry.js
+workspace-registry.js
 sha256.js
 tar-mini.js
 llm.js
