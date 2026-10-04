@@ -4,12 +4,22 @@
  * The per-tool deadline (upstream/tool-deadline.js) bounds tool dispatch;
  * a turn can still wedge OUTSIDE it — an LLM stream that stalls mid-frame,
  * a loop-internal await that never settles. This watchdog arms a re-armable
- * timer that every observable turn progress feeds (session journal appends,
- * assistant-stream frames, agent status transitions); when a full budget
- * passes with NO progress while an agent is running, it fails the turn
- * IN-BAND: the running agent(s) are cancelled with a `watchdog` cause
- * (keepInbox — queued user messages are not the wedge), the loop unwinds at
- * its next await boundary, and the journal records the abort honestly.
+ * timer that SEMANTIC turn progress feeds (durable session journal appends,
+ * agent status transitions, and within the assistant stream only answer
+ * text and tool calls); when a full budget passes with NO semantic progress
+ * while an agent is running, it fails the turn IN-BAND: the running
+ * agent(s) are cancelled with a `watchdog` cause (keepInbox — queued user
+ * messages are not the wedge), the loop unwinds at its next await boundary,
+ * and the journal records the abort honestly.
+ *
+ * Why the assistant-stream feed is filtered (#346): the loop emits one
+ * `agent/assistant-stream` event per stream FRAME — the start/end markers
+ * and every chunk, including reasoning deltas. A long think phase ("Deep
+ * diving…", the >15-min stall the real-model battery measured) is exactly a
+ * steady drip of reasoning frames with zero durable progress behind them;
+ * counting frames counts wire liveness, and the watchdog never fires. The
+ * semantic filter (isSemanticStreamFrame) is the fix: wire keepalives and
+ * reasoning traffic never re-arm the timer; answer text and tool calls do.
  *
  * Honest limit, same as ring 1: the timer rides the runtime's own timer seam
  * (the setTimeout shim → gateway timerSchedule), so a thread pinned by a
@@ -23,16 +33,54 @@ import { createLogger } from 'logger.js';
 const log = createLogger('dsh.turn-watchdog');
 
 /** The default silence budget. Tool dispatch is already bounded at 120s per
- * call (ring 1); the outer ring only trips when the WHOLE spine went quiet —
- * 5 minutes of zero journal/stream/status activity on a running agent. */
+ * call (ring 1); the outer ring only trips when the WHOLE spine went
+ * semantically quiet — 5 minutes with no durable turn message, no status
+ * transition, and no answer text/tool-call frame on a running agent. */
 export const DEFAULT_BUDGET_MS = 300_000;
 
-/** The progress events a live turn emits (dsh-session's append dispatch,
- * dsh-agent-loop's stream/status emissions). Any one re-arms the timer. */
-const PROGRESS_EVENTS = [
-  'session/event',
-  'agent/assistant-stream',
-  'agent/status',
+/** The StreamChunk types (vendored dsh-llm types.ts) whose frame carries
+ * SEMANTIC assistant progress: the model produced answer text or is
+ * assembling a tool call. Deliberately absent: `reasoning-delta` (the think
+ * phase's own wire traffic — transient frames, nothing durable behind them
+ * until the attempt settles) and `usage`/`finish` (accounting/terminal
+ * framing whose durable settlement reaches us as `session/event`). */
+const SEMANTIC_CHUNK_TYPES = new Set(['text-delta', 'tool-call-delta']);
+
+/** The ContentBlock types that count when a block-start/block-end frame
+ * names them (an answer block opening/closing, a tool call assembling);
+ * `reasoning` blocks are the think phase and never count. */
+const SEMANTIC_BLOCK_TYPES = new Set(['text', 'tool-call']);
+
+/** Decide whether one `agent/assistant-stream` event payload is semantic
+ * progress. The payload is `{ agent, frame }` (dsh-agent's fused dispatch);
+ * the frame is `{ type: 'start' | 'chunk' | 'end', chunk? }`. Only a chunk
+ * frame naming answer text or a tool call in any form counts; stream
+ * markers, reasoning deltas, and provider keepalive-shaped frames are wire
+ * liveness and never re-arm the timer. */
+export const isSemanticStreamFrame = (payload) => {
+  const frame = payload?.frame;
+  log.debug('stream frame classify', { frameType: frame?.type, chunkType: frame?.chunk?.type });
+  if (frame?.type !== 'chunk') return false; // start/end are framing markers
+  const chunk = frame.chunk;
+  if (chunk === null || typeof chunk !== 'object') return false;
+  if (SEMANTIC_CHUNK_TYPES.has(chunk.type)) return true;
+  if (chunk.type === 'block-start' || chunk.type === 'block-end') {
+    const blockType = chunk.type === 'block-start' ? chunk.blockType : chunk.block?.type;
+    return SEMANTIC_BLOCK_TYPES.has(blockType);
+  }
+  return false;
+};
+
+/** The progress feeds a live turn emits, each paired with its semantic
+ * predicate. `session/event` is dsh-session's append dispatch (every durable
+ * turn message — turn boundaries, user/system/assistant messages, tool
+ * events) and `agent/status` is dsh-agent-loop's status-transition emission
+ * (change-only: a wedged phase emits no transitions) — both are semantic by
+ * construction. */
+const PROGRESS_FEEDS = [
+  ['session/event', () => true],
+  ['agent/status', () => true],
+  ['agent/assistant-stream', isSemanticStreamFrame],
 ];
 
 /** Validate the configured budget (rule 5). */
@@ -112,10 +160,19 @@ export const apply = (ctx, config) => {
     budgetMs,
     listRunning: () => registry.list(),
   });
-  for (const event of PROGRESS_EVENTS) {
+  for (const [event, semantic] of PROGRESS_FEEDS) {
     // the disposers ride the plugin fiber (cordis tracks them); the timer
-    // self-neutralizes after teardown because listRunning() empties
-    ctx.on(event, () => watchdog.markProgress());
+    // self-neutralizes after teardown because listRunning() empties. The
+    // predicate gates WIRE liveness out (reasoning deltas, stream markers —
+    // #346): only semantic progress re-arms the budget.
+    ctx.on(event, (payload) => {
+      if (!semantic(payload)) return;
+      watchdog.markProgress();
+    });
   }
-  log.info('turn watchdog mounted', { budgetMs, progress: PROGRESS_EVENTS });
+  log.info('turn watchdog mounted', {
+    budgetMs,
+    feeds: PROGRESS_FEEDS.map(([event]) => event),
+    assistantStreamFeed: 'semantic-only (text/tool-call frames; reasoning & markers excluded)',
+  });
 };
