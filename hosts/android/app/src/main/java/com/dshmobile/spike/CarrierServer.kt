@@ -437,12 +437,29 @@ class CarrierServer {
     private fun frame(opcode: Int, payload: ByteArray): ByteArray {
         val out = ArrayList<Byte>()
         out.add((0x80 or opcode).toByte())
-        if (payload.size < 126) {
-            out.add(payload.size.toByte())
-        } else {
+        val size = payload.size
+        if (size < 126) {
+            out.add(size.toByte())
+        } else if (size < 65536) {
             out.add(126.toByte())
-            out.add((payload.size shr 8).toByte())
-            out.add((payload.size and 0xFF).toByte())
+            out.add((size shr 8).toByte())
+            out.add((size and 0xFF).toByte())
+        } else {
+            // RFC6455 §5.2: a payload ≥ 65536 MUST carry the 64-bit length
+            // form. The 16-bit form silently truncates (`size shr 8` keeps
+            // only the low byte): the page's WS client reads a short
+            // payload, desyncs on the remainder as a bogus next header, and
+            // fails the socket — the session/follow snapshot of any real-
+            // sized journal rode exactly such a frame, and the official
+            // page folded the dead mux into `Failed to load history …
+            // (gateway/internal)` on every reload (#330). The iOS and
+            // harmony siblings already encode this branch; only Android
+            // lacked it.
+            val n = size.toLong()
+            out.add(127.toByte())
+            for (shift in 56 downTo 0 step 8) {
+                out.add((n shr shift).toByte())
+            }
         }
         for (b in payload) out.add(b)
         return out.toByteArray()
