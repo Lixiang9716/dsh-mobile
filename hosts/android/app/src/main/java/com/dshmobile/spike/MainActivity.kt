@@ -27,6 +27,9 @@ import java.io.File
  */
 class MainActivity : Activity() {
 
+    /** The per-tree asset manifest stamp (syncAssetDir). */
+    private val assetStampName = ".dsh-asset-stamp"
+
     private lateinit var verdictView: TextView
     private var spikeHost: SpikeHostM4? = null
     private var webView: WebView? = null
@@ -233,8 +236,8 @@ class MainActivity : Activity() {
         // thread: spike bundle + official dist + web-plugins), then start.
         SpikeRuntime.post {
             materializeBundle()
-            copyAssetDir("official-web", File(filesDir, "official-web"))
-            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
                 session = OfficialWebSession.start(this, view, onFinished = { verdict ->
                     verdictView.text = verdict
@@ -266,7 +269,7 @@ class MainActivity : Activity() {
         // spike bundle incl. webclient-next + web-plugins), then drive.
         SpikeRuntime.post {
             materializeBundle()
-            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
                 nextWeb = NextWebSession.start(this, view) { verdict ->
                     verdictView.text = verdict
@@ -353,8 +356,8 @@ class MainActivity : Activity() {
         // serve. No verdict callback — a user-facing boot has nothing to assert.
         SpikeRuntime.post {
             materializeBundle()
-            copyAssetDir("official-web", File(filesDir, "official-web"))
-            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
                 val client = intent.getStringExtra(EXTRA_WEB_CLIENT)
                     ?: SessionServe.CLIENT_ID
@@ -380,11 +383,6 @@ class MainActivity : Activity() {
         }
     }
 
-    /** Copies the asset spike bundle to filesDir/spike preserving the layout. */
-    private fun materializeBundle() {
-        copyAssetDir("spike", File(filesDir, "spike"))
-    }
-
     /**
      * The session-live session (`android.session.live-read`): the FULL upstream
      * agent spine boots on-device and claims `/api/session.list` + the mux
@@ -400,8 +398,8 @@ class MainActivity : Activity() {
         // thread: spike bundle + official dist + web-plugins), then start.
         SpikeRuntime.post {
             materializeBundle()
-            copyAssetDir("official-web", File(filesDir, "official-web"))
-            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
                 sessionLive = SessionLiveSession.start(this, view) { verdict ->
                     verdictView.text = verdict
@@ -425,8 +423,8 @@ class MainActivity : Activity() {
         // thread: spike bundle + official dist + web-plugins), then start.
         SpikeRuntime.post {
             materializeBundle()
-            copyAssetDir("official-web", File(filesDir, "official-web"))
-            copyAssetDir("web-plugins", File(filesDir, "web-plugins"))
+            syncAssetDir("official-web", File(filesDir, "official-web"))
+            syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
                 sessionWrite = SessionWriteSession.start(this, view) { verdict ->
                     verdictView.text = verdict
@@ -435,16 +433,50 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun copyAssetDir(assetPath: String, target: File) {
+    /** Copies the asset spike bundle to filesDir/spike preserving the layout. */
+    private fun materializeBundle() {
+        syncAssetDir("spike", File(filesDir, "spike"))
+    }
+
+    /** The asset-set stamp written INSIDE each synced tree: the exact sorted
+     * relative-path manifest of what the current APK ships. */
+    private fun collectAssetNames(assetPath: String, prefix: String, names: MutableSet<String>) {
         val children = assets.list(assetPath).orEmpty()
         if (children.isEmpty()) {
-            copyAssetFile(assetPath, target)
+            names.add(prefix)
             return
         }
-        target.mkdirs()
         for (child in children) {
-            copyAssetDir("$assetPath/$child", File(target, child))
+            collectAssetNames("$assetPath/$child", if (prefix.isEmpty()) child else "$prefix/$child", names)
         }
+    }
+
+    /** Reconciles one served tree with the APK's assets (loop-g): an
+     * overwrite-only copy let every entry an OLDER APK shipped survive
+     * `install -r` forever — the device's files/spike/vendor/dsh carried
+     * 274 pre-lean dirs the current closure never materializes, and no
+     * clean-install proof could pass over them. The stamped manifest makes
+     * drift loud and self-healing: matching stamp → no-op; missing or
+     * differing stamp (first boot after this fix, a lean change, a new
+     * file) → wipe the tree and re-materialize exactly the shipped set.
+     * Crash-safe: the stamp lands only after the copy completes. Trees are
+     * app-owned scratch (the workspace lives under files/profiles/, and the
+     * presets seed re-delivers its rows every boot), so the wipe never
+     * takes user data with it. */
+    private fun syncAssetDir(assetPath: String, target: File) {
+        val stamp = File(target, assetStampName)
+        val names = sortedSetOf<String>()
+        collectAssetNames(assetPath, "", names)
+        val desired = names.joinToString("\n")
+        if (stamp.isFile && stamp.readText() == desired) return
+        if (target.exists()) target.deleteRecursively()
+        target.mkdirs()
+        for (rel in names) {
+            val out = File(target, rel)
+            out.parentFile?.mkdirs()
+            copyAssetFile("$assetPath/$rel", out)
+        }
+        stamp.writeText(desired)
     }
 
     private fun copyAssetFile(assetPath: String, target: File) {
