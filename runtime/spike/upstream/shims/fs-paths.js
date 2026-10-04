@@ -16,6 +16,7 @@ import {
   resolveSymlinkAt,
 } from 'upstream/shims/fs-workspace.js';
 import { DshBuffer } from 'upstream/shims/buffer.js';
+
 import { underVFS, vfs, enoent, readAnyBytes } from 'upstream/shims/fs.js';
 
 export const resolveWorkspaceSymlink = (path) => {
@@ -57,7 +58,7 @@ const outsideEveryView = (path) => {
   const error = new Error(
     `node:fs: path '${path}' is outside the writable workspace root and every staged read-only view `
     + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `
-    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)`);
+    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)${wsRootHint(path)}`);
   error.code = 'EACCES';
   error.path = path;
   return error;

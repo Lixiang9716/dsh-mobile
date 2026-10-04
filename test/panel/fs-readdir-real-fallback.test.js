@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync as nodeReadd
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
-import { readdirSync, writeFileSync as wsWriteFileSync } from 'upstream/shims/fs.js';
+import { readdirSync, writeFileSync as wsWriteFileSync, mkdirSync as wsMkdirSync } from 'upstream/shims/fs.js';
 
 // loop-p (round 4): the model's str_replace_editor view of a REAL workspace
 // directory answered `cannot list …: not found` while reads of the same
@@ -84,5 +84,22 @@ describe('fs readdir real-disk fallback (loop-p)', () => {
 
   it('answers absence for a directory that does not exist anywhere', () => {
     expect(() => readdirSync(join(root, 'no-such-branch'))).toThrow(/ENOENT|no such/);
+  });
+});
+
+describe('outside-root refusals teach the anchor (loop-h)', () => {
+  it('the write refusal names the workspace root and the correct spelling', () => {
+    try {
+      wsWriteFileSync('/plugins/thing.js', new TextEncoder().encode('x\n'));
+      expect.unreachable('the outside-root write must refuse');
+    } catch (error) {
+      expect(error.message).toContain('outside the writable workspace root');
+      expect(error.message).toContain(root);
+      expect(error.message).toContain(`'${root}/plugins/thing.js'`);
+    }
+  });
+
+  it('the mkdir refusal carries the same anchor', () => {
+    expect(() => wsMkdirSync('/plugins')).toThrow(/the writable workspace root is '/);
   });
 });
