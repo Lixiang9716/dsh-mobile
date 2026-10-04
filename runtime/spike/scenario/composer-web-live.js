@@ -31,6 +31,7 @@ import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRout
 import { writeSurfaceOptions } from 'scenario/write-surface-options.js';
 import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
 import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
+import { makeFailGate } from 'scenario/scenario-verdict.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -61,24 +62,20 @@ const log = createLogger('b4.web');
 
 
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
-/** One verdict per scenario: the completion is terminal, and the embedder
- * re-reports a completed-fail on every later bus crossing (dsh_spike_m4.c
- * m4_status reads the sticky completed flag) — a second __dshComplete only
- * multiplies the FAIL lines, never the facts (loop-q: the demand throw rode
- * main().catch(fail) into a second emission, doubling the storm). */
-let scenarioFailed = false;
-const fail = (reason) => {
-  if (scenarioFailed) return;
-  scenarioFailed = true;
-  const error = reason instanceof Error ? reason : null;
-  const message = error ? error.message : String(reason);
-  const withStack = error?.stack
-    ? `${message} | ${error.stack.split('\n').slice(0, 4).join(' / ')}`
-    : message;
-  log.debug('scenario failed', { reason: withStack });
-  emit('scenario.failed', { reason: withStack });
-  globalThis.__dshComplete(false, withStack);
-};
+/** One verdict per scenario (scenario/scenario-verdict.js, split at loop-x):
+ * the completion is terminal, and the embedder re-reports a completed-fail
+ * on every later bus crossing (dsh_spike_m4.c m4_status reads the sticky
+ * completed flag) — a second __dshComplete only multiplies the FAIL lines,
+ * never the facts (loop-q: the demand throw rode main().catch(fail) into a
+ * second emission, doubling the storm). A suppressed fail whose message
+ * DIFFERS from the recorded verdict — a genuinely new failure class — rides
+ * log.warn once (warn survives the release strip, rule L4); the same
+ * message stays silent. */
+const fail = makeFailGate({
+  log,
+  emit,
+  complete: (ok, reason) => globalThis.__dshComplete(ok, reason),
+});
 const demand = (cond, reason) => { if (cond) return; fail(reason); throw new Error(reason); };
 
 /** Bus deliveries may arrive before the awaiting half exists (the drive

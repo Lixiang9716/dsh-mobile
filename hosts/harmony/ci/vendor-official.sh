@@ -182,6 +182,7 @@ logger.js
 registry.js
 scenario/officialweb-web-live.js
 scenario/composer-web-live.js
+scenario/scenario-verdict.js
 vendor/npm/turndown@7.2.4/lib/turndown.es.js
 $(cd runtime/spike && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
     vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib \
