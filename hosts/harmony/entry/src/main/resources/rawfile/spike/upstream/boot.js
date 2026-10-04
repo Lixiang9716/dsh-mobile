@@ -62,6 +62,7 @@ import * as TurnWatchdog from 'upstream/turn-watchdog.js';
 // Exports {Config, apply, inject, name} and no default — the namespace object
 // IS the cordis plugin (the tool-todo import's rule).
 import * as LlmRetry from '@deepseek-ai/dsh-llm-retry';
+import * as RetryTelemetry from 'upstream/retry-telemetry.js';
 // The turn-failure supervisor (loop-u): what a retry budget cannot cover —
 // an errored turn gets one honest system message and its queued followups
 // continue (the desktop controller's api-session/error relay + the followup
@@ -304,12 +305,13 @@ const mountPresetPlane = async (ctx) => {
   });
 };
 
-/** Ring 2's recovery face (loop-u): the request-level retry answer first
- * (transient stream deaths retry in-turn under the provider's policy), then
- * the turn-failure supervisor (an errored turn closes honestly and its
- * queued followups continue). Both read the agents registry. */
+/** Ring 2's recovery face (loop-u + loop-x2): the request-level retry answer
+ * first (transient stream deaths retry in-turn under the provider's policy),
+ * then its release-visible retry telemetry, then the turn-failure supervisor
+ * (an errored turn closes honestly; queued followups continue). */
 const mountRecoveryRings = async (ctx) => {
   await ctx.plugin(LlmRetry, {});
+  await ctx.plugin(RetryTelemetry, {});
   await ctx.plugin(TurnRecovery, {});
 };
 

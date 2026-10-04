@@ -240,6 +240,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/tool-deadline.js',
   'upstream/tool-present.js',
   'upstream/turn-recovery.js',
+  'upstream/retry-telemetry.js',
   'upstream/turn-watchdog.js',
   'upstream/web-boot.js',
   'upstream/web-search-keyless.js',
