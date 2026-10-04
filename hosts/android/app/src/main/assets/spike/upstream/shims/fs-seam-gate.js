@@ -8,7 +8,7 @@
  * the workspace bindings), so the one-way import edge adds no cycle risk —
  * the constraint the wsRootHint move documents (fs-workspace.js).
  */
-import { workspace, wsAt, wsRootHint } from 'upstream/shims/fs-workspace.js';
+import { wsAt, wsRootHint } from 'upstream/shims/fs-workspace.js';
 
 /** Whether the real-disk seam may answer this canonical path (loop-r): only
  * paths INSIDE the pinned workspace root — the same containment wsAt draws,
@@ -24,12 +24,10 @@ export const realSeamInsideRoot = (canonical) => wsAt(canonical) !== null;
 /** The #358-shaped outside-root refusal for the read faces (loop-r): the
  * outsideEveryView message family (fs-paths.js cannot be imported there from
  * here — same cycle constraint as wsRootHint) plus the wsRootHint anchor.
- * Code EACCES like the write refusals; the hint degrades to '' when no
- * workspace is mounted so the refusal never masks itself with a mount
- * error. */
+ * Code EACCES like the write refusals; the unmounted-workspace hint degrade
+ * lives INSIDE wsRootHint since loop-w, so no local guard is needed here. */
 export const wsOutsideRootError = (call, path) => {
-  const state = workspace();
-  const hint = state !== null ? wsRootHint(path) : '';
+  const hint = wsRootHint(path);
   const error = new Error(
     `node:fs.${call}: path '${path}' is outside the writable workspace root and every staged read-only view `
     + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `

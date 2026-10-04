@@ -157,13 +157,14 @@ const ws = () => {
   return state;
 };
 
-/** The refusal suffix that teaches the anchor (loop-h): an outside-root path
- * is recoverable in one step when the refusal names the root and the correct
- * spelling. Lives HERE, not fs-paths.js: that import edge re-orders the shim
- * cycle and lands fs.js's eval before mountWorkspace initializes (TDZ —
- * measured: ios m1 boot.verification). */
+/** The refusal suffix that teaches the anchor (loop-h). Lives HERE, not
+ * fs-paths.js: that import edge re-orders the shim cycle (TDZ at boot).
+ * loop-w: DEGRADES to '' when no workspace is mounted — a refusal never
+ * masks itself with the mount error; every caller shares the rule. */
 export const wsRootHint = (path) => {
-  const root = ws().root;
+  const state = workspace();
+  if (state === null) return '';
+  const root = state.root;
   const anchored = typeof path === 'string' && path.startsWith('/')
     ? `${root}${path.replace(/\/+$/, '')}`
     : `${root}/file.txt`;

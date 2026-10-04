@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync as nodeReadd
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
-import { readdirSync, writeFileSync as wsWriteFileSync, mkdirSync as wsMkdirSync, readFileSync } from 'upstream/shims/fs.js';
+import { readdirSync, writeFileSync as wsWriteFileSync, mkdirSync as wsMkdirSync, readFileSync, readAnyBytes, realpathSync } from 'upstream/shims/fs.js';
 import { readFile } from 'upstream/shims/fs-promises.js';
 
 // loop-p (round 4): the model's str_replace_editor view of a REAL workspace
@@ -215,5 +215,121 @@ describe('the model seat cannot read the staged credential (loop-r)', () => {
     seamOnlyFiles.set(insideSeamPath, Buffer.from('done\n').toString('base64'));
     const text = await readFile(insideSeamPath, 'utf8');
     expect(text).toBe('done\n');
+  });
+});
+
+// loop-w: the #363-review follow-ups — the unmounted-workspace hint degrade,
+// the absence-shape symmetry across the read faces, and the lexical refusal
+// spellings.
+describe('unmounted-workspace hints degrade to empty (loop-w)', () => {
+  it('readdirSync outside-root with NO workspace mounted answers absence, not a mount error', () => {
+    const saved = globalThis.__DSH_WORKSPACE_FS__;
+    globalThis.__DSH_WORKSPACE_FS__ = null;
+    try {
+      let error;
+      try {
+        readdirSync('/no-workspace-mounted/no-such-dir');
+        expect.unreachable('the unmounted readdir must throw');
+      } catch (caught) {
+        error = caught;
+      }
+      // The pre-fix answer here was the mount error (wsRootHint's ws() call)
+      // masking the ENOENT the discovery walks branch on — the same
+      // degrade-to-empty principle fs-seam-gate already holds.
+      expect(error.code).toBe('ENOENT');
+      expect(error.message).not.toContain('not mounted');
+    } finally {
+      globalThis.__DSH_WORKSPACE_FS__ = saved;
+    }
+  });
+
+  it('the seam-gate refusal with no workspace mounted still refuses, hint-free', () => {
+    const saved = globalThis.__DSH_WORKSPACE_FS__;
+    globalThis.__DSH_WORKSPACE_FS__ = null;
+    try {
+      let error;
+      try {
+        readFileSync('/no-workspace-mounted/secret.txt', 'utf8');
+        expect.unreachable('the unmounted outside read must refuse');
+      } catch (caught) {
+        error = caught;
+      }
+      expect(error.code).toBe('EACCES');
+      expect(error.message).toContain('outside the writable workspace root');
+      expect(error.message).not.toContain('not mounted');
+    } finally {
+      globalThis.__DSH_WORKSPACE_FS__ = saved;
+    }
+  });
+});
+
+describe('outside-root absence answers ENOENT on every read face (loop-w)', () => {
+  it('the promise readFile arm answers ENOENT for an outside-root path that exists nowhere', async () => {
+    const absent = join(tmpdir(), `dsh-fs-absent-${process.pid}`, 'no-such.txt');
+    let error;
+    try {
+      await readFile(absent, 'utf8');
+      expect.unreachable('the absent read must throw');
+    } catch (caught) {
+      error = caught;
+    }
+    // Symmetric with readdirMiss: the anchor is for a path the host disk
+    // actually holds; genuine absence keeps the discovery-walk ENOENT.
+    expect(error.code).toBe('ENOENT');
+    expect(error.message).not.toContain('outside the writable workspace root');
+  });
+});
+
+describe('refusal spellings are lexical (loop-w)', () => {
+  it('the sync readFileSync refusal carries the lexical spelling, not raw ../ hops', () => {
+    // String-built on purpose: node's join would lexicalize the '..' hop
+    // before the shim ever sees it.
+    const raw = `${systemApp}/no-such/../BasicDreams.apk`;
+    let error;
+    try {
+      readFileSync(raw, 'utf8');
+      expect.unreachable('the outside read must refuse');
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error.message).toContain('outside the writable workspace root');
+    // The lexical spelling is refused; the raw '..' hop never teaches the
+    // model a wrong maybe-you-meant.
+    expect(error.message).toContain(`${systemApp}/BasicDreams.apk`);
+    expect(error.message).not.toContain('/../');
+    expect(error.message).toContain(`'${root}${systemApp}/BasicDreams.apk'`);
+    // The one refusal shape: node-complete fields on both factories.
+    expect(error.code).toBe('EACCES');
+    expect(error.errno).toBe(-13);
+    expect(error.syscall).toBe('readFileSync');
+  });
+
+  it('readAnyBytes refusal is lexical too', () => {
+    const raw = `${systemApp}/no-such/../BasicDreams.apk`;
+    let error;
+    try {
+      readAnyBytes(raw);
+      expect.unreachable('the outside read must refuse');
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error.message).toContain('outside the writable workspace root');
+    expect(error.message).not.toContain('/../');
+  });
+});
+
+describe('the outside-root refusal carries one shape (loop-w)', () => {
+  it('realpathSync outside-root absent path refuses with the anchor and the same node fields', () => {
+    let error;
+    try {
+      realpathSync(join(tmpdir(), `dsh-fs-absent-${process.pid}`, 'no-such.txt'));
+      expect.unreachable('the outside realpath must refuse');
+    } catch (caught) {
+      error = caught;
+    }
+    expect(error.message).toContain('outside the writable workspace root');
+    expect(error.code).toBe('EACCES');
+    expect(error.errno).toBe(-13);
+    expect(error.syscall).toBe('realpath');
   });
 });
