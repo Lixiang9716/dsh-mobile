@@ -90,6 +90,31 @@ def tracked_sources():
     return [n for n in names if Path(n).suffix in SOURCE_EXTS and Path(n).exists()]
 
 
+def declared_exclusions():
+    """Globs declared in .gov/checks/exclude.json — the same exclusion home
+    the `check` gate's syntax judging honors, read here so the two scoping
+    surfaces cannot drift. The gate's file set is git's would-be-committed
+    set, which sweeps worktree-local agent scratch (#352's shared-tree red:
+    8/8 violations under .zcode/, zero in any reviewed diff — every session
+    in the shared worktree went red for another session's scratch). Declared
+    here = counted in the summary, never a silent skip (rules 5/6)."""
+    try:
+        rows = json.loads(
+            Path(".gov/checks/exclude.json").read_text(encoding="utf-8")
+        )["exclude"]
+        return [row["path"] for row in rows]
+    except Exception:
+        return []
+
+
+def declared_excluded(files, patterns):
+    import fnmatch
+
+    kept = [f for f in files
+            if not any(fnmatch.fnmatch(f, pattern) for pattern in patterns)]
+    return kept, len(files) - len(kept)
+
+
 def untracked_sources(files):
     """How many of ``files`` git does not track yet (#338).
 
@@ -371,6 +396,14 @@ def main():
     files = [f for f in files if VENDOR_SEGMENT not in f
              and not f.startswith(STAGED_CLOSURE_DIRS)
              and not f.startswith(VENDORED_AGENT_SKILL_DIRS)]
+    exclusion_globs = declared_exclusions()
+    files, declared_excluded_count = declared_excluded(files, exclusion_globs)
+    if declared_excluded_count > 0:
+        print(
+            "code-size: note — "
+            f"{declared_excluded_count} file(s) excluded by declared exclusion "
+            f"(.gov/checks/exclude.json): {', '.join(exclusion_globs)}"
+        )
     if not files:
         print("code-size: no tracked source files — nothing to check")
         return 0
