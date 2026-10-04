@@ -157,8 +157,10 @@ const rowOf = (doc, id) =>
 /**
  * Read-modify-write: upsert one roster row by id (unknown doc/entry fields
  * preserved — agent-authored rows carry fields this plane does not own, the
- * #340 write-legs semantic). Answers `{ok, changed, row}` or a structured
- * refusal; never throws.
+ * #340 write-legs semantic). Provenance the registry owns: `installedAt`
+ * records the FIRST install and survives re-installs (the tool proposes a
+ * fresh timestamp per call), and every real change stamps `updatedAt`.
+ * Answers `{ok, changed, row}` or a structured refusal; never throws.
  */
 export const upsertRegistryRow = async ({ fsRead, fsWrite, path }, row) => {
   const read = await readRegistryStrict({ fsRead, path });
@@ -167,15 +169,23 @@ export const upsertRegistryRow = async ({ fsRead, fsWrite, path }, row) => {
   const existing = rowOf(doc, row.id);
   let changed = false;
   if (existing === undefined) {
-    doc.plugins.push(row);
+    doc.plugins.push({ ...row, updatedAt: row.updatedAt ?? new Date().toISOString() });
     changed = true;
   } else {
     for (const [key, value] of Object.entries(row)) {
+      // installedAt is provenance the registry owns (loop-l): a re-install
+      // updates the row but keeps the FIRST install's stamp — the tool
+      // proposes a fresh timestamp per call, which would otherwise erase
+      // the creation date on every update.
+      if (key === 'installedAt' && existing.installedAt !== undefined) continue;
       if (existing[key] !== value) {
         existing[key] = value;
         changed = true;
       }
     }
+    // The update stamp lands only on a real change: an idempotent
+    // re-install leaves the row (provenance included) byte-identical.
+    if (changed) existing.updatedAt = new Date().toISOString();
   }
   if (changed) await writeRegistryDoc({ fsWrite, path }, doc);
   return { ok: true, changed, row: rowOf(doc, row.id) };

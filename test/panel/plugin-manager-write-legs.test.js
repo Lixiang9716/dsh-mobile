@@ -7,6 +7,7 @@ import { sha256Hex } from 'sha256.js';
 import { canonicalJson } from 'canonical-json.js';
 import { clearIndexCache } from 'marketplace-resolver.js';
 import { workspace, __httpRoute, __httpReset, __dump } from './gateway-shim.js';
+import { upsertRegistryRow } from 'workspace-registry.js';
 
 // The pluginManager WRITE legs battery (#335 A1 + B3): every leg answers
 // in-band — the ChangeResult refusal vocabulary on failure, never a throw
@@ -362,5 +363,86 @@ describe('dynamicCordisRunner runtime-side legs (#335 B3)', () => {
     await expect(api['dynamicCordisRunner/syncInspectManifest']({
       providers: [{ id: '', description: 'x', methods: [] }],
     })).rejects.toMatchObject({ code: 'gateway/bad-request' });
+  });
+});
+
+describe('registry provenance (loop-l) — installedAt survives re-install', () => {
+  const store = new Map();
+  const REG = 'test/plugins/registry.json';
+  const enc = (doc) => new TextEncoder().encode(JSON.stringify(doc));
+  const fsRead = async (scope, p) => {
+    const bytes = store.get(p);
+    if (bytes === undefined) {
+      throw Object.assign(new Error(`no such file: ${p}`), { code: 'io' });
+    }
+    return { bytes };
+  };
+  const fsWrite = async (scope, p, bytes) => { store.set(p, bytes); };
+  const doc = () => JSON.parse(new TextDecoder().decode(store.get(REG)));
+
+  it('a fresh install records installedAt and updatedAt', async () => {
+    const res = await upsertRegistryRow(
+      { fsRead, fsWrite, path: REG },
+      { id: 'quick-notes', name: 'Quick Notes', installedAt: '2026-10-04T03:05:04.879Z' });
+    expect(res).toMatchObject({ ok: true, changed: true });
+    const row = doc().plugins.find((r) => r.id === 'quick-notes');
+    expect(row.installedAt).toBe('2026-10-04T03:05:04.879Z');
+    expect(typeof row.updatedAt).toBe('string');
+  });
+
+  it('a re-install with a fresh installedAt keeps the FIRST stamp and stamps updatedAt', async () => {
+    const before = doc().plugins.find((r) => r.id === 'quick-notes');
+    const res = await upsertRegistryRow(
+      { fsRead, fsWrite, path: REG },
+      { id: 'quick-notes', name: 'Quick Notes', version: '2',
+        installedAt: '2026-10-04T03:29:54.501Z' });
+    expect(res).toMatchObject({ ok: true, changed: true });
+    const row = doc().plugins.find((r) => r.id === 'quick-notes');
+    expect(row.installedAt).toBe('2026-10-04T03:05:04.879Z'); // provenance kept
+    expect(row.version).toBe('2'); // the update itself landed
+    expect(row.updatedAt >= before.updatedAt).toBe(true);
+  });
+
+});
+
+describe('registry provenance (loop-l) — stamp churn and backfill', () => {
+  const REG = 'test/plugins/registry.json';
+  const store = new Map();
+  const enc = (doc) => new TextEncoder().encode(JSON.stringify(doc));
+  const fsRead = async (scope, p) => {
+    const bytes = store.get(p);
+    if (bytes === undefined) {
+      throw Object.assign(new Error(`no such file: ${p}`), { code: 'io' });
+    }
+    return { bytes };
+  };
+  const fsWrite = async (scope, p, bytes) => { store.set(p, bytes); };
+  const doc = () => JSON.parse(new TextDecoder().decode(store.get(REG)));
+  const seed = async () => {
+    store.set(REG, enc({ version: 1, plugins: [
+      { id: 'quick-notes', name: 'Quick Notes', version: '1',
+        installedAt: '2026-10-04T03:05:04.879Z', updatedAt: '2026-10-04T03:05:04.879Z' },
+    ] }));
+  };
+
+  it('an idempotent re-install changes nothing (no stamp churn)', async () => {
+    await seed();
+    const before = JSON.stringify(doc().plugins.find((r) => r.id === 'quick-notes'));
+    const res = await upsertRegistryRow(
+      { fsRead, fsWrite, path: REG },
+      { id: 'quick-notes', name: 'Quick Notes', version: '1',
+        installedAt: '2026-10-04T03:05:04.879Z' });
+    expect(res).toMatchObject({ ok: true, changed: false });
+    expect(JSON.stringify(doc().plugins.find((r) => r.id === 'quick-notes'))).toBe(before);
+  });
+
+  it('a model-authored row without installedAt adopts the incoming one (backfill)', async () => {
+    await seed();
+    const res = await upsertRegistryRow(
+      { fsRead, fsWrite, path: REG },
+      { id: 'hand-written', name: 'Hand Written', installedAt: '2026-10-04T09:00:00.000Z' });
+    expect(res).toMatchObject({ ok: true, changed: true });
+    expect(doc().plugins.find((r) => r.id === 'hand-written').installedAt)
+      .toBe('2026-10-04T09:00:00.000Z');
   });
 });
