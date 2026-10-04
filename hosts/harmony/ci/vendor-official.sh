@@ -331,6 +331,7 @@ upstream/web-write-onboarding.js
 upstream/web-write-marketplace.js
 upstream/web-write-plugin-manager.js
 upstream/web-write-cordis.js
+upstream/web-write-inventory.js
 upstream/preset-mobile-rows.js
 upstream/web-write-files.js
 upstream/web-write-picker.js
