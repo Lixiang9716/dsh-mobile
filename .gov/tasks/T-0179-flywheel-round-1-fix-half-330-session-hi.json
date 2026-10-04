@@ -13,7 +13,7 @@
     "[x] diagnose the top open entry: #330 follow-stream gateway/internal on session click-through",
     "[x] fix the Android carrier's ws frame() to emit the 64-bit length form (hosts/android CarrierServer.kt)",
     "[x] verify: byte-level old-vs-new encoder check, :app:compileDebugKotlin green, test/panel/run.sh green",
-    "land: agent note + commit + push + PR + green checks + squash merge + queue fixed line + main synced"
+    "[x] land: agent note + commit + push + PR + green checks + squash merge + queue fixed line + main synced"
   ],
   "status": "open",
   "receipt": null,
