@@ -71,6 +71,15 @@ import * as ShellIsh from 'system-plugins/dsh-shell-ish/index.js';
 // httpFetch): projects, BYOK generate, artifact save/lint. A host with no
 // configured daemon mounts nothing — the same decline shape as shell-ish.
 import * as OpenDesign from 'system-plugins/dsh-open-design/index.js';
+// The PLUGIN-MANAGER row (#346 item 3): the session toolset's plugin
+// pipeline — the `plugin_manager` tool over the workspace dsh.plugins/1
+// registry (the LIST legs' manageable plane), in the same outboard
+// implementation-package shape (D6). The Creator composition's
+// `tool-plugin-manager` row names the vendored desktop tool whose host-face
+// (pluginManager/sandboxPolicy services, dsh-sandbox) this closure does not
+// carry; this row is what makes the composition's Enabled declaration TRUE
+// on the mobile seat. Mounted after `tools`, which its `inject` waits for.
+import * as PluginManagerTools from 'system-plugins/dsh-plugin-manager-tools/index.js';
 // The FILE-TOOLS row (the dsh-desktop plugin surface): upstream's fs tool
 // family over the vendored fs-local backend, working in ONE in-memory
 // workspace world (upstream/shims/fs.js mountWorkspace). The npm bridge that
@@ -192,6 +201,7 @@ export const spineInventory = (ctx) => {
     tool('shell-wasm', 'system-plugins/dsh-shell-wasm', 'shell'),
     tool('shell-ish', 'system-plugins/dsh-shell-ish', 'ish'),
     tool('open-design', 'system-plugins/dsh-open-design', 'open_design_projects'),
+    tool('tool-plugin-manager', 'system-plugins/dsh-plugin-manager-tools', 'plugin_manager'),
     service('fs', '@deepseek-ai/dsh-fs-local', 'fs'),
     tool('tool-fs', '@deepseek-ai/dsh-tool-fs', 'read'),
     tool('tool-str-replace-editor', '@deepseek-ai/dsh-tool-str-replace-editor', 'str_replace_editor'),
@@ -300,6 +310,7 @@ const mountSpine = async (ctx, identity) => {
     await ctx.plugin(ShellWasm);
     await ctx.plugin(ShellIsh);
     await ctx.plugin(OpenDesign);
+    await ctx.plugin(PluginManagerTools);
     await ctx.plugin(await import('system-plugins/dsh-office/index.js')); // the OFFICE row — dynamic: bare `fflate` needs the bridges body first
     // The WEB row (#335 B5): the dsh-web seam + the keyless search provider +
     // the search-only tool row. Dynamic import: the bridges must have

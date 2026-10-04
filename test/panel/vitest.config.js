@@ -47,6 +47,11 @@ export default defineConfig({
       'upstream/web-write-marketplace.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-marketplace.js', import.meta.url)),
       'upstream/web-write-plugin-manager.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-plugin-manager.js', import.meta.url)),
       'upstream/web-write-cordis.js': fileURLToPath(new URL('../../runtime/spike/upstream/web-write-cordis.js', import.meta.url)),
+      // The plugin_manager tool suite (#346): the outboard plugin-manager
+      // package over the shared workspace-registry module (its gateway and
+      // dsh-tools imports alias above; the §4 validator aliases below).
+      'system-plugins/dsh-plugin-manager-tools/index.js': fileURLToPath(new URL('../../system-plugins/dsh-plugin-manager-tools/index.js', import.meta.url)),
+      'workspace-registry.js': fileURLToPath(new URL('../../runtime/spike/workspace-registry.js', import.meta.url)),
     },
   },
 });
