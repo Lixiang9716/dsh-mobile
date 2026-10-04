@@ -1036,3 +1036,45 @@ theme.css[RU5T]: F:The theme tokens (CSS variables), the token single source's w
 
 ===/home/lx/dsh-mobile/presentation/web-client-next/web/===
 index.html[RU4M]: F:The web client entry page: the shell the views mount into | R:code:presentation/web-client-next/web/js | A:served at the carrier root | S:The product tree the hosts stage mirrors FROM — edits start here
+
+===/home/lx/dsh-mobile/presentation/web-client-next/web/js/===
+api.js[RU5T]: F:The POST /api envelope bridge (webserver-contract §2.3) | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/api.js, code:docs/webserver-contract.md | A:the page's single HTTP mouth | S:The PRODUCT tree — the hosts stage mirrors of it, and the asset-mirrors gate compares both directions; edits start here
+composer.js[RU5S]: F:The input deck: auto-growing textarea, send button, keyboard affordances | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/composer.js | A:the composer DOM surface | S:Product tree — re-stage after edit; the staged mirror is build output of this file
+main.js[RU6M]: F:The wiring: mux connection, the home-chat view switch, the panel mounts | R:code:presentation/web-client-next/web/js/mux.js, code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/main.js | A:the page entry the HTML loads | S:Product tree — the asset-mirrors gate re-derives both directions from here
+markdown.js[RU5S]: F:A bounded markdown subset renderer | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/markdown.js | A:the transcript's markdown face | S:Bounded on purpose — an unbounded parser is an XSS surface. Product tree; re-stage after edit
+marketplace-core.js[RU5S]: F:The marketplace panel's pure logic, no DOM | R:code:presentation/web-client-next/web/js/marketplace.js | A:the marketplace state machine | S:Pure core split for vitest coverage without a page. Product tree
+marketplace.js[RU5M]: F:The plugin marketplace panel's DOM wiring | R:code:presentation/web-client-next/web/js/marketplace-core.js | A:the marketplace panel surface main.js calls | S:Browse/install ride the wire legs — the panel adds display, never trust. Product tree
+mux.js[RU5S]: F:The page half of WS /api/remote.mux: follow feeds, deltas, reconnection | R:code:docs/webserver-contract.md, code:presentation/lynx-client/driver/wire/mux.js | A:the page's single WS mouth | S:The lynx driver's mux is a PORTED copy of this file — drift between them is a port regression the vitest suite pins. Product tree
+onboarding-core.js[RU5S]: F:The BYOK onboarding panel's pure logic, no DOM | R:code:presentation/web-client-next/web/js/onboarding.js | A:the onboarding state machine | S:Pure core split for vitest. Product tree
+onboarding.js[RU5S]: F:The BYOK first-run panel plus the saved-key management face | R:code:presentation/web-client-next/web/js/onboarding-core.js | A:the onboarding panel surface | S:Keys render masked and never echo back — the panel reads presence, not values. Product tree
+render-chat.js[RU5M]: F:The transcript DOM renderer: structure bumps re-render, content bumps patch | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/render-chat.js | A:the chat view renderer | S:Two-tier update rule is the perf contract. Product tree — re-stage after edit
+render-home.js[RU5T]: F:The workspace home view: the hero and workspace affordances | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/render-home.js | A:the home view renderer | S:Product tree — the staged mirrors re-derive from here
+timeline.js[RU5M]: F:The journal-to-display-items fold the timeline renders | R:code:hosts/android/app/src/main/assets/spike/webclient-next/web/js/timeline.js | A:the journal projection the chat view consumes | S:THE #286 file: an edit that skipped the staged mirrors rode two PRs — the asset-mirrors gate exists because of it. Product tree; re-stage
+
+===/home/lx/dsh-mobile/presentation/web-client-whale/===
+manifest.json[FC4T]: F:The whale whole-client plugin manifest | R:code:presentation/web-client-whale/web | A:schemaVersion 1; config-selectable by id | S:Whale is the whole-client swap proof — config-selected, wholly replaceable
+
+===/home/lx/dsh-mobile/presentation/web-client-whale/web/===
+index.html[RU4T]: F:The whale client's page shell | R:code:hosts/android/app/src/main/assets/spike/webclient-whale/web/index.html | A:served at the carrier mount | S:Product tree — the hosts stage mirrors; re-stage after edit
+main.js[RU5M]: F:The whale client's page wiring | R:code:hosts/android/app/src/main/assets/spike/webclient-whale/web/main.js | A:the page entry | S:Presentation-side page logs nothing — evidence rides the runtime/carrier loggers. Product tree
+whale.css[RU5M]: F:The whale client's stylesheet | R:code:hosts/android/app/src/main/assets/spike/webclient-whale/web/whale.css | A:served verbatim | S:Product tree — re-stage after edit
+
+===/home/lx/dsh-mobile/presentation/web-client/===
+manifest.json[FC4T]: F:The v1 dsh-web-client plugin manifest | R:code:presentation/web-client/web | A:schemaVersion 1; the config layer's default client | S:The original client face — superseded by next as the default but still config-selectable
+
+===/home/lx/dsh-mobile/presentation/web-client/web/===
+index.html[RU4T]: F:The v1 client's page shell | R:code:hosts/android/app/src/main/assets/spike/webclient/web/index.html | A:served at the carrier mount | S:Product tree — the staged mirror re-derives from here
+main.js[RU5T]: F:The v1 client's page wiring | R:code:hosts/android/app/src/main/assets/spike/webclient/web/main.js | A:the page entry | S:Presentation-side page logs nothing. Product tree — re-stage after edit
+
+===/home/lx/dsh-mobile/runtime/===
+README.md[SG5T]: F:The runtime layer README: quickjs-ng integration and the platform-independent shim | R:code:runtime/spike/README.md | A:- | S:-
+
+===/home/lx/dsh-mobile/runtime/logger/===
+index.ts[RS8M]: F:The unified logger's canonical TS contract: the only permitted logging surface — bare console.* fails the logging gate | R:code:runtime/spike/logger.js, code:docs/ARCHITECTURE.md | A:createLogger's canonical shape the ports must match | S:Nothing BUNDLES this file — the operative module every host ships is its port (runtime/spike/logger.js and siblings); the logging gate names the operative one, this file is the contract they must match
+
+===/home/lx/dsh-mobile/runtime/spike/===
+README.md[SG7M]: F:The core spike README: the runtime-and-host-spikes phase through the first on-device session, the closure inventory, and the shim table pointer | R:code:runtime/spike/upstream/README.md, code:runtime/spike/vendor/ensure-dsh.sh | A:- | S:The canonical closure everything stages FROM — the committed host copies byte-verify against this tree, and the README is where the shim surface is honestly tabulated
+canonical-json.js[RD5T]: F:Pure wire codecs for the marketplace signature plane: canonical JSON serialization and UTF-8 codecs | R:code:contract/data-protocols.md, code:runtime/spike/marketplace-resolver.js | A:the canonical bytes the ed25519 signature covers | S:THE CANONICAL file — the android/harmony staged copies byte-verify against it; edit here and re-sync, never the copies. No TextEncoder/TextDecoder: some embeds lack them
+
+===/home/lx/dsh-mobile/runtime/spike/ci/===
+check-parity-resolution.mjs[XQ5S]: F:The #328 gate assertion: a fresh environment resolves the parity legs' dependencies exactly as CI will | R:code:runtime/spike/scenario/upstream-parity.js | A:dsh:logging-exempt build tool — stdout is the verdict | S:Resolution drift broke the parity leg once; this checker re-derives the resolution instead of trusting a lockfile age
