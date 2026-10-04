@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-04T09:58:02Z",
+  "updated_at": "2026-10-04T10:17:14Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "c19766baf2221512d6316f2fdfb3cb7f15c9169de745046fe1805dce1b867bfb",
-      "size": 10691,
-      "normalized_sha256": "c19766baf2221512d6316f2fdfb3cb7f15c9169de745046fe1805dce1b867bfb"
+      "sha256": "1bfa6dbb68a42a9fab3f7642c7250806775e75895e93cc3f4818739abc220fb5",
+      "size": 58460,
+      "normalized_sha256": "1bfa6dbb68a42a9fab3f7642c7250806775e75895e93cc3f4818739abc220fb5"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -8050,9 +8050,9 @@
     },
     "test/panel/fs-readdir-real-fallback.test.js": {
       "role": "observe",
-      "sha256": "1bf12035350f37b281d8f3557cca466fa8ce6aa09a7099bc1c71e0ded695e581",
-      "size": 4253,
-      "normalized_sha256": "1bf12035350f37b281d8f3557cca466fa8ce6aa09a7099bc1c71e0ded695e581"
+      "sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b",
+      "size": 9844,
+      "normalized_sha256": "823027f846409051672641e6a8bed7695fbe481379d395b027f252bbd7c3bf7b"
     },
     "test/panel/gateway-shim.js": {
       "role": "index",
