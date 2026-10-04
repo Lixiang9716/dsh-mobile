@@ -246,6 +246,15 @@ jobs:
         working-directory: hosts/android
         run: |
           ./gradlew assembleRelease --no-daemon
+          # The hosted runner does not always carry a debug keystore (measured
+          # 2026-10-04: apksigner died on the missing file even after
+          # assembleDebug) — generate the standard one when absent. Not a
+          # distribution signature: the pin only needs an installable APK.
+          [ -f "$HOME/.android/debug.keystore" ] || \
+            keytool -genkeypair -keystore "$HOME/.android/debug.keystore" \
+              -storepass android -keypass android -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" sign \
             --ks "$HOME/.android/debug.keystore" --ks-pass pass:android \
             --out app/build/outputs/apk/release/app-release-signed.apk \

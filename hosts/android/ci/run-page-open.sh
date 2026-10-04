@@ -45,7 +45,15 @@ until adb get-state >/dev/null 2>&1 &&
     sleep 5
 done
 
-adb install -r "$APK" >/dev/null || die "adb install failed"
+adb install -r "$APK" >/dev/null || {
+    # A signature mismatch (the release APK is signed with a different debug
+    # cert than the installed harness build — CI generates the keystore on
+    # the fly) refuses -r; the seat state this check needs is the fresh boot
+    # itself, so a replace-by-uninstall is honest here — loudly said.
+    say "install -r refused (cert mismatch?) — uninstalling and installing fresh"
+    adb uninstall $PKG >/dev/null 2>&1 || true
+    adb install "$APK" >/dev/null || die "adb install failed even after uninstall"
+}
 mkdir -p "$OUT"
 
 # ---- fresh boot of the DEFAULT seat (no intent extras — the official serve) --
