@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-04T10:34:22Z",
+  "updated_at": "2026-10-04T10:47:24Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "e356e128ff5c967fb6f2f9b0c586ba567afa86799e0574fd143fc4b28f9a648f",
-      "size": 132828,
-      "normalized_sha256": "e356e128ff5c967fb6f2f9b0c586ba567afa86799e0574fd143fc4b28f9a648f"
+      "sha256": "b3168130f559de8be2d2c4510497a527b4305a093465a6be17132233425d1526",
+      "size": 235869,
+      "normalized_sha256": "b3168130f559de8be2d2c4510497a527b4305a093465a6be17132233425d1526"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -2819,9 +2819,9 @@
     },
     "hosts/harmony/ci/vendor-official.sh": {
       "role": "index",
-      "sha256": "8374a736cddfe5cab4e476afbff40d76656c3e9c90ac304d08d3f74badc27040",
-      "size": 36500,
-      "normalized_sha256": "8374a736cddfe5cab4e476afbff40d76656c3e9c90ac304d08d3f74badc27040"
+      "sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0",
+      "size": 36531,
+      "normalized_sha256": "d538ade33098392fc8cc1459a44307229d56e684a2789437516df81fe042b5a0"
     },
     "hosts/harmony/entry/build-profile.json5": {
       "role": "index",
@@ -3035,9 +3035,9 @@
     },
     "hosts/harmony/entry/src/main/ets/pages/Index.ets": {
       "role": "index",
-      "sha256": "0cac2d9395d9d115917483e7bc15d0e7b3d18c7e6c7675ddc578517d9c8360d7",
-      "size": 100722,
-      "normalized_sha256": "0cac2d9395d9d115917483e7bc15d0e7b3d18c7e6c7675ddc578517d9c8360d7"
+      "sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775",
+      "size": 100758,
+      "normalized_sha256": "f10749af04d9ad64268b5e7d044adee35a35cf15b24d9bca998f4090b61b2775"
     },
     "hosts/harmony/entry/src/main/module.json5": {
       "role": "index",
@@ -3917,15 +3917,21 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-promises.js": {
       "role": "index",
-      "sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2",
-      "size": 20874,
-      "normalized_sha256": "a9bc39dcaa4b287628289340f6b9ca4e9037c5941353f2afc65a55dabf4f33c2"
+      "sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd",
+      "size": 21737,
+      "normalized_sha256": "2976bfdc3b9019b780e9225fc857b66e427855fcec77bc5e5abb13d5f1066cbd"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-readdir.js": {
       "role": "index",
-      "sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0",
-      "size": 7508,
-      "normalized_sha256": "474d328f4135cb01156f5b5d6181092ca6bb7830111381620b00f3a3d8fadad0"
+      "sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0",
+      "size": 8848,
+      "normalized_sha256": "12d5f8ba764e0576f84da87c9d291e05c1c3a44eec48723fcd384ce1da82eef0"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seam-gate.js": {
+      "role": "index",
+      "sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d",
+      "size": 2391,
+      "normalized_sha256": "5b24bc275c8b58911ac3f29abdb12e87665f988494a9eee05b605904416c204d"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-seeded.js": {
       "role": "index",
@@ -3971,9 +3977,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs.js": {
       "role": "index",
-      "sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a",
-      "size": 17874,
-      "normalized_sha256": "28b8c7abec00db73fe999e5f88aa9405e880bbbd011581431c5b816fc519b27a"
+      "sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13",
+      "size": 18995,
+      "normalized_sha256": "7d7310c6498219511ff51861cd5b5d300199f2c7bf20d2ea05dca0515316da13"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/globals.js": {
       "role": "index",
