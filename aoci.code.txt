@@ -949,6 +949,8 @@ README.zh.md[SG7S]: F:lynx-client README 的简体中文对照：Lynx 渲染面�
 manifest.json[FC5T]: F:The lynx-client plugin manifest | R:code:presentation/lynx-client | A:schemaVersion 1; the config layer selects this client | S:A CLIENT plugin manifest — type web-client, zero gateway capabilities required
 package-lock.json[FV3M]: F:The committed lockfile of the lynx-client root | R:code:presentation/lynx-client/package.json | A:the runner's deterministic install | S:Committed for deterministic CI installs
 package.json[FV4T]: F:The lynx-client root manifest: driver dependencies and scripts | R:code:presentation/lynx-client/driver | A:the runner's npm scripts | S:Driver-side deps only — the bundle's own build lives under bundle/
+vitest.config.js[XQ4T]: F:Coverage config over the driver face plus the untouched modules | R:code:presentation/lynx-client/vitest.config.ts | A:the legacy js config | S:Superseded by the .ts config
+vitest.config.ts[XQ4T]: F:Line coverage over the Node-testable surface of the lynx driver | R:code:tools/test/run-coverage.sh | A:the vitest config the suite runs under | S:Covers the exercised modules AND the untouched ones — untouched coverage is how dead seams get noticed
 
 ===/home/lx/dsh-mobile/presentation/lynx-client/bundle/===
 lynx.config.ts[XV4T]: F:The rspeedy/Lynx bundle build config | R:code:presentation/lynx-client/bundle/package.json | A:the build the committed bundle ships from | S:The built bundle IS committed and sha256-verified at mount — rebuilds must stay byte-stable or the mount verify fails
@@ -994,3 +996,43 @@ ws-lite.mjs[RN4T]: F:A minimal WS client for the mock driver, no dependencies | 
 api.js[RN5T]: F:The POST /api envelope client of the driver | R:code:presentation/lynx-client/driver/wire/session-serve.js | A:the wire's HTTP half | S:Ported from the web clients' envelope — same shapes, one protocol
 mux.js[RN5T]: F:The driver half of WS /api/remote.mux, ported from web-client-next's mux | R:code:presentation/web-client-next/web/js/mux.js | A:the wire's WS half | S:A PORT with named provenance — drift between the two copies is a port regression the vitest suite pins
 session-serve.js[RN5T]: F:The SessionServe wire client: endpoints and exact envelope shapes | R:code:presentation/lynx-client/driver/wire/api.js | A:the session endpoints' typed face | S:Ported from web-client-next's main.js/composer.js — the envelopes must stay identical
+
+===/home/lx/dsh-mobile/presentation/lynx-client/shared/===
+fold.js[RD6T]: F:The view-events-to-view-state fold: a pure state machine shared by BOTH skins | R:code:presentation/lynx-client/driver/driver.js | A:the clarklevis projection the thread renders from | S:Pure and shared — the stub skin and the lynx skin render the same fold, which is what makes the replaceability claim testable
+surface-core.js[RI6T]: F:The bundle's seam core, React-free: one file, three consumers | R:code:presentation/lynx-client/bundle/src/bridge.ts, code:presentation/lynx-client/driver/render-surface-client.js | A:mount, pushViewEvent, onIntent, teardown | S:bridge.ts wraps this exact module for ReactLynx — the seam has one implementation, not one per skin
+view-events.js[RD5T]: F:The closed view-event vocabulary with fail-loud validators for both seam directions | R:code:presentation/lynx-client/shared/surface-core.js | A:the event-model faces | S:Closed vocabulary, iron law #2: an unknown event fails loud (rule 5) instead of being ignored
+
+===/home/lx/dsh-mobile/presentation/lynx-client/theme/===
+gen.mjs[XV4T]: F:The theme token single source, rendered to its two faces | R:code:presentation/lynx-client/theme/tokens.json, code:presentation/lynx-client/theme/web.tokens.css | A:node theme/gen.mjs regenerates both faces | S:One tokens.json, two generated faces (Lynx constants + web CSS vars) — hand-editing a face is drift by construction
+tokens.json[FC4T]: F:The theme token source: the deep-ocean palette ported from web-client-next plus the aurora gradients | R:code:presentation/lynx-client/theme/gen.mjs | A:the $source provenance names its origin | S:Ported with named provenance — regeneration starts from the upstream tokens, not from the generated faces
+web.tokens.css[RD3T]: F:GENERATED web face of the token source | R:code:presentation/lynx-client/theme/gen.mjs | A:GENERATED — regenerate, never hand-edit | S:Regenerated from tokens.json
+
+===/home/lx/dsh-mobile/presentation/official-web/===
+MANIFEST.sha256[XQ4T]: F:The digest manifest of the vendored official upstream dist | R:code:presentation/official-web/PROVENANCE.md | A:the trust record the content gates verify | S:Vendored verbatim build output (D9/D3) — the manifest is the provenance record, the dist bytes are never edited
+PROVENANCE.md[SS5S]: F:The provenance record of the official upstream web dist: what was vendored, from where, at what pin | R:code:presentation/official-web/MANIFEST.sha256, code:presentation/official-web/build-upstream.sh | A:human-facing doc; the dist's identity card | S:Verbatim vendored output of @deepseek-ai/dsh-web-frontend — adaptation lives in shims, never in these bytes (D6)
+build-upstream.sh[XV5T]: F:Reproducible build of the official upstream web app dist | R:code:presentation/official-web/PROVENANCE.md | A:the build that regenerates the vendored dist | S:Reproducibility is the claim — the same inputs must produce the manifest's digests, or the vendoring is broken
+
+===/home/lx/dsh-mobile/presentation/official-web/client-bundles/===
+MANIFEST.sha256[XQ4T]: F:The digest manifest of the application-tier client bundles | R:code:presentation/official-web/client-bundles/ROSTER.json | A:the trust record the stagers byte-verify | S:Mirrored into the three hosts — the asset-mirrors gate compares every copy both directions
+PROVENANCE.md[SS5S]: F:Provenance for the application-tier client bundles (the 58-package W-SHELL tier) | R:code:presentation/official-web/client-bundles/ROSTER.json | A:the bundles' identity card | S:The app tier rides verbatim (D9) — the roster names exactly which packages, the manifest pins their bytes
+ROSTER.json[FD5S]: F:The derived application-tier client-bundle roster: which packages the app tier needs | R:code:presentation/official-web/client-bundles/roster.mjs | A:generated by roster.mjs from the upstream cordis.patch dsh.client closure | S:Derived, not authored — regenerating from the upstream checkout is the only honest way to change it
+build-client-bundles.sh[XV5M]: F:Reproducible build of the application-tier client bundles (W-SHELL) | R:code:presentation/official-web/client-bundles/ROSTER.json | A:the build the staged bundles ship from | S:Builds from the upstream checkout against the roster — outputs land in npm/ which the content gates never judge
+roster.mjs[XV5T]: F:Derives the application-tier client-bundle roster from the upstream monorepo checkout | R:code:presentation/official-web/client-bundles/ROSTER.json | A:the roster generator (D9, W-SHELL leg) | S:Derivation over authorship: the upstream cordis.patch closure is the truth, this just reads it
+verify-manifest.mjs[XQ5M]: F:Verifies the client-bundles manifest: recomputed digests against the recorded ones | R:code:presentation/official-web/client-bundles/MANIFEST.sha256 | A:the verify tool the gates call | S:A mismatch names the offending file — the verifier never silently passes a partial tree
+
+===/home/lx/dsh-mobile/presentation/web-client-mini/===
+manifest.json[FC4T]: F:The mini web-client plugin manifest (dsh-web-client-mini) | R:code:presentation/web-client-mini/web/main.js | A:schemaVersion 1; config-selectable by id | S:A whole-client plugin proving the swap level — minimal by design
+
+===/home/lx/dsh-mobile/presentation/web-client-mini/web/===
+index.html[RU4T]: F:The mini client's page shell | R:code:presentation/web-client-mini/web/main.js | A:served at the carrier mount | S:-
+main.js[RU5T]: F:The mini client's page wiring | R:code:presentation/web-client-mini/manifest.json | A:the page entry | S:Presentation-side page logs nothing — evidence flows through the runtime/carrier loggers
+
+===/home/lx/dsh-mobile/presentation/web-client-next/===
+manifest.json[FC4T]: F:The web-client-next plugin manifest (the self-hosted creation-mode client) | R:code:presentation/web-client-next/web | A:schemaVersion 1; config-selectable by id | S:The client the nextweb.mount legs drive — selected by config, replaceable whole
+
+===/home/lx/dsh-mobile/presentation/web-client-next/web/css/===
+app.css[RU5L]: F:The web client's application stylesheet | R:code:presentation/web-client-next/web/css/theme.css | A:imported by the entry page | S:The aurora palette source the lynx tokens.json ported from — the token provenance points here
+theme.css[RU5T]: F:The theme tokens (CSS variables), the token single source's web face | R:code:presentation/web-client-next/web/css/app.css | A:the :root vocabulary consumers read | S:The lynx theme's named $source — a palette change here is a token event, regenerated downstream
+
+===/home/lx/dsh-mobile/presentation/web-client-next/web/===
+index.html[RU4M]: F:The web client entry page: the shell the views mount into | R:code:presentation/web-client-next/web/js | A:served at the carrier root | S:The product tree the hosts stage mirrors FROM — edits start here
