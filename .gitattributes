@@ -20,3 +20,12 @@ hosts/ios/DSHSpike.xcodeproj/** linguist-generated
 
 # govrail's append-only surprises ledger: concurrent writers union-merge.
 .gov/surprises.jsonl merge=union
+
+# AOCI baselines exact raw bytes of its index and governance files, so a
+# checkout must be byte-identical on every platform: these always check out
+# LF, overriding any autocrlf rewrite. (Scoped to AOCI-managed files only —
+# not the repo-wide `* eol=lf` aoci-init writes on greenfield projects.)
+aoci.txt text eol=lf
+aoci.meta.txt text eol=lf
+aoci.code.txt text eol=lf
+.aoci/** text eol=lf

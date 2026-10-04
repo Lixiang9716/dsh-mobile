@@ -1,0 +1,20 @@
+{
+  "title": "Introduce aoci-code as the workspace agent index (CLI + stdio MCP)",
+  "created": "2026-10-04T08:26:22+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] install signed v0.1.0-rc17 linux-amd64 binary at ~/tools/aoci (sha256 verified)",
+    "[x] wire stdio MCP server into the dsh-mobile workspace (.mcp.json, machine path gitignored)",
+    "[x] aoci init + scan baseline; decide tracked vs ignored artifacts",
+    "[x] verify mcp/doctor healthy; report wiring + follow-ups"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0188"
+}
