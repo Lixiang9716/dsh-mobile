@@ -213,10 +213,10 @@ RESOURCES = [
     # legs (the honest mobile cordis answers).
     ("upstream_web_write_plugin_manager_js", SPIKE / "upstream" / "web-write-plugin-manager.js"),
     ("upstream_web_write_cordis_js", SPIKE / "upstream" / "web-write-cordis.js"),
-    # the #323 guard rings (boot.js mounts both): the per-tool deadline and
-    # the turn-level watchdog
+    # the #323 guard rings + loop-u's recovery face (llm-retry rides the vendor pin)
     ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
     ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
+    ("upstream_turn_recovery_js", SPIKE / "upstream" / "turn-recovery.js"),
     ("upstream_boot_coverage_rows_js", SPIKE / "upstream" / "boot-coverage-rows.js"),
 ]
 # Directory trees embedded whole and staged back under the same
