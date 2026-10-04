@@ -1,0 +1,20 @@
+{
+  "title": "loop-u2: arm an attempt-level read-idle watchdog in the mobile llm transport seam",
+  "created": "2026-10-04T19:52:57+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] llm-transport.js parseSse arms a read-idle watchdog (default 120s, guard-family grounded): a byteless stall aborts the attempt via response.abort() as retryable TIMEOUT, and caller signal aborts bridge eagerly to response.abort() (non-retryable ABORTED) so ring-2 cancel unwinds a parked read",
+    "[x] boot.js mountLlm forwards llm.readIdleTimeoutMs; config validation fails loud (rule 5)",
+    "[x] panel suite pins the seam (llm-transport-read-idle.test.js): frozen attempt -> TIMEOUT at exactly the budget, sub-budget lulls survive, per-attempt re-entry, ABORTED/TRANSPORT/STREAM_CLOSED legs unchanged, default 120s live, bad config loud; suite green",
+    "[x] closures synced (build/build.sh sync android + sync harmony, byte-verified; android's missing dsh-llm-retry staged copy lands tracked) and Agent Note (bug-fix) written"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0197"
+}

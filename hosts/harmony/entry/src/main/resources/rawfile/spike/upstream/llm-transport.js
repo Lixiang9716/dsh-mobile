@@ -23,6 +23,13 @@
  *   EventSourceParserStream         →     incremental SSE byte parser (below;
  *                                          reads may split anywhere, including
  *                                          mid-UTF-8 — same contract)
+ *   (upstream: none — fetch has     →     the read-idle watchdog (loop-u2,
+ *   its own socket timeouts)              upstream/llm-read-idle.js): N
+ *                                          seconds of wire silence aborts
+ *                                          the attempt as a retryable
+ *                                          LlmError TIMEOUT, and caller
+ *                                          aborts unwind a byteless stall
+ *                                          eagerly (ABORTED, non-retryable)
  *   TextEncoder/TextDecoder         →     utf8Encode/utf8Decode (no Text* globals
  *                                          in the spike runtime)
  *
@@ -39,6 +46,7 @@ import {
   isAgentLoopRequest,
 } from '@deepseek-ai/dsh-llm';
 import { httpFetch } from '../gateway.js';
+import { makeReadIdleGuard, parseReadIdleTimeoutMs } from './llm-read-idle.js';
 
 /** Non-ASCII-safe UTF-8 bytes for one JSON string (the wire body). */
 const utf8Encode = (text) => {
@@ -235,7 +243,8 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
  * so the exception is a named decision at the call site instead of a guard
  * quietly weakened for every caller. */
 export function createGatewayLlmAdapter(options) {
-  const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false } = options;
+  const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false, readIdleTimeoutMs } = options;
+  const idleTimeoutMs = parseReadIdleTimeoutMs(readIdleTimeoutMs);
   if (userEndpoint === true) {
     if (typeof baseURL !== 'string' || !/^https?:\/\/[^\s]+$/.test(baseURL)) {
       throw new TypeError(`llm-transport: user endpoint baseURL is not an http(s) URL, got ${String(baseURL)}`);
@@ -276,7 +285,7 @@ export function createGatewayLlmAdapter(options) {
       onRequestBody?.(wire);
       const response = await openWireStream(endpoint, apiKey, wire, requestOptions.signal);
       await demandStreamResponse(response);
-      yield* translate(parseSse(response, requestOptions.signal), onSse);
+      yield* translate(parseSse(response, requestOptions.signal, idleTimeoutMs), onSse);
     }
   }();
   return adapter;
@@ -287,12 +296,21 @@ export function createGatewayLlmAdapter(options) {
  * blank line; only `data:` fields carry payload. Reads may split anywhere —
  * the line buffer reassembles them. Throws LlmError STREAM_CLOSED when the
  * body ends without the sentinel (upstream contract: a truncated stream
- * cannot be trusted) and maps caller aborts to ABORTED. */
-const parseSse = async function* (response, signal) {
+ * cannot be trusted) and maps caller aborts to ABORTED.
+ *
+ * The read-idle watchdog (loop-u2) rides each attempt here: the guard
+ * (upstream/llm-read-idle.js) aborts the response on wire silence or a
+ * caller abort — this parser maps the guard's fired flag to the retryable
+ * TIMEOUT code (dsh-llm-retry then owns the 1/5..5/5 rhythm), lets signal
+ * aborts read ABORTED (non-retryable), and leaves real socket errors on
+ * TRANSPORT. */
+const parseSse = async function* (response, signal, idleTimeoutMs) {
   const decode = utf8Decoder();
   let buffer = '';
+  const idle = makeReadIdleGuard(response, idleTimeoutMs, signal);
   try {
     for await (const chunk of response.body) {
+      idle.touch(); // delivered bytes are wire liveness: re-arm before consuming
       signal?.throwIfAborted();
       buffer += decode(chunk);
       let at = buffer.indexOf('\n\n');
@@ -304,7 +322,9 @@ const parseSse = async function* (response, signal) {
           .map((line) => line.slice(5).trim())
           .join('\n');
         if (data.length > 0) {
-          yield data;
+          idle.pause(); // the budget measures the WIRE — a consumer
+          yield data; // pausing on a delivered payload is not a dead socket
+          idle.touch();
           if (data === '[DONE]') return;
         }
         at = buffer.indexOf('\n\n');
@@ -313,7 +333,16 @@ const parseSse = async function* (response, signal) {
   } catch (error) {
     response.abort?.();
     if (signal?.aborted) throw new LlmError('gateway request aborted by caller', 'ABORTED', { cause: error });
+    if (idle.fired) {
+      throw new LlmError(
+        `gateway SSE stream stalled: no bytes for ${idleTimeoutMs}ms — read-idle watchdog aborted the attempt`,
+        'TIMEOUT',
+        { cause: error },
+      );
+    }
     throw new LlmError(`gateway SSE stream failed: ${error?.message ?? error}`, 'TRANSPORT', { cause: error });
+  } finally {
+    idle.dispose();
   }
   throw new LlmError('SSE stream ended without [DONE]', 'STREAM_CLOSED');
 };

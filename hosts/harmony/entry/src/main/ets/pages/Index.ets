@@ -157,6 +157,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/boot.js',
   'upstream/llm-route.js',
   'upstream/llm-transport.js',
+  'upstream/llm-read-idle.js',
   'upstream/model-selection-holder.js',
   'upstream/model-selection-projection.js',
   'upstream/preset-mobile-rows.js',

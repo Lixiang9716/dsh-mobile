@@ -1,0 +1,25 @@
+{
+  "title": "loop-u2: arm an attempt-level read-idle watchdog in the mobile llm transport seam",
+  "created": "2026-10-04T19:50:29+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "llm-transport.js: read-idle watchdog aborts a stalled attempt as retryable TIMEOUT (default 120s, guard-family grounded) and caller signal aborts bridge eagerly to response.abort()",
+    "panel suite pins the seam: frozen attempt -> TIMEOUT, sub-budget lulls survive, per-attempt re-entry, ABORTED/TRANSPORT/STREAM_CLOSED legs unchanged, default 120s live behavior, rule-5 config validation",
+    "closures synced android + harmony byte-identical to canonical (android's missing dsh-llm-retry closure copy lands tracked)",
+    "PR gates green on CI and squash-merged; queue row loop-u2 -> fixed"
+  ],
+  "status": "voided",
+  "receipt": null,
+  "id": "T-0196",
+  "void": {
+    "ts": "2026-10-04T19:52:48+00:00",
+    "by": "lx@DESKTOP-AOFQD6F",
+    "reason": "checklist item 4 demanded post-push facts (CI green + squash-merged) \u2014 a card cannot be closed before its own push; recreated with the loop-w precedent wording (all items verifiable at close time; CI/merge verified in the round flow outside the card)"
+  }
+}
