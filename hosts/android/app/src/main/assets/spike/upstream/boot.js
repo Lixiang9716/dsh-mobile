@@ -56,6 +56,17 @@ import * as ToolDeadline from 'upstream/tool-deadline.js';
 // beyond the budget fails the turn in-band (agent cancel, watchdog cause) —
 // covers stalls outside tool dispatch (LLM stream, loop awaits).
 import * as TurnWatchdog from 'upstream/turn-watchdog.js';
+// The upstream request-retry policy answer (loop-u): a transient LLM stream
+// death retries the REQUEST in-turn under the provider's retry policy (the
+// defaults ride the llm service's prepareCall) instead of erroring the turn.
+// Exports {Config, apply, inject, name} and no default — the namespace object
+// IS the cordis plugin (the tool-todo import's rule).
+import * as LlmRetry from '@deepseek-ai/dsh-llm-retry';
+// The turn-failure supervisor (loop-u): what a retry budget cannot cover —
+// an errored turn gets one honest system message and its queued followups
+// continue (the desktop controller's api-session/error relay + the followup
+// semantics the mobile compose lacked).
+import * as TurnRecovery from 'upstream/turn-recovery.js';
 // The outboard WebAssembly tool (contract v1.2.0). It is a staged system
 // plugin, not a vendored upstream package: the closure has no WebAssembly tool
 // to port, and an in-house implementation package is where a host-specific
@@ -293,6 +304,15 @@ const mountPresetPlane = async (ctx) => {
   });
 };
 
+/** Ring 2's recovery face (loop-u): the request-level retry answer first
+ * (transient stream deaths retry in-turn under the provider's policy), then
+ * the turn-failure supervisor (an errored turn closes honestly and its
+ * queued followups continue). Both read the agents registry. */
+const mountRecoveryRings = async (ctx) => {
+  await ctx.plugin(LlmRetry, {});
+  await ctx.plugin(TurnRecovery, {});
+};
+
 const mountSpine = async (ctx, identity) => {
   await ctx.plugin(SessionStore);
   await ctx.plugin(AgentRegistry);
@@ -340,6 +360,7 @@ const mountSpine = async (ctx, identity) => {
   });
   // Ring 2 sits after the loop it watches (its injects: agentLoop, agents).
   await ctx.plugin(TurnWatchdog, {});
+  await mountRecoveryRings(ctx);
   await mountPresetPlane(ctx);
 };
 

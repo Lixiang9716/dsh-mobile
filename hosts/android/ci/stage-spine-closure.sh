@@ -159,7 +159,7 @@ cp "$SPIKE/vendor/npm/@deepseek-ai/cordis-plugin-include@1.0.7/lib/index.js" \
 mkdir -p "$ASSETS/vendor/npm/js-yaml@4.1.0/dist"
 cp "$SPIKE/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs" \
    "$ASSETS/vendor/npm/js-yaml@4.1.0/dist/js-yaml.mjs"
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local; do
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry; do
     say "staging vendor/npm/@deepseek-ai/$pkg@$VER (lib)"
     (cd "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
@@ -476,7 +476,7 @@ fi
         cmp -s "$SPIKE/vendor/npm/yaml@2.9.0/browser/$rel" "$ASSETS/vendor/npm/yaml@2.9.0/browser/$rel" ||
             note_drift "npm/yaml@2.9.0/browser/$rel"
     done
-for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local; do
+for pkg in dsh-anonymous-user-id dsh-goal dsh-file-reference dsh-file-reference-local dsh-llm-retry; do
     (cd "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER" && find lib -type f ! -name '*.d.ts') |
         while IFS= read -r rel; do
             path="vendor/npm/@deepseek-ai/$pkg@$VER/$rel"

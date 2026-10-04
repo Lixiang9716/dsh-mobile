@@ -213,10 +213,10 @@ RESOURCES = [
     # legs (the honest mobile cordis answers).
     ("upstream_web_write_plugin_manager_js", SPIKE / "upstream" / "web-write-plugin-manager.js"),
     ("upstream_web_write_cordis_js", SPIKE / "upstream" / "web-write-cordis.js"),
-    # the #323 guard rings (boot.js mounts both): the per-tool deadline and
-    # the turn-level watchdog
+    # the #323 guard rings + loop-u's recovery face (llm-retry rides the vendor pin)
     ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
     ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
+    ("upstream_turn_recovery_js", SPIKE / "upstream" / "turn-recovery.js"),
     ("upstream_boot_coverage_rows_js", SPIKE / "upstream" / "boot-coverage-rows.js"),
 ]
 # Directory trees embedded whole and staged back under the same
@@ -272,17 +272,13 @@ TREES = [
     ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib",
      SPIKE / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
 ] + [
-    # api-full-coverage (D9): the vendored services the coverage rows mount —
-    # the event-sourced goal service (goals/*) and the local file-reference
-    # discovery (fileReferences/list, with its base package). Dynamic imports
-    # of boot.js's gated GOAL/FILE-REFERENCE rows; absent trees would refuse
-    # the coverage boot loud, so they ride the embed with the adapters.
-    ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
-    ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
-    ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
+    # api-full-coverage (D9): the vendored services the coverage rows mount
+    # (the goal service, the file-reference discovery) + loop-u's llm-retry —
+    # boot.js imports these npm-face packages directly (a missing tree fails
+    # the generator loud), and the loop's request-retry answer rides in-turn.
+    *(("vendor/npm/@deepseek-ai/dsh-%s@0.1.6-alpha.2",
+       SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
+      for n in ("goal", "file-reference", "file-reference-local", "llm-retry")),
 ] + [
     # the npm `diff` bridge target: npm-bridges re-exports the libesm face
     # behind the bare specifier vendored tool-fs imports (structuredPatch).
