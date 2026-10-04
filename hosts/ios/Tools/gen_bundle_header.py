@@ -227,7 +227,7 @@ TREES = [
     (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
      SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
     for pkg in [
-        "agent", "agent-loop", "brand", "llm", "dsh-llm-retry", "sandbox", "scope",
+        "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
         "agent-presets", "atomic-write", "home-paths",
         "fs", "attachment", "fs-local", "tool-fs", "tool-str-replace-editor",
         "session", "session-projection", "settings", "system-prompt",
@@ -272,17 +272,13 @@ TREES = [
     ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib",
      SPIKE / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
 ] + [
-    # api-full-coverage (D9): the vendored services the coverage rows mount —
-    # the event-sourced goal service (goals/*) and the local file-reference
-    # discovery (fileReferences/list, with its base package). Dynamic imports
-    # of boot.js's gated GOAL/FILE-REFERENCE rows; absent trees would refuse
-    # the coverage boot loud, so they ride the embed with the adapters.
-    ("vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-goal@0.1.6-alpha.2"),
-    ("vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference@0.1.6-alpha.2"),
-    ("vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-file-reference-local@0.1.6-alpha.2"),
+    # api-full-coverage (D9): the vendored services the coverage rows mount
+    # (the goal service, the file-reference discovery) + loop-u's llm-retry —
+    # boot.js imports these npm-face packages directly (a missing tree fails
+    # the generator loud), and the loop's request-retry answer rides in-turn.
+    *(("vendor/npm/@deepseek-ai/dsh-%s@0.1.6-alpha.2",
+       SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
+      for n in ("goal", "file-reference", "file-reference-local", "llm-retry")),
 ] + [
     # the npm `diff` bridge target: npm-bridges re-exports the libesm face
     # behind the bare specifier vendored tool-fs imports (structuredPatch).

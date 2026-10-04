@@ -50,7 +50,15 @@ Two mobile-layer wires, no vendored edits:
    service's `prepareCall` already attaches with normal-mode defaults (5
    retries; EMPTY_RESPONSE/RATE_LIMIT/SERVER/TIMEOUT/TRANSPORT) — so a
    transient stream death retries the REQUEST in-turn. Most blips never
-   become errored turns.
+   become errored turns. The package is now PINNED (its
+   `@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2` registry tarball, sha
+   69f1080b…, in ensure-dsh.sh's NPM_PACKAGES + the tracked mirror) — until
+   this PR it existed only as an untracked dev-tree leftover, so every
+   fresh checkout (all of CI) booted the spine straight into
+   "no vendored dsh package serves it". Embed rows: android stages the
+   npm face at the dsh rel path (the goal/file-reference loop), harmony
+   carries it in the rawfile CLOSURE find + BUNDLE_FILES, iOS embeds the
+   tree (the dsh-goal pattern, now a comprehension row).
 2. **`upstream/turn-recovery.js`** (new, ring 2, mounted after llm-retry):
    marks an agent on `agent/error`; on its `agent/status` idle transition it
    appends ONE durable `system/message` ("Turn failed: <chain> — the queued

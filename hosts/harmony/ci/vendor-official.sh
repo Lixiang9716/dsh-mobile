@@ -301,6 +301,7 @@ vendor/npm/yaml@2.9.0/browser/dist/visit.js
 vendor/npm/yaml@2.9.0/browser/index.js
 vendor/npm/yaml@2.9.0/browser/package.json
 $(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
+    vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2 \
     vendor/npm/@deepseek-ai/dsh-file-reference@0.1.6-alpha.2 \
     vendor/npm/@deepseek-ai/dsh-file-reference-local@0.1.6-alpha.2 \
     \( -name '*.js' -o -name '*.json' \) -type f | LC_ALL=C sort)"
