@@ -371,6 +371,7 @@ upstream/shims/buffer-codecs.js
 upstream/shims/fs-paths.js
 upstream/shims/fs-promises-fh.js
 upstream/shims/fs-readdir.js
+upstream/shims/fs-seam-gate.js
 upstream/shims/fs-stat.js
 upstream/shims/fs-workspace-rename.js
 upstream/shims/fs-workspace-write.js

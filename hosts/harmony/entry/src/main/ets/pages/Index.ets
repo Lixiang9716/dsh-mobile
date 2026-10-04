@@ -174,6 +174,7 @@ const BUNDLE_FILES: string[] = [
   'upstream/shims/fs-promises-fh.js',
   'upstream/shims/fs-promises.js',
   'upstream/shims/fs-readdir.js',
+  'upstream/shims/fs-seam-gate.js',
   'upstream/shims/fs-seeded.js',
   'upstream/shims/fs-stat.js',
   'upstream/shims/fs-workspace-rename.js',

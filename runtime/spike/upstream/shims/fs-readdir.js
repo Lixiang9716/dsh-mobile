@@ -11,7 +11,12 @@ import {
   wsEnotdir,
   wsFileAt,
   wsReaddirAt,
+  wsRootHint,
 } from 'upstream/shims/fs-workspace.js';
+// loop-r: the real-disk seam's containment gate + the #358 read refusal
+// (split from fs-workspace.js at the code-size gate; call-time functions
+// only — no new cycle risk).
+import { realSeamInsideRoot, wsOutsideRootError } from 'upstream/shims/fs-seam-gate.js';
 import { underVFS, vfs, enoent, statSync } from 'upstream/shims/fs.js';
 import { resolveWorkspaceSymlink } from 'upstream/shims/fs-paths.js';
 
@@ -96,12 +101,44 @@ const realDirNames = (canonical) => {
  * seam when mounted (every device seat, loop-p: the model's view of a real
  * workspace directory answered not-found because this fallback needed the
  * desktop-only subprocess namespace), else through the subprocess seam's
- * find (the suite leg pins the namespace early). */
+ * find (the suite leg pins the namespace early).
+ * loop-r: the seam answers the mirrored WORKSPACE only — outside-root
+ * absolute paths decline here (the caller refuses with the anchor when the
+ * host disk actually holds the directory, keeps node-absence otherwise). */
 const readdirRealFallback = (canonical, options) => {
   if (typeof canonical !== 'string' || !canonical.startsWith('/')) return null;
+  if (!realSeamInsideRoot(canonical)) return null;
   const names = realDirNames(canonical);
   if (names === null) return null;
   return listNames(names, canonical, options?.withFileTypes === true);
+};
+
+/** The readdir MISS answer for a path both served views declined (module
+ * level for size). Inside the workspace root a miss is node-ENOENT; outside
+ * it the answer depends on the HOST disk (loop-r): a directory the host
+ * actually holds refuses with the #358 anchor — the code deliberately
+ * dropped, because fs-local's listingIoError rewrites EACCES to a bare
+ * 'permission denied' and ENOENT to 'not found', and only a codeless error
+ * rides the generic IO_ERROR arm that carries the message to the model
+ * (the discovery walks never scan outside their own pinned inside-root
+ * lists, so the pass-through reaches only the tool face); where even the
+ * host declines, absence stays the node ENOENT the vendored discovery walks
+ * branch on (isAbsentSkillPathError accepts ENOENT/ENOTDIR and treats
+ * anything else as a hard failure that poisons the whole observation —
+ * `complete: false`, silently disabling the tool-skill durable catalog) —
+ * the message keeps the runtime explanation plus the root hint. */
+const readdirMiss = (canonical, insideWorkspace) => {
+  if (insideWorkspace) return enoent('readdir', canonical);
+  const realDir = globalThis.__dshProcStatReal?.(canonical);
+  if (realDir?.isDirectory === true) {
+    const refusal = wsOutsideRootError('readdir', canonical);
+    delete refusal.code;
+    delete refusal.errno;
+    return refusal;
+  }
+  const absent = enoent('readdir', canonical);
+  absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}${wsRootHint(canonical)}`;
+  return absent;
 };
 
 export const readdirSync = (path, options) => {
@@ -135,20 +172,7 @@ export const readdirSync = (path, options) => {
   // ENOENT'd).
   const insideWorkspace = wsAt(canonical) !== null;
   if (insideWorkspace && wsFileAt(canonical) !== undefined) throw wsEnotdir('readdir', canonical);
-  // Outside both served views a directory scan answers ABSENCE, not the
-  // loud refusal: the vendored discovery walks (skill-filesystem's root
-  // scan, the presets service) branch on the ERROR CODE —
-  // isAbsentSkillPathError accepts ENOENT/ENOTDIR/FS_NOT_FOUND and treats
-  // anything else as a hard failure that poisons the whole observation
-  // (`complete: false`, which silently disables the tool-skill durable
-  // catalog). A directory that does not exist in this runtime is absent —
-  // node's own readdir answer — so the error carries code ENOENT (the
-  // message keeps the runtime explanation for anyone logging it).
-  const absent = enoent('readdir', canonical);
-  if (!insideWorkspace) {
-    absent.message = `node:fs.readdirSync: no such directory in the spike runtime's served views — ${absent.message}`;
-  }
   const real = readdirRealFallback(canonical, options);
   if (real !== null) return real;
-  throw absent;
+  throw readdirMiss(canonical, insideWorkspace);
 };
