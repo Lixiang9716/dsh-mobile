@@ -100,6 +100,10 @@ describe('framing + hostile frames', () => {
     const items = [];
     openFollow(mux, { items });
     await waitFor('open', () => srv.state.clientFrames.length > 0);
+    // The server answers the open with two item frames whose client-side
+    // dispatch is async, and muxDiag.frames accumulates across tests —
+    // snapshot at the quiesce point or framesBefore + 3 races them (CI: 6 vs 8).
+    await waitFor('open response routed', () => items.length >= 2);
     const framesBefore = muxDiag.frames;
     const droppedBefore = muxDiag.dropped;
     const throwsBefore = muxDiag.throws;
