@@ -26,6 +26,7 @@ import {
 // The write-permission gate lives with the rename/link faces (it shipped
 // in the same W4-N round); single definition, both modules import it.
 import { wsRequireDirWrite } from 'upstream/shims/fs-workspace-rename.js';
+import { wsRootHint } from 'upstream/shims/fs-paths.js';
 
 /** Create the missing chain for recursive mkdir (module level for size):
  * the segments under the root, real-disk mirrored (W6-U r3) —
@@ -62,7 +63,7 @@ const mkdirSegments = (state, canonical, options) => {
 export const wsMkdir = (path, options = {}) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.mkdir: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.mkdir: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const { state } = at;
   const canonical = wsResolveSymlinkChain(state, at.path);
@@ -146,7 +147,7 @@ export const wsResolveSymlinkChain = (state, canonical) => {
 export const wsWriteFile = (path, bytes, mode) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.writeFile: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.writeFile: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const { state } = at;
   const canonical = wsResolveSymlinkChain(state, at.path);
@@ -285,7 +286,7 @@ const rmDirRecursive = (state, canonical) => {
 export const wsRm = (path, options = {}) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.rm: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.rm: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const { state } = at;
   // Symlink removal (W6-V): unlink NEVER follows the link — check the
@@ -336,7 +337,7 @@ const wsMirrorRmReal = (canonical, recursive) => {
 export const wsSymlink = (target, path) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.symlink: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.symlink: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const { state, path: canonical } = at;
   if (state.files.has(canonical) || state.dirs.has(canonical)

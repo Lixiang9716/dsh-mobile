@@ -16,6 +16,22 @@ import {
   resolveSymlinkAt,
 } from 'upstream/shims/fs-workspace.js';
 import { DshBuffer } from 'upstream/shims/buffer.js';
+
+/** The refusal suffix that teaches the anchor (loop-h): an outside-root
+ * path is recoverable in one step when the refusal names the root and the
+ * correct spelling — the model otherwise guesses device-root spellings
+ * ('/plugins') and burns steps on refusals. Empty when no workspace is
+ * mounted (the generic refusal stands). Split here from fs-workspace.js at
+ * the file-size gate; the write/rename refusal sites are its consumers. */
+export const wsRootHint = (path) => {
+  const state = workspace();
+  if (state === null) return '';
+  const root = state.root;
+  const anchored = typeof path === 'string' && path.startsWith('/')
+    ? `${root}${path.replace(/\/+$/, '')}`
+    : `${root}/file.txt`;
+  return ` — the writable workspace root is '${root}'; file paths must be absolute under it (maybe you meant '${anchored}'?)`;
+};
 import { underVFS, vfs, enoent, readAnyBytes } from 'upstream/shims/fs.js';
 
 export const resolveWorkspaceSymlink = (path) => {
@@ -57,7 +73,7 @@ const outsideEveryView = (path) => {
   const error = new Error(
     `node:fs: path '${path}' is outside the writable workspace root and every staged read-only view `
     + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `
-    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)`);
+    + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)${wsRootHint(path)}`);
   error.code = 'EACCES';
   error.path = path;
   return error;

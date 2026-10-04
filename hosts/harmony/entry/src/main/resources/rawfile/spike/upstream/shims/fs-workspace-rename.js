@@ -17,7 +17,8 @@ import {
   wsIsDirAt,
   notifyWatches,
   resolveSymlinkAt,
-} from 'upstream/shims/fs-workspace.js';
+  } from 'upstream/shims/fs-workspace.js';
+import { wsRootHint } from 'upstream/shims/fs-paths.js';
 import {
   wsMirrorChmodReal,
   wsResolveSymlinkChain,
@@ -73,7 +74,7 @@ export const wsRename = (from, to) => {
   const source = wsAt(from);
   const target = wsAt(to);
   if (source === null || target === null) {
-    throw new Error(`node:fs.rename: path outside the writable workspace root: ${from} -> ${to}`);
+    throw new Error(`node:fs.rename: path outside the writable workspace root: ${from} -> ${to}${wsRootHint(from)}`);
   }
   const { state } = source;
   const dest = wsResolveSymlinkChain(state, target.path);
@@ -114,7 +115,7 @@ export const wsLink = (sourcePath, destPath) => {
   const source = wsAt(sourcePath);
   const target = wsAt(destPath);
   if (source === null || target === null) {
-    throw new Error(`node:fs.link: path outside the writable workspace root: ${sourcePath} -> ${destPath}`);
+    throw new Error(`node:fs.link: path outside the writable workspace root: ${sourcePath} -> ${destPath}${wsRootHint(sourcePath)}`);
   }
   const { state } = source;
   const entry = state.files.get(source.path);
@@ -133,7 +134,7 @@ export const wsLink = (sourcePath, destPath) => {
 export const wsChmod = (path, mode) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.chmod: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.chmod: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const file = at.state.files.get(at.path);
   if (file !== undefined) {
@@ -194,7 +195,7 @@ export const wsRequireDirWrite = (state, targetPath, syscall) => {
 export const wsUtimes = (path, atimeSeconds, mtimeSeconds) => {
   const at = wsAt(path);
   if (at === null) {
-    throw new Error(`node:fs.utimes: path outside the writable workspace root: ${path}`);
+    throw new Error(`node:fs.utimes: path outside the writable workspace root: ${path}${wsRootHint(path)}`);
   }
   const { state, path: canonical } = at;
   const entry = state.files.get(canonical);
