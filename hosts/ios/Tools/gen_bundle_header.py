@@ -202,6 +202,7 @@ RESOURCES = [
     ("workspace_registry_js", SPIKE / "workspace-registry.js"), ("sha256_js", SPIKE / "sha256.js"),
     ("tar_mini_js", SPIKE / "tar-mini.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
+    ("upstream_llm_read_idle_js", SPIKE / "upstream" / "llm-read-idle.js"),
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_model_selection_projection_js", SPIKE / "upstream" / "model-selection-projection.js"),
     ("upstream_model_selection_holder_js", SPIKE / "upstream" / "model-selection-holder.js"),

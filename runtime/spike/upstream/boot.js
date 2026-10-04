@@ -374,7 +374,7 @@ const mountSpine = async (ctx, identity) => {
  * @param options.sessionId - exact session identity for the configured agent.
  * @param options.cwd - session cwd (mobile-honest: a gateway fs scope label).
  * @param options.llm - the llm route {baseURL, apiKey, provider, model,
- *   onWire?, onSse?}; required, no transport-free fallback.
+ *   onWire?, onSse?, readIdleTimeoutMs? (the loop-u2 attempt-level stall guard; absent = the 120s default)}; required, no transport-free fallback.
  * @param options.systemPrompt - optional override seam: {personaPrefix} —
  *   the vendored SystemPrompt's own config (the prompt's persona section),
  *   mounted verbatim; default '' (the historical boot shape).
@@ -414,7 +414,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     userEndpoint: llm.userEndpoint === true,
     onWire: llm.onWire,
     onSse: llm.onSse,
-    onRequestBody: llm.onRequestBody,
+    onRequestBody: llm.onRequestBody, readIdleTimeoutMs: llm.readIdleTimeoutMs, // loop-u2's attempt-level stall guard; undefined = the 120s default
   }));
   registerRouteDisposer(ctx, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
   // The directory registration's handle rides the same seam: a route rebind/

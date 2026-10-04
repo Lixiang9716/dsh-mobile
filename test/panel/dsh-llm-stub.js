@@ -22,3 +22,48 @@ export const errorChain = (error) => {
     const message = error instanceof Error ? error.message : String(error);
     return error.cause !== undefined ? `${message} (caused by: ${errorChain(error.cause)})` : message;
 };
+
+// ---- the adapter-seam faces (loop-u2): the four names upstream/
+// llm-transport.js imports, mirroring the vendored shapes (llm@lib/types:
+// HarnessError, LlmError, LlmAdapter, attribution, call-config).
+
+/** The vendored HarnessError base: `code` beside the message, standard
+ * ErrorOptions cause chaining, name = the concrete class. */
+class HarnessError extends Error {
+    constructor(message, code, options) {
+        super(message, options);
+        this.code = code;
+        this.name = new.target.name;
+    }
+}
+
+/** The vendored LlmError: non-empty message + code, frozen serializable
+ * failure facts beside the live error (llm@lib/types LlmError). */
+export class LlmError extends HarnessError {
+    constructor(message, code, options) {
+        if (typeof message !== 'string' || message.length === 0) {
+            throw new Error('LlmError message must be a non-empty string');
+        }
+        if (typeof code !== 'string' || code.length === 0) {
+            throw new Error('LlmError code must be a non-empty string');
+        }
+        super(message, code, options);
+        this.failure = Object.freeze({
+            message,
+            code,
+            ...options?.status === undefined ? {} : { status: options.status },
+        });
+    }
+}
+
+/** The vendored LlmAdapter base: the seam subclasses it; the panel suite
+ * never calls the base's own faces. */
+export class LlmAdapter {}
+
+/** The vendored attribution headers (llm@lib attribution): plain static
+ * fields here — the suite asserts transport behavior, not header values. */
+export const attributionHeaders = () => ({ 'user-agent': 'dsh-panel-stub' });
+
+/** The vendored call-config marker check: the suite's requests are never
+ * marked. */
+export const isAgentLoopRequest = () => false;
