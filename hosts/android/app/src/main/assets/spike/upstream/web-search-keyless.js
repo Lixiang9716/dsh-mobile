@@ -58,7 +58,7 @@ export const CODE_CONFIG = 'WEB_SEARCH_KEYLESS_CONFIG';
 const CHALLENGE_MARKER = 'bots use duckduckgo';
 
 // The coded-error constructor: `{name: 'WebError', code, message}`.
-export const webSearchError = (code, message) => Object.assign(new Error(message), { name: 'WebError', code });
+export const webSearchError = (code, message) => Object.assign(new Error(`[${code}] ${message}`), { name: 'WebError', code });
 
 // The seat's config resolution: the host's `__dshWebSearch` declaration
 // first, the launch environment second, the public endpoint last (the

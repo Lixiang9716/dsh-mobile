@@ -194,6 +194,12 @@ describe('web-search-keyless: href + challenge helpers', () => {
     expect(call).toThrow(/__dshWebSearch\.endpoint/);
   });
 
+  it('the code rides the MESSAGE text too — the tool-result surface a model sees is text-only (loop-n)', () => {
+    const call = () => parseDuckDuckGoHtml(CHALLENGE_VARIANT_HTML);
+    expect(call).toThrow(/^\[WEB_SEARCH_KEYLESS_CHALLENGED\] /);
+    expect(call).toThrow(/WEB_SEARCH_KEYLESS_CHALLENGED.*anomaly-modal__title/s);
+  });
+
   it('a page with the results-list DOM but zero anchors stays an honest empty success', () => {
     expect(parseDuckDuckGoHtml('<div class="serp__results"><div id="links"></div></div>'))
       .toEqual({ sources: [], truncated: false });
@@ -299,6 +305,8 @@ describe('web-search-keyless: the coded error shape', () => {
     expect(err).toBeInstanceOf(Error);
     expect(err.name).toBe('WebError');
     expect(err.code).toBe(CODE_CHALLENGED);
-    expect(err.message).toBe('boom');
+    // loop-n: the code rides the MESSAGE too — the tool-result surface a
+    // model or battery sees is text-only.
+    expect(err.message).toBe(`[${CODE_CHALLENGED}] boom`);
   });
 });
