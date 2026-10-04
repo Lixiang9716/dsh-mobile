@@ -1,0 +1,21 @@
+{
+  "title": "Flywheel round (T-0178): persistent fixer \u00d7 persistent tester closed loop until Oct 7",
+  "created": "2026-10-04T02:45:40+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "fixer workflow running: queue-driven fix rounds with serial CI merges",
+    "tester workflow running: E2E battery rounds feeding the queue",
+    "closed loop demonstrated: a tester finding fixed and re-verified",
+    "harmony HAP assertions riding the rounds",
+    "final wrap: cards closed, records landed, report"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0178"
+}
