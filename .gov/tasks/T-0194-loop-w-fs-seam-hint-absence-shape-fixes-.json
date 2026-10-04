@@ -1,0 +1,21 @@
+{
+  "title": "loop-w: fs seam hint/absence-shape fixes (#363 follow-ups)",
+  "created": "2026-10-04T15:09:03+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] readdirMiss's ENOENT branch no longer throws the mount error when no workspace is mounted \u2014 the root hint degrades like fs-seam-gate's own guard (fs-readdir.js:140 vs fs-seam-gate.js:37-39)",
+    "[x] promise readFile aligns with readdir's absence shape: outside-root truly-absent path answers ENOENT, outside-root path the seam can serve keeps the #358 anchor (fs-promises.js:105), without breaking the pinned fs-readdir-real-fallback.test.js behaviors",
+    "[x] readFileSync/readAnyBytes outside-root refusal text is lexicalized like readdir (raw '..' spellings no longer teach a wrong maybe-you-meant); wsOutsideRootError vs #358 outsideEveryView aligned to one error shape",
+    "[x] panel suite cases pin the unmounted-hint degrade, the absence-ENOENT symmetry, and the lexical spellings; fs-readdir-real-fallback suite green",
+    "[x] closures synced (build/build.sh sync android + sync harmony) and Agent Note (bug-fix) written"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0194"
+}

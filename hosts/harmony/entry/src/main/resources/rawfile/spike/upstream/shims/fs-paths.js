@@ -13,6 +13,7 @@ import {
   wsFileAt,
   wsIsDirAt,
   wsReadlinkAt,
+  wsRootHint,
   resolveSymlinkAt,
 } from 'upstream/shims/fs-workspace.js';
 import { DshBuffer } from 'upstream/shims/buffer.js';
@@ -60,6 +61,11 @@ const outsideEveryView = (path) => {
     + `— the fs backends on this host serve exactly one pinned workspace (mountWorkspace) `
     + `plus the seeded views (see runtime/spike/upstream/README.md, FILE-TOOLS row)${wsRootHint(path)}`);
   error.code = 'EACCES';
+  // loop-w: one refusal shape with fs-seam-gate's wsOutsideRootError — the
+  // node-complete fields ride every outside-root refusal (the sole caller
+  // is vfsRealpath, hence the syscall).
+  error.errno = -13;
+  error.syscall = 'realpath';
   error.path = path;
   return error;
 };

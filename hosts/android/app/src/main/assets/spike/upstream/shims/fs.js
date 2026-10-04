@@ -358,8 +358,10 @@ export const readFileSync = (rawPath, encoding) => {
   if (insideWorkspace) throw enoent('open', workspacePath);
   // loop-r: the outside answer is the #358 anchor refusal (was the generic
   // desktop-host refuse — the real seam used to answer first, so the model
-  // seat never saw this arm at all).
-  throw wsOutsideRootError('readFileSync', path);
+  // seat never saw this arm at all). loop-w: the LEXICAL spelling rides the
+  // refusal (readdir's rule) — a raw '../..' spelling would anchor the
+  // maybe-you-meant hint at a path that doesn't mean what it spells.
+  throw wsOutsideRootError('readFileSync', canonical);
 };
 
 /** The seeded-VFS stat arm (module level for size): a seeded FILE answers

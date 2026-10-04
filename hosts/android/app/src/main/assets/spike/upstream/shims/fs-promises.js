@@ -75,6 +75,18 @@ export const enoent = (call, path) => {
   return error;
 };
 
+/** The outside-root miss answer for the promise readFile arm (module level
+ * for size; loop-w): the READ intrinsic is the existence check (W6-V: stat
+ * declines intermediate-symlink paths; the W5-R seam-only markers stat
+ * null) — a path the host actually holds returns the #358 anchor, genuine
+ * absence the node ENOENT the discovery walks branch on. The probe bytes
+ * are discarded: the anchor names the path, never content. */
+const outsideRootReadError = (path) => {
+  const probe = globalThis.__dshProcReadReal?.(path);
+  if (probe !== undefined && probe !== null) return wsOutsideRootError('open', lexical(path));
+  return enoent('open', path);
+};
+
 /** readFile(path[, options]) — utf8 string or Buffer, like node. The VFS has
  * no read latency to cancel, so the `signal` member of the options object is
  * accepted and (being pre-aborted or not at call time) not polled. */
@@ -90,19 +102,14 @@ export const readFile = async (path, options) => {
     // VFS models; when the VFS face misses and the real disk has the file,
     // read it through the host (base64 bridge, same channel the spawn
     // pumps). VFS-first precedence is preserved — staged bytes win.
-    // Read-as-existence (W6-V): __dshProcStatReal declines INTERMEDIATE-
-    // symlink paths ('<skills>/linked-dir/SKILL.md' through a real dir
-    // symlink: stat null, read serves the bytes — measured), so the read
-    // intrinsic itself is the existence check; the ENOENT below stays the
-    // answer for genuinely absent paths.
+    // Read-as-existence (W6-V): the read intrinsic itself is the existence
+    // check; the ENOENT below stays the answer for genuinely absent paths.
     if (typeof path === 'string' && path.startsWith('/')) {
       // loop-r: the seam answers the mirrored WORKSPACE only — an
-      // outside-root absolute path refuses with the #358 anchor instead of
-      // reading the host disk (the 2026-10-04 battery read the app-private
-      // profile tree — llm/config.json included — through this arm). The
-      // raw rejection rides fs-local's readFileAbortable verbatim, so the
-      // anchor reaches the model seat in-band.
-      if (!realSeamInsideRoot(lexical(path))) throw wsOutsideRootError('open', path);
+      // outside-root absolute path refuses with the #358 anchor (or, since
+      // loop-w, stays node-absent when the host holds nothing there; the
+      // refusal rides fs-local's readFileAbortable verbatim, in-band).
+      if (!realSeamInsideRoot(lexical(path))) throw outsideRootReadError(path);
       const b64 = globalThis.__dshProcReadReal?.(path);
       if (b64 !== undefined && b64 !== null) {
         const encoding2 = typeof options === 'string' ? options : options?.encoding;
