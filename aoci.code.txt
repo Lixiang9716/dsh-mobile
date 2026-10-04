@@ -180,6 +180,11 @@ upstream-dsh-anatomy.zh.md[SG6M]: F:upstream-dsh-anatomy.md 的简体中文对�
 ===/home/lx/dsh-mobile/hosts/android/===
 .gitignore[FV2T]: F:Host-local ignores for the Android host: gradle build outputs and the staged asset trees the stager materializes | R:code:.gitignore | A:- | S:-
 README.md[SH7S]: F:The Android host README: the isomorphic v1 (quickjs-ng + Kotlin gateway) and the v2 nodejs-mobile option | R:code:docs/ARCHITECTURE.md, code:hosts/android/app/build.gradle.kts | A:- | S:v2's V8/Termux differences must surface as RuntimeDescriptor capabilities, never a code branch — the isomorphic v1 is the negotiating floor
+build.gradle.kts[FV4T]: F:The Android host's root Gradle build: plugin versions and the clean task wiring | R:code:hosts/android/app/build.gradle.kts | A:the root of the Gradle invocation | S:-
+gradle.properties[FV2T]: F:Gradle JVM and Kotlin style properties | R:code:hosts/android/app/build.gradle.kts | A:- | S:-
+gradlew[XV3L]: F:The standard Gradle wrapper launcher script | R:code:hosts/android/gradle/wrapper/gradle-wrapper.properties | A:./gradlew on any machine with a JDK | S:-
+gradlew.bat[XV2T]: F:The Gradle wrapper launcher for Windows | R:code:hosts/android/gradlew | A:gradlew.bat on Windows hosts | S:-
+settings.gradle.kts[FV3T]: F:Gradle settings: plugin management and the app module inclusion | R:code:hosts/android/app/build.gradle.kts | A:the Gradle entry Gradle reads first | S:-
 
 ===/home/lx/dsh-mobile/hosts/android/app/===
 build.gradle.kts[FV7M]: F:The Android app build: NDK/CMake native build of the spike host, the staged-closure asset wiring, release defines, and signing configuration | R:code:build/build.sh, code:hosts/android/ci/stage-spine-closure.sh | A:gradlew assembleDebug/assembleRelease; variants debug and release | S:Release builds compile the shared C host with -DDSH_RELEASE which injects globalThis.__DSH_RELEASE__ — the logger's debug/info become no-ops only while that define stays wired (rule L4)
@@ -509,3 +514,38 @@ TreeScopeFs.kt[RD6S]: F:The SAF tree-scope filesystem: user-granted directory ac
 UiPrimitives.kt[TU6M]: F:The native-UI primitives: presentApproval, presentPicker, and the notify surface the ui service composes | R:code:contract/primitives.md, code:system-plugins/dsh-ui | A:the gateway's presentApproval/presentPicker handlers | S:User dismissal is a value: picker resolves null and grants nothing; approval doubles as a checkpoint boundary — backgrounding degrades to notify-then-resume (D7)
 WasmPrimitive.kt[RD5T]: F:The WebAssembly primitive (v1.2.0 wasmRun): one export of one module, in-process over the vendored wasm3 | R:code:contract/primitives.md, code:runtime/spike/vendor/wasm3 | A:the gateway's wasmRun handler | S:The ABI is the seam: memory export, input in the last 4096 bytes, output via dsh.emit — a trap or bad export rejects io, never a partial result
 WebPluginsDelivery.kt[RC5T]: F:The web-plugins delivery face: serving an installed web-client plugin's assets through the carrier | R:code:java/com/dshmobile/spike/CarrierPlugins.kt | A:the plugin web/ asset surface | S:Plugin assets serve from the installed tree after integrity verification — unverified trees never reach the carrier
+
+===/home/lx/dsh-mobile/hosts/android/app/src/main/res/values/===
+themes.xml[FU2T]: F:The app theme declarations | R:code:hosts/android/app/src/main/AndroidManifest.xml | A:the theme the manifest references | S:-
+
+===/home/lx/dsh-mobile/hosts/android/ci/===
+logcat-capture.sh[XO4M]: F:The logcat capture helper: pulls the scenario log stream off the emulator as E2E evidence | R:code:hosts/android/ci/run-spike-e2e.sh | A:the capture step the runners invoke | S:E2E verdicts are log-based — this capture is evidence collection, not assertion
+run-android-full.sh[XO6L]: F:The full on-emulator drive: build, boot, install, and every E2E leg in one invocation | R:code:hosts/android/ci/run-spike-e2e.sh, code:.github/workflows/dev-android.yml | A:the runner the CI job and local hosts invoke | S:One script drives the emulator directly because android-emulator-runner proved hostile twice (one sh -c per line) — keep that lesson before swapping the runner
+run-ble.sh[XO5M]: F:The BLE mock-radio e2e runner: build with the mock, drive ble.plane, verify by logs | R:code:hosts/android/ci/run-android-full.sh, code:hosts/android/app/src/main/assets/spike/scenario/ble-plane.js | A:run-ble.sh on a booted emulator | S:Mock radio by design (no emulator radio) plus the honest radio-skip leg; the real-device run is the D-g contract
+run-camera-plane.sh[XO5M]: F:The camera-plane e2e runner over the emulator's virtual camera | R:code:hosts/android/app/src/main/assets/spike/scenario/camera-plane.js | A:run-camera-plane.sh on a booted emulator | S:The virtual camera's real burst (sizes and timing) is what makes the maxBytes drop leg a live assertion
+run-device-plane.sh[XO5M]: F:The device-plane e2e runner: the clipboard ladder, share, keepAwake, and the media picker on the emulator | R:code:hosts/android/app/src/main/assets/spike/scenario/device-plane.js | A:run-device-plane.sh on a booted emulator | S:The emulator's dead pasteboard honestly rejects unavailable — the ladder still completes; that posture is asserted
+run-live-llm.sh[XO5M]: F:The real-LLM leg runner: launches llm.live-stream alone so the default chain spends no serve quota | R:code:hosts/android/app/src/main/assets/spike/scenario/llm-live-stream.js | A:run-live-llm.sh with a served key | S:The leg runs ALONE by design; the key is written through the credential handshake and audited against every log line
+run-mic-plane.sh[XO5M]: F:The microphone-plane e2e runner: the armed consent ladder with real PCM frames | R:code:hosts/android/app/src/main/assets/spike/scenario/mic-plane.js | A:run-mic-plane.sh on a booted emulator | S:Asserts the stop record's duration/bytes and the exactly-once end; idempotence of a second stop is part of the leg
+run-spike-e2e.sh[XO6M]: F:One invocation drives the whole on-emulator E2E: boot wait, install, launch, deadline poll, capture, checker verdict | R:code:test/e2e/check.mjs, code:hosts/android/ci/logcat-capture.sh | A:the runner the dev/android CI job invokes | S:Deadlines poll conditions, never sleep blind (rule 8); the checker's one-to-one log match is the only verdict
+run-upstream-parity.sh[XO5M]: F:The upstream parity differential runner: vendored spine against the committed Node golden | R:code:runtime/spike/scenario/upstream-parity.js | A:run-upstream-parity.sh on a booted emulator | S:Both legs must consume the shared projector's normalized output — a projector change re-baselines this comparison
+run-upstream-suite.sh[XO5M]: F:The upstream suite runner: transpiled specs on the emulator through the suite leg | R:code:hosts/android/app/src/main/assets/spike/scenario/upstream-suite-leg.js, code:test/upstream-suite | A:run-upstream-suite.sh on a booted emulator | S:The on-emulator face of the weekly sweep — CI's full sweep runs on arm64, this leg rides the device
+stage-spine-closure.sh[XV8L]: F:The Android stager: copies the D9 spine closure from the canonical runtime spike into app assets, byte-identical, idempotent | R:code:runtime/spike/vendor/ensure-dsh.sh, code:build/build.sh | A:--check mode is the closures gate's android leg | S:The copies are the committed closure — a stager --check drift means run build/build.sh sync android, never hand-edit assets; the ./ -prefix SKIP hole is fixed, so webclient mirrors are covered too
+
+===/home/lx/dsh-mobile/hosts/android/gradle/wrapper/===
+gradle-wrapper.properties[FV3T]: F:The Gradle wrapper distribution pin | R:code:hosts/android/gradlew | A:pins the Gradle version CI and local builds share | S:-
+
+===/home/lx/dsh-mobile/hosts/harmony/===
+.gitignore[FV2T]: F:Host-local ignores for the HarmonyOS host | R:code:.gitignore | A:- | S:-
+README.md[SH6M]: F:The HarmonyOS host README: ArkTS shell, NAPI bridge to quickjs-ng, ArkWeb, and the honest unavailable posture | R:code:docs/ARCHITECTURE.md, code:hosts/harmony/build-profile.json5 | A:- | S:Subprocesses are DESIGNED as unavailable and store-review posture is unverified in practice — both stated, not papered over
+build-profile.json5[FC5T]: F:The hvigor build profile: signing configs, targets, and the module graph | R:code:hosts/harmony/AppScope/app.json5 | A:the build config hvigorw assembleHap consumes | S:-
+
+===/home/lx/dsh-mobile/hosts/harmony/AppScope/===
+app.json5[FC4T]: F:The HarmonyOS application identity: bundle name, version code, and icon/label references | R:code:packages/release | A:the app-level config hvigor builds from | S:The version fields are release-please extra-file targets (D10) — a tag that disagrees fails check-tag-version.sh
+
+===/home/lx/dsh-mobile/hosts/harmony/AppScope/resources/base/element/===
+string.json[FL2T]: F:The app-scope string resources | R:code:hosts/harmony/AppScope/app.json5 | A:the label the app.json5 references | S:-
+
+===/home/lx/dsh-mobile/hosts/harmony/ci/===
+check-bundle-files.mjs[XQ5S]: F:The #56-class drift guard for the harmony rawfile closure: walks BUNDLE_FILES on disk and fails loud on drift | R:code:hosts/harmony/entry/src/main/ets/pages/Index.ets, code:.github/workflows/gov.yml | A:the bundle-files gate's checker | S:Walks the rawfile ON DISK — its contract is that vendor-official.sh materialized it first; a fresh checkout without staging fails, which is the designed honesty
+drive-binding.mjs[XO5M]: F:The E2E UI-automation driver for the harmony binding leg: hdc-driven, console output IS the drive evidence | R:code:hosts/harmony/ci/drive-device-plane.mjs | A:dsh:logging-exempt driver script | S:Dev script standing like test/e2e/check.mjs — the console stream is the evidence the checker consumes
+drive-device-plane.mjs[XO5M]: F:The harmony device-plane UI driver over hdc | R:code:hosts/harmony/ci/drive-binding.mjs | A:the device.plane harmony leg driver | S:Staged-copy semantics do not apply — this is CI-side tooling; harmony legs await real hardware for the capability planes (D-g standby)
