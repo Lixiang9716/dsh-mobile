@@ -142,6 +142,10 @@ import {
   resolveSymlinkAt,
   statFace,
 } from 'upstream/shims/fs-workspace.js';
+// loop-r: the real-disk seam's containment gate + the #358 read refusal it
+// throws outside-root (split from fs-workspace.js at the code-size gate;
+// call-time functions only — no new cycle risk, see the module's header).
+import { realSeamInsideRoot, wsOutsideRootError } from 'upstream/shims/fs-seam-gate.js';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 // The fs split (the file crossed the size budget): paths/realpath machinery
 // in fs-paths.js, stat faces in fs-stat.js, the write faces + descriptor
@@ -245,7 +249,10 @@ export const readAnyBytes = (path) => {
     throw enoent('open', path);
   }
   if (wsAt(resolved) !== null || underVFS(path)) throw enoent('open', resolved);
-  return refuse('readFile')();
+  // loop-r: the outside answer is the #358 anchor refusal (was the generic
+  // desktop-host refuse — the model seat never took that arm meaningfully,
+  // the real seam answered first).
+  throw wsOutsideRootError('readFile', resolved);
 };
 
 /** One-hop symlink resolution for workspace paths (identity elsewhere);
@@ -296,6 +303,11 @@ const readRealBytes = (path, encoding) => {
   const map = globalThis.__dshFlatPathMap;
   const mapped = typeof map === 'function' ? map(path) : undefined;
   if (!absolute && typeof mapped !== 'string') return undefined;
+  // loop-r: the RAW absolute arm answers the mirrored workspace only — an
+  // outside-root path declines (the caller refuses with the #358 anchor).
+  // The leg's flat-map rows keep flowing: a mapped path is the suite's own
+  // declared staging re-root, not a model-reachable spelling.
+  if (absolute && typeof mapped !== 'string' && !realSeamInsideRoot(lexical(path))) return undefined;
   const realPath = typeof mapped === 'string' ? mapped : path;
   const b64 = globalThis.__dshProcReadReal?.(realPath);
   if (b64 === undefined || b64 === null) return undefined;
@@ -344,7 +356,10 @@ export const readFileSync = (rawPath, encoding) => {
   const real = readRealBytes(path, encoding);
   if (real !== undefined) return real;
   if (insideWorkspace) throw enoent('open', workspacePath);
-  return refuse('readFileSync')(path);
+  // loop-r: the outside answer is the #358 anchor refusal (was the generic
+  // desktop-host refuse — the real seam used to answer first, so the model
+  // seat never saw this arm at all).
+  throw wsOutsideRootError('readFileSync', path);
 };
 
 /** The seeded-VFS stat arm (module level for size): a seeded FILE answers

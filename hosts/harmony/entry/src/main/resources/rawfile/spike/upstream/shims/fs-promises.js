@@ -46,6 +46,11 @@ import {
   _wsAt,
 } from 'node:fs';
 import { encodeUtf8 } from 'upstream/shims/buffer.js';
+// loop-r: the real-disk read arm's containment gate + the #358 anchor
+// refusal it throws outside-root (split from fs-workspace.js at the
+// code-size gate; call-time functions only — no new cycle risk).
+import { lexical } from 'upstream/shims/fs-workspace.js';
+import { realSeamInsideRoot, wsOutsideRootError } from 'upstream/shims/fs-seam-gate.js';
 // The FileHandle + open face lives in fs-promises-fh.js (the file crossed
 // the size budget); the default namespace below re-exports the faces.
 import { open } from 'upstream/shims/fs-promises-fh.js';
@@ -91,6 +96,13 @@ export const readFile = async (path, options) => {
     // intrinsic itself is the existence check; the ENOENT below stays the
     // answer for genuinely absent paths.
     if (typeof path === 'string' && path.startsWith('/')) {
+      // loop-r: the seam answers the mirrored WORKSPACE only — an
+      // outside-root absolute path refuses with the #358 anchor instead of
+      // reading the host disk (the 2026-10-04 battery read the app-private
+      // profile tree — llm/config.json included — through this arm). The
+      // raw rejection rides fs-local's readFileAbortable verbatim, so the
+      // anchor reaches the model seat in-band.
+      if (!realSeamInsideRoot(lexical(path))) throw wsOutsideRootError('open', path);
       const b64 = globalThis.__dshProcReadReal?.(path);
       if (b64 !== undefined && b64 !== null) {
         const encoding2 = typeof options === 'string' ? options : options?.encoding;
