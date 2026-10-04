@@ -46,6 +46,7 @@ export default defineConfig({
       { find: 'workspace-registry.js', replacement: fileURLToPath(new URL('../../runtime/spike/workspace-registry.js', import.meta.url)) },
       { find: 'scenario/probe-respond-await.js', replacement: fileURLToPath(new URL('../../runtime/spike/scenario/probe-respond-await.js', import.meta.url)) },
       { find: 'scenario/scenario-verdict.js', replacement: fileURLToPath(new URL('../../runtime/spike/scenario/scenario-verdict.js', import.meta.url)) },
+      { find: 'scenario/api-handler-respond.js', replacement: fileURLToPath(new URL('../../runtime/spike/scenario/api-handler-respond.js', import.meta.url)) },
       // The fs-shim suite (loop-p): the spike's bare 'upstream/…' specifiers
       // resolve through the quickjs loader on device; the regex prefix maps
       // the whole shim family — the node:fs imports inside stay REAL, a
