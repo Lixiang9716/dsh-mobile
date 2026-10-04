@@ -414,8 +414,7 @@ const mountLlm = async (ctx, llm, onEvent) => {
     userEndpoint: llm.userEndpoint === true,
     onWire: llm.onWire,
     onSse: llm.onSse,
-    onRequestBody: llm.onRequestBody,
-    readIdleTimeoutMs: llm.readIdleTimeoutMs, // the loop-u2 attempt-level stall guard; undefined = the 120s default
+    onRequestBody: llm.onRequestBody, readIdleTimeoutMs: llm.readIdleTimeoutMs, // loop-u2's attempt-level stall guard; undefined = the 120s default
   }));
   registerRouteDisposer(ctx, routeDisposer); // the BYOK rebind seam (upstream/llm-route.js)
   // The directory registration's handle rides the same seam: a route rebind/
