@@ -89,7 +89,12 @@ const recoverFromFailedTurn = (agent, reason) => {
                     : '.'}`,
                 SOURCE,
             ),
-        });
+        // system/message is surface-eligible: the vendored log contract requires
+        // every message-producing event to declare how it joins the surface.
+        // The note is a new node at its own log position, so the marker is the
+        // plain append op (the same one the vendored driver stamps on every
+        // user/message it commits — dsh-agent-loop lib/index.js sendMessage).
+        }, { surfaceOp: 'append' });
     } catch (error) {
         // The note must never mask the recovery below; the journal already
         // carries turn/end{reason:error} as the durable record.
