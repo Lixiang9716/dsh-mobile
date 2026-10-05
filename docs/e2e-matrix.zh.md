@@ -6,6 +6,21 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 Windows 模拟器上的 harmony 收口（2026-10-05）：
+> HarmonyOS 宿主 E2E 首次在 Windows 宿主模拟器上端到端跑通——CLT
+> 26.0.0.851、镜像 HarmonyOS 7.0.0(26.0.0)、dsh_phone 实例、hdc 目标
+> 127.0.0.1:5559、本地构建的 x86_64 HAP——全部八个 scenario 绿色，runner
+> 的绿色路径 receipt 一并落盘。三个 harmony receipt 行以真实重跑闭合
+> （d9-official-web、d9-session-live、d9-write-live 各自携带本次主机的
+> 8/8 receipt）。运行带出两处宿主修复：picker 驱动在确认区域内改选**最右**
+> 的可点击节点（7.0.0.107 镜像在 ✓ 左侧多了一个新建文件夹图标）；
+> OfficialPhase 的 session.list 观察者容忍写腿的非 sessions 形状应答
+> （此前的 TypeError 会杀死整个进程）。三个 scenario manifest 随所钉
+> 树的增长更新（descriptor available 24→26、mock 工具 6→16、claim 端点
+> 花名册与首批 forwarded 的 dynamicCordisRunner 腿）。本树检查器：
+> 93 个目录 / 211 条 verdict（1 项已归属缺口）。下面的 receipt 落盘注记
+> 是上一次的时效记录。
+>
 > **时效性**：本矩阵反映 receipt 落盘变更（2026-10-05）：android 与
 > harmony 宿主 runner 现已在绿色路径上机器撰写各自的证据 receipt
 > （共享的 `test/e2e/write-receipt.sh` 为非 simctl 宿主新增了
@@ -161,11 +176,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 92 |
-| 已提交 verdict（179 绿） | 179 |
+| 证据目录 | 93 |
+| 已提交 verdict（211 绿） | 211 |
 | 至少有一份已提交证据的 scenario | 80 / 80 个不同的 scenario id（73 个 manifest） |
-| 已验证 PNG 的截图 | 184 |
-| 验收标准缺口 | 4 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
+| 已验证 PNG 的截图 | 220 |
+| 验收标准缺口 | 1 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -297,9 +312,9 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
-| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17 | ✓ | ✓ | ✗（缺口 2） | 4 |
-| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43 | ✓ | ✓ | ✗（缺口 5） | 6 |
-| `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✗（缺口 6） | 9 |
+| `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
+| `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
+| `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
 | `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
@@ -370,7 +385,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 
 ## 已知缺口（如实列出）
 
-本树上有四项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
+本树上有一项未闭合的发现项，且**它有主**。检查器默认全部报出并以
 非零码退出；下方这张表就是**已知缺口登记表（known-gaps register）**，
 它让同一次运行可以被接成门禁。
 
@@ -390,34 +405,28 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | code | file | owner | closes with |
 | --- | --- | --- | --- |
 | MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 工作流（#65） | run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live 绿色运行 ＋ 该 runner 的 receipt 步骤 |
-| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony 工作流（#64） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web ＋ 同样的 runner 落盘步骤 |
-| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
-| MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
 
 （检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
 是源；本表为读者保留等价的中文渲染。）
 
-### 为什么剩余四项不在本分支闭合（如实说明）
+### 为什么剩余一项不在本分支闭合（如实说明）
 
-其中四项需要一份 `receipt.json`，而它只能由各自主机工作流下一次在
-设备/模拟器上的运行产出。（三个 android receipt 行已于 2026-10-05 闭合：
-android runner 现已在绿色路径上机器撰写 receipt，且一次真实的完整
-`run-android-full.sh` 本地 Windows 宿主模拟器运行将三个目录重新捕获为
-绿色、receipt 与刷新后的 verdict 一并提交。第八项——Android 相机审计的自相矛盾
-verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小节。）
-在本分支里补写这些 receipt 就等于凭空编造：
+它需要一份 `receipt.json`，而它只能由其主机工作流下一次运行产出。
+（三个 android receipt 行与三个 harmony receipt 行均已于 2026-10-05 闭合：android 由一次真实的完整
+`run-android-full.sh` 本地 Windows 宿主模拟器运行闭合；harmony 在 Windows 侧工具链就位后（CLT 26.0.0.851
+＋ HarmonyOS 7.0.0(26.0.0) 镜像，见 docs/windows-test-plan.md）由完整
+`run-host-e2e.sh` 套件在该模拟器上绿色跑通、三个 d9 目录各自以真实运行刷新并携带 receipt。
+第八项——Android 相机审计的自相矛盾 verdict——已由 v0.0.2 发布回归闭合，
+2026-09-30；见下方闭合小节。）
+在本分支里补写这份 receipt 就等于凭空编造：
 
 - **receipt 证明的是一次运行，而该运行的设备本就属于它。** `host`
   字段记的是运行发生在哪台机器上——iOS 模拟器 UDID 与运行时版本、android
   模拟器实例及其 AVD 与 API 级别、harmony 的 hdc 目标。各 runner 在运行时
   读取它（iOS 用 `xcrun simctl`，android 用 `adb`，harmony 用 `hdc`）。
-  三个 android 行在其 runner 开始于绿色路径撰写该行并有一次真实运行落盘
-  之后闭合。harmony 两行剩下的阻塞是设备而非代码：本次 receipt 落盘变更
-  在一台没有鸿蒙工具链（DevEco Studio、SDK、`hdc`、`hvigor`）的 Windows
-  宿主上完成——D9 重跑距离闭合只差工具链宿主（按文档记载的 CLT 路径即
-  macOS；Windows 侧的运行时 E2E 模拟器准备见 docs/windows-test-plan.md）
-  上一次绿色的 `run-host-e2e.sh`，届时 receipt 随运行一并落盘。iOS b4 行
-  沿用 `write-receipt.sh` 的绿色路径落盘。
+  android 与 harmony 各行都在其 runner 开始于绿色路径撰写该行、且有真实
+  运行落盘之后闭合。剩余唯一一行（iOS b4）沿用 `write-receipt.sh` 的
+  绿色路径落盘——一次 iOS 工具链宿主上的绿色 `run-ios-b4.sh` 即闭合。
 - **没有一次真实绿色运行，receipt 就不可能存在。** 每个 runner 现在都只在
   绿色路径上落盘 receipt，且仅在全部 checker 通过后可达——receipt 绝不
   凭空合成。
@@ -442,23 +451,11 @@ verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小�
    所有：在携带 #65 的树上跑一次绿色的
    `test/e2e/run-ios-b4.sh --art-dir hosts/ios/artifacts/b4-write-live`，
    并在该 runner 的绿色路径上落盘 receipt（即 `run-ios.sh` 第 7 步的做法）。
-2. **`hosts/harmony/artifacts/d9-official-web/` 缺 `receipt.json`** ——
-   目录随 #64（harmony webServer carrier）落地。归 harmony 工作流所有：一次
-   绿色的
-   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web`
-   加上同样的 runner 落盘。
+2. *（2026-10-05 闭合——d9-official-web 的 receipt，见登记表。）*
 3. *（2026-10-05 闭合——android-upstream 的 receipt，见登记表。）*
 4. *（2026-10-05 闭合——android-session-live 的 receipt，见登记表。）*
-5. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
-   目录随 #67（harmony session.live 主线脊柱，b-harmony.session.live
-   43/43 绿色）落地。归 harmony 工作流所有：一次绿色的
-   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live`
-   加上同样的 runner 落盘。
-6. **`hosts/harmony/artifacts/d9-write-live/` 缺 `receipt.json`** ——
-   目录随 #70（harmony composer 写入路径，b-harmony.write.live 33/33
-   绿色）落地。归 harmony 工作流所有：一次绿色的
-   `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live`
-   加上同样的 runner 落盘。
+5. *（2026-10-05 闭合——d9-session-live 的 receipt，见登记表。）*
+6. *（2026-10-05 闭合——d9-write-live 的 receipt，见登记表。）*
 7. *（2026-10-05 闭合——android-write-live 的 receipt，见登记表。）*
 ### 由 v0.0.2 发布回归闭合（2026-09-30）
 

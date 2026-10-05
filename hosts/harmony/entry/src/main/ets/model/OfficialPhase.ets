@@ -239,20 +239,25 @@ export class OfficialPhase {
   }
 
   /** The first REAL session.list answer through the seam (from the
-   * already-shaped ok envelope the runtime posted) — session-live leg. */
+   * already-shaped ok envelope the runtime posted) — session-live leg.
+   * The write leg's boot also drives ok:true envelopes through this seam
+   * whose value is NOT a sessions record (an observed TypeError here killed
+   * the whole app process) — every shape but the sessions one returns. */
   private observeRespond(result: Record<string, Object>): void {
     if (this.respondLogged || result['ok'] !== true) {
       return;
     }
-    const value = result['value'] as Record<string, Object> | undefined;
-    const items = value !== undefined && value['items'] !== undefined ?
-      value['items'] as Array<Record<string, Object>> : undefined;
-    if (items === undefined) {
+    const value = result['value'];
+    if (typeof value !== 'object' || value === null) {
+      return;
+    }
+    const items = (value as Record<string, Object>)['items'];
+    if (!Array.isArray(items)) {
       return;
     }
     this.respondLogged = true;
     this.emit(this.legScenario, 'session.list.responded', {
-      'ok': true, 'sessions': items.length,
+      'ok': true, 'sessions': (items as Array<Record<string, Object>>).length,
       'source': 'the on-device spine (ctx.sessions)',
     });
   }

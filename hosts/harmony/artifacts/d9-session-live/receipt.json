@@ -1,0 +1,78 @@
+{
+  "host": "HarmonyOS emulator (127.0.0.1:5559, HarmonyOS emulator 7.0.0.107(SP8DEVC00E999R4P11) )",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "host-e2e (regression trio + binding + D9 official phases)",
+  "launchConfiguration": "aa start -b com.dshmobile.spike -a EntryAbility",
+  "tree": "origin/main a19c2ce55cca (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "boot.verification",
+      "checker": "test/e2e/scenarios/boot-verification.json",
+      "events": 8,
+      "result": "pass"
+    },
+    {
+      "id": "gateway.bridge-smoke",
+      "checker": "test/e2e/scenarios/gateway-bridge-smoke.json",
+      "events": 7,
+      "result": "pass"
+    },
+    {
+      "id": "session.mock-llm",
+      "checker": "test/e2e/scenarios/session-mock-llm.json",
+      "events": 23,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.capability-binding",
+      "checker": "test/e2e/scenarios/harmony-capability-binding.json",
+      "events": 27,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.officialweb.mount",
+      "checker": "test/e2e/scenarios/harmony-officialweb-mount.json",
+      "events": 17,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.httpfetch-streaming",
+      "checker": "test/e2e/scenarios/harmony-httpfetch-streaming.json",
+      "events": 6,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.session.live-read",
+      "checker": "test/e2e/scenarios/harmony-session-live-read.json",
+      "events": 43,
+      "result": "pass"
+    },
+    {
+      "id": "harmony.composer.live-write",
+      "checker": "test/e2e/scenarios/harmony-composer-live-write.json",
+      "events": 38,
+      "result": "pass"
+    }
+  ],
+  "runner": "hosts/harmony/ci/run-host-e2e.sh",
+  "screens": [
+    "b1-final-state.png",
+    "b1-official-boot-screen.png",
+    "b3-official-boot-screen.png",
+    "b3-session-live-final.png",
+    "composer-reply-rendered.png",
+    "composer-typed.png",
+    "composer-write-boot-screen.png",
+    "harmony-capability-binding-complete.png",
+    "harmony-capability-live-deltas.png",
+    "m5-binding-complete.png",
+    "m5-live-deltas.png",
+    "officialweb-boot-screen.png",
+    "officialweb-final-state.png",
+    "session-live-boot-screen.png",
+    "session-live-read-final.png"
+  ],
+  "timestamp": "2026-10-05T19:58:55+08:00",
+  "exitCode": 0
+}
