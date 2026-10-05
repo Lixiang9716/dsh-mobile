@@ -87,6 +87,8 @@ const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
  * carries {mockLlmUrl, apiKey, containerRoot}, the exact handoff the
  * scenario's hostFacts() awaits (the Android host's armed-MockLlmRoute
  * shape). No web client mounts: the scenario drives the spine only. */
+const SCENARIO_REAL_AGENT: string = 'real.agent.loop';
+const ENTRY_REAL_AGENT: string = 'scenario/real-agent-loop.js';
 const SCENARIO_PARITY: string = 'upstream.parity';
 const ENTRY_PARITY: string = 'scenario/upstream-parity.js';
 
@@ -350,6 +352,42 @@ export class HostPhase {
     this.connectedLogged = false;
     this.hostInfoDelivered = false;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
+  /** The `real.agent.loop` leg (windows-test-plan T4/T5): the parity leg's
+   * eval-then-deliver shape — the scenario evaluates, THEN the runtime.config
+   * delivery lands (the scenario's hostFacts take() subscribes during eval).
+   * Headless: no page mounts, no carrier-side records; the containerRoot is
+   * the fs scope root the probes' fs primitive resolves against. */
+  beginRealAgent(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_REAL_AGENT;
+    this.carrierScenario = SCENARIO_REAL_AGENT;
+    this.entry = ENTRY_REAL_AGENT;
+    // The staging-handshake flag: its stage.ready→stage-ready conversion is
+    // what the runner's send waits on. The other llmLeg-gated behaviors
+    // (client.selected, host.seed, ws token deltas) all sit behind a page
+    // connection this headless leg never gets.
+    this.llmLeg = true;
+    this.parityLeg = false;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+    // The staging entry FIRST: it writes the credential placeholder (the
+    // stage-ready marker the runner's send waits on) — the same module the
+    // llm leg evals. The scenario then polls the staged file into its boot.
+    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    if (staged < 0) {
+      hilog.error(0x0000, TAG, 'real-agent leg: staging eval failed');
+      return;
+    }
+    const status = hostEval(PHASE_ID, ENTRY_REAL_AGENT);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'real-agent leg: scenario eval failed');
+      return;
+    }
+    hostBusDeliver(PHASE_ID, JSON.stringify({
+      'type': 'runtime.config',
+      'containerRoot': fsRoot,
+    }));
   }
 
   /** The upstream-suite leg: the driver scenario plus the runtime.config

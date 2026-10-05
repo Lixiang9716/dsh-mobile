@@ -1,0 +1,144 @@
+{
+  "scenario": "real.agent.loop",
+  "extract": {
+    "prefix": "dsh.spike.log:"
+  },
+  "expect": [
+    {
+      "event": "realagent/config/loaded",
+      "match": {
+        "baseUrl": "https://open.bigmodel.cn/api/coding/paas/v4",
+        "model": "glm-5.3-flash"
+      }
+    },
+    {
+      "event": "llm/runtime",
+      "match": {
+        "provider": "bigmodel",
+        "model": "glm-5.3-flash"
+      }
+    },
+    {
+      "event": "upstream/profile",
+      "match": {
+        "profile": "mobile"
+      }
+    },
+    {
+      "event": "upstream/services"
+    },
+    {
+      "event": "realagent/spine/booted",
+      "match": {
+        "sessionId": "s-real-agent-0001",
+        "provider": "bigmodel"
+      }
+    },
+    {
+      "event": "realagent/turn",
+      "match": {
+        "seq": 1
+      }
+    },
+    {
+      "event": "realagent/tool/calls",
+      "match": {
+        "seq": 1
+      }
+    },
+    {
+      "event": "realagent/tool/result",
+      "match": {
+        "seq": 1,
+        "shape": "anchored-refusal",
+        "ok": true
+      }
+    },
+    {
+      "event": "realagent/turn",
+      "match": {
+        "seq": 2
+      }
+    },
+    {
+      "event": "realagent/tool/calls",
+      "match": {
+        "seq": 2
+      }
+    },
+    {
+      "event": "realagent/tool/result",
+      "match": {
+        "seq": 2,
+        "shape": "relative-resolves",
+        "ok": true
+      }
+    },
+    {
+      "event": "realagent/turn",
+      "match": {
+        "seq": 3
+      }
+    },
+    {
+      "event": "realagent/tool/calls",
+      "match": {
+        "seq": 3
+      }
+    },
+    {
+      "event": "realagent/tool/result",
+      "match": {
+        "seq": 3,
+        "shape": "absence",
+        "ok": true
+      }
+    },
+    {
+      "event": "realagent/turn",
+      "match": {
+        "seq": 4
+      }
+    },
+    {
+      "event": "realagent/tool/calls",
+      "match": {
+        "seq": 4
+      }
+    },
+    {
+      "event": "realagent/tool/result",
+      "match": {
+        "seq": 4,
+        "shape": "pinned-in-root",
+        "ok": true
+      }
+    },
+    {
+      "event": "realagent/turn",
+      "match": {
+        "seq": 5
+      }
+    },
+    {
+      "event": "realagent/tool/calls",
+      "match": {
+        "seq": 5
+      }
+    },
+    {
+      "event": "realagent/tool/result",
+      "match": {
+        "seq": 5,
+        "ok": true
+      }
+    },
+    {
+      "event": "realagent/summary",
+      "match": {
+        "probes": 5,
+        "pass": true
+      }
+    }
+  ]
+}

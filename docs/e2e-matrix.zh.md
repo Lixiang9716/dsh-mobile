@@ -6,6 +6,15 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 T4/T5 harness 落地（2026-10-05）：新的
+> `real.agent.loop` 腿在钉定的 bigmodel 凭据上启动完整 spine（工具挂载），
+> glm-5.3-flash 亲自驱动五个探针轮次——fs 边界的四种形态（锚点拒绝、
+> 相对拼写解析、纯 absence、in-root 钉定）与一次**真实应答**的 web_search
+> （免代理网络无 keyless 挑战）。manifest 21/21、receipt 在活目标行落盘
+> （`hosts/harmony/artifacts/windows-t4t5-real-agent/`），T4/T5 移出计划
+> 队列。本树检查器：94 个目录 / 206 条 verdict（1 项已归属缺口）。下面的
+> T3 注记是上一次的时效记录。
+>
 > **时效性**：本矩阵反映 T3 在 Windows 宿主上以钉定座位闭合（2026-10-05）：
 > `llm.live-stream` 在 Windows 侧模拟器上以钉定的 bigmodel 座跑绿——
 > glm-5.3-flash 经 gateway httpFetch 流式输出 reasoning + content，device
@@ -189,9 +198,9 @@
 | 指标 | 数值 |
 | --- | --- |
 | 证据目录 | 93 |
-| 已提交 verdict（205 绿） | 205 |
+| 已提交 verdict（206 绿） | 206 |
 | 至少有一份已提交证据的 scenario | 80 / 80 个不同的 scenario id（73 个 manifest） |
-| 已验证 PNG 的截图 | 212 |
+| 已验证 PNG 的截图 | 213 |
 | 验收标准缺口 | 1 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
@@ -234,6 +243,7 @@
 | `install.carrier-evidence` | 11/11 | — | — | — |
 | `install.from-http` | 46/46 | — | — | — |
 | `m2.llm` | 14/148 | 14/171 | 14/130, 14/114（Windows 宿主） | 19/19 |
+| `real.agent.loop` | — | — | 21/21（Windows 宿主，glm-5.3-flash 实况） | — |
 | `m2.llm.carrier` | 7/7 | 7/7 | — | — |
 | `llm.live-stream` | 14/67 | — | 14/130 | — |
 | `llm.live-stream.carrier` | 7/7 | — | 7/7 | — |
@@ -334,6 +344,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20（漂移）, harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
 | `hosts/harmony/artifacts/m5-llm-live-stream` | HarmonyOS | llm.live-stream 14/130, llm.live-stream.carrier 7/7 —— 配额阻塞的 `m5-m2-llm` 目录于 2026-09-28 重跑转绿（提交 `64889c54`）；被服务的轮次已可宣称 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/windows-t3-live-llm` | HarmonyOS | llm.live-stream 14/114 + carrier 7/7（receipt 2026-10-05，bigmodel 座，Windows 宿主） | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/windows-t4t5-real-agent` | HarmonyOS | real.agent.loop 21/21（receipt 2026-10-05，glm-5.3-flash 实况工具循环，Windows 宿主） | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
