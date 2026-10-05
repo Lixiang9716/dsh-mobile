@@ -67,6 +67,10 @@ const LEG_MIC_PLANE: string = 'mic.plane';
 /** The windows-test-plan T4/T5 leg (`--ps dsh.e2e.leg real.agent.loop`):
  * the spine + tools on the STAGED real backend, the probes in-scenario. */
 const LEG_REAL_AGENT: string = 'real.agent.loop';
+/** The CREATE-mode live demo (`--ps dsh.e2e.leg real.create`): the whale
+ * creation client on the STAGED real backend — one Pomodoro-clock creation
+ * turn, streamed into the page. A demo: no one-to-one manifest. */
+const LEG_REAL_CREATE: string = 'real.create';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -114,6 +118,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/officialweb-web-live.js',
   'scenario/parity-projector.js',
   'scenario/real-agent-loop.js',
+  'scenario/real-create.js',
   'scenario/session-mock-llm.js',
   'scenario/upstream-fake-timers.js',
   'scenario/upstream-harness-matchers.js',
@@ -1252,6 +1257,9 @@ struct Index {
     } else if (leg === LEG_REAL_AGENT) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runRealAgentLeg();
+    } else if (leg === LEG_REAL_CREATE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runRealCreateLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1437,6 +1445,58 @@ struct Index {
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
         hilog.error(0x0000, TAG, 'real-agent leg failed: %{public}s',
+          err.message ?? 'unknown');
+        LlmConfigStaging.cleanup(configPath);
+      });
+  }
+
+  /** The `real.create` leg (CREATE-mode live demo; ci/run-real-create.sh):
+   * the whale leg's carrier + page shuttle + the llm leg's credential
+   * choreography — the whale creation client mounts and ONE REAL turn
+   * creates the Pomodoro clock, streamed into the page. Demo: no manifest;
+   * the runner waits for the summary marker and screenshots. */
+  private runRealCreateLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const configPath: string = fsRoot + '/llm-live-stream/config.json';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' real.create (demo leg)';
+      LlmConfigStaging.cleanup(configPath);
+    };
+    phase.pageSink = (text: string): void => {
+      this.carrier.sendText(text);
+    };
+    this.carrier.onStaticServed = (path: string): void => {
+      phase.onStaticServed(path);
+    };
+    this.carrier.onWsText = (text: string): void => {
+      phase.onPageText(text);
+    };
+    this.materializeBundle(ctx)
+      .then((root: string): Promise<number> => {
+        this.verdict = 'real-create leg: staging credentials...';
+        LlmConfigStaging.prepare(configPath);
+        phase.beginRealCreate(ctx, root, ctx.cacheDir + '/dsh-real-create-capture.log', fsRoot);
+        installLegacyRoutes(this.carrier, root + WHALE_WEB_DIR);
+        installE2EStreams(this.carrier);
+        return LlmConfigStaging.awaitStaged(configPath);
+      })
+      .then((stagedBytes: number): Promise<number> => {
+        hilog.info(0x0000, TAG, 'real-create leg: credentials staged (%{public}d bytes)',
+          stagedBytes);
+        return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
+          phase.onCarrierListening(port);
+          this.webUrl = 'http://127.0.0.1:' + port + '/';
+          return port;
+        });
+      })
+      .then((port: number): void => {
+        this.verdict = 'real-create leg: creation turn running on 127.0.0.1:' + port;
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'real-create leg failed: %{public}s',
           err.message ?? 'unknown');
         LlmConfigStaging.cleanup(configPath);
       });

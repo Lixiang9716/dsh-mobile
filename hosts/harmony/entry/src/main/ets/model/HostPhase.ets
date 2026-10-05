@@ -87,6 +87,8 @@ const ENTRY_SUITE: string = 'scenario/upstream-suite-leg.js';
  * carries {mockLlmUrl, apiKey, containerRoot}, the exact handoff the
  * scenario's hostFacts() awaits (the Android host's armed-MockLlmRoute
  * shape). No web client mounts: the scenario drives the spine only. */
+const SCENARIO_REAL_CREATE: string = 'real.create';
+const ENTRY_REAL_CREATE: string = 'scenario/real-create.js';
 const SCENARIO_REAL_AGENT: string = 'real.agent.loop';
 const ENTRY_REAL_AGENT: string = 'scenario/real-agent-loop.js';
 const SCENARIO_PARITY: string = 'upstream.parity';
@@ -352,6 +354,35 @@ export class HostPhase {
     this.connectedLogged = false;
     this.hostInfoDelivered = false;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
+  }
+
+  /** The `real.create` leg (CREATE-mode live demo): the whale mount's
+   * carrier + page shuttle with the llm leg's staging handshake — the
+   * staging entry evals first (the credential placeholder), then the
+   * creation scenario, then the runtime.config delivery. Headless of
+   * manifests by design: a creative turn's records are the model's own. */
+  beginRealCreate(ctx: common.UIAbilityContext, bundleRoot: string,
+    capturePath: string, fsRoot: string): void {
+    this.scenario = SCENARIO_REAL_CREATE;
+    this.carrierScenario = SCENARIO_REAL_CREATE;
+    this.entry = ENTRY_REAL_CREATE;
+    this.llmLeg = true;
+    this.whaleLeg = true;
+    this.start(ctx, bundleRoot, capturePath, fsRoot);
+    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    if (staged < 0) {
+      hilog.error(0x0000, TAG, 'real-create leg: staging eval failed');
+      return;
+    }
+    const status = hostEval(PHASE_ID, ENTRY_REAL_CREATE);
+    if (status < 0) {
+      hilog.error(0x0000, TAG, 'real-create leg: scenario eval failed');
+      return;
+    }
+    hostBusDeliver(PHASE_ID, JSON.stringify({
+      'type': 'runtime.config',
+      'containerRoot': fsRoot,
+    }));
   }
 
   /** The `real.agent.loop` leg (windows-test-plan T4/T5): the parity leg's
