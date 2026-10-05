@@ -130,25 +130,33 @@ const findText = (node, regex) => {
 
 /** Nodes whose bounds center falls inside the region box; CLICKABLE nodes
  * win over decorative containers (the picker's top-right ✓ confirm vs the
- * wrappers around it). */
+ * wrappers around it). Among CLICKABLE candidates the RIGHTMOST wins: the
+ * 7.0.0.107 image parks a second control (the 新建文件夹 new-folder icon) in
+ * the same corner strip left of the ✓, and DFS order alone picked it — the
+ * save then never confirmed and the drive starved its deadline. */
 const findInRegion = (node, region) => {
-  const a = node?.attributes;
-  let best = null;
-  if (a) {
-    const center = boundsCenter(a.bounds ?? '');
-    if (center && center.x >= region.x0 && center.x <= region.x1 &&
-        center.y >= region.y0 && center.y <= region.y1) {
-      best = { x: center.x, y: center.y, enabled: a.enabled === 'true',
-        clickable: a.clickable === 'true' };
+  const better = (hit, best) => {
+    if (best === null) return true;
+    if (hit.clickable !== best.clickable) return hit.clickable;
+    return hit.x > best.x;
+  };
+  const walk = (node, best) => {
+    const a = node?.attributes;
+    if (a) {
+      const center = boundsCenter(a.bounds ?? '');
+      if (center && center.x >= region.x0 && center.x <= region.x1 &&
+          center.y >= region.y0 && center.y <= region.y1) {
+        const hit = { x: center.x, y: center.y, enabled: a.enabled === 'true',
+          clickable: a.clickable === 'true' };
+        if (better(hit, best)) best = hit;
+      }
     }
-  }
-  for (const child of node?.children ?? []) {
-    const hit = findInRegion(child, region);
-    if (hit !== null && (best === null || (hit.clickable && !best.clickable))) {
-      best = hit;
+    for (const child of node?.children ?? []) {
+      best = walk(child, best);
     }
-  }
-  return best;
+    return best;
+  };
+  return walk(node, null);
 };
 
 const tapText = async (what, regex, ms, soft = false) => {

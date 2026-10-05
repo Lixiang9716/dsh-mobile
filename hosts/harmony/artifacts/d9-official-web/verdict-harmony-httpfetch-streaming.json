@@ -1,0 +1,8 @@
+{
+  "scenario": "harmony.httpfetch-streaming",
+  "pass": true,
+  "expected": 6,
+  "logged": 6,
+  "failures": [],
+  "parseErrors": []
+}
