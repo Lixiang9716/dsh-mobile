@@ -107,8 +107,10 @@ mv "$HERE/ROSTER.json.tmp" "$HERE/ROSTER.json"
 echo "==> write this build's record to MANIFEST.sha256.computed"
 # LC_ALL=C pins the sort collation: a record generated under another locale
 # lists the same digests in a different order and shasum -c (order-sensitive)
-# then fails on the other platform.
-( cd "$HERE/npm" && find . -type f | LC_ALL=C sort | xargs shasum -a 256 ) \
+# then fails on the other platform. -t pins the TEXT record format: shasum
+# defaults to binary mode on Windows (`digest *./path`), while the committed
+# reference record — and verify-manifest.mjs — spell `digest  ./path`.
+( cd "$HERE/npm" && find . -type f | LC_ALL=C sort | xargs shasum -a 256 -t ) \
     > "$HERE/MANIFEST.sha256.computed"
 
 echo "==> compare it against the committed reference record"

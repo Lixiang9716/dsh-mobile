@@ -33,7 +33,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, relative, basename } from 'node:path';
+import { join, dirname, relative, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -68,7 +68,9 @@ const diskFiles = () => {
         walk(full);
         continue;
       }
-      out.push(relative(rawRoot, full));
+      // BUNDLE_FILES entries are forward-slash relatives; a Windows readdir
+      // yields backslash ones — normalize before the set comparisons.
+      out.push(relative(rawRoot, full).split(sep).join('/'));
     }
   };
   walk(rawRoot);
