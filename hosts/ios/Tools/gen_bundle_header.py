@@ -216,6 +216,8 @@ RESOURCES = [
     ("upstream_web_write_cordis_js", SPIKE / "upstream" / "web-write-cordis.js"),
     # the #323 guard rings + loop-u's recovery face (llm-retry rides the vendor pin)
     ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
+    # loop-z3: the editor tool face's relative-path anchor (boot.js mounts the vendored editor through it)
+    ("upstream_tool_path_anchor_js", SPIKE / "upstream" / "tool-path-anchor.js"),
     ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
     ("upstream_turn_recovery_js", SPIKE / "upstream" / "turn-recovery.js"),
     ("upstream_retry_telemetry_js", SPIKE / "upstream" / "retry-telemetry.js"),

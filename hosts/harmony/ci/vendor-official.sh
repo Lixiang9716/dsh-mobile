@@ -343,6 +343,7 @@ upstream/web-write-picker.js
 upstream/web-write-workspace.js
 upstream/web-write-catalog.js
 upstream/tool-deadline.js
+upstream/tool-path-anchor.js
 upstream/turn-recovery.js
 upstream/retry-telemetry.js
 upstream/turn-watchdog.js

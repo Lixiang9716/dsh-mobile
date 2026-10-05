@@ -6,6 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync
 import { tmpdir } from 'node:os';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 import { statSync as shimStatSync } from 'upstream/shims/fs-stat.js';
+import { anchorModelPath } from '../../runtime/spike/upstream/tool-path-anchor.js';
 
 // loop-v2 (2026-10-05): the #373 seam symmetry held on the shim faces but
 // INVERTED on the model's tool face. The 2026-10-05 battery (round 14, w2,
@@ -148,5 +149,125 @@ describe('the stat face holds the seam boundary (loop-v2, shim-face controls)', 
   it('still answers real INSIDE-root entries the served views never registered (W6-V children)', () => {
     const shape = shimStatSync(join(controlRoot, 'real-child', 'notes.txt'));
     expect(shape.isFile()).toBe(true);
+  });
+});
+
+// loop-z3 (2026-10-05): the r16 battery (v2c) measured the model's
+// str_replace_editor refusing the in-root relative spelling
+// 'spike/../plugins/registry.json' at the VENDORED absolute-path gate
+// (resolveTarget, vendored tool-str-replace-editor lib/index.js:69) with a
+// "maybe you meant /spike/..." suggestion whose leading / is the DEVICE root
+// — driving the suggestion answered FS_NOT_FOUND (v2c2). The queue line
+// suspected the #380 seam re-order; the r14→r16 delta is actually the TOOL
+// the model picked (r14's w2c drove `read`, whose fs-local resolve accepts
+// relative spellings against the workspace cwd — the #356 semantics — and
+// the probe run on 105abafa shows it still passing), while the editor's gate
+// is upstream and byte-identical since it was vendored. The defect is real
+// either way: one model face accepts the workspace-relative directory
+// language the other refuses, and the refusal teaches a dead end.
+//
+// The fix anchors the editor's model-supplied `path` at the mounted
+// workspace root BEFORE the vendored handler runs (applyWithAnchoredModelPaths
+// — the exact call boot.js's mountFileTools now makes). Normalization first,
+// inside/outside + existence second: in-root relative spellings resolve,
+// out-of-root climbs still refuse at the loop-v2 containment gate, absolute
+// spellings pass byte-identical, and the gate (with its device-root
+// suggestion) is unreachable for model input.
+describe('the model-path anchor (loop-z3, unit)', () => {
+  it('passes absolute spellings through byte-identical', () => {
+    const root = '/data/user/0/com.dshmobile.spike/files/profiles/default/spike';
+    expect(anchorModelPath(`${root}/plugins/registry.json`, root)).toBe(`${root}/plugins/registry.json`);
+    expect(anchorModelPath(`${root}/spike/../plugins/registry.json`, root))
+      .toBe(`${root}/spike/../plugins/registry.json`);
+  });
+
+  it('joins relative spellings at the root verbatim (physical .., no normalization)', () => {
+    const root = '/data/user/0/com.dshmobile.spike/files/profiles/default/spike';
+    expect(anchorModelPath('spike/../plugins/registry.json', root))
+      .toBe(`${root}/spike/../plugins/registry.json`);
+    expect(anchorModelPath('../../etc/passwd', root)).toBe(`${root}/../../etc/passwd`);
+  });
+
+  it('leaves empty and non-string inputs so the vendored gate keeps its own answers', () => {
+    const root = '/ws';
+    expect(anchorModelPath('', root)).toBe('');
+    expect(anchorModelPath(undefined, root)).toBe(undefined);
+  });
+});
+
+const runRelativeSpelling = () => {
+  const result = spawnSync(
+    process.execPath,
+    ['--import', './toolface-register.mjs', './toolface-relative-spelling-runner.mjs'],
+    { cwd: here, encoding: 'utf8', timeout: 60_000 },
+  );
+  if (result.status !== 0) {
+    throw new Error(`relative-spelling runner failed (${result.status}): ${result.stderr?.slice(0, 2000)}`);
+  }
+  return JSON.parse(result.stdout.trim().split('\n').pop());
+};
+
+const z3 = runRelativeSpelling();
+
+describe('the editor face answers relative spellings like the read face (loop-z3)', () => {
+  it('the read-face control: read resolves the relative .. spelling (unchanged)', () => {
+    expect(z3.readRelative.ok).toBe(true);
+    // The read tool's execute resolves to its line-window envelope — the
+    // served lines carry the registry content.
+    const lines = z3.readRelative.value?.lines?.map((line) => line.text) ?? [];
+    expect(lines.join('\n')).toContain('"version": 1');
+    expect(z3.readRelative.text).toContain('plugins/registry.json');
+  });
+
+  it('the r16 v2c spelling resolves through the anchored editor and serves the registry', () => {
+    expect(z3.editorRelative.ok).toBe(true);
+    expect(z3.editorRelative.text).toContain('"version": 1');
+    expect(z3.editorRelative.text).toContain(z3.root);
+  });
+
+  it('a relative absent spelling answers honest absence — never the device-root suggestion', () => {
+    expect(z3.editorRelativeAbsent.ok).toBe(false);
+    expect(z3.editorRelativeAbsent.message).toContain('does not exist');
+    expect(z3.editorRelativeAbsent.message).toContain(z3.root);
+    expect(z3.editorRelativeAbsent.message).not.toContain('is not an absolute path');
+    expect(z3.editorRelativeAbsent.message).not.toContain('Maybe you meant');
+  });
+
+  it('the vendored absolute-path gate is unreachable for every driven spelling', () => {
+    expect(z3.gateTextSeen).toBe(false);
+  });
+
+  it('the vendored empty-path answer is preserved', () => {
+    expect(z3.editorEmpty.ok).toBe(false);
+    expect(z3.editorEmpty.message).toContain('path must be a non-empty string');
+  });
+});
+
+describe('the loop-v2 three forms hold through the tool face post-wrap (loop-z3)', () => {
+  it('(a) an existing outside-root directory refuses with the anchor', () => {
+    expect(z3.editorOutsideExisting.ok).toBe(false);
+    expect(z3.editorOutsideExisting.message).toContain('outside the writable workspace root');
+    expect(z3.editorOutsideExisting.message).toContain(z3.root);
+    expect(z3.editorOutsideExisting.message).toContain('maybe you meant');
+    expect(z3.editorOutsideExisting.code).toBe('EACCES');
+    expect(z3.editorOutsideExisting.errno).toBe(-13);
+    expect(z3.editorOutsideExisting.syscall).toBe('stat');
+  });
+
+  it('(b) an absent outside-root path answers plain absence', () => {
+    expect(z3.editorOutsideAbsent.ok).toBe(false);
+    expect(z3.editorOutsideAbsent.message).toContain('does not exist');
+    expect(z3.editorOutsideAbsent.code).toBe('FS_NOT_FOUND');
+  });
+
+  it('(c) an inside-root absolute spelling resolves and serves, byte-identical semantics', () => {
+    expect(z3.editorInside.ok).toBe(true);
+    expect(z3.editorInside.text).toContain('"version": 1');
+  });
+
+  it('a relative spelling climbing OUT of the root refuses at the containment gate', () => {
+    expect(z3.editorClimbOut.ok).toBe(false);
+    expect(z3.editorClimbOut.message).toContain('outside the writable workspace root');
+    expect(z3.editorClimbOut.code).toBe('EACCES');
   });
 });

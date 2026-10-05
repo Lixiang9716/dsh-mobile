@@ -1,0 +1,22 @@
+{
+  "title": "loop-z3: the editor tool face resolves in-root relative spellings like the read face",
+  "created": "2026-10-04T23:26:46+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] Diagnose the r16 v2c refusal with line numbers over the r14/r16 evidence",
+    "[x] Anchor the editor's model-supplied path at the workspace root before the vendored gate (seam + boot mount)",
+    "[x] Panel: relative .. resolves, no device-root suggestion, loop-v2 three forms stay green (full suite)",
+    "[x] Closure sync android+harmony (incl. the harmony roster rows)",
+    "[x] Agent Note (bug-fix) with the corrected root cause",
+    "PR green + merged, main green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0200"
+}

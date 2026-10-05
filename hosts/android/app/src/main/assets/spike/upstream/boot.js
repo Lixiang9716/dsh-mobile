@@ -226,7 +226,7 @@ export const spineInventory = (ctx) => {
 
 /** The FILE-TOOLS row's mounts (see the import note at the top of this
  * file): the workspace world, the vendored fs-local backend as the `fs`
- * service, and the file tools into the REAL ToolRuntime. */
+ * service, the file tools into the REAL ToolRuntime (editor via the loop-z3 path anchor). */
 const mountFileTools = async (ctx, cwd) => {
   mountWorkspace(cwd);
   const [{ LocalFileSystem }, ToolFs, StrReplaceEditor] = await Promise.all([
@@ -236,7 +236,7 @@ const mountFileTools = async (ctx, cwd) => {
   ]);
   await ctx.plugin(LocalFileSystem, { cwd });
   await ctx.plugin(ToolFs, {});
-  await ctx.plugin(StrReplaceEditor, {});
+  await ctx.plugin((await import('upstream/tool-path-anchor.js')).anchoredEditorPlugin(StrReplaceEditor, cwd), {});
 };
 
 /** The SKILL row (2026-09-23, the agent-flow E2E): the upstream skill family
