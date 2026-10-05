@@ -178,7 +178,10 @@ run_attempt() {
     if [ "$(printf '%s' "$PLACEHOLDER_MODE" | cut -c9)" != "w" ]; then
         die "the runtime's placeholder is not others-writable ($PLACEHOLDER_MODE) — hdc file send cannot land"
     fi
-    SEND_OUT=$("$HDC" file send "$CFG" "$CONFIG_REMOTE" 2>&1) || true
+    # hdc treats a forward-slash Windows local path as RELATIVE (measured on
+    # this host: `C:/...` gained the cwd prefix); hand it the backslash form.
+    CFG_SEND=$(command -v cygpath >/dev/null 2>&1 && cygpath -w "$CFG" || printf '%s' "$CFG")
+    SEND_OUT=$("$HDC" file send "$CFG_SEND" "$CONFIG_REMOTE" 2>&1) || true
     case "$SEND_OUT" in
         *"[Fail]"*) die "hdc file send refused the config into the app sandbox: $SEND_OUT" ;;
     esac
@@ -323,7 +326,7 @@ done
 TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
 cat > "$OUT/receipt.json" <<EOF
 {
-  "host": "harmony 127.0.0.1:5555 (dsh_phone emulator)",
+  "host": "harmony $(HTARGET=("$HDC" list targets 2>/dev/null | grep -v Empty | head -1 | tr -d ''); echo "${HTARGET:-unknown-target}") (dsh_phone emulator)",
   "runner": "hosts/harmony/ci/run-live-llm.sh",
   "phase": "harmony.llm.live-stream",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real z.ai backend",

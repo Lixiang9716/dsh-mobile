@@ -156,3 +156,32 @@ hdc shell "hidumper --mem $(pidof com.dshmobile.spike)"   # 或 ps -o RSSHLK
 - 任一断言不符 → 截图 + hilog 摘录 + journal 证据入队,按修复轨处理;预期内的宿主差异
   (如 timer denied)不算失败,入 owner 决策清单。
 - 全程不要动 WSL 侧仓库的 git/gov 状态;Windows 侧一切在模拟器内发生。
+
+---
+
+## 执行状态（2026-10-05，Windows 宿主——首轮完整执行）
+
+| 项 | 结果 |
+| --- | --- |
+| P0 环境准备 | 完成——CLT 26.0.0.851（D:\harmonyos-commandlinetools，含 SDK + Emulator + hdc）、镜像 HarmonyOS 7.0.0(26.0.0)、dsh_phone 实例（D 盘）、目标 127.0.0.1:5559、WHPX 开启。无需 DevEco Studio。 |
+| T1 冷启动 | 完成且超额——完整 8-scenario `run-host-e2e.sh` 套件绿跑 4 次（PR #390）：composer 渲染、页面服务、checker 零失败。 |
+| T2 timer 诚实性 | 凭运行日志完成——每个 runtime 恰一条 `arm/failed` 警告（2 个 runtime → 2 行，无风暴），GatewayCore 拒绝 timerSchedule 有日志，轮次照常完成。 |
+| T3 真实模型轮次 | 完成但带偏差——本机没有 bigmodel key，轮次改打 OpenRouter 免费池（`inclusionai/ling-3.0-flash-sante:free`）：scenario verdict PASS（流式轮次完成、served-model 逐字、key 泄漏审计干净、凭据已删），carrier manifest 7/7；device manifest 13/14——其 `llm.reasoning.delta` 期望钉死在 bigmodel 座（reasoning 模型）；OpenRouter 免费路由经 vendored 适配器不产出 reasoning（0 条）。这是命名差距而非宿主缺陷：两个宿主在此行为完全一致（T7）。 |
+| T4 fs 形态 | 排队——需要真实模型创建循环驱动 composer；harmony 的写探针是脚本化 llm 固定文本。harness 缺口，一行 queue。 |
+| T5 web_search | 排队——与 T4 同一 harness 缺口。 |
+| T6 浸泡 | 完成——5/5 冷启动绿（boot 31/69/63/66/65s，应用 ready 每轮 +3s，PSS 97.7→106.3→98.9→102.4→99.2MB = 1.09×，FAIL 增量 0）。 |
+| T7 Android 对照 | 真实轮次腿完成——同一 OpenRouter 轮次跑在本机免代理 Android 模拟器上：scenario ALL PASS，且 device manifest 失败与 harmony 逐字节相同（want reasoning.delta @7，got llm.delta "Hello"）——两座一致；不一致的是 manifest 的 provider 钉定。 |
+
+学到的环境事实（修复或记住）：
+
+- 本镜像上 `/proc/net/tcp6` 对 shell 用户不显示任何套接字行——T1 的
+  readiness 轮询必须改用应用自己的 hilog 标记（`session.mock-llm PASS`）。
+- `hdc` 把正斜杠与 MSYS 路径当相对路径（前面拼 cwd）；传 `D:\...` 反斜杠
+  形式，设备侧参数设 `MSYS_NO_PATHCONV=1`。
+- 没有运行时的 others-writable 占位文件，`hdc file send` 无法落进应用
+  沙箱（run-live-llm 的握手）；`run-as` 是 Android 独有便利。
+- Emulator 首次运行的输入法向导会劫持屏幕一次——先点完再驱动，否则
+  uitest 驱动会饿死。
+- OpenRouter 免费池的 429 是瞬时且按模型的；花一次设备尝试前先探测，
+  且免费路由经 vendored 适配器永不产出 reasoning 字段（manifest 钉定，
+  不是缺陷）。
