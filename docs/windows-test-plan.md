@@ -1,5 +1,7 @@
 # Windows-side test plan (harmony runtime E2E + a proxy-free control)
 
+English | [简体中文](windows-test-plan.zh.md)
+
 Date: 2026-10-05. Purpose: close the verification boundary WSL2 cannot cover —
 the harmony HAP has never been **executed** anywhere (compile + HAP structure
 assertions are green; runtime proof is zero). The Windows-side DevEco emulator

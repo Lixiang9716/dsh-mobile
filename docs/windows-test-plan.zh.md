@@ -1,5 +1,7 @@
 # Windows 侧测试计划(harmony 运行时 E2E + 对照)
 
+[English](windows-test-plan.md) | 简体中文
+
 日期:2026-10-05。目的:补全 WSL2 无法覆盖的验证边界 —— harmony 的 HAP 从未被任何环境**执行**过
 (编译 + HAP 结构断言全绿,运行时零证明)。Windows 侧 DevEco 模拟器是全仓库唯一的 harmony
 可执行目标;附带一个可选的 proxy-free Android 对照(解耦 Clash 代理变量)。
