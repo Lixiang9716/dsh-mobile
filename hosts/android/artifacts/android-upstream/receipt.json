@@ -1,0 +1,25 @@
+{
+  "host": "Android emulator (emulator-5554, unknown-avd / API 35)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "officialweb-mount",
+  "launchConfiguration": "am start -n com.dshmobile.spike/.MainActivity --ez dsh.web true",
+  "tree": "origin/main f3d364561695 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "android.officialweb.mount",
+      "checker": "test/e2e/scenarios/android-officialweb-mount.json",
+      "events": 14,
+      "result": "pass"
+    }
+  ],
+  "runner": "hosts/android/ci/run-android-full.sh",
+  "screens": [
+    "screens/01-official-boot-screen.png",
+    "screens/02-plugins-loading.png",
+    "screens/03-app-shell.png",
+    "screens/04-final-state.png"
+  ],
+  "timestamp": "2026-10-05T15:16:29+08:00",
+  "exitCode": 0
+}

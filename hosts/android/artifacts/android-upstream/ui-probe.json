@@ -1,0 +1,11 @@
+{
+  "scenario": "ui.occlusion",
+  "event": "ui.probe",
+  "probe": "occlusion",
+  "violations": [],
+  "scanned": {
+    "nodes": 6,
+    "web": 0
+  },
+  "format": "uiautomator"
+}

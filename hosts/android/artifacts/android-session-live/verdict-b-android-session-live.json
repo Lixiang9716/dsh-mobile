@@ -1,8 +1,0 @@
-{
-  "scenario": "b-android.session.live",
-  "pass": true,
-  "expected": 46,
-  "logged": 46,
-  "failures": [],
-  "parseErrors": []
-}

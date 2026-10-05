@@ -1,0 +1,25 @@
+{
+  "host": "Android emulator (emulator-5554, unknown-avd / API 35)",
+  "engine": "quickjs-ng",
+  "engineVersion": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "phase": "session-live-read",
+  "launchConfiguration": "am start -n com.dshmobile.spike/.MainActivity --ez dsh.session true",
+  "tree": "origin/main f3d364561695 (dirty working tree at receipt time)",
+  "scenarios": [
+    {
+      "id": "android.session.live-read",
+      "checker": "test/e2e/scenarios/android-session-live-read.json",
+      "events": 46,
+      "result": "pass"
+    }
+  ],
+  "runner": "hosts/android/ci/run-android-full.sh",
+  "screens": [
+    "screens/01-session-live-boot.png",
+    "screens/02-session-list-real.png",
+    "screens/03-journal-live.png",
+    "screens/04-final-state.png"
+  ],
+  "timestamp": "2026-10-05T15:16:54+08:00",
+  "exitCode": 0
+}
