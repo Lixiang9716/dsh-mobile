@@ -58,8 +58,12 @@ const recordLine = /^([0-9a-f]{64}) {2}\.\/(.+)$/;
 const readRecord = (path) => {
   const out = new Map();
   for (const line of readFileSync(path, 'utf8').split('\n')) {
-    if (line.trim() === '') continue;
-    const m = recordLine.exec(line);
+    // A core.autocrlf checkout hands the record over with CRLF endings; the
+    // regex's `.` cannot consume the CR, so strip it before matching — the
+    // digests are the payload, the line terminator is not.
+    const clean = line.replace(/\r$/, '');
+    if (clean.trim() === '') continue;
+    const m = recordLine.exec(clean);
     if (!m) {
       console.error(`client-bundles: FAIL unparsable record line in ${path}: ${line.slice(0, 60)}`);
       process.exit(1);
@@ -73,7 +77,10 @@ const walk = (dir, base = dir, out = []) => {
   for (const entry of readdirSync(dir, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : 1))) {
     const p = join(dir, entry.name);
     if (entry.isDirectory()) walk(p, base, out);
-    else out.push(relative(base, p));
+    // Record keys are forward-slash paths (the record format's own spelling);
+    // a Windows readdir yields backslash relatives — normalize before the
+    // set comparisons so the platform separator never becomes a divergence.
+    else out.push(relative(base, p).replaceAll('\\', '/'));
   }
   return out;
 };

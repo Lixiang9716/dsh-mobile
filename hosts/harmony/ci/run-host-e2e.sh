@@ -206,4 +206,18 @@ if [ "$fail" != "0" ]; then
     echo "::error::one or more E2E checkers failed — see $OUT/verdict-*.json"
     exit 1
 fi
+# Receipt: reachable ONLY on the green path above (fail=0, set -eu) — the
+# green-path emission the known-gaps register names; the host line records
+# the hdc target and the HarmonyOS build this run actually happened on.
+HTARGET=$("$HDC" list targets | head -1 | tr -d '\r')
+HVER=$("$HDC" shell param get const.product.software.version 2>/dev/null | tr -d '\r\n')
+DSH_RECEIPT_HOST="HarmonyOS emulator ($HTARGET, HarmonyOS ${HVER:-unknown})" \
+    sh test/e2e/write-receipt.sh "$OUT" "$HTARGET" \
+    "hosts/harmony/ci/run-host-e2e.sh" \
+    "host-e2e (regression trio + binding + D9 official phases)" \
+    "aa start -b $BUNDLE -a EntryAbility" \
+    boot-verification gateway-bridge-smoke session-mock-llm \
+    harmony-capability-binding harmony-officialweb-mount \
+    harmony-httpfetch-streaming harmony-session-live-read \
+    harmony-composer-live-write
 echo "run-host-e2e: PASS (boot.verification + gateway.bridge-smoke + session.mock-llm + harmony.capability-binding + harmony.officialweb.mount + harmony.httpfetch-streaming + harmony.session.live-read + harmony.composer.live-write)"

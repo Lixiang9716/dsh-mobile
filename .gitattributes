@@ -29,3 +29,7 @@ aoci.txt text eol=lf
 aoci.meta.txt text eol=lf
 aoci.code.txt text eol=lf
 .aoci/** text eol=lf
+
+# Digest records are content-addressed payloads: a core.autocrlf checkout must
+# not hand CRLF bytes to the verifiers that hash-compare them.
+*.sha256 -text

@@ -6,6 +6,17 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the receipt-emission change (2026-10-05):
+> the android and harmony host runners now machine-author their evidence
+> receipts on the green path (the shared `test/e2e/write-receipt.sh` grew a
+> `DSH_RECEIPT_HOST` face for non-simctl hosts), and a real full
+> `run-android-full.sh` run on a local Windows-host emulator (dsh-e2e AVD,
+> API 35) closed the three Android receipt gaps — `android.official-web.mount`
+> 14/14, `b-android.session.live` 46/46, `b-android.write.live` 45/45,
+> receipts committed beside the refreshed verdicts. Checker on this tree:
+> 92 dirs / 179 verdicts (4 accepted owned gaps). The BYOK-tails note below
+> is the previous currency record.
+>
 > **Currency**: this matrix reflects the BYOK tails (2026-10-01): the two
 > named follow-ups of the onboarding round — `onboarding/clear` (the
 > keychain delete + the LIVE boot-route restore; the second turn answers
@@ -210,11 +221,11 @@ following hold:
 
 | Metric | Value |
 | --- | --- |
-| Evidence dirs | 80 |
-| Verdicts committed (156 green) | 156 |
+| Evidence dirs | 92 |
+| Verdicts committed (179 green) | 179 |
 | Scenarios with at least one committed evidence dir | 80 of 80 distinct scenario ids (73 manifests) |
-| Screenshots verified PNG | 157 |
-| Acceptance-bar findings | 7 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
+| Screenshots verified PNG | 184 |
+| Acceptance-bar findings | 4 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
 
@@ -332,10 +343,10 @@ present. `shots` = PNG count (all magic-verified except where noted).
 
 | Dir | Platform | Verdicts (`expected/logged`) | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗ (gap 3) | 4 |
+| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg, on-device MockLlmRoute) | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗ (gap 4) | 4 |
-| `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗ (gap 7) | 4 |
+| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✓ | 4 |
+| `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8 (the deterministic mock radio's two-device GATT db — 180f/2a19 read+notify, fe00/fe01 write — riding the same gateway enforcement, consent layers, and audit as a real radio) | ✓ | ✓ | ✓ | 0 |
@@ -422,8 +433,8 @@ are headless, and `hosts/android/artifacts/m2-llm/` carries its capture as
 
 ## Known gaps (honest list)
 
-Eight findings are open on this tree, and **every one of them is owned**. The
-checker reports all eight and exits non-zero by default; the table below is
+Four findings are open on this tree, and **every one of them is owned**. The
+checker reports all four and exits non-zero by default; the table below is
 the **known-gaps register** that makes the very same run wireable as a gate.
 
 - `node test/e2e/matrix.mjs` — prints every finding, registered or not, and
@@ -445,38 +456,38 @@ missing or malformed is a finding of its own, never a silent pass.
 | --- | --- | --- | --- |
 | MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 work stream (#65) | run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live green run + that runner's receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony work stream (#64) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web + receipt step |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android work stream (#63) | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh + receipt step |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android work stream (#66) | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony work stream (#67) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live + receipt step |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony work stream (#70) | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live + receipt step |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android work stream (#72) | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh + receipt step |
 
-### Why the remaining seven are not closed here (the honest reason)
+### Why the remaining four are not closed here (the honest reason)
 
-Seven of them need a `receipt.json` only the owning host work stream's next
-device/emulator run can produce. (The eighth — the Android camera audit's
-self-inconsistent verdict — was closed by the v0.0.2 release regression,
-2026-09-30; see the closed section below.) Writing those receipts from
-this branch would mean inventing them:
+Four of them need a `receipt.json` only the owning host work stream's next
+device/emulator run can produce. (The three Android receipt rows closed
+2026-10-05: the android runner now machine-authors its receipts on the green
+path, and a real full `run-android-full.sh` run on a local Windows-host
+emulator re-captured the three dirs green with the receipts committed beside
+the refreshed verdicts. The camera-audit verdict gap was closed by the v0.0.2
+release regression, 2026-09-30.) Writing the remaining receipts from this
+branch would mean inventing them:
 
 - **The receipt certifies a run, and the run's device is not in the
   committed artifacts.** `host` names the machine a run happened on — the
   iOS simulator UDID and runtime, the android emulator instance with its AVD
-  and API level, the harmony hdc target — and `test/e2e/run-ios.sh` reads
-  it from `xcrun simctl` at run time. Verified on this tree:
-  `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone' hosts/android/artifacts/{android-upstream,android-session-live,android-write-live}/`,
-  `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc' hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live}/`
-  and `grep -rliE 'simctl|UDID|iOS 26|A4AE41BF' hosts/ios/artifacts/b4-write-live/`
-  all return **nothing**: the green verdicts, the captures and the engine
-  line (`quickjs-ng 0.17.0`, in the android `results.txt`) are committed;
-  the device is not. Acceptance-bar clause 3 and the receipt convention
-  forbid synthesizing the rest.
-- **A receipt can never exist without a real green run.** `run-ios.sh`
-  machine-authors its receipt on the green path only (step 7, reachable
-  after every checker passed). The android, harmony and `run-ios-b4.sh`
-  runners have no such step yet, so those rows close as a runner change
-  (adopt the same green-path emission) *plus* the re-run named in the row —
-  both owned by the work stream that landed the dir.
+  and API level, the harmony hdc target. The runners read it at run time
+  (`xcrun simctl` on iOS, `adb` on android, `hdc` on harmony). The three
+  Android rows closed when their runner started emitting that line on the
+  green path and a real run landed it. For the harmony rows the remaining
+  blocker is the device, not the code: the receipt-emission change was
+  authored on a Windows host whose HarmonyOS toolchain (DevEco Studio, the
+  SDK, `hdc`, `hvigor`) is absent — the D9 re-runs stay one green
+  `run-host-e2e.sh` invocation away on a toolchain host (macOS per the
+  documented CLT path; the Windows-side plan,
+  docs/windows-test-plan.md, provisions the emulator for the runtime E2E),
+  at which point the receipt lands with the run. The iOS b4 row keeps the
+  `write-receipt.sh` green-path emission.
+- **A receipt can never exist without a real green run.** Every runner now
+  emits its receipt on the green path only, reachable after every checker
+  passed — a receipt is never synthesized.
 - **The eighth was a verdict that contradicted itself, not a missing run —
   CLOSED 2026-09-30.** The camera landing's
   `verdict-camera-plane-capture-audit.json` recorded `pass: true` with
@@ -506,17 +517,8 @@ cites, and the register's rows in order):
    harmony work stream: a green
    `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web`
    plus the same runner emission.
-3. **`hosts/android/artifacts/android-upstream/` has no `receipt.json`**
-   — the dir landed with #63 (the android official-web boot). Owned by the
-   android work stream: a green
-   `DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh`
-   plus the same runner emission.
-4. **`hosts/android/artifacts/android-session-live/` has no
-   `receipt.json`** — the dir landed with #66 (the android session.live
-   spine, b-android.session.live 46/46 green). Owned by the android work
-   stream: a green
-   `DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh`
-   plus the same runner emission.
+3. *(closed 2026-10-05 — the android-upstream receipt, see the register.)*
+4. *(closed 2026-10-05 — the android-session-live receipt, see the register.)*
 5. **`hosts/harmony/artifacts/d9-session-live/` has no `receipt.json`**
    — the dir landed with #67 (the harmony session.live spine,
    b-harmony.session.live 43/43 green). Owned by the harmony work stream: a
@@ -529,12 +531,7 @@ cites, and the register's rows in order):
    green
    `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live`
    plus the same runner emission.
-7. **`hosts/android/artifacts/android-write-live/` has no `receipt.json`**
-   — the dir landed with #72 (the android session write surface,
-   b-android.write.live 45/45 green). Owned by the android work stream: a
-   green
-   `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
-   plus the same runner emission.
+7. *(closed 2026-10-05 — the android-write-live receipt, see the register.)*
 ### Closed by the v0.0.2 release regression (2026-09-30)
 
 - **Gap 8 (the Android camera audit's self-inconsistent verdict)** —

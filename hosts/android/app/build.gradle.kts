@@ -3,13 +3,31 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// The Exec bash: a bare `bash` launched by a Windows parent resolves
+// C:\Windows\System32\bash.exe — the WSL launcher (CreateProcess searches
+// System32 BEFORE the PATH) — and the POSIX script arguments then go looking
+// inside the WSL filesystem, failing "No such file or directory". Scan the
+// PATH for bash.exe explicitly instead (Git for Windows wins there); POSIX
+// hosts keep the bare name. DSH_BASH overrides the scan.
+val execBash: String = when {
+    !org.gradle.internal.os.OperatingSystem.current().isWindows -> "bash"
+    else -> System.getenv("DSH_BASH")
+        ?: System.getenv("PATH")?.split(File.pathSeparator)
+            ?.map { File(it, "bash.exe") }
+            ?.firstOrNull { it.isFile }?.absolutePath
+        ?: "bash"
+}
+
 // The vendored engine sources are untracked by design (runtime/spike/README.md):
 // this materializes them (sha256-verified tarball, idempotent) before any build
 // that compiles the engine. Absolute path: an Exec task inherits the launcher
 // cwd, which must never decide whether the engine sources are found.
+// POSIX spelling for the bash argument: a Windows absolutePath carries
+// backslashes that bash consumes as escapes (`D:workspacedsh-mobile…`);
+// forward slashes reach the shell intact on every host.
 val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/spike/vendor/ensure.sh")
 val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
-    commandLine("bash", ensureSpikeScript.asFile.absolutePath)
+    commandLine(execBash, ensureSpikeScript.asFile.absolutePath.replace('\\', '/'))
 }
 
 // The official upstream web app is vendored UNTRACKED too
@@ -37,7 +55,7 @@ val dshAssets = layout.buildDirectory.dir("generated/dsh-assets")
 // The script fails loud when the runtime pin checkout is missing.
 val stageSpineScript = rootProject.file("../../hosts/android/ci/stage-spine-closure.sh")
 val stageSpineClosure = tasks.register<Exec>("stageSpineClosure") {
-    commandLine("bash", stageSpineScript.absolutePath)
+    commandLine(execBash, stageSpineScript.absolutePath.replace('\\', '/'))
 }
 
 val verifyOfficialTrees = tasks.register("verifyOfficialTrees") {

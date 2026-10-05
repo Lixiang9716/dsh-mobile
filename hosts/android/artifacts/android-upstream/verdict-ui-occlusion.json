@@ -1,0 +1,8 @@
+{
+  "scenario": "ui.occlusion",
+  "pass": true,
+  "expected": 1,
+  "logged": 1,
+  "failures": [],
+  "parseErrors": []
+}

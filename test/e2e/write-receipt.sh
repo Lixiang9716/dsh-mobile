@@ -9,12 +9,20 @@
 # tripping on dirs whose runner predates the clause).
 #
 # usage: write-receipt.sh <ART_DIR> <UDID> <RUNNER_PATH> <PHASE>
-#                         <LAUNCH_CONFIG> <checker.json> [<checker.json>...]
-#   checker paths are repo-relative (test/e2e/scenarios/…); each must have a
-#   verdict-<stem>.json beside it in ART_DIR (the runner's own checkers).
-set -euo pipefail
+#                         <LAUNCH_CONFIG> <manifest-stem> [<manifest-stem>...]
+#   manifest stems are BARE (no path, no .json — `boot-verification`, exactly
+#   the iOS runners' convention); each must have a verdict-<stem>.json beside
+#   it in ART_DIR (the runner's own checkers).
+#
+# Non-iOS hosts (the android/harmony runners) set DSH_RECEIPT_HOST to their
+# host line — adb serial + AVD + API level, or the hdc target + HarmonyOS
+# version — and the writer skips the xcrun simctl query entirely; when the
+# variable is unset the iOS lookup runs unchanged. Screens ride `screens/`
+# when the dir exists (the iOS runners' layout) and top-level `*.png`
+# otherwise (the harmony runner lays its shots loose in the artifacts dir).
+set -eu
 ART="$1"; UDID="$2"; RUNNER="$3"; PHASE="$4"; LAUNCH="$5"; shift 5
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO"
 
 TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
@@ -24,14 +32,18 @@ import json, os, subprocess, sys
 from datetime import datetime
 art, udid, tree, engine_pin, runner, phase, launch = sys.argv[1:8]
 checker_ids = sys.argv[8:]
-out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
-                     capture_output=True, text=True, check=True).stdout
-devs = json.loads(out)["devices"]
-def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
-    parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
-    return parts[0] + " " + ".".join(parts[1:])
-host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
-            for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
+host_override = os.environ.get("DSH_RECEIPT_HOST", "")
+if host_override:
+    host = host_override
+else:
+    out = subprocess.run(["xcrun", "simctl", "list", "devices", "-j"],
+                         capture_output=True, text=True, check=True).stdout
+    devs = json.loads(out)["devices"]
+    def pretty(rt):  # com.apple.CoreSimulator.SimRuntime.iOS-26-5 -> iOS 26.5
+        parts = rt.rsplit("SimRuntime.", 1)[-1].split("-")
+        return parts[0] + " " + ".".join(parts[1:])
+    host = next(f'{d["name"]} simulator ({udid}, {pretty(rt)})'
+                for rt, ds in devs.items() for d in ds if d.get("udid") == udid)
 scenarios = []
 for sid in checker_ids:
     # Two verdict namings exist: the per-checker verdict-<stem>.json (run-ios
@@ -47,11 +59,15 @@ for sid in checker_ids:
         "events": v["logged"],
         "result": "pass" if v["pass"] else "fail",
     })
-screens = sorted("screens/" + f
-                 for f in os.listdir(os.path.join(art, "screens"))
-                 if f.endswith(".png"))
+screens = []
+screens_dir = os.path.join(art, "screens")
+if os.path.isdir(screens_dir):
+    screens += sorted("screens/" + f
+                      for f in os.listdir(screens_dir) if f.endswith(".png"))
+screens += sorted(f for f in os.listdir(art)
+                  if f.endswith(".png") and os.path.isfile(os.path.join(art, f)))
 receipt = {
-    "host": "iOS " + host,
+    "host": host if host_override else "iOS " + host,
     "engine": "quickjs-ng",
     "engineVersion": engine_pin,
     "phase": phase,

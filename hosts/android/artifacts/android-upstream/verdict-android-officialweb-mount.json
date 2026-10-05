@@ -1,5 +1,5 @@
 {
-  "scenario": "b-android.official-web.mount",
+  "scenario": "android.officialweb.mount",
   "pass": true,
   "expected": 14,
   "logged": 14,

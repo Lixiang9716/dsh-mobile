@@ -45,6 +45,10 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const PNG_MAGIC = '89504e470d0a1a0a';
+/** POSIX spelling for every path this tool carries internally: Windows
+ *  join()/relative() yield backslashes, and the walk's verdict-name test,
+ *  the register keys and the doc's table are all forward-slash records. */
+const posix = (p) => p.replaceAll('\\', '/');
 const DELIVERABLES = ['logs.txt', 'scenario.jsonl', 'receipt.json'];
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 const VERDICT_RE = /^verdict(?:-.+)?\.json$/;
@@ -109,7 +113,7 @@ const walkFiles = (dir, out = []) => {
     if (e.name.startsWith('.') || SKIP_DIRS.has(e.name)) continue;
     const p = join(dir, e.name);
     if (e.isDirectory()) walkFiles(p, out);
-    else out.push(p);
+    else out.push(posix(p));
   }
   return out;
 };
@@ -133,7 +137,7 @@ const platformOf = (relDir) => {
  *  so the register keys, the doc's table and the inventory agree whatever the
  *  process cwd is (findings used to be cwd-relative — the register cannot be
  *  keyed on a path that moves). */
-const finding = (root, code, file, detail) => ({ code, file: relative(root, file), detail });
+const finding = (root, code, file, detail) => ({ code, file: posix(relative(root, file)), detail });
 
 const FIELD_TYPES = { scenario: 'string', pass: 'boolean', expected: 'number', logged: 'number' };
 
@@ -150,7 +154,7 @@ const checkVerdict = (root, file, manifestDir) => {
   }
   const findings = [];
   if (v.pass !== true) findings.push(finding(root, 'VERDICT_FAIL', file, v.scenario));
-  const out = { file: relative(root, file), scenario: v.scenario, pass: v.pass,
+  const out = { file: posix(relative(root, file)), scenario: v.scenario, pass: v.pass,
     expected: v.expected, logged: v.logged };
   // Manifest resolution: prefer the verdict file's own stem
   // (verdict-<stem>.json → scenarios/<stem>.json — several manifests may
@@ -166,7 +170,7 @@ const checkVerdict = (root, file, manifestDir) => {
   if (stemStem && statSafe(join(manifestDir, `${stemStem}.json`))) {
     manifest = join(manifestDir, `${stemStem}.json`);
   }
-  out.manifest = relative(root, manifest);
+  out.manifest = posix(relative(root, manifest));
   let repeatAware = false;
   if (!statSafe(manifest)) {
     findings.push(finding(root, 'SCENARIO_WITHOUT_MANIFEST', file, v.scenario));
@@ -238,7 +242,7 @@ export const audit = (root, scenariosDir) => {
       .sort().map((f) => checkVerdict(root, f, scenariosDir));
     const deliv = checkDeliverables(root, dir);
     const pngs = checkPngs(root, inDir);
-    const relDir = relative(root, dir);
+    const relDir = posix(relative(root, dir));
     entries.push({
       dir: relDir,
       platform: platformOf(relDir),
@@ -250,7 +254,7 @@ export const audit = (root, scenariosDir) => {
       ...verdicts.flatMap((v) => v.findings));
   }
   return {
-    root: relative(process.cwd(), root),
+    root: posix(relative(process.cwd(), root)),
     scenariosDir: relative(process.cwd(), scenariosDir),
     dirs: entries.length,
     verdicts: entries.reduce((n, e) => n + e.verdicts.length, 0),

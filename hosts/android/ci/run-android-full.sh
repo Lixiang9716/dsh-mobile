@@ -61,6 +61,27 @@ until adb get-state >/dev/null 2>&1 &&
     sleep 5
 done
 
+# The receipt host line (write-receipt.sh's DSH_RECEIPT_HOST): the emulator
+# serial, its AVD name and API level — the machine-a-run-happened-on record
+# the e2e-matrix acceptance bar demands (a receipt certifies a run, and the
+# run's device belongs in it).
+SERIAL=$(adb devices | awk 'NR==2 && $2=="device" {print $1}')
+[ -n "$SERIAL" ] || die "no adb device found after boot poll"
+AVD=$(adb -s "$SERIAL" emu avd name 2>/dev/null | head -1 | tr -d '\r')
+API=$(adb -s "$SERIAL" shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r')
+HOST_LINE="Android emulator ($SERIAL, ${AVD:-unknown-avd} / API ${API:-?})"
+
+# Pin the device timezone to an IANA Area/Location name. The composer
+# surface's session/prompt envelope carries the WebView's clientTimeZone and
+# the upstream util-time wire contract admits only UTC or an IANA
+# Area/Location — the AOSP emulator's default "GMT" zone makes the WebView
+# report bare "GMT" and the turn would be refused (session/invalid-time-zone).
+# adb root is a no-op on images that refuse it; the app relaunches per phase
+# and a fresh process picks the zone up.
+adb root >/dev/null 2>&1 || true
+adb wait-for-device >/dev/null 2>&1
+adb shell setprop persist.sys.timezone Asia/Shanghai >/dev/null 2>&1 || true
+
 # ---- E2E staging: notification permission + the SAF picker target
 adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null \
     || say "POST_NOTIFICATIONS grant skipped (pre-33 or already granted)"
@@ -77,6 +98,14 @@ if phase_wanted 1; then
 say "phase 1: three-scenario regression"
 bash hosts/android/ci/run-spike-e2e.sh
 fi
+
+# The m4 phase's notify leg needs POST_NOTIFICATIONS: the grant above ran
+# BEFORE the phase-1 install, so on a fresh device adb refused it (the
+# package did not exist yet) and the scenario's notify primitive would
+# answer "refused by user policy". Re-grant now that the app exists —
+# idempotent, and the `|| say` keeps pre-33 images quiet.
+adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS 2>/dev/null \
+    || say "POST_NOTIFICATIONS re-grant skipped (pre-33 or already granted)"
 
 # ---- phase 2: the M4 completion session -------------------------------
 if phase_wanted 2; then
@@ -331,6 +360,12 @@ adb pull "/data/data/$PKG/files/spike-capture-android-officialweb-mount.log" \
 node test/e2e/check.mjs --manifest $SCEN/android-officialweb-mount.json \
     --log "$ART/logs.txt" --out "$ART/verdict-android-officialweb-mount.json"
 cat "$ART/verdict-android-officialweb-mount.json"
+# Receipt: machine-authored here, reachable ONLY because the checker above
+# passed (set -eu) — the green-path emission the known-gaps register names.
+DSH_RECEIPT_HOST="$HOST_LINE" sh test/e2e/write-receipt.sh "$ART" "$SERIAL" \
+    "hosts/android/ci/run-android-full.sh" "officialweb-mount" \
+    "am start -n $PKG/.MainActivity --ez dsh.web true" \
+    android-officialweb-mount
 say "phase 3 complete — evidence under $ART"
 fi
 
@@ -410,6 +445,10 @@ adb exec-out run-as $PKG cat files/spike-capture-android-session-live-read.log \
 node test/e2e/check.mjs --manifest $SCEN/android-session-live-read.json \
     --log "$SART/logs.txt" --out "$SART/verdict-android-session-live-read.json"
 cat "$SART/verdict-android-session-live-read.json"
+DSH_RECEIPT_HOST="$HOST_LINE" sh test/e2e/write-receipt.sh "$SART" "$SERIAL" \
+    "hosts/android/ci/run-android-full.sh" "session-live-read" \
+    "am start -n $PKG/.MainActivity --ez dsh.session true" \
+    android-session-live-read
 say "phase 4 complete — evidence under $SART"
 fi
 
@@ -489,5 +528,9 @@ adb exec-out run-as $PKG cat files/spike-capture-android-composer-live-write.log
 node test/e2e/check.mjs --manifest $SCEN/android-composer-live-write.json \
     --log "$WART/logs.txt" --out "$WART/verdict-android-composer-live-write.json"
 cat "$WART/verdict-android-composer-live-write.json"
+DSH_RECEIPT_HOST="$HOST_LINE" sh test/e2e/write-receipt.sh "$WART" "$SERIAL" \
+    "hosts/android/ci/run-android-full.sh" "composer-live-write" \
+    "am start -n $PKG/.MainActivity --ez dsh.write true" \
+    android-composer-live-write
 say "phase 5 complete — evidence under $WART"
 fi

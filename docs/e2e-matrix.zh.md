@@ -6,6 +6,16 @@
 数据来自已提交的 artifacts 目录。由
 [test/e2e/matrix.mjs](../test/e2e/matrix.mjs) 机器校验。
 
+> **时效性**：本矩阵反映 receipt 落盘变更（2026-10-05）：android 与
+> harmony 宿主 runner 现已在绿色路径上机器撰写各自的证据 receipt
+> （共享的 `test/e2e/write-receipt.sh` 为非 simctl 宿主新增了
+> `DSH_RECEIPT_HOST` 入口），且一次真实的完整 `run-android-full.sh`
+> 本地 Windows 宿主模拟器运行（dsh-e2e AVD，API 35）闭合了三个 android
+> receipt 缺口——`android.official-web.mount` 14/14、
+> `b-android.session.live` 46/46、`b-android.write.live` 45/45，receipt
+> 与刷新后的 verdict 一并提交。本树检查器：92 个目录 / 179 条 verdict
+> （4 项已归属的缺口）。下面的 BYOK 尾巴注记是上一次的时效记录。
+>
 > **时效性**：本矩阵反映 BYOK 两条尾巴（2026-10-01）：上轮引导变更点名的
 > 两个后续 —— `onboarding/clear`（keychain 删除 + 热恢复 boot 路由；清除后
 > 第二回合由恢复的 mock 适配器应答，无需重启）与 models 设置页目录跟随
@@ -151,11 +161,11 @@
 
 | 指标 | 数值 |
 | --- | --- |
-| 证据目录 | 80 |
-| 已提交 verdict（156 绿） | 156 |
+| 证据目录 | 92 |
+| 已提交 verdict（179 绿） | 179 |
 | 至少有一份已提交证据的 scenario | 80 / 80 个不同的 scenario id（73 个 manifest） |
-| 已验证 PNG 的截图 | 157 |
-| 验收标准缺口 | 7 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
+| 已验证 PNG 的截图 | 184 |
+| 验收标准缺口 | 4 —— 全部在[已知缺口登记表](#已知缺口如实列出)中有主；0 项阻塞门禁 |
 
 ## 覆盖矩阵 —— scenario × 平台
 
@@ -270,10 +280,10 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 
 | 目录 | 平台 | Verdict（`expected/logged`） | logs | scen | rcpt | shots |
 | --- | --- | --- | --- | --- | --- | --- |
-| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✗（缺口 3） | 4 |
+| `hosts/android/artifacts/android-upstream` | Android | b-android.official-web.mount 14/14 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（模拟器腿，设备内 MockLlmRoute） | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✗（缺口 4） | 4 |
-| `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✗（缺口 7） | 4 |
+| `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✓ | 4 |
+| `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
@@ -360,7 +370,7 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 
 ## 已知缺口（如实列出）
 
-本树上有八项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
+本树上有四项未闭合的发现项，且**每一项都有主**。检查器默认全部报出并以
 非零码退出；下方这张表就是**已知缺口登记表（known-gaps register）**，
 它让同一次运行可以被接成门禁。
 
@@ -381,39 +391,36 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | --- | --- | --- | --- |
 | MISSING_DELIVERABLE | hosts/ios/artifacts/b4-write-live/receipt.json | iOS b4 工作流（#65） | run-ios-live-write.sh --art-dir hosts/ios/artifacts/b4-write-live 绿色运行 ＋ 该 runner 的 receipt 步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-official-web/receipt.json | harmony 工作流（#64） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web ＋ 同样的 runner 落盘步骤 |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-upstream/receipt.json | android 工作流（#63） | DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-session-live/receipt.json | android 工作流（#66） | DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-session-live/receipt.json | harmony 工作流（#67） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-session-live ＋ 同样的 runner 落盘步骤 |
 | MISSING_DELIVERABLE | hosts/harmony/artifacts/d9-write-live/receipt.json | harmony 工作流（#70） | DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live ＋ 同样的 runner 落盘步骤 |
-| MISSING_DELIVERABLE | hosts/android/artifacts/android-write-live/receipt.json | android 工作流（#72） | DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh ＋ 同样的 runner 落盘步骤 |
 
 （检查器读的是英文侧 `docs/e2e-matrix.md` 中的同一张表——配对规则里英文
 是源；本表为读者保留等价的中文渲染。）
 
-### 为什么这八项都不在本分支闭合（如实说明）
+### 为什么剩余四项不在本分支闭合（如实说明）
 
-其中七项需要一份 `receipt.json`，而它只能由各自主机工作流下一次在
-设备/模拟器上的运行产出。（第八项——Android 相机审计的自相矛盾
+其中四项需要一份 `receipt.json`，而它只能由各自主机工作流下一次在
+设备/模拟器上的运行产出。（三个 android receipt 行已于 2026-10-05 闭合：
+android runner 现已在绿色路径上机器撰写 receipt，且一次真实的完整
+`run-android-full.sh` 本地 Windows 宿主模拟器运行将三个目录重新捕获为
+绿色、receipt 与刷新后的 verdict 一并提交。第八项——Android 相机审计的自相矛盾
 verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小节。）
 在本分支里补写这些 receipt 就等于凭空编造：
 
-- **receipt 证明的是一次运行，而该运行的设备不在已提交工件里。** `host`
+- **receipt 证明的是一次运行，而该运行的设备本就属于它。** `host`
   字段记的是运行发生在哪台机器上——iOS 模拟器 UDID 与运行时版本、android
-  模拟器实例及其 AVD 与 API 级别、harmony 的 hdc 目标——而
-  `test/e2e/run-ios.sh` 是在运行时从 `xcrun simctl` 读取它的。已在本树
-  核验：对三个 android 目录执行
-  `grep -rliE 'emulator-5554|AVD|Pixel|sdk_gphone'`、对三个 harmony D9
-  目录执行 `grep -rliE 'dsh_phone|127.0.0.1:5557|HarmonyOS 7|hdc'`、对
-  `hosts/ios/artifacts/b4-write-live/` 执行
-  `grep -rliE 'simctl|UDID|iOS 26|A4AE41BF'`，**全部无输出**：绿色
-  verdict、capture 与引擎行（`quickjs-ng 0.17.0`，在 android 的
-  `results.txt` 中）都已提交，唯独设备不在其中。验收标准第 3 条与 receipt
-  约定禁止凭空合成其余字段。
-- **没有一次真实绿色运行，receipt 就不可能存在。** `run-ios.sh` 只在绿色
-  路径上机器撰写 receipt（第 7 步，仅在全部 checker 通过后可达）。android、
-  harmony 与 `run-ios-b4.sh` 的 runner 尚无该步骤，因此这些行需先做 runner
-  变更（照搬同样的绿色路径落盘）**再**执行该行点名的重跑——两件事都归目录
-  落地的工作流所有。
+  模拟器实例及其 AVD 与 API 级别、harmony 的 hdc 目标。各 runner 在运行时
+  读取它（iOS 用 `xcrun simctl`，android 用 `adb`，harmony 用 `hdc`）。
+  三个 android 行在其 runner 开始于绿色路径撰写该行并有一次真实运行落盘
+  之后闭合。harmony 两行剩下的阻塞是设备而非代码：本次 receipt 落盘变更
+  在一台没有鸿蒙工具链（DevEco Studio、SDK、`hdc`、`hvigor`）的 Windows
+  宿主上完成——D9 重跑距离闭合只差工具链宿主（按文档记载的 CLT 路径即
+  macOS；Windows 侧的运行时 E2E 模拟器准备见 docs/windows-test-plan.md）
+  上一次绿色的 `run-host-e2e.sh`，届时 receipt 随运行一并落盘。iOS b4 行
+  沿用 `write-receipt.sh` 的绿色路径落盘。
+- **没有一次真实绿色运行，receipt 就不可能存在。** 每个 runner 现在都只在
+  绿色路径上落盘 receipt，且仅在全部 checker 通过后可达——receipt 绝不
+  凭空合成。
 - **第八项曾是一条自我矛盾的 verdict，不是缺失的运行——2026-09-30 已
   闭合。** 相机落地时的
   `verdict-camera-plane-capture-audit.json` 记录 `pass: true` 且
@@ -440,16 +447,8 @@ verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小�
    绿色的
    `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-official-web`
    加上同样的 runner 落盘。
-3. **`hosts/android/artifacts/android-upstream/` 缺 `receipt.json`** ——
-   目录随 #63（android official-web boot）落地。归 android 工作流所有：一次
-   绿色的
-   `DSH_WEB_ART=hosts/android/artifacts/android-upstream hosts/android/ci/run-android-full.sh`
-   加上同样的 runner 落盘。
-4. **`hosts/android/artifacts/android-session-live/` 缺 `receipt.json`**
-   —— 目录随 #66（android session.live 主线脊柱，b-android.session.live
-   46/46 绿色）落地。归 android 工作流所有：一次绿色的
-   `DSH_SESSION_ART=hosts/android/artifacts/android-session-live hosts/android/ci/run-android-full.sh`
-   加上同样的 runner 落盘。
+3. *（2026-10-05 闭合——android-upstream 的 receipt，见登记表。）*
+4. *（2026-10-05 闭合——android-session-live 的 receipt，见登记表。）*
 5. **`hosts/harmony/artifacts/d9-session-live/` 缺 `receipt.json`** ——
    目录随 #67（harmony session.live 主线脊柱，b-harmony.session.live
    43/43 绿色）落地。归 harmony 工作流所有：一次绿色的
@@ -460,11 +459,7 @@ verdict——已由 v0.0.2 发布回归闭合，2026-09-30；见下方闭合小�
    绿色）落地。归 harmony 工作流所有：一次绿色的
    `DSH_SKIP_BUILD=1 hosts/harmony/ci/run-host-e2e.sh hosts/harmony/artifacts/d9-write-live`
    加上同样的 runner 落盘。
-7. **`hosts/android/artifacts/android-write-live/` 缺 `receipt.json`**
-   —— 目录随 #72（android session 写表面，b-android.write.live 45/45
-   绿色）落地。归 android 工作流所有：一次绿色的
-   `DSH_WRITE_ART=hosts/android/artifacts/android-write-live hosts/android/ci/run-android-full.sh`
-   加上同样的 runner 落盘。
+7. *（2026-10-05 闭合——android-write-live 的 receipt，见登记表。）*
 ### 由 v0.0.2 发布回归闭合（2026-09-30）
 
 - **缺口 8（Android 相机审计的自相矛盾 verdict）** —— 真实闭合，且方式

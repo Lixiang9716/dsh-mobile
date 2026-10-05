@@ -152,16 +152,10 @@ RESOURCES = [
      SPIKE / "system-plugins" / "dsh-shell-wasm" / "programs.js"),
     # The outboard in-process Linux shell (contract v1.3.0): the same shape,
     # with the guest engine's `ishRun` behind it.
-    ("plugin_shell_ish_manifest",
-     SPIKE / "system-plugins" / "dsh-shell-ish" / "manifest.json"),
-    ("plugin_shell_ish_js",
-     SPIKE / "system-plugins" / "dsh-shell-ish" / "index.js"),
+    ("plugin_shell_ish_manifest", SPIKE / "system-plugins" / "dsh-shell-ish" / "manifest.json"), ("plugin_shell_ish_js", SPIKE / "system-plugins" / "dsh-shell-ish" / "index.js"),
     # The Open Design client plugin: the design daemon's REST surface over
     # gateway httpFetch (projects / BYOK generate / artifact save+lint).
-    ("plugin_open_design_manifest",
-     SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"),
-    ("plugin_open_design_js",
-     SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
+    ("plugin_open_design_manifest", SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"), ("plugin_open_design_js", SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
     # The plugin_manager tool row (#346); face at workspace_registry_js.
     ("plugin_manager_tools_manifest",
      SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "manifest.json"), ("plugin_manager_tools_js", SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "index.js"),
@@ -184,8 +178,7 @@ RESOURCES = [
     ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
     ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
     ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"),
-    ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
+    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"), ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("scenario_manager_legs_probe_js", SPIKE / "scenario" / "manager-legs-probe.js"),
     # The spike-root runtime files + upstream adapters Swift stages by name
@@ -491,8 +484,11 @@ def emit() -> None:
         *parts,
         *funcs,
     ])
-    (OUT / "SpikeBundle.h").write_text(header, encoding="utf-8")
-    (OUT / "SpikeBundle.c").write_text(source, encoding="utf-8")
+    # open()'s newline= predates write_text()'s (3.10; the runner's python is
+    # older) — the generated C must be LF on every host.
+    for name, text in (("SpikeBundle.h", header), ("SpikeBundle.c", source)):
+        with open(OUT / name, "w", encoding="utf-8", newline=chr(10)) as fh:
+            fh.write(text)
     print(f"gen_bundle_header: wrote {OUT / 'SpikeBundle.c'} + .h")
 
 

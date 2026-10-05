@@ -1,2 +1,2 @@
-10-04 09:15:03.583 11746 11874 I dsh.spike.result: android.session.live-read PASS | quickjs-ng 0.17.0
-10-04 09:15:03.583 11746 11874 I dsh.spike.result: ALL PASS
+10-05 15:16:51.210 28583 28707 I dsh.spike.result: android.session.live-read PASS | quickjs-ng 0.17.0
+10-05 15:16:51.210 28583 28707 I dsh.spike.result: ALL PASS
