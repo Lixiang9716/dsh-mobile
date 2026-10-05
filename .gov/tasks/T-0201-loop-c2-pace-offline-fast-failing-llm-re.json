@@ -1,0 +1,21 @@
+{
+  "title": "loop-c2: pace offline fast-failing llm retries at the transport seam",
+  "created": "2026-10-05T01:45:39+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "[x] seam: upstream/llm-retry-pacing.js pacer (fast-transport table 15/45/120s, episode reset) wired into llm-transport.js via LlmError providerRetryAfterMs + providerRetryPolicy maxDelayMs widening",
+    "[x] panel pins: fast offline fails pace 15/45/120/120 (real vendored dsh-llm-retry recover consumes them), slow-failure local rhythm unchanged, budget exhaustion still hands the error on",
+    "[x] field visibility: retry-telemetry warn data carries the scheduled delayMs",
+    "[x] closures: android + harmony sync green, harmony SPINE_OURS + Index.ets rows for the new module",
+    "Agent Note (bug-fix, loop-c2) + PR gates green + squash merge + main green"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0201"
+}
