@@ -187,3 +187,33 @@ Connection reset may surface earlier — expected).
   are not failures — they go to the owner-decision list.
 - Never touch the WSL-side repository's git/gov state; everything on Windows
   happens inside the emulator.
+
+---
+
+## Execution status (2026-10-05, Windows host — first full pass)
+
+| Item | Result |
+| --- | --- |
+| P0 provisioning | DONE — CLT 26.0.0.851 (D:\harmonyos-commandlinetools, includes the SDK + Emulator + hdc), image HarmonyOS 7.0.0(26.0.0), dsh_phone instance (D:), target 127.0.0.1:5559, WHPX on. No DevEco Studio needed. |
+| T1 cold boot | DONE, exceeded — the full 8-scenario `run-host-e2e.sh` suite ran green 4× (PR #390): composer renders, page serves, 0 checker failures. |
+| T2 timer honesty | DONE from run logs — exactly one `arm/failed` warning per runtime (2 runtimes → 2 lines, no storm), GatewayCore denying timerSchedule logged, turns complete. |
+| T3 real-model turn | DONE with a deviation — the bigmodel key is absent on this host, so the turn ran against OpenRouter's free pool (`inclusionai/ling-3.0-flash-sante:free`): scenario verdict PASS (streamed turn completed, served-model verbatim, key-leak audit clean, credentials removed), carrier manifest 7/7; the device manifest is 13/14 — its `llm.reasoning.delta` expectation is pinned to the bigmodel seat (a reasoning model); OpenRouter's free routes surface no reasoning through the vendored adapter (0 records). Named gap, not a host defect: the two hosts behave IDENTICALLY here (T7). |
+| T4 fs shapes | QUEUED — needs the real-model creation loop driving the composer; harmony's write probe is scripted-llm with a fixed prompt. Harness gap, one queue row. |
+| T5 web_search | QUEUED — same harness gap as T4. |
+| T6 soak | DONE — 5/5 cold boots green (boot 31/69/63/66/65s, app ready +3s every round, PSS 97.7→106.3→98.9→102.4→99.2MB = 1.09×, FAIL delta 0). |
+| T7 Android control | DONE for the real-turn leg — the same OpenRouter turn on the local proxy-free Android emulator: scenario ALL PASS, and the device-manifest failure is byte-identical to harmony's (want reasoning.delta @7, got llm.delta "Hello") — the seats match; the mismatch is the manifest's provider pin. |
+
+Environment facts learned (fix or remember):
+
+- `/proc/net/tcp6` shows NO socket rows to the shell user on this image — T1's
+  readiness poll must use the app's own hilog marker (`session.mock-llm PASS`).
+- `hdc` treats forward-slash and MSYS paths as RELATIVE (prefixes its cwd);
+  pass `D:\...` backslash forms and set `MSYS_NO_PATHCONV=1` for device args.
+- `hdc file send` cannot land into the app sandbox without the runtime's
+  others-writable placeholder (the run-live-llm handshake); `run-as` is an
+  Android-only convenience.
+- The Emulator's first-run IME wizard hijacks the screen once — tap through
+  before driving, or the uitest drive starves.
+- OpenRouter free-pool 429s are transient and per-model; probe before spending
+  a device attempt, and the free routes never serve the reasoning field
+  through the vendored adapter (manifest pin, not a defect).

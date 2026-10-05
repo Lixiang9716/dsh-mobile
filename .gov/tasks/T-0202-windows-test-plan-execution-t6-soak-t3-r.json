@@ -1,0 +1,20 @@
+{
+  "title": "windows-test-plan execution: T6 soak + T3 real-model turn on the harmony emulator; fix what surfaces",
+  "created": "2026-10-05T12:41:34+00:00",
+  "rules": {
+    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "files": {
+      ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
+      "gates.json": "ca500db2f2b02fc84c5cbb650f174f68e056705730283360626281e27060e818"
+    }
+  },
+  "checklist": [
+    "T6: 5 cold-boot cycles green (ready each round, memory not growing, no FAIL accumulation)",
+    "T3: real-model streaming turn completes on the harmony emulator (real bigmodel backend via gateway httpFetch)",
+    "T4/T5/T7 assessment recorded honestly (runnable or queued with the harness gap named)",
+    "problems found fixed or queued with evidence"
+  ],
+  "status": "open",
+  "receipt": null,
+  "id": "T-0202"
+}
