@@ -203,6 +203,7 @@ RESOURCES = [
     ("tar_mini_js", SPIKE / "tar-mini.js"),
     ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
     ("upstream_llm_read_idle_js", SPIKE / "upstream" / "llm-read-idle.js"),
+    ("upstream_llm_retry_pacing_js", SPIKE / "upstream" / "llm-retry-pacing.js"),
     ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
     ("upstream_model_selection_projection_js", SPIKE / "upstream" / "model-selection-projection.js"),
     ("upstream_model_selection_holder_js", SPIKE / "upstream" / "model-selection-holder.js"),

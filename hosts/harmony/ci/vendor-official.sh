@@ -315,10 +315,17 @@ $(cd runtime/spike && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
 SPINE_OURS="scenario/boot-verification.js
 scenario/harmony-session-live-read.js
 scenario/harmony-composer-live-write.js
+scenario/harmony-capability-binding.js
+scenario/harmony-httpfetch-streaming.js
 scenario/api-handler-respond.js
 scenario/manager-legs-probe.js
 scenario/probe-respond-await.js
 scenario/mic-plane.js
+scenario/device-plane.js
+scenario/gateway-bridge-smoke.js
+scenario/parity-projector.js
+scenario/session-mock-llm.js
+scenario/upstream-parity.js
 upstream/boot.js
 upstream/wire-logger.js
 upstream/settings-memory.js
@@ -345,6 +352,7 @@ upstream/web-write-workspace.js
 upstream/web-write-catalog.js
 upstream/tool-deadline.js
 upstream/tool-path-anchor.js
+upstream/tool-present.js
 upstream/turn-recovery.js
 upstream/retry-telemetry.js
 upstream/turn-watchdog.js
@@ -553,7 +561,32 @@ system-plugins/dsh-device-plane/manifest.json
 system-plugins/dsh-device-plane/index.js
 system-plugins/dsh-ble/manifest.json
 system-plugins/dsh-ble/index.js
-system-plugins/dsh-shell-wasm/programs.js"
+system-plugins/dsh-fs/manifest.json
+system-plugins/dsh-fs/index.js
+system-plugins/dsh-office/manifest.json
+system-plugins/dsh-office/index.js
+system-plugins/dsh-office/excel.js
+system-plugins/dsh-office/excel-core.js
+system-plugins/dsh-office/fschannel.js
+system-plugins/dsh-office/ppt-create.js
+system-plugins/dsh-office/ppt-read.js
+system-plugins/dsh-office/ppt-write.js
+system-plugins/dsh-office/shared.js
+system-plugins/dsh-office/word.js
+system-plugins/dsh-office/zip.js
+system-plugins/dsh-open-design/manifest.json
+system-plugins/dsh-open-design/index.js
+system-plugins/dsh-plugin-manager-tools/manifest.json
+system-plugins/dsh-plugin-manager-tools/index.js
+system-plugins/dsh-shell-ish/manifest.json
+system-plugins/dsh-shell-ish/index.js
+system-plugins/dsh-shell-wasm/manifest.json
+system-plugins/dsh-shell-wasm/index.js
+system-plugins/dsh-shell-wasm/programs.js
+system-plugins/dsh-subprocess-quickjs/manifest.json
+system-plugins/dsh-subprocess-quickjs/index.js
+system-plugins/dsh-ui/manifest.json
+system-plugins/dsh-ui/index.js"
 if [ "$MODE" != "check" ]; then
     for rel in $CLOSURE; do
         mkdir -p "$RAW/$(dirname "$rel")"

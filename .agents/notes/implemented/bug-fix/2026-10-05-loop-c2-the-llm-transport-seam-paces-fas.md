@@ -74,6 +74,24 @@ Index.ets rows for the new module), `dsh-llm-stub.js` grew the two faces the
 seam now imports (`providerRetryAfterMs` on LlmError, `resolveRetryPolicy`),
 mirroring the vendored shapes.
 
+**The staging-check activation (collateral, in the same PR).** Adding the new
+module's rows to `Index.ets` / `vendor-official.sh` put this PR inside the
+staging-check gate's path scope for the first time since its triage — until
+then the gate had been passing vacuously ("0 files in scope"; #385 an hour
+earlier), and once live it reported 25 PRE-EXISTING harmony gaps (7 scenario
+files + 8 plugins' files, shipped in the committed rawfile but never named in
+`vendor-official.sh`'s CLOSURE/SPINE_OURS, so CI never refreshed them) plus
+this PR's own real iOS gap. The PR carries the repair: the 25 rows joined
+their surfaces (plugin manifest.json rows alongside, per the dsh-device-plane
+pair precedent — all byte-identical no-ops), `upstream/llm-retry-pacing.js`
+joined `hosts/ios/Tools/gen_bundle_header.py`, and one file was a genuine
+drift catch: harmony's committed `dsh-shell-wasm/index.js` was the #139-era
+bytes (the starter set grew in #338; android re-synced, harmony never did) —
+the SPINE row now stages canonical over it, and the committed rawfile copy is
+the refresh. Recorded as a surprise (rule 11): a gate whose scope is
+diff-activated accumulates silent debt that charges whoever touches the
+surface next.
+
 Honest limits: (a) the escalation state lives on the adapter and decays on
 episode time only — a SUCCESS does not reset it, so a fast blip shortly after
 a recovered outage can draw one rung wider than strictly needed (bounded by
