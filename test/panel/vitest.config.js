@@ -26,6 +26,15 @@ export default defineConfig({
       { find: 'marketplace-resolver.js', replacement: fileURLToPath(new URL('../../runtime/spike/marketplace-resolver.js', import.meta.url)) },
       { find: 'web-write-inventory.js', replacement: fileURLToPath(new URL('../../runtime/spike/upstream/web-write-inventory.js', import.meta.url)) },
       { find: '@deepseek-ai/dsh-timeout', replacement: fileURLToPath(new URL('./.vendored/dsh-timeout/lib/index.js', import.meta.url)) },
+      // loop-c2's vendored-retry pin drives the REAL dsh-llm-retry recover()
+      // over the seam's paced failures. The package itself needs zod (bare,
+      // untracked — the C host's bare map owns it on device), so the suite
+      // test that mounts it vi.mocks 'zod' file-locally; the bytes here are
+      // the tracked android staged copy the `closures` gate keeps in sync.
+      {
+        find: '@deepseek-ai/dsh-llm-retry',
+        replacement: fileURLToPath(new URL('../../hosts/android/app/src/main/assets/spike/vendor/npm/@deepseek-ai/dsh-llm-retry@0.1.6-alpha.2/lib/index.js', import.meta.url)),
+      },
       // loop-u's supervisor imports two message utilities from @deepseek-ai/dsh-llm;
       // the vendored package needs zod + schemastery (outside the suite's
       // provisioned deps), so the alias doubles it (dsh-tools-stub's rule).

@@ -56,6 +56,7 @@ export const apply = (ctx) => {
       turn: data.turn,
       step: data.step,
       retryId: data.retryId,
+      delayMs: data.delayMs, // loop-c2: the seam's paced wait (15/45/120s offline) is field-visible
     });
   });
   log.info('llm retry telemetry mounted', {

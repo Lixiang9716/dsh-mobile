@@ -44,9 +44,11 @@ import {
   LlmError,
   attributionHeaders,
   isAgentLoopRequest,
+  resolveRetryPolicy,
 } from '@deepseek-ai/dsh-llm';
 import { httpFetch } from '../gateway.js';
 import { makeReadIdleGuard, parseReadIdleTimeoutMs } from './llm-read-idle.js';
+import { FAST_TRANSPORT_MAX_PACE_MS, makeFastTransportPacer } from './llm-retry-pacing.js';
 
 /** Non-ASCII-safe UTF-8 bytes for one JSON string (the wire body). */
 const utf8Encode = (text) => {
@@ -207,9 +209,16 @@ const demandStreamResponse = async (response) => {
   );
 };
 
-/** The transport call itself: one gateway httpFetch with the wire headers
- * (attribution headers come from the VENDORED package) and the UTF-8 body. */
-const openWireStream = async (endpoint, apiKey, wire, signal) => {
+/** The attempt's TRANSPORT failure, paced when it failed FAST (loop-c2):
+ * a fast offline reflex carries `providerRetryAfterMs` for dsh-llm-retry's
+ * recover(); slow failures carry nothing (upstream/llm-retry-pacing.js). */
+const pacedTransportError = (pacer, startedAtMs, message, cause) => {
+  const paceMs = pacer.pace(Date.now() - startedAtMs);
+  return new LlmError(message, 'TRANSPORT', { cause, ...(paceMs === undefined ? {} : { providerRetryAfterMs: paceMs }) });
+};
+
+/** The transport call: one gateway httpFetch, wire headers, UTF-8 body. */
+const openWireStream = async (endpoint, apiKey, wire, signal, pacer, startedAtMs) => {
   const headers = {
     'authorization': `Bearer ${apiKey}`,
     'content-type': 'application/json',
@@ -222,9 +231,51 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
     if (signal?.aborted) {
       throw new LlmError('gateway request aborted by caller', 'ABORTED', { cause: error });
     }
-    throw new LlmError(`gateway transport to ${endpoint} failed: ${error?.message ?? error}`, 'TRANSPORT', { cause: error });
+    throw pacedTransportError(pacer, startedAtMs, `gateway transport to ${endpoint} failed: ${error?.message ?? error}`, error);
   }
 };
+
+/** One route-bound adapter: wire target, hooks, read-idle budget, pacer. */
+class GatewayLlmAdapter extends LlmAdapter {
+  constructor(deps) {
+    super();
+    this.deps = deps;
+  }
+
+  providerInfo(route) {
+    return { id: route, name: this.deps.name ?? route };
+  }
+
+  /** The route's retry policy (loop-c2): vendored normal defaults with
+   * maxDelayMs raised to the widest pace slot, so dsh-llm-retry's give-up
+   * clause can never fire on a paced failure (initialDelayMs keeps 500ms). */
+  providerRetryPolicy() {
+    return resolveRetryPolicy({ mode: 'normal', backoff: { maxDelayMs: FAST_TRANSPORT_MAX_PACE_MS } }, 'llm-transport: provider retryPolicy');
+  }
+
+  async resolveModel(route, model, _signal) {
+    // the mock route pins effort 'off'; else upstream fails UNSUPPORTED_REASONING_EFFORT
+    return { provider: route, id: model, name: model, reasoning: { efforts: [{ id: 'off', name: 'off' }] } };
+  }
+
+  async *stream(requestOptions) {
+    const { endpoint, apiKey, onWire, onSse, onRequestBody, idleTimeoutMs, pacer } = this.deps;
+    const wire = serializeWireRequest(requestOptions);
+    onWire?.({
+      provider: requestOptions.provider,
+      model: requestOptions.model,
+      messages: Array.isArray(requestOptions.messages) ? requestOptions.messages.length : 0,
+      tools: Array.isArray(requestOptions.tools) ? requestOptions.tools.length : 0,
+      path: '/chat/completions', method: 'POST',
+      agentLoopMarked: isAgentLoopRequest(requestOptions), stream: true,
+    });
+    onRequestBody?.(wire);
+    const startedAtMs = Date.now(); // the attempt's wall clock — the pacer's fast/slow axis (loop-c2)
+    const response = await openWireStream(endpoint, apiKey, wire, requestOptions.signal, pacer, startedAtMs);
+    await demandStreamResponse(response);
+    yield* translate(parseSse(response, requestOptions.signal, idleTimeoutMs, pacer, startedAtMs), onSse);
+  }
+}
 
 /** Build one adapter bound to one route. Observability rides hooks:
  * onWire(info) fires once per wire request (the scenario logs the request
@@ -244,7 +295,6 @@ const openWireStream = async (endpoint, apiKey, wire, signal) => {
  * quietly weakened for every caller. */
 export function createGatewayLlmAdapter(options) {
   const { baseURL, apiKey, provider, name, onWire, onSse, onRequestBody, userEndpoint = false, readIdleTimeoutMs } = options;
-  const idleTimeoutMs = parseReadIdleTimeoutMs(readIdleTimeoutMs);
   if (userEndpoint === true) {
     if (typeof baseURL !== 'string' || !/^https?:\/\/[^\s]+$/.test(baseURL)) {
       throw new TypeError(`llm-transport: user endpoint baseURL is not an http(s) URL, got ${String(baseURL)}`);
@@ -257,38 +307,16 @@ export function createGatewayLlmAdapter(options) {
   }
   if (typeof apiKey !== 'string' || apiKey.length === 0) throw new TypeError('llm-transport: apiKey is required');
   if (typeof provider !== 'string' || provider.length === 0) throw new TypeError('llm-transport: provider is required');
-  const endpoint = `${baseURL.replace(/\/+$/, '')}/chat/completions`;
-
-  const adapter = new class extends LlmAdapter {
-    providerInfo(route) {
-      return { id: route, name: name ?? route };
-    }
-
-    async resolveModel(route, model, _signal) {
-      // The mock route declares exactly the effort the mobile profile pins
-      // ('off'); anything else fails upstream as UNSUPPORTED_REASONING_EFFORT.
-      return { provider: route, id: model, name: model, reasoning: { efforts: [{ id: 'off', name: 'off' }] } };
-    }
-
-    async *stream(requestOptions) {
-      const wire = serializeWireRequest(requestOptions);
-      onWire?.({
-        provider: requestOptions.provider,
-        model: requestOptions.model,
-        messages: Array.isArray(requestOptions.messages) ? requestOptions.messages.length : 0,
-        tools: Array.isArray(requestOptions.tools) ? requestOptions.tools.length : 0,
-        path: '/chat/completions',
-        method: 'POST',
-        agentLoopMarked: isAgentLoopRequest(requestOptions),
-        stream: true,
-      });
-      onRequestBody?.(wire);
-      const response = await openWireStream(endpoint, apiKey, wire, requestOptions.signal);
-      await demandStreamResponse(response);
-      yield* translate(parseSse(response, requestOptions.signal, idleTimeoutMs), onSse);
-    }
-  }();
-  return adapter;
+  return new GatewayLlmAdapter({
+    endpoint: `${baseURL.replace(/\/+$/, '')}/chat/completions`,
+    apiKey,
+    name,
+    onWire,
+    onSse,
+    onRequestBody,
+    idleTimeoutMs: parseReadIdleTimeoutMs(readIdleTimeoutMs),
+    pacer: makeFastTransportPacer(), // loop-c2: one ladder per provider route
+  });
 }
 
 /** Parse one SSE byte stream into data payloads (the '[DONE]' sentinel
@@ -303,8 +331,8 @@ export function createGatewayLlmAdapter(options) {
  * caller abort — this parser maps the guard's fired flag to the retryable
  * TIMEOUT code (dsh-llm-retry then owns the 1/5..5/5 rhythm), lets signal
  * aborts read ABORTED (non-retryable), and leaves real socket errors on
- * TRANSPORT. */
-const parseSse = async function* (response, signal, idleTimeoutMs) {
+ * TRANSPORT — fast ones paced (loop-c2, upstream/llm-retry-pacing.js). */
+const parseSse = async function* (response, signal, idleTimeoutMs, pacer, startedAtMs) {
   const decode = utf8Decoder();
   let buffer = '';
   const idle = makeReadIdleGuard(response, idleTimeoutMs, signal);
@@ -340,7 +368,7 @@ const parseSse = async function* (response, signal, idleTimeoutMs) {
         { cause: error },
       );
     }
-    throw new LlmError(`gateway SSE stream failed: ${error?.message ?? error}`, 'TRANSPORT', { cause: error });
+    throw pacedTransportError(pacer, startedAtMs, `gateway SSE stream failed: ${error?.message ?? error}`, error);
   } finally {
     idle.dispose();
   }
