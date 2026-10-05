@@ -166,7 +166,7 @@ hdc shell "hidumper --mem $(pidof com.dshmobile.spike)"   # 或 ps -o RSSHLK
 | P0 环境准备 | 完成——CLT 26.0.0.851（D:\harmonyos-commandlinetools，含 SDK + Emulator + hdc）、镜像 HarmonyOS 7.0.0(26.0.0)、dsh_phone 实例（D 盘）、目标 127.0.0.1:5559、WHPX 开启。无需 DevEco Studio。 |
 | T1 冷启动 | 完成且超额——完整 8-scenario `run-host-e2e.sh` 套件绿跑 4 次（PR #390）：composer 渲染、页面服务、checker 零失败。 |
 | T2 timer 诚实性 | 凭运行日志完成——每个 runtime 恰一条 `arm/failed` 警告（2 个 runtime → 2 行，无风暴），GatewayCore 拒绝 timerSchedule 有日志，轮次照常完成。 |
-| T3 真实模型轮次 | 完成但带偏差——本机没有 bigmodel key，轮次改打 OpenRouter 免费池（`inclusionai/ling-3.0-flash-sante:free`）：scenario verdict PASS（流式轮次完成、served-model 逐字、key 泄漏审计干净、凭据已删），carrier manifest 7/7；device manifest 13/14——其 `llm.reasoning.delta` 期望钉死在 bigmodel 座（reasoning 模型）；OpenRouter 免费路由经 vendored 适配器不产出 reasoning（0 条）。这是命名差距而非宿主缺陷：两个宿主在此行为完全一致（T7）。 |
+| T3 真实模型轮次 | 在钉定座位完成——glm-5.3-flash 在 Windows 模拟器上流式完成完整轮次：scenario verdict PASS、device manifest 14/114（reasoning + content 增量，repeat 感知）、carrier 7/7、served-model 逐字、key 泄漏审计干净、凭据已删；receipt 在绿色路径落盘（`hosts/harmony/artifacts/windows-t3-live-llm/`）。更早的 OpenRouter 免费池尝试（key 到位前）已证明传输，并把 device manifest 留在 13/14——其 `llm.reasoning.delta` 钉定是 bigmodel 座专属（免费路由无 reasoning；Android 行为完全一致，见 T7）——该发现是 manifest 的 provider 钉定，不是宿主缺陷。 |
 | T4 fs 形态 | 排队——需要真实模型创建循环驱动 composer；harmony 的写探针是脚本化 llm 固定文本。harness 缺口，一行 queue。 |
 | T5 web_search | 排队——与 T4 同一 harness 缺口。 |
 | T6 浸泡 | 完成——5/5 冷启动绿（boot 31/69/63/66/65s，应用 ready 每轮 +3s，PSS 97.7→106.3→98.9→102.4→99.2MB = 1.09×，FAIL 增量 0）。 |
