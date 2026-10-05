@@ -324,12 +324,16 @@ done
 # above would have died on any failure — so a receipt can never exist
 # without this real green run. Harmony shape per run-device-plane.sh.
 TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
+# The receipt names the device that RAN: the live hdc target, not a
+# hardcoded port (this host's emulator answers on :5559, not :5555).
+HTARGET=$("$HDC" list targets 2>/dev/null | grep -v Empty | head -1 | tr -d '\r')
+HTARGET=${HTARGET:-unknown-target}
 cat > "$OUT/receipt.json" <<EOF
 {
-  "host": "harmony $(HTARGET=("$HDC" list targets 2>/dev/null | grep -v Empty | head -1 | tr -d ''); echo "${HTARGET:-unknown-target}") (dsh_phone emulator)",
+  "host": "harmony $HTARGET (dsh_phone emulator)",
   "runner": "hosts/harmony/ci/run-live-llm.sh",
   "phase": "harmony.llm.live-stream",
-  "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real z.ai backend",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
   "tree": "$TREE_LINE",
   "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
   "scenarios": [
