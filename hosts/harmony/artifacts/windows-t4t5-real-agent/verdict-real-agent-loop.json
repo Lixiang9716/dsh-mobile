@@ -1,0 +1,8 @@
+{
+  "scenario": "real.agent.loop",
+  "pass": true,
+  "expected": 21,
+  "logged": 21,
+  "failures": [],
+  "parseErrors": []
+}

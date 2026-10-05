@@ -1,0 +1,14 @@
+{
+  "host": "harmony 127.0.0.1:5559 (dsh_phone emulator)",
+  "runner": "hosts/harmony/ci/run-real-agent.sh",
+  "phase": "real.agent.loop (T4/T5)",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
+  "tree": "origin/main 03b1edb99948 (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "real-agent-loop", "verdict": "verdict-real-agent-loop.json", "pass": true },
+    { "manifest": "real-agent-loop", "verdict": "verdict-real-agent-loop.json", "pass": true }
+  ],
+  "screens": ["real-agent-live-page.png"],
+  "producedAt": "2026-10-05T15:59:49Z"
+}

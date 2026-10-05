@@ -64,6 +64,9 @@ const LEG_CAMERA_PLANE: string = 'camera.plane';
 const LEG_PARITY: string = 'upstream.parity';
 const LEG_BLE: string = 'ble.plane';
 const LEG_MIC_PLANE: string = 'mic.plane';
+/** The windows-test-plan T4/T5 leg (`--ps dsh.e2e.leg real.agent.loop`):
+ * the spine + tools on the STAGED real backend, the probes in-scenario. */
+const LEG_REAL_AGENT: string = 'real.agent.loop';
 
 // bundle-root-relative files shipped under resources/rawfile/spike/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
@@ -110,6 +113,7 @@ const BUNDLE_FILES: string[] = [
   'scenario/mic-plane.js',
   'scenario/officialweb-web-live.js',
   'scenario/parity-projector.js',
+  'scenario/real-agent-loop.js',
   'scenario/session-mock-llm.js',
   'scenario/upstream-fake-timers.js',
   'scenario/upstream-harness-matchers.js',
@@ -1245,6 +1249,9 @@ struct Index {
     } else if (leg === LEG_MIC_PLANE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runMicPlaneLeg();
+    } else if (leg === LEG_REAL_AGENT) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
+      this.runRealAgentLeg();
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1397,6 +1404,41 @@ struct Index {
       .catch((err: BusinessError) => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
         hilog.error(0x0000, TAG, 'spike failed: %{public}s', err.message ?? 'unknown');
+      });
+  }
+
+  /** The `real.agent.loop` leg (windows-test-plan T4/T5; ci/run-real-agent.sh):
+   * the llm leg's credential choreography VERBATIM (same staged path, the
+   * runtime's others-writable placeholder, the send over it, the import),
+   * but headless — no page mounts, no carrier records; the scenario boots
+   * the spine with tools on the staged REAL backend and runs the five probe
+   * turns itself. The verdict is the scenario's own. */
+  private runRealAgentLeg(): void {
+    const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const fsRoot: string = ctx.filesDir + '/spike-fs';
+    const configPath: string = fsRoot + '/llm-live-stream/config.json';
+    const phase = HostPhase.getInstance();
+    phase.onPhaseComplete = (passed: boolean): void => {
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' real.agent.loop (logs are the verdict)';
+      LlmConfigStaging.cleanup(configPath);
+    };
+    this.materializeBundle(ctx)
+      .then((bundleRoot: string): Promise<number> => {
+        this.verdict = 'real-agent leg: staging credentials...';
+        LlmConfigStaging.prepare(configPath);
+        phase.beginRealAgent(ctx, bundleRoot, ctx.cacheDir + '/dsh-real-agent-capture.log', fsRoot);
+        return LlmConfigStaging.awaitStaged(configPath);
+      })
+      .then((stagedBytes: number): void => {
+        hilog.info(0x0000, TAG, 'real-agent leg: credentials staged (%{public}d bytes) — the probes are running',
+          stagedBytes);
+        this.verdict = 'real-agent leg: probes running';
+      })
+      .catch((err: BusinessError): void => {
+        this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
+        hilog.error(0x0000, TAG, 'real-agent leg failed: %{public}s',
+          err.message ?? 'unknown');
+        LlmConfigStaging.cleanup(configPath);
       });
   }
 

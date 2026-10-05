@@ -167,8 +167,8 @@ hdc shell "hidumper --mem $(pidof com.dshmobile.spike)"   # 或 ps -o RSSHLK
 | T1 冷启动 | 完成且超额——完整 8-scenario `run-host-e2e.sh` 套件绿跑 4 次（PR #390）：composer 渲染、页面服务、checker 零失败。 |
 | T2 timer 诚实性 | 凭运行日志完成——每个 runtime 恰一条 `arm/failed` 警告（2 个 runtime → 2 行，无风暴），GatewayCore 拒绝 timerSchedule 有日志，轮次照常完成。 |
 | T3 真实模型轮次 | 在钉定座位完成——glm-5.3-flash 在 Windows 模拟器上流式完成完整轮次：scenario verdict PASS、device manifest 14/114（reasoning + content 增量，repeat 感知）、carrier 7/7、served-model 逐字、key 泄漏审计干净、凭据已删；receipt 在绿色路径落盘（`hosts/harmony/artifacts/windows-t3-live-llm/`）。更早的 OpenRouter 免费池尝试（key 到位前）已证明传输，并把 device manifest 留在 13/14——其 `llm.reasoning.delta` 钉定是 bigmodel 座专属（免费路由无 reasoning；Android 行为完全一致，见 T7）——该发现是 manifest 的 provider 钉定，不是宿主缺陷。 |
-| T4 fs 形态 | 排队——需要真实模型创建循环驱动 composer；harmony 的写探针是脚本化 llm 固定文本。harness 缺口，一行 queue。 |
-| T5 web_search | 排队——与 T4 同一 harness 缺口。 |
+| T4 fs 形态 | 完成（2026-10-05）——`real.agent.loop` 腿：完整 spine 跑在 staged bigmodel 凭据上，glm-5.3-flash 亲自驱动四个探针轮次。四种形态与 Android 预期逐字一致（锚点拒绝 / 携带种子 registry 的相对拼写解析 / 纯 absence / in-root 钉定）；manifest 21/21，receipt 落在活目标行。 |
+| T5 web_search | 完成（2026-10-05）——同一腿的第五轮：模型调用了 web_search 且工具在免代理网络上**真实应答**（无 keyless 挑战、无静默空成功——最优结局，同时为该探针定了 T7 的环境问题）。 |
 | T6 浸泡 | 完成——5/5 冷启动绿（boot 31/69/63/66/65s，应用 ready 每轮 +3s，PSS 97.7→106.3→98.9→102.4→99.2MB = 1.09×，FAIL 增量 0）。 |
 | T7 Android 对照 | 真实轮次腿完成——同一 OpenRouter 轮次跑在本机免代理 Android 模拟器上：scenario ALL PASS，且 device manifest 失败与 harmony 逐字节相同（want reasoning.delta @7，got llm.delta "Hello"）——两座一致；不一致的是 manifest 的 provider 钉定。 |
 
