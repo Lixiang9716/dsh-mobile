@@ -33,6 +33,22 @@ perfectly healthy.
   forms, the IME wizard, the free-pool 429/no-reasoning reality) recorded
   where the next executor will find them.
 
+## Follow-up (same day): T3 closed at the pinned seat
+
+The bigmodel key arrived and the leg re-ran at the seat the plan pins:
+glm-5.3-flash streamed reasoning + content on the Windows emulator —
+scenario verdict PASS, device manifest 14/114 (repeat-aware), carrier 7/7,
+key-leak audit clean, credentials removed, receipt authored by the runner
+on the green path with the LIVE host line (`harmony 127.0.0.1:5559` — the
+fix above verified in production). The evidence dir lands committed
+(`hosts/harmony/artifacts/windows-t3-live-llm/`); the plan doc's T3 row and
+both matrix docs record the closure, and the totals correct to the
+committed-state measurement (93 dirs / 205 verdicts / 212 pngs — the
+previous 211/220 had counted a since-removed scratch dir). The OpenRouter
+attempt stays in the T3 row as the transport-proof intermediate; the
+manifest's `llm.reasoning.delta` pin is named there as bigmodel-seat-specific
+(Android behaves identically), not widened.
+
 ## Alternatives considered
 
 - Making the readiness poll root the emulator or privileged-shell its way

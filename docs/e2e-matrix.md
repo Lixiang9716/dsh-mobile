@@ -6,6 +6,19 @@ Consolidated acceptance evidence for every E2E claim across the four hosts
 (iOS, Android, HarmonyOS, macOS CLI), built from the committed artifacts
 dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 
+> **Currency**: this matrix reflects the T3 bigmodel closure on the Windows
+> host (2026-10-05): `llm.live-stream` ran GREEN at the pinned seat on the
+> Windows-side emulator — glm-5.3-flash streamed reasoning + content through
+> the gateway httpFetch, device manifest 14/114 (repeat-aware), carrier 7/7,
+> scenario verdict PASS, receipt authored by the runner on the green path
+> (`hosts/harmony/artifacts/windows-t3-live-llm/`). An OpenRouter free-pool
+> attempt the same day proved the transport before the key arrived and left
+> a named finding: the device manifest's `llm.reasoning.delta` expectation is
+> a bigmodel-seat pin (0 reasoning records from the free routes; the SAME
+> shape on Android — the seats match). Checker on this tree: 93 dirs / 205
+> verdicts (1 accepted owned gap). The Windows-emulator harmony closure note
+> below is the previous currency record.
+>
 > **Currency**: this matrix reflects the Windows-emulator harmony closure
 > (2026-10-05): the HarmonyOS host E2E ran END TO END on a Windows-host
 > emulator for the first time — CLT 26.0.0.851, image HarmonyOS 7.0.0(26.0.0),
@@ -239,9 +252,9 @@ following hold:
 | Metric | Value |
 | --- | --- |
 | Evidence dirs | 93 |
-| Verdicts committed (211 green) | 211 |
+| Verdicts committed (205 green) | 205 |
 | Scenarios with at least one committed evidence dir | 80 of 80 distinct scenario ids (73 manifests) |
-| Screenshots verified PNG | 220 |
+| Screenshots verified PNG | 212 |
 | Acceptance-bar findings | 1 — every one owned in the [known-gaps register](#known-gaps-honest-list); 0 block the gate |
 
 ## Coverage matrix — scenario × platform
@@ -284,7 +297,7 @@ evidence on that platform.
 | `m2.gateway.binding` | 19/19 | — | — | — |
 | `install.carrier-evidence` | 11/11 | — | — | — |
 | `install.from-http` | 46/46 | — | — | — |
-| `m2.llm` | 14/148 | 14/171 | — | 19/19 |
+| `m2.llm` | 14/148 | 14/171 | 14/130, 14/114 (Windows host) | 19/19 |
 | `m2.llm.carrier` | 7/7 | 7/7 | — | — |
 | `llm.live-stream` | 14/67 | — | 14/130 | — |
 | `llm.live-stream.carrier` | 7/7 | — | 7/7 | — |
@@ -388,6 +401,7 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 (drift), harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-llm-live-stream` | HarmonyOS | llm.live-stream 14/130, llm.live-stream.carrier 7/7 — the quota-blocked `m5-m2-llm` dir re-run GREEN on 2026-09-28 (commit `64889c54`); the served turn is claimed | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/windows-t3-live-llm` | HarmonyOS | llm.live-stream 14/114 + carrier 7/7 (receipt 2026-10-05, bigmodel seat, Windows host) | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
