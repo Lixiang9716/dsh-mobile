@@ -1,3 +1,6 @@
+// dsh:logging-exempt (spine-boot module, the session-live template's class:
+// the demand/take/post helper trio never logs — the mounted logger carries
+// every canonical line the probes emit)
 /**
  * real-agent-loop.js — the REAL-model agent-loop harness behind the
  * windows-test-plan's T4/T5 probes: the FULL upstream spine boots inside the
@@ -128,6 +131,8 @@ const lastResultText = (records) => {
 
 /** Run one probe turn and emit the evidence trio. Returns the records. */
 const probe = async (ctx, session, seq, prompt) => {
+  log.debug('probe begin', { seq, prompt });
+
   const baseline = session.snapshotEvents().length;
   emit('realagent/turn', { seq, prompt });
   await runTurn(ctx.agents.get(SESSION_ID), prompt);
@@ -138,6 +143,8 @@ const probe = async (ctx, session, seq, prompt) => {
 };
 
 const bootPhase = async (cfg, containerRoot) => {
+  log.debug('spine boot begin', { model: cfg.model });
+
   demand(typeof containerRoot === 'string' && containerRoot.startsWith('/'),
     `profile container not granted by the host: ${JSON.stringify(containerRoot)}`);
   const { ctx } = await bootUpstream({
@@ -174,6 +181,8 @@ const bootPhase = async (cfg, containerRoot) => {
 
 /** T4-a: the anchored refusal (workspace root + the maybe-you-meant hint). */
 const probeAnchoredRefusal = async (ctx, session) => {
+  log.debug('T4-a begin', {});
+
   const a = await probe(ctx, session, 1, '请使用 read 工具读取 /system/app 这个路径的完整内容，把工具返回的原样告诉我。');
   demand(a.calls.length > 0, `T4-a: the model produced no tool call — assistant said: ${a.records
     .filter((r) => r.type === 'assistant/message').map((r) => JSON.stringify(r.data)).join('').slice(0, 200)}`);
@@ -184,6 +193,8 @@ const probeAnchoredRefusal = async (ctx, session) => {
 
 /** T4-b: the relative spelling resolves to the seeded registry. */
 const probeRelativeResolves = async (ctx, session) => {
+  log.debug('T4-b begin', {});
+
   const b = await probe(ctx, session, 2, '请使用 read 工具读取文件 spike/../plugins/registry.json，原样告诉我文件内容。');
   demand(b.calls.length > 0, 'T4-b: the model produced no tool call');
   demand(b.resultText.includes(REGISTRY_MARKER),
@@ -193,6 +204,8 @@ const probeRelativeResolves = async (ctx, session) => {
 
 /** T4-c: plain absence — no anchor refusal. */
 const probeAbsence = async (ctx, session) => {
+  log.debug('T4-c begin', {});
+
   const c = await probe(ctx, session, 3, '请使用 read 工具读取 /system/definitely-not-here-xyz。');
   demand(c.calls.length > 0, 'T4-c: the model produced no tool call');
   demand(c.resultText.includes('maybe you meant') === false,
@@ -202,6 +215,8 @@ const probeAbsence = async (ctx, session) => {
 
 /** T4-d: pinned in-root — ENOENT, never passwd content. */
 const probePinnedInRoot = async (ctx, session) => {
+  log.debug('T4-d begin', {});
+
   const d = await probe(ctx, session, 4, '请使用 read 工具读取 ../../../../etc/passwd 的内容。');
   demand(d.calls.length > 0, 'T4-d: the model produced no tool call');
   demand(d.resultText.includes('root:x:0:0') === false,
@@ -212,6 +227,8 @@ const probePinnedInRoot = async (ctx, session) => {
 /** T5: web_search — content, or the keyless challenge, in band. The defect
  * line is a silent empty success. */
 const probeWebSearch = async (ctx, session) => {
+  log.debug('T5 begin', {});
+
   const e = await probe(ctx, session, 5, '请使用 web_search 工具搜索 HarmonyOS，把搜索结果告诉我。');
   const searchCall = e.calls.find((call) => call.tool === 'web_search');
   demand(searchCall !== undefined, `T5: no web_search tool call — calls: ${JSON.stringify(e.calls).slice(0, 200)}`);
@@ -221,15 +238,16 @@ const probeWebSearch = async (ctx, session) => {
   emit('realagent/tool/result', { seq: 5, shape: challenged ? 'keyless-challenged' : 'answered', ok: true });
 };
 
-const main = async () => {
-  const configMsg = await take('runtime.config');
-  const containerRoot = configMsg.containerRoot;
-
-  // The staged credential (the llm.live-stream handshake's path — the same
-  // placeholder/send/import choreography, reused unchanged). The send lands
-  // ASYNCHRONOUSLY after the stage-ready marker, so the read polls until the
-  // file exists (the runner's own awaitStaged deadline bounds the handshake).
-  const readStagedConfig = async () => {
+/** The staged credential (the llm.live-stream handshake's path — the same
+ * placeholder/send/import choreography, reused unchanged). The send lands
+ * ASYNCHRONOUSLY after the stage-ready marker, so the read polls until the
+ * file carries the real config (the runner's awaitStaged deadline bounds
+ * the handshake). NO timer sleep: this host's timers never fire (the
+ * timerSchedule denial, T2's known boundary) — an awaited setTimeout would
+ * hang the poll forever; each failed fsRead is itself a gateway round trip
+ * that yields the runtime thread to the host pump. */
+const readStagedConfig = async () => {
+  log.debug('staged config poll begin', { path: CONFIG_PATH });
     const deadline = Date.now() + 120_000;
     for (;;) {
       // The placeholder (`{}`) precedes the send: a parse success without a
@@ -251,7 +269,14 @@ const main = async () => {
       // round trip that yields the runtime thread to the host pump.
     }
   };
-  const cfg = await readStagedConfig();
+
+const main = async () => {
+  log.debug('main begin', {});
+
+  const configMsg = await take('runtime.config');
+  const containerRoot = configMsg.containerRoot;
+
+  const cfg = await readStagedConfig();  const cfg = await readStagedConfig();
   demand(typeof cfg.baseUrl === 'string' && cfg.baseUrl.indexOf('https://') === 0,
     `config.baseUrl missing or not https: ${JSON.stringify(cfg.baseUrl)}`);
   demand(typeof cfg.apiKey === 'string' && cfg.apiKey.length > 0, 'config.apiKey missing');
