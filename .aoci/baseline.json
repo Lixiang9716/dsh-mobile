@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-06T23:44:55Z",
+  "updated_at": "2026-10-06T23:50:16Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "b2e486922ea0e0197098e1f659949801a1f4caa5be79a269b45f7b2acb8c2d67",
-      "size": 440785,
-      "normalized_sha256": "b2e486922ea0e0197098e1f659949801a1f4caa5be79a269b45f7b2acb8c2d67"
+      "sha256": "4db34b7d4dbee81ca449387e23e6d78ec69e3dc96e24c4cac6d7d8f1be600f01",
+      "size": 443207,
+      "normalized_sha256": "4db34b7d4dbee81ca449387e23e6d78ec69e3dc96e24c4cac6d7d8f1be600f01"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -2951,9 +2951,9 @@
     },
     "hosts/harmony/entry/src/main/cpp/gateway_smoke.cpp": {
       "role": "index",
-      "sha256": "ced3212cfc62cfab04926dc759462d9bc905ae3b09edad2757fe31b94440e256",
-      "size": 25324,
-      "normalized_sha256": "ced3212cfc62cfab04926dc759462d9bc905ae3b09edad2757fe31b94440e256"
+      "sha256": "4f05af968b915276e05dc22374b9473fd508e90c2937f50cd3e066a7ffceb998",
+      "size": 25410,
+      "normalized_sha256": "4f05af968b915276e05dc22374b9473fd508e90c2937f50cd3e066a7ffceb998"
     },
     "hosts/harmony/entry/src/main/cpp/gateway_smoke.h": {
       "role": "index",
@@ -3009,6 +3009,12 @@
       "size": 16302,
       "normalized_sha256": "a5d4c7db8ee2a237901f072b482ffcf5bf748b422ec641eda4ff75cc1abe1a44"
     },
+    "hosts/harmony/entry/src/main/ets/model/CardPlayer.ets": {
+      "role": "index",
+      "sha256": "222c46f7c4da8737aa94802ca6665f8e2bbbd0c8059146ef304f300da5254be7",
+      "size": 6903,
+      "normalized_sha256": "222c46f7c4da8737aa94802ca6665f8e2bbbd0c8059146ef304f300da5254be7"
+    },
     "hosts/harmony/entry/src/main/ets/model/CarrierRoutes.ets": {
       "role": "index",
       "sha256": "f1f178b2e98c696314a1fdac04068ff0af95bf4ed9fb4ccd6ebdb683917e91a5",
@@ -3035,15 +3041,15 @@
     },
     "hosts/harmony/entry/src/main/ets/model/HostPhase.ets": {
       "role": "index",
-      "sha256": "56cae9c2a0ad66487b138f1b8e72e7089ff8b6e3da3007ed386217329dbc9df9",
-      "size": 41033,
-      "normalized_sha256": "56cae9c2a0ad66487b138f1b8e72e7089ff8b6e3da3007ed386217329dbc9df9"
+      "sha256": "9d9f24a8dcb5619f4979647416c2678167fe51c8e056f35bc51b42adc626cbff",
+      "size": 44498,
+      "normalized_sha256": "9d9f24a8dcb5619f4979647416c2678167fe51c8e056f35bc51b42adc626cbff"
     },
     "hosts/harmony/entry/src/main/ets/model/HttpFetch.ets": {
       "role": "index",
-      "sha256": "cd818d255bcd5fb1cb56423a49573e55e5726f7af6c656fdeca41d961148e368",
-      "size": 9828,
-      "normalized_sha256": "cd818d255bcd5fb1cb56423a49573e55e5726f7af6c656fdeca41d961148e368"
+      "sha256": "0edec1acc35c6990679c07b05266b2e001595e5320981642e311f7950956cb32",
+      "size": 10199,
+      "normalized_sha256": "0edec1acc35c6990679c07b05266b2e001595e5320981642e311f7950956cb32"
     },
     "hosts/harmony/entry/src/main/ets/model/HttpPrimitive.ets": {
       "role": "index",
@@ -3065,9 +3071,9 @@
     },
     "hosts/harmony/entry/src/main/ets/model/MicPrimitives.ets": {
       "role": "index",
-      "sha256": "62a1630124208feabf1816ca8a424db8937c052cb95f3cff488580cd684d1e42",
-      "size": 13183,
-      "normalized_sha256": "62a1630124208feabf1816ca8a424db8937c052cb95f3cff488580cd684d1e42"
+      "sha256": "bca00683e12843030070fe6d2df73f7827e23b23293e430322ef03da5e20f269",
+      "size": 14206,
+      "normalized_sha256": "bca00683e12843030070fe6d2df73f7827e23b23293e430322ef03da5e20f269"
     },
     "hosts/harmony/entry/src/main/ets/model/NextWebPhase.ets": {
       "role": "index",
@@ -3077,15 +3083,15 @@
     },
     "hosts/harmony/entry/src/main/ets/model/OfficialPhase.ets": {
       "role": "index",
-      "sha256": "e8051e8a8abb021a64f6d595751c98ef74af6530021c4a5d3a06ec28d2b72a57",
-      "size": 41146,
-      "normalized_sha256": "e8051e8a8abb021a64f6d595751c98ef74af6530021c4a5d3a06ec28d2b72a57"
+      "sha256": "7269b98ea43f096f286d07f1e39fc8318ddafdd7aab83ee20eef8002f859d88c",
+      "size": 41368,
+      "normalized_sha256": "7269b98ea43f096f286d07f1e39fc8318ddafdd7aab83ee20eef8002f859d88c"
     },
     "hosts/harmony/entry/src/main/ets/model/OfficialServe.ets": {
       "role": "index",
-      "sha256": "d8455f56734f7947ba87f7b4f2b765b6b4546cd411f2f51dbff077a536484ecc",
-      "size": 44045,
-      "normalized_sha256": "d8455f56734f7947ba87f7b4f2b765b6b4546cd411f2f51dbff077a536484ecc"
+      "sha256": "898eabdecfe436c18867ea40ee41e0e4f893336cb1793495202ae020f58319aa",
+      "size": 44075,
+      "normalized_sha256": "898eabdecfe436c18867ea40ee41e0e4f893336cb1793495202ae020f58319aa"
     },
     "hosts/harmony/entry/src/main/ets/model/ParityMockRoute.ets": {
       "role": "index",
@@ -3095,9 +3101,9 @@
     },
     "hosts/harmony/entry/src/main/ets/model/PickerPrimitives.ets": {
       "role": "index",
-      "sha256": "012bc8660cf0947e9e708cc4a348581268b7d8b48d8a690d0d6a40d399225d11",
-      "size": 16828,
-      "normalized_sha256": "012bc8660cf0947e9e708cc4a348581268b7d8b48d8a690d0d6a40d399225d11"
+      "sha256": "666e8988f74fec19545860675473d3193a2785d4920ad753c4071d3657cd75a7",
+      "size": 17529,
+      "normalized_sha256": "666e8988f74fec19545860675473d3193a2785d4920ad753c4071d3657cd75a7"
     },
     "hosts/harmony/entry/src/main/ets/model/SessionLiveProbe.ets": {
       "role": "index",
@@ -3117,6 +3123,12 @@
       "size": 3601,
       "normalized_sha256": "23ee2a864f9c3283e93f42bf71d90aaf2a433ae49b6a8da67a694de419bada7d"
     },
+    "hosts/harmony/entry/src/main/ets/model/TimerPrimitive.ets": {
+      "role": "index",
+      "sha256": "de8853e88a74bf5ea832c7b2e7263a6a6cf9ac09563e53773491fd6e0c60192e",
+      "size": 3711,
+      "normalized_sha256": "de8853e88a74bf5ea832c7b2e7263a6a6cf9ac09563e53773491fd6e0c60192e"
+    },
     "hosts/harmony/entry/src/main/ets/model/WebDist.ets": {
       "role": "index",
       "sha256": "594a1f38f1cb8185676447bde7d4d7d8ff40c2b2ee6494e06816a62b0d43621a",
@@ -3131,9 +3143,9 @@
     },
     "hosts/harmony/entry/src/main/ets/pages/Index.ets": {
       "role": "index",
-      "sha256": "72741e33606cc4432da7188f06d8527013cf6b43d533f04d05dbbc6768c72619",
-      "size": 101460,
-      "normalized_sha256": "72741e33606cc4432da7188f06d8527013cf6b43d533f04d05dbbc6768c72619"
+      "sha256": "cf949500c2d2af6b7e9745b128e604cfb7335897412163744a45a6a3ce8bc606",
+      "size": 108677,
+      "normalized_sha256": "cf949500c2d2af6b7e9745b128e604cfb7335897412163744a45a6a3ce8bc606"
     },
     "hosts/harmony/entry/src/main/module.json5": {
       "role": "index",
@@ -3184,9 +3196,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/gateway.js": {
       "role": "index",
-      "sha256": "182ca0a0aa203eb67a2c7223ca1da8ec520b200edc53ae7d8069e1e14ca2d025",
-      "size": 19019,
-      "normalized_sha256": "182ca0a0aa203eb67a2c7223ca1da8ec520b200edc53ae7d8069e1e14ca2d025"
+      "sha256": "2e617668af143869107117a9a266ce809ed4eba8af4011eb0482d74d877403dd",
+      "size": 20627,
+      "normalized_sha256": "2e617668af143869107117a9a266ce809ed4eba8af4011eb0482d74d877403dd"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/install-fetch.js": {
       "role": "index",
@@ -3536,6 +3548,12 @@
       "sha256": "d13dfaf9b049dbf44607463b670f447fc639669d69ab56a7dfa8069833568fc6",
       "size": 258831,
       "normalized_sha256": "d13dfaf9b049dbf44607463b670f447fc639669d69ab56a7dfa8069833568fc6"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/api-handler-respond.js": {
+      "role": "index",
+      "sha256": "e0bf7ff14ab9b4fb1fae7ee918f9e0b0328447b3d2e1dca80a59f8f19c1ab8da",
+      "size": 4402,
+      "normalized_sha256": "e0bf7ff14ab9b4fb1fae7ee918f9e0b0328447b3d2e1dca80a59f8f19c1ab8da"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/ble-plane.js": {
       "role": "index",
