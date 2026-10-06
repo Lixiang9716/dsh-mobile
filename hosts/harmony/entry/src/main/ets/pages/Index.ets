@@ -49,6 +49,7 @@ import { OfficialPhase } from '../model/OfficialPhase';
 import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
 import { NextWebPhase } from '../model/NextWebPhase';
 import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
+import { CardPlayerRoute } from '../model/CardPlayer';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
 
@@ -67,6 +68,10 @@ const LEG_MIC_PLANE: string = 'mic.plane';
 /** The windows-test-plan T4/T5 leg (`--ps dsh.e2e.leg real.agent.loop`):
  * the spine + tools on the STAGED real backend, the probes in-scenario. */
 const LEG_REAL_AGENT: string = 'real.agent.loop';
+/** The upstream-suite leg (`--ps dsh.e2e.leg upstream.suite` + `--ps
+ * dsh.e2e.spec <file>`): ONE transpiled spec per launch, the QuickJS-shaped
+ * harness runs it in the on-device runtime. */
+const LEG_UPSTREAM_SUITE: string = 'upstream.suite';
 /** The CREATE-mode live demo (`--ps dsh.e2e.leg real.create`): the whale
  * creation client on the STAGED real backend — one Pomodoro-clock creation
  * turn, streamed into the page. A demo: no one-to-one manifest. */
@@ -1192,6 +1197,7 @@ struct ApprovalDialog {
 struct Index {
   @State verdict: string = 'spike: running...';
   @State webUrl: string = '';
+  private realCreatePort: number = CARRIER_BASE_PORT;
   @State approvalTitle: string = '';
   private approvalResolve: ((approved: boolean) => void) | null = null;
   private approvalController: CustomDialogController | null = null;
@@ -1260,6 +1266,9 @@ struct Index {
     } else if (leg === LEG_REAL_CREATE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runRealCreateLeg();
+    } else if (leg === LEG_UPSTREAM_SUITE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch, spec %{public}s', leg, E2eLeg.getSpec());
+      this.runSuiteLeg(E2eLeg.getSpec());
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
@@ -1463,6 +1472,12 @@ struct Index {
     phase.onPhaseComplete = (passed: boolean): void => {
       this.verdict = (passed ? 'PASS' : 'FAIL') + ' real.create (demo leg)';
       LlmConfigStaging.cleanup(configPath);
+      // The demo's final face: navigate the mounted web view to the card
+      // player — the CREATED plugin renders and RUNS in the browser.
+      if (passed) {
+        this.webUrl = 'http://127.0.0.1:' + this.realCreatePort
+          + '/card-player?plugin=real-create/pomodoro-clock';
+      }
     };
     phase.pageSink = (text: string): void => {
       this.carrier.sendText(text);
@@ -1496,6 +1511,7 @@ struct Index {
       .then((stagedBytes: number): Promise<number> => {
         hilog.info(0x0000, TAG, 'real-create leg: credentials staged (%{public}d bytes)',
           stagedBytes);
+        new CardPlayerRoute(this.carrier, fsRoot).register();
         return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
           phase.onCarrierListening(port);
           this.webUrl = 'http://127.0.0.1:' + port + '/';
