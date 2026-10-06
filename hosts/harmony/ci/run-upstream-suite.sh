@@ -151,11 +151,15 @@ for spec in $SPECS; do
     fi
 
     # Completion signal: the driver's terminal `suite/summary` record in the
-    # hilog stream (polled with a deadline, rule 8). The VERDICT comes from
-    # the pulled capture below, never from this stream.
+    # hilog stream (polled with a deadline, rule 8). A boot-stage death is
+    # equally terminal — the driver's fail() path emits `scenario.failed` in
+    # the first seconds, and waiting on suite/summary alone starved 300s per
+    # spec on the 2026-10-06 full run (every spec died at the then-missing
+    # scope://app resolve). The VERDICT comes from the pulled capture below,
+    # never from this stream.
     deadline=$(( $(date +%s) + LAUNCH_DEADLINE_SECONDS ))
     status='done'
-    until grep -q 'suite/summary' "$STREAM" 2>/dev/null; do
+    until grep -qE '"event":"(suite/summary|scenario.failed)"' "$STREAM" 2>/dev/null; do
         if [ "$(date +%s)" -ge "$deadline" ]; then
             status=timeout
             break
@@ -174,6 +178,7 @@ for spec in $SPECS; do
 const fs = require('fs');
 const spec = process.argv[2], capturePath = process.argv[3], status = process.argv[4];
 let summary = null;
+let bootFail = null;
 if (fs.existsSync(capturePath)) {
   for (const line of fs.readFileSync(capturePath, 'utf8').split('\n')) {
     if (!line.startsWith('dsh.spike.log:')) continue;
@@ -182,11 +187,15 @@ if (fs.existsSync(capturePath)) {
     const e2e = (record.data ?? [])[0];
     if (e2e?.scenario !== 'upstream.suite') continue;
     if (e2e.event === 'suite/summary') summary = e2e;
+    if (e2e.event === 'scenario.failed') bootFail = e2e;
   }
 }
 if (summary !== null) {
   console.log(JSON.stringify({ spec, status: summary.failed > 0 ? 'fail' : 'pass',
     passed: summary.passed, failed: summary.failed, skipped: summary.skipped }));
+} else if (bootFail !== null) {
+  console.log(JSON.stringify({ spec, status: 'boot-fail',
+    reason: String(bootFail.reason ?? '').slice(0, 200) }));
 } else {
   console.log(JSON.stringify({ spec, status: status === 'timeout' ? 'timeout' : 'no-summary' }));
 }

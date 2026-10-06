@@ -268,6 +268,19 @@ export class PickerPrimitives {
       reject(callId, settle, 'invalid', 'fsScope.resolve', 'malformed args');
       return;
     }
+    // Reserved-scope URIs (`scope://app/`) resolve to the app scope root —
+    // the profile container IS the scope root, and the upstream-suite
+    // driver pins its profile cwd there. The Android/iOS/CLI hosts answer
+    // this shape (FsPrimitives.kt resolveRef); without it every suite spec
+    // dies at boot with `malformed ref`.
+    const reserved = args.ref;
+    if (reserved !== undefined && reserved.startsWith('scope://') && reserved.endsWith('/')) {
+      const name = reserved.substring(8, reserved.length - 1);
+      if (name === 'app') {
+        settle(callId, '{"scope":"app","path":' + JSON.stringify(this.ctx.filesDir + '/spike-fs') + '}', true);
+        return;
+      }
+    }
     if (args.ref === undefined || !args.ref.startsWith(BOOKMARK_PREFIX)) {
       reject(callId, settle, 'invalid', 'fsScope.resolve', 'malformed ref');
       return;

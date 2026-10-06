@@ -81,19 +81,21 @@ if [ "$MODE" = "suite" ]; then
     for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
         pkg="$(basename "$pkg_dir")"
         [ -d "$pkg_dir/lib" ] || continue
-        if [ ! -d "$RAW/vendor/dsh/$pkg/lib" ]; then
-            mkdir -p "$RAW/vendor/dsh/$pkg"
-            (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
+        mkdir -p "$RAW/vendor/dsh/$pkg"
+        # Every lib file rides the manifest UNCONDITIONALLY — listing only
+        # the freshly-copied ones made the exemption set depend on staging
+        # history: a package dir left by an earlier run skipped the copy,
+        # its files fell out of __files.txt, and the next --closure-only's
+        # drift check flagged them as BUNDLE_FILES strays (2026-10-06 full
+        # run, 15 files across 5 packages).
+        (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
+            if [ ! -f "$RAW/vendor/dsh/$pkg/$f" ]; then
                 mkdir -p "$RAW/vendor/dsh/$pkg/$(dirname "$f")"
                 cp "$pkg_dir/$f" "$RAW/vendor/dsh/$pkg/$f"
-                echo "vendor/dsh/$pkg/$f" >> "$RAW/upstream-tests/__files.txt"
-                cp "$pkg_dir/package.json" "$RAW/vendor/dsh/$pkg/package.json" 2>/dev/null || true
-            done
-        else
-            (cd "$pkg_dir" && find lib -type f ! -name '*.d.ts') | while IFS= read -r f; do
-                [ -f "$RAW/vendor/dsh/$pkg/$f" ] || { cp "$pkg_dir/$f" "$RAW/vendor/dsh/$pkg/$f"; echo "vendor/dsh/$pkg/$f" >> "$RAW/upstream-tests/__files.txt"; }
-            done
-        fi
+            fi
+            echo "vendor/dsh/$pkg/$f" >> "$RAW/upstream-tests/__files.txt"
+        done
+        cp "$pkg_dir/package.json" "$RAW/vendor/dsh/$pkg/package.json" 2>/dev/null || true
     done
     # package.json rows for freshly staged packages (the loader may read them)
     for pkg_dir in runtime/spike/vendor/dsh/*@0.1.6-alpha.2; do
@@ -398,6 +400,16 @@ upstream/shims/fs-workspace.js
 upstream/shims/fs-write-stream.js
 upstream/shims/fs-writes.js
 upstream/shims/node-child-process-exec.js
+upstream/shims/node-child-process.js
+upstream/shims/cordis-loader-failure-face.js
+upstream/shims/dsh-client-ui-renderer-client.js
+upstream/shims/node-addon-system-landlock-run.js
+upstream/shims/node-sqlite.js
+upstream/shims/openai-client.js
+upstream/shims/partial-json.js
+upstream/shims/slot-registry.js
+upstream/shims/source-bootstrap-loader-smoke.js
+upstream/shims/string-decoder.js
 upstream/shims/node-http-loopback-client.js
 upstream/shims/node-http-loopback-dispatch.js
 upstream/shims/node-stream-duplex.js

@@ -19,9 +19,12 @@
  */
 import esbuild from 'esbuild';
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync, unlinkSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('../..', import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows .pathname yields '/D:/...' and
+// every join below grows a phantom drive segment (measured 2026-10-06).
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
 const OUT = join(ROOT, 'runtime/spike/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
@@ -301,7 +304,10 @@ const emitPackageAssets = (rel, files) => {
 mkdirSync(OUT, { recursive: true });
 const manifest = { transpiled: [], excluded: {} };
 const specs = walk(TESTS)
-  .map((full) => relative(TESTS, full))
+  // POSIX-normalized: relative() yields backslashes on Windows, which broke
+  // the flat-name split('/') (nested dirs under OUT) and the per-OS filters
+  // below (measured 2026-10-06).
+  .map((full) => relative(TESTS, full).split(sep).join('/'))
   // The client face and the per-OS/native suites are out of this phase's
   // scope (counted exclusions, never silent).
   .filter((rel) => !rel.startsWith('client/'))
