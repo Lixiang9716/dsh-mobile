@@ -1,3 +1,4 @@
+#!/bin/sh
 # run-real-create.sh — the CREATE-mode live demo (windows-test-plan follow-up):
 # scenario `real.create` boots the FULL spine (creation row mounted) on the
 # STAGED real backend, mounts the whale creation client, and runs ONE REAL
