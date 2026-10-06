@@ -1,0 +1,96 @@
+{
+  "id": "pomodoro-clock-card",
+  "plugin": "pomodoro-clock",
+  "version": "1.0.0",
+  "name": "番茄时钟卡片",
+  "description": "显示番茄钟倒计时（mm:ss），提供开始/暂停和重置操作",
+  "type": "card",
+  "state": {
+    "remainingSeconds": {
+      "source": "plugin.remainingSeconds",
+      "type": "number",
+      "description": "当前阶段剩余秒数"
+    },
+    "phase": {
+      "source": "plugin.phase",
+      "type": "string",
+      "description": "当前阶段：focus（专注）或 break（休息）"
+    },
+    "running": {
+      "source": "plugin.running",
+      "type": "boolean",
+      "description": "是否正在计时"
+    }
+  },
+  "layout": {
+    "direction": "vertical",
+    "align": "center",
+    "children": [
+      {
+        "type": "text",
+        "id": "phase-label",
+        "binding": "phase",
+        "style": {
+          "fontSize": 14,
+          "color": "#888888"
+        },
+        "textMap": {
+          "focus": "专注中",
+          "break": "休息中"
+        }
+      },
+      {
+        "type": "text",
+        "id": "countdown",
+        "binding": "remainingSeconds",
+        "format": "mm:ss",
+        "placeholder": "25:00",
+        "style": {
+          "fontSize": 48,
+          "fontWeight": "bold",
+          "fontFamily": "monospace",
+          "color": "#222222"
+        }
+      },
+      {
+        "type": "row",
+        "id": "actions",
+        "spacing": 12,
+        "children": [
+          {
+            "type": "button",
+            "id": "start-button",
+            "label": "开始",
+            "labelMap": {
+              "running": "暂停"
+            },
+            "bindingVisible": "running",
+            "action": {
+              "call": "plugin.start"
+            },
+            "style": {
+              "backgroundColor": "#FF6347",
+              "color": "#FFFFFF",
+              "padding": 10,
+              "borderRadius": 8
+            }
+          },
+          {
+            "type": "button",
+            "id": "reset-button",
+            "label": "重置",
+            "action": {
+              "call": "plugin.reset"
+            },
+            "style": {
+              "backgroundColor": "#EEEEEE",
+              "color": "#333333",
+              "padding": 10,
+              "borderRadius": 8
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
