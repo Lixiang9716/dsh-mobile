@@ -26,9 +26,10 @@ const SCENARIO = 'real.create';
 const AGENT_ID = 'main';
 const SESSION_ID = 's-real-create-0001';
 const CONFIG_PATH = 'llm-live-stream/config.json';
-const PROMPT = '帮我创建一个番茄时钟：目录名 pomodoro-clock，包含 manifest.json、'
-  + 'plugin.js（25 分钟专注 + 5 分钟休息的番茄钟计时逻辑）和 card.json'
-  + '（显示倒计时和开始/重置按钮的卡片）。创建完成后把创建的文件列表告诉我。';
+const PROMPT = '用 write 工具在当前工作区真实创建一个番茄时钟插件：目录 pomodoro-clock/，'
+  + '必须写出三个文件——manifest.json（插件清单）、plugin.js（25 分钟专注 + 5 分钟休息的番茄钟计时逻辑）、'
+  + 'card.json（显示倒计时和开始/重置按钮的卡片）。不要只在回复里给代码：用工具把每个文件写到磁盘上，'
+  + '写完后用 read 工具核对 pomodoro-clock/manifest.json 存在，最后告诉我创建了哪些文件。';
 
 const log = createLogger('real.create.spike');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
@@ -48,29 +49,6 @@ const demand = (cond, reason) => {
   throw new Error(reason);
 };
 
-/** Bus deliveries may arrive before the awaiting half exists — module-scope
- * subscription, buffered, waking pending take() waiters. */
-const queue = [];
-let wake = null;
-let dispatch = null;
-globalThis.__dshBusOnMessage = (line) => {
-  const msg = JSON.parse(line);
-  if (dispatch !== null) return dispatch(msg);
-  queue.push(msg);
-  wake?.();
-};
-const take = (type) => new Promise((resolve, reject) => {
-  const buffered = queue.find((msg) => msg.type === type);
-  if (buffered !== undefined) return resolve(buffered);
-  const timer = setTimeout(() => reject(new Error(`runtime did not deliver ${type} within 60s`)), 60_000);
-  dispatch = (msg) => {
-    if (msg.type !== type) return false;
-    clearTimeout(timer);
-    resolve(msg);
-    return true;
-  };
-  wake = () => {};
-});
 
 /** The staged credential (the llm.live-stream handshake's path). The send
  * lands ASYNCHRONOUSLY after the stage-ready marker, so the read polls until
@@ -151,6 +129,10 @@ const spineOptions = (cfg, containerRoot) => ({
     provider: 'bigmodel',
     model: cfg.model,
     userEndpoint: true,
+    // A reasoning model's first byte can take minutes over the emulator
+    // network — the loop-u2 read-idle guard's 120s default would cut every
+    // attempt mid-thinking (measured: three consecutive 120s cuts).
+    readIdleTimeoutMs: 300_000,
     adapterName: 'bigmodel coding-plan chat-completions (gateway httpFetch, live create demo)',
     transportLabel: 'gateway httpFetch → real bigmodel backend (CREATE-mode live demo)',
     onSse: (info) => {
@@ -165,10 +147,12 @@ const spineOptions = (cfg, containerRoot) => ({
 
 const main = async () => {
   log.debug('main begin', {});
-  const configMsg = await take('runtime.config');
-  const containerRoot = configMsg.containerRoot;
+  // The container root rides a FILE the host stages before the eval (no bus
+  // delivery race): fs scope app IS that root, so a scope-relative read.
+  const { bytes: rootBytes } = await fsRead('app', 'real-create/root.json');
+  const { containerRoot } = JSON.parse(utf8Decode(rootBytes));
   demand(typeof containerRoot === 'string' && containerRoot.startsWith('/'),
-    `profile container not granted: ${JSON.stringify(containerRoot)}`);
+    `profile container not staged: ${JSON.stringify(containerRoot)}`);
 
   const cfg = await readStagedConfig();
   emit('realcreate/config/loaded', { baseUrl: cfg.baseUrl, model: cfg.model });
