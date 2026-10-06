@@ -6,8 +6,11 @@
 // no side effects, no imports beyond node builtins.
 import { join, dirname } from 'node:path';
 import { existsSync, readFileSync, readdirSync, statSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = new URL('../..', import.meta.url).pathname;
+// fileURLToPath, not .pathname: on Windows .pathname yields '/D:/...' and
+// every scandir below grows a phantom drive segment (measured 2026-10-06).
+const ROOT = fileURLToPath(new URL('../..', import.meta.url));
 const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
 
 /** The unvendored-limb stub load (module level for size). The .cjs suffix
@@ -143,7 +146,9 @@ export const BARE_EXTERNAL_PLUGIN = {
   name: 'bare-external',
   setup(build) {
     build.onResolve({ filter: /^[.@a-zA-Z]/ }, (args) => {
-      if (args.path.startsWith('.') || args.path.startsWith('/')) return null;
+      // Absolute paths ride esbuild's own resolution: POSIX ones start with '/'
+      // (outside this filter), Windows drive-letter ones match — else the worker entry was marked external.
+      if (args.path.startsWith('.') || args.path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(args.path)) return null;
       if (args.importer.startsWith(SUBMODULE_ROOT)
           && UNVENDORED_INLINED.some((re) => re.test(args.path))) {
         return { path: `${args.path}.cjs`, namespace: 'unvendored-stub' };
