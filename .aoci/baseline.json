@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-06T20:10:29Z",
+  "updated_at": "2026-10-06T23:39:28Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "07a91b514b08cb64212fd8c620e1530920e85d20fe3794e27a304856d955e025",
-      "size": 435317,
-      "normalized_sha256": "07a91b514b08cb64212fd8c620e1530920e85d20fe3794e27a304856d955e025"
+      "sha256": "ec210e537806801343bd091395394f3971966a2371ada06019d0efbc6c4aeef1",
+      "size": 438084,
+      "normalized_sha256": "ec210e537806801343bd091395394f3971966a2371ada06019d0efbc6c4aeef1"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -1117,9 +1117,9 @@
     },
     "hosts/android/app/src/main/assets/spike/scenario/mic-plane.js": {
       "role": "index",
-      "sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910",
-      "size": 8099,
-      "normalized_sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910"
+      "sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34",
+      "size": 8531,
+      "normalized_sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34"
     },
     "hosts/android/app/src/main/assets/spike/scenario/parity-projector.js": {
       "role": "index",
@@ -1399,9 +1399,21 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
-      "size": 27138,
-      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
+      "sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba",
+      "size": 27560,
+      "normalized_sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/llm-read-idle.js": {
+      "role": "index",
+      "sha256": "aa57a78bcc122a3268a96c5c4d7c977185a61f845771212f79c4bc0ed657fd07",
+      "size": 4149,
+      "normalized_sha256": "aa57a78bcc122a3268a96c5c4d7c977185a61f845771212f79c4bc0ed657fd07"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/llm-retry-pacing.js": {
+      "role": "index",
+      "sha256": "61d65d98c5d406da868c352e3bbc7e15d2c6854d463222b52510a5b59272685b",
+      "size": 6155,
+      "normalized_sha256": "61d65d98c5d406da868c352e3bbc7e15d2c6854d463222b52510a5b59272685b"
     },
     "hosts/android/app/src/main/assets/spike/upstream/llm-route.js": {
       "role": "index",
@@ -1411,9 +1423,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/llm-transport.js": {
       "role": "index",
-      "sha256": "4ac2b269958a78aababe9b29a1806d55a213d080af817f9e7aaa54fd8196a567",
-      "size": 19558,
-      "normalized_sha256": "4ac2b269958a78aababe9b29a1806d55a213d080af817f9e7aaa54fd8196a567"
+      "sha256": "f765f534dfd24089fc9f3addc63eca5cfa34a1362f60bdd037e0e098490a8d82",
+      "size": 22650,
+      "normalized_sha256": "f765f534dfd24089fc9f3addc63eca5cfa34a1362f60bdd037e0e098490a8d82"
     },
     "hosts/android/app/src/main/assets/spike/upstream/model-selection-holder.js": {
       "role": "index",
@@ -1432,6 +1444,12 @@
       "sha256": "9233696db2b68fb46bfad5c926efe04bee2c6f477d78dc9ef35ef933fb854566",
       "size": 5810,
       "normalized_sha256": "9233696db2b68fb46bfad5c926efe04bee2c6f477d78dc9ef35ef933fb854566"
+    },
+    "hosts/android/app/src/main/assets/spike/upstream/retry-telemetry.js": {
+      "role": "index",
+      "sha256": "64f78c21c21629e87a287c21f286959f9cb728b822659b9ba915c95649e75a4f",
+      "size": 3272,
+      "normalized_sha256": "64f78c21c21629e87a287c21f286959f9cb728b822659b9ba915c95649e75a4f"
     },
     "hosts/android/app/src/main/assets/spike/upstream/settings-memory.js": {
       "role": "index",
@@ -1525,9 +1543,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-paths.js": {
       "role": "index",
-      "sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0",
-      "size": 5505,
-      "normalized_sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0"
+      "sha256": "017a00ecfb0f2a46a867001aaf0d09f577d5c352d526a938631da73f0a1cc99f",
+      "size": 5834,
+      "normalized_sha256": "017a00ecfb0f2a46a867001aaf0d09f577d5c352d526a938631da73f0a1cc99f"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-promises-fh.js": {
       "role": "index",
@@ -1561,9 +1579,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-stat.js": {
       "role": "index",
-      "sha256": "01d204c6ba3d5374144a139bd6b571e8a3c39153d2b7d71141fb0dc22d90c943",
-      "size": 11687,
-      "normalized_sha256": "01d204c6ba3d5374144a139bd6b571e8a3c39153d2b7d71141fb0dc22d90c943"
+      "sha256": "594d9a18e53474d1b1f36abde04f3efcf30b4db1f0ff115862bf33fc8e531410",
+      "size": 12879,
+      "normalized_sha256": "594d9a18e53474d1b1f36abde04f3efcf30b4db1f0ff115862bf33fc8e531410"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/fs-workspace-rename.js": {
       "role": "index",
@@ -1915,9 +1933,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/timers.js": {
       "role": "index",
-      "sha256": "fd95533fd818da5a2bf5b6a7eb640699e39120ce86f9b1c38a095176dd669845",
-      "size": 9333,
-      "normalized_sha256": "fd95533fd818da5a2bf5b6a7eb640699e39120ce86f9b1c38a095176dd669845"
+      "sha256": "8115e854e8f533150e861e7c6d25e79e9b4b6d39eeffb00fe55fc93d6034866d",
+      "size": 11131,
+      "normalized_sha256": "8115e854e8f533150e861e7c6d25e79e9b4b6d39eeffb00fe55fc93d6034866d"
     },
     "hosts/android/app/src/main/assets/spike/upstream/shims/undici.js": {
       "role": "index",
@@ -2027,6 +2045,12 @@
       "size": 5739,
       "normalized_sha256": "b717d727b11bedf34af72c29ad5815cdfee98b7bb98596d8e5468e325477d3a0"
     },
+    "hosts/android/app/src/main/assets/spike/upstream/tool-path-anchor.js": {
+      "role": "index",
+      "sha256": "9e579f24fa1d08eb3860968d5612d95e75709a2de6bad7d91494fe6a08aab70e",
+      "size": 3283,
+      "normalized_sha256": "9e579f24fa1d08eb3860968d5612d95e75709a2de6bad7d91494fe6a08aab70e"
+    },
     "hosts/android/app/src/main/assets/spike/upstream/tool-present.js": {
       "role": "index",
       "sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2",
@@ -2035,9 +2059,9 @@
     },
     "hosts/android/app/src/main/assets/spike/upstream/turn-recovery.js": {
       "role": "index",
-      "sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07",
-      "size": 4980,
-      "normalized_sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07"
+      "sha256": "90becf160e63761708e263abf51e4a983d23e0ece80d19bfa261e2cd134e84c4",
+      "size": 5403,
+      "normalized_sha256": "90becf160e63761708e263abf51e4a983d23e0ece80d19bfa261e2cd134e84c4"
     },
     "hosts/android/app/src/main/assets/spike/upstream/turn-watchdog.js": {
       "role": "index",
@@ -2473,9 +2497,9 @@
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/MainActivity.kt": {
       "role": "index",
-      "sha256": "dbcff904f9f9bbc4a715e239bb8192fa1f2c819a884132836d49315dbc2c85a9",
-      "size": 21752,
-      "normalized_sha256": "dbcff904f9f9bbc4a715e239bb8192fa1f2c819a884132836d49315dbc2c85a9"
+      "sha256": "ca6281d3dfa0b158f6fe8a4dc4d713d66edb9e748db8680b5a066f3dc8348cb2",
+      "size": 21758,
+      "normalized_sha256": "ca6281d3dfa0b158f6fe8a4dc4d713d66edb9e748db8680b5a066f3dc8348cb2"
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/MicPrimitives.kt": {
       "role": "index",
