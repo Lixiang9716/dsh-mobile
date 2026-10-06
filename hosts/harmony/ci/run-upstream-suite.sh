@@ -44,7 +44,10 @@ if [ "${1:-}" = "--all" ]; then
     LIMIT=${2:-1000000}
     [ -f "$CORPUS/manifest.json" ] \
         || die "transpiled corpus missing ($CORPUS/manifest.json) — run test/upstream-suite/transpile.mjs first"
-    SPECS=$(node -e "const m = require('$CORPUS/manifest.json'); console.log(m.transpiled.slice(0, $LIMIT).join('\n'));")
+    # Windows node cannot require a POSIX-form path (measured): the mixed
+    # form (cygpath -m) reads on both hosts.
+    CORPUS_NATIVE=$(command -v cygpath >/dev/null 2>&1 && cygpath -m "$CORPUS" || printf '%s' "$CORPUS")
+    SPECS=$(node -e "const m = require('$CORPUS_NATIVE/manifest.json'); console.log(m.transpiled.slice(0, $LIMIT).join('\n'));")
 else
     SPECS="$*"
 fi

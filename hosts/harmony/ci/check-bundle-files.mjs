@@ -78,7 +78,29 @@ const diskFiles = () => {
 };
 
 const listed = new Set(bundleFiles());
-const onDisk = diskFiles();
+let onDisk = diskFiles();
+
+// The upstream-suite job stages the transpiled corpus + test closure into
+// rawfile/spike as UNTRACKED extras (vendor-official.sh --suite-extras; the
+// extras manifest __files.txt lists them) — the suite HAP needs them beside
+// the pinned bundle, while BUNDLE_FILES (the tracked tree) never lists them
+// by design. When the extras manifest is present, those paths are counted
+// SKIPS (surfaced, never silent) instead of missing-from-list drifts — the
+// same posture the closures gate applies to untracked-but-closure files.
+const extrasManifest = join(rawRoot, 'upstream-tests', '__files.txt');
+let extrasSkipped = 0;
+try {
+  const nl = String.fromCharCode(10);
+  const extras = readFileSync(extrasManifest, 'utf8').split(nl)
+    .map((line) => line.trim()).filter((line) => line.length > 0);
+  extras.push('upstream-tests/__files.txt'); // the manifest itself: staged beside the extras
+  const extraSet = new Set(extras);
+  // Pure extras only: a file BUNDLE_FILES also lists stays on disk (it is a
+  // tracked entry — some suite-closure vendor files are).
+  const before = onDisk.length;
+  onDisk = onDisk.filter((rel) => listed.has(rel) || !extraSet.has(rel));
+  extrasSkipped = before - onDisk.length;
+} catch { /* no extras manifest — the standard tree */ }
 
 // A hidden file can never reach the materialized bundle: the HAP packer
 // drops dotfiles at packaging (measured 2026-09-30 — the pi-ai providers
