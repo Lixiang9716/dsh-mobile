@@ -118,6 +118,10 @@ const spineOptions = (cfg, containerRoot) => ({
   onEvent: emit,
   container: {
     cwd: containerRoot,
+    // The scope root == the container: the shell tool's workspace gate
+    // demands the workspace start with __dshProfileScopeRoot, and this
+    // seat's fs scope root IS the container (the bare-spelling posture).
+    scopeRoot: containerRoot,
     tmpdir: `${containerRoot}/tmp`,
     home: `${containerRoot}/home`,
     env: {},
