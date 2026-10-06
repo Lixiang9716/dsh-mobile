@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-06T23:39:28Z",
+  "updated_at": "2026-10-06T23:44:55Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "ec210e537806801343bd091395394f3971966a2371ada06019d0efbc6c4aeef1",
-      "size": 438084,
-      "normalized_sha256": "ec210e537806801343bd091395394f3971966a2371ada06019d0efbc6c4aeef1"
+      "sha256": "b2e486922ea0e0197098e1f659949801a1f4caa5be79a269b45f7b2acb8c2d67",
+      "size": 440785,
+      "normalized_sha256": "b2e486922ea0e0197098e1f659949801a1f4caa5be79a269b45f7b2acb8c2d67"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -2563,9 +2563,15 @@
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/SessionServe.kt": {
       "role": "index",
-      "sha256": "0a15750dae9127a8fa40075328e400fa22e11b3c87ce6d9c021dee5375f85a4a",
-      "size": 23446,
-      "normalized_sha256": "0a15750dae9127a8fa40075328e400fa22e11b3c87ce6d9c021dee5375f85a4a"
+      "sha256": "328198e0f4833c04c451d552dedf0cf990fb9b2da39c504c35b01ce534b5573d",
+      "size": 20516,
+      "normalized_sha256": "328198e0f4833c04c451d552dedf0cf990fb9b2da39c504c35b01ce534b5573d"
+    },
+    "hosts/android/app/src/main/java/com/dshmobile/spike/SessionServeConfig.kt": {
+      "role": "index",
+      "sha256": "5d985d6da86ee5a369fd6ea503a0e1ef7d0ee8bf6d3831e12c4c8447ffb45213",
+      "size": 4364,
+      "normalized_sha256": "5d985d6da86ee5a369fd6ea503a0e1ef7d0ee8bf6d3831e12c4c8447ffb45213"
     },
     "hosts/android/app/src/main/java/com/dshmobile/spike/SessionWriteAssetOrder.kt": {
       "role": "index",
@@ -2665,9 +2671,9 @@
     },
     "hosts/android/ci/run-android-full.sh": {
       "role": "index",
-      "sha256": "f565993d916e091c29d952e48aca47f587645b44553a214abe80e92e3536d22b",
-      "size": 22016,
-      "normalized_sha256": "f565993d916e091c29d952e48aca47f587645b44553a214abe80e92e3536d22b"
+      "sha256": "4d70c728ea747ab90e1840b00908b8686ddabaadf59515528c0014b0fff9d998",
+      "size": 24624,
+      "normalized_sha256": "4d70c728ea747ab90e1840b00908b8686ddabaadf59515528c0014b0fff9d998"
     },
     "hosts/android/ci/run-ble.sh": {
       "role": "index",
@@ -2725,9 +2731,9 @@
     },
     "hosts/android/ci/stage-spine-closure.sh": {
       "role": "index",
-      "sha256": "d0120a1d3318b2469056675102f9f2b6e2c0513ed1b7513597290fd8bed8ea87",
-      "size": 30854,
-      "normalized_sha256": "d0120a1d3318b2469056675102f9f2b6e2c0513ed1b7513597290fd8bed8ea87"
+      "sha256": "bf6b26a495a27c158dc23204acbcad5a9e9f297d26528bea64478d9523c490fb",
+      "size": 30900,
+      "normalized_sha256": "bf6b26a495a27c158dc23204acbcad5a9e9f297d26528bea64478d9523c490fb"
     },
     "hosts/android/gradle.properties": {
       "role": "index",
@@ -2801,15 +2807,15 @@
     },
     "hosts/harmony/ci/check-bundle-files.mjs": {
       "role": "index",
-      "sha256": "51540f329fb0807f7c954fb38604cec42f92b8f71c3f5d2c226e8da86d023abb",
-      "size": 4821,
-      "normalized_sha256": "51540f329fb0807f7c954fb38604cec42f92b8f71c3f5d2c226e8da86d023abb"
+      "sha256": "00fa92328a54c7dfaeb479c30fc3ae60eab0fcdfe90ba8e633b6d967bb0423dd",
+      "size": 6275,
+      "normalized_sha256": "00fa92328a54c7dfaeb479c30fc3ae60eab0fcdfe90ba8e633b6d967bb0423dd"
     },
     "hosts/harmony/ci/drive-binding.mjs": {
       "role": "index",
-      "sha256": "570cd466b813d2fd4647620cf8e4f1c8b6dc2ff36f3994f880d0397db919a59a",
-      "size": 13499,
-      "normalized_sha256": "570cd466b813d2fd4647620cf8e4f1c8b6dc2ff36f3994f880d0397db919a59a"
+      "sha256": "791987ef3d78a5adcba3e5b4bd3b04039c7bbbdff35975655714fda39bd50600",
+      "size": 13944,
+      "normalized_sha256": "791987ef3d78a5adcba3e5b4bd3b04039c7bbbdff35975655714fda39bd50600"
     },
     "hosts/harmony/ci/drive-device-plane.mjs": {
       "role": "index",
@@ -2855,15 +2861,15 @@
     },
     "hosts/harmony/ci/run-host-e2e.sh": {
       "role": "index",
-      "sha256": "1a666c6c35e30677c688e0d784c716631c7fe46a302438ba2f5e49a9989e5802",
-      "size": 10173,
-      "normalized_sha256": "1a666c6c35e30677c688e0d784c716631c7fe46a302438ba2f5e49a9989e5802"
+      "sha256": "f29139463c86dcc624f53d1a1e22d5ef78ef74ca14dca57a203111322a4bcfd7",
+      "size": 11035,
+      "normalized_sha256": "f29139463c86dcc624f53d1a1e22d5ef78ef74ca14dca57a203111322a4bcfd7"
     },
     "hosts/harmony/ci/run-live-llm.sh": {
       "role": "index",
-      "sha256": "bf5a1180f42caf15f65784bf36c67bef31790039ab0cb3585edd5a6e1d9ea3e2",
-      "size": 16226,
-      "normalized_sha256": "bf5a1180f42caf15f65784bf36c67bef31790039ab0cb3585edd5a6e1d9ea3e2"
+      "sha256": "7caca57a843a1df3ca5829a855d90b92a1f2bf7371d65a17f080927d70c7709d",
+      "size": 16723,
+      "normalized_sha256": "7caca57a843a1df3ca5829a855d90b92a1f2bf7371d65a17f080927d70c7709d"
     },
     "hosts/harmony/ci/run-mic-plane.sh": {
       "role": "index",
@@ -2877,11 +2883,29 @@
       "size": 4752,
       "normalized_sha256": "c0e9a9d811523f993605457ba9c865b337a741dd17ab28ad103423c1b5bb0ae4"
     },
+    "hosts/harmony/ci/run-real-agent.sh": {
+      "role": "index",
+      "sha256": "df91f8bba121c34f2f134363485e981e61c21ef66eb7ba58b1e429e72c9dd7b1",
+      "size": 14202,
+      "normalized_sha256": "df91f8bba121c34f2f134363485e981e61c21ef66eb7ba58b1e429e72c9dd7b1"
+    },
+    "hosts/harmony/ci/run-real-create.sh": {
+      "role": "index",
+      "sha256": "70e3afc76f8d4e119bfe47fb6884e2815f517fc84dbaa3c667f394d8efc8a33c",
+      "size": 13508,
+      "normalized_sha256": "70e3afc76f8d4e119bfe47fb6884e2815f517fc84dbaa3c667f394d8efc8a33c"
+    },
+    "hosts/harmony/ci/run-upstream-parity.sh": {
+      "role": "index",
+      "sha256": "780eba4f477daf3dabaf788d44d9f5e8cc71bcec71470a2ecde669f4bbd7bd8e",
+      "size": 4961,
+      "normalized_sha256": "780eba4f477daf3dabaf788d44d9f5e8cc71bcec71470a2ecde669f4bbd7bd8e"
+    },
     "hosts/harmony/ci/run-upstream-suite.sh": {
       "role": "index",
-      "sha256": "a1ddc0a2186f0a995238421423d2bffdfe0eca7a0ccd5b9b8ff15ca47ecfb113",
-      "size": 9329,
-      "normalized_sha256": "a1ddc0a2186f0a995238421423d2bffdfe0eca7a0ccd5b9b8ff15ca47ecfb113"
+      "sha256": "1a7791f9563ce5a0ebb0be7f74bac52090ef681d21eeb984aed622d6e3381635",
+      "size": 10099,
+      "normalized_sha256": "1a7791f9563ce5a0ebb0be7f74bac52090ef681d21eeb984aed622d6e3381635"
     },
     "hosts/harmony/ci/run-whale-mount.sh": {
       "role": "index",
@@ -2891,9 +2915,9 @@
     },
     "hosts/harmony/ci/vendor-official.sh": {
       "role": "index",
-      "sha256": "e2bf6ba76efa5b08dc4ce161af9a06d244d1b28f004f4e0fd1c74401d4ce103a",
-      "size": 36708,
-      "normalized_sha256": "e2bf6ba76efa5b08dc4ce161af9a06d244d1b28f004f4e0fd1c74401d4ce103a"
+      "sha256": "74a115760361389b2552b30d1866ec8cd016bc3513af33f359acd5ace39fcecb",
+      "size": 38628,
+      "normalized_sha256": "74a115760361389b2552b30d1866ec8cd016bc3513af33f359acd5ace39fcecb"
     },
     "hosts/harmony/entry/build-profile.json5": {
       "role": "index",
