@@ -102,7 +102,7 @@ const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
  * (the streaming body bridge, model/HttpFetch.ets) — 6 available / 3
  * unavailable. The frozen m5 phase keeps its 5/4 v1 descriptor. */
 export const OFFICIAL_DESCRIPTOR = '{"available":["fsRead","fsWrite","fsScope",' +
-  '"notify","presentApproval","httpFetch"],' +
+  '"notify","presentApproval","httpFetch","timerSchedule","timerCancel"],' +
   '"unavailable":["presentPicker","keychainGet","keychainSet"]}';
 
 interface BootMessage {

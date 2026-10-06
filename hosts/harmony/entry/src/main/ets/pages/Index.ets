@@ -1476,6 +1476,17 @@ struct Index {
     this.materializeBundle(ctx)
       .then((root: string): Promise<number> => {
         this.verdict = 'real-create leg: staging credentials...';
+        // The container root rides a FILE, not the bus: the scenario reads it
+        // through fs scope app with no delivery race (the bus delivery proved
+        // racy against the runtime's boot on this leg).
+        const rootDir: string = fsRoot + '/real-create';
+        if (!fs.accessSync(rootDir)) {
+          fs.mkdirSync(rootDir, true);
+        }
+        const rootFile: string = rootDir + '/root.json';
+        const file = fs.openSync(rootFile, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
+        fs.writeSync(file.fd, '{"containerRoot":' + JSON.stringify(rootDir) + '}');
+        fs.closeSync(file.fd);
         LlmConfigStaging.prepare(configPath);
         phase.beginRealCreate(ctx, root, ctx.cacheDir + '/dsh-real-create-capture.log', fsRoot);
         installLegacyRoutes(this.carrier, root + WHALE_WEB_DIR);

@@ -162,7 +162,7 @@ run_attempt() {
     # The verdict, bounded; the screen is re-woken while waiting because a
     # sleeping screen stalls the ArkWeb mount (observed: one attempt died at
     # the mount with no request ever sent).
-    deadline=$(( $(date +%s) + 480 ))
+    deadline=$(( $(date +%s) + 900 ))
     next_wake=0
     while :; do
         grep -q "dsh.spike.verdict: $LEG " "$STREAM" && break

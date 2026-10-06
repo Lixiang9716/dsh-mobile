@@ -55,6 +55,7 @@ import { wantAgent } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { HttpPrimitive } from './HttpPrimitive';
+import { TimerPrimitive } from './TimerPrimitive';
 import { KeychainPrimitives } from './KeychainPrimitives';
 import { PickerPrimitives } from './PickerPrimitives';
 import { DevicePlanePrimitives } from './DevicePlanePrimitives';
@@ -202,6 +203,9 @@ export class HostPhase {
   onPhaseComplete: (passed: boolean) => void = (passed: boolean): void => {};
   private seedPath: string = '';
   private http: HttpPrimitive = new HttpPrimitive();
+  private timer: TimerPrimitive = new TimerPrimitive((eventJson: string): void => {
+    this.deliverEvent(eventJson);
+  });
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
   private device: DevicePlanePrimitives | null = null;
@@ -809,6 +813,10 @@ export class HostPhase {
     } else if (name === 'httpFetch.abort') {
       const target = typeof parsed.callId === 'number' ? parsed.callId : callId;
       this.http.abort(target);
+    } else if (name === 'timerSchedule') {
+      this.timer.schedule(callId, args, this.settleFn());
+    } else if (name === 'timerCancel') {
+      this.timer.cancel(callId, args, this.settleFn());
     } else if (name === 'presentPicker') {
       this.picker?.present(callId, args, this.settleFn());
     } else if (name === 'keychainGet') {

@@ -21,7 +21,12 @@ import { BusinessError } from '@kit.BasicServicesKit';
 const CHUNK_LIMIT = 16 * 1024;
 const BODY_PREFIX = 'body:';
 const CONNECT_TIMEOUT_MS = 15000;
-const READ_TIMEOUT_MS = 30000;
+// The read timeout is the BETWEEN-BYTES gap, not the whole request: a
+// reasoning model over the streaming llm route can think for minutes before
+// the first SSE byte (measured 2026-10-06: glm-5.3-flash + the 16-tool
+// creation payload cut three consecutive attempts at 30s — the transport
+// retried and hung the turn). 5 min of silence is the honest stall line.
+const READ_TIMEOUT_MS = 300000;
 
 interface FetchArgs {
   url?: string;
