@@ -410,13 +410,51 @@ const micEvent = (ev) => {
  * precedent): yields `{ streamId, kind: "frame", seq, bytes }` per chunk,
  * then the single `{ streamId, kind: "end", reason }` event as the last
  * value (delivered once; the iteration completes after it). */
-export const micFrames = (streamId) => {
+/** The idle-tick fire dispatcher: one persistent gateway-event listener
+ * resolving whichever armed tick's timerId fired (no per-poll listener
+ * leak). */
+const pendingTicks = new Map();
+let tickListenerReady = false;
+const ensureTickListener = () => {
+  if (tickListenerReady) return;
+  tickListenerReady = true;
+  onEvent((ev) => {
+    if (ev?.event !== 'timer.fire') return;
+    const resolve = pendingTicks.get(ev.timerId);
+    if (resolve !== undefined) {
+      pendingTicks.delete(ev.timerId);
+      resolve();
+    }
+  });
+};
+
+export const micFrames = (streamId, opts = {}) => {
   log.debug('micFrames subscribe', { streamId });
   const st = micStreams.get(streamId);
   if (!st) throw new GatewayError('invalid', 'mic.frame', `unknown stream ${streamId}`);
+  // The idle deadline: a mic-less image's capturer starts but readData never
+  // fires — without this race the iterator hangs forever INSIDE next() (the
+  // window deadline above is only checked BETWEEN frames). The tick rides
+  // the GATEWAY timerSchedule primitive (never globalThis.setTimeout — a
+  // bare plane runtime has no timers shim), and the fire resolves the tick
+  // through the gateway event channel; the consumer filters the null.
+  const idleMs = opts.idleTimeoutMs ?? 0;
   const next = async () => {
     while (st.frames.length === 0 && st.end === null) {
-      await new Promise((resolve) => (st.wake = resolve));
+      const wake = new Promise((resolve) => (st.wake = resolve));
+      let tick = null;
+      if (idleMs > 0) {
+        ensureTickListener();
+        tick = timerSchedule(idleMs, { tag: 'micFrames:idle' }).then(({ timerId }) => new Promise((resolve) => {
+          pendingTicks.set(timerId, () => resolve(null));
+        }));
+      }
+      const woken = tick ? await Promise.race([wake, tick]) : await wake;
+      if (tick) {
+        timerCancel(pendingTicks.get(tick) ?? 0).catch(() => {});
+        pendingTicks.clear();
+      }
+      if (woken === null) return { value: { kind: 'idle-timeout' }, done: false };
     }
     if (st.frames.length > 0) return { value: st.frames.shift(), done: false };
     if (!st.endSeen) {

@@ -228,10 +228,34 @@ export class MicPrimitives {
     const id = 'mic:' + Date.now().toString(16) + '-'
       + Math.floor(Math.random() * 0x100000000).toString(16);
     const s = new MicStream(id, frameBytes);
+    // The honest-deadline guard: a mic-less SDK image's createAudioCapturer
+    // promise may NEVER settle (neither resolve nor reject — measured on the
+    // Windows-host emulator 2026-10-06), leaving the micStart call and the
+    // whole scenario hung. The deadline settles the honest `null` — a value,
+    // like the OS-layer refusal — and marks the stream stopped so a late
+    // settle is a no-op.
+    let settled = false;
+    const settleOnce = (payload: string, ok: boolean): void => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      settle(callId, payload, ok);
+    };
+    const deadline = setTimeout((): void => {
+      if (!settled) {
+        s.stopped = true;
+        hilog.warn(0x0000, TAG, 'micStart: the capturer never settled within 15s '
+          + '— settling the honest null (mic-less image posture)');
+        settleOnce('null', true);
+      }
+    }, 15_000);
     audio.createAudioCapturer(options).then((created: audio.AudioCapturer): Promise<void> => {
       s.capturer = created;
       return created.start();
     }).then((): void => {
+      clearTimeout(deadline);
+      settled = true;
       s.startedAt = Date.now();
       this.streams.set(id, s);
       // settle FIRST, then install readData: the hostSettle enters the
@@ -243,6 +267,8 @@ export class MicPrimitives {
         this.capture(s, buffer);
       });
     }).catch((err: BusinessError): void => {
+      clearTimeout(deadline);
+      settled = true;
       reject(callId, settle, 'unavailable', 'micStart',
         'capturer refused: ' + (err.message ?? 'unknown'));
     });

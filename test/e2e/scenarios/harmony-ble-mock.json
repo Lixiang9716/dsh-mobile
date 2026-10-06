@@ -1,5 +1,5 @@
 {
-  "scenario": "harmony.ble.plane",
+  "scenario": "ble.plane",
   "extract": {
     "prefix": "dsh.spike.log:"
   },
