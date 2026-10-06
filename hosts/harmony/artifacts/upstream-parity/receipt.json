@@ -1,0 +1,8 @@
+{
+  "host": "harmonyos emulator dsh_phone (Windows host, 127.0.0.1:5559)",
+  "engine": "quickjs-ng",
+  "leg": "upstream.parity (in-app scripted mock-llm route, ParityMockRoute)",
+  "golden": "test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "parityEvents": 25,
+  "comparator": "runtime/spike/ci/parity-compare.mjs"
+}
