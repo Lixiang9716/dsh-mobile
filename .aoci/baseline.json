@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-06T23:50:16Z",
+  "updated_at": "2026-10-06T23:58:50Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "4db34b7d4dbee81ca449387e23e6d78ec69e3dc96e24c4cac6d7d8f1be600f01",
-      "size": 443207,
-      "normalized_sha256": "4db34b7d4dbee81ca449387e23e6d78ec69e3dc96e24c4cac6d7d8f1be600f01"
+      "sha256": "f2819d9c130e462d952dff739958244ecb8397a66b9d5c63c8338de6c6f982d2",
+      "size": 446766,
+      "normalized_sha256": "f2819d9c130e462d952dff739958244ecb8397a66b9d5c63c8338de6c6f982d2"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -3575,9 +3575,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/composer-web-live.js": {
       "role": "index",
-      "sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0",
-      "size": 23082,
-      "normalized_sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0"
+      "sha256": "8f08e4bf0db0f5b3c28760975800e68875f761a165bc9c4c60b73805d1daaf00",
+      "size": 23013,
+      "normalized_sha256": "8f08e4bf0db0f5b3c28760975800e68875f761a165bc9c4c60b73805d1daaf00"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/device-plane.js": {
       "role": "index",
@@ -3599,9 +3599,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/harmony-composer-live-write.js": {
       "role": "index",
-      "sha256": "ab1e2493e26d95f43567785ae60ff6d2671c34e1e9ee1b783e86126c720386cd",
-      "size": 9702,
-      "normalized_sha256": "ab1e2493e26d95f43567785ae60ff6d2671c34e1e9ee1b783e86126c720386cd"
+      "sha256": "6bc40c7a68cf488565dfb1d2ae36bbcbf4286889f7948be7ef4f778400bec39c",
+      "size": 9577,
+      "normalized_sha256": "6bc40c7a68cf488565dfb1d2ae36bbcbf4286889f7948be7ef4f778400bec39c"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/harmony-httpfetch-streaming.js": {
       "role": "index",
@@ -3629,9 +3629,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/mic-plane.js": {
       "role": "index",
-      "sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910",
-      "size": 8099,
-      "normalized_sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910"
+      "sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34",
+      "size": 8531,
+      "normalized_sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/officialweb-web-live.js": {
       "role": "index",
@@ -3650,6 +3650,18 @@
       "sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad",
       "size": 3966,
       "normalized_sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/real-agent-loop.js": {
+      "role": "index",
+      "sha256": "af962de52fbb702a8c580d3272c96ff236dd9772374adde787601991eb178faf",
+      "size": 14206,
+      "normalized_sha256": "af962de52fbb702a8c580d3272c96ff236dd9772374adde787601991eb178faf"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/real-create.js": {
+      "role": "index",
+      "sha256": "8359c26edcc2687bc6bf94529025813e1a947d43d4b48120f950ea9276339b90",
+      "size": 8966,
+      "normalized_sha256": "8359c26edcc2687bc6bf94529025813e1a947d43d4b48120f950ea9276339b90"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/scenario-verdict.js": {
       "role": "index",
@@ -3863,9 +3875,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/system-plugins/dsh-shell-wasm/index.js": {
       "role": "index",
-      "sha256": "56d956d6eb8ed1a2ba66b6056635aabaa828f74e87fe761566489a31d89d6086",
-      "size": 10747,
-      "normalized_sha256": "56d956d6eb8ed1a2ba66b6056635aabaa828f74e87fe761566489a31d89d6086"
+      "sha256": "f4e8a12be72a75a9b6306216f6cc54e70ef8b52af5de7374606dfdcd45d3e1df",
+      "size": 12894,
+      "normalized_sha256": "f4e8a12be72a75a9b6306216f6cc54e70ef8b52af5de7374606dfdcd45d3e1df"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/system-plugins/dsh-shell-wasm/manifest.json": {
       "role": "index",
@@ -3917,9 +3929,21 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
-      "size": 27138,
-      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
+      "sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba",
+      "size": 27560,
+      "normalized_sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/llm-read-idle.js": {
+      "role": "index",
+      "sha256": "aa57a78bcc122a3268a96c5c4d7c977185a61f845771212f79c4bc0ed657fd07",
+      "size": 4149,
+      "normalized_sha256": "aa57a78bcc122a3268a96c5c4d7c977185a61f845771212f79c4bc0ed657fd07"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/llm-retry-pacing.js": {
+      "role": "index",
+      "sha256": "61d65d98c5d406da868c352e3bbc7e15d2c6854d463222b52510a5b59272685b",
+      "size": 6155,
+      "normalized_sha256": "61d65d98c5d406da868c352e3bbc7e15d2c6854d463222b52510a5b59272685b"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/llm-route.js": {
       "role": "index",
@@ -3929,9 +3953,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/llm-transport.js": {
       "role": "index",
-      "sha256": "4ac2b269958a78aababe9b29a1806d55a213d080af817f9e7aaa54fd8196a567",
-      "size": 19558,
-      "normalized_sha256": "4ac2b269958a78aababe9b29a1806d55a213d080af817f9e7aaa54fd8196a567"
+      "sha256": "f765f534dfd24089fc9f3addc63eca5cfa34a1362f60bdd037e0e098490a8d82",
+      "size": 22650,
+      "normalized_sha256": "f765f534dfd24089fc9f3addc63eca5cfa34a1362f60bdd037e0e098490a8d82"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/model-selection-holder.js": {
       "role": "index",
@@ -3950,6 +3974,12 @@
       "sha256": "9233696db2b68fb46bfad5c926efe04bee2c6f477d78dc9ef35ef933fb854566",
       "size": 5810,
       "normalized_sha256": "9233696db2b68fb46bfad5c926efe04bee2c6f477d78dc9ef35ef933fb854566"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/retry-telemetry.js": {
+      "role": "index",
+      "sha256": "64f78c21c21629e87a287c21f286959f9cb728b822659b9ba915c95649e75a4f",
+      "size": 3272,
+      "normalized_sha256": "64f78c21c21629e87a287c21f286959f9cb728b822659b9ba915c95649e75a4f"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/settings-memory.js": {
       "role": "index",
@@ -3993,6 +4023,12 @@
       "size": 10806,
       "normalized_sha256": "75fda97572a5f5104278a5ab46c2884db9818b9e1fee897be8464ab5a1f3b562"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/cordis-loader-failure-face.js": {
+      "role": "index",
+      "sha256": "84b6085d8dd737e561e7072d0a5e54b123c07960e4bdb5a60bd0fb41023762a0",
+      "size": 8782,
+      "normalized_sha256": "84b6085d8dd737e561e7072d0a5e54b123c07960e4bdb5a60bd0fb41023762a0"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/crypto.js": {
       "role": "index",
       "sha256": "f646dd9d980c648f92f1df3f351f5cdfe910cac65237cb10b1787ceaa01980fa",
@@ -4004,6 +4040,12 @@
       "sha256": "1e6756251e59b0611461ed851b3d0749d2106776edf4345c5235f60b4d23a1ea",
       "size": 4425,
       "normalized_sha256": "1e6756251e59b0611461ed851b3d0749d2106776edf4345c5235f60b4d23a1ea"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/dsh-client-ui-renderer-client.js": {
+      "role": "index",
+      "sha256": "e3afa8ea55d1eb49cb2f214c995ac8e0ccc720a0ae6c180b9b2af73dab7b56d1",
+      "size": 877,
+      "normalized_sha256": "e3afa8ea55d1eb49cb2f214c995ac8e0ccc720a0ae6c180b9b2af73dab7b56d1"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/dsh-session-persistence.js": {
       "role": "index",
