@@ -1,5 +1,5 @@
 {
-  "scenario": "harmony.ble.plane",
+  "scenario": "ble.plane",
   "extract": {
     "prefix": "dsh.spike.log:"
   },
@@ -13,7 +13,7 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 24,
+        "available": 26,
         "unavailable": 2,
         "blePlane": 8
       }

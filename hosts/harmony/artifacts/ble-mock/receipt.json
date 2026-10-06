@@ -1,0 +1,13 @@
+{
+  "host": "harmony",
+  "udid": "127.0.0.1:5555 (dsh_phone emulator)",
+  "runner": "hosts/harmony/ci/run-ble.sh",
+  "phase": "harmony.ble.plane (mock)",
+  "launch": "dsh_phone emulator, --ps dsh.e2e.leg ble.plane --ps dsh.e2e.ble.mock true (Debug)",
+  "tree": "origin/main 1f536715ac41 (dirty working tree at receipt time)",
+  "engine": "0.17.0+fork-tostring+async-context+tc39+promise-mark",
+  "scenarios": [
+    { "manifest": "harmony-ble-mock", "verdict": "verdict-harmony-ble-mock.json", "pass": true }
+  ],
+  "producedAt": "2026-10-06T08:12:27Z"
+}

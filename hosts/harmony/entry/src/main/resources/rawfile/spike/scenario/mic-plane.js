@@ -49,14 +49,25 @@ const collectWindow = async (streamId) => {
   log.debug('frame window open', { streamId });
   const frames = [];
   let end = null;
+  let idleCut = false;
   const deadline = Date.now() + WINDOW_MS;
-  for await (const item of micFrames(streamId)) {
+  for await (const item of micFrames(streamId, { idleTimeoutMs: WINDOW_MS })) {
     if (item.kind === 'end') {
       end = item;
       break;
     }
+    if (item.kind === 'idle-timeout') {
+      // No frame ever arrived: the mic-less image posture — the demand
+      // below fails the run honestly (a red verdict, never a hang).
+      idleCut = true;
+      break;
+    }
     frames.push(item);
     if (frames.length >= MIN_FRAMES || Date.now() >= deadline) break;
+  }
+  if (idleCut) {
+    emit('mic.idle/cut', { window: WINDOW_MS });
+    demand(frames.length >= 1, 'no mic frame arrived within the window (idle cut)');
   }
   return { frames, end };
 };
