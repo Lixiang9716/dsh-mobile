@@ -67,6 +67,10 @@ const LEG_MIC_PLANE: string = 'mic.plane';
 /** The windows-test-plan T4/T5 leg (`--ps dsh.e2e.leg real.agent.loop`):
  * the spine + tools on the STAGED real backend, the probes in-scenario. */
 const LEG_REAL_AGENT: string = 'real.agent.loop';
+/** The upstream-suite leg (`--ps dsh.e2e.leg upstream.suite` + `--ps
+ * dsh.e2e.spec <file>`): ONE transpiled spec per launch, the QuickJS-shaped
+ * harness runs it in the on-device runtime. */
+const LEG_UPSTREAM_SUITE: string = 'upstream.suite';
 /** The CREATE-mode live demo (`--ps dsh.e2e.leg real.create`): the whale
  * creation client on the STAGED real backend — one Pomodoro-clock creation
  * turn, streamed into the page. A demo: no one-to-one manifest. */
@@ -1260,6 +1264,9 @@ struct Index {
     } else if (leg === LEG_REAL_CREATE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runRealCreateLeg();
+    } else if (leg === LEG_UPSTREAM_SUITE) {
+      hilog.info(0x0000, TAG, 'leg %{public}s selected at launch, spec %{public}s', leg, E2eLeg.getSpec());
+      this.runSuiteLeg(E2eLeg.getSpec());
     } else {
       this.verdict = 'FAIL (unknown dsh.e2e.leg: ' + leg + ')';
       hilog.error(0x0000, TAG, 'unknown dsh.e2e.leg: %{public}s', leg);
