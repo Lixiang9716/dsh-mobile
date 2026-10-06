@@ -49,6 +49,7 @@ import { OfficialPhase } from '../model/OfficialPhase';
 import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
 import { NextWebPhase } from '../model/NextWebPhase';
 import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
+import { CardPlayerRoute } from '../model/CardPlayer';
 import { PickerPrimitives } from '../model/PickerPrimitives';
 import { BuildFlavor } from '../model/BuildFlavor';
 
@@ -1196,6 +1197,7 @@ struct ApprovalDialog {
 struct Index {
   @State verdict: string = 'spike: running...';
   @State webUrl: string = '';
+  private realCreatePort: number = CARRIER_BASE_PORT;
   @State approvalTitle: string = '';
   private approvalResolve: ((approved: boolean) => void) | null = null;
   private approvalController: CustomDialogController | null = null;
@@ -1470,6 +1472,12 @@ struct Index {
     phase.onPhaseComplete = (passed: boolean): void => {
       this.verdict = (passed ? 'PASS' : 'FAIL') + ' real.create (demo leg)';
       LlmConfigStaging.cleanup(configPath);
+      // The demo's final face: navigate the mounted web view to the card
+      // player — the CREATED plugin renders and RUNS in the browser.
+      if (passed) {
+        this.webUrl = 'http://127.0.0.1:' + this.realCreatePort
+          + '/card-player?plugin=real-create/pomodoro-clock';
+      }
     };
     phase.pageSink = (text: string): void => {
       this.carrier.sendText(text);
@@ -1503,6 +1511,7 @@ struct Index {
       .then((stagedBytes: number): Promise<number> => {
         hilog.info(0x0000, TAG, 'real-create leg: credentials staged (%{public}d bytes)',
           stagedBytes);
+        new CardPlayerRoute(this.carrier, fsRoot).register();
         return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
           phase.onCarrierListening(port);
           this.webUrl = 'http://127.0.0.1:' + port + '/';
