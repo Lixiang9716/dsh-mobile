@@ -1,3 +1,5 @@
+// dsh:logging-exempt (hilog here is drive/progress evidence only; canonical
+// lines belong to the runtime's mounted logger — the KeychainPrimitives face)
 import { hilog } from '@kit.PerformanceAnalysisKit';
 
 /**
@@ -33,6 +35,7 @@ export class TimerPrimitive {
 
   /** `timerSchedule {delayMs, tag?}` — arm and answer `{timerId}`. */
   schedule(callId: number, args: string, settle: SettleFn): void {
+    hilog.debug(0x0000, TAG, 'timerSchedule call=%{public}d', callId);
     let parsed: Record<string, Object> = {};
     try {
       parsed = JSON.parse(args) as Record<string, Object>;
@@ -50,12 +53,14 @@ export class TimerPrimitive {
       this.deliver('{"event":"timer.fire","timerId":' + timerId + '}');
     }, delayMs);
     this.timeouts.set(timerId, arktsId);
+    hilog.info(0x0000, TAG, 'timer armed id=%{public}d delay=%{public}d', timerId, delayMs);
     settle(callId, '{"timerId":' + timerId + '}', true);
   }
 
   /** `timerCancel {timerId}` — idempotent: an unknown or already-fired id
    * still settles ok. */
   cancel(callId: number, args: string, settle: SettleFn): void {
+    hilog.debug(0x0000, TAG, 'timerCancel call=%{public}d', callId);
     let parsed: Record<string, Object> = {};
     try {
       parsed = JSON.parse(args) as Record<string, Object>;
@@ -70,6 +75,7 @@ export class TimerPrimitive {
       clearTimeout(arktsId);
       this.timeouts.delete(timerId);
     }
+    hilog.info(0x0000, TAG, 'timer cancelled id=%{public}d', timerId);
     settle(callId, '{"cancelled":true}', true);
   }
 }
