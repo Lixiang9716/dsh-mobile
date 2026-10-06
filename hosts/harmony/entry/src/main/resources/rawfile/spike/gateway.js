@@ -416,7 +416,7 @@ const micEvent = (ev) => {
 const pendingTicks = new Map();
 let tickListenerReady = false;
 const ensureTickListener = () => {
-  if (tickListenerReady) return;
+  log.debug('tick listener install', {});
   tickListenerReady = true;
   onEvent((ev) => {
     if (ev?.event !== 'timer.fire') return;
