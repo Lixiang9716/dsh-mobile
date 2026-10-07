@@ -172,6 +172,38 @@ const check = () => {
     problems.push('gateway_smoke.cpp: the known-absent check must run before the invalid fall-through');
   }
 
+  // 3b. the SMOKE face answers the same absent families `unavailable`, so
+  // its own descriptor must declare them too (a face's declaration covers
+  // exactly what it answers — the review finding on the regression face)
+  const smokeJson = literalConcat(cpp, 'const char *DSH_SMOKE_DESCRIPTOR');
+  const smokeDesc = smokeJson === null
+    ? null
+    : parseDescriptor(smokeJson, 'gateway_smoke.cpp DSH_SMOKE_DESCRIPTOR', problems);
+  if (smokeDesc !== null) {
+    for (const name of knownAbsent) {
+      if (!smokeDesc.unavailable.includes(name)) {
+        problems.push(`DSH_SMOKE_DESCRIPTOR does not declare "${name}" unavailable although the smoke face answers it unavailable (smoke_known_absent serves both modes)`);
+      }
+    }
+  }
+
+  // 3c. the descriptor must fit host_start's fixed buffer — phase_str_arg
+  // rejects len >= sizeof (EINVAL "descriptor too long"), and the 28-row
+  // descriptor sat at 511/512 (review finding: one added row from a dead
+  // phase start). Parse the bound from the source so the gate trips before
+  // the runtime does.
+  const napi = read('hosts/harmony/entry/src/main/cpp/napi_init.cpp');
+  const buf = napi.match(/char descriptor\[(\d+)\]/);
+  const cap = buf ? Number(buf[1]) : 0;
+  if (cap <= 0) {
+    problems.push('napi_init.cpp: the descriptor buffer declaration (char descriptor[N]) was not found');
+  } else if (etsJson.length >= cap) {
+    problems.push(`BINDING_DESCRIPTOR is ${etsJson.length} bytes — at or over host_start's char descriptor[${cap}] (phase_str_arg rejects len >= ${cap} with EINVAL; the phase would never start)`);
+  }
+  if (cppJson !== null && cap > 0 && cppJson.length >= cap) {
+    problems.push(`DSH_BINDING_DESCRIPTOR is ${cppJson.length} bytes — at or over host_start's char descriptor[${cap}]`);
+  }
+
   // 4. the module the descriptor credits must exist on disk
   for (const mod of ['TimerPrimitive', 'MicPrimitives', 'BlePrimitives', 'CameraPrimitives',
     'DevicePlanePrimitives', 'KeychainPrimitives', 'PickerPrimitives', 'HttpPrimitive']) {
