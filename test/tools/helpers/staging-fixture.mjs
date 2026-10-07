@@ -12,7 +12,8 @@
 // `\n];`), vendor-official.sh (multiline double-quoted CLOSURE accumulation +
 // $() find spans + simple-var interpolation), stage-spine-closure.sh (eight
 // for-in lists: scenario/web-live/dsh/npm × stage/verify + the mirror
-// needles), gen_bundle_header.py (RESOURCES with prose comments, TREES with a
+// needles), gen_bundle_resources.py (RESOURCES with prose comments) +
+// gen_bundle_header.py (TREES with a
 // comprehension + `] + [` continuation, ZOD_FILES).
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -182,22 +183,17 @@ function stageSpineClosureSh() {
   ].join('\n');
 }
 
-/** gen_bundle_header.py: RESOURCES (DSH- and REPO-rooted rows, prose
- * comments with apostrophes/quotes/parens), TREES (comprehension + `] + [`
- * continuation + plain rows), ZOD_FILES (the third hand zod copy). */
+/** gen_bundle_header.py: TREES (comprehension + `] + [` continuation +
+ * plain rows) and ZOD_FILES (the third hand zod copy); gen_bundle_resources.py:
+ * RESOURCES (DSH- and REPO-rooted rows, prose comments with
+ * apostrophes/quotes/parens) — the accession table split out of the header
+ * at the code-size gate, mirrored here so the fixture matches the real
+ * Tools/ shape the checkers parse. */
 function genBundleHeaderPy() {
   return [
     'import pathlib',
     'REPO = pathlib.Path(__file__).resolve().parents[2]',
     'DSH = REPO / "runtime" / "dsh"',
-    'RESOURCES = [',
-    '    ("logger_js", DSH / "logger.js"),',
-    `    # prose with an apostrophe: the loader's note; "quoted" and (parens)`,
-    '    # stay comment prose — the scanner must skip them whole.',
-    '    ("leg_a_js", DSH / "scenario" / "leg-a.js"),',
-    '    ("suite_leg_js", DSH / "scenario" / "upstream-suite-leg.js"),',
-    '    ("webclient_src", REPO / "presentation" / "web-client" / "index.html"),',
-    ']',
     '',
     'TREES = [',
     '    (f"vendor/dsh/{pkg}@' + VER + '",',
@@ -216,6 +212,24 @@ function genBundleHeaderPy() {
     '    "index.js",',
     '    "errors.js",',
     '    "v4/classic/checks.js",',
+    ']',
+    '',
+  ].join('\n');
+}
+
+function genBundleResourcesPy() {
+  return [
+    'from pathlib import Path',
+    'REPO = Path(__file__).resolve().parent.parent.parent.parent',
+    'DSH = REPO / "runtime" / "dsh"',
+    '',
+    'RESOURCES = [',
+    '    ("logger_js", DSH / "logger.js"),',
+    `    # prose with an apostrophe: the loader's note; "quoted" and (parens)`,
+    '    # stay comment prose — the scanner must skip them whole.',
+    '    ("leg_a_js", DSH / "scenario" / "leg-a.js"),',
+    '    ("suite_leg_js", DSH / "scenario" / "upstream-suite-leg.js"),',
+    '    ("webclient_src", REPO / "presentation" / "web-client" / "index.html"),',
     ']',
     '',
   ].join('\n');
@@ -334,6 +348,7 @@ export function buildGreenFixture() {
   fx.write('hosts/harmony/ci/vendor-official.sh', vendorOfficialSh());
   fx.write('hosts/android/ci/stage-spine-closure.sh', stageSpineClosureSh());
   fx.write('hosts/ios/Tools/gen_bundle_header.py', genBundleHeaderPy());
+  fx.write('hosts/ios/Tools/gen_bundle_resources.py', genBundleResourcesPy());
   mirrorRawfileBundle(fx);
   return fx;
 }
