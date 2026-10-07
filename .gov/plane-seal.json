@@ -10,13 +10,13 @@
       "sha256": "230fa8a429212578cd16658c5ac824476164da72e56dca61e4edda64f8e0ec3a"
     },
     ".gov/rejections/case-asset-mirrors.sh": {
-      "sha256": "adfc73c00864280b3b9b6b757c351ce56d2466cb4a41a636469fc171652b38f9"
+      "sha256": "de7e8faf1bfc869a7cd8203c3aa5ed47d5c8a5419cc6a021d2737ca3d8939672"
     },
     ".gov/rejections/case-bundle-files-dotfile.sh": {
-      "sha256": "71ab95c052a6189a7d6e773c5217cd21741848025defb1603d61a97abe540327"
+      "sha256": "a28028afe5b46af009a15e9e31d7804fff74e8fef0ea4ad94fcecf3f4311096e"
     },
     ".gov/rejections/case-bundle-files.sh": {
-      "sha256": "14c498cbf3a9631b1de2fd6fc1ee4d2970660073b14fd0f9cb3271a7456586b2"
+      "sha256": "806edd11e264da9b31615fc4bedadee75ab8b0b8328cc86fe8c055a614be2cc2"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
@@ -28,16 +28,16 @@
       "sha256": "9d91eb52d5b0a5a0c7e08954c78170d6b6225af21e7364c9957d6d0342426ddb"
     },
     ".gov/rejections/case-logging-l4.sh": {
-      "sha256": "566f9ba8a8fd94b8c2ec9f027aa79cce932c4be0e750fc2fb5f7854d9e9359c3"
+      "sha256": "2d992821a657a1471623f83bff1d011b8d5a2eceffd82652123affe155e420dc"
     },
     ".gov/rejections/case-logging.sh": {
       "sha256": "ad4931f0b48bc3bd9620c706579fd4e78b59ddaa204f067da202111ed35a8b17"
     },
     ".gov/rejections/case-perf-budget.sh": {
-      "sha256": "224b76b2a1f2e7d29d07cfb703d5c3dcefaf4b15f7d738c49a591587b92f91c9"
+      "sha256": "8f99a54c5ec4099bdc3fd16f20fd3d19786b0f327409ea92ce672ea3b410b704"
     },
     ".gov/rejections/case-quickjs-boot-parse.sh": {
-      "sha256": "a8126bef486b79af37a5f3f3acebd4edfa350036628beec878c9715047d57d12"
+      "sha256": "20c6bce6a45afadf569a8a473898d78a5b6d7a4b49576c54761a2504b2263db9"
     },
     ".gov/rejections/case-shellcheck-warn.sh": {
       "sha256": "229080a05f57561a9eef151c7fae29dcbc0e01127523accc6d8359093156d364"
@@ -46,7 +46,7 @@
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
     },
     ".gov/rejections/case-webclient-staged-tree.sh": {
-      "sha256": "fa4084c9beae97e2c0e4c22347dd40de78fbf68e9062f37782d2edb442aa2ea9"
+      "sha256": "73b4d6fd14c8c7970c2b0e1e73ec8d061fafff6ef5a43b648258e5bf951a3469"
     },
     ".gov/rules.md": {
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
@@ -56,8 +56,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T07:14:40+00:00",
+    "ts": "2026-10-07T08:54:26+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
-    "unattended": false
+    "unattended": true,
+    "reason": "rejection-case scripts follow the renamed paths (rawfile/dsh, web-client-v2) \u2014 mechanical path sweep only, no gate semantics change"
   }
 }
