@@ -3,7 +3,7 @@
 // via hostCarrierLine so the capture keeps ONE writer)
 /**
  * HostPhase — the M5 binding phase controller (mission pieces 2+3). Owns
- * the event-driven NAPI runtime (libspike.so host* functions), the loopback
+ * the event-driven NAPI runtime (libdruntime.so host* functions), the loopback
  * carrier's message shuttle, and the ArkTS capability layer:
  *
  *   - notify          → @ohos.notification (requestEnableNotification +
@@ -29,7 +29,7 @@
  *
  * The SAME controller hosts the `llm.live-stream` real-LLM leg (beginLlm): only the
  * scenario id, the JS entry and the carrier-side evidence set change —
- * exactly how the Android host's SpikeHostM4 swaps its entry for
+ * exactly how the Android host's BindingHost swaps its entry for
  * `--ez dsh.llm true`. The leg evals the canonical
  * `runtime/dsh/scenario/llm-live-stream.js` byte for byte (the platform-neutral
  * client over this host's REAL httpFetch), and emits the carrier-side
@@ -49,7 +49,7 @@ import {
   hostFree,
   hostSettle,
   hostStart,
-} from 'libspike.so';
+} from 'libdruntime.so';
 import { common } from '@kit.AbilityKit';
 import { wantAgent } from '@kit.AbilityKit';
 import { notificationManager } from '@kit.NotificationKit';
@@ -65,9 +65,9 @@ import { MicPrimitives } from './MicPrimitives';
 import { BuildFlavor } from './BuildFlavor';
 
 const TAG: string = 'dsh.app';
-/** The spike bundle's caller identity (the manifest.json id) — the audit
+/** The rt bundle's caller identity (the manifest.json id) — the audit
  * records' caller field. */
-const CALLER_ID: string = 'dsh.spike.scenario';
+const CALLER_ID: string = 'dsh.rt.scenario';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'harmony.capability-binding';
 const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';
@@ -306,7 +306,7 @@ export class HostPhase {
   /** The capability plane's camera leg (`harmony.camera-plane`, ONE launch):
    * the same machinery with the camera-plane scenario as the entry — no web
    * client mounts (the scenario drives primitives only). The verdict is the
-   * C `dsh.spike.verdict: harmony.camera-plane` line. */
+   * C `dsh.rt.verdict: harmony.camera-plane` line. */
   beginCameraPlane(ctx: common.UIAbilityContext, bundleRoot: string,
     capturePath: string, fsRoot: string): void {
     this.scenario = SCENARIO_CAMERA_PLANE;

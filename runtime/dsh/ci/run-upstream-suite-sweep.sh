@@ -51,7 +51,7 @@ worker() {
     node_log="$LOGDIR/$stem.node.log"
     frag="$FRAGS/$stem.tsv"
 
-    qjs_summary="$(cd "$SPIKE" && run_to 90 ./build/dsh-spike-cli . \
+    qjs_summary="$(cd "$SPIKE" && run_to 90 ./build/dsh-cli . \
         scenario/upstream-suite-leg.js \
         --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" > "$qjs_log" 2>&1 \
         && grep -o '"event":"suite/summary".*' "$qjs_log" | tail -1)"
@@ -60,7 +60,7 @@ worker() {
     # immediately, inside this worker (same xargs slot — same parallelism),
     # to its own log so the first failure stays inspectable in $qjs_log.
     if [ -z "${qjs_summary:-}" ]; then
-        qjs_summary="$(cd "$SPIKE" && run_to 90 ./build/dsh-spike-cli . \
+        qjs_summary="$(cd "$SPIKE" && run_to 90 ./build/dsh-cli . \
             scenario/upstream-suite-leg.js \
             --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" > "$qjs_retry_log" 2>&1 \
             && grep -o '"event":"suite/summary".*' "$qjs_retry_log" | tail -1)"

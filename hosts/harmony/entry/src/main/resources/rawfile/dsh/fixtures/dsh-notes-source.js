@@ -1,6 +1,6 @@
 // dsh:logging-exempt (this file is DATA, not executing code — it carries the
 // dsh-notes plugin source as a template literal so the install pipeline can
-// package it into a fixture tarball at scenario time; the spike JS cannot
+// package it into a fixture tarball at scenario time; the rt JS cannot
 // shell out to tar/npm, so the package is built in JS from these bytes)
 /**
  * The dsh-notes fixture plugin SOURCE (the bytes that go inside the package

@@ -21,7 +21,7 @@ import org.json.JSONObject
  * reader thread enqueues into a bounded ring with seq minted per captured
  * chunk — a chunk dropped by a full ring leaves an honest seq gap, never a
  * growing queue — and one coalesced drain forwards the ring FIFO onto the
- * runtime queue ([SpikeRuntime.post]; the emitFn hop lands there). The end
+ * runtime queue ([JsRuntime.post]; the emitFn hop lands there). The end
  * event publishes exactly once, after the last forwarded frame.
  */
 class MicPrimitives(private val activity: android.app.Activity) {

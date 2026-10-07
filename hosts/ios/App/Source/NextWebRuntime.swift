@@ -31,7 +31,7 @@ final class NextWebRuntime {
     private let serve = SessionServe(interactive: true)
     let eventLog = CarrierEventLog(scenario: NextWebRuntime.scenario)
     private weak var webView: WKWebView?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
     private var finished = false
 
@@ -42,7 +42,7 @@ final class NextWebRuntime {
         self.webView = webView
     }
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         self.completion = completion
         armWatchdog()
         wireEvidence()
@@ -391,22 +391,22 @@ final class NextWebRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: nextweb FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: nextweb FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: nextweb FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: nextweb FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message,
             canonicalLines: eventLog.lines
         )
     }
 
-    func finish(_ outcome: SpikeOutcome) {
+    func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         serve.stop()
-        print("spike: nextweb drive finished verdict=\(outcome.verdict)")
+        print("rt: nextweb drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         DispatchQueue.main.async { [weak self] in
             self?.completion?(outcome)

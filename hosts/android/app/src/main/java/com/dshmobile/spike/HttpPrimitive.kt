@@ -23,7 +23,7 @@ class HttpPrimitive {
     companion object {
         const val CHUNK_LIMIT = 16 * 1024
         const val BODY_PREFIX = "body:"
-        private const val TAG = "dsh.spike"
+        private const val TAG = "dsh.rt"
     }
 
     private val tasks = ConcurrentHashMap<Int, HttpURLConnection>()

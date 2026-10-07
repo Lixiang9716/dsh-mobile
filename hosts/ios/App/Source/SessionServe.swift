@@ -130,7 +130,7 @@ final class SessionServe {
     /// scripted llm endpoint), starts listening, and boots the runtime half
     /// once the port is bound (its runtime.config needs the port).
     func start() throws {
-        let root = try SpikeBundleStager.stage()
+        let root = try BundleStager.stage()
         // The client flavor: when the launch configuration selects OUR client
         // (dsh-web-client-next) the seat serves the staged plugin's web dir
         // with NO injection rows — the page owns its whole boot, and the
@@ -142,7 +142,7 @@ final class SessionServe {
             ? root.appendingPathComponent("webclient-next/web", isDirectory: true)
             : OfficialWebRuntime.locateDist()
         token = OfficialWebRuntime.randomToken()
-        let plugins = CarrierPlugins.staged(spikeRoot: root)
+        let plugins = CarrierPlugins.staged(dshRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         comboURL = OfficialWebRuntime.batchURL(graphJSON: config.bootGraphJSON)
         let dist = CarrierWebDist(
@@ -235,7 +235,7 @@ final class SessionServe {
             bundleRoot: bundleRoot,
             plugins: WebBootRuntimeDrive.webPluginsDelivery(),
             config: runtimeConfig(port: server.port, bundleRoot: bundleRoot),
-            scenario: dsh_spike_res_scenario_b4_web_live_js,
+            scenario: dsh_runtime_res_scenario_b4_web_live_js,
             scenarioPath: "scenario/composer-web-live.js",
             gateway: true)
     }

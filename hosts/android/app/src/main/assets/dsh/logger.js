@@ -5,7 +5,7 @@
  * receives ONE JSON line so every platform emits byte-identical E2E lines.
  *
  * Release builds are STRIPPED AT THE SOURCE: the platform hosts compile
- * runtime/dsh/host/dsh_spike_host.c with -DDSH_RELEASE, and
+ * runtime/dsh/host/dsh_runtime_host.c with -DDSH_RELEASE, and
  * dsh_bind_globals() then injects `globalThis.__DSH_RELEASE__ = true` before
  * the bundle evaluates (see the host's comment — the flag arrives at
  * context-bind time, never as a rewritten copy of this file, so every

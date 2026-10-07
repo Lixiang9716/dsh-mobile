@@ -9,16 +9,16 @@ import org.json.JSONObject
  * against the caller's bundle manifest (data-protocols.md §2), and the
  * mandatory structured audit of contract/primitives.md §6 — one record per
  * call, never payload contents. Audit rides its own logcat tag
- * ("dsh.spike.audit") with the flat "dsh.gateway.audit: " prefix so the
+ * ("dsh.rt.audit") with the flat "dsh.gateway.audit: " prefix so the
  * canonical "dsh.spike.log: " E2E stream stays one-to-one. Handlers run on
  * the dispatching (runtime) thread and call done OFF it — every settle hop
- * back via SpikeRuntime.post (ARCHITECTURE.md §6 thread rules).
+ * back via JsRuntime.post (ARCHITECTURE.md §6 thread rules).
  */
 class GatewayCore private constructor(val manifest: GatewayManifest) {
 
     companion object {
-        /** The caller identity of the spike bundle (manifest.json id). */
-        const val CALLER = "dsh.spike.scenario"
+        /** The caller identity of the rt bundle (manifest.json id). */
+        const val CALLER = "dsh.rt.scenario"
 
         /** The frozen primitive table (contract v1.4.0: nine + fs additions
          * + wasmRun + ishRun-unavailable-on-android + the timer seam; the
@@ -41,8 +41,8 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
          * `unavailable`. */
         val PHASED_ROWS = listOf("cameraRecordStart", "cameraRecordStop")
         const val AUDIT_PREFIX = "dsh.gateway.audit: "
-        private const val AUDIT_TAG = "dsh.spike.audit"
-        private const val UI_TAG = "dsh.spike.ui"
+        private const val AUDIT_TAG = "dsh.rt.audit"
+        private const val UI_TAG = "dsh.rt.ui"
 
         /** Fails loud (rules.md rule 5): bundle_root/manifest.json must exist. */
         fun create(bundleRoot: java.io.File): GatewayCore {

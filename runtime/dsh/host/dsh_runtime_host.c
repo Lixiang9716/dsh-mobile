@@ -1,5 +1,5 @@
 /*
- * dsh_spike_host.c — the M2 spike host shim, shared by every platform.
+ * dsh_runtime_host.c — the M2 rt host shim, shared by every platform.
  *
  * Responsibilities (all in ONE thread, driven by the embedder):
  *   - unified-log sink: JS calls globalThis.__DSH_LOG_SINK__(jsonLine) and
@@ -12,16 +12,16 @@
  *   - the REAL gateway bridge per contract/ v1.0.0: __dshGatewayCall hands
  *     each call a monotonic call_id and dispatches it to the embedder
  *     (multiple calls may be in flight); the embedder settles through
- *     dsh_spike_gateway_settle and streams events through
- *     dsh_spike_gateway_event — both RUNTIME-THREAD-ONLY (M1's canned
+ *     dsh_runtime_gateway_settle and streams events through
+ *     dsh_runtime_gateway_event — both RUNTIME-THREAD-ONLY (M1's canned
  *     responses are gone: the host no longer invents gateway results);
- *   - an ESM loader over the spike bundle: "dsh:util-crypto" (legacy spike
+ *   - an ESM loader over the rt bundle: "dsh:util-crypto" (legacy rt
  *     specifier), bare npm specifiers (@deepseek-ai/<pkg>, zod) map into the
- *     vendored upstream closure, node: builtins map to the spike shims
+ *     vendored upstream closure, node: builtins map to the rt shims
  *     (runtime/dsh/upstream/shims/), everything else resolves
  *     bundle-root-relative; unmapped bare specifiers fail loud.
  */
-#include "dsh_spike_host.h"
+#include "dsh_runtime_host.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,7 +53,7 @@
 /* Vendored zstd (single-threaded build: no ZSTD_MULTITHREAD — D2's one
  * serial runtime thread). The include paths (-I<zstd> -I<zstd>/common) are
  * part of THIS file's compile interface: every build system that compiles
- * dsh_spike_host.c must pass them (host/build.sh does; the platform builds
+ * dsh_runtime_host.c must pass them (host/build.sh does; the platform builds
  * name the same vendor pin). */
 #include "zstd.h"
 
@@ -65,11 +65,11 @@ static const char *DSH_GATEWAY_VERSION = "gateway@1";
 /* The pinned upstream runtime version this build maps bare specifiers to
  * (runtime/dsh/vendor/ensure-dsh.sh is the single source of the pin). */
 static const char *DSH_UPSTREAM_VERSION = "0.1.6-alpha.2";
-/* Legacy spike specifier (m1 spike boot): kept working on the alpha.2 pin. */
+/* Legacy rt specifier (m1 rt boot): kept working on the alpha.2 pin. */
 static const char *DSH_PKG_CRYPTO = "dsh:util-crypto";
 static const char *DSH_PKG_CRYPTO_PATH = "vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js";
 
-/* node: builtin → spike shim under upstream/shims/. Only builtins the vendored
+/* node: builtin → rt shim under upstream/shims/. Only builtins the vendored
  * closure actually imports are mapped; anything else fails loud at import time
  * naming the specifier (rule 5) so a missing seam is never silently wrong. */
 static const char *dsh_node_shim(const char *name) {
@@ -138,7 +138,7 @@ typedef struct dsh_def_module {
  * untouched — children never execute JS here); the HOST owns the OS
  * processes and hands bytes to JS as base64 chunks the shim pumps over the
  * ordinary timer seam. Portable POSIX only (fork/execvp/poll/waitpid): it
- * compiles on the mobile hosts but only the spike JS ever calls it. */
+ * compiles on the mobile hosts but only the rt JS ever calls it. */
 #define DSH_PROC_MAX_SLOTS 64
 /* Extra stdio fds (node's stdio array may run past fd 2 — the ptc control
  * channel rides fd 7; IPC-style protocols claim 3+). Each piped extra gets
@@ -191,13 +191,13 @@ typedef struct dsh_pty {
     int flush_err;           /* nonzero errno once the master is gone with pending bytes */
 } dsh_pty;
 
-typedef struct dsh_spike {
+typedef struct dsh_runtime {
     JSRuntime *rt;
     JSContext *ctx;
-    dsh_spike_sink sink;
+    dsh_runtime_sink sink;
     void (*bus)(void *ud, const char *line);
     void *bus_ud;
-    dsh_spike_gateway_fn gateway;
+    dsh_runtime_gateway_fn gateway;
     void *gateway_ud;
     char *descriptor;
     char *launch_env;
@@ -212,9 +212,9 @@ typedef struct dsh_spike {
     char err[DSH_ERR_MAX];
     int completed;
     int passed;
-} dsh_spike_t;
+} dsh_runtime_t;
 
-static void dsh_seterr(dsh_spike_t *s, const char *fmt, const char *arg) {
+static void dsh_seterr(dsh_runtime_t *s, const char *fmt, const char *arg) {
     snprintf(s->err, sizeof(s->err), fmt, arg);
 }
 
@@ -235,7 +235,7 @@ static void dsh_random_bytes(unsigned char *buf, size_t n) {
     }
     if (n > 0) { /* fall through to the fallback below */ }
 #else
-    /* No platform RNG declared: deterministic LCG fallback. Spike-only —
+    /* No platform RNG declared: deterministic LCG fallback. Runtime-only —
      * real hosts replace this via their platform shim before M2. */
     static unsigned long long state = 0;
     if (!state) state = (unsigned long long)time(NULL) | 1;
@@ -251,7 +251,7 @@ static void dsh_random_bytes(unsigned char *buf, size_t n) {
 static JSValue js_log_sink(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 1) return JS_UNDEFINED;
     size_t len = 0;
     const char *json = JS_ToCStringLen(ctx, &len, argv[0]);
@@ -271,7 +271,7 @@ static JSValue js_log_sink(JSContext *ctx, JSValueConst this_val,
 static JSValue js_bus_post(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 1 || !s->bus) return JS_UNDEFINED;
     const char *json = JS_ToCString(ctx, argv[0]);
     if (!json) return JS_EXCEPTION;
@@ -327,7 +327,7 @@ static JSValue js_perf_probe(JSContext *ctx, JSValueConst this_val,
 static JSValue js_gateway_negotiate(JSContext *ctx, JSValueConst this_val,
                                     int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 1) return JS_FALSE;
     const char *requested = JS_ToCString(ctx, argv[0]);
     if (!requested) return JS_EXCEPTION;
@@ -339,7 +339,7 @@ static JSValue js_gateway_negotiate(JSContext *ctx, JSValueConst this_val,
 
 /* ---- gateway bridge ----------------------------------------------------- */
 
-static int dsh_pending_add(dsh_spike_t *s, int call_id, JSValue resolve,
+static int dsh_pending_add(dsh_runtime_t *s, int call_id, JSValue resolve,
                            JSValue reject) {
     if (s->pending_count == s->pending_cap) {
         int cap = s->pending_cap > 0 ? s->pending_cap * 2 : 8;
@@ -356,7 +356,7 @@ static int dsh_pending_add(dsh_spike_t *s, int call_id, JSValue resolve,
 
 /* Remove + return the entry for call_id, or 0 when absent (unknown or
  * already-settled ids fail loud at the settle call site). */
-static int dsh_pending_take(dsh_spike_t *s, int call_id,
+static int dsh_pending_take(dsh_runtime_t *s, int call_id,
                             dsh_pending_call *out) {
     for (int i = 0; i < s->pending_count; i++) {
         if (s->pending[i].call_id == call_id) {
@@ -375,7 +375,7 @@ static int dsh_pending_take(dsh_spike_t *s, int call_id,
 static JSValue js_gateway_call(JSContext *ctx, JSValueConst this_val,
                                int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 2) {
         return JS_ThrowTypeError(ctx, "gateway call needs (name, argsJson)");
     }
@@ -415,7 +415,7 @@ static JSValue js_gateway_call(JSContext *ctx, JSValueConst this_val,
 static JSValue js_gateway_abort(JSContext *ctx, JSValueConst this_val,
                                 int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (!s->gateway) {
         return JS_ThrowInternalError(ctx, "no gateway dispatch registered");
     }
@@ -433,7 +433,7 @@ static JSValue js_gateway_abort(JSContext *ctx, JSValueConst this_val,
 static JSValue js_gateway_descriptor(JSContext *ctx, JSValueConst this_val,
                                      int argc, JSValueConst *argv) {
     (void)this_val; (void)argc; (void)argv;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     return JS_NewString(ctx, s->descriptor ? s->descriptor : "null");
 }
 
@@ -441,20 +441,20 @@ static JSValue js_gateway_descriptor(JSContext *ctx, JSValueConst this_val,
 static JSValue js_launch_env(JSContext *ctx, JSValueConst this_val,
                              int argc, JSValueConst *argv) {
     (void)this_val; (void)argc; (void)argv;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     return JS_NewString(ctx, s->launch_env ? s->launch_env : "{}");
 }
 
 static JSValue js_complete(JSContext *ctx, JSValueConst this_val,
                            int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     int pass = JS_ToBool(ctx, argv[0]); /* -1 on exception; anything falsy = fail */
     s->completed = 1;
     s->passed = pass > 0;
     /* A failing scenario hands its reason (message + short stack) as the
      * second argument. Keep it in s->err so embedders reading
-     * dsh_spike_error() at completion — the m4 status-2 branch, the harmony
+     * dsh_runtime_error() at completion — the m4 status-2 branch, the harmony
      * napi !pass legs, the iOS drive's onComplete message — report WHY the
      * scenario failed instead of an empty string. */
     if (pass <= 0 && argc >= 2 && JS_IsString(argv[1])) {
@@ -613,7 +613,7 @@ static JSValue js_atob(JSContext *ctx, JSValueConst this_val,
 
 /* Raw-byte base64 codec for the zstd intrinsics. main_cli.c carries its own
  * static b64_encode/b64_decode twins, but they are file-local: platform
- * embedders compile dsh_spike_host.c WITHOUT main_cli.c, so these small
+ * embedders compile dsh_runtime_host.c WITHOUT main_cli.c, so these small
  * versions stay here (sharing B64_TABLE / dsh_b64_val with btoa/atob —
  * one alphabet, two entry styles: JS-string latin-1 vs raw bytes). */
 static char *dsh_b64_encode_bytes(JSContext *ctx, const unsigned char *src, size_t n) {
@@ -774,7 +774,7 @@ static char *dsh_read_file(const char *path, size_t *out_len);
 static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, size_t err_len);
 /* dsh_map_bare's vendored-dsh marker kind (the probe below owns resolution). */
 #define DSH_MAP_VENDORED_PROBE 2
-static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char *sub,
+static const char *dsh_vendored_rel(dsh_runtime_t *s, const char *pkg, const char *sub,
                                     char *out, size_t out_len);
 static char *dsh_resolve_relative(JSContext *ctx, const char *dir, const char *name);
 static JSValue js_import_meta_resolve(JSContext *ctx, JSValueConst this_val,
@@ -854,7 +854,7 @@ static void dsh_manifest_shim(const char *rel) {
 static JSValue js_bundle_require(JSContext *ctx, JSValueConst this_val,
                                  int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 2) {
         return JS_ThrowTypeError(ctx, "__dshBundleRequire needs (base, request)");
     }
@@ -910,7 +910,7 @@ static JSValue js_bundle_require(JSContext *ctx, JSValueConst this_val,
                               || strcmp(resolved + rlen - 4, ".mjs") == 0
                               || strcmp(resolved + rlen - 4, ".cjs") == 0);
     if (!is_json && !is_js) {
-        JS_ThrowTypeError(ctx, "require('%s'): only .json/.js/.cjs/.mjs reads are served by the spike host", request);
+        JS_ThrowTypeError(ctx, "require('%s'): only .json/.js/.cjs/.mjs reads are served by the rt host", request);
         goto fail;
     }
     char *abs = dsh_join(s->base, resolved);
@@ -939,7 +939,7 @@ fail:
 
 /* ---- exception bookkeeping ---------------------------------------------- */
 
-static void dsh_record_exception(dsh_spike_t *s) {
+static void dsh_record_exception(dsh_runtime_t *s) {
     JSValue exc = JS_GetException(s->ctx);
     const char *msg = JS_ToCString(s->ctx, exc);
     dsh_seterr(s, "%s", msg ? msg : "JS exception");
@@ -961,7 +961,7 @@ static void dsh_record_exception(dsh_spike_t *s) {
 
 /* Drain the microtasks a delivery spun up (shared by bus_deliver, gateway
  * settle and gateway event). 0 quiescent, -1 exception. */
-static int dsh_drain_jobs(dsh_spike_t *s) {
+static int dsh_drain_jobs(dsh_runtime_t *s) {
     int guard = 0;
     for (;;) {
         JSContext *jctx = NULL;
@@ -1067,7 +1067,7 @@ static JSModuleDef *dsh_load_module(JSContext *ctx, const char *abs_path,
  * dsh packages use (lib/<sub>.js, lib/types/<sub>.js), failing loud naming
  * the specifier when nothing opens (rule 5). Returns the first existing
  * bundle-relative path, or NULL when no candidate opens. */
-static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char *sub,
+static const char *dsh_vendored_rel(dsh_runtime_t *s, const char *pkg, const char *sub,
                                     char *out, size_t out_len) {
     static const char *FAMILIES[] = { "", "dsh-" };
     /* Some imports carry their own .js suffix ('…/types.js'); the exports
@@ -1139,7 +1139,7 @@ static const char *dsh_vendored_rel(dsh_spike_t *s, const char *pkg, const char 
 
 /* Load a vendored dsh package module (the loader half of the probe above:
  * compile the first existing candidate under the ORIGINAL specifier name). */
-static JSModuleDef *dsh_load_vendored_dsh(JSContext *ctx, dsh_spike_t *s,
+static JSModuleDef *dsh_load_vendored_dsh(JSContext *ctx, dsh_runtime_t *s,
                                           const char *name,
                                           const char *pkg, const char *sub) {
     char rel[512];
@@ -1172,7 +1172,7 @@ static JSModuleDef *dsh_load_vendored_dsh(JSContext *ctx, dsh_spike_t *s,
 static JSValue js_module_define(JSContext *ctx, JSValueConst this_val,
                                 int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
     if (argc < 2) {
         return JS_ThrowTypeError(ctx, "__dshModuleDefine needs (name, source)");
     }
@@ -1239,7 +1239,7 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
     if (strncmp(name, "node:", 5) == 0) {
         const char *path = dsh_node_shim(name);
         if (!path) {
-            snprintf(err, err_len, "no spike shim for node builtin '%s' (see runtime/dsh/upstream/README.md)", name);
+            snprintf(err, err_len, "no rt shim for node builtin '%s' (see runtime/dsh/upstream/README.md)", name);
             return -1;
         }
         snprintf(out, out_len, "%s", path);
@@ -1394,7 +1394,7 @@ static int dsh_map_bare(const char *name, char *out, size_t out_len, char *err, 
 }
 
 static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *opaque) {
-    dsh_spike_t *s = (dsh_spike_t *)opaque;
+    dsh_runtime_t *s = (dsh_runtime_t *)opaque;
     /* A trailing '?query' is a cache-buster (node ESM semantics: each
      * distinct specifier string is its own module instance). The defined
      * table keys modules by the QUERY-LESS name (fs shims register written
@@ -1450,7 +1450,7 @@ static JSModuleDef *dsh_module_loader(JSContext *ctx, const char *name, void *op
             JS_ThrowReferenceError(ctx, "relative import '%s' escaped its module root", name);
             return NULL;
         } else if (strchr(name, '.') != NULL || strchr(name, '/') != NULL) {
-            /* Legacy spike behavior: bundle-root-relative module paths
+            /* Legacy rt behavior: bundle-root-relative module paths
              * ('logger.js', 'gateway.js', 'upstream/boot.js', scenarios). */
             rel = name;
         } else {
@@ -1563,7 +1563,7 @@ static JSValue js_import_meta_resolve(JSContext *ctx, JSValueConst this_val,
         /* bundle-absolute name: the loader serves it from the bundle root */
         ret = JS_NewString(ctx, spec);
     } else {
-        dsh_spike_t *s = (dsh_spike_t *)JS_GetContextOpaque(ctx);
+        dsh_runtime_t *s = (dsh_runtime_t *)JS_GetContextOpaque(ctx);
         char mapped[512];
         char maperr[256];
         int kind = dsh_map_bare(spec, mapped, sizeof(mapped), maperr, sizeof(maperr));
@@ -1711,7 +1711,7 @@ static const char *dsh_signal_name(int num) {
     return NULL;
 }
 
-static dsh_proc *dsh_proc_slot(dsh_spike_t *s, int pid) {
+static dsh_proc *dsh_proc_slot(dsh_runtime_t *s, int pid) {
     for (int i = 0; i < DSH_PROC_MAX_SLOTS; i++) {
         if (s->procs[i].used && s->procs[i].pid == pid) return &s->procs[i];
     }
@@ -1721,7 +1721,7 @@ static dsh_proc *dsh_proc_slot(dsh_spike_t *s, int pid) {
 /* Public keep-alive probe (main_cli.c): a run must not go quiescent while a
  * spawned child is still awaited. Any used slot counts — reaped-but-open
  * pipes still carry data the JS pump drains. */
-int dsh_spike_procs_alive(dsh_spike_t *s) {
+int dsh_runtime_procs_alive(dsh_runtime_t *s) {
     if (!s) return 0;
     int n = 0;
     for (int i = 0; i < DSH_PROC_MAX_SLOTS; i++) n += s->procs[i].used ? 1 : 0;
@@ -1834,7 +1834,7 @@ static void dsh_free_vec(JSContext *ctx, char **vec) {
 }
 
 /* stdio disposition per fd: 0 = pipe, 1 = /dev/null, 2 = inherit (pass the
- * spike's own std fd through). */
+ * rt's own std fd through). */
 static int dsh_stdio_mode(const char *s) {
     if (!s) return 0;
     if (strcmp(s, "ignore") == 0) return 1;
@@ -1851,7 +1851,7 @@ static void dsh_close_all(int fds[], int n) {
  * BUNDLE-RELATIVE ("file:///upstream-tests/x.spec.mjs"), so spec-computed
  * child argv (fileURLToPath joins) arrive as rootless absolute paths that
  * exist only under the bundle root. Cached once. */
-static const char *dsh_bundle_root_real(dsh_spike_t *s) {
+static const char *dsh_bundle_root_real(dsh_runtime_t *s) {
     static char real_root[4096];
     if (real_root[0] == 0) {
         if (realpath(s->base && s->base[0] ? s->base : ".", real_root) == NULL) {
@@ -1866,7 +1866,7 @@ static const char *dsh_bundle_root_real(dsh_spike_t *s) {
  * is re-rooted there — node-faithful argv for a runtime whose URL face is
  * bundle-relative (W5-R, 2026-09-28). Relative args and existing absolutes
  * pass through untouched. */
-static void dsh_proc_remap_argv(dsh_spike_t *s, JSRuntime *rt, char **argv) {
+static void dsh_proc_remap_argv(dsh_runtime_t *s, JSRuntime *rt, char **argv) {
     const char *root = dsh_bundle_root_real(s);
     if (root[0] == 0) return;
     for (int i = 1; argv[i]; i++) {
@@ -1949,7 +1949,7 @@ static pid_t dsh_proc_fork_exec(JSContext *ctx, const char *command, char **argv
             } else if (modes[fd] == 1) {
                 if (devnull < 0) devnull = open("/dev/null", O_RDWR);
                 dup2(devnull >= 0 ? devnull : target[fd], target[fd]);
-            } /* inherit: leave the spike's fd in place */
+            } /* inherit: leave the rt's fd in place */
         }
         for (int i = 0; i < DSH_PROC_EXTRA; i++) {
             if (modes[3 + i] == 0) dup2(x[i][1], 3 + i); /* child's end of the pair */
@@ -2034,7 +2034,7 @@ static int dsh_drain_fd(JSRuntime *rt, int fd, unsigned char **buf, size_t *n, s
  * exited, exitCode (null until reaped-exit), signal (null or number). */
 static JSValue js_proc_poll(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0;
     if (argc < 1 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshProcPoll needs a pid");
     dsh_proc *p = dsh_proc_slot(s, (int)pid);
@@ -2416,7 +2416,7 @@ static JSValue js_proc_access_real(JSContext *ctx, JSValueConst this_val, int ar
 /* __dshProcWrite(pid, b64) → {written} | {error:{code,errno}}. */
 static JSValue js_proc_write(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0;
     if (argc < 2 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshProcWrite needs (pid, base64)");
     dsh_proc *p = dsh_proc_slot(s, (int)pid);
@@ -2462,7 +2462,7 @@ static JSValue js_proc_write(JSContext *ctx, JSValueConst this_val, int argc, JS
 /* __dshProcEndStdin(pid): close the child's stdin (EOF marker). */
 static JSValue js_proc_end_stdin(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0;
     if (argc < 1 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshProcEndStdin needs a pid");
     dsh_proc *p = dsh_proc_slot(s, (int)pid);
@@ -2479,7 +2479,7 @@ static JSValue js_proc_end_stdin(JSContext *ctx, JSValueConst this_val, int argc
  * the exact contract the stdin face honors. */
 static JSValue js_proc_write_fd(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0, slot = 0;
     if (argc < 3 || JS_ToInt32(ctx, &pid, argv[0]) < 0 || JS_ToInt32(ctx, &slot, argv[1]) < 0)
         return JS_ThrowTypeError(ctx, "__dshProcWriteFd needs (pid, slot, base64)");
@@ -2540,7 +2540,7 @@ static JSValue js_proc_write_fd(JSContext *ctx, JSValueConst this_val, int argc,
  * EOF on its fd while our read side stays live (shutdown, not close). */
 static JSValue js_proc_end_fd(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0, slot = 0;
     if (argc < 2 || JS_ToInt32(ctx, &pid, argv[0]) < 0 || JS_ToInt32(ctx, &slot, argv[1]) < 0)
         return JS_ThrowTypeError(ctx, "__dshProcEndFd needs (pid, slot)");
@@ -2574,7 +2574,7 @@ static JSValue js_proc_kill(JSContext *ctx, JSValueConst this_val, int argc, JSV
 
 /* ---- forkpty seam intrinsics (see the section comment above) ------------- */
 
-static dsh_pty *dsh_pty_slot(dsh_spike_t *s, int pid) {
+static dsh_pty *dsh_pty_slot(dsh_runtime_t *s, int pid) {
     for (int i = 0; i < DSH_PTY_MAX_SLOTS; i++) {
         if (s->ptys[i].used && s->ptys[i].pid == pid) return &s->ptys[i];
     }
@@ -2588,7 +2588,7 @@ static dsh_pty *dsh_pty_slot(dsh_spike_t *s, int pid) {
  * runs), the same contract the subprocess seam enforces. */
 static JSValue js_pty_spawn(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshPtySpawn needs an options object");
 #ifndef DSH_HAVE_FORKPTY
     (void)s;
@@ -2713,7 +2713,7 @@ static JSValue js_pty_spawn(JSContext *ctx, JSValueConst this_val, int argc, JSV
  * as EOF, which is exactly the terminal's EOF shape. */
 static JSValue js_pty_poll(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0;
     if (argc < 1 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshPtyPoll needs a pid");
     dsh_pty *t = dsh_pty_slot(s, (int)pid);
@@ -2795,7 +2795,7 @@ static JSValue js_pty_poll(JSContext *ctx, JSValueConst this_val, int argc, JSVa
  * backpressure buffer and drains on the pump's poll ticks. */
 static JSValue js_pty_write(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0;
     if (argc < 2 || JS_ToInt32(ctx, &pid, argv[0]) < 0) return JS_ThrowTypeError(ctx, "__dshPtyWrite needs (pid, base64)");
     dsh_pty *t = dsh_pty_slot(s, (int)pid);
@@ -2856,7 +2856,7 @@ static JSValue js_pty_write(JSContext *ctx, JSValueConst this_val, int argc, JSV
  * master; the kernel delivers SIGWINCH to the child's foreground group. */
 static JSValue js_pty_resize(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     int32_t pid = 0, cols = 0, rows = 0;
     if (argc < 3 || JS_ToInt32(ctx, &pid, argv[0]) < 0
         || JS_ToInt32(ctx, &cols, argv[1]) < 0 || JS_ToInt32(ctx, &rows, argv[2]) < 0) {
@@ -2981,7 +2981,7 @@ static int dsh_parse_spawn_opts(JSContext *ctx, JSValueConst opts, const char **
  * {error:{code,errno}}. */
 static JSValue js_proc_spawn(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcSpawn needs an options object");
     const char *command = NULL; char **cargv = NULL, **envp = NULL;
     const char *cwd = NULL; int modes[3 + DSH_PROC_EXTRA]; int detached = 0; char *err = NULL;
@@ -3044,7 +3044,7 @@ static JSValue js_proc_spawn(JSContext *ctx, JSValueConst this_val, int argc, JS
  * the runtime exactly like node blocks its event loop. */
 static JSValue js_proc_spawn_sync(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx);
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx);
     if (argc < 1 || !JS_IsObject(argv[0])) return JS_ThrowTypeError(ctx, "__dshProcSpawnSync needs an options object");
     const char *command = NULL; char **cargv = NULL, **envp = NULL;
     const char *cwd = NULL; int modes[3 + DSH_PROC_EXTRA]; int detached = 0; char *err = NULL;
@@ -3179,7 +3179,7 @@ static JSValue js_proc_spawn_sync(JSContext *ctx, JSValueConst this_val, int arg
  * `process.execPath fixture.ts` expecting node's erasable-TS support. */
 static JSValue js_proc_facts(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
     (void)this_val; (void)argc; (void)argv;
-    dsh_spike_t *s = JS_GetContextOpaque(ctx); /* bundleRoot source */
+    dsh_runtime_t *s = JS_GetContextOpaque(ctx); /* bundleRoot source */
     static char node_path[4096];
     if (node_path[0] == 0) {
         const char *path = getenv("PATH");
@@ -3772,7 +3772,7 @@ static JSValue js_sqlite_all(JSContext *ctx, JSValueConst this_val, int argc, JS
 
 /* ---- lifecycle ---------------------------------------------------------- */
 
-static void dsh_bind_globals(dsh_spike_t *s) {
+static void dsh_bind_globals(dsh_runtime_t *s) {
     JSContext *ctx = s->ctx;
     JSValue global = JS_GetGlobalObject(ctx);
 #ifdef DSH_RELEASE
@@ -3900,9 +3900,9 @@ static void dsh_bind_globals(dsh_spike_t *s) {
     JS_FreeValue(ctx, global);
 }
 
-dsh_spike_t *dsh_spike_new(const char *bundle_root, const dsh_spike_sink *sink) {
+dsh_runtime_t *dsh_runtime_new(const char *bundle_root, const dsh_runtime_sink *sink) {
     if (!bundle_root || !sink || !sink->on_log) return NULL;
-    dsh_spike_t *s = calloc(1, sizeof(dsh_spike_t));
+    dsh_runtime_t *s = calloc(1, sizeof(dsh_runtime_t));
     if (!s) return NULL;
     s->sink = *sink;
     snprintf(s->base, sizeof(s->base), "%s", bundle_root);
@@ -3923,7 +3923,7 @@ dsh_spike_t *dsh_spike_new(const char *bundle_root, const dsh_spike_sink *sink) 
     return s;
 }
 
-int dsh_spike_eval(dsh_spike_t *s, const char *module_name, const char *source) {
+int dsh_runtime_eval(dsh_runtime_t *s, const char *module_name, const char *source) {
     if (!s || !module_name || !source) return -1;
     s->err[0] = 0;
     size_t len = strlen(source);
@@ -3952,7 +3952,7 @@ int dsh_spike_eval(dsh_spike_t *s, const char *module_name, const char *source) 
     return 0;
 }
 
-int dsh_spike_pump(dsh_spike_t *s) {
+int dsh_runtime_pump(dsh_runtime_t *s) {
     if (!s) return -1;
     int guard = 0;
     for (;;) {
@@ -3970,28 +3970,28 @@ int dsh_spike_pump(dsh_spike_t *s) {
     }
 }
 
-int dsh_spike_complete(const dsh_spike_t *s) { return s ? s->completed : 0; }
+int dsh_runtime_complete(const dsh_runtime_t *s) { return s ? s->completed : 0; }
 
-void dsh_spike_set_gateway_dispatch(dsh_spike_t *s, dsh_spike_gateway_fn on_call,
+void dsh_runtime_set_gateway_dispatch(dsh_runtime_t *s, dsh_runtime_gateway_fn on_call,
                                     void *ud) {
     if (!s) return;
     s->gateway = on_call;
     s->gateway_ud = ud;
 }
 
-void dsh_spike_set_descriptor(dsh_spike_t *s, const char *descriptor_json) {
+void dsh_runtime_set_descriptor(dsh_runtime_t *s, const char *descriptor_json) {
     if (!s) return;
     free(s->descriptor);
     s->descriptor = descriptor_json ? strdup(descriptor_json) : NULL;
 }
 
-void dsh_spike_set_launch_env(dsh_spike_t *s, const char *env_json) {
+void dsh_runtime_set_launch_env(dsh_runtime_t *s, const char *env_json) {
     if (!s) return;
     free(s->launch_env);
     s->launch_env = env_json ? strdup(env_json) : NULL;
 }
 
-int dsh_spike_gateway_settle(dsh_spike_t *s, int call_id, int ok,
+int dsh_runtime_gateway_settle(dsh_runtime_t *s, int call_id, int ok,
                              const char *payload_json) {
     if (!s || !payload_json) return -1;
     dsh_pending_call pc;
@@ -4020,7 +4020,7 @@ int dsh_spike_gateway_settle(dsh_spike_t *s, int call_id, int ok,
     return dsh_drain_jobs(s);
 }
 
-int dsh_spike_gateway_event(dsh_spike_t *s, const char *event_json) {
+int dsh_runtime_gateway_event(dsh_runtime_t *s, const char *event_json) {
     if (!s || !event_json) return -1;
     JSValue global = JS_GetGlobalObject(s->ctx);
     JSValue handler = JS_GetPropertyStr(s->ctx, global, "__dshGatewayOnEvent");
@@ -4047,7 +4047,7 @@ int dsh_spike_gateway_event(dsh_spike_t *s, const char *event_json) {
     return dsh_drain_jobs(s);
 }
 
-void dsh_spike_set_bus_sink(dsh_spike_t *s,
+void dsh_runtime_set_bus_sink(dsh_runtime_t *s,
                             void (*on_bus)(void *ud, const char *line),
                             void *ud) {
     if (!s) return;
@@ -4055,7 +4055,7 @@ void dsh_spike_set_bus_sink(dsh_spike_t *s,
     s->bus_ud = ud;
 }
 
-int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line) {
+int dsh_runtime_bus_deliver(dsh_runtime_t *s, const char *line) {
     if (!s || !line) return -1;
     JSValue global = JS_GetGlobalObject(s->ctx);
     JSValue handler = JS_GetPropertyStr(s->ctx, global, "__dshBusOnMessage");
@@ -4082,16 +4082,16 @@ int dsh_spike_bus_deliver(dsh_spike_t *s, const char *line) {
     return dsh_drain_jobs(s);
 }
 
-int dsh_spike_pass(const dsh_spike_t *s) { return s ? s->passed : 0; }
+int dsh_runtime_pass(const dsh_runtime_t *s) { return s ? s->passed : 0; }
 
-const char *dsh_spike_error(const dsh_spike_t *s) { return s ? s->err : ""; }
+const char *dsh_runtime_error(const dsh_runtime_t *s) { return s ? s->err : ""; }
 
-void dsh_spike_free(dsh_spike_t *s) {
+void dsh_runtime_free(dsh_runtime_t *s) {
     if (!s) return;
     /* Subprocess teardown before the runtime goes: SIGKILL every still-tracked
      * attached child (a run must not leak awaited children), reap, close all
      * pipe ends. Detached group leaders (node's detached:true — the
-     * launchDetachedApp face) survive the spike on purpose. */
+     * launchDetachedApp face) survive the rt on purpose. */
     for (int i = 0; i < DSH_PROC_MAX_SLOTS; i++) {
         dsh_proc *p = &s->procs[i];
         if (!p->used) continue;

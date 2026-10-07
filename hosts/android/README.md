@@ -13,7 +13,7 @@ On top of the three-scenario regression (below), the host completion session
   of hosts/ios `CarrierServer.swift`): loopback HTTP static serving of the embedded Web Client
   and a minimal RFC6455 WS text-frame pump (SHA-1 accept via `MessageDigest`), shuttling JSON
   lines between the WebView and the runtime thread over the platform-neutral bus seam
-  (`dsh_spike_set_bus_sink` / `dsh_spike_bus_deliver`).
+  (`dsh_runtime_set_bus_sink` / `dsh_runtime_bus_deliver`).
 - **Web Client mount** — a real `WebView` loads `http://127.0.0.1:<port>/` and renders the
   session live (slot button, token deltas, session-complete line); the presentation/web-client
   files ride in assets byte-identical to the canonicals.
@@ -35,7 +35,7 @@ On top of the three-scenario regression (below), the host completion session
 
 Threading law unchanged: JS executes only on `HandlerThread("dsh-spike-js")`; the carrier
 threads, fetch threads, and the UI thread never touch the runtime — every settle/event/bus
-delivery hops through `SpikeRuntime.post`.
+delivery hops through `JsRuntime.post`.
 
 Evidence (one run, final code state): `artifacts/m4-complete/` — `logs.txt` + `scenario.jsonl`
 + `audit.jsonl`, `verdict-android-capability-binding.json` + `verdict-gateway-audit.json` (checker
@@ -44,7 +44,7 @@ final — human evidence only), `receipt.json`.
 
 ## Regression status: gateway bridge + first session green on emulator
 
-The app embeds the shared spike host (`runtime/dsh/host/dsh_spike_host.c`) with its REAL
+The app embeds the shared spike host (`runtime/dsh/host/dsh_runtime_host.c`) with its REAL
 gateway dispatch bridge (no canned responses — the canned single-call slot is gone) and runs ALL
 THREE scenarios in one launch, judged by the shared checker:
 
@@ -65,7 +65,7 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
 
 ## How it works
 
-- `app/src/main/cpp/dsh_spike_smoke.c` — the Android smoke backend, sibling of
+- `app/src/main/cpp/dsh_runtime_smoke.c` — the Android smoke backend, sibling of
   `runtime/dsh/host/main_cli.c`'s: calls are only QUEUED inside the dispatch callback (which
   fires synchronously on the runtime thread) and settled in the post-pump drain pass — the
   deferred later-tick settlement the scenario proves. `fsRead`/`fsWrite` run base64 payloads
@@ -75,8 +75,8 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
   `invalid` with the offending name. The descriptor is identical to the CLI's, and the
   `host.info` readiness event (`{"event":"host.info","port":0}`) is delivered after eval exactly
   like the CLI. NO new primitives, NO contract changes.
-- `app/src/main/cpp/dsh_spike_jni.c` — one fresh `dsh_spike_t` runtime per scenario, whole
-  lifecycle on the CALLING thread; Kotlin (`SpikeRuntime`) keeps that caller a single
+- `app/src/main/cpp/dsh_runtime_jni.c` — one fresh `dsh_runtime_t` runtime per scenario, whole
+  lifecycle on the CALLING thread; Kotlin (`JsRuntime`) keeps that caller a single
   `HandlerThread("dsh-spike-js")` (logcat pid/tid columns prove the split from the UI thread).
 - `app/src/main/assets/dsh/` — the spike bundle as byte-identical copies of `runtime/dsh/`
   (`gateway.js`, `registry.js`, `scenario/boot-verification.js`, `scenario/gateway-bridge-smoke.js`,

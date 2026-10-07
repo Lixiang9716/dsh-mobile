@@ -11,7 +11,7 @@
 # loopback, so the app reaches it at 127.0.0.1 through the REAL gateway
 # httpFetch primitive, and the endpoint rides the launch environment
 # (SIMCTL_CHILD_DSH_MOCK_LLM_URL/KEY → the launch-env snapshot
-# SpikeHostFactory declares to the spine).
+# CRuntimeFactory declares to the spine).
 #
 # usage: run-ios-upstream-parity.sh [--udid U] [--art-dir D] [--skip-build]
 #

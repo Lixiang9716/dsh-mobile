@@ -3,7 +3,7 @@
 /**
  * HttpPrimitive — the httpFetch capability primitive (contract/primitives.md
  * §4) over @ohos.net.http requestInStream. Platform sibling of
- * hosts/android/app/src/main/java/com/dshmobile/spike/HttpPrimitive.kt.
+ * hosts/android/app/src/main/java/com/dshmobile/rt/HttpPrimitive.kt.
  *
  * The gateway call settles `{status, headers, bodyId: <callId>}` when the
  * response HEADERS arrive; the body then streams onto the runtime queue as

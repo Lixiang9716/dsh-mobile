@@ -6,7 +6,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * The M4 host's `/ws` page pump, extracted from SpikeHostM4 to keep both
+ * The M4 host's `/ws` page pump, extracted from BindingHost to keep both
  * under the file-size gate: the projection replay buffer (fed by the
  * runtime's ws.send bus posts) with its token-delta evidence, the page's
  * hello/slot.ack protocol, the ws.connected / slot.registered / host.info
@@ -14,7 +14,7 @@ import org.json.JSONObject
  * carrier — the records still ride the owning drive's scenario id through
  * [log] (the owner's carrierLog) and the runtime events through [onEvent].
  */
-internal class M4PagePump(
+internal class PagePump(
     private val activity: Activity,
     private val carrier: CarrierServer,
     /** One canonical record (the owner's carrierLog, scenario id included). */
@@ -76,7 +76,7 @@ internal class M4PagePump(
         } catch (_: Exception) {
             return
         }
-        SpikeRuntime.post {
+        JsRuntime.post {
             when (payload.optString("type")) {
                 "hello" -> pageHello(payload.optString("protocol"))
                 "slot.ack" -> slotAck(payload)

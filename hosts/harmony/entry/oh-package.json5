@@ -7,6 +7,6 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "libspike.so": "file:./src/main/cpp/types/libspike"
+    "libdruntime.so": "file:./src/main/cpp/types/libdruntime"
   }
 }

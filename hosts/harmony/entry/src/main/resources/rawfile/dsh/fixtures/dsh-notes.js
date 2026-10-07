@@ -1,6 +1,6 @@
 /**
  * dsh-notes fixture — builds the install-pipeline's test package at scenario
- * time. The spike JS cannot shell out (single-threaded runtime, no
+ * time. The rt JS cannot shell out (single-threaded runtime, no
  * subprocesses), so the package tarball is written in JS: a deterministic
  * ustar archive (tar-mini.js, mtime 0 everywhere) with two members —
  * manifest.json + bundle/index.js — carrying the plugin source from

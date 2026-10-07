@@ -40,7 +40,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. byte facts (shell-side, receipt-only): the generated iOS bundle and the
 #    market tgz this runner authors. The bundle generator needs the same
@@ -101,7 +101,7 @@ TGZ_BYTES="$(stat -f %z "$CATALOG/dsh-fs@0.1.0.tgz")"
 # 5. run the scenario with the process-level cold start measured around it
 #    (node's Date.now on both sides — millisecond wall clock; receipt-only).
 PROC_START="$(node -e 'console.log(Date.now())')"
-./build/dsh-spike-cli . scenario/perf-baseline.js \
+./build/dsh-cli . scenario/perf-baseline.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" \

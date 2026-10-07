@@ -9,12 +9,12 @@ extension AppDelegate {
     func runDevicePlane() {
         let session = GatewaySession(
             entryModule: "scenario/device-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_device_plane_js(nil)) })
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_device_plane_js(nil)) })
         gateway = session
         session.run { [weak self] outcome in
             self?.show(outcome, phase: "device.plane") { self?.gatewayVerdict = $0 }
             self?.gateway = nil
-            print("spike: device-plane drive finished verdict=\(outcome.verdict)")
+            print("rt: device-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
         }
     }
@@ -23,12 +23,12 @@ extension AppDelegate {
     func runCameraPlane() {
         let session = GatewaySession(
             entryModule: "scenario/camera-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_camera_plane_js(nil)) })
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_camera_plane_js(nil)) })
         gateway = session
         session.run { [weak self] outcome in
             self?.show(outcome, phase: "camera.plane") { self?.gatewayVerdict = $0 }
             self?.gateway = nil
-            print("spike: camera-plane drive finished verdict=\(outcome.verdict)")
+            print("rt: camera-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
         }
     }

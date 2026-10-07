@@ -39,7 +39,7 @@ sh vendor/ensure-dsh.sh
 sh vendor/ensure-ish.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. loopback file hosting + TWO catalogs over the same staged tree:
 #    - index-rollback.json: the STALE-BUT-VALID catalog (generatedAt
@@ -104,7 +104,7 @@ mkdir -p "$ART_DIR"
 LOG="$ART_DIR/logs.txt"
 rm -f "$LOG"
 RC=0
-(cd . && ./build/dsh-spike-cli . scenario/security-manifest-forgery.js --http \
+(cd . && ./build/dsh-cli . scenario/security-manifest-forgery.js --http \
     --env "DSH_MARKET_URL=$MARKET_URL" > "$LOG" 2>&1) || RC=$?
 grep '^dsh.spike.log:' "$LOG" > "$ART_DIR/scenario.jsonl" || true
 node "$ROOT/test/e2e/check.mjs" \
@@ -131,7 +131,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "phase": "security adversarial leg 2/4 — the install pipeline under a manifest forgery ladder + a stale-catalog replay (docs/security-threat-model.md)",
- "launchConfiguration": "./build/dsh-spike-cli . scenario/security-manifest-forgery.js --http --env DSH_MARKET_URL=<loopback, ephemeral>",
+ "launchConfiguration": "./build/dsh-cli . scenario/security-manifest-forgery.js --http --env DSH_MARKET_URL=<loopback, ephemeral>",
  "scenarios": [
   {
    "id": "security.manifest-forgery",

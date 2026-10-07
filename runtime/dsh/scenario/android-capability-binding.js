@@ -9,7 +9,7 @@
  * keychain set/get/delete roundtrip over the Android Keystore, and the
  * notification → background → notify.response → foreground lifecycle (the
  * embedder delivers those bridge events in order through
- * dsh_spike_gateway_event). Every expected event emits exactly one
+ * dsh_runtime_gateway_event). Every expected event emits exactly one
  * structured log entry, in the order declared by
  * tools/e2e/scenarios/android-capability-binding.json — the carrier-side records
  * (mounted / connected / slot / deltas / session-complete) come from the

@@ -27,7 +27,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh > /dev/null
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. loopback mock LLM (the boot requires a route; no agent turn runs),
 #    condition-polled (rule 8) for its announce.
@@ -63,7 +63,7 @@ echo "mock llm server: $LLM_URL" >&2
 
 # 4. run the scenario (--http: loopback httpFetch; --env: the launch env
 #    snapshot carrying the llm route) and verify the log one-to-one.
-./build/dsh-spike-cli . scenario/office.js \
+./build/dsh-cli . scenario/office.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$LLM_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-office.txt

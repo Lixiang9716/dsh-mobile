@@ -398,7 +398,7 @@
         "runtime/dsh/ci/run-leak-canary.sh",
         "runtime/dsh/artifacts/macos-cli-perf-baseline/**",
         "runtime/dsh/artifacts/macos-cli-leak-canary/**",
-        "runtime/dsh/host/dsh_spike_host.c"
+        "runtime/dsh/host/dsh_runtime_host.c"
       ],
       "needs": [
         "self-test"

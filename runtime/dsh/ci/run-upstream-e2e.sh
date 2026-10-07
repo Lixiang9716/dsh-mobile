@@ -30,7 +30,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. start the vendored mock LLM server node-side; the driver announces the
 #    OS-assigned endpoint once the port is bound.
@@ -65,7 +65,7 @@ echo "mock llm server: $MOCK_URL" >&2
 # 4. run the scenario (--http: the CLI's loopback httpFetch backend; --env:
 #    the launch-env snapshot the scenario merges into its profile container)
 #    and verify one-to-one.
-./build/dsh-spike-cli . scenario/upstream-session.js \
+./build/dsh-cli . scenario/upstream-session.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-upstream.txt

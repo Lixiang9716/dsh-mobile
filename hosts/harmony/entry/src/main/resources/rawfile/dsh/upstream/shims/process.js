@@ -121,7 +121,7 @@ export const platform = () => globalThis.__dshProfilePlatform ?? 'mobile';
  * spelling is ABSOLUTE (R3-G1, 2026-09-28): node's execPath is always
  * absolute and the acp bridge validates `isAbsolute(server.command)` with it
  * — the bare 'dsh' default failed that gate for the whole acp mcp family. */
-export const execPath = () => globalThis.__dshProfileExecPath ?? '/usr/local/bin/dsh-spike-cli';
+export const execPath = () => globalThis.__dshProfileExecPath ?? '/usr/local/bin/dsh-cli';
 /** uid/gid faces: the runtime is single-user — ONE identity owns everything
  * (the spill/settings POSIX safety checks compare stat.uid against
  * process.geteuid() to detect foreign-owned directories; a single-user

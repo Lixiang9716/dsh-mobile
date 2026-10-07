@@ -25,7 +25,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh > /dev/null
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. start both loopback mocks (the LLM route the boot requires is never
 #    driven — no agent turn runs here — and the Open Design daemon mock
@@ -70,7 +70,7 @@ echo "mock open-design daemon: $OD_URL" >&2
 # 4. run the scenario (--http: loopback httpFetch; --env: the launch env
 #    snapshot that carries BOTH the llm route and the daemon + BYOK config)
 #    and verify the log one-to-one.
-./build/dsh-spike-cli . scenario/open-design.js \
+./build/dsh-cli . scenario/open-design.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$LLM_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" \

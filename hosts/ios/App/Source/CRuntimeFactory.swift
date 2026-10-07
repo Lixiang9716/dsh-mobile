@@ -1,6 +1,6 @@
 import Foundation
 
-/// Creating the C spike host, in ONE place, because the host has to declare its
+/// Creating the C rt host, in ONE place, because the host has to declare its
 /// capabilities to the JS spine *before* the entry module runs — and the spine
 /// boots from four different drives (the plain runtime, the session runtime, the
 /// carrier, the web-boot drive). A declaration made on one path and forgotten on
@@ -11,12 +11,12 @@ import Foundation
 /// shell plugin offers its `ish` tool only when the host says it can serve one,
 /// and a host with no userland must stay silent so the plugin can say so instead
 /// of handing the model a command line that cannot run.
-func dsh_spike_new_declaring(
+func dsh_runtime_new_declaring(
     _ bundleRoot: String,
-    _ sink: inout dsh_spike_sink,
+    _ sink: inout dsh_runtime_sink,
     note: ((String) -> Void)? = nil
 ) -> OpaquePointer? {
-    guard let host = dsh_spike_new(bundleRoot, &sink) else { return nil }
+    guard let host = dsh_runtime_new(bundleRoot, &sink) else { return nil }
     // The launch-env snapshot is the host's declaration channel to the JS
     // spine. Two kinds of fact ride it: the guest userland (DSH_ISH_ROOTFS,
     // below) and the E2E runner's DSH_-prefixed process environment — the
@@ -32,7 +32,7 @@ func dsh_spike_new_declaring(
     if !env.isEmpty,
        let data = try? JSONSerialization.data(withJSONObject: env),
        let json = String(data: data, encoding: .utf8) {
-        dsh_spike_set_launch_env(host, json)
+        dsh_runtime_set_launch_env(host, json)
     }
     return host
 }
@@ -57,5 +57,5 @@ private func launchEnvRecord(_ guestRoot: String) -> String {
         "message": "launch env declares the guest userland",
         "data": [payload],
     ]) ?? "{}"
-    return SpikeLogSink.prefix + envelope
+    return RuntimeLogSink.prefix + envelope
 }

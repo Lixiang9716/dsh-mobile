@@ -46,7 +46,7 @@ sh vendor/ensure-dsh.sh
 sh vendor/ensure-ish.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. loopback file hosting FIRST (the generator needs its base URL), then the
 #    catalog: honest index + packages from system-plugins, then the tamper
@@ -119,7 +119,7 @@ node ci/market-test-indexes.mjs "$CATALOG" "$MARKET_URL" "$SEED_1" "$SEED_2" "$S
 
 # 4. run the scenario (--http: loopback httpFetch; --env: the catalog URL)
 #    and verify one-to-one.
-./build/dsh-spike-cli . scenario/marketplace-install.js \
+./build/dsh-cli . scenario/marketplace-install.js \
     --http \
     --env "DSH_MARKET_URL=$MARKET_URL" > logs-marketplace-install.txt
 mkdir -p "$ART_DIR"

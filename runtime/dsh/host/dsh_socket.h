@@ -93,11 +93,11 @@ int dsh_socket_end(const char *id, char *err, size_t errcap);
 int dsh_socket_close(const char *id, char *err, size_t errcap);
 
 /* Live servers + connections — the run loop's quiescence check (a listener
- * with nobody polling keeps the loop alive, mirroring dsh_spike_procs_alive).
+ * with nobody polling keeps the loop alive, mirroring dsh_runtime_procs_alive).
  * Also nonzero while any connect is still in progress. */
 int dsh_socket_alive(void);
 
-/* Teardown: close every fd and free every slot (dsh_spike_free's socket
+/* Teardown: close every fd and free every slot (dsh_runtime_free's socket
  * mirror of the SIGKILL-and-reap child sweep). */
 void dsh_socket_close_all(void);
 

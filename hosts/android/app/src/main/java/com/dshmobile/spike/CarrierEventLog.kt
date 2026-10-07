@@ -57,7 +57,7 @@ class CarrierEventLog(private val scenario: String) {
     }
 
     companion object {
-        const val TAG = "dsh.spike"
+        const val TAG = "dsh.rt"
         const val PREFIX = "dsh.spike.log: "
     }
 }

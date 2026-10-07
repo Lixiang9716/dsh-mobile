@@ -41,7 +41,7 @@ struct GatewayError: Error {
 /// The caller's manifest (data-protocols.md §2), read from the staged bundle
 /// root. Fail-loud: a missing or malformed manifest aborts the session.
 struct GatewayManifest {
-    static let caller = "dsh.spike.scenario"
+    static let caller = "dsh.rt.scenario"
     let id: String
     let required: [String]
 
@@ -351,10 +351,10 @@ final class GatewayCore {
     }
 
     /// stdout automation marker (NOT the canonical stream) for the E2E
-    /// driver: "spike: ui-wait <name>" before an automatable surface,
-    /// "spike: ui-done <name>" once it resolves.
+    /// driver: "rt: ui-wait <name>" before an automatable surface,
+    /// "rt: ui-done <name>" once it resolves.
     static func uiMarker(_ name: String, _ phase: String) {
-        print("spike: ui-\(phase) \(name)")
+        print("rt: ui-\(phase) \(name)")
         fflush(stdout)
     }
 }

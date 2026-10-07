@@ -65,7 +65,7 @@ const log = createLogger('b4.web');
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 /** One verdict per scenario (scenario/scenario-verdict.js, split at loop-x):
  * the completion is terminal, and the embedder re-reports a completed-fail
- * on every later bus crossing (dsh_spike_m4.c m4_status reads the sticky
+ * on every later bus crossing (dsh_runtime_m4.c m4_status reads the sticky
  * completed flag) — a second __dshComplete only multiplies the FAIL lines,
  * never the facts (loop-q: the demand throw rode main().catch(fail) into a
  * second emission, doubling the storm). A suppressed fail whose message

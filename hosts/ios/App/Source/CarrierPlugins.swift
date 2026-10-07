@@ -320,11 +320,11 @@ final class CarrierPlugins {
     /// replaces the rows + revs before the origin opens; the route must
     /// serve every staged package the composed graph lists (sorted directory
     /// order = the delivery order = the graph's scan-order tie-break).
-    static func staged(spikeRoot: URL) -> CarrierPlugins {
+    static func staged(dshRoot: URL) -> CarrierPlugins {
         var bundles: [(String, URL)] = [
-            ("dsh-web-client", spikeRoot.appendingPathComponent("webclient/web/main.js")),
-            ("dsh-web-client-mini", spikeRoot.appendingPathComponent("webclient-mini/web/main.js")),
-            ("dsh-web-client-whale", spikeRoot.appendingPathComponent("webclient-whale/web/main.js")),
+            ("dsh-web-client", dshRoot.appendingPathComponent("webclient/web/main.js")),
+            ("dsh-web-client-mini", dshRoot.appendingPathComponent("webclient-mini/web/main.js")),
+            ("dsh-web-client-whale", dshRoot.appendingPathComponent("webclient-whale/web/main.js")),
         ]
         var chunks: [(String, String, URL)] = []
         for pkg in stagedPackageDirs() {
@@ -338,11 +338,11 @@ final class CarrierPlugins {
     }
 
     /// The staged package directories under <scope>/@deepseek-ai, in sorted
-    /// (= delivery = graph scan-order) sequence. SpikeBundleStager decides
+    /// (= delivery = graph scan-order) sequence. BundleStager decides
     /// which tree: the embedded app resource in a user-facing build, else
     /// the Documents tree the E2E runners stage.
     private static func stagedPackageDirs() -> [URL] {
-        guard let scope = SpikeBundleStager.stagedPluginScope() else { return [] }
+        guard let scope = BundleStager.stagedPluginScope() else { return [] }
         return ((try? FileManager.default.contentsOfDirectory(
             at: scope, includingPropertiesForKeys: nil, options: []))?
             .filter(\.hasDirectoryPath)

@@ -733,7 +733,7 @@ fi
 # scenario rode byte-identical — the leg would die at import-link, and
 # nothing compared the two; the staged SCENARIO copies byte-check below in
 # the same sweep, so the pair cannot drift apart again).
-SPIKE_ROOT="gateway.js
+DSH_ROOT="gateway.js
 logger.js
 registry.js
 workspace-registry.js
@@ -746,7 +746,7 @@ canonical-json.js
 install-pipeline.js
 install-fetch.js
 receipt-journal.js"
-for f in $SPIKE_ROOT; do
+for f in $DSH_ROOT; do
     if [ "$MODE" != "check" ] && [ -f "runtime/dsh/$f" ]; then
         cmp -s "runtime/dsh/$f" "$RAW/$f" || cp "runtime/dsh/$f" "$RAW/$f"
     fi

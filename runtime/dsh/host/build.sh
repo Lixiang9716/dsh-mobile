@@ -1,5 +1,5 @@
 #!/bin/sh
-# Build the M1 spike desktop CLI (macOS/Linux proof run for the core spike).
+# Build the M1 rt desktop CLI (macOS/Linux proof run for the core rt).
 # Platforms do NOT use this script — they compile the same sources through
 # their own build systems (Xcode / CMake-NDK / hvigor NAPI), each after
 # running runtime/dsh/vendor/ensure.sh first.
@@ -7,8 +7,8 @@
 # Two variants, one per logging regime (the same split the platform Release
 # configurations produce, so this CLI is how the strip is verified on the
 # cheapest host):
-#   build.sh            → build/dsh-spike-cli          (debug: full logging)
-#   build.sh --release  → build/dsh-spike-cli-release  (-DDSH_RELEASE: the
+#   build.sh            → build/dsh-cli          (debug: full logging)
+#   build.sh --release  → build/dsh-cli-release  (-DDSH_RELEASE: the
 #                         shared host injects globalThis.__DSH_RELEASE__)
 set -e
 cd "$(dirname "$0")/.."
@@ -59,22 +59,22 @@ if [ "$RELEASE" -eq 1 ]; then
     # shellcheck disable=SC2086 # intentional word split
     cc -std=c11 -O1 -D_GNU_SOURCE -DDSH_RELEASE=1 -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
-       -o build/dsh-spike-cli-release \
-       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
+       -o build/dsh-cli-release \
+       host/dsh_runtime_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
        $WASM3_SRC \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm
-    echo "built build/dsh-spike-cli-release (-DDSH_RELEASE)"
+    echo "built build/dsh-cli-release (-DDSH_RELEASE)"
 else
     # shellcheck disable=SC2086 # intentional word split (see the release leg above)
     cc -std=c11 -O1 -D_GNU_SOURCE -DZSTD_DISABLE_ASM=1 -DDSH_WITH_SQLITE=1 \
        -I"$VENDOR" -I"$ZSTD" -I"$ZSTD/common" -I"$WASM3" \
-       -o build/dsh-spike-cli \
-       host/dsh_spike_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
+       -o build/dsh-cli \
+       host/dsh_runtime_host.c host/main_cli.c host/dsh_socket.c host/dsh_wasm.c \
        $WASM3_SRC \
        "$VENDOR/dtoa.c" "$VENDOR/libregexp.c" "$VENDOR/libunicode.c" "$VENDOR/quickjs.c" \
        $ZSTD_SRC \
        $ISH_LIBS -lm
-    echo "built build/dsh-spike-cli"
+    echo "built build/dsh-cli"
 fi

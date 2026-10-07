@@ -100,7 +100,7 @@ embedder plus a typed JS shim (`gateway.js`).
   time (the spike JS cannot shell out to tar/npm). The `tampered` variant
   appends attacker bytes so the integrity-rejection case exercises a real
   drifting package.
-- `__dshModuleDefine` — a spike-host seam (host/dsh_spike_host.c): registers
+- `__dshModuleDefine` — a spike-host seam (host/dsh_runtime_host.c): registers
   a module SOURCE under a specifier so `import(specifier)` resolves to it.
   Needed because the gateway fs scopes are NOT the ESM loader's filesystem
   (the loader reads the bundle root from disk; installed plugins land in the
@@ -248,43 +248,43 @@ embedder plus a typed JS shim (`gateway.js`).
 - `web/` — the spike Presentation page (`index.html` + `carrier-page.js`),
   served as static files by a host carrier; it knows only the WS protocol.
 - `host/` — the platform-neutral C shim every platform host links
-  (`dsh_spike_host.c` + `main_cli.c` desktop driver + `build.sh`).
+  (`dsh_runtime_host.c` + `main_cli.c` desktop driver + `build.sh`).
 - `artifacts/` — committed evidence per environment (logs, verdict,
   receipt).
 
 ## Embedding contract (platforms)
 
 Run `vendor/ensure.sh` first, then link
-`host/dsh_spike_host.c` + `vendor/quickjs-ng/0.17.0/{dtoa,libregexp,
+`host/dsh_runtime_host.c` + `vendor/quickjs-ng/0.17.0/{dtoa,libregexp,
 libunicode,quickjs}.c`, then from a SINGLE thread:
 
-1. `dsh_spike_new(bundle_root, &sink)` — sink receives canonical
+1. `dsh_runtime_new(bundle_root, &sink)` — sink receives canonical
    `dsh.spike.log: {...}` lines; print them to the native log unmodified.
 2. register the gateway bridge BEFORE eval:
-   - `dsh_spike_set_gateway_dispatch(s, on_call, ud)` — every
+   - `dsh_runtime_set_gateway_dispatch(s, on_call, ud)` — every
      `__dshGatewayCall(name, argsJson)` gets a monotonic `call_id` (from 1)
      and invokes `on_call(ud, call_id, name, args_json)` synchronously ON
      THE RUNTIME THREAD; hop the work to your transport queue there, never
      block. Multiple calls may be in flight.
-   - `dsh_spike_set_descriptor(s, descriptor_json)` — stores the runtime
+   - `dsh_runtime_set_descriptor(s, descriptor_json)` — stores the runtime
      descriptor JS reads via `__dshGatewayDescriptor()` (verbatim, or
      `"null"` when never set).
-3. read + `dsh_spike_eval(s, "scenario/gateway-binding.js", source)`.
+3. read + `dsh_runtime_eval(s, "scenario/gateway-binding.js", source)`.
 4. settle and stream from the RUNTIME THREAD ONLY (dispatch your platform
    results onto that queue first — ARCHITECTURE.md §6 thread rules):
-   - `dsh_spike_gateway_settle(s, call_id, ok, payload_json)` — resolves
+   - `dsh_runtime_gateway_settle(s, call_id, ok, payload_json)` — resolves
      (ok=1) / rejects (ok=0) the promise stored for `call_id` with
      `payload_json` parsed as a JSON value (`"null"` resolves null).
      Unknown or already-settled id → -1 (fail loud). Drains pending jobs
      after settling.
-   - `dsh_spike_gateway_event(s, event_json)` — calls the JS global
+   - `dsh_runtime_gateway_event(s, event_json)` — calls the JS global
      `__dshGatewayOnEvent(eventJson)` when the scenario subscribed
      (undefined handler → 0, dropped), then drains pending jobs. This is
      the channel for `http.body` / `http.end` / `http.error` stream
      events, `host.info`, `app.state`, and `notify.response`.
-5. `dsh_spike_pump(s)` — drains microtasks until quiescent (settlement now
+5. `dsh_runtime_pump(s)` — drains microtasks until quiescent (settlement now
    happens exclusively through the two calls above).
-6. verdict = `dsh_spike_complete(s) && dsh_spike_pass(s)` (plus the
+6. verdict = `dsh_runtime_complete(s) && dsh_runtime_pass(s)` (plus the
    `test/e2e/check.mjs` one-to-one match over the captured lines).
 
 JSON conventions on the bridge: byte payloads travel base64 in fields
@@ -296,14 +296,14 @@ and refs are opaque strings. `__dshGatewayAbort(callId)` dispatches an
 ### Carrier bus seam (carrier.loopback only)
 
 Hosts proving the local-carrier topology additionally register
-`dsh_spike_set_bus_sink(s, on_bus, ud)` BEFORE eval, then keep the runtime
+`dsh_runtime_set_bus_sink(s, on_bus, ud)` BEFORE eval, then keep the runtime
 alive and shuttle one-JSON-line messages:
 
 - JS → host: the scenario calls `__dshBusPost(line)`; `on_bus` fires on the
   runtime thread (hop to your transport queue there, never block).
-- host → JS: from the runtime thread only, `dsh_spike_bus_deliver(s, line)`
+- host → JS: from the runtime thread only, `dsh_runtime_bus_deliver(s, line)`
   invokes the scenario's `__dshBusOnMessage` handler and drains microtasks;
-  check `dsh_spike_complete`/`dsh_spike_pass` after each deliver.
+  check `dsh_runtime_complete`/`dsh_runtime_pass` after each deliver.
 
 The message vocabulary (`bus.ready`, `host.hello`, `ws.hello`, `ws.send`,
 `ws.message`) is spike-local; the first on-device session replaces it with the real session
@@ -313,9 +313,9 @@ projection protocol — do not build on it.
 
 ```sh
 runtime/dsh/host/build.sh
-cd runtime/dsh && ./build/dsh-spike-cli . scenario/boot-verification.js > logs.txt
+cd runtime/dsh && ./build/dsh-cli . scenario/boot-verification.js > logs.txt
 node test/e2e/check.mjs --manifest test/e2e/scenarios/boot-verification.json --log runtime/dsh/logs.txt
-./build/dsh-spike-cli . scenario/gateway-bridge-smoke.js > logs-m2.txt
+./build/dsh-cli . scenario/gateway-bridge-smoke.js > logs-m2.txt
 node test/e2e/check.mjs --manifest test/e2e/scenarios/gateway-bridge-smoke.json --log runtime/dsh/logs-m2.txt
 ```
 
@@ -327,7 +327,7 @@ host-readiness signal (`host.info`, port 0) right after eval, and defers
 every settlement to the post-pump drain pass — proving the later-tick
 pattern. The `session.mock-llm` scenario runs on the same driver:
 ```sh
-./build/dsh-spike-cli . scenario/session-mock-llm.js > logs-session-mock-llm.txt
+./build/dsh-cli . scenario/session-mock-llm.js > logs-session-mock-llm.txt
 node test/e2e/check.mjs --manifest test/e2e/scenarios/session-mock-llm.json \
   --log logs-session-mock-llm.txt
 ```
@@ -335,7 +335,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/session-mock-llm.json \
 So does the plugin-system install pipeline (`install.verified-tarball`):
 
 ```sh
-./build/dsh-spike-cli . scenario/install-verified-tarball.js > logs-install-verified-tarball.txt
+./build/dsh-cli . scenario/install-verified-tarball.js > logs-install-verified-tarball.txt
 node test/e2e/check.mjs --manifest test/e2e/scenarios/install-verified-tarball.json \
   --log logs-install-verified-tarball.txt
 ```
@@ -344,7 +344,7 @@ And the plugin-system completion scenario (config layer + fetch-based install + 
 receipt startup replay + install-time capability negotiation):
 
 ```sh
-./build/dsh-spike-cli . scenario/install-full-cycle.js > logs-install-full-cycle.txt
+./build/dsh-cli . scenario/install-full-cycle.js > logs-install-full-cycle.txt
 node test/e2e/check.mjs --manifest test/e2e/scenarios/install-full-cycle.json \
   --log logs-install-full-cycle.txt
 ```

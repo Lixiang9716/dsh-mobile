@@ -5,17 +5,17 @@ import android.os.HandlerThread
 
 /**
  * Owns the single serial thread the JS runtime lives on (AGENTS.md rule 2: JS
- * executes on one serial thread only — no spike exception). The HandlerThread
+ * executes on one serial thread only — no rt exception). The HandlerThread
  * is started once per process; bundle materialization and every
  * eval/pump/complete cycle run posted on its looper, never on the UI thread.
  */
-object SpikeRuntime {
+object JsRuntime {
 
     init {
-        System.loadLibrary("dsh_spike")
+        System.loadLibrary("dsh_runtime")
     }
 
-    private val thread = HandlerThread("dsh-spike-js").also { it.start() }
+    private val thread = HandlerThread("dsh-rt-js").also { it.start() }
     private val handler = Handler(thread.looper)
 
     /** Posts work onto the runtime thread; results come back via callbacks. */
@@ -24,7 +24,7 @@ object SpikeRuntime {
     }
 
     /**
-     * Runs the full spike lifecycle on the CALLING thread (the runtime
+     * Runs the full rt lifecycle on the CALLING thread (the runtime
      * thread): one dsh_spike runtime per scenario inside nativeRunSpike —
      * boot.verification (regression) then gateway.bridge-smoke + session.mock-llm.
      * Returns the combined multi-line verdict.
@@ -32,27 +32,27 @@ object SpikeRuntime {
     fun runOnce(contextDir: String): String = nativeRunSpike(contextDir)
 
     // ---- M4 completion session (carrier + WebView + real gateway binding) ---
-    // The driver (SpikeHostM4) keeps the handle and hops every settle/event/
+    // The driver (BindingHost) keeps the handle and hops every settle/event/
     // bus delivery back onto THIS thread via post {} — the frozen bridge's
-    // runtime-thread-only law. See dsh_spike_m4.c for the C side.
+    // runtime-thread-only law. See dsh_runtime_m4.c for the C side.
 
     /** Object every m4 crossing is delivered to (runtime thread only). */
-    interface M4Bridge {
+    interface BindingBridge {
         fun onGatewayCall(callId: Int, name: String, args: String)
         fun onBusLine(line: String)
     }
 
     /** Creates the m4 runtime: descriptor + dispatch + bus sink + eval +
      * first pump. [captureLabel] names the capture file
-     * (spike-capture-<label>.log). Returns 0 on failure (details via
-     * m4LastError()). */
+     * (rt-capture-<label>.log). Returns 0 on failure (details via
+     * bindingLastError()). */
     fun m4Begin(
         contextDir: String,
         entryName: String,
         source: String,
         descriptor: String,
         captureLabel: String,
-        bridge: M4Bridge,
+        bridge: BindingBridge,
     ): Long = nativeM4Begin(contextDir, entryName, source, descriptor, captureLabel, bridge)
 
     fun m4Settle(handle: Long, callId: Int, ok: Boolean, payload: String): Int =
@@ -63,7 +63,7 @@ object SpikeRuntime {
     fun m4BusDeliver(handle: Long, line: String): Int =
         nativeM4BusDeliver(handle, line)
 
-    fun m4LastError(): String = nativeM4Last()
+    fun bindingLastError(): String = nativeM4Last()
 
     fun m4End(handle: Long) = nativeM4End(handle)
 
@@ -73,7 +73,7 @@ object SpikeRuntime {
     // this ON the runtime thread (every gateway handler runs there), which is
     // also why the C sink needs no lock: one run at a time is the thread
     // rule. Returns the JSON payload {"result","output"}, or null with the
-    // reason in wasmLastError() (the m4LastError pattern).
+    // reason in wasmLastError() (the bindingLastError pattern).
 
     /** Runs one module export; [moduleBytes] is the raw .wasm image. */
     fun wasmRun(moduleBytes: ByteArray, func: String, input: String): String? =
@@ -97,7 +97,7 @@ object SpikeRuntime {
         source: String,
         descriptor: String,
         captureLabel: String,
-        bridge: M4Bridge,
+        bridge: BindingBridge,
     ): Long
 
     private external fun nativeM4Settle(

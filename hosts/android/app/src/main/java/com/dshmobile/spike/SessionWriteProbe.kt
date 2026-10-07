@@ -28,7 +28,7 @@ object SessionWriteProbe {
     const val SECOND_MESSAGE_TEXT = "Say hello again"
 
     /** The seeded workspace's title: the profile container's basename (the
-     * staged spike bundle directory). */
+     * staged rt bundle directory). */
     const val WORKSPACE_TITLE = "dsh"
 
     private const val FOLLOW_STREAM_ID = "bandroid-probe-follow"

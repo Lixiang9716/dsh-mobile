@@ -3,7 +3,7 @@
  * isolation: the vendored dsh-commands registry + dsh-command-feedback mount
  * as cordis plugins (the CLI composition's shape) and the registry service
  * lands on the context. Run:
- *   cd runtime/dsh && ./build/dsh-spike-cli . scenario/commands-mount-probe.js
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/commands-mount-probe.js
  */
 import { createLogger } from 'logger.js';
 const log = createLogger('probe.commands');

@@ -30,7 +30,7 @@ import org.json.JSONObject
  * evidence drive keeps its own class (`SessionWriteSession`) so its
  * manifest-pinned boot stays byte-identical; this seat shares every carrier
  * piece with it and adds no E2E machinery at all. JS runs ONLY on
- * SpikeRuntime's HandlerThread.
+ * JsRuntime's HandlerThread.
  */
 class SessionServe private constructor(
     private val activity: Activity,
@@ -72,7 +72,7 @@ class SessionServe private constructor(
             val seat = SessionServe(activity, credential, interactive, clientID)
             seat.webView = webView
             instance = seat
-            SpikeRuntime.post {
+            JsRuntime.post {
                 try {
                     seat.begin()
                 } catch (e: Exception) {
@@ -118,7 +118,7 @@ class SessionServe private constructor(
      * user-facing launch stops only when the app leaves the screen). */
     fun stop() {
         if (handle != 0L) {
-            SpikeRuntime.m4End(handle)
+            JsRuntime.m4End(handle)
             handle = 0
         }
         carrier.stop()
@@ -209,11 +209,11 @@ class SessionServe private constructor(
     private fun startSpine(pluginsDelivery: JSONArray) {
         val bundle = wirePrimitives()
         val entry = File(bundle, ENTRY)
-        handle = SpikeRuntime.m4Begin(
+        handle = JsRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
             "session-serve", runtimeBridge,
         )
-        if (handle == 0L) throw IllegalStateException("serve begin: ${SpikeRuntime.m4LastError()}")
+        if (handle == 0L) throw IllegalStateException("serve begin: ${JsRuntime.bindingLastError()}")
         deliverRuntime(runtimeConfig())
         deliverRuntime(
             JSONObject().put("type", "web.plugins").put("plugins", pluginsDelivery),
@@ -226,7 +226,7 @@ class SessionServe private constructor(
      * channel must be wired here: inside the runtime a dropped fire is
      * indistinguishable from a never-armed timer (loop-z2 — the read-idle
      * watchdog armed and never fired while emitFn went unwired). Returns the
-     * spike bundle dir the spine entry loads from. */
+     * rt bundle dir the spine entry loads from. */
     private fun wirePrimitives(): File {
         val bundle = File(activity.filesDir, "dsh")
         core = GatewayCore.create(bundle)
@@ -248,9 +248,9 @@ class SessionServe private constructor(
         // gateway denial and the shell tool could not execute at all.
         WasmPrimitive(fs).register(core)
         core.settleFn = { callId, ok, json ->
-            SpikeRuntime.post {
+            JsRuntime.post {
                 if (handle == 0L) return@post
-                onRuntimeStatus(SpikeRuntime.m4Settle(handle, callId, ok, json))
+                onRuntimeStatus(JsRuntime.m4Settle(handle, callId, ok, json))
             }
         }
         http.eventFn = ::emitEvent
@@ -262,9 +262,9 @@ class SessionServe private constructor(
      * timer.fire, …): onto the serial runtime queue, a no-op once the runtime
      * is gone. The M4 host wires its emitters the same way. */
     private fun emitEvent(json: String) {
-        SpikeRuntime.post {
+        JsRuntime.post {
             if (handle == 0L) return@post
-            onRuntimeStatus(SpikeRuntime.m4Event(handle, json))
+            onRuntimeStatus(JsRuntime.m4Event(handle, json))
         }
     }
 
@@ -330,11 +330,11 @@ class SessionServe private constructor(
         .put("available", JSONArray(GatewayCore.PRIMITIVES))
         .put("unavailable", JSONArray(GatewayCore.PHASED_ROWS)).toString()
 
-    /** The M4Bridge the C host calls back (runtime thread): gateway calls
+    /** The BindingBridge the C host calls back (runtime thread): gateway calls
      * dispatch into the core; bus messages fold into the web-boot row
      * application, the page-open gate, or the claims seam. An unknown bus
      * type is a Log line, never a death — serving mode stays up. */
-    private val runtimeBridge = object : SpikeRuntime.M4Bridge {
+    private val runtimeBridge = object : JsRuntime.BindingBridge {
         override fun onGatewayCall(callId: Int, name: String, args: String) {
             core.dispatch(callId, name, args)
         }
@@ -384,10 +384,10 @@ class SessionServe private constructor(
     /** Carrier → runtime: one bus delivery (any thread; hops onto the runtime
      * thread — the bridge hands over claimed api.request / mux.open frames). */
     private fun deliverRuntime(msg: JSONObject) {
-        SpikeRuntime.post {
+        JsRuntime.post {
             if (handle == 0L) return@post
-            val status = SpikeRuntime.m4BusDeliver(handle, msg.toString())
-            if (status < 0) fail("serve bus deliver: ${SpikeRuntime.m4LastError()}")
+            val status = JsRuntime.m4BusDeliver(handle, msg.toString())
+            if (status < 0) fail("serve bus deliver: ${JsRuntime.bindingLastError()}")
         }
     }
 
@@ -395,13 +395,13 @@ class SessionServe private constructor(
      * RESIDENT on success (1 is normal life); a failure still opens the
      * origin so the page renders its own honest state instead of a dead
      * screen, next to the failure line in the log. On 2 the scenario's own
-     * reason rides m4LastError (js_complete keeps the __dshComplete(false,
+     * reason rides bindingLastError (js_complete keeps the __dshComplete(false,
      * reason) string in the host's error slot) — the FAIL line names WHY. */
     private fun onRuntimeStatus(status: Int) {
         when (status) {
             0, 1 -> {}
-            2 -> fail("the spine scenario failed: ${SpikeRuntime.m4LastError()}")
-            else -> fail("serve runtime: ${SpikeRuntime.m4LastError()}")
+            2 -> fail("the spine scenario failed: ${JsRuntime.bindingLastError()}")
+            else -> fail("serve runtime: ${JsRuntime.bindingLastError()}")
         }
     }
 

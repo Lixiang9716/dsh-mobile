@@ -10,7 +10,7 @@
  * the host-provided Web-API seams (crypto.getRandomValues, btoa), and
  * gateway negotiation (gateway@1). The M1 canned gateway-call blocks are
  * GONE — real primitive dispatch now lives in the m2 scenarios over the
- * dsh_spike_set_gateway_dispatch bridge (gateway.bridge-smoke on the desktop
+ * dsh_runtime_set_gateway_dispatch bridge (gateway.bridge-smoke on the desktop
  * CLI, gateway.binding on the full embedder).
  */
 import { createLogger } from '../logger.js';

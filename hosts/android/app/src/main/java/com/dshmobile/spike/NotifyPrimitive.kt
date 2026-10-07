@@ -67,7 +67,7 @@ class NotifyPrimitive(private val context: Context) {
             android.content.Intent(context, MainActivity::class.java).apply {
                 setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
                     android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                putExtra(SpikeHostM4.EXTRA_NOTIFY_RESPONSE, id)
+                putExtra(BindingHost.EXTRA_NOTIFY_RESPONSE, id)
             },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )

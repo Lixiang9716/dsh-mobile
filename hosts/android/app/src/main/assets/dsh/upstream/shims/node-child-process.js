@@ -2,7 +2,7 @@
 /**
  * node:child_process — the REAL subprocess face for the parity leg (W5-R,
  * 2026-09-28). The host owns OS children through the __dshProc* intrinsics
- * (portable fork/exec/poll/waitpid in dsh_spike_host.c); this shim serves
+ * (portable fork/exec/poll/waitpid in dsh_runtime_host.c); this shim serves
  * node's API over them: spawn (stdio pipes, detached, exit/close/error and
  * the 'spawn' event), spawnSync (status:null + .error on unspawnable
  * commands — node's own contract the pwsh/systemd-run probes rely on),
@@ -69,7 +69,7 @@ const endFdIntrinsic = globalThis.__dshProcEndFd;
 /** Fail loud naming the missing host intrinsic (rule 5) at CALL time —
  * linking child_process must not kill a load that never spawns. */
 const needSeam = (name) => {
-  throw new Error(`node:child_process: ${name} needs the host subprocess seam (__dshProc* intrinsics absent — rebuild the host with dsh_spike_host.c W5-R or later)`);
+  throw new Error(`node:child_process: ${name} needs the host subprocess seam (__dshProc* intrinsics absent — rebuild the host with dsh_runtime_host.c W5-R or later)`);
 };
 
 /** setEncoding face (node: strings instead of Buffers from the named

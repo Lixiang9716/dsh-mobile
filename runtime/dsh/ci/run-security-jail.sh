@@ -50,7 +50,7 @@ echo "== 2/2 JS gate: the jail battery =="
 LOG="$ART/logs.txt"
 rm -f "$LOG"
 RC=0
-(cd . && ./build/dsh-spike-cli . scenario/security-jail.js > "$LOG" 2>&1) || RC=$?
+(cd . && ./build/dsh-cli . scenario/security-jail.js > "$LOG" 2>&1) || RC=$?
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node "$ROOT/test/e2e/check.mjs" --manifest "$ROOT/test/e2e/scenarios/security-jail.json" \
@@ -71,7 +71,7 @@ cat > "$ART/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "phase": "security adversarial leg 3/4 — the wasm jail's import surface + the socket loopback boundary (docs/security-threat-model.md); the CLI now SERVES contract v1.2.0 wasmRun through the portable spine (dsh_wasm.c + wasm3, the iOS code path)",
- "launchConfiguration": "./build/dsh-spike-cli . scenario/security-jail.js",
+ "launchConfiguration": "./build/dsh-cli . scenario/security-jail.js",
  "scenarios": [
   {
    "id": "security.jail",

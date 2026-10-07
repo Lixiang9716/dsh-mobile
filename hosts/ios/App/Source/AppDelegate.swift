@@ -62,7 +62,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// The harness console: the drive's face, not its verdict (every canonical
-    /// line goes to the spike sink; this pane is what a human watches).
+    /// line goes to the rt sink; this pane is what a human watches).
     private func makeConsole(in window: UIWindow) -> UITextView {
         let console = UITextView(frame: CGRect(
             x: 16, y: 64,
@@ -92,7 +92,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         switch launchMode {
         case "device-plane":
             announce("DSH device plane — device.plane, the v1.5.0 SDK surface live…",
-                     line: "spike: app launched in device-plane mode", web: false)
+                     line: "rt: app launched in device-plane mode", web: false)
             runDevicePlane()
         case "camera-plane":
             startCameraMode()
@@ -103,23 +103,23 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         case "session":
             let surface = sessionSurface
             announce("DSH session — session.mock-llm over the system plugins, \(surface)…",
-                     line: "spike: app launched in session mode (\(surface))", web: false)
+                     line: "rt: app launched in session mode (\(surface))", web: false)
             runSession()
         case "official-web":
             announce("DSH official web — officialweb.mount, the upstream app on the contract carrier…",
-                     line: "spike: app launched in official-web mode", web: true)
+                     line: "rt: app launched in official-web mode", web: true)
             runOfficialWeb()
         case "session-live":
             announce("DSH session live — session.live-read, the upstream spine on-device answering the official app…",
-                     line: "spike: app launched in session-live mode", web: true)
+                     line: "rt: app launched in session-live mode", web: true)
             runSessionLive()
         case "session-write":
             announce("DSH session write — composer.live-write, the official composer driving the upstream spine…",
-                     line: "spike: app launched in session-write mode", web: true)
+                     line: "rt: app launched in session-write mode", web: true)
             runSessionWrite()
         case "next-web":
             announce("DSH next web — nextweb.mount, the self-hosted client on the serving seat…",
-                     line: "spike: app launched in next-web mode", web: true)
+                     line: "rt: app launched in next-web mode", web: true)
             runNextWeb()
         case "serve":
             // The USER-FACING serving seat with the harness's logging intact:
@@ -129,7 +129,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             // does (a release build drops every debug/info record by design).
             // This is the mode to reproduce a user-visible failure in.
             announce("DSH serve — the user-facing seat, driven by hand (harness logging on)…",
-                     line: "spike: app launched in serve mode", web: true)
+                     line: "rt: app launched in serve mode", web: true)
             runServingBoot()
         default:
             runDefaultChain()
@@ -138,9 +138,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
 
     /// The historical launch sequence: boot verification, then the carrier.
     private func runDefaultChain() {
-        print("spike: app launched, driving boot.verification then carrier.loopback")
+        print("rt: app launched, driving boot.verification then carrier.loopback")
         fflush(stdout)
-        SpikeRuntime().run { [weak self] boot in
+        JsRuntime().run { [weak self] boot in
             self?.show(boot, phase: "boot.verification") { self?.bootVerdict = $0 }
             self?.runCarrier()
         }
@@ -336,7 +336,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.show(outcome, phase: "session.mock-llm") { self.sessionVerdict = $0 }
             self.session = nil
             // The session runner polls for this terminal marker.
-            print("spike: sequence session=\(self.sessionVerdict)")
+            print("rt: sequence session=\(self.sessionVerdict)")
             fflush(stdout)
         }
     }
@@ -356,7 +356,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let self, !BuildFlavor.isRelease else { return }
             self.show(outcome, phase: "officialweb.mount") { self.officialVerdict = $0 }
             self.official = nil
-            print("spike: sequence official-web=\(self.officialVerdict)")
+            print("rt: sequence official-web=\(self.officialVerdict)")
             fflush(stdout)
         }
     }
@@ -375,7 +375,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let self else { return }
             self.show(outcome, phase: "session.live-read") { self.sessionLiveVerdict = $0 }
             self.sessionLive = nil
-            print("spike: sequence session-live=\(self.sessionLiveVerdict)")
+            print("rt: sequence session-live=\(self.sessionLiveVerdict)")
             fflush(stdout)
         }
     }
@@ -394,7 +394,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let self else { return }
             self.show(outcome, phase: "composer.live-write") { self.sessionWriteVerdict = $0 }
             self.sessionWrite = nil
-            print("spike: sequence session-write=\(self.sessionWriteVerdict)")
+            print("rt: sequence session-write=\(self.sessionWriteVerdict)")
             fflush(stdout)
         }
     }
@@ -411,7 +411,7 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             guard let self else { return }
             self.show(outcome, phase: "nextweb.mount") { self.nextWebVerdict = $0 }
             self.nextWeb = nil
-            print("spike: sequence next-web=\(self.nextWebVerdict)")
+            print("rt: sequence next-web=\(self.nextWebVerdict)")
             fflush(stdout)
         }
     }
@@ -440,28 +440,28 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
             self.show(outcome, phase: "gateway.binding") { self.gatewayVerdict = $0 }
             self.gateway = nil
             // The CI poll waits for this final marker before running the checkers.
-            print("spike: sequence boot=\(self.bootVerdict) carrier=\(self.carrierVerdict)"
+            print("rt: sequence boot=\(self.bootVerdict) carrier=\(self.carrierVerdict)"
                 + " gateway=\(self.gatewayVerdict)")
             fflush(stdout)
         }
     }
 
     func show(
-        _ outcome: SpikeOutcome, phase: String, setVerdict: @escaping (String) -> Void
+        _ outcome: JsOutcome, phase: String, setVerdict: @escaping (String) -> Void
     ) {
         setVerdict(outcome.verdict)
         var text = [
-            "DSH spike — \(phase)",
+            "DSH rt — \(phase)",
             "engine: \(outcome.engineName) \(outcome.engineVersion)",
             "events logged: \(outcome.canonicalLines.count)",
             "verdict: \(outcome.verdict)",
         ].joined(separator: "\n")
         if !outcome.error.isEmpty {
             text += "\nerror: \(outcome.error)"
-            print("spike: error \(outcome.error)")
+            print("rt: error \(outcome.error)")
         }
         console?.text = (console?.text ?? "") + "\n\n" + text
-        print("spike: verdict \(outcome.verdict) (\(phase), events logged: \(outcome.canonicalLines.count))")
+        print("rt: verdict \(outcome.verdict) (\(phase), events logged: \(outcome.canonicalLines.count))")
         fflush(stdout)
     }
 }

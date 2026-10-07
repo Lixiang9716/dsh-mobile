@@ -3,7 +3,7 @@
 /*
  * Index — the D9 host page. THREE phases on ONE launch:
  *
- * 1. Regression (synchronous): materializes the bundled spike (byte-identical
+ * 1. Regression (synchronous): materializes the bundled rt (byte-identical
  *    rawfile copies of the runtime/dsh originals + the Web Client plugin)
  *    into the app cache dir preserving layout, then calls startSpike ONCE on
  *    the UI thread — boot.verification, gateway.bridge-smoke, session.mock-llm on the ONE
@@ -34,7 +34,7 @@
  * release launch that asks for an E2E leg is refused LOUD by name (rule 5):
  * a user-facing binary has no drives.
  */
-import { startSpike } from 'libspike.so';
+import { startSpike } from 'libdruntime.so';
 import { fileIo as fs } from '@kit.CoreFileKit';
 import { common } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
@@ -80,7 +80,7 @@ const LEG_REAL_CREATE: string = 'real.create';
 // bundle-root-relative files shipped under resources/rawfile/dsh/ —
 // logger.js must sit at <bundle>/logger.js, gateway.js at <bundle>/gateway.js,
 // the scenarios at <bundle>/scenario/..., the vendored package under
-// <bundle>/vendor/... (the spike host's ESM loader resolves these paths).
+// <bundle>/vendor/... (the rt host's ESM loader resolves these paths).
 // webclient/... is the ACTIVE Web Client plugin the m5 carrier serves;
 // upstream/... + the vendor/npm libs are the D9 web-boot closure the
 // official-web phase runs, and the W-SESS spine closure below it is the
@@ -1205,7 +1205,7 @@ struct ApprovalDialog {
 @Entry
 @Component
 struct Index {
-  @State verdict: string = 'spike: running...';
+  @State verdict: string = 'rt: running...';
   @State webUrl: string = '';
   private realCreatePort: number = CARRIER_BASE_PORT;
   @State approvalTitle: string = '';
@@ -1238,7 +1238,7 @@ struct Index {
         return;
       }
       // The user-facing page carries NO verdict: the panel above (and the
-      // initial "spike: running..." placeholder, which the harness shows
+      // initial "rt: running..." placeholder, which the harness shows
       // while the trio runs) belongs to the verification UI.
       this.verdict = '';
       this.startReleaseServe();
@@ -1372,7 +1372,7 @@ struct Index {
   }
 
   private materializeBundle(ctx: common.Context): Promise<string> {
-    const root: string = ctx.cacheDir + '/spike';
+    const root: string = ctx.cacheDir + '/rt';
     const jobs: Promise<void>[] =
       BUNDLE_FILES.map((rel: string): Promise<void> => this.copyRawFile(ctx, rel, root + '/' + rel));
     return Promise.all(jobs).then((): string => root);
@@ -1419,18 +1419,18 @@ struct Index {
 
   private runSpike(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
-    const capturePath: string = ctx.cacheDir + '/dsh-spike-capture.log';
+    const capturePath: string = ctx.cacheDir + '/dsh-rt-capture.log';
     const fsRoot: string = ctx.filesDir + '/dsh-fs';
     this.materializeBundle(ctx)
       .then((root: string): string => startSpike(root, capturePath, fsRoot))
       .then((summary: string) => {
         this.verdict = summary;
-        hilog.info(0x0000, TAG, 'spike verdict: %{public}s', summary);
+        hilog.info(0x0000, TAG, 'rt verdict: %{public}s', summary);
         this.startBindingPhase(ctx, fsRoot);
       })
       .catch((err: BusinessError) => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
-        hilog.error(0x0000, TAG, 'spike failed: %{public}s', err.message ?? 'unknown');
+        hilog.error(0x0000, TAG, 'rt failed: %{public}s', err.message ?? 'unknown');
       });
   }
 
@@ -1546,7 +1546,7 @@ struct Index {
    * other path). Then the SAME carrier + HostPhase wiring the binding phase
    * uses, with the canonical llm-live-stream scenario as the entry. No user-store
    * seeding and no D9 chain: this leg is the whole run, so the default chain
-   * never spends serve quota. The verdict is the C `dsh.spike.verdict:
+   * never spends serve quota. The verdict is the C `dsh.rt.verdict:
    * llm.live-stream` line, asserted record by record by the E2E checkers. */
   /** The upstream-suite leg: materialize the bundle (the --suite-extras
    * staged corpus + test closure ride the same copy), then hand the driver
@@ -1705,7 +1705,7 @@ struct Index {
    * phase's carrier + HostPhase machinery with the device-plane scenario as
    * the entry — no web client mounts (the scenario drives primitives only),
    * and the page's approval dialog serves clipboardRead's gate. The verdict
-   * is the C `dsh.spike.verdict: harmony.device-plane` line. */
+   * is the C `dsh.rt.verdict: harmony.device-plane` line. */
   /** The capability plane's microphone leg (v1.10.0 candidate): the
    * device-plane leg's shape — micStart/micStop + the mic.frame channel,
    * no web client mounts. The OS microphone prompt is driven by the
@@ -1843,7 +1843,7 @@ struct Index {
    * phase's carrier + HostPhase machinery with the camera-plane scenario as
    * the entry — the capture burst against a real camera; a camera-less image
    * answers `unavailable` and the ladder walks the denial legs. The verdict
-   * is the C `dsh.spike.verdict: harmony.camera-plane` line. */
+   * is the C `dsh.rt.verdict: harmony.camera-plane` line. */
   private runCameraPlaneLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/dsh-fs';

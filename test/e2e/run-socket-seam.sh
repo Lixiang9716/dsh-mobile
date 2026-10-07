@@ -45,7 +45,7 @@ fi
 echo "== 2/2 JS gate: scenario → gateway → host seam =="
 LOG="$ART/logs.txt"
 rm -f "$LOG"
-(cd runtime/dsh && ./build/dsh-spike-cli . scenario/socket-seam.js > "$LOG" 2>&1) || true
+(cd runtime/dsh && ./build/dsh-cli . scenario/socket-seam.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/socket-audit.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/socket-seam-local.json \
@@ -76,7 +76,7 @@ cat > "$ART/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "phase": "contract v1.8.0 \`socketListen\`/\`socketConnect\` — audited loopback-only TCP (decision D-d); the desktop CLI is the dev/test profile, so the loopback grants come from the descriptor alone and nothing prompts",
- "launchConfiguration": "(cd runtime/dsh) ./build/dsh-spike-cli . scenario/socket-seam.js",
+ "launchConfiguration": "(cd runtime/dsh) ./build/dsh-cli . scenario/socket-seam.js",
  "scenarios": [
   {
    "id": "socket.seam",

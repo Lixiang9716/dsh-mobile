@@ -1,13 +1,13 @@
 /*
- * dsh_spike_smoke.c — Android smoke backend over the shared spike host's
- * gateway dispatch bridge (dsh_spike_set_gateway_dispatch). Handler set
+ * dsh_runtime_smoke.c — Android smoke backend over the shared rt host's
+ * gateway dispatch bridge (dsh_runtime_set_gateway_dispatch). Handler set
  * mirrors runtime/dsh/host/main_cli.c: calls are only QUEUED inside
  * on_call (which fires synchronously on the runtime thread) and settled in
  * the post-pump drain pass — the deferred later-tick settlement the
  * gateway.bridge-smoke scenario exists to prove. fs payloads travel base64; the
  * scope root is an app-private directory instead of /tmp.
  */
-#include "dsh_spike_smoke.h"
+#include "dsh_gateway_smoke.h"
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -22,7 +22,7 @@
 /* Same descriptor the CLI smoke backend sets (main_cli.c): fs ON and the
  * keychain primitives IMPLEMENTED as app-private files (contract v1.0.0
  * rows 8-9 — the BYOK onboarding flow stores credentials there), everything
- * the spike cannot honestly provide on Android declared unavailable
+ * the rt cannot honestly provide on Android declared unavailable
  * (contract §2). */
 static const char *SMOKE_DESCRIPTOR =
         "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\","
@@ -38,7 +38,7 @@ typedef struct smoke_req {
 } smoke_req;
 
 typedef struct smoke_backend {
-    dsh_spike_t *spike;
+    dsh_runtime_t *rt;
     const char *fs_root;
     smoke_req *head;
     smoke_req *tail;
@@ -47,12 +47,12 @@ typedef struct smoke_backend {
 
 static void smoke_seterr(smoke_backend *b, char *err_out, size_t err_sz) {
     if (!err_out || err_sz == 0) return;
-    snprintf(err_out, err_sz, "%s", dsh_spike_error(b->spike));
+    snprintf(err_out, err_sz, "%s", dsh_runtime_error(b->rt));
 }
 
 static void smoke_settle(smoke_backend *b, int call_id, int ok,
                          const char *payload) {
-    if (dsh_spike_gateway_settle(b->spike, call_id, ok, payload) == 0) return;
+    if (dsh_runtime_gateway_settle(b->rt, call_id, ok, payload) == 0) return;
     b->failed = 1;
 }
 
@@ -504,12 +504,12 @@ static int smoke_drive(smoke_backend *b) {
     struct timespec deadline;
     smoke_deadline(&deadline, SMOKE_DEADLINE_SECONDS);
     int rc = 0;
-    while (rc == 0 && !b->failed && !dsh_spike_complete(b->spike)) {
-        rc = dsh_spike_pump(b->spike);
+    while (rc == 0 && !b->failed && !dsh_runtime_complete(b->rt)) {
+        rc = dsh_runtime_pump(b->rt);
         if (rc != 0) break;
         int served = smoke_drain(b);
         if (served < 0) { rc = -1; break; }
-        if (dsh_spike_complete(b->spike)) break;
+        if (dsh_runtime_complete(b->rt)) break;
         if (served == 0) break; /* quiescent with nothing outstanding */
         if (smoke_expired(&deadline)) rc = -1;
     }
@@ -518,36 +518,36 @@ static int smoke_drive(smoke_backend *b) {
 
 int dsh_smoke_run(const char *bundle_root, const char *entry_name,
                   const char *source, const char *fs_root,
-                  const dsh_spike_sink *sink, char *err_out,
+                  const dsh_runtime_sink *sink, char *err_out,
                   size_t err_out_sz) {
     smoke_backend b = {0};
     b.fs_root = fs_root;
-    b.spike = dsh_spike_new(bundle_root, sink);
-    if (!b.spike) {
-        snprintf(err_out, err_out_sz, "dsh_spike_new failed");
+    b.rt = dsh_runtime_new(bundle_root, sink);
+    if (!b.rt) {
+        snprintf(err_out, err_out_sz, "dsh_runtime_new failed");
         return 0;
     }
-    dsh_spike_set_gateway_dispatch(b.spike, smoke_on_call, &b);
-    dsh_spike_set_descriptor(b.spike, SMOKE_DESCRIPTOR);
+    dsh_runtime_set_gateway_dispatch(b.rt, smoke_on_call, &b);
+    dsh_runtime_set_descriptor(b.rt, SMOKE_DESCRIPTOR);
 
-    int rc = dsh_spike_eval(b.spike, entry_name, source);
+    int rc = dsh_runtime_eval(b.rt, entry_name, source);
     /* source stays caller-owned (freed in dsh_run_scenario) — do NOT free here. */
 
     /* Host readiness signal through the same gateway-event channel the
-     * platform embedders use: {"event":"host.info","port":0} — the spike
+     * platform embedders use: {"event":"host.info","port":0} — the rt
      * backend has no carrier, so port 0. Scenarios waiting on it start
      * here; runtimes without a subscriber drop it (shim contract). */
     if (rc == 0 && !b.failed
-        && dsh_spike_gateway_event(b.spike, "{\"event\":\"host.info\",\"port\":0}") != 0) {
+        && dsh_runtime_gateway_event(b.rt, "{\"event\":\"host.info\",\"port\":0}") != 0) {
         rc = -1;
     }
     if (rc == 0) rc = smoke_drive(&b);
 
-    int passed = (rc == 0 && !b.failed && dsh_spike_complete(b.spike) &&
-                  dsh_spike_pass(b.spike));
-    if (!passed || dsh_spike_error(b.spike)[0]) {
+    int passed = (rc == 0 && !b.failed && dsh_runtime_complete(b.rt) &&
+                  dsh_runtime_pass(b.rt));
+    if (!passed || dsh_runtime_error(b.rt)[0]) {
         smoke_seterr(&b, err_out, err_out_sz);
     }
-    dsh_spike_free(b.spike);
+    dsh_runtime_free(b.rt);
     return passed;
 }

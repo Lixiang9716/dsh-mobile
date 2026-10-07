@@ -4,7 +4,7 @@
  * intrinsic's conformance probe. Run against the quickjs CLI:
  *
  *   cp test/upstream-suite/tc39-probe.mjs runtime/dsh/upstream-tests/__tc39.spec.mjs
- *   cd runtime/dsh && ./build/dsh-spike-cli . scenario/upstream-suite-leg.js \
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/upstream-suite-leg.js \
  *     --env DSH_UPSTREAM_SPEC=upstream-tests/__tc39.spec.mjs
  *
  * Asserts the proposal's load-bearing semantics on OUR engine: the surface

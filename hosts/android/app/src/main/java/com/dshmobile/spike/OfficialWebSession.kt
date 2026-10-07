@@ -14,7 +14,7 @@ import org.json.JSONObject
  * Drives `android.officialweb.mount`: the carrier as a REAL implementation
  * of the upstream `ctx.webServer` contract, mounting the OFFICIAL web app
  * (vendored dist, zero upstream edits) in the Android WebView — with the
- * runtime live: a spike session running the android-officialweb-web-live scenario
+ * runtime live: a rt session running the android-officialweb-web-live scenario
  * composes the OFFICIAL boot wire with the vendored client-modules node half
  * and posts `web.boot` over the bus seam; the carrier swaps the delivered
  * rows into the index render pipeline, overrides the /plugins revs, and only
@@ -27,7 +27,7 @@ import org.json.JSONObject
  * streams stay UNCLAIMED (the embedded closure carries no agent spine, so
  * there are no session services) and the carrier answers them structured-
  * unavailable — the next named gap, never faked. Kotlin sibling of hosts/ios
- * OfficialWebRuntime.swift; JS runs ONLY on SpikeRuntime's HandlerThread.
+ * OfficialWebRuntime.swift; JS runs ONLY on JsRuntime's HandlerThread.
  */
 class OfficialWebSession private constructor(
     private val activity: Activity,
@@ -46,8 +46,8 @@ class OfficialWebSession private constructor(
         // fired mid-boot in the 2026-09-21 full-suite run).
         const val WATCHDOG_SECONDS = 270
 
-        private const val TAG = "dsh.spike"
-        private const val RESULT_TAG = "dsh.spike.result"
+        private const val TAG = "dsh.rt"
+        private const val RESULT_TAG = "dsh.rt.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
         private const val BOOT_SOURCE = "runtime (vendored @deepseek-ai/dsh-client-modules)"
         private const val SERVICES_PENDING_REASON =
@@ -116,7 +116,7 @@ class OfficialWebSession private constructor(
 
     private fun start(onFinished: (String) -> Unit) {
         this.onFinished = onFinished
-        SpikeRuntime.post {
+        JsRuntime.post {
             try {
                 begin()
             } catch (e: Exception) {
@@ -279,20 +279,20 @@ class OfficialWebSession private constructor(
      * `web.plugins` files. Runtime thread. */
     private fun startWebBootRuntime(pluginsDelivery: JSONArray) {
         val entry = File(activity.filesDir, "dsh/$ENTRY")
-        handle = SpikeRuntime.m4Begin(
+        handle = JsRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
             "android-officialweb-mount", runtimeBridge,
         )
-        if (handle == 0L) throw IllegalStateException("official-web begin: ${SpikeRuntime.m4LastError()}")
+        if (handle == 0L) throw IllegalStateException("official-web begin: ${JsRuntime.bindingLastError()}")
         deliverRuntime(
             JSONObject().put("type", "web.plugins").put("plugins", pluginsDelivery),
         )
     }
 
-    /** The M4Bridge the C host calls back (runtime thread). The scenario
+    /** The BindingBridge the C host calls back (runtime thread). The scenario
      * claims nothing: a gateway dispatch would be a bug (fail loud), and the
      * scenario's own completion is NOT the verdict — the probe's is. */
-    private val runtimeBridge = object : SpikeRuntime.M4Bridge {
+    private val runtimeBridge = object : JsRuntime.BindingBridge {
         override fun onGatewayCall(callId: Int, name: String, args: String) {
             fail("official-web: unexpected gateway call '$name' (compose-only closure)")
         }
@@ -351,10 +351,10 @@ class OfficialWebSession private constructor(
      * thread — the bridge hands over claimed api.request / mux.open frames
      * here). The scenario's own completion status is NOT the verdict. */
     private fun deliverRuntime(msg: JSONObject) {
-        SpikeRuntime.post {
+        JsRuntime.post {
             if (finished || handle == 0L) return@post
-            val status = SpikeRuntime.m4BusDeliver(handle, msg.toString())
-            if (status < 0) fail("official-web bus deliver: ${SpikeRuntime.m4LastError()}")
+            val status = JsRuntime.m4BusDeliver(handle, msg.toString())
+            if (status < 0) fail("official-web bus deliver: ${JsRuntime.bindingLastError()}")
         }
     }
 
@@ -435,7 +435,7 @@ class OfficialWebSession private constructor(
             (if (error.isEmpty()) "" else " | error: $error")
         Log.i(RESULT_TAG, line)
         Log.i(RESULT_TAG, "ALL ${if (passed) "PASS" else "FAIL"}")
-        if (handle != 0L) SpikeRuntime.m4End(handle)
+        if (handle != 0L) JsRuntime.m4End(handle)
         handle = 0
         carrier.stop()
         instance = null

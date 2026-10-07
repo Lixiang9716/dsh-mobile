@@ -37,7 +37,7 @@ import {
   hostFree,
   hostSettle,
   hostStart,
-} from 'libspike.so';
+} from 'libdruntime.so';
 import { common } from '@kit.AbilityKit';
 import { socket } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';

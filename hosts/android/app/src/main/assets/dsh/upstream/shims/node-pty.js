@@ -7,7 +7,7 @@
  * backend through `createLazyRequire('node-pty')` and spawns REAL children
  * on REAL pseudo-terminals (echo, job control, a foreground process group,
  * TERM, SIGWINCH window sizes). The host grew the __dshPty* intrinsics
- * (forkpty(3) in dsh_spike_host.c) and this module serves node-pty's IPty
+ * (forkpty(3) in dsh_runtime_host.c) and this module serves node-pty's IPty
  * surface over them: spawn/onData/onExit/write/resize/kill plus the
  * pause/resume flow-control pair the vendored handle drives.
  *

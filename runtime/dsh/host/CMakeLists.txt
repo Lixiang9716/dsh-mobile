@@ -6,8 +6,8 @@
 # sources — hosts/android/app/src/main/cpp/CMakeLists.txt,
 # hosts/harmony/entry/src/main/cpp/CMakeLists.txt and the C Sources of
 # hosts/ios/DSHSpike.xcodeproj/project.pbxproj (the three agree on the engine
-# set). Platform-edge TUs stay out: dsh_spike_jni.c / dsh_spike_m4.c /
-# dsh_spike_smoke.c / android_compat.c are the Android JNI shell's,
+# set). Platform-edge TUs stay out: dsh_jni_scenario.c / dsh_jni_binding.c /
+# dsh_gateway_smoke.c / android_compat.c are the Android JNI shell's,
 # napi_init.cpp / gateway_smoke.cpp the HarmonyOS NAPI shell's, main_cli.c /
 # ish_smoke.c are executables' mains, SpikeBundle.c an iOS-generated app file.
 #
@@ -27,11 +27,11 @@ add_library(dsh-core STATIC
   # plain POSIX/BSD sockets; every per-host build compiles it, and a host
   # whose gateway layer does not SERVE the socket primitives answers
   # `unavailable` (negotiation, not a branch).
-  dsh_spike_host.c
+  dsh_runtime_host.c
   dsh_wasm.c
   dsh_socket.c
   # The quickjs-ng fork (pin: vendor/ensure.sh) — exactly the four TUs every
-  # proven build compiles; quickjs-libc is deliberately excluded (the spike
+  # proven build compiles; quickjs-libc is deliberately excluded (the rt
   # host provides its own glue, runtime/dsh/README.md "Embedding contract").
   "${DSH_QJS_DIR}/dtoa.c"
   "${DSH_QJS_DIR}/libregexp.c"
@@ -144,7 +144,7 @@ target_compile_options(dsh-core PRIVATE
   -Wall
   -Wno-unused-parameter
   -Wno-unused-function)
-set_source_files_properties(dsh_spike_host.c PROPERTIES
+set_source_files_properties(dsh_runtime_host.c PROPERTIES
   COMPILE_OPTIONS "-include;unistd.h")
 
 # Release logging regime (AGENTS.md rule L4): -DDSH_RELEASE=1 on the cache —

@@ -10,7 +10,7 @@
  * picker grant → fsScope persist/resolve roundtrip, approval dialog,
  * keychain set/get/delete roundtrip, and the notification → background →
  * notify.response → foreground lifecycle (the embedder delivers those
- * bridge events in order through dsh_spike_gateway_event).
+ * bridge events in order through dsh_runtime_gateway_event).
  */
 import { createLogger } from '../logger.js';
 import {

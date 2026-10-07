@@ -18,7 +18,7 @@ import org.json.JSONObject
      * the page's own timeline fold renders it. One implementation of the
      * serving path, verified by this manifest and run by users — the seat's
      * hook block (no-op defaults) is the seam, the iOS drive's shape
-     * mirrored. JS runs ONLY on SpikeRuntime's HandlerThread. */
+     * mirrored. JS runs ONLY on JsRuntime's HandlerThread. */
 class NextWebSession private constructor(private val activity: Activity) {
 
     companion object {
@@ -28,8 +28,8 @@ class NextWebSession private constructor(private val activity: Activity) {
         // phase window (the write-live drive's 270s budget, same seat class).
         const val WATCHDOG_SECONDS = 270
 
-        private const val TAG = "dsh.spike"
-        private const val RESULT_TAG = "dsh.spike.result"
+        private const val TAG = "dsh.rt"
+        private const val RESULT_TAG = "dsh.rt.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 
         @Volatile private var instance: NextWebSession? = null

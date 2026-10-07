@@ -5,7 +5,7 @@
  "extracted": "wave-7 opener, 2026-09-27, from the working tree at branch feat/cmake-phase1 (de facto -> de jure; EXTRACTION not design)",
  "sources": [
   "runtime/dsh/upstream/shims/*.js (export statements + module/lead comments)",
-  "runtime/dsh/host/dsh_spike_host.c (dsh_node_shim table rows)",
+  "runtime/dsh/host/dsh_runtime_host.c (dsh_node_shim table rows)",
   "runtime/dsh/upstream/shims/runtime-modules.js + npm-bridges{,-b,-c,-pi-ai}.js (registration rows)",
   "tmp/r3-ledger-*.json (wave ledgers: per-face contracts, W-numbers cited in `since`)"
  ],

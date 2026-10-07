@@ -12,7 +12,7 @@
  * mounts its tool. The remaining packages are load-verified only: mounting
  * them is the integration round's move (boot.js stays untouched this leg).
  * Run:
- *   cd runtime/dsh && ./build/dsh-spike-cli . scenario/interactive-circle-probe.js
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/interactive-circle-probe.js
  */
 import { createLogger } from 'logger.js';
 const log = createLogger('probe.interactive-circle');

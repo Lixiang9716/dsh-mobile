@@ -177,7 +177,7 @@ class BlePrimitives(
         done.settle(JSONObject().put("stopped", stopped), null)
     }
 
-    /** MainActivity → SpikeHostM4 route the OS prompt's verdict here. */
+    /** MainActivity → BindingHost route the OS prompt's verdict here. */
     fun onPermissionResult(granted: Boolean) {
         consent.onPermissionResult(granted)
     }

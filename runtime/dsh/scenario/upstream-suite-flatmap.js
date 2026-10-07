@@ -56,7 +56,7 @@ const reRoots = [
 
 export const installFlatPathMap = () => {
   // W8 (2026-09-29): the spec joins its consumer manifest against
-  // process.cwd() — the RUN's workspace root (/tmp/dsh-spike-smoke.*) — so
+  // process.cwd() — the RUN's workspace root (/tmp/dsh-runtime-smoke.*) — so
   // the ancestor walk produces WORKSPACE-ABSOLUTE spellings
   // (<root>/packages/.../node_modules/...) the bare watchTrees rows above
   // never match ("cannot resolve 'chokidar' from /tmp/.../settings-file/

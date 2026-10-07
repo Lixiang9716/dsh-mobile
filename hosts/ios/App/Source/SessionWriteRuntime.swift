@@ -40,7 +40,7 @@ final class SessionWriteRuntime {
     }()
     private let eventLog = CarrierEventLog(scenario: SessionWriteRuntime.scenario)
     private weak var webView: WKWebView?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
     private var finished = false
 
@@ -51,7 +51,7 @@ final class SessionWriteRuntime {
         self.webView = webView
     }
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         self.completion = completion
         armWatchdog()
         wireEvidence()
@@ -269,7 +269,7 @@ final class SessionWriteRuntime {
             "bodyText": (page["bodyText"] as? String ?? "")
                 .replacingOccurrences(of: "\n", with: " "),
         ])
-        finish(SpikeOutcome(
+        finish(JsOutcome(
             completed: true, passed: true, error: "",
             canonicalLines: eventLog.lines
         ))
@@ -288,22 +288,22 @@ final class SessionWriteRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: session-write FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: session-write FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: session-write FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: session-write FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message,
             canonicalLines: eventLog.lines
         )
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         serve.stop()
-        print("spike: session-write drive finished verdict=\(outcome.verdict)")
+        print("rt: session-write drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         DispatchQueue.main.async { [weak self] in
             self?.completion?(outcome)

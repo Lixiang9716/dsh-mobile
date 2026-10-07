@@ -4,7 +4,7 @@
  * scenario/scenario-verdict.js — the scenario's one-verdict fail gate
  * (split from composer-web-live.js at loop-x). #366 made `fail` first-only:
  * a completed-fail verdict is STICKY — js_complete keeps the reason in the
- * host's error slot (dsh_spike_host.c) and every later bus crossing
+ * host's error slot (dsh_runtime_host.c) and every later bus crossing
  * re-reports it (m4_status reads the completed flag) — so a second
  * __dshComplete only multiplies the FAIL lines, never the facts.
  *

@@ -39,7 +39,7 @@ run_to() { perl -e 'alarm shift; exec @ARGV' "$@"; }
 # boot-staging faces all run, the import fails, __dshComplete(false) fires.
 : > "$OUT/__baseline__.txt"
 DSH_MODULE_MANIFEST="$OUT/__baseline__.txt" \
-    "$SPIKE/build/dsh-spike-cli" "$SPIKE" scenario/upstream-suite-leg.js \
+    "$SPIKE/build/dsh-cli" "$SPIKE" scenario/upstream-suite-leg.js \
     --env "DSH_UPSTREAM_SPEC=upstream-tests/definitely-missing.spec.mjs" \
     > "$LOGDIR/__baseline__.log" 2>&1
 
@@ -49,7 +49,7 @@ worker() {
     stem="${name%.spec.mjs}"
     manifest="$OUT/$stem.txt"
     DSH_MODULE_MANIFEST="$manifest" \
-        run_to 90 "$SPIKE/build/dsh-spike-cli" "$SPIKE" scenario/upstream-suite-leg.js \
+        run_to 90 "$SPIKE/build/dsh-cli" "$SPIKE" scenario/upstream-suite-leg.js \
         --env "DSH_UPSTREAM_SPEC=upstream-tests/$name" \
         > "$LOGDIR/$stem.log" 2>&1
 }

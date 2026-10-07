@@ -8,7 +8,7 @@
 #   1. stage the LLM credentials into fs scope "app"
 #      (files/profiles/default/llm-live-stream/config.json via run-as — the key is
 #      written to the app container only, never echoed, never committed);
-#   2. launch with `--ez dsh.llm true` (SpikeHostM4.startLlm — scenario
+#   2. launch with `--ez dsh.llm true` (BindingHost.startLlm — scenario
 #      `llm.live-stream`, entry scenario/llm-live-stream.js, one real streaming chat turn
 #      through the gateway httpFetch);
 #   3. verify the captured log against llm-live-stream-device.json AND

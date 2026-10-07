@@ -2,7 +2,7 @@
  "manifest": "bare-map",
  "version": 1,
  "constitution": "runtime/dsh/upstream/INTERFACES.md",
- "extracted": "wave-7 opener, 2026-09-27, from host/dsh_spike_host.c (dsh_node_shim + dsh_map_bare), upstream/shims/npm-bridges{,-b,-c,-pi-ai}.js and upstream/shims/runtime-modules.js",
+ "extracted": "wave-7 opener, 2026-09-27, from host/dsh_runtime_host.c (dsh_node_shim + dsh_map_bare), upstream/shims/npm-bridges{,-b,-c,-pi-ai}.js and upstream/shims/runtime-modules.js",
  "resolutionOrder": [
   "1. runtime-defined modules (__dshModuleDefine registry: runtime-modules.js + npm-bridges rows) — checked FIRST; a registration SHADOWS the bare map (documented replay semantics: a second define replaces)",
   "2. dsh:util-crypto (legacy spike specifier)",
@@ -27,286 +27,286 @@
    "specifier": "node:path",
    "provider": "shim:path.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:crypto",
    "provider": "shim:crypto.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:async_hooks",
    "provider": "shim:async-hooks.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:util",
    "provider": "shim:util.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:util/types",
    "provider": "shim:util-types.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:fs",
    "provider": "shim:fs.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:fs/promises",
    "provider": "shim:fs-promises.js",
    "since": "wave-ish (2026-09-22)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:timers/promises",
    "provider": "shim:timers-promises.js",
    "since": "wave-ish (2026-09-22)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:buffer",
    "provider": "shim:buffer.js",
    "since": "pre-wave (W-INTEG)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:os",
    "provider": "shim:os.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:process",
    "provider": "shim:process.js",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:module",
    "provider": "shim:node-module.js",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:url",
    "provider": "shim:url.js",
    "since": "pre-wave (W-INTEG)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:perf_hooks",
    "provider": "shim:node-perf-hooks.js",
    "since": "wave-vendor (2026-09-24)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:zlib",
    "provider": "shim:node-zlib.js",
    "since": "wave-vendor (2026-09-24)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:worker_threads",
    "provider": "shim:node-worker-threads.js",
    "since": "wave-vendor (2026-09-24)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:stream",
    "provider": "shim:node-stream.js",
    "since": "wave-vendor (2026-09-24)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:events",
    "provider": "shim:events.js",
    "since": "wave5 (round 2)",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:sqlite",
    "provider": "shim:node-sqlite.js",
    "since": "wave5-R",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim"
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim"
   },
   {
    "specifier": "node:<other>",
    "provider": "FAIL LOUD",
    "since": "standing rule",
-   "registeredBy": "host/dsh_spike_host.c dsh_node_shim",
+   "registeredBy": "host/dsh_runtime_host.c dsh_node_shim",
    "note": "Only builtins the vendored closure actually imports are mapped; anything else fails loud at import time naming the specifier (rule 5): 'no spike shim for node builtin ...'"
   },
   {
    "specifier": "dsh:util-crypto",
    "provider": "npm-pin dsh util-crypto@0.1.6-alpha.2 (vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js)",
    "since": "pre-wave (M1 legacy)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "legacy spike specifier, kept working on the alpha.2 pin"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (vendor/dsh/llm@0.1.6-alpha.2/lib/index.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/invariant",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/invariant.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/message",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/message.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/assistant-stream",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/assistant-stream.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/brand",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/brand.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/types",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/types/types.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/typert",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/typert.host.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/dsh-llm/remote",
    "provider": "npm-pin dsh llm@0.1.6-alpha.2 (lib/typert.remote-client.js)",
    "since": "pre-wave (W-LLM)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the vendored exports-map subpath; unlisted subpaths fall through to the generic vendored probe"
   },
   {
    "specifier": "@deepseek-ai/node-addon-system/flock",
    "provider": "shim:node-addon-system-flock.js",
    "since": "wave-vendor (2026-09-24)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "@deepseek-ai/dsh-client-modules",
    "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (vendor/npm/.../lib/index.js)",
    "since": "pre-wave (W-INTEG)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "NPM-published web-boot composer (not a dsh-desktop runtime tarball); subpaths: /client -> client.js, /invariant -> invariant.js; other subpaths fail loud"
   },
   {
    "specifier": "@deepseek-ai/dsh-client-modules/client",
    "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (lib/client.js)",
    "since": "pre-wave (W-INTEG)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "@deepseek-ai/dsh-client-modules/invariant",
    "provider": "npm-pin @deepseek-ai/dsh-client-modules@0.1.6-alpha.2 (lib/invariant.js)",
    "since": "pre-wave (W-INTEG)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "@deepseek-ai/dsh-<pkg>[/sub]",
    "provider": "vendored-dsh probe (DSH_MAP_VENDORED_PROBE marker 'pkg|sub')",
    "since": "pre-wave",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "VERBATIM tarballs; the loader probes two staging families and the exports-map subpath shapes, failing loud naming the specifier. Note: @deepseek-ai/dsh-session-persistence rides this probe since the 2026-09-23 closure harvest (the submodule-built real package is staged koffi-free; the old errors-only shim would shadow it)"
   },
   {
    "specifier": "@deepseek-ai/cordis-plugin-loader",
    "provider": "npm-pin @deepseek-ai/cordis-plugin-loader@1.0.3",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "C host row; SHADOWED at runtime: runtime-modules registers a Loader-subclass row over the same vendored lib (resolution order rule 1) — see the runtime-modules row below"
   },
   {
    "specifier": "@deepseek-ai/cordis-plugin-include",
    "provider": "npm-pin @deepseek-ai/cordis-plugin-include@1.0.7",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "js-yaml",
    "provider": "npm-pin js-yaml@4.1.0 (dist/js-yaml.mjs)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "fast-check",
    "provider": "npm-pin fast-check@4.8.0 (lib/fast-check.bundle.mjs; pre-bundled with pure-rand via esbuild nodePaths)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the property-testing lib the upstream suite's *__properties specs import; the monorepo's own lockfile pin"
   },
   {
    "specifier": "fast-check/<sub>",
    "provider": "npm-pin fast-check@4.8.0 (lib/<sub>)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "pure-rand/<sub>",
    "provider": "npm-pin pure-rand@8.4.0 (lib/<sub>.js)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "fast-check's rng, same lockfile pin, CJS-free ESM face"
   },
   {
    "specifier": "@deepseek-ai/cordis",
    "provider": "npm-pin cordis@4.0.2",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "SHADOWED at runtime: runtime-modules re-registers this specifier with a row that adds FiberState/LoggerLevel and the loader failure face (resolution order rule 1) — see the runtime-modules row below"
   },
   {
    "specifier": "@deepseek-ai/cosmokit",
    "provider": "npm-pin cosmokit@1.8.3",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "@deepseek-ai/schemastery",
    "provider": "npm-pin schemastery@3.18.2 (lib/index.mjs)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "zod",
    "provider": "npm-pin zod@4.4.3 (index.js)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare"
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare"
   },
   {
    "specifier": "zod/<sub>",
    "provider": "npm-pin zod@4.4.3 (<sub> as raw path; NO extension/index resolution)",
    "since": "wave3 (round 3)",
-   "registeredBy": "host/dsh_spike_host.c dsh_map_bare",
+   "registeredBy": "host/dsh_runtime_host.c dsh_map_bare",
    "note": "the raw-path rule is why zod/v4 has its own npm-bridges row"
   },
   {

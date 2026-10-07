@@ -1,12 +1,12 @@
 /**
- * NAPI surface of libspike.so — the M5 spike host binding.
+ * NAPI surface of libdruntime.so — the M5 rt host binding.
  *
- * startSpike runs ALL spike scenarios (boot.verification regression +
+ * startSpike runs ALL rt scenarios (boot.verification regression +
  * gateway.bridge-smoke + session.mock-llm over the gateway bridge) synchronously on the
  * caller thread — new + eval + pump + settle per scenario — and returns the
  * combined verdict summary (PASS/FAIL + per-scenario verdicts). The
  * canonical `dsh.spike.log:` lines stream to hilog (domain 0xD5E0, tag
- * "dsh.spike") and to the capture file at capturePath. fsRoot is the
+ * "dsh.rt") and to the capture file at capturePath. fsRoot is the
  * scope-"app" directory the smoke backend's fs primitives operate on.
  */
 export const startSpike: (bundleRoot: string, capturePath: string, fsRoot: string) => string;
@@ -24,7 +24,7 @@ export const startSpike: (bundleRoot: string, capturePath: string, fsRoot: strin
  * seam. The two callbacks are `(line: string) => void` (JS bus post) and
  * `(callId: number, name: string, args: string) => void` (platform
  * primitive dispatch — queue it, never settle from inside). The optional
- * scenario label names the `dsh.spike.verdict:` line (default
+ * scenario label names the `dsh.rt.verdict:` line (default
  * harmony.capability-binding).
  */
 export const hostStart: (bundleRoot: string, capturePath: string, fsRoot: string,

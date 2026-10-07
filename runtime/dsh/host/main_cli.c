@@ -1,12 +1,12 @@
 /*
- * main_cli.c — desktop CLI driver for the M2 spike (macOS/Linux proof run).
+ * main_cli.c — desktop CLI driver for the M2 rt (macOS/Linux proof run).
  *
  * stdout carries ONLY the canonical E2E log lines (so `> logs.txt` feeds the
  * checker directly); diagnostics go to stderr; exit 0 = scenario completed
  * and passed.
  *
  * The driver doubles as the gateway BRIDGE SMOKE BACKEND: it registers the
- * dispatch (dsh_spike_set_gateway_dispatch) and a descriptor declaring
+ * dispatch (dsh_runtime_set_gateway_dispatch) and a descriptor declaring
  * fsRead/fsWrite/fsScope available, everything else unavailable — plus
  * httpFetch when launched with --http (the upstream-LLM E2E streams the mock
  * chat-completions server through it; default builds keep the descriptor
@@ -18,9 +18,9 @@
  * (127.0.0.1/localhost): a phone's real egress is the platform embedder's
  * policy, not the desktop proof driver's business.
  *
- * usage: dsh-spike-cli [base] [entry] [--http] [--env KEY=VALUE ...]
+ * usage: dsh-cli [base] [entry] [--http] [--env KEY=VALUE ...]
  */
-#include "dsh_spike_host.h"
+#include "dsh_runtime_host.h"
 #include "dsh_ish.h"
 #include "dsh_wasm.h" /* the wasm seam (contract v1.2.0): dsh_wasm_run */
 #include "dsh_socket.h" /* the loopback socket seam (contract v1.8.0) */
@@ -92,7 +92,7 @@ typedef struct smoke_req {
 } smoke_req;
 
 typedef struct smoke_backend {
-    dsh_spike_t *spike;
+    dsh_runtime_t *rt;
     char *tmpdir;
     smoke_req *head;
     smoke_req *tail;
@@ -587,7 +587,7 @@ static void http_emit_body(smoke_backend *b, int call_id, const char *bytes, lon
     }
     snprintf(event, n,
              "{\"event\":\"http.body\",\"callId\":%d,\"chunkB64\":\"%s\"}", call_id, b64);
-    dsh_spike_gateway_event(b->spike, event);
+    dsh_runtime_gateway_event(b->rt, event);
     free(event);
     free(b64);
 }
@@ -687,7 +687,7 @@ emit_end:
     free(p.data);
     char end[64];
     snprintf(end, sizeof(end), "{\"event\":\"http.end\",\"callId\":%d}", call_id);
-    dsh_spike_gateway_event(b->spike, end);
+    dsh_runtime_gateway_event(b->rt, end);
     return;
 fail:
     free(p.data);
@@ -784,9 +784,9 @@ done:
 
 static void smoke_settle(smoke_backend *b, int call_id, int ok,
                          const char *payload) {
-    if (dsh_spike_gateway_settle(b->spike, call_id, ok, payload) == 0) return;
+    if (dsh_runtime_gateway_settle(b->rt, call_id, ok, payload) == 0) return;
     b->failed = 1;
-    fprintf(stderr, "smoke: settle failed: %s\n", dsh_spike_error(b->spike));
+    fprintf(stderr, "smoke: settle failed: %s\n", dsh_runtime_error(b->rt));
 }
 
 static void smoke_reject(smoke_backend *b, int call_id, const char *primitive,
@@ -1471,7 +1471,7 @@ static char *smoke_tmpdir(void) {
         if (dir != NULL) smoke_mkdirs(dir);
         return dir;
     }
-    char tmpl[] = "/tmp/dsh-spike-smoke.XXXXXX";
+    char tmpl[] = "/tmp/dsh-runtime-smoke.XXXXXX";
     char *dir = mkdtemp(tmpl);
     return dir ? strdup(dir) : NULL; /* temp litter is left for /tmp cleanup */
 }
@@ -1487,7 +1487,7 @@ static int spike_run_main(int argc, char **argv) {
      * snapshot the scenario merges into its profile container; --bus-inject
      * FILE delivers the file's content as ONE bus line right after the entry
      * eval — the host→runtime staged-data seam the platform embedders drive
-     * through dsh_spike_bus_deliver (the W-INTEG web-boot drive feeds the
+     * through dsh_runtime_bus_deliver (the W-INTEG web-boot drive feeds the
      * staged web-plugin table through it). Values pass
      * through unescaped — reject quotes/backslashes instead of escaping. */
     int http = 0;
@@ -1517,7 +1517,7 @@ static int spike_run_main(int argc, char **argv) {
         }
         if (strcmp(argv[i], "--bus-inject") == 0) {
             if (i + 1 >= argc) {
-                fprintf(stderr, "spike: --bus-inject needs FILE\n");
+                fprintf(stderr, "rt: --bus-inject needs FILE\n");
                 return 2;
             }
             bus_inject_path = argv[++i];
@@ -1527,52 +1527,52 @@ static int spike_run_main(int argc, char **argv) {
             const char *kv = argv[i][5] == ' ' ? argv[i] + 6
                              : (i + 1 < argc ? argv[++i] : NULL);
             if (!kv) {
-                fprintf(stderr, "spike: --env needs KEY=VALUE\n");
+                fprintf(stderr, "rt: --env needs KEY=VALUE\n");
                 return 2;
             }
             const char *eq = strchr(kv, '=');
             if (!eq || eq == kv || strchr(kv, '"') || strchr(kv, '\\')
                 || (size_t)(eq - kv) > 128 || strlen(eq + 1) > 512) {
-                fprintf(stderr, "spike: --env needs plain KEY=VALUE (no quotes/backslashes)\n");
+                fprintf(stderr, "rt: --env needs plain KEY=VALUE (no quotes/backslashes)\n");
                 return 2;
             }
             int n = snprintf(env_json + env_len, sizeof(env_json) - env_len,
                              "%s%.*s\":\"%s\"", env_len > 1 ? ",\"" : "\"",
                              (int)(eq - kv), kv, eq + 1);
             if (n < 0 || (size_t)n >= sizeof(env_json) - env_len) {
-                fprintf(stderr, "spike: launch env snapshot overflow\n");
+                fprintf(stderr, "rt: launch env snapshot overflow\n");
                 return 2;
             }
             env_len += (size_t)n;
             continue;
         }
-        fprintf(stderr, "spike: unknown argument '%s'\n", argv[i]);
+        fprintf(stderr, "rt: unknown argument '%s'\n", argv[i]);
         return 2;
     }
     snprintf(env_json + env_len, sizeof(env_json) - env_len, "}");
 
     char *source = slurp(entry_path, NULL);
     if (!source) {
-        fprintf(stderr, "spike: cannot read entry %s\n", entry_path);
+        fprintf(stderr, "rt: cannot read entry %s\n", entry_path);
         return 2;
     }
 
-    dsh_spike_sink sink = { on_log, NULL };
+    dsh_runtime_sink sink = { on_log, NULL };
     smoke_backend b = {0};
     b.tmpdir = smoke_tmpdir();
     b.ish_mount = DSH_ISH_GUEST_MOUNT;
-    b.spike = dsh_spike_new(base, &sink);
-    if (!b.spike || !b.tmpdir) {
-        fprintf(stderr, "spike: runtime init failed\n");
+    b.rt = dsh_runtime_new(base, &sink);
+    if (!b.rt || !b.tmpdir) {
+        fprintf(stderr, "rt: runtime init failed\n");
         free(source);
         free(b.tmpdir);
-        if (b.spike) dsh_spike_free(b.spike);
+        if (b.rt) dsh_runtime_free(b.rt);
         return 2;
     }
     signal(SIGPIPE, SIG_IGN);
     b.http = http;
-    dsh_spike_set_gateway_dispatch(b.spike, smoke_on_call, &b);
-    dsh_spike_set_descriptor(b.spike, http
+    dsh_runtime_set_gateway_dispatch(b.rt, smoke_on_call, &b);
+    dsh_runtime_set_descriptor(b.rt, http
         ? "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
           SMOKE_SOCKET_AVAILABLE ","
           SMOKE_KEYCHAIN_AVAILABLE "],"
@@ -1580,25 +1580,25 @@ static int spike_run_main(int argc, char **argv) {
           "\"deviceInfo\",\"haptic\","
           "\"clipboardRead\",\"clipboardWrite\",\"presentShare\",\"keepAwake\"]}"
         : SMOKE_DESCRIPTOR);
-    dsh_spike_set_launch_env(b.spike, env_json);
+    dsh_runtime_set_launch_env(b.rt, env_json);
 
-    int rc = dsh_spike_eval(b.spike, entry, source);
+    int rc = dsh_runtime_eval(b.rt, entry, source);
     free(source);
 
     /* --bus-inject: the staged-data bus delivery, BEFORE the readiness
      * signal — the scenario subscribes during eval, so the drop-guard in
-     * dsh_spike_bus_deliver cannot swallow it. */
+     * dsh_runtime_bus_deliver cannot swallow it. */
     if (rc == 0 && bus_inject_path) {
         char *line = slurp(bus_inject_path, NULL);
         if (!line) {
-            fprintf(stderr, "spike: cannot read --bus-inject file %s\n", bus_inject_path);
-            dsh_spike_free(b.spike);
+            fprintf(stderr, "rt: cannot read --bus-inject file %s\n", bus_inject_path);
+            dsh_runtime_free(b.rt);
             free(b.tmpdir);
             return 2;
         }
-        rc = dsh_spike_bus_deliver(b.spike, line);
+        rc = dsh_runtime_bus_deliver(b.rt, line);
         if (rc != 0) {
-            fprintf(stderr, "spike: bus inject failed: %s\n", dsh_spike_error(b.spike));
+            fprintf(stderr, "rt: bus inject failed: %s\n", dsh_runtime_error(b.rt));
         }
         free(line);
     }
@@ -1608,7 +1608,7 @@ static int spike_run_main(int argc, char **argv) {
      * backend has no carrier, so port 0. Scenarios waiting on it start here;
      * scenarios without a subscriber drop it (shim contract). */
     if (rc == 0 && !b.failed
-        && dsh_spike_gateway_event(b.spike, "{\"event\":\"host.info\",\"port\":0}") != 0) {
+        && dsh_runtime_gateway_event(b.rt, "{\"event\":\"host.info\",\"port\":0}") != 0) {
         rc = -1;
     }
 
@@ -1617,12 +1617,12 @@ static int spike_run_main(int argc, char **argv) {
     struct timespec deadline;
     clock_gettime(CLOCK_MONOTONIC, &deadline);
     deadline.tv_sec += smoke_deadline_seconds();
-    while (rc == 0 && !b.failed && !dsh_spike_complete(b.spike)) {
-        rc = dsh_spike_pump(b.spike);
+    while (rc == 0 && !b.failed && !dsh_runtime_complete(b.rt)) {
+        rc = dsh_runtime_pump(b.rt);
         if (rc != 0) break;
         int served = smoke_drain(&b);
         if (served < 0) { rc = -1; break; }
-        if (dsh_spike_complete(b.spike)) break;
+        if (dsh_runtime_complete(b.rt)) break;
         if (served == 0) {
             /* Quiescent with nothing outstanding — except armed timers,
              * awaited subprocesses, and LIVE SOCKETS: the wall-clock
@@ -1633,7 +1633,7 @@ static int spike_run_main(int argc, char **argv) {
              * connection (the v1.8.0 socket seam) keeps it alive the same
              * way — a run must not exit with doors open (contract §4: the
              * server lifetime is the opening session's). */
-            int procs = dsh_spike_procs_alive(b.spike);
+            int procs = dsh_runtime_procs_alive(b.rt);
             int sockets = dsh_socket_alive();
             if (b.n_timers == 0 && procs == 0 && sockets == 0) break;
             size_t earliest = 0;
@@ -1666,7 +1666,7 @@ static int spike_run_main(int argc, char **argv) {
             b.n_timers--;
             char ev[80];
             snprintf(ev, sizeof(ev), "{\"event\":\"timer.fire\",\"timerId\":%d}", fired_id);
-            if (dsh_spike_gateway_event(b.spike, ev) != 0) { rc = -1; break; }
+            if (dsh_runtime_gateway_event(b.rt, ev) != 0) { rc = -1; break; }
             }
         }
         struct timespec now;
@@ -1680,15 +1680,15 @@ static int spike_run_main(int argc, char **argv) {
         }
     }
 
-    int exit_code = (rc == 0 && !b.failed && dsh_spike_complete(b.spike) &&
-                     dsh_spike_pass(b.spike)) ? 0 : 1;
-    fprintf(stderr, "spike: %s (complete=%d pass=%d)\n",
+    int exit_code = (rc == 0 && !b.failed && dsh_runtime_complete(b.rt) &&
+                     dsh_runtime_pass(b.rt)) ? 0 : 1;
+    fprintf(stderr, "rt: %s (complete=%d pass=%d)\n",
             exit_code == 0 ? "PASS" : "FAIL",
-            dsh_spike_complete(b.spike), dsh_spike_pass(b.spike));
+            dsh_runtime_complete(b.rt), dsh_runtime_pass(b.rt));
     if (rc < 0 || exit_code != 0) {
-        fprintf(stderr, "spike: error: %s\n", dsh_spike_error(b.spike));
+        fprintf(stderr, "rt: error: %s\n", dsh_runtime_error(b.rt));
     }
-    dsh_spike_free(b.spike);
+    dsh_runtime_free(b.rt);
     free(b.tmpdir);
     return exit_code;
 }

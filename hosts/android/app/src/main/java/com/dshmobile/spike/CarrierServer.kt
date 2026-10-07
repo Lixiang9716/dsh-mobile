@@ -21,14 +21,14 @@ import java.util.concurrent.atomic.AtomicBoolean
  * otherwise), and per-path WS upgrades (`/ws` legacy, `/api/remote.mux`).
  * All state is guarded by [lock]; `send` is safe from any thread. Accept +
  * per-connection threads never touch the JS runtime (AGENTS.md rule 2: only
- * SpikeRuntime's HandlerThread does).
+ * JsRuntime's HandlerThread does).
  */
 class CarrierServer {
     companion object {
         const val WS_PATH = "/ws"
         const val COOKIE_NAME = "dsh.session"
         private const val WS_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        private const val TAG = "dsh.spike"
+        private const val TAG = "dsh.rt"
         private const val MAX_BODY = 2 * 1024 * 1024
     }
 

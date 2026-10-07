@@ -28,7 +28,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. the mock LLM server with a REPEAT-LAST success script — 100 rounds need
 #    100 scripted successes (condition-polled announce, rule 8).
@@ -68,7 +68,7 @@ echo "leak-canary: mock llm server $MOCK_URL (rounds=100, pinned with the manife
 #    unreachable dead code (review #297 — proven with a minimal /bin/sh
 #    repro before this fix).
 CLI_RC=0
-./build/dsh-spike-cli . scenario/leak-canary.js \
+./build/dsh-cli . scenario/leak-canary.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-leak-canary.txt || CLI_RC=$?

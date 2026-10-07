@@ -10,19 +10,19 @@ enum MicPlaneDrive {
     static func launch(_ appDelegate: AppDelegate) {
         appDelegate.announce(
             "DSH mic plane — mic.plane, the capability plane's microphone face live…",
-            line: "spike: app launched in mic-plane mode", web: false)
+            line: "rt: app launched in mic-plane mode", web: false)
         run(appDelegate)
     }
 
     static func run(_ appDelegate: AppDelegate) {
         let session = GatewaySession(
             entryModule: "scenario/mic-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_mic_plane_js(nil)) })
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_mic_plane_js(nil)) })
         appDelegate.gateway = session
         session.run { [weak appDelegate] outcome in
             appDelegate?.show(outcome, phase: "mic.plane") { appDelegate?.gatewayVerdict = $0 }
             appDelegate?.gateway = nil
-            print("spike: mic-plane drive finished verdict=\(outcome.verdict)")
+            print("rt: mic-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
         }
     }

@@ -28,7 +28,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. run the scenario and verify one-to-one. DSH_MODULE_MANIFEST rides the
 #    SAME run on purpose (default-off switch; the env only opens the
@@ -36,7 +36,7 @@ sh vendor/ensure-dsh.sh
 #    the survey mechanism's standing in-repo proof, every line a shim load.
 mkdir -p "$ART_DIR"
 DSH_MODULE_MANIFEST="$ART_DIR/manifest.txt" \
-    ./build/dsh-spike-cli . scenario/shim-exposure-probe.js > logs-shim-exposure-probe.txt
+    ./build/dsh-cli . scenario/shim-exposure-probe.js > logs-shim-exposure-probe.txt
 cp logs-shim-exposure-probe.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-shim-exposure-probe.txt > "$ART_DIR/scenario.jsonl"
 # The manifest must be real (rule 5): non-empty, every line a shim load.

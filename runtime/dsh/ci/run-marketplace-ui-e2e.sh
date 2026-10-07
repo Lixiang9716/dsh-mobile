@@ -42,7 +42,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. start the mock catalog server and wait for the announce (condition
 #    poll with a deadline, rule 8).
@@ -88,7 +88,7 @@ echo "host-side pin: $PUB_B64" >&2
 # 4. run the scenario (--http: the CLI's loopback httpFetch backend — the
 #    catalog + package transport; --env: the launch-env snapshot) and verify
 #    one-to-one.
-./build/dsh-spike-cli . scenario/marketplace-ui.js \
+./build/dsh-cli . scenario/marketplace-ui.js \
     --http \
     --env "DSH_MARKET_URL=$MARKET_URL" \
     --env "DSH_MARKET_PUBKEY_B64=$PUB_B64" > logs-marketplace-ui.txt

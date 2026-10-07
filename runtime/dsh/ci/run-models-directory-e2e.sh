@@ -32,10 +32,10 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. run the scenario and verify one-to-one.
-./build/dsh-spike-cli . scenario/models-directory.js > logs-models-directory.txt
+./build/dsh-cli . scenario/models-directory.js > logs-models-directory.txt
 mkdir -p "$ART_DIR"
 cp logs-models-directory.txt "$ART_DIR/logs.txt"
 grep '^dsh.spike.log:' logs-models-directory.txt > "$ART_DIR/scenario.jsonl"

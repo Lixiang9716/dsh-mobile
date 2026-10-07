@@ -8,7 +8,7 @@
  * pipeline (§1.5): head rows after `<head…>`, body rows after `<body…>`, the
  * `__DSH_BOOT_READY__` tail last, then `<base href="/">`.
  *
- * The dist bytes come straight from rawfile (`spike/officialweb/www/…` —
+ * The dist bytes come straight from rawfile (`rt/officialweb/www/…` —
  * vendored verbatim by ci/vendor-official.sh); no disk staging.
  */
 import { socket } from '@kit.NetworkKit';

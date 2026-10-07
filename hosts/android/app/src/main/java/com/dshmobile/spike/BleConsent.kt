@@ -29,7 +29,7 @@ class BleConsentLayer(
         const val STANDING_GRANT_KEY = "dsh.ble.granted"
 
         /** The OS runtime-permission request code (MainActivity routes the
-         * result back through SpikeHostM4 → onPermissionResult). */
+         * result back through BindingHost → onPermissionResult). */
         const val REQUEST_BLE = 4102
     }
 
@@ -129,7 +129,7 @@ class BleConsentLayer(
             "denied", primitive, reason))
     }
 
-    /** MainActivity → SpikeHostM4 route the OS prompt's verdict here: the
+    /** MainActivity → BindingHost route the OS prompt's verdict here: the
      * pending call proceeds on grant; a refusal settles denied (layer os). */
     fun onPermissionResult(granted: Boolean) {
         val pending = pendingOsPrompt

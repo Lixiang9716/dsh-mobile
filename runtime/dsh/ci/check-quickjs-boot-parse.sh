@@ -31,7 +31,7 @@ cd "$ROOT/runtime/dsh"
 
 # 1. The engine exists — build on miss (rule 5: a missing engine is a loud
 #    build, never a silent skip).
-if [ ! -x build/dsh-spike-cli ]; then
+if [ ! -x build/dsh-cli ]; then
     # host/build.sh links the iSH static libs, whose vendor tree is
     # materialized by ensure-ish.sh — NOT by ensure.sh/ensure-dsh.sh (the
     # gov.yml materialize step), so a cold CI runner needs it here first
@@ -40,7 +40,7 @@ if [ ! -x build/dsh-spike-cli ]; then
         echo "quickjs-boot-parse: ish vendor tree absent — materializing (vendor/ensure-ish.sh)"
         sh vendor/ensure-ish.sh
     fi
-    echo "quickjs-boot-parse: build/dsh-spike-cli missing — building (host/build.sh)"
+    echo "quickjs-boot-parse: build/dsh-cli missing — building (host/build.sh)"
     sh host/build.sh
 fi
 
@@ -69,4 +69,4 @@ STUB_EOF
 
 # 3. Boot it: exit 0 only when the whole graph compiles AND evaluates under
 #    the vendored engine.
-./build/dsh-spike-cli . "$STUB"
+./build/dsh-cli . "$STUB"

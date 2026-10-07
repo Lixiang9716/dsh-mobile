@@ -128,7 +128,7 @@ const pinProfileContainer = async () => {
   // fixture-server.ts` expecting node's erasable-TS support (the lsp-stdio
   // fixture's own header says "Run: node fixture-server.ts"). When the host
   // exposes a node binary (the subprocess seam's PATH probe), pin it — the
-  // old fixed spelling (`/usr/local/bin/dsh-spike-cli`) was a non-executable
+  // old fixed spelling (`/usr/local/bin/dsh-cli`) was a non-executable
   // placeholder whose only property was being absolute (W5-R, 2026-09-28).
   try {
     const facts = globalThis.__dshProcFacts?.();

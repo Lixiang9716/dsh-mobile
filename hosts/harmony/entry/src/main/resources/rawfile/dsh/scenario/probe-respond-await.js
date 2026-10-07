@@ -9,7 +9,7 @@
  * may cross the EMBEDDER — the 插件 inventory's workspace tier reads its
  * registry document through the gateway (`fsRead`, #334/#346) — and on the
  * device seats that settle is queued on the runtime looper
- * (SpikeRuntime.post): it only lands when the JS job queue empties and the
+ * (JsRuntime.post): it only lands when the JS job queue empties and the
  * native pump returns. The historical wait spun `await Promise.resolve()` —
  * pure microtasks never empty the queue — so a correct handler starved, the
  * probe failed, the scenario completed-fail, and every later bus frame

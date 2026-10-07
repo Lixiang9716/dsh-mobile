@@ -17,7 +17,7 @@ SPIKE = REPO / "runtime" / "dsh"
 OUT = HOSTS_IOS / "App" / "Generated"
 GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 
-# (accessor suffix, source file) -> dsh_spike_res_<suffix>()
+# (accessor suffix, source file) -> dsh_runtime_res_<suffix>()
 RESOURCES = [
     ("logger_js", SPIKE / "logger.js"),
     # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
@@ -160,8 +160,8 @@ RESOURCES = [
     ("plugin_manager_tools_manifest",
      SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "manifest.json"), ("plugin_manager_tools_js", SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "index.js"),
     # FIFTEEN scenario files keep NAMED accessors — RESOURCES rows emit the
-    # dsh_spike_res_<suffix> symbols Swift links against (readers:
-    # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
+    # dsh_runtime_res_<suffix> symbols Swift links against (readers:
+    # JsRuntime, GatewaySession, SessionRuntime, SessionServe,
     # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
     # the whole-dir scenario tree row serves the loader's file view
     # (926c6a7 dropped this block while every read site stayed — restored).
@@ -182,7 +182,7 @@ RESOURCES = [
     ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
     ("scenario_manager_legs_probe_js", SPIKE / "scenario" / "manager-legs-probe.js"),
     # The spike-root runtime files + upstream adapters Swift stages by name
-    # (SpikeBundleStager / SessionServe / SessionRuntime) — the pre-refactor
+    # (BundleStager / SessionServe / SessionRuntime) — the pre-refactor
     # RESOURCES rows, restored.
     ("gateway_js", SPIKE / "gateway.js"),
     ("registry_js", SPIKE / "registry.js"),
@@ -395,7 +395,7 @@ def collect_tree_files():
 # The SELF-HOSTED Web Client plugin (presentation/web-client-next): its own
 # tree so .html/.css ride along — the spine tree's suffix filter is
 # .js/.mjs/.json/... and a silent suffix drop is exactly the 2026-09-24
-# drift class this repo refuses. Staged under webclient-next/ (SpikeBundleStager).
+# drift class this repo refuses. Staged under webclient-next/ (BundleStager).
 WEBCLIENT_TREES = [
     ("webclient-next", REPO / "presentation" / "web-client-next"),
     ("webclient-whale", REPO / "presentation" / "web-client-whale"),
@@ -425,7 +425,7 @@ def c_array(symbol: str, data: bytes, raw: bytes) -> str:
         chunk = ", ".join(f"0x{b:02x}" for b in raw[at:at + 16])
         rows.append(f"  {chunk},")
     body = "\n".join(rows)
-    # trailing NUL keeps the array a valid C string (dsh_spike_eval strlens)
+    # trailing NUL keeps the array a valid C string (dsh_runtime_eval strlens)
     return f"static const unsigned char {symbol}[] = {{\n{body}\n  0x00\n}};\n"
 
 
@@ -437,9 +437,9 @@ def emit_resources(parts: list, decls: list, funcs: list) -> None:
         raw = path.read_bytes()
         data = raw + b"\x00"
         parts.append(f"/* {path.relative_to(REPO)} ({len(data) - 1} bytes) */\n{c_array(symbol, data, raw)}")
-        decls.append(f"const char *dsh_spike_res_{suffix}(size_t *len);")
+        decls.append(f"const char *dsh_runtime_res_{suffix}(size_t *len);")
         funcs.append(
-            f"const char *dsh_spike_res_{suffix}(size_t *len) {{\n"
+            f"const char *dsh_runtime_res_{suffix}(size_t *len) {{\n"
             f"  if (len) *len = sizeof({symbol}) - 1;\n"
             f"  return (const char *){symbol};\n"
             f"}}\n"
@@ -451,14 +451,14 @@ def emit() -> None:
     parts, decls, funcs = [], [], []
     emit_resources(parts, decls, funcs)
     tree = collect_tree_files()
-    parts.append(trees.tree_c_source(tree, "DSH", "dsh_spike_bundle_tree_file", REPO))
+    parts.append(trees.tree_c_source(tree, "DSH", "dsh_runtime_bundle_tree_file", REPO))
     decls.append(trees.SPINE_TREE_WALKER_DECL)
     total = sum(p.stat().st_size for _, p in tree)
     print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
           f"({total / 1024:.0f} KiB)")
     webclient_tree = collect_webclient_files()
     parts.append(trees.tree_c_source(
-        webclient_tree, "DSH_WEBCLIENT", "dsh_spike_webclient_tree_file", REPO))
+        webclient_tree, "DSH_WEBCLIENT", "dsh_runtime_webclient_tree_file", REPO))
     decls.append(trees.WEBCLIENT_TREE_WALKER_DECL)
     wtotal = sum(p.stat().st_size for _, p in webclient_tree)
     print(f"gen_bundle_header: webclient tree = {len(webclient_tree)} files, "

@@ -4,7 +4,7 @@ import Foundation
 /// stack limit from the thread that created the runtime and validates the
 /// stack on every JS call, so a runtime may NEVER be driven from pooled
 /// dispatch threads (they hand each block an arbitrary thread). The boot
-/// spike survives dispatch queues because its whole JS lifetime stays inside
+/// rt survives dispatch queues because its whole JS lifetime stays inside
 /// one block = one thread; the carrier's and gateway's event-driven
 /// delivers cannot, so they run here. 4 MB stack: quickjs-ng's JS stack
 /// budget + C-to-Swift callback headroom (ARCHITECTURE.md §6 thread rules).

@@ -67,7 +67,7 @@ final class SessionRuntime {
     }
 
     /// Layered config resolution (base → hostFace → profile): reads the
-    /// staged cordis.patch.json (JSON in the spike — no YAML parser on the
+    /// staged cordis.patch.json (JSON in the rt — no YAML parser on the
     /// frozen gateway; documented in runtime/dsh/config-layer.js) and
     /// applies its webClient + slots.allow over the launch configuration.
     private func resolveProfileConfig(root: URL) throws {
@@ -98,13 +98,13 @@ final class SessionRuntime {
 
     static let watchdogSeconds = 120
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.spike.session")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.rt.session")
     private let server = CarrierServer()
-    private let sink = SpikeLogSink()
+    private let sink = RuntimeLogSink()
     private var core: GatewayCore?
     private var host: OpaquePointer?
     private var watchdog: DispatchWorkItem?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var finished = false
     private var mountedLogged = false
     private var connectedLogged = false
@@ -122,7 +122,7 @@ final class SessionRuntime {
     /// can serve the Web Client (the Presentation surface loads it here).
     var onOpenOrigin: ((URL) -> Void)?
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         runtimeThread.start()
         runtimeThread.async { [self] in
             self.completion = completion
@@ -135,7 +135,7 @@ final class SessionRuntime {
     private func startSession() {
         let root: URL
         do {
-            root = try SpikeBundleStager.stage()
+            root = try BundleStager.stage()
             core = try GatewayCore(bundleRoot: root)
         } catch {
             return finish(failOutcome("session bootstrap: \(error)"))
@@ -163,8 +163,8 @@ final class SessionRuntime {
             return finish(failOutcome("session server: \(error)"))
         }
         var cSink = sink.cSink
-        guard let host = dsh_spike_new_declaring(root.path, &cSink) else {
-            return finish(failOutcome("dsh_spike_new returned NULL"))
+        guard let host = dsh_runtime_new_declaring(root.path, &cSink) else {
+            return finish(failOutcome("dsh_runtime_new returned NULL"))
         }
         self.host = host
         bindAndEval(host)
@@ -188,13 +188,13 @@ final class SessionRuntime {
     /// dispatch, entry eval, first pump, watchdog. host.info waits for the
     /// mounted + connected Web Client.
     private func bindAndEval(_ host: OpaquePointer) {
-        dsh_spike_set_descriptor(host, Self.descriptorJSON)
-        dsh_spike_set_bus_sink(host, { ud, line in
+        dsh_runtime_set_descriptor(host, Self.descriptorJSON)
+        dsh_runtime_set_bus_sink(host, { ud, line in
             guard let ud, let line else { return }
             let session = Unmanaged<SessionRuntime>.fromOpaque(ud).takeUnretainedValue()
             session.busPosted(String(cString: line))
         }, Unmanaged.passUnretained(self).toOpaque())
-        dsh_spike_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
+        dsh_runtime_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
             guard let ud, let name, let argsJSON else { return }
             let session = Unmanaged<SessionRuntime>.fromOpaque(ud).takeUnretainedValue()
             session.core?.dispatch(
@@ -204,23 +204,23 @@ final class SessionRuntime {
         let source: String
         switch entryModule {
         case "scenario/llm-live-stream.js":
-            source = String(cString: dsh_spike_res_scenario_m2_llm_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_m2_llm_js(nil))
         case "scenario/upstream-parity.js":
-            source = String(cString: dsh_spike_res_scenario_upstream_parity_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_upstream_parity_js(nil))
         case "scenario/upstream-suite-leg.js":
-            source = String(cString: dsh_spike_res_scenario_upstream_suite_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_upstream_suite_js(nil))
         case "scenario/agent-flow.js":
-            source = String(cString: dsh_spike_res_scenario_agent_flow_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_agent_flow_js(nil))
         case "scenario/install-from-http.js":
-            source = String(cString: dsh_spike_res_scenario_m3_fetch_install_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_m3_fetch_install_js(nil))
         default:
-            source = String(cString: dsh_spike_res_scenario_m2_session_js(nil))
+            source = String(cString: dsh_runtime_res_scenario_m2_session_js(nil))
         }
-        if dsh_spike_eval(host, entryModule, source) != 0 {
-            return finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_eval(host, entryModule, source) != 0 {
+            return finish(failOutcome("eval: \(String(cString: dsh_runtime_error(host)))"))
         }
-        if dsh_spike_pump(host) != 0 {
-            return finish(failOutcome("pump: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_pump(host) != 0 {
+            return finish(failOutcome("pump: \(String(cString: dsh_runtime_error(host)))"))
         }
         armWatchdog()
     }
@@ -372,31 +372,31 @@ final class SessionRuntime {
 
     private func settle(callId: Int, ok: Bool, json: String) {
         guard let host, !finished else { return }
-        if dsh_spike_gateway_settle(host, Int32(callId), ok ? 1 : 0, json) != 0 {
+        if dsh_runtime_gateway_settle(host, Int32(callId), ok ? 1 : 0, json) != 0 {
             return finish(failOutcome(
-                "gateway settle: \(String(cString: dsh_spike_error(host)))"))
+                "gateway settle: \(String(cString: dsh_runtime_error(host)))"))
         }
         settleCheck("settle")
     }
 
     private func emitJSON(_ json: String) {
         guard let host, !finished else { return }
-        if dsh_spike_gateway_event(host, json) != 0 {
+        if dsh_runtime_gateway_event(host, json) != 0 {
             return finish(failOutcome(
-                "gateway event: \(String(cString: dsh_spike_error(host)))"))
+                "gateway event: \(String(cString: dsh_runtime_error(host)))"))
         }
         settleCheck("event")
     }
 
     private func settleCheck(_ what: String) {
         guard let host, !finished else { return }
-        if dsh_spike_pump(host) != 0 {
+        if dsh_runtime_pump(host) != 0 {
             return finish(failOutcome(
-                "pump after \(what): \(String(cString: dsh_spike_error(host)))"))
+                "pump after \(what): \(String(cString: dsh_runtime_error(host)))"))
         }
-        if dsh_spike_complete(host) != 0 {
-            finish(SpikeOutcome(
-                completed: true, passed: dsh_spike_pass(host) != 0,
+        if dsh_runtime_complete(host) != 0 {
+            finish(JsOutcome(
+                completed: true, passed: dsh_runtime_pass(host) != 0,
                 error: "", canonicalLines: sink.lines))
         }
     }
@@ -416,17 +416,17 @@ final class SessionRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         if outcome.completed, outcome.passed {
             logSessionEvidence()
         }
-        dsh_spike_free(host)
+        dsh_runtime_free(host)
         host = nil
         server.stop()
-        print("spike: session drive finished verdict=\(outcome.verdict)")
+        print("rt: session drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         runtimeThread.async { [weak self] in self?.runtimeThread.stop() }
         DispatchQueue.main.async { [weak self] in
@@ -435,11 +435,11 @@ final class SessionRuntime {
         }
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: session FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: session FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: session FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: session FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message, canonicalLines: sink.lines)
     }
 
@@ -465,7 +465,7 @@ final class SessionRuntime {
             "data": [payload],
         ]) else { return }
         guard BuildFlavor.keeps(data) else { return }
-        print(SpikeLogSink.prefix + data)
+        print(RuntimeLogSink.prefix + data)
         fflush(stdout)
     }
 

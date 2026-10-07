@@ -139,12 +139,12 @@ fi
 #    binary; built here on macOS, never on Linux — the vendored iSH-arm64
 #    engine does not assemble under x86-64). A FRESH mock carries the same
 #    script (the reference leg consumed the first instance's sequence).
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 stop_mock
 rm -f "$MOCK_LOG"
 start_mock
 set +e
-./build/dsh-spike-cli . scenario/upstream-parity.js \
+./build/dsh-cli . scenario/upstream-parity.js \
     --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_MOCK_LLM_KEY=$MOCK_KEY" > logs-parity.txt 2>&1

@@ -148,7 +148,7 @@ extension NextWebRuntime {
                 self.eventLog.emit("game.closed", [
                     "srcdocCleared": srcdoc.isEmpty,
                 ])
-                self.finish(SpikeOutcome(
+                self.finish(JsOutcome(
                     completed: true, passed: true, error: "",
                     canonicalLines: self.eventLog.lines))
         })

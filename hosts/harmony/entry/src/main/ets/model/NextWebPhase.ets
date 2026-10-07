@@ -19,7 +19,7 @@
  */
 import { common } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { hostCarrierLine } from 'libspike.so';
+import { hostCarrierLine } from 'libdruntime.so';
 import { OfficialServe, NEXT_CLIENT_ROOT } from './OfficialServe';
 
 const TAG: string = 'dsh.app';
@@ -399,9 +399,9 @@ export class NextWebPhase {
     this.finished = true;
     hilog.info(0x0000, TAG, 'nextweb: verdict %{public}s (%{public}s)',
       passed ? 'PASS' : 'FAIL', error);
-    hostCarrierLine(2, 'dsh.spike.verdict: ' + SCENARIO +
+    hostCarrierLine(2, 'dsh.rt.verdict: ' + SCENARIO +
       (passed ? ' PASS | quickjs-ng 0.17.0' : ' FAIL | ' + error));
-    hostCarrierLine(2, 'dsh.spike.result: ALL ' + (passed ? 'PASS' : 'FAIL'));
+    hostCarrierLine(2, 'dsh.rt.result: ALL ' + (passed ? 'PASS' : 'FAIL'));
   }
 
   private carrierLine(event: string, fields: Record<string, Object>): void {

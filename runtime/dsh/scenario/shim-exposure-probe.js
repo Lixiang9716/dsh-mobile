@@ -18,7 +18,7 @@
  *                                registration guard faces
  *
  * Run:
- *   cd runtime/dsh && ./build/dsh-spike-cli . scenario/shim-exposure-probe.js
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/shim-exposure-probe.js
  * The captured log is verified one-to-one against
  * test/e2e/scenarios/shim-exposure-probe.json by
  * runtime/dsh/ci/run-shim-exposure-probe.sh.

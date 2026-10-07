@@ -9,7 +9,7 @@ extension AppDelegate {
     /// camera sibling of startBleMode).
     func startCameraMode() {
         announce("DSH camera plane — camera.plane, the capability plane's capture burst live…",
-                 line: "spike: app launched in camera-plane mode", web: false)
+                 line: "rt: app launched in camera-plane mode", web: false)
         runCameraPlane()
     }
 
@@ -22,7 +22,7 @@ extension AppDelegate {
         announce(
             "DSH BLE plane — ble.plane, the capability plane's BLE face "
                 + (mock ? "over the deterministic mock radio…" : "over the real radio…"),
-            line: "spike: app launched in \(launchMode) mode", web: false)
+            line: "rt: app launched in \(launchMode) mode", web: false)
         runBlePlane(mockRadio: mock)
     }
 
@@ -31,13 +31,13 @@ extension AppDelegate {
     func runBlePlane(mockRadio: Bool) {
         let session = GatewaySession(
             entryModule: "scenario/ble-plane.js",
-            sourceProvider: { String(cString: dsh_spike_res_scenario_ble_plane_js(nil)) },
+            sourceProvider: { String(cString: dsh_runtime_res_scenario_ble_plane_js(nil)) },
             bleRadio: mockRadio ? MockBleRadio() : nil)
         self.gateway = session
         session.run { [weak self] outcome in
             self?.show(outcome, phase: "ble.plane") { self?.gatewayVerdict = $0 }
             self?.gateway = nil
-            print("spike: ble-plane drive finished verdict=\(outcome.verdict)")
+            print("rt: ble-plane drive finished verdict=\(outcome.verdict)")
             fflush(stdout)
         }
     }

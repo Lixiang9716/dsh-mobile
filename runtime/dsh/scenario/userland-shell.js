@@ -7,7 +7,7 @@
  *            → the host's dispatch backend
  *            → dsh_ish.c → the emulated Alpine userland
  *
- * It runs on the desktop CLI (`runtime/dsh/build/dsh-spike-cli … scenario/
+ * It runs on the desktop CLI (`runtime/dsh/build/dsh-cli … scenario/
  * userland-shell.js`) and its records are the ones `tools/e2e/scenarios/
  * userland-shell-local.json` matches one-to-one, so "the logs match" is checked the
  * same way every other evidence dir in this repository checks it.

@@ -23,7 +23,7 @@ settings:
       # The wasm3 interpreter's own headers (dsh_wasm.c includes them by
       # quoted name from a different directory than the vendored sources).
       - "$(SRCROOT)/../../runtime/dsh/vendor/wasm3/0.9.0/source"
-      # zstd headers (dsh_spike_host.c intrinsics include them)
+      # zstd headers (dsh_runtime_host.c intrinsics include them)
       - "$(SRCROOT)/../../runtime/dsh/vendor/zstd/1.5.7"
       - "$(SRCROOT)/../../runtime/dsh/vendor/zstd/1.5.7/common"
       - "$(SRCROOT)/App/Generated"
@@ -44,9 +44,9 @@ targets:
     platform: iOS
     sources:
       - path: App
-      - path: ../../runtime/dsh/host/dsh_spike_host.c
+      - path: ../../runtime/dsh/host/dsh_runtime_host.c
       # dsh_socket.c — the loopback socket seam's pump table (contract
-      # v1.8.0): dsh_spike_host.c references dsh_socket_poll/close_all
+      # v1.8.0): dsh_runtime_host.c references dsh_socket_poll/close_all
       # unconditionally, so leaving it out is a link error, not a
       # negotiation (the gateway still decides what gets SERVED).
       - path: ../../runtime/dsh/host/dsh_socket.c

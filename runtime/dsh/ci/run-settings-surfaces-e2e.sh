@@ -33,7 +33,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. stage the web.plugins bus payload from the full application tier
 #    (package.json + lib/client.js per package; fixed generation stamp).
@@ -47,7 +47,7 @@ trap cleanup EXIT INT TERM
 
 # 4. run the scenario (--bus-inject: the staged web.plugins delivery; --env:
 #    the never-dialed llm placeholder the boot demands) and verify one-to-one.
-./build/dsh-spike-cli . scenario/settings-surfaces.js \
+./build/dsh-cli . scenario/settings-surfaces.js \
     --bus-inject "$PAYLOAD" \
     --env "DSH_SETTINGS_LLM_BASEURL=http://127.0.0.1:1" > logs-settings-surfaces.txt
 mkdir -p "$ART_DIR"

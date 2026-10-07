@@ -19,9 +19,9 @@ import org.json.JSONObject
  * exactly once: scenario completion or watchdog (180 s — the UI
  * choreography takes time). JS runs ONLY on the runtime thread; primitive
  * handlers run off it (UI thread / fetch threads); every settle/event hops
- * back via SpikeRuntime.post (ARCHITECTURE.md §6 thread rules); carrier-side
+ * back via JsRuntime.post (ARCHITECTURE.md §6 thread rules); carrier-side
  * evidence rides the canonical envelope under its scenario id. */
-class SpikeHostM4 private constructor(
+class BindingHost private constructor(
     private val activity: Activity,
     /** Carrier-side evidence scenario id + JS entry + capture label for this
      * drive. The default is the M4 binding; the real-LLM drive (`llm.live-stream`)
@@ -65,8 +65,8 @@ class SpikeHostM4 private constructor(
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
-        private const val TAG = "dsh.spike"
-        private const val RESULT_TAG = "dsh.spike.result"
+        private const val TAG = "dsh.rt"
+        private const val RESULT_TAG = "dsh.rt.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 
         /** RuntimeDescriptor pre-eval: the full table available, the
@@ -77,15 +77,15 @@ class SpikeHostM4 private constructor(
             .put("unavailable", JSONArray(GatewayCore.PHASED_ROWS))
             .toString()
 
-        @Volatile private var instance: SpikeHostM4? = null
+        @Volatile private var instance: BindingHost? = null
 
         /** Creates and starts the session; [onFinished] gets the verdict text. */
         fun start(
             activity: Activity,
             webView: WebView?,
             onFinished: (String) -> Unit,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(activity)
+        ): BindingHost {
+            val host = BindingHost(activity)
             host.pump.attach(webView)
             instance = host
             host.start(onFinished)
@@ -97,18 +97,18 @@ class SpikeHostM4 private constructor(
          * through the gateway httpFetch. Credentials ride fs scope "app"
          * (files/profiles/default/llm-live-stream/config.json), staged by the E2E
          * runner before launch. */
-        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+        fun startLlm(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("llm-live-stream", LLM_SCENARIO, LLM_ENTRY, activity, webView, onFinished)
 
         /** The v1.5.0 device-plane drive (scenario `android.device-plane`):
          * the six SDK primitives + the media picker, driven marker-by-marker
          * from the runner. */
-        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+        fun startDevicePlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("device-plane", DEVICE_PLANE_SCENARIO, DEVICE_PLANE_ENTRY, activity, webView, onFinished)
         /** The capability plane's BLE drive (scenario `android.ble-plane`):
          * the real radio by default (an emulator answers `unavailable` honestly
          * — the CI skip leg), the deterministic mock on the mock extra. */
-        fun startBle(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, mockRadio: Boolean): SpikeHostM4 =
+        fun startBle(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, mockRadio: Boolean): BindingHost =
             drive("ble-plane", BLE_SCENARIO, BLE_ENTRY, activity, webView, onFinished, mockRadio)
 
         /** One scenario drive factory: the binding machinery with the leg's scenario
@@ -121,8 +121,8 @@ class SpikeHostM4 private constructor(
             webView: WebView?,
             onFinished: (String) -> Unit,
             mockRadio: Boolean = false,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
+        ): BindingHost {
+            val host = BindingHost(
                 activity,
                 scenarioId = scenarioId,
                 entryPath = entryPath,
@@ -135,19 +135,19 @@ class SpikeHostM4 private constructor(
             return host
         }
         /** The mic drive (`android.mic-plane`): micStart/micStop + the mic.frame channel; the OS prompt pre-granted in automation. */
-        fun startMicPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+        fun startMicPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("mic-plane", MIC_PLANE_SCENARIO, MIC_PLANE_ENTRY, activity, webView, onFinished)
 
         /** The camera drive (`android.camera-plane`, v1.10.0): the capture burst
          * against the emulator's virtual camera, the phased rows' honest `unavailable`. */
-        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 =
+        fun startCameraPlane(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost =
             drive("camera-plane", CAMERA_PLANE_SCENARIO, CAMERA_PLANE_ENTRY, activity, webView, onFinished)
 
         /** The upstream-suite drive (scenario `upstream.suite`): ONE transpiled
          * upstream spec executed by the quickjs-shaped harness inside our
          * runtime — per-test verdicts stream as scenario records; the spec
          * name rides the runtime.config bus delivery. */
-        fun startSuite(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, spec: String): SpikeHostM4 = spawn(
+        fun startSuite(activity: Activity, webView: WebView?, onFinished: (String) -> Unit, spec: String): BindingHost = spawn(
             activity, webView, onFinished,
             scenarioId = SUITE_SCENARIO,
             entryPath = SUITE_ENTRY,
@@ -155,7 +155,7 @@ class SpikeHostM4 private constructor(
         ).also { it.suiteSpec = spec }
 
         /** The upstream-parity drive (scenario `upstream.parity`): the port leg against the committed golden. */
-        fun startParity(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+        fun startParity(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost = spawn(
             activity, webView, onFinished,
                 scenarioId = PARITY_SCENARIO,
                 entryPath = PARITY_ENTRY,
@@ -164,7 +164,7 @@ class SpikeHostM4 private constructor(
         )
 
         /** The whale creation-client drive (scenario `android.whale.mount`). */
-        fun startWhale(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): SpikeHostM4 = spawn(
+        fun startWhale(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost = spawn(
             activity, webView, onFinished,
                 scenarioId = WHALE_SCENARIO,
                 entryPath = WHALE_ENTRY,
@@ -188,8 +188,8 @@ class SpikeHostM4 private constructor(
             webRootDir: String = "webclient/web",
             whaleLeg: Boolean = false,
             parityMode: Boolean = false,
-        ): SpikeHostM4 {
-            val host = SpikeHostM4(
+        ): BindingHost {
+            val host = BindingHost(
                 activity,
                 scenarioId = scenarioId,
                 entryPath = entryPath,
@@ -251,7 +251,7 @@ class SpikeHostM4 private constructor(
      * the ws.* records + the host.info gate + the origin load) — extracted
      * to keep this file under the size gate; the records still ride this
      * drive's scenario id through carrierLog. */
-    private val pump = M4PagePump(
+    private val pump = PagePump(
         activity, carrier,
         log = { event, fields -> carrierLog(event, fields) },
         onEvent = { json -> event(json) },
@@ -260,7 +260,7 @@ class SpikeHostM4 private constructor(
 
     private fun start(onFinished: (String) -> Unit) {
         this.onFinished = onFinished
-        SpikeRuntime.post {
+        JsRuntime.post {
             try {
                 begin()
             } catch (e: Exception) {
@@ -301,11 +301,11 @@ class SpikeHostM4 private constructor(
         }
         carrier.start(webRoot) { /* readiness consumed below */ }
         val entry = File(bundle, entryPath)
-        handle = SpikeRuntime.m4Begin(
+        handle = JsRuntime.m4Begin(
             activity.filesDir.absolutePath, entryPath, entry.readText(), DESCRIPTOR,
             captureLabel, bridge,
         )
-        if (handle == 0L) fail("m4 begin: ${SpikeRuntime.m4LastError()}")
+        if (handle == 0L) fail("m4 begin: ${JsRuntime.bindingLastError()}")
         if (parityMode) {
             // Same handoff shape as the session-live drives: the scenario's
             // bus subscription is installed during eval, so the delivery
@@ -315,14 +315,14 @@ class SpikeHostM4 private constructor(
                 .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
                 .put("apiKey", MockLlmRoute.KEY)
                 .put("containerRoot", bundle.absolutePath)
-            onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, config.toString()))
+            onRuntimeStatus(JsRuntime.m4BusDeliver(handle, config.toString()))
         }
         suiteSpec?.let { spec ->
             val config = JSONObject()
                 .put("type", "runtime.config")
                 .put("spec", "upstream-tests/$spec")
                 .put("containerRoot", bundle.absolutePath)
-            onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, config.toString()))
+            onRuntimeStatus(JsRuntime.m4BusDeliver(handle, config.toString()))
         }
         deliverHostHello() // in case bus.ready arrived during eval
     }
@@ -342,9 +342,9 @@ class SpikeHostM4 private constructor(
         mic.register(core)
         wasm.register(core)
         core.settleFn = { callId, ok, json ->
-            SpikeRuntime.post {
+            JsRuntime.post {
                 if (finished) return@post
-                onRuntimeStatus(SpikeRuntime.m4Settle(handle, callId, ok, json))
+                onRuntimeStatus(JsRuntime.m4Settle(handle, callId, ok, json))
             }
         }
         http.eventFn = { json -> event(json) }
@@ -355,7 +355,7 @@ class SpikeHostM4 private constructor(
         timer.register(core)
     }
 
-    private val bridge = object : SpikeRuntime.M4Bridge {
+    private val bridge = object : JsRuntime.BindingBridge {
         override fun onGatewayCall(callId: Int, name: String, args: String) {
             if (finished) return
             core.dispatch(callId, name, args)
@@ -401,7 +401,7 @@ class SpikeHostM4 private constructor(
         if (!whaleLeg && !busReady) return
         hostHelloDelivered = true
         val hello = JSONObject().put("type", "host.hello").put("port", carrier.port)
-        onRuntimeStatus(SpikeRuntime.m4BusDeliver(handle, hello.toString()))
+        onRuntimeStatus(JsRuntime.m4BusDeliver(handle, hello.toString()))
         val port = carrier.port
         activity.runOnUiThread { pump.loadOrigin(port) }
     }
@@ -409,9 +409,9 @@ class SpikeHostM4 private constructor(
     // ---- runtime-queue settle/event + settling --------------------------------
 
     private fun event(json: String) {
-        SpikeRuntime.post {
+        JsRuntime.post {
             if (finished) return@post
-            onRuntimeStatus(SpikeRuntime.m4Event(handle, json))
+            onRuntimeStatus(JsRuntime.m4Event(handle, json))
         }
     }
 
@@ -421,7 +421,7 @@ class SpikeHostM4 private constructor(
             0 -> {}
             1 -> pass()
             2 -> fail("scenario completed with pass=false")
-            else -> fail("m4 runtime: ${SpikeRuntime.m4LastError()}")
+            else -> fail("m4 runtime: ${JsRuntime.bindingLastError()}")
         }
     }
 
@@ -471,7 +471,7 @@ class SpikeHostM4 private constructor(
             (if (error.isEmpty()) "" else " | error: $error")
         Log.i(RESULT_TAG, line)
         Log.i(RESULT_TAG, "ALL ${if (passed) "PASS" else "FAIL"}")
-        if (handle != 0L) SpikeRuntime.m4End(handle)
+        if (handle != 0L) JsRuntime.m4End(handle)
         handle = 0
         carrier.stop()
         instance = null

@@ -333,7 +333,7 @@ const REGISTRATIONS = [
 
   // node:child_process — the REAL subprocess face (W5-R, 2026-09-28): the
   // host grew the __dshProc* intrinsics (portable fork/exec/poll in
-  // dsh_spike_host.c) and upstream/shims/node-child-process.js serves node's
+  // dsh_runtime_host.c) and upstream/shims/node-child-process.js serves node's
   // spawn/spawnSync/execFile surface over them (children never run JS in
   // this runtime — D2's serial-thread constitution is untouched; the
   // desktop/Android parity leg spawns REAL fixture servers exactly like

@@ -1,7 +1,7 @@
 // dsh:logging-exempt (host shim: no side effects to log)
 /**
  * node:sqlite — DatabaseSync over the host's real sqlite3 (already linked
- * for the iSH userland; see dsh_spike_host.c's node:sqlite seam, W5-R,
+ * for the iSH userland; see dsh_runtime_host.c's node:sqlite seam, W5-R,
  * 2026-09-28). The subset the session-query/storage schemas drive: exec,
  * prepare → StatementSync {run, get, all, iterate}, close, plus open
  * (re-open) and the function-valued member faces the corpus touches.

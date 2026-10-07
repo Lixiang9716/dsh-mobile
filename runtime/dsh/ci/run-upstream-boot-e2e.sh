@@ -33,7 +33,7 @@ sh vendor/ensure.sh > /dev/null
 sh vendor/ensure-dsh.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. stage the web.plugins bus payload from the vendored client-modules tree
 #    (package.json + lib/client.js; fixed generation stamp, see the script).
@@ -74,7 +74,7 @@ echo "mock llm server: $MOCK_URL" >&2
 
 # 5. run the scenario (--http: loopback httpFetch; --bus-inject: the staged
 #    web.plugins delivery; --env: the launch env snapshot) and verify.
-./build/dsh-spike-cli . scenario/upstream-web-boot.js \
+./build/dsh-cli . scenario/upstream-web-boot.js \
     --http \
     --bus-inject "$PAYLOAD" \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \

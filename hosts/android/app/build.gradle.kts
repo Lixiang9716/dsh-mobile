@@ -26,7 +26,7 @@ val execBash: String = when {
 // backslashes that bash consumes as escapes (`D:workspacedsh-mobile…`);
 // forward slashes reach the shell intact on every host.
 val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/dsh/vendor/ensure.sh")
-val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
+val ensureDshVendor = tasks.register<Exec>("ensureDshVendor") {
     commandLine(execBash, ensureSpikeScript.asFile.absolutePath.replace('\\', '/'))
 }
 
@@ -219,6 +219,6 @@ tasks.configureEach {
         name.startsWith("package") && name.endsWith("Assets") ||
         name.startsWith("bundleDebug") || name.startsWith("assemble")
     ) {
-        dependsOn(ensureSpikeVendor, stageSpineClosure, stageWebPlugins)
+        dependsOn(ensureDshVendor, stageSpineClosure, stageWebPlugins)
     }
 }

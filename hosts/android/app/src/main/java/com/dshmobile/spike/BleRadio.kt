@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
  * radio that is not the named mock.
  *
  * All completions fire on the main looper; the primitives' settles hop onto
- * the runtime queue via SpikeRuntime.post (ARCHITECTURE.md §6).
+ * the runtime queue via JsRuntime.post (ARCHITECTURE.md §6).
  */
 sealed class BleRadioFailure {
     /** The radio layer cannot serve the call (contract §3 `unavailable`). */

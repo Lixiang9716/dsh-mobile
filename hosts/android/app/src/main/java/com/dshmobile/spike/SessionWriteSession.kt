@@ -20,7 +20,7 @@ import org.json.JSONObject
      * such) whose deltas stream live over the mux journal back into the
      * official UI. Endpoints the spine does not implement stay structured-
      * unavailable, never faked. Kotlin sibling of hosts/ios
-     * SessionWriteRuntime.swift; JS runs ONLY on SpikeRuntime's
+     * SessionWriteRuntime.swift; JS runs ONLY on JsRuntime's
      * HandlerThread. The carrier/runtime plumbing is the session-live
      * drive's (SessionLiveSession); only the entry, the seam, and the probe
      * legs differ. */
@@ -38,8 +38,8 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         // 270s sits inside the runner's 300s phase window (session-live's budget).
         const val WATCHDOG_SECONDS = 270
 
-        private const val TAG = "dsh.spike"
-        private const val RESULT_TAG = "dsh.spike.result"
+        private const val TAG = "dsh.rt"
+        private const val RESULT_TAG = "dsh.rt.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
         private const val BOOT_SOURCE =
             "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"
@@ -92,7 +92,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
 
     private fun start(onFinished: (String) -> Unit) {
         this.onFinished = onFinished
-        SpikeRuntime.post {
+        JsRuntime.post {
             try {
                 begin()
             } catch (e: Exception) {
@@ -177,23 +177,23 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         http.register(core)
         WasmPrimitive(fs).register(core)
         core.settleFn = { callId, ok, json ->
-            SpikeRuntime.post {
+            JsRuntime.post {
                 if (finished) return@post
-                onRuntimeStatus(SpikeRuntime.m4Settle(handle, callId, ok, json))
+                onRuntimeStatus(JsRuntime.m4Settle(handle, callId, ok, json))
             }
         }
         http.eventFn = { json ->
-            SpikeRuntime.post {
+            JsRuntime.post {
                 if (finished) return@post
-                onRuntimeStatus(SpikeRuntime.m4Event(handle, json))
+                onRuntimeStatus(JsRuntime.m4Event(handle, json))
             }
         }
         val entry = File(bundle, ENTRY)
-        handle = SpikeRuntime.m4Begin(
+        handle = JsRuntime.m4Begin(
             activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
             "android-composer-live-write", runtimeBridge,
         )
-        if (handle == 0L) throw IllegalStateException("write-live begin: ${SpikeRuntime.m4LastError()}")
+        if (handle == 0L) throw IllegalStateException("write-live begin: ${JsRuntime.bindingLastError()}")
         val config = JSONObject()
             .put("type", "runtime.config")
             .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
@@ -208,11 +208,11 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         AgentPresetsSeed.build(bundle)?.let { deliverRuntime(it) }
     }
 
-    /** The M4Bridge the C host calls back (runtime thread): gateway calls
+    /** The BindingBridge the C host calls back (runtime thread): gateway calls
      * dispatch into the core; bus messages fold into the web-boot row
      * application (web.boot) or the claims seam (everything else). The
      * scenario's own completion is NOT the verdict — the probe's is. */
-    private val runtimeBridge = object : SpikeRuntime.M4Bridge {
+    private val runtimeBridge = object : JsRuntime.BindingBridge {
         override fun onGatewayCall(callId: Int, name: String, args: String) {
             if (finished) return
             core.dispatch(callId, name, args)
@@ -270,10 +270,10 @@ class SessionWriteSession private constructor(private val activity: Activity) {
      * thread — the bridge hands over claimed api.request / mux.open frames
      * here). The scenario's own completion status is NOT the verdict. */
     private fun deliverRuntime(msg: JSONObject) {
-        SpikeRuntime.post {
+        JsRuntime.post {
             if (finished || handle == 0L) return@post
-            val status = SpikeRuntime.m4BusDeliver(handle, msg.toString())
-            if (status < 0) fail("write-live bus deliver: ${SpikeRuntime.m4LastError()}")
+            val status = JsRuntime.m4BusDeliver(handle, msg.toString())
+            if (status < 0) fail("write-live bus deliver: ${JsRuntime.bindingLastError()}")
         }
     }
 
@@ -284,7 +284,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
         when (status) {
             0, 1 -> {}
             2 -> fail("write-live: scenario completed with pass=false")
-            else -> fail("write-live runtime: ${SpikeRuntime.m4LastError()}")
+            else -> fail("write-live runtime: ${JsRuntime.bindingLastError()}")
         }
     }
 
@@ -478,7 +478,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
             (if (error.isEmpty()) "" else " | error: $error")
         Log.i(RESULT_TAG, line)
         Log.i(RESULT_TAG, "ALL ${if (passed) "PASS" else "FAIL"}")
-        if (handle != 0L) SpikeRuntime.m4End(handle)
+        if (handle != 0L) JsRuntime.m4End(handle)
         handle = 0
         carrier.stop()
         instance = null

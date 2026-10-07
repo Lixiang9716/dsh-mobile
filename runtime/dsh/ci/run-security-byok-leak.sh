@@ -31,7 +31,7 @@ sh vendor/ensure-dsh.sh
 sh vendor/ensure-ish.sh
 
 # 2. build the spike host when the binary is missing.
-[ -x build/dsh-spike-cli ] || sh host/build.sh
+[ -x build/dsh-cli ] || sh host/build.sh
 
 # 3. the mock LLM server: one scripted success, then the scripted 401.
 MOCK_LOG="$(mktemp /tmp/dsh-mock-llm-byok.XXXXXX)"
@@ -65,7 +65,7 @@ mkdir -p "$ART_DIR"
 LOG="$ART_DIR/logs.txt"
 rm -f "$LOG"
 RC=0
-(cd . && ./build/dsh-spike-cli . scenario/security-byok-leak.js --http \
+(cd . && ./build/dsh-cli . scenario/security-byok-leak.js --http \
     --env "DSH_MOCK_LLM_URL=$MOCK_URL" \
     --env "DSH_BYOK_CANARY=$CANARY" \
     --env "DSH_BYOK_WRONG=$WRONG_KEY" > "$LOG" 2>&1) || RC=$?
@@ -101,7 +101,7 @@ cat > "$ART_DIR/receipt.json" <<EOF
 {
  "host": "macOS $(uname -s | tr '[:upper:]' '[:lower:]')-cli ($(uname -sr) $(uname -m))",
  "phase": "security adversarial leg 4/4 — the BYOK credential's leak surface under a canary audit (docs/security-threat-model.md)",
- "launchConfiguration": "./build/dsh-spike-cli . scenario/security-byok-leak.js --http --env DSH_BYOK_CANARY=<canary, not reproduced here>",
+ "launchConfiguration": "./build/dsh-cli . scenario/security-byok-leak.js --http --env DSH_BYOK_CANARY=<canary, not reproduced here>",
  "scenarios": [
   {
    "id": "security.byok-leak",

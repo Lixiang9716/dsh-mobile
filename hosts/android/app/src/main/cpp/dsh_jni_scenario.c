@@ -1,15 +1,15 @@
 /*
- * dsh_spike_jni.c — JNI bridge for the Android M4 spike host.
+ * dsh_runtime_jni.c — JNI bridge for the Android M4 rt host.
  *
- * Runs each scenario lifecycle (dsh_spike_new -> eval -> {pump, drain} ->
+ * Runs each scenario lifecycle (dsh_runtime_new -> eval -> {pump, drain} ->
  * complete) on the CALLING thread; Kotlin keeps that caller a single
  * dedicated HandlerThread for the life of the process, so the JS runtime is
  * touched by exactly one serial thread (ARCHITECTURE.md §6 thread rules).
  * One launch drives BOTH scenarios: the boot.verification regression and the
- * gateway.bridge-smoke gateway-bridge scenario (backend in dsh_spike_smoke.c).
+ * gateway.bridge-smoke gateway-bridge scenario (backend in dsh_runtime_smoke.c).
  *
  * Each canonical E2E line the host sink receives goes out UNMODIFIED to both:
- *   - logcat under tag "dsh.spike" (the CI-captured stream), and
+ *   - logcat under tag "dsh.rt" (the CI-captured stream), and
  *   - <contextDir>/<per-scenario capture file> (verbatim second capture,
  *     pulled via adb run-as — truncation-proof cross-check).
  */
@@ -21,12 +21,12 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "dsh_spike_host.h"
-#include "dsh_spike_smoke.h"
+#include "dsh_runtime_host.h"
+#include "dsh_gateway_smoke.h"
 #include "dsh_wasm.h"
 
-#define DSH_LOG_TAG "dsh.spike"
-#define DSH_RESULT_TAG "dsh.spike.result"
+#define DSH_LOG_TAG "dsh.rt"
+#define DSH_RESULT_TAG "dsh.rt.result"
 #define DSH_ENGINE_LABEL "quickjs-ng 0.17.0"
 #define DSH_ERR_MAX 512
 
@@ -38,11 +38,11 @@ typedef struct dsh_scenario {
 
 static const dsh_scenario DSH_SCENARIOS[] = {
         {"boot.verification", "scenario/boot-verification.js",
-         "spike-capture-boot-verification.log"},
+         "rt-capture-boot-verification.log"},
         {"gateway.bridge-smoke", "scenario/gateway-bridge-smoke.js",
-         "spike-capture-gateway-bridge-smoke.log"},
+         "rt-capture-gateway-bridge-smoke.log"},
         {"session.mock-llm", "scenario/session-mock-llm.js",
-         "spike-capture-session-mock-llm.log"},
+         "rt-capture-session-mock-llm.log"},
 };
 
 static void dsh_sink_log(void *ud, const char *line) {
@@ -119,14 +119,14 @@ static int dsh_run_scenario(const char *context, const dsh_scenario *sc,
 
     if (!bundle_root || !source) {
         snprintf(err, DSH_ERR_MAX,
-                 "bundle materialization failed — expected filesDir/spike/%s",
+                 "bundle materialization failed — expected filesDir/rt/%s",
                  sc->entry);
     } else if (!capture) {
         snprintf(err, DSH_ERR_MAX, "cannot open capture file %s", sc->capture);
     } else if (!fs_root) {
         snprintf(err, DSH_ERR_MAX, "out of memory");
     } else {
-        dsh_spike_sink sink = {dsh_sink_log, capture};
+        dsh_runtime_sink sink = {dsh_sink_log, capture};
         passed = dsh_smoke_run(bundle_root, sc->entry, source, fs_root, &sink,
                                err, DSH_ERR_MAX);
     }
@@ -164,13 +164,13 @@ static int dsh_prepare_fs_root(const char *context, char *err) {
  * through the vendored wasm3 and a JSON payload comes back. Every gateway
  * handler runs on the single runtime thread (ARCHITECTURE.md §6), so the
  * one-run-at-a-time sink and the last-error slot need no lock; the error is
- * read back on the same thread that produced it (the m4LastError pattern).
+ * read back on the same thread that produced it (the bindingLastError pattern).
  * The Kotlin side is WasmPrimitive; until this leg landed (#335 B4) the
  * release seat answered every wasmRun with a gateway denial. */
 static char g_wasm_err[DSH_ERR_MAX];
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmRun(
+jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmRun(
         JNIEnv *env, jobject thiz, jbyteArray j_module, jstring j_func,
         jstring j_input) {
     (void)thiz;
@@ -204,7 +204,7 @@ jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmRun(
 }
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmLast(
+jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmLast(
         JNIEnv *env, jobject thiz) {
     (void)thiz;
     return (*env)->NewStringUTF(env, g_wasm_err);
@@ -215,7 +215,7 @@ jstring Java_com_dshmobile_spike_SpikeRuntime_nativeWasmLast(
  * syntax gate cannot parse the macro-prefixed declarator. The attribute keeps
  * the export explicit even if -fvisibility=hidden lands later. */
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_SpikeRuntime_nativeRunSpike(
+jstring Java_com_dshmobile_spike_JsRuntime_nativeRunSpike(
         JNIEnv *env, jobject thiz, jstring j_context_dir) {
     (void)thiz;
     const char *context = (*env)->GetStringUTFChars(env, j_context_dir, NULL);

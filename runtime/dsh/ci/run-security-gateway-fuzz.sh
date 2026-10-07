@@ -51,7 +51,7 @@ rm -f "$LOG"
 # --http: the httpFetch validation face (missing url) is served, not the
 # declared-unavailable fallback — the battery attacks the validator.
 RC=0
-(cd . && ./build/dsh-spike-cli . scenario/security-gateway-fuzz.js --http > "$LOG" 2>&1) || RC=$?
+(cd . && ./build/dsh-cli . scenario/security-gateway-fuzz.js --http > "$LOG" 2>&1) || RC=$?
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 grep '^{"audit":"socket\.' "$LOG" > "$ART/gateway-audit.jsonl" || true
 # The checker is the authoritative gate; the exit code is reported beside it
@@ -79,7 +79,7 @@ cat > "$ART/receipt.json" <<EOF
 {
  "host": "macOS $(uname -m) (the desktop CLI, no simulator)",
  "phase": "security adversarial leg 1/4 — the gateway validation face under a malformed-primitive battery (docs/security-threat-model.md)",
- "launchConfiguration": "./build/dsh-spike-cli . scenario/security-gateway-fuzz.js --http",
+ "launchConfiguration": "./build/dsh-cli . scenario/security-gateway-fuzz.js --http",
  "scenarios": [
   {
    "id": "security.gateway-fuzz",

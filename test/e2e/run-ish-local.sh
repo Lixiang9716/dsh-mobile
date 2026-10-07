@@ -165,7 +165,7 @@ rm -f "$LOG"
 # workspace so the deliverable below is a known path.
 (cd runtime/dsh && \
     DSH_ISH_ROOTFS="$ROOTFS" DSH_SPIKE_TMPDIR="$WORKSPACE" \
-    ./build/dsh-spike-cli . scenario/userland-shell.js > "$LOG" 2>&1) || true
+    ./build/dsh-cli . scenario/userland-shell.js > "$LOG" 2>&1) || true
 grep '^dsh.spike.log:' "$LOG" > "$ART/scenario.jsonl" || true
 node test/e2e/check.mjs --manifest test/e2e/scenarios/userland-shell-local.json \
     --log "$LOG" --out "$ART/verdict-userland-shell-local.json"
@@ -196,7 +196,7 @@ cat > "$ART/receipt.json" <<EOF
  "engineVersion": "OpenMinis/ish-arm64 e1d579480fba88e8f0428e3cf23811bcdd05421f, vendored + sha256-pinned by runtime/dsh/vendor/ensure-ish.sh",
  "guestRoot": "Alpine 3.21.8 aarch64 minirootfs (sha256 $ROOTFS_SHA256)",
  "phase": "contract v1.3.0 \`ishRun\` — a real Linux userland running INSIDE the host process (no child process, no second OS), driven from the JS layer through system-plugins/dsh-shell-ish",
- "launchConfiguration": "(cd runtime/dsh) ./build/dsh-spike-cli . scenario/userland-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
+ "launchConfiguration": "(cd runtime/dsh) ./build/dsh-cli . scenario/userland-shell.js, with DSH_ISH_ROOTFS set to the extracted guest root and DSH_SPIKE_TMPDIR pinned to the staged workspace",
  "scenarios": [
   {
    "id": "userland.shell",

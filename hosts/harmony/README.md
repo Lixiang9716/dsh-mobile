@@ -40,7 +40,7 @@ ONE launch on the emulator now proves the host end to end in two phases:
   capability layer (settled from later UI callbacks), and the honest-unavailable
   set widens per the binding descriptor.
 - `entry/src/main/cpp/napi_init.cpp` — `startSpike(bundleRoot, capturePath, fsRoot)`
-  runs the regression trio synchronously (each on its own `dsh_spike_t`, one
+  runs the regression trio synchronously (each on its own `dsh_runtime_t`, one
   `dsh.spike.verdict:` line per scenario). The binding phase exposes the same
   runtime FINE-GRAINED (`hostStart`/`hostEval`/`hostEvent`/`hostBusDeliver`/
   `hostSettle`/`hostCarrierLine`/`hostStatus`/`hostFree`): ArkTS drives it per
@@ -159,8 +159,8 @@ Layout:
 - `build-profile.json5` / `hvigorfile.ts` / `oh-package.json5` / `hvigor/` — project level
   (hvigor 6.x, modelVersion 5.0.0, `compatibleSdkVersion: "26.0.0"`).
 - `AppScope/` — app identity (`com.dshmobile.spike`).
-- `entry/src/main/cpp/` — the NAPI library (`libspike.so`): CMake compiles
-  `runtime/dsh/host/dsh_spike_host.c`, `gateway_smoke.cpp`, plus the pinned
+- `entry/src/main/cpp/` — the NAPI library (`libdruntime.so`): CMake compiles
+  `runtime/dsh/host/dsh_runtime_host.c`, `gateway_smoke.cpp`, plus the pinned
   quickjs-ng 0.17.0 sources (`dtoa.c libregexp.c libunicode.c quickjs.c`) through
   hvigor's externalNativeOptions. CMake runs `runtime/dsh/vendor/ensure.sh`
   first, so the vendor tree is always materialized before compiling.

@@ -14,14 +14,14 @@ import android.widget.TextView
 import java.io.File
 
 /**
- * M4 spike host activity. Two launch modes:
- * - default (no extras): copies the spike bundle from assets into
- *   filesDir/spike (the C host fopen()s real paths), then drives ALL THREE
+ * M4 rt host activity. Two launch modes:
+ * - default (no extras): copies the rt bundle from assets into
+ *   filesDir/rt (the C host fopen()s real paths), then drives ALL THREE
  *   regression scenarios (boot.verification + gateway.bridge-smoke + session.mock-llm) on
  *   the serial runtime thread and shows the combined verdict.
  * - `--ez dsh.m4 true`: the M4 completion session — the loopback carrier
  *   serves the embedded Web Client into a real WebView and the full
- *   nine-primitive gateway binding runs UI-driven (SpikeHostM4).
+ *   nine-primitive gateway binding runs UI-driven (BindingHost).
  * The E2E assertion is the captured log, never the screen — views are human
  * evidence only.
  */
@@ -31,7 +31,7 @@ class MainActivity : Activity() {
     private val assetStampName = ".dsh-asset-stamp"
 
     private lateinit var verdictView: TextView
-    private var spikeHost: SpikeHostM4? = null
+    private var spikeHost: BindingHost? = null
     private var webView: WebView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,26 +46,26 @@ class MainActivity : Activity() {
             gravity = Gravity.CENTER
             setPadding(64, 64, 64, 64)
             textSize = 16f
-            text = "dsh spike host: booting quickjs-ng..."
+            text = "dsh rt host: booting quickjs-ng..."
         }
         if (intent.getBooleanExtra(EXTRA_SUITE, false)) {
-            startM4(savedInstanceState, parity = true, suite = intent.getStringExtra(EXTRA_SPEC))
+            startBinding(savedInstanceState, parity = true, suite = intent.getStringExtra(EXTRA_SPEC))
         } else if (intent.getBooleanExtra(EXTRA_PARITY, false)) {
-            startM4(savedInstanceState, parity = true)
+            startBinding(savedInstanceState, parity = true)
         } else if (intent.getBooleanExtra(EXTRA_LLM, false)) {
-            startM4(savedInstanceState, llm = true)
+            startBinding(savedInstanceState, llm = true)
         } else if (intent.getBooleanExtra(EXTRA_M4, false)) {
-            startM4(savedInstanceState, llm = false)
+            startBinding(savedInstanceState, llm = false)
         } else if (intent.getBooleanExtra(EXTRA_WHALE, false)) {
-            startM4(savedInstanceState, whale = true)
+            startBinding(savedInstanceState, whale = true)
         } else if (intent.getBooleanExtra(EXTRA_DEVICE_PLANE, false)) {
-            startM4(savedInstanceState, devicePlane = true)
+            startBinding(savedInstanceState, devicePlane = true)
         } else if (intent.getBooleanExtra(EXTRA_CAMERA_PLANE, false)) {
-            startM4(savedInstanceState, cameraPlane = true)
+            startBinding(savedInstanceState, cameraPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_BLE, false)) {
-            startM4(savedInstanceState, ble = true, bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
+            startBinding(savedInstanceState, ble = true, bleMock = intent.getBooleanExtra(EXTRA_BLE_MOCK, false))
         } else if (intent.getBooleanExtra(EXTRA_MIC_PLANE, false)) {
-            startM4(savedInstanceState, micPlane = true)
+            startBinding(savedInstanceState, micPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
             startNextWeb()
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
@@ -76,9 +76,9 @@ class MainActivity : Activity() {
             startWriteLive()
         } else {
             setContentView(verdictView)
-            SpikeRuntime.post {
+            JsRuntime.post {
                 materializeBundle()
-                val verdict = SpikeRuntime.runOnce(filesDir.absolutePath)
+                val verdict = JsRuntime.runOnce(filesDir.absolutePath)
                 runOnUiThread { verdictView.text = verdict }
             }
         }
@@ -103,7 +103,7 @@ class MainActivity : Activity() {
             insets
         }
         content.requestApplyInsets()
-        SpikeHostM4.dispatchResume()
+        BindingHost.dispatchResume()
     }
 
     /** Top inset of the system bars + display cutout, in pixels (issue #179). */
@@ -121,12 +121,12 @@ class MainActivity : Activity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        SpikeHostM4.dispatchNotifyResponse(intent)
+        BindingHost.dispatchNotifyResponse(intent)
     }
 
     override fun onPause() {
         super.onPause()
-        SpikeHostM4.dispatchPause()
+        BindingHost.dispatchPause()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -146,7 +146,7 @@ class MainActivity : Activity() {
         spikeHost?.onRequestPermissionsResult(requestCode, grantResults)
     }
 
-    private fun startM4(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
+    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -171,33 +171,33 @@ class MainActivity : Activity() {
         )
         setContentView(layout)
         webView = view
-        // The gateway core reads filesDir/spike at construction: materialize
+        // The gateway core reads filesDir/rt at construction: materialize
         // the bundle FIRST (runtime thread), then construct the host.
-        SpikeRuntime.post {
+        JsRuntime.post {
             materializeBundle()
             runOnUiThread {
                 spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane, ble, bleMock, micPlane)
             }
         }
-        view.post { SpikeHostM4.dispatchNotifyResponse(intent) }
+        view.post { BindingHost.dispatchNotifyResponse(intent) }
     }
 
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
      * the whale creation-client mount, or the M4 binding — with the same
      * carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): SpikeHostM4 {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): BindingHost {
 
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
-            suite != null -> SpikeHostM4.startSuite(this, view, onVerdict, suite)
-            parity -> SpikeHostM4.startParity(this, view, onVerdict)
-            whale -> SpikeHostM4.startWhale(this, view, onVerdict)
-            devicePlane -> SpikeHostM4.startDevicePlane(this, view, onVerdict)
-            cameraPlane -> SpikeHostM4.startCameraPlane(this, view, onVerdict)
-            ble -> SpikeHostM4.startBle(this, view, onVerdict, bleMock)
-            micPlane -> SpikeHostM4.startMicPlane(this, view, onVerdict)
-            llm -> SpikeHostM4.startLlm(this, view, onVerdict)
-            else -> SpikeHostM4.start(this, view, onVerdict)
+            suite != null -> BindingHost.startSuite(this, view, onVerdict, suite)
+            parity -> BindingHost.startParity(this, view, onVerdict)
+            whale -> BindingHost.startWhale(this, view, onVerdict)
+            devicePlane -> BindingHost.startDevicePlane(this, view, onVerdict)
+            cameraPlane -> BindingHost.startCameraPlane(this, view, onVerdict)
+            ble -> BindingHost.startBle(this, view, onVerdict, bleMock)
+            micPlane -> BindingHost.startMicPlane(this, view, onVerdict)
+            llm -> BindingHost.startLlm(this, view, onVerdict)
+            else -> BindingHost.start(this, view, onVerdict)
         }
     }
 
@@ -233,8 +233,8 @@ class MainActivity : Activity() {
         val view = drivenWebView { OfficialWebSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
-        // thread: spike bundle + official dist + web-plugins), then start.
-        SpikeRuntime.post {
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
             materializeBundle()
             syncAssetDir("official-web", File(filesDir, "official-web"))
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
@@ -266,8 +266,8 @@ class MainActivity : Activity() {
         val view = drivenWebView { NextWebSession.dispatchPageFinished() }
         webView = view
         // The seat reads filesDir trees: materialize FIRST (runtime thread:
-        // spike bundle incl. webclient-next + web-plugins), then drive.
-        SpikeRuntime.post {
+        // rt bundle incl. webclient-next + web-plugins), then drive.
+        JsRuntime.post {
             materializeBundle()
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
@@ -354,7 +354,7 @@ class MainActivity : Activity() {
         webView = view
         // The carrier + runtime read filesDir trees: materialize FIRST, then
         // serve. No verdict callback — a user-facing boot has nothing to assert.
-        SpikeRuntime.post {
+        JsRuntime.post {
             materializeBundle()
             syncAssetDir("official-web", File(filesDir, "official-web"))
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
@@ -395,8 +395,8 @@ class MainActivity : Activity() {
         val view = drivenWebView { SessionLiveSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
-        // thread: spike bundle + official dist + web-plugins), then start.
-        SpikeRuntime.post {
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
             materializeBundle()
             syncAssetDir("official-web", File(filesDir, "official-web"))
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
@@ -420,8 +420,8 @@ class MainActivity : Activity() {
         val view = drivenWebView { SessionWriteSession.dispatchPageFinished() }
         webView = view
         // The carrier + drive read filesDir trees: materialize FIRST (runtime
-        // thread: spike bundle + official dist + web-plugins), then start.
-        SpikeRuntime.post {
+        // thread: rt bundle + official dist + web-plugins), then start.
+        JsRuntime.post {
             materializeBundle()
             syncAssetDir("official-web", File(filesDir, "official-web"))
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
@@ -433,7 +433,7 @@ class MainActivity : Activity() {
         }
     }
 
-    /** Copies the asset spike bundle to filesDir/spike preserving the layout. */
+    /** Copies the asset rt bundle to filesDir/rt preserving the layout. */
     private fun materializeBundle() {
         syncAssetDir("dsh", File(filesDir, "dsh"))
     }
@@ -453,7 +453,7 @@ class MainActivity : Activity() {
 
     /** Reconciles one served tree with the APK's assets (loop-g): an
      * overwrite-only copy let every entry an OLDER APK shipped survive
-     * `install -r` forever — the device's files/spike/vendor/dsh carried
+     * `install -r` forever — the device's files/rt/vendor/dsh carried
      * 274 pre-lean dirs the current closure never materializes, and no
      * clean-install proof could pass over them. The stamped manifest makes
      * drift loud and self-healing: matching stamp → no-op; missing or

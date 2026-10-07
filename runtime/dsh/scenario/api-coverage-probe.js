@@ -4,7 +4,7 @@
  * commands + goals + fileReferences), and the write surface composed with
  * `fullCoverage: true` answers every COVERAGE endpoint from the REAL
  * vendored services. Run:
- *   cd runtime/dsh && ./build/dsh-spike-cli . scenario/api-coverage-probe.js
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/api-coverage-probe.js
  *
  * Asserts, per namespace: the wire result shapes (stat/list/read/readAll/
  * readBytes/readRelated), the structured error legs (not-found,

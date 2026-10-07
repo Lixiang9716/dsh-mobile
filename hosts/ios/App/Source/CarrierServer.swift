@@ -134,7 +134,7 @@ final class CarrierServer {
                 onReady()
             }
             if case .failed(let error) = state {
-                print("spike: carrier server failed: \(error)")
+                print("rt: carrier server failed: \(error)")
                 fflush(stdout)
             }
         }

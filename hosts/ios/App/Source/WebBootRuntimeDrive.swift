@@ -12,10 +12,10 @@ import Foundation
 /// parsed message to `onBusPost` (owner decides the queue). Gateway
 /// settle/event hop BACK onto the runtime thread before re-entering C.
 /// Failures surface once through `onFailure` (drive-owned verdict); the
-/// drive never logs — the spike sink already carries the canonical lines.
+/// drive never logs — the rt sink already carries the canonical lines.
 final class WebBootRuntimeDrive {
-    private let thread = RuntimeThread(name: "org.dsh.spike.webboot")
-    private let sink = SpikeLogSink()
+    private let thread = RuntimeThread(name: "org.dsh.rt.webboot")
+    private let sink = RuntimeLogSink()
     private var host: OpaquePointer?
     /// The capability gateway the scenario's spine exercises (fs scope for
     /// the profile container, httpFetch for the llm transport). Nil for the
@@ -39,7 +39,7 @@ final class WebBootRuntimeDrive {
     func start(
         bundleRoot: URL, plugins: [[String: Any]]?, config: [String: Any]? = nil,
         scenario: @escaping (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>? =
-            dsh_spike_res_scenario_b1_web_live_js,
+            dsh_runtime_res_scenario_b1_web_live_js,
         scenarioPath: String = "scenario/officialweb-web-live.js",
         gateway: Bool = false
     ) {
@@ -50,8 +50,8 @@ final class WebBootRuntimeDrive {
             wireSinks(host: host)
             guard evalScenario(host: host, scenario: scenario, path: scenarioPath) else { return }
             guard deliverStaging(plugins, config, bundleRoot.path) else { return }
-            if dsh_spike_pump(host) != 0 {
-                onFailure?("web-boot pump: \(String(cString: dsh_spike_error(host)))")
+            if dsh_runtime_pump(host) != 0 {
+                onFailure?("web-boot pump: \(String(cString: dsh_runtime_error(host)))")
             }
         }
     }
@@ -60,8 +60,8 @@ final class WebBootRuntimeDrive {
     /// failure has already been reported through `onFailure`.
     private func bootHost(bundleRoot: URL) -> OpaquePointer? {
         var cSink = sink.cSink
-        guard let host = dsh_spike_new_declaring(bundleRoot.path, &cSink) else {
-            onFailure?("web-boot runtime: dsh_spike_new returned NULL")
+        guard let host = dsh_runtime_new_declaring(bundleRoot.path, &cSink) else {
+            onFailure?("web-boot runtime: dsh_runtime_new returned NULL")
             return nil
         }
         self.host = host
@@ -85,7 +85,7 @@ final class WebBootRuntimeDrive {
         core.emit = { [weak self] json in
             self?.thread.async { self?.emitEvent(json) }
         }
-        dsh_spike_set_descriptor(host, GatewayCore.jsonLine([
+        dsh_runtime_set_descriptor(host, GatewayCore.jsonLine([
             "available": GatewayCore.primitives, "unavailable": [],
         ]) ?? "{}")
         return true
@@ -94,12 +94,12 @@ final class WebBootRuntimeDrive {
     /// The two C → drive seams: bus lines (every JS → host post) and gateway
     /// dispatch (a claimed primitive call).
     private func wireSinks(host: OpaquePointer) {
-        dsh_spike_set_bus_sink(host, { ud, line in
+        dsh_runtime_set_bus_sink(host, { ud, line in
             guard let ud, let line else { return }
             let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
             drive.handleBusLine(String(cString: line))
         }, Unmanaged.passUnretained(self).toOpaque())
-        dsh_spike_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
+        dsh_runtime_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
             guard let ud, let name, let argsJSON else { return }
             let drive = Unmanaged<WebBootRuntimeDrive>.fromOpaque(ud).takeUnretainedValue()
             drive.core?.dispatch(
@@ -121,8 +121,8 @@ final class WebBootRuntimeDrive {
             return false
         }
         let source = String(cString: src)
-        if dsh_spike_eval(host, path, source) != 0 {
-            onFailure?("web-boot eval: \(String(cString: dsh_spike_error(host)))")
+        if dsh_runtime_eval(host, path, source) != 0 {
+            onFailure?("web-boot eval: \(String(cString: dsh_runtime_error(host)))")
             return false
         }
         return true
@@ -152,7 +152,7 @@ final class WebBootRuntimeDrive {
     }
 
     /// The staged presets tree (vendor/dsh/agent-presets@…/presets/**, written
-    /// by SpikeBundleStager from the embedded spine tree) as an
+    /// by BundleStager from the embedded spine tree) as an
     /// `agentPresets.seed` delivery: every file base64 under its VFS path,
     /// plus one node_modules resolution marker per staged dsh package — the
     /// same rule runtime/dsh/ci/gen-presets-seed.py generates for the CLI.
@@ -160,7 +160,7 @@ final class WebBootRuntimeDrive {
     /// `broken` (no speculative markers); a row naming a staged package
     /// resolves through its marker onto the bare map's vendored tree.
     private func agentPresetsSeedDelivery(stagedRoot: String) -> [String: Any]? {
-        // `stagedRoot` is the spike bundle root (SpikeBundleStager.stage()'s
+        // `stagedRoot` is the rt bundle root (BundleStager.stage()'s
         // return) — the vendored tree is staged beneath it verbatim.
         let vendorRoot = stagedRoot + "/vendor/dsh"
         let rootPath = vendorRoot + "/agent-presets@0.1.6-alpha.2/presets"
@@ -214,8 +214,8 @@ final class WebBootRuntimeDrive {
     private func deliver(_ obj: [String: Any]) {
         guard let host, let text = try? JSONSerialization.data(withJSONObject: obj),
               let line = String(data: text, encoding: .utf8) else { return }
-        if dsh_spike_bus_deliver(host, line) != 0 {
-            onFailure?("web-boot bus deliver: \(String(cString: dsh_spike_error(host)))")
+        if dsh_runtime_bus_deliver(host, line) != 0 {
+            onFailure?("web-boot bus deliver: \(String(cString: dsh_runtime_error(host)))")
         }
     }
 
@@ -230,8 +230,8 @@ final class WebBootRuntimeDrive {
     /// Runtime thread: one settled gateway primitive call.
     private func settle(callId: Int, ok: Bool, json: String) {
         guard let host else { return }
-        if dsh_spike_gateway_settle(host, Int32(callId), ok ? 1 : 0, json) != 0 {
-            onFailure?("web-boot gateway settle: \(String(cString: dsh_spike_error(host)))")
+        if dsh_runtime_gateway_settle(host, Int32(callId), ok ? 1 : 0, json) != 0 {
+            onFailure?("web-boot gateway settle: \(String(cString: dsh_runtime_error(host)))")
             return
         }
         pumpAndCheck()
@@ -240,8 +240,8 @@ final class WebBootRuntimeDrive {
     /// Runtime thread: one gateway event into the scenario.
     private func emitEvent(_ json: String) {
         guard let host else { return }
-        if dsh_spike_gateway_event(host, json) != 0 {
-            onFailure?("web-boot gateway event: \(String(cString: dsh_spike_error(host)))")
+        if dsh_runtime_gateway_event(host, json) != 0 {
+            onFailure?("web-boot gateway event: \(String(cString: dsh_runtime_error(host)))")
             return
         }
         pumpAndCheck()
@@ -251,19 +251,19 @@ final class WebBootRuntimeDrive {
     /// completed scenario once (b3's failure leg rides this).
     private func pumpAndCheck() {
         guard let host else { return }
-        if dsh_spike_pump(host) != 0 {
-            onFailure?("web-boot pump after gateway: \(String(cString: dsh_spike_error(host)))")
+        if dsh_runtime_pump(host) != 0 {
+            onFailure?("web-boot pump after gateway: \(String(cString: dsh_runtime_error(host)))")
             return
         }
-        if dsh_spike_complete(host) != 0 {
-            onComplete?(dsh_spike_pass(host) != 0, String(cString: dsh_spike_error(host)))
+        if dsh_runtime_complete(host) != 0 {
+            onComplete?(dsh_runtime_pass(host) != 0, String(cString: dsh_runtime_error(host)))
         }
     }
 
     /// Frees the host and stops the thread (call from the owner's finish).
     func stop() {
         thread.async { [self] in
-            if let host { dsh_spike_free(host) }
+            if let host { dsh_runtime_free(host) }
             self.host = nil
             thread.stop()
         }
@@ -312,8 +312,8 @@ extension WebBootRuntimeDrive {
     /// staged package-local chunks); the graph's revs come from the runtime.
     static func webPluginsDelivery() -> [[String: Any]]? {
         // The embedded bundle scope in a user-facing build, else the
-        // Documents tree the E2E runners stage (SpikeBundleStager decides).
-        guard let scope = SpikeBundleStager.stagedPluginScope(),
+        // Documents tree the E2E runners stage (BundleStager decides).
+        guard let scope = BundleStager.stagedPluginScope(),
               let packageDirs = try? FileManager.default.contentsOfDirectory(
                   at: scope, includingPropertiesForKeys: nil, options: []) else { return nil }
         var plugins: [[String: Any]] = []

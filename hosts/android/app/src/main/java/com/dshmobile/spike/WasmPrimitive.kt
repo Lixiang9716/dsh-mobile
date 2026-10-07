@@ -55,11 +55,11 @@ class WasmPrimitive(private val fs: FsPrimitives) {
             )
         }
         val input = call.string("input") ?: ""
-        val json = SpikeRuntime.wasmRun(moduleBytes, func, input)
+        val json = JsRuntime.wasmRun(moduleBytes, func, input)
         if (json == null) {
             return done.settle(
                 null,
-                GatewayCore.GatewayError("io", "wasmRun", SpikeRuntime.wasmLastError()),
+                GatewayCore.GatewayError("io", "wasmRun", JsRuntime.wasmLastError()),
             )
         }
         val payload = try {

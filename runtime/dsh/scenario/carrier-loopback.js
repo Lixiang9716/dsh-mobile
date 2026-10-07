@@ -6,7 +6,7 @@
  * one-to-one expected<->logged match on these lines only.
  *
  * Proves the loopback carrier topology on a host that implements the bus
- * seam (dsh_spike_set_bus_sink / dsh_spike_bus_deliver) plus an HTTP+WS
+ * seam (dsh_runtime_set_bus_sink / dsh_runtime_bus_deliver) plus an HTTP+WS
  * carrier in front of the runtime: static file serving for the Presentation
  * page, a WS connection from that page, the carrier pumping page→JS and
  * JS→page in both directions, with the runtime on its single serial thread.
