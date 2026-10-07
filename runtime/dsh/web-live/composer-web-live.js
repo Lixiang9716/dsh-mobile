@@ -235,8 +235,12 @@ const installRuntimeHalf = (ctx, cfg, route) => {
         entries: outcome.entries.length,
         source: 'vendored @deepseek-ai/dsh-client-modules composed in-runtime',
       });
+      // endpointCount, not the full array: the on-device log line budget
+      // (~1KB payload — MEASURED 2026-10-08: the 36-endpoint array truncated
+      // at 1069 chars mid-JSON and the E2E capture lost the record) keeps
+      // the exact claim-set pin on the api-coverage probe, not the wire.
       emit('write.surface.claimed', {
-        endpoints: WRITE_ENDPOINTS, streams: WRITE_STREAMS,
+        endpointCount: WRITE_ENDPOINTS.length, streams: WRITE_STREAMS,
         source: 'the on-device spine (ctx.sessions/agents/settings)',
       });
     } else if (outcome.kind === 'handler') {

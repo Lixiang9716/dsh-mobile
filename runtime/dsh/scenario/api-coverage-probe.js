@@ -10,8 +10,11 @@
  * readBytes/readRelated), the structured error legs (not-found,
  * not-directory, outside-workspace), the workspace mutation flow with its
  * follow increments, the picker browse verbs, the skill/file-reference/
- * goal/command catalogs, the changes stream frame, and the HONEST gaps
- * (terminal/*, credentials/set|unset, directoryPicker/pick stay unclaimed).
+ * goal/command catalogs, the changes stream frame, the session deep-page
+ * legs (rename/page/search/updateQueue over the live journal), and the
+ * HONEST gaps (terminal/*, directoryPicker/pick, the desktop openers,
+ * session/attachment, sessionReferenceResolver/candidates stay
+ * unclaimed).
  */
 import { createLogger } from 'logger.js';
 import { mkdir, writeFile } from 'node:fs/promises';
@@ -297,29 +300,34 @@ const changesPhase = async (ctx, s) => {
 };
 
 /** The honest gaps: coverage OFF keeps the historical claim set, and the
- * declared-unimplemented endpoints carry no handler. */
+ * declared-unimplemented endpoints carry no handler. The residues carry
+ * their reasons (upstream/web-write-session.js's header holds the full
+ * ones): session/attachment has no attachment store to read bytes from;
+ * openWorkspacePath's asker is gated off by canOpenWorkspacePath=false;
+ * the reference resolver's context-preparation half needs the unvendored
+ * dsh-session-reference package. */
 const gapsPhase = async (ctx, s) => {
   for (const endpoint of ['terminal/create', 'terminal/list', 'terminal/write',
     'terminal/shells', 'directoryPicker/pick', 'settings/replace',
     'settings/openSettingsDocument', 'settings/openAgentPresetDirectory',
     'llm/discoverModels', 'subagents/list', 'subagents/prompt',
-    'permissionPresets/catalog',
     'fileUploads/upload', 'officeToPdf/render',
-    'session/page', 'session/search', 'session/rename',
-    'session/updateQueue', 'session/attachment']) {
+    'session/attachment', 'session/openWorkspacePath',
+    'sessionReferenceResolver/candidates']) {
     demand(s.api[endpoint] === undefined, `${endpoint} must stay unclaimed`);
   }
-  // session/cancel LEFT the gap list (the stop-button claim, 2026-09-25):
-  // the shape demand moves to the claimed side; its live semantics are
-  // proven on-device by v2web.mount's cancel leg. sessionFeedback/record
-  // followed (#312, the feedback dialog's journal record) and session/fork
-  // (the composer dialog's server-side fork half, 2026-10-02).
-  demand(typeof s.api['session/cancel'] === 'function',
-    'session/cancel is claimed (the stop button)');
-  demand(typeof s.api['sessionFeedback/record'] === 'function',
-    'sessionFeedback/record is claimed (the feedback dialog)');
-  demand(typeof s.api['session/fork'] === 'function',
-    'session/fork is claimed (the composer Fork session leg)');
+  // The legs that LEFT the gap list: session/cancel (the stop button,
+  // 2026-09-25), sessionFeedback/record (#312), session/fork (2026-10-02),
+  // and — this round — the session deep-page legs + the opener gate +
+  // permissionPresets/catalog (upstream/web-write-session.js); their live
+  // semantics are asserted by sessionLegsPhase above.
+  for (const endpoint of ['session/cancel', 'sessionFeedback/record',
+    'session/fork', 'session/page', 'session/search', 'session/rename',
+    'session/updateQueue', 'session/canOpenWorkspacePath',
+    'permissionPresets/catalog']) {
+    demand(typeof s.api[endpoint] === 'function',
+      `${endpoint} is claimed`);
+  }
   demand(new Set(COVERAGE_ENDPOINTS.filter((e) => WRITE_ENDPOINTS.includes(e))).size === 0,
     'coverage endpoints overlap the historical claim set');
   const bare = createWriteSurface(ctx, () => {}, {
@@ -389,6 +397,8 @@ try {
   await catalogPhase(ctx, s);
   await changesPhase(ctx, s);
   await llmCredentialsPhase(ctx, s);
+  await probeSessionLegs({ ctx, api: s.api, demand, demandRefusal, log,
+    SESSION_ID });
   await gapsPhase(ctx, s);
   log.info('probe ok', { coverageEndpoints: COVERAGE_ENDPOINTS.length });
   if (!verdict) { verdict = true; globalThis.__dshComplete(true, 'api coverage verified'); }

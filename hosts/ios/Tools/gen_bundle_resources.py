@@ -119,6 +119,8 @@ RESOURCES = [
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
     # the REAL spine — the write adapter + its booting scenario.
     ("upstream_web_write_js", DSH / "upstream" / "web-write.js"),
+    ("upstream_web_write_session_js", DSH / "upstream" / "web-write-session.js"),
+    ("upstream_web_write_presets_js", DSH / "upstream" / "web-write-presets.js"),
     ("upstream_web_write_inventory_js", DSH / "upstream" / "web-write-inventory.js"),
     ("upstream_web_write_streams_js", DSH / "upstream" / "web-write-streams.js"),
     ("upstream_web_write_settings_js", DSH / "upstream" / "web-write-settings.js"),
