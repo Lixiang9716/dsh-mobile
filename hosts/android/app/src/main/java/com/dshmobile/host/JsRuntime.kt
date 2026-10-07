@@ -25,11 +25,11 @@ object JsRuntime {
 
     /**
      * Runs the full rt lifecycle on the CALLING thread (the runtime
-     * thread): one dsh_spike runtime per scenario inside nativeRunSpike —
+     * thread): one dsh_spike runtime per scenario inside nativeRunScenario —
      * boot.verification (regression) then gateway.bridge-smoke + session.mock-llm.
      * Returns the combined multi-line verdict.
      */
-    fun runOnce(contextDir: String): String = nativeRunSpike(contextDir)
+    fun runOnce(contextDir: String): String = nativeRunScenario(contextDir)
 
     // ---- M4 completion session (carrier + WebView + real gateway binding) ---
     // The driver (BindingHost) keeps the handle and hops every settle/event/
@@ -53,19 +53,19 @@ object JsRuntime {
         descriptor: String,
         captureLabel: String,
         bridge: BindingBridge,
-    ): Long = nativeM4Begin(contextDir, entryName, source, descriptor, captureLabel, bridge)
+    ): Long = nativeBindingBegin(contextDir, entryName, source, descriptor, captureLabel, bridge)
 
     fun m4Settle(handle: Long, callId: Int, ok: Boolean, payload: String): Int =
-        nativeM4Settle(handle, callId, ok, payload)
+        nativeBindingSettle(handle, callId, ok, payload)
 
-    fun m4Event(handle: Long, json: String): Int = nativeM4Event(handle, json)
+    fun m4Event(handle: Long, json: String): Int = nativeBindingEvent(handle, json)
 
     fun m4BusDeliver(handle: Long, line: String): Int =
-        nativeM4BusDeliver(handle, line)
+        nativeBindingBusDeliver(handle, line)
 
-    fun bindingLastError(): String = nativeM4Last()
+    fun bindingLastError(): String = nativeBindingLast()
 
-    fun m4End(handle: Long) = nativeM4End(handle)
+    fun m4End(handle: Long) = nativeBindingEnd(handle)
 
     // ---- the WebAssembly seam (contract v1.2.0 wasmRun) -------------------
     // The module bytes run IN-PROCESS through the vendored wasm3 (dsh_wasm.c
@@ -89,9 +89,9 @@ object JsRuntime {
 
     private external fun nativeWasmLast(): String
 
-    private external fun nativeRunSpike(contextDir: String): String
+    private external fun nativeRunScenario(contextDir: String): String
 
-    private external fun nativeM4Begin(
+    private external fun nativeBindingBegin(
         contextDir: String,
         entryName: String,
         source: String,
@@ -100,18 +100,18 @@ object JsRuntime {
         bridge: BindingBridge,
     ): Long
 
-    private external fun nativeM4Settle(
+    private external fun nativeBindingSettle(
         handle: Long,
         callId: Int,
         ok: Boolean,
         payload: String,
     ): Int
 
-    private external fun nativeM4Event(handle: Long, json: String): Int
+    private external fun nativeBindingEvent(handle: Long, json: String): Int
 
-    private external fun nativeM4BusDeliver(handle: Long, line: String): Int
+    private external fun nativeBindingBusDeliver(handle: Long, line: String): Int
 
-    private external fun nativeM4Last(): String
+    private external fun nativeBindingLast(): String
 
-    private external fun nativeM4End(handle: Long)
+    private external fun nativeBindingEnd(handle: Long)
 }

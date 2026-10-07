@@ -46,7 +46,7 @@ class OfficialWebSession private constructor(
         // fired mid-boot in the 2026-09-21 full-suite run).
         const val WATCHDOG_SECONDS = 270
 
-        private const val TAG = "dsh.rt"
+        private const val TAG = "dsh.runtime"
         private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
         private const val BOOT_SOURCE = "runtime (vendored @deepseek-ai/dsh-client-modules)"

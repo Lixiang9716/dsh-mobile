@@ -28,7 +28,7 @@ class CarrierServer {
         const val WS_PATH = "/ws"
         const val COOKIE_NAME = "dsh.session"
         private const val WS_MAGIC = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        private const val TAG = "dsh.rt"
+        private const val TAG = "dsh.runtime"
         private const val MAX_BODY = 2 * 1024 * 1024
     }
 

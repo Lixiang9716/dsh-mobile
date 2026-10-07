@@ -11,7 +11,7 @@
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD5E0
 #undef LOG_TAG
-#define LOG_TAG "dsh.rt"
+#define LOG_TAG "dsh.runtime"
 
 extern "C" {
 #include "dsh_runtime_host.h"

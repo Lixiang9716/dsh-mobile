@@ -57,7 +57,7 @@ class CarrierEventLog(private val scenario: String) {
     }
 
     companion object {
-        const val TAG = "dsh.rt"
+        const val TAG = "dsh.runtime"
         const val PREFIX = "dsh.runtime.log: "
     }
 }

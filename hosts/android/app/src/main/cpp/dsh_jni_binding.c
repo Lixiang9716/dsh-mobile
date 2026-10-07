@@ -20,7 +20,7 @@
 
 #include "dsh_runtime_host.h"
 
-#define M4_LOG_TAG "dsh.rt"
+#define M4_LOG_TAG "dsh.runtime"
 #define BINDING_ERR_MAX 512
 
 /* Last C-side failure description; confined to the runtime thread (every
@@ -116,10 +116,10 @@ static char *m4_join(const char *dir, const char *rel) {
 /*
  * Creates the runtime, wires the frozen bridge, evaluates the entry module,
  * and pumps once. Returns the handle (nonzero) or 0 on failure (details via
- * nativeM4Last, same thread).
+ * nativeBindingLast, same thread).
  */
 __attribute__((visibility("default")))
-jlong Java_com_dshmobile_spike_JsRuntime_nativeM4Begin(
+jlong Java_com_dshmobile_host_JsRuntime_nativeBindingBegin(
         JNIEnv *env, jobject thiz, jstring j_context, jstring j_entry,
         jstring j_source, jstring j_descriptor, jstring j_capture,
         jobject bridge) {
@@ -202,7 +202,7 @@ jlong Java_com_dshmobile_spike_JsRuntime_nativeM4Begin(
  * 0 = running, 1 = complete pass, 2 = complete fail, -1 = error. On a
  * complete-fail the scenario's own reason (js_complete keeps it in
  * dsh_runtime_error) rides g_binding_err — the embedder's status-2 branch reads it
- * back through nativeM4Last. */
+ * back through nativeBindingLast. */
 static jint m4_status(dsh_runtime_t *rt) {
     if (dsh_runtime_pump(rt) != 0) {
         snprintf(g_binding_err, BINDING_ERR_MAX, "%s", dsh_runtime_error(rt));
@@ -217,7 +217,7 @@ static jint m4_status(dsh_runtime_t *rt) {
 }
 
 __attribute__((visibility("default")))
-jint Java_com_dshmobile_spike_JsRuntime_nativeM4Settle(
+jint Java_com_dshmobile_host_JsRuntime_nativeBindingSettle(
         JNIEnv *env, jobject thiz, jlong handle, jint call_id, jint ok,
         jstring j_payload) {
     (void)thiz;
@@ -235,7 +235,7 @@ jint Java_com_dshmobile_spike_JsRuntime_nativeM4Settle(
 }
 
 __attribute__((visibility("default")))
-jint Java_com_dshmobile_spike_JsRuntime_nativeM4Event(
+jint Java_com_dshmobile_host_JsRuntime_nativeBindingEvent(
         JNIEnv *env, jobject thiz, jlong handle, jstring j_json) {
     (void)thiz;
     dsh_runtime_t *rt = (dsh_runtime_t *)(intptr_t)handle;
@@ -252,7 +252,7 @@ jint Java_com_dshmobile_spike_JsRuntime_nativeM4Event(
 }
 
 __attribute__((visibility("default")))
-jint Java_com_dshmobile_spike_JsRuntime_nativeM4BusDeliver(
+jint Java_com_dshmobile_host_JsRuntime_nativeBindingBusDeliver(
         JNIEnv *env, jobject thiz, jlong handle, jstring j_line) {
     (void)thiz;
     dsh_runtime_t *rt = (dsh_runtime_t *)(intptr_t)handle;
@@ -269,7 +269,7 @@ jint Java_com_dshmobile_spike_JsRuntime_nativeM4BusDeliver(
 }
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_JsRuntime_nativeM4Last(JNIEnv *env,
+jstring Java_com_dshmobile_host_JsRuntime_nativeBindingLast(JNIEnv *env,
                                                            jobject thiz) {
     (void)thiz;
     return (*env)->NewStringUTF(env, g_binding_err);
@@ -277,7 +277,7 @@ jstring Java_com_dshmobile_spike_JsRuntime_nativeM4Last(JNIEnv *env,
 
 /* Frees the runtime and releases the bridge global ref + capture file. */
 __attribute__((visibility("default")))
-void Java_com_dshmobile_spike_JsRuntime_nativeM4End(JNIEnv *env,
+void Java_com_dshmobile_host_JsRuntime_nativeBindingEnd(JNIEnv *env,
                                                        jobject thiz,
                                                        jlong handle) {
     (void)thiz;

@@ -65,7 +65,7 @@ class BindingHost private constructor(
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
-        private const val TAG = "dsh.rt"
+        private const val TAG = "dsh.runtime"
         private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 

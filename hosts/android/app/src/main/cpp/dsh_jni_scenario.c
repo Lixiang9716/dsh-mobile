@@ -9,7 +9,7 @@
  * gateway.bridge-smoke gateway-bridge scenario (backend in dsh_runtime_smoke.c).
  *
  * Each canonical E2E line the host sink receives goes out UNMODIFIED to both:
- *   - logcat under tag "dsh.rt" (the CI-captured stream), and
+ *   - logcat under tag "dsh.runtime" (the CI-captured stream), and
  *   - <contextDir>/<per-scenario capture file> (verbatim second capture,
  *     pulled via adb run-as — truncation-proof cross-check).
  */
@@ -25,7 +25,7 @@
 #include "dsh_gateway_smoke.h"
 #include "dsh_wasm.h"
 
-#define DSH_LOG_TAG "dsh.rt"
+#define DSH_LOG_TAG "dsh.runtime"
 #define DSH_RESULT_TAG "dsh.runtime.result"
 #define DSH_ENGINE_LABEL "quickjs-ng 0.17.0"
 #define DSH_ERR_MAX 512
@@ -170,7 +170,7 @@ static int dsh_prepare_fs_root(const char *context, char *err) {
 static char g_wasm_err[DSH_ERR_MAX];
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmRun(
+jstring Java_com_dshmobile_host_JsRuntime_nativeWasmRun(
         JNIEnv *env, jobject thiz, jbyteArray j_module, jstring j_func,
         jstring j_input) {
     (void)thiz;
@@ -204,7 +204,7 @@ jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmRun(
 }
 
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmLast(
+jstring Java_com_dshmobile_host_JsRuntime_nativeWasmLast(
         JNIEnv *env, jobject thiz) {
     (void)thiz;
     return (*env)->NewStringUTF(env, g_wasm_err);
@@ -215,7 +215,7 @@ jstring Java_com_dshmobile_spike_JsRuntime_nativeWasmLast(
  * syntax gate cannot parse the macro-prefixed declarator. The attribute keeps
  * the export explicit even if -fvisibility=hidden lands later. */
 __attribute__((visibility("default")))
-jstring Java_com_dshmobile_spike_JsRuntime_nativeRunSpike(
+jstring Java_com_dshmobile_host_JsRuntime_nativeRunScenario(
         JNIEnv *env, jobject thiz, jstring j_context_dir) {
     (void)thiz;
     const char *context = (*env)->GetStringUTFChars(env, j_context_dir, NULL);

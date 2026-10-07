@@ -28,7 +28,7 @@ class V2WebSession private constructor(private val activity: Activity) {
         // phase window (the write-live drive's 270s budget, same seat class).
         const val WATCHDOG_SECONDS = 270
 
-        private const val TAG = "dsh.rt"
+        private const val TAG = "dsh.runtime"
         private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 

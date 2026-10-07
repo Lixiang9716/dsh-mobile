@@ -20,7 +20,7 @@
  *
  * The sink receives each canonical E2E line ("dsh.runtime.log: {...") from
  * dsh_runtime_host and forwards it, byte-unmodified, to (a) hilog under
- * domain 0xD5E0 / tag "dsh.rt" (hilog requires printing through its
+ * domain 0xD5E0 / tag "dsh.runtime" (hilog requires printing through its
  * format string, hence "%{public}s"), and (b) a capture file under the
  * app's cache dir, pulled verbatim via `hdc file recv` as the checker's
  * second, truncation-proof capture.
@@ -41,7 +41,7 @@ extern "C" {
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD5E0
 #undef LOG_TAG
-#define LOG_TAG "dsh.rt"
+#define LOG_TAG "dsh.runtime"
 
 namespace {
 
