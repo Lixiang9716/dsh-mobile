@@ -16,6 +16,7 @@
       "panel-tests",
       "e2e-matrix",
       "closures",
+      "descriptor-parity",
       "vendoring-repro",
       "bundle-files",
       "webclient-staged-tree",
@@ -225,6 +226,23 @@
         "build/check-closures.sh"
       ],
       "description": "committed host copies of the canonical runtime/dsh closure are byte-identical (android assets, harmony rawfile, ios generated bundle)",
+      "needs": [
+        "self-test"
+      ]
+    },
+    {
+      "id": "descriptor-parity",
+      "command": [
+        "node",
+        "tools/check-descriptor-parity.mjs"
+      ],
+      "description": "harmony binding descriptor honest everywhere: ArkTS BINDING_DESCRIPTOR = C DSH_BINDING_DESCRIPTOR = the faces actually served/answered (forward list, onDispatch rows, smoke_known_absent; the timer-seam under-reporting class)",
+      "paths": [
+        "hosts/harmony/entry/src/main/ets/model/HostPhase.ets",
+        "hosts/harmony/entry/src/main/cpp/gateway_smoke.cpp",
+        "tools/check-descriptor-parity.mjs"
+      ],
+      "timeoutMs": 60000,
       "needs": [
         "self-test"
       ]

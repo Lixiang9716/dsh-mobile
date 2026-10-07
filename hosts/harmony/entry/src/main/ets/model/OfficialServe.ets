@@ -99,8 +99,12 @@ const RECOVERY_DEFAULTS = '{"backoffBaseMs":500,"backoffFactor":2,' +
   '"backoffMaxMs":10000,"generationReadyWarnMs":3000,' +
   '"generationReadyTimeoutMs":15000}';
 /** The official-phase RuntimeDescriptor: httpFetch v2 is REAL on this host
- * (the streaming body bridge, model/HttpFetch.ets) — 6 available / 3
- * unavailable. The frozen m5 phase keeps its 5/4 v1 descriptor. */
+ * (the streaming body bridge, model/HttpFetch.ets) — 8 available (the
+ * serving face carries the timer pair since #395) / 3 unavailable. This is
+ * the narrow official serving face, NOT the binding gateway table: it names
+ * only what this seat serves or explicitly dropped from the v0 table, so
+ * the binding descriptor's honest-absence families (fs metadata, wasmRun,
+ * ishRun) are out of its scope — nothing on this seat negotiates them. */
 export const OFFICIAL_DESCRIPTOR = '{"available":["fsRead","fsWrite","fsScope",' +
   '"notify","presentApproval","httpFetch","timerSchedule","timerCancel"],' +
   '"unavailable":["presentPicker","keychainGet","keychainSet"]}';

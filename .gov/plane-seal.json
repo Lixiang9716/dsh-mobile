@@ -55,13 +55,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "91169505ae0baf6924cac33ee75ece74afb6afc1f7d94b3ea208cba7a4b9fe12"
+      "sha256": "009a40c44c7a2a6b2b493b4de2878908e7e9dc4e1760604ec0c50d9b1b97059c"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T10:42:20+00:00",
+    "ts": "2026-10-07T15:29:32+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "add the transport-tokens gate: runtime/dsh/transport-tokens.mjs single token source + tools/check-transport-tokens.mjs checker + rejection case"
+    "reason": "rebase onto main (transport-tokens gate merged): re-seal with this branch's rejection cases"
   }
 }

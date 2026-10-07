@@ -513,7 +513,14 @@ napi_value host_start(napi_env env, napi_callback_info info) {
     char bundle_root[1024] = {0};
     char capture_path[1024] = {0};
     char fs_root[1024] = {0};
-    char descriptor[512] = {0};
+    /* The binding descriptor rides this buffer through phase_str_arg's
+     * fixed-size read (len >= sizeof rejects with EINVAL) — 512 sat ONE
+     * byte under the 28-row descriptor (511 bytes; review finding: any
+     * added row would fail phase start with "descriptor too long"). The
+     * runtime side is a strdup (dsh_runtime_set_descriptor), so 2048 is
+     * pure headroom; tools/check-descriptor-parity.mjs asserts the
+     * descriptor stays under this bound. */
+    char descriptor[2048] = {0};
     if (!phase_str_arg(env, argv[0], bundle_root, sizeof(bundle_root), "bundleRoot too long") ||
         !phase_str_arg(env, argv[1], capture_path, sizeof(capture_path), "capturePath too long") ||
         !phase_str_arg(env, argv[2], fs_root, sizeof(fs_root), "fsRoot too long") ||

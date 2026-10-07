@@ -2,7 +2,11 @@
   "scenario": "android.mic.plane.audit",
   "extract": {
     "prefix": "dsh.gateway.audit:",
-    "envelope": "flat"
+    "envelope": "flat",
+    "skip": [
+      "timerSchedule",
+      "timerCancel"
+    ]
   },
   "expect": [
     {

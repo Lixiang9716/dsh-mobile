@@ -48,34 +48,47 @@ struct dsh_smoke_backend {
     char *descriptor_json;
 };
 
-/* Regression (smoke) descriptor — matches the desktop CLI twin (main_cli.c):
+/* Regression (smoke) descriptor — the desktop CLI twin's shape (main_cli.c):
  * fs ON and the keychain primitives IMPLEMENTED as app-private files
  * (contract v1.0.0 rows 8-9 — the BYOK onboarding flow stores credentials
- * there), the rest declared unavailable (contract §2). Binding mode serves
- * keychain for real through the ArkTS capability layer instead. */
+ * there), the rest declared unavailable (contract §2). The seven
+ * contract-known families this host serves nowhere are declared here too:
+ * smoke_known_absent answers them `unavailable` in BOTH serve modes, and a
+ * face's declaration must cover what it actually answers (conformance §7
+ * #1 — the review finding that caught the gap the unavailable answers
+ * opened). Binding mode serves keychain for real through the ArkTS
+ * capability layer instead. */
 const char *DSH_SMOKE_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\","
     "\"keychainGet\",\"keychainSet\"],"
     "\"unavailable\":[\"httpFetch\",\"notify\",\"presentApproval\","
-    "\"presentPicker\"]}";
+    "\"presentPicker\",\"fsStat\",\"fsList\",\"fsMkdir\",\"fsRemove\","
+    "\"fsRename\",\"wasmRun\",\"ishRun\"]}";
 
 /* Binding descriptor: all nine contract primitives are served for real —
  * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
  * presentPicker (and user-scope fs) forwarded to the ArkTS capability layer
- * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets). The
- * capability plane (v1.10.0) adds cameraCapture (CameraPrimitives.ets), the
- * eight BLE rows (BlePrimitives.ets), and the mic pair (MicPrimitives.ets);
- * the camera recording rows are PHASED — declared unavailable, their
- * handlers answer exactly that (conformance §7). Keep in sync with
- * HostPhase.ets's BINDING_DESCRIPTOR. */
+ * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets), plus
+ * the timer seam (TimerPrimitive.ets). The capability plane (v1.10.0) adds
+ * cameraCapture (CameraPrimitives.ets), the eight BLE rows
+ * (BlePrimitives.ets), and the mic pair (MicPrimitives.ets). The
+ * unavailable array is the honest-absence declaration (conformance §7 #1:
+ * absence is information for negotiation, never faked): the PHASED camera
+ * recording rows, and the contract-known families this host serves nowhere
+ * — the fs metadata rows, wasmRun, ishRun (smoke_known_absent below answers
+ * them exactly that way). Keep in sync with HostPhase.ets's
+ * BINDING_DESCRIPTOR. */
 const char *DSH_BINDING_DESCRIPTOR =
     "{\"available\":[\"fsRead\",\"fsWrite\",\"fsScope\",\"httpFetch\","
     "\"notify\",\"presentApproval\",\"presentPicker\",\"keychainGet\","
-    "\"keychainSet\",\"deviceInfo\",\"haptic\",\"clipboardRead\","
+    "\"keychainSet\",\"timerSchedule\",\"timerCancel\","
+    "\"deviceInfo\",\"haptic\",\"clipboardRead\","
     "\"clipboardWrite\",\"presentShare\",\"keepAwake\",\"cameraCapture\","
     "\"bleScanStart\",\"bleScanStop\",\"bleConnect\",\"bleDisconnect\","
     "\"bleRead\",\"bleWrite\",\"bleSubscribe\",\"bleUnsubscribe\","
-    "\"micStart\",\"micStop\"],\"unavailable\":[\"cameraRecordStart\",\"cameraRecordStop\"]}";
+    "\"micStart\",\"micStop\"],\"unavailable\":[\"cameraRecordStart\","
+    "\"cameraRecordStop\",\"fsStat\",\"fsList\",\"fsMkdir\",\"fsRemove\","
+    "\"fsRename\",\"wasmRun\",\"ishRun\"]}";
 
 /* ---- base64 (payloads travel B64 per the bridge contract) ---------------- */
 
@@ -455,6 +468,19 @@ static void smoke_keychain_set(dsh_smoke_backend *b, int call_id,
 
 /* ---- primitive table ------------------------------------------------------ */
 
+/* Contract-known but not implemented on this host (conformance §7 #1:
+ * absence is information for negotiation, never faked): the fs metadata
+ * families (v1.1.0), wasmRun (v1.2.0) and ishRun (v1.3.0) answer
+ * `unavailable` with a readable reason; BOTH descriptors (binding and
+ * smoke) declare the same names in their unavailable arrays. Any OTHER
+ * name is genuinely unknown and stays `invalid`. */
+static int smoke_known_absent(const char *name) {
+    return strcmp(name, "fsStat") == 0 || strcmp(name, "fsList") == 0 ||
+           strcmp(name, "fsMkdir") == 0 || strcmp(name, "fsRemove") == 0 ||
+           strcmp(name, "fsRename") == 0 || strcmp(name, "wasmRun") == 0 ||
+           strcmp(name, "ishRun") == 0;
+}
+
 /* Binding mode reaches the table only for the C-served app-scope fs (and
  * httpFetch.abort, which returns above); regression mode serves everything
  * here, rejecting what its descriptor declares unavailable. */
@@ -548,6 +574,11 @@ static void smoke_serve(dsh_smoke_backend *b, int call_id, const char *name,
         if (strcmp(name, "keychainSet") == 0) {
             return smoke_keychain_set(b, call_id, args);
         }
+    }
+    if (smoke_known_absent(name)) {
+        smoke_reject(b, call_id, name, "unavailable",
+                     "not implemented on this host");
+        return;
     }
     smoke_reject(b, call_id, name, "invalid", "unknown primitive");
 }

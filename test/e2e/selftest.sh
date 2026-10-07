@@ -65,6 +65,16 @@ ANY=test/e2e/testdata/order-any.json
 expect_pass "$ANY" "$TD/order-any.positive.txt"
 expect_fail_at "$ANY" "$TD/order-any.negative-missing.txt" -1
 expect_fail_at "$ANY" "$TD/order-any.negative-extra.txt" 2
+# extract.skip (records dropped at extraction — the gateway audit manifests
+# of the mic legs skip the micFrames idle window's nondeterministic
+# timerSchedule/timerCancel rows, gateway.js's #397 timer seam): the
+# interleaved stream passes WITH skip and fails at the interleave WITHOUT
+# it (skip is doing the work); a skipped stream still fails on a MISSING
+# covered row (skip is not a pass-through).
+SKIP=test/e2e/testdata/extract-skip.json
+expect_pass "$SKIP" "$TD/extract-skip.positive.txt"
+expect_fail_at test/e2e/testdata/extract-skip.noskip.json "$TD/extract-skip.positive.txt" 1
+expect_fail_at "$SKIP" "$TD/extract-skip.negative-missing.txt" 2
 
 # Layout-truth probe (ui.occlusion, test/e2e/ui-probe.mjs): GEOMETRY enters
 # the same assertion currency — the probe emits its record onto the probe

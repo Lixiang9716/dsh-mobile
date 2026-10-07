@@ -91,10 +91,14 @@ const PROBE_PATH = 'm5/binding-probe.txt';
 const PROBE = 'dsh-binding-probe'; // exactly 17 ASCII bytes
 const probeBytes = () => Uint8Array.from([...PROBE].map((c) => c.charCodeAt(0)));
 const bytesEqual = (a, b) => a.length === b.length && [...a].every((v, i) => v === b[i]);
-// The capability plane's phased rows (contract/proposals v1.10.0): shapes on
-// record, implementations follow as their own changes — the descriptor
-// declares them unavailable by design (HostPhase.ets).
-const PHASED_ROWS = ['cameraRecordStart', 'cameraRecordStop'];
+// The descriptor's honest-absence rows: the capability plane's phased
+// camera rows (contract/proposals v1.10.0 — shapes on record, the
+// implementations follow as their own changes) plus the contract-known
+// families this host serves nowhere (the fs metadata rows, wasmRun, ishRun
+// — conformance §7 #1: absence is declared, never faked). The host
+// descriptor (HostPhase.ets / gateway_smoke.cpp) carries exactly this set.
+const UNAVAILABLE_DECLARED = ['cameraRecordStart', 'cameraRecordStop',
+  'fsStat', 'fsList', 'fsMkdir', 'fsRemove', 'fsRename', 'wasmRun', 'ishRun'];
 
 const PICKER_MODE = 'file';
 
@@ -111,12 +115,12 @@ async function main() {
   emit('gateway.negotiated', { version: 'gateway@1' });
 
   const descriptor = JSON.parse(globalThis.__dshGatewayDescriptor());
-  // every unavailable row must be one of the known phased rows, so a
+  // every unavailable row must be one of the honestly-absent names, so a
   // primitive that regresses to unavailable (or a face that quietly widens
   // the list) still fails here, loudly, by name (gateway-binding.js's rule);
   // the available count stays the manifest's assertion, not the scenario's.
   demand(
-    descriptor.unavailable.every((name) => PHASED_ROWS.includes(name)),
+    descriptor.unavailable.every((name) => UNAVAILABLE_DECLARED.includes(name)),
     `host declared unexpected unavailable primitives: ${descriptor.unavailable.join(',')}`,
   );
   emit('descriptor.declared', {

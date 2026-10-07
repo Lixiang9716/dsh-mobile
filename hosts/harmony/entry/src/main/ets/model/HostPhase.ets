@@ -123,18 +123,23 @@ export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-compact/web';
 const ENTRY_STAGE: string = 'credential-stage.js';
 
 /** Binding RuntimeDescriptor: the full serving table (nine v0 primitives,
- * the six v1.5.0 device-plane rows, and the capability plane's mic pair —
- * v1.10.0 candidate), none unavailable (conformance §7 — keep in sync with
- * the C fallback in gateway_smoke.cpp). */
+ * the timer seam, the six v1.5.0 device-plane rows, and the capability
+ * plane's mic pair — v1.10.0 candidate) plus the honest-absence rows
+ * (conformance §7 #1: absence is information for negotiation, never
+ * faked) — the phased camera recording rows, the fs metadata families,
+ * wasmRun and ishRun this host serves nowhere. Keep in sync with the C
+ * fallback in gateway_smoke.cpp. */
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
+  '"timerSchedule","timerCancel",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
   '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
   '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe",' +
   '"micStart","micStop"],' +
-  '"unavailable":["cameraRecordStart","cameraRecordStop"]}';
-  '"unavailable":[]}';
+  '"unavailable":["cameraRecordStart","cameraRecordStop",' +
+  '"fsStat","fsList","fsMkdir","fsRemove","fsRename",' +
+  '"wasmRun","ishRun"]}';
 
 /** (title) => user decision — Index presents the custom approval dialog. */
 export type ApprovalPresenter = (title: string,
@@ -208,6 +213,9 @@ export class HostPhase {
   });
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
+  /** The deferred §6 audit queue: flat [name, args, payloadJson, ok] rows,
+   * drained one event-loop turn after their settles (see auditedSettle). */
+  private auditQueue: string[] = [];
   private device: DevicePlanePrimitives | null = null;
   private cameraKit: CameraPrimitives | null = null;
   private ble: BlePrimitives | null = null;
@@ -373,12 +381,12 @@ export class HostPhase {
     this.llmLeg = true;
     this.whaleLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    const staged: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (staged < 0) {
       hilog.error(0x0000, TAG, 'real-create leg: staging eval failed');
       return;
     }
-    const status = hostEval(PHASE_ID, ENTRY_REAL_CREATE);
+    const status: number = hostEval(PHASE_ID, ENTRY_REAL_CREATE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'real-create leg: scenario eval failed');
       return;
@@ -409,12 +417,12 @@ export class HostPhase {
     // The staging entry FIRST: it writes the credential placeholder (the
     // stage-ready marker the runner's send waits on) — the same module the
     // llm leg evals. The scenario then polls the staged file into its boot.
-    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    const staged: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (staged < 0) {
       hilog.error(0x0000, TAG, 'real-agent leg: staging eval failed');
       return;
     }
-    const status = hostEval(PHASE_ID, ENTRY_REAL_AGENT);
+    const status: number = hostEval(PHASE_ID, ENTRY_REAL_AGENT);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'real-agent leg: scenario eval failed');
       return;
@@ -464,7 +472,7 @@ export class HostPhase {
     this.llmLeg = false;
     this.parityLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_PARITY);
+    const status: number = hostEval(PHASE_ID, ENTRY_PARITY);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'parity leg: scenario eval failed');
       return;
@@ -790,7 +798,9 @@ export class HostPhase {
    * inside — queue work, settle on async completion). The C binding backend
    * serves the app-scope fs itself; fsRead/fsWrite/fsScope.* arrive here
    * only for user scopes. httpFetch.abort never settles — the abort seam
-   * has no pending promise, it just cancels the in-flight request. */
+   * has no pending promise, it just cancels the in-flight request. Every
+   * settlement carries its §6 audit record (auditedSettle) — the same ONE
+   * record per call the Android/iOS gateway cores emit. */
   private onDispatch(ctx: common.UIAbilityContext, callId: number,
     name: string, args: string): void {
     hilog.info(0x0000, TAG, 'phase: dispatch %{public}s call=%{public}d', name, callId);
@@ -798,78 +808,96 @@ export class HostPhase {
     try {
       parsed = JSON.parse(args) as DispatchArgs;
     } catch (e) {
+      // unparseable args reach a granted dispatch (the Android core's
+      // granted/invalid shape), never a permission verdict
+      this.auditLine(name, args, '{"code":"invalid"}', false, 'granted');
       this.settleCall(callId,
         '{"code":"invalid","primitive":"' + name + '","message":"bad args"}', false);
       return;
     }
     if (name === 'notify') {
-      this.handleNotify(ctx, callId, parsed.title ?? 'DSH', parsed.body ?? '');
+      this.handleNotify(ctx, callId, parsed.title ?? 'DSH', parsed.body ?? '',
+        this.auditedSettle(name, args));
     } else if (name === 'presentApproval') {
-      this.handleApproval(callId, parsed.title ?? 'Approval');
+      this.handleApproval(callId, parsed.title ?? 'Approval',
+        this.auditedSettle(name, args));
     } else if (name === 'httpFetch') {
-      this.http.fetch(callId, args, this.settleFn(), (eventJson: string): void => {
-        this.deliverEvent(eventJson);
-      });
+      this.http.fetch(callId, args, this.auditedSettle(name, args),
+        (eventJson: string): void => {
+          this.deliverEvent(eventJson);
+        });
     } else if (name === 'httpFetch.abort') {
       const target = typeof parsed.callId === 'number' ? parsed.callId : callId;
       this.http.abort(target);
+      // control-plane abort: audited, never settled (the Android core's
+      // dispatchAbort shape)
+      this.auditLine(name, args, '{"ok":true}', true, 'granted');
     } else if (name === 'timerSchedule') {
-      this.timer.schedule(callId, args, this.settleFn());
+      this.timer.schedule(callId, args, this.auditedSettle(name, args));
     } else if (name === 'timerCancel') {
-      this.timer.cancel(callId, args, this.settleFn());
+      this.timer.cancel(callId, args, this.auditedSettle(name, args));
     } else if (name === 'presentPicker') {
-      this.picker?.present(callId, args, this.settleFn());
+      this.picker?.present(callId, args, this.auditedSettle(name, args));
     } else if (name === 'keychainGet') {
-      this.keychain?.get(callId, args, this.settleFn());
+      this.keychain?.get(callId, args, this.auditedSettle(name, args));
     } else if (name === 'keychainSet') {
-      this.keychain?.set(callId, args, this.settleFn());
+      this.keychain?.set(callId, args, this.auditedSettle(name, args));
     } else if (name === 'fsRead') {
-      this.picker?.read(callId, args, this.settleFn());
+      this.picker?.read(callId, args, this.auditedSettle(name, args));
     } else if (name === 'fsWrite') {
-      this.picker?.write(callId, args, this.settleFn());
+      this.picker?.write(callId, args, this.auditedSettle(name, args));
     } else if (name === 'fsScope.persist') {
-      this.picker?.persist(callId, args, this.settleFn());
+      this.picker?.persist(callId, args, this.auditedSettle(name, args));
     } else if (name === 'fsScope.resolve') {
-      this.picker?.resolve(callId, args, this.settleFn());
+      this.picker?.resolve(callId, args, this.auditedSettle(name, args));
     } else if (name === 'deviceInfo') {
-      this.device?.deviceInfo(callId, args, this.settleFn());
+      this.device?.deviceInfo(callId, args, this.auditedSettle(name, args));
     } else if (name === 'haptic') {
-      this.device?.haptic(callId, args, this.settleFn());
+      this.device?.haptic(callId, args, this.auditedSettle(name, args));
     } else if (name === 'keepAwake') {
-      this.device?.keepAwake(callId, args, this.settleFn());
+      this.device?.keepAwake(callId, args, this.auditedSettle(name, args));
     } else if (name === 'presentShare') {
-      this.device?.share(callId, args, this.settleFn());
+      this.device?.share(callId, args, this.auditedSettle(name, args));
     } else if (name === 'clipboardRead') {
-      this.device?.clipboardRead(callId, args, this.settleFn());
+      this.device?.clipboardRead(callId, args, this.auditedSettle(name, args));
     } else if (name === 'clipboardWrite') {
-      this.device?.clipboardWrite(callId, args, this.settleFn());
+      this.device?.clipboardWrite(callId, args, this.auditedSettle(name, args));
     } else if (name === 'cameraCapture') {
-      this.cameraKit?.capture(callId, args, this.settleFn());
+      this.cameraKit?.capture(callId, args, this.auditedSettle(name, args));
     } else if (name === 'cameraRecordStart' || name === 'cameraRecordStop') {
-      this.cameraKit?.recordPhased(name, callId, this.settleFn());
+      this.cameraKit?.recordPhased(name, callId, this.auditedSettle(name, args));
     } else if (name === 'bleScanStart') {
-      this.ble?.scanStart(callId, args, this.settleFn());
+      this.ble?.scanStart(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleScanStop') {
-      this.ble?.scanStop(callId, args, this.settleFn());
+      this.ble?.scanStop(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleConnect') {
-      this.ble?.connect(callId, args, this.settleFn());
+      this.ble?.connect(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleDisconnect') {
-      this.ble?.disconnect(callId, args, this.settleFn());
+      this.ble?.disconnect(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleRead') {
-      this.ble?.read(callId, args, this.settleFn());
+      this.ble?.read(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleWrite') {
-      this.ble?.write(callId, args, this.settleFn());
+      this.ble?.write(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleSubscribe') {
-      this.ble?.subscribe(callId, args, this.settleFn());
+      this.ble?.subscribe(callId, args, this.auditedSettle(name, args));
     } else if (name === 'bleUnsubscribe') {
-      this.ble?.unsubscribe(callId, args, this.settleFn());
+      this.ble?.unsubscribe(callId, args, this.auditedSettle(name, args));
     } else if (name === 'micStart') {
-      this.mic?.micStart(callId, args, this.settleFn());
+      this.mic?.micStart(callId, args, this.auditedSettle(name, args));
     } else if (name === 'micStop') {
-      this.mic?.micStop(callId, args, this.settleFn());
+      this.mic?.micStop(callId, args, this.auditedSettle(name, args));
     } else {
+      // a name the C side forwarded but this table covers nowhere: the
+      // gateway refused it. Unreachable while the descriptor-parity gate
+      // holds the C forward list and this table in sync; the vocabulary is
+      // the Android core's unknown-row shape regardless (audit
+      // denied/denied, settlement code 'denied' — GatewayCore.kt's
+      // null-handler arm), so the audit stream never carries a
+      // verdict/outcome pair the other hosts do not emit.
+      this.auditLine(name, args, '{"code":"denied"}', false, 'denied');
       this.settleCall(callId,
-        '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);
+        '{"code":"denied","primitive":"' + name + '","message":"not granted to '
+        + CALLER_ID + '"}', false);
     }
   }
 
@@ -890,30 +918,64 @@ export class HostPhase {
     return this.picker?.resolveForShare(scope, rel) ?? null;
   }
 
-  /** settleCall with its receiver bound — handed to the primitive modules so
-   * they settle dispatches from their async completions. */
-  private settleFn(): (callId: number, payloadJson: string, ok: boolean) => void {
-    return (callId: number, payloadJson: string, ok: boolean): void => {
-      this.settleCall(callId, payloadJson, ok);
-    };
-  }
-
-  /** The mic rows' settle, audited (contract rule 4: every call carries ONE
-   * record — verdict granted, outcome ok | the error code, detail from the
-   * closed vocabulary: format/rate/frameMs/tag on start, refused / duration
-   * + bytes on stop — never payload contents). Emitted through the same
-   * carrier line the capture pulls, under the audit prefix. */
-  private auditSettleFn(name: string, args: string):
+  /** settleCall with its receiver bound AND the settlement audited
+   * (contract §6: one structured record per gateway call) — handed to the
+   * primitive modules so every settlement they make from their async
+   * completions carries its audit line. The call reached a handler, so the
+   * verdict is granted; the outcome is ok | the settle code (the Android
+   * core's Done-wrapper shape). */
+  private auditedSettle(name: string, args: string):
     (callId: number, payloadJson: string, ok: boolean) => void {
     return (callId: number, payloadJson: string, ok: boolean): void => {
-      this.micAuditLine(name, args, payloadJson, ok);
+      // Settle IMMEDIATELY; the §6 record rides the deferred audit queue.
+      // hostCarrierLine ends in a synchronous fflush of the capture file —
+      // run in the settle callback (before OR after the settle call) that
+      // disk flush measurably perturbed the spine's racy journal-write
+      // order (session.live-read's frame types flipped on 3/3 runs, while
+      // main passed the same emulator 2/2 — the bisect that named this
+      // path). An observation must never delay or displace the observed:
+      // records queue FIFO and flush on the NEXT event-loop turn, still
+      // through the one phase-sink writer, still in order — a few ms later
+      // in the capture, which no checker matches against wall-clock.
       this.settleCall(callId, payloadJson, ok);
+      this.auditQueue.push(name, args, payloadJson, ok ? 'true' : 'false');
+      if (this.auditQueue.length === 4) {
+        setTimeout((): void => { this.flushAuditQueue(); }, 0);
+      }
     };
   }
 
-  /** Builds the one audit record for a settled mic call. */
-  private micAuditLine(name: string, args: string, payloadJson: string,
-    ok: boolean): void {
+  /** Drain the deferred audit queue (ArkTS main thread, one event-loop turn
+   * after the settles that enqueued them — the single-writer discipline is
+   * preserved: every line still goes through auditLine → hostCarrierLine). */
+  private flushAuditQueue(): void {
+    while (this.auditQueue.length > 0) {
+      const name: string = this.auditQueue.shift() ?? '';
+      const args: string = this.auditQueue.shift() ?? '{}';
+      const payloadJson: string = this.auditQueue.shift() ?? '{}';
+      const okRaw: string = this.auditQueue.shift() ?? 'false';
+      this.auditLine(name, args, payloadJson, okRaw === 'true', 'granted');
+    }
+  }
+
+  /** One §6 audit record: {ts, primitive, caller, verdict, outcome} — never
+   * payload contents (the mic rows keep the capability plane's
+   * closed-vocabulary detail: format/rate/frameMs/tag on start, refused /
+   * duration + bytes on stop). The FIELD SET and the verdict/outcome
+   * vocabulary match the Android/iOS gateway cores; byte rendering does
+   * not — each host serializes its own JSON (field order is the platform
+   * dict's, ts precision follows the platform clock: microseconds on
+   * Android's Instant, milliseconds in toISOString here, seconds on iOS),
+   * so parity is a shared field set and vocabulary, never identical bytes.
+   * Emitted through the phase sink (ONE writer — a hilog direct write
+   * would break the single-writer capture rule); debug-only, like those
+   * cores. */
+  private auditLine(name: string, args: string, payloadJson: string,
+    ok: boolean, verdict: string): void {
+    if (BuildFlavor.isRelease()) {
+      // Release strip: the audit stream is harness-only.
+      return;
+    }
     let outcome: string = 'ok';
     if (!ok) {
       outcome = this.jsonField(payloadJson, 'code') ?? 'invalid';
@@ -927,15 +989,15 @@ export class HostPhase {
       if (payloadJson === 'null') {
         detail = '"detail":{"refused":"os"}';
       }
-    } else {
+    } else if (name === 'micStop') {
       if (payloadJson.indexOf('"stopped":true') >= 0) {
         detail = '"detail":{"durationMs":' + (this.jsonField(payloadJson, 'durationMs') ?? '0')
           + ',"bytes":' + (this.jsonField(payloadJson, 'bytes') ?? '0') + '}';
       }
     }
     const record = '{"ts":"' + new Date().toISOString() + '","primitive":"' + name
-      + '","caller":"' + CALLER_ID + '","verdict":"'
-      + (ok ? 'granted' : 'denied') + '","outcome":"' + outcome + '"'
+      + '","caller":"' + CALLER_ID + '","verdict":"' + verdict
+      + '","outcome":"' + outcome + '"'
       + (detail === '' ? '' : ',' + detail) + '}';
     hostCarrierLine(PHASE_ID, 'dsh.gateway.audit: ' + record);
   }
@@ -962,10 +1024,11 @@ export class HostPhase {
     return v === '' ? null : v;
   }
 
-  private handleApproval(callId: number, title: string): void {
+  private handleApproval(callId: number, title: string,
+    settle: (callId: number, payloadJson: string, ok: boolean) => void): void {
     const presenter = this.approvalPresenter;
     if (presenter === null) {
-      this.settleCall(callId,
+      settle(callId,
         '{"code":"unavailable","primitive":"presentApproval","message":"no presenter"}',
         false);
       return;
@@ -973,12 +1036,13 @@ export class HostPhase {
     hilog.info(0x0000, TAG, 'ui-wait approval');
     presenter(title, (approved: boolean): void => {
       hilog.info(0x0000, TAG, 'ui-done approval approved=%{public}s', String(approved));
-      this.settleCall(callId, '{"approved":' + String(approved) + '}', true);
+      settle(callId, '{"approved":' + String(approved) + '}', true);
     });
   }
 
   private handleNotify(ctx: common.UIAbilityContext, callId: number,
-    title: string, body: string): void {
+    title: string, body: string,
+    settle: (callId: number, payloadJson: string, ok: boolean) => void): void {
     const run = async (): Promise<void> => {
       hilog.info(0x0000, TAG, 'ui-wait notification-permission');
       await notificationManager.requestEnableNotification(ctx);
@@ -1009,11 +1073,11 @@ export class HostPhase {
       };
       await notificationManager.publish(request);
       hilog.info(0x0000, TAG, 'ui-done notify-scheduled %{public}s', id);
-      this.settleCall(callId, '{"id":"' + id + '"}', true);
+      settle(callId, '{"id":"' + id + '"}', true);
     };
     run().catch((err: Error): void => {
       hilog.error(0x0000, TAG, 'phase: notify failed: %{public}s', err.message ?? 'unknown');
-      this.settleCall(callId,
+      settle(callId,
         '{"code":"unavailable","primitive":"notify","message":"publish failed"}', false);
     });
   }
