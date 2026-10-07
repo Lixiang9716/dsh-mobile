@@ -26,7 +26,7 @@
  *
  * Runs on the desktop CLI from the bundle root (host/build.sh + --release):
  *   build/dsh-spike-cli [--release] . <this file>
- * The bundle root is runtime/dsh, so the probe imports the CANONICAL
+ * The bundle root is runtime/spike, so the probe imports the CANONICAL
  * logger/shims/upstream modules — no staged copy can drift. Records pass
  * through unchanged (tee), so the raw capture is the stream the host itself
  * printed.

@@ -4,5 +4,5 @@
   "leg": "upstream.parity (in-app scripted mock-llm route, ParityMockRoute)",
   "golden": "test/e2e/fixtures/upstream-parity-reference.jsonl",
   "parityEvents": 25,
-  "comparator": "runtime/dsh/ci/parity-compare.mjs"
+  "comparator": "runtime/spike/ci/parity-compare.mjs"
 }

@@ -222,7 +222,7 @@
   {
    "spec": "core__agent__tests__agent-initiator",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/READM"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/READM"
   },
   {
    "spec": "core__agent__tests__agent",
@@ -283,7 +283,7 @@
   {
    "spec": "core__session__tests__json",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/READM"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/READM"
   },
   {
    "spec": "core__session__tests__properties",
@@ -436,7 +436,7 @@
   {
    "spec": "experimental__webworker-runtime__tests__compile__transform-corpus",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "experimental__webworker-runtime__tests__node__fs",
@@ -791,7 +791,7 @@
   {
    "spec": "lsp__lsp-stdio__tests__host",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "lsp__lsp-stdio__tests__instance",
@@ -836,7 +836,7 @@
   {
    "spec": "mcp__mcp-client__tests__egress",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/REA"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
   },
   {
    "spec": "mcp__mcp-client__tests__load-path",
@@ -954,7 +954,7 @@
   {
    "spec": "session-query__session-query-sqlite__tests__sqlite",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:sqlite' (see runtime/dsh/upstream/R"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:sqlite' (see runtime/spike/upstream/R"
   },
   {
    "spec": "session-query__session-query__tests__search-helpers",
@@ -1070,7 +1070,7 @@
   {
    "spec": "shell__pwsh-local__tests__executor",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "shell__pwsh-local__tests__settings",
@@ -1105,7 +1105,7 @@
   {
    "spec": "shell__tool-pwsh-persistent__tests__loader-composition",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "shell__tool-pwsh-persistent__tests__tools",
@@ -1115,12 +1115,12 @@
   {
    "spec": "shell__tool-pwsh__tests__integration",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "shell__tool-pwsh__tests__loader",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "skill__skill-badge__tests__skill-badge",
@@ -1130,7 +1130,7 @@
   {
    "spec": "skill__skill-office__tests__checkers",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "skill__skill-office__tests__skill-office",
@@ -1160,12 +1160,12 @@
   {
    "spec": "ssh__ssh__tests__inspector-signal",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "subagent__subagent-codex__tests__real-product-cleanup",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/REA"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
   },
   {
    "spec": "subagent__subagent__tests__control",
@@ -1195,7 +1195,7 @@
   {
    "spec": "subprocess__subprocess__tests__service",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:stream' (see runtime/dsh/upstream/R"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:stream' (see runtime/spike/upstream/R"
   },
   {
    "spec": "terminal__terminal-bash__tests__config",
@@ -1205,7 +1205,7 @@
   {
    "spec": "terminal__terminal-bash__tests__local",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/dsh/ups"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:child_process' (see runtime/spike/ups"
   },
   {
    "spec": "terminal__terminal-bash__tests__sanitize",
@@ -1305,7 +1305,7 @@
   {
    "spec": "web__web-search-deepseek__tests__redirect",
    "outcome": "no-summary",
-   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/REA"
+   "cause": "ReferenceError: no spike shim for node builtin 'node:http' (see runtime/spike/upstream/REA"
   },
   {
    "spec": "web__web-search-deepseek__tests__settings",

@@ -5,7 +5,7 @@ against the SAME bundle on the cheapest host. Debug is the harness: full
 structured logging. Release (`-DDSH_RELEASE`, the shared C host injecting
 `globalThis.__DSH_RELEASE__`) keeps only the critical set.
 
-- Run: `runtime/dsh/artifacts/release-logging/run.sh` (builds both CLI
+- Run: `runtime/spike/artifacts/release-logging/run.sh` (builds both CLI
   variants, runs all three probes, asserts the counts per route — exit
   non-zero on any violation).
 - The final lines of a green run: `debug=18 records, release=0 records;
@@ -24,7 +24,7 @@ structured logging. Release (`-DDSH_RELEASE`, the shared C host injecting
 
 | route (`module`) | debug `debug`/`info`/`warn`/`error` | release | assertion |
 | --- | --- | --- | --- |
-| `probe.sink` — `createLogger` (`runtime/dsh/logger.js`) | 1 / 1 / 1 / 1 | 1 / 1 / 1 / 1 → **0 / 0 / 1 / 1** | release keeps warn+error only |
+| `probe.sink` — `createLogger` (`runtime/spike/logger.js`) | 1 / 1 / 1 / 1 | 1 / 1 / 1 / 1 → **0 / 0 / 1 / 1** | release keeps warn+error only |
 | `upstream.console` — the forwarding console (`upstream/web-shims.js`) | 1 / **2** / 1 / 1 | **0 / 0 / 1 / 1** | `console.log`+`console.info` → level `info`, `console.debug` → `debug`; both stripped in release, warn/error kept |
 | `cordis:probe.boot` — the cordis logger exporter (`upstream/boot.js`) | 1 / 1 / 1 / 1 | **0 / 0 / 1 / 1** | the exporter route honors the same policy |
 
@@ -35,16 +35,16 @@ name, so a mapping change must be a deliberate edit.
 Files: `m2-bridge-smoke.debug.txt` / `.release.txt`, `levels.debug.txt` /
 `levels.release.txt`, `sink.debug.txt` / `sink.release.txt` (raw CLI stdout),
 `probe/probe.js` (the level probe — it imports the canonical
-`runtime/dsh/logger.js`, which `run.sh` copies in beside it so no third
+`runtime/spike/logger.js`, which `run.sh` copies in beside it so no third
 committed copy of the logger can drift), `probe/sink-probe.js` (the route
 probe — it runs from the bundle root, so its three routes ARE the canonical
-`runtime/dsh/logger.js` / `upstream/web-shims.js` / `upstream/boot.js`),
+`runtime/spike/logger.js` / `upstream/web-shims.js` / `upstream/boot.js`),
 `sink-route-rejection.release.txt` (the rule-6 proof: the pre-fix emitters
 leaking, and `run.sh` going red when one gate is deleted).
 
 ## Why this is the same mechanism the apps run
 
-`runtime/dsh/logger.js` is embedded byte-identically into all three hosts
+`runtime/spike/logger.js` is embedded byte-identically into all three hosts
 (iOS C arrays, Android assets, HarmonyOS rawfile). It is the logger the
 shipped app actually runs; `runtime/logger/index.ts` is the canonical
 declaration and is bundled by nothing. Before the first release-logging
@@ -62,7 +62,7 @@ Two other writers on the sink — the forwarding `console` in
 logger exporter in `upstream/boot.js` — wrote UNCONDITIONALLY. The release
 captures were clean only because the vendored closure happened to contain no
 `console.*` calls; the property rested on upstream's continued silence. The
-fix puts the policy in ONE place (`runtime/dsh/logger.js`:
+fix puts the policy in ONE place (`runtime/spike/logger.js`:
 `RELEASE_CRITICAL_LEVELS` + `releaseKeeps()`, consulted by all three
 writers), and this probe exercises the two shim routes in BOTH builds so the
 property is asserted instead of assumed. `sink-route-rejection.release.txt`

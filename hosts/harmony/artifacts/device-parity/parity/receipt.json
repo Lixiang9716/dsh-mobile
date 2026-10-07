@@ -11,7 +11,7 @@
     "the vendored upstream spine produces the SAME projected session log on the HarmonyOS device as under plain Node: record-for-record identity against the committed 25-record golden, the scripted route replaying success → todo_write tool round → success → 401",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
   "referenceRecords": 25,
   "exitCode": 0
 }

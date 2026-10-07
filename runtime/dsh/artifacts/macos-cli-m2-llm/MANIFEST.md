@@ -1,10 +1,10 @@
 # Evidence — scenario `m2.llm`, SCRIPTED leg (macOS CLI)
 
-- Run: `runtime/dsh/build/dsh-spike-cli runtime/dsh . scenario/m2-llm.js > logs.txt`
+- Run: `runtime/spike/build/dsh-spike-cli runtime/spike . scenario/m2-llm.js > logs.txt`
 - Checker: `node tools/e2e/check.mjs --manifest tools/e2e/scenarios/m2-llm.json --log logs.txt --out verdict.json` → PASS (19/19, in order)
 - The desktop CLI descriptor honestly declares `httpFetch` unavailable, so the
   scenario negotiated the SCRIPTED leg (`llm.leg`): the real client code path
-  (`runtime/dsh/llm.js`) is fed by a scripted SSE transport with the gateway
+  (`runtime/spike/llm.js`) is fed by a scripted SSE transport with the gateway
   `httpFetch` response shape. The REAL-backend legs are the device evidence:
   `hosts/ios/artifacts/m2-llm/` and `hosts/android/artifacts/m2-llm/`.
 

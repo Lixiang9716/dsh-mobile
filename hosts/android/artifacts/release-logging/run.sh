@@ -77,7 +77,7 @@ done
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "materializing the untracked trees the release APK embeds"
-  for s in runtime/dsh/vendor/ensure-dsh.sh tools/e2e/ensure-official-dist.sh \
+  for s in runtime/spike/vendor/ensure-dsh.sh tools/e2e/ensure-official-dist.sh \
            tools/e2e/ensure-client-bundles.sh; do
     PATH="$NODE_BIN:$PATH" bash "$s" || die "$s failed"
   done
@@ -95,7 +95,7 @@ fi
 unzip -l "$APK_REL" > "$ART/apk-release-listing.txt"
 DIST_N="$(grep -c 'assets/official-web/' "$ART/apk-release-listing.txt" || true)"
 PLUGINS_N="$(grep -c 'assets/web-plugins/' "$ART/apk-release-listing.txt" || true)"
-SPIKE_N="$(grep -c 'assets/dsh/' "$ART/apk-release-listing.txt" || true)"
+SPIKE_N="$(grep -c 'assets/spike/' "$ART/apk-release-listing.txt" || true)"
 {
   echo "# release.yml ships hosts/android/app/build/outputs/apk/release/app-release-unsigned.apk"
   ls -l "$APK_REL" "$APK_DBG"
@@ -106,8 +106,8 @@ SPIKE_N="$(grep -c 'assets/dsh/' "$ART/apk-release-listing.txt" || true)"
   echo "## embedded assets inside the release APK (unzip -l)"
   echo "assets/official-web entries:   $DIST_N"
   echo "assets/web-plugins entries:    $PLUGINS_N"
-  echo "assets/dsh entries:          $SPIKE_N"
-  grep -E "assets/official-web/dist/index.html|assets/dsh/scenario/b-android-web-live.js|assets/dsh/logger.js" \
+  echo "assets/spike entries:          $SPIKE_N"
+  grep -E "assets/official-web/dist/index.html|assets/spike/scenario/b-android-web-live.js|assets/spike/logger.js" \
     "$ART/apk-release-listing.txt"
 } > "$ART/apk-release-contents.txt"
 grep -q "DOES NOT VERIFY" "$ART/apk-release-contents.txt" ||
@@ -116,7 +116,7 @@ grep -q "DOES NOT VERIFY" "$ART/apk-release-contents.txt" ||
   die "the release APK does not embed the official dist (expect 89 files, got $DIST_N)"
 [ "$PLUGINS_N" -eq 129 ] ||
   die "the release APK does not embed the client bundles (expect 129 files, got $PLUGINS_N)"
-grep -q "assets/dsh/logger.js" "$ART/apk-release-listing.txt" ||
+grep -q "assets/spike/logger.js" "$ART/apk-release-listing.txt" ||
   die "the release APK does not embed the spike bundle"
 
 # ---- local verification signing (NOT the shipped artifact's state) ---------

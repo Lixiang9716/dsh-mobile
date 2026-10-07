@@ -19,7 +19,7 @@ the map against. Regenerate from a clean tree:
 
 ```sh
 test/upstream-suite/transpile.mjs                       # or use the pinned manifest
-runtime/dsh/ci/run-shim-exposure-sweep.sh --paral 8   # ~8 min at paral 8
+runtime/spike/ci/run-shim-exposure-sweep.sh --paral 8   # ~8 min at paral 8
 node tools/shim-exposure.mjs tmp/shim-manifests \
     --baseline tmp/shim-manifests/__baseline__.txt      # the table
 ```

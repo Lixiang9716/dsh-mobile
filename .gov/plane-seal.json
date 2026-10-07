@@ -52,11 +52,11 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "d64f53024981faa19a3f13966c9811a1c05af0d8a77fee37ed60b2c5ab46e909"
+      "sha256": "683ac3b2a5db059eee8a189d849fdfd62f6f3d13362acf2ee40c9a5b2b518671"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T02:16:20+00:00",
+    "ts": "2026-10-07T06:49:55+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": false
   }

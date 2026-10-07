@@ -31,7 +31,7 @@ screenshots are supplementary.
 | the official dist seat answers the origin | `origin-release.txt`: `GET / -> status=401 bytes=0` through `adb forward` — the auth-lite token gate of the dist seat; a dead origin would have refused the connection |
 | the launcher focus is the app | `origin-release.txt`: `mCurrentFocus=Window{… com.dshmobile.spike/com.dshmobile.spike.MainActivity}` |
 | the release build is not debuggable | `run.sh` asserts `run-as com.dshmobile.spike ls files` FAILS (the harness-only capture vehicle is unavailable by construction) |
-| embedded assets in the shipped APK | `apk-release-contents.txt`: 89 `assets/official-web/` entries + 129 `assets/web-plugins/` entries + 254 `assets/dsh/` entries, including `official-web/dist/index.html`, `spike/logger.js`, `spike/scenario/b-android-web-live.js` (`apk-release-listing.txt` is the raw listing) |
+| embedded assets in the shipped APK | `apk-release-contents.txt`: 89 `assets/official-web/` entries + 129 `assets/web-plugins/` entries + 254 `assets/spike/` entries, including `official-web/dist/index.html`, `spike/logger.js`, `spike/scenario/b-android-web-live.js` (`apk-release-listing.txt` is the raw listing) |
 
 The counts in this MANIFEST are the RECORDED run's (2026-09-21, `emulator-5554`);
 the carrier port and the app uid change every install, and the incidental line
@@ -122,11 +122,11 @@ fixed hold bounds the observation window and awaits no state.
 
 ## Known gap (not a regression — nothing fails today)
 
-The release strip is enforced by `runtime/dsh/logger.js`, the OPERATIVE
+The release strip is enforced by `runtime/spike/logger.js`, the OPERATIVE
 logger. Two raw-sink emitters beside it do NOT consult `__DSH_RELEASE__`:
-`runtime/dsh/upstream/web-shims.js` installs a forwarding `console` whose
+`runtime/spike/upstream/web-shims.js` installs a forwarding `console` whose
 `log`/`info`/`debug` write straight to `__DSH_LOG_SINK__` as `"level":"info"`,
-and `runtime/dsh/upstream/boot.js`'s `wireLogger` does the same for cordis
+and `runtime/spike/upstream/boot.js`'s `wireLogger` does the same for cordis
 records. Both are on the release path's import graph (`web-boot.js` imports
 `./web-shims.js`). Measured today: 0 records, and the vendored closure the
 release path loads (dsh-client-modules, cordis, cosmokit, schemastery) has

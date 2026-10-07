@@ -2,12 +2,12 @@ dsh.spike.log: {"data":[{"event":"client.selected","scenario":"b4.write.live","c
 dsh.spike.log: {"level":"debug","module":"b4.web","message":"main begin","data":[{}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"b4.write.live","event":"llm/runtime","provider":"mock","model":"mock-1","service":"vendored @deepseek-ai/dsh-llm LlmRuntime (adapter registry)","transport":"gateway httpFetch → carrier scripted chat-completions (E2E determinism boundary, mirrors the CLI mock server)","userAgent":"deepseek-harness/0.1.6-alpha.2 (+https://github.com/deepseek-ai/deepseek-harness)"}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"b4.write.live","event":"upstream/profile","profile":"mobile","root":"empty (patch layers compose over it)","upstream":"0.1.6-alpha.2 (vendored verbatim, sha256-pinned)","layers":["session","agent","system-prompt","tools","session-projection","settings","agent-loop"]}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"dsh/echo.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsRead","data":[{"scope":"app","path":"spike/echo.wasm"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsRead"}]}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"b4.write.live","event":"upstream/services","kernel":"@deepseek-ai/cordis@4.0.2","services":["sessions","agents","systemPrompt","tools","sessionProjections","settings","agentLoop","llm"],"llm":"vendored LlmRuntime + gateway adapter (provider \"mock\")"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsMkdir"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway error","data":[{"code":"io","primitive":"fsRead"}]}
-dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"dsh/echo.wasm"}]}
+dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"spike/echo.wasm"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"fsWrite","data":[{"scope":"app","path":"probe/sub/hello.txt"}]}
 dsh.spike.log: {"level":"debug","module":"dsh.gateway","message":"gateway call","data":[{"name":"fsWrite"}]}
@@ -59,7 +59,7 @@ dsh.spike.log: {"module":"dsh.carrier","data":[{"notice":false,"composer":true,"
 dsh.spike.log: {"module":"dsh.carrier","data":[{"endpoint":"settings\/mutate","event":"rpc.observed","scenario":"b4.write.live","answered":"forwarded"}],"level":"info","message":"e2e"}
 dsh.spike.log: {"level":"info","data":[{"event":"rpc.observed","answered":"unavailable","scenario":"b4.write.live","endpoint":"llm\/listProviders"}],"module":"dsh.carrier","message":"e2e"}
 dsh.spike.log: {"level":"info","data":[{"event":"rpc.observed","answered":"unavailable","scenario":"b4.write.live","endpoint":"llm\/listConfigurableProviders"}],"module":"dsh.carrier","message":"e2e"}
-dsh.spike.log: {"module":"dsh.carrier","data":[{"event":"composer.typed","buttons":[{"vis":true,"dis":false,"cls":"kSzZ8W_workspace","t":"dsh"}],"scenario":"b4.write.live","className":"URpz4a_input","found":"div","text":"Say hello from the composer","value":"Say hello from the composer","active":"DIV","editable":true}],"level":"info","message":"e2e"}
+dsh.spike.log: {"module":"dsh.carrier","data":[{"event":"composer.typed","buttons":[{"vis":true,"dis":false,"cls":"kSzZ8W_workspace","t":"spike"}],"scenario":"b4.write.live","className":"URpz4a_input","found":"div","text":"Say hello from the composer","value":"Say hello from the composer","active":"DIV","editable":true}],"level":"info","message":"e2e"}
 dsh.spike.log: {"module":"dsh.carrier","data":[{"endpoint":"terminal\/list","event":"rpc.observed","scenario":"b4.write.live","answered":"unavailable"}],"level":"info","message":"e2e"}
 dsh.spike.log: {"data":[{"answered":"forwarded","event":"rpc.observed","endpoint":"session\/prompt","scenario":"b4.write.live"}],"level":"info","module":"dsh.carrier","message":"e2e"}
 dsh.spike.log: {"level":"info","module":"b4.web","message":"e2e","data":[{"scenario":"b4.write.live","event":"write.prompt.observed","sessionId":"session-853fa440-338f-433e-87d8-eb67c30444e5","seq":5}]}

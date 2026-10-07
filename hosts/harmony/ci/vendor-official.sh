@@ -830,7 +830,11 @@ if [ "$MODE" = "check" ]; then
     echo "vendor-official: closure verified in place (check mode, no writes, $SKIPS untracked-but-closure file(s) skipped — materialized at build time)"
     exit 0
 fi
-files=$(find "$RAW/officialweb" -type f | wc -l | tr -d ' ')
+# officialweb is GITIGNORED (materialized at build time from the pinned dist):
+# on a fresh CI checkout it does not exist yet — the count is informational,
+# so an absent tree is 0, never a failure (the find exit otherwise rides
+# pipefail into the closure step and reads as a phantom rawfile drift).
+files=$( { find "$RAW/officialweb" -type f 2>/dev/null || true; } | wc -l | tr -d ' ')
 closure_count=$(printf '%s\n' "$CLOSURE" | grep -c .)
 echo "vendor-official: rawfile fresh (officialweb: $files files, closure: $closure_count files, byte-verified)"
 node hosts/harmony/ci/check-bundle-files.mjs

@@ -1,4 +1,4 @@
-# Shim exposure map (upstream suite → runtime/dsh/upstream/shims)
+# Shim exposure map (upstream suite → runtime/spike/upstream/shims)
 
 - spec manifests: 648 (dir tmp/shim-manifests)
 - shims total: 86 — exposed: 85, zero-exposure: 1

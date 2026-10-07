@@ -4,7 +4,7 @@
   "engineVersion": "0.17.0",
   "quickjsTag": "v0.17.0",
   "quickjsCommit": "6d46d07d04041b40f4f49eaa7fdebe44c314c699",
-  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, tgz sha256-pinned by runtime/dsh/vendor/ensure-dsh.sh)",
+  "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, tgz sha256-pinned by runtime/spike/vendor/ensure-dsh.sh)",
   "kernel": "@deepseek-ai/cordis@4.0.2",
   "scenario": "onboarding.flow",
   "proves": [

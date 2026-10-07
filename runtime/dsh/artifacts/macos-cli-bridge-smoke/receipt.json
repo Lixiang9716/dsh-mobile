@@ -13,5 +13,5 @@
   "captures": {
     "primary": "logs.txt (CLI stdout of this run; scenario.jsonl = grep 'dsh.spike.log:' logs.txt)"
   },
-  "invocation": "cd runtime/dsh && sh vendor/ensure.sh && sh vendor/ensure-dsh.sh && sh host/build.sh && ./build/dsh-spike-cli . scenario/gateway-bridge-smoke.js > artifacts/macos-cli-bridge-smoke/logs.txt; then node test/e2e/check.mjs --manifest test/e2e/scenarios/gateway-bridge-smoke.json --log <logs.txt> --out verdict.json"
+  "invocation": "cd runtime/spike && sh vendor/ensure.sh && sh vendor/ensure-dsh.sh && sh host/build.sh && ./build/dsh-spike-cli . scenario/gateway-bridge-smoke.js > artifacts/macos-cli-bridge-smoke/logs.txt; then node test/e2e/check.mjs --manifest test/e2e/scenarios/gateway-bridge-smoke.json --log <logs.txt> --out verdict.json"
 }

@@ -15,5 +15,5 @@
   "checker": "tools/e2e/scenarios/m2-session.json",
   "events": 23,
   "exitCode": 0,
-  "m3Notes": "dsh-notes arrives through runtime/dsh/install-pipeline.js (receipt transaction) before the session starts; notes.installed asserted"
+  "m3Notes": "dsh-notes arrives through runtime/spike/install-pipeline.js (receipt transaction) before the session starts; notes.installed asserted"
 }

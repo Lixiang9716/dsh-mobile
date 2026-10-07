@@ -1,7 +1,7 @@
 {
   "generated": "2026-09-23T05:50:08.989Z",
-  "cli": "/Users/lixiang/workspace/dsh-mobile/runtime/dsh/build/dsh-spike-cli",
-  "scenario": "runtime/dsh/scenario/upstream-suite-leg.js",
+  "cli": "/Users/lixiang/workspace/dsh-mobile/runtime/spike/build/dsh-spike-cli",
+  "scenario": "runtime/spike/scenario/upstream-suite-leg.js",
   "per_spec_timeout_s": 90,
   "totals": {
     "total": 252,
@@ -471,7 +471,7 @@
       "duration_s": 1,
       "status": "red",
       "failure_class": "module-resolution: diff",
-      "failure_detail": "unmapped module specifier 'diff': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'diff': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -507,7 +507,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:vm",
-      "failure_detail": "no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -681,7 +681,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "module-resolution: fast-check",
-      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -933,7 +933,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:vm",
-      "failure_detail": "no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -945,7 +945,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "module-resolution: fast-check",
-      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -1163,7 +1163,7 @@
       "duration_s": 1,
       "status": "red",
       "failure_class": "module-resolution: fast-check",
-      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -1317,7 +1317,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2051,7 +2051,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "module-resolution: fast-check",
-      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'fast-check': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2208,7 +2208,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2304,7 +2304,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:http",
-      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2810,7 +2810,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:sqlite",
-      "failure_detail": "no spike shim for node builtin 'node:sqlite' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:sqlite' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2870,7 +2870,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2954,7 +2954,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2966,7 +2966,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -2978,7 +2978,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3026,7 +3026,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3086,7 +3086,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3134,7 +3134,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:http",
-      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3158,7 +3158,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:stream",
-      "failure_detail": "no spike shim for node builtin 'node:stream' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:stream' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3194,7 +3194,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:child_process",
-      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3278,7 +3278,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "module-resolution: typescript",
-      "failure_detail": "unmapped module specifier 'typescript': not vendored and not shimmed (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "unmapped module specifier 'typescript': not vendored and not shimmed (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null
@@ -3446,7 +3446,7 @@
       "duration_s": 0,
       "status": "red",
       "failure_class": "missing-node-builtin: node:http",
-      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) |",
+      "failure_detail": "no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) |",
       "passed": null,
       "failed": null,
       "skipped": null

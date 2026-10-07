@@ -3,7 +3,7 @@
 Human evidence ONLY (the repo's acceptance bar is logs — AGENTS.md rule 7;
 the machine assertions for everything below live in
 `hosts/ios/artifacts/b4-write-live/` and
-`runtime/dsh/artifacts/macos-cli-settings-surfaces/`). Captured 2026-09-22
+`runtime/spike/artifacts/macos-cli-settings-surfaces/`). Captured 2026-09-22
 on the `dsh-iphone` simulator, Release serving seat (`-dsh-mode
 session-write`), driven by label through WDA (`tools/e2e/ios-ui.py`).
 

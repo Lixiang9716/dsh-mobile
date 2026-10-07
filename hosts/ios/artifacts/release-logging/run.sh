@@ -32,8 +32,8 @@ die() { echo "release-logging(ios): FAIL: $*" >&2; exit 1; }
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "vendoring + the official web trees the Release build embeds"
-  sh runtime/dsh/vendor/ensure.sh
-  sh runtime/dsh/vendor/ensure-dsh.sh >/dev/null
+  sh runtime/spike/vendor/ensure.sh
+  sh runtime/spike/vendor/ensure-dsh.sh >/dev/null
   tools/e2e/ensure-official-dist.sh
   tools/e2e/ensure-client-bundles.sh
   for cfg in Release Debug; do

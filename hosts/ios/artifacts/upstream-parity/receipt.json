@@ -8,7 +8,7 @@
     "the tool round is real: the scripted todo_write tool-call streamed through the REAL gateway httpFetch primitive to the host-side mock, the upstream ToolRuntime dispatched it, and the todos projection landed identically",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
+  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
   "events": 37,
   "referenceRecords": 25,
   "exitCode": 0

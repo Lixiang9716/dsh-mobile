@@ -7,10 +7,10 @@
 #     cordis exporter route leaks all four: the strip held only while
 #     upstream stayed quiet, never because the flag said so.
 #     Reproduce (scratch root = this tree with the three emitters reverted):
-#       rm -rf /tmp/prefix-spike && cp -R runtime/dsh /tmp/prefix-spike
-#       git show d8fc7d4:runtime/dsh/logger.js > /tmp/prefix-spike/logger.js
-#       git show d8fc7d4:runtime/dsh/upstream/web-shims.js > /tmp/prefix-spike/upstream/web-shims.js
-#       git show d8fc7d4:runtime/dsh/upstream/boot.js > /tmp/prefix-spike/upstream/boot.js
+#       rm -rf /tmp/prefix-spike && cp -R runtime/spike /tmp/prefix-spike
+#       git show d8fc7d4:runtime/spike/logger.js > /tmp/prefix-spike/logger.js
+#       git show d8fc7d4:runtime/spike/upstream/web-shims.js > /tmp/prefix-spike/upstream/web-shims.js
+#       git show d8fc7d4:runtime/spike/upstream/boot.js > /tmp/prefix-spike/upstream/boot.js
 #       sed 's/^const wireLogger/export const wireLogger/' \
 #         /tmp/prefix-spike/upstream/boot.js > /tmp/prefix-spike/upstream/boot-probe.js
 #       # + the two sink-route-repro*.js entries under that root's probe/ dir
@@ -20,7 +20,7 @@
 # (b) the CURRENT tree with ONE gate deleted (boot.js's releaseKeeps call),
 #     run through run.sh: exit 1, and the probe's own verdict record names
 #     the offending route and level. Reproduce: delete that line, run
-#     runtime/dsh/artifacts/release-logging/run.sh, read the FAIL line.
+#     runtime/spike/artifacts/release-logging/run.sh, read the FAIL line.
 
 ===== (a) pre-fix forwarding console, RELEASE =====
 dsh.spike.log: {"level":"info","module":"upstream.console","message":"console-log","data":[]}

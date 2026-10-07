@@ -265,22 +265,22 @@ Total excluded: **602** specs (vs 252 transpiled).
 
 | Spec | Exit | Failure class | Detail (truncated) | Dur (s) |
 |---|---:|---|---|---:|
-| core__agent__tests__agent-initiator | 1 | missing-node-builtin: node:vm | no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/README.md) | | 0 |
-| core__session__tests__json | 1 | missing-node-builtin: node:vm | no spike shim for node builtin 'node:vm' (see runtime/dsh/upstream/README.md) | | 0 |
-| experimental__webworker-runtime__tests__compile__transform-corpus | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| lsp__lsp-stdio__tests__host | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| mcp__mcp-client__tests__egress | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) | | 0 |
-| session-query__session-query-sqlite__tests__sqlite | 1 | missing-node-builtin: node:sqlite | no spike shim for node builtin 'node:sqlite' (see runtime/dsh/upstream/README.md) | | 0 |
-| shell__pwsh-local__tests__executor | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| shell__tool-pwsh__tests__integration | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| shell__tool-pwsh__tests__loader | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| shell__tool-pwsh-persistent__tests__loader-composition | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| skill__skill-office__tests__checkers | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| ssh__ssh__tests__inspector-signal | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| subagent__subagent-codex__tests__real-product-cleanup | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) | | 0 |
-| subprocess__subprocess__tests__service | 1 | missing-node-builtin: node:stream | no spike shim for node builtin 'node:stream' (see runtime/dsh/upstream/README.md) | | 0 |
-| terminal__terminal-bash__tests__local | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/dsh/upstream/README.md) | | 0 |
-| web__web-search-deepseek__tests__redirect | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/dsh/upstream/README.md) | | 0 |
+| core__agent__tests__agent-initiator | 1 | missing-node-builtin: node:vm | no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/README.md) | | 0 |
+| core__session__tests__json | 1 | missing-node-builtin: node:vm | no spike shim for node builtin 'node:vm' (see runtime/spike/upstream/README.md) | | 0 |
+| experimental__webworker-runtime__tests__compile__transform-corpus | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| lsp__lsp-stdio__tests__host | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| mcp__mcp-client__tests__egress | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) | | 0 |
+| session-query__session-query-sqlite__tests__sqlite | 1 | missing-node-builtin: node:sqlite | no spike shim for node builtin 'node:sqlite' (see runtime/spike/upstream/README.md) | | 0 |
+| shell__pwsh-local__tests__executor | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| shell__tool-pwsh__tests__integration | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| shell__tool-pwsh__tests__loader | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| shell__tool-pwsh-persistent__tests__loader-composition | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| skill__skill-office__tests__checkers | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| ssh__ssh__tests__inspector-signal | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| subagent__subagent-codex__tests__real-product-cleanup | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) | | 0 |
+| subprocess__subprocess__tests__service | 1 | missing-node-builtin: node:stream | no spike shim for node builtin 'node:stream' (see runtime/spike/upstream/README.md) | | 0 |
+| terminal__terminal-bash__tests__local | 1 | missing-node-builtin: node:child_process | no spike shim for node builtin 'node:child_process' (see runtime/spike/upstream/README.md) | | 0 |
+| web__web-search-deepseek__tests__redirect | 1 | missing-node-builtin: node:http | no spike shim for node builtin 'node:http' (see runtime/spike/upstream/README.md) | | 0 |
 
 ### missing-export (vendored module/shim lacks an export) — 8 specs
 

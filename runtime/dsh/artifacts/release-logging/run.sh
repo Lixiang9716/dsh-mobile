@@ -9,11 +9,11 @@
 # the strip must hold on EVERY route that writes to the sink — not only on the
 # canonical createLogger, whose silence the shims could otherwise mask.
 #
-# usage: runtime/dsh/artifacts/release-logging/run.sh   (from the repo root)
+# usage: runtime/spike/artifacts/release-logging/run.sh   (from the repo root)
 set -eu
 ROOT=$(cd "$(dirname "$0")/../../../.." && pwd)
-ART="$ROOT/runtime/dsh/artifacts/release-logging"
-SPIKE="$ROOT/runtime/dsh"
+ART="$ROOT/runtime/spike/artifacts/release-logging"
+SPIKE="$ROOT/runtime/spike"
 cd "$SPIKE"
 
 sh host/build.sh >/dev/null
