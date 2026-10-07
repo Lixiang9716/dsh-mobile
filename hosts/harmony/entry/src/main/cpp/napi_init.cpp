@@ -1,12 +1,12 @@
 /*
- * napi_init.cpp — NAPI binding for the M5 spike host on HarmonyOS.
+ * napi_init.cpp — NAPI binding for the M5 rt host on HarmonyOS.
  *
  * Threading rule (AGENTS.md / ARCHITECTURE.md §6): the scenario JS executes
  * on ONE serial thread. The whole new+eval+pump(+settle) loop runs
  * synchronously inside startSpike on the NAPI caller thread (the ArkTS main
  * thread); it takes well under a second. No extra JS-driving threads exist.
  *
- * One launch drives ALL THREE spike scenarios:
+ * One launch drives ALL THREE rt scenarios:
  *   - boot.verification (regression): loader + seams + gateway negotiation;
  *   - gateway.bridge-smoke: the real gateway bridge, served by the smoke backend
  *     in gateway_smoke.cpp (fs on the app dir as scope "app", the keychain
@@ -18,9 +18,9 @@
  *     (registry + dsh-fs + dsh-subprocess-quickjs + dsh-ui), started by the
  *     host.info readiness event after eval.
  *
- * The sink receives each canonical E2E line ("dsh.spike.log: {...") from
- * dsh_spike_host and forwards it, byte-unmodified, to (a) hilog under
- * domain 0xD5E0 / tag "dsh.spike" (hilog requires printing through its
+ * The sink receives each canonical E2E line ("dsh.runtime.log: {...") from
+ * dsh_runtime_host and forwards it, byte-unmodified, to (a) hilog under
+ * domain 0xD5E0 / tag "dsh.runtime" (hilog requires printing through its
  * format string, hence "%{public}s"), and (b) a capture file under the
  * app's cache dir, pulled verbatim via `hdc file recv` as the checker's
  * second, truncation-proof capture.
@@ -34,24 +34,24 @@
 #include <time.h>
 
 extern "C" {
-#include "dsh_spike_host.h"
+#include "dsh_runtime_host.h"
 #include "gateway_smoke.h"
 }
 
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD5E0
 #undef LOG_TAG
-#define LOG_TAG "dsh.spike"
+#define LOG_TAG "dsh.runtime"
 
 namespace {
 
-constexpr const char *DSH_ENTRY_M1 = "scenario/boot-verification.js";
-constexpr const char *DSH_ENTRY_M2 = "scenario/gateway-bridge-smoke.js";
+constexpr const char *DSH_ENTRY_BOOT = "scenario/boot-verification.js";
+constexpr const char *DSH_ENTRY_BRIDGE_SMOKE = "scenario/gateway-bridge-smoke.js";
 constexpr const char *DSH_ENTRY_SESSION = "scenario/session-mock-llm.js";
 constexpr const char *DSH_ENGINE_NAME = "quickjs-ng";
 constexpr const char *DSH_ENGINE_VERSION = "0.17.0";
-constexpr const char *DSH_SCENARIO_M1 = "boot.verification";
-constexpr const char *DSH_SCENARIO_M2 = "gateway.bridge-smoke";
+constexpr const char *DSH_SCENARIO_BOOT = "boot.verification";
+constexpr const char *DSH_SCENARIO_BRIDGE_SMOKE = "gateway.bridge-smoke";
 constexpr const char *DSH_SCENARIO_SESSION = "session.mock-llm";
 /* Host readiness signal through the same gateway-event channel the desktop
  * backend uses: {"event":"host.info","port":0} — this embedder has no carrier,
@@ -112,23 +112,23 @@ struct ScenarioResult {
 
 /* Drive {pump → drain} until the scenario completes, an exception fires, or
  * the backstop deadline passes — condition-driven, never sleeps. */
-int pump_until_settled(dsh_spike_t *spike, dsh_smoke_backend_t *smoke,
+int pump_until_settled(dsh_runtime_t *rt, dsh_smoke_backend_t *smoke,
                        const char *scenario) {
     struct timespec deadline;
     clock_gettime(CLOCK_MONOTONIC, &deadline);
     deadline.tv_sec += DSH_SMOKE_DEADLINE_SECONDS;
     int rc = 0;
-    while (rc == 0 && !dsh_spike_complete(spike)) {
-        rc = dsh_spike_pump(spike);
+    while (rc == 0 && !dsh_runtime_complete(rt)) {
+        rc = dsh_runtime_pump(rt);
         if (rc != 0 || smoke == nullptr) break;
         int served = dsh_smoke_drain(smoke);
         if (served < 0) { rc = -1; break; }
-        if (dsh_spike_complete(spike) || served == 0) break;
+        if (dsh_runtime_complete(rt) || served == 0) break;
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         if (now.tv_sec > deadline.tv_sec) {
             OH_LOG_ERROR(LOG_APP,
-                         "dsh.spike: %{public}ds deadline elapsed in %{public}s",
+                         "dsh.rt: %{public}ds deadline elapsed in %{public}s",
                          DSH_SMOKE_DEADLINE_SECONDS, scenario);
             rc = -1;
         }
@@ -138,7 +138,7 @@ int pump_until_settled(dsh_spike_t *spike, dsh_smoke_backend_t *smoke,
 
 /* Eval one entry module and drive it to completion (no gateway bridge —
  * the m1 regression never dispatches a primitive call). */
-ScenarioResult run_scenario(dsh_spike_t *spike, const std::string &bundle_root,
+ScenarioResult run_scenario(dsh_runtime_t *rt, const std::string &bundle_root,
                             const char *scenario, const char *entry,
                             SinkCtx *sink_ctx) {
     (void)sink_ctx;
@@ -150,12 +150,12 @@ ScenarioResult run_scenario(dsh_spike_t *spike, const std::string &bundle_root,
         res.verdict = std::string(scenario) + " FAIL error=\"cannot read entry\"";
         return res;
     }
-    int rc = dsh_spike_eval(spike, entry, source);
+    int rc = dsh_runtime_eval(rt, entry, source);
     free(source);
     if (rc == 0) {
-        rc = pump_until_settled(spike, nullptr, scenario);
+        rc = pump_until_settled(rt, nullptr, scenario);
     }
-    res.pass = (rc == 0) && dsh_spike_complete(spike) && dsh_spike_pass(spike);
+    res.pass = (rc == 0) && dsh_runtime_complete(rt) && dsh_runtime_pass(rt);
     return res;
 }
 
@@ -163,14 +163,14 @@ ScenarioResult run_scenario(dsh_spike_t *spike, const std::string &bundle_root,
  * calls (queued, then settled by the pump loop). ready_event (nullable) is
  * delivered once after eval, before the first pump pass — the host readiness
  * signal session.mock-llm waits on. */
-ScenarioResult run_smoke_scenario(dsh_spike_t *spike,
+ScenarioResult run_smoke_scenario(dsh_runtime_t *rt,
                                   const std::string &bundle_root,
                                   const char *scenario, const char *entry,
                                   dsh_smoke_backend_t *smoke, SinkCtx *sink_ctx,
                                   const char *ready_event) {
     (void)sink_ctx;
     ScenarioResult res;
-    dsh_smoke_attach(smoke, spike);
+    dsh_smoke_attach(smoke, rt);
     std::string entry_path = join_path(bundle_root, entry);
     char *source = slurp(entry_path.c_str());
     if (source == nullptr) {
@@ -178,90 +178,90 @@ ScenarioResult run_smoke_scenario(dsh_spike_t *spike,
         res.verdict = std::string(scenario) + " FAIL error=\"cannot read entry\"";
         return res;
     }
-    int rc = dsh_spike_eval(spike, entry, source);
+    int rc = dsh_runtime_eval(rt, entry, source);
     free(source);
     if (rc == 0 && ready_event != nullptr
-        && dsh_spike_gateway_event(spike, ready_event) != 0) {
+        && dsh_runtime_gateway_event(rt, ready_event) != 0) {
         rc = -1;
     }
     if (rc == 0) {
-        rc = pump_until_settled(spike, smoke, scenario);
+        rc = pump_until_settled(rt, smoke, scenario);
     }
     res.pass = (rc == 0) && !dsh_smoke_failed(smoke) &&
-               dsh_spike_complete(spike) && dsh_spike_pass(spike);
+               dsh_runtime_complete(rt) && dsh_runtime_pass(rt);
     return res;
 }
 
 /* hilog verdict line: "<scenario> PASS|FAIL complete=… pass=… logLines=…". */
 std::string verdict_line(const char *scenario, const ScenarioResult &res,
-                         int lines, dsh_spike_t *spike) {
+                         int lines, dsh_runtime_t *rt) {
     std::string out = std::string(scenario) + " " + (res.pass ? "PASS" : "FAIL");
     out += " engine=" + std::string(DSH_ENGINE_NAME);
     out += " version=" + std::string(DSH_ENGINE_VERSION);
-    out += " complete=" + std::to_string(dsh_spike_complete(spike));
-    out += " pass=" + std::to_string(dsh_spike_pass(spike));
+    out += " complete=" + std::to_string(dsh_runtime_complete(rt));
+    out += " pass=" + std::to_string(dsh_runtime_pass(rt));
     out += " logLines=" + std::to_string(lines);
-    if (!res.pass && strlen(dsh_spike_error(spike)) > 0) {
-        out += std::string(" error=\"") + dsh_spike_error(spike) + "\"";
+    if (!res.pass && strlen(dsh_runtime_error(rt)) > 0) {
+        out += std::string(" error=\"") + dsh_runtime_error(rt) + "\"";
     }
     return out;
 }
 
 /* One scenario lifecycle: new runtime → run → collect → free. */
-ScenarioResult run_m1(const std::string &bundle_root, dsh_spike_sink *sink,
+ScenarioResult run_m1(const std::string &bundle_root, dsh_runtime_sink *sink,
                       SinkCtx *sink_ctx) {
-    dsh_spike_t *spike = dsh_spike_new(bundle_root.c_str(), sink);
+    dsh_runtime_t *rt = dsh_runtime_new(bundle_root.c_str(), sink);
     ScenarioResult res;
-    if (spike == nullptr) {
-        res.verdict = std::string(DSH_SCENARIO_M1) + " FAIL error=\"runtime init failed\"";
+    if (rt == nullptr) {
+        res.verdict = std::string(DSH_SCENARIO_BOOT) + " FAIL error=\"runtime init failed\"";
         return res;
     }
     int lines_before = sink_ctx->lines;
-    res = run_scenario(spike, bundle_root, DSH_SCENARIO_M1, DSH_ENTRY_M1, sink_ctx);
-    res.verdict = verdict_line(DSH_SCENARIO_M1, res, sink_ctx->lines - lines_before, spike);
-    dsh_spike_free(spike);
+    res = run_scenario(rt, bundle_root, DSH_SCENARIO_BOOT, DSH_ENTRY_BOOT, sink_ctx);
+    res.verdict = verdict_line(DSH_SCENARIO_BOOT, res, sink_ctx->lines - lines_before, rt);
+    dsh_runtime_free(rt);
     return res;
 }
 
-ScenarioResult run_m2(const std::string &bundle_root, dsh_spike_sink *sink,
+ScenarioResult run_m2(const std::string &bundle_root, dsh_runtime_sink *sink,
                       SinkCtx *sink_ctx, const char *fs_root) {
     dsh_smoke_backend_t *smoke = dsh_smoke_new(fs_root);
-    dsh_spike_t *spike = dsh_spike_new(bundle_root.c_str(), sink);
+    dsh_runtime_t *rt = dsh_runtime_new(bundle_root.c_str(), sink);
     ScenarioResult res;
-    if (smoke == nullptr || spike == nullptr) {
-        res.verdict = std::string(DSH_SCENARIO_M2) + " FAIL error=\"runtime init failed\"";
+    if (smoke == nullptr || rt == nullptr) {
+        res.verdict = std::string(DSH_SCENARIO_BRIDGE_SMOKE) + " FAIL error=\"runtime init failed\"";
         dsh_smoke_free(smoke);
-        if (spike != nullptr) dsh_spike_free(spike);
+        if (rt != nullptr) dsh_runtime_free(rt);
         return res;
     }
     int lines_before = sink_ctx->lines;
-    res = run_smoke_scenario(spike, bundle_root, DSH_SCENARIO_M2, DSH_ENTRY_M2,
+    res = run_smoke_scenario(rt, bundle_root, DSH_SCENARIO_BRIDGE_SMOKE, DSH_ENTRY_BRIDGE_SMOKE,
                              smoke, sink_ctx, nullptr);
-    res.verdict = verdict_line(DSH_SCENARIO_M2, res, sink_ctx->lines - lines_before, spike);
-    dsh_spike_free(spike);
+    res.verdict = verdict_line(DSH_SCENARIO_BRIDGE_SMOKE, res, sink_ctx->lines - lines_before, rt);
+    dsh_runtime_free(rt);
     dsh_smoke_free(smoke);
     return res;
 }
 
 /* session.mock-llm — the mini agent session over the three system plugins; same
  * smoke backend, plus the host.info readiness event after eval. */
-ScenarioResult run_session(const std::string &bundle_root, dsh_spike_sink *sink,
+ScenarioResult run_session(const std::string &bundle_root, dsh_runtime_sink *sink,
                            SinkCtx *sink_ctx, const char *fs_root) {
     dsh_smoke_backend_t *smoke = dsh_smoke_new(fs_root);
-    dsh_spike_t *spike = dsh_spike_new(bundle_root.c_str(), sink);
+    dsh_runtime_t *rt = dsh_runtime_new(bundle_root.c_str(), sink);
     ScenarioResult res;
-    if (smoke == nullptr || spike == nullptr) {
+    if (smoke == nullptr || rt == nullptr) {
         res.verdict = std::string(DSH_SCENARIO_SESSION) + " FAIL error=\"runtime init failed\"";
         dsh_smoke_free(smoke);
-        if (spike != nullptr) dsh_spike_free(spike);
+        if (rt != nullptr) dsh_runtime_free(rt);
         return res;
     }
     int lines_before = sink_ctx->lines;
-    res = run_smoke_scenario(spike, bundle_root, DSH_SCENARIO_SESSION,
+    res = run_smoke_scenario(rt, bundle_root, DSH_SCENARIO_SESSION,
                              DSH_ENTRY_SESSION, smoke, sink_ctx,
                              DSH_HOST_INFO_EVENT);
-    res.verdict = verdict_line(DSH_SCENARIO_SESSION, res, sink_ctx->lines - lines_before, spike);
-    dsh_spike_free(spike);
+    res.verdict = verdict_line(DSH_SCENARIO_SESSION, res, sink_ctx->lines - lines_before, rt);
+    dsh_runtime_free(rt);
     dsh_smoke_free(smoke);
     return res;
 }
@@ -305,7 +305,7 @@ napi_value start_spike(napi_env env, napi_callback_info info) {
         OH_LOG_WARN(LOG_APP, "capture file not writable: %{public}s", capture_path);
     }
 
-    dsh_spike_sink sink = {sink_on_log, &sink_ctx};
+    dsh_runtime_sink sink = {sink_on_log, &sink_ctx};
     ScenarioResult m1 = run_m1(bundle_root, &sink, &sink_ctx);
     ScenarioResult m2 = run_m2(bundle_root, &sink, &sink_ctx, fs_root);
     ScenarioResult session = run_session(bundle_root, &sink, &sink_ctx, fs_root);
@@ -317,9 +317,9 @@ napi_value start_spike(napi_env env, napi_callback_info info) {
      * unaffected — it is the ArkTS verdict Text, which the same release
      * branch in Index.ets never renders. */
 #ifndef DSH_RELEASE
-    OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", m1.verdict.c_str());
-    OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", m2.verdict.c_str());
-    OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", session.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", m1.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", m2.verdict.c_str());
+    OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", session.verdict.c_str());
 #endif
     if (sink_ctx.capture != nullptr) {
         fclose(sink_ctx.capture);
@@ -358,7 +358,7 @@ struct PhaseHandlers {
 };
 
 struct HostPhase {
-    dsh_spike_t *spike = nullptr;
+    dsh_runtime_t *rt = nullptr;
     dsh_smoke_backend_t *smoke = nullptr;
     FILE *capture = nullptr;
     int lines = 0;
@@ -367,7 +367,7 @@ struct HostPhase {
     PhaseHandlers handlers;
     char bundle_root[1024] = {0};
     /* The phase's scenario label — the verdict line names it (drive-binding
-     * watches for `dsh.spike.verdict: <scenario>`). */
+     * watches for `dsh.runtime.verdict: <scenario>`). */
     char scenario[64] = {0};
 };
 
@@ -433,23 +433,23 @@ void phase_on_forward(void *ud, int call_id, const char *name, const char *args)
  * or quiesces waiting on the embedder (host.info, app.state, a UI settle,
  * a bus message) — the later-tick pattern, driven per event. */
 int phase_drive(HostPhase *p) {
-    if (p->spike == nullptr) return -1;
+    if (p->rt == nullptr) return -1;
     for (;;) {
-        if (dsh_spike_pump(p->spike) != 0) {
+        if (dsh_runtime_pump(p->rt) != 0) {
             OH_LOG_ERROR(LOG_APP, "phase: pump failed: %{public}s",
-                         dsh_spike_error(p->spike));
+                         dsh_runtime_error(p->rt));
             return -1;
         }
-        if (dsh_spike_complete(p->spike)) break;
+        if (dsh_runtime_complete(p->rt)) break;
         int served = dsh_smoke_drain(p->smoke);
         if (served < 0) {
             OH_LOG_ERROR(LOG_APP, "phase: drain failed: %{public}s",
-                         dsh_spike_error(p->spike));
+                         dsh_runtime_error(p->rt));
             return -1;
         }
         if (served == 0) break; /* parked — the next mutator re-drives */
     }
-    if (!dsh_spike_complete(p->spike)) return 0;
+    if (!dsh_runtime_complete(p->rt)) return 0;
     /* The phase verdict is a drive's terminal evidence, so a Release build
      * keeps none of it (AGENTS.md constraint 5, rules.md rule L4) — this is
      * the path a user-facing launch actually reaches (the official serving
@@ -461,23 +461,23 @@ int phase_drive(HostPhase *p) {
 #ifndef DSH_RELEASE
         const char *scenario = p->scenario[0] != 0 ? p->scenario : DSH_SCENARIO_BINDING;
         std::string v = std::string(scenario) +
-                        (dsh_spike_pass(p->spike) ? " PASS" : " FAIL");
+                        (dsh_runtime_pass(p->rt) ? " PASS" : " FAIL");
         v += " engine=" + std::string(DSH_ENGINE_NAME);
         v += " version=" + std::string(DSH_ENGINE_VERSION);
-        v += " complete=" + std::to_string(dsh_spike_complete(p->spike));
-        v += " pass=" + std::to_string(dsh_spike_pass(p->spike));
+        v += " complete=" + std::to_string(dsh_runtime_complete(p->rt));
+        v += " pass=" + std::to_string(dsh_runtime_pass(p->rt));
         v += " logLines=" + std::to_string(p->lines);
-        if (!dsh_spike_pass(p->spike) && strlen(dsh_spike_error(p->spike)) > 0) {
-            v += std::string(" error=\"") + dsh_spike_error(p->spike) + "\"";
+        if (!dsh_runtime_pass(p->rt) && strlen(dsh_runtime_error(p->rt)) > 0) {
+            v += std::string(" error=\"") + dsh_runtime_error(p->rt) + "\"";
         }
-        OH_LOG_INFO(LOG_APP, "dsh.spike.verdict: %{public}s", v.c_str());
+        OH_LOG_INFO(LOG_APP, "dsh.runtime.verdict: %{public}s", v.c_str());
 #endif
     }
-    return dsh_spike_pass(p->spike) ? 1 : 2;
+    return dsh_runtime_pass(p->rt) ? 1 : 2;
 }
 
 int phase_expect_active(napi_env env) {
-    if (!g_phase_active || g_phase.spike == nullptr) {
+    if (!g_phase_active || g_phase.rt == nullptr) {
         napi_throw_error(env, "EINVAL", "binding phase is not active");
         return 0;
     }
@@ -533,15 +533,15 @@ napi_value host_start(napi_env env, napi_callback_info info) {
     if (ok && g_phase.smoke != nullptr) {
         dsh_smoke_set_descriptor_json(g_phase.smoke, descriptor);
         dsh_smoke_set_forward(g_phase.smoke, phase_on_forward, &g_phase);
-        dsh_spike_sink sink = {phase_sink_on_log, &g_phase};
-        g_phase.spike = dsh_spike_new(bundle_root, &sink);
+        dsh_runtime_sink sink = {phase_sink_on_log, &g_phase};
+        g_phase.rt = dsh_runtime_new(bundle_root, &sink);
     }
-    if (!ok || g_phase.smoke == nullptr || g_phase.spike == nullptr) {
+    if (!ok || g_phase.smoke == nullptr || g_phase.rt == nullptr) {
         napi_throw_error(env, "EIO", "binding phase init failed");
         return nullptr;
     }
-    dsh_smoke_attach(g_phase.smoke, g_phase.spike);
-    dsh_spike_set_bus_sink(g_phase.spike, phase_on_bus, &g_phase);
+    dsh_smoke_attach(g_phase.smoke, g_phase.rt);
+    dsh_runtime_set_bus_sink(g_phase.rt, phase_on_bus, &g_phase);
     snprintf(g_phase.bundle_root, sizeof(g_phase.bundle_root), "%s", bundle_root);
     if (argc >= 7) {
         phase_str_arg(env, argv[6], g_phase.scenario, sizeof(g_phase.scenario),
@@ -569,15 +569,15 @@ napi_value host_eval(napi_env env, napi_callback_info info) {
         napi_throw_error(env, "EIO", "cannot read entry");
         return nullptr;
     }
-    int rc = dsh_spike_eval(g_phase.spike, entry, source);
+    int rc = dsh_runtime_eval(g_phase.rt, entry, source);
     free(source);
     if (rc != 0) {
-        // The eval exception text dies with dsh_spike_error unless someone
+        // The eval exception text dies with dsh_runtime_error unless someone
         // reads it — an eval failure with no named cause starves the leg's
         // whole deadline looking like a hang (the parity leg's 2026-09-30
         // lesson: "scenario eval failed" and nothing else).
         OH_LOG_ERROR(LOG_APP, "phase: eval %{public}s failed: %{public}s",
-            entry, dsh_spike_error(g_phase.spike));
+            entry, dsh_runtime_error(g_phase.rt));
     }
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     napi_value out;
@@ -609,12 +609,12 @@ napi_value host_event(napi_env env, napi_callback_info info) {
         napi_throw_error(env, "EINVAL", "event read failed");
         return nullptr;
     }
-    int rc = dsh_spike_gateway_event(g_phase.spike, json);
+    int rc = dsh_runtime_gateway_event(g_phase.rt, json);
     free(json);
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     if (status < 0) {
         OH_LOG_ERROR(LOG_APP, "phase: gateway event failed: %{public}s",
-                     dsh_spike_error(g_phase.spike));
+                     dsh_runtime_error(g_phase.rt));
     }
     napi_value out;
     napi_create_int32(env, status, &out);
@@ -645,12 +645,12 @@ napi_value host_bus_deliver(napi_env env, napi_callback_info info) {
         napi_throw_error(env, "EINVAL", "bus line read failed");
         return nullptr;
     }
-    int rc = dsh_spike_bus_deliver(g_phase.spike, line);
+    int rc = dsh_runtime_bus_deliver(g_phase.rt, line);
     free(line);
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     if (status < 0) {
         OH_LOG_ERROR(LOG_APP, "phase: bus deliver failed: %{public}s",
-                     dsh_spike_error(g_phase.spike));
+                     dsh_runtime_error(g_phase.rt));
     }
     napi_value out;
     napi_create_int32(env, status, &out);
@@ -670,11 +670,11 @@ napi_value host_settle(napi_env env, napi_callback_info info) {
         !phase_str_arg(env, argv[3], json, sizeof(json), "payload too long")) {
         return nullptr;
     }
-    int rc = dsh_spike_gateway_settle(g_phase.spike, call_id, ok ? 1 : 0, json);
+    int rc = dsh_runtime_gateway_settle(g_phase.rt, call_id, ok ? 1 : 0, json);
     int status = (rc == 0) ? phase_drive(&g_phase) : -1;
     if (status < 0) {
         OH_LOG_ERROR(LOG_APP, "phase: settle failed: %{public}s",
-                     dsh_spike_error(g_phase.spike));
+                     dsh_runtime_error(g_phase.rt));
     }
     napi_value out;
     napi_create_int32(env, status, &out);
@@ -719,8 +719,8 @@ napi_value host_status(napi_env env, napi_callback_info info) {
     char buf[512];
     snprintf(buf, sizeof(buf),
              "{\"complete\":%d,\"pass\":%d,\"lines\":%d,\"error\":\"%.200s\"}",
-             dsh_spike_complete(g_phase.spike), dsh_spike_pass(g_phase.spike),
-             g_phase.lines, dsh_spike_error(g_phase.spike));
+             dsh_runtime_complete(g_phase.rt), dsh_runtime_pass(g_phase.rt),
+             g_phase.lines, dsh_runtime_error(g_phase.rt));
     napi_value out;
     napi_create_string_utf8(env, buf, strlen(buf), &out);
     return out;
@@ -732,7 +732,7 @@ napi_value host_free(napi_env env, napi_callback_info info) {
         napi_throw_error(env, "EINVAL", "binding phase is not active");
         return nullptr;
     }
-    if (g_phase.spike != nullptr) dsh_spike_free(g_phase.spike);
+    if (g_phase.rt != nullptr) dsh_runtime_free(g_phase.rt);
     if (g_phase.smoke != nullptr) dsh_smoke_free(g_phase.smoke);
     if (g_phase.capture != nullptr) fclose(g_phase.capture);
     if (g_phase.handlers.on_bus != nullptr) {
@@ -770,16 +770,16 @@ static napi_value Init(napi_env env, napi_value exports) {
 
 }  /* extern "C" */
 
-static napi_module dsh_spike_module;
+static napi_module dsh_runtime_module;
 
-/* Runs at .so load time, before the ArkTS side imports libspike.so. */
+/* Runs at .so load time, before the ArkTS side imports libdruntime.so. */
 extern "C" __attribute__((constructor)) void RegisterDshSpikeModule(void) {
-    dsh_spike_module.nm_version = 1;
-    dsh_spike_module.nm_flags = 0;
-    dsh_spike_module.nm_filename = nullptr;
-    dsh_spike_module.nm_register_func = Init;
-    dsh_spike_module.nm_modname = "spike";
-    dsh_spike_module.nm_priv = nullptr;
-    dsh_spike_module.reserved[0] = 0;
-    napi_module_register(&dsh_spike_module);
+    dsh_runtime_module.nm_version = 1;
+    dsh_runtime_module.nm_flags = 0;
+    dsh_runtime_module.nm_filename = nullptr;
+    dsh_runtime_module.nm_register_func = Init;
+    dsh_runtime_module.nm_modname = "dsh";
+    dsh_runtime_module.nm_priv = nullptr;
+    dsh_runtime_module.reserved[0] = 0;
+    napi_module_register(&dsh_runtime_module);
 }

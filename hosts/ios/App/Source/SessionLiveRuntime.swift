@@ -27,7 +27,7 @@ final class SessionLiveRuntime {
     private var dist: CarrierWebDist?
     private var plugins: CarrierPlugins?
     private weak var webView: WKWebView?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
     private var finished = false
     private var token = ""
@@ -41,7 +41,7 @@ final class SessionLiveRuntime {
         self.webView = webView
     }
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         self.completion = completion
         armWatchdog()
         do {
@@ -57,10 +57,10 @@ final class SessionLiveRuntime {
     /// the scripted llm endpoint), starts listening, and boots the runtime
     /// half once the port is bound (its runtime.config needs the port).
     private func startCarrier() throws {
-        let root = try SpikeBundleStager.stage()
+        let root = try BundleStager.stage()
         let distRoot = try OfficialWebRuntime.locateDist()
         token = OfficialWebRuntime.randomToken()
-        let plugins = CarrierPlugins.staged(spikeRoot: root)
+        let plugins = CarrierPlugins.staged(dshRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         comboURL = OfficialWebRuntime.batchURL(graphJSON: config.bootGraphJSON)
         let dist = CarrierWebDist(
@@ -283,7 +283,7 @@ final class SessionLiveRuntime {
             self?.runtimeBusPosted(msg)
         }
         drive.onFailure = { [weak self] message in
-            self?.finish(self?.failOutcome(message) ?? SpikeOutcome(
+            self?.finish(self?.failOutcome(message) ?? JsOutcome(
                 completed: false, passed: false, error: message, canonicalLines: []))
         }
         drive.onComplete = { [weak self] passed, message in
@@ -298,7 +298,7 @@ final class SessionLiveRuntime {
                      "mockLlmUrl": "http://127.0.0.1:\(server.port)/mock-llm",
                      "apiKey": CarrierServer.mockLlmKey,
                      "containerRoot": bundleRoot.path],
-            scenario: dsh_spike_res_scenario_b3_web_live_js,
+            scenario: dsh_runtime_res_scenario_b3_web_live_js,
             scenarioPath: "scenario/session-web-live.js",
             gateway: true)
     }
@@ -358,7 +358,7 @@ final class SessionLiveRuntime {
             finish(failOutcome(message))
         case .pass(let events):
             for (event, fields) in events { eventLog.emit(event, fields) }
-            finish(SpikeOutcome(
+            finish(JsOutcome(
                 completed: true, passed: true, error: "",
                 canonicalLines: eventLog.lines
             ))
@@ -378,22 +378,22 @@ final class SessionLiveRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: session-live FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: session-live FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: session-live FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: session-live FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message,
             canonicalLines: eventLog.lines
         )
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         server.stop()
-        print("spike: session-live drive finished verdict=\(outcome.verdict)")
+        print("rt: session-live drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         sessionLive?.stop()
         DispatchQueue.main.async { [weak self] in

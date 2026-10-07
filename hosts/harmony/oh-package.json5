@@ -1,8 +1,8 @@
 {
   "modelVersion": "5.0.0",
-  "name": "dshmobile-spike",
+  "name": "dshmobile-dsh",
   "version": "1.0.0",
-  "description": "dsh-mobile M1 spike: quickjs host verified on the HarmonyOS emulator",
+  "description": "dsh-mobile M1 dsh: quickjs host verified on the HarmonyOS emulator",
   "main": "",
   "author": "",
   "license": "",

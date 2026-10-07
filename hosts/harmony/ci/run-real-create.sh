@@ -1,7 +1,7 @@
 #!/bin/sh
 # run-real-create.sh — the CREATE-mode live demo (windows-test-plan follow-up):
 # scenario `real.create` boots the FULL spine (creation row mounted) on the
-# STAGED real backend, mounts the whale creation client, and runs ONE REAL
+# STAGED real backend, mounts the compact creation client, and runs ONE REAL
 # turn — "create a Pomodoro clock" — streamed into the page. A DEMO leg: no
 # one-to-one manifest (a creative turn's records are the model's own); the
 # green path is the realcreate/summary marker, the evidence is the pulled
@@ -16,10 +16,10 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 OUT=${1:-hosts/harmony/artifacts/windows-real-create}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-real-create-capture.log
-CONFIG_REMOTE=$BASE/files/spike-fs/llm-live-stream/config.json
+CONFIG_REMOTE=$BASE/files/dsh-fs/llm-live-stream/config.json
 LEG=real.create
 STREAM=/tmp/dsh-harmony-real-create-hilog.txt
 MAX_ATTEMPTS=${DSH_M2_LLM_ATTEMPTS:-2}
@@ -165,7 +165,7 @@ run_attempt() {
     deadline=$(( $(date +%s) + 900 ))
     next_wake=0
     while :; do
-        grep -q "dsh.spike.verdict: $LEG " "$STREAM" && break
+        grep -q "dsh.runtime.verdict: $LEG " "$STREAM" && break
         if [ "$(date +%s)" -ge "$deadline" ]; then
             return 1
         fi
@@ -231,7 +231,7 @@ wait "$streamer" 2>/dev/null || true
 streamer=""
 trap cleanup EXIT INT TERM
 
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 grep -q "realcreate/summary" "$OUT/capture.txt" \
     || die "the capture carries no realcreate/summary marker"
 cat "$OUT/results.txt"
@@ -239,7 +239,7 @@ cat "$OUT/results.txt"
 # The truncation-proof second capture: the app's own sink file, pulled from
 # the sandbox (same convention as run-host-e2e.sh).
 "$HDC" file recv "$CAPTURE_REMOTE" "$OUT/capture.txt" >/dev/null
-grep '^dsh.spike.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
+grep '^dsh.runtime.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
 
 # ---- the key-leak re-check over the RAW streams -----------------------------
 # First, before any verdict check: a leak is the one failure that must be
@@ -286,7 +286,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "real.create (CREATE-mode demo)",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "real-create (demo)", "verdict": "capture.txt", "pass": true }
     { "manifest": "real-create (demo)", "verdict": "capture.txt", "pass": true }

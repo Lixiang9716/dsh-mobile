@@ -19,8 +19,8 @@ enum SessionWriteProbe {
     static let expectedReply = ProcessInfo.processInfo.environment["DSH_E2E_EXPECT"]
         ?? "Hello from upstream"
     /// The seeded workspace's title: the profile container's basename
-    /// (the staged spike bundle directory).
-    static let workspaceTitle = "spike"
+    /// (the staged rt bundle directory).
+    static let workspaceTitle = "dsh"
 
     /// Defines the three page functions (each leg its own constant so every
     /// function stays small; the one script installs all of them).

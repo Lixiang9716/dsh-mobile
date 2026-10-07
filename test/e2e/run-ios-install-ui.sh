@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-install-ui.sh — local M3 "on-device fetch-install" E2E driver.
 #
-# Builds DSHSpike, launches it on a booted simulator IN SESSION MODE with
+# Builds DSHHost, launches it on a booted simulator IN SESSION MODE with
 # the install-full-cycle PROFILE (-dsh-mode session -dsh-profile install-full-cycle). The
 # profile's cordis.patch.json (the M3 config layer) selects the ACTIVE Web
 # Client (mini) and the toolbar slot allow-set; the carrier SELF-HOSTS the
@@ -29,8 +29,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/install-full-cycle"
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -74,12 +74,12 @@ fail_deadline() {
 
 # ---- 1-3. vendor, build, install -------------------------------------------
 log "1/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 regenerate embedded bundle + xcodebuild (simulator, udid $UDID)"
   (cd hosts/ios && python3 Tools/gen_bundle_header.py)
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -107,7 +107,7 @@ xcrun simctl launch --terminate-running-process \
 
 # Markers: config.resolved (patch applied) → page-loaded shot; http.served
 # (the carrier served the package over loopback) → mid-install shot;
-# "spike: sequence session=" → final shot, then checkers.
+# "dsh: sequence session=" → final shot, then checkers.
 log "waiting for the config-resolved carrier event (deadline 300s)"
 wait_line "config.resolved" 300 || fail_deadline "config.resolved never appeared"
 log "waiting for the Web Client mount"
@@ -118,13 +118,13 @@ log "waiting for the carrier to serve the self-hosted package"
 wait_line "http.served" 120 || fail_deadline "carrier never served the package"
 shot 02-fetch-install
 log "waiting for session completion (terminal marker)"
-wait_line "spike: sequence session=" 120 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence session=" 120 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 03-final-transcript
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
   if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then

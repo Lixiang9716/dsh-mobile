@@ -1,6 +1,6 @@
 /*
  * gateway_smoke.cpp — the HarmonyOS gateway-bridge smoke backend (M5).
- * Platform twin of runtime/spike/host/main_cli.c's smoke backend; see
+ * Platform twin of runtime/dsh/host/main_cli.c's smoke backend; see
  * gateway_smoke.h. Only the primitives gateway.bridge-smoke exercises are
  * implemented; everything else fails with the contract's error codes
  * (contract/primitives.md §3): keychain honestly "unavailable" (the
@@ -11,10 +11,10 @@
 #undef LOG_DOMAIN
 #define LOG_DOMAIN 0xD5E0
 #undef LOG_TAG
-#define LOG_TAG "dsh.spike"
+#define LOG_TAG "dsh.runtime"
 
 extern "C" {
-#include "dsh_spike_host.h"
+#include "dsh_runtime_host.h"
 #include "gateway_smoke.h"
 }
 
@@ -36,7 +36,7 @@ struct dsh_smoke_req {
 };
 
 struct dsh_smoke_backend {
-    dsh_spike_t *spike;
+    dsh_runtime_t *rt;
     char *fs_root;
     dsh_smoke_req *head;
     dsh_smoke_req *tail;
@@ -172,9 +172,9 @@ static int json_bool(const char *json, const char *key, int dflt) {
 
 static void smoke_settle(dsh_smoke_backend *b, int call_id, int ok,
                          const char *payload) {
-    if (dsh_spike_gateway_settle(b->spike, call_id, ok, payload) == 0) return;
+    if (dsh_runtime_gateway_settle(b->rt, call_id, ok, payload) == 0) return;
     b->failed = 1;
-    OH_LOG_ERROR(LOG_APP, "smoke: settle failed: %{public}s", dsh_spike_error(b->spike));
+    OH_LOG_ERROR(LOG_APP, "smoke: settle failed: %{public}s", dsh_runtime_error(b->rt));
 }
 
 static void smoke_reject(dsh_smoke_backend *b, int call_id, const char *primitive,
@@ -605,11 +605,11 @@ void dsh_smoke_set_descriptor_json(dsh_smoke_backend_t *b,
     b->descriptor_json = strdup(descriptor_json);
 }
 
-void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_spike_t *spike) {
+void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_runtime_t *rt) {
     if (!b) return;
-    b->spike = spike;
-    dsh_spike_set_gateway_dispatch(spike, smoke_on_call, b);
-    dsh_spike_set_descriptor(spike, b->descriptor_json != nullptr
+    b->rt = rt;
+    dsh_runtime_set_gateway_dispatch(rt, smoke_on_call, b);
+    dsh_runtime_set_descriptor(rt, b->descriptor_json != nullptr
                                         ? b->descriptor_json
                                         : DSH_SMOKE_DESCRIPTOR);
 }

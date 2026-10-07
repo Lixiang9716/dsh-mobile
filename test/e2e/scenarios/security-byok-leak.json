@@ -1,7 +1,7 @@
 {
  "scenario": "security.byok-leak",
  "extract": {
-  "prefix": "dsh.spike.log:"
+  "prefix": "dsh.runtime.log:"
  },
  "expect": [
   { "event": "leak.saved", "match": { "ref": "dsh.llm/byok-route" } },

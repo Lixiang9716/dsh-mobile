@@ -32,8 +32,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/agent-flow"
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 MANIFEST=test/e2e/scenarios/agent-flow.json
 MOCK_KEY="mock-key-0001"
 MOCK_WAIT_DEADLINE_SECONDS=15
@@ -72,13 +72,13 @@ fail_deadline() {
 # ---- 1-3. vendor, regen the bundle header (the agent-flow scenario and the
 # skill closure embed), build, install
 log "1/5 vendor + regenerate the bundle header (embeds scenario/agent-flow.js + the skill closure)"
-runtime/spike/vendor/ensure.sh
-runtime/spike/vendor/ensure-dsh.sh
+runtime/dsh/vendor/ensure.sh
+runtime/dsh/vendor/ensure-dsh.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -96,7 +96,7 @@ MOCK_LOG="$(mktemp /tmp/dsh-mock-agent-flow.XXXXXX)"
 DSH_MOCK_SEQUENCE='success tool_call_success success' \
 DSH_MOCK_TOOL_NAME='skill' \
 DSH_MOCK_TOOL_ARGS='{"name":"greeter"}' \
-    node runtime/spike/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
+    node runtime/dsh/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() {
   kill "$MOCK_PID" 2>/dev/null || true
@@ -158,13 +158,13 @@ node test/e2e/check.mjs \
   --log "$LOG" \
   --out "$ART/verdict.json"
 
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 
 EVENTS="$(grep -c '"scenario":"agent.flow"' "$LOG" || true)"
 cat > "$ART/receipt.json" <<EOF
 {
   "host": "ios-simulator",
-  "engine": "quickjs-ng (DSHSpike, gateway httpFetch → host loopback mock)",
+  "engine": "quickjs-ng (DSHHost, gateway httpFetch → host loopback mock)",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned)",
   "scenario": "agent.flow",
   "proves": [

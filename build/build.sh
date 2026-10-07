@@ -5,7 +5,7 @@
 # one-core-three-hosts model made executable):
 #
 #   sync      re-stage the host's committed closure from the canonical
-#             runtime/spike tree (byte-identical, single source — D6/D9)
+#             runtime/dsh tree (byte-identical, single source — D6/D9)
 #   compile   the platform's own toolchain build, the exact command its
 #             dev/<platform> CI workflow runs
 #   test      the platform's log-verified e2e leg (never screenshots)
@@ -78,7 +78,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 ios_toolchain() {
     need xcodebuild "iOS compiles only on macOS with Xcode (CI: dev-ios.yml on macos-15)"
-    need xcodegen "brew install xcodegen (regenerates DSHSpike.xcodeproj from project.yml)"
+    need xcodegen "brew install xcodegen (regenerates DSHHost.xcodeproj from project.yml)"
 }
 
 android_toolchain() {
@@ -108,7 +108,7 @@ stage_sync() {
     case "$1" in
         ios)
             ios_toolchain
-            echo "build: sync ios (embed the spike bundle as C arrays + regen the project)"
+            echo "build: sync ios (embed the dsh bundle as C arrays + regen the project)"
             (cd hosts/ios && ./gen.sh) ;;
         android)
             echo "build: sync android (stage the spine closure into assets)"
@@ -118,7 +118,7 @@ stage_sync() {
             hosts/harmony/ci/vendor-official.sh --closure-only ;;
         core)
             echo "build: sync core (verify the vendored pins)"
-            (cd runtime/spike && ./vendor/ensure.sh) ;;
+            (cd runtime/dsh && ./vendor/ensure.sh) ;;
         *)
             echo "::error::build: sync: unknown platform '$1' (want ios|android|harmony|core)" >&2
             return 1 ;;
@@ -136,8 +136,8 @@ stage_compile() {
             (cd hosts/ios
              xb_log=$(mktemp /tmp/dsh-xcodebuild.XXXXXX)
              xcodebuild build \
-                 -project DSHSpike.xcodeproj \
-                 -scheme DSHSpike \
+                 -project DSHHost.xcodeproj \
+                 -scheme DSHHost \
                  -destination 'generic/platform=iOS Simulator' \
                  -derivedDataPath DerivedData \
                  >"$xb_log" 2>&1 || { xb_st=$?; tail -30 "$xb_log"; rm -f "$xb_log"; exit "$xb_st"; }
@@ -158,10 +158,10 @@ stage_compile() {
             core_toolchain
             if [ "$RELEASE" = "1" ]; then
                 echo "build: compile core (C host CLI, debug + release flavors)"
-                (cd runtime/spike && ./host/build.sh && ./host/build.sh --release)
+                (cd runtime/dsh && ./host/build.sh && ./host/build.sh --release)
             else
                 echo "build: compile core (C host CLI, debug flavor)"
-                (cd runtime/spike && ./host/build.sh)
+                (cd runtime/dsh && ./host/build.sh)
             fi ;;
         *)
             echo "::error::build: compile: unknown platform '$1' (want ios|android|harmony|core)" >&2
@@ -178,20 +178,20 @@ stage_test() {
         android)
             android_toolchain
             need adb "the e2e leg installs the APK on an emulator (CI boots a system-images;android-35 emulator)"
-            echo "build: test android (run-spike-e2e.sh: the regression trio, log-verified)"
-            hosts/android/ci/run-spike-e2e.sh ;;
+            echo "build: test android (run-dsh-e2e.sh: the regression trio, log-verified)"
+            hosts/android/ci/run-dsh-e2e.sh ;;
         harmony)
             harmony_toolchain
             echo "build: test harmony (run-host-e2e.sh: the on-device legs, log-verified)"
             hosts/harmony/ci/run-host-e2e.sh ;;
         core)
             echo "build: test core (the CLI proof legs over the vendored upstream spine)"
-            runtime/spike/ci/run-upstream-e2e.sh
-            runtime/spike/ci/run-upstream-boot-e2e.sh
-            runtime/spike/ci/run-settings-surfaces-e2e.sh
-            runtime/spike/ci/run-open-design-e2e.sh
-            runtime/spike/ci/run-office-e2e.sh
-            runtime/spike/ci/run-shim-exposure-probe.sh ;;
+            runtime/dsh/ci/run-upstream-e2e.sh
+            runtime/dsh/ci/run-upstream-boot-e2e.sh
+            runtime/dsh/ci/run-settings-surfaces-e2e.sh
+            runtime/dsh/ci/run-open-design-e2e.sh
+            runtime/dsh/ci/run-office-e2e.sh
+            runtime/dsh/ci/run-shim-exposure-probe.sh ;;
         *)
             echo "::error::build: test: unknown platform '$1' (want ios|android|harmony|core)" >&2
             return 1 ;;

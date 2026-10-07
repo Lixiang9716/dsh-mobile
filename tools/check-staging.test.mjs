@@ -102,7 +102,7 @@ describe('check-staging counterexamples: manifest verdicts', () => {
 
   it('a stale row: manifest names a file the tree renamed → STALE, exit 1 blocked', () => {
     const fx = freshFixture();
-    fx.remove('hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/leg-a.js');
+    fx.remove('hosts/harmony/entry/src/main/resources/rawfile/dsh/scenario/leg-a.js');
     const r = fx.run('check-staging.mjs', ['--block', 'harmony']);
     expect(r.status).toBe(1);
     expect(r.stdout).toContain('STALE scenario/leg-a.js — no such file');
@@ -121,7 +121,7 @@ describe('check-staging counterexamples: graph and surface verdicts', () => {
   it('a missing root: a staged scenario entry that does not exist → MISSING ROOTS', () => {
     const fx = freshFixture();
     // android's scenario rows ARE its roots; rename one on disk only.
-    fx.remove('runtime/spike/scenario/leg-a.js');
+    fx.remove('runtime/dsh/scenario/leg-a.js');
     const r = fx.run('check-staging.mjs', ['--block', 'android']);
     expect(r.status).toBe(1);
     expect(r.stdout).toContain('MISSING ROOTS (staged scenario entry does not exist)');

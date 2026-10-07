@@ -13,7 +13,7 @@
 # integration — the exact invocation #289 used); with shellcheck absent the
 # pass covers actionlint's own checks and says so, loudly.
 #
-# Availability (skip-on-absent precedent: runtime/spike/ci/check-quickjs-boot-parse.sh):
+# Availability (skip-on-absent precedent: runtime/dsh/ci/check-quickjs-boot-parse.sh):
 # agent machines vary; a missing actionlint binary SKIPs loudly (exit 0 with
 # a named reason) instead of faking green. CI installs the checksum-verified
 # pinned release (v1.7.12) in .github/workflows/gov.yml before `gov run`, so

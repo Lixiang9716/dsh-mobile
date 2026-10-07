@@ -2,7 +2,7 @@
   "comment": "test/e2e/testdata/ui-probe-occlusion.wda.json — the #179 class on the WDA face: an unlabeled-typed but text-carrying native banner ('Other' with a StaticText child) paints over the WebView's top 120px, covering the Close button's row. Probe names the banner an occluder; the checker fails ui.occlusion.",
   "value": {
     "type": "Window",
-    "name": "DSHSpike",
+    "name": "DSHHost",
     "frame": { "x": 0, "y": 0, "width": 390, "height": 844 },
     "children": [
       {

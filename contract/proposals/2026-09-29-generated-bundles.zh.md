@@ -7,12 +7,12 @@
 ## 动机
 
 iOS 宿主的生成字节目前是入库的：`hosts/ios/App/Generated/SpikeBundle.c` +
-`SpikeBundle.h`（以 C 字节数组嵌入的 runtime/spike closure），以及
-`hosts/ios/DSHSpike.xcodeproj/`（`project.pbxproj` + workspace 数据，由
+`SpikeBundle.h`（以 C 字节数组嵌入的 runtime/dsh closure），以及
+`hosts/ios/DSHHost.xcodeproj/`（`project.pbxproj` + workspace 数据，由
 `xcodegen generate` 从 `project.yml` 再生成）。把它们放进去的决策记录在 M1
-spike-embed note
-（`.agents/notes/implemented/feature/2026-09-19-ios-m1-spike-embed.md:37-39`）：
-*"生成的 `DSHSpike.xcodeproj` ALSO 入库，让 CI 和 fresh clone 不装 xcodegen
+dsh-embed note
+（`.agents/notes/implemented/feature/2026-09-19-ios-m1-dsh-embed.md:37-39`）：
+*"生成的 `DSHHost.xcodeproj` ALSO 入库，让 CI 和 fresh clone 不装 xcodegen
 也能构建"*——并且把"只提交 `project.yml`、在 CI 里生成"作为替代方案明确
 拒绝。`closures` gate 的 iOS leg（`build/check-closures.sh:41-61`）就架在这个
 选择之上：确定性地再生成 bundle 并要求 `git diff --quiet`，让入库副本成为
@@ -39,14 +39,14 @@ spike-embed note
   纯 bundle 的推送（`908c3bdd` 修复是单文件提交）事实上是 100%。简报的
   "99.9% of push payload" 就是这一类。
 - **一个 amend 顺序陷阱**（来自本轮运行简报；台账里记录的是它的同类）：
-  碰过 `runtime/spike` 之后的任何 amend 都多了一条
+  碰过 `runtime/dsh` 之后的任何 amend 都多了一条
   "先再生成的再 amend" 的顺序约束，走反了就会把陈旧 bundle 装进被 amend 的
   提交——与 surprise 台账已记录的同一失效类（2026-09-27：并行会话的重排一度
   把陈旧的 `SpikeBundle.c` 推上了分支）。
 
 本分支在飞的 `.gitattributes` 变更（生成路径标 `binary`/
 `linguist-generated`）治的是 review 渲染这个症状：diff 显示成 `Bin` 而不是
-六位数的行噪声。但字节照样传输、照样扰动 pack、照样让每次碰 runtime/spike
+六位数的行噪声。但字节照样传输、照样扰动 pack、照样让每次碰 runtime/dsh
 都变成一个 64 MB 的提交。
 
 **而且前提已经空心化了。** 入库副本的理由是"不用生成就能构建"。但
@@ -72,13 +72,13 @@ CI 路径都靠入库的 `project.pbxproj`（`dev-ios.yml:179`；
 
 1. **停止提交生成字节。** 把
    `hosts/ios/App/Generated/SpikeBundle.c` + `SpikeBundle.h` 与
-   `hosts/ios/DSHSpike.xcodeproj/`（`project.pbxproj`、
+   `hosts/ios/DSHHost.xcodeproj/`（`project.pbxproj`、
    `project.xcworkspace/contents.xcworkspacedata`——`App/Generated` 下两个
    文件加 xcodeproj 下两个：今天共 4 个被跟踪的生成文件）
    移出索引，并把两个路径加进 `.gitignore`。`ish-rootfs.tar.gz` 本就被
    ignore——`App/Generated` 整体变成它今天大部分已经是的东西：构建输出。
 2. **生成成为每个消费者站点的构建职责。** 已提交字节的每一个消费者都已经
-   收敛到同一种命令形态——`xcodebuild -project DSHSpike.xcodeproj`（在前提
+   收敛到同一种命令形态——`xcodebuild -project DSHHost.xcodeproj`（在前提
    P2 里枚举）——所以在每个站点前面加一步 `gen.sh`（vendor 源 →
    `gen_bundle_header.py` → `xcodegen generate`）即可均匀覆盖。pre-build
    phase 保持按构建再生成 bundle，与它今天的做法完全一致；app 的运行时
@@ -100,14 +100,14 @@ CI 路径都靠入库的 `project.pbxproj`（`dev-ios.yml:179`；
   device-plane、install-ui、live-llm、live-session、live-write、
   next-web-mount、official-web-mount、session-mock-llm、upstream-parity、
   upstream-suite、run-ios.sh）全部调用
-  `xcodebuild build -project hosts/ios/DSHSpike.xcodeproj`；
+  `xcodebuild build -project hosts/ios/DSHHost.xcodeproj`；
   `build/build.sh:136`（compile 阶段）与 `build/build.sh:112`（sync 阶段，
   已经跑 `gen.sh`）；`dev-ios.yml:179`；`release-ios.yml:198,206,269,277`。
   字节的其他读者只有被翻转的 gate 本身（`check-closures.sh:42-59`）和
   `dev-ios.yml:77` 的 DerivedData cache key——pbxproj 退跟踪后，后者须改键
   到 `project.yml` + 源文件。
 - **P3——fresh 的 `gen.sh` 有它的输入。** `gen.sh:3-5` 要求先跑
-  `runtime/spike/vendor/ensure.sh`（xcodegen 需要磁盘上的 quickjs 源码才能
+  `runtime/dsh/vendor/ensure.sh`（xcodegen 需要磁盘上的 quickjs 源码才能
   引用它们）。`dev/ios` 已经在构建前 vendor（`dev-ios.yml:159-163`）；被
   翻转的 gate 的生成 leg 需要同样的顺序。
 - **P4——本地裸脚本路径仍然可用。** `run-ios*.sh` 脚本目前假设入库项目
@@ -147,13 +147,13 @@ regen-and-diff 机制存在要检验的性质，而且自那以后每次 gate �
   大字节问题，自包含的 APK/HAP 打包语义（D17："the copies are deliberate
   for self-contained APK/HAP and platform IDEs"）支持保留。`closures` 的
   逐字节比较对两者照旧。本提案只作用于 iOS 生成物。
-- **不改 `runtime/spike` 内容、bundle 布局、pre-build phase 行为。** app 的
+- **不改 `runtime/dsh` 内容、bundle 布局、pre-build phase 行为。** app 的
   运行时路径翻转前后完全一致。
 
 ## 若被接受
 
 本提案推翻的是有记录的决策，因此必须作为一个整体落地：M1 note 的入库项目
-选择（`2026-09-19-ios-m1-spike-embed.md`，alternatives 一节）、09-22 note
+选择（`2026-09-19-ios-m1-dsh-embed.md`，alternatives 一节）、09-22 note
 被拒绝的"让 CI 跑 `gen.sh`"替代方案
 （`2026-09-22-the-ios-release-staging-phase-moves-into.md:62-65`）、以及
 D17 的入库副本替代方案的 iOS leg。接受后，通过 `gov decision add` 落一条

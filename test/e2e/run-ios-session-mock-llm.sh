@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-session-mock-llm.sh — local M2 "first on-device session" E2E driver.
 #
-# Builds DSHSpike, launches it on a booted simulator IN SESSION MODE
+# Builds DSHHost, launches it on a booted simulator IN SESSION MODE
 # (-dsh-mode session), and waits for the Web Client to mount + the
 # session.mock-llm scenario to complete — NO UI interaction: the scenario
 # auto-runs once the mounted page connects (host.info readiness signal),
@@ -32,19 +32,19 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
 CLIENT=default
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
     --art-dir) ART="$2"; shift 2 ;;
     --skip-build) SKIP_BUILD=1; shift ;;
     --client) CLIENT="$2"; shift 2 ;;
-    *) echo "usage: run-ios-session-mock-llm.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|whale|default]" >&2; exit 2 ;;
+    *) echo "usage: run-ios-session-mock-llm.sh [--udid U] [--art-dir D] [--skip-build] [--client mini|compact|default]" >&2; exit 2 ;;
   esac
 done
-[ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] || [ "$CLIENT" = "whale" ] \
-  || { echo "run-ios-session-mock-llm: unknown --client '$CLIENT' (mini|whale|default)" >&2; exit 2; }
+[ "$CLIENT" = "default" ] || [ "$CLIENT" = "mini" ] || [ "$CLIENT" = "compact" ] \
+  || { echo "run-ios-session-mock-llm: unknown --client '$CLIENT' (mini|compact|default)" >&2; exit 2; }
 CARRIER_MANIFEST=test/e2e/scenarios/webclient-mount.json
 CARRIER_STEM=webclient-mount
 LAUNCH_ARGS=()
@@ -54,11 +54,11 @@ if [ "$CLIENT" = "mini" ]; then
   LAUNCH_ARGS=(-dsh-web-client dsh-web-client-mini)
   [ -n "$ART" ] || ART="hosts/ios/artifacts/ui-pluggability"
 fi
-if [ "$CLIENT" = "whale" ]; then
-  CARRIER_MANIFEST=test/e2e/scenarios/whale-mount.json
-  CARRIER_STEM=whale-mount
-  LAUNCH_ARGS=(-dsh-web-client dsh-web-client-whale)
-  [ -n "$ART" ] || ART="hosts/ios/artifacts/whale-mount"
+if [ "$CLIENT" = "compact" ]; then
+  CARRIER_MANIFEST=test/e2e/scenarios/compact-mount.json
+  CARRIER_STEM=compact-mount
+  LAUNCH_ARGS=(-dsh-web-client dsh-web-client-compact)
+  [ -n "$ART" ] || ART="hosts/ios/artifacts/compact-mount"
 fi
 [ -n "$ART" ] || ART="hosts/ios/artifacts/session-mock-llm"
 LOG="$ART/logs.txt"   # derived AFTER arg parsing — --art-dir must apply
@@ -87,11 +87,11 @@ fail_deadline() {
 
 # ---- 1-3. vendor, build, install -------------------------------------------
 log "1/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -114,7 +114,7 @@ xcrun simctl launch --terminate-running-process \
   "$UDID" "$APP_BUNDLE_ID" -dsh-mode session ${LAUNCH_ARGS[@]+"${LAUNCH_ARGS[@]}"} >/dev/null
 
 # Markers: webclient.mounted → page-loaded shot; first ws.token-delta →
-# mid-stream shot; "spike: sequence session=" → final shot, then checkers.
+# mid-stream shot; "dsh: sequence session=" → final shot, then checkers.
 log "waiting for Web Client mount (deadline 300s)"
 wait_line "webclient.mounted" 300 || fail_deadline "webclient.mounted never appeared"
 sleep 1   # let the first frames render before the shot
@@ -126,13 +126,13 @@ wait_line "ws.token-delta" 60 \
 shot 02-mid-stream
 
 log "waiting for session completion (terminal marker)"
-wait_line "spike: sequence session=" 120 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence session=" 120 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 03-final-transcript
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
   if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then
@@ -166,11 +166,11 @@ log "ALL CHECKERS PASS"
 # Acceptance-bar clause 3 (docs/e2e-matrix.md) — via the SHARED writer.
 RECEIPT_STEMS="session-mock-llm webclient-mount"
 [ "$CLIENT" = "mini" ] && RECEIPT_STEMS="$RECEIPT_STEMS ui-client-swap"
-# Whale flips the CARRIER manifest to whale-mount.json — the receipt must name
+# Compact flips the CARRIER manifest to compact-mount.json — the receipt must name
 # the verdict files that actually exist (webclient-mount.json is not written in
 # this mode, and the writer's verdict-<stem>.json lookup would die on it), so
-# whale REPLACES the stem list instead of appending.
-[ "$CLIENT" = "whale" ] && RECEIPT_STEMS="session-mock-llm whale-mount"
+# compact REPLACES the stem list instead of appending.
+[ "$CLIENT" = "compact" ] && RECEIPT_STEMS="session-mock-llm compact-mount"
 # RECEIPT_STEMS is a whitespace-separated stem list — each becomes its own argv entry
 # shellcheck disable=SC2086 # intentional word split
 sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios-session-mock-llm.sh" \

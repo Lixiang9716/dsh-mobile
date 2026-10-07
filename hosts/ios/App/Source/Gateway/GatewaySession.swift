@@ -14,7 +14,7 @@ final class GatewaySession {
     static let watchdogSeconds = 180
 
     /// The entry module + its embedded source (a generated
-    /// dsh_spike_res_* accessor). Defaults keep the m2 gateway-binding drive.
+    /// dsh_runtime_res_* accessor). Defaults keep the m2 gateway-binding drive.
     private let entryModule: String
     private let sourceProvider: () -> String
 
@@ -25,7 +25,7 @@ final class GatewaySession {
     init(
         entryModule: String = GatewaySession.defaultEntry,
         sourceProvider: @escaping () -> String = {
-            String(cString: dsh_spike_res_scenario_m2_js(nil))
+            String(cString: dsh_runtime_res_scenario_m2_js(nil))
         },
         bleRadio: BleRadio? = nil
     ) {
@@ -34,19 +34,19 @@ final class GatewaySession {
         self.bleRadio = bleRadio
     }
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.spike.gateway")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.runtime.gateway")
     private let server = CarrierServer()
-    private let sink = SpikeLogSink()
+    private let sink = RuntimeLogSink()
     private var core: GatewayCore?
     private var notifyPrimitive: NotifyPrimitive?
     private var host: OpaquePointer?
     private var watchdog: DispatchWorkItem?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var finished = false
     private var hostInfoDelivered = false
     private var stateObservers: [NSObjectProtocol] = []
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         runtimeThread.start()
         runtimeThread.async { [self] in
             self.completion = completion
@@ -59,7 +59,7 @@ final class GatewaySession {
     private func startSession() {
         let root: URL
         do {
-            root = try SpikeBundleStager.stage()
+            root = try BundleStager.stage()
             try Self.stageE2ETarget()
             core = try GatewayCore(bundleRoot: root)
         } catch {
@@ -76,8 +76,8 @@ final class GatewaySession {
             return finish(failOutcome("gateway server: \(error)"))
         }
         var cSink = sink.cSink
-        guard let host = dsh_spike_new(root.path, &cSink) else {
-            return finish(failOutcome("dsh_spike_new returned NULL"))
+        guard let host = dsh_runtime_new(root.path, &cSink) else {
+            return finish(failOutcome("dsh_runtime_new returned NULL"))
         }
         self.host = host
         bindAndEval(host)
@@ -86,24 +86,24 @@ final class GatewaySession {
     /// Descriptor before eval (frozen bridge order), then the bus seam, the
     /// gateway dispatch, the entry eval, and the first pump.
     private func bindAndEval(_ host: OpaquePointer) {
-        dsh_spike_set_descriptor(host, Self.descriptorJSON)
-        dsh_spike_set_bus_sink(host, { ud, line in
+        dsh_runtime_set_descriptor(host, Self.descriptorJSON)
+        dsh_runtime_set_bus_sink(host, { ud, line in
             guard let ud, let line else { return }
             let session = Unmanaged<GatewaySession>.fromOpaque(ud).takeUnretainedValue()
             session.busPosted(String(cString: line))
         }, Unmanaged.passUnretained(self).toOpaque())
-        dsh_spike_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
+        dsh_runtime_set_gateway_dispatch(host, { ud, callId, name, argsJSON in
             guard let ud, let name, let argsJSON else { return }
             let session = Unmanaged<GatewaySession>.fromOpaque(ud).takeUnretainedValue()
             session.gatewayCall(
                 callId: Int(callId), name: String(cString: name),
                 argsJSON: String(cString: argsJSON))
         }, Unmanaged.passUnretained(self).toOpaque())
-        if dsh_spike_eval(host, entryModule, sourceProvider()) != 0 {
-            return finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_eval(host, entryModule, sourceProvider()) != 0 {
+            return finish(failOutcome("eval: \(String(cString: dsh_runtime_error(host)))"))
         }
-        if dsh_spike_pump(host) != 0 {
-            return finish(failOutcome("pump: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_pump(host) != 0 {
+            return finish(failOutcome("pump: \(String(cString: dsh_runtime_error(host)))"))
         }
         observeAppState()
         deliverHostInfo()
@@ -136,10 +136,10 @@ final class GatewaySession {
     /// Runtime queue only (frozen bridge: settle is RUNTIME THREAD ONLY).
     private func settle(callId: Int, ok: Bool, json: String) {
         guard let host, !finished else { return }
-        let status = dsh_spike_gateway_settle(host, Int32(callId), ok ? 1 : 0, json)
+        let status = dsh_runtime_gateway_settle(host, Int32(callId), ok ? 1 : 0, json)
         if status != 0 {
             return finish(failOutcome(
-                "gateway settle: \(String(cString: dsh_spike_error(host)))"))
+                "gateway settle: \(String(cString: dsh_runtime_error(host)))"))
         }
         settleCheck("settle")
     }
@@ -147,9 +147,9 @@ final class GatewaySession {
     /// Runtime queue only (frozen bridge: gateway_event is RUNTIME THREAD ONLY).
     private func emitJSON(_ json: String) {
         guard let host, !finished else { return }
-        if dsh_spike_gateway_event(host, json) != 0 {
+        if dsh_runtime_gateway_event(host, json) != 0 {
             return finish(failOutcome(
-                "gateway event: \(String(cString: dsh_spike_error(host)))"))
+                "gateway event: \(String(cString: dsh_runtime_error(host)))"))
         }
         settleCheck("event")
     }
@@ -157,13 +157,13 @@ final class GatewaySession {
     /// After every settle/event: drain microtasks, then check completion.
     private func settleCheck(_ what: String) {
         guard let host, !finished else { return }
-        if dsh_spike_pump(host) != 0 {
+        if dsh_runtime_pump(host) != 0 {
             return finish(failOutcome(
-                "pump after \(what): \(String(cString: dsh_spike_error(host)))"))
+                "pump after \(what): \(String(cString: dsh_runtime_error(host)))"))
         }
-        if dsh_spike_complete(host) != 0 {
-            finish(SpikeOutcome(
-                completed: true, passed: dsh_spike_pass(host) != 0,
+        if dsh_runtime_complete(host) != 0 {
+            finish(JsOutcome(
+                completed: true, passed: dsh_runtime_pass(host) != 0,
                 error: "", canonicalLines: sink.lines))
         }
     }
@@ -242,15 +242,15 @@ final class GatewaySession {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         DispatchQueue.main.async { [weak self] in self?.removeStateObservers() }
-        dsh_spike_free(host)
+        dsh_runtime_free(host)
         host = nil
         server.stop()
-        print("spike: gateway drive finished verdict=\(outcome.verdict)")
+        print("rt: gateway drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         runtimeThread.async { [weak self] in self?.runtimeThread.stop() }
         DispatchQueue.main.async { [weak self] in
@@ -264,11 +264,11 @@ final class GatewaySession {
         stateObservers = []
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: gateway FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: gateway FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: gateway FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: gateway FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message, canonicalLines: sink.lines)
     }
 

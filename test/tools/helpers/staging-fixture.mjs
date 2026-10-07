@@ -28,7 +28,7 @@ const TOOL_FILES = [
 export const VER = '0.1.6-alpha.2';
 export const ZOD_PIN = 'vendor/npm/zod@4.4.3';
 
-// --- the spike closure (import graph the walker must traverse) --------------
+// --- the dsh closure (import graph the walker must traverse) --------------
 
 const SPIKE_FILES = {
   'logger.js': 'export const log = () => {};\n',
@@ -64,8 +64,8 @@ export const ZOD_ROWS = [
 
 const WEBCLIENT_TREES = [
   { dir: 'presentation/web-client', staged: 'dsh-web-client' },
-  { dir: 'presentation/web-client-next', staged: 'dsh-web-client-next' },
-  { dir: 'presentation/web-client-whale', staged: 'dsh-web-client-whale' },
+  { dir: 'presentation/web-client-v2', staged: 'dsh-web-client-v2' },
+  { dir: 'presentation/web-client-compact', staged: 'dsh-web-client-compact' },
 ];
 
 // Every row the generator derives on the green fixture: graph + dshpins +
@@ -111,7 +111,7 @@ function vendorOfficialSh() {
     'SPINE_PKG_DSH="agent brand"',
     'PIN=0.1.6-alpha.2',
     `CLOSURE="${rows.join('\n')}`,
-    `$(cd runtime/spike && find ${ZOD_PIN} -name '*.js' | LC_ALL=C sort)`,
+    `$(cd runtime/dsh && find ${ZOD_PIN} -name '*.js' | LC_ALL=C sort)`,
     '"',
     'SPINE_OURS="$SPINE_OURS',
     'vendor/npm/cordis@4.0.2/package.json',
@@ -145,23 +145,23 @@ function stageSpineClosureSh() {
     '#!/bin/sh',
     '# fixture: minimal shape-compatible stage-spine-closure.sh',
     `VER=${VER}`,
-    `ZOD_SRC=$SPIKE/${ZOD_PIN}`,
+    `ZOD_SRC=$DSH/${ZOD_PIN}`,
     'for pkg in ' + dsh + '; do',
-    `    stage_pkg "$SPIKE/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"`,
+    `    stage_pkg "$DSH/vendor/dsh/$pkg@$VER" "$ASSETS/vendor/dsh/$pkg@$VER"`,
     'done',
     'for pkg in ' + npm + '; do',
-    `    stage_pkg "$SPIKE/vendor/npm/@deepseek-ai/$pkg@$VER" "$ASSETS/vendor/npm/@deepseek-ai/$pkg@$VER"`,
+    `    stage_pkg "$DSH/vendor/npm/@deepseek-ai/$pkg@$VER" "$ASSETS/vendor/npm/@deepseek-ai/$pkg@$VER"`,
     'done',
     'for s in ' + scenario + '; do',
-    '        cp "$SPIKE/scenario/$s" "$ASSETS/scenario/$s"',
+    '        cp "$DSH/scenario/$s" "$ASSETS/scenario/$s"',
     'done',
-    'find "$SPIKE/upstream" -maxdepth 1 -name \'*.js\' -type f | while IFS= read -r src; do',
+    'find "$DSH/upstream" -maxdepth 1 -name \'*.js\' -type f | while IFS= read -r src; do',
     '    cp "$src" "$ASSETS/upstream/$(basename "$src")"',
     'done',
-    'find "$SPIKE/upstream/shims" -name \'*.js\' -type f | while IFS= read -r src; do',
+    'find "$DSH/upstream/shims" -name \'*.js\' -type f | while IFS= read -r src; do',
     '    cp "$src" "$ASSETS/upstream/shims/$(basename "$src")"',
     'done',
-    'for src in "$SPIKE"/system-plugins/*/; do',
+    'for src in "$DSH"/system-plugins/*/; do',
     '    cp -r "$src" "$ASSETS/system-plugins/$(basename "$src")"',
     'done',
     '# verify twins',
@@ -172,33 +172,33 @@ function stageSpineClosureSh() {
   ].join('\n');
 }
 
-/** gen_bundle_header.py: RESOURCES (SPIKE- and REPO-rooted rows, prose
+/** gen_bundle_header.py: RESOURCES (DSH- and REPO-rooted rows, prose
  * comments with apostrophes/quotes/parens), TREES (comprehension + `] + [`
  * continuation + plain rows), ZOD_FILES (the third hand zod copy). */
 function genBundleHeaderPy() {
   return [
     'import pathlib',
     'REPO = pathlib.Path(__file__).resolve().parents[2]',
-    'SPIKE = REPO / "runtime" / "spike"',
+    'DSH = REPO / "runtime" / "dsh"',
     'RESOURCES = [',
-    '    ("logger_js", SPIKE / "logger.js"),',
+    '    ("logger_js", DSH / "logger.js"),',
     `    # prose with an apostrophe: the loader's note; "quoted" and (parens)`,
     '    # stay comment prose — the scanner must skip them whole.',
-    '    ("leg_a_js", SPIKE / "scenario" / "leg-a.js"),',
-    '    ("suite_leg_js", SPIKE / "scenario" / "upstream-suite-leg.js"),',
+    '    ("leg_a_js", DSH / "scenario" / "leg-a.js"),',
+    '    ("suite_leg_js", DSH / "scenario" / "upstream-suite-leg.js"),',
     '    ("webclient_src", REPO / "presentation" / "web-client" / "index.html"),',
     ']',
     '',
     'TREES = [',
     '    (f"vendor/dsh/{pkg}@' + VER + '",',
-    `     SPIKE / "vendor" / "dsh" / f"{pkg}@${VER}")`,
+    `     DSH / "vendor" / "dsh" / f"{pkg}@${VER}")`,
     '    for pkg in [',
     '        "agent", "brand",',
     '    ]',
     '] + [',
-    '    ("scenario", SPIKE / "scenario"),',
-    '    ("upstream", SPIKE / "upstream"),',
-    '    ("system-plugins", SPIKE / "system-plugins"),',
+    '    ("scenario", DSH / "scenario"),',
+    '    ("upstream", DSH / "upstream"),',
+    '    ("system-plugins", DSH / "system-plugins"),',
     '    ("webclient/dsh-web-client", REPO / "presentation" / "web-client"),',
     ']',
     '',
@@ -213,7 +213,7 @@ function genBundleHeaderPy() {
 
 // --- extra pin-tree files (existence + extension filters) --------------------
 
-// Spike-relative files that exist ONLY so manifest rows pass the stale check
+// Dsh-relative files that exist ONLY so manifest rows pass the stale check
 // and the derivation legs can walk them. The .txt row proves dirPinRows'
 // extension filter drops it.
 const PIN_TREE_FILES = {
@@ -244,7 +244,7 @@ const PIN_TREE_FILES = {
 export class StagingFixture {
   constructor(root) {
     this.root = root;
-    this.spike = join(root, 'runtime', 'spike');
+    this.dsh = join(root, 'runtime', 'dsh');
   }
 
   abs(rel) { return join(this.root, rel); }
@@ -254,11 +254,11 @@ export class StagingFixture {
     writeFileSync(join(this.root, rel), content);
   }
 
-  /** Write a spike file AND keep the harmony rawfile mirror row in step
+  /** Write a dsh file AND keep the harmony rawfile mirror row in step
    * (only needed for rows some manifest names). */
   writeSpike(rel, content) {
-    this.write(join('runtime/spike', rel), content);
-    const raw = join('hosts/harmony/entry/src/main/resources/rawfile/spike', rel);
+    this.write(join('runtime/dsh', rel), content);
+    const raw = join('hosts/harmony/entry/src/main/resources/rawfile/dsh', rel);
     if (existsSync(join(this.root, raw))) this.write(raw, content);
   }
 
@@ -282,9 +282,9 @@ export class StagingFixture {
     return { ...r, data: JSON.parse(r.stdout) };
   }
 
-  /** Add rows to Index.ets BUNDLE_FILES and materialize their rawfile/spike
+  /** Add rows to Index.ets BUNDLE_FILES and materialize their rawfile/dsh
    * copies (the stale check's root) — rows arrive covered by the primary
-   * harmony surface. Spike rows copy from the spike tree. */
+   * harmony surface. Dsh rows copy from the dsh tree. */
   addBundleRows(rows) {
     const ets = join('hosts/harmony/entry/src/main/ets/pages/Index.ets');
     const src = this.read(ets);
@@ -295,15 +295,15 @@ export class StagingFixture {
     for (const row of rows) this.mirrorRawfileRow(row);
   }
 
-  /** The harmony rawfile/spike copy of one BUNDLE_FILES row: spike rows
+  /** The harmony rawfile/dsh copy of one BUNDLE_FILES row: dsh rows
    * byte-copy; webclient rows map to their presentation sources. */
   mirrorRawfileRow(row) {
     const stagedPrefix = row.split('/').slice(0, 2).join('/');
     const staged = WEBCLIENT_TREES.find((t) => `webclient/${t.staged}` === stagedPrefix);
     const source = staged
       ? join(this.root, staged.dir, row.split('/').slice(2).join('/'))
-      : join(this.spike, row);
-    this.write(join('hosts/harmony/entry/src/main/resources/rawfile/spike', row), readFileSync(source, 'utf8'));
+      : join(this.dsh, row);
+    this.write(join('hosts/harmony/entry/src/main/resources/rawfile/dsh', row), readFileSync(source, 'utf8'));
   }
 }
 
@@ -317,7 +317,7 @@ export function buildGreenFixture() {
   }
   for (const [rel, src] of Object.entries(SPIKE_FILES)) fx.writeSpike(rel, src);
   for (const [rel, src] of Object.entries(PIN_TREE_FILES)) {
-    fx.write(join('runtime/spike', rel), src);
+    fx.write(join('runtime/dsh', rel), src);
   }
   for (const t of WEBCLIENT_TREES) fx.write(join(t.dir, 'index.html'), `<h1>${t.staged}</h1>\n`);
   fx.write('hosts/harmony/entry/src/main/ets/pages/Index.ets', indexEts(derivedBundleRows()));
@@ -328,8 +328,8 @@ export function buildGreenFixture() {
   return fx;
 }
 
-/** The harmony rawfile/spike copy of every BUNDLE_FILES row (the stale
- * check's root): spike rows byte-copy; webclient rows map to their
+/** The harmony rawfile/dsh copy of every BUNDLE_FILES row (the stale
+ * check's root): dsh rows byte-copy; webclient rows map to their
  * presentation sources. */
 function mirrorRawfileBundle(fx) {
   for (const row of derivedBundleRows()) fx.mirrorRawfileRow(row);

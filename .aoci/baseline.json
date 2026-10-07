@@ -8624,37 +8624,37 @@
       "size": 2160,
       "normalized_sha256": "6c650428d14862ed5c8267b63318ed4bbea25f10461b05723cd0d7e6738d7afa"
     },
-    "test/web-client-next-suite/package-lock.json": {
+    "test/web-client-v2-suite/package-lock.json": {
       "role": "index",
       "sha256": "70fe51046222f8b09b33ae6be149822531b0cbe2dc17434576882329e9ee3636",
       "size": 47710,
       "normalized_sha256": "70fe51046222f8b09b33ae6be149822531b0cbe2dc17434576882329e9ee3636"
     },
-    "test/web-client-next-suite/package.json": {
+    "test/web-client-v2-suite/package.json": {
       "role": "index",
       "sha256": "0212c2b3a3092a97dca39d40a3e748fd4a4f372ce7515ea3ca423ea04d3ae0b6",
       "size": 570,
       "normalized_sha256": "0212c2b3a3092a97dca39d40a3e748fd4a4f372ce7515ea3ca423ea04d3ae0b6"
     },
-    "test/web-client-next-suite/tests/mux.test.js": {
+    "test/web-client-v2-suite/tests/mux.test.js": {
       "role": "observe",
       "sha256": "be953323c772b7900c9d413f6b3169393baf662252d4720daadf30e695fed15e",
       "size": 10403,
       "normalized_sha256": "be953323c772b7900c9d413f6b3169393baf662252d4720daadf30e695fed15e"
     },
-    "test/web-client-next-suite/tests/timeline.test.js": {
+    "test/web-client-v2-suite/tests/timeline.test.js": {
       "role": "observe",
       "sha256": "f9453dca9460a23846f7776dce8dd8edb8fcb8efc069087782a5b9544474dc86",
       "size": 17862,
       "normalized_sha256": "f9453dca9460a23846f7776dce8dd8edb8fcb8efc069087782a5b9544474dc86"
     },
-    "test/web-client-next-suite/tests/wire.test.js": {
+    "test/web-client-v2-suite/tests/wire.test.js": {
       "role": "observe",
       "sha256": "8e6eed7ad7668bc8203a8a4bfab97c1266db1b1b08f23781c2361a3d38c05471",
       "size": 7235,
       "normalized_sha256": "8e6eed7ad7668bc8203a8a4bfab97c1266db1b1b08f23781c2361a3d38c05471"
     },
-    "test/web-client-next-suite/vitest.config.js": {
+    "test/web-client-v2-suite/vitest.config.js": {
       "role": "index",
       "sha256": "70be4559553898280e171b95b949ba2ef6f7e854a9cd332817e80b441f9734e2",
       "size": 1934,

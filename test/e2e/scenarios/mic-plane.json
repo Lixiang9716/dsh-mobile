@@ -1,7 +1,7 @@
 {
   "scenario": "mic.plane",
   "extract": {
-    "prefix": "dsh.spike.log:"
+    "prefix": "dsh.runtime.log:"
   },
   "expect": [
     {

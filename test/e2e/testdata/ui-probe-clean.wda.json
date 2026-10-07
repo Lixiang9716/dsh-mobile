@@ -2,7 +2,7 @@
   "comment": "test/e2e/testdata/ui-probe-clean.wda.json — WebDriverAgent /source?format=json shape: the WKWebView owns its rectangle below the top inset, its web elements sit inside it. Probe emits violations: [].",
   "value": {
     "type": "Window",
-    "name": "DSHSpike",
+    "name": "DSHHost",
     "frame": { "x": 0, "y": 0, "width": 390, "height": 844 },
     "children": [
       {

@@ -1,7 +1,7 @@
 // dsh:logging-exempt (test file: real local servers, no logging surface)
 /**
  * mux.test.js — driver/wire/mux.js, the driver half of WS /api/remote.mux
- * (the port of web-client-next's page mux: URL-parameter constructor,
+ * (the port of web-client-v2's page mux: URL-parameter constructor,
  * Node's native WebSocket). Same contract legs as the page original's
  * suite: framing, hostile frames, generation-tracked reconnect. The
  * superseded-socket leg is the port-fidelity check — the page original

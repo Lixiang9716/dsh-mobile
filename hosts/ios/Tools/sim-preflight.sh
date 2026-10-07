@@ -3,7 +3,7 @@
 # E2E runners (P1: the iOS 18.5 runtime trap).
 #
 # WHY: the iOS 18.5 simulator runtime's dyld shared cache does not carry
-# libswiftWebKit, so DSHSpike.debug.dylib dies AT LAUNCH with
+# libswiftWebKit, so DSHHost.debug.dylib dies AT LAUNCH with
 # "Library not loaded: @rpath/libswiftWebKit.dylib". Every runner in
 # test/e2e/run-ios-*.sh builds happily against such a destination and then
 # burns its whole budget on a launch that can never produce app logs. The
@@ -68,7 +68,7 @@ fam, nums = parse_rt(rt_key)
 name = dev.get("name", "?")
 if fam != "iOS" or not nums or not nums[0].isdigit():
     print(f"sim-preflight: FAIL: device '{name}' ({udid}) runs {pretty_rt(rt_key)!r}, "
-          f"not an iOS runtime — DSHSpike pairs with iOS >= {min_major}", file=sys.stderr)
+          f"not an iOS runtime — DSHHost pairs with iOS >= {min_major}", file=sys.stderr)
     sys.exit(1)
 
 major = int(nums[0])
@@ -78,9 +78,9 @@ if major < min_major:
                  and parse_rt(k)[1][0].isdigit() and int(parse_rt(k)[1][0]) >= min_major})
     have = ok if ok else ["(none installed)"]
     print(f"sim-preflight: FAIL: device '{name}' (UDID {udid}) runs {pretty_rt(rt_key)} — "
-          f"DSHSpike needs iOS >= {min_major}.\n"
+          f"DSHHost needs iOS >= {min_major}.\n"
           f"  The pre-26 runtime's dyld shared cache lacks libswiftWebKit (observed on "
-          f"18.5), so DSHSpike.debug.dylib dies at launch with 'Library not loaded' — the "
+          f"18.5), so DSHHost.debug.dylib dies at launch with 'Library not loaded' — the "
           f"run would burn its whole budget on a launch that can never produce logs.\n"
           f"  Proven pairing: the 'dsh-iphone' simulator on iOS 26.5.\n"
           f"  Fix: point --udid / DSH_E2E_UDID at a device on: {', '.join(have)}",

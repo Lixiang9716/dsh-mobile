@@ -25,7 +25,7 @@ Basis (all read at this repository's `main`, 2026-10-01):
   package must carry, untouched by anything in this document.
 - The vendored consumer identity:
   `@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2`, pinned in
-  [runtime/spike/vendor/ensure-dsh.sh](../runtime/spike/vendor/ensure-dsh.sh)
+  [runtime/dsh/vendor/ensure-dsh.sh](../runtime/dsh/vendor/ensure-dsh.sh)
   (the vendor pin table, D6 discipline).
 
 ## 1. The two faces, and why they never meet

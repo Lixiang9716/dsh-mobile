@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # gate: asset-mirrors
 # Proves the product-tree ↔ host-mirror comparator catches the #286-class
-# drift it exists for: a product file (web-client-next/web/js/timeline.js)
+# drift it exists for: a product file (web-client-v2/web/js/timeline.js)
 # whose harmony rawfile mirror goes stale. Vehicle: append a probe line to
 # the mirror copy — the minimal real mutation, the same shape the #279→#288
 # window shipped (the android twin rode the stager's `./`-prefix SKIP hole).
@@ -13,8 +13,8 @@
 # other (the measured pair behind case-staging-check's lock, 2026-09-29).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-MIRROR="$REPO/hosts/harmony/entry/src/main/resources/rawfile/spike/webclient/dsh-web-client-next/web/js/timeline.js"
-PRODUCT="$REPO/presentation/web-client-next/web/js/timeline.js"
+MIRROR="$REPO/hosts/harmony/entry/src/main/resources/rawfile/dsh/webclient/dsh-web-client-v2/web/js/timeline.js"
+PRODUCT="$REPO/presentation/web-client-v2/web/js/timeline.js"
 [ -f "$MIRROR" ] || { echo "case-asset-mirrors: FAIL — mirror timeline.js absent" >&2; exit 1; }
 cmp -s "$PRODUCT" "$MIRROR" || { echo "case-asset-mirrors: FAIL — fixture mirror already drifted" >&2; exit 1; }
 

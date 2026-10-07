@@ -9,7 +9,7 @@
  * Index.ets's BUNDLE_FILES is the MATERIALIZATION LIST: every bundle-root
  * relative file the runtime half loads must be copied from rawfile into the
  * app cache dir before startSpike/hostStart. Two silent-drift directions
- * burned the m1 spike once (surprise ledger: a stale copy survived because
+ * burned the m1 dsh once (surprise ledger: a stale copy survived because
  * nothing compared the lists):
  *
  *   a rawfile file missing from BUNDLE_FILES  → never materialized; the
@@ -17,10 +17,10 @@
  *     leg that never runs it stays silently broken;
  *   a BUNDLE_FILES entry missing from rawfile → copyRawFile throws at launch.
  *
- * The check pins the invariant in BOTH directions against the rawfile/spike
+ * The check pins the invariant in BOTH directions against the rawfile/dsh
  * tree ON DISK (the vendor script materializes it before any check runs):
  *
- *   every file under rawfile/spike (except the served-directly officialweb/
+ *   every file under rawfile/dsh (except the served-directly officialweb/
  *   assets) must appear in BUNDLE_FILES, and every BUNDLE_FILES entry must
  *   exist on disk.
  *
@@ -38,7 +38,7 @@ import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..', '..', '..');
-const rawRoot = join(root, 'hosts/harmony/entry/src/main/resources/rawfile/spike');
+const rawRoot = join(root, 'hosts/harmony/entry/src/main/resources/rawfile/dsh');
 const indexEts = join(root, 'hosts/harmony/entry/src/main/ets/pages/Index.ets');
 
 /** BUNDLE_FILES entries between the `const BUNDLE_FILES: string[] = [` and
@@ -54,7 +54,7 @@ const bundleFiles = () => {
   return [...body.matchAll(/'([^']+)'/g)].map((m) => m[1]);
 };
 
-/** Every file on disk under rawfile/spike except officialweb/ (the served
+/** Every file on disk under rawfile/dsh except officialweb/ (the served
  * -straight-from-rawfile assets, deliberately not materialized). */
 const diskFiles = () => {
   const out = [];
@@ -81,7 +81,7 @@ const listed = new Set(bundleFiles());
 let onDisk = diskFiles();
 
 // The upstream-suite job stages the transpiled corpus + test closure into
-// rawfile/spike as UNTRACKED extras (vendor-official.sh --suite-extras; the
+// rawfile/dsh as UNTRACKED extras (vendor-official.sh --suite-extras; the
 // extras manifest __files.txt lists them) — the suite HAP needs them beside
 // the pinned bundle, while BUNDLE_FILES (the tracked tree) never lists them
 // by design. When the extras manifest is present, those paths are counted
@@ -123,7 +123,7 @@ const missingFromList = onDisk.filter((rel) => !listed.has(rel)).sort();
 const missingOnDisk = [...listed].filter((rel) => !onDisk.includes(rel)).sort();
 
 if (missingFromList.length > 0 || missingOnDisk.length > 0) {
-  console.error('check-bundle-files: FAIL — BUNDLE_FILES and rawfile/spike disagree');
+  console.error('check-bundle-files: FAIL — BUNDLE_FILES and rawfile/dsh disagree');
   for (const rel of missingFromList) {
     console.error(`  rawfile file missing from BUNDLE_FILES: ${rel}`);
   }

@@ -51,7 +51,7 @@ React Native 代理应用，本地执行工具，内嵌全系统 x86-64 解释�
 - **像桌面宿主那样挂载，而非另起一套**：Electron 引导*共享 profile
   runner*，再以 `ctx.plugin(...)` 向运行中的上下文添加宿主能力——第二套
   后端组合是被上游明确拒绝的替代方案。我们的
-  `runtime/spike/upstream/boot.js` 移动 profile 引导正是同构；保持如此。
+  `runtime/dsh/upstream/boot.js` 移动 profile 引导正是同构；保持如此。
 - **我们的钉版落后于 preset 浪潮**：`agent-preset-registry`（带激活审计的
   按会话组合）、`config-editor`、account/job Remote 控制器、双工
   `RemoteStream`、带回退的插件管理器都在 `0.1.6-alpha.2` 之后落地。

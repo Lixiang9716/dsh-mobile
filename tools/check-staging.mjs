@@ -18,7 +18,7 @@
  * scenario/upstream-suite-leg.js) plus the scenario files each host's
  * staging names, resolving relative and bundle-root spellings (./x, ../x,
  * upstream/x, scenario/x, system-plugins/x, vendor/..., /vendor/...,
- * spike-root *.js) through the shims' export-from chains and the vendored
+ * dsh-root *.js) through the shims' export-from chains and the vendored
  * layout (vendor/dsh/<pkg>@<ver>/lib, vendor/npm/<pkg>@<ver>/...). node:*
  * and bare npm names are NOT followed — they resolve through the loader's
  * bridge/map rows (npm-bridges-*.js tables, the bare map), which are
@@ -26,7 +26,7 @@
  *
  * It then checks each host's staging surfaces in two directions:
  *   (a) graph → manifest: every reached file under
- *       runtime/spike/{scenario,upstream,system-plugins} must be covered by
+ *       runtime/dsh/{scenario,upstream,system-plugins} must be covered by
  *       the host's staging (an exact hand row or a whole-dir mirror the
  *       host's stager actually performs);
  *   (b) manifest → disk: every hand row must name a file that exists
@@ -56,7 +56,7 @@
  */
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { REPO, SPIKE, inScope, walkGraph } from './check-staging-graph.mjs';
+import { REPO, DSH, inScope, walkGraph } from './check-staging-graph.mjs';
 import { fail, buildHosts } from './check-staging-hosts.mjs';
 
 // --- the check --------------------------------------------------------------
@@ -66,7 +66,7 @@ import { fail, buildHosts } from './check-staging-hosts.mjs';
 function collectHostGraph(host) {
   const surfaces = host.surfaces;
   const roots = host.roots(surfaces);
-  const missingRoots = roots.filter((r) => !existsSync(join(SPIKE, r)));
+  const missingRoots = roots.filter((r) => !existsSync(join(DSH, r)));
   const { reached, skippedBare, brokenEdges } = walkGraph(roots);
   const scoped = [...reached.keys()].filter(inScope).sort();
   return {
@@ -94,7 +94,7 @@ function checkSurface(surfaces, surface, scoped, reached) {
     }
   }
   // (b) manifest → disk (stale rows)
-  const staleBase = surface.staleRoot || SPIKE;
+  const staleBase = surface.staleRoot || DSH;
   const spikeRows = rowList.filter((r) => !r.includes('**'));
   for (const row of spikeRows) {
     if (!existsSync(join(staleBase, row))) sres.stale.push(row);
@@ -104,7 +104,7 @@ function checkSurface(surfaces, surface, scoped, reached) {
       if (!existsSync(join(REPO, r.rel))) sres.stale.push(`(repo) ${r.rel}`);
     }
     for (const m of surface.mirrorRoots) {
-      const base = m.root === 'SPIKE' ? SPIKE : REPO;
+      const base = m.root === 'DSH' ? DSH : REPO;
       if (!existsSync(join(base, m.rel))) sres.stale.push(`(tree ${m.root}) ${m.rel}`);
     }
   }
@@ -149,7 +149,7 @@ function humanReport(results, blocked) {
     lines.push(`== host ${r.host} (${blocking ? 'blocking' : 'warn'}) ==`);
     lines.push(`roots ${r.roots} · graph ${r.reached} files reached (${r.scopedReached} in scenario/upstream/system-plugins scope) · bare bridge/map imports skipped: ${r.skippedBare} distinct specifiers`);
     for (const e of r.brokenEdges) {
-      lines.push(`  BROKEN EDGE ${e.from}:${e.line} imports '${e.spec}' (${e.kind}) — resolves to no file under runtime/spike`);
+      lines.push(`  BROKEN EDGE ${e.from}:${e.line} imports '${e.spec}' (${e.kind}) — resolves to no file under runtime/dsh`);
     }
     for (const s of r.surfaces) {
       const tag = s.advisory ? ' (advisory surface)' : '';

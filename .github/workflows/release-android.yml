@@ -196,10 +196,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Materialize the vendored web app + DSH closure
         env:
@@ -208,7 +208,7 @@ jobs:
         run: |
           set -euo pipefail
           corepack enable
-          runtime/spike/vendor/ensure-dsh.sh > /dev/null
+          runtime/dsh/vendor/ensure-dsh.sh > /dev/null
           test/e2e/ensure-official-dist.sh
           test/e2e/ensure-client-bundles.sh
 

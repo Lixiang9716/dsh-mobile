@@ -11,7 +11,7 @@ import { hilog } from '@kit.PerformanceAnalysisKit';
  * runtime queue, so a timer callback never runs on a second thread).
  * `timerCancel` is the idempotent one-way cancel the contract defines.
  *
- * The consumer is runtime/spike/upstream/shims/timers.js: the vendored
+ * The consumer is runtime/dsh/upstream/shims/timers.js: the vendored
  * runtime's deadline fuses, the llm retry pacing and the read-idle watchdog
  * all arm through it. Before this primitive the gateway answered the arm
  * with `invalid` — the shim warned once per runtime and every timer hung

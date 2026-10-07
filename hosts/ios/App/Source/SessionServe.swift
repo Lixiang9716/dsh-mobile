@@ -15,7 +15,7 @@ import Foundation
 /// user drives the page. The `composer.live-write` evidence drive
 /// (`SessionWriteRuntime`) holds an instance, assigns the hooks below and
 /// verifies it. The seam is the hook block, and its defaults are no-ops: the
-/// seat reports serving FACTS, and which `dsh.spike.log:` record a fact
+/// seat reports serving FACTS, and which `dsh.runtime.log:` record a fact
 /// becomes — under which scenario id, once or every time — is the drive's
 /// business. This is the shape the harmony precedent
 /// (`OfficialServe.ets` / `OfficialPhase.ets`) settled on after rejecting the
@@ -33,10 +33,10 @@ final class SessionServe {
     /// drive both serve this one.
     static let clientID = "dsh-web-official"
 
-    /// The self-hosted client (presentation/web-client-next) this seat can
+    /// The self-hosted client (presentation/web-client-v2) this seat can
     /// serve when the launch configuration selects it — same /api + mux
     /// surface, our page instead of the vendored dist.
-    static let nextClientID = "dsh-web-client-next"
+    static let nextClientID = "dsh-web-client-v2"
 
     // ---- the hook block (a drive assigns these; defaults are no-ops) -------
 
@@ -75,7 +75,7 @@ final class SessionServe {
     /// app scope, created on first use so the agent always has somewhere to
     /// work (see `runtimeConfig` for why it is not the staged bundle root).
     static var workspaceRoot: URL {
-        let url = appScopeRoot.appendingPathComponent("spike", isDirectory: true)
+        let url = appScopeRoot.appendingPathComponent("dsh", isDirectory: true)
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
     }
@@ -130,19 +130,19 @@ final class SessionServe {
     /// scripted llm endpoint), starts listening, and boots the runtime half
     /// once the port is bound (its runtime.config needs the port).
     func start() throws {
-        let root = try SpikeBundleStager.stage()
+        let root = try BundleStager.stage()
         // The client flavor: when the launch configuration selects OUR client
-        // (dsh-web-client-next) the seat serves the staged plugin's web dir
+        // (dsh-web-client-v2) the seat serves the staged plugin's web dir
         // with NO injection rows — the page owns its whole boot, and the
         // facade/boot-graph/phone-CSS rows are the official page's. Every
         // other selection serves the vendored official dist exactly as
         // before, so every existing scenario's boot bytes stay untouched.
         let servesNext = SessionLaunchConfig.activeWebClient == Self.nextClientID
         let distRoot = try servesNext
-            ? root.appendingPathComponent("webclient-next/web", isDirectory: true)
+            ? root.appendingPathComponent("webclient-v2/web", isDirectory: true)
             : OfficialWebRuntime.locateDist()
         token = OfficialWebRuntime.randomToken()
-        let plugins = CarrierPlugins.staged(spikeRoot: root)
+        let plugins = CarrierPlugins.staged(dshRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         comboURL = OfficialWebRuntime.batchURL(graphJSON: config.bootGraphJSON)
         let dist = CarrierWebDist(
@@ -235,7 +235,7 @@ final class SessionServe {
             bundleRoot: bundleRoot,
             plugins: WebBootRuntimeDrive.webPluginsDelivery(),
             config: runtimeConfig(port: server.port, bundleRoot: bundleRoot),
-            scenario: dsh_spike_res_scenario_b4_web_live_js,
+            scenario: dsh_runtime_res_scenario_b4_web_live_js,
             scenarioPath: "scenario/composer-web-live.js",
             gateway: true)
     }

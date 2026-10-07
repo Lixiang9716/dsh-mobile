@@ -16,7 +16,7 @@
  *   signature itself.
  *
  * BYTE FORMAT NOTE (load-bearing for the resolver): the installer pipeline
- * consumes UNCOMPRESSED POSIX ustar today — runtime/spike/tar-mini.js ships
+ * consumes UNCOMPRESSED POSIX ustar today — runtime/dsh/tar-mini.js ships
  * "an uncompressed archive ... the gzip transport coding lands with the real
  * fetch-based installer", and install-fetch.js passes the bytes to
  * installPackage WITHOUT gunzipping. The packages produced here use the SAME
@@ -52,11 +52,11 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 // The canonical form is ONE module repo-wide (the §7.1 signature covers
-// runtime/spike/canonical-json.js and nothing else) — this generator signs
+// runtime/dsh/canonical-json.js and nothing else) — this generator signs
 // with the same file the runtime resolver verifies with, so signer and
 // verifier cannot drift; the marketplace e2e's signature check stays as the
 // cross-implementation detector (node:crypto here, pure-JS ed25519 there).
-import { canonicalJson } from '../runtime/spike/canonical-json.js';
+import { canonicalJson } from '../runtime/dsh/canonical-json.js';
 
 // Catalog display summaries live beside the deploy tooling; resolved from
 // THIS file's location so the generator runs from any working directory.
@@ -257,7 +257,7 @@ const packPlugin = (pkgDir, name) => {
 
 // ---------------------------------------------------------------------------
 // ed25519 (raw 32-byte seed → PKCS8; SPKI DER tail → raw public key).
-// canonicalJson is imported from runtime/spike/canonical-json.js — the one
+// canonicalJson is imported from runtime/dsh/canonical-json.js — the one
 // canonical form, one module (see the import block).
 // ---------------------------------------------------------------------------
 

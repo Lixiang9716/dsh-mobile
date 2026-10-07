@@ -3,7 +3,7 @@
  * CardPlayer — the generic card surface for WORKSPACE plugins created by the
  * CREATE-mode loop: one exact route serves the player page (a declarative
  * renderer for `card.json` + a CommonJS runner for `plugin.js`), one prefix
- * route serves the workspace files themselves from the app's spike-fs root
+ * route serves the workspace files themselves from the app's dsh-fs root
  * (path-escape reject). The player fetches the card description, executes
  * the plugin module in-page, binds the declared state live (countdown,
  * phase) and wires the declared buttons to the plugin's actions — the
@@ -114,7 +114,7 @@ function renderBindings() {
 </script></body></html>`;
 
 /** Serves the player page and the workspace files it renders from. The
- * workspace root is the app's spike-fs dir (the fs primitive's own root —
+ * workspace root is the app's dsh-fs dir (the fs primitive's own root —
  * the same bytes the runtime's fs primitive served the creation turn). */
 export class CardPlayerRoute {
   private server: CarrierServer;
@@ -137,7 +137,7 @@ export class CardPlayerRoute {
       });
   }
 
-  /** GET /workspace/<plugin-relative path> — from the app's spike-fs root,
+  /** GET /workspace/<plugin-relative path> — from the app's dsh-fs root,
    * path-escape reject, content type by extension. */
   private serveWorkspace(conn: socket.TCPSocketConnection, rawPath: string): void {
     const rel = rawPath.substring('/workspace/'.length);

@@ -26,7 +26,7 @@ REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$REPO"
 
 TREE_LINE="origin/main $(git rev-parse --short=12 HEAD)$(git diff-index --quiet HEAD -- || echo ' (dirty working tree at receipt time)')"
-ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)"
+ENGINE_PIN="$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)"
 python3 - "$ART" "$UDID" "$TREE_LINE" "$ENGINE_PIN" "$RUNNER" "$PHASE" "$LAUNCH" "$@" <<'PY'
 import json, os, subprocess, sys
 from datetime import datetime

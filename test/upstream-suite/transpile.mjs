@@ -15,7 +15,7 @@
  * imports never appear in the spec's own text (the session-snapshot suite's
  * vi.waitFor hid inside a helper for a whole round).
  *
- * usage: node transpile.mjs   (writes runtime/spike/upstream-tests/ + manifest.json)
+ * usage: node transpile.mjs   (writes runtime/dsh/upstream-tests/ + manifest.json)
  */
 import esbuild from 'esbuild';
 import { existsSync, readdirSync, readFileSync, writeFileSync, mkdirSync, statSync, realpathSync, unlinkSync } from 'node:fs';
@@ -25,15 +25,15 @@ import { fileURLToPath } from 'node:url';
 // fileURLToPath, not .pathname: on Windows .pathname yields '/D:/...' and
 // every join below grows a phantom drive segment (measured 2026-10-06).
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
-const OUT = join(ROOT, 'runtime/spike/upstream-tests');
+const TESTS = join(ROOT, 'runtime/dsh/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
+const OUT = join(ROOT, 'runtime/dsh/upstream-tests');
 const HARNESS_SPECIFIER = 'scenario/upstream-test-harness.js';
 // The path-rewrite machinery lives in transpile-rewrites.js (the file
 // crossed the size budget; these faces are pure source->source transforms).
 import { BARE_EXTERNAL_PLUGIN, SUBMODULE_BARE_RESOLVES, hoistCreateRequireJson, hoistSubmoduleSrcSubpaths, rewriteBundleManifestRoot, rewriteSeedTreeRoots, collectSeedTreeFiles, walk, BUNDLE_MANIFEST_PACKAGES, BUNDLE_MANIFEST_FILES, SEED_TREE_SPECS } from './transpile-rewrites.mjs';
 
 const UNIMPLEMENTED = [
-  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no spike shim — the vm builtin is a Node embedding surface)'],
+  [/from\s*[\x27\x22]node:vm[\x27\x22]/, 'node:vm (no dsh shim — the vm builtin is a Node embedding surface)'],
   // NOTE: the session-persistence-jsonl exclusion was REMOVED when the
   // closure harvest staged the koffi-free submodule-built package
   // (vendor/dsh/session-persistence-jsonl@0.1.6-alpha.2, 2026-09-23): its
@@ -283,8 +283,8 @@ const emitFixturesModule = (rel, flat) => {
 const emitPackageAssets = (rel, files) => {
   const pkgName = rel.split('/')[1];
   const assetCandidates = [
-    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
-    join(ROOT, `runtime/spike/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/dsh/vendor/npm/@deepseek-ai/dsh-${pkgName}@0.1.6-alpha.2/assets`),
+    join(ROOT, `runtime/dsh/vendor/npm/@deepseek-ai/${pkgName}@0.1.6-alpha.2/assets`),
   ];
   for (const assetsDir of assetCandidates) {
     if (!existsSync(assetsDir)) continue;

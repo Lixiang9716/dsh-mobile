@@ -28,7 +28,7 @@ writeFileSync(join(root, 'plugins', 'countdown-timer', 'index.js'), 'export {};\
 // 2026-10-04 battery proved the model seat could read. The system-tree shape
 // (a /system/app sibling branch), and the credential shape (a sibling branch
 // of the root holding an llm config — the S4 topology where the workspace
-// root is <scope>/spike and the key sits at <scope>/llm/config.json).
+// root is <scope>/dsh and the key sits at <scope>/llm/config.json).
 const systemApp = join(tmpdir(), `dsh-fs-system-${process.pid}`);
 mkdirSync(systemApp, { recursive: true });
 writeFileSync(join(systemApp, 'BasicDreams.apk'), 'apk\n');

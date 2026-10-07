@@ -22,8 +22,8 @@ verdict 都是一对一日志断言(截图是 owner 点名的交付物,绝不作
 |---|---|---|
 | boot.verification / carrier.loopback / gateway.binding / gateway.audit | 8/7/19/16 事件,全 pass | `B-backend/gateway/` |
 | session.mock-llm + webclient.mount(官方客户端) | 23/7,pass | `B-backend/session-mock-llm/` |
-| session.mock-llm + whale.mount(whale 客户端) | 23/7,pass | `A-ui/whale-mount/` |
-| nextweb.mount(自托管 web-client-next) | 25,pass | `A-ui/nextweb-mount/` |
+| session.mock-llm + compactweb.mount(compact 客户端) | 23/7,pass | `A-ui/compact-mount/` |
+| v2web.mount(自托管 web-client-v2) | 25,pass | `A-ui/v2web-mount/` |
 | composer.live-write(b4.write.live) | 46,pass | `C-tools/b4-write-live/` |
 | device.plane + audit | 16/23,pass | `D-capability/device-plane/` |
 | camera.plane + audit(sim 诚实 `unavailable`) | 6/3,pass | `D-capability/camera-plane/` |
@@ -50,7 +50,7 @@ canonical 记录):
 
 1. **iOS stager 漏了三个 upstream 模块**(`llm-route.js`、
    `web-write-marketplace.js`、`web-write-onboarding.js`)——import 链够到
-   它们的 drive 全在 eval 死(`cannot load module`),nextweb.mount 腿实测。
+   它们的 drive 全在 eval 死(`cannot load module`),v2web.mount 腿实测。
    修在 `SpikeBundleStager.swift`。
 2. **……以及再外一环的三个根模块**(`marketplace-resolver.js`、
    `canonical-json.js`、`ed25519.js`)——同一次现场发现,同款修法。
@@ -58,10 +58,10 @@ canonical 记录):
    app 不带 `ish-rootfs.tar.gz`,ish 插件诚实拒绝激活
    (`unavailable: ... is missing`)。gen.sh 现在先 stage 再 `xcodegen
    generate`。
-4. **whale 的 receipt 点名了一个不存在的 verdict 文件**(该模式下 carrier
-   manifest 换成 whale-mount.json)——两个 checker 全绿之后共享 writer 死掉。
+4. **compact 的 receipt 点名了一个不存在的 verdict 文件**(该模式下 carrier
+   manifest 换成 compact-mount.json)——两个 checker 全绿之后共享 writer 死掉。
    一行 receipt-stems 修复。
-5. **nextweb-mount manifest 早于 BYOK 开机探测**(composer manifest 早于
+5. **v2web-mount manifest 早于 BYOK 开机探测**(composer manifest 早于
    tool-rows / session-cancel / mobile 默认预设三轮)——两者按今日线刷新,
    腿分别 25/25、46/46 按序绿。
 

@@ -3,7 +3,7 @@
  * not yet ship it (minSdk 26; bionic introduced it in 28). Fills the buffer
  * from the kernel CSPRNG: getrandom(2) when the syscall works, /dev/urandom
  * otherwise. Same contract as bionic: the buffer is filled fully or the
- * process aborts — the spike never runs on a fake entropy source.
+ * process aborts — the rt never runs on a fake entropy source.
  */
 #include "android_compat.h"
 

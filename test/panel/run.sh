@@ -1,6 +1,6 @@
 #!/bin/sh
 # test/panel/run.sh — the panel unit-suite runner (vitest over the
-# web-client-next page's pure logic). Node resolves through nvm like
+# web-client-v2 page's pure logic). Node resolves through nvm like
 # test/e2e/matrix.sh. The suite SELF-PROVISIONS its deps: node_modules/ is
 # gitignored, so a fresh checkout (and CI) lands without it — review finding
 # on PR #280: the gate must not be red-by-construction there. With the

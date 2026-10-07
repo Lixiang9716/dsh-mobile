@@ -6,7 +6,7 @@
  * parity scenario's real LlmRuntime through the gateway httpFetch
  * primitive). The harmony twin of the iOS leg's host-side vendored mock
  * (DSH_MOCK_SEQUENCE='success tool_call_success success auth_error',
- * runtime/spike/ci/mock-llm-server.mjs) and the Android leg's armed
+ * runtime/dsh/ci/mock-llm-server.mjs) and the Android leg's armed
  * MockLlmRoute: per-call behaviors in script order, never interpreted.
  *
  * The wire shapes are the vendored @deepseek-ai/dsh-llm-mock-server's

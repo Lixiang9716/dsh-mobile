@@ -13,7 +13,7 @@
 #   evidence: the repository root has no package.json; presentation/lynx-client
 #   has a manifest but no lockfile (a single devDependency, so nothing for a
 #   resolution to be verified against); and the shim manifests under
-#   runtime/spike/upstream/shims/ and their host copies are pinned by the
+#   runtime/dsh/upstream/shims/ and their host copies are pinned by the
 #   vendoring plane — the closures gate byte-verifies them — so npm must NOT
 #   point at "/", which would sweep those manifests in.
 version: 2

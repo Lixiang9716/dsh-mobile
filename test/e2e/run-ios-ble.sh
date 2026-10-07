@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-ble.sh — the capability plane's BLE-face E2E driver
-# (scenario `ble.plane`): launches DSHSpike in -dsh-mode ble-plane[-mock],
+# (scenario `ble.plane`): launches DSHHost in -dsh-mode ble-plane[-mock],
 # waits for the terminal marker, and verifies the captured log against the
 # scenario + audit manifests. No UI driving: the mock radio needs no taps
 # and the real-radio skip path answers `unavailable` honestly — CI-runnable.
@@ -25,8 +25,8 @@ MODE="skip"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 DEADLINE=$((SECONDS + 420))
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -64,8 +64,8 @@ mkdir -p "$ART/screens"   # the receipt writer lists screens/ (empty is fine)
 log() { echo "run-ios-ble: $*"; }
 
 if [ "$SKIP_BUILD" = "0" ]; then
-  log "1/4 building DSHSpike"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  log "1/4 building DSHHost"
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination 'platform=iOS Simulator,id='"$UDID" \
     -derivedDataPath hosts/ios/DerivedData -quiet >/dev/null
 else
@@ -103,7 +103,7 @@ done
 
 log "4/4 waiting for the terminal marker"
 while true; do
-  if grep -q "spike: ble-plane drive finished" "$LOG" 2>/dev/null; then
+  if grep -q "dsh: ble-plane drive finished" "$LOG" 2>/dev/null; then
     break
   fi
   if [ "$SECONDS" -ge "$DEADLINE" ]; then
@@ -115,7 +115,7 @@ while true; do
 done
 
 rm -f "$ART"/verdict-*.json   # a prior red run's verdicts must not linger
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 FAIL=0
 run_check() { # MANIFEST OUT

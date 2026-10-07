@@ -102,7 +102,7 @@ the generated record (names, versions, declarations, file lists).
   `dsh-client-modules/lib/client.js` is byte-identical (sha256
   `3f7769d5f860961d412810d6a88a359ba05fe19b77624bf6a31207dae6c22760`) to the
   vendored npm tarball the runtime stages
-  (`runtime/spike/vendor/ensure-dsh.sh` pin); the manifests differ only in
+  (`runtime/dsh/vendor/ensure-dsh.sh` pin); the manifests differ only in
   dependency ranges (`workspace:^` vs published ranges), which the
   `dsh.client` scan never reads.
 
@@ -158,5 +158,5 @@ At this pin the tree is 58 packages, 116 files, 5.8 MB.
 The `/plugins` route on the carrier serves these files at the upstream
 combo/chunk URLs with revisions framed by the RUNTIME's composed graph
 (`web.boot` over the bus seam); the carrier never invents roster rows. The
-`dsh.client` scan itself runs inside the embedded spike runtime over the
+`dsh.client` scan itself runs inside the embedded dsh runtime over the
 bus-delivered file view — this directory is the staging source for both.

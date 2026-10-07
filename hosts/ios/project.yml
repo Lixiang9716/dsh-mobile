@@ -1,13 +1,13 @@
-# DSHSpike — minimal iOS host embedding the M1 core spike.
+# DSHHost — minimal iOS host embedding the M1 core dsh.
 #
-# The committed DSHSpike.xcodeproj is generated from this file
+# The committed DSHHost.xcodeproj is generated from this file
 # (hosts/ios/gen.sh) but is ALSO committed, so CI and fresh clones build
 # without xcodegen. The pre-build phase re-runs Tools/gen_bundle_header.py
-# whenever a runtime/spike JS input changes, keeping the embedded bundle
+# whenever a runtime/dsh JS input changes, keeping the embedded bundle
 # byte-identical to the checkout. quickjs-ng sources come from
-# runtime/spike/vendor/quickjs-ng/0.17.0 — materialize them first with
-# runtime/spike/vendor/ensure.sh.
-name: DSHSpike
+# runtime/dsh/vendor/quickjs-ng/0.17.0 — materialize them first with
+# runtime/dsh/vendor/ensure.sh.
+name: DSHHost
 options:
   bundleIdPrefix: org.dsh
   createIntermediateGroups: true
@@ -18,14 +18,14 @@ settings:
   base:
     SWIFT_VERSION: "5.0"
     HEADER_SEARCH_PATHS:
-      - "$(SRCROOT)/../../runtime/spike/host"
-      - "$(SRCROOT)/../../runtime/spike/vendor/quickjs-ng/0.17.0"
+      - "$(SRCROOT)/../../runtime/dsh/host"
+      - "$(SRCROOT)/../../runtime/dsh/vendor/quickjs-ng/0.17.0"
       # The wasm3 interpreter's own headers (dsh_wasm.c includes them by
       # quoted name from a different directory than the vendored sources).
-      - "$(SRCROOT)/../../runtime/spike/vendor/wasm3/0.9.0/source"
-      # zstd headers (dsh_spike_host.c intrinsics include them)
-      - "$(SRCROOT)/../../runtime/spike/vendor/zstd/1.5.7"
-      - "$(SRCROOT)/../../runtime/spike/vendor/zstd/1.5.7/common"
+      - "$(SRCROOT)/../../runtime/dsh/vendor/wasm3/0.9.0/source"
+      # zstd headers (dsh_runtime_host.c intrinsics include them)
+      - "$(SRCROOT)/../../runtime/dsh/vendor/zstd/1.5.7"
+      - "$(SRCROOT)/../../runtime/dsh/vendor/zstd/1.5.7/common"
       - "$(SRCROOT)/App/Generated"
     # zstd's x86_64 fast loop lives in huf_decompress_amd64.S, which the pin
     # does not carry: an x86_64 slice (Intel-Mac simulator) would hit undefined
@@ -39,91 +39,91 @@ settings:
         GCC_PREPROCESSOR_DEFINITIONS: ["$(inherited)", "ZSTD_DISABLE_ASM=1", "DSH_WITH_SQLITE=1"]
 
 targets:
-  DSHSpike:
+  DSHHost:
     type: application
     platform: iOS
     sources:
       - path: App
-      - path: ../../runtime/spike/host/dsh_spike_host.c
+      - path: ../../runtime/dsh/host/dsh_runtime_host.c
       # dsh_socket.c — the loopback socket seam's pump table (contract
-      # v1.8.0): dsh_spike_host.c references dsh_socket_poll/close_all
+      # v1.8.0): dsh_runtime_host.c references dsh_socket_poll/close_all
       # unconditionally, so leaving it out is a link error, not a
       # negotiation (the gateway still decides what gets SERVED).
-      - path: ../../runtime/spike/host/dsh_socket.c
-      - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/dtoa.c
-      - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libregexp.c
-      - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/libunicode.c
-      - path: ../../runtime/spike/vendor/quickjs-ng/0.17.0/quickjs.c
+      - path: ../../runtime/dsh/host/dsh_socket.c
+      - path: ../../runtime/dsh/vendor/quickjs-ng/0.17.0/dtoa.c
+      - path: ../../runtime/dsh/vendor/quickjs-ng/0.17.0/libregexp.c
+      - path: ../../runtime/dsh/vendor/quickjs-ng/0.17.0/libunicode.c
+      - path: ../../runtime/dsh/vendor/quickjs-ng/0.17.0/quickjs.c
       # The WebAssembly interpreter (contract v1.2.0 `wasmRun`): vendored +
-      # sha256-pinned by runtime/spike/vendor/ensure-wasm3.sh, compiled from
+      # sha256-pinned by runtime/dsh/vendor/ensure-wasm3.sh, compiled from
       # the same vendor tree the quickjs sources come from. Only the core is
       # linked; the WASI backends stay out (the app's boundary is our own
       # imported functions, not WASI's descriptor table).
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_core.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_core.c
       # zstd 1.5.7 (BSD-3, single-thread) — the node:zlib zstd face, pinned by
-      # runtime/spike/vendor/ensure-zstd.sh
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/debug.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/entropy_common.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/error_private.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/fse_decompress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/pool.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/threading.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/xxhash.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/common/zstd_common.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/fse_compress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/hist.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/huf_compress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_literals.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_sequences.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_compress_superblock.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_double_fast.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_fast.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_lazy.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_ldm.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_opt.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/compress/zstd_preSplit.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/huf_decompress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_ddict.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_decompress.c
-      - path: ../../runtime/spike/vendor/zstd/1.5.7/decompress/zstd_decompress_block.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_env.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_parse.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_compile.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_code.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_module.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_function.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_bind.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_info.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_exec.c
-      - path: ../../runtime/spike/vendor/wasm3/0.9.0/source/m3_validate.c
-      - path: ../../runtime/spike/host/dsh_wasm.c
+      # runtime/dsh/vendor/ensure-zstd.sh
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/debug.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/entropy_common.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/error_private.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/fse_decompress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/pool.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/threading.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/xxhash.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/common/zstd_common.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/fse_compress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/hist.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/huf_compress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_compress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_compress_literals.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_compress_sequences.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_compress_superblock.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_double_fast.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_fast.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_lazy.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_ldm.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_opt.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/compress/zstd_preSplit.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/decompress/huf_decompress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/decompress/zstd_ddict.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/decompress/zstd_decompress.c
+      - path: ../../runtime/dsh/vendor/zstd/1.5.7/decompress/zstd_decompress_block.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_env.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_parse.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_compile.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_code.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_module.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_function.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_bind.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_info.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_exec.c
+      - path: ../../runtime/dsh/vendor/wasm3/0.9.0/source/m3_validate.c
+      - path: ../../runtime/dsh/host/dsh_wasm.c
     preBuildScripts:
       - name: GenerateSpikeBundle
         script: |
           python3 "$SRCROOT/Tools/gen_bundle_header.py"
         inputFiles:
           - Tools/gen_bundle_header.py
-          - ../../runtime/spike/logger.js
-          - ../../runtime/spike/gateway.js
-          - ../../runtime/spike/registry.js
-          - ../../runtime/spike/manifest.json
-          - ../../runtime/spike/scenario/boot-verification.js
-          - ../../runtime/spike/scenario/gateway-binding.js
-          - ../../runtime/spike/scenario/device-plane.js
-          - ../../runtime/spike/scenario/gateway-bridge-smoke.js
-          - ../../runtime/spike/scenario/session-mock-llm.js
-          - ../../runtime/spike/scenario/carrier-loopback.js
-          - ../../runtime/spike/scenario/session-web-live.js
-          - ../../runtime/spike/upstream/web-write.js
-          - ../../runtime/spike/upstream/web-write-streams.js
-          - ../../runtime/spike/upstream/web-write-settings.js
-          - ../../runtime/spike/scenario/composer-web-live.js
-          - ../../runtime/spike/web/index.html
-          - ../../runtime/spike/web/carrier-page.js
-          - ../../runtime/spike/llm.js
-          - ../../runtime/spike/scenario/llm-live-stream.js
-          - ../../runtime/spike/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js
+          - ../../runtime/dsh/logger.js
+          - ../../runtime/dsh/gateway.js
+          - ../../runtime/dsh/registry.js
+          - ../../runtime/dsh/manifest.json
+          - ../../runtime/dsh/scenario/boot-verification.js
+          - ../../runtime/dsh/scenario/gateway-binding.js
+          - ../../runtime/dsh/scenario/device-plane.js
+          - ../../runtime/dsh/scenario/gateway-bridge-smoke.js
+          - ../../runtime/dsh/scenario/session-mock-llm.js
+          - ../../runtime/dsh/scenario/carrier-loopback.js
+          - ../../runtime/dsh/scenario/session-web-live.js
+          - ../../runtime/dsh/upstream/web-write.js
+          - ../../runtime/dsh/upstream/web-write-streams.js
+          - ../../runtime/dsh/upstream/web-write-settings.js
+          - ../../runtime/dsh/scenario/composer-web-live.js
+          - ../../runtime/dsh/web/index.html
+          - ../../runtime/dsh/web/carrier-page.js
+          - ../../runtime/dsh/llm.js
+          - ../../runtime/dsh/scenario/llm-live-stream.js
+          - ../../runtime/dsh/vendor/dsh/util-crypto@0.1.6-alpha.2/lib/index.js
           - ../../system-plugins/dsh-fs/manifest.json
           - ../../system-plugins/dsh-fs/index.js
           - ../../system-plugins/dsh-subprocess-quickjs/manifest.json
@@ -150,9 +150,9 @@ targets:
       - name: FetchIshRootfs
         basedOnDependencyAnalysis: false
         script: |
-          "$SRCROOT/../../runtime/spike/vendor/ensure-ish-rootfs.sh" "$SRCROOT/App/Generated"
+          "$SRCROOT/../../runtime/dsh/vendor/ensure-ish-rootfs.sh" "$SRCROOT/App/Generated"
         inputFiles:
-          - ../../runtime/spike/vendor/ensure-ish-rootfs.sh
+          - ../../runtime/dsh/vendor/ensure-ish-rootfs.sh
         outputFiles:
           - App/Generated/ish-rootfs.tar.gz
       # The in-process Linux guest (contract v1.3.0 `ishRun`): the vendored
@@ -178,20 +178,20 @@ targets:
             echo "error: cmake not found — install CMake (brew install cmake)"; exit 1; }
           set -e
           REPO="$SRCROOT/../.."
-          "$REPO/runtime/spike/vendor/ensure-ish.sh"
+          "$REPO/runtime/dsh/vendor/ensure-ish.sh"
           # The guest vdso is a GUEST aarch64 elf, so it is identical on every
           # platform: a HOST configure builds it once and the iOS build reuses
           # it. The zero-byte placeholder a cross-compile would write is not an
           # option — a zeroed vdso makes the kernel ABORT the app on the first
           # signal delivered to a guest task (kernel/vdso.c's fail path), and
           # ISH_VDSO_ELF_DIR refuses it.
-          VDSO="$REPO/runtime/spike/build/ish/vdso"
+          VDSO="$REPO/runtime/dsh/build/ish/vdso"
           if [ ! -s "$VDSO/libvdso.so.elf" ]; then
-            cmake -S "$REPO/runtime/spike/host/ish" -B "$REPO/runtime/spike/build/ish"
-            cmake --build "$REPO/runtime/spike/build/ish" --target ish-vdso
+            cmake -S "$REPO/runtime/dsh/host/ish" -B "$REPO/runtime/dsh/build/ish"
+            cmake --build "$REPO/runtime/dsh/build/ish" --target ish-vdso
           fi
-          BUILD="$REPO/runtime/spike/build/ish-ios-$SDK_NAME"
-          cmake -S "$REPO/runtime/spike/host/ish" -B "$BUILD" \
+          BUILD="$REPO/runtime/dsh/build/ish-ios-$SDK_NAME"
+          cmake -S "$REPO/runtime/dsh/host/ish" -B "$BUILD" \
             -DISH_SDK="$SDK_NAME" \
             -DCMAKE_SYSTEM_NAME=iOS \
             -DCMAKE_OSX_SYSROOT="$SDK_NAME" \
@@ -224,7 +224,7 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: DSH Spike
+        CFBundleDisplayName: DSH Dsh
         CFBundleShortVersionString: "0.1.0"
         CFBundleVersion: "1"
         UILaunchScreen: {}
@@ -237,7 +237,7 @@ targets:
         NSCameraUsageDescription: The camera capture burst (cameraCapture) lands the frames you shoot into the session's capture scope.
         # The capability plane's microphone face (v1.10.0): the same rule —
         # the first mic request TCC-kills the app without this key.
-        NSMicrophoneUsageDescription: DSH Spike records audio only while an agent session you started is using the microphone.
+        NSMicrophoneUsageDescription: DSH Dsh records audio only while an agent session you started is using the microphone.
         # The picker E2E grants a scope into the app's Documents directory;
         # both flags keep that directory visible/browsable in Files.app so
         # the granted files can be inspected from the simulator UI.
@@ -245,7 +245,7 @@ targets:
         LSSupportsOpeningDocumentsInPlace: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHSpike
+        PRODUCT_BUNDLE_IDENTIFIER: org.dsh.DSHHost
         SWIFT_OBJC_BRIDGING_HEADER: App/Source/Bridge.h
         TARGETED_DEVICE_FAMILY: "1"
         # The in-process Linux guest is an aarch64 HOST engine — its interpreter
@@ -260,7 +260,7 @@ targets:
         # system library on iOS, hence no path for it.
         LIBRARY_SEARCH_PATHS:
           - "$(inherited)"
-          - "$(SRCROOT)/../../runtime/spike/build/ish-ios-$(SDK_NAME)"
+          - "$(SRCROOT)/../../runtime/dsh/build/ish-ios-$(SDK_NAME)"
         OTHER_LDFLAGS:
           - "$(inherited)"
           - "-ldsh_ish"

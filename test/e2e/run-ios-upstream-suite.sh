@@ -3,7 +3,7 @@
 # iOS simulator (scenario `upstream.suite`).
 #
 # One transpiled upstream spec (default: core__agent-loop__tests__loop.spec,
-# the spec PR #161 proved) runs inside DSHSpike through the quickjs-shaped
+# the spec PR #161 proved) runs inside DSHHost through the quickjs-shaped
 # vitest harness, every test streaming a structured verdict; the runner
 # first executes the SAME spec under plain Node through the same harness
 # (test/upstream-suite/smoke.mjs) and demands the two summaries AGREE —
@@ -24,8 +24,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/upstream-suite"
 SKIP_BUILD=0
 SPEC="core__agent-loop__tests__loop.spec.mjs"
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -58,12 +58,12 @@ fail_deadline() {
 }
 
 # ---- 0. the spec exists + the Node reference leg (same harness, no device) --
-[ -f "runtime/spike/upstream-tests/$SPEC" ] || {
+[ -f "runtime/dsh/upstream-tests/$SPEC" ] || {
   log "transpiled spec missing — materializing (vendor + transpile)"
-  sh runtime/spike/vendor/ensure-dsh-tests.sh
+  sh runtime/dsh/vendor/ensure-dsh-tests.sh
   (cd test/upstream-suite && npm install --no-audit --no-fund >/dev/null 2>&1 && node transpile.mjs >/dev/null)
 }
-[ -f "runtime/spike/upstream-tests/$SPEC" ] || die "spec not produced by the pipeline: $SPEC"
+[ -f "runtime/dsh/upstream-tests/$SPEC" ] || die "spec not produced by the pipeline: $SPEC"
 
 log "0/5 Node reference leg (same harness under plain Node): $SPEC"
 node test/upstream-suite/smoke.mjs "$SPEC" > "$ART/reference-smoke.txt" 2>&1 \
@@ -73,12 +73,12 @@ log "reference: $REF_SUMMARY"
 
 # ---- 1-3. vendor, regen the bundle header, build, install -------------------
 log "1/5 vendor + regenerate the bundle header (embeds the suite leg + harness)"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -95,7 +95,7 @@ xcrun simctl install "$UDID" "$APP"
 CONTAINER="$(xcrun simctl get_app_container "$UDID" "$APP_BUNDLE_ID" data)"
 rm -rf "$CONTAINER/Documents/upstream-tests"
 mkdir -p "$CONTAINER/Documents/upstream-tests"
-cp "runtime/spike/upstream-tests/$SPEC" "$CONTAINER/Documents/upstream-tests/"
+cp "runtime/dsh/upstream-tests/$SPEC" "$CONTAINER/Documents/upstream-tests/"
 log "spec staged: Documents/upstream-tests/$SPEC"
 
 # ---- 4. launch + watch the per-test verdicts --------------------------------
@@ -115,7 +115,7 @@ xcrun simctl io "$UDID" screenshot "$ART/screens/01-final-state.png" >/dev/null 
 
 # ---- 5. the differential verdict ---------------------------------------------
 log "5/5 summary + agreement with the Node reference"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 node - "$ART" <<'SUMMARY'
 const fs = require('fs');
 const art = process.argv[2];
@@ -153,7 +153,7 @@ DEV_PASSED="$(grep -o '"passed":[0-9]*' "$ART/suite-summary.json" | head -1 | gr
 cat > "$ART/receipt.json" <<EOF
 {
   "host": "ios-simulator ($(xcrun simctl list -j devices | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(x['name']+' '+x['udid'] for xs in d['devices'].values() for x in xs if x['udid']=='$UDID'))") )",
-  "engine": "quickjs-ng (DSHSpike; the transpiled spec's bare imports served from the embedded vendored closure)",
+  "engine": "quickjs-ng (DSHHost; the transpiled spec's bare imports served from the embedded vendored closure)",
   "upstream": "deepseek-harness dsh-v0.1.6-alpha.2 test suite (tag tarball, sha256-pinned; spec: $SPEC)",
   "scenario": "upstream.suite",
   "proves": [

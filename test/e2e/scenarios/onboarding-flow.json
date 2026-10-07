@@ -1,6 +1,6 @@
 {
   "scenario": "onboarding.flow",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "onboarding.detect", "match": { "mode": "mock", "provider": "mock" } },
     { "event": "onboarding.probe.open", "match": { "status": 200 } },

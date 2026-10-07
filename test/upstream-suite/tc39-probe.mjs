@@ -3,8 +3,8 @@
  * tc39-probe.mjs — the AsyncContext (TC39 proposal-async-context) engine
  * intrinsic's conformance probe. Run against the quickjs CLI:
  *
- *   cp test/upstream-suite/tc39-probe.mjs runtime/spike/upstream-tests/__tc39.spec.mjs
- *   cd runtime/spike && ./build/dsh-spike-cli . scenario/upstream-suite-leg.js \
+ *   cp test/upstream-suite/tc39-probe.mjs runtime/dsh/upstream-tests/__tc39.spec.mjs
+ *   cd runtime/dsh && ./build/dsh-cli . scenario/upstream-suite-leg.js \
  *     --env DSH_UPSTREAM_SPEC=upstream-tests/__tc39.spec.mjs
  *
  * Asserts the proposal's load-bearing semantics on OUR engine: the surface

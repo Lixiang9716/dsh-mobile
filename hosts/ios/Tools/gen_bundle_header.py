@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Embed the runtime/spike JS bundle into the iOS app as C byte arrays.
+"""Embed the runtime/dsh JS bundle into the iOS app as C byte arrays.
 
-The spike host loads ESM imports from disk under a bundle_root; compiling
+The dsh host loads ESM imports from disk under a bundle_root; compiling
 the JS into the binary and staging it to a writable sandbox at launch keeps
 the bytes the simulator runs byte-identical to the checkout. Outputs are
 committed (App/Generated/) so a fresh clone builds without this script.
@@ -13,13 +13,13 @@ import gen_bundle_trees as trees
 
 HOSTS_IOS = Path(__file__).resolve().parents[1]
 REPO = HOSTS_IOS.parents[1]
-SPIKE = REPO / "runtime" / "spike"
+DSH = REPO / "runtime" / "dsh"
 OUT = HOSTS_IOS / "App" / "Generated"
 GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 
-# (accessor suffix, source file) -> dsh_spike_res_<suffix>()
+# (accessor suffix, source file) -> dsh_runtime_res_<suffix>()
 RESOURCES = [
-    ("logger_js", SPIKE / "logger.js"),
+    ("logger_js", DSH / "logger.js"),
     # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
     # leg drives the real gateway httpFetch against the configured backend)
     # M3 completion: on-device fetch-install scenario + its new modules
@@ -32,13 +32,13 @@ RESOURCES = [
     # The agent-flow leg (the 打通流程 E2E): prompt override + skill loading
     # over the vendored skill family (the spine itself rides the TREES below;
     # the fixture skill is staged at runtime by the scenario itself).
-    ("receipt_journal_js", SPIKE / "receipt-journal.js"),
+    ("receipt_journal_js", DSH / "receipt-journal.js"),
     # M3 config layer: the install-full-cycle profile patch (cordis.patch, JSON)
-    ("profile_m3_patch_json", SPIKE / "profiles" / "install-full-cycle" / "cordis.patch.json"),
-    ("web_index_html", SPIKE / "web" / "index.html"),
-    ("web_page_js", SPIKE / "web" / "carrier-page.js"),
+    ("profile_m3_patch_json", DSH / "profiles" / "install-full-cycle" / "cordis.patch.json"),
+    ("web_index_html", DSH / "web" / "index.html"),
+    ("web_page_js", DSH / "web" / "carrier-page.js"),
     ("pkg_crypto_js",
-     SPIKE / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.2" / "lib" / "index.js"),
+     DSH / "vendor" / "dsh" / "util-crypto@0.1.6-alpha.2" / "lib" / "index.js"),
     # system implementation plugins (repo-root tree, staged bundle-relative
     # under system-plugins/ — the scenario's canonical import specifier)
     ("plugin_fs_manifest", REPO / "system-plugins" / "dsh-fs" / "manifest.json"),
@@ -54,8 +54,8 @@ RESOURCES = [
      REPO / "system-plugins" / "dsh-device-plane" / "index.js"),
     ("plugin_ble_manifest", REPO / "system-plugins" / "dsh-ble" / "manifest.json"), ("plugin_ble_js", REPO / "system-plugins" / "dsh-ble" / "index.js"),
     # the dsh-notes fixture (M3 install pipeline: builder + plugin source data)
-    ("fixture_notes_js", SPIKE / "fixtures" / "dsh-notes.js"),
-    ("fixture_notes_source_js", SPIKE / "fixtures" / "dsh-notes-source.js"),
+    ("fixture_notes_js", DSH / "fixtures" / "dsh-notes.js"),
+    ("fixture_notes_source_js", DSH / "fixtures" / "dsh-notes-source.js"),
     # the ACTIVE Web Client plugin (presentation/, type=web-client, web/ dir)
     ("webclient_manifest", REPO / "presentation" / "web-client" / "manifest.json"),
     ("webclient_index_html", REPO / "presentation" / "web-client" / "web" / "index.html"),
@@ -72,149 +72,149 @@ RESOURCES = [
     # composition imports (cordis -> cosmokit; schemastery -> cosmokit; the
     # client-modules node + browser faces). NOT the full agent spine — the
     # officialweb-web-live drive composes the boot wire without runtime services.
-    ("upstream_web_boot_js", SPIKE / "upstream" / "web-boot.js"),
-    ("upstream_web_shims_js", SPIKE / "upstream" / "web-shims.js"),
+    ("upstream_web_boot_js", DSH / "upstream" / "web-boot.js"),
+    ("upstream_web_shims_js", DSH / "upstream" / "web-shims.js"),
     # The WEB plane's mobile search provider (#335 B5): boot.js imports it
     # statically (the mount + the inventory web tiers ride it).
-    ("upstream_web_search_keyless_js", SPIKE / "upstream" / "web-search-keyless.js"),
+    ("upstream_web_search_keyless_js", DSH / "upstream" / "web-search-keyless.js"),
     ("npm_cordis_js",
-     SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
+     DSH / "vendor" / "npm" / "cordis@4.0.2" / "lib" / "index.js"),
     ("npm_cosmokit_js",
-     SPIKE / "vendor" / "npm" / "cosmokit@1.8.3" / "lib" / "index.js"),
+     DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "lib" / "index.js"),
     ("npm_schemastery_mjs",
-     SPIKE / "vendor" / "npm" / "schemastery@3.18.2" / "lib" / "index.mjs"),
+     DSH / "vendor" / "npm" / "schemastery@3.18.2" / "lib" / "index.mjs"),
     ("npm_client_modules_index_js",
-     SPIKE / "vendor" / "npm"
+     DSH / "vendor" / "npm"
      / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "index.js"),
     ("npm_client_modules_client_js",
-     SPIKE / "vendor" / "npm"
+     DSH / "vendor" / "npm"
      / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "lib" / "client.js"),
     # The commands plane's per-user receipt key: dsh-command-feedback imports
     # the anonymous user id at module load, so the bare specifier must have a
     # staged file (the npm-face base of the vendored probe serves it).
     ("npm_anonymous_user_id_js",
-     SPIKE / "vendor" / "npm"
+     DSH / "vendor" / "npm"
      / "@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2" / "lib" / "index.js"),
     # The MOBILE preset (the interactive seat's roster row): the standard
     # composition minus the three physically-walled rows (tool-fs-search,
     # workflow-ptc, tool-web). Staged into the vendored presets COPY (never
     # the tracked vendor tree) so the seed enumerator picks it up.
     ("presets_mobile_preset_yml",
-     SPIKE / "presets-mobile" / "mobile" / "preset.yml"),
+     DSH / "presets-mobile" / "mobile" / "preset.yml"),
     ("presets_mobile_agent_cordis_yml",
-     SPIKE / "presets-mobile" / "mobile" / "agent.cordis.yml"),
+     DSH / "presets-mobile" / "mobile" / "agent.cordis.yml"),
     # The agent-presets closure (the Agent 预设 panel's data source): the
     # presets service package plus the five dependency libs its import chain
-    # resolves through the spike's bare map. js-yaml ships an ESM dist face.
+    # resolves through the dsh's bare map. js-yaml ships an ESM dist face.
     ("npm_agent_presets_index_js",
-     SPIKE / "vendor" / "dsh" / "agent-presets@0.1.6-alpha.2" / "lib" / "index.js"),
+     DSH / "vendor" / "dsh" / "agent-presets@0.1.6-alpha.2" / "lib" / "index.js"),
     ("npm_plugin_loader_js",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-loader@1.0.3" / "lib" / "index.js"),
+     DSH / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-loader@1.0.3" / "lib" / "index.js"),
     ("npm_plugin_include_js",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-include@1.0.7" / "lib" / "index.js"),
+     DSH / "vendor" / "npm" / "@deepseek-ai/cordis-plugin-include@1.0.7" / "lib" / "index.js"),
     ("npm_js_yaml_mjs",
-     SPIKE / "vendor" / "npm" / "js-yaml@4.1.0" / "dist" / "js-yaml.mjs"),
+     DSH / "vendor" / "npm" / "js-yaml@4.1.0" / "dist" / "js-yaml.mjs"),
     # W-SESS spine closure (D9): the FULL upstream agent spine boots
     # on-device — the mobile profile boot, its settings backend, the gateway
     # llm transport, and the node shims the spine needs beyond the web-boot
     # set (async-hooks, util, util/types, os, process, the
     # session-persistence errors shim).
-    ("upstream_boot_js", SPIKE / "upstream" / "boot.js"),
-    ("upstream_wire_logger_js", SPIKE / "upstream" / "wire-logger.js"),
-    ("upstream_llm_route_js", SPIKE / "upstream" / "llm-route.js"),
-    ("upstream_settings_memory_js", SPIKE / "upstream" / "settings-memory.js"),
+    ("upstream_boot_js", DSH / "upstream" / "boot.js"),
+    ("upstream_wire_logger_js", DSH / "upstream" / "wire-logger.js"),
+    ("upstream_llm_route_js", DSH / "upstream" / "llm-route.js"),
+    ("upstream_settings_memory_js", DSH / "upstream" / "settings-memory.js"),
     # W-RPC write surface (D9): the composer's `POST /api/session/prompt` from
     # the REAL spine — the write adapter + its booting scenario.
-    ("upstream_web_write_js", SPIKE / "upstream" / "web-write.js"),
-    ("upstream_web_write_inventory_js", SPIKE / "upstream" / "web-write-inventory.js"),
-    ("upstream_web_write_streams_js", SPIKE / "upstream" / "web-write-streams.js"),
-    ("upstream_web_write_settings_js", SPIKE / "upstream" / "web-write-settings.js"),
+    ("upstream_web_write_js", DSH / "upstream" / "web-write.js"),
+    ("upstream_web_write_inventory_js", DSH / "upstream" / "web-write-inventory.js"),
+    ("upstream_web_write_streams_js", DSH / "upstream" / "web-write-streams.js"),
+    ("upstream_web_write_settings_js", DSH / "upstream" / "web-write-settings.js"),
     # api-full-coverage (D9): coverage adapters + llm/credential legs + the preset
     # mobile-row transform (claimed under fullCoverage — byte-identical base).
-    ("upstream_web_write_files_js", SPIKE / "upstream" / "web-write-files.js"),
-    ("upstream_web_write_picker_js", SPIKE / "upstream" / "web-write-picker.js"),
-    ("upstream_web_write_workspace_js", SPIKE / "upstream" / "web-write-workspace.js"),
-    ("upstream_web_write_coverage_js", SPIKE / "upstream" / "web-write-coverage.js"),
-    ("upstream_web_write_llm_js", SPIKE / "upstream" / "web-write-llm.js"),
-    ("upstream_preset_mobile_rows_js", SPIKE / "upstream" / "preset-mobile-rows.js"),
-    ("shims_util_js", SPIKE / "upstream" / "shims" / "util.js"),
-    ("shims_util_types_js", SPIKE / "upstream" / "shims" / "util-types.js"),
-    ("shims_os_js", SPIKE / "upstream" / "shims" / "os.js"),
-    ("shims_process_js", SPIKE / "upstream" / "shims" / "process.js"),
-    ("shims_dsh_session_persistence_js", SPIKE / "upstream" / "shims" / "dsh-session-persistence.js"),
+    ("upstream_web_write_files_js", DSH / "upstream" / "web-write-files.js"),
+    ("upstream_web_write_picker_js", DSH / "upstream" / "web-write-picker.js"),
+    ("upstream_web_write_workspace_js", DSH / "upstream" / "web-write-workspace.js"),
+    ("upstream_web_write_coverage_js", DSH / "upstream" / "web-write-coverage.js"),
+    ("upstream_web_write_llm_js", DSH / "upstream" / "web-write-llm.js"),
+    ("upstream_preset_mobile_rows_js", DSH / "upstream" / "preset-mobile-rows.js"),
+    ("shims_util_js", DSH / "upstream" / "shims" / "util.js"),
+    ("shims_util_types_js", DSH / "upstream" / "shims" / "util-types.js"),
+    ("shims_os_js", DSH / "upstream" / "shims" / "os.js"),
+    ("shims_process_js", DSH / "upstream" / "shims" / "process.js"),
+    ("shims_dsh_session_persistence_js", DSH / "upstream" / "shims" / "dsh-session-persistence.js"),
     # The outboard WebAssembly tool plugin (contract v1.2.0): a service plugin
     # that registers the model-facing `wasm_run` tool into the spine.
     ("plugin_shell_wasm_manifest",
-     SPIKE / "system-plugins" / "dsh-shell-wasm" / "manifest.json"),
+     DSH / "system-plugins" / "dsh-shell-wasm" / "manifest.json"),
     ("plugin_shell_wasm_js",
-     SPIKE / "system-plugins" / "dsh-shell-wasm" / "index.js"),
+     DSH / "system-plugins" / "dsh-shell-wasm" / "index.js"),
     ("plugin_shell_wasm_programs_js",
-     SPIKE / "system-plugins" / "dsh-shell-wasm" / "programs.js"),
+     DSH / "system-plugins" / "dsh-shell-wasm" / "programs.js"),
     # The outboard in-process Linux shell (contract v1.3.0): the same shape,
     # with the guest engine's `ishRun` behind it.
-    ("plugin_shell_ish_manifest", SPIKE / "system-plugins" / "dsh-shell-ish" / "manifest.json"), ("plugin_shell_ish_js", SPIKE / "system-plugins" / "dsh-shell-ish" / "index.js"),
+    ("plugin_shell_ish_manifest", DSH / "system-plugins" / "dsh-shell-ish" / "manifest.json"), ("plugin_shell_ish_js", DSH / "system-plugins" / "dsh-shell-ish" / "index.js"),
     # The Open Design client plugin: the design daemon's REST surface over
     # gateway httpFetch (projects / BYOK generate / artifact save+lint).
-    ("plugin_open_design_manifest", SPIKE / "system-plugins" / "dsh-open-design" / "manifest.json"), ("plugin_open_design_js", SPIKE / "system-plugins" / "dsh-open-design" / "index.js"),
+    ("plugin_open_design_manifest", DSH / "system-plugins" / "dsh-open-design" / "manifest.json"), ("plugin_open_design_js", DSH / "system-plugins" / "dsh-open-design" / "index.js"),
     # The plugin_manager tool row (#346); face at workspace_registry_js.
     ("plugin_manager_tools_manifest",
-     SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "manifest.json"), ("plugin_manager_tools_js", SPIKE / "system-plugins" / "dsh-plugin-manager-tools" / "index.js"),
+     DSH / "system-plugins" / "dsh-plugin-manager-tools" / "manifest.json"), ("plugin_manager_tools_js", DSH / "system-plugins" / "dsh-plugin-manager-tools" / "index.js"),
     # FIFTEEN scenario files keep NAMED accessors — RESOURCES rows emit the
-    # dsh_spike_res_<suffix> symbols Swift links against (readers:
-    # SpikeRuntime, GatewaySession, SessionRuntime, SessionServe,
+    # dsh_runtime_res_<suffix> symbols Swift links against (readers:
+    # JsRuntime, GatewaySession, SessionRuntime, SessionServe,
     # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
     # the whole-dir scenario tree row serves the loader's file view
     # (926c6a7 dropped this block while every read site stayed — restored).
-    ("scenario_js", SPIKE / "scenario" / "boot-verification.js"),
-    ("scenario_m2_js", SPIKE / "scenario" / "gateway-binding.js"),
-    ("scenario_device_plane_js", SPIKE / "scenario" / "device-plane.js"),
-    ("scenario_ble_plane_js", SPIKE / "scenario" / "ble-plane.js"),
-    ("scenario_camera_plane_js", SPIKE / "scenario" / "camera-plane.js"),
-    ("scenario_mic_plane_js", SPIKE / "scenario" / "mic-plane.js"),
-    ("scenario_m2_session_js", SPIKE / "scenario" / "session-mock-llm.js"),
-    ("scenario_carrier_js", SPIKE / "scenario" / "carrier-loopback.js"),
-    ("scenario_m2_llm_js", SPIKE / "scenario" / "llm-live-stream.js"),
-    ("scenario_m3_fetch_install_js", SPIKE / "scenario" / "install-from-http.js"),
-    ("scenario_upstream_parity_js", SPIKE / "scenario" / "upstream-parity.js"),
-    ("scenario_upstream_suite_js", SPIKE / "scenario" / "upstream-suite-leg.js"),
-    ("scenario_agent_flow_js", SPIKE / "scenario" / "agent-flow.js"),
-    ("scenario_b1_web_live_js", SPIKE / "scenario" / "officialweb-web-live.js"), ("scenario_b3_web_live_js", SPIKE / "scenario" / "session-web-live.js"),
-    ("scenario_b4_web_live_js", SPIKE / "scenario" / "composer-web-live.js"),
-    ("scenario_manager_legs_probe_js", SPIKE / "scenario" / "manager-legs-probe.js"),
-    # The spike-root runtime files + upstream adapters Swift stages by name
-    # (SpikeBundleStager / SessionServe / SessionRuntime) — the pre-refactor
+    ("scenario_js", DSH / "scenario" / "boot-verification.js"),
+    ("scenario_m2_js", DSH / "scenario" / "gateway-binding.js"),
+    ("scenario_device_plane_js", DSH / "scenario" / "device-plane.js"),
+    ("scenario_ble_plane_js", DSH / "scenario" / "ble-plane.js"),
+    ("scenario_camera_plane_js", DSH / "scenario" / "camera-plane.js"),
+    ("scenario_mic_plane_js", DSH / "scenario" / "mic-plane.js"),
+    ("scenario_m2_session_js", DSH / "scenario" / "session-mock-llm.js"),
+    ("scenario_carrier_js", DSH / "scenario" / "carrier-loopback.js"),
+    ("scenario_m2_llm_js", DSH / "scenario" / "llm-live-stream.js"),
+    ("scenario_m3_fetch_install_js", DSH / "scenario" / "install-from-http.js"),
+    ("scenario_upstream_parity_js", DSH / "scenario" / "upstream-parity.js"),
+    ("scenario_upstream_suite_js", DSH / "scenario" / "upstream-suite-leg.js"),
+    ("scenario_agent_flow_js", DSH / "scenario" / "agent-flow.js"),
+    ("scenario_b1_web_live_js", DSH / "scenario" / "officialweb-web-live.js"), ("scenario_b3_web_live_js", DSH / "scenario" / "session-web-live.js"),
+    ("scenario_b4_web_live_js", DSH / "scenario" / "composer-web-live.js"),
+    ("scenario_manager_legs_probe_js", DSH / "scenario" / "manager-legs-probe.js"),
+    # The dsh-root runtime files + upstream adapters Swift stages by name
+    # (BundleStager / SessionServe / SessionRuntime) — the pre-refactor
     # RESOURCES rows, restored.
-    ("gateway_js", SPIKE / "gateway.js"),
-    ("registry_js", SPIKE / "registry.js"),
-    ("manifest_json", SPIKE / "manifest.json"),
-    ("llm_js", SPIKE / "llm.js"),
-    ("install_pipeline_js", SPIKE / "install-pipeline.js"),
-    ("ed25519_js", SPIKE / "ed25519.js"), ("canonical_json_js", SPIKE / "canonical-json.js"),
-    ("marketplace_resolver_js", SPIKE / "marketplace-resolver.js"),
-    ("install_fetch_js", SPIKE / "install-fetch.js"),
-    ("workspace_registry_js", SPIKE / "workspace-registry.js"), ("sha256_js", SPIKE / "sha256.js"),
-    ("tar_mini_js", SPIKE / "tar-mini.js"),
-    ("upstream_llm_transport_js", SPIKE / "upstream" / "llm-transport.js"),
-    ("upstream_llm_read_idle_js", SPIKE / "upstream" / "llm-read-idle.js"), ("upstream_llm_retry_pacing_js", SPIKE / "upstream" / "llm-retry-pacing.js"),
-    ("upstream_tool_present_js", SPIKE / "upstream" / "tool-present.js"),
-    ("upstream_model_selection_projection_js", SPIKE / "upstream" / "model-selection-projection.js"),
-    ("upstream_model_selection_holder_js", SPIKE / "upstream" / "model-selection-holder.js"),
-    ("upstream_web_write_catalog_js", SPIKE / "upstream" / "web-write-catalog.js"),
-    ("upstream_web_write_onboarding_js", SPIKE / "upstream" / "web-write-onboarding.js"),
-    ("upstream_web_write_marketplace_js", SPIKE / "upstream" / "web-write-marketplace.js"),
+    ("gateway_js", DSH / "gateway.js"),
+    ("registry_js", DSH / "registry.js"),
+    ("manifest_json", DSH / "manifest.json"),
+    ("llm_js", DSH / "llm.js"),
+    ("install_pipeline_js", DSH / "install-pipeline.js"),
+    ("ed25519_js", DSH / "ed25519.js"), ("canonical_json_js", DSH / "canonical-json.js"),
+    ("marketplace_resolver_js", DSH / "marketplace-resolver.js"),
+    ("install_fetch_js", DSH / "install-fetch.js"),
+    ("workspace_registry_js", DSH / "workspace-registry.js"), ("sha256_js", DSH / "sha256.js"),
+    ("tar_mini_js", DSH / "tar-mini.js"),
+    ("upstream_llm_transport_js", DSH / "upstream" / "llm-transport.js"),
+    ("upstream_llm_read_idle_js", DSH / "upstream" / "llm-read-idle.js"), ("upstream_llm_retry_pacing_js", DSH / "upstream" / "llm-retry-pacing.js"),
+    ("upstream_tool_present_js", DSH / "upstream" / "tool-present.js"),
+    ("upstream_model_selection_projection_js", DSH / "upstream" / "model-selection-projection.js"),
+    ("upstream_model_selection_holder_js", DSH / "upstream" / "model-selection-holder.js"),
+    ("upstream_web_write_catalog_js", DSH / "upstream" / "web-write-catalog.js"),
+    ("upstream_web_write_onboarding_js", DSH / "upstream" / "web-write-onboarding.js"),
+    ("upstream_web_write_marketplace_js", DSH / "upstream" / "web-write-marketplace.js"),
     # issue #335 A1+B3: the pluginManager WRITE legs (§4 pipeline + receipts
     # journal + workspace registry) and the dynamicCordisRunner runtime-side
     # legs (the honest mobile cordis answers).
-    ("upstream_web_write_plugin_manager_js", SPIKE / "upstream" / "web-write-plugin-manager.js"),
-    ("upstream_web_write_cordis_js", SPIKE / "upstream" / "web-write-cordis.js"),
+    ("upstream_web_write_plugin_manager_js", DSH / "upstream" / "web-write-plugin-manager.js"),
+    ("upstream_web_write_cordis_js", DSH / "upstream" / "web-write-cordis.js"),
     # the #323 guard rings + loop-u's recovery face (llm-retry rides the vendor pin)
-    ("upstream_tool_deadline_js", SPIKE / "upstream" / "tool-deadline.js"),
+    ("upstream_tool_deadline_js", DSH / "upstream" / "tool-deadline.js"),
     # loop-z3: the editor tool face's relative-path anchor (boot.js mounts the vendored editor through it)
-    ("upstream_tool_path_anchor_js", SPIKE / "upstream" / "tool-path-anchor.js"),
-    ("upstream_turn_watchdog_js", SPIKE / "upstream" / "turn-watchdog.js"),
-    ("upstream_turn_recovery_js", SPIKE / "upstream" / "turn-recovery.js"),
-    ("upstream_retry_telemetry_js", SPIKE / "upstream" / "retry-telemetry.js"),
-    ("upstream_boot_coverage_rows_js", SPIKE / "upstream" / "boot-coverage-rows.js"),
+    ("upstream_tool_path_anchor_js", DSH / "upstream" / "tool-path-anchor.js"),
+    ("upstream_turn_watchdog_js", DSH / "upstream" / "turn-watchdog.js"),
+    ("upstream_turn_recovery_js", DSH / "upstream" / "turn-recovery.js"),
+    ("upstream_retry_telemetry_js", DSH / "upstream" / "retry-telemetry.js"),
+    ("upstream_boot_coverage_rows_js", DSH / "upstream" / "boot-coverage-rows.js"),
 ]
 # Directory trees embedded whole and staged back under the same
 # bundle-relative paths: the vendored upstream spine packages (verbatim
@@ -222,7 +222,7 @@ RESOURCES = [
 # upstream code, embedded from the materialized vendor checkout.
 TREES = [
     (f"vendor/dsh/{pkg}@0.1.6-alpha.2",
-     SPIKE / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
+     DSH / "vendor" / "dsh" / f"{pkg}@0.1.6-alpha.2")
     for pkg in [
         "agent", "agent-loop", "brand", "llm", "sandbox", "scope",
         "agent-presets", "atomic-write", "home-paths",
@@ -252,7 +252,7 @@ TREES = [
     # serves no vendor/dsh tree for them) but STAGED at the vendor/dsh/<pkg>
     # @ver rel path — the dir the preset-health marker seeder walks.
     *(("vendor/dsh/%s@0.1.6-alpha.2" % n,
-       SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
+       DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
       for n in ("tool-present", "tool-ralph", "tool-bash", "tool-pwsh",
                 "plugin-manager", "tool-web")),
     # The WEB plane's seam + HTML→markdown chain (#335 B5): boot.js mounts
@@ -261,71 +261,71 @@ TREES = [
     # dir name (a stripped stage would mint the web@ mismatch-name); the
     # chain mirrors the android stager's staged set.
     ("vendor/dsh/dsh-web@0.1.6-alpha.2",
-     SPIKE / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
+     DSH / "vendor" / "npm" / "@deepseek-ai" / "dsh-web@0.1.6-alpha.2"),
     ("vendor/npm/turndown@7.2.4/lib",
-     SPIKE / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
+     DSH / "vendor" / "npm" / "turndown@7.2.4" / "lib"),
     ("vendor/npm/@mixmark-io/domino@2.2.0/lib",
-     SPIKE / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
+     DSH / "vendor" / "npm" / "@mixmark-io" / "domino@2.2.0" / "lib"),
     ("vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib",
-     SPIKE / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
+     DSH / "vendor" / "npm" / "@joplin" / "turndown-plugin-gfm@1.0.67" / "lib"),
 ] + [
     # api-full-coverage (D9): the vendored services the coverage rows mount
     # (the goal service, the file-reference discovery) + loop-u's llm-retry —
     # boot.js imports these npm-face packages directly (a missing tree fails
     # the generator loud), and the loop's request-retry answer rides in-turn.
     *(("vendor/npm/@deepseek-ai/dsh-%s@0.1.6-alpha.2",
-       SPIKE / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
+       DSH / "vendor" / "npm" / "@deepseek-ai" / ("dsh-%s@0.1.6-alpha.2" % n))
       for n in ("goal", "file-reference", "file-reference-local", "llm-retry")),
 ] + [
     # the npm `diff` bridge target: npm-bridges re-exports the libesm face
     # behind the bare specifier vendored tool-fs imports (structuredPatch).
     ("vendor/npm/diff@9.0.0/libesm",
-     SPIKE / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
+     DSH / "vendor" / "npm" / "diff@9.0.0" / "libesm"),
     # the npm `yaml` bridge target (the SKILL row): the browser/ ESM face
     # behind the bare specifier skill-filesystem imports for frontmatter
     # (the "node" face is CJS, which the loader cannot serve).
     ("vendor/npm/yaml@2.9.0/browser",
-     SPIKE / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
+     DSH / "vendor" / "npm" / "yaml@2.9.0" / "browser"),
     # the npm `fflate` bridge target (the OFFICE row's zip engine).
     ("vendor/npm/fflate@0.8.2/esm",
-     SPIKE / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
+     DSH / "vendor" / "npm" / "fflate@0.8.2" / "esm"),
     # D-c: the sharp face's engines (its adapter rides upstream/shims below).
-    *(("vendor/npm/%s" % n, SPIKE / "vendor" / "npm" / n) for n in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
+    *(("vendor/npm/%s" % n, DSH / "vendor" / "npm" / n) for n in ("pngjs@5.0.0/lib", "jpeg-js@0.4.4", "fflate@0.8.2/lib/index.cjs")),
     # The crypto shims' npm face (crypto.js's static noble imports) and
     # the pi-ai bridge target (the providers barrel + its data face):
     # both whole pins ride — the parity legs died on bytes-absent-in-app.
     ("vendor/npm/@noble/hashes@2.3.0",
-     SPIKE / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
+     DSH / "vendor" / "npm" / "@noble" / "hashes@2.3.0"),
     ("vendor/npm/@earendil-works/pi-ai@0.85.1",
-     SPIKE / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
+     DSH / "vendor" / "npm" / "@earendil-works" / "pi-ai@0.85.1"),
     # The OFFICE row (2026-09-27): the whole plugin dir rides the tree.
     ("system-plugins/dsh-office",
-     SPIKE / "system-plugins" / "dsh-office"),
+     DSH / "system-plugins" / "dsh-office"),
     # The upstream shims ride the WHOLE DIRECTORY (the android stager's
     # convention): a shim joins the embed by existing, not by list edit.
-    ("upstream/shims", SPIKE / "upstream" / "shims"),
+    ("upstream/shims", DSH / "upstream" / "shims"),
     # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims).
     ("scenario",
-     SPIKE / "scenario"),
+     DSH / "scenario"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/
     # bundles themselves are embedded individually in RESOURCES above.
     ("vendor/npm/cordis@4.0.2/package.json",
-     SPIKE / "vendor" / "npm" / "cordis@4.0.2" / "package.json"),
+     DSH / "vendor" / "npm" / "cordis@4.0.2" / "package.json"),
     ("vendor/npm/cosmokit@1.8.3/package.json",
-     SPIKE / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
+     DSH / "vendor" / "npm" / "cosmokit@1.8.3" / "package.json"),
     ("vendor/npm/schemastery@3.18.2/package.json",
-     SPIKE / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
+     DSH / "vendor" / "npm" / "schemastery@3.18.2" / "package.json"),
     ("vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2/package.json",
-     SPIKE / "vendor" / "npm"
+     DSH / "vendor" / "npm"
      / "@deepseek-ai/dsh-client-modules@0.1.6-alpha.2" / "package.json"),
 ]
 
 # The pinned zod's runtime closure: `zod` → index.js → the classic build's
 # relative import graph (computed once by walking imports from index.js at
 # the pin). The rest of the package (src/, v3/, mini/, .d.ts) never loads.
-ZOD_ROOT = ("vendor/npm/zod@4.4.3", SPIKE / "vendor" / "npm" / "zod@4.4.3")
+ZOD_ROOT = ("vendor/npm/zod@4.4.3", DSH / "vendor" / "npm" / "zod@4.4.3")
 ZOD_FILES = [
     "index.js",
     "v4/classic/checks.js",
@@ -392,13 +392,13 @@ def collect_tree_files():
     return out
 
 
-# The SELF-HOSTED Web Client plugin (presentation/web-client-next): its own
+# The SELF-HOSTED Web Client plugin (presentation/web-client-v2): its own
 # tree so .html/.css ride along — the spine tree's suffix filter is
 # .js/.mjs/.json/... and a silent suffix drop is exactly the 2026-09-24
-# drift class this repo refuses. Staged under webclient-next/ (SpikeBundleStager).
+# drift class this repo refuses. Staged under webclient-v2/ (BundleStager).
 WEBCLIENT_TREES = [
-    ("webclient-next", REPO / "presentation" / "web-client-next"),
-    ("webclient-whale", REPO / "presentation" / "web-client-whale"),
+    ("webclient-v2", REPO / "presentation" / "web-client-v2"),
+    ("webclient-compact", REPO / "presentation" / "web-client-compact"),
 ]
 WEBCLIENT_SUFFIXES = (".html", ".css", ".js", ".json")
 
@@ -425,7 +425,7 @@ def c_array(symbol: str, data: bytes, raw: bytes) -> str:
         chunk = ", ".join(f"0x{b:02x}" for b in raw[at:at + 16])
         rows.append(f"  {chunk},")
     body = "\n".join(rows)
-    # trailing NUL keeps the array a valid C string (dsh_spike_eval strlens)
+    # trailing NUL keeps the array a valid C string (dsh_runtime_eval strlens)
     return f"static const unsigned char {symbol}[] = {{\n{body}\n  0x00\n}};\n"
 
 
@@ -437,9 +437,9 @@ def emit_resources(parts: list, decls: list, funcs: list) -> None:
         raw = path.read_bytes()
         data = raw + b"\x00"
         parts.append(f"/* {path.relative_to(REPO)} ({len(data) - 1} bytes) */\n{c_array(symbol, data, raw)}")
-        decls.append(f"const char *dsh_spike_res_{suffix}(size_t *len);")
+        decls.append(f"const char *dsh_runtime_res_{suffix}(size_t *len);")
         funcs.append(
-            f"const char *dsh_spike_res_{suffix}(size_t *len) {{\n"
+            f"const char *dsh_runtime_res_{suffix}(size_t *len) {{\n"
             f"  if (len) *len = sizeof({symbol}) - 1;\n"
             f"  return (const char *){symbol};\n"
             f"}}\n"
@@ -451,14 +451,14 @@ def emit() -> None:
     parts, decls, funcs = [], [], []
     emit_resources(parts, decls, funcs)
     tree = collect_tree_files()
-    parts.append(trees.tree_c_source(tree, "DSH", "dsh_spike_bundle_tree_file", REPO))
+    parts.append(trees.tree_c_source(tree, "DSH", "dsh_runtime_bundle_tree_file", REPO))
     decls.append(trees.SPINE_TREE_WALKER_DECL)
     total = sum(p.stat().st_size for _, p in tree)
     print(f"gen_bundle_header: tree = {len(tree)} files, {total} bytes "
           f"({total / 1024:.0f} KiB)")
     webclient_tree = collect_webclient_files()
     parts.append(trees.tree_c_source(
-        webclient_tree, "DSH_WEBCLIENT", "dsh_spike_webclient_tree_file", REPO))
+        webclient_tree, "DSH_WEBCLIENT", "dsh_runtime_webclient_tree_file", REPO))
     decls.append(trees.WEBCLIENT_TREE_WALKER_DECL)
     wtotal = sum(p.stat().st_size for _, p in webclient_tree)
     print(f"gen_bundle_header: webclient tree = {len(webclient_tree)} files, "
@@ -466,7 +466,7 @@ def emit() -> None:
 
     header = "\n".join([
         "/* Generated by hosts/ios/Tools/gen_bundle_header.py — do not edit.",
-        " * Re-embeds the runtime/spike JS bundle (byte arrays, NUL-terminated). */",
+        " * Re-embeds the runtime/dsh JS bundle (byte arrays, NUL-terminated). */",
         f"#ifndef {GUARD}",
         f"#define {GUARD}",
         "",

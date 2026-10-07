@@ -53,7 +53,7 @@ endforeach()
 unset(_p)
 
 # The core has no app shell: the dsh-core static lib is defined by
-# runtime/spike/host (see root CMakeLists.txt), so only its closure re-stage
+# runtime/dsh/host (see root CMakeLists.txt), so only its closure re-stage
 # is a wrapper here.
 add_custom_target(dsh-sync-core
   COMMAND sh build/build.sh sync core

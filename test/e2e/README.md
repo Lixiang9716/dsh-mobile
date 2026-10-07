@@ -20,27 +20,27 @@ node test/e2e/check.mjs \
 ```
 
 Platforms capture their native log stream (stdout / os_log / logcat /
-hilog); the canonical `dsh.spike.log: {...}` lines are byte-identical
+hilog); the canonical `dsh.runtime.log: {...}` lines are byte-identical
 everywhere, so one checker serves all hosts.
 
 ## Scenario manifests (first on-device session)
 
 | Manifest | Scenario | Runs on | Contract |
 | --- | --- | --- | --- |
-| `boot-verification.json` | `boot.verification` | iOS (and any spike host) | 7 events — runtime boot, gateway negotiation, crypto/base64 shims |
+| `boot-verification.json` | `boot.verification` | iOS (and any dsh host) | 7 events — runtime boot, gateway negotiation, crypto/base64 shims |
 | `carrier-loopback.json` | `carrier.loopback` | iOS | 7 events — loopback HTTP+WS carrier |
 | `gateway-bridge-smoke.json` | `gateway.bridge-smoke` | macOS CLI | 6 events — C bridge dispatch: fs read/write/invalid, keychain unavailable |
 | `gateway-binding.json` | `gateway.binding` | iOS, UI-driven | 19 events — the frozen real-gateway-binding sequence (fs, http, picker, scope, approval, keychain, notify, app state) |
 | `gateway-audit.json` | `gateway.audit` | iOS, UI-driven | 15 flat audit records mirroring the binding call sequence, incl. the denied fsRead |
 | `session-mock-llm.json` | `session.mock-llm` | macOS CLI + iOS (auto-run) | 23 events — mini agent session over the system plugins: registry install, `dsh-notes` arriving through the install pipeline (`notes.installed`, receipt committed), host readiness, mock-LLM token deltas, subprocess tool persisting via fs under scope `app`, session complete |
 | `webclient-mount.json` | `webclient.mount` | iOS, carrier-side | 7 events — client.selected, Web Client mount, WS connect, the plugin toolbar slot rendered + acked (`slot.registered`), first/last streamed token delta, session complete |
-| `install-verified-tarball.json` | `install.verified-tarball` | macOS CLI (and any spike host) | 22 events — the install transaction end to end: deterministic fixture package, sha256 blob store, trust-record verify, strict manifest validation, install-time capability negotiation (`install.negotiated`), staged integrity read-back, promote, receipt commit, installed-plugin load + notes service roundtrip, and the tamper case (`install.integrity-rejected` before unpack, tree intact, no receipt) |
+| `install-verified-tarball.json` | `install.verified-tarball` | macOS CLI (and any dsh host) | 22 events — the install transaction end to end: deterministic fixture package, sha256 blob store, trust-record verify, strict manifest validation, install-time capability negotiation (`install.negotiated`), staged integrity read-back, promote, receipt commit, installed-plugin load + notes service roundtrip, and the tamper case (`install.integrity-rejected` before unpack, tree intact, no receipt) |
 | `ui-client-swap.json` | `ui.client-swap` | iOS, carrier-side (`run-ios-session-mock-llm.sh --client mini`) | 7 events — the config-selected client flip: `client.selected` = `dsh-web-client-mini`, mini-client mount, WS connect, `slot.registered`, first/last streamed delta, session complete |
-| `install-full-cycle.json` | `install.full-cycle` | macOS CLI (and any spike host) | 41 events — the four plugin-system scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
-| `marketplace-install.json` | `marketplace.install` | macOS CLI `--http` (`runtime/spike/ci/run-marketplace-install-e2e.sh`) | 71 events — the signed catalog (data-protocols §7) end to end over the REAL gateway `httpFetch` against loopback file hosting the generator authored from `system-plugins/`: pure-JS ed25519 self-test (RFC 8032 vectors) then catalog verify, resolver lookup (`^0.1.0` + `*`), the trust record passed THROUGH to the UNCHANGED `installFromFetch` (the committed receipt's `blobSha256` equals the signed entry's — the passthrough proof), the installed `dsh-fs` loaded and its fs service round-tripped; the §7.2 rotation drill (dual-signed window accepted + key learned → post-window index accepted by the window-observer, `unknown-key` for the stale pin) and the §7.1 tamper ladder (`bad-signature` / `unknown-key` self-consistent attacker catalog / `blob-mismatch` via a hostile mirror's control endpoint / `manifest-mismatch` honestly re-signed publisher error), every rung `InstallRejected` + audited + zero staging (`market.tamper.zero-staging`, journal untouched, tree intact) |
+| `install-full-cycle.json` | `install.full-cycle` | macOS CLI (and any dsh host) | 41 events — the four plugin-system scope items in one stream: the config layer (`config.resolved` + the slot gate admitting/refusing slots), the fetch-based installer over a logged scope-read stub (`install.fetch.stub` — the CLI descriptor honestly declares `httpFetch` unavailable), two crash-simulated pending receipts startup-replayed (`replay.committed` / `replay.rolled-back`, tree untouched), and a capability-rejected package (`install.capability-rejected`, `missing: ["notify"]`, before unpack) |
+| `marketplace-install.json` | `marketplace.install` | macOS CLI `--http` (`runtime/dsh/ci/run-marketplace-install-e2e.sh`) | 71 events — the signed catalog (data-protocols §7) end to end over the REAL gateway `httpFetch` against loopback file hosting the generator authored from `system-plugins/`: pure-JS ed25519 self-test (RFC 8032 vectors) then catalog verify, resolver lookup (`^0.1.0` + `*`), the trust record passed THROUGH to the UNCHANGED `installFromFetch` (the committed receipt's `blobSha256` equals the signed entry's — the passthrough proof), the installed `dsh-fs` loaded and its fs service round-tripped; the §7.2 rotation drill (dual-signed window accepted + key learned → post-window index accepted by the window-observer, `unknown-key` for the stale pin) and the §7.1 tamper ladder (`bad-signature` / `unknown-key` self-consistent attacker catalog / `blob-mismatch` via a hostile mirror's control endpoint / `manifest-mismatch` honestly re-signed publisher error), every rung `InstallRejected` + audited + zero staging (`market.tamper.zero-staging`, journal untouched, tree intact) |
 | `install-from-http.json` | `install.from-http` | iOS, profile mode (`run-ios-install-ui.sh`) | 46 events — the same fetch path ON DEVICE with the real `httpFetch` against the loopback carrier (the carrier self-hosts the package via the bus seam), the journal `pending→committed` order asserted, the two crash-simulated receipts replayed, then the session.mock-llm-shaped agent session |
 | `install-carrier-evidence.json` | `install.carrier-evidence` | iOS, carrier-side (`run-ios-install-ui.sh`) | 11 events — causal carrier evidence for the profile drive: `config.resolved` (the patch), `client.selected` `source=config`, mini-client mount, `http.route-registered` + `http.served` (3584 bytes over TCP), `slot.denied` (the configured allow-set enforced host-side), `slot.registered`, deltas, complete |
-| `llm-live-stream.json` | `llm.live-stream` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/spike/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
+| `llm-live-stream.json` | `llm.live-stream` | macOS CLI (scripted leg) | 19 events — the REAL-LLM streaming scenario on the CI-safe leg: the descriptor declares `httpFetch` unavailable, so `llm.leg` = `scripted-sse` and the OpenAI-compatible client (`runtime/dsh/llm.js`) runs against a scripted SSE stream split at odd byte boundaries — 1 `llm.reasoning.delta` + 6 `llm.delta` with exact texts, `llm.stream.completed`, `llm.served-model`, `llm.content.asserted`, and the `llm.key.audit` (the non-secret fixture key used in the scripted Authorization header appears nowhere in the log) |
 | `llm-live-stream-device.json` | `llm.live-stream` | iOS + Android (`run-ios-live-llm.sh` / `hosts/android/ci/run-live-llm.sh`) | 14 expectations — the REAL-backend leg: `llm.leg` = `gateway.httpFetch`, config from fs scope `app`, then the nondeterministic delta runs are asserted with the checker's `repeat` expectations (`llm.reasoning.delta` ≥1, `llm.delta` ≥1), `llm.stream.completed`, `llm.served-model` (logged verbatim — the server may substitute a model name), `llm.content.asserted` (non-empty aggregate), `llm.key.audit` `leaked: false` |
 | `llm-live-stream-carrier.json` | `llm.live-stream.carrier` | iOS + Android, carrier-side | 7 events — `client.selected`, Web Client mount, WS connect, the `llm` toolbar slot registered, first/last streamed LLM delta, session complete |
 | `officialweb-mount.json` | `officialweb.mount` | iOS, carrier-side + runtime (`run-ios-official-web-mount.sh`) | 14 events — the contract carrier mounting the OFFICIAL upstream web app with the RUNTIME LIVE and the APPLICATION TIER booting (the web integration and application-shell legs; `docs/webserver-contract.md` §4): `client.selected` `dsh-web-official`, `web.boot.applied` (the runtime's composed rows replace the carrier defaults) + `runtime.booted` (the vendored client-modules composer over the full 58-package `dsh.client` roster), `index.rendered` (5 injection rows) + `index.served` (token→cookie→303 auth-lite), `asset.served` (dist entry chunk), `plugins.served` (the runtime graph's bootstrap combo — the REAL vendored browser bundle, 36040 bytes), `upgrade.accepted` (`/api/remote.mux`), `rpc.observed` (the page's own first POST envelope answered structured `gateway/unimplemented`), `session.attached` (the page's first mux stream open) + `session.services.pending` (no agent spine embedded — the session API is the next named gap), `module.system.live` (the official facade materialized the vendored bundle; mode flipped queue→live), `app.shell.rendered` (the boot page DISPOSED — the UI renderer mounted the real shell: the application-shell leg past "Loading plugins…") + `page.rendered` (probe: final DOM state, no failure text; no upstream code edited) |
@@ -155,14 +155,14 @@ here:
 test/e2e/run-ios.sh [--udid U] [--art-dir D] [--skip-build]
 ```
 
-It vendors the engine, builds DSHSpike, installs and launches it with
+It vendors the engine, builds DSHHost, installs and launches it with
 stdout/stderr capture (log truncated first — the checker must see only this
-run), then follows the live log and drives every `spike: ui-wait` marker
+run), then follows the live log and drives every `dsh: ui-wait` marker
 via idb: notification-permission alert ("Allow"), HOME press on
 `notify.scheduled`, notification banner (retry loop ≤20s, pull-down
 fallback), approval dialog ("Approve"), and the Files picker navigation
-(On My iPhone → DSHSpike → gateway-e2e → notes.txt). On the terminal
-`spike: sequence` marker it runs all four scenario checkers, prints a
+(On My iPhone → DSHHost → gateway-e2e → notes.txt). On the terminal
+`dsh: sequence` marker it runs all four scenario checkers, prints a
 summary table, and exits non-zero if any fails. Screenshots land in
 `<art-dir>/screens/` as debugging artifacts — never checker inputs. Every
 wait polls a condition with a deadline; overall deadline 300s fails loud
@@ -236,9 +236,9 @@ into `files/profiles/default/llm-live-stream/config.json`, launch extra
 Both runners end with a `grep -F` of the RAW captured log for the API key —
 the key must appear nowhere.
 
-It builds DSHSpike, launches it in session mode (`-dsh-mode session`),
+It builds DSHHost, launches it in session mode (`-dsh-mode session`),
 waits for the `webclient.mounted` / `ws.token-delta` / terminal
-`spike: sequence session=` markers (screenshots at page-loaded,
+`dsh: sequence session=` markers (screenshots at page-loaded,
 mid-stream, final transcript), then verifies the captured log against
 BOTH `session-mock-llm.json` and the active client's carrier manifest. Same
 rule-8 polling discipline and 300s overall deadline as `run-ios.sh`.
@@ -255,7 +255,7 @@ It first materializes the vendored official dist (`ensure-official-dist.sh`:
 verify against the committed sha256 MANIFEST, rebuild reproducibly from the
 pinned upstream if absent) and the application-shell client bundles
 (`presentation/official-web/client-bundles/`, MANIFEST-verified), builds
-DSHSpike, stages the dist (`Documents/official-web/dist`) plus the full
+DSHHost, stages the dist (`Documents/official-web/dist`) plus the full
 web-plugins tree (`Documents/web-plugins` — 58 `dsh.client` packages, the
 vendored tarball winning for the bootstrap), and launches
 `-dsh-mode official-web`. The carrier serves the dist through the

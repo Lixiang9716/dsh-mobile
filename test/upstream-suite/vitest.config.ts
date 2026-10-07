@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config'
  *
  * What this proves: every spec upstream ships at the pinned tag
  * (dsh-v0.1.6-alpha.2 — the exact version, and the exact bytes, our runtime
- * vendors) passes with the packages resolved to `runtime/spike/vendor/`
+ * vendors) passes with the packages resolved to `runtime/dsh/vendor/`
  * through the node_modules layout. A green run means: the vendored build we
  * ship satisfies upstream's own unit and integration expectations.
  *
@@ -25,7 +25,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     include: [
-      'runtime/spike/vendor/dsh-tests@*/packages/*/*/tests/**/*.spec.ts',
+      'runtime/dsh/vendor/dsh-tests@*/packages/*/*/tests/**/*.spec.ts',
     ],
     exclude: [
       '**/node_modules/**',

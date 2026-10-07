@@ -14,7 +14,7 @@
 set -u
 ROOT=$(cd "$(dirname "$0")/../../.." && pwd)
 cd "$ROOT" || exit 1
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT="${DSH_ANDROID_ART:-hosts/android/artifacts/camera-plane}"
 SCEN=test/e2e/scenarios
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
@@ -78,14 +78,14 @@ until adbsh shell am start -n $PKG/.MainActivity --ez dsh.cameraplane true >/dev
     sleep 2
 done
 rec_deadline=$(( $(date +%s) + 60 ))
-until adbsh logcat -d -s dsh.spike 2>/dev/null | grep -q "dsh.spike.log"; do
-    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.spike records within 60s of am start"
+until adbsh logcat -d -s dsh.runtime 2>/dev/null | grep -q "dsh.runtime.log"; do
+    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.runtime records within 60s of am start"
     sleep 1
 done
 
 deadline=$(( $(date +%s) + 420 ))
-until adbsh logcat -d -s dsh.spike dsh.spike.result dsh.spike.audit > "$DUMP" 2>/dev/null \
-        && grep -q "dsh.spike.result: ALL" "$DUMP"; do
+until adbsh logcat -d -s dsh.runtime dsh.runtime.result dsh.runtime.audit > "$DUMP" 2>/dev/null \
+        && grep -q "dsh.runtime.result: ALL" "$DUMP"; do
     [ "$(date +%s)" -ge "$deadline" ] && die "camera-plane scenario did not complete within 420s"
     sleep 2
 done
@@ -94,8 +94,8 @@ sleep 1
 # ---- 5. checkers -------------------------------------------------------------
 say "5/5 checkers"
 cp "$DUMP" "$OUT/logs.txt"
-grep 'dsh.spike.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep 'dsh.runtime.result' "$OUT/logs.txt" > "$OUT/results.txt" || true
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 grep 'dsh.gateway.audit:' "$OUT/logs.txt" > "$OUT/gateway-audit.jsonl" || true
 
 FAIL=0
@@ -124,7 +124,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "android.camera-plane",
   "launch": "emulator, --ez dsh.cameraplane true (Debug, virtual camera burst)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "android-camera-plane", "verdict": "verdict-android-camera-plane.json", "pass": true },
     { "manifest": "android-camera-plane-audit", "verdict": "verdict-android-camera-plane-audit.json", "pass": true }

@@ -3,7 +3,7 @@
 # EMULATOR (the owner's target): one transpiled upstream spec per app
 # launch, executed by the quickjs-shaped harness inside our runtime; every
 # per-test verdict streams as a scenario record and lands in the aggregate
-# evidence. The corpus is staged under filesDir/spike/upstream-tests/
+# evidence. The corpus is staged under filesDir/dsh/upstream-tests/
 # (copyAssetDir MERGES on launch, so staged specs survive relaunches).
 #
 # usage: run-upstream-suite.sh <spec.mjs> [spec.mjs ...] | --all [--limit N]
@@ -13,9 +13,9 @@ ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CAPTURE="$ROOT/hosts/android/ci/logcat-capture.sh"
 cd "$ROOT"
 
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
-CORPUS="$ROOT/runtime/spike/upstream-tests"
+CORPUS="$ROOT/runtime/dsh/upstream-tests"
 OUT=${DSH_SUITE_OUT:-hosts/android/artifacts/upstream-suite}
 LAUNCH_DEADLINE_SECONDS=300
 
@@ -36,7 +36,7 @@ fi
 [ -n "$SPECS" ] || die "no specs given (pass spec names, or --all)"
 mkdir -p "$OUT"
 
-# ---- device + boot, one bounded poll (the run-spike-e2e discipline) --------
+# ---- device + boot, one bounded poll (the run-dsh-e2e discipline) --------
 if [ "$(uname)" = "Linux" ] && [ ! -w /dev/kvm ]; then
     die "/dev/kvm missing or not writable — KVM acceleration unavailable"
 fi
@@ -66,13 +66,13 @@ say "staging the corpus"
 CORPUS_TGZ="$(mktemp /tmp/dsh-suite-corpus.XXXXXX.tgz)"
 tar czf "$CORPUS_TGZ" -C "$CORPUS" .
 adb push "$CORPUS_TGZ" /data/local/tmp/dsh-suite-corpus.tgz >/dev/null
-adb shell "run-as $PKG sh -c 'rm -rf files/spike/upstream-tests && mkdir -p files/spike/upstream-tests && tar xzf /data/local/tmp/dsh-suite-corpus.tgz -C files/spike/upstream-tests'"
+adb shell "run-as $PKG sh -c 'rm -rf files/dsh/upstream-tests && mkdir -p files/dsh/upstream-tests && tar xzf /data/local/tmp/dsh-suite-corpus.tgz -C files/dsh/upstream-tests'"
 rm -f "$CORPUS_TGZ"
-adb shell "run-as $PKG ls files/spike/upstream-tests | wc -l" | tr -d '\r' | \
+adb shell "run-as $PKG ls files/dsh/upstream-tests | wc -l" | tr -d '\r' | \
     { read -r staged; say "staged $staged corpus files"; }
 
 # The suite driver + harness ship as TRACKED APK assets (staged by
-# stage-spine-closure.sh from runtime/spike/scenario — the single source).
+# stage-spine-closure.sh from runtime/dsh/scenario — the single source).
 # copyAssetDir re-merges assets over filesDir on every launch, so a
 # runner-pushed copy would be clobbered on first boot anyway; the APK is the
 # only source that sticks.
@@ -88,7 +88,7 @@ for spec in $SPECS; do
     # reader's initial snapshot, so the wait and the truncation judge the
     # canary view only — a previous spec's completion tag must not satisfy
     # this spec's wait.
-    CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+    CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
     cleanup_streamer() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
     trap cleanup_streamer EXIT INT TERM
 
@@ -96,7 +96,7 @@ for spec in $SPECS; do
         || { cleanup_streamer; die "am start failed for $spec"; }
 
     timed_out=0
-    if ! "$CAPTURE" wait -f "$STREAM" "$CANARY" "$LAUNCH_DEADLINE_SECONDS" "dsh.spike.result: ALL"; then
+    if ! "$CAPTURE" wait -f "$STREAM" "$CANARY" "$LAUNCH_DEADLINE_SECONDS" "dsh.runtime.result: ALL"; then
         echo "{\"spec\":\"$spec\",\"status\":\"timeout\"}" >> "$OUT/aggregate.jsonl"
         FILES_ERROR=$((FILES_ERROR + 1))
         timed_out=1
@@ -112,7 +112,7 @@ for spec in $SPECS; do
         continue
     fi
 
-    "$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > "$STREAM.final" 2>/dev/null \
+    "$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.runtime.result: ALL/q' > "$STREAM.final" 2>/dev/null \
         || cp "$STREAM" "$STREAM.final"
     # the aggregate line: one JSON per spec from its suite/summary record
     node - "$spec" "$STREAM.final" >> "$OUT/aggregate.jsonl" <<'EXTRACT'

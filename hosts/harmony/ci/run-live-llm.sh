@@ -16,7 +16,7 @@
 #      Measured on the dsh_phone emulator: hdc file send can OPEN an existing
 #      app-owned file but never CREATE one; an ArkTS-side create lands 0660
 #      (unopenable by the shell) and an app-side chmod is a silent no-op. So
-#      the RUNTIME creates the placeholder — e2e-stage.js asks the C-side
+#      the RUNTIME creates the placeholder — credential-stage.js asks the C-side
 #      app-scope fsWrite, whose fopen lands 0666 — announces it with the
 #      `stage-ready` marker, this script writes the real config over it with
 #      `hdc file send`, and the app imports, validates and consumes it
@@ -55,10 +55,10 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 OUT=${1:-hosts/harmony/artifacts/m5-llm-live-stream}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry
 CAPTURE_REMOTE=$BASE/cache/dsh-llm-live-stream-capture.log
-CONFIG_REMOTE=$BASE/files/spike-fs/llm-live-stream/config.json
+CONFIG_REMOTE=$BASE/files/dsh-fs/llm-live-stream/config.json
 LEG=llm.live-stream
 STREAM=/tmp/dsh-harmony-llm-live-stream-hilog.txt
 MAX_ATTEMPTS=${DSH_M2_LLM_ATTEMPTS:-2}
@@ -206,7 +206,7 @@ run_attempt() {
     deadline=$(( $(date +%s) + 240 ))
     next_wake=0
     while :; do
-        grep -q "dsh.spike.verdict: $LEG " "$STREAM" && break
+        grep -q "dsh.runtime.verdict: $LEG " "$STREAM" && break
         if [ "$(date +%s)" -ge "$deadline" ]; then
             return 1
         fi
@@ -272,14 +272,14 @@ wait "$streamer" 2>/dev/null || true
 streamer=""
 trap cleanup EXIT INT TERM
 
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
-grep "dsh.spike.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
+grep "dsh.runtime.verdict: $LEG " "$STREAM" > "$OUT/results.txt" || true
 cat "$OUT/results.txt"
 
 # The truncation-proof second capture: the app's own sink file, pulled from
 # the sandbox (same convention as run-host-e2e.sh).
 "$HDC" file recv "$CAPTURE_REMOTE" "$OUT/capture.txt" >/dev/null
-grep '^dsh.spike.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
+grep '^dsh.runtime.log:' "$OUT/capture.txt" > "$OUT/scenario.jsonl"
 
 # ---- the key-leak re-check over the RAW streams -----------------------------
 # First, before any verdict check: a leak is the one failure that must be
@@ -312,7 +312,7 @@ node test/e2e/check.mjs --manifest test/e2e/scenarios/llm-live-stream-carrier.js
     --log "$OUT/capture.txt" --out "$OUT/verdict-llm-live-stream-carrier.json" || true
 cat "$OUT/verdict-llm-live-stream-carrier.json"
 
-grep "dsh.spike.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
+grep "dsh.runtime.verdict: $LEG " "$OUT/results.txt" | grep -q " PASS" \
     || die "the scenario verdict is not PASS — see $OUT/results.txt"
 for v in "$OUT/verdict-llm-live-stream-device.json" "$OUT/verdict-llm-live-stream-carrier.json"; do
     grep -q '"pass": true' "$v" || die "$(basename "$v") is not a PASS verdict"
@@ -335,7 +335,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.llm.live-stream",
   "launch": "dsh_phone emulator, --ps dsh.e2e.leg llm.live-stream, real backend",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "llm-live-stream-device", "verdict": "verdict-llm-live-stream-device.json", "pass": true },
     { "manifest": "llm-live-stream-carrier", "verdict": "verdict-llm-live-stream-carrier.json", "pass": true }

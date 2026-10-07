@@ -8,7 +8,7 @@
  * pipeline (§1.5): head rows after `<head…>`, body rows after `<body…>`, the
  * `__DSH_BOOT_READY__` tail last, then `<base href="/">`.
  *
- * The dist bytes come straight from rawfile (`spike/officialweb/www/…` —
+ * The dist bytes come straight from rawfile (`rt/officialweb/www/…` —
  * vendored verbatim by ci/vendor-official.sh); no disk staging.
  */
 import { socket } from '@kit.NetworkKit';
@@ -59,7 +59,7 @@ export class WebDist {
 
   /** [distRoot] is the rawfile rel root this seat serves — the official
    * dist ('officialweb/www', the default) or a self-hosted client's staged
-   * web dir ('webclient/dsh-web-client-next/web' — the same seat, our page,
+   * web dir ('webclient/dsh-web-client-v2/web' — the same seat, our page,
    * and the caller keeps the injection rows empty: the page owns its boot). */
   constructor(server: CarrierServer, rawfile: (rel: string) => Uint8Array | null,
     sessionToken: string, distRoot: string = 'officialweb/www') {

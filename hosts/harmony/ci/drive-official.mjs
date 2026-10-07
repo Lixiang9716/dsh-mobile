@@ -16,9 +16,9 @@
  *   harmony.composer.live-write        index.served → write boot screenshot
  *   harmony.composer.live-write        composer.typed → composer-typed screenshot
  *   harmony.composer.live-write        write.reply.rendered → reply-rendered screenshot
- *   dsh.spike.verdict: harmony.httpfetch-streaming     → leg done
- *   dsh.spike.verdict: harmony.session.live-read     → leg done
- *   dsh.spike.verdict: harmony.composer.live-write       → done (exit 0 on PASS)
+ *   dsh.runtime.verdict: harmony.httpfetch-streaming     → leg done
+ *   dsh.runtime.verdict: harmony.session.live-read     → leg done
+ *   dsh.runtime.verdict: harmony.composer.live-write       → done (exit 0 on PASS)
  *
  * usage: drive-official.mjs --hdc <path> [--overall-deadline S]
  *                            [--shot-boot PNG] [--shot-final PNG]
@@ -146,13 +146,13 @@ const onLine = (line) => {
     state.writeReplyShot = true;
     snapshot(args['shot-write-reply']);
   }
-  if (line.includes('dsh.spike.verdict: harmony.httpfetch-streaming')) {
+  if (line.includes('dsh.runtime.verdict: harmony.httpfetch-streaming')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
-  if (line.includes('dsh.spike.verdict: harmony.session.live-read')) {
+  if (line.includes('dsh.runtime.verdict: harmony.session.live-read')) {
     state.sessionVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
-  if (line.includes('dsh.spike.verdict: harmony.composer.live-write')) {
+  if (line.includes('dsh.runtime.verdict: harmony.composer.live-write')) {
     state.writeVerdict = line.includes(' PASS') ? 'pass' : 'fail';
   }
 };

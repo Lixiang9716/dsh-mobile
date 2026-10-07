@@ -2,7 +2,7 @@
 # test/e2e/run-ios-upstream-parity.sh — the UPSTREAM PARITY differential's
 # iOS-simulator port leg (scenario `upstream.parity`).
 #
-# The vendored upstream DSH spine runs inside DSHSpike over the same scripted
+# The vendored upstream DSH spine runs inside DSHHost over the same scripted
 # turns the Node reference leg ran (success → todo_write tool round → closing
 # success → 401), and the projected session log must match the committed
 # golden record-for-record (ci/parity-compare.mjs) — the same bar the macOS
@@ -11,7 +11,7 @@
 # loopback, so the app reaches it at 127.0.0.1 through the REAL gateway
 # httpFetch primitive, and the endpoint rides the launch environment
 # (SIMCTL_CHILD_DSH_MOCK_LLM_URL/KEY → the launch-env snapshot
-# SpikeHostFactory declares to the spine).
+# CRuntimeFactory declares to the spine).
 #
 # usage: run-ios-upstream-parity.sh [--udid U] [--art-dir D] [--skip-build]
 #
@@ -24,8 +24,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/upstream-parity"
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
 MOCK_KEY="mock-key-0001"
 MOCK_WAIT_DEADLINE_SECONDS=15
@@ -65,12 +65,12 @@ fail_deadline() {
 
 # ---- 1-3. vendor, regen the bundle header (the parity scenario embeds), build
 log "1/5 vendor + regenerate the bundle header (embeds scenario/upstream-parity.js)"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 python3 hosts/ios/Tools/gen_bundle_header.py
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -88,7 +88,7 @@ MOCK_LOG="$(mktemp /tmp/dsh-mock-parity-ios.XXXXXX)"
 DSH_MOCK_SEQUENCE='success tool_call_success success auth_error' \
 DSH_MOCK_TOOL_NAME='todo_write' \
 DSH_MOCK_TOOL_ARGS='{"todos":[{"content":"Track the parity check","status":"in_progress"}]}' \
-    node runtime/spike/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
+    node runtime/dsh/ci/mock-llm-server.mjs > "$MOCK_LOG" 2>&1 &
 MOCK_PID=$!
 cleanup() {
   kill "$MOCK_PID" 2>/dev/null || true
@@ -151,7 +151,7 @@ fs.writeFileSync(`${art}/port.jsonl`, out.map((r) => JSON.stringify(r)).join('\n
 if (out.length === 0) { console.error('port leg produced no parity/event records'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$ART/port.jsonl" \
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$ART/port.jsonl" \
   | tee "$ART/parity-verdict.txt"
 
 node test/e2e/check.mjs \
@@ -159,7 +159,7 @@ node test/e2e/check.mjs \
   --log "$LOG" \
   --out "$ART/verdict.json"
 
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 
 # The receipt (what this run proves).
 EVENTS="$(grep -c '"scenario":"upstream.parity"' "$LOG" || true)"
@@ -167,7 +167,7 @@ REF_COUNT="$(wc -l < "$GOLDEN" | tr -d ' ')"
 cat > "$ART/receipt.json" <<EOF
 {
   "host": "ios-simulator ($(xcrun simctl list -j devices | python3 -c "import json,sys; d=json.load(sys.stdin); print(next(x['name']+' '+x['udid'] for xs in d['devices'].values() for x in xs if x['udid']=='$UDID'))") )",
-  "engine": "quickjs-ng (DSHSpike, gateway httpFetch → host loopback mock)",
+  "engine": "quickjs-ng (DSHHost, gateway httpFetch → host loopback mock)",
   "upstream": "@deepseek-ai/dsh-* 0.1.6-alpha.2 (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",
   "proves": [
@@ -175,7 +175,7 @@ cat > "$ART/receipt.json" <<EOF
     "the tool round is real: the scripted todo_write tool-call streamed through the REAL gateway httpFetch primitive to the host-side mock, the upstream ToolRuntime dispatched it, and the todos projection landed identically",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl + test/e2e/scenarios/upstream-parity-cli.json",
   "events": $EVENTS,
   "referenceRecords": $REF_COUNT,
   "exitCode": 0

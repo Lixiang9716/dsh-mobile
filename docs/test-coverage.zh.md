@@ -67,7 +67,7 @@ dash 必须能跑(数组与 `pipefail` 在那里是语法错误)。
   是 CLI 套件的行为证明。
 - `presentation/web-client*` — 纯浏览器 JS,无运行器、无测试;Node 侧
   `import` `main.js` 直接失败(`document is not defined`)。
-- `runtime/spike`(QuickJS 运行时 + shims)— 交付语义是 QuickJS 的;
+- `runtime/dsh`(QuickJS 运行时 + shims)— 交付语义是 QuickJS 的;
   行为网负责它们。
 
 ## 新增一个面

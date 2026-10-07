@@ -1,6 +1,6 @@
 {
   "app": {
-    "bundleName": "com.dshmobile.spike",
+    "bundleName": "com.dshmobile.host",
     "vendor": "dsh-mobile",
     "versionCode": 1000000,
     "versionName": "0.0.1",

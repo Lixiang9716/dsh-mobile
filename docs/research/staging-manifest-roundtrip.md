@@ -50,7 +50,7 @@ Derivation legs (mechanics in `tools/gen-staging-legs.mjs`):
   runtime closure **recomputed by walking the pin's own import graph**;
 - **closure-faces** — the npm single-file faces, taken verbatim from
   vendor-official.sh's CLOSURE rows (policy, not re-derived);
-- **webclient** — presentation/web-client{,-next,-whale} at their staged
+- **webclient** — presentation/web-client{,-next,-compact} at their staged
   names.
 
 Result per manifest:
@@ -122,7 +122,7 @@ round-trip that holds is set-level and attribution-level. The residue:
 ## 5. Reproducing
 
 ```
-runtime/spike/vendor/ensure-dsh.sh          # materialize the vendored pins
+runtime/dsh/vendor/ensure-dsh.sh          # materialize the vendored pins
 sh hosts/harmony/ci/vendor-official.sh --closure-only   # rawfile closure
 node tools/gen-staging-manifests.mjs --out /tmp/gen-out  # this report's numbers
 node tools/check-staging.mjs --block harmony,android,ios # the verifier, green

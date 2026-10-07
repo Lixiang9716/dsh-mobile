@@ -8,7 +8,7 @@
  * `/plugins/??<a>/client.js,<b>/client.js&rev=…` combine form, and the
  * `.map` identity maps; anything else under /plugins is an unknown resource
  * → 404; non-GET/HEAD → 405. Sources come from rawfile
- * (`spike/officialweb/plugins/npm/@deepseek-ai/<pkg>/lib/client.js`).
+ * (`rt/officialweb/plugins/npm/@deepseek-ai/<pkg>/lib/client.js`).
  *
  * Upstream byte semantics (CarrierPlugins.swift is the platform twin):
  * prepareSource trailer strip, `;\n` per source, combo sourceMappingURL,

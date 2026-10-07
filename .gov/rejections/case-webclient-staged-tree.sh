@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # gate: webclient-staged-tree
 # Proves the staged-tree gate rejects the #288 leak class: one unsynced
-# (untracked) file inside the whole-tree-staged presentation/web-client-next
+# (untracked) file inside the whole-tree-staged presentation/web-client-v2
 # directory turns the file-count check red, and removing it restores green.
 # This is the ask's hand counter-proof for A12, institutionalized per
 # rules.md §6 (a gate that never fails is a vacuous script).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-DIR="$REPO/presentation/web-client-next"
+DIR="$REPO/presentation/web-client-v2"
 LEAK="$DIR/web/js/.case-leak-tmp.js"
 
 restore() { rm -f "$LEAK"; }

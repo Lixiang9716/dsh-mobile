@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios.sh — local M2 "real gateway binding" E2E driver.
 #
-# Builds DSHSpike, installs and launches it on a booted iOS simulator, drives
+# Builds DSHHost, installs and launches it on a booted iOS simulator, drives
 # the NATIVE UI the scenario blocks on (permission alert, Files picker,
 # approval dialog, notification banner) via idb, then verifies the captured
 # log against all four scenario manifests. Screenshots are saved artifacts
@@ -40,8 +40,8 @@ ART="hosts/ios/artifacts/gateway"
 SKIP_BUILD=0
 NO_REBOOT=0
 SKIP_INSTALL=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 # The step-3 REBOOT kills any running WDA, so step 5 re-bootstraps it on the
 # freshly booted sim — test-manager daemons can take minutes there, and the
 # system-UI legs (banner/picker) hang without it. Budget accordingly:
@@ -312,10 +312,10 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   # (matrix attempts 4-7 + the standalone discriminators, 2026-09-30: not
   # found at file age ~2, ~5, ~26 minutes; the one green search rode an
   # ~11-minute-old file). The browse hierarchy reads the filesystem DIRECTLY
-  # (verified live by the probe walk: 浏览 tab → DSH Spike → gateway-e2e →
+  # (verified live by the probe walk: 浏览 tab → DSH Dsh → gateway-e2e →
   # the notes cell, every hop visible in WDA's tree), so there is no index
   # to wait for and no pre-launch settle to bet. The ~0.15s press on the
-  # notes cell = select+confirm in one gesture; `spike: ui-done picker` is
+  # notes cell = select+confirm in one gesture; `dsh: ui-done picker` is
   # the verdict marker. Labels tried in the runtime's language first (浏览/
   # 我的iPhone on this zh sim), then English — the hop CELLS (gateway-e2e,
   # notes) are locale-neutral names.
@@ -332,12 +332,12 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
     if wda_find_tap "gateway-e2e" 0.1; then
       walked=1; break
     fi
-    # The browse root: location list (我的 iPhone / DSH Spike) OR the app's
+    # The browse root: location list (我的 iPhone / DSH Dsh) OR the app's
     # Documents (the sheet remembers its last location) — walk whichever shows.
     wda_find_tap "我的iPhone" 0.1 || wda_find_tap "My iPhone" 0.1 || true
     sleep 3
     if wda_find_tap "gateway-e2e" 0.1; then walked=1; break; fi
-    wda_find_tap "DSH Spike" 0.1 || true
+    wda_find_tap "DSH Dsh" 0.1 || true
     sleep 3
     if wda_find_tap "gateway-e2e" 0.1; then walked=1; break; fi
     sleep 4   # let the listing settle before retrying the walk
@@ -347,7 +347,7 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
   shot 05-picker-search   # historical name: the folder-content frame (notes cell visible)
   for _ in 1 2 3; do
     if wda_find_tap "notes" 0.15; then   # duration press = select+confirm
-      if wait_line "spike: ui-done picker" 6; then
+      if wait_line "dsh: ui-done picker" 6; then
         shot 06-picker-selected
         return 0
       fi
@@ -359,11 +359,11 @@ drive_picker() { # Files sheet; the walk is BROWSE-based, label-addressed via
 
 # ---- 1-4. vendor, build, boot, install, launch -----------------------------
 log "1/6 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/6 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -461,7 +461,7 @@ if [ "$rc" != "0" ]; then
   exit 1
 fi
 
-# ---- 5. driver: react to spike: markers on the live log --------------------
+# ---- 5. driver: react to dsh: markers on the live log --------------------
 log "5/6 driving scenario markers (deadline 900s)"
 wda_bootstrap || echo "run-ios: WARNING: WDA unavailable — system-UI legs degraded"
 FIFO="$ART/.driver.fifo"
@@ -475,30 +475,30 @@ exec 3<"$FIFO"
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
-      *"spike: ui-wait notification-permission"*)
+      *"dsh: ui-wait notification-permission"*)
         shot 01-notification-permission
         sleep 1.5   # alert presentation completes before the press lands
         wda_click "允许" || wda_click "Allow" || idb ui tap --udid "$UDID" "${PT_ALLOW[@]}" --duration 0.15 || true ;;
-      *"dsh.spike.log:"*"notify.scheduled"*)
+      *"dsh.runtime.log:"*"notify.scheduled"*)
         log "notify.scheduled seen -> HOME (background)"; idb ui button --udid "$UDID" HOME >/dev/null ;;
-      *"spike: ui-wait notification-banner"*) drive_banner ;;
-      *"spike: ui-wait approval"*)
+      *"dsh: ui-wait notification-banner"*) drive_banner ;;
+      *"dsh: ui-wait approval"*)
         shot 03-approval
         wda_click "Approve" || tap_label "Approve" "${PT_APPROVE[@]}" ;;
-      *"spike: ui-wait picker"*) drive_picker ;;
-      *"spike: sequence"*)
+      *"dsh: ui-wait picker"*) drive_picker ;;
+      *"dsh: sequence"*)
         log "terminal marker: $line"; break ;;
     esac
   fi
   if [ "$SECONDS" -ge "$DEADLINE" ]; then
-    fail_deadline "900s deadline — 'spike: sequence' never appeared"
+    fail_deadline "900s deadline — 'dsh: sequence' never appeared"
   fi
 done
 exec 3<&-; { kill "$TAIL_PID" && wait "$TAIL_PID"; } 2>/dev/null || true
 
 # ---- 6. checkers ------------------------------------------------------------
 log "6/6 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0; FAILED=""
 run_check() { # MANIFEST OUT
@@ -535,5 +535,5 @@ log "ALL CHECKERS PASS"
 # receipt can never exist without this real green run (never synthesized).
 sh test/e2e/write-receipt.sh "$ART" "$UDID" "test/e2e/run-ios.sh" \
   "M2 gateway binding — the native UI legs the gateway scenario blocks on (notification permission alert, banner tap, approval dialog, Files-document picker search) are driven LIVE on the simulator while the gateway/fs/http primitives answer over the real JS bridge, one-to-one against all four scenario manifests" \
-  "default DSHSpike scenario drive (boot -> carrier -> gateway binding -> audit); picker target pre-staged at Documents/gateway-e2e/notes.txt, stage-once per the provider index-settle recipe" \
+  "default DSHHost scenario drive (boot -> carrier -> gateway binding -> audit); picker target pre-staged at Documents/gateway-e2e/notes.txt, stage-once per the provider index-settle recipe" \
   boot-verification carrier-loopback gateway-binding gateway-audit

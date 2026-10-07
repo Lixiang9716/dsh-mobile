@@ -2,7 +2,7 @@ import Foundation
 
 /// ishRun (contract v1.3.0) — one program in the host's in-process Linux
 /// guest. The engine is the vendored iSH-arm64 userland emulator
-/// (runtime/spike/host/dsh_ish.{h,c}, built by runtime/spike/host/ish and
+/// (runtime/dsh/host/dsh_ish.{h,c}, built by runtime/dsh/host/ish and
 /// linked into this app): a real aarch64 Alpine tree runs as emulated tasks
 /// inside this process, so "run a command" needs neither a subprocess (D2) nor
 /// a shell binary iOS does not have. It lives beside the fs primitives because

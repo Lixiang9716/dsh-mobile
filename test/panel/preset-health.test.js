@@ -14,7 +14,7 @@ import yaml from 'js-yaml';
 // gen-presets-seed.py are the same rule four times).
 //
 // The verdict rule is the vendored AgentPresets discovery's
-// (runtime/spike/vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js):
+// (runtime/dsh/vendor/dsh/agent-presets@0.1.6-alpha.2/lib/index.js):
 //   - a row with a truthy `disabled` is not part of the composition — a
 //     `!!js` expression arrives as an OBJECT there, so it is always truthy
 //     and skips the row; these docs are pre-mapped `!!js` → `!!str` so every
@@ -32,7 +32,7 @@ import yaml from 'js-yaml';
 // from its embed fails here first, naming the row and the package.
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const STAGED_DSH = join(REPO, 'hosts/android/app/src/main/assets/spike/vendor/dsh');
+const STAGED_DSH = join(REPO, 'hosts/android/app/src/main/assets/dsh/vendor/dsh');
 const PRESETS_ROOT = join(STAGED_DSH, 'agent-presets@0.1.6-alpha.2', 'presets');
 
 /** The staged marker set: every staged vendor/dsh package's own name,
@@ -78,7 +78,7 @@ const markerNames = () => {
  * declaration (the module itself imports the runtime's node:buffer shim
  * face and cannot load under node). */
 const mobileAbsentRowIds = () => {
-  const src = readFileSync(join(REPO, 'runtime/spike/upstream/preset-mobile-rows.js'), 'utf8');
+  const src = readFileSync(join(REPO, 'runtime/dsh/upstream/preset-mobile-rows.js'), 'utf8');
   const block = src.match(/MOBILE_ABSENT_ROW_IDS = new Set\(\[([\s\S]*?)\]\)/);
   expect(block, 'preset-mobile-rows.js no longer declares MOBILE_ABSENT_ROW_IDS').toBeTruthy();
   return new Set([...block[1].matchAll(/'([A-Za-z0-9_-]+)'/g)].map((m) => m[1]));
@@ -111,7 +111,7 @@ const unresolvableRows = (rows, presetDir, markers, at = '') => {
     } else {
       // file URL / absolute path: a real file on the staged tree
       const spec = name.startsWith('file:') ? fileURLToPath(name) : name;
-      try { statSync(spec.startsWith('/') ? join(REPO, 'hosts/android/app/src/main/assets/spike', `.${spec}`) : spec); return; } catch { /* fall through */ }
+      try { statSync(spec.startsWith('/') ? join(REPO, 'hosts/android/app/src/main/assets/dsh', `.${spec}`) : spec); return; } catch { /* fall through */ }
     }
     found.push({ label, name });
   });

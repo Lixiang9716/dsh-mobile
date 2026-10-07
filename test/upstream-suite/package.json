@@ -2,7 +2,7 @@
   "name": "dsh-mobile-upstream-suite",
   "private": true,
   "type": "module",
-  "description": "The upstream DSH test suite (same tag as the vendored closure, dsh-v0.1.6-alpha.2) executed against OUR vendored packages — the full-suite compatibility proof. Imports resolve through runtime/spike/vendor/node_modules (ci/parity-node-modules.sh); the runner is test/upstream-suite/run.sh.",
+  "description": "The upstream DSH test suite (same tag as the vendored closure, dsh-v0.1.6-alpha.2) executed against OUR vendored packages — the full-suite compatibility proof. Imports resolve through runtime/dsh/vendor/node_modules (ci/parity-node-modules.sh); the runner is test/upstream-suite/run.sh.",
   "devDependencies": {
     "jsdom": "29.1.1",
     "vitest": "^5.0.2"

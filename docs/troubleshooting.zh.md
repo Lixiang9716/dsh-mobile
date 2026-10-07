@@ -12,8 +12,8 @@ agent（或换一台机器）就归零。本文件就是这本账：每个陷阱
 ## 1. shim 文件间的静态 import 环会让 QuickJS 在 link 阶段以空错误死亡
 
 每个文件都能干净通过 —— 对它们逐个跑 `node --check` 全绿 —— 但真引擎下
-运行时一个字都不留地死了：spike CLI 以非零退出，打印 `spike: error: `
-后面什么都没有（空行的呈现方式见第 6 条）。机理：`runtime/spike/upstream/shims/`
+运行时一个字都不留地死了：dsh CLI 以非零退出，打印 `dsh: error: `
+后面什么都没有（空行的呈现方式见第 6 条）。机理：`runtime/dsh/upstream/shims/`
 下两个文件之间的静态 ESM import 环会让 QuickJS 的模块 link 阶段直接中止，
 且不带任何错误字符串 —— 这是实测，不是推断（引入该环的那次拆分
 node 全绿、QuickJS 致命，2026-09-29）。Node 复现不了，因为 `node --check`
@@ -24,10 +24,10 @@ node 全绿、QuickJS 致命，2026-09-29）。Node 复现不了，因为 `node 
 import。真出现双向形状时，回向引用只能发生在调用时刻（ESM-cycle-safe
 模式：导入方在调用时经 namespace 读绑定，此时定义方早已求值完成 ——
 见 `fs-paths.js`、`fs-readdir.js`、`fs-stat.js`、`fs-writes.js` 的文件头）。
-代码承载：`runtime/spike/upstream/shims/fs-seeded.js:22-24`（"ONE-WAY EDGE
+代码承载：`runtime/dsh/upstream/shims/fs-seeded.js:22-24`（"ONE-WAY EDGE
 … a static import cycle between two runtime/shims files kills quickjs at
 link with an empty error (measured)"）与
-`runtime/spike/upstream/shims/buffer.js:31`（"one-way; a shim-shim import
+`runtime/dsh/upstream/shims/buffer.js:31`（"one-way; a shim-shim import
 cycle kills QuickJS at link"）。
 
 ## 2. aapt2 默认 ignoreAssetsPattern 会把点文件悄悄排除出 APK assets
@@ -61,27 +61,27 @@ pins 只挂在一条 ensure 路径上，spine ensure 没物化它们，217 行
 绝不产出安静的半截 rawfile。代码承载于
 [hosts/harmony/ci/vendor-official.sh](../hosts/harmony/ci/vendor-official.sh)：
 每个 `(cd "$DIR" && find …) | while` 暂存循环之前都有
-`[ ! -d "runtime/spike/$DIR" ] && echo "::error::… absent" && exit 1`
+`[ ! -d "runtime/dsh/$DIR" ] && echo "::error::… absent" && exit 1`
 （noble pin 在 `vendor-official.sh:474-481`，pi-ai 在 `:490-497`，
 `vendor/dsh` 在 `:112`），首个 guard 上方的注释记录了这次事故。
 
 ## 4. `git show` / `git checkout` 的路径必须以仓库根为基准
 
 从某个 ref 抽文件时用了"站在当前位置看是对的"的路径 —— 在
-`runtime/spike/` 下写 `git show <ref>:scenario/upstream-suite-leg.js`，
+`runtime/dsh/` 下写 `git show <ref>:scenario/upstream-suite-leg.js`，
 或同样拼法用于 `git checkout <ref> -- …` —— 得到的是空内容，且没有任何
 东西指出原因。机理：`<ref>:<path>` 对象上的 pathspec（以及
 `git checkout <ref> -- <path>`）从仓库根解析，与当前目录无关 —— 作为普通
 文件系统路径正确的拼法，在 git 的索引里什么都不是。本树实测（只读）：
 错误拼法让 `git show` 报 `fatal: path
-'runtime/spike/scenario/upstream-suite-leg.js' exists, but not
+'runtime/dsh/scenario/upstream-suite-leg.js' exists, but not
 'scenario/upstream-suite-leg.js'` —— 在 stderr 上，而输出一旦进管道或命令
 替换就丢了，空字符串继续静默流下去；而 `git checkout HEAD -- scenario/…`
-在 `runtime/spike/` 下退出码 0、什么都没改（`git status --porcelain`
+在 `runtime/dsh/` 下退出码 0、什么都没改（`git status --porcelain`
 无新条目）。
 
 git 对象路径永远按仓库根拼全：
-`git show <ref>:runtime/spike/scenario/upstream-suite-leg.js`。git 报错时
+`git show <ref>:runtime/dsh/scenario/upstream-suite-leg.js`。git 报错时
 读它自己的 hint —— 它会给出根相对形式（以及 `<ref>:./<path>` 这个显式
 要求 cwd 相对的拼法）。目前还没有仓库代码承载这条纪律 —— 没有任何 gate
 或脚本校验 `git show`/`git checkout` 的路径拼法 —— 在那之前，本段的约定
@@ -99,19 +99,19 @@ git 对象路径永远按仓库根拼全：
 部分，扫描器的注释跟踪随之失步，其后每个嵌套块都变成违规。
 
 这类模式用 `new RegExp` 重建，让撇号活在扫描器看得懂的真正字符串字面量里。
-代码承载：`runtime/spike/upstream/shims/node-http-loopback.js:375-381`
+代码承载：`runtime/dsh/upstream/shims/node-http-loopback.js:375-381`
 把 token 字符集构建为 `new RegExp("^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$")`，
 旁边注释写明原因（"a regex literal here carries ' and ` inside the
 class, and the code-size scanner (line-based, no regex state) reads them
 as an unterminated string"）。扫描器本身未改 —— 本条记录的是它的盲视
 所逼出来的绕法。
 
-## 6. spike CLI 的空 `spike: error:` 是正常的未完成形状，不是崩溃
+## 6. dsh CLI 的空 `dsh: error:` 是正常的未完成形状，不是崩溃
 
-普通（非 scenario）入口打印 `spike: FAIL (complete=0 pass=0)`，跟着
-`spike: error: ` 冒号后面什么都没有 —— 看起来像崩溃丢了报文。既不是
+普通（非 scenario）入口打印 `dsh: FAIL (complete=0 pass=0)`，跟着
+`dsh: error: ` 冒号后面什么都没有 —— 看起来像崩溃丢了报文。既不是
 崩溃也没有丢报文：机理是 `main_cli.c` 在任何非零退出时打印
-`dsh_spike_error()`（[runtime/spike/host/main_cli.c](../runtime/spike/host/main_cli.c):1305-1308），
+`dsh_spike_error()`（[runtime/dsh/host/main_cli.c](../runtime/dsh/host/main_cli.c):1305-1308），
 而错误缓冲只在运行时真的记录了错误时才被写入 ——
 `dsh_spike_host.c:3561` 返回 `s->err`，从未设置时就是空字符串
 （`dsh_spike_host.h:31` 注明新结构体不带错误文本）。普通入口跑完就退出、
@@ -144,13 +144,13 @@ streamer 持续写同一文件、就地重写孤儿化了 streamer 的 fd
 `CANARY` 钉子、`canary_view()` 助手，以及 `:86-91` 点名 2026-09-29 复发
 （截断已 canary 钉住、等待却仍在 grep 裸流）的注释。device-plane runner
 则干脆放弃实时流：force-stop、`logcat -c`、干净启动，然后轮询
-`logcat -d -s dsh.spike` 快照 —— dump 天然只含本轮
+`logcat -d -s dsh.runtime` 快照 —— dump 天然只含本轮
 （`run-device-plane.sh:70-95`）。两种纪律都成立；混用（截断 canary 钉住、
 等待裁裸流）正是失败形状。
 
 ## 8. iOS 模拟器 runtime < 26 的 dyld 缓存里没有 libswiftWebKit
 
-`DSHSpike.debug.dylib` 在 iOS 18.5 模拟器上启动即死：`Library not loaded:
+`DSHHost.debug.dylib` 在 iOS 18.5 模拟器上启动即死：`Library not loaded:
 @rpath/libswiftWebKit.dylib` —— 而每个 runner 都先干净地构建成功，失败
 只在 install+boot 之后才浮出，把整轮预算烧在一个永远产不出 app 日志的
 启动上。机理：26 之前的模拟器 runtime 的 dyld 共享缓存不带

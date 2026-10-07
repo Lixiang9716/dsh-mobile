@@ -7,8 +7,8 @@ import { existsSync } from 'node:fs';
 
 const ROOT = pathResolve(new URL('../..', import.meta.url).pathname);
 const BUNDLE_SCENARIO = {
-  'scenario/upstream-test-harness.js': 'runtime/spike/scenario/upstream-test-harness.js',
-  'scenario/upstream-fake-timers.js': 'runtime/spike/scenario/upstream-fake-timers.js',
+  'scenario/upstream-test-harness.js': 'runtime/dsh/scenario/upstream-test-harness.js',
+  'scenario/upstream-fake-timers.js': 'runtime/dsh/scenario/upstream-fake-timers.js',
 };
 
 // The runtime-module seam, Node side. shims/runtime-modules.js (and the
@@ -38,12 +38,12 @@ export async function resolve(specifier, context, nextResolve) {
   }
   // Bundle-root ABSOLUTE specifiers (the shape the npm-bridges rows and
   // the quickjs host's static bare map both speak): '/x' is the runtime/
-  // spike bundle's own root, not the machine's. Without this the Node
+  // dsh bundle's own root, not the machine's. Without this the Node
   // reference leg dies on the first spec whose boot graph pulls a bridge
   // target (the loop spec: office tools → fflate — 2026-09-29).
   if (specifier.startsWith('/')) {
     return {
-      url: pathToFileURL(pathResolve(ROOT, 'runtime/spike', specifier.slice(1))).href,
+      url: pathToFileURL(pathResolve(ROOT, 'runtime/dsh', specifier.slice(1))).href,
       shortCircuit: true,
     };
   }
@@ -57,7 +57,7 @@ export async function resolve(specifier, context, nextResolve) {
     || /^(logger|gateway|registry|sha256|manifest)\.js$/.test(specifier);
   if (bundleNs) {
     return {
-      url: pathToFileURL(pathResolve(ROOT, 'runtime/spike', specifier)).href,
+      url: pathToFileURL(pathResolve(ROOT, 'runtime/dsh', specifier)).href,
       shortCircuit: true,
     };
   }

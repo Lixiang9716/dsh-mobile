@@ -28,7 +28,7 @@
 set -eu
 
 APK=${DSH_PAGEOPEN_APK:-hosts/android/app/build/outputs/apk/release/app-release-signed.apk}
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 OUT=${DSH_PAGEOPEN_OUT:-/tmp/dsh-page-open}
 DEADLINE=${DSH_PAGEOPEN_DEADLINE:-120}
 

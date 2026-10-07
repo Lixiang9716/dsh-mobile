@@ -1,6 +1,6 @@
-// Bridging header — exposes the platform-neutral C spike host (and the
+// Bridging header — exposes the platform-neutral C rt host (and the
 // generated embedded-bundle accessors) to Swift.
-#include "dsh_spike_host.h"
+#include "dsh_runtime_host.h"
 #include "dsh_wasm.h"
 #include "dsh_ish.h"
 #include "SpikeBundle.h"

@@ -32,8 +32,8 @@ Web Client from plugin configuration and hardcodes no UI:
   14/14 (Android), `harmony.officialweb.mount` 17/17 (HarmonyOS) in
   [docs/e2e-matrix.md](../docs/e2e-matrix.md).
 
-- `web-client-next/` — v2 (2026-09-25): the SELF-HOSTED full client
-  (`dsh-web-client-next`), our own UI in the clarklevis deep-ocean glass
+- `web-client-v2/` — v2 (2026-09-25): the SELF-HOSTED full client
+  (`dsh-web-client-v2`), our own UI in the clarklevis deep-ocean glass
   design language — home (session list + new session), a chat transcript
   with a dedicated streaming tail, collapsible reasoning/tool groups,
   cached-subset markdown, and a send/stop composer. It speaks the OFFICIAL
@@ -43,28 +43,28 @@ Web Client from plugin configuration and hardcodes no UI:
   change frames). Vanilla ES modules, no build step, every file under the
   code-size gate. Served by the SAME SessionServe seat as the official
   dist — the launch configuration selects it (`-dsh-web-client
-  dsh-web-client-next` on iOS, `--es dsh.web.client dsh-web-client-next`
+  dsh-web-client-v2` on iOS, `--es dsh.web.client dsh-web-client-v2`
   on Android's release boot, `--ez dsh.next true` for Android's E2E drive)
   and the seat swaps the dist root and drops the injection rows (the page
   owns its whole boot); the vendored official dist stays byte-verbatim
   (D6). Iteration loop: `node tools/dev-web-carrier/dev-carrier.mjs
   --client next` (fixture dev-echo turn, desktop speed). Evidence:
-  `nextweb.mount` on iOS and `android.nextweb.mount` 19/19 on Android
+  `v2web.mount` on iOS and `android.v2web.mount` 19/19 on Android
   ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
-- `web-client-whale/` — the CREATION-MODE plugin (2026-09-26): a third
-  self-hosted client (`dsh-web-client-whale`) whose page IS the product —
-  a blue whale cruising a deep-ocean scene (pure CSS/SVG animation, zero
+- `web-client-compact/` — the CREATION-MODE plugin (2026-09-26): a third
+  self-hosted client (`dsh-web-client-compact`) whose page IS the product —
+  a blue compact cruising a deep-ocean scene (pure CSS/SVG animation, zero
   dependencies) — while still speaking the full v0 contract
-  (session-projection@0 over `/ws` + the toolbar slot ACK). The whale
+  (session-projection@0 over `/ws` + the toolbar slot ACK). The compact
   reacts to the session: token deltas spout bubbles, completion releases
-  a pod. Selected by `-dsh-web-client dsh-web-client-whale` on iOS and
-  `--ez dsh.whale true` on Android (both ride the hosts' session-mock-llm
-  drive). Evidence: `whale.mount` 16/16 on iOS, `android.whale.mount` 7/7
+  a pod. Selected by `-dsh-web-client dsh-web-client-compact` on iOS and
+  `--ez dsh.compact true` on Android (both ride the hosts' session-mock-llm
+  drive). Evidence: `compact.mount` 16/16 on iOS, `android.compact.mount` 7/7
   on Android ([docs/e2e-matrix.md](../docs/e2e-matrix.md)).
 
 Which Web Client is active is host configuration (`-dsh-web-client <id>`
-launch argument on the iOS spike; default `dsh-web-client`) — the device
+launch argument on the iOS dsh; default `dsh-web-client`) — the device
 evidence behind the swappable-UI claim being the config-selected client
 swap (`ui.client-swap` 7/7) and a component-level slot registration (the
 `dsh-notes` plugin's `notes.toolbar`, logged `slot.register` →

@@ -1,6 +1,6 @@
 {
   "scenario": "llm.live-stream.fixture",
-  "extract": { "prefix": "dsh.spike.log:" },
+  "extract": { "prefix": "dsh.runtime.log:" },
   "expect": [
     { "event": "llm.stream.started", "match": { "turn": 1 } },
     { "event": "llm.delta", "repeat": true },

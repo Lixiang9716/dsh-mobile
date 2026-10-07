@@ -2,7 +2,7 @@
 // the fs legs carry an in-memory workspace.
 //
 // The wasmRun shim is a byte-faithful mirror of the C runner the device
-// serves (runtime/spike/host/dsh_wasm.c): the caller's input rides the LAST
+// serves (runtime/dsh/host/dsh_wasm.c): the caller's input rides the LAST
 // 4096 bytes of the module's own memory as a NUL-terminated string, the
 // export `run(ptr, len)` receives (pointer, length), dsh.emit(ptr, len)
 // appends to the collected output, and the export's i32 return is the

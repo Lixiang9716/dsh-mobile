@@ -1,7 +1,7 @@
 {
  "scenario": "security.jail",
  "extract": {
-  "prefix": "dsh.spike.log:"
+  "prefix": "dsh.runtime.log:"
  },
  "expect": [
   { "event": "jail.control", "match": { "result": 15, "output": "hello from jail" } },

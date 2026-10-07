@@ -2,7 +2,7 @@
 # gate: logging
 # Proves L4 sees the violation the 2026-09-21 audit found: the canonical TS
 # logger carries the `__DSH_RELEASE__` branch while the OPERATIVE logger
-# (runtime/spike/logger.js — the one embedded into all three hosts) has no
+# (runtime/dsh/logger.js — the one embedded into all three hosts) has no
 # branch at all and no build config defines the flag. The old L4 checked only
 # that the STRING appeared under runtime/logger/, so this exact tree passed
 # green; now it must go red on L4b and L4c.
@@ -17,7 +17,7 @@ trap 'rm -rf "$TMP"' EXIT
 
 fixture() { # $1 = dir, $2 = operative-branch (yes/no), $3 = plumbing (yes/no)
   local dir="$1" branch="$2" plumbing="$3"
-  mkdir -p "$dir/runtime/logger" "$dir/runtime/spike/host" \
+  mkdir -p "$dir/runtime/logger" "$dir/runtime/dsh/host" \
            "$dir/hosts/ios/DSHSpike.xcodeproj" "$dir/hosts/android/app" \
            "$dir/hosts/harmony/entry"
   cd "$dir"
@@ -34,7 +34,7 @@ export function createLogger(module: string): object {
 }
 TS
   if [ "$branch" = yes ]; then
-    cat > runtime/spike/logger.js <<'JS'
+    cat > runtime/dsh/logger.js <<'JS'
 // dsh:logging-exempt (this IS a logger fixture)
 export function createLogger(module) {
   if (globalThis.__DSH_RELEASE__ === true) {
@@ -44,7 +44,7 @@ export function createLogger(module) {
 }
 JS
   else
-    cat > runtime/spike/logger.js <<'JS'
+    cat > runtime/dsh/logger.js <<'JS'
 // dsh:logging-exempt (this IS a logger fixture)
 export function createLogger(module) {
   return { debug() {}, info() {}, warn() {}, error() {} };
@@ -57,12 +57,12 @@ JS
     echo 'externalNativeBuild { cmake { cFlags += "-DDSH_RELEASE=1" } }' \
       > hosts/android/app/build.gradle.kts
     echo '"DSH_RELEASE": true' > hosts/harmony/entry/build-profile.json5
-    echo '-DDSH_RELEASE=1' > runtime/spike/host/build.sh
+    echo '-DDSH_RELEASE=1' > runtime/dsh/host/build.sh
   else
     : > hosts/ios/project.yml
     : > hosts/android/app/build.gradle.kts
     : > hosts/harmony/entry/build-profile.json5
-    : > runtime/spike/host/build.sh
+    : > runtime/dsh/host/build.sh
   fi
   git add -A
   git -c user.email=t@t -c user.name=t commit -qm fixture

@@ -1,5 +1,5 @@
 /*
- * EntryAbility — standard stage-model entry point; the spike runs from the
+ * EntryAbility — standard stage-model entry point; the rt runs from the
  * Index page (aboutToAppear) so the verdict Text is on screen when the
  * scenario finishes. The M5 binding phase adds the lifecycle edges: app
  * foreground/background drive the `app.state` event channel, and a

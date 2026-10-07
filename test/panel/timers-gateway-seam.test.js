@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // as a `timer.fire` bridge event (contract v1.4.0). That indirection is where
 // the battery-r16 black hole lived: the Android serving seat REGISTERED the
 // timer primitive but never wired its fire channel (SessionServe.kt —
-// SpikeHostM4.kt:352 did), so every fire died inside TimerPrimitive's
+// BindingHost.kt:352 did), so every fire died inside TimerPrimitive's
 // `emitFn?.invoke` — the loop-u2 watchdog armed at the first streamed chunk
 // and NEVER fired (zero telemetry 120-330s), the retry's own 1s backoff never
 // advanced (banner frozen at "1/5 · 1s" for 8.5+ min), and only a manual
@@ -61,7 +61,7 @@ globalThis.__asyncContextSet = (value) => { asyncSlot = value; };
 await import('upstream/shims/timers.js');
 
 const { DEFAULT_READ_IDLE_TIMEOUT_MS } = await import(
-  '../../runtime/spike/upstream/llm-read-idle.js');
+  '../../runtime/dsh/upstream/llm-read-idle.js');
 
 /** The bridge fire: what TimerPrimitive's emitFn hands the runtime on the
  * serving seat — the exact event the unwired seat never delivered. */

@@ -15,7 +15,7 @@
  *                            walking away resolves {shared:false} — a value)
  *   ui-wait picker media   → BACK (the media leg drives cancellation; the
  *                            emulator image's gallery is not seedable)
- *   dsh.spike.verdict: harmony.device-plane → done (exit 0 on PASS)
+ *   dsh.runtime.verdict: harmony.device-plane → done (exit 0 on PASS)
  *
  * usage: drive-device-plane.mjs --hdc <path> [--overall-deadline S]
  *                               [--shot-final PNG]
@@ -160,7 +160,7 @@ const onLine = async (line) => {
       }
     }, 2500);
   }
-  if (line.includes('dsh.spike.verdict: harmony.device-plane')) {
+  if (line.includes('dsh.runtime.verdict: harmony.device-plane')) {
     state.verdict = line.includes(' PASS ') ? 'pass' : 'fail';
   }
 };

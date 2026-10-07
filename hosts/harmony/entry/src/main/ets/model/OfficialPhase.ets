@@ -10,7 +10,7 @@
  * drive attached at all.
  *
  * This drive attaches to that seat through its hook properties and adds:
- * the per-event canonical `dsh.spike.log:` records (carrier-side
+ * the per-event canonical `dsh.runtime.log:` records (carrier-side
  * observation, single-emission in manifest order), the same-origin probes
  * through the WebView, the SCRIPTED model boundary, the httpFetch /
  * session-live / write proof legs, and the terminal verdicts. Rule 5 holds
@@ -37,7 +37,7 @@
  * JS runtime thread (ARCHITECTURE.md §6). Bus callbacks from C re-enter
  * ArkTS synchronously and only send (never re-enter the runtime).
  */
-import { hostCarrierLine, hostStatus } from 'libspike.so';
+import { hostCarrierLine, hostStatus } from 'libdruntime.so';
 import { common } from '@kit.AbilityKit';
 import { socket } from '@kit.NetworkKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
@@ -517,7 +517,7 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (BuildFlavor.isRelease()) {
       return;
     }
-    let line = 'dsh.spike.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
+    let line = 'dsh.runtime.verdict: ' + this.legScenario + (passed ? ' PASS' : ' FAIL');
     line += ' probe=' + (passed ? 'pass' : 'fail');
     if (!passed) {
       line += ' error="' + reason + '"';
@@ -670,13 +670,13 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
             this.runSessionLiveLeg(ctx);
           }, 200);
         } else {
-          hostCarrierLine(2, 'dsh.spike.verdict: ' + SCENARIO_SESSION +
+          hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO_SESSION +
             ' FAIL probe=not-run error="the httpfetch leg failed; session-live leg not started"');
         }
         return;
       }
       if (Date.now() > deadline) {
-        hostCarrierLine(2, 'dsh.spike.verdict: ' + SCENARIO_SESSION +
+        hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO_SESSION +
           ' FAIL probe=not-run error="the httpfetch leg never completed"');
         return;
       }
@@ -956,7 +956,7 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
   }
 
   /** One canonical carrier-side evidence line through the phase sink: the
-   * SAME `dsh.spike.log:` envelope the JS logger emits (the checker's
+   * SAME `dsh.runtime.log:` envelope the JS logger emits (the checker's
    * extract prefix), routed host→sink for hilog + capture. */
   private carrierLine(scenario: string, event: string,
     fields: Record<string, Object>): void {
@@ -979,6 +979,6 @@ window.__b1Run().then((json) => { window.__b1Out = json; })
     if (BuildFlavor.isRelease()) {
       return;
     }
-    hostCarrierLine(2, 'dsh.spike.log: ' + JSON.stringify(envelope));
+    hostCarrierLine(2, 'dsh.runtime.log: ' + JSON.stringify(envelope));
   }
 }

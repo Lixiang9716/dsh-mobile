@@ -2,15 +2,15 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "M1 spike: quickjs-ng host via NAPI"
+      "value": "M1 rt: quickjs-ng host via NAPI"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "DSH M1 spike entry ability"
+      "value": "DSH M1 rt entry ability"
     },
     {
       "name": "EntryAbility_label",
-      "value": "DSH M1 Spike"
+      "value": "DSH M1 Runtime"
     },
     {
       "name": "internet_reason",

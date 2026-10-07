@@ -62,7 +62,7 @@ EXPECTED_RED="$(node -e 'const j=JSON.parse(require("fs").readFileSync(process.a
 
 # 2. a missing receipt fails loud (rule 5) — margins loosened, but the
 #    receipts are gone from the sandbox artifacts root.
-mkdir -p "$TMP/empty-tree/runtime/spike/artifacts"
+mkdir -p "$TMP/empty-tree/runtime/dsh/artifacts"
 node -e 'const fs=require("fs");const j=JSON.parse(fs.readFileSync(process.argv[1],"utf8"));
 for(const m of Object.values(j.metrics)){m.warnAbove=m.baseline+1000000;}
 fs.writeFileSync(process.argv[1],JSON.stringify(j,null,2)+"\n")' \

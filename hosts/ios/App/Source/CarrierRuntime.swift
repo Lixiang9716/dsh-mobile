@@ -3,7 +3,7 @@ import Foundation
 /// Drives `carrier.loopback`: one C runtime session with the bus seam
 /// wired, the loopback carrier server in front of it, and every crossing
 /// marshaled onto the right queues — server (carrier queue) → JS via
-/// `dsh_spike_bus_deliver` on the dedicated runtime thread; JS
+/// `dsh_runtime_bus_deliver` on the dedicated runtime thread; JS
 /// (`__dshBusPost`, runtime thread) → server via a hop to the carrier queue
 /// (the server re-hops internally). The JS lifetime stays on ONE thread
 /// (ARCHITECTURE.md §6); the outcome settles exactly once — scenario
@@ -14,13 +14,13 @@ final class CarrierRuntime {
     static let entryModule = "scenario/carrier-loopback.js"
     static let watchdogSeconds = 30
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.spike.carrier")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.runtime.carrier")
     private let server = CarrierServer()
-    private let sink = SpikeLogSink()
+    private let sink = RuntimeLogSink()
     // Swift imports the never-defined C struct's pointer as OpaquePointer.
     private var host: OpaquePointer?
     private var watchdog: DispatchWorkItem?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var finished = false
     private var hostHelloDelivered = false
 
@@ -28,7 +28,7 @@ final class CarrierRuntime {
     /// be loaded (the Presentation surface wires its WKWebView here).
     var onOpenOrigin: ((URL) -> Void)?
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         runtimeThread.start()
         runtimeThread.async { [self] in
             self.completion = completion
@@ -41,14 +41,14 @@ final class CarrierRuntime {
     private func startSession() {
         let root: URL
         do {
-            root = try SpikeBundleStager.stage()
+            root = try BundleStager.stage()
             try server.installLegacyRoutes(webRoot: root.appendingPathComponent("web"))
             try server.start { [weak self] in
                 // fires on the server queue; JS only ever runs on our thread
                 self?.runtimeThread.async { self?.deliverHostHello() }
             }
         } catch {
-            finish(SpikeOutcome(
+            finish(JsOutcome(
                 completed: false, passed: false,
                 error: "carrier bootstrap: \(error)",
                 canonicalLines: sink.lines
@@ -57,24 +57,24 @@ final class CarrierRuntime {
         }
         server.onWSMessage = { [weak self] text in self?.ingest(text) }
         var cSink = sink.cSink
-        guard let host = dsh_spike_new_declaring(root.path, &cSink)
+        guard let host = dsh_runtime_new_declaring(root.path, &cSink)
         else {
-            finish(failOutcome("dsh_spike_new returned NULL"))
+            finish(failOutcome("dsh_runtime_new returned NULL"))
             return
         }
         self.host = host
-        dsh_spike_set_bus_sink(host, { ud, line in
+        dsh_runtime_set_bus_sink(host, { ud, line in
             guard let ud, let line else { return }
             let runtime = Unmanaged<CarrierRuntime>.fromOpaque(ud).takeUnretainedValue()
             runtime.busPosted(String(cString: line))
         }, Unmanaged.passUnretained(self).toOpaque())
-        let source = String(cString: dsh_spike_res_scenario_carrier_js(nil))
-        if dsh_spike_eval(host, Self.entryModule, source) != 0 {
-            finish(failOutcome("eval: \(String(cString: dsh_spike_error(host)))"))
+        let source = String(cString: dsh_runtime_res_scenario_carrier_js(nil))
+        if dsh_runtime_eval(host, Self.entryModule, source) != 0 {
+            finish(failOutcome("eval: \(String(cString: dsh_runtime_error(host)))"))
             return
         }
-        if dsh_spike_pump(host) != 0 {
-            finish(failOutcome("pump: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_pump(host) != 0 {
+            finish(failOutcome("pump: \(String(cString: dsh_runtime_error(host)))"))
             return
         }
         armWatchdog()
@@ -140,14 +140,14 @@ final class CarrierRuntime {
     /// Runtime queue only.
     private func deliver(_ obj: [String: Any]) {
         guard let host, !finished, let text = Self.jsonLine(obj) else { return }
-        if dsh_spike_bus_deliver(host, text) != 0 {
-            finish(failOutcome("bus deliver: \(String(cString: dsh_spike_error(host)))"))
+        if dsh_runtime_bus_deliver(host, text) != 0 {
+            finish(failOutcome("bus deliver: \(String(cString: dsh_runtime_error(host)))"))
             return
         }
-        if dsh_spike_complete(host) != 0 {
-            finish(SpikeOutcome(
+        if dsh_runtime_complete(host) != 0 {
+            finish(JsOutcome(
                 completed: true,
-                passed: dsh_spike_pass(host) != 0,
+                passed: dsh_runtime_pass(host) != 0,
                 error: "",
                 canonicalLines: sink.lines
             ))
@@ -171,23 +171,23 @@ final class CarrierRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
+    private func failOutcome(_ message: String) -> JsOutcome {
         reportFailure(message)
-        return SpikeOutcome(
+        return JsOutcome(
             completed: false, passed: false,
             error: message,
             canonicalLines: sink.lines
         )
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
-        dsh_spike_free(host)
+        dsh_runtime_free(host)
         host = nil
         server.stop()
-        print("spike: carrier drive finished verdict=\(outcome.verdict)")
+        print("rt: carrier drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         runtimeThread.async { [weak self] in self?.runtimeThread.stop() }
         DispatchQueue.main.async { [weak self] in
@@ -199,9 +199,9 @@ final class CarrierRuntime {
     /// Failure report on stdout (the E2E capture channel; lines without the
     /// canonical prefix are ignored by the checker) and NSLog (os_log).
     private func reportFailure(_ message: String) {
-        print("spike: carrier FAIL \(message)")
+        print("rt: carrier FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: carrier FAIL \(message)")
+        NSLog("%@", "rt: carrier FAIL \(message)")
     }
 
     private static func jsonLine(_ obj: Any) -> String? {

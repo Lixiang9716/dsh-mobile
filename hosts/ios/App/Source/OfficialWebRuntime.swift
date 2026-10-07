@@ -2,11 +2,11 @@ import Foundation
 import WebKit
 
 /// Canonical E2E emitter for carrier-only drives: the same envelope as the
-/// runtimes' carrierEvent (`dsh.spike.log:` prefix, unified-logger shape),
+/// runtimes' carrierEvent (`dsh.runtime.log:` prefix, unified-logger shape),
 /// with retention for the outcome's canonicalLines. Serial queue: emission
 /// order = call order across all caller queues.
 final class CarrierEventLog {
-    static let prefix = SpikeLogSink.prefix
+    static let prefix = RuntimeLogSink.prefix
     private(set) var lines: [String] = []
     private let queue = DispatchQueue(label: "org.dsh.carrier.eventlog")
     private let scenario: String
@@ -61,7 +61,7 @@ final class CarrierEventLog {
 /// Drives `officialweb.mount`: the carrier as a REAL implementation of
 /// the upstream `ctx.webServer` contract, mounting the OFFICIAL web app
 /// (vendored dist, zero upstream edits) in the WebView — now with the
-/// runtime live (W-INTEG): a spike session running the officialweb-web-live scenario
+/// runtime live (W-INTEG): a rt session running the officialweb-web-live scenario
 /// composes the OFFICIAL boot wire with the vendored client-modules node
 /// half and posts `web.boot` over the bus seam; the carrier swaps the
 /// delivered rows into the index render pipeline, overrides the /plugins
@@ -101,7 +101,7 @@ final class OfficialWebRuntime {
     /// closures would otherwise be the only retainers mid-flight).
     private var plugins: CarrierPlugins?
     private weak var webView: WKWebView?
-    private var completion: ((SpikeOutcome) -> Void)?
+    private var completion: ((JsOutcome) -> Void)?
     private var watchdog: DispatchWorkItem?
     private var finished = false
     private var token = ""
@@ -119,7 +119,7 @@ final class OfficialWebRuntime {
         self.webView = webView
     }
 
-    func run(completion: @escaping (SpikeOutcome) -> Void) {
+    func run(completion: @escaping (JsOutcome) -> Void) {
         self.completion = completion
         if evidence { armWatchdog() }
         do {
@@ -205,10 +205,10 @@ final class OfficialWebRuntime {
     /// plugin revs override the /plugins route), so the page always loads
     /// the runtime-composed boot wire.
     private func startCarrier() throws {
-        let root = try SpikeBundleStager.stage()
+        let root = try BundleStager.stage()
         let distRoot = try Self.locateDist()
         token = Self.randomToken()
-        let plugins = CarrierPlugins.staged(spikeRoot: root)
+        let plugins = CarrierPlugins.staged(dshRoot: root)
         let config = CarrierBootConfig.default(plugins: plugins)
         defaultComboURL = Self.batchURL(graphJSON: config.bootGraphJSON)
         comboURL = defaultComboURL
@@ -295,7 +295,7 @@ final class OfficialWebRuntime {
             self?.runtimeBusPosted(msg)
         }
         drive.onFailure = { [weak self] message in
-            self?.finish(self?.failOutcome(message) ?? SpikeOutcome(
+            self?.finish(self?.failOutcome(message) ?? JsOutcome(
                 completed: false, passed: false, error: message, canonicalLines: []))
         }
         webBoot = drive
@@ -407,7 +407,7 @@ final class OfficialWebRuntime {
             finish(failOutcome(message))
         case .pass(let events):
             for (event, fields) in events { eventLog.emit(event, fields) }
-            finish(SpikeOutcome(
+            finish(JsOutcome(
                 completed: true, passed: true, error: "",
                 canonicalLines: eventLog.lines
             ))
@@ -427,22 +427,22 @@ final class OfficialWebRuntime {
             deadline: .now() + .seconds(Self.watchdogSeconds), execute: item)
     }
 
-    private func failOutcome(_ message: String) -> SpikeOutcome {
-        print("spike: official FAIL \(message)")
+    private func failOutcome(_ message: String) -> JsOutcome {
+        print("rt: official FAIL \(message)")
         fflush(stdout)
-        NSLog("%@", "spike: official FAIL \(message)")
-        return SpikeOutcome(
+        NSLog("%@", "rt: official FAIL \(message)")
+        return JsOutcome(
             completed: false, passed: false, error: message,
             canonicalLines: eventLog.lines
         )
     }
 
-    private func finish(_ outcome: SpikeOutcome) {
+    private func finish(_ outcome: JsOutcome) {
         guard !finished else { return }
         finished = true
         watchdog?.cancel()
         server.stop()
-        print("spike: official drive finished verdict=\(outcome.verdict)")
+        print("rt: official drive finished verdict=\(outcome.verdict)")
         fflush(stdout)
         webBoot?.stop()
         DispatchQueue.main.async { [weak self] in

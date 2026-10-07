@@ -5,14 +5,14 @@
 
 - `manifest.json` — 插件门面(id/version/surface/entry/bundle/skins)
 - `theme/` — 主题 token 单源(`tokens.json`);`gen.mjs` 生成两个面:
-  `web.tokens.css`(CSS 自定义属性,web-client-next 的 `:root` 词汇)与
+  `web.tokens.css`(CSS 自定义属性,web-client-v2 的 `:root` 词汇)与
   `bundle/src/theme.generated.ts`(Lynx 样式常量,带类型)。
   `node theme/gen.mjs --check` 作漂移门。
 - `shared/` — 事件模型:`view-events.js`(视图事件闭集
   {message-delta, tool-card-phase, session-settled} 与意图闭集
   {submit, cancel, select-session, new-session},未知即 fail loud)与
   `fold.js`(视图事件 → 视图状态的纯折叠,两个皮肤共用一份)。
-- `driver/` — 宿主侧:SessionServe wire 客户端(自 web-client-next 逐字
+- `driver/` — 宿主侧:SessionServe wire 客户端(自 web-client-v2 逐字
   移植,三层 `{args:{request}}` 信封原样)、adapter(域记录 → 视图事件)、
   编排 driver(单一订阅点、seed 爆发、意图执行),以及同一
   `RenderSurfaceClient` 缝(`mount` / `pushViewEvent` / `onIntent` /
@@ -39,7 +39,7 @@ npm run theme:check           # token 单源同步
   一一对应;verdict + receipt 入库在 `artifacts/cli-lynx-mount-{lynx,stub}/`。
   `npm run mock-loop` 保留为快速内层断言环路(18/18)。
 - vitest(`npm test`,本包 71 个用例;两套 presentation 套件合计 116——
-  web-client-next 的 45 个在 `test/web-client-next-suite/`):缝契约、fold、
+  web-client-v2 的 45 个在 `test/web-client-v2-suite/`):缝契约、fold、
   adapter 映射表、wire 客户端(本地起真服务器、真 ws-lite 升级)——外加
   `tests/driver-loop.test.js`(run-mock 的 18 项检查 1:1 formalize 成
   vitest 用例,跑同一条真 mock 环路,并补上流错误 / 无 sessionId /

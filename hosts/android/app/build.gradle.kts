@@ -18,15 +18,15 @@ val execBash: String = when {
         ?: "bash"
 }
 
-// The vendored engine sources are untracked by design (runtime/spike/README.md):
+// The vendored engine sources are untracked by design (runtime/dsh/README.md):
 // this materializes them (sha256-verified tarball, idempotent) before any build
 // that compiles the engine. Absolute path: an Exec task inherits the launcher
 // cwd, which must never decide whether the engine sources are found.
 // POSIX spelling for the bash argument: a Windows absolutePath carries
 // backslashes that bash consumes as escapes (`D:workspacedsh-mobile…`);
 // forward slashes reach the shell intact on every host.
-val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/spike/vendor/ensure.sh")
-val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
+val ensureSpikeScript = layout.projectDirectory.file("../../../runtime/dsh/vendor/ensure.sh")
+val ensureDshVendor = tasks.register<Exec>("ensureDshVendor") {
     commandLine(execBash, ensureSpikeScript.asFile.absolutePath.replace('\\', '/'))
 }
 
@@ -44,7 +44,7 @@ val ensureSpikeVendor = tasks.register<Exec>("ensureSpikeVendor") {
 val officialDistDir = rootProject.file("../../presentation/official-web/dist")
 val clientBundlesDir = rootProject.file("../../presentation/official-web/client-bundles")
 val vendoredBootstrap = rootProject.file(
-    "../../runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
+    "../../runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2",
 )
 val dshAssets = layout.buildDirectory.dir("generated/dsh-assets")
 
@@ -103,7 +103,7 @@ val stageWebPlugins = tasks.register<Copy>("stageWebPlugins") {
 }
 
 android {
-    namespace = "com.dshmobile.spike"
+    namespace = "com.dshmobile.host"
     compileSdk = 35
 
     // aapt2's default ignore pattern excludes EVERY dotfile ('.*') from
@@ -146,7 +146,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshBuildTypes() {
         // The harness (debug) is the verification vehicle: full structured
         // logging, the E2E drives run. The release build is what a user
         // gets: the define reaches BOTH halves — BuildConfig.DSH_RELEASE in
-        // Kotlin and -DDSH_RELEASE in the spike .so (where the shared C host
+        // Kotlin and -DDSH_RELEASE in the dsh .so (where the shared C host
         // injects globalThis.__DSH_RELEASE__, which strips the JS logger to
         // the critical set) — and the drives refuse to start.
         release {
@@ -154,7 +154,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshBuildTypes() {
             buildConfigField("boolean", "DSH_RELEASE", "true")
             externalNativeBuild {
                 cmake {
-                    // The spike target is C-ONLY (CMakeLists: project(… C)), so
+                    // The dsh target is C-ONLY (CMakeLists: project(… C)), so
                     // the define must ride cFlags — cppFlags covers C++ sources
                     // and silently reaches nothing here.
                     cFlags += "-DDSH_RELEASE=1"
@@ -180,7 +180,7 @@ private fun com.android.build.api.dsl.ApplicationExtension.dshSourceSets(
 
 private fun com.android.build.api.dsl.ApplicationExtension.dshDefaultConfig() {
     defaultConfig {
-        applicationId = "com.dshmobile.spike"
+        applicationId = "com.dshmobile.host"
         minSdk = 26
         targetSdk = 35
         versionCode = 1
@@ -219,6 +219,6 @@ tasks.configureEach {
         name.startsWith("package") && name.endsWith("Assets") ||
         name.startsWith("bundleDebug") || name.startsWith("assemble")
     ) {
-        dependsOn(ensureSpikeVendor, stageSpineClosure, stageWebPlugins)
+        dependsOn(ensureDshVendor, stageSpineClosure, stageWebPlugins)
     }
 }

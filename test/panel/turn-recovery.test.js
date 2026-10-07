@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { apply as applyTurnRecovery } from '../../runtime/spike/upstream/turn-recovery.js';
+import { apply as applyTurnRecovery } from '../../runtime/dsh/upstream/turn-recovery.js';
 
 /** A fake cordis context recording the plugin's listeners and answering
  * ctx.get('agents') with `registry`. Mirrors the three faces the supervisor

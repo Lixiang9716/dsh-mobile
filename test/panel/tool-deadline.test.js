@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   makeToolsExecuteListener, deadlineResult, parseBudgetMs,
   DEFAULT_BUDGET_MS, TIMEOUT_CODE,
-} from '../../runtime/spike/upstream/tool-deadline.js';
+} from '../../runtime/dsh/upstream/tool-deadline.js';
 
 /** The #323 spinner, modeled in JS: a tool body that NEVER resolves and
  * chews the event loop in synchronous slices (the JS-observable shape of the

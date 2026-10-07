@@ -247,8 +247,8 @@ open-in-app 路由（POST open / GET apps / GET icon prefix）、仅开发态
 
 现有载体（`hosts/ios/App/Source/CarrierServer.swift`、
 `hosts/android/.../CarrierServer.kt`、
-`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`）是运行时 spike
-spike 形态：单回环监听、仅 GET、硬编码 `/ws` 升级、限定
+`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`）是运行时 dsh
+dsh 形态：单回环监听、仅 GET、硬编码 `/ws` 升级、限定
 `.html`/`.js` 的目录静态服务、一次性 `Connection: close` 响应、手工
 `gateway-e2e` switch、单个 WebSocket 席位。已满足项与各平台为实现 §2
 需新增项如下：
@@ -353,7 +353,7 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 
 ## 4. E2E 前置：官方应用在日志中可观察的行为
 
-官方页面不可改动以输出 `dsh.spike.log:` 行，因此一对一清单（基于
+官方页面不可改动以输出 `dsh.runtime.log:` 行，因此一对一清单（基于
 日志的 E2E，唯一 scenario id，期望 ↔ 日志）由**载体对线缆的观察**加
 一条平台侧渲染态探针承载。拟议场景 `officialweb.mount`（先 iOS，
 后 Android/Harmony），顺序固定：
@@ -403,7 +403,7 @@ BrowserAuth（见 §3.4 裁剪）、实验 inspector 行。命名路由可组合
 - 载体拓扑语境：`anywhere-labs/dsh-desktop` `docs/architecture.md`
   —— 回环 HTTP+WS 载体、沙箱化 renderer、同源页面加载（WebView 即
   沙箱）。
-- 现有 spike 载体：`hosts/ios/App/Source/CarrierServer.swift`、
-  `hosts/android/app/src/main/java/com/dshmobile/spike/CarrierServer.kt`、
+- 现有 dsh 载体：`hosts/ios/App/Source/CarrierServer.swift`、
+  `hosts/android/app/src/main/java/com/dshmobile/dsh/CarrierServer.kt`、
   `hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`。
 - E2E 清单惯例：`test/e2e/README.md`、`docs/e2e-matrix.md`。

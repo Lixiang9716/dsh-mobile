@@ -5,7 +5,7 @@
 # + prompt admission + the session/follow + workspace/follow streams), the
 # probe picks the seeded workspace and TYPES INTO THE REAL COMPOSER, the
 # send drives a REAL upstream agent-loop turn (scripted-llm transport), and
-# the reply renders live in the official UI. Builds DSHSpike, stages the
+# the reply renders live in the official UI. Builds DSHHost, stages the
 # vendored official dist + the web-boot plugin files, launches in
 # SESSION-WRITE mode (-dsh-mode session-write), and verifies the captured
 # log against the one-to-one manifest composer-live-write.json. Screenshots are
@@ -19,8 +19,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART=""
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -74,11 +74,11 @@ log "1/5 official dist present + manifest-verified"
 test/e2e/ensure-official-dist.sh
 
 log "2/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "3/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -96,9 +96,9 @@ mkdir -p "$APP_DATA/Documents/official-web"
 cp -R presentation/official-web/dist "$APP_DATA/Documents/official-web/dist"
 
 log "4b/5 stage the web-plugins tree (W-SHELL application tier + vendored bootstrap; fixed stamp)"
-runtime/spike/vendor/ensure-dsh.sh > /dev/null
+runtime/dsh/vendor/ensure-dsh.sh > /dev/null
 test/e2e/ensure-client-bundles.sh
-PKG_SRC="runtime/spike/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
+PKG_SRC="runtime/dsh/vendor/npm/@deepseek-ai/dsh-client-modules@0.1.6-alpha.2"
 [ -f "$PKG_SRC/lib/client.js" ] || die "vendored bootstrap package missing (ensure-dsh.sh)"
 rm -rf "$APP_DATA/Documents/web-plugins"
 mkdir -p "$APP_DATA/Documents/web-plugins/npm/@deepseek-ai"
@@ -130,13 +130,13 @@ wait_line "composer.typed" 180 || fail_deadline "composer.typed never appeared"
 shot 02-composer-typed
 
 log "waiting for the session-write drive to complete (terminal marker)"
-wait_line "spike: sequence session-write=" 240 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence session-write=" 240 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 03-reply-rendered
 
 # ---- checkers -------------------------------------------------------------------
 log "6/6 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/composer-live-write.json \
     --log "$LOG" --out "$ART/verdict-composer-live-write.json"; then
   echo "==================== E2E summary ($ART) ===================="

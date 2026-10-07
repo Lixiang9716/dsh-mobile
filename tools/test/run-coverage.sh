@@ -24,7 +24,7 @@
 #     coverage, and a different thing from the CLI suite's behavior proof.
 #   - presentation/web-client*  plain browser JS: `import` of main.js fails
 #     on Node (`document is not defined`), no test runner, no tests.
-#   - runtime/spike (QuickJS runtime + shims)  no Node-side line coverage
+#   - runtime/dsh (QuickJS runtime + shims)  no Node-side line coverage
 #     pretend: the shipped semantics are QuickJS's; the behavior net owns
 #     them.
 #

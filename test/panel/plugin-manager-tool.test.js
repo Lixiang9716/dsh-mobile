@@ -14,7 +14,7 @@ import { workspaceRegistryPath, workspacePrefix } from 'workspace-registry.js';
 // tool table carries `plugin_manager` — here, apply() against a
 // ToolRuntime-shaped ctx (the same register/view surface boot.js's
 // spineInventory row reads), then the legs driven against the gateway
-// shim with the device seat's workspace geometry (workspace `spike/`
+// shim with the device seat's workspace geometry (workspace `dsh/`
 // inside the app scope root).
 
 const REGISTRY_DOC = {
@@ -26,10 +26,10 @@ const REGISTRY_DOC = {
   ],
 };
 
-/** The device seat's geometry: workspace = <scopeRoot>/spike. */
-const SEAT = { containerRoot: '/data/user/0/com.dshmobile.spike/files/profiles/default/spike',
-  scopeRoot: '/data/user/0/com.dshmobile.spike/files/profiles/default' };
-const SEAT_REGISTRY = 'spike/plugins/registry.json';
+/** The device seat's geometry: workspace = <scopeRoot>/dsh. */
+const SEAT = { containerRoot: '/data/user/0/com.dshmobile.host/files/profiles/default/dsh',
+  scopeRoot: '/data/user/0/com.dshmobile.host/files/profiles/default' };
+const SEAT_REGISTRY = 'dsh/plugins/registry.json';
 
 const encode = (text) => new TextEncoder().encode(text);
 const seedRegistry = (doc, path = SEAT_REGISTRY) => {
@@ -112,12 +112,12 @@ describe('plugin_manager enable + remove legs', () => {
 
   it('remove_bundle drops only the roster row (workspace files untouched)', async () => {
     seedRegistry(REGISTRY_DOC);
-    workspace.set('app/spike/plugins/quotes/manifest.json', encode('{}'));
+    workspace.set('app/dsh/plugins/quotes/manifest.json', encode('{}'));
     const res = await drive({ action: 'remove_bundle', target: 'countdown10' });
     expect(res).toMatchObject({ ok: true, changed: true, application: 'applied' });
     expect(JSON.parse(new TextDecoder().decode(__dump(`app/${SEAT_REGISTRY}`))).plugins)
       .toHaveLength(1);
-    expect(__dump('app/spike/plugins/quotes/manifest.json')).toBeDefined();
+    expect(__dump('app/dsh/plugins/quotes/manifest.json')).toBeDefined();
   });
 });
 
@@ -127,7 +127,7 @@ describe('plugin_manager install leg (the workspace-tree adoption)', () => {
 
   it('installs the authored tree: manifest validated, roster row upserted', async () => {
     seedRegistry(REGISTRY_DOC);
-    workspace.set('app/spike/plugins/quotes/manifest.json', encode(JSON.stringify(MANIFEST)));
+    workspace.set('app/dsh/plugins/quotes/manifest.json', encode(JSON.stringify(MANIFEST)));
     const res = await drive({ action: 'install_bundle', target: 'quotes' });
     expect(res).toMatchObject({ ok: true, application: 'applied', stage: 'install', bundle: 'quotes', enabled: true });
     const doc = JSON.parse(new TextDecoder().decode(__dump(`app/${SEAT_REGISTRY}`)));
@@ -143,7 +143,7 @@ describe('plugin_manager install leg (the workspace-tree adoption)', () => {
   });
 
   it('a manifest whose id disagrees with the spec refuses (rule 5, in-band)', async () => {
-    workspace.set('app/spike/plugins/wrong/manifest.json',
+    workspace.set('app/dsh/plugins/wrong/manifest.json',
       encode(JSON.stringify({ ...MANIFEST, id: 'other' })));
     const res = await drive({ action: 'install_bundle', target: 'wrong' });
     expect(res.application).toBe('failed');
@@ -159,8 +159,8 @@ describe('plugin_manager install leg (the workspace-tree adoption)', () => {
 
 describe('the workspace geometry the tool and the LIST tier share', () => {
   it('derives the device seat prefix (containerRoot below the scope root)', () => {
-    expect(workspacePrefix(SEAT)).toBe('spike');
-    expect(workspaceRegistryPath(SEAT)).toBe('spike/plugins/registry.json');
+    expect(workspacePrefix(SEAT)).toBe('dsh');
+    expect(workspaceRegistryPath(SEAT)).toBe('dsh/plugins/registry.json');
   });
 
   it('derives the bare spelling when the workspace IS the scope root (CLI seats)', () => {

@@ -74,7 +74,7 @@ export declare function ptySpawn(request: PtySpawnRequest): Promise<
 ## 验证计划
 
 - 该面的第一份交付物就是套件本身:三个 node-pty 族 spec 重新入场,并在 darwin CLI 腿上逐个验收(`upstream-suite-leg.js --env DSH_UPSTREAM_SPEC=...`,每个 `suite/summary failed:0`)。
-- spike 在 Darwin 上实现该缝(`forkpty(3)`,`<util.h>`);Linux 族的宿主编译同一张脸(`<pty.h>`)并保持可用,能力协商因此永远不需要按平台分叉——同一代码路径,凡能编译处皆诚实存在。
+- dsh 在 Darwin 上实现该缝(`forkpty(3)`,`<util.h>`);Linux 族的宿主编译同一张脸(`<pty.h>`)并保持可用,能力协商因此永远不需要按平台分叉——同一代码路径,凡能编译处皆诚实存在。
 - 协商地板:不编译该面的宿主在实现前答 `unavailable`;现有行为一概不变。
 
 ## 版本

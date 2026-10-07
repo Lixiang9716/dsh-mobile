@@ -4,14 +4,14 @@
  * time by entry/build-profile.json5: BOTH buildOptionSet modes publish
  * `arkOptions.buildProfileFields.DSH_RELEASE` into hvigor's generated
  * BuildProfile module (true for release, false for debug), and the release
- * mode additionally passes `-DDSH_RELEASE=1` into the spike target's CMake
+ * mode additionally passes `-DDSH_RELEASE=1` into the rt target's CMake
  * build, so the shared C host injects globalThis.__DSH_RELEASE__ and the JS
  * logger drops debug/info at the source.
  *
  * The harness (debug) is the verification vehicle — full structured logging,
  * E2E drives run. The release build is what a user gets: no E2E machinery,
  * no per-event stream, and the critical set retained. ArkTS sibling of
- * hosts/ios App/Source/SpikeRuntime.swift's BuildFlavor and hosts/android
+ * hosts/ios App/Source/JsRuntime.swift's BuildFlavor and hosts/android
  * BuildFlavor.kt.
  */
 import { DSH_RELEASE } from 'BuildProfile';

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-device-plane.sh — the v1.5.0 device-plane E2E driver
-# (`device.plane`): launches DSHSpike in -dsh-mode device-plane, drives the
+# (`device.plane`): launches DSHHost in -dsh-mode device-plane, drives the
 # native surfaces the scenario blocks on (clipboard approval alert, the two
 # share sheets, the PHPicker media grid) via WDA/idb, then verifies the
 # captured log against the scenario + audit manifests. Sibling of
@@ -19,8 +19,8 @@ UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/device-plane"
 SKIP_BUILD=0
 SKIP_INSTALL=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 DEADLINE=$((SECONDS + 900))
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -78,8 +78,8 @@ tap_alert() { # LABEL PX PY
 
 # ---- 1. build ---------------------------------------------------------------
 if [ "$SKIP_BUILD" = "0" ]; then
-  log "1/5 building DSHSpike"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  log "1/5 building DSHHost"
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination 'platform=iOS Simulator,id='"$UDID" \
     -derivedDataPath hosts/ios/DerivedData -quiet >/dev/null
 else
@@ -157,7 +157,7 @@ SHARES=0
 while true; do
   if IFS= read -r -t 5 line <&3; then
     case "$line" in
-      *"spike: ui-wait clipboard-read"*)
+      *"dsh: ui-wait clipboard-read"*)
         READS=$((READS + 1))
         shot() { xcrun simctl io "$UDID" screenshot "$ART/screens/clipboard-$READS.png" >/dev/null 2>&1 || true; }
         shot
@@ -169,7 +169,7 @@ while true; do
           log "clipboard read #$READS -> Approve & Remember"
           wda_click "Approve & Remember" || wda_click "Approve" || true
         fi ;;
-      *"spike: ui-wait share"*)
+      *"dsh: ui-wait share"*)
         SHARES=$((SHARES + 1))
         xcrun simctl io "$UDID" screenshot "$ART/screens/share-$SHARES.png" >/dev/null 2>&1 || true
         sleep 1.5
@@ -185,7 +185,7 @@ while true; do
         done
         [ "$copied" = "1" ] || idb ui tap --udid "$UDID" 152 700 --duration 0.15 >/dev/null 2>&1 || true ;;
 
-      *"spike: ui-wait picker"*)
+      *"dsh: ui-wait picker"*)
         xcrun simctl io "$UDID" screenshot "$ART/screens/picker-media.png" >/dev/null 2>&1 || true
         sleep 1.5
         # single-select PHPicker: the grid loads for seconds on a cold photo
@@ -205,7 +205,7 @@ while true; do
         else
           log "media picker -> cell tapped by label"
         fi ;;
-      *"spike: device-plane drive finished"*)
+      *"dsh: device-plane drive finished"*)
         log "terminal marker: $line"; break ;;
     esac
   fi
@@ -219,7 +219,7 @@ exec 3<&-; { kill "$TAIL_PID" && wait "$TAIL_PID"; } 2>/dev/null || true
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 grep '^dsh.gateway.audit:' "$LOG" >"$ART/gateway-audit.jsonl" || true
 PASS=0; FAIL=0
 run_check() { # MANIFEST OUT

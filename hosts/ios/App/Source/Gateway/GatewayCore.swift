@@ -41,7 +41,7 @@ struct GatewayError: Error {
 /// The caller's manifest (data-protocols.md §2), read from the staged bundle
 /// root. Fail-loud: a missing or malformed manifest aborts the session.
 struct GatewayManifest {
-    static let caller = "dsh.spike.scenario"
+    static let caller = "dsh.runtime.scenario"
     let id: String
     let required: [String]
 
@@ -113,7 +113,7 @@ struct GatewayManifest {
 /// enforcement against the manifest, and the mandatory structured audit of
 /// primitives.md §6 — one record per call, never payload contents. Audit
 /// lines use their own stdout prefix ("dsh.gateway.audit: ") so the
-/// canonical "dsh.spike.log: " E2E stream stays one-to-one.
+/// canonical "dsh.runtime.log: " E2E stream stays one-to-one.
 final class GatewayCore {
     /// The full serving table (contract/primitives.md §2 through v1.10.0):
     /// the name list IS the RuntimeDescriptor's available array, so it must
@@ -351,10 +351,10 @@ final class GatewayCore {
     }
 
     /// stdout automation marker (NOT the canonical stream) for the E2E
-    /// driver: "spike: ui-wait <name>" before an automatable surface,
-    /// "spike: ui-done <name>" once it resolves.
+    /// driver: "rt: ui-wait <name>" before an automatable surface,
+    /// "rt: ui-done <name>" once it resolves.
     static func uiMarker(_ name: String, _ phase: String) {
-        print("spike: ui-\(phase) \(name)")
+        print("rt: ui-\(phase) \(name)")
         fflush(stdout)
     }
 }

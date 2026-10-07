@@ -2,7 +2,7 @@
  * gateway_smoke.h — the HarmonyOS gateway-bridge smoke backend (M5).
  *
  * The platform twin of the desktop CLI driver's smoke backend
- * (runtime/spike/host/main_cli.c): it answers scenario gateway.bridge-smoke
+ * (runtime/dsh/host/main_cli.c): it answers scenario gateway.bridge-smoke
  * over the REAL dsh_spike dispatch bridge — fs primitives on a
  * host-app directory exposed as scope "app", the keychain primitives as
  * app-private files under the same root (the desktop CLI twin's shape),
@@ -15,9 +15,9 @@
 #ifndef DSH_GATEWAY_SMOKE_H
 #define DSH_GATEWAY_SMOKE_H
 
-/* Plain C interface only. The includer must include dsh_spike_host.h FIRST
+/* Plain C interface only. The includer must include dsh_runtime_host.h FIRST
  * (this header only reuses its types) and, from C++, wrap BOTH includes in
- * one extern "C" block — like dsh_spike_host.h, there is no #ifdef
+ * one extern "C" block — like dsh_runtime_host.h, there is no #ifdef
  * __cplusplus guard on purpose: the syntax-class checker's tree-sitter C
  * grammar misparses the preprocessor/brace interleave. */
 
@@ -51,13 +51,13 @@ void dsh_smoke_set_forward(dsh_smoke_backend_t *b, dsh_smoke_forward_fn fn,
 void dsh_smoke_set_descriptor_json(dsh_smoke_backend_t *b,
                                    const char *descriptor_json);
 
-/* Register the dispatch callback + descriptor on the spike. Call BEFORE
- * dsh_spike_eval. */
-void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_spike_t *spike);
+/* Register the dispatch callback + descriptor on the rt. Call BEFORE
+ * dsh_runtime_eval. */
+void dsh_smoke_attach(dsh_smoke_backend_t *b, dsh_runtime_t *rt);
 
 /* Serve every queued call (settling each on the runtime thread). Returns
  * the number served, or -1 when a settlement failed (details via
- * dsh_spike_error). */
+ * dsh_runtime_error). */
 int dsh_smoke_drain(dsh_smoke_backend_t *b);
 
 /* 1 once any settlement failed — the run must fail loud. */

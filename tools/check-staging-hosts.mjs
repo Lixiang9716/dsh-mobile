@@ -5,7 +5,7 @@
  * parsed manifests into checkable surfaces:
  *
  *   harmony — Index.ets BUNDLE_FILES rows (primary, stale-judged against the
- *             committed rawfile/spike tree) + ci/vendor-official.sh
+ *             committed rawfile/dsh tree) + ci/vendor-official.sh
  *             CLOSURE/SPINE_OURS (advisory);
  *   android — ci/stage-spine-closure.sh scenario hand list + whole-dir
  *             mirrors;
@@ -17,7 +17,7 @@
  */
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, relative as relPath } from 'node:path';
-import { REPO, SPIKE } from './check-staging-graph.mjs';
+import { REPO, DSH } from './check-staging-graph.mjs';
 
 // --- manifest surfaces ------------------------------------------------------
 
@@ -164,7 +164,7 @@ function harmonyClosureSurface() {
 function androidSurface() {
   const file = join(REPO, 'hosts/android/ci/stage-spine-closure.sh');
   const src = readFileSync(file, 'utf8');
-  const loopAt = src.indexOf('cp "$SPIKE/scenario/$s"');
+  const loopAt = src.indexOf('cp "$DSH/scenario/$s"');
   if (loopAt < 0) fail('scenario copy loop not found in stage-spine-closure.sh');
   const head = src.lastIndexOf('for s in', loopAt);
   if (head < 0) fail('for s in loop header not found in stage-spine-closure.sh');
@@ -176,9 +176,9 @@ function androidSurface() {
     if (!src.includes(needle)) fail(`whole-dir mirror gone from stage-spine-closure.sh: ${needle}`);
     mirrors.push(rel);
   };
-  mirrorOf('find "$SPIKE/upstream"', 'upstream/**');
-  mirrorOf('find "$SPIKE/upstream/shims"', 'upstream/shims/**');
-  mirrorOf('"$SPIKE"/system-plugins/*/', 'system-plugins/**');
+  mirrorOf('find "$DSH/upstream"', 'upstream/**');
+  mirrorOf('find "$DSH/upstream/shims"', 'upstream/shims/**');
+  mirrorOf('"$DSH"/system-plugins/*/', 'system-plugins/**');
   return { file, label: 'ci/stage-spine-closure.sh', scenarioRows: names.map((s) => `scenario/${s}`), mirrors };
 }
 
@@ -241,10 +241,10 @@ function pyListBlock(src, name) {
 }
 
 const PY_PAREN_ROW = /\(((?:[^()]|\([^()]*\))*)\)/gs;
-const rootOf = (body) => (body.includes('SPIKE') ? 'SPIKE' : body.includes('REPO') ? 'REPO' : null);
+const rootOf = (body) => (body.includes('DSH') ? 'DSH' : body.includes('REPO') ? 'REPO' : null);
 
-/** (suffix, PATH) paren rows in a block body — { rel, root: 'SPIKE'|'REPO' };
- * skips anything that is not a (suffix, PATH) row (no SPIKE/REPO root, or
+/** (suffix, PATH) paren rows in a block body — { rel, root: 'DSH'|'REPO' };
+ * skips anything that is not a (suffix, PATH) row (no DSH/REPO root, or
  * fewer than two strings). */
 function pyRows(text) {
   const rows = [];
@@ -347,8 +347,8 @@ function expandPyTrees(treesBlock) {
   return { mirrorRoots, rest };
 }
 
-/** gen_bundle_header.py (ios): RESOURCES hand rows (SPIKE-rooted rows are
- * bundle-root staging; REPO-rooted rows stage outside runtime/spike) +
+/** gen_bundle_header.py (ios): RESOURCES hand rows (DSH-rooted rows are
+ * bundle-root staging; REPO-rooted rows stage outside runtime/dsh) +
  * TREES whole-dir mirror roots, including the two comprehension rows. */
 function iosSurface() {
   const file = join(REPO, 'hosts/ios/Tools/gen_bundle_header.py');
@@ -395,17 +395,17 @@ function harmonyHost(bf, closure) {
         rows: bf.rows,
         rowOrigin: bf.file,
         // BUNDLE_FILES materializes from the COMMITTED rawfile tree (the
-        // webclient/, e2e-stage.js and npm-face-staged vendor/dsh rows live
-        // only there), so stale rows are judged against rawfile/spike —
+        // webclient/, credential-stage.js and npm-face-staged vendor/dsh rows live
+        // only there), so stale rows are judged against rawfile/dsh —
         // the same root ci/check-bundle-files.mjs pins the list to.
-        staleRoot: join(REPO, 'hosts/harmony/entry/src/main/resources/rawfile/spike'),
+        staleRoot: join(REPO, 'hosts/harmony/entry/src/main/resources/rawfile/dsh'),
         covers: (rel, rows) => rows.includes(rel),
       },
       advisory: {
         label: closure.label,
         rows: closure.rows,
         rowOrigin: closure.file,
-        staleRoot: SPIKE, // vendor-official.sh copies from runtime/spike
+        staleRoot: DSH, // vendor-official.sh copies from runtime/dsh
         covers: (rel, rows) => rows.includes(rel),
       },
     },
@@ -440,14 +440,14 @@ function iosHost(ios) {
     roots: (surfaces) => [
       'upstream/boot.js', 'upstream/web-boot.js', 'scenario/upstream-suite-leg.js',
       ...surfaces.primary.mirrorRoots
-        .filter((r) => r.root === 'SPIKE' && (r.rel === 'scenario' || r.rel.startsWith('scenario/')))
-        .flatMap((r) => listDirFiles(join(SPIKE, r.rel)).map((f) => `${r.rel}/${f}`))
+        .filter((r) => r.root === 'DSH' && (r.rel === 'scenario' || r.rel.startsWith('scenario/')))
+        .flatMap((r) => listDirFiles(join(DSH, r.rel)).map((f) => `${r.rel}/${f}`))
         .filter((f) => f.endsWith('.js')),
     ],
     surfaces: {
       primary: {
         label: ios.label,
-        rows: ios.rows.filter((r) => r.root === 'SPIKE').map((r) => r.rel),
+        rows: ios.rows.filter((r) => r.root === 'DSH').map((r) => r.rel),
         outOfSpikeRows: ios.rows.filter((r) => r.root === 'REPO'),
         mirrorRoots: ios.mirrorRoots,
         rowOrigin: ios.file,

@@ -14,14 +14,14 @@
  *     copies the `closures` gate keeps in sync with canonical); dsh-llm is
  *     the suite's stub (HarnessError base only);
  *   - the shims' bare `upstream/shims/…` specifiers resolve to the canonical
- *     runtime tree, exactly as the spike loader does on device.
+ *     runtime tree, exactly as the dsh loader does on device.
  */
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url));
-const vendorRoot = join(repoRoot, 'hosts/android/app/src/main/assets/spike/vendor');
+const vendorRoot = join(repoRoot, 'hosts/android/app/src/main/assets/dsh/vendor');
 
 const VENDOR_BARE = {
   '@deepseek-ai/dsh-fs-local': join(vendorRoot, 'dsh/fs-local@0.1.6-alpha.2/lib/index.js'),
@@ -43,7 +43,7 @@ const VENDOR_BARE = {
   diff: join(vendorRoot, 'npm/diff@9.0.0/libesm/index.js'),
 };
 
-const shimUrl = (name) => pathToFileURL(join(repoRoot, 'runtime/spike/upstream/shims', name)).href;
+const shimUrl = (name) => pathToFileURL(join(repoRoot, 'runtime/dsh/upstream/shims', name)).href;
 
 export function resolve(specifier, context, next) {
   const parent = context.parentURL ?? '';
@@ -53,15 +53,15 @@ export function resolve(specifier, context, next) {
     return { url: pathToFileURL(mapped).href, shortCircuit: true };
   }
   if (specifier.startsWith('upstream/shims/')) {
-    return { url: pathToFileURL(join(repoRoot, 'runtime/spike', specifier)).href, shortCircuit: true };
+    return { url: pathToFileURL(join(repoRoot, 'runtime/dsh', specifier)).href, shortCircuit: true };
   }
-  // The spike-root spellings the loader serves on device ('/' IS the spike
+  // The dsh-root spellings the loader serves on device ('/' IS the dsh
   // root) — the same rows vitest.config.js aliases for the in-process suites.
   if (specifier.startsWith('/upstream/shims/')) {
-    return { url: pathToFileURL(join(repoRoot, 'runtime/spike', specifier.slice(1))).href, shortCircuit: true };
+    return { url: pathToFileURL(join(repoRoot, 'runtime/dsh', specifier.slice(1))).href, shortCircuit: true };
   }
   if (specifier.startsWith('/vendor/')) {
-    return { url: pathToFileURL(join(repoRoot, 'runtime/spike', specifier.slice(1))).href, shortCircuit: true };
+    return { url: pathToFileURL(join(repoRoot, 'runtime/dsh', specifier.slice(1))).href, shortCircuit: true };
   }
   // The panel's own shim doubles (the vitest aliases' equivalents); gateway
   // gains the inert socket faces raw-node ESM link-errors on (see

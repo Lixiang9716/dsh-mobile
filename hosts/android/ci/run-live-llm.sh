@@ -1,6 +1,6 @@
 #!/bin/sh
 # run-live-llm.sh — the REAL-backend LLM E2E on the Android emulator (scenario
-# `llm.live-stream`, real leg). Sibling of hosts/android/ci/run-spike-e2e.sh (same
+# `llm.live-stream`, real leg). Sibling of hosts/android/ci/run-dsh-e2e.sh (same
 # capture discipline via hosts/android/ci/logcat-capture.sh: launch exactly ONCE,
 # stream the log, bound the capture at the first completion tag — judged from
 # the canary onward) with the LLM steps added:
@@ -8,7 +8,7 @@
 #   1. stage the LLM credentials into fs scope "app"
 #      (files/profiles/default/llm-live-stream/config.json via run-as — the key is
 #      written to the app container only, never echoed, never committed);
-#   2. launch with `--ez dsh.llm true` (SpikeHostM4.startLlm — scenario
+#   2. launch with `--ez dsh.llm true` (BindingHost.startLlm — scenario
 #      `llm.live-stream`, entry scenario/llm-live-stream.js, one real streaming chat turn
 #      through the gateway httpFetch);
 #   3. verify the captured log against llm-live-stream-device.json AND
@@ -22,7 +22,7 @@ set -eu
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 CAPTURE="$ROOT/hosts/android/ci/logcat-capture.sh"
 cd "$ROOT"
-PKG=com.dshmobile.spike
+PKG=com.dshmobile.host
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 OUT=${DSH_M2_LLM_OUT:-hosts/android/artifacts/llm-live-stream}
 STREAM=$OUT/dsh-llm-live-stream-stream.txt
@@ -61,7 +61,7 @@ done
 
 # ---- stage credentials into fs scope "app" ----------------------------------
 # The reserved app scope maps to <filesDir>/profiles/default (FsPrimitives.kt).
-# materializeBundle only re-copies assets UNDER filesDir/spike, so the staged
+# materializeBundle only re-copies assets UNDER filesDir/dsh, so the staged
 # config survives relaunches.
 CFG=$(mktemp "${TMPDIR:-/tmp}/dsh-llm-live-stream-config.XXXXXX")
 chmod 600 "$CFG"
@@ -78,7 +78,7 @@ adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Shared canary-pinned capture (logcat-capture.sh): `logcat -c` races the
 # reader's initial snapshot, so the wait and the truncation judge the canary
 # view only.
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.spike dsh.spike.result)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
 cleanup() {
     "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true
 }
@@ -90,7 +90,7 @@ until adb shell am start -n $PKG/.MainActivity --ez dsh.llm true >/dev/null 2>&1
     sleep 2
 done
 
-"$CAPTURE" wait -f "$STREAM" "$CANARY" 300 "dsh.spike.result: ALL" || {
+"$CAPTURE" wait -f "$STREAM" "$CANARY" 300 "dsh.runtime.result: ALL" || {
     echo "::error::llm.live-stream session did not complete within 300s"
     tail -80 "$STREAM"
     exit 1
@@ -99,10 +99,10 @@ sleep 0.3          # let the completion-tag line itself flush
 trap - EXIT
 cleanup
 
-"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.spike.result: ALL/q' > "$OUT/logs.txt"
-grep 'dsh.spike.result' "$OUT/logs.txt" > "$OUT/results.txt"
+"$CAPTURE" view -f "$STREAM" "$CANARY" | sed '/dsh.runtime.result: ALL/q' > "$OUT/logs.txt"
+grep 'dsh.runtime.result' "$OUT/logs.txt" > "$OUT/results.txt"
 cat "$OUT/results.txt"
-grep 'dsh.spike.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
+grep 'dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
 # ---- the key-leak re-check over the RAW captured stream AND the canary view --
 if grep -qF "$ZAI_API_KEY" "$STREAM" || grep -qF "$ZAI_API_KEY" "$OUT/logs.txt"; then

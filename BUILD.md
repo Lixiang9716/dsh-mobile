@@ -13,11 +13,11 @@ build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--rel
 
 | Examples | What happens |
 | --- | --- |
-| `build/build.sh android` | stage the android closure from the canonical runtime → `gradlew assembleDebug` → `run-spike-e2e.sh` (log-verified) |
+| `build/build.sh android` | stage the android closure from the canonical runtime → `gradlew assembleDebug` → `run-dsh-e2e.sh` (log-verified) |
 | `build/build.sh android harmony` | the same, for both platforms — any mix of platforms |
 | `build/build.sh test ios` | the e2e leg only (build must already be fresh) |
 | `build/build.sh check` | the `closures` gate only — no toolchains needed |
-| `build/build.sh sync harmony` | re-stage the committed harmony closure from `runtime/spike` |
+| `build/build.sh sync harmony` | re-stage the committed harmony closure from `runtime/dsh` |
 | `build/build.sh sync all` | re-stage every committed closure (ios → android → harmony → core, in order; an unknown platform aborts loud, never a silent skip) |
 
 - The default command is `build`; the default platform set is `all` (the CI
@@ -25,7 +25,7 @@ build/build.sh [build|test|check|sync] [ios|android|harmony|core|all ...] [--rel
 - A missing toolchain **fails loud**, naming the tool and how to get it — never
   a silent skip. `--list` shows the platforms and their toolchain needs.
 - `core` is the canonical runtime's own vehicle: the C host CLI
-  (`runtime/spike/host/build.sh`) plus the CLI proof legs — the same closure
+  (`runtime/dsh/host/build.sh`) plus the CLI proof legs — the same closure
   the platforms embed, proven on the cheapest host.
 
 ## Why this shape (the DSH method)
@@ -37,7 +37,7 @@ The build system expresses exactly that:
 
 1. **sync** re-stages each host's *committed copy* of the canonical closure
    (byte-identical; the vendored upstream is pinned and sha256-verified by
-   `runtime/spike/vendor/ensure-dsh.sh`);
+   `runtime/dsh/vendor/ensure-dsh.sh`);
 2. **compile** runs the platform's own toolchain (Xcode / Gradle-NDK / hvigor
    NAPI — each host compiles the same C host through its own build system);
 3. **test** runs the platform's log-verified e2e legs (assertions on
@@ -45,8 +45,8 @@ The build system expresses exactly that:
 
 ## The closures gate
 
-Android `assets/spike/`, HarmonyOS `rawfile/spike/`, and the iOS generated
-bundle are **committed copies** of the canonical `runtime/spike` closure —
+Android `assets/dsh/`, HarmonyOS `rawfile/dsh/`, and the iOS generated
+bundle are **committed copies** of the canonical `runtime/dsh` closure —
 deliberately (self-contained APK/HAP, platform IDEs see the files). Because CI
 re-stages before every build, drift in the committed copies is invisible to a
 green pipeline. The `closures` gate (`gov run`, wired in `gates.json`) closes
@@ -57,9 +57,9 @@ that hole: it byte-verifies every committed copy against the canonical source
 ## The asset-mirror family (the web clients)
 
 The self-hosted web clients are a second mirror family: the product trees
-`presentation/web-client-{next,whale}` ship bytes through three host faces —
-android `assets/spike/webclient-*/`, harmony
-`rawfile/spike/webclient/dsh-web-client-*/`, and the iOS embedder's
+`presentation/web-client-{next,compact}` ship bytes through three host faces —
+android `assets/dsh/webclient-*/`, harmony
+`rawfile/dsh/webclient/dsh-web-client-*/`, and the iOS embedder's
 `WEBCLIENT_TREES` declaration (its bundle regenerates from the product tree
 at build time, so the declaration is the committed claim). A product edit
 that skips the mirrors is the #286 class (timeline.js rode a vacuous
@@ -89,7 +89,7 @@ ctest --preset macos-dev                                # the gates (dsh-gate-cl
 Scope by construction (phase 1 — add-the-layer, move-no-paths):
 
 - **CMake compiles only the C core**: the `dsh-core` static library, built
-  from `runtime/spike/host` plus the pinned engines — the same file set the
+  from `runtime/dsh/host` plus the pinned engines — the same file set the
   android and harmony `cpp/CMakeLists.txt` compile. Configure materializes
   the vendored pins first (`include(Vendor)` runs the ensure scripts, fail
   loud; `DSH_SKIP_VENDOR=ON` skips with a named warning).
@@ -135,7 +135,7 @@ platform, both halves of the flavor split on a real simulator/emulator:
 
 | Leg | What it proves | Evidence |
 | --- | --- | --- |
-| release (iOS / Android) | the user-facing build boots to the official UI with ZERO drive machinery — no drive markers (`spike: sequence` / `ui-wait` / verdict text), no debug/info logger records — and refuses an E2E drive BY NAME. The Release configuration cannot run the drives (they are compiled out of it by design), and that absence plus the loud refusal is exactly its evidence. The audit stream and warn/error records are the product's own planes (the serving boot brings up the full spine); they are RECORDED in `release-proof.json`, never asserted zero | `hosts/<plat>/artifacts/simulator-matrix/release/` |
+| release (iOS / Android) | the user-facing build boots to the official UI with ZERO drive machinery — no drive markers (`dsh: sequence` / `ui-wait` / verdict text), no debug/info logger records — and refuses an E2E drive BY NAME. The Release configuration cannot run the drives (they are compiled out of it by design), and that absence plus the loud refusal is exactly its evidence. The audit stream and warn/error records are the product's own planes (the serving boot brings up the full spine); they are RECORDED in `release-proof.json`, never asserted zero | `hosts/<plat>/artifacts/simulator-matrix/release/` |
 | harness (iOS / Android) | the debug harness — the verification vehicle — runs the existing e2e runners unchanged: scenario-id logs 1:1 against the manifests, receipts machine-authored on the green path only | `…/simulator-matrix/{gateway-drive,device-plane,regression}/` |
 | harmony | honestly skipped when no DevEco toolchain / hdc target exists on the machine — a skip receipt, never a fake pass (the leg stays script-ready for a real device) | `hosts/harmony/artifacts/simulator-matrix/matrix-skip-receipt.json` |
 
@@ -173,10 +173,10 @@ workflow — the mapping, and where each leg runs:
 
 | Platform | compile (workflow) | test (workflow) |
 | --- | --- | --- |
-| ios | `xcodebuild … -scheme DSHSpike` (`dev/ios`, macos-15) | `test/e2e/run-ios.sh` (same job) |
-| android | `./gradlew assembleDebug` (`dev/android`) | `hosts/android/ci/run-spike-e2e.sh` (same job) |
+| ios | `xcodebuild … -scheme DSHHost` (`dev/ios`, macos-15) | `test/e2e/run-ios.sh` (same job) |
+| android | `./gradlew assembleDebug` (`dev/android`) | `hosts/android/ci/run-dsh-e2e.sh` (same job) |
 | harmony | `hvigorw assembleHap` (`dev/harmonyos`) | `hosts/harmony/ci/run-host-e2e.sh` (same job) |
-| core | `runtime/spike/host/build.sh` (macOS local; the CLI legs' own runners) | `runtime/spike/ci/run-*-e2e.sh` |
+| core | `runtime/dsh/host/build.sh` (macOS local; the CLI legs' own runners) | `runtime/dsh/ci/run-*-e2e.sh` |
 
 [D9]: docs/decisions.md
 [D6]: docs/decisions.md

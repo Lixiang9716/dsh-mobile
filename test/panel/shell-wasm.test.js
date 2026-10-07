@@ -5,9 +5,9 @@ import { workspace, sha256Hex, wasmRun } from './gateway-shim.js';
 
 /** The pinned profile container the executor maps the workspace through
  * (boot.js's pinProfileContainer globals): the workspace sits INSIDE the
- * scope root, so a workspace-relative program is `spike/<name>.wasm`. */
+ * scope root, so a workspace-relative program is `dsh/<name>.wasm`. */
 const seedGlobals = () => {
-  globalThis.__dshProfileCwd = '/profiles/default/spike';
+  globalThis.__dshProfileCwd = '/profiles/default/dsh';
   globalThis.__dshProfileScopeRoot = '/profiles/default';
 };
 
@@ -60,9 +60,9 @@ describe('shell-wasm: echo and wc execute and their output comes back', () => {
     // shim: the shell adds nothing between the model and the module (the
     // executor's one transform is parseCommand's trim, mirrored here)
     await activate();
-    workspace.set('app/spike/probe.wc', WC_BYTES);
+    workspace.set('app/dsh/probe.wc', WC_BYTES);
     const throughShell = await shellExecutor.run({ command: 'wc a b c\nd e\n' });
-    const direct = await wasmRun('app', 'spike/probe.wc', 'run', 'a b c\nd e');
+    const direct = await wasmRun('app', 'dsh/probe.wc', 'run', 'a b c\nd e');
     expect(throughShell.stdout).toBe(direct.output);
     expect(throughShell.exitCode).toBe(direct.result);
     expect(direct.output).toBe('2 5 9\n');
@@ -117,18 +117,18 @@ describe('shell-wasm: the starter set', () => {
   it('activation writes echo, wc and grep into the workspace once each', async () => {
     await activate();
     expect([...workspace.keys()].sort()).toEqual([
-      'app/spike/echo.wasm', 'app/spike/grep.wasm', 'app/spike/wc.wasm']);
-    expect(workspace.get('app/spike/wc.wasm')).toEqual(WC_BYTES);
-    expect(workspace.get('app/spike/grep.wasm')).toEqual(GREP_BYTES);
+      'app/dsh/echo.wasm', 'app/dsh/grep.wasm', 'app/dsh/wc.wasm']);
+    expect(workspace.get('app/dsh/wc.wasm')).toEqual(WC_BYTES);
+    expect(workspace.get('app/dsh/grep.wasm')).toEqual(GREP_BYTES);
   });
 
   it("a starter already present is never overwritten (the user's copy wins)", async () => {
     await activate();
     const tampered = Uint8Array.from(WC_BYTES);
     tampered[0] = ~tampered[0];
-    workspace.set('app/spike/wc.wasm', tampered);
+    workspace.set('app/dsh/wc.wasm', tampered);
     await activate();
-    expect(workspace.get('app/spike/wc.wasm')).toBe(tampered);
+    expect(workspace.get('app/dsh/wc.wasm')).toBe(tampered);
   });
 
   it('the tool registration carries the honest description and works end to end', async () => {

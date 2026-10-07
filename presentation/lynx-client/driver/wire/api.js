@@ -1,7 +1,7 @@
 // dsh:logging-exempt (node-side driver)
 /**
  * api.js — the POST /api envelope bridge (docs/webserver-contract.md §2.3).
- * PORTED from presentation/web-client-next/web/js/api.js — not rewritten.
+ * PORTED from presentation/web-client-v2/web/js/api.js — not rewritten.
  * Deltas from the browser original, all transport-level only:
  *   - the base URL is a constructor parameter (the driver is not same-origin)
  *   - Node 24 global fetch; no token-cookie handling (the dev carrier's

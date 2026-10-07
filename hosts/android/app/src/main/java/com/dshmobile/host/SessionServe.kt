@@ -1,0 +1,441 @@
+package com.dshmobile.host
+
+import android.app.Activity
+import android.util.Log
+import android.webkit.WebView
+import java.io.File
+import org.json.JSONArray
+import org.json.JSONObject
+
+/**
+ * The SERVING seat behind the official Web Client on the loopback carrier:
+ * the carrier (`CarrierServer`), the official dist seat (`CarrierWebDist`),
+ * the `/plugins` delivery (`CarrierPlugins`), the `/api` + mux bridge
+ * (`CarrierAPIBridge` + `SessionWriteSeam` folding the runtime's claims),
+ * the scripted chat-completions endpoint (`MockLlmRoute`), and the runtime
+ * half — the FULL upstream spine booted through scenario/composer-web-live.js,
+ * which claims the write surface, the settings describe and the mux streams
+ * and then goes RESIDENT: the page's own composer drives real turns, nothing
+ * here pre-plays them.
+ *
+ * The user-facing boot composes the INTERACTIVE surfaces behind the
+ * `interactive` flag (the commands registry + the skill plane the composer's
+ * "/" menu reads — boot.js mounts them only when the config carries the
+ * rows), and takes the user's model endpoint from the credential file when
+ * one is staged (else the scripted route answers, and the whole UI still
+ * works). Kotlin sibling of hosts/ios SessionServe.swift, which holds the
+ * same seam contract: a serving seat reports FACTS (here, Log.i lines — a
+ * release build strips debug/info from the canonical logger), and which
+ * E2E record a fact becomes is the drive's business. The `composer.live-write`
+ * evidence drive keeps its own class (`SessionWriteSession`) so its
+ * manifest-pinned boot stays byte-identical; this seat shares every carrier
+ * piece with it and adds no E2E machinery at all. JS runs ONLY on
+ * JsRuntime's HandlerThread.
+ */
+class SessionServe private constructor(
+    private val activity: Activity,
+    private val credential: Credential?,
+    private val interactive: Boolean,
+    /** The Web Client this seat serves: the official dist (default) or the
+     * self-hosted `dsh-web-client-v2` — same /api + mux surface, the staged
+     * plugin's web dir instead of the vendored dist, ZERO injection rows
+     * (the page owns its whole boot; the facade/boot-graph/phone-CSS rows
+     * are the official page's). Mirrors hosts/ios SessionServe.start. */
+    private val clientID: String = CLIENT_ID,
+) {
+
+    companion object {
+        private const val TAG = "SessionServe"
+        private const val ENTRY = "scenario/composer-web-live.js"
+        const val CLIENT_ID = "dsh-web-official"
+        const val NEXT_CLIENT_ID = "dsh-web-client-v2"
+
+        /** The one workspace the mobile profile seeds: a real directory inside
+         * the app scope, so the agent always has somewhere to work and what it
+         * writes survives relaunches (the staged bundle root would be neither).
+         * The custom skills dir lives INSIDE it for the same reason — the fs
+         * views refuse anything outside the granted scope. */
+        fun workspaceRoot(activity: Activity): File =
+            File(SessionServeConfig.appScopeRoot(activity), "dsh").apply { mkdirs() }
+
+        @Volatile private var instance: SessionServe? = null
+
+        /** Creates and starts the seat; the WebView loads the origin when the
+         * runtime's composed boot wire + the settings probes are in. */
+        fun start(
+            activity: Activity,
+            webView: WebView?,
+            credential: Credential?,
+            interactive: Boolean = true,
+            clientID: String = CLIENT_ID,
+        ): SessionServe {
+            val seat = SessionServe(activity, credential, interactive, clientID)
+            seat.webView = webView
+            instance = seat
+            JsRuntime.post {
+                try {
+                    seat.begin()
+                } catch (e: Exception) {
+                    seat.fail("serve bootstrap: ${e::class.java.simpleName}: ${e.message}")
+                }
+            }
+            return seat
+        }
+
+        /** The WebView finished a document load (no-op for the seat — there is
+         * no probe; kept so MainActivity's client can dispatch uniformly). */
+        fun dispatchPageFinished() = Unit
+    }
+
+    private val carrier = CarrierServer()
+    private lateinit var plugins: CarrierPlugins
+    private lateinit var bridge: CarrierAPIBridge
+    private lateinit var dist: CarrierWebDist
+    private lateinit var core: GatewayCore
+    private lateinit var seam: SessionWriteSeam
+    private lateinit var ui: UiPrimitives
+
+    // ---- the hook block (a drive assigns these; defaults are no-ops —
+    // the seat reports serving FACTS as Log lines, and which record a fact
+    // becomes is the drive's business; the iOS sibling holds the same seam) —
+
+    /** The index rendered (injection-row count, body bytes). */
+    var onIndexRendered: ((Int, Int) -> Unit)? = null
+    /** The index served (200 on "/"). */
+    var onIndexServed: (() -> Unit)? = null
+    /** One static asset served. */
+    var onAssetServed: ((String) -> Unit)? = null
+    /** One WebSocket upgrade accepted (path). */
+    var onUpgradeAccepted: ((String) -> Unit)? = null
+    /** One /api call observed (endpoint, how it was answered). */
+    var onAPICall: ((String, String) -> Unit)? = null
+    /** One mux frame crossed the bridge (direction, frame kind). */
+    var onMuxFrame: ((String, String) -> Unit)? = null
+    /** The runtime half failed (the page still opens — its own honest state). */
+    var onRuntimeFailure: ((String) -> Unit)? = null
+
+    /** Stops serving and ends the runtime half (a drive's terminal step; a
+     * user-facing launch stops only when the app leaves the screen). */
+    fun stop() {
+        if (handle != 0L) {
+            JsRuntime.m4End(handle)
+            handle = 0
+        }
+        carrier.stop()
+    }
+
+    /** The picker's activity result (MainActivity routes it here — the
+     * composer's attachment flow presents the SAF picker). */
+    fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        if (requestCode == UiPrimitives.REQUEST_PICKER) ui.onPickerResult(resultCode, data)
+        if (requestCode == UiPrimitives.REQUEST_MEDIA) ui.onMediaResult(resultCode, data)
+        if (requestCode == DevicePlanePrimitives.REQUEST_SHARE) device.onShareResult(resultCode)
+    }
+
+    private lateinit var device: DevicePlanePrimitives
+    private var handle: Long = 0
+    private var token = ""
+    private var webView: WebView? = null
+
+    private var webBootRows: JSONArray? = null
+    private var runtimeBootApplied = false
+    private var probesDone = false
+    private var runtimeFailed = false
+    private var comboURL = ""
+    private var originOpened = false
+
+    /** Runtime thread: the route table (official dist fallback + /plugins +
+     * /api + the scripted llm endpoint), then the spine. The client flavor
+     * selects the dist root: the self-hosted next client serves the staged
+     * plugin's web dir with NO injection rows, so every existing scenario's
+     * boot bytes stay untouched. */
+    private fun begin() {
+        val files = activity.filesDir
+        val staged = WebPluginsDelivery.build(File(files, "web-plugins"))
+            ?: throw IllegalStateException(
+                "web-plugins is not staged (bootRelease copies it from assets)",
+            )
+        MockLlmRoute.workspaceRoot = workspaceRoot(activity).absolutePath
+        token = randomToken()
+        plugins = CarrierPlugins.staged(File(files, "web-plugins"))
+        val config = CarrierBootConfig.default(plugins)
+        comboURL = batchURL(config.bootGraphJSON) ?: ""
+        val servesNext = clientID == NEXT_CLIENT_ID
+        dist = CarrierWebDist(
+            distRoot = if (servesNext) {
+                File(files, "dsh/webclient-v2/web")
+            } else {
+                File(files, "official-web/dist")
+            },
+            sessionToken = token,
+            indexRows = {
+                if (servesNext) emptyList() else CarrierIndexRows.runtimeRows(webBootRows)
+            },
+        )
+        bridge = CarrierAPIBridge(token)
+        bridge.deliverToRuntime = { msg -> deliverRuntime(msg) }
+        seam = SessionWriteSeam(bridge)
+        wireEvidence()
+        carrier.registerFallback(dist.handler)
+        carrier.register(CarrierRouteKind.PREFIX, "/plugins") { req, out ->
+            plugins.handler(req, out)
+        }
+        bridge.install(carrier)
+        carrier.onWSFrame = { text, path -> bridge.ingestFrame(text, path) }
+        carrier.register(CarrierRouteKind.EXACT, MockLlmRoute.PATH) { request, out ->
+            MockLlmRoute.serve(request, out)
+        }
+        carrier.start(File(files, "dsh/webclient/web")) { /* readiness below */ }
+        Log.i(TAG, "serving $clientID on 127.0.0.1:${carrier.port}")
+        startSpine(staged)
+    }
+
+    /** Wires the seat's serving facts onto the hook block (carrier conn
+     * threads; the defaults are no-ops so a hook-free launch — every
+     * user-facing boot — passes each fact through untouched). */
+    private fun wireEvidence() {
+        dist.onIndexRendered = { rows, bytes -> onIndexRendered?.invoke(rows, bytes) }
+        dist.onIndexServed = { onIndexServed?.invoke() }
+        dist.onAssetServed = { path -> onAssetServed?.invoke(path) }
+        bridge.onUpgradeAccepted = { path -> onUpgradeAccepted?.invoke(path) }
+        bridge.onAPICall = { endpoint, answered -> onAPICall?.invoke(endpoint, answered) }
+        bridge.onMuxFrame = { direction, kind -> onMuxFrame?.invoke(direction, kind) }
+    }
+
+    /** Evals the resident spine scenario through the frozen bridge, wires the
+     * gateway (the full primitive table), and delivers runtime.config (the
+     * model route, the workspace, the interactive rows) + `web.plugins` +
+     * the preset seed. */
+    private fun startSpine(pluginsDelivery: JSONArray) {
+        val bundle = wirePrimitives()
+        val entry = File(bundle, ENTRY)
+        handle = JsRuntime.m4Begin(
+            activity.filesDir.absolutePath, ENTRY, entry.readText(), DESCRIPTOR,
+            "session-serve", runtimeBridge,
+        )
+        if (handle == 0L) throw IllegalStateException("serve begin: ${JsRuntime.bindingLastError()}")
+        deliverRuntime(runtimeConfig())
+        deliverRuntime(
+            JSONObject().put("type", "web.plugins").put("plugins", pluginsDelivery),
+        )
+        AgentPresetsSeed.build(bundle)?.let { deliverRuntime(it) }
+    }
+
+    /** The serving seat's gateway primitive table plus its event channels —
+     * the settle/event hops onto the serial runtime queue. EVERY emitter's
+     * channel must be wired here: inside the runtime a dropped fire is
+     * indistinguishable from a never-armed timer (loop-z2 — the read-idle
+     * watchdog armed and never fired while emitFn went unwired). Returns the
+     * rt bundle dir the spine entry loads from. */
+    private fun wirePrimitives(): File {
+        val bundle = File(activity.filesDir, "dsh")
+        core = GatewayCore.create(bundle)
+        val fs = FsPrimitives(activity)
+        fs.register(core)
+        val http = HttpPrimitive()
+        http.register(core)
+        KeychainPrimitives(activity).register(core)
+        NotifyPrimitive(activity).register(core)
+        ui = UiPrimitives(activity, fs)
+        ui.register(core)
+        DevicePlanePrimitives(activity, fs).register(core)
+        ClipboardPrimitives(activity).register(core)
+        CameraPrimitives(activity, fs).register(core)
+        val timer = TimerPrimitive()
+        timer.register(core)
+        // The WebAssembly seam (contract v1.2.0): the shell executor's runs
+        // land here — before #335 B4 this seat answered them all with a
+        // gateway denial and the shell tool could not execute at all.
+        WasmPrimitive(fs).register(core)
+        core.settleFn = { callId, ok, json ->
+            JsRuntime.post {
+                if (handle == 0L) return@post
+                onRuntimeStatus(JsRuntime.m4Settle(handle, callId, ok, json))
+            }
+        }
+        http.eventFn = ::emitEvent
+        timer.emitFn = ::emitEvent
+        return bundle
+    }
+
+    /** The bridge-event hop every event emitter shares (http.body/http.error,
+     * timer.fire, …): onto the serial runtime queue, a no-op once the runtime
+     * is gone. The M4 host wires its emitters the same way. */
+    private fun emitEvent(json: String) {
+        JsRuntime.post {
+            if (handle == 0L) return@post
+            onRuntimeStatus(JsRuntime.m4Event(handle, json))
+        }
+    }
+
+    /** The runtime.config delivery. `llmBaseUrl` is present exactly when the
+     * user staged a credential, which is what makes turns hit a REAL model
+     * instead of the carrier's scripted one. `commands`/`skills` ride only
+     * the interactive seat (the "/" surfaces read them). */
+    private fun runtimeConfig(): JSONObject {
+        val workspace = workspaceRoot(activity)
+        val config = JSONObject()
+            .put("type", "runtime.config")
+            .put("mockLlmUrl", "http://127.0.0.1:${carrier.port}/mock-llm")
+            .put("apiKey", MockLlmRoute.KEY)
+            .put("containerRoot", workspace.absolutePath)
+            .put("fsScopeRoot", SessionServeConfig.appScopeRoot(activity).absolutePath)
+        if (credential != null) {
+            config
+                .put("llmBaseUrl", credential.baseUrl)
+                .put("llmApiKey", credential.apiKey)
+                .put("llmModel", credential.model)
+                .put("llmProvider", credential.provider)
+            if (credential.models.isNotEmpty()) config.put("llmModels", modelsJSON(credential.models))
+        }
+        if (interactive) {
+            config
+                .put("commands", true)
+                .put("fullCoverage", true)
+                .put("goals", true)
+                .put("fileReferences", true)
+                // The CREATION row: the present tool — the model declares
+                // workspace files as deliverables, journaled as
+                // deliverables/presented for the clients to render on screen.
+                .put("creation", true)
+                .put("skills", skillsConfig(workspace))
+        }
+        // The marketplace opt-in (the plugin marketplace panel's browse/
+        // install legs): present exactly when the user staged the resolver
+        // config — the scenario relays it as the write surface's
+        // marketplace {indexUrl} option (absent → the legs stay unclaimed).
+        SessionServeConfig.loadMarketplaceIndex(activity)?.let { config.put("marketplaceIndex", it) }
+        return config
+    }
+
+    /** The skill-plane rows (boot.js `mountSkillPlane` reads them): the
+     * dsh home, the agents home, and the user's custom skills dir — all
+     * INSIDE the pinned workspace (the fs views refuse anything outside). */
+    private fun skillsConfig(workspace: File): JSONObject = JSONObject()
+        .put("dshHome", "${workspace.absolutePath}/home")
+        .put("agentsHome", "${workspace.absolutePath}/home/agents")
+        .put("customSkillDirs", JSONArray().put("${workspace.absolutePath}/skills"))
+
+    /** The staged roster as the `runtime.config llmModels` row (entries
+     * `{id, name}`) — the multi-model catalog the composer's model dialog
+     * lists for the staged credential (upstream/llm-route.js consumes it). */
+    private fun modelsJSON(models: List<Pair<String, String>>): JSONArray = JSONArray().apply {
+        for ((id, name) in models) put(JSONObject().put("id", id).put("name", name))
+    }
+
+    /** The full primitive table — the spine and its tools use the real
+     * gateway (fs scopes, httpFetch for the llm transport, timers, the
+     * capability plane's capture burst); the phased rows declare honestly. */
+    private val DESCRIPTOR: String = JSONObject()
+        .put("available", JSONArray(GatewayCore.PRIMITIVES))
+        .put("unavailable", JSONArray(GatewayCore.PHASED_ROWS)).toString()
+
+    /** The BindingBridge the C host calls back (runtime thread): gateway calls
+     * dispatch into the core; bus messages fold into the web-boot row
+     * application, the page-open gate, or the claims seam. An unknown bus
+     * type is a Log line, never a death — serving mode stays up. */
+    private val runtimeBridge = object : JsRuntime.BindingBridge {
+        override fun onGatewayCall(callId: Int, name: String, args: String) {
+            core.dispatch(callId, name, args)
+        }
+
+        override fun onBusLine(line: String) {
+            val msg = try {
+                JSONObject(line)
+            } catch (_: Exception) {
+                return
+            }
+            when (msg.optString("type")) {
+                "web.boot" -> applyWebBoot(msg)
+                "settings.probes.done" -> {
+                    probesDone = true
+                    maybeOpenOrigin()
+                }
+                else -> {
+                    val handled = seam.onBusMessage(msg)
+                    if (!handled) Log.i(TAG, "bus: unhandled '${msg.optString("type")}'")
+                }
+            }
+        }
+    }
+
+    /** Runtime thread: the runtime's `web.boot` rows replace the carrier
+     * defaults and its plugin revs override the /plugins route. */
+    private fun applyWebBoot(msg: JSONObject) {
+        val rows = msg.optJSONArray("rows") ?: return
+        webBootRows = rows
+        msg.optJSONObject("graph")?.let { graph ->
+            batchURL(graph.toString())?.let { comboURL = it }
+        }
+        msg.optJSONArray("plugins")?.let { pluginRows ->
+            val list = ArrayList<Map<String, Any>>()
+            for (i in 0 until pluginRows.length()) {
+                val row = pluginRows.getJSONObject(i)
+                val map = HashMap<String, Any>()
+                for (key in row.keys()) map[key] = row.get(key)
+                list.add(map)
+            }
+            plugins.applyRuntimeRevs(list)
+        }
+        runtimeBootApplied = true
+        maybeOpenOrigin()
+    }
+
+    /** Carrier → runtime: one bus delivery (any thread; hops onto the runtime
+     * thread — the bridge hands over claimed api.request / mux.open frames). */
+    private fun deliverRuntime(msg: JSONObject) {
+        JsRuntime.post {
+            if (handle == 0L) return@post
+            val status = JsRuntime.m4BusDeliver(handle, msg.toString())
+            if (status < 0) fail("serve bus deliver: ${JsRuntime.bindingLastError()}")
+        }
+    }
+
+    /** 0 = running, 1 = pass, 2 = fail, -1 = error. The scenario stays
+     * RESIDENT on success (1 is normal life); a failure still opens the
+     * origin so the page renders its own honest state instead of a dead
+     * screen, next to the failure line in the log. On 2 the scenario's own
+     * reason rides bindingLastError (js_complete keeps the __dshComplete(false,
+     * reason) string in the host's error slot) — the FAIL line names WHY. */
+    private fun onRuntimeStatus(status: Int) {
+        when (status) {
+            0, 1 -> {}
+            2 -> fail("the spine scenario failed: ${JsRuntime.bindingLastError()}")
+            else -> fail("serve runtime: ${JsRuntime.bindingLastError()}")
+        }
+    }
+
+    private fun fail(message: String) {
+        // One verdict: a completed-fail is re-reported per crossing (loop-q storm).
+        if (runtimeFailed) return
+        runtimeFailed = true
+        Log.i(TAG, "FAIL $message")
+        onRuntimeFailure?.invoke(message)
+        maybeOpenOrigin()
+    }
+
+    /** Opens the origin once the port is bound AND (the composed boot wire +
+     * the settings probes are in, OR the runtime failed — the page shows its
+     * own boot state, never a blank WebView). */
+    @Synchronized
+    private fun maybeOpenOrigin() {
+        if (carrier.port == 0 || originOpened) return
+        val ready = runtimeBootApplied && probesDone
+        if (!ready && !runtimeFailed) return
+        originOpened = true
+        val port = carrier.port
+        activity.runOnUiThread {
+            webView?.loadUrl("http://127.0.0.1:$port/?token=$token")
+        }
+    }
+
+    private fun randomToken(): String = java.security.SecureRandom()
+        .run { ByteArray(16).also { nextBytes(it) } }.joinToString("") { "%02x".format(it) }
+
+    /** The application batch's combo URL from the injected graph JSON. */
+    private fun batchURL(graphJSON: String): String? = try {
+        JSONObject(graphJSON).optJSONArray("batches")?.getJSONObject(0)?.optString("url")
+    } catch (_: Exception) {
+        null
+    }
+}

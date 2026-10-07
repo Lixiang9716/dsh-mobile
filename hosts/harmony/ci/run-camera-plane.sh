@@ -18,7 +18,7 @@ CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools
 HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 [ -x "$HDC" ] || HDC=$(find "$CLT" -name hdc -type f | head -1)
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 OUT=hosts/harmony/artifacts/camera-plane
 
@@ -155,7 +155,7 @@ process.exit(hit ? (console.log(hit[0] + " " + hit[1]), 0) : 1);' 2>/dev/null ||
             fi
         fi
     fi
-    VERDICT_LINE=$(grep "dsh.spike.verdict: harmony.camera-plane" "$STREAM" 2>/dev/null | tail -1 || true)
+    VERDICT_LINE=$(grep "dsh.runtime.verdict: harmony.camera-plane" "$STREAM" 2>/dev/null | tail -1 || true)
     [ -n "$VERDICT_LINE" ] && break
     sleep 2
 done
@@ -169,10 +169,10 @@ say "terminal verdict: $VERDICT_LINE"
 kill "$streamer" 2>/dev/null || true
 wait "$streamer" 2>/dev/null || true
 trap - EXIT
-grep 'dsh.spike' "$STREAM" > "$OUT/logs.txt" || true
+grep'dsh.runtime' "$STREAM" > "$OUT/logs.txt" || true
 
 "$HDC" file recv "$BASE/dsh-camera-plane-capture.log" "$OUT/camera-plane-capture.txt" >/dev/null
-grep -h '^dsh.spike.log:' "$OUT/camera-plane-capture.txt" > "$OUT/scenario.jsonl" || true
+grep -h '^dsh.runtime.log:' "$OUT/camera-plane-capture.txt" > "$OUT/scenario.jsonl" || true
 
 if node test/e2e/check.mjs --manifest test/e2e/scenarios/camera-plane-capture.json \
     --log "$OUT/camera-plane-capture.txt" \
@@ -192,7 +192,7 @@ cat > "$OUT/receipt.json" <<EOF
   "phase": "harmony.camera-plane",
   "launch": "physical device, --ps dsh.e2e.leg camera.plane (Debug)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "scenarios": [
     { "manifest": "camera-plane-capture", "verdict": "verdict-camera-plane-capture.json", "pass": true }
   ],

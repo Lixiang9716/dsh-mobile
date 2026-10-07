@@ -5,7 +5,7 @@
 
 ## Motivation
 
-The creation-mode clients (web-client-next, web-client-whale; #214/#218/#220/#221)
+The creation-mode clients (web-client-v2, web-client-compact; #214/#218/#220/#221)
 gave the agent a delivery path for visual work: `write` + `present` → creation
 card → fullscreen viewer. Today the viewer renders every artifact as HTML in a
 sandboxed iframe (`sandbox="allow-scripts"`) inside the Web Client — which is
@@ -15,7 +15,7 @@ canvas-game E2E leg is in flight as the evidence run for this proposal).
 It is also a ceiling with three measured walls:
 
 1. **The driven WebView throttles timers.** The iOS drive documents it at
-   `hosts/ios/App/Source/NextWebRuntime.swift:15-17`: all waiting is Swift-side
+   `hosts/ios/App/Source/V2WebRuntime.swift:15-17`: all waiting is Swift-side
    polling precisely because a driven WKWebView stops firing page timers. A
    game loop inside that page runs at the throttle's mercy.
 2. **No sustained-frame guarantee and no 3D.** A WebView canvas competes with
@@ -149,9 +149,9 @@ and there is no `hostType` branch anywhere (RFC 0002 anti-pattern).
 ## Evidence base
 
 The creation chain is on all three hosts (#214/#218/#220/#221) and the
-whale viewer already demonstrated the presentation posture this proposal
+compact viewer already demonstrated the presentation posture this proposal
 formalizes. The driven-timer throttling is documented in the iOS drive
-source it forced into existence (`NextWebRuntime.swift:15-17`, Swift-side
+source it forced into existence (`V2WebRuntime.swift:15-17`, Swift-side
 `pollPage`). The canvas-game E2E leg — the first `requestAnimationFrame`
 artifact in the viewer — is the in-flight evidence run that motivates the
 frame pump; the upstream agent's own behavior supplies the rest: asked for

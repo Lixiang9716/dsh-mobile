@@ -27,7 +27,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
-import { anchoredEditorPlugin } from '../../runtime/spike/upstream/tool-path-anchor.js';
+import { anchoredEditorPlugin } from '../../runtime/dsh/upstream/tool-path-anchor.js';
 
 const { LocalFileSystem } = await import('@deepseek-ai/dsh-fs-local');
 const ToolFs = await import('@deepseek-ai/dsh-tool-fs');
@@ -36,12 +36,12 @@ const StrReplaceEditor = await import('@deepseek-ai/dsh-tool-str-replace-editor'
 const root = mkdtempSync(join(tmpdir(), 'dsh-toolface-z3-'));
 mountWorkspace(root);
 
-// The battery shape (r16 v2c): root/spike is the spike tree, the registry
-// lives at root/plugins/registry.json — 'spike/../plugins/registry.json'
-// climbs out of root/spike back INTO the root.
-mkdirSync(join(root, 'spike'), { recursive: true });
+// The battery shape (r16 v2c): root/dsh is the dsh tree, the registry
+// lives at root/plugins/registry.json — 'dsh/../plugins/registry.json'
+// climbs out of root/dsh back INTO the root.
+mkdirSync(join(root, 'dsh'), { recursive: true });
 mkdirSync(join(root, 'plugins'), { recursive: true });
-writeFileSync(join(root, 'spike', 'main.js'), 'boot\n');
+writeFileSync(join(root, 'dsh', 'main.js'), 'boot\n');
 writeFileSync(join(root, 'plugins', 'registry.json'), '{\n  "version": 1\n}\n');
 
 // An EXISTING directory outside the root (the /system/app sibling) and an
@@ -120,8 +120,8 @@ const drive = async (tool, args) => {
 
 const facts = { root, outsideDir, outsideAbsent };
 
-facts.readRelative = await drive(readTool, { file_path: 'spike/../plugins/registry.json' });
-facts.editorRelative = await drive(editor, { command: 'view', path: 'spike/../plugins/registry.json' });
+facts.readRelative = await drive(readTool, { file_path: 'dsh/../plugins/registry.json' });
+facts.editorRelative = await drive(editor, { command: 'view', path: 'dsh/../plugins/registry.json' });
 facts.editorRelativeAbsent = await drive(editor, { command: 'view', path: 'no-such-relative-xyz.txt' });
 facts.editorInside = await drive(editor, { command: 'view', path: join(root, 'plugins', 'registry.json') });
 facts.editorOutsideExisting = await drive(editor, { command: 'view', path: outsideDir });

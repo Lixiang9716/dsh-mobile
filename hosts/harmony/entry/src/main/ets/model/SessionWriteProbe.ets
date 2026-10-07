@@ -12,12 +12,12 @@
  * stage a hang sits in.
  *
  * The typed message and the scripted reply it must render. The seeded
- * workspace's title is the profile container's basename (the staged spike
+ * workspace's title is the profile container's basename (the staged rt
  * bundle directory).
  */
 export const WRITE_MESSAGE: string = 'Say hello from the composer';
 export const WRITE_REPLY: string = 'Hello from upstream';
-const WORKSPACE_TITLE: string = 'spike';
+const WORKSPACE_TITLE: string = 'dsh';
 
 /** One (event, fields) pair the verdict unfolds into canonical lines. */
 export interface WriteLegEvent {

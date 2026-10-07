@@ -2,7 +2,7 @@
 # test/e2e/run-ios-live-llm.sh — the REAL-backend LLM E2E on the iOS simulator
 # (scenario `llm.live-stream`, real leg).
 #
-# Builds DSHSpike, stages the LLM credentials into fs scope "app"
+# Builds DSHHost, stages the LLM credentials into fs scope "app"
 # (Documents/profiles/default/llm-live-stream/config.json — from the environment
 # ZAI_BASE_URL / ZAI_API_KEY / ZAI_MODEL, or the repo-root .env), launches
 # the app in session mode with `-dsh-scenario llm-live-stream`, waits for the Web
@@ -28,8 +28,8 @@ cd "$ROOT"
 UDID="${DSH_E2E_UDID:-A4AE41BF-026A-441E-85DF-F53522996073}"   # dsh-iphone
 ART="hosts/ios/artifacts/llm-live-stream"
 SKIP_BUILD=0
-APP_BUNDLE_ID=org.dsh.DSHSpike
-APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHSpike.app
+APP_BUNDLE_ID=org.dsh.DSHHost
+APP=hosts/ios/DerivedData/Build/Products/Debug-iphonesimulator/DSHHost.app
 while [ $# -gt 0 ]; do
   case "$1" in
     --udid) UDID="$2"; shift 2 ;;
@@ -76,11 +76,11 @@ fi
 
 # ---- 1-3. vendor, build, install -------------------------------------------
 log "1/5 vendor quickjs-ng sources"
-runtime/spike/vendor/ensure.sh
+runtime/dsh/vendor/ensure.sh
 
 if [ "$SKIP_BUILD" -eq 0 ]; then
   log "2/5 xcodebuild (simulator, udid $UDID)"
-  xcodebuild build -project hosts/ios/DSHSpike.xcodeproj -scheme DSHSpike \
+  xcodebuild build -project hosts/ios/DSHHost.xcodeproj -scheme DSHHost \
     -destination "platform=iOS Simulator,id=$UDID" \
     -derivedDataPath hosts/ios/DerivedData 2>&1 | tail -5
 else
@@ -123,13 +123,13 @@ wait_line '"event":"llm.delta"' 180 || fail_deadline "no LLM delta streamed"
 shot 02-mid-stream
 
 log "waiting for session completion (terminal marker)"
-wait_line "spike: sequence session=" 120 || fail_deadline "terminal marker never appeared"
+wait_line "dsh: sequence session=" 120 || fail_deadline "terminal marker never appeared"
 sleep 1
 shot 03-final-transcript
 
 # ---- 5. checkers ------------------------------------------------------------
 log "5/5 running checkers"
-grep '^dsh.spike.log:' "$LOG" >"$ART/scenario.jsonl" || true
+grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
 PASS=0; FAILED=""
 run_check() { # MANIFEST STEM
   if node test/e2e/check.mjs --manifest "$1" --log "$LOG" --out "$ART/verdict-$2.json"; then

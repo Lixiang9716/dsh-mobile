@@ -11,10 +11,10 @@ one-to-one by a checker. An attack that lands is a **finding**, recorded
 here at its real severity, never absorbed into prose.
 
 The legs live in the repo and re-run on the cheapest host (the macOS CLI):
-[security.gateway-fuzz](../runtime/spike/ci/run-security-gateway-fuzz.sh) ·
-[security.jail](../runtime/spike/ci/run-security-jail.sh) ·
-[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh) ·
-[security.byok-leak](../runtime/spike/ci/run-security-byok-leak.sh).
+[security.gateway-fuzz](../runtime/dsh/ci/run-security-gateway-fuzz.sh) ·
+[security.jail](../runtime/dsh/ci/run-security-jail.sh) ·
+[security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh) ·
+[security.byok-leak](../runtime/dsh/ci/run-security-byok-leak.sh).
 
 ## Adversary model
 
@@ -46,17 +46,17 @@ and side channels.
 boundary and answers the frozen contract §3 vocabulary — `invalid`
 (malformed), `denied` (a scope the host never granted), `unavailable` (a
 primitive this host does not serve) — fail loud, never a default; a
-rejection is structured, not a crash ([runtime/spike/host/main_cli.c](../runtime/spike/host/main_cli.c),
+rejection is structured, not a crash ([runtime/dsh/host/main_cli.c](../runtime/dsh/host/main_cli.c),
 the smoke backend's per-primitive validation).
 
-**This leg's attack**: [security.gateway-fuzz](../runtime/spike/ci/run-security-gateway-fuzz.sh)
+**This leg's attack**: [security.gateway-fuzz](../runtime/dsh/ci/run-security-gateway-fuzz.sh)
 fires a 21-case battery through the raw seam — wrong types, missing fields,
 `..` and absolute path escapes, unknown scopes (case and name), a 1 MB
 path, an over-length keychain ref, negative/missing timer bounds, three
 primitive names that must not exist, two malformed args-JSON bodies, and
 two out-of-boundary socket targets — and demands a structured rejection
 per case plus a benign post-battery roundtrip (the process survived).
-Evidence: `runtime/spike/artifacts/macos-cli-security-gateway-fuzz/`
+Evidence: `runtime/dsh/artifacts/macos-cli-security-gateway-fuzz/`
 (21/21 rejected; both socket attacks audited with fixed reason codes).
 
 ### 2. Marketplace supply chain — the signed catalog
@@ -73,14 +73,14 @@ attacker catalog (trust is the pin, not the document), a hostile mirror
 serving flipped bytes behind an honest catalog, and an honestly re-signed
 publisher metadata error. Four rungs, each `InstallRejected` + audited +
 zero staging
-([run-marketplace-install-e2e.sh](../runtime/spike/ci/run-marketplace-install-e2e.sh),
-evidence `runtime/spike/artifacts/macos-cli-marketplace-install/`).
+([run-marketplace-install-e2e.sh](../runtime/dsh/ci/run-marketplace-install-e2e.sh),
+evidence `runtime/dsh/artifacts/macos-cli-marketplace-install/`).
 
 ### 3. Marketplace supply chain — catalog freshness (defended: the freshness anchor; #295 HIGH closed)
 
 **Defense today**: the client-side freshness anchor — a monotonic
-`generatedAt` floor ([runtime/spike/marketplace.js](../runtime/spike/marketplace.js),
-persisted by [runtime/spike/freshness-store.js](../runtime/spike/freshness-store.js)):
+`generatedAt` floor ([runtime/dsh/marketplace.js](../runtime/dsh/marketplace.js),
+persisted by [runtime/dsh/freshness-store.js](../runtime/dsh/freshness-store.js)):
 every refresh verifies the signature FIRST, then compares the catalog's
 publication time against the newest one this client has ever ACCEPTED —
 the floor, persisted through the caller's data plane (one app-scope file;
@@ -103,14 +103,14 @@ file present but unreadable fails LOUD rather than silently resetting
 the floor; the host shape that cannot prove absence resets only at WARN
 level, never silent).
 
-**This leg's attack — and the flip**: [security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+**This leg's attack — and the flip**: [security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh)
 hosts the CURRENT catalog (generatedAt 2026-10-01) beside a stale-but-VALID
 one (an honestly signed old index, generatedAt 2026-09-01 — the model for
 a compromised mirror serving what the publisher once published). The rung
 anchors the floor on the current catalog (first contact), then replays
 the stale one: **the replay refuses at refresh** —
 `"event":"forge.rollback.catalog","outcome":"rejected","code":"catalog","via":"catalog-replay"`
-(evidence `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`)
+(evidence `runtime/dsh/artifacts/macos-cli-security-manifest-forgery/`)
 — nothing stages, and the current catalog still refreshes afterward (the
 equal floor passes; the guard holds no grudge). The rung previously pinned
 today's-truth-as-HIGH-finding: the replay INSTALLED (#295 — the pin
@@ -133,8 +133,8 @@ to distribute and rotate). The #295 HIGH therefore closes for ESTABLISHED
 clients; the first contact remains an honest trust bootstrap, in the same
 class as the out-of-band pin itself (the pin's distribution is trusted
 the same way). SECOND, the panel's install stream
-([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
-resolves through [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js),
+([upstream/web-write-marketplace.js](../runtime/dsh/upstream/web-write-marketplace.js))
+resolves through [marketplace-resolver.js](../runtime/dsh/marketplace-resolver.js),
 whose rejection vocabulary (network/format/unknown-key/signature) has no
 stale code — guarding that face is a wire-vocabulary decision, the named
 follow-up. The contract face this leg attacks is the one the §7.3 install
@@ -165,11 +165,11 @@ imported `dsh.emit(ptr, len)`; a module importing anything else has
 nothing to link to, an emit outside the module's memory traps in the
 host-side bounds check, and every interpreter-level failure (bad parse,
 missing export, stack exhaustion) is a structured `io` rejection —
-[dsh_wasm.c](../runtime/spike/host/dsh_wasm.c). Served on the CLI through
+[dsh_wasm.c](../runtime/dsh/host/dsh_wasm.c). Served on the CLI through
 the same portable spine the iOS app compiles, so the jail is attackable on
 the cheapest host.
 
-**This leg's attack**: [security.jail](../runtime/spike/ci/run-security-jail.sh)
+**This leg's attack**: [security.jail](../runtime/dsh/ci/run-security-jail.sh)
 runs crafted modules: a hostile import called (`env.evil` — nothing to
 link), the sanctioned name with the wrong signature (link refusal), an
 emit pointer past the memory (bounds trap), infinite recursion (stack
@@ -177,7 +177,7 @@ trap), a missing export, an absent module, a scope-escape path, a scope
 the host never granted — 8/8 rejected, and the honest echo module runs
 before AND after the battery (the jail serves sanctioned callers; the
 process survived). Evidence:
-`runtime/spike/artifacts/macos-cli-security-jail/`.
+`runtime/dsh/artifacts/macos-cli-security-jail/`.
 
 ### 6. The socket seam's loopback boundary
 
@@ -204,7 +204,7 @@ fail loud BEFORE anything unpacks; at run time every grant-checked call
 (socket seam) and every rejection (this whole net) leaves a structured
 audit record with a fixed vocabulary.
 
-**This leg's attack**: [security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+**This leg's attack**: [security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh)
 escalates a manifest's capability requirements two ways — past a stale
 trust record (`integrity`, the anchor catches the tamper before
 negotiation) and with fully recomputed trust (`capability`, the negotiation
@@ -218,12 +218,12 @@ transaction never reached its commit point).
 **Defense today**: the credential lives in the keychain (frozen
 `keychainSet`/`keychainGet`, contract v1.0.0 rows 8–9) under one ref,
 never a plaintext file; route resolution is the one home that reads it
-([upstream/llm-route.js](../runtime/spike/upstream/llm-route.js)); llm.js
+([upstream/llm-route.js](../runtime/dsh/upstream/llm-route.js)); llm.js
 never logs a header or body — the key rides the Authorization header,
 wire-only; credential values never cross the wire back (the write
 surface's own rule).
 
-**This leg's attack**: [security.byok-leak](../runtime/spike/ci/run-security-byok-leak.sh)
+**This leg's attack**: [security.byok-leak](../runtime/dsh/ci/run-security-byok-leak.sh)
 drives a CANARY through the save, the relaunch route resolution, a REAL
 transport turn, and the 401 error face — asserting IN RUNTIME that the
 error message carries neither the canary nor a separate wrong-key probe
@@ -234,16 +234,16 @@ host/OS-side); the leak faces code can reach — logs, error messages, route
 facts — are the ones this leg audits, and the shared mock now accepts the
 leg's canary as its expected bearer so the REAL value is the one on the
 wire. Evidence:
-`runtime/spike/artifacts/macos-cli-security-byok-leak/`.
+`runtime/dsh/artifacts/macos-cli-security-byok-leak/`.
 
 ## The leg registry
 
 | Leg | Scenario id | Checker | Evidence dir | Regression it catches |
 | --- | --- | --- | --- | --- |
-| gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/spike/artifacts/macos-cli-security-gateway-fuzz/` | a primitive that stops validating (an attack case resolves, or a code drifts) |
-| jail (wasm + socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/spike/artifacts/macos-cli-security-jail/` | a wider wasm import surface, a missing emit bounds check, or a leakier loopback boundary |
-| manifest forgery | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | a weaker pipeline anchor/negotiation, or a freshness anchor that stops refusing the replayed catalog (falsify-first: neuter the floor check and this checker reddens) |
-| byok leak | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/spike/artifacts/macos-cli-security-byok-leak/` | a credential value reaching any log sink, or an error face that echoes secrets |
+| gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/dsh/artifacts/macos-cli-security-gateway-fuzz/` | a primitive that stops validating (an attack case resolves, or a code drifts) |
+| jail (wasm + socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/dsh/artifacts/macos-cli-security-jail/` | a wider wasm import surface, a missing emit bounds check, or a leakier loopback boundary |
+| manifest forgery | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/dsh/artifacts/macos-cli-security-manifest-forgery/` | a weaker pipeline anchor/negotiation, or a freshness anchor that stops refusing the replayed catalog (falsify-first: neuter the floor check and this checker reddens) |
+| byok leak | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/dsh/artifacts/macos-cli-security-byok-leak/` | a credential value reaching any log sink, or an error face that echoes secrets |
 
 ## Maintenance contract
 

@@ -220,7 +220,7 @@ describe('gen-staging-manifests structural drift fails loud (exit 2)', () => {
     const fx = freshFixture();
     // rule 5: a missing pin tree is a materialization failure, not an
     // empty leg that would silently rot the evidence green
-    fx.removeTree(join('runtime/spike', `vendor/dsh/brand@${VER}`));
+    fx.removeTree(join('runtime/dsh', `vendor/dsh/brand@${VER}`));
     const r = fx.run('gen-staging-manifests.mjs');
     expect(r.status).toBe(2);
     expect(r.stderr).toContain(`dsh roster pins absent from the materialized tree: vendor/dsh/brand@${VER}`);
@@ -238,7 +238,7 @@ describe('gen-staging-manifests structural drift fails loud (exit 2)', () => {
   it('a missing ZOD_SRC assignment fails loud (exit 2)', () => {
     const fx = freshFixture();
     const sh = join('hosts/android/ci/stage-spine-closure.sh');
-    fx.write(sh, fx.read(sh).replace(`ZOD_SRC=$SPIKE/${ZOD_PIN}\n`, ''));
+    fx.write(sh, fx.read(sh).replace(`ZOD_SRC=$DSH/${ZOD_PIN}\n`, ''));
     const r = fx.run('gen-staging-manifests.mjs');
     expect(r.status).toBe(2);
     expect(r.stderr).toContain('ZOD_SRC assignment not found');
@@ -274,7 +274,7 @@ describe('gen-staging-manifests artifacts and usage (exit 2)', () => {
 });
 
 describe('gen-staging-manifests against the real repo (materialized pins)', () => {
-  // The vendored pins are materialized by runtime/spike/vendor/ensure*.sh
+  // The vendored pins are materialized by runtime/dsh/vendor/ensure*.sh
   // (CI does the same before the gate DAG). What holds on ANY prepared
   // checkout: the tool runs to a verdict (never a crash), three host
   // reports parse, and the manifest-parsing legs all execute.

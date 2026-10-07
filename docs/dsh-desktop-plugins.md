@@ -65,11 +65,11 @@ trees + the plugin-system receipt journal. Each is a vendor pin + shim rows + a 
 
 ## Evidence
 
-- `runtime/spike/artifacts/macos-cli-settings-surfaces/` — the 预设 roster
+- `runtime/dsh/artifacts/macos-cli-settings-surfaces/` — the 预设 roster
   (cordis/minimal/ptc/standard, deployment default marked) and the 插件
   inventory (16 spine rows + 58 client bundles + 4 compositions) answered
   on the CLI, 12/12 expected↔logged.
-- `runtime/spike/artifacts/macos-cli-tool-fs/` — create/read/write/edit/
+- `runtime/dsh/artifacts/macos-cli-tool-fs/` — create/read/write/edit/
   view/str_replace through the REAL tool dispatch, boundary refusals
   included.
 - `hosts/ios/artifacts/b4-write-live/` — the same surfaces on device,

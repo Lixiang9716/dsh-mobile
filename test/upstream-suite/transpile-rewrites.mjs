@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 // fileURLToPath, not .pathname: on Windows .pathname yields '/D:/...' and
 // every scandir below grows a phantom drive segment (measured 2026-10-06).
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const TESTS = join(ROOT, 'runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
+const TESTS = join(ROOT, 'runtime/dsh/vendor/dsh-tests@dsh-v0.1.6-alpha.2/packages');
 
 /** The unvendored-limb stub load (module level for size). The .cjs suffix
  * makes esbuild treat the stub as CommonJS, which is what lets named
@@ -62,7 +62,7 @@ try {
 
 const abs = (rel) => join(SUBMODULE_ROOT, rel);
 const otel = (name, ver) => ({
-  inline: join(ROOT, `runtime/spike/vendor/npm/@opentelemetry/${name}@${ver}/build/esm/index.js`),
+  inline: join(ROOT, `runtime/dsh/vendor/npm/@opentelemetry/${name}@${ver}/build/esm/index.js`),
 });
 
 const SUBMODULE_BARE_ROWS = new Map([
@@ -83,7 +83,7 @@ const SUBMODULE_BARE_ROWS = new Map([
     ['@opentelemetry/otlp-transformer', otel('otlp-transformer', '0.220.0')],
     // The exporter's platform subpath (same extensionless-import reasoning).
     ['@opentelemetry/otlp-exporter-base/node-http', {
-      inline: join(ROOT, 'runtime/spike/vendor/npm/@opentelemetry'
+      inline: join(ROOT, 'runtime/dsh/vendor/npm/@opentelemetry'
         + '/otlp-exporter-base@0.220.0/build/esm/index-node-http.js'),
     }],
     ['@opentelemetry/semantic-conventions', otel('semantic-conventions', '1.43.0')],
@@ -94,7 +94,7 @@ const SUBMODULE_BARE_ROWS = new Map([
     // resolves /assets/ — exactly the path the spec asserts and the package-
     // asset seed delivers.
     ['@deepseek-ai/dsh-skill-badge', {
-      inline: join(ROOT, 'runtime/spike/vendor/npm/@deepseek-ai/dsh-skill-badge@0.1.6-alpha.2/lib/index.js'),
+      inline: join(ROOT, 'runtime/dsh/vendor/npm/@deepseek-ai/dsh-skill-badge@0.1.6-alpha.2/lib/index.js'),
     }],
     // W5-S (2026-09-28): the package face the three web spec families drive
     // (fetch-http, proxy, tool-web integration/spill). The specs spy
@@ -221,8 +221,8 @@ const hoistCreateRequireJson = (source, rel) => {
   const specDir = dirname(join(TESTS, rel));
   const pkgName = rel.split('/')[1];
   const vendorCandidates = [
-    join(ROOT, `runtime/spike/vendor/dsh/${pkgName}@0.1.6-alpha.2`),
-    join(ROOT, `runtime/spike/vendor/dsh/dsh-${pkgName}@0.1.6-alpha.2`),
+    join(ROOT, `runtime/dsh/vendor/dsh/${pkgName}@0.1.6-alpha.2`),
+    join(ROOT, `runtime/dsh/vendor/dsh/dsh-${pkgName}@0.1.6-alpha.2`),
   ];
   const imports = [];
   const rewritten = source.replace(re, (_m, _q, rawPath) => {

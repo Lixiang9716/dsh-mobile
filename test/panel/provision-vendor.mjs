@@ -4,7 +4,7 @@
  * (vitest globalSetup). The runtime modules under test import the VENDORED
  * @deepseek-ai/dsh-timeout (the #323 deadline ring arms its budgets through
  * it), and the vendor trees are UNTRACKED (gitignored, materialized by
- * runtime/spike/vendor/ensure-dsh.sh) — a fresh checkout has none, and a
+ * runtime/dsh/vendor/ensure-dsh.sh) — a fresh checkout has none, and a
  * gate that is red-by-construction there is vacuous (the run.sh #280
  * precedent). This script stages the one package the suite needs into
  * test/panel/.vendored/dsh-timeout/ from the TRACKED mirror tarball
@@ -30,8 +30,8 @@ const setup = () => {
     console.log('provision-vendor: dsh-timeout already staged');
     return;
   }
-  const canonical = join(root, 'runtime/spike/vendor/dsh', `timeout@${VERSION}`, 'lib', 'index.js');
-  const tarball = join(root, 'runtime/spike/vendor/dsh-tarballs', `deepseek-ai-dsh-timeout-${VERSION}.tgz`);
+  const canonical = join(root, 'runtime/dsh/vendor/dsh', `timeout@${VERSION}`, 'lib', 'index.js');
+  const tarball = join(root, 'runtime/dsh/vendor/dsh-tarballs', `deepseek-ai-dsh-timeout-${VERSION}.tgz`);
   rmSync(dst, { recursive: true, force: true });
   mkdirSync(join(dst, 'lib'), { recursive: true });
   if (existsSync(canonical)) {

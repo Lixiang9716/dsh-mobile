@@ -236,7 +236,7 @@ Evidence: `settings.surfaces` (CLI, one-to-one).
 sequenceDiagram
     participant R as Runner (run-*.sh)
     participant A as App on device/emulator
-    participant L as Structured log stream (dsh.spike.log:)
+    participant L as Structured log stream (dsh.runtime.log:)
     participant X as check.mjs
     participant M as Evidence dir (artifacts/)
 
@@ -263,7 +263,7 @@ sequenceDiagram
     participant GA as gov gates (incl. closures)
 
     D->>B: build/build.sh android [harmony…]
-    B->>SY: re-stage committed copies from runtime/spike
+    B->>SY: re-stage committed copies from runtime/dsh
     SY-->>B: byte-identical (stagers verify)
     B->>CO: exact CI command (gradlew / xcodebuild / hvigorw)
     CO-->>B: app built

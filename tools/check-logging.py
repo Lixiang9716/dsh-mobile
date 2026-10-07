@@ -15,7 +15,7 @@ Rules:
       attributed to the innermost function, never the outer one)
   L4  the release strip is REAL end to end, not a branch one file carries:
       a) runtime/logger keeps its `__DSH_RELEASE__` no-op branch;
-      b) runtime/spike/logger.js — the logger the SHIPPED app actually runs —
+      b) runtime/dsh/logger.js — the logger the SHIPPED app actually runs —
          honors the injected `globalThis.__DSH_RELEASE__`;
       c) every host's Release configuration actually DEFINES the flag (iOS,
          Android, HarmonyOS) and the desktop CLI has a release build mode.
@@ -56,7 +56,7 @@ LOG_CALL = re.compile(r"\blog\s*\.(debug|info|warn|error)\s*\(")
 # L4: the operative logger (the one the shipped app actually runs — the
 # canonical TS file is bundled by nothing) and the JS global the shared C host
 # injects under -DDSH_RELEASE.
-OPERATIVE_LOGGER = "runtime/spike/logger.js"
+OPERATIVE_LOGGER = "runtime/dsh/logger.js"
 RELEASE_GLOBAL = "globalThis.__DSH_RELEASE__"
 
 # L4c: every host's Release configuration must DEFINE the flag. One row per
@@ -70,7 +70,7 @@ PLUMBING = (
     ("iOS", "hosts/ios/project.yml", "DSH_RELEASE"),
     ("Android", "hosts/android/app/build.gradle.kts", "DSH_RELEASE"),
     ("HarmonyOS", "hosts/harmony/entry/build-profile.json5", "DSH_RELEASE"),
-    ("macOS CLI", "runtime/spike/host/build.sh", "DSH_RELEASE"),
+    ("macOS CLI", "runtime/dsh/host/build.sh", "DSH_RELEASE"),
 )
 
 
@@ -160,12 +160,12 @@ def check_release_silence(files):
         out.append(f"{LOGGER_DIR}: L4a release no-op branch (__DSH_RELEASE__) missing")
 
     # L4b: the logger the SHIPPED app runs. The canonical TS logger is bundled
-    # by nothing; runtime/spike/logger.js is embedded byte-identically into the
+    # by nothing; runtime/dsh/logger.js is embedded byte-identically into the
     # iOS C arrays, the Android assets and the HarmonyOS rawfile tree. A
     # release branch in the canonical file alone strips nothing.
     operative = Path(OPERATIVE_LOGGER)
     if not operative.exists():
-        out.append(f"{OPERATIVE_LOGGER}: L4b the operative spike logger is missing")
+        out.append(f"{OPERATIVE_LOGGER}: L4b the operative dsh logger is missing")
     else:
         text = operative.read_text(encoding="utf-8", errors="replace")
         if RELEASE_GLOBAL not in text:

@@ -8,10 +8,10 @@
 钉住。打进来了的攻击就是**发现**,按真实严重度记录在此,绝不用散文消化。
 
 各腿都在库内,在最便宜的宿主(macOS CLI)上即可重跑:
-[security.gateway-fuzz](../runtime/spike/ci/run-security-gateway-fuzz.sh) ·
-[security.jail](../runtime/spike/ci/run-security-jail.sh) ·
-[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh) ·
-[security.byok-leak](../runtime/spike/ci/run-security-byok-leak.sh)。
+[security.gateway-fuzz](../runtime/dsh/ci/run-security-gateway-fuzz.sh) ·
+[security.jail](../runtime/dsh/ci/run-security-jail.sh) ·
+[security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh) ·
+[security.byok-leak](../runtime/dsh/ci/run-security-byok-leak.sh)。
 
 ## 对手模型
 
@@ -36,15 +36,15 @@ C 不可利用)、侧信道。
 **现有防线**:每个原语在宿主边界校验参数,以冻结的契约 §3 词汇作答——
 `invalid`(畸形)、`denied`(宿主从未授予的 scope)、`unavailable`(本
 宿主不服务的原语)——fail loud,绝不默认放行;拒绝是结构化的,不是崩溃
-([runtime/spike/host/main_cli.c](../runtime/spike/host/main_cli.c) 冒烟
+([runtime/dsh/host/main_cli.c](../runtime/dsh/host/main_cli.c) 冒烟
 后端的逐原语校验)。
 
-**本腿怎么攻**:[security.gateway-fuzz](../runtime/spike/ci/run-security-gateway-fuzz.sh)
+**本腿怎么攻**:[security.gateway-fuzz](../runtime/dsh/ci/run-security-gateway-fuzz.sh)
 拿 21 案例电池打裸缝——错型、缺字段、`..` 与绝对路径逃逸、未知 scope
 (含大小写与错名)、1MB 路径、超长钥匙串 ref、负数/缺失的定时器边界、
 三个必须不存在的原语名、两个畸形 args JSON、两个越界 socket 目标——
 逐案例要求结构化拒绝,外加电池之后的良性往返(进程存活)。证据:
-`runtime/spike/artifacts/macos-cli-security-gateway-fuzz/`(21/21 全拒;
+`runtime/dsh/artifacts/macos-cli-security-gateway-fuzz/`(21/21 全拒;
 两起 socket 攻击各留固定 reason 码的审计)。
 
 ### 2. 市场供应链——签名目录
@@ -57,14 +57,14 @@ canonical-JSON ed25519,密钥带外钉扎,§7.2 双签窗口轮换,签名信任�
 腿里——坏签名、自洽的攻击者目录(信任在钉扎不在文档)、诚实目录背后
 翻转字节的敌意镜像、诚实重签的发布方元数据错误。四级阶梯,每级
 `InstallRejected` + 审计 + 零暂存
-([run-marketplace-install-e2e.sh](../runtime/spike/ci/run-marketplace-install-e2e.sh),
-证据 `runtime/spike/artifacts/macos-cli-marketplace-install/`)。
+([run-marketplace-install-e2e.sh](../runtime/dsh/ci/run-marketplace-install-e2e.sh),
+证据 `runtime/dsh/artifacts/macos-cli-marketplace-install/`)。
 
 ### 3. 市场供应链——目录新鲜度(已防:新鲜度锚;#295 HIGH 已闭合)
 
 **现有防线**:客户端新鲜度锚——单调 `generatedAt` 下限
-([runtime/spike/marketplace.js](../runtime/spike/marketplace.js),由
-[runtime/spike/freshness-store.js](../runtime/spike/freshness-store.js)
+([runtime/dsh/marketplace.js](../runtime/dsh/marketplace.js),由
+[runtime/dsh/freshness-store.js](../runtime/dsh/freshness-store.js)
 持久化):每次 refresh 先验签名,再把目录的发布时间与客户端**曾经接受过的
 最新**发布时间(下限)比较——下限经调用方的数据面持久化(app scope 一个
 文件;不进 keychain、零新 gateway 原语)。早于下限 → 在 resolver 把文档
@@ -80,13 +80,13 @@ resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)�
 (stat 证明不存在 = 首次接触;文件在但读不了 = 响亮失败,绝不无声重置
 下限;无法证明不存在的宿主形态只在 WARN 级重置,从不出声)。
 
-**本腿怎么攻——即翻转**:[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+**本腿怎么攻——即翻转**:[security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh)
 在宿主上同时放置当前目录(generatedAt 2026-10-01)与一份过期但**签名
 有效**的目录(诚实签出的旧索引,generatedAt 2026-09-01——敌意镜像提供
 发布者曾发布过内容的模型)。本腿先在当前目录上锚定下限(首次接触),
 再重放过期目录:**重放在 refresh 即被拒**——
 `"event":"forge.rollback.catalog","outcome":"rejected","code":"catalog","via":"catalog-replay"`
-(证据 `runtime/spike/artifacts/macos-cli-security-manifest-forgery/`)
+(证据 `runtime/dsh/artifacts/macos-cli-security-manifest-forgery/`)
 ——零暂存,且当前目录此后仍可刷新(等于下限放行;防线不记仇)。本腿
 此前钉住的是当时的真话——HIGH 发现:重放装了进来(#295——钉扎锚定
 签名密钥而非纪元,`generatedAt` 只验存在)。按下方维护契约,checker
@@ -102,8 +102,8 @@ resolver 构造时**必填**:没有锚的 resolver 当场响亮失败(规则 5)�
 需要带外分发与轮换的信任工件)。因此 #295 的 HIGH 对**已建立连接的**
 客户端闭合;首次接触仍是一次诚实的信任引导,与带外钉扎自身同一类
 (钉扎的分发也是这么被信任的)。第二,面板的安装流
-([upstream/web-write-marketplace.js](../runtime/spike/upstream/web-write-marketplace.js))
-经 [marketplace-resolver.js](../runtime/spike/marketplace-resolver.js)
+([upstream/web-write-marketplace.js](../runtime/dsh/upstream/web-write-marketplace.js))
+经 [marketplace-resolver.js](../runtime/dsh/marketplace-resolver.js)
 解析,其拒绝词汇(network/format/unknown-key/signature)没有 stale 码——
 守住那个面是一次线级词汇决策,为已命名后续。本腿攻击的契约面才是 §7.3
 安装直通所骑的面。还有一个如实携带的后果:发布方时钟错误若发布了
@@ -127,15 +127,15 @@ JS 侧不存在原生 FFI 面——一切能力穿越都是 gateway 调用,因�
 `wasmRun`),它唯一的宿主回调是被导入的 `dsh.emit(ptr, len)`;导入其他
 任何东西的模块无可链接之物,越出模块内存的 emit 在宿主侧边界检查处陷阱,
 解释器级失败(坏解析、缺导出、栈耗尽)一律是结构化 `io` 拒绝
-([dsh_wasm.c](../runtime/spike/host/dsh_wasm.c))。CLI 经由与 iOS 应用
+([dsh_wasm.c](../runtime/dsh/host/dsh_wasm.c))。CLI 经由与 iOS 应用
 同源的可移植 spine 服务该面,jail 因此在最便宜的宿主上可被攻击。
 
-**本腿怎么攻**:[security.jail](../runtime/spike/ci/run-security-jail.sh)
+**本腿怎么攻**:[security.jail](../runtime/dsh/ci/run-security-jail.sh)
 投喂手工构造的模块:被调用的敌意导入(`env.evil`——无可链接)、用错误
 签名冒用 `dsh.emit` 之名(链接拒绝)、越过内存的 emit 指针(边界陷阱)、
 无限递归(栈陷阱)、缺失导出、缺失模块、逃逸路径、未授予 scope——
 8/8 全拒,且诚实 echo 模块在电池前后各跑一次(jail 服务守规调用者;
-进程存活)。证据:`runtime/spike/artifacts/macos-cli-security-jail/`。
+进程存活)。证据:`runtime/dsh/artifacts/macos-cli-security-jail/`。
 
 ### 6. socket 缝的回环边界
 
@@ -158,7 +158,7 @@ IPv6 回环 `::1`、未指定地址 `0.0.0.0`、名字 `localhost`、回环相�
 调用(socket 缝)与每一次拒绝(本证据网全体)都落一条固定词汇的结构化
 审计记录。
 
-**本腿怎么攻**:[security.manifest-forgery](../runtime/spike/ci/run-security-manifest-forgery.sh)
+**本腿怎么攻**:[security.manifest-forgery](../runtime/dsh/ci/run-security-manifest-forgery.sh)
 把清单的能力要求两级抬升——越过过期信任记录(`integrity`,锚先于协商
 抓到篡改)与完全重算的信任(`capability`,协商面拒绝连自洽字节也买不到
 的东西:宿主不提供 `notify@2`)。管线各档同时钉住 id 锚与每次拒绝后的
@@ -168,27 +168,27 @@ IPv6 回环 `::1`、未指定地址 `0.0.0.0`、名字 `localhost`、回环相�
 
 **现有防线**:凭据只进钥匙串(冻结的 `keychainSet`/`keychainGet`,契约
 v1.0.0 第 8–9 行),单一 ref,绝不落明文文件;路由解析是唯一读取它的家
-([upstream/llm-route.js](../runtime/spike/upstream/llm-route.js));llm.js
+([upstream/llm-route.js](../runtime/dsh/upstream/llm-route.js));llm.js
 从不记录 header 或 body——密钥只乘 Authorization header 走网络;凭据值
 从不回传(写面自己的规则)。
 
-**本腿怎么攻**:[security.byok-leak](../runtime/spike/ci/run-security-byok-leak.sh)
+**本腿怎么攻**:[security.byok-leak](../runtime/dsh/ci/run-security-byok-leak.sh)
 让金丝雀走过保存、重启路由解析、一次真实传输回合与 401 错误面——在运行
 时内断言错误消息既不含金丝雀也不含另一个错钥探针值——随后 runner 审计
 裸日志里两个值都不得出现,且审计前先证明匹配器对播种行会命中(不能命中
 的 grep 是不能抓漏的审计)。截屏捕获没有运行时面(那是宿主/OS 侧);代码
 能触及的泄漏面——日志、错误消息、路由事实——正是本腿审计的对象;共享
 mock 现在接受本腿金丝雀作为期望 bearer,让真实值走上网络。证据:
-`runtime/spike/artifacts/macos-cli-security-byok-leak/`。
+`runtime/dsh/artifacts/macos-cli-security-byok-leak/`。
 
 ## 腿登记表
 
 | 腿 | 场景 id | 检查器 | 证据目录 | 拦哪类回归 |
 | --- | --- | --- | --- | --- |
-| gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/spike/artifacts/macos-cli-security-gateway-fuzz/` | 原语停止校验(攻击案例得手,或拒绝码漂移) |
-| jail(wasm+socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/spike/artifacts/macos-cli-security-jail/` | wasm 导入面变宽、emit 边界检查缺失、回环边界漏风 |
-| 清单伪造 | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/spike/artifacts/macos-cli-security-manifest-forgery/` | 管线锚/协商变弱,或新鲜度锚停止拒绝重放目录(证伪先行:废掉下限检查,checker 随之变红) |
-| BYOK 泄漏 | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/spike/artifacts/macos-cli-security-byok-leak/` | 凭据值摸到任何日志汇,或错误面回显秘密 |
+| gateway fuzz | `security.gateway-fuzz` | [security-gateway-fuzz.json](../test/e2e/scenarios/security-gateway-fuzz.json) | `runtime/dsh/artifacts/macos-cli-security-gateway-fuzz/` | 原语停止校验(攻击案例得手,或拒绝码漂移) |
+| jail(wasm+socket) | `security.jail` | [security-jail.json](../test/e2e/scenarios/security-jail.json) | `runtime/dsh/artifacts/macos-cli-security-jail/` | wasm 导入面变宽、emit 边界检查缺失、回环边界漏风 |
+| 清单伪造 | `security.manifest-forgery` | [security-manifest-forgery.json](../test/e2e/scenarios/security-manifest-forgery.json) | `runtime/dsh/artifacts/macos-cli-security-manifest-forgery/` | 管线锚/协商变弱,或新鲜度锚停止拒绝重放目录(证伪先行:废掉下限检查,checker 随之变红) |
+| BYOK 泄漏 | `security.byok-leak` | [security-byok-leak.json](../test/e2e/scenarios/security-byok-leak.json) | `runtime/dsh/artifacts/macos-cli-security-byok-leak/` | 凭据值摸到任何日志汇,或错误面回显秘密 |
 
 ## 维护契约
 

@@ -1,7 +1,7 @@
 // dsh:logging-exempt (node-side driver)
 /**
  * mux.js — the driver half of WS /api/remote.mux (docs/webserver-contract.md
- * §2.4). PORTED from presentation/web-client-next/web/js/mux.js — the mux
+ * §2.4). PORTED from presentation/web-client-v2/web/js/mux.js — the mux
  * state machine (generation-tracked reconnect, per-stream handlers,
  * item/error/end routing) is UNMOVED. Deltas, transport-level only:
  *   - the ws URL is a constructor parameter; Node 24 global WebSocket
@@ -47,7 +47,7 @@ export class Mux {
     const ws = new WebSocket(this.wsUrl);
     this.ws = ws;
     // Per-connect instance generation — the port MUST keep the page
-    // original's `++` (web-client-next/web/js/mux.js). Without it the
+    // original's `++` (web-client-v2/web/js/mux.js). Without it the
     // generation guard is dead: a superseded socket's late close passes
     // the check, emits a spurious 'closed' and dials a duplicate socket
     // (both then re-open every live stream).

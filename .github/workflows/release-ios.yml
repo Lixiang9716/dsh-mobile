@@ -136,18 +136,18 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-dsh.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+          key: vendor-${{ runner.os }}-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-dsh.sh') }}
 
       - name: Vendor quickjs-ng + the pinned upstream DSH closure
         # Both trees are untracked by design (upstream discipline D6);
         # gen_bundle_header.py pins the alpha.2 dsh closure at build time.
         run: |
           set -euo pipefail
-          sh runtime/spike/vendor/ensure.sh
-          sh runtime/spike/vendor/ensure-dsh.sh
+          sh runtime/dsh/vendor/ensure.sh
+          sh runtime/dsh/vendor/ensure-dsh.sh
 
       - name: Locate the pnpm store
         # Resolved, never guessed: `pnpm store path` prints it, and a guessed
@@ -210,21 +210,21 @@ jobs:
           set -o pipefail
           cd hosts/ios
           xcodebuild build \
-            -project DSHSpike.xcodeproj \
-            -scheme DSHSpike \
+            -project DSHHost.xcodeproj \
+            -scheme DSHHost \
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath /tmp/dsh-rel-device-dd \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             | tail -20
           xcodebuild build \
-            -project DSHSpike.xcodeproj \
-            -scheme DSHSpike \
+            -project DSHHost.xcodeproj \
+            -scheme DSHHost \
             -configuration Release \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath /tmp/dsh-rel-sim-dd \
             | tail -20
-          test -f /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app/official-web/dist/index.html \
+          test -f /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHHost.app/official-web/dist/index.html \
             || { echo "::error::the release .app embeds no official dist"; exit 1; }
           # The device build is packaged as a real `.ipa`: a zip whose root
           # holds Payload/<App>.app. That layout is what AltStore, Sideloadly
@@ -234,13 +234,13 @@ jobs:
           # agrees with. It is UNSIGNED (CI holds no Apple certificates):
           # the signer replaces the profile and re-seals it.
           rm -rf /tmp/dsh-ipa && mkdir -p /tmp/dsh-ipa/Payload
-          cp -R /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHSpike.app \
+          cp -R /tmp/dsh-rel-device-dd/Build/Products/Release-iphoneos/DSHHost.app \
             /tmp/dsh-ipa/Payload/
           ( cd /tmp/dsh-ipa && zip -qry /tmp/dsh-ios.ipa Payload )
-          unzip -l /tmp/dsh-ios.ipa | grep -q 'Payload/DSHSpike.app/' \
-            || { echo "::error::the .ipa does not carry Payload/DSHSpike.app"; exit 1; }
+          unzip -l /tmp/dsh-ios.ipa | grep -q 'Payload/DSHHost.app/' \
+            || { echo "::error::the .ipa does not carry Payload/DSHHost.app"; exit 1; }
           cd /tmp/dsh-rel-sim-dd/Build/Products
-          zip -qry /tmp/dsh-ios-simulator.zip Release-iphonesimulator/DSHSpike.app
+          zip -qry /tmp/dsh-ios-simulator.zip Release-iphonesimulator/DSHHost.app
 
       - name: Upload dsh-ios
         uses: actions/upload-artifact@v7
@@ -294,24 +294,24 @@ jobs:
           set -o pipefail
           cd hosts/ios
           xcodebuild build \
-            -project DSHSpike.xcodeproj \
-            -scheme DSHSpike \
+            -project DSHHost.xcodeproj \
+            -scheme DSHHost \
             -configuration Debug \
             -destination 'generic/platform=iOS' \
             -derivedDataPath /tmp/dsh-harness-device-dd \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             | tail -20
           xcodebuild build \
-            -project DSHSpike.xcodeproj \
-            -scheme DSHSpike \
+            -project DSHHost.xcodeproj \
+            -scheme DSHHost \
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
             -derivedDataPath /tmp/dsh-harness-sim-dd \
             | tail -20
           cd /tmp/dsh-harness-device-dd/Build/Products
-          zip -qry /tmp/DSHSpike-harness-device-unsigned.zip Debug-iphoneos/DSHSpike.app
+          zip -qry /tmp/DSHHost-harness-device-unsigned.zip Debug-iphoneos/DSHHost.app
           cd /tmp/dsh-harness-sim-dd/Build/Products
-          zip -qry /tmp/DSHSpike-harness-simulator.zip Debug-iphonesimulator/DSHSpike.app
+          zip -qry /tmp/DSHHost-harness-simulator.zip Debug-iphonesimulator/DSHHost.app
 
       - name: Upload dsh-ios-harness
         if: github.event_name == 'workflow_dispatch' && inputs.include_harness
@@ -319,6 +319,6 @@ jobs:
         with:
           name: dsh-ios-harness
           path: |
-            /tmp/DSHSpike-harness-device-unsigned.zip
-            /tmp/DSHSpike-harness-simulator.zip
+            /tmp/DSHHost-harness-device-unsigned.zip
+            /tmp/DSHHost-harness-simulator.zip
           if-no-files-found: error

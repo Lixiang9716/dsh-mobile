@@ -1,5 +1,5 @@
 /*
- * Project-level build profile for the dsh-mobile M1 spike HAP.
+ * Project-level build profile for the dsh-mobile M1 dsh HAP.
  * Built with the HarmonyOS CLT 26.0.0 flow (see README.md):
  *   DEVECO_SDK_HOME=<clt>/sdk; ohpm install --all; hvigorw assembleHap
  */

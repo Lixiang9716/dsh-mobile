@@ -1,7 +1,7 @@
 {
   "scenario": "socket.seam",
   "extract": {
-    "prefix": "dsh.spike.log:"
+    "prefix": "dsh.runtime.log:"
   },
   "expect": [
     { "event": "socket.started", "match": { "scenario": "socket.seam" } },

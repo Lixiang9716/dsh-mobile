@@ -1,7 +1,7 @@
 name: weekly-sweep
 # The FULL upstream dsh-tests sweep as a standing drift net: every transpiled
 # spec runs under the QuickJS CLI AND the plain-Node differential reference
-# (runtime/spike/ci/run-upstream-suite-sweep.sh), weekly plus on demand.
+# (runtime/dsh/ci/run-upstream-suite-sweep.sh), weekly plus on demand.
 #
 # This is an INSPECTION, not a gate: the sweep step is continue-on-error by
 # design — a non-green result means the inspection FOUND something (shim or
@@ -48,14 +48,14 @@ jobs:
         uses: actions/cache@v6
         with:
           path: |
-            runtime/spike/vendor/quickjs-ng
-            runtime/spike/vendor/zstd
-            runtime/spike/vendor/wasm3
-            runtime/spike/vendor/ish
-            runtime/spike/vendor/dsh
-            runtime/spike/vendor/npm
-            runtime/spike/vendor/dsh-tests@dsh-v0.1.6-alpha.2
-          key: weekly-sweep-${{ hashFiles('runtime/spike/vendor/ensure.sh', 'runtime/spike/vendor/ensure-ish.sh', 'runtime/spike/vendor/ensure-dsh.sh', 'runtime/spike/vendor/ensure-dsh-tests.sh') }}
+            runtime/dsh/vendor/quickjs-ng
+            runtime/dsh/vendor/zstd
+            runtime/dsh/vendor/wasm3
+            runtime/dsh/vendor/ish
+            runtime/dsh/vendor/dsh
+            runtime/dsh/vendor/npm
+            runtime/dsh/vendor/dsh-tests@dsh-v0.1.6-alpha.2
+          key: weekly-sweep-${{ hashFiles('runtime/dsh/vendor/ensure.sh', 'runtime/dsh/vendor/ensure-ish.sh', 'runtime/dsh/vendor/ensure-dsh.sh', 'runtime/dsh/vendor/ensure-dsh-tests.sh') }}
       - name: Materialize the vendored trees
         # ensure.sh: engine + zstd + wasm3. ensure-ish.sh: the iSH sources the
         # CLI links — NOT covered by ensure.sh (the gap the 2026-09-29 CI run
@@ -63,26 +63,26 @@ jobs:
         # runtime closure the boot serves. ensure-dsh-tests.sh: the upstream
         # test tree + the pinned npm test faces the transpiled specs import.
         run: |
-          runtime/spike/vendor/ensure.sh
-          runtime/spike/vendor/ensure-ish.sh
-          runtime/spike/vendor/ensure-dsh.sh
-          runtime/spike/vendor/ensure-dsh-tests.sh
+          runtime/dsh/vendor/ensure.sh
+          runtime/dsh/vendor/ensure-ish.sh
+          runtime/dsh/vendor/ensure-dsh.sh
+          runtime/dsh/vendor/ensure-dsh-tests.sh
       - name: Materialize the node-side test tooling
         # npm ci: the transpiler's esbuild (+ the test faces' node-side
         # devDeps). transpile.mjs: every upstream spec -> plain ESM under
-        # runtime/spike/upstream-tests/ (gitignored; fresh every run).
+        # runtime/dsh/upstream-tests/ (gitignored; fresh every run).
         # parity-node-modules.sh: the Node resolution layout the reference
         # leg resolves bare imports through (vendor/node_modules + the
-        # runtime/spike/node_modules link).
+        # runtime/dsh/node_modules link).
         run: |
           npm ci --prefix test/upstream-suite --no-fund --no-audit
           node test/upstream-suite/transpile.mjs
-          sh runtime/spike/ci/parity-node-modules.sh
+          sh runtime/dsh/ci/parity-node-modules.sh
       - name: Build the desktop CLI
         # host/build.sh compiles the iSH static libs (cmake) then the CLI
         # (cc); the quickjs-boot-parse job's 15-minute budget on the same
         # runner image is the measured ceiling for the cold build.
-        run: sh runtime/spike/host/build.sh
+        run: sh runtime/dsh/host/build.sh
       - name: Run the full upstream-suite sweep
         # --paral 4: the sweep script's own default, kept explicit. The step
         # is continue-on-error ON PURPOSE (see the header): red findings are
@@ -90,7 +90,7 @@ jobs:
         # artifacts. Infrastructure failures still surface — the summary
         # step below fails loud on a missing/empty report.
         continue-on-error: true
-        run: runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4
+        run: runtime/dsh/ci/run-upstream-suite-sweep.sh --paral 4
       - name: Summarize the report
         # Renders the human-readable verdict into the run summary (green /
         # failed / NOSUM buckets with the offending spec names) and writes

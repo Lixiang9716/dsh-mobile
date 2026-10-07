@@ -11,8 +11,8 @@
 #                round → success → 401), and the projected session log MUST
 #                equal the committed 25-record golden
 #                (test/e2e/fixtures/upstream-parity-reference.jsonl)
-#                record-for-record (runtime/spike/ci/parity-compare.mjs).
-#   tool-rows  — T-0048 item 3: the interactive seat (nextweb.mount launch,
+#                record-for-record (runtime/dsh/ci/parity-compare.mjs).
+#   tool-rows  — T-0048 item 3: the interactive seat (v2web.mount launch,
 #                which evals scenario/composer-web-live.js) probes
 #                agentPresets/list + pluginInventory/list on-device; the
 #                capture must show the roster all-healthy AND the composed
@@ -42,7 +42,7 @@ cd "$ROOT"
 CLT=${DSH_CLT:-/opt/homebrew/share/harmonyos-commandlinetools/command-line-tools}
 HDC_BIN=${DSH_HDC:-"$CLT/sdk/default/openharmony/toolchains/hdc"}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
-BUNDLE=com.dshmobile.spike
+BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
 OUT=${1:-${DSH_PARITY_OUT:-hosts/harmony/artifacts/device-parity}}
 GOLDEN="$ROOT/test/e2e/fixtures/upstream-parity-reference.jsonl"
@@ -194,8 +194,8 @@ stop_streamer
 
 hdc file recv "$BASE/dsh-parity-capture.log" "$PARITY_OUT/capture.txt" >/dev/null 2>&1 \
     || die "parity capture pull failed — no $BASE/dsh-parity-capture.log on $DSH_HDC_TARGET"
-grep 'dsh.spike' "$STREAM" > "$PARITY_OUT/logs.txt" || true
-grep -h '^dsh.spike.log:' "$PARITY_OUT/capture.txt" > "$PARITY_OUT/scenario.jsonl" || true
+grep'dsh.runtime' "$STREAM" > "$PARITY_OUT/logs.txt" || true
+grep -h '^dsh.runtime.log:' "$PARITY_OUT/capture.txt" > "$PARITY_OUT/scenario.jsonl" || true
 
 if [ "$status" != "done" ]; then
     if grep -q 'scenario\.failed' "$STREAM" "$PARITY_OUT/capture.txt" 2>/dev/null; then
@@ -224,7 +224,7 @@ fs.writeFileSync(`${out}/port.jsonl`, records.map((r) => JSON.stringify(r)).join
 if (records.length === 0) { console.error('no parity/event records in the pulled capture'); process.exit(1); }
 EXTRACT
 
-node runtime/spike/ci/parity-compare.mjs "$GOLDEN" "$PARITY_OUT/port.jsonl" \
+node runtime/dsh/ci/parity-compare.mjs "$GOLDEN" "$PARITY_OUT/port.jsonl" \
     | tee "$PARITY_OUT/parity-verdict.txt"
 grep -q 'identical' "$PARITY_OUT/parity-verdict.txt" \
     || die "parity differential FAILED — see $PARITY_OUT/parity-verdict.txt"
@@ -238,14 +238,14 @@ cat > "$PARITY_OUT/receipt.json" <<EOF
   "phase": "upstream.parity",
   "launch": "--ps dsh.e2e.leg upstream.parity (Debug, in-app ParityMockRoute)",
   "tree": "$TREE_LINE",
-  "engine": "$(sed -n 's/^PIN=//p' runtime/spike/vendor/ensure.sh)",
+  "engine": "$(sed -n 's/^PIN=//p' runtime/dsh/vendor/ensure.sh)",
   "upstream": "@deepseek-ai/dsh-* (vendored verbatim, sha256-pinned; the SAME closure the Node reference ran)",
   "scenario": "upstream.parity",
   "proves": [
     "the vendored upstream spine produces the SAME projected session log on the HarmonyOS device as under plain Node: record-for-record identity against the committed ${REF_COUNT}-record golden, the scripted route replaying success → todo_write tool round → success → 401",
     "the 401 transport-error leg surfaces as the same upstream error-finish"
   ],
-  "checker": "runtime/spike/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
+  "checker": "runtime/dsh/ci/parity-compare.mjs vs test/e2e/fixtures/upstream-parity-reference.jsonl",
   "referenceRecords": $REF_COUNT,
   "exitCode": 0
 }
@@ -257,7 +257,7 @@ TOOLROWS_OUT="$OUT/tool-rows"
 mkdir -p "$TOOLROWS_OUT"
 STREAM="$TOOLROWS_OUT/hilog-stream.txt"
 say "phase 2/2: tool-rows markers (interactive seat probes)"
-launch_leg "--ps dsh.e2e.leg nextweb.mount" "$STREAM"
+launch_leg "--ps dsh.e2e.leg v2web.mount" "$STREAM"
 
 deadline=$(( $(date +%s) + TOOLROWS_DEADLINE_SECONDS ))
 until grep -q 'settings\.plugin\.inventory' "$STREAM" 2>/dev/null; do
@@ -270,10 +270,10 @@ done
 sleep 1
 stop_streamer
 
-hdc file recv "$BASE/dsh-nextweb-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
-    || die "tool-rows capture pull failed — no $BASE/dsh-nextweb-capture.log on $DSH_HDC_TARGET"
-grep 'dsh.spike' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
-grep -h '^dsh.spike.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
+hdc file recv "$BASE/dsh-v2web-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
+    || die "tool-rows capture pull failed — no $BASE/dsh-v2web-capture.log on $DSH_HDC_TARGET"
+grep'dsh.runtime' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
+grep -h '^dsh.runtime.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
 
 # The assertion: the roster all-healthy + the four tool rows NAMED in the
 # composed inventory (a row exists only when its preset composed — which
@@ -321,7 +321,7 @@ cat > "$TOOLROWS_OUT/receipt.json" <<EOF
   "host": "harmony ($DSH_HDC_TARGET, $HOST_KIND)",
   "runner": "hosts/harmony/ci/run-device-parity.sh",
   "phase": "harmony.tool-rows (T-0048 item 3)",
-  "launch": "--ps dsh.e2e.leg nextweb.mount (Debug, interactive seat)",
+  "launch": "--ps dsh.e2e.leg v2web.mount (Debug, interactive seat)",
   "tree": "$TREE_LINE",
   "scenario": "composer.live-write",
   "proves": [

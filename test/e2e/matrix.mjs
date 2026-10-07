@@ -77,7 +77,7 @@ const LEGACY_STEMS = new Map(Object.entries({
   'm3-fetch-install': 'install-from-http', 'm3-fetch-carrier': 'install-carrier-evidence',
   'm3-ui-swap': 'ui-client-swap', 'm4-host-binding': 'android-capability-binding',
   'm5-host-binding': 'harmony-capability-binding', 'b1-official-web-mount': 'officialweb-mount',
-  'b3-session-live': 'session-live-read', 'b4-write-live': 'composer-live-write',
+  'b3-session-live': 'session-live-read', 'b4-write-live': 'composer-live-write', 'nextweb-mount': 'v2web-mount', 'whale-mount': 'compactweb-mount', 'android-nextweb-mount': 'android-v2web-mount', 'android-whale-mount': 'android-compactweb-mount', 'harmony-nextweb-mount': 'harmony-v2web-mount', 'harmony-whale-mount': 'harmony-compactweb-mount',
   'b-android-official-web-mount': 'android-officialweb-mount',
   'b-android-session-live': 'android-session-live-read', 'b-android-write-live': 'android-composer-live-write',
   'b-harmony-official-web-mount': 'harmony-officialweb-mount',
@@ -125,12 +125,12 @@ const statSafe = (p) => {
 const baseName = (p) => p.split('/').pop();
 
 /** Platform label from the path: the segment before `artifacts`; the runtime
- *  spike tree's hosts are named by the dir itself (macos-cli*). */
+ *  dsh tree's hosts are named by the dir itself (macos-cli*). */
 const platformOf = (relDir) => {
   const parts = relDir.split('/');
   const at = parts.indexOf('artifacts');
   const host = at > 0 ? parts[at - 1] : parts[0];
-  return host === 'spike' ? 'macos-cli' : host;
+  return host === 'dsh' ? 'macos-cli' : host;
 };
 
 /** Every path this checker prints or matches is relative to the audited root,
@@ -226,9 +226,9 @@ const checkPngs = (root, files) => {
  *  can point both at synthetic fixtures. */
 export const audit = (root, scenariosDir) => {
   // #158: every audited evidence dir lives under an `artifacts` segment
-  // (hosts/<host>/artifacts/<dir>, runtime/spike/artifacts/<dir>) — scoping
+  // (hosts/<host>/artifacts/<dir>, runtime/dsh/artifacts/<dir>) — scoping
   // the walk there means a stray verdict capture in any other corner of the
-  // tree (a gitignored tmp dir, a screenshot-primary spike) cannot fail the
+  // tree (a gitignored tmp dir, a screenshot-primary dsh) cannot fail the
   // gate demanding deliverables it never claimed. Known-gaps semantics are
   // unchanged: the register's paths all carry the segment too.
   const files = walkFiles(root).filter((f) => f.split('/').includes('artifacts'));

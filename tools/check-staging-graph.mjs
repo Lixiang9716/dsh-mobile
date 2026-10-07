@@ -5,7 +5,7 @@
  *
  * Walks the runtime closure's import graph from the boot entries, resolving
  * relative and bundle-root spellings (./x, ../x, upstream/x, scenario/x,
- * system-plugins/x, vendor/..., /vendor/..., spike-root *.js) through the
+ * system-plugins/x, vendor/..., /vendor/..., dsh-root *.js) through the
  * shims' export-from chains and the vendored layout
  * (vendor/dsh/<pkg>@<ver>/lib, vendor/npm/<pkg>@<ver>/...). node:* and bare
  * npm names are NOT followed — they resolve through the loader's bridge/map
@@ -21,22 +21,22 @@ import { join, dirname, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const REPO = join(dirname(fileURLToPath(import.meta.url)), '..');
-export const SPIKE = join(REPO, 'runtime', 'spike');
+export const DSH = join(REPO, 'runtime', 'dsh');
 
 // --- graph walk -------------------------------------------------------------
 
-/** Bundle-root subtrees a first-party specifier may name (the spike host's
+/** Bundle-root subtrees a first-party specifier may name (the dsh host's
  * ESM loader resolves these from the bundle root; everything else that is
  * not relative is a bare npm name → bridge/map row → skipped). */
 const BUNDLE_DIRS = new Set([
   'upstream', 'scenario', 'system-plugins', 'vendor', 'fixtures',
   'presets-mobile', 'webclient', 'upstream-tests', 'profiles', 'assets',
 ]);
-/** Spike-root single files the loader serves by name. */
+/** Dsh-root single files the loader serves by name. */
 const ROOT_FILES = new Set([
   'logger.js', 'gateway.js', 'registry.js', 'sha256.js', 'tar-mini.js',
   'llm.js', 'install-pipeline.js', 'install-fetch.js', 'receipt-journal.js',
-  'config-layer.js', 'manifest.json', 'e2e-stage.js',
+  'config-layer.js', 'manifest.json', 'credential-stage.js',
 ]);
 /** Check (a) scope: the subtrees whose staging the manifests hand-maintain. */
 const SCOPE_PREFIXES = ['scenario/', 'upstream/', 'system-plugins/'];
@@ -147,11 +147,11 @@ export function walkGraph(roots) {
     if (!seen.has(rel)) { seen.add(rel); reached.set(rel, edge); queue.push(rel); }
   };
   for (const root of roots) {
-    if (existsSync(join(SPIKE, root))) enqueue(root, { via: '(entry)', spec: root, kind: 'boot-entry', line: 0 });
+    if (existsSync(join(DSH, root))) enqueue(root, { via: '(entry)', spec: root, kind: 'boot-entry', line: 0 });
   }
   while (queue.length) {
     const rel = queue.shift();
-    const abs = join(SPIKE, rel);
+    const abs = join(DSH, rel);
     if (!existsSync(abs) || !isJs(rel)) continue; // .json reached but not walked
     // vendor subtrees are staged whole by every host; their internal edges
     // never affect check (a), and dist imports use npm semantics — stop here.
@@ -169,9 +169,9 @@ export function walkGraph(roots) {
         continue;
       }
       let target = r.rel;
-      if (!existsSync(join(SPIKE, target))) {
+      if (!existsSync(join(DSH, target))) {
         const candidates = [target + '.js', target + '.mjs', target + '/index.js'];
-        const hit = candidates.find((c) => existsSync(join(SPIKE, c)));
+        const hit = candidates.find((c) => existsSync(join(DSH, c)));
         if (!hit) {
           if (inScope(rel) || !rel.includes('/')) brokenEdges.push({ from: rel, spec, kind, line }); // vendor-internal extensionless dist imports: not our graph
           continue;

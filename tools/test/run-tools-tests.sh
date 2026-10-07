@@ -9,10 +9,10 @@
 #
 # Placement contract: this step runs AFTER `gov run` in the gates job, by
 # which point the workflow has materialized the vendored closure
-# (runtime/spike/vendor/ensure.sh + ensure-dsh.sh) and staged the harmony
+# (runtime/dsh/vendor/ensure.sh + ensure-dsh.sh) and staged the harmony
 # rawfile (vendor-official.sh --closure-only) — the gen-staging-manifests
 # real-repo leg's documented precondition. Local runs need the same
-# materialization (`sh runtime/spike/vendor/ensure-dsh.sh` and
+# materialization (`sh runtime/dsh/vendor/ensure-dsh.sh` and
 # `sh build/build.sh sync harmony`) or that one leg fails loud.
 #
 # Dependencies: the suite installs its own devDependencies when absent.

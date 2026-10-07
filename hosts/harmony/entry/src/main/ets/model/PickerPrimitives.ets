@@ -277,7 +277,7 @@ export class PickerPrimitives {
     if (reserved !== undefined && reserved.startsWith('scope://') && reserved.endsWith('/')) {
       const name = reserved.substring(8, reserved.length - 1);
       if (name === 'app') {
-        settle(callId, '{"scope":"app","path":' + JSON.stringify(this.ctx.filesDir + '/spike-fs') + '}', true);
+        settle(callId, '{"scope":"app","path":' + JSON.stringify(this.ctx.filesDir + '/dsh-fs') + '}', true);
         return;
       }
     }

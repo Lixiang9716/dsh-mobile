@@ -1,0 +1,14 @@
+{
+  "name": "dsh-web-client-v2-suite",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Test suite for the web-client-v2 Node-testable faces (api.js envelope, mux.js state machine, timeline.js fold). Lives under test/ because presentation/web-client-v2 is whole-tree staged into the harmony HAP rawfile (vendor-official.sh webclient_files) — the product directory must stay free of test tooling.",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.8",
+    "vitest": "^4.1.8"
+  }
+}
