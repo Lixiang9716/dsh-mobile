@@ -2,11 +2,11 @@ import { describe, it, expect, afterAll } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, rmSync, statSync as nodeStatSync } from 'node:fs';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 import { statSync as shimStatSync } from 'upstream/shims/fs-stat.js';
 import { anchorModelPath } from '../../runtime/dsh/upstream/tool-path-anchor.js';
+import { mkdtempPosix } from './posix-fixture.mjs';
 
 // loop-v2 (2026-10-05): the #373 seam symmetry held on the shim faces but
 // INVERTED on the model's tool face. The 2026-10-05 battery (round 14, w2,
@@ -55,11 +55,11 @@ const facts = runToolface();
 // The shim-face controls' own world: a mounted workspace and the faked seam
 // (the loop-r suite's shapes — this file keeps them self-contained so the
 // fs-readdir suite's graph stays untouched).
-const controlRoot = mkdtempSync(join(tmpdir(), 'dsh-toolface-controls-'));
+const controlRoot = mkdtempPosix('dsh-toolface-controls-');
 mountWorkspace(controlRoot);
 mkdirSync(join(controlRoot, 'real-child'), { recursive: true });
 writeFileSync(join(controlRoot, 'real-child', 'notes.txt'), 'real\n');
-const controlOutside = mkdtempSync(join(tmpdir(), 'dsh-toolface-controls-out-'));
+const controlOutside = mkdtempPosix('dsh-toolface-controls-out-');
 globalThis.__dshProcStatReal = (p) => {
   try {
     const st = nodeStatSync(p);
@@ -137,7 +137,7 @@ describe('the stat face holds the seam boundary (loop-v2, shim-face controls)', 
   it('keeps node-absence (ENOENT) for an outside-root path the host does not hold', () => {
     let error;
     try {
-      shimStatSync(join(tmpdir(), 'dsh-toolface-absent-nowhere', 'no-such.txt'));
+      shimStatSync(`/tmp/dsh-toolface-absent-nowhere-${process.pid}/no-such.txt`);
       expect.unreachable('the absent stat must throw');
     } catch (caught) {
       error = caught;

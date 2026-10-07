@@ -1,10 +1,10 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync as nodeReaddirSync, readFileSync as nodeReadFileSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, writeFileSync, rmSync, readdirSync as nodeReaddirSync, readFileSync as nodeReadFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { mountWorkspace } from 'upstream/shims/fs-workspace.js';
 import { readdirSync, writeFileSync as wsWriteFileSync, mkdirSync as wsMkdirSync, readFileSync, readAnyBytes, realpathSync } from 'upstream/shims/fs.js';
 import { readFile } from 'upstream/shims/fs-promises.js';
+import { mkdtempPosix } from './posix-fixture.mjs';
 
 // loop-p (round 4): the model's str_replace_editor view of a REAL workspace
 // directory answered `cannot list …: not found` while reads of the same
@@ -15,7 +15,7 @@ import { readFile } from 'upstream/shims/fs-promises.js';
 // pins the fallback with the seam faked over node:fs — exactly the
 // desktop-host shape the fallback targets.
 
-const root = mkdtempSync(join(tmpdir(), 'dsh-fs-readdir-'));
+const root = mkdtempPosix('dsh-fs-readdir-');
 mountWorkspace(root);
 
 // A real tree the served VFS never registered — the "parent/child wrote it"
@@ -29,11 +29,11 @@ writeFileSync(join(root, 'plugins', 'countdown-timer', 'index.js'), 'export {};\
 // (a /system/app sibling branch), and the credential shape (a sibling branch
 // of the root holding an llm config — the S4 topology where the workspace
 // root is <scope>/dsh and the key sits at <scope>/llm/config.json).
-const systemApp = join(tmpdir(), `dsh-fs-system-${process.pid}`);
+const systemApp = `/tmp/dsh-fs-system-${process.pid}`;
 mkdirSync(systemApp, { recursive: true });
 writeFileSync(join(systemApp, 'BasicDreams.apk'), 'apk\n');
 writeFileSync(join(systemApp, 'Traceur.apk'), 'apk\n');
-const secretBranch = mkdtempSync(join(tmpdir(), 'dsh-fs-secret-'));
+const secretBranch = mkdtempPosix('dsh-fs-secret-');
 mkdirSync(join(secretBranch, 'llm'), { recursive: true });
 const SECRET = '{"baseUrl":"https://example.invalid","apiKey":"sk-secret-loop-r"}\n';
 writeFileSync(join(secretBranch, 'llm', 'config.json'), SECRET);
@@ -175,7 +175,7 @@ describe('the real-disk seam answers the workspace only (loop-r)', () => {
   it('an outside-root path that does not exist anywhere stays node-absent (ENOENT)', () => {
     let error;
     try {
-      readdirSync(join(tmpdir(), `dsh-fs-absent-${process.pid}`));
+      readdirSync(`/tmp/dsh-fs-absent-${process.pid}`);
       expect.unreachable('the absent readdir must throw');
     } catch (caught) {
       error = caught;
@@ -204,7 +204,7 @@ describe('the model seat cannot read the staged credential (loop-r)', () => {
   });
 
   it('the promise readFile arm refuses a seam-served outside-root file with the anchor', async () => {
-    const outsideSeamPath = join(tmpdir(), `dsh-fs-seam-${process.pid}`, 'marker.txt');
+    const outsideSeamPath = `/tmp/dsh-fs-seam-${process.pid}/marker.txt`;
     seamOnlyFiles.set(outsideSeamPath, Buffer.from('child wrote this\n').toString('base64'));
     await expect(readFile(outsideSeamPath, 'utf8')).rejects.toThrow(/outside the writable workspace root/);
     await expect(readFile(outsideSeamPath, 'utf8')).rejects.toThrow(/maybe you meant/);
@@ -265,7 +265,7 @@ describe('unmounted-workspace hints degrade to empty (loop-w)', () => {
 
 describe('outside-root absence answers ENOENT on every read face (loop-w)', () => {
   it('the promise readFile arm answers ENOENT for an outside-root path that exists nowhere', async () => {
-    const absent = join(tmpdir(), `dsh-fs-absent-${process.pid}`, 'no-such.txt');
+    const absent = `/tmp/dsh-fs-absent-${process.pid}/no-such.txt`;
     let error;
     try {
       await readFile(absent, 'utf8');
@@ -329,7 +329,7 @@ describe('the outside-root refusal carries one shape (loop-w)', () => {
   it('realpathSync outside-root absent path answers node-absence (ENOENT), not the anchor', () => {
     let error;
     try {
-      realpathSync(join(tmpdir(), `dsh-fs-absent-${process.pid}`, 'no-such.txt'));
+      realpathSync(`/tmp/dsh-fs-absent-${process.pid}/no-such.txt`);
       expect.unreachable('the outside absent realpath must throw');
     } catch (caught) {
       error = caught;
@@ -344,6 +344,6 @@ describe('the outside-root refusal carries one shape (loop-w)', () => {
     // The answering arm stays: fs-local's resolve ENOENT walk realpaths the
     // nearest existing ancestor — an outside-root REAL directory — and the
     // tool face's refusal happens one face later (stat), not here.
-    expect(realpathSync(join(tmpdir(), `dsh-fs-system-${process.pid}`))).toBe(join(tmpdir(), `dsh-fs-system-${process.pid}`));
+    expect(realpathSync(`/tmp/dsh-fs-system-${process.pid}`)).toBe(`/tmp/dsh-fs-system-${process.pid}`);
   });
 });
