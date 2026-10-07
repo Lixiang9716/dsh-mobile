@@ -6,7 +6,7 @@ directory is the product.
 
 - `manifest.json` — the plugin face (id/version/surface/entry/bundle/skins)
 - `theme/` — the token single source (`tokens.json`); `gen.mjs` renders it
-  to both faces: `web.tokens.css` (CSS custom properties, web-client-next
+  to both faces: `web.tokens.css` (CSS custom properties, web-client-v2
   `:root` vocabulary) and `bundle/src/theme.generated.ts` (typed Lynx
   style constants). `node theme/gen.mjs --check` gates drift.
 - `shared/` — the event model: `view-events.js` (the closed view-event set
@@ -14,7 +14,7 @@ directory is the product.
   {submit, cancel, select-session, new-session}, fail loud on the unknown)
   and `fold.js` (the pure view-events → view-state fold both skins share).
 - `driver/` — the host side: the SessionServe wire client (ported verbatim
-  from web-client-next, three-layer `{args:{request}}` envelope unmoved),
+  from web-client-v2, three-layer `{args:{request}}` envelope unmoved),
   the adapter (domain records → view events), the orchestration driver
   (single subscription point, seed bursts, intent execution), and the two
   skins over one `RenderSurfaceClient` seam (`mount` / `pushViewEvent` /
@@ -43,7 +43,7 @@ Two evidence channels, both green (acceptance round):
   + receipts committed under `artifacts/cli-lynx-mount-{lynx,stub}/`.
   `npm run mock-loop` stays as the fast inner assert loop (18/18).
 - vitest (`npm test`, 71 tests here; 116 across both presentation suites
-  once web-client-next's 45 at `test/web-client-next-suite/` are counted):
+  once web-client-v2's 45 at `test/web-client-v2-suite/` are counted):
   the seam contract, the fold, the adapter mapping table, and the wire
   client (live local server, real ws-lite upgrade) — plus
   `tests/driver-loop.test.js` (run-mock's 18 checks 1:1 as vitest cases

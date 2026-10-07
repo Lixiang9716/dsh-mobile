@@ -32,8 +32,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
     /// The W-RPC session-write drive (`-dsh-mode session-write`).
     private var sessionWrite: SessionWriteRuntime?
     private var sessionWriteVerdict = "PENDING"
-    private var nextWeb: NextWebRuntime?
-    private var nextWebVerdict = "PENDING"
+    private var v2Web: V2WebRuntime?
+    private var v2WebVerdict = "PENDING"
 
     func application(
         _ application: UIApplication,
@@ -118,9 +118,9 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      line: "rt: app launched in session-write mode", web: true)
             runSessionWrite()
         case "next-web":
-            announce("DSH next web — nextweb.mount, the self-hosted client on the serving seat…",
+            announce("DSH next web — v2web.mount, the self-hosted client on the serving seat…",
                      line: "rt: app launched in next-web mode", web: true)
-            runNextWeb()
+            runV2Web()
         case "serve":
             // The USER-FACING serving seat with the harness's logging intact:
             // no probe, no watchdog, no evidence hooks — a human drives the
@@ -399,19 +399,19 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    /// The nextweb.mount drive: the self-hosted client on the serving seat.
-    private func runNextWeb() {
-        let next = NextWebRuntime()
-        self.nextWeb = next
+    /// The v2web.mount drive: the self-hosted client on the serving seat.
+    private func runV2Web() {
+        let next = V2WebRuntime()
+        self.v2Web = next
         next.attach(webView: webView!)
         next.onOpenOrigin = { [weak self] origin in
             self?.webView?.load(URLRequest(url: origin))
         }
         next.run { [weak self] outcome in
             guard let self else { return }
-            self.show(outcome, phase: "nextweb.mount") { self.nextWebVerdict = $0 }
-            self.nextWeb = nil
-            print("rt: sequence next-web=\(self.nextWebVerdict)")
+            self.show(outcome, phase: "v2web.mount") { self.v2WebVerdict = $0 }
+            self.v2Web = nil
+            print("rt: sequence v2-web=\(self.v2WebVerdict)")
             fflush(stdout)
         }
     }
@@ -475,7 +475,7 @@ extension AppDelegate: WKNavigationDelegate {
         official?.pageDidFinish()
         sessionLive?.pageDidFinish()
         sessionWrite?.pageDidFinish()
-        nextWeb?.pageDidFinish()
+        v2Web?.pageDidFinish()
         hideBootOverlay()
     }
 

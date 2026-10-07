@@ -3,10 +3,10 @@
 # (.github/workflows/gov.yml): the two Node-testable presentation suites,
 # sequentially, first failure fails the job naming the package:
 #   1. presentation/lynx-client        (driver loop, wire envelope, mux — 71 tests)
-#   2. test/web-client-next-suite      (envelope, mux over real sockets, journal fold — 45 tests)
+#   2. test/web-client-v2-suite      (envelope, mux over real sockets, journal fold — 45 tests)
 #
-# The web-client-next suite lives OUTSIDE the product directory on purpose
-# (presentation/web-client-next is whole-tree staged into the harmony HAP
+# The web-client-v2 suite lives OUTSIDE the product directory on purpose
+# (presentation/web-client-v2 is whole-tree staged into the harmony HAP
 # rawfile — vendor-official.sh webclient_files; see the Agent Note
 # 2026-09-30-driver-presentation-node-faces-carry-real-coverage.md). The
 # tree-count invariant is a REAL gate now (`webclient-staged-tree` in
@@ -46,6 +46,6 @@ assert_product_tree() {
 assert_product_tree
 run_suite "presentation/lynx-client" "lynx-client (driver loop / wire envelope / mux)"
 assert_product_tree
-run_suite "test/web-client-next-suite" "web-client-next suite (envelope / mux / journal fold)"
+run_suite "test/web-client-v2-suite" "web-client-v2 suite (envelope / mux / journal fold)"
 assert_product_tree
-echo "presentation-tests: PASS (lynx-client + web-client-next suites green; product tree intact)"
+echo "presentation-tests: PASS (lynx-client + web-client-v2 suites green; product tree intact)"

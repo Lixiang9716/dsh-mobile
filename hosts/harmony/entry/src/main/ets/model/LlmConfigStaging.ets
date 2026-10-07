@@ -11,7 +11,7 @@
  * — all three measured on the dsh_phone emulator (surprise ledger). So the
  * handoff is split three ways, as a polled-condition handshake (rule 8):
  *
- *   1. the RUNTIME creates the placeholder — `e2e-stage.js` asks the C-side
+ *   1. the RUNTIME creates the placeholder — `credential-stage.js` asks the C-side
  *      app-scope fsWrite (fopen, mode 0666) for `<filesDir>/dsh-fs/
  *      llm-live-stream/config.json` = `{}` and posts `stage.ready` on the bus seam,
  *      which HostPhase turns into the `stage-ready` drive marker;
@@ -105,7 +105,7 @@ export class LlmConfigStaging {
     try {
       const stat = fs.statSync(configPath);
       if (stat.size <= 3) {
-        return 0; // still the "{}" placeholder from e2e-stage.js
+        return 0; // still the "{}" placeholder from credential-stage.js
       }
       const file = fs.openSync(configPath, fs.OpenMode.READ_ONLY);
       const buffer = new ArrayBuffer(stat.size);

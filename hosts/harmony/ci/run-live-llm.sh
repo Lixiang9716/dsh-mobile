@@ -16,7 +16,7 @@
 #      Measured on the dsh_phone emulator: hdc file send can OPEN an existing
 #      app-owned file but never CREATE one; an ArkTS-side create lands 0660
 #      (unopenable by the shell) and an app-side chmod is a silent no-op. So
-#      the RUNTIME creates the placeholder — e2e-stage.js asks the C-side
+#      the RUNTIME creates the placeholder — credential-stage.js asks the C-side
 #      app-scope fsWrite, whose fopen lands 0666 — announces it with the
 #      `stage-ready` marker, this script writes the real config over it with
 #      `hdc file send`, and the app imports, validates and consumes it

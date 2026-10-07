@@ -1,9 +1,9 @@
 #!/bin/sh
-# run-whale-mount.sh — the whale creation-client mount on the HarmonyOS
-# emulator (harmony.whale.mount, the iOS session-mock-llm drive's --client
-# whale leg and the Android dsh.whale leg's sibling): ONE launch with
-# --ps dsh.e2e.leg whale.mount, the session-mock scenario over the staged
-# whale page, evidence = the phase capture file (E2E by logs) + one
+# run-compact-mount.sh — the compact creation-client mount on the HarmonyOS
+# emulator (harmony.compact.mount, the iOS session-mock-llm drive's --client
+# compact leg and the Android dsh.compact leg's sibling): ONE launch with
+# --ps dsh.e2e.leg compact.mount, the session-mock scenario over the staged
+# compact page, evidence = the phase capture file (E2E by logs) + one
 # screenshot (human evidence only). Every wait is a polled condition with a
 # deadline (rules.md rule 8); every exhaustion fails loud (rule 5).
 set -eu
@@ -13,11 +13,11 @@ HDC=${HDC_PATH:-$CLT/sdk/default/openharmony/toolchains/hdc}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
-CAPTURE=$BASE/dsh-whale-mount-capture.log
-OUT=${1:-hosts/harmony/artifacts/whale-mount}
+CAPTURE=$BASE/dsh-compact-mount-capture.log
+OUT=${1:-hosts/harmony/artifacts/compact-mount}
 
-say() { echo "run-whale-mount: $*"; }
-die() { echo "::error::run-whale-mount: $*" >&2; exit 1; }
+say() { echo "run-compact-mount: $*"; }
+die() { echo "::error::run-compact-mount: $*" >&2; exit 1; }
 
 # The emulator must be reachable (the dsh_phone instance; run-host-e2e.sh's
 # wait, bounded).
@@ -52,7 +52,7 @@ until [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; do
     "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
     "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
     "$HDC" shell aa start -b $BUNDLE -a EntryAbility \
-        --ps dsh.e2e.leg whale.mount >/dev/null 2>&1 || true
+        --ps dsh.e2e.leg compact.mount >/dev/null 2>&1 || true
     sleep 3
 done
 
@@ -65,18 +65,18 @@ deadline=$(( $(date +%s) + 420 ))
 until "$HDC" shell "cat $CAPTURE 2>/dev/null" | grep -q "ws.session-complete"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         "$HDC" shell "cat $CAPTURE 2>/dev/null" | tail -40 >&2 || true
-        die "harmony.whale.mount did not complete within 420s"
+        die "harmony.compact.mount did not complete within 420s"
     fi
     sleep 2
 done
 sleep 3 # let the trailing records (the page's late re-ack) settle
 
-"$HDC" shell snapshot_display -f /data/local/tmp/dsh-whale.jpeg >/dev/null 2>&1 || true
-"$HDC" file recv /data/local/tmp/dsh-whale.jpeg "$OUT/01-whale-mounted.jpeg" >/dev/null 2>&1 || true
-if [ -f "$OUT/01-whale-mounted.jpeg" ]; then
-    sips -s format png "$OUT/01-whale-mounted.jpeg" \
-        --out "$OUT/01-whale-mounted.png" >/dev/null
-    rm -f "$OUT/01-whale-mounted.jpeg"
+"$HDC" shell snapshot_display -f /data/local/tmp/dsh-compact.jpeg >/dev/null 2>&1 || true
+"$HDC" file recv /data/local/tmp/dsh-compact.jpeg "$OUT/01-compact-mounted.jpeg" >/dev/null 2>&1 || true
+if [ -f "$OUT/01-compact-mounted.jpeg" ]; then
+    sips -s format png "$OUT/01-compact-mounted.jpeg" \
+        --out "$OUT/01-compact-mounted.png" >/dev/null
+    rm -f "$OUT/01-compact-mounted.jpeg"
 fi
 
 # The C host's capture writes are buffered — the wait condition greps the
@@ -96,7 +96,7 @@ done
 [ "$pull_verified" = "1" ] || die "capture pull kept missing the terminal records"
 grep '^dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
-node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-whale-mount.json \
-    --log "$OUT/logs.txt" --out "$OUT/verdict-harmony-whale-mount.json"
-cat "$OUT/verdict-harmony-whale-mount.json"
-say "harmony.whale.mount green — evidence under $OUT"
+node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-compact-mount.json \
+    --log "$OUT/logs.txt" --out "$OUT/verdict-harmony-compact-mount.json"
+cat "$OUT/verdict-harmony-compact-mount.json"
+say "harmony.compact.mount green — evidence under $OUT"

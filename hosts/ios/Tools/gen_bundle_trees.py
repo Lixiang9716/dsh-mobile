@@ -71,5 +71,5 @@ SPINE_TREE_WALKER_DECL = tree_walker_decl(
     "The staged tree walker (vendored spine packages + zod closure):",
     "dsh_runtime_bundle_tree_file")
 WEBCLIENT_TREE_WALKER_DECL = tree_walker_decl(
-    "The self-hosted web client tree walker (presentation/web-client-next):",
+    "The self-hosted web client tree walker (presentation/web-client-v2):",
     "dsh_runtime_webclient_tree_file")

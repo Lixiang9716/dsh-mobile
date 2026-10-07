@@ -2,7 +2,7 @@
 /**
  * next-mode.mjs — `dev-carrier.mjs --client next`: the SAME auth-lite +
  * /api + mux surface, but the fallback seat serves OUR client
- * (presentation/web-client-next/web, zero injection rows — the page owns
+ * (presentation/web-client-v2/web, zero injection rows — the page owns
  * its whole boot) and the claim surface grows a LIVE dev turn:
  * session/create mints a session, session/prompt appends the durable
  * user/message and runs a canned echo turn streamed over session/follow
@@ -85,7 +85,7 @@ const echoScript = (turn, promptText) => {
       { type: 'step/end', data: { turn, step } },
       { type: 'turn/end', data: { turn, reason: { kind: 'stop' } } },
       { type: 'session/title', data: { title: promptText.slice(0, 12) || 'dev 会话' } },
-      { type: 'deliverables/presented', data: { turn, callId, files: [{ path: 'creations/blue-whale.html', description: '桌面回声鲸鱼' }] } },
+      { type: 'deliverables/presented', data: { turn, callId, files: [{ path: 'creations/blue-compact.html', description: '桌面回声鲸鱼' }] } },
     ],
   };
 };
@@ -320,7 +320,7 @@ const authReject = (respond, res, url, token) => {
 };
 
 export const startNextCarrier = ({ repoRoot, port, sessionsFixture, journalPath }) => {
-  const webRoot = join(repoRoot, 'presentation/web-client-next/web');
+  const webRoot = join(repoRoot, 'presentation/web-client-v2/web');
   const machine = state();
   seedFrom(machine, sessionsFixture, journalPath);
   const token = randomBytes(16).toString('hex');

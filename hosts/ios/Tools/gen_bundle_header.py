@@ -392,13 +392,13 @@ def collect_tree_files():
     return out
 
 
-# The SELF-HOSTED Web Client plugin (presentation/web-client-next): its own
+# The SELF-HOSTED Web Client plugin (presentation/web-client-v2): its own
 # tree so .html/.css ride along — the spine tree's suffix filter is
 # .js/.mjs/.json/... and a silent suffix drop is exactly the 2026-09-24
-# drift class this repo refuses. Staged under webclient-next/ (BundleStager).
+# drift class this repo refuses. Staged under webclient-v2/ (BundleStager).
 WEBCLIENT_TREES = [
-    ("webclient-next", REPO / "presentation" / "web-client-next"),
-    ("webclient-whale", REPO / "presentation" / "web-client-whale"),
+    ("webclient-v2", REPO / "presentation" / "web-client-v2"),
+    ("webclient-compact", REPO / "presentation" / "web-client-compact"),
 ]
 WEBCLIENT_SUFFIXES = (".html", ".css", ".js", ".json")
 

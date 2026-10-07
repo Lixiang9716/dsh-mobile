@@ -57,7 +57,7 @@ class MainActivity : Activity() {
         } else if (intent.getBooleanExtra(EXTRA_M4, false)) {
             startBinding(savedInstanceState, llm = false)
         } else if (intent.getBooleanExtra(EXTRA_WHALE, false)) {
-            startBinding(savedInstanceState, whale = true)
+            startBinding(savedInstanceState, compact = true)
         } else if (intent.getBooleanExtra(EXTRA_DEVICE_PLANE, false)) {
             startBinding(savedInstanceState, devicePlane = true)
         } else if (intent.getBooleanExtra(EXTRA_CAMERA_PLANE, false)) {
@@ -67,7 +67,7 @@ class MainActivity : Activity() {
         } else if (intent.getBooleanExtra(EXTRA_MIC_PLANE, false)) {
             startBinding(savedInstanceState, micPlane = true)
         } else if (intent.getBooleanExtra(EXTRA_NEXT, false)) {
-            startNextWeb()
+            startV2Web()
         } else if (intent.getBooleanExtra(EXTRA_WEB, false)) {
             startOfficialWeb()
         } else if (intent.getBooleanExtra(EXTRA_SESSION, false)) {
@@ -146,7 +146,7 @@ class MainActivity : Activity() {
         spikeHost?.onRequestPermissionsResult(requestCode, grantResults)
     }
 
-    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
+    private fun startBinding(savedInstanceState: Bundle?, llm: Boolean = false, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false) {
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
         }
@@ -176,22 +176,22 @@ class MainActivity : Activity() {
         JsRuntime.post {
             materializeBundle()
             runOnUiThread {
-                spikeHost = startHost(llm, view, parity, suite, whale, devicePlane, cameraPlane, ble, bleMock, micPlane)
+                spikeHost = startHost(llm, view, parity, suite, compact, devicePlane, cameraPlane, ble, bleMock, micPlane)
             }
         }
         view.post { BindingHost.dispatchNotifyResponse(intent) }
     }
 
     /** UI thread: constructs the drive — the real-LLM scenario (llm.live-stream),
-     * the whale creation-client mount, or the M4 binding — with the same
+     * the compact creation-client mount, or the M4 binding — with the same
      * carrier + WebView flow. */
-    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, whale: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): BindingHost {
+    private fun startHost(llm: Boolean, view: WebView, parity: Boolean = false, suite: String? = null, compact: Boolean = false, devicePlane: Boolean = false, cameraPlane: Boolean = false, ble: Boolean = false, bleMock: Boolean = false, micPlane: Boolean = false): BindingHost {
 
         val onVerdict = { verdict: String -> verdictView.text = verdict }
         return when {
             suite != null -> BindingHost.startSuite(this, view, onVerdict, suite)
             parity -> BindingHost.startParity(this, view, onVerdict)
-            whale -> BindingHost.startWhale(this, view, onVerdict)
+            compact -> BindingHost.startWhale(this, view, onVerdict)
             devicePlane -> BindingHost.startDevicePlane(this, view, onVerdict)
             cameraPlane -> BindingHost.startCameraPlane(this, view, onVerdict)
             ble -> BindingHost.startBle(this, view, onVerdict, bleMock)
@@ -210,7 +210,7 @@ class MainActivity : Activity() {
         const val EXTRA_PARITY = "dsh.parity"
         const val EXTRA_SUITE = "dsh.suite"
         const val EXTRA_SPEC = "dsh.spec"
-        const val EXTRA_WHALE = "dsh.whale"
+        const val EXTRA_WHALE = "dsh.compact"
         const val EXTRA_DEVICE_PLANE = "dsh.deviceplane"
         const val EXTRA_CAMERA_PLANE = "dsh.cameraplane"
         const val EXTRA_BLE = "dsh.ble"
@@ -250,28 +250,28 @@ class MainActivity : Activity() {
     private var serve: SessionServe? = null
     private var sessionLive: SessionLiveSession? = null
     private var sessionWrite: SessionWriteSession? = null
-    private var nextWeb: NextWebSession? = null
+    private var v2Web: V2WebSession? = null
 
     /**
-     * The nextweb.mount drive (`android.nextweb.mount`): the SELF-HOSTED web
+     * The v2web.mount drive (`android.v2web.mount`): the SELF-HOSTED web
      * client on the SessionServe seat the user-facing launch runs — selected
-     * by client id (dsh-web-client-next), zero injection rows, the same
+     * by client id (dsh-web-client-v2), zero injection rows, the same
      * /api + remote.mux surface. The probe drives OUR page like a user
      * (new session → type → send → stop → create) through real agent-loop
      * turns over the carrier's scripted SSE endpoint; the creation row (the
      * present tool) rides the interactive config. Kotlin sibling of hosts/ios
-     * NextWebRuntime (the drive class holds the probe chain).
+     * V2WebRuntime (the drive class holds the probe chain).
      */
-    private fun startNextWeb() {
-        val view = drivenWebView { NextWebSession.dispatchPageFinished() }
+    private fun startV2Web() {
+        val view = drivenWebView { V2WebSession.dispatchPageFinished() }
         webView = view
         // The seat reads filesDir trees: materialize FIRST (runtime thread:
-        // rt bundle incl. webclient-next + web-plugins), then drive.
+        // rt bundle incl. webclient-v2 + web-plugins), then drive.
         JsRuntime.post {
             materializeBundle()
             syncAssetDir("web-plugins", File(filesDir, "web-plugins"))
             runOnUiThread {
-                nextWeb = NextWebSession.start(this, view) { verdict ->
+                v2Web = V2WebSession.start(this, view) { verdict ->
                     verdictView.text = verdict
                 }
             }
@@ -379,7 +379,7 @@ class MainActivity : Activity() {
             OfficialWebSession.dispatchProbeResult(json)
             SessionLiveSession.dispatchProbeResult(json)
             SessionWriteSession.dispatchProbeResult(json)
-            NextWebSession.dispatchProbeResult(json)
+            V2WebSession.dispatchProbeResult(json)
         }
     }
 

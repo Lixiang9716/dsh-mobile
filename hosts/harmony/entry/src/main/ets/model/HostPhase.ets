@@ -108,19 +108,19 @@ const ENTRY_BLE: string = 'scenario/ble-plane.js';
  * binding machinery — the device-plane leg's shape (no web client mounts). */
 const SCENARIO_MIC_PLANE: string = 'harmony.mic-plane';
 const ENTRY_MIC_PLANE: string = 'scenario/mic-plane.js';
-/** The whale creation-client mount (the iOS session-mock-llm drive's
- * `--client whale` leg, mirrored): the v0 /ws session flow over the staged
- * web-client-whale page — the session-mock scenario (notes slot, two
- * streamed turns) with the whale client id in the mount records. */
-const SCENARIO_WHALE: string = 'harmony.whale.mount';
+/** The compact creation-client mount (the iOS session-mock-llm drive's
+ * `--client compact` leg, mirrored): the v0 /ws session flow over the staged
+ * web-client-compact page — the session-mock scenario (notes slot, two
+ * streamed turns) with the compact client id in the mount records. */
+const SCENARIO_WHALE: string = 'harmony.compact.mount';
 const ENTRY_WHALE: string = 'scenario/session-mock-llm.js';
-const WHALE_CLIENT_ID: string = 'dsh-web-client-whale';
-/** The staged whale client's web dir (bundle-root relative) — Index's whale
+const WHALE_CLIENT_ID: string = 'dsh-web-client-compact';
+/** The staged compact client's web dir (bundle-root relative) — Index's compact
  * leg wires the legacy static seat to it. */
-export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-whale/web';
+export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-compact/web';
 /** The credential-placeholder writer the llm leg evals first (harmony-only
  * E2E glue; see the file's header for why the C side must create it). */
-const ENTRY_STAGE: string = 'e2e-stage.js';
+const ENTRY_STAGE: string = 'credential-stage.js';
 
 /** Binding RuntimeDescriptor: the full serving table (nine v0 primitives,
  * the six v1.5.0 device-plane rows, and the capability plane's mic pair —
@@ -149,7 +149,7 @@ interface BusMessage {
   label?: string;
   by?: string;
   /** stage.ready / stage.error fields (the credential handshake that
-   * e2e-stage.js and LlmConfigStaging carry, llm leg only). */
+   * credential-stage.js and LlmConfigStaging carry, llm leg only). */
   path?: string;
   message?: string;
 }
@@ -192,7 +192,7 @@ export class HostPhase {
   private parityLeg: boolean = false;
   private bleLeg: boolean = false;
   private bleMock: boolean = false;
-  /** The whale creation-client leg: session-mock-llm over the whale page —
+  /** The compact creation-client leg: session-mock-llm over the compact page —
    * the client id in the mount records, host.info on page connect (the
    * scenario never reads host.seed), and the slot.ack record this leg
    * shares with the llm leg. */
@@ -252,7 +252,7 @@ export class HostPhase {
    * carrier, page shuttle and dispatch seam, the canonical llm-live-stream scenario
    * as the entry, and the carrier-side evidence set that scenario's sibling
    * manifest pins. The runtime is created FIRST and immediately evals the
-   * staging module (`e2e-stage.js`), because the credentials must exist in
+   * staging module (`credential-stage.js`), because the credentials must exist in
    * fs scope "app" before the page hello evals the scenario: the placeholder
    * is created C-side (the only writer that lands a shell-openable mode),
    * its `stage.ready` bus post becomes the `stage-ready` drive marker, and
@@ -360,7 +360,7 @@ export class HostPhase {
     this.start(ctx, bundleRoot, capturePath, fsRoot);
   }
 
-  /** The `real.create` leg (CREATE-mode live demo): the whale mount's
+  /** The `real.create` leg (CREATE-mode live demo): the compact mount's
    * carrier + page shuttle with the llm leg's staging handshake — the
    * staging entry evals first (the credential placeholder), then the
    * creation scenario, then the runtime.config delivery. Headless of
@@ -477,10 +477,10 @@ export class HostPhase {
     }));
   }
 
-  /** The whale creation-client mount (ONE launch, its own scenario id): the
+  /** The compact creation-client mount (ONE launch, its own scenario id): the
    * same carrier + page shuttle + dispatch seam as the llm leg, but the
    * session-mock scenario (deterministic scripted turns, no credentials, no
-   * quota) and the staged whale page as the carrier web root. */
+   * quota) and the staged compact page as the carrier web root. */
   beginWhale(ctx: common.UIAbilityContext, bundleRoot: string,
     capturePath: string, fsRoot: string): void {
     this.scenario = SCENARIO_WHALE;
@@ -577,7 +577,7 @@ export class HostPhase {
    * readiness events (host.info + host.seed on the binding leg) fire only
    * once the page ALSO acked the projected slot (deliverHostInfo's gate),
    * the iOS/Android hosts' semantic ("the deltas always stream into a fully
-   * rendered client" — the whale leg measured an ungated delivery racing
+   * rendered client" — the compact leg measured an ungated delivery racing
    * the page's own render, its slot.ack landing after the whole session).
    * The llm.live-stream scenario awaits host.info before its first turn and
    * never reads host.seed, so the leg delivers only what its contract
@@ -593,8 +593,8 @@ export class HostPhase {
     this.deliverHostInfo();
   }
 
-  /** Runtime thread: the whale leg fires host.info only once the page ALSO
-   * acked the projected slot (the iOS/Android hosts' semantic — the whale
+  /** Runtime thread: the compact leg fires host.info only once the page ALSO
+   * acked the projected slot (the iOS/Android hosts' semantic — the compact
    * page renders the replay before acking, and an ungated delivery raced
    * that render, its slot.registered landing after the whole session). The
    * m5 and llm legs keep the hello-time delivery: their scenarios gate
@@ -647,7 +647,7 @@ export class HostPhase {
 
   /** The page rendered the projected slot and acked it (main.js
    * slot.ack) — the carrier-side `slot.registered` record, ONCE: the page
-   * re-acks on re-renders (the whale leg measured a second ack after the
+   * re-acks on re-renders (the compact leg measured a second ack after the
    * live deltas), and the manifests allow exactly one such record (the
    * Android/iOS hosts' slotAcked guard, mirrored). */
   private slotAcked: boolean = false;
@@ -771,7 +771,7 @@ export class HostPhase {
       }
       this.lastDeltaIndex = payload.index;
     } else if (payload.kind === 'complete') {
-      // The closing delta record: the llm-live-stream carrier and whale-mount
+      // The closing delta record: the llm-live-stream carrier and compact-mount
       // manifests pin `{first:false, last:true}` (the Android/iOS host's
       // shape), the m5 manifest pins `{last:true, index}` — each leg emits
       // its own.

@@ -644,11 +644,11 @@ if [ "$MODE" != "check" ]; then
        "$RAW/vendor/dsh/dsh-web@0.1.6-alpha.2/lib/index.js"
 fi
 
-# The self-hosted web clients (presentation/web-client-{next,whale}):
+# The self-hosted web clients (presentation/web-client-{next,compact}):
 # whole-tree copies into rawfile/dsh/webclient/dsh-web-client-*, the same
 # sync+check discipline as the closure — the older v0 webclient/
 # dsh-web-client hand-commit predates this script's coverage and stays as-is.
-WEBCLIENT_DIRS="next whale"
+WEBCLIENT_DIRS="v2 compact"
 
 # The crypto shims' npm face (2026-09-29): shims/crypto.js statically
 # imports @noble/hashes/{sha2,hmac,legacy}.js and the host's STATIC bare

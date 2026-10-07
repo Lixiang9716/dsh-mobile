@@ -24,7 +24,7 @@
  *   pinfiles — noble *.js, pi-ai js+json, the goal trio js+json, zod's
  *              recomputed import closure; npm single-file faces are policy,
  *              extracted verbatim from vendor-official.sh's CLOSURE rows;
- *   webcl    — presentation/web-client{,-next,-whale} at their staged names.
+ *   webcl    — presentation/web-client{,-next,-compact} at their staged names.
  *
  * Round-trip verdicts: a derived graph-leg row missing from a committed
  * manifest is the fresh-install death class → exit 1. Everything else
@@ -159,8 +159,8 @@ function dshPinRoster(hosts, facts, closure) {
 
 const WEBCLIENT_TREES = [
   { dir: 'presentation/web-client', staged: 'dsh-web-client' },
-  { dir: 'presentation/web-client-next', staged: 'dsh-web-client-next' },
-  { dir: 'presentation/web-client-whale', staged: 'dsh-web-client-whale' },
+  { dir: 'presentation/web-client-v2', staged: 'dsh-web-client-v2' },
+  { dir: 'presentation/web-client-compact', staged: 'dsh-web-client-compact' },
 ];
 
 /** One stager-named pin subtree — the dir MUST exist. A missing pin tree is

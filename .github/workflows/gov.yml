@@ -107,11 +107,11 @@ jobs:
       - name: Run the presentation vitest suites
         # The Node-testable presentation faces (T-0078): lynx-client's
         # driver loop / wire envelope / mux suites (71 tests) and the
-        # web-client-next envelope / real-socket mux / journal-fold suite
+        # web-client-v2 envelope / real-socket mux / journal-fold suite
         # (45 tests). A port regression between the two mux copies or a
         # fold regression now fails this job. The runner installs each
         # suite's devDependencies when absent and re-asserts that the
-        # whole-tree-staged web-client-next product directory holds
+        # whole-tree-staged web-client-v2 product directory holds
         # exactly its shipped files (see the Agent Note
         # 2026-09-30-driver-presentation-node-faces-carry-real-coverage).
         run: sh tools/test/run-presentation-tests.sh

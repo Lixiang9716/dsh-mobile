@@ -37,7 +37,7 @@ class SessionServe private constructor(
     private val credential: Credential?,
     private val interactive: Boolean,
     /** The Web Client this seat serves: the official dist (default) or the
-     * self-hosted `dsh-web-client-next` — same /api + mux surface, the staged
+     * self-hosted `dsh-web-client-v2` — same /api + mux surface, the staged
      * plugin's web dir instead of the vendored dist, ZERO injection rows
      * (the page owns its whole boot; the facade/boot-graph/phone-CSS rows
      * are the official page's). Mirrors hosts/ios SessionServe.start. */
@@ -48,7 +48,7 @@ class SessionServe private constructor(
         private const val TAG = "SessionServe"
         private const val ENTRY = "scenario/composer-web-live.js"
         const val CLIENT_ID = "dsh-web-official"
-        const val NEXT_CLIENT_ID = "dsh-web-client-next"
+        const val NEXT_CLIENT_ID = "dsh-web-client-v2"
 
         /** The one workspace the mobile profile seeds: a real directory inside
          * the app scope, so the agent always has somewhere to work and what it
@@ -163,7 +163,7 @@ class SessionServe private constructor(
         val servesNext = clientID == NEXT_CLIENT_ID
         dist = CarrierWebDist(
             distRoot = if (servesNext) {
-                File(files, "dsh/webclient-next/web")
+                File(files, "dsh/webclient-v2/web")
             } else {
                 File(files, "official-web/dist")
             },

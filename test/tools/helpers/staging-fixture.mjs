@@ -64,8 +64,8 @@ export const ZOD_ROWS = [
 
 const WEBCLIENT_TREES = [
   { dir: 'presentation/web-client', staged: 'dsh-web-client' },
-  { dir: 'presentation/web-client-next', staged: 'dsh-web-client-next' },
-  { dir: 'presentation/web-client-whale', staged: 'dsh-web-client-whale' },
+  { dir: 'presentation/web-client-v2', staged: 'dsh-web-client-v2' },
+  { dir: 'presentation/web-client-compact', staged: 'dsh-web-client-compact' },
 ];
 
 // Every row the generator derives on the green fixture: graph + dshpins +

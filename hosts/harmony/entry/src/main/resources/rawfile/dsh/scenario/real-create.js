@@ -2,10 +2,10 @@
 // the demand/take/post helper trio never logs — the mounted logger carries
 // every canonical line the creation turn emits)
 /**
- * real-create.js — the CREATE-mode live demo behind the whale creation
+ * real-create.js — the CREATE-mode live demo behind the compact creation
  * client: the FULL upstream spine boots on the STAGED real backend (the
  * llm.live-stream credential handshake verbatim, `userEndpoint: true`),
- * the whale page mounts as the carrier web root, and ONE REAL turn —
+ * the compact page mounts as the carrier web root, and ONE REAL turn —
  * "create a Pomodoro clock" — runs with the creation row mounted
  * (workspace files as deliverables). The assistant's deltas project into
  * the page LIVE (token-delta over session-projection@0), the created file
@@ -108,7 +108,7 @@ const listTree = async (root) => {
 
 /** The spine boot options: the creation row mounted, the llm route the
  * STAGED real backend, and the assistant's content deltas projected into the
- * whale page live (reasoning chunks stay out of the transcript view). */
+ * compact page live (reasoning chunks stay out of the transcript view). */
 const spineOptions = (cfg, containerRoot) => ({
   scenario: SCENARIO,
   agentId: AGENT_ID,

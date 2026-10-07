@@ -1,10 +1,10 @@
 #!/bin/sh
 # run-next-web-mount.sh — the SELF-HOSTED next client on the HarmonyOS
-# emulator (harmony.nextweb.mount, the iOS nextweb.mount and Android
-# android.nextweb.mount legs' sibling): ONE launch with --ps dsh.e2e.leg
-# nextweb.mount, the OfficialServe seat over the staged webclient-next page
+# emulator (harmony.v2web.mount, the iOS v2web.mount and Android
+# android.v2web.mount legs' sibling): ONE launch with --ps dsh.e2e.leg
+# v2web.mount, the OfficialServe seat over the staged webclient-v2 page
 # (dist root swapped, zero injection rows, the interactive creation row),
-# the NextWebPhase probe driving the full creation chain; evidence = the
+# the V2WebPhase probe driving the full creation chain; evidence = the
 # phase capture file (E2E by logs) + one screenshot (human evidence only). Every wait is a polled condition with a
 # deadline (rules.md rule 8); every exhaustion fails loud (rule 5).
 set -eu
@@ -14,8 +14,8 @@ HDC=${HDC_PATH:-$CLT/sdk/default/openharmony/toolchains/hdc}
 HAP=hosts/harmony/entry/build/default/outputs/default/entry-default-unsigned.hap
 BUNDLE=com.dshmobile.host
 BASE=/data/app/el2/100/base/$BUNDLE/haps/entry/cache
-CAPTURE=$BASE/dsh-nextweb-capture.log
-OUT=${1:-hosts/harmony/artifacts/nextweb-mount}
+CAPTURE=$BASE/dsh-v2web-capture.log
+OUT=${1:-hosts/harmony/artifacts/v2web-mount}
 
 say() { echo "run-next-web-mount: $*"; }
 die() { echo "::error::run-next-web-mount: $*" >&2; exit 1; }
@@ -53,7 +53,7 @@ until [ -n "$("$HDC" shell pidof $BUNDLE 2>/dev/null | tr -d '[:space:]')" ]; do
     "$HDC" shell power-shell wakeup >/dev/null 2>&1 || true
     "$HDC" shell uinput -T -m 400 1600 400 400 300 >/dev/null 2>&1 || true
     "$HDC" shell aa start -b $BUNDLE -a EntryAbility \
-        --ps dsh.e2e.leg nextweb.mount >/dev/null 2>&1 || true
+        --ps dsh.e2e.leg v2web.mount >/dev/null 2>&1 || true
     sleep 3
 done
 
@@ -66,14 +66,14 @@ deadline=$(( $(date +%s) + 660 ))
 until "$HDC" shell "cat $CAPTURE 2>/dev/null" | grep -q "game.closed"; do
     if [ "$(date +%s)" -ge "$deadline" ]; then
         "$HDC" shell "cat $CAPTURE 2>/dev/null" | tail -40 >&2 || true
-        die "harmony.nextweb.mount did not complete within 660s"
+        die "harmony.v2web.mount did not complete within 660s"
     fi
     sleep 2
 done
 sleep 3 # let the trailing records (the page's late re-ack) settle
 
-"$HDC" shell snapshot_display -f /data/local/tmp/dsh-nextweb.jpeg >/dev/null 2>&1 || true
-"$HDC" file recv /data/local/tmp/dsh-nextweb.jpeg "$OUT/02-creation-viewer.jpeg" >/dev/null 2>&1 || true
+"$HDC" shell snapshot_display -f /data/local/tmp/dsh-v2web.jpeg >/dev/null 2>&1 || true
+"$HDC" file recv /data/local/tmp/dsh-v2web.jpeg "$OUT/02-creation-viewer.jpeg" >/dev/null 2>&1 || true
 if [ -f "$OUT/02-creation-viewer.jpeg" ]; then
     sips -s format png "$OUT/02-creation-viewer.jpeg" \
         --out "$OUT/02-creation-viewer.png" >/dev/null
@@ -97,7 +97,7 @@ done
 [ "$pull_verified" = "1" ] || die "capture pull kept missing the terminal records"
 grep '^dsh.runtime.log:' "$OUT/logs.txt" > "$OUT/scenario.jsonl" || true
 
-node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-nextweb-mount.json \
-    --log "$OUT/logs.txt" --out "$OUT/verdict-harmony-nextweb-mount.json"
-cat "$OUT/verdict-harmony-nextweb-mount.json"
-say "harmony.nextweb.mount green — evidence under $OUT"
+node test/e2e/check.mjs --manifest test/e2e/scenarios/harmony-v2web-mount.json \
+    --log "$OUT/logs.txt" --out "$OUT/verdict-harmony-v2web-mount.json"
+cat "$OUT/verdict-harmony-v2web-mount.json"
+say "harmony.v2web.mount green — evidence under $OUT"

@@ -1,7 +1,7 @@
 #!/bin/sh
 # run-android-next-web-mount.sh — the SELF-HOSTED web clients on Android:
-# the whale creation client on the v0 /ws session seat (android.whale.mount)
-# and the next client on the official SessionServe seat (android.nextweb.mount
+# the compact creation client on the v0 /ws session seat (android.compact.mount)
+# and the next client on the official SessionServe seat (android.v2web.mount
 # — the full creation leg: prompt → streamed reply → stop → create → present
 # → fullscreen viewer, all driven through the page's own composer).
 #
@@ -15,7 +15,7 @@ set -eu
 
 APK=hosts/android/app/build/outputs/apk/debug/app-debug.apk
 PKG=com.dshmobile.host
-OUT=${DSH_NEXT_OUT:-hosts/android/artifacts/nextweb-mount}
+OUT=${DSH_NEXT_OUT:-hosts/android/artifacts/v2web-mount}
 SCEN=test/e2e/scenarios
 
 say() { echo "run-android-next-web-mount: $*"; }
@@ -101,9 +101,9 @@ run_leg() {
     say "leg $leg complete — evidence under $out"
 }
 
-run_leg whale dsh.whale "ws.session-complete" android-whale-mount.json \
-    hosts/android/artifacts/whale-mount 01-whale-mounted.png
-run_leg next dsh.next "creation.opened" android-nextweb-mount.json \
-    hosts/android/artifacts/nextweb-mount 02-creation-viewer.png
+run_leg compact dsh.compact "ws.session-complete" android-compact-mount.json \
+    hosts/android/artifacts/compact-mount 01-compact-mounted.png
+run_leg next dsh.next "creation.opened" android-v2web-mount.json \
+    hosts/android/artifacts/v2web-mount 02-creation-viewer.png
 
-say "both legs green — evidence under hosts/android/artifacts/{whale,next}web-mount"
+say "both legs green — evidence under hosts/android/artifacts/{compact,next}web-mount"

@@ -190,7 +190,7 @@ enum BundleStager {
                   data: resData(dsh_runtime_res_upstream_llm_transport_js), under: root)
         // The BYOK route seam (upstream/boot.js imports it at the top level):
         // missing here made every boot.js drive die with `cannot load module
-        // 'upstream/llm-route.js'` — measured live on the nextweb.mount leg,
+        // 'upstream/llm-route.js'` — measured live on the v2web.mount leg,
         // 2026-10-01. Android stages the same file in its assets.
         try write("upstream/llm-route.js",
                   data: resData(dsh_runtime_res_upstream_llm_route_js), under: root)
@@ -222,7 +222,7 @@ enum BundleStager {
         // row's world; split from fs.js at the file-size gate).
     }
 
-    /// The self-hosted Web Client (presentation/web-client-next), embedded
+    /// The self-hosted Web Client (presentation/web-client-v2), embedded
     /// whole by gen_bundle_header.py's own tree (html/css ride along — the
     /// spine tree's suffix filter would drop them) and staged back at the
     /// bundle-relative path the carrier serves. Fails loud when empty.

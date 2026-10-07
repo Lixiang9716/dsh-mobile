@@ -395,7 +395,7 @@ function harmonyHost(bf, closure) {
         rows: bf.rows,
         rowOrigin: bf.file,
         // BUNDLE_FILES materializes from the COMMITTED rawfile tree (the
-        // webclient/, e2e-stage.js and npm-face-staged vendor/dsh rows live
+        // webclient/, credential-stage.js and npm-face-staged vendor/dsh rows live
         // only there), so stale rows are judged against rawfile/dsh —
         // the same root ci/check-bundle-files.mjs pins the list to.
         staleRoot: join(REPO, 'hosts/harmony/entry/src/main/resources/rawfile/dsh'),

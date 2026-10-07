@@ -51,7 +51,7 @@ object MockLlmRoute {
     @Volatile private var createScriptDone = false
 
     /** The GAME leg's one-shot latch (gameStream) — same posture, one per
-     * scripted create turn, so the whale and game legs compose in one
+     * scripted create turn, so the compact and game legs compose in one
      * launch. */
     @Volatile private var gameScriptDone = false
 
@@ -63,7 +63,7 @@ object MockLlmRoute {
     }
 
     /** Carrier thread: one scripted chat-completions response, then close.
-     * The nextweb drive's legs select scripts by prompt marker (every other
+     * The v2web drive's legs select scripts by prompt marker (every other
      * drive's prompts never carry them, so their wire stays byte-identical):
      * CREATE_TURN answers one round with the write+present tool calls;
      * SLOW_TURN drips the success body ~220ms per slice. */
@@ -152,12 +152,12 @@ object MockLlmRoute {
      * declares it (the runtime journals deliverables/presented; the client
      * renders the card). Kotlin sibling of the iOS seat's serveCreateScript. */
     private fun createStream(): String {
-        val whalePath = "$workspaceRoot/creations/blue-whale.html"
+        val whalePath = "$workspaceRoot/creations/blue-compact.html"
         val writeArgs = JSONObject()
             .put("file_path", whalePath)
             .put("content", whaleHtml())
             .toString()
-        val file = JSONObject().put("path", "creations/blue-whale.html")
+        val file = JSONObject().put("path", "creations/blue-compact.html")
             .put("description", "游动的蓝色鲸鱼 — 点按全屏查看")
         val presentArgs = JSONObject()
             .put("files", JSONArray().put(file))
@@ -181,10 +181,10 @@ object MockLlmRoute {
             "<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}" +
             "#w{font-size:120px;position:absolute;top:38%;left:-140px;" +
             "animation:swim 8s linear infinite}" +
-            "</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>"
+            "</style><!--BLUE-V2-CANARY--><div id=w>🐋</div>"
 
     /** The GAME script's assistant message: the same TWO tool-call shape as
-     * the whale (distinct wire indices), creating the canvas-game
+     * the compact (distinct wire indices), creating the canvas-game
      * deliverable the game leg drives. The write arguments are
      * JSON-serialized rather than hand-escaped — the game HTML carries
      * quotes and newlines. */
@@ -216,7 +216,7 @@ object MockLlmRoute {
      * PARENT — the viewer's iframe is sandbox="allow-scripts" with no
      * allow-same-origin, so the drive cannot read inside it; the heartbeat
      * is the game leg's canary twin (fixture evidence, not product code),
-     * counted by the probe-side listener (NextWebProbe installGameListener). */
+     * counted by the probe-side listener (V2WebProbe installGameListener). */
     private fun gameHtml(): String = """
         <!doctype html><html><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">

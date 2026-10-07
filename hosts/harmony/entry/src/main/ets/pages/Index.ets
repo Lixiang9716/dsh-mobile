@@ -47,7 +47,7 @@ import { HostPhase, WHALE_WEB_DIR } from '../model/HostPhase';
 import { LlmConfigStaging } from '../model/LlmConfigStaging';
 import { OfficialPhase } from '../model/OfficialPhase';
 import { OfficialServe, NEXT_CLIENT_ROOT } from '../model/OfficialServe';
-import { NextWebPhase } from '../model/NextWebPhase';
+import { V2WebPhase } from '../model/V2WebPhase';
 import { ParityMockRoute, PARITY_MOCK_KEY } from '../model/ParityMockRoute';
 import { CardPlayerRoute } from '../model/CardPlayer';
 import { PickerPrimitives } from '../model/PickerPrimitives';
@@ -57,8 +57,8 @@ const TAG: string = 'dsh.app';
 const CARRIER_BASE_PORT: number = 17877;
 /** The launch parameter EntryAbility parks in E2eLeg — `--ps dsh.e2e.leg`. */
 const LEG_LLM: string = 'llm.live-stream';
-const LEG_WHALE: string = 'whale.mount';
-const LEG_NEXTWEB: string = 'nextweb.mount';
+const LEG_WHALE: string = 'compact.mount';
+const LEG_V2WEB: string = 'v2web.mount';
 const LEG_DEVICE_PLANE: string = 'device.plane';
 /** The capability plane's camera leg (`--ps dsh.e2e.leg camera.plane`). */
 const LEG_CAMERA_PLANE: string = 'camera.plane';
@@ -72,7 +72,7 @@ const LEG_REAL_AGENT: string = 'real.agent.loop';
  * dsh.e2e.spec <file>`): ONE transpiled spec per launch, the QuickJS-shaped
  * harness runs it in the on-device runtime. */
 const LEG_UPSTREAM_SUITE: string = 'upstream.suite';
-/** The CREATE-mode live demo (`--ps dsh.e2e.leg real.create`): the whale
+/** The CREATE-mode live demo (`--ps dsh.e2e.leg real.create`): the compact
  * creation client on the STAGED real backend — one Pomodoro-clock creation
  * turn, streamed into the page. A demo: no one-to-one manifest. */
 const LEG_REAL_CREATE: string = 'real.create';
@@ -90,7 +90,7 @@ const LEG_REAL_CREATE: string = 'real.create';
 // tree). EXTEND whenever the closure grows.
 const BUNDLE_FILES: string[] = [
   'canonical-json.js',
-  'e2e-stage.js',
+  'credential-stage.js',
   'ed25519.js',
   'fixtures/dsh-notes-source.js',
   'fixtures/dsh-notes.js',
@@ -1149,26 +1149,26 @@ const BUNDLE_FILES: string[] = [
   'vendor/npm/zod@4.4.3/v4/locales/yo.js',
   'vendor/npm/zod@4.4.3/v4/locales/zh-CN.js',
   'vendor/npm/zod@4.4.3/v4/locales/zh-TW.js',
-  'webclient/dsh-web-client-next/manifest.json',
-  'webclient/dsh-web-client-next/web/css/app.css',
-  'webclient/dsh-web-client-next/web/css/theme.css',
-  'webclient/dsh-web-client-next/web/index.html',
-  'webclient/dsh-web-client-next/web/js/api.js',
-  'webclient/dsh-web-client-next/web/js/composer.js',
-  'webclient/dsh-web-client-next/web/js/main.js',
-  'webclient/dsh-web-client-next/web/js/markdown.js',
-  'webclient/dsh-web-client-next/web/js/marketplace-core.js',
-  'webclient/dsh-web-client-next/web/js/marketplace.js',
-  'webclient/dsh-web-client-next/web/js/mux.js',
-  'webclient/dsh-web-client-next/web/js/onboarding-core.js',
-  'webclient/dsh-web-client-next/web/js/onboarding.js',
-  'webclient/dsh-web-client-next/web/js/render-chat.js',
-  'webclient/dsh-web-client-next/web/js/render-home.js',
-  'webclient/dsh-web-client-next/web/js/timeline.js',
-  'webclient/dsh-web-client-whale/manifest.json',
-  'webclient/dsh-web-client-whale/web/index.html',
-  'webclient/dsh-web-client-whale/web/main.js',
-  'webclient/dsh-web-client-whale/web/whale.css',
+  'webclient/dsh-web-client-v2/manifest.json',
+  'webclient/dsh-web-client-v2/web/css/app.css',
+  'webclient/dsh-web-client-v2/web/css/theme.css',
+  'webclient/dsh-web-client-v2/web/index.html',
+  'webclient/dsh-web-client-v2/web/js/api.js',
+  'webclient/dsh-web-client-v2/web/js/composer.js',
+  'webclient/dsh-web-client-v2/web/js/main.js',
+  'webclient/dsh-web-client-v2/web/js/markdown.js',
+  'webclient/dsh-web-client-v2/web/js/marketplace-core.js',
+  'webclient/dsh-web-client-v2/web/js/marketplace.js',
+  'webclient/dsh-web-client-v2/web/js/mux.js',
+  'webclient/dsh-web-client-v2/web/js/onboarding-core.js',
+  'webclient/dsh-web-client-v2/web/js/onboarding.js',
+  'webclient/dsh-web-client-v2/web/js/render-chat.js',
+  'webclient/dsh-web-client-v2/web/js/render-home.js',
+  'webclient/dsh-web-client-v2/web/js/timeline.js',
+  'webclient/dsh-web-client-compact/manifest.json',
+  'webclient/dsh-web-client-compact/web/index.html',
+  'webclient/dsh-web-client-compact/web/main.js',
+  'webclient/dsh-web-client-compact/web/compact.css',
   'webclient/dsh-web-client/manifest.json',
   'webclient/dsh-web-client/web/index.html',
   'webclient/dsh-web-client/web/main.js',
@@ -1252,9 +1252,9 @@ struct Index {
     } else if (leg === LEG_WHALE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runWhaleLeg();
-    } else if (leg === LEG_NEXTWEB) {
+    } else if (leg === LEG_V2WEB) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
-      this.runNextWebLeg();
+      this.runV2WebLeg();
     } else if (leg === LEG_DEVICE_PLANE) {
       hilog.info(0x0000, TAG, 'leg %{public}s selected at launch', leg);
       this.runDevicePlaneLeg();
@@ -1294,7 +1294,7 @@ struct Index {
     }
     HostPhase.getInstance().destroy();
     OfficialPhase.getInstance().destroy();
-    NextWebPhase.destroyIfLive();
+    V2WebPhase.destroyIfLive();
     this.carrier.stop();
   }
 
@@ -1323,7 +1323,7 @@ struct Index {
     // silently fall back to the official page.
     const selected: string = E2eLeg.getWebClient();
     let distRoot: string = 'officialweb/www';
-    if (selected === 'dsh-web-client-next') {
+    if (selected === 'dsh-web-client-v2') {
       distRoot = NEXT_CLIENT_ROOT;
     } else if (selected !== '') {
       this.verdict = 'FAIL (unknown dsh.web.client: ' + selected + ')';
@@ -1470,8 +1470,8 @@ struct Index {
   }
 
   /** The `real.create` leg (CREATE-mode live demo; ci/run-real-create.sh):
-   * the whale leg's carrier + page shuttle + the llm leg's credential
-   * choreography — the whale creation client mounts and ONE REAL turn
+   * the compact leg's carrier + page shuttle + the llm leg's credential
+   * choreography — the compact creation client mounts and ONE REAL turn
    * creates the Pomodoro clock, streamed into the page. Demo: no manifest;
    * the runner waits for the summary marker and screenshots. */
   private runRealCreateLeg(): void {
@@ -1629,17 +1629,17 @@ struct Index {
       });
   }
 
-  /** The whale creation-client mount leg (`harmony.whale.mount`, the iOS
-   * session-mock-llm drive's --client whale leg mirrored): the llm leg's
+  /** The compact creation-client mount leg (`harmony.compact.mount`, the iOS
+   * session-mock-llm drive's --client compact leg mirrored): the llm leg's
    * carrier + page shuttle + dispatch wiring, but the session-mock scenario
    * (deterministic scripted turns — no credentials, no quota) and the staged
-   * whale page as the carrier web root. */
+   * compact page as the carrier web root. */
   private runWhaleLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/dsh-fs';
     const phase = HostPhase.getInstance();
     phase.onPhaseComplete = (passed: boolean): void => {
-      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.whale.mount (logs are the verdict)';
+      this.verdict = (passed ? 'PASS' : 'FAIL') + ' harmony.compact.mount (logs are the verdict)';
     };
     phase.pageSink = (text: string): void => {
       this.carrier.sendText(text);
@@ -1652,8 +1652,8 @@ struct Index {
     };
     this.materializeBundle(ctx)
       .then((root: string): Promise<number> => {
-        this.verdict = 'whale leg: running the session-mock mount...';
-        phase.beginWhale(ctx, root, ctx.cacheDir + '/dsh-whale-mount-capture.log', fsRoot);
+        this.verdict = 'compact leg: running the session-mock mount...';
+        phase.beginWhale(ctx, root, ctx.cacheDir + '/dsh-compact-mount-capture.log', fsRoot);
         installLegacyRoutes(this.carrier, root + WHALE_WEB_DIR);
         installE2EStreams(this.carrier);
         return this.carrier.start(CARRIER_BASE_PORT).then((port: number): number => {
@@ -1663,24 +1663,24 @@ struct Index {
         });
       })
       .then((port: number): void => {
-        this.verdict = 'whale leg: running on 127.0.0.1:' + port;
+        this.verdict = 'compact leg: running on 127.0.0.1:' + port;
       })
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
-        hilog.error(0x0000, TAG, 'whale leg failed: %{public}s',
+        hilog.error(0x0000, TAG, 'compact leg failed: %{public}s',
           err.message ?? 'unknown');
       });
   }
 
-  /** The nextweb.mount drive (`harmony.nextweb.mount`): the SELF-HOSTED web
+  /** The v2web.mount drive (`harmony.v2web.mount`): the SELF-HOSTED web
    * client on the OfficialServe seat the release boot runs — dist root
    * swapped, zero injection rows, the interactive config with the CREATION
    * row; the probe drives OUR page like a user through real scripted turns
-   * (NextWebPhase holds the chain). */
-  private runNextWebLeg(): void {
+   * (V2WebPhase holds the chain). */
+  private runV2WebLeg(): void {
     const ctx = this.getUIContext().getHostContext() as common.UIAbilityContext;
     const fsRoot: string = ctx.filesDir + '/dsh-fs';
-    const phase = NextWebPhase.getInstance();
+    const phase = V2WebPhase.getInstance();
     phase.openOrigin = (url: string): void => {
       // The fresh-Web remount trick (startOfficialPhase's): exactly one
       // navigation onto the next client's origin.
@@ -1691,12 +1691,12 @@ struct Index {
     };
     this.materializeBundle(ctx)
       .then((root: string): void => {
-        this.verdict = 'nextweb leg: serving the self-hosted client...';
-        phase.begin(ctx, root, ctx.cacheDir + '/dsh-nextweb-capture.log', fsRoot);
+        this.verdict = 'v2web leg: serving the self-hosted client...';
+        phase.begin(ctx, root, ctx.cacheDir + '/dsh-v2web-capture.log', fsRoot);
       })
       .catch((err: BusinessError): void => {
         this.verdict = 'FAIL (' + (err.message ?? JSON.stringify(err)) + ')';
-        hilog.error(0x0000, TAG, 'nextweb leg failed: %{public}s',
+        hilog.error(0x0000, TAG, 'v2web leg failed: %{public}s',
           err.message ?? 'unknown');
       });
   }
@@ -2064,8 +2064,8 @@ struct Index {
             if (BuildFlavor.isRelease()) {
               return; // a user-facing build runs no probe (no drives at all)
             }
-            if (E2eLeg.get() === LEG_NEXTWEB) {
-              NextWebPhase.getInstance().onPageFinished(
+            if (E2eLeg.get() === LEG_V2WEB) {
+              V2WebPhase.getInstance().onPageFinished(
                 (script: string): Promise<string> =>
                   this.webController.runJavaScript(script));
             } else {

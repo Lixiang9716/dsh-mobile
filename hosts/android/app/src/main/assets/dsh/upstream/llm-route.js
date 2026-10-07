@@ -53,7 +53,7 @@ const log = createLogger('dsh.llm-route');
 export const BYOK_REF = 'dsh.llm/byok-route';
 
 /** The panel's provider rows (mirrored in the page bundle — see
- * presentation/web-client-next/web/js/onboarding-core.js; this repo mirrors
+ * presentation/web-client-v2/web/js/onboarding-core.js; this repo mirrors
  * page-side vocabulary deliberately, it never imports runtime code).
  * `displayName` is the models-directory row label — the same strings the
  * page's PROVIDERS render. */

@@ -10,7 +10,7 @@
  * seed-start / seed-end so a mid-session mount rebuilds instead of
  * starting blank.
  *
- * The mapping table is the journal vocabulary web-client-next renders
+ * The mapping table is the journal vocabulary web-client-v2 renders
  * (timeline.js's switch, unmoved): user/message, assistant/message,
  * tool/call, tool/result, deliverables/presented, session/title,
  * turn/end, the status family, the system family — and the assistant

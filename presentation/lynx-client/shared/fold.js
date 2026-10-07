@@ -6,7 +6,7 @@
  * same shape and renders it declaratively. One file, one behavior — the
  * two faces cannot drift.
  *
- * Ported from web-client-next's timeline.js, narrowed to the view-event
+ * Ported from web-client-v2's timeline.js, narrowed to the view-event
  * vocabulary (the domain→view translation lives in driver/adapter.js):
  *
  *   message-delta    → the streaming tail (text + reasoning + building

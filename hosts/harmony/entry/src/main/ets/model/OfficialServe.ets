@@ -58,7 +58,7 @@ const PLUGIN_PACKAGES_PREFIX: string = 'dsh/officialweb/plugins/npm/@deepseek-ai
 /** The official dist's rawfile rel root (the WebDist default). */
 const OFFICIAL_DIST_ROOT: string = 'officialweb/www';
 /** The self-hosted next client's staged web dir (rawfile rel root). */
-export const NEXT_CLIENT_ROOT: string = 'webclient/dsh-web-client-next/web';
+export const NEXT_CLIENT_ROOT: string = 'webclient/dsh-web-client-v2/web';
 /** The GAME script's deliverable content: a dependency-free canvas game.
  * The heartbeat line posts frame/beat counters to the PARENT — the viewer's
  * iframe is sandbox="allow-scripts" with no allow-same-origin, so the drive
@@ -72,7 +72,7 @@ const WHALE_HTML: string = '<!doctype html><title>蓝色鲸鱼</title>' +
   '<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}' +
   '#w{font-size:120px;position:absolute;top:38%;left:-140px;' +
   'animation:swim 8s linear infinite}' +
-  '</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>';
+  '</style><!--BLUE-V2-CANARY--><div id=w>🐋</div>';
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
 const ENTRY_MOUNT = 'scenario/officialweb-web-live.js';
@@ -839,7 +839,7 @@ export class OfficialServe {
    * /mock-llm/chat/completions — the same byte-for-byte success stream the
    * harness's dsh-llm-mock mirror serves ('Hello from upstream', 5-char
    * deltas, terminal chunk with finish_reason + usage, [DONE]) and its fixed
-   * bearer check (401 JSON on a bad key). The nextweb drive's legs select
+   * bearer check (401 JSON on a bad key). The v2web drive's legs select
    * scripts by prompt marker (every other prompt never carries them, so its
    * wire stays byte-identical): CREATE_TURN answers one round per launch
    * with a write+present tool-call pair; SLOW_TURN drips the success body
@@ -890,7 +890,7 @@ export class OfficialServe {
   private createScriptDone: boolean = false;
 
   /** The GAME leg's one-shot latch (gameStream) — one per scripted create
-   * turn, so the whale and game legs compose in one launch. */
+   * turn, so the compact and game legs compose in one launch. */
   private gameScriptDone: boolean = false;
 
   private successStream(): string {
@@ -917,9 +917,9 @@ export class OfficialServe {
   private createStream(): string {
     const workspace: string = this.fsRoot + '/workspace';
     const writeArgs = '{"file_path":' +
-      JSON.stringify(workspace + '/creations/blue-whale.html') +
+      JSON.stringify(workspace + '/creations/blue-compact.html') +
       ',"content":' + JSON.stringify(WHALE_HTML) + '}';
-    const presentArgs = '{"files":[{"path":"creations/blue-whale.html",' +
+    const presentArgs = '{"files":[{"path":"creations/blue-compact.html",' +
       '"description":"游动的蓝色鲸鱼 — 点按全屏查看"}]}';
     const sse = 'data: {"choices":[{"index":0,"delta":{"tool_calls":[' +
       '{"index":0,"id":"call-create-1","type":"function",' +
@@ -937,7 +937,7 @@ export class OfficialServe {
   }
 
   /** The GAME script's assistant message: the same TWO tool-call shape as
-   * the whale (distinct wire indices), creating the canvas-game deliverable
+   * the compact (distinct wire indices), creating the canvas-game deliverable
    * the game leg drives. The write arguments ride JSON.stringify (the game
    * HTML carries quotes and newlines). */
   private gameStream(): string {

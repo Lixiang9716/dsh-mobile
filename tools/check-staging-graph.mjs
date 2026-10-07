@@ -36,7 +36,7 @@ const BUNDLE_DIRS = new Set([
 const ROOT_FILES = new Set([
   'logger.js', 'gateway.js', 'registry.js', 'sha256.js', 'tar-mini.js',
   'llm.js', 'install-pipeline.js', 'install-fetch.js', 'receipt-journal.js',
-  'config-layer.js', 'manifest.json', 'e2e-stage.js',
+  'config-layer.js', 'manifest.json', 'credential-stage.js',
 ]);
 /** Check (a) scope: the subtrees whose staging the manifests hand-maintain. */
 const SCOPE_PREFIXES = ['scenario/', 'upstream/', 'system-plugins/'];

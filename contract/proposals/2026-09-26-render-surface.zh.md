@@ -5,7 +5,7 @@
 
 ## 动机
 
-creation-mode 客户端（web-client-next、web-client-whale；#214/#218/#220/#221）
+creation-mode 客户端（web-client-v2、web-client-compact；#214/#218/#220/#221）
 已经为 agent 打通了视觉作品的交付路径：`write` + `present` → 创作卡片 → 全屏
 查看器。今天，查看器把每件作品都作为 HTML 渲染在 Web Client 的沙箱 iframe
 里（`sandbox="allow-scripts"`）——这是正确的下限，并且已经可以承载计划中的
@@ -14,7 +14,7 @@ creation-mode 客户端（web-client-next、web-client-whale；#214/#218/#220/#2
 但它同时也是一个天花板，由三面实测过的墙构成：
 
 1. **被驱动的 WebView 会节流定时器。** iOS 驱动层在
-   `hosts/ios/App/Source/NextWebRuntime.swift:15-17` 记录了这一点：所有等待
+   `hosts/ios/App/Source/V2WebRuntime.swift:15-17` 记录了这一点：所有等待
    都必须在 Swift 侧轮询，正是因为被驱动的 WKWebView 不再触发页面定时器。
    跑在那个页面里的游戏循环，帧率任由节流摆布。
 2. **没有持续帧率保证，也没有 3D。** WebView 的 canvas 与整个页面争抢内存，
@@ -128,9 +128,9 @@ HarmonyOS 映射（XComponent + Canvas，ArkTS 回调）。**任何宿主都不�
 
 ## 证据基础
 
-creation 链路已在三个宿主上（#214/#218/#220/#221），whale 查看器已经演示了
+creation 链路已在三个宿主上（#214/#218/#220/#221），compact 查看器已经演示了
 本提案所形式化的呈现姿态。被驱动定时器的节流记录在它逼出来的 iOS 驱动源码
-里（`NextWebRuntime.swift:15-17`，Swift 侧 `pollPage`）。canvas 游戏 E2E
+里（`V2WebRuntime.swift:15-17`，Swift 侧 `pollPage`）。canvas 游戏 E2E
 leg——viewer 里第一个 `requestAnimationFrame` 工件——是帧泵动机的在飞证据
 运行；其余证据来自上游 agent 自身的行为：让它做个游戏，它就写一个，而它
 目前唯一能跑的地方是一页被节流的 WebView。

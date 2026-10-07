@@ -1,7 +1,7 @@
 #!/bin/sh
 # run-real-create.sh — the CREATE-mode live demo (windows-test-plan follow-up):
 # scenario `real.create` boots the FULL spine (creation row mounted) on the
-# STAGED real backend, mounts the whale creation client, and runs ONE REAL
+# STAGED real backend, mounts the compact creation client, and runs ONE REAL
 # turn — "create a Pomodoro clock" — streamed into the page. A DEMO leg: no
 # one-to-one manifest (a creative turn's records are the model's own); the
 # green path is the realcreate/summary marker, the evidence is the pulled

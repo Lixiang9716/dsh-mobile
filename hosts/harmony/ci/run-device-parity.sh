@@ -12,7 +12,7 @@
 #                equal the committed 25-record golden
 #                (test/e2e/fixtures/upstream-parity-reference.jsonl)
 #                record-for-record (runtime/dsh/ci/parity-compare.mjs).
-#   tool-rows  — T-0048 item 3: the interactive seat (nextweb.mount launch,
+#   tool-rows  — T-0048 item 3: the interactive seat (v2web.mount launch,
 #                which evals scenario/composer-web-live.js) probes
 #                agentPresets/list + pluginInventory/list on-device; the
 #                capture must show the roster all-healthy AND the composed
@@ -257,7 +257,7 @@ TOOLROWS_OUT="$OUT/tool-rows"
 mkdir -p "$TOOLROWS_OUT"
 STREAM="$TOOLROWS_OUT/hilog-stream.txt"
 say "phase 2/2: tool-rows markers (interactive seat probes)"
-launch_leg "--ps dsh.e2e.leg nextweb.mount" "$STREAM"
+launch_leg "--ps dsh.e2e.leg v2web.mount" "$STREAM"
 
 deadline=$(( $(date +%s) + TOOLROWS_DEADLINE_SECONDS ))
 until grep -q 'settings\.plugin\.inventory' "$STREAM" 2>/dev/null; do
@@ -270,8 +270,8 @@ done
 sleep 1
 stop_streamer
 
-hdc file recv "$BASE/dsh-nextweb-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
-    || die "tool-rows capture pull failed — no $BASE/dsh-nextweb-capture.log on $DSH_HDC_TARGET"
+hdc file recv "$BASE/dsh-v2web-capture.log" "$TOOLROWS_OUT/capture.txt" >/dev/null 2>&1 \
+    || die "tool-rows capture pull failed — no $BASE/dsh-v2web-capture.log on $DSH_HDC_TARGET"
 grep'dsh.runtime' "$STREAM" > "$TOOLROWS_OUT/logs.txt" || true
 grep -h '^dsh.runtime.log:' "$TOOLROWS_OUT/capture.txt" > "$TOOLROWS_OUT/scenario.jsonl" || true
 
@@ -321,7 +321,7 @@ cat > "$TOOLROWS_OUT/receipt.json" <<EOF
   "host": "harmony ($DSH_HDC_TARGET, $HOST_KIND)",
   "runner": "hosts/harmony/ci/run-device-parity.sh",
   "phase": "harmony.tool-rows (T-0048 item 3)",
-  "launch": "--ps dsh.e2e.leg nextweb.mount (Debug, interactive seat)",
+  "launch": "--ps dsh.e2e.leg v2web.mount (Debug, interactive seat)",
   "tree": "$TREE_LINE",
   "scenario": "composer.live-write",
   "proves": [

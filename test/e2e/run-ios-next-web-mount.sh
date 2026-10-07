@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # test/e2e/run-ios-next-web-mount.sh — the SELF-HOSTED web client mounts E2E
-# (nextweb.mount): presentation/web-client-next on the SAME SessionServe seat
+# (v2web.mount): presentation/web-client-v2 on the SAME SessionServe seat
 # the user-facing launch runs, selected by the launch configuration
-# (-dsh-web-client dsh-web-client-next), served with zero injection rows.
+# (-dsh-web-client dsh-web-client-v2), served with zero injection rows.
 #
 # Builds DSHHost (the client rides the embedded webclient tree — no dist
 # staging, nothing vendored), launches in NEXT-WEB mode, and waits for the
@@ -10,7 +10,7 @@
 # the probe drives OUR UI like a user (new session → type → send), a REAL
 # agent-loop turn streams over the journal with the carrier's scripted
 # model boundary, and the page's timeline fold renders it. The captured log
-# is verified against the one-to-one manifest nextweb-mount.json.
+# is verified against the one-to-one manifest v2web-mount.json.
 # Screenshots are saved artifacts (screens/) — the verdict is logs only.
 #
 # usage: run-ios-next-web-mount.sh [--udid U] [--art-dir D] [--skip-build]
@@ -31,7 +31,7 @@ while [ $# -gt 0 ]; do
     *) echo "usage: run-ios-next-web-mount.sh [--udid U] [--art-dir D] [--skip-build]" >&2; exit 2 ;;
   esac
 done
-[ -n "$ART" ] || ART="hosts/ios/artifacts/nextweb-mount"
+[ -n "$ART" ] || ART="hosts/ios/artifacts/v2web-mount"
 LOG="$ART/logs.txt"
 mkdir -p "$ART" "$ART/screens"
 
@@ -102,7 +102,7 @@ case "$LOG" in /*) LOG_ABS="$LOG" ;; *) LOG_ABS="$PWD/$LOG" ;; esac
 case "$ART" in /*) NSLOG_ABS="$ART/nslog-stderr.txt" ;; *) NSLOG_ABS="$PWD/$ART/nslog-stderr.txt" ;; esac
 xcrun simctl launch --terminate-running-process \
   --stdout="$LOG_ABS" --stderr="$NSLOG_ABS" \
-  "$UDID" "$APP_BUNDLE_ID" -dsh-mode next-web -dsh-web-client dsh-web-client-next >/dev/null
+  "$UDID" "$APP_BUNDLE_ID" -dsh-mode next-web -dsh-web-client dsh-web-client-v2 >/dev/null
 
 log "waiting for the next client page (index.served, deadline 300s)"
 wait_line "index.served" 300 || fail_deadline "index.served never appeared"
@@ -116,14 +116,14 @@ shot 02-final-state
 # ---- checkers -----------------------------------------------------------------
 log "5/5 running checkers"
 grep '^dsh.runtime.log:' "$LOG" >"$ART/scenario.jsonl" || true
-if node test/e2e/check.mjs --manifest test/e2e/scenarios/nextweb-mount.json \
-    --log "$LOG" --out "$ART/verdict-nextweb-mount.json"; then
+if node test/e2e/check.mjs --manifest test/e2e/scenarios/v2web-mount.json \
+    --log "$LOG" --out "$ART/verdict-v2web-mount.json"; then
   echo "==================== E2E summary ($ART) ===================="
-  echo "  nextweb-mount         PASS"
+  echo "  v2web-mount         PASS"
   echo "  logs: $LOG  screens: $ART/screens/"
 else
   echo "==================== E2E summary ($ART) ====================" >&2
-  echo "  nextweb-mount         FAIL" >&2
+  echo "  v2web-mount         FAIL" >&2
   echo "  logs: $LOG  screens: $ART/screens/" >&2
-  die "nextweb-mount checker failed — see $ART/verdict-nextweb-mount.json"
+  die "v2web-mount checker failed — see $ART/verdict-v2web-mount.json"
 fi

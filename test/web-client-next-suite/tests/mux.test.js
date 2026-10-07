@@ -17,7 +17,7 @@
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { createServer } from 'node:http';
 import { acceptUpgrade } from '../../../tools/dev-web-carrier/ws-lite.mjs';
-import { Mux, muxDiag } from '../../presentation/web-client-next/web/js/mux.js';
+import { Mux, muxDiag } from '../../presentation/web-client-v2/web/js/mux.js';
 
 /** One ws-capable test server: counts upgrades, records client frames,
  * and answers `session/follow` opens with a snapshot + an item. */

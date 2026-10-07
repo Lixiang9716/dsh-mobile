@@ -1,7 +1,7 @@
 // dsh:logging-exempt (node-side driver)
 /**
  * session-serve.js — the SessionServe wire client: the endpoints and their
- * exact envelope shapes, PORTED from web-client-next's main.js/composer.js
+ * exact envelope shapes, PORTED from web-client-v2's main.js/composer.js
  * call sites (not rewritten, not invented):
  *
  *   session/list    → rpc('session/list')            (bare {} payload, as main.js)

@@ -3,7 +3,7 @@ import {
   PROVIDERS, PROVIDER_IDS, validateDraft, shouldShowPanel, statusLine,
   readableProbeError, probeLine, saveEnabled, draftFingerprint,
   canClear, manageLine, clearedLine,
-} from '../../presentation/web-client-next/web/js/onboarding-core.js';
+} from '../../presentation/web-client-v2/web/js/onboarding-core.js';
 
 const validDraft = () => ({
   provider: 'deepseek',

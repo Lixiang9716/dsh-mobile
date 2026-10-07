@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* check-asset-mirrors.mjs — the product-tree ↔ host-mirror comparator.
  *
- * The #286-class drift: a product-tree file (presentation/web-client-next/
+ * The #286-class drift: a product-tree file (presentation/web-client-v2/
  * web/js/timeline.js, #279) moves while the host mirrors that ship its bytes
  * (android assets, harmony rawfile, the iOS embed) stay at the old version —
  * silent on a dev disk, stale on every fresh install, and (measured
@@ -15,9 +15,9 @@
  * the family (the D9 flip made generated freshness the iOS claim; the
  * declaration is what decides WHICH trees the embedder even carries).
  *
- * The mirror family is a declared policy row, not a glob: next + whale, the
+ * The mirror family is a declared policy row, not a glob: next + compact, the
  * two trees the stagers stage (stage-spine-closure.sh's `for client in next
- * whale`, vendor-official.sh's WEBCLIENT_DIRS, gen_bundle_header.py's
+ * compact`, vendor-official.sh's WEBCLIENT_DIRS, gen_bundle_header.py's
  * WEBCLIENT_TREES). A new web-client-* tree outside the family is reported
  * as an informational `outside-family` row — whether it must mirror is a
  * human call, not a glob's — while a FAMILY member whose product dir is
@@ -46,7 +46,7 @@ const fail = (msg) => {
 
 // The family, in the stagers' own words. Adding a member = adding it to the
 // two stagers AND gen_bundle_header.py's WEBCLIENT_TREES, then a row here.
-const FAMILY = ['next', 'whale'];
+const FAMILY = ['v2', 'compact'];
 const PRODUCT_DIR = (name) => join(ROOT, 'presentation', `web-client-${name}`);
 // (label, mirror path builder) — the committed copies the platform builds consume.
 const MIRRORS = [

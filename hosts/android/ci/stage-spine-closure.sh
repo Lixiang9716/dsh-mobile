@@ -148,7 +148,7 @@ cp "$DSH/vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib/turndown-plugin-gfm.c
 # coverage rows mount dsh-goal + the file-reference pair — the same four
 # the iOS embedder carries (gen_bundle_header.py's coverage block); without
 # them every commands:true boot fails on the first import (caught by the
-# nextweb drive 2026-09-26: "no vendored dsh package serves it").
+# v2web drive 2026-09-26: "no vendored dsh package serves it").
 say "staging presets-closure npm packages"
 mkdir -p "$ASSETS/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib"
 cp "$DSH/vendor/npm/@deepseek-ai/cordis-plugin-loader@1.0.3/lib/index.js" \
@@ -338,14 +338,14 @@ for src in "$DSH"/system-plugins/*/; do
         done
 done
 
-# The self-hosted web clients (presentation/web-client-next on the official
-# /api+mux plane, presentation/web-client-whale on the v0 /ws plane):
-# whole-tree mirrors into assets/dsh/webclient-{next,whale}, the same
+# The self-hosted web clients (presentation/web-client-v2 on the official
+# /api+mux plane, presentation/web-client-compact on the v0 /ws plane):
+# whole-tree mirrors into assets/dsh/webclient-{next,compact}, the same
 # sync+check discipline as the upstream layer — the iOS embedder stages the
 # same two trees through gen_bundle_header.py WEBCLIENT_TREES, and the v0
 # webclient's older hand-committed copy (assets/dsh/webclient) predates
 # this discipline and stays as-is.
-for client in next whale; do
+for client in v2 compact; do
     say "staging presentation/web-client-$client → assets/dsh/webclient-$client"
     (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
         while IFS= read -r rel; do
@@ -509,7 +509,7 @@ done
 # and the whole webclient byte-verify was vacuous in check mode (the #286
 # timeline.js mirror drift rode exactly this hole past two PRs, measured
 # 2026-10-01: an injected mirror drift exited 0).
-for client in next whale; do
+for client in v2 compact; do
     (cd "$ROOT/presentation/web-client-$client" && find . -type f) |
         while IFS= read -r rel; do
             rel=${rel#./}

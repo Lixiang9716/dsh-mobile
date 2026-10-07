@@ -33,10 +33,10 @@ final class SessionServe {
     /// drive both serve this one.
     static let clientID = "dsh-web-official"
 
-    /// The self-hosted client (presentation/web-client-next) this seat can
+    /// The self-hosted client (presentation/web-client-v2) this seat can
     /// serve when the launch configuration selects it — same /api + mux
     /// surface, our page instead of the vendored dist.
-    static let nextClientID = "dsh-web-client-next"
+    static let nextClientID = "dsh-web-client-v2"
 
     // ---- the hook block (a drive assigns these; defaults are no-ops) -------
 
@@ -132,14 +132,14 @@ final class SessionServe {
     func start() throws {
         let root = try BundleStager.stage()
         // The client flavor: when the launch configuration selects OUR client
-        // (dsh-web-client-next) the seat serves the staged plugin's web dir
+        // (dsh-web-client-v2) the seat serves the staged plugin's web dir
         // with NO injection rows — the page owns its whole boot, and the
         // facade/boot-graph/phone-CSS rows are the official page's. Every
         // other selection serves the vendored official dist exactly as
         // before, so every existing scenario's boot bytes stay untouched.
         let servesNext = SessionLaunchConfig.activeWebClient == Self.nextClientID
         let distRoot = try servesNext
-            ? root.appendingPathComponent("webclient-next/web", isDirectory: true)
+            ? root.appendingPathComponent("webclient-v2/web", isDirectory: true)
             : OfficialWebRuntime.locateDist()
         token = OfficialWebRuntime.randomToken()
         let plugins = CarrierPlugins.staged(dshRoot: root)

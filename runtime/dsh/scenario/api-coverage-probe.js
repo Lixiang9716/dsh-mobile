@@ -311,7 +311,7 @@ const gapsPhase = async (ctx, s) => {
   }
   // session/cancel LEFT the gap list (the stop-button claim, 2026-09-25):
   // the shape demand moves to the claimed side; its live semantics are
-  // proven on-device by nextweb.mount's cancel leg. sessionFeedback/record
+  // proven on-device by v2web.mount's cancel leg. sessionFeedback/record
   // followed (#312, the feedback dialog's journal record) and session/fork
   // (the composer dialog's server-side fork half, 2026-10-02).
   demand(typeof s.api['session/cancel'] === 'function',

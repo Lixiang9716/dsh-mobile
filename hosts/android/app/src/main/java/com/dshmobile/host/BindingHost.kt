@@ -30,14 +30,14 @@ class BindingHost private constructor(
     private val entryPath: String = ENTRY,
     private val captureLabel: String = "android-capability-binding",
     /** The v0-plane Web Client this drive serves (client id + staged dir):
-     * the default v0 client, or the whale creation client whose web dir
+     * the default v0 client, or the compact creation client whose web dir
      * rides the same assets staging (the iOS drive selects it through
      * -dsh-web-client; the Android launch extras select the drive). The
-     * whale flag switches the readiness seam: its entry (session-mock-llm)
+     * compact flag switches the readiness seam: its entry (session-mock-llm)
      * never posts bus.ready — see deliverHostHello. */
     private val clientId: String = "dsh-web-client",
     private val webRootDir: String = "webclient/web",
-    private val whaleLeg: Boolean = false,
+    private val compactLeg: Boolean = false,
     /** The BLE face's radio choice (the launch extras decide). */
     private val mockRadio: Boolean = false,
 ) {
@@ -51,8 +51,8 @@ class BindingHost private constructor(
         const val PARITY_ENTRY = "scenario/upstream-parity.js"
         const val SUITE_SCENARIO = "upstream.suite"
         const val SUITE_ENTRY = "scenario/upstream-suite-leg.js"
-        const val WHALE_SCENARIO = "android.whale.mount"
-        const val WHALE_ENTRY = "scenario/session-mock-llm.js"
+        const val COMPACT_SCENARIO = "android.compactweb.mount"
+        const val COMPACT_ENTRY = "scenario/session-mock-llm.js"
         const val DEVICE_PLANE_SCENARIO = "android.device-plane"
         const val DEVICE_PLANE_ENTRY = "scenario/device-plane.js"
         const val CAMERA_PLANE_SCENARIO = "android.camera-plane"
@@ -61,7 +61,7 @@ class BindingHost private constructor(
         const val BLE_ENTRY = "scenario/ble-plane.js"
         const val MIC_PLANE_SCENARIO = "android.mic-plane"
         const val MIC_PLANE_ENTRY = "scenario/mic-plane.js"
-        const val WHALE_CLIENT_ID = "dsh-web-client-whale"
+        const val WHALE_CLIENT_ID = "dsh-web-client-compact"
         const val WATCHDOG_SECONDS = 180
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
@@ -112,7 +112,7 @@ class BindingHost private constructor(
             drive("ble-plane", BLE_SCENARIO, BLE_ENTRY, activity, webView, onFinished, mockRadio)
 
         /** One scenario drive factory: the binding machinery with the leg's scenario
-         * id, entry and capture label. The whale/parity/suite legs keep their own factories. */
+         * id, entry and capture label. The compact/parity/suite legs keep their own factories. */
         private fun drive(
             captureLabel: String,
             scenarioId: String,
@@ -163,15 +163,15 @@ class BindingHost private constructor(
                 parityMode = true,
         )
 
-        /** The whale creation-client drive (scenario `android.whale.mount`). */
+        /** The compact creation-client drive (scenario `android.compactweb.mount`). */
         fun startWhale(activity: Activity, webView: WebView?, onFinished: (String) -> Unit): BindingHost = spawn(
             activity, webView, onFinished,
-                scenarioId = WHALE_SCENARIO,
-                entryPath = WHALE_ENTRY,
-                captureLabel = "android-whale-mount",
+                scenarioId = COMPACT_SCENARIO,
+                entryPath = COMPACT_ENTRY,
+                captureLabel = "android-compact-mount",
                 clientId = WHALE_CLIENT_ID,
-                webRootDir = "webclient-whale/web",
-                whaleLeg = true,
+                webRootDir = "webclient-compact/web",
+                compactLeg = true,
         )
 
         /** The shared factory tail of the scenario-swap drives (the
@@ -186,7 +186,7 @@ class BindingHost private constructor(
             mockRadio: Boolean = false,
             clientId: String = "dsh-web-client",
             webRootDir: String = "webclient/web",
-            whaleLeg: Boolean = false,
+            compactLeg: Boolean = false,
             parityMode: Boolean = false,
         ): BindingHost {
             val host = BindingHost(
@@ -196,7 +196,7 @@ class BindingHost private constructor(
                 captureLabel = captureLabel,
                 clientId = clientId,
                 webRootDir = webRootDir,
-                whaleLeg = whaleLeg,
+                compactLeg = compactLeg,
                 mockRadio = mockRadio,
             )
             if (parityMode) host.parityMode = true
@@ -392,13 +392,13 @@ class BindingHost private constructor(
      * scenario announces the bus subscription DURING eval (inside m4Begin,
      * before the handle field is assigned) and after the carrier is up —
      * so delivery happens at the later of: begin() returning, bus.ready,
-     * carrier listening. Never reentrant into eval. The whale leg's entry
+     * carrier listening. Never reentrant into eval. The compact leg's entry
      * (scenario/session-mock-llm.js, the iOS drive's shape) never posts
      * bus.ready — it parks on the host.info EVENT until the page connects —
      * so that leg opens the origin on handle + port alone. */
     private fun deliverHostHello() {
         if (hostHelloDelivered || handle == 0L || carrier.port == 0) return
-        if (!whaleLeg && !busReady) return
+        if (!compactLeg && !busReady) return
         hostHelloDelivered = true
         val hello = JSONObject().put("type", "host.hello").put("port", carrier.port)
         onRuntimeStatus(JsRuntime.m4BusDeliver(handle, hello.toString()))

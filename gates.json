@@ -195,14 +195,14 @@
     },
     {
       "id": "panel-tests",
-      "label": "web-client-next panel unit suite (vitest over the page's pure logic)",
+      "label": "web-client-v2 panel unit suite (vitest over the page's pure logic)",
       "command": [
         "sh",
         "test/panel/run.sh"
       ],
       "paths": [
         "test/panel/**",
-        "presentation/web-client-next/**"
+        "presentation/web-client-v2/**"
       ],
       "timeoutMs": 300000
     },
@@ -255,7 +255,7 @@
         "sh",
         "tools/check-webclient-staged-tree.sh"
       ],
-      "description": "presentation/web-client-next holds exactly its shipped files — the whole-tree-staged harmony HAP directory admits no tooling leakage (the #288 CI-only invariant, now a real gate; A12)",
+      "description": "presentation/web-client-v2 holds exactly its shipped files — the whole-tree-staged harmony HAP directory admits no tooling leakage (the #288 CI-only invariant, now a real gate; A12)",
       "needs": [
         "self-test"
       ],
@@ -329,8 +329,8 @@
       "description": "product trees vs host mirrors byte-identical both ways, iOS embedder declaration aligned (check-asset-mirrors; the #286 timeline.js class)",
       "allowFailure": true,
       "paths": [
-        "presentation/web-client-next/**",
-        "presentation/web-client-whale/**",
+        "presentation/web-client-v2/**",
+        "presentation/web-client-compact/**",
         "hosts/android/app/src/main/assets/dsh/webclient-*/**",
         "hosts/harmony/entry/src/main/resources/rawfile/dsh/webclient/**",
         "hosts/ios/Tools/gen_bundle_header.py",

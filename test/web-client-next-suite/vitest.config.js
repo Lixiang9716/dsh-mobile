@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 
-// This suite lives under test/ because presentation/web-client-next is
+// This suite lives under test/ because presentation/web-client-v2 is
 // WHOLE-TREE staged into the harmony HAP rawfile (vendor-official.sh
 // webclient_files): the product directory must stay free of test tooling
 // AND of every tool artifact — the staging find()s the whole tree, and
@@ -24,7 +24,7 @@ import { defineConfig } from 'vitest/config';
 // mux.js (WS state machine, over a real socket) and timeline.js (the
 // journal fold).
 const here = import.meta.dirname;
-const product = resolve(here, '../../presentation/web-client-next');
+const product = resolve(here, '../../presentation/web-client-v2');
 export default defineConfig({
   root: product,
   cacheDir: resolve(here, 'node_modules/.vite'),

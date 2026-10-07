@@ -39,7 +39,7 @@ final class SessionRuntime {
         if llmMode { return "llm.live-stream.carrier" }
         if profileMode { return "install.carrier-evidence" }
         if resolvedClient == "dsh-web-client-mini" { return "ui.client-swap" }
-        if resolvedClient == "dsh-web-client-whale" { return "whale.mount" }
+        if resolvedClient == "dsh-web-client-compact" { return "compact.mount" }
         return "webclient.mount"
     }
 

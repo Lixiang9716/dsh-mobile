@@ -108,7 +108,7 @@ extension CarrierServer {
     /// on-device session-live drive: a real loopback HTTP + SSE endpoint on
     /// the carrier whose scripts mirror the vendored dsh-llm-mock-server's
     /// success stream byte-for-byte and use its fixed bearer check (401 JSON
-    /// on a bad key). Real transport, scripted model. The nextweb drive's
+    /// on a bad key). Real transport, scripted model. The v2web drive's
     /// legs select scripts by prompt marker (every existing drive's prompts
     /// never carry these, so their wire stays byte-identical to before):
     ///   (none)       — the success script: "Hello from upstream" in
@@ -118,7 +118,7 @@ extension CarrierServer {
     ///                  when the probe presses stop.
     ///   CREATE_TURN  — the creation leg: the assistant message carries TWO
     ///                  tool calls — write creates
-    ///                  creations/blue-whale.html, present declares it a
+    ///                  creations/blue-compact.html, present declares it a
     ///                  deliverable (journaled deliverables/presented).
     static let mockLlmPath = "/mock-llm/chat/completions"
     static let mockLlmKey = "mock-key-0001"
@@ -229,14 +229,14 @@ extension CarrierServer {
         // absolute path; `present` keeps the relative form — its contract
         // resolves against the session cwd, which this leg also covers.
         let whalePath = SessionServe.workspaceRoot
-            .appendingPathComponent("creations/blue-whale.html").path
+            .appendingPathComponent("creations/blue-compact.html").path
         let writeArgs = "{\"file_path\":\"\(whalePath)\","
             + "\"content\":\"<!doctype html><title>蓝色鲸鱼</title>"
             + "<style>body{margin:0;background:#0a2a52;overflow:hidden;height:100dvh}"
             + "#w{font-size:120px;position:absolute;top:38%;left:-140px;"
             + "animation:swim 8s linear infinite}"
-            + "</style><!--BLUE-WHALE-CANARY--><div id=w>🐋</div>\"}"
-        let presentArgs = "{\"files\":[{\"path\":\"creations/blue-whale.html\","
+            + "</style><!--BLUE-V2-CANARY--><div id=w>🐋</div>\"}"
+        let presentArgs = "{\"files\":[{\"path\":\"creations/blue-compact.html\","
             + "\"description\":\"游动的蓝色鲸鱼 — 点按全屏查看\"}]}"
         sse(["choices": [["index": 0, "delta": ["tool_calls": [
             ["index": 0, "id": "call-create-1", "type": "function",
@@ -251,7 +251,7 @@ extension CarrierServer {
         respond(200, body, "text/event-stream; charset=utf-8", conn)
     }
 
-    /// The GAME script: the same TWO tool-call shape as the whale (distinct
+    /// The GAME script: the same TWO tool-call shape as the compact (distinct
     /// wire indices), creating the canvas-game deliverable the game leg
     /// drives. The write arguments are JSON-serialized rather than
     /// hand-escaped — the game HTML carries quotes and newlines, and hand
@@ -290,7 +290,7 @@ extension CarrierServer {
     /// viewer's iframe is sandbox="allow-scripts" with no allow-same-origin,
     /// so the drive cannot read inside it; the heartbeat is the game leg's
     /// canary twin (fixture evidence, not product code), counted by the
-    /// probe-side listener (NextWebProbe.installGameListenerLeg).
+    /// probe-side listener (V2WebProbe.installGameListenerLeg).
     static let gameHtml = #"""
 <!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">

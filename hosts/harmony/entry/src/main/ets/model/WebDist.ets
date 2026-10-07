@@ -59,7 +59,7 @@ export class WebDist {
 
   /** [distRoot] is the rawfile rel root this seat serves — the official
    * dist ('officialweb/www', the default) or a self-hosted client's staged
-   * web dir ('webclient/dsh-web-client-next/web' — the same seat, our page,
+   * web dir ('webclient/dsh-web-client-v2/web' — the same seat, our page,
    * and the caller keeps the injection rows empty: the page owns its boot). */
   constructor(server: CarrierServer, rawfile: (rel: string) => Uint8Array | null,
     sessionToken: string, distRoot: string = 'officialweb/www') {

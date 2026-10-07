@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   INSTALL_STEPS, installFold, installEnabled, entryRow, installedRow,
   readableInstallError, removeConfirmLine, removedLine,
-} from '../../presentation/web-client-next/web/js/marketplace-core.js';
+} from '../../presentation/web-client-v2/web/js/marketplace-core.js';
 
 const catalogEntry = (over = {}) => ({
   id: 'dsh-office',
