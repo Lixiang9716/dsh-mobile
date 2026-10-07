@@ -7,7 +7,7 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 6,
+        "available": 8,
         "unavailable": 3
       }
     },
