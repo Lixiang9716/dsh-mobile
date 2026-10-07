@@ -78,9 +78,36 @@ primitives.md) while its iOS/Android twins conformed:
 
 ## Consequences
 
-The harmony audit stream is byte-shape-identical to Android/iOS
-(verified on-device: micStart granted/ok with the mic detail
+The harmony audit stream shares the Android/iOS field set and
+vocabulary (verified on-device: micStart granted/ok with the mic detail
 vocabulary, timerSchedule granted/ok). Descriptor counts change for
 every HostPhase seat, so the six manifests and the canonical scenario
 demand moved together; the rawfile mirror was re-staged byte-verified
 (vendor-official.sh --closure-only + check-bundle-files 1083/1083).
+
+## Review round (same day)
+
+Five review findings on the first pass, all taken:
+
+- The mic audit manifests tripped on the micFrames idle window's
+  timerSchedule/timerCancel rows (the #397 timer seam dispatches through
+  the gateway; a healthy mic emits one armed/cancelled pair per consumed
+  frame — count nondeterministic). check.mjs gained `extract.skip` (drop
+  named records at extraction, invisible to the ordered walk and the
+  nothing-extra check); the three mic audit manifests skip the two timer
+  names; selftest.sh proves the fixture passes with skip, fails at the
+  interleave without it, and still fails on a missing covered row.
+- The not-covered dispatch arm (unreachable behind the parity gate)
+  now mirrors Android's unknown-row vocabulary — audit denied/denied,
+  settlement 'denied' — instead of denied/invalid.
+- The smoke descriptor declares the seven absent families its own face
+  answers unavailable (the answer/declaration gap had reopened on the
+  regression face); the parity gate now enforces smoke-face coverage.
+- host_start's descriptor read buffer grew 512 → 2048 — the 28-row
+  descriptor sat at 511 bytes, one byte from an EINVAL phase start; the
+  parity gate parses the buffer bound from napi_init.cpp and fails
+  naming byte counts when a descriptor would not fit.
+- The "byte for byte" parity claim is corrected to what holds: a shared
+  field set and verdict/outcome vocabulary — the platforms' JSON field
+  orders and ts precisions genuinely differ (the committed iOS
+  device-plane artifact shows two field orders in its first two rows).
