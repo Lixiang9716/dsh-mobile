@@ -50,6 +50,18 @@ import {
   makeModelSelectionHandlers, makeSessionForkHandlers,
   makeSessionFeedbackHandlers, shellLoadHandlers,
 } from 'upstream/web-write-catalog.js';
+// The session deep-page legs (transcript paging, search, rename, the queue
+// mutations, the desktop-opener gate): upstream/web-write-session.js.
+import {
+  makeSessionPageHandlers, makeSessionSearchHandlers,
+  makeSessionRenameHandlers, makeSessionQueueHandlers,
+  makeSessionOpenerHandlers,
+} from 'upstream/web-write-session.js';
+// The preset adapters (agentPresets forwarders + the endpointPresets
+// platform-fact adapter), split out at the code-size gate.
+import {
+  makeAgentPresetHandlers, makeEndpointPresetAdapter,
+} from 'upstream/web-write-presets.js';
 
 export { COVERAGE_ENDPOINTS, COVERAGE_STREAMS };
 
@@ -70,6 +82,18 @@ export const WRITE_ENDPOINTS = [
   // forks server-side from one completed-turn prefix (the #306 thread's
   // design; the desktop controller's commands.fork semantics, narrowed).
   'session/fork',
+  // The session deep-page legs (upstream/web-write-session.js; the T-0049
+  // tail item): the transcript pager, the cross-session text search, the
+  // user rename, the pending-queue mutations, and the desktop-opener gate
+  // (canOpenWorkspacePath answers false so the page hides the open-in-app
+  // asker — openWorkspacePath itself stays unclaimed). The permission
+  // 预设 popup's catalog rides here too: the catalog IS the deployment's
+  // configured preset table (interaction/permission-presets
+  // src/index.ts catalog()), this host's composition configures none, and
+  // the honest answer is the empty table — never a fabricated roster.
+  'session/page', 'session/search', 'session/rename',
+  'session/updateQueue', 'session/canOpenWorkspacePath',
+  'permissionPresets/catalog',
   'settings/describe', 'settings/update', 'settings/mutate',
   'agentPresets/list', 'agentPresets/read', 'agentPresets/copy',
   'agentPresets/deletePreset', 'agentPresets/select',
@@ -240,79 +264,6 @@ const makeCreateSession = (ctx, deps) => async (args) => {
   return { sessionId };
 };
 
-/** The REAL prompt admission (upstream commands.prompt, narrowed): admit
- * into the agent inbox and return — the turn streams via the journal. */
-/** The agentPresets/* handlers: thin forwarders onto the service boot.js
- * mounted from @deepseek-ai/dsh-agent-presets. Wire names, argument names,
- * and the IMPLEMENTATION each wire method maps to follow the package's own
- * @Remote descriptors (dsh-api-remotes): list→remoteExportList,
- * read→readDocument, copy→remoteExportCopy, deletePreset→remoteExportDelete,
- * select→select — and select's `agent` parameter arrives on the wire as an
- * agentId, which the host resolves to the LIVE agent before invoking (the
- * same resolution commands.prompt does). The panel's wire names are
- * agentPresets/list, /read, /copy, /deletePreset, /select. */
-const makeAgentPresetHandlers = (ctx) => {
-  const call = async (method, args) => {
-    const service = ctx.get('agentPresets');
-    if (service === undefined) {
-      throw remoteError('gateway/unavailable', 'agentPresets service is not mounted', {});
-    }
-    return service[method](...args);
-  };
-  return {
-    'agentPresets/list': () => call('remoteExportList', []),
-    'agentPresets/read': (args) => call('readDocument', [args?.agentPreset]),
-    'agentPresets/copy': (args) => call('remoteExportCopy', [args?.from, args?.id, args?.name]),
-    'agentPresets/deletePreset': (args) => call('remoteExportDelete', [args?.id]),
-    'agentPresets/select': async (args) => {
-      const agent = ctx.agents.get(args?.agent);
-      if (agent === undefined) {
-        throw remoteError('session/not-found',
-          `session ${JSON.stringify(args?.agent ?? null)} is not attached to the mobile runtime`,
-          { sessionId: args?.agent ?? null });
-      }
-      return call('select', [agent, args?.agentPreset]);
-    },
-  };
-};
-
-/** The endpointPresets adapter. The desktop keeps this service closed-source,
- * so there is nothing to port (D9 forbids inventing product behavior); what
- * THIS host knows is a platform fact: one model endpoint, the user's staged
- * credential. Reads project it (no key material); writes refuse honestly. */
-const makeEndpointPresetAdapter = (options) => {
-  const one = {
-    id: 'default',
-    name: 'This device (staged credential)',
-    baseUrl: options.llm?.baseURL ?? '',
-    model: options.llm?.model ?? '',
-    readonly: true,
-  };
-  return {
-    'endpointPresets/list': async () => ({
-      presets: [one],
-      default: one.id,
-      authorable: false,
-    }),
-    'endpointPresets/read': async (args) => {
-      if (String(args?.id ?? '') === one.id) return one;
-      throw remoteError('endpoint-preset/not-found', `no endpoint preset "${String(args?.id)}"`, {});
-    },
-    'endpointPresets/create': async () => {
-      throw remoteError('gateway/unimplemented',
-        'endpoint presets are read-only on this host (one staged credential)', {});
-    },
-    'endpointPresets/update': async () => {
-      throw remoteError('gateway/unimplemented',
-        'endpoint presets are read-only on this host (one staged credential)', {});
-    },
-    'endpointPresets/delete': async () => {
-      throw remoteError('gateway/unimplemented',
-        'endpoint presets are read-only on this host (one staged credential)', {});
-    },
-  };
-};
-
 const makePromptSession = (ctx) => async (args) => {
   const request = args?.request ?? args;
   if (request === null || typeof request !== 'object'
@@ -411,6 +362,16 @@ const buildApiMap = (ctx, deps, options, ensureNamespaces) => ({
       // The composer dialog's Fork session leg: seeds the child from one
       // completed-turn prefix and attaches it to the profile's workspace.
       ...makeSessionForkHandlers(ctx, deps),
+      // The session deep-page legs (upstream/web-write-session.js): the
+      // transcript pager, the cross-session text search, the user rename,
+      // the pending-queue mutations, the desktop-opener gate, and the
+      // permission 预设 catalog (the honest empty configured table).
+      ...makeSessionPageHandlers(ctx),
+      ...makeSessionSearchHandlers(ctx),
+      ...makeSessionRenameHandlers(ctx),
+      ...makeSessionQueueHandlers(ctx),
+      ...makeSessionOpenerHandlers(),
+      'permissionPresets/catalog': async () => ({ options: [] }),
       'settings/describe': makeDescribeSettings(ctx, ensureNamespaces),
       'settings/update': makeSettingsWrite(ctx, ensureNamespaces,
         (settings, args) => settings.update(

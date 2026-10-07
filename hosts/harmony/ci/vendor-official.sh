@@ -338,6 +338,8 @@ upstream/llm-retry-pacing.js
 upstream/model-selection-projection.js
 upstream/model-selection-holder.js
 upstream/web-write.js
+upstream/web-write-session.js
+upstream/web-write-presets.js
 upstream/web-write-settings.js
 upstream/web-write-streams.js
 upstream/web-write-coverage.js

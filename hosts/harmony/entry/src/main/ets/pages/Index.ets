@@ -274,6 +274,8 @@ const BUNDLE_FILES: string[] = [
   'upstream/web-write-onboarding.js',
   'upstream/web-write-picker.js',
   'upstream/web-write-plugin-manager.js',
+  'upstream/web-write-session.js',
+  'upstream/web-write-presets.js',
   'upstream/web-write-settings.js',
   'upstream/web-write-streams.js',
   'upstream/web-write-workspace.js',
