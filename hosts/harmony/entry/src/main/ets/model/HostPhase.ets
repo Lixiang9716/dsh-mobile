@@ -373,12 +373,12 @@ export class HostPhase {
     this.llmLeg = true;
     this.whaleLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    const staged: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (staged < 0) {
       hilog.error(0x0000, TAG, 'real-create leg: staging eval failed');
       return;
     }
-    const status = hostEval(PHASE_ID, ENTRY_REAL_CREATE);
+    const status: number = hostEval(PHASE_ID, ENTRY_REAL_CREATE);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'real-create leg: scenario eval failed');
       return;
@@ -409,12 +409,12 @@ export class HostPhase {
     // The staging entry FIRST: it writes the credential placeholder (the
     // stage-ready marker the runner's send waits on) — the same module the
     // llm leg evals. The scenario then polls the staged file into its boot.
-    const staged = hostEval(PHASE_ID, ENTRY_STAGE);
+    const staged: number = hostEval(PHASE_ID, ENTRY_STAGE);
     if (staged < 0) {
       hilog.error(0x0000, TAG, 'real-agent leg: staging eval failed');
       return;
     }
-    const status = hostEval(PHASE_ID, ENTRY_REAL_AGENT);
+    const status: number = hostEval(PHASE_ID, ENTRY_REAL_AGENT);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'real-agent leg: scenario eval failed');
       return;
@@ -464,7 +464,7 @@ export class HostPhase {
     this.llmLeg = false;
     this.parityLeg = true;
     this.start(ctx, bundleRoot, capturePath, fsRoot);
-    const status = hostEval(PHASE_ID, ENTRY_PARITY);
+    const status: number = hostEval(PHASE_ID, ENTRY_PARITY);
     if (status < 0) {
       hilog.error(0x0000, TAG, 'parity leg: scenario eval failed');
       return;
