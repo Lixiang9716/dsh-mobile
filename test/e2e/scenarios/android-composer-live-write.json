@@ -72,50 +72,14 @@
     {
       "event": "write.surface.claimed",
       "match": {
-        "endpoints": [
-          "session.list",
-          "session/list",
-          "session/create",
-          "session/prompt",
-          "session/cancel",
-          "session/selectModel",
-          "sessionFeedback/record",
-          "session/fork",
-          "session/page",
-          "session/search",
-          "session/rename",
-          "session/updateQueue",
-          "session/canOpenWorkspacePath",
-          "permissionPresets/catalog",
-          "settings/describe",
-          "settings/update",
-          "settings/mutate",
-          "agentPresets/list",
-          "agentPresets/read",
-          "agentPresets/copy",
-          "agentPresets/deletePreset",
-          "agentPresets/select",
-          "pluginInventory/list",
-          "pluginManager/listBundles",
-          "pluginManager/listPlugins",
-          "pluginManager/installBundle",
-          "pluginManager/removeBundle",
-          "pluginManager/setBundleEnabled",
-          "pluginManager/setPluginEnabled",
-          "pluginManager/inspect",
-          "pluginManager/cancelInstall",
-          "dynamicCordisRunner/inventory",
-          "dynamicCordisRunner/syncInspectManifest",
-          "credentials/describe",
-          "session/modelCatalog"
-        ],
         "streams": [
           "session/follow",
           "workspace/follow",
           "session/control",
           "$events"
         ],
-        "source": "the on-device spine (ctx.sessions/agents/settings)"
+        "source": "the on-device spine (ctx.sessions/agents/settings)",
+        "endpointCount": 35
       }
     },
     {
@@ -436,7 +400,7 @@
       "event": "rpc.observed",
       "match": {
         "endpoint": "permissionPresets/catalog",
-        "answered": "unavailable"
+        "answered": "forwarded"
       }
     },
     {
