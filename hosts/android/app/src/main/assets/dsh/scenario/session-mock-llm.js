@@ -15,6 +15,7 @@
  * declared by tools/e2e/scenarios/session-mock-llm.json.
  */
 import { createLogger } from 'logger.js';
+import { scenarioModule } from 'transport-tokens.mjs';
 import { onEvent } from 'gateway.js';
 import { createRegistry } from 'registry.js';
 import { installPackage } from 'install-pipeline.js';
@@ -25,7 +26,7 @@ import * as subprocessPlugin from 'system-plugins/dsh-subprocess-quickjs/index.j
 import * as uiPlugin from 'system-plugins/dsh-ui/index.js';
 
 const SCENARIO = 'session.mock-llm';
-const log = createLogger('dsh.scenario');
+const log = createLogger(scenarioModule);
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
 const fail = (reason) => {
   log.debug('scenario failed', { reason });

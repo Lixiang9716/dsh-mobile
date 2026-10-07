@@ -20,6 +20,10 @@ GUARD = "DSH_IOS_SPIKE_BUNDLE_H"
 # (accessor suffix, source file) -> dsh_runtime_res_<suffix>()
 RESOURCES = [
     ("logger_js", DSH / "logger.js"),
+    # The cross-layer transport/E2E token table — scenarios call
+    # createLogger(scenarioModule) importing it bundle-root-relative; the
+    # scenario TREES row embeds the importers, this row the imported.
+    ("transport_tokens_mjs", DSH / "transport-tokens.mjs"),
     # M2 real-LLM scenario + its client module (scenario llm.live-stream; the device
     # leg drives the real gateway httpFetch against the configured backend)
     # M3 completion: on-device fetch-install scenario + its new modules
