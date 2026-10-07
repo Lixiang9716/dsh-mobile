@@ -1,29 +1,11 @@
 {
-  "scenario": "mic.plane.audit",
+  "scenario": "mic.audit.skip",
   "extract": {
     "prefix": "dsh.gateway.audit:",
     "envelope": "flat",
-    "skip": [
-      "timerSchedule",
-      "timerCancel"
-    ]
+    "skip": ["timerSchedule", "timerCancel"]
   },
   "expect": [
-    {
-      "primitive": "micStart",
-      "verdict": "granted",
-      "outcome": "ok"
-    },
-    {
-      "primitive": "micStop",
-      "verdict": "granted",
-      "outcome": "ok"
-    },
-    {
-      "primitive": "micStop",
-      "verdict": "granted",
-      "outcome": "ok"
-    },
     {
       "primitive": "micStart",
       "verdict": "granted",

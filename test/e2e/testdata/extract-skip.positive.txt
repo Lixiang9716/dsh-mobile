@@ -1,0 +1,7 @@
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:05.824Z","primitive":"micStart","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok","detail":{"format":"pcm-s16le","sampleRate":16000,"frameMs":100,"tag":"mic.plane"}}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:05.831Z","primitive":"timerSchedule","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:05.940Z","primitive":"timerCancel","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:06.048Z","primitive":"timerSchedule","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:06.152Z","primitive":"timerCancel","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:06.412Z","primitive":"micStop","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok","detail":{"durationMs":588,"bytes":18816}}
+dsh.gateway.audit: {"ts":"2026-10-07T10:48:06.470Z","primitive":"micStop","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}

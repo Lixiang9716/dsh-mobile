@@ -1,0 +1,24 @@
+{
+  "scenario": "mic.audit.skip.noskip",
+  "extract": {
+    "prefix": "dsh.gateway.audit:",
+    "envelope": "flat"
+  },
+  "expect": [
+    {
+      "primitive": "micStart",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "micStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    },
+    {
+      "primitive": "micStop",
+      "verdict": "granted",
+      "outcome": "ok"
+    }
+  ]
+}

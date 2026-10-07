@@ -35,6 +35,17 @@
  * Manifests default to the unified-logger envelope; "extract.envelope":
  * "flat" switches to a plain-JSON stream (gateway audit: one flat record per
  * line, matched on its top-level primitive/verdict/outcome fields).
+ *
+ * A third extraction control, "extract.skip" (array of names), drops records
+ * whose `event`/`primitive` field names one of the listed values BEFORE
+ * matching — invisible to the ordered walk AND the nothing-extra check. It
+ * exists for streams whose cardinality is nondeterministic by construction:
+ * the gateway audit manifest of a mic leg also receives the micFrames idle
+ * window's timerSchedule/timerCancel rows (runtime/dsh/gateway.js, the
+ * #397 timer seam) — a healthy mic yields one armed/cancelled pair per
+ * consumed frame, a dead one a stray schedule that never settles, so no
+ * fixed expectation can pin them. Skip names the rows the manifest's
+ * story does not cover; the covered rows still match one-to-one.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { writeJUnit } from './junit.mjs';
@@ -66,6 +77,7 @@ const deepEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const extract = (logText, manifest) => {
   const prefix = manifest.extract.prefix;
   const flat = manifest.extract.envelope === 'flat';
+  const skip = new Set(manifest.extract.skip ?? []);
   const records = [];
   const parseErrors = [];
   logText.split('\n').forEach((line, i) => {
@@ -76,6 +88,7 @@ const extract = (logText, manifest) => {
       const payload = flat ? rec : (Array.isArray(rec.data) ? rec.data[0] : undefined);
       if (payload && typeof payload === 'object' &&
           (flat || payload.scenario === manifest.scenario)) {
+        if (skip.has(payload.event) || skip.has(payload.primitive)) return;
         records.push({ line: i + 1, payload });
       }
     } catch {
