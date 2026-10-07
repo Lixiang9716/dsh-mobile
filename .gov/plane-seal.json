@@ -45,6 +45,9 @@
     ".gov/rejections/case-staging-check.sh": {
       "sha256": "1ef2139800ea4fdf4800c5750e4119f5159cb5f81dc183754a3b4b295cf2a1ed"
     },
+    ".gov/rejections/case-transport-tokens.sh": {
+      "sha256": "6741cbfd8225ddd0451e85b33ee311c4eb8482c1c3a08e0b9f7bb3b4cd0dd6b1"
+    },
     ".gov/rejections/case-webclient-staged-tree.sh": {
       "sha256": "73b4d6fd14c8c7970c2b0e1e73ec8d061fafff6ef5a43b648258e5bf951a3469"
     },
@@ -52,13 +55,13 @@
       "sha256": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9"
     },
     "gates.json": {
-      "sha256": "683ac3b2a5db059eee8a189d849fdfd62f6f3d13362acf2ee40c9a5b2b518671"
+      "sha256": "91169505ae0baf6924cac33ee75ece74afb6afc1f7d94b3ea208cba7a4b9fe12"
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T08:54:26+00:00",
+    "ts": "2026-10-07T10:42:20+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "rejection-case scripts follow the renamed paths (rawfile/dsh, web-client-v2) \u2014 mechanical path sweep only, no gate semantics change"
+    "reason": "add the transport-tokens gate: runtime/dsh/transport-tokens.mjs single token source + tools/check-transport-tokens.mjs checker + rejection case"
   }
 }

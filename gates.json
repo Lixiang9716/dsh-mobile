@@ -23,12 +23,14 @@
       "staging-check",
       "coverage-floor",
       "asset-mirrors",
+      "transport-tokens",
       "shellcheck-warn",
       "actionlint",
       "perf-budget"
     ],
     "quick": [
-      "notes"
+      "notes",
+      "transport-tokens"
     ],
     "governance": [
       "self-test",
@@ -336,6 +338,18 @@
         "hosts/ios/Tools/gen_bundle_header.py",
         "tools/check-asset-mirrors.mjs"
       ],
+      "timeoutMs": 120000,
+      "needs": [
+        "self-test"
+      ]
+    },
+    {
+      "id": "transport-tokens",
+      "command": [
+        "node",
+        "tools/check-transport-tokens.mjs"
+      ],
+      "description": "cross-layer transport/E2E tokens match runtime/dsh/transport-tokens.mjs — no pre-rename spellings, every consuming layer still spells its tokens (check-transport-tokens; the rename post-mortem drift class)",
       "timeoutMs": 120000,
       "needs": [
         "self-test"
