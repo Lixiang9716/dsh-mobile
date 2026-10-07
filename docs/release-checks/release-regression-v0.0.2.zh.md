@@ -81,7 +81,7 @@ audit;BLE mock——GATT 阶梯全绿 + audit。**BLE skip**:在本文这台 AVD
 
 ## 跑 2 — 上游全套件 sweep(权威数字)
 
-命令:`sh runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4`,安静机器
+命令:`sh runtime/dsh/ci/run-upstream-suite-sweep.sh --paral 4`,安静机器
 (负载 < 5),全量 vendor 树 + 新转译。汇总文件:
 `tmp/upstream-suite-report-totals.txt`(诊断件,按约定不入库)。
 
@@ -98,7 +98,7 @@ audit;BLE mock——GATT 阶梯全绿 + audit。**BLE skip**:在本文这台 AVD
 `failed:0`。
 
 对增量的诚实解读:spec **集合**已不是 #243 测的那一批——HEAD 的转译排除
-类(`runtime/spike/upstream-tests/manifest.json`:vi.mock 装载器类 65+2+4、
+类(`runtime/dsh/upstream-tests/manifest.json`:vi.mock 装载器类 65+2+4、
 monorepo-src 类 54+8+4+1、31 个 esbuild 解析错类、node:vm 6+6、wall-clock 7、
 fast-check 5……)相对 #243 有演化,且 #243 的逐 spec 报告未入库,逐 spec
 diff 不可复原。本跑能背书的首行事实是:v0.0.2 处,每个能转译且能产出汇总
@@ -161,6 +161,6 @@ regression-final-run-is-the-net-that-caught.md`。
 
 ```
 bash tools/test/run-simulator-matrix.sh                       # 跑 1(+1b 能力腿,按上表逐条)
-sh runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4     # 跑 2(汇总在 tmp/)
+sh runtime/dsh/ci/run-upstream-suite-sweep.sh --paral 4     # 跑 2(汇总在 tmp/)
 test/e2e/ios-ui.py sweep hosts/ios/artifacts/release-feature-sweep   # 跑 3(裸装 Release app)
 ```

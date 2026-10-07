@@ -165,7 +165,7 @@ Release 页面的东西随 workflow run 发布:iOS 的**模拟器**包
 artifact,不是 release asset。`-harness` 包同理。
 
 **`dsh-ios.ipa`** 是真正的(未签名)`.ipa` —— 根目录下是
-`Payload/DSHSpike.app`,即 AltStore / Sideloadly / `xcrun devicectl`
+`Payload/DSHHost.app`,即 AltStore / Sideloadly / `xcrun devicectl`
 所期望的布局,而不是把 `Release-iphoneos/…` 换个扩展名。
 
 **三个包都未签名。** CI 不持有 Apple 证书,也没有 HarmonyOS 签名材料,
@@ -178,12 +178,12 @@ artifact 里取模拟器包。
 
 | 产物 | 配置 | 内容 |
 | --- | --- | --- |
-| `dsh-ios-harness` | Debug | `DSHSpike-harness-device-unsigned.zip` + `DSHSpike-harness-simulator.zip` |
+| `dsh-ios-harness` | Debug | `DSHHost-harness-device-unsigned.zip` + `DSHHost-harness-simulator.zip` |
 | `dsh-android-harness` | Debug | `app-debug.apk`(debug 签名,可直接安装) |
 | `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
 
 该选哪个?**想用这个 App 就选 Release;想验证它就选 harness**(跑 E2E 腿、
-读 `dsh.spike.log:` 流)。
+读 `dsh.runtime.log:` 流)。
 
 三条构建镜像自已验证过的 `dev/ios` / `dev/android` / `dev/harmonyos`
 配方(同样的 vendor、同样的钉死工具链)。发行级签名(分发证书、上架
@@ -193,21 +193,21 @@ App Store / AppGallery)不在范围内:这些包仍需本地签名才能安装�
 
 真机 `.app` 刻意未签名(CI 不持有任何 Apple 证书)。装上 iPhone:
 
-1. 取 `dsh-ios.ipa` —— 一个未签名的 `.ipa`(`Payload/DSHSpike.app`)。
+1. 取 `dsh-ios.ipa` —— 一个未签名的 `.ipa`(`Payload/DSHHost.app`)。
    不需要先解压:签名工具直接吃 `.ipa` 本身。
 2. 用免费 Apple ID(7 天有效期)或付费团队签名:
-   - **Xcode**:打开 `hosts/ios/DSHSpike.xcodeproj`,在 target 的
+   - **Xcode**:打开 `hosts/ios/DSHHost.xcodeproj`,在 target 的
      Signing & Capabilities 里选你的团队,连上手机直接 Run——或把解压的
      `.app` 拖到 **Window → Devices and Simulators** 里的设备上。
    - **Sideloadly / AltStore**:用你的 Apple ID 指向解压的 `.app`。
 3. 手机上:设置 → 通用 → VPN 与设备管理 → 信任你的开发者描述文件,然后
-   启动 **DSHSpike**。
+   启动 **DSHHost**。
 
 **`dsh-ios`(release):直接启动就进官方 DSH Web UI。** 官方 dist(89 个文件)
 与客户端 bundles(129 个文件)作为资源内嵌进 App(`Tools/stage_official_web.py`,
 仅 Release 配置由 `StageOfficialWeb` 构建阶段执行),因此不需要从外部暂存任何
 东西。证据:`hosts/ios/artifacts/release-logging/`(直接启动、容器为空、无启动
-参数 → 官方 UI,`dsh.spike.log:` 记录 0 条、verdict 文本 0 条、debug/info 记录
+参数 → 官方 UI,`dsh.runtime.log:` 记录 0 条、verdict 文本 0 条、debug/info 记录
 0 条)。
 
 **`dsh-ios-harness`(debug):验证载体。** 它什么都不内嵌,读的是 runner 暂存到
@@ -223,14 +223,14 @@ vendored 官方 dist,官方 web 驱动(`officialweb.mount`)才能把它服务出
 # 1. 本地物化三棵未跟踪目录树(均按 MANIFEST 校验)
 test/e2e/ensure-official-dist.sh
 test/e2e/ensure-client-bundles.sh
-runtime/spike/vendor/ensure-dsh.sh
+runtime/dsh/vendor/ensure-dsh.sh
 
 # 2. 暂存进应用容器
 #    模拟器:
-APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
+APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHHost data)
 #    真机(iOS 17+;设备名/UDID 见 `xcrun devicectl list devices`):
 #      xcrun devicectl device copy to --device "$DEVICE" \
-#        --domain-type appDataContainer --domain-identifier org.dsh.DSHSpike \
+#        --domain-type appDataContainer --domain-identifier org.dsh.DSHHost \
 #        --source <tree> --destination Documents/...
 #    两者相同:dist → Documents/official-web/dist
 #             客户端 bundles → Documents/web-plugins/npm/@deepseek-ai/
@@ -239,10 +239,10 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 
 # 3. 以 official-web 模式启动
 #    模拟器:
-xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
+xcrun simctl launch org.dsh.DSHHost -dsh-mode official-web
 #    真机:
 #      xcrun devicectl device process launch --device "$DEVICE" \
-#        org.dsh.DSHSpike -dsh-mode official-web
+#        org.dsh.DSHHost -dsh-mode official-web
 ```
 
 真实对话回合还需要把凭据放进
@@ -260,7 +260,7 @@ DSH Web UI;harness 则通过 `hosts/android/ci/` runner 脚本跑 E2E 腿
 ## HarmonyOS
 
 HAP 未签名(签名材料与设备相关)。`dsh-harmony` 是 release 配置
-(`DSH_RELEASE` 定义同时到达 ArkTS 与原生 spike 库,debug/info 因此折叠掉);
+(`DSH_RELEASE` 定义同时到达 ArkTS 与原生 dsh 库,debug/info 因此折叠掉);
 `dsh-harmony-harness` 是 debug/E2E 载体。
 
 **`dsh-harmony`(release):直接启动即可到达官方 DSH Web UI。**
@@ -275,7 +275,7 @@ write 三段腿、verdict)只通过 hook 挂到这个座位上,所以 release �
 ——session 面只在 harness 的 spine 腿上被服务——而真正的对话需要用户自己提供
 凭据,移动宿主不带模型端点。证据:
 `hosts/harmony/artifacts/release-logging/`(直接启动、无启动参数、无外部投放 →
-官方 UI、零 `dsh.spike.log:` 记录、零 verdict 文本、零 debug/info 记录;拒绝;
+官方 UI、零 `dsh.runtime.log:` 记录、零 verdict 文本、零 debug/info 记录;拒绝;
 harness 套件重跑全绿)。
 
 签名:

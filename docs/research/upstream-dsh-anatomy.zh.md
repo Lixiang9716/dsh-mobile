@@ -5,10 +5,10 @@
 本文整理上游 **deepseek-harness**（DSH）monorepo 包含什么、一次 agent
 对话如何在其中流转、以及 dsh-mobile 在哪里接入。资料来源：`tmp/deepseek-harness`
 处的上游克隆（tag `dsh-v0.1.7-alpha.2`，merge `00102833d`）与我们的
-供应商化 pin `0.1.6-alpha.2`（`runtime/spike/vendor/`）。本文是
+供应商化 pin `0.1.6-alpha.2`（`runtime/dsh/vendor/`）。本文是
 [upstream-capability-mounting.md](upstream-capability-mounting.zh.md)
 （姊妹项目的 capability 模式与采纳决策）与
-[`runtime/spike/upstream/README.md`](../../runtime/spike/upstream/README.md)
+[`runtime/dsh/upstream/README.md`](../../runtime/dsh/upstream/README.md)
 （shim 表）的补充——那两份都没有从头走一遍上游流程，这正是本文的任务。
 
 ## 1. Monorepo 全貌
@@ -237,7 +237,7 @@ llm-adapter 的 provider seam 触达 OS**；组合靠把 provider 挂到 context
 ### 3.1 规则
 
 D9 + D6：承载产品的上游包**逐字**供应商化（钉住 tarball + sha256，
-`runtime/spike/vendor/ensure-dsh.sh`），经适配器插件驱动；自研代码只做
+`runtime/dsh/vendor/ensure-dsh.sh`），经适配器插件驱动；自研代码只做
 胶水。平台差异活在**上游契约之下**——绝不在其上做 `hostType` 分支。
 
 ### 3.2 供应商化闭包
@@ -253,7 +253,7 @@ provider 适配器（`llm-deepseek`/`llm-pi-ai`——由网关传输层替代）
 
 ### 3.3 移动 profile boot
 
-`runtime/spike/upstream/boot.js` —— `bootUpstream(options)` 以空根 +
+`runtime/dsh/upstream/boot.js` —— `bootUpstream(options)` 以空根 +
 内存层组合复现桌面入口形状（没有磁盘 Loader；宿主模块加载器把说明符映射
 进 vendor 闭包）。挂载顺序：
 
@@ -301,7 +301,7 @@ web-plugin VFS 上，把组合好的 wire 加 `/api` 与 mux journal 面交给�
 ### 3.6 三个宿主
 
 `hosts/ios`、`hosts/android`、`hosts/harmony` 三个平台宿主内嵌规范
-`runtime/spike` 闭包的提交副本（`closures` gate 逐字节校验），并提供：
+`runtime/dsh` 闭包的提交副本（`closures` gate 逐字节校验），并提供：
 串行运行时线程 + 模块加载器（`dsh_spike_host.c`）、网关桥、平台原语
 （SAF / 安全范围书签 scope、流式 httpFetch、keychain、通知）与载体服务器。
 平台差异只以能力协商答案出现（如 `ishRun` 仅 iOS 可用）。
@@ -348,5 +348,5 @@ registry-fallback 插件管理器）。流程层面再补三条：
 | 工具执行 | 上游 `packages/core/tools`、`docs/tool-execution-pipeline.md` |
 | LLM 契约 | 上游 `packages/llm/llm/src/types.ts`（`StreamChunk`、`GenerateOptions`） |
 | 客户端线 | 上游 `docs/api-gateway.md`、`packages/api/session-controller` |
-| 我们的移植 | `runtime/spike/upstream/README.md`、`runtime/spike/upstream/boot.js`、`docs/ARCHITECTURE.md` §3–§5、§10 D9 |
+| 我们的移植 | `runtime/dsh/upstream/README.md`、`runtime/dsh/upstream/boot.js`、`docs/ARCHITECTURE.md` §3–§5、§10 D9 |
 | 我们采纳的能力模式 | [upstream-capability-mounting.md](upstream-capability-mounting.zh.md) |

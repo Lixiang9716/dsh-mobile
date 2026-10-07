@@ -64,7 +64,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > from the restored mock adapter with no relaunch) and the models 设置页
 > directory following the live route (the byok row replaces the boot row on
 > save) — the CLI leg `onboarding.flow` 13/13, dir
-> `runtime/spike/artifacts/macos-cli-onboarding/`; `models.directory` 6/6
+> `runtime/dsh/artifacts/macos-cli-onboarding/`; `models.directory` 6/6
 > re-run green; the api-coverage probe re-run (37 coverage endpoints —
 > `onboarding/clear` joined the claim set). Checker on this tree: 80 dirs /
 > 156 verdicts, PASS (7 accepted owned gaps).
@@ -93,7 +93,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > file-hosted catalog authored from `system-plugins/`, the trust record
 > passed through to the unchanged installer, the §7.2 rotation drill and the
 > §7.1 tamper ladder (four rungs, each `InstallRejected` + audited + zero
-> staging), dir `runtime/spike/artifacts/macos-cli-marketplace-install/`.
+> staging), dir `runtime/dsh/artifacts/macos-cli-marketplace-install/`.
 > The checker re-ran on this tree with the new dir: 75 dirs / 151 verdicts,
 > PASS.
 >
@@ -103,7 +103,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > and 401 paths over the REAL gateway httpFetch transport → the keychain save
 > → the 已配过 re-detect → the relaunch route resolution → the first turn over
 > the rebound route), dir
-> `runtime/spike/artifacts/macos-cli-onboarding/`; the CLI dev host now
+> `runtime/dsh/artifacts/macos-cli-onboarding/`; the CLI dev host now
 > implements the frozen keychain primitives (one 0600 file per ref —
 > `gateway.bridge-smoke` re-pinned to the roundtrip, 7/7) and `llm.js`'s SSE
 > drain no longer orphans a pending `next()` at the [DONE] fold (measured:
@@ -123,7 +123,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > (node-sqlite 3/648, openai-client/partial-json/slot-registry 5/648,
 > string-decoder 7/648), and the new CLI leg `shim.exposure-probe` presses
 > those five faces on the real engine (8/8, dir
-> `runtime/spike/artifacts/macos-cli-shim-exposure-probe/`; falsified
+> `runtime/dsh/artifacts/macos-cli-shim-exposure-probe/`; falsified
 > first — a broken string-decoder tail-hold goes red). The totals are
 > re-run against this tree (73 dirs / 149 verdicts / 73 of 73 scenario ids
 > green-covered / 66 manifests), which also absorbs the BLE + camera + mic +
@@ -193,7 +193,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > evidence synthesized). The notes below are the previous currency records.
 > **Currency**: this matrix reflects the socket-seam change (2026-09-30,
 > PR #251): scenario `socket.seam` 17→19 records / 19/19, dir
-> `runtime/spike/artifacts/macos-cli-socket-seam/` — and the totals are
+> `runtime/dsh/artifacts/macos-cli-socket-seam/` — and the totals are
 > re-run against this tree (47 dirs / 95 verdicts / 46 of 46 scenario ids
 > green-covered / 38 manifests). The models-page note below is the previous
 > currency record; rows it added keep their display-name spellings.
@@ -201,7 +201,7 @@ dirs. Machine-checked by [test/e2e/matrix.mjs](../test/e2e/matrix.mjs).
 > **Currency**: this matrix reflects the models-page e2e change
 > (2026-09-25): the official client's models 设置页 has its own CLI proof —
 > scenario `models.directory` 6/6, dir
-> `runtime/spike/artifacts/macos-cli-models-directory/` — and the totals are
+> `runtime/dsh/artifacts/macos-cli-models-directory/` — and the totals are
 > re-run against this tree (44 dirs / 92 verdicts / 43 of 43 scenario ids
 > green-covered / 35 manifests). The T-0035 note below is the previous
 > currency record; rows it added keep their display-name spellings, which
@@ -298,7 +298,7 @@ evidence on that platform.
 | `composer.live-write` | 46/46 | — | — | — |
 | `device.plane` | 16/16, 16/16 | 15/15, 15/15 | 13/13 | — |
 | `device.plane.audit` | 14/23, 14/23 | 13/22, 13/22 | — | — |
-| `m1.spike.boot` | 9/9 (drift), 7/7 (drift) | 9/9 (drift), 7/7 (drift), 7/7 (drift) | 7/7 (drift), 7/7 (drift), 7/7 (drift), 9/9 (drift), 7/7 (drift), 7/7 (drift) | 9/9 (drift) |
+| `m1.dsh.boot` | 9/9 (drift), 7/7 (drift) | 9/9 (drift), 7/7 (drift), 7/7 (drift) | 7/7 (drift), 7/7 (drift), 7/7 (drift), 9/9 (drift), 7/7 (drift), 7/7 (drift) | 9/9 (drift) |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
 | `gateway.bridge-smoke` | — | 6/6 | 6/6 | — |
@@ -340,12 +340,12 @@ evidence on that platform.
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
-| `nextweb.mount` | 24/24 | — | — | — |
-| `whale.mount` | 7/7 | — | — | — |
-| `android.whale.mount` | — | 7/7 | — | — |
-| `android.nextweb.mount` | — | 24/24 | — | — |
-| `harmony.whale.mount` | — | — | 7/7 | — |
-| `harmony.nextweb.mount` | — | — | 24/24 | — |
+| `v2web.mount` | 24/24 | — | — | — |
+| `compactweb.mount` | 7/7 | — | — | — |
+| `android.compactweb.mount` | — | 7/7 | — | — |
+| `android.v2web.mount` | — | 24/24 | — | — |
+| `harmony.compactweb.mount` | — | — | 7/7 | — |
+| `harmony.v2web.mount` | — | — | 24/24 | — |
 | `upstream.parity` | 12/37 (drift) + 25/25 diff | 13/13 + 25/25 | — | 12/37 (drift) + 25/25 diff |
 | `userland.shell` | — | — | — | 11/11 |
 | `lynx.mount` | — | — | — | 34/34, 34/34 |
@@ -389,8 +389,8 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + parity differential 25/25 records identical to the Node golden (the emulator leg, on-device MockLlmRoute) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✓ | 4 |
-| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
+| `hosts/android/artifacts/compact-mount` | Android | android.compactweb.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/v2web-mount` | Android | android.v2web.mount 24/24 | ✓ | ✓ | ✓ | 2 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8 (the deterministic mock radio's two-device GATT db — 180f/2a19 read+notify, fe00/fe01 write — riding the same gateway enforcement, consent layers, and audit as a real radio) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4 (the honest no-radio posture: the emulator's virtual controller with ungranted runtime permissions) | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8 (the REAL virtual-camera burst), camera.plane.audit 5-pin/6-logged (the audit manifest declares `repeat` — legitimate) | ✓ | ✓ | ✓ | 0 |
@@ -398,35 +398,35 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/android/artifacts/simulator-matrix/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/simulator-matrix/regression` | Android | boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/device-plane` | Android | device.plane 15/15, device.plane.audit 13/22 | ✓ | ✓ | ✓ | 4 |
-| `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 0 |
-| `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/harmony/artifacts/compact-mount` | HarmonyOS | harmony.compactweb.mount 7/7 | ✓ | ✓ | ✓ | 0 |
+| `hosts/harmony/artifacts/v2web-mount` | HarmonyOS | harmony.v2web.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | — (human evidence only; the machine assertions live in `b4-write-live`) | ✓ (app-stdout) | ✗ (by design) | ✗ (by design) | 2 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (the simulator leg; gateway httpFetch → the host-side mock) | ✓ | ✓ | ✓ | 2 |
-| `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/m1-dsh` | Android | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
-| `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/m4-complete` | Android | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
+| `hosts/android/artifacts/m4-host` | Android | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22 (drift) | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | the full 8-scenario suite, green (receipt 2026-10-05) | ✓ | ✓ | ✓ | 8 |
 | `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | the full 8-scenario suite, green (receipt 2026-10-05) | ✓ | ✓ | ✓ | 8 |
 | `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | the full 8-scenario suite, green (receipt 2026-10-05) | ✓ | ✓ | ✓ | 8 |
-| `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 (drift), harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
+| `hosts/harmony/artifacts/m1-dsh` | HarmonyOS | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20 (drift), harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/m5-llm-live-stream` | HarmonyOS | llm.live-stream 14/130, llm.live-stream.carrier 7/7 — the quota-blocked `m5-m2-llm` dir re-run GREEN on 2026-09-28 (commit `64889c54`); the served turn is claimed | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/windows-t3-live-llm` | HarmonyOS | llm.live-stream 14/114 + carrier 7/7 (receipt 2026-10-05, bigmodel seat, Windows host) | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/windows-t4t5-real-agent` | HarmonyOS | real.agent.loop 21/21 (receipt 2026-10-05, glm-5.3-flash live agent loop, Windows host) | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
+| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 46/46 | ✓ | ✓ | ✗ (gap 1) | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
+| `hosts/ios/artifacts/m1-dsh` | iOS | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/m2-gateway` | iOS | m1.dsh.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/m2-llm` | iOS | m2.llm.carrier 7/7, m2.llm 14/148 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
-| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/v2web-mount` | iOS | v2web.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/agent-flow` | iOS | agent.flow 17/17 | ✓ | ✓ | ✓ | 4 |
 | `hosts/ios/artifacts/composer-live-write` | iOS | composer.live-write 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 6 |
@@ -442,33 +442,33 @@ present. `shots` = PNG count (all magic-verified except where noted).
 | `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11, mic.plane.audit 6/6 — the armed ladder with real PCM frames | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/simulator-matrix/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 5 |
 | `hosts/ios/artifacts/simulator-matrix/gateway-drive` | iOS | boot.verification 8/8, carrier.loopback 7/7, gateway.audit 16/16, gateway.binding 19/19 | ✓ | ✓ | ✓ | 7 |
-| `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 7/7, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19 (scripted-SSE leg) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-ish-shell` | macOS CLI | ish.shell 11/11 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-office` | macOS CLI | office 19/19 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/compact-mount` | iOS | compactweb.mount 7/7, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli` | macOS CLI | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19 (scripted-SSE leg) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-ish-shell` | macOS CLI | ish.shell 11/11 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-office` | macOS CLI | office 19/19 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37 (drift) + parity differential 25/25 records identical to the committed golden (per-leg mock instances) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs (probe, 15 records) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34 (lynx face: the bundle's seam core + artifact sha256 verify) | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34 (stub face: the SAME flow — the replaceability proof) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=3 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71 (the signed catalog: pure-JS ed25519 verify, trust passthrough to the unchanged installer, the rotation drill, the four-rung tamper ladder — zero staging on every rejection) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25 (the 21-case malformed-primitive battery through the RAW gateway seam — wrong types, missing fields, path escapes, unknown scopes, overlong values, must-not-exist primitive names, malformed args JSON — every attack a structured §3 rejection; the benign post-battery roundtrip proves the process survived; both socket attacks audited, fixed reason codes) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19 (8 crafted wasm modules against the jail — hostile import called, wrong-signature emit, out-of-bounds emit pointer, stack exhaustion, missing export, absent module, path escape, ungranted scope — plus 6 out-of-boundary socket dials, each audited host-not-loopback=4 / scope-not-loopback=2; the honest echo module runs before AND after the battery) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11 (five pipeline forgery rungs rejected — capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — zero staging, no journal; the control honest package installs after the ladder; the catalog-freshness replay rung records the HIGH finding: the stale-but-valid catalog INSTALLS, dsh-echo@0.9.0) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7 (a canary through the keychain save, the relaunch route resolution, one REAL transport turn, and the 401 face — the error message asserted key-free IN RUNTIME; the runner audits the raw log for both secret values behind a matcher self-check) | ✓ | ✓ | ✓ | 0 |
-| `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19 (the loopback seam: a real-TCP echo with half-close, a spawned /bin/bash child dialing the in-test server over /dev/tcp, and the two out-of-scope denial legs; the audit gate pins listen=3 connect=3 accept=2 denied=2) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71 (the signed catalog: pure-JS ed25519 verify, trust passthrough to the unchanged installer, the rotation drill, the four-rung tamper ladder — zero staging on every rejection) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25 (the 21-case malformed-primitive battery through the RAW gateway seam — wrong types, missing fields, path escapes, unknown scopes, overlong values, must-not-exist primitive names, malformed args JSON — every attack a structured §3 rejection; the benign post-battery roundtrip proves the process survived; both socket attacks audited, fixed reason codes) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19 (8 crafted wasm modules against the jail — hostile import called, wrong-signature emit, out-of-bounds emit pointer, stack exhaustion, missing export, absent module, path escape, ungranted scope — plus 6 out-of-boundary socket dials, each audited host-not-loopback=4 / scope-not-loopback=2; the honest echo module runs before AND after the battery) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11 (five pipeline forgery rungs rejected — capability escalation past a stale anchor and past recomputed trust, entry replacement, id swap, old-package rollback — zero staging, no journal; the control honest package installs after the ladder; the catalog-freshness replay rung records the HIGH finding: the stale-but-valid catalog INSTALLS, dsh-echo@0.9.0) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7 (a canary through the keychain save, the relaunch route resolution, one REAL transport turn, and the 401 face — the error message asserted key-free IN RUNTIME; the runner audits the raw log for both secret values behind a matcher self-check) | ✓ | ✓ | ✓ | 0 |
+| `runtime/dsh/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8 (the shim exposure survey's five behavior legs: the loader-orphaned dsh-session-persistence error classes, node:sqlite `:memory:`, string-decoder's split-UTF-8 hold, partial-json + openai-client's wire faces, slot-registry's guards) | ✓ | ✓ | ✓ | 0 |
 
 Zero screenshots is compliant everywhere (bar clause 2 makes screenshots
 optional debugging aids, never deliverables or inputs): the CLI host dirs
@@ -612,10 +612,10 @@ cites, and the register's rows in order):
 
 - **Gap 2 (harmony `scenario.jsonl`)** — closed by a full
   `hosts/harmony/ci/run-host-e2e.sh` re-run on this tree: all four
-  verdicts re-matched the committed manifests (m1.spike.boot 7/7,
+  verdicts re-matched the committed manifests (m1.dsh.boot 7/7,
   m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20), and the
   runner now extracts `scenario.jsonl` from the run's own capture files
-  (`grep -h '^dsh.spike.log:'` over sink + binding captures — the same
+  (`grep -h '^dsh.runtime.log:'` over sink + binding captures — the same
   extraction convention as the Android runner). The re-run required a
   one-line host fix: #53 bumped `dsh:util-crypto` to 0.1.6-alpha.2 in
   the loader path, manifest, and rawfile copy but not
@@ -627,9 +627,9 @@ cites, and the register's rows in order):
   both re-captured files carry the real PNG magic.
 - **Gap 4 (no macOS CLI evidence for `m2.bridge.smoke`)** — closed by a
   real headless run of the scenario's canonical host:
-  `runtime/spike/artifacts/macos-cli-bridge-smoke/` carries logs.txt +
+  `runtime/dsh/artifacts/macos-cli-bridge-smoke/` carries logs.txt +
   scenario.jsonl + `verdict.json` (6/6, one-to-one) + receipt.json from
-  `./build/dsh-spike-cli . scenario/m2-bridge-smoke.js`.
+  `./build/dsh-dsh-cli . scenario/m2-bridge-smoke.js`.
 
 ### Closed by the 2026-09-21 receipt closure (fix/receipt-gaps)
 
@@ -640,14 +640,14 @@ cites, and the register's rows in order):
   format. (The first cold-worktree run exposed a runner ordering gap —
   the bundle build needs the vendored DSH closure that the runner only
   stages at step 4b, after the build; materializing
-  `runtime/spike/vendor/ensure-dsh.sh` before the runner is the
+  `runtime/dsh/vendor/ensure-dsh.sh` before the runner is the
   workaround, surprise-recorded.)
 
 ### Closed by the 2026-09-21 m2-gateway receipt closure (fix/m2-gateway-receipt)
 
 - **m2-gateway receipt** — closed by a real `run-ios.sh` re-run on this
   branch (fresh worktree at `e3bd333`): the four checkers re-matched the
-  manifests one-to-one (m1.spike.boot 7/7, m1.carrier.loopback 7/7,
+  manifests one-to-one (m1.dsh.boot 7/7, m1.carrier.loopback 7/7,
   m2.gateway.binding 19/19, m2.gateway.audit 16/16, expected == logged,
   exit 0), the evidence was refreshed from the run, and `receipt.json`
   is machine-authored IN-RUN by the runner's new green-path step
@@ -672,9 +672,9 @@ cites, and the register's rows in order):
 
 ## Informational, not failures
 
-- **Manifest-revision drift** (25 verdicts): `m1.spike.boot` was captured
-  at 9 events in `hosts/{ios,android,harmony}/artifacts/m1-spike/` and
-  `runtime/spike/artifacts/macos-cli/`, but the current manifest declares
+- **Manifest-revision drift** (25 verdicts): `m1.dsh.boot` was captured
+  at 9 events in `hosts/{ios,android,harmony}/artifacts/m1-dsh/` and
+  `runtime/dsh/artifacts/macos-cli/`, but the current manifest declares
   7; `hosts/android/artifacts/m4-host/` captured `m2.session` at 22
   events vs the current 23; `m5.host-binding` was captured at 20 events in
   `hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live,m5-host}/`
@@ -684,12 +684,12 @@ cites, and the register's rows in order):
   `upstream.parity` 12/37 (iOS simulator, macOS CLI), the Android
   `mic.plane` pair and the camera `5/6` audit leg (the honest postures
   re-pinned per host), `b4.write.live` 43/43 (wasm-shell-e2e), and the
-  `m1.spike.boot` 7/7 re-captures (m4-complete, m4-host, m2-gateway,
+  `m1.dsh.boot` 7/7 re-captures (m4-complete, m4-host, m2-gateway,
   m5-host, m5-primitives, the d9 dirs). Verdicts are capture-time records;
   older logs are not guaranteed to re-verify against a grown manifest. The
   checker reports `drift: true` and does not fail on it.
 - **The three dirs previously listed here as "in flight" have resolved.**
-  `runtime/spike/artifacts/macos-cli-m2-llm/` landed with #74 and is a
+  `runtime/dsh/artifacts/macos-cli-m2-llm/` landed with #74 and is a
   green table row (the scripted-SSE CLI leg, `m2.llm` 19/19); the M5
   close-out evidence landed instead as
   `hosts/harmony/artifacts/m5-primitives/` (#76, descriptor 9/0) and

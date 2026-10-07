@@ -25,7 +25,7 @@
    - WSL 互操作可用:WSL 里
      `/mnt/c/.../sdk/default/openharmony/toolchains/hdc.exe list targets` 与 Windows 侧一致
      (WSL 将以此驱动全部测试)。
-4. HAP 产物来源:CI 下载(`gh run download <dev-harmonyos run-id> -n dsh-spike-hap -D
+4. HAP 产物来源:CI 下载(`gh run download <dev-harmonyos run-id> -n dsh-dsh-hap -D
    ~/dsh-mobile-artifacts/windows-e2e/`),或仓库 harmony 腿本地构建(hvigor 可复用 /mnt/d
    的包装器)。模拟器接受调试签名;install 报签名错则在 DevEco 里配置自动签名后重试。
 
@@ -37,7 +37,7 @@
 
 ```
 hdc install <hap>                          # 安装
-hdc shell aa start -a EntryAbility -b com.dshmobile.spike   # 启动
+hdc shell aa start -a EntryAbility -b com.dshmobile.host   # 启动
 # 就绪轮询(60s 截止,每 5s):
 hdc shell "cat /proc/net/tcp6"             # 找应用的 LISTEN 行
 hdc fport tcp:<P> tcp:<P>                  # 端口转发
@@ -75,7 +75,7 @@ hilog | grep -E "timer|arm"                # 冷启后一次性采样
 
 ## T3 真模型回合(创作链路在 harmony 的首次运行)
 
-步骤:staging 凭证(harmony 应用数据在 `/data/app/el2/100/base/com.dshmobile.spike/...`):
+步骤:staging 凭证(harmony 应用数据在 `/data/app/el2/100/base/com.dshmobile.host/...`):
 
 ```
 hdc file send config.json <el2>/files/profiles/default/llm/config.json
@@ -92,7 +92,7 @@ session journal(wire 快照)出现 `turn/end completed`;或页面文本出现收
 **预期结果**(对照 Android r20 的同款断言):
 - 回合 **completed**,模型调用 plugin_manager 的 install 腿;
 - 设备树出现 `plugins/win-hello/{manifest.json,plugin.js,card.json}`,registry 行
-  `enabled:true`(el2 路径下 `files/profiles/default/spike/plugins/registry.json` 附近);
+  `enabled:true`(el2 路径下 `files/profiles/default/dsh/plugins/registry.json` 附近);
 - hilog 增量 0 新 FAIL;
 - 若有失败:**逐字摘录** —— harmony 宿主原语缺失应以结构化拒绝出现,不允许静默假成功。
 
@@ -104,9 +104,9 @@ session journal(wire 快照)出现 `turn/end completed`;或页面文本出现收
 
 | 输入 | 预期结果(与 Android r18/r20 逐字同形 —— shim 字节相同) |
 | --- | --- |
-| `/system/app` | in-band 拒绝:含工作区根(el2 下的 spike 路径)+ "maybe you meant …/spike/system/app?" |
+| `/system/app` | in-band 拒绝:含工作区根(el2 下的 dsh 路径)+ "maybe you meant …/dsh/system/app?" |
 | `/system/definitely-not-here-xyz` | 缺席语义(not found / ENOENT),**无**锚点拒绝 |
-| `spike/../plugins/registry.json` | 解析成功,registry 内容可见(#383 语义) |
+| `dsh/../plugins/registry.json` | 解析成功,registry 内容可见(#383 语义) |
 | `../../../../etc/passwd` | 钉在根内:ENOENT 形态,**无** passwd 内容 |
 
 任何与 Android 不一致的形态 = 宿主接缝差异(harmony 的 fs 原语实现差异),逐条入队 —— 这是
@@ -130,7 +130,7 @@ session journal(wire 快照)出现 `turn/end completed`;或页面文本出现收
 5 次冷启循环(同 T1 协议)+ 每轮内存采样:
 
 ```
-hdc shell "hidumper --mem $(pidof com.dshmobile.spike)"   # 或 ps -o RSSHLK
+hdc shell "hidumper --mem $(pidof com.dshmobile.host)"   # 或 ps -o RSSHLK
 ```
 
 **预期结果**:5/5 就绪;boot 秒数零方差或小方差(记录分布);无 FAIL 累积;内存无单调增长

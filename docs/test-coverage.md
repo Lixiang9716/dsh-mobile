@@ -79,7 +79,7 @@ Whole surfaces deliberately not registered:
   not the CLI suite's behavior proof either.
 - `presentation/web-client*` — plain browser JS with no runner and no
   tests; `import` of `main.js` fails on Node (`document is not defined`).
-- `runtime/spike` (QuickJS runtime + shims) — the shipped semantics are
+- `runtime/dsh` (QuickJS runtime + shims) — the shipped semantics are
   QuickJS's; the behavior net owns them.
 
 ## Adding a surface

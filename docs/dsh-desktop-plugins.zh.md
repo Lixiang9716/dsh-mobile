@@ -61,10 +61,10 @@ plugin-manager。每项都是一次 vendor 锚点 + shim 行 + 一次挂载—�
 
 ## 证据
 
-- `runtime/spike/artifacts/macos-cli-settings-surfaces/` —— CLI 上应答
+- `runtime/dsh/artifacts/macos-cli-settings-surfaces/` —— CLI 上应答
   的预设名册（cordis/minimal/ptc/standard，标记部署默认）与插件清单
   （16 行主干 + 58 个客户端 bundle + 4 个组合），12/12 期望↔日志。
-- `runtime/spike/artifacts/macos-cli-tool-fs/` —— 走真实工具分发的
+- `runtime/dsh/artifacts/macos-cli-tool-fs/` —— 走真实工具分发的
   create/read/write/edit/view/str_replace，含边界拒绝。
 - `hosts/ios/artifacts/b4-write-live/` —— 设备上的同一批面，由 b4
   驱动断言（以日志为准；`screens/` 里的截图仅作人的证据）。

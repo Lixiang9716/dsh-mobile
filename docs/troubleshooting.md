@@ -14,10 +14,10 @@ recorded when it is cheapest, before the mental model rots.
 ## 1. A shim-shim import cycle kills QuickJS at link with an EMPTY error
 
 Every file parses clean — `node --check` passes on each of them — yet the
-runtime dies under the real engine with no message at all: the spike CLI
-exits nonzero and prints `spike: error: ` followed by nothing (entry 6 is
+runtime dies under the real engine with no message at all: the dsh CLI
+exits nonzero and prints `dsh: error: ` followed by nothing (entry 6 is
 how that empty line presents). The mechanism: a static ESM import cycle
-between two files under `runtime/spike/upstream/shims/` aborts inside
+between two files under `runtime/dsh/upstream/shims/` aborts inside
 QuickJS's module linker, which fails without an error string — measured,
 not inferred (the split that introduced such a cycle was node-clean and
 QuickJS-fatal, 2026-09-29). Node never reproduces it because `node --check`
@@ -31,10 +31,10 @@ other. Where a true two-way shape is unavoidable, references back are
 call-time only (an ESM-cycle-safe pattern: the importing module reads the
 binding through the namespace at call time, after the definer's evaluation
 completed — see the headers of `fs-paths.js`, `fs-readdir.js`, `fs-stat.js`,
-`fs-writes.js`). Encoded: `runtime/spike/upstream/shims/fs-seeded.js:22-24`
+`fs-writes.js`). Encoded: `runtime/dsh/upstream/shims/fs-seeded.js:22-24`
 ("ONE-WAY EDGE … a static import cycle between two runtime/shims files
 kills quickjs at link with an empty error (measured)") and
-`runtime/spike/upstream/shims/buffer.js:31` ("one-way; a shim-shim import
+`runtime/dsh/upstream/shims/buffer.js:31` ("one-way; a shim-shim import
 cycle kills QuickJS at link").
 
 ## 2. aapt2's default ignoreAssetsPattern silently drops dotfiles from APK assets
@@ -74,7 +74,7 @@ BEFORE the staging loop — fail on the missing pin, never on the quiet
 half-rawfile. Encoded in
 [hosts/harmony/ci/vendor-official.sh](../hosts/harmony/ci/vendor-official.sh):
 each `(cd "$DIR" && find …) | while` staging loop is preceded by
-`[ ! -d "runtime/spike/$DIR" ] && echo "::error::… absent" && exit 1`
+`[ ! -d "runtime/dsh/$DIR" ] && echo "::error::… absent" && exit 1`
 (`vendor-official.sh:474-481` for the noble pin, `:490-497` for pi-ai,
 `:112` for `vendor/dsh`), and the comment above the first guard records the
 incident.
@@ -83,21 +83,21 @@ incident.
 
 Extracting a file from a ref with a path that looks right from where you
 stand — `git show <ref>:scenario/upstream-suite-leg.js` from
-`runtime/spike/`, or the same spelling in `git checkout <ref> -- …` —
+`runtime/dsh/`, or the same spelling in `git checkout <ref> -- …` —
 produces EMPTY content, and nothing points at the cause. The mechanism:
 pathspecs on a `<ref>:<path>` object (and in `git checkout <ref> -- <path>`)
 resolve from the REPO ROOT, not the current directory — the same spelling
 that is correct as a plain filesystem path names nothing in git's index.
 Verified on this tree (read-only): the wrong spelling makes `git show` fail
-with `fatal: path 'runtime/spike/scenario/upstream-suite-leg.js' exists,
+with `fatal: path 'runtime/dsh/scenario/upstream-suite-leg.js' exists,
 but not 'scenario/upstream-suite-leg.js'` — on stderr, which is lost the
 moment the output is piped or command-substituted, leaving an empty string
 that flows on silently — while `git checkout HEAD -- scenario/…` from
-`runtime/spike/` exits 0 having changed NOTHING (`git status --porcelain`
+`runtime/dsh/` exits 0 having changed NOTHING (`git status --porcelain`
 shows no new entry).
 
 Spell git object paths repo-root-relative, always:
-`git show <ref>:runtime/spike/scenario/upstream-suite-leg.js`. When git
+`git show <ref>:runtime/dsh/scenario/upstream-suite-leg.js`. When git
 does error, read its own hint — it names the root-relative form (and the
 `<ref>:./<path>` cwd-relative spelling, which is the deliberate way to ask
 for cwd-relative). No repo code encodes this discipline yet — no gate or
@@ -120,21 +120,21 @@ every subsequent nested block into an indent violation.
 
 Rebuild such patterns via `new RegExp`, so the apostrophe lives inside a
 real string literal the scanner understands. Encoded:
-`runtime/spike/upstream/shims/node-http-loopback.js:375-381` builds the
+`runtime/dsh/upstream/shims/node-http-loopback.js:375-381` builds the
 token charset as `new RegExp("^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$")` with the
 reason in the adjacent comment ("a regex literal here carries ' and `
 inside the class, and the code-size scanner (line-based, no regex state)
 reads them as an unterminated string"). The scanner itself is unchanged —
 this entry documents the workaround its blindness forces.
 
-## 6. The spike CLI's empty `spike: error:` is its NORMAL no-completion shape
+## 6. The dsh CLI's empty `dsh: error:` is its NORMAL no-completion shape
 
-A plain (non-scenario) entry prints `spike: FAIL (complete=0 pass=0)`
-followed by `spike: error: ` with NOTHING after the colon — which reads
+A plain (non-scenario) entry prints `dsh: FAIL (complete=0 pass=0)`
+followed by `dsh: error: ` with NOTHING after the colon — which reads
 like a crash that lost its message. It is not a crash and nothing was
 lost: the mechanism is that `main_cli.c` prints `dsh_spike_error()` on any
 nonzero exit
-([runtime/spike/host/main_cli.c](../runtime/spike/host/main_cli.c):1305-1308),
+([runtime/dsh/host/main_cli.c](../runtime/dsh/host/main_cli.c):1305-1308),
 while the error buffer is only written when the runtime records a real
 error — `dsh_spike_host.c:3561` returns `s->err`, an empty string when
 never set (`dsh_spike_host.h:31` notes a fresh struct carries no error
@@ -174,13 +174,13 @@ the `CANARY` pin, the `canary_view()` helper, and the comment at `:86-91`
 naming the 2026-09-29 relapse (truncation was canary-pinned but the wait
 still grepped the raw stream). The device-plane runner instead abandons the
 live stream: force-stop, `logcat -c`, launch clean, then poll `logcat -d
--s dsh.spike` snapshots — a dump is inherently this-run-only
+-s dsh.dsh` snapshots — a dump is inherently this-run-only
 (`run-device-plane.sh:70-95`). Either discipline works; mixing them
 (canary-pinned truncation, raw-stream waits) is the failure.
 
 ## 8. iOS simulator runtimes < 26 lack libswiftWebKit in the dyld cache
 
-`DSHSpike.debug.dylib` dies AT LAUNCH with `Library not loaded:
+`DSHHost.debug.dylib` dies AT LAUNCH with `Library not loaded:
 @rpath/libswiftWebKit.dylib` on an iOS 18.5 simulator — and every runner
 builds cleanly first, so the failure surfaces only after install+boot and
 burns the run's whole budget on a launch that can never produce app logs.

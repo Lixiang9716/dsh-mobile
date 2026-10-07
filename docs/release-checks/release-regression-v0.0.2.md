@@ -97,7 +97,7 @@ of the tree (diagnostic copy `/tmp/dsh-regr-final/ble-skip-rerun-diag`).
 
 ## Run 2 — the upstream-suite sweep (authoritative numbers)
 
-Command: `sh runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4` on a
+Command: `sh runtime/dsh/ci/run-upstream-suite-sweep.sh --paral 4` on a
 quieted box (load < 5), full vendored tree + fresh transpile. Totals file:
 `tmp/upstream-suite-report-totals.txt` (diagnostic, gitignored by contract).
 
@@ -115,7 +115,7 @@ node differential agrees on every failed count; the canary spec
 
 Reading the deltas honestly: the spec SET is not the same set #243
 measured — the transpile pipeline's exclusion classes at HEAD
-(`runtime/spike/upstream-tests/manifest.json`: vi.mock-loader class 65+2+4,
+(`runtime/dsh/upstream-tests/manifest.json`: vi.mock-loader class 65+2+4,
 monorepo-src class 54+8+4+1, the 31-spec esbuild parse-error class,
 node:vm 6+6, wall-clock 7, fast-check 5, …) have moved since #243, and
 #243's per-spec report was never committed, so a per-spec diff is not
@@ -187,6 +187,6 @@ owner's go.
 
 ```
 bash tools/test/run-simulator-matrix.sh                       # run 1 (+1b, the capability legs, per the tables above)
-sh runtime/spike/ci/run-upstream-suite-sweep.sh --paral 4     # run 2 (totals under tmp/)
+sh runtime/dsh/ci/run-upstream-suite-sweep.sh --paral 4     # run 2 (totals under tmp/)
 test/e2e/ios-ui.py sweep hosts/ios/artifacts/release-feature-sweep   # run 3 (Release app installed plain)
 ```

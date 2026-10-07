@@ -62,10 +62,10 @@ const discoverInstall = () => {
     if (typeof spawnSync !== 'function') return installCache;
     const pwd = spawnSync('/bin/pwd', [], { encoding: 'utf8' });
     if (pwd.status !== 0 || typeof pwd.stdout !== 'string') return installCache;
-    const spikeDir = pwd.stdout.replace(/\n+$/, '');
+    const dshDir = pwd.stdout.replace(/\n+$/, '');
     const tail = '/runtime/dsh';
-    if (!spikeDir.endsWith(tail)) return installCache;
-    const repo = spikeDir.slice(0, -tail.length);
+    if (!dshDir.endsWith(tail)) return installCache;
+    const repo = dshDir.slice(0, -tail.length);
     const root = `${repo}/test/upstream-suite/node_modules/tsx`;
     // The package.json read is the existence check (readRealBytes serves
     // real absolute paths; a missing install answers null).

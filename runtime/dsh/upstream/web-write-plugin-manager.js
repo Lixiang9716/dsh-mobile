@@ -81,10 +81,10 @@ let utf8FaceCache = null;
 const utf8Face = async () => {
   if (utf8FaceCache !== null) return utf8FaceCache;
   const dsh = await import('node:buffer').catch(() => undefined);
-  const spikeFace = typeof dsh?.decodeUtf8 === 'function'
+  const dshFace = typeof dsh?.decodeUtf8 === 'function'
     && typeof dsh?.encodeUtf8 === 'function';
-  log.debug('utf8 face resolved', { dsh: spikeFace });
-  utf8FaceCache = spikeFace
+  log.debug('utf8 face resolved', { dsh: dshFace });
+  utf8FaceCache = dshFace
     ? { decode: dsh.decodeUtf8, encode: dsh.encodeUtf8 }
     : {
       decode: (bytes) => new TextDecoder().decode(bytes),

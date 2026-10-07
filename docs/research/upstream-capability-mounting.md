@@ -62,7 +62,7 @@ interpreter booting a real kernel per program run (~40 s). Its lessons:
 - **Mount like the desktop host, not beside it**: Electron boots the *shared
   profile runner* and adds host capabilities with `ctx.plugin(...)` onto the
   running context — a second backend composition is an explicitly rejected
-  alternative. Our `runtime/spike/upstream/boot.js` mobile profile boot is the
+  alternative. Our `runtime/dsh/upstream/boot.js` mobile profile boot is the
   same shape; keep it that way.
 - **Our pin is behind the preset wave**: `agent-preset-registry` (per-session
   composition with activation auditing), `config-editor`, account/job Remote

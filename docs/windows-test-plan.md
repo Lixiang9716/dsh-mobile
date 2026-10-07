@@ -32,7 +32,7 @@ AppScope/entry/hvigor). Required:
      `/mnt/c/.../sdk/default/openharmony/toolchains/hdc.exe list targets` matches —
      WSL drives every test below through this path.
 4. HAP source: download from CI
-   (`gh run download <dev-harmonyos run-id> -n dsh-spike-hap -D
+   (`gh run download <dev-harmonyos run-id> -n dsh-dsh-hap -D
    ~/dsh-mobile-artifacts/windows-e2e/`), or build locally via the repo's
    harmony leg (hvigor may reuse the /mnt/d wrapper). The emulator accepts
    debug signing; if install reports a signing error, configure auto-signing
@@ -46,7 +46,7 @@ Steps (WSL drives hdc.exe; `hdc` below means that interop path):
 
 ```
 hdc install <hap>                          # install
-hdc shell aa start -a EntryAbility -b com.dshmobile.spike   # launch
+hdc shell aa start -a EntryAbility -b com.dshmobile.host   # launch
 # readiness poll (60s deadline, every 5s):
 hdc shell "cat /proc/net/tcp6"             # find the app's LISTEN row
 hdc fport tcp:<P> tcp:<P>                  # port forward
@@ -92,7 +92,7 @@ hilog | grep -E "timer|arm"                # one-time sample after cold boot
 ## T3 Real-model turn (the creation loop's first harmony run)
 
 Steps: stage the credential (harmony app data lives under
-`/data/app/el2/100/base/com.dshmobile.spike/...`):
+`/data/app/el2/100/base/com.dshmobile.host/...`):
 
 ```
 hdc file send config.json <el2>/files/profiles/default/llm/config.json
@@ -113,7 +113,7 @@ renders the closing text.
 - turn **completed**, the model invokes the plugin_manager install leg;
 - the device tree grows `plugins/win-hello/{manifest.json,plugin.js,card.json}`
   and a registry row `enabled:true` (under the el2
-  `files/profiles/default/spike/plugins/registry.json` area);
+  `files/profiles/default/dsh/plugins/registry.json` area);
 - hilog delta: 0 new FAIL;
 - on any failure: **verbatim capture** — a missing harmony host primitive
   must surface as a structured refusal, never a silent fake success.
@@ -127,9 +127,9 @@ page transcript):
 
 | Input | Expected result (verbatim-identical to Android r18/r20 — same shim bytes) |
 | --- | --- |
-| `/system/app` | in-band refusal: workspace root (the el2 spike path) + "maybe you meant …/spike/system/app?" |
+| `/system/app` | in-band refusal: workspace root (the el2 dsh path) + "maybe you meant …/dsh/system/app?" |
 | `/system/definitely-not-here-xyz` | absence semantics (not found / ENOENT), **no** anchor refusal |
-| `spike/../plugins/registry.json` | resolves; registry content rendered (#383 semantics) |
+| `dsh/../plugins/registry.json` | resolves; registry content rendered (#383 semantics) |
 | `../../../../etc/passwd` | pinned in-root: ENOENT form, **no** passwd content |
 
 Any divergence from Android = a host-seam difference (harmony's fs primitive
@@ -154,7 +154,7 @@ stack may not be challenged). **The defect line = a silent empty success**
 5 cold-boot cycles (the T1 protocol) + a memory sample per round:
 
 ```
-hdc shell "hidumper --mem $(pidof com.dshmobile.spike)"   # or ps -o RSSHLK
+hdc shell "hidumper --mem $(pidof com.dshmobile.host)"   # or ps -o RSSHLK
 ```
 
 **Expected results**: 5/5 ready; boot seconds zero-or-small variance

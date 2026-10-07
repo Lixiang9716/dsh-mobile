@@ -278,8 +278,8 @@ routes compose; the carrier needs the route table, not these handlers.
 
 Current carriers (`hosts/ios/App/Source/CarrierServer.swift`,
 `hosts/android/.../CarrierServer.kt`,
-`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`) are the runtime-spike
-spike shape: one loopback listener, GET-only, hard-coded `/ws` upgrade,
+`hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`) are the runtime-dsh
+dsh shape: one loopback listener, GET-only, hard-coded `/ws` upgrade,
 directory static serving restricted to `.html`/`.js`, one-shot
 `Connection: close` responses, a hand-coded `gateway-e2e` switch, and a
 single WebSocket seat. What already matches, and what each host must
@@ -404,7 +404,7 @@ composition means these can land later without touching the table.
 
 ## 4. E2E prep: log-observable official-app behaviors
 
-The official page cannot be edited to emit `dsh.spike.log:` lines, so
+The official page cannot be edited to emit `dsh.runtime.log:` lines, so
 the one-to-one manifest (log-based E2E, unique scenario id, expected ↔
 logged) is carried by **carrier-side observations of the wire**, plus
 one platform-side rendered-state probe. Proposed scenario
@@ -459,7 +459,7 @@ boot-failure screen — fail loud, by design.
 - Carrier topology context: `anywhere-labs/dsh-desktop`
   `docs/architecture.md` — loopback HTTP+WS carrier, sandboxed
   renderer, same-origin page load (the WebView IS the sandbox).
-- Current spike carriers: `hosts/ios/App/Source/CarrierServer.swift`,
-  `hosts/android/app/src/main/java/com/dshmobile/spike/CarrierServer.kt`,
+- Current dsh carriers: `hosts/ios/App/Source/CarrierServer.swift`,
+  `hosts/android/app/src/main/java/com/dshmobile/dsh/CarrierServer.kt`,
   `hosts/harmony/entry/src/main/ets/model/CarrierServer.ets`.
 - E2E manifest conventions: `test/e2e/README.md`, `docs/e2e-matrix.md`.

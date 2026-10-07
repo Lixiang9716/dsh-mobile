@@ -25,8 +25,8 @@ deliverable, never a CI assertion).
 |---|---|---|
 | boot.verification / carrier.loopback / gateway.binding / gateway.audit | 8/7/19/16 events, all pass | `B-backend/gateway/` |
 | session.mock-llm + webclient.mount (official client) | 23/7, pass | `B-backend/session-mock-llm/` |
-| session.mock-llm + whale.mount (whale client) | 23/7, pass | `A-ui/whale-mount/` |
-| nextweb.mount (self-hosted web-client-next) | 25, pass | `A-ui/nextweb-mount/` |
+| session.mock-llm + compactweb.mount (compact client) | 23/7, pass | `A-ui/compact-mount/` |
+| v2web.mount (self-hosted web-client-v2) | 25, pass | `A-ui/v2web-mount/` |
 | composer.live-write (b4.write.live) | 46, pass | `C-tools/b4-write-live/` |
 | device.plane + audit | 16/23, pass | `D-capability/device-plane/` |
 | camera.plane + audit (sim: honest `unavailable`) | 6/3, pass | `D-capability/camera-plane/` |
@@ -55,7 +55,7 @@ The b4 runtime half now probes all three execution seams on every run
 1. **The iOS stager missed three upstream modules** (`llm-route.js`,
    `web-write-marketplace.js`, `web-write-onboarding.js`) — every drive whose
    import chain reached them died at eval (`cannot load module`), measured on
-   the nextweb.mount leg. Fixed in `SpikeBundleStager.swift`.
+   the v2web.mount leg. Fixed in `SpikeBundleStager.swift`.
 2. **...and three more root modules** (`marketplace-resolver.js`,
    `canonical-json.js`, `ed25519.js`) one ring further — same live finding,
    same fix shape.
@@ -63,10 +63,10 @@ The b4 runtime half now probes all three execution seams on every run
    fresh worktree's app shipped without `ish-rootfs.tar.gz`, so the ish
    plugin honestly declined activation (`unavailable: ... is missing`).
    gen.sh now stages it before `xcodegen generate`.
-4. **The whale receipt named a verdict file that never exists** in whale mode
-   (the carrier manifest flips to whale-mount.json) — the shared writer died
+4. **The compact receipt named a verdict file that never exists** in compact mode
+   (the carrier manifest flips to compact-mount.json) — the shared writer died
    after both checkers were green. One-line receipt-stems fix.
-5. **The nextweb-mount manifest predated the BYOK boot probe** (and the
+5. **The v2web-mount manifest predated the BYOK boot probe** (and the
    composer manifest predated tool-rows / session-cancel / the mobile-default
    preset round) — both refreshed to today's wire, legs green 25/25 and
    46/46 in order.

@@ -19,7 +19,7 @@
   (`blobSha256` / `manifestSha256`)——已发布包必须携带的字段,本文不动它们。
 - vendored 的消费者身份:`@deepseek-ai/dsh-anonymous-user-id@0.1.6-alpha.2`,
   pin 在
-  [runtime/spike/vendor/ensure-dsh.sh](../runtime/spike/vendor/ensure-dsh.sh)
+  [runtime/dsh/vendor/ensure-dsh.sh](../runtime/dsh/vendor/ensure-dsh.sh)
   (vendor pin 表,D6 纪律)。
 
 ## 1. 两个面,以及它们为何永不相遇

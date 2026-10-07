@@ -43,7 +43,7 @@ node tools/gen-staging-manifests.mjs --out /tmp/gen-out
   的运行时闭包(**重走 pin 自身导入图重算**);
 - **closure-faces** —— npm 单文件 face,逐字取自 vendor-official.sh 的
   CLOSURE 行(策略,不重推导);
-- **webclient** —— presentation/web-client{,-next,-whale} 按其暂存名。
+- **webclient** —— presentation/web-client{,-next,-compact} 按其暂存名。
 
 各清单结果:
 
@@ -103,7 +103,7 @@ harmony CLOSURE、iOS ZOD_FILES),三份都与重算的 79 行闭包集合相等�
 ## 5. 复现
 
 ```
-runtime/spike/vendor/ensure-dsh.sh          # 物化 vendored pins
+runtime/dsh/vendor/ensure-dsh.sh          # 物化 vendored pins
 sh hosts/harmony/ci/vendor-official.sh --closure-only   # rawfile 闭包
 node tools/gen-staging-manifests.mjs --out /tmp/gen-out  # 本报告数字
 node tools/check-staging.mjs --block harmony,android,ios # 验证器,绿

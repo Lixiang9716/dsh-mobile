@@ -201,7 +201,7 @@ convenience, so it is an artifact of the `dsh-ios` job rather than a release
 asset. Same for the `-harness` packages.
 
 **`dsh-ios.ipa`** is a real (unsigned) `.ipa` — a zip whose root holds
-`Payload/DSHSpike.app`, the layout AltStore, Sideloadly and
+`Payload/DSHHost.app`, the layout AltStore, Sideloadly and
 `xcrun devicectl` expect. It is not a renamed `Release-iphoneos/…` archive.
 
 **All three are unsigned.** CI holds no Apple certificates and no HarmonyOS
@@ -217,12 +217,12 @@ the opt-in default is off:
 
 | Artifact | Configuration | Contents |
 | --- | --- | --- |
-| `dsh-ios-harness` | Debug | `DSHSpike-harness-device-unsigned.zip` + `DSHSpike-harness-simulator.zip` |
+| `dsh-ios-harness` | Debug | `DSHHost-harness-device-unsigned.zip` + `DSHHost-harness-simulator.zip` |
 | `dsh-android-harness` | Debug | `app-debug.apk` (debug-keystore signed — installs directly) |
 | `dsh-harmony-harness` | Debug | `entry-default-debug-unsigned.hap` |
 
 Which one do you want? **Release when you want to use the app**; harness when
-you want to verify it (run the E2E legs, read the `dsh.spike.log:` stream).
+you want to verify it (run the E2E legs, read the `dsh.runtime.log:` stream).
 
 The three builds mirror the proven `dev/ios` / `dev/android` /
 `dev/harmonyos` recipes (same vendors, same pinned toolchains). Release-mode
@@ -234,17 +234,17 @@ packages still need local signing to install.
 The device `.app` is built unsigned on purpose (CI holds no Apple
 certificates). To put it on your iPhone:
 
-1. Take `dsh-ios.ipa` — an unsigned `.ipa` (`Payload/DSHSpike.app`). Nothing
+1. Take `dsh-ios.ipa` — an unsigned `.ipa` (`Payload/DSHHost.app`). Nothing
    needs unzipping first: the signing tools take the `.ipa` itself.
 2. Sign with a free Apple ID (7-day validity) or a paid team:
-   - **Xcode**: open `hosts/ios/DSHSpike.xcodeproj`, set your team on the
+   - **Xcode**: open `hosts/ios/DSHHost.xcodeproj`, set your team on the
      target's Signing & Capabilities, connect the phone, and build to the
      device — or drop the unzipped `.app` onto the device in
      **Window → Devices and Simulators**.
    - **Sideloadly / AltStore**: point either at the unzipped `.app` with
      your Apple ID.
 3. On the phone: Settings → General → VPN & Device Management → trust your
-   developer profile, then launch **DSHSpike**.
+   developer profile, then launch **DSHHost**.
 
 **`dsh-ios` (release): a plain launch reaches the official DSH Web UI.** The
 official dist (89 files) and the client bundles (129 files) are EMBEDDED in
@@ -252,7 +252,7 @@ the app as resources (`Tools/stage_official_web.py`, run by the
 `StageOfficialWeb` build phase in the Release configuration only), so nothing
 is staged from outside. Evidence: `hosts/ios/artifacts/release-logging/`
 (plain launch, empty container, no arguments → the official UI, zero
-`dsh.spike.log:` records, zero verdict text, zero debug/info records).
+`dsh.runtime.log:` records, zero verdict text, zero debug/info records).
 
 **`dsh-ios-harness` (debug): the verification vehicle.** It embeds nothing
 and reads the `Documents/` trees its runners stage — exactly as before. It
@@ -270,14 +270,14 @@ drive (`officialweb.mount`) can serve it.
 # 1. materialize the three untracked trees locally (manifest-verified)
 test/e2e/ensure-official-dist.sh
 test/e2e/ensure-client-bundles.sh
-runtime/spike/vendor/ensure-dsh.sh
+runtime/dsh/vendor/ensure-dsh.sh
 
 # 2. stage them into the app container
 #    simulator:
-APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
+APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHHost data)
 #    device (iOS 17+; UDID or name from `xcrun devicectl list devices`):
 #      xcrun devicectl device copy to --device "$DEVICE" \
-#        --domain-type appDataContainer --domain-identifier org.dsh.DSHSpike \
+#        --domain-type appDataContainer --domain-identifier org.dsh.DSHHost \
 #        --source <tree> --destination Documents/...
 #    both: dist → Documents/official-web/dist
 #          client bundles → Documents/web-plugins/npm/@deepseek-ai/
@@ -286,10 +286,10 @@ APP_DATA=$(xcrun simctl get_app_container "$UDID" org.dsh.DSHSpike data)
 
 # 3. launch in official-web mode
 #    simulator:
-xcrun simctl launch org.dsh.DSHSpike -dsh-mode official-web
+xcrun simctl launch org.dsh.DSHHost -dsh-mode official-web
 #    device:
 #      xcrun devicectl device process launch --device "$DEVICE" \
-#        org.dsh.DSHSpike -dsh-mode official-web
+#        org.dsh.DSHHost -dsh-mode official-web
 ```
 
 A real chat turn additionally needs credentials in
@@ -311,7 +311,7 @@ hosts/android/artifacts/m2-llm/ for the evidence flow).
 
 The HAP is unsigned (signing material is device-specific). `dsh-harmony`
 is the release configuration (the `DSH_RELEASE` define reaches both ArkTS and
-the native spike library, so debug/info fold away); `dsh-harmony-harness` is
+the native dsh library, so debug/info fold away); `dsh-harmony-harness` is
 the debug/E2E vehicle.
 
 **`dsh-harmony` (release): a plain launch reaches the official DSH Web UI.**
@@ -330,7 +330,7 @@ and the mux answer unclaimed endpoints structurally — the session surface is
 served only on the harness's spine legs — and a real chat turn needs
 credentials the user supplies, since the mobile hosts ship no model endpoint.
 Evidence: `hosts/harmony/artifacts/release-logging/` (plain launch, no launch
-parameter, nothing staged → the official UI, zero `dsh.spike.log:` records,
+parameter, nothing staged → the official UI, zero `dsh.runtime.log:` records,
 zero verdict text, zero debug/info records; the refusal; the harness suite
 re-run green).
 

@@ -6,10 +6,10 @@ This document organizes what the upstream **deepseek-harness** (DSH) monorepo
 contains, how one agent conversation flows through it, and where dsh-mobile
 plugs into it. Sources: the upstream clone at `tmp/deepseek-harness`
 (tag `dsh-v0.1.7-alpha.2`, merge `00102833d`) and our vendored pin
-`0.1.6-alpha.2` (`runtime/spike/vendor/`). It complements
+`0.1.6-alpha.2` (`runtime/dsh/vendor/`). It complements
 [upstream-capability-mounting.md](upstream-capability-mounting.md) (the sibling
 -project capability patterns and adoption decisions) and
-[`runtime/spike/upstream/README.md`](../../runtime/spike/upstream/README.md)
+[`runtime/dsh/upstream/README.md`](../../runtime/dsh/upstream/README.md)
 (the shim table); neither of those walks the upstream flow itself, which is
 this file's job.
 
@@ -256,7 +256,7 @@ capabilities).
 ### 3.1 The rule
 
 D9 + D6: product-carrying upstream packages are vendored **verbatim**
-(pinned tarball + sha256, `runtime/spike/vendor/ensure-dsh.sh`), driven
+(pinned tarball + sha256, `runtime/dsh/vendor/ensure-dsh.sh`), driven
 through adapter plugins; in-house code is glue only. Platform differences
 live **below** the upstream contracts — never `hostType` branches above them.
 
@@ -274,7 +274,7 @@ replaced by the in-memory composition below).
 
 ### 3.3 The mobile profile boot
 
-`runtime/spike/upstream/boot.js` — `bootUpstream(options)` reproduces the
+`runtime/dsh/upstream/boot.js` — `bootUpstream(options)` reproduces the
 desktop entry shape with an empty root and in-memory layer composition (no
 disk Loader; the host module loader maps specifiers into the vendor
 closure). Mount order:
@@ -325,7 +325,7 @@ MANIFEST, plus the **58-package application tier** (api-gateway, connection,
 ### 3.6 The hosts
 
 Three platform hosts (`hosts/ios`, `hosts/android`, `hosts/harmony`) embed
-committed copies of the canonical `runtime/spike` closure (byte-verified by
+committed copies of the canonical `runtime/dsh` closure (byte-verified by
 the `closures` gate) and provide: the serial runtime thread + module loader
 (`dsh_spike_host.c`), the gateway bridge, platform primitives (SAF /
 security-scoped-bookmark scopes, streaming httpFetch, keychain, notify),
@@ -377,5 +377,5 @@ the watch list so it is prepared, not surprised by.
 | Tool execution | upstream `packages/core/tools`, `docs/tool-execution-pipeline.md` |
 | LLM contract | upstream `packages/llm/llm/src/types.ts` (`StreamChunk`, `GenerateOptions`) |
 | The client wire | upstream `docs/api-gateway.md`, `packages/api/session-controller` |
-| Our port | `runtime/spike/upstream/README.md`, `runtime/spike/upstream/boot.js`, `docs/ARCHITECTURE.md` §3–§5, §10 D9 |
+| Our port | `runtime/dsh/upstream/README.md`, `runtime/dsh/upstream/boot.js`, `docs/ARCHITECTURE.md` §3–§5, §10 D9 |
 | The capability patterns we adopted | [upstream-capability-mounting.md](upstream-capability-mounting.md) |

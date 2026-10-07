@@ -1,6 +1,6 @@
 # runtime/dsh/
 
-The core dsh (the runtime-and-host-spikes phase, then the first
+The core dsh (the the runtime phase, then the first
 on-device session): quickjs-ng shim running a pinned upstream pure-logic
 package, with the E2E verdict emitted as structured logs. The first-session
 phase replaces the canned gateway responses with a REAL dispatch bridge to the platform

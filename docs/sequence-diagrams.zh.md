@@ -230,7 +230,7 @@ sequenceDiagram
 sequenceDiagram
     participant R as Runner (run-*.sh)
     participant A as 设备/模拟器上的应用
-    participant L as 结构化日志流 (dsh.spike.log:)
+    participant L as 结构化日志流 (dsh.runtime.log:)
     participant X as check.mjs
     participant M as 证据目录 (artifacts/)
 
@@ -257,7 +257,7 @@ sequenceDiagram
     participant GA as gov 门禁（含 closures）
 
     D->>B: build/build.sh android [harmony…]
-    B->>SY: 从 runtime/spike 重暂存已提交副本
+    B->>SY: 从 runtime/dsh 重暂存已提交副本
     SY-->>B: 逐字节一致（暂存器自校验）
     B->>CO: 精确 CI 命令（gradlew / xcodebuild / hvigorw）
     CO-->>B: 应用构建完成
