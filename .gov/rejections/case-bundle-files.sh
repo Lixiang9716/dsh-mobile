@@ -16,7 +16,7 @@
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
 REL="scenario/composer-web-live.js"
-RAW="$REPO/hosts/harmony/entry/src/main/resources/rawfile/spike/$REL"
+RAW="$REPO/hosts/harmony/entry/src/main/resources/rawfile/dsh/$REL"
 [ -f "$RAW" ] || {
   echo "case-bundle-files: FAIL — fixture file absent; materialize rawfile first (vendor-official.sh)" >&2
   exit 1

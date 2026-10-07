@@ -12,7 +12,7 @@
 # of case-bundle-files.sh — see its header for the measured collision pair).
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
-DOT="$REPO/hosts/harmony/entry/src/main/resources/rawfile/spike/scenario/.case-dotfile.json"
+DOT="$REPO/hosts/harmony/entry/src/main/resources/rawfile/dsh/scenario/.case-dotfile.json"
 
 # Repo-scoped: the mutated tree (Index.ets) is THIS worktree's, so the
 # serialization window is per-worktree too — a global /tmp lock made
