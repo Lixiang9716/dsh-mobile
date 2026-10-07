@@ -9,8 +9,8 @@
  *             CLOSURE/SPINE_OURS (advisory);
  *   android — ci/stage-spine-closure.sh scenario/web-live hand lists +
  *             whole-dir mirrors;
- *   ios     — Tools/gen_bundle_header.py RESOURCES hand rows + TREES
- *             whole-dir mirror roots (including the two comprehension rows).
+ *   ios     — Tools/gen_bundle_resources.py RESOURCES hand rows (split out of
+ *             the header at the size gate) + header TREES mirror roots.
  *
  * Split out of check-staging.mjs purely for the code-size gate; the three
  * files together are one tool — see the CLI's header for the full contract.
@@ -214,7 +214,7 @@ function pyStringClose(text, open) {
  * strings (the file uses no single-quoted strings; comment apostrophes like
  * "loader's" would desync a naive quote tracker). Fails loud when the
  * segment never closes. */
-function pyListClose(text, open, name) {
+function pyListClose(text, open, name, where) {
   let depth = 0;
   let i = open;
   for (; i < text.length; i += 1) {
@@ -227,7 +227,7 @@ function pyListClose(text, open, name) {
       if (depth === 0) return i;
     }
   }
-  return fail(`${name} block closing ] not found in gen_bundle_header.py`);
+  return fail(`${name} block closing ] not found in ${where}`);
 }
 
 /** Whole Python list literal for `name`, joining `] + [` continuation
@@ -235,13 +235,13 @@ function pyListClose(text, open, name) {
  * naive `\n]` search would truncate it at the first continuation and
  * silently drop the later mirror rows. Each segment is kept with its
  * closing `]` and newline-terminated. */
-function pyListBlock(src, name) {
+function pyListBlock(src, name, where) {
   const at = src.indexOf(`${name} = [`);
-  if (at < 0) fail(`${name} block not found in gen_bundle_header.py`);
+  if (at < 0) fail(`${name} block not found in ${where}`);
   let out = '';
   let seg = src.indexOf('[', at);
   for (;;) {
-    const end = pyListClose(src, seg, name);
+    const end = pyListClose(src, seg, name, where);
     out += `${src.slice(seg, end)}]\n`;
     // `] + [` continuation → keep scanning the next segment
     const tail = src.slice(end + 1);
@@ -359,18 +359,18 @@ function expandPyTrees(treesBlock) {
   return { mirrorRoots, rest };
 }
 
-/** gen_bundle_header.py (ios): RESOURCES hand rows (DSH-rooted rows are
- * bundle-root staging; REPO-rooted rows stage outside runtime/dsh) +
- * TREES whole-dir mirror roots, including the two comprehension rows. */
+/** ios manifests: gen_bundle_header.py TREES whole-dir mirror roots (with the
+ * two comprehension rows) + gen_bundle_resources.py RESOURCES hand rows. */
 function iosSurface() {
   const file = join(REPO, 'hosts/ios/Tools/gen_bundle_header.py');
   const src = readFileSync(file, 'utf8');
-  const rows = pyRows(pyListBlock(src, 'RESOURCES'));
-  if (!rows.length) fail('RESOURCES parsed to zero rows in gen_bundle_header.py');
-  const { mirrorRoots, rest } = expandPyTrees(pyListBlock(src, 'TREES'));
+  const resSrc = readFileSync(join(REPO, 'hosts/ios/Tools/gen_bundle_resources.py'), 'utf8');
+  const rows = pyRows(pyListBlock(resSrc, 'RESOURCES', 'gen_bundle_resources.py'));
+  if (!rows.length) fail('RESOURCES parsed to zero rows in gen_bundle_resources.py');
+  const { mirrorRoots, rest } = expandPyTrees(pyListBlock(src, 'TREES', 'gen_bundle_header.py'));
   mirrorRoots.push(...pyRows(rest));
   if (!mirrorRoots.length) fail('TREES parsed to zero mirror roots in gen_bundle_header.py');
-  return { file, label: 'Tools/gen_bundle_header.py RESOURCES+TREES', rows, mirrorRoots };
+  return { file, label: 'Tools/gen_bundle_header.py TREES + Tools/gen_bundle_resources.py RESOURCES', rows, mirrorRoots };
 }
 
 // --- host wiring ------------------------------------------------------------
