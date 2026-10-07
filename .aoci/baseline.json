@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-07T00:18:18Z",
+  "updated_at": "2026-10-07T00:24:51Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "445ad46df28c56b0dcaca8eb389d8c660a94a1001f28629660b220ad8a648769",
-      "size": 456265,
-      "normalized_sha256": "445ad46df28c56b0dcaca8eb389d8c660a94a1001f28629660b220ad8a648769"
+      "sha256": "734d1fa73162de4b8faa74a02fb9222943fb1e4807be602337de7f3d3c4d0cdd",
+      "size": 459720,
+      "normalized_sha256": "734d1fa73162de4b8faa74a02fb9222943fb1e4807be602337de7f3d3c4d0cdd"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -7996,9 +7996,9 @@
     },
     "test/e2e/scenarios/harmony-device-plane.json": {
       "role": "index",
-      "sha256": "beae0bd98de16b21df1d98b0e93f051642b0f153134584ef3cf25567c0cfc429",
+      "sha256": "e70a358058ded4144bc7b6421fd05d7e67d3253ccdc379ad96da65afe39dde23",
       "size": 1532,
-      "normalized_sha256": "beae0bd98de16b21df1d98b0e93f051642b0f153134584ef3cf25567c0cfc429"
+      "normalized_sha256": "e70a358058ded4144bc7b6421fd05d7e67d3253ccdc379ad96da65afe39dde23"
     },
     "test/e2e/scenarios/harmony-httpfetch-streaming.json": {
       "role": "index",
@@ -8032,9 +8032,9 @@
     },
     "test/e2e/scenarios/harmony-session-live-read.json": {
       "role": "index",
-      "sha256": "e78e89dd669753aad47a703c570968779de0f997321dae26b4913855a55718b7",
-      "size": 10289,
-      "normalized_sha256": "e78e89dd669753aad47a703c570968779de0f997321dae26b4913855a55718b7"
+      "sha256": "d6cad4302f7b0f5a0f751e9b043de33362f9038d82ab1c8e9c4960a96550648b",
+      "size": 10291,
+      "normalized_sha256": "d6cad4302f7b0f5a0f751e9b043de33362f9038d82ab1c8e9c4960a96550648b"
     },
     "test/e2e/scenarios/harmony-whale-mount.json": {
       "role": "index",
@@ -8222,6 +8222,12 @@
       "size": 821,
       "normalized_sha256": "9f7e52a47bc0ebd83d4556a2ae4e9abb0371c4f2b4d62f688c3fd6e819e392c7"
     },
+    "test/e2e/scenarios/real-agent-loop.json": {
+      "role": "index",
+      "sha256": "b87a6a6b6bf0d84b64814e867a5a3d60bc891bb7ebafe36391d7c584de23ccfd",
+      "size": 2457,
+      "normalized_sha256": "b87a6a6b6bf0d84b64814e867a5a3d60bc891bb7ebafe36391d7c584de23ccfd"
+    },
     "test/e2e/scenarios/security-byok-leak.json": {
       "role": "index",
       "sha256": "aea2520e57d885930ec5543eb3ad07a54897b8e0cb8932fc1c09f34e8c5ebdde",
@@ -8344,9 +8350,9 @@
     },
     "test/e2e/write-receipt.sh": {
       "role": "index",
-      "sha256": "f737b4bbc3ccf39c69e2db3569c9805f21a87e79b3c6407b9aad7cf28f47df50",
-      "size": 3197,
-      "normalized_sha256": "f737b4bbc3ccf39c69e2db3569c9805f21a87e79b3c6407b9aad7cf28f47df50"
+      "sha256": "f27a052fbb0732613dab2ab2c7a6e16262f9889a4e62393e8a284ef775e78fd2",
+      "size": 4031,
+      "normalized_sha256": "f27a052fbb0732613dab2ab2c7a6e16262f9889a4e62393e8a284ef775e78fd2"
     },
     "test/panel/android-jni-surface.test.js": {
       "role": "observe",
@@ -8362,9 +8368,15 @@
     },
     "test/panel/dsh-llm-stub.js": {
       "role": "index",
-      "sha256": "5376620eab4b3bda8072cfc57bc9b950f6dc9adaec52798f3f7de0ba1f66750d",
-      "size": 1192,
-      "normalized_sha256": "5376620eab4b3bda8072cfc57bc9b950f6dc9adaec52798f3f7de0ba1f66750d"
+      "sha256": "14e68aca35818ff964becc6541bc9410554bbdfb6455c6e0cb6c33e55cc6f377",
+      "size": 6450,
+      "normalized_sha256": "14e68aca35818ff964becc6541bc9410554bbdfb6455c6e0cb6c33e55cc6f377"
+    },
+    "test/panel/dsh-sandbox-stub.js": {
+      "role": "index",
+      "sha256": "538714e48b5a689de4c7bb03cd3b4128ae8c0b5970ba8646c33dd31d74d81493",
+      "size": 702,
+      "normalized_sha256": "538714e48b5a689de4c7bb03cd3b4128ae8c0b5970ba8646c33dd31d74d81493"
     },
     "test/panel/dsh-tools-stub.js": {
       "role": "index",
@@ -8510,6 +8522,36 @@
       "size": 12949,
       "normalized_sha256": "efbae01c03acc1642a7ab518c479a28837bab436dfc92e5d328850e233364ad1"
     },
+    "test/panel/toolface-fs-local-runner.mjs": {
+      "role": "index",
+      "sha256": "6dffeb82c634b93f885a29302d24cdd343ca9273ea48ddd376dec74c1bcd6dd0",
+      "size": 4984,
+      "normalized_sha256": "6dffeb82c634b93f885a29302d24cdd343ca9273ea48ddd376dec74c1bcd6dd0"
+    },
+    "test/panel/toolface-gateway.js": {
+      "role": "index",
+      "sha256": "0fe53603f8d65de734b98a50ea4afefba526aae9b0046fe959a861954bfd4bf2",
+      "size": 1045,
+      "normalized_sha256": "0fe53603f8d65de734b98a50ea4afefba526aae9b0046fe959a861954bfd4bf2"
+    },
+    "test/panel/toolface-loader-hooks.mjs": {
+      "role": "index",
+      "sha256": "ba41b400cf7c1c83aecc72eb549ef219bae1b90c27d2272122d20d8b5588f9cd",
+      "size": 5302,
+      "normalized_sha256": "ba41b400cf7c1c83aecc72eb549ef219bae1b90c27d2272122d20d8b5588f9cd"
+    },
+    "test/panel/toolface-register.mjs": {
+      "role": "index",
+      "sha256": "cc5a132e910ea520cc20cf6056c29d091ce6ecafe8c7f11e11c8d19385829828",
+      "size": 297,
+      "normalized_sha256": "cc5a132e910ea520cc20cf6056c29d091ce6ecafe8c7f11e11c8d19385829828"
+    },
+    "test/panel/toolface-relative-spelling-runner.mjs": {
+      "role": "index",
+      "sha256": "9436ad68f0525543db79f818501a6629ebdaaa2b68ae9542d6bb0753f4d7508b",
+      "size": 6765,
+      "normalized_sha256": "9436ad68f0525543db79f818501a6629ebdaaa2b68ae9542d6bb0753f4d7508b"
+    },
     "test/panel/turn-recovery.test.js": {
       "role": "observe",
       "sha256": "3e51b9f3fa18e44ec2fe24dd422844039e490e3f8aee4fe69aa6b133974650a0",
@@ -8530,9 +8572,9 @@
     },
     "test/panel/vitest.config.js": {
       "role": "index",
-      "sha256": "12cefd9570adba8f68b5a508630da0b06d0cfc3f879cd2e5a5e0eb8cb06e0839",
-      "size": 5171,
-      "normalized_sha256": "12cefd9570adba8f68b5a508630da0b06d0cfc3f879cd2e5a5e0eb8cb06e0839"
+      "sha256": "b5d2a7a859082e3d0d27f082367ffae9fb06b11d15de4fa5bd1a0b1bcdf72b41",
+      "size": 7279,
+      "normalized_sha256": "b5d2a7a859082e3d0d27f082367ffae9fb06b11d15de4fa5bd1a0b1bcdf72b41"
     },
     "test/panel/web-search-keyless.test.js": {
       "role": "observe",
