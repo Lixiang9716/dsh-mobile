@@ -10,9 +10,9 @@
 // The manifest shapes below are reduced but syntactically true to the real
 // ones the parsers walk: Index.ets BUNDLE_FILES (multiline `const … = [` …
 // `\n];`), vendor-official.sh (multiline double-quoted CLOSURE accumulation +
-// $() find spans + simple-var interpolation), stage-spine-closure.sh (six
-// for-in lists: scenario/dsh/npm × stage/verify + the mirror needles),
-// gen_bundle_header.py (RESOURCES with prose comments, TREES with a
+// $() find spans + simple-var interpolation), stage-spine-closure.sh (eight
+// for-in lists: scenario/web-live/dsh/npm × stage/verify + the mirror
+// needles), gen_bundle_header.py (RESOURCES with prose comments, TREES with a
 // comprehension + `] + [` continuation, ZOD_FILES).
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -41,6 +41,9 @@ const SPIKE_FILES = {
   ].join('\n'),
   'scenario/upstream-suite-leg.js': "import './leg-a.js';\nimport '../upstream/helper.js';\n",
   'scenario/leg-a.js': "export { a } from '../upstream/helper.js';\n",
+  // the web-live product layer's lone staged file: an ISOLATED boot entry the
+  // graph never reaches (a product mount is driven by a host, not imported)
+  'web-live/web-leg.js': 'export const w = 1;\n',
   'upstream/helper.js': "import './extra.js';\n",
   'upstream/extra.js': 'export const a = 1;\n',
   'system-plugins/dsh-fs/manifest.json': '{}\n',
@@ -134,11 +137,14 @@ function indexEts(rows) {
   ].join('\n');
 }
 
-/** stage-spine-closure.sh: SIX for-in lists (scenario/dsh/npm × stage/verify
- * twins — the generator refuses any other count) + the three whole-dir
- * mirror needles the verifier requires + VER/ZOD_SRC. */
+/** stage-spine-closure.sh: EIGHT for-in lists (scenario/web-live/dsh/npm ×
+ * stage/verify twins — the generator refuses any other count) + the three
+ * whole-dir mirror needles the verifier requires + VER/ZOD_SRC. The verify
+ * twins carry the `cmp -s "$DSH/<dir>/$s"` anchor the parsers classify the
+ * dir and the role by (the real script's shape). */
 function stageSpineClosureSh() {
   const scenario = 'leg-a.js upstream-suite-leg.js';
+  const webLive = 'web-leg.js';
   const dsh = 'agent brand';
   const npm = 'dsh-anonymous dsh-goalish';
   return [
@@ -155,6 +161,9 @@ function stageSpineClosureSh() {
     'for s in ' + scenario + '; do',
     '        cp "$DSH/scenario/$s" "$ASSETS/scenario/$s"',
     'done',
+    'for s in ' + webLive + '; do',
+    '        cp "$DSH/web-live/$s" "$ASSETS/web-live/$s"',
+    'done',
     'find "$DSH/upstream" -maxdepth 1 -name \'*.js\' -type f | while IFS= read -r src; do',
     '    cp "$src" "$ASSETS/upstream/$(basename "$src")"',
     'done',
@@ -167,7 +176,8 @@ function stageSpineClosureSh() {
     '# verify twins',
     'for pkg in ' + dsh + '; do test -d "$ASSETS/vendor/dsh/$pkg@$VER"; done',
     'for pkg in ' + npm + '; do test -d "$ASSETS/vendor/npm/@deepseek-ai/$pkg@$VER"; done',
-    'for s in ' + scenario + '; do test -f "$ASSETS/scenario/$s"; done',
+    'for s in ' + scenario + '; do cmp -s "$DSH/scenario/$s" "$ASSETS/scenario/$s"; done',
+    'for s in ' + webLive + '; do cmp -s "$DSH/web-live/$s" "$ASSETS/web-live/$s"; done',
     '',
   ].join('\n');
 }

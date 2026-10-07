@@ -71,17 +71,27 @@ function bundleRawRows() {
 }
 
 /** The scenario/web-live for-in list pairs of the android stager: each .js
- * list's DIR comes from its loop body's `$DSH/<dir>/$s` anchor and its ROLE
- * from cp (stage) vs cmp -s (verify). Fails loud on a duplicate or an
+ * list's DIR and ROLE come from the FIRST `cp "$DSH/<dir>/$s"` (stage) or
+ * `cmp -s "$DSH/<dir>/$s"` (verify) anchor inside its own loop body — the
+ * first anchor belongs to the loop itself, while later ones are the next
+ * loops' (the body window deliberately over-spans; the fixture's compact
+ * script puts them inside one window). Fails loud on a duplicate or an
  * incomplete pair — the twin drift report is only as good as the pairing. */
 function parseAndroidJsListPairs(jsLists) {
+  // Quote-bearing pattern via new RegExp from a plain string: a quote inside
+  // a regex LITERAL desyncs govrail's code-size string tracking (govrail#411).
+  // No g flag: String.match returns the FIRST match with its capture groups
+  // (a g flag yields a bare string array — the groups vanish), and the first
+  // anchor inside the body window is the loop's own.
+  const ANCHOR = new RegExp('(cp|cmp -s) "\\$DSH/(scenario|web-live)/\\$s"');
   const jsRows = { scenario: { stage: null, verify: null }, 'web-live': { stage: null, verify: null } };
   for (const l of jsLists) {
-    const dir = ['scenario', 'web-live'].find((d) => l.body.includes(`"$DSH/${d}/$s"`));
-    if (!dir) fail('a .js for-in list in stage-spine-closure.sh anchors neither $DSH/scenario/$s nor $DSH/web-live/$s');
-    const cpAt = l.body.indexOf(`cp "$DSH/${dir}/$s"`);
-    const cmpAt = l.body.indexOf(`cmp -s "$DSH/${dir}/$s"`);
-    const role = cpAt >= 0 && (cmpAt < 0 || cpAt < cmpAt) ? 'stage' : 'verify';
+    const first = l.body.match(ANCHOR);
+    if (!first) {
+      fail('a .js for-in list in stage-spine-closure.sh anchors neither $DSH/scenario/$s nor $DSH/web-live/$s');
+    }
+    const dir = first[2];
+    const role = first[1] === 'cp' ? 'stage' : 'verify';
     if (jsRows[dir][role]) fail(`duplicate ${dir} ${role} for-in list in stage-spine-closure.sh`);
     jsRows[dir][role] = l.names.map((s) => `${dir}/${s}`);
   }
