@@ -213,6 +213,9 @@ export class HostPhase {
   });
   private keychain: KeychainPrimitives | null = null;
   private picker: PickerPrimitives | null = null;
+  /** The deferred §6 audit queue: flat [name, args, payloadJson, ok] rows,
+   * drained one event-loop turn after their settles (see auditedSettle). */
+  private auditQueue: string[] = [];
   private device: DevicePlanePrimitives | null = null;
   private cameraKit: CameraPrimitives | null = null;
   private ble: BlePrimitives | null = null;
@@ -924,9 +927,35 @@ export class HostPhase {
   private auditedSettle(name: string, args: string):
     (callId: number, payloadJson: string, ok: boolean) => void {
     return (callId: number, payloadJson: string, ok: boolean): void => {
-      this.auditLine(name, args, payloadJson, ok, 'granted');
+      // Settle IMMEDIATELY; the §6 record rides the deferred audit queue.
+      // hostCarrierLine ends in a synchronous fflush of the capture file —
+      // run in the settle callback (before OR after the settle call) that
+      // disk flush measurably perturbed the spine's racy journal-write
+      // order (session.live-read's frame types flipped on 3/3 runs, while
+      // main passed the same emulator 2/2 — the bisect that named this
+      // path). An observation must never delay or displace the observed:
+      // records queue FIFO and flush on the NEXT event-loop turn, still
+      // through the one phase-sink writer, still in order — a few ms later
+      // in the capture, which no checker matches against wall-clock.
       this.settleCall(callId, payloadJson, ok);
+      this.auditQueue.push(name, args, payloadJson, ok ? 'true' : 'false');
+      if (this.auditQueue.length === 4) {
+        setTimeout((): void => { this.flushAuditQueue(); }, 0);
+      }
     };
+  }
+
+  /** Drain the deferred audit queue (ArkTS main thread, one event-loop turn
+   * after the settles that enqueued them — the single-writer discipline is
+   * preserved: every line still goes through auditLine → hostCarrierLine). */
+  private flushAuditQueue(): void {
+    while (this.auditQueue.length > 0) {
+      const name: string = this.auditQueue.shift() ?? '';
+      const args: string = this.auditQueue.shift() ?? '{}';
+      const payloadJson: string = this.auditQueue.shift() ?? '{}';
+      const okRaw: string = this.auditQueue.shift() ?? 'false';
+      this.auditLine(name, args, payloadJson, okRaw === 'true', 'granted');
+    }
   }
 
   /** One §6 audit record: {ts, primitive, caller, verdict, outcome} — never
