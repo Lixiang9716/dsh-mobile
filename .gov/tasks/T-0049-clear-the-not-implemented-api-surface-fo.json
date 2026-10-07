@@ -2,7 +2,7 @@
   "title": "Clear the not-implemented API surface for the official page",
   "created": "2026-09-24T12:54:06+00:00",
   "rules": {
-    "hash": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+    "hash": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -88,6 +88,13 @@
       "from": "c3c8fdd14021e1f552cb1a2ea375afe01714a608ac20ec7a65c28ef9b5799b78",
       "to": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
       "reason": "Post-#294 rebase constitution sweep onto ee4951678e7c (the lint gates join; the cards were restored from main's ledger after a conflicted rebase and re-pinned current) \u2014 briefs unchanged, the same recorded sweep shape as PRs #244/#274."
+    },
+    {
+      "ts": "2026-10-07T08:02:57+00:00",
+      "by": "13957@DESKTOP-AOFQD6F",
+      "from": "ee4951678e7c3bb62080bcf2a1d06e71cb8b1a9db379a3c508599f3b52a5f02a",
+      "to": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
+      "reason": "plane advanced by the semantic-names rename \u2014 brief unchanged, re-pinned per the gate's remedy"
     }
   ]
 }
