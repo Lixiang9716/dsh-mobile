@@ -15,7 +15,7 @@
     "harmony HAP assertions riding the rounds",
     "final wrap: cards closed, records landed, report"
   ],
-  "status": "open",
+  "status": "voided",
   "receipt": null,
   "id": "T-0178",
   "repins": [
@@ -40,5 +40,10 @@
       "to": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
       "reason": "plane advanced (transport-tokens gate merged + this branch's rejection cases) \u2014 brief unchanged"
     }
-  ]
+  ],
+  "void": {
+    "ts": "2026-10-07T19:20:30+00:00",
+    "by": "13957@DESKTOP-AOFQD6F",
+    "reason": "superseded-by-goal-round: the umbrella's fixer-x-tester window (until Oct 7) expired with its own checklist unticked while the loop it scoped actually ran and closed under the per-round goal cards \u2014 T-0179..T-0186 (flywheel rounds 1-8) and the loop-q..loop-y/z follow-ups (T-0189..T-0201), each carrying its own green mode=all receipt; the ledger-honesty closeout round retires the umbrella rather than closing it against work its own items never ticked. A future flywheel window re-briefs fresh."
+  }
 }
