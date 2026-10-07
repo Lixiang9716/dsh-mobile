@@ -1,5 +1,7 @@
 # The product web-live boot producers leave scenario/
 
+Status: implemented
+
 ## Problem
 
 `runtime/dsh/scenario/` carried two populations under one roof: pure E2E
