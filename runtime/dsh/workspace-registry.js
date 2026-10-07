@@ -39,11 +39,11 @@
 let utf8FaceCache = null;
 const utf8Face = async () => {
   if (utf8FaceCache !== null) return utf8FaceCache;
-  const dshFace0 = await import('node:buffer').catch(() => undefined);
-  const dshFaceRaw = typeof dshFace0?.decodeUtf8 === 'function'
-    && typeof dsh?.encodeUtf8 === 'function';
-  utf8FaceCache = dshFaceRaw
-    ? { decode: dsh.decodeUtf8, encode: dsh.encodeUtf8 }
+  const bufFace = await import('node:buffer').catch(() => undefined);
+  const bufFaceOk = typeof bufFace?.decodeUtf8 === 'function'
+    && typeof bufFace?.encodeUtf8 === 'function';
+  utf8FaceCache = bufFaceOk
+    ? { decode: bufFace.decodeUtf8, encode: bufFace.encodeUtf8 }
     : {
       decode: (bytes) => new TextDecoder().decode(bytes),
       encode: (text) => new TextEncoder().encode(text),
