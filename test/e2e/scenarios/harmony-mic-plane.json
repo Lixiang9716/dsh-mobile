@@ -13,8 +13,8 @@
     {
       "event": "descriptor.declared",
       "match": {
-        "available": 18,
-        "unavailable": 2,
+        "available": 26,
+        "unavailable": 9,
         "micPlane": 2
       }
     },
