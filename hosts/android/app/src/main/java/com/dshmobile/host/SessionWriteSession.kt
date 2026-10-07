@@ -28,7 +28,7 @@ class SessionWriteSession private constructor(private val activity: Activity) {
 
     companion object {
         const val SCENARIO = "android.composer.live-write"
-        const val ENTRY = "scenario/android-composer-live-write.js"
+        const val ENTRY = "web-live/android-composer-live-write.js"
         const val CLIENT_ID = "dsh-web-official"
         // The staged roster (runtime.config llmModels): turn A serves mock-1,
         // turn B the pick (SessionServe's config.json `models` shape).

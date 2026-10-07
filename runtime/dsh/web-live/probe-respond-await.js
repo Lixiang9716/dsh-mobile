@@ -1,6 +1,6 @@
 // dsh:logging-exempt (probe harness plumbing; the scenario logs the outcome)
 /**
- * scenario/probe-respond-await.js — the settings-probe response waiter
+ * web-live/probe-respond-await.js — the settings-probe response waiter
  * (split from composer-web-live.js at loop-q). The probes synthesize
  * `api.request` frames at the same wire boundary the page uses and wait for
  * the matching `api.respond` in the posted-frame record.

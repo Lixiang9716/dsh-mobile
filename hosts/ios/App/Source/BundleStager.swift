@@ -4,7 +4,8 @@ import Foundation
 /// preserving the runtime/dsh layout the C loader expects: logger.js and
 /// gateway.js at the root, manifest.json beside them (the M2 embedder reads
 /// the scenario's declared capabilities from it), the entries under
-/// scenario/, and the vendored upstream package under vendor/ (the
+/// scenario/ and the product web-live boot producers under web-live/, and
+/// the vendored upstream package under vendor/ (the
 /// "dsh:util-crypto" import maps there). The bytes come from the embedded
 /// arrays (gen_bundle_header.py), so what the simulator runs is
 /// byte-identical to the checkout.

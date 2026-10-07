@@ -70,23 +70,55 @@ function bundleRawRows() {
   return { file, rows: [...src.slice(at, end).matchAll(ETS_ROW)].map((m) => m[1]) };
 }
 
-/** android stage-spine-closure.sh: the `for s in` scenario rosters and the
- * for-pkg lists (stage + verify twins for each) — kept separate so twin drift
- * is reportable. The script carries SIX for-in lists (scenario/dsh/npm ×
- * stage/verify); they are classified by content, and anything else is a
+/** The scenario/web-live for-in list pairs of the android stager: each .js
+ * list's DIR comes from its loop body's `$DSH/<dir>/$s` anchor and its ROLE
+ * from cp (stage) vs cmp -s (verify). Fails loud on a duplicate or an
+ * incomplete pair — the twin drift report is only as good as the pairing. */
+function parseAndroidJsListPairs(jsLists) {
+  const jsRows = { scenario: { stage: null, verify: null }, 'web-live': { stage: null, verify: null } };
+  for (const l of jsLists) {
+    const dir = ['scenario', 'web-live'].find((d) => l.body.includes(`"$DSH/${d}/$s"`));
+    if (!dir) fail('a .js for-in list in stage-spine-closure.sh anchors neither $DSH/scenario/$s nor $DSH/web-live/$s');
+    const cpAt = l.body.indexOf(`cp "$DSH/${dir}/$s"`);
+    const cmpAt = l.body.indexOf(`cmp -s "$DSH/${dir}/$s"`);
+    const role = cpAt >= 0 && (cmpAt < 0 || cpAt < cmpAt) ? 'stage' : 'verify';
+    if (jsRows[dir][role]) fail(`duplicate ${dir} ${role} for-in list in stage-spine-closure.sh`);
+    jsRows[dir][role] = l.names.map((s) => `${dir}/${s}`);
+  }
+  for (const dir of Object.keys(jsRows)) {
+    if (!jsRows[dir].stage || !jsRows[dir].verify) {
+      fail(`${dir} stage/verify for-in list pair incomplete in stage-spine-closure.sh`);
+    }
+  }
+  return jsRows;
+}
+
+/** android stage-spine-closure.sh: the `for s in` scenario/web-live rosters
+ * and the for-pkg lists (stage + verify twins for each) — kept separate so
+ * twin drift is reportable. The script carries EIGHT for-in lists
+ * (scenario/web-live/dsh/npm × stage/verify); the .js lists are paired by
+ * parseAndroidJsListPairs, the pkg lists by content, and anything else is a
  * structural drift this tool refuses to guess around. */
 function androidScriptFacts() {
   const file = join(REPO, 'hosts/android/ci/stage-spine-closure.sh');
   const src = readFileSync(file, 'utf8');
   const lists = [...src.matchAll(/for (?:pkg|s) in ([^;]+); do/g)]
-    .map((m) => m[1].replace(/\\\n/g, ' ').split(/\s+/).filter(Boolean));
-  const kind = (l) => (l.some((x) => x.endsWith('.js')) ? 'scenario'
-    : l.every((x) => x.startsWith('dsh-')) ? 'npm' : 'dsh');
+    .map((m) => ({
+      names: m[1].replace(/\\\n/g, ' ').split(/\s+/).filter(Boolean),
+      // the loop body: enough window to cover header + body + done
+      body: src.slice(m.index, m.index + 1400),
+    }));
+  const kind = (l) => (l.names.some((x) => x.endsWith('.js')) ? 'scenario'
+    : l.names.every((x) => x.startsWith('dsh-')) ? 'npm' : 'dsh');
   const byKind = { scenario: [], npm: [], dsh: [] };
   for (const l of lists) byKind[kind(l)].push(l);
   for (const k of Object.keys(byKind)) {
-    if (byKind[k].length !== 2) fail(`expected 2 ${k} for-in lists in stage-spine-closure.sh, parsed ${byKind[k].length}`);
+    const expect = k === 'scenario' ? 4 : 2;
+    if (byKind[k].length !== expect) {
+      fail(`expected ${expect} ${k} for-in lists in stage-spine-closure.sh, parsed ${byKind[k].length}`);
+    }
   }
+  const jsRows = parseAndroidJsListPairs(byKind.scenario);
   const ver = src.match(/^VER=(\S+)$/m);
   if (!ver) fail('VER assignment not found in stage-spine-closure.sh');
   const zod = src.match(/^ZOD_SRC=\$DSH\/(\S+)$/m);
@@ -95,12 +127,14 @@ function androidScriptFacts() {
     file,
     ver: ver[1],
     zodPin: zod[1],
-    scenarioStage: byKind.scenario[0].map((s) => `scenario/${s}`),
-    scenarioVerify: byKind.scenario[1].map((s) => `scenario/${s}`),
-    pkgStage: byKind.dsh[0],
-    pkgVerify: byKind.dsh[1],
-    npmStage: byKind.npm[0],
-    npmVerify: byKind.npm[1],
+    scenarioStage: jsRows.scenario.stage,
+    scenarioVerify: jsRows.scenario.verify,
+    webLiveStage: jsRows['web-live'].stage,
+    webLiveVerify: jsRows['web-live'].verify,
+    pkgStage: byKind.dsh[0].names,
+    pkgVerify: byKind.dsh[1].names,
+    npmStage: byKind.npm[0].names,
+    npmVerify: byKind.npm[1].names,
   };
 }
 
@@ -279,14 +313,20 @@ function roundTripHarmony(hosts, facts, closure) {
 
 function roundTripAndroid(hosts, facts) {
   const a = hosts.android;
-  const onDisk = readdirSync(join(DSH, 'scenario'))
-    .filter((f) => f.endsWith('.js')).map((f) => `scenario/${f}`).sort();
+  const onDisk = [
+    ...readdirSync(join(DSH, 'scenario')).filter((f) => f.endsWith('.js'))
+      .map((f) => `scenario/${f}`),
+    ...readdirSync(join(DSH, 'web-live')).filter((f) => f.endsWith('.js'))
+      .map((f) => `web-live/${f}`),
+  ].sort();
   const reached = [...walkGraph(a.roots(a.surfaces)).reached.keys()];
   const mirrors = a.surfaces.primary.mirrors;
-  const covered = (r) => mirrorCovers(r, mirrors) || facts.scenarioStage.includes(r);
+  const stagedRows = [...facts.scenarioStage, ...facts.webLiveStage];
+  const covered = (r) => mirrorCovers(r, mirrors) || stagedRows.includes(r);
   const graphRowsOutsideMirrors = reached.filter((r) => inScope(r) && !covered(r)).sort();
   const twins = {
     scenarioStageVsVerify: facts.scenarioStage.filter((r) => !facts.scenarioVerify.includes(r)),
+    webLiveStageVsVerify: facts.webLiveStage.filter((r) => !facts.webLiveVerify.includes(r)),
     pkgStageVsVerify: facts.pkgStage.filter((p) => !facts.pkgVerify.includes(p)),
     pkgVerifyVsStage: facts.pkgVerify.filter((p) => !facts.pkgStage.includes(p)),
     npmStageVsVerify: facts.npmStage.filter((p) => !facts.npmVerify.includes(p)),
@@ -300,8 +340,8 @@ function roundTripAndroid(hosts, facts) {
     host: 'android',
     file: facts.file,
     scenarioRoster: {
-      rows: facts.scenarioStage.length, onDisk: onDisk.length,
-      unstagedByPolicy: onDisk.filter((r) => !facts.scenarioStage.includes(r)).length,
+      rows: stagedRows.length, onDisk: onDisk.length,
+      unstagedByPolicy: onDisk.filter((r) => !stagedRows.includes(r)).length,
     },
     mirrors,
     graphRowsOutsideMirrors,
@@ -344,6 +384,7 @@ function freezeFatal(reports) {
     }
     if (r.host === 'android') {
       for (const m of r.twins.scenarioStageVsVerify) out.push(`android scenario twin drift: ${m}`);
+      for (const m of r.twins.webLiveStageVsVerify) out.push(`android web-live twin drift: ${m}`);
       for (const m of r.twins.pkgStageVsVerify) out.push(`android pkg twin drift (verify lacks): ${m}`);
       for (const m of r.twins.pkgVerifyVsStage) out.push(`android pkg twin drift (stage lacks): ${m}`);
       for (const m of r.twins.npmStageVsVerify) out.push(`android npm twin drift (verify lacks): ${m}`);
@@ -372,7 +413,7 @@ function hostLines(r) {
     lines.push(`scenario roster: ${r.scenarioRoster.rows} staged (policy) of ${r.scenarioRoster.onDisk} on-disk — ${r.scenarioRoster.unstagedByPolicy} unstaged by host policy`);
     lines.push(`mirrors: ${r.mirrors.join(', ')}`);
     lines.push(`graph rows outside mirrors: ${r.graphRowsOutsideMirrors.length}`);
-    lines.push(`twin lists: scenario drift ${r.twins.scenarioStageVsVerify.length} · pkg drift ${r.twins.pkgStageVsVerify.length}/${r.twins.pkgVerifyVsStage.length} · npm drift ${r.twins.npmStageVsVerify.length}/${r.twins.npmVerifyVsStage.length} · declared pins absent on disk: ${r.pinsAbsent.length}`);
+    lines.push(`twin lists: scenario drift ${r.twins.scenarioStageVsVerify.length} · web-live drift ${r.twins.webLiveStageVsVerify.length} · pkg drift ${r.twins.pkgStageVsVerify.length}/${r.twins.pkgVerifyVsStage.length} · npm drift ${r.twins.npmStageVsVerify.length}/${r.twins.npmVerifyVsStage.length} · declared pins absent on disk: ${r.pinsAbsent.length}`);
     for (const p of r.pinsAbsent) lines.push(`    PIN ABSENT ${p}`);
   } else {
     lines.push(`RESOURCES: ${r.resources.rows} rows — ${r.resources.graphDerived} graph-derived, ${r.resources.policyRows.length} policy rows (classified, not graph-derivable)`);

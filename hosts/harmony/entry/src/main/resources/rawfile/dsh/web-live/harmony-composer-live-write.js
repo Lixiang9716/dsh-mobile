@@ -30,7 +30,7 @@ import { createLogger } from 'logger.js';
 import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
-import { makeApiHandlerRespond } from 'scenario/api-handler-respond.js';
+import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 
 const SCENARIO = 'harmony.composer.live-write';
 const AGENT_ID = 'main';
@@ -167,7 +167,7 @@ const installTurnEvidence = (ctx) => {
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: an UNSTRUCTURED claimed-endpoint failure is a defect and kills
- * the drive — but only after the shared guard (scenario/api-handler-respond.js,
+ * the drive — but only after the shared guard (web-live/api-handler-respond.js,
  * loop-w2) answers the caller in band, so a structured refusal is a fast
  * in-band error, never the 30s RESPOND_TIMEOUT black-hole. */
 const installRuntimeHalf = (ctx, cfg) => {

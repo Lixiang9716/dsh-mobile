@@ -5,8 +5,8 @@
  *
  * Walks the runtime closure's import graph from the boot entries, resolving
  * relative and bundle-root spellings (./x, ../x, upstream/x, scenario/x,
- * system-plugins/x, vendor/..., /vendor/..., dsh-root *.js) through the
- * shims' export-from chains and the vendored layout
+ * web-live/x, system-plugins/x, vendor/..., /vendor/..., dsh-root *.js)
+ * through the shims' export-from chains and the vendored layout
  * (vendor/dsh/<pkg>@<ver>/lib, vendor/npm/<pkg>@<ver>/...). node:* and bare
  * npm names are NOT followed — they resolve through the loader's bridge/map
  * rows (npm-bridges-*.js tables, the bare map), which are themselves
@@ -29,7 +29,7 @@ export const DSH = join(REPO, 'runtime', 'dsh');
  * ESM loader resolves these from the bundle root; everything else that is
  * not relative is a bare npm name → bridge/map row → skipped). */
 const BUNDLE_DIRS = new Set([
-  'upstream', 'scenario', 'system-plugins', 'vendor', 'fixtures',
+  'upstream', 'scenario', 'web-live', 'system-plugins', 'vendor', 'fixtures',
   'presets-mobile', 'webclient', 'upstream-tests', 'profiles', 'assets',
 ]);
 /** Dsh-root single files the loader serves by name. */
@@ -38,8 +38,9 @@ const ROOT_FILES = new Set([
   'llm.js', 'install-pipeline.js', 'install-fetch.js', 'receipt-journal.js',
   'config-layer.js', 'manifest.json', 'credential-stage.js',
 ]);
-/** Check (a) scope: the subtrees whose staging the manifests hand-maintain. */
-const SCOPE_PREFIXES = ['scenario/', 'upstream/', 'system-plugins/'];
+/** Check (a) scope: the subtrees whose staging the manifests hand-maintain
+ * (web-live/ joined when the product boot producers left scenario/). */
+const SCOPE_PREFIXES = ['scenario/', 'web-live/', 'upstream/', 'system-plugins/'];
 
 export const inScope = (rel) => SCOPE_PREFIXES.some((p) => rel.startsWith(p));
 const isJs = (rel) => /\.(js|mjs)$/.test(rel);

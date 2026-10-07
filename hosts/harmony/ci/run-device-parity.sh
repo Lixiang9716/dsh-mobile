@@ -13,7 +13,7 @@
 #                (test/e2e/fixtures/upstream-parity-reference.jsonl)
 #                record-for-record (runtime/dsh/ci/parity-compare.mjs).
 #   tool-rows  — T-0048 item 3: the interactive seat (v2web.mount launch,
-#                which evals scenario/composer-web-live.js) probes
+#                which evals web-live/composer-web-live.js) probes
 #                agentPresets/list + pluginInventory/list on-device; the
 #                capture must show the roster all-healthy AND the composed
 #                tool rows NAMED — bash/pwsh/present/ralph resolve through

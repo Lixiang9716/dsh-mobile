@@ -29,7 +29,7 @@ class SessionLiveSession private constructor(private val activity: Activity) {
 
     companion object {
         const val SCENARIO = "android.session.live-read"
-        const val ENTRY = "scenario/android-session-live-read.js"
+        const val ENTRY = "web-live/android-session-live-read.js"
         const val CLIENT_ID = "dsh-web-official"
         // Bound, not pacing: the drive's stages carry their own deadlines
         // (spine boot + two turns before the page, composition + page boot +

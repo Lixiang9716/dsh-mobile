@@ -59,9 +59,9 @@ const SCENARIO_SESSION = 'harmony.session.live-read';
  * (`POST /api/session/prompt`) admits a REAL upstream agent-loop turn and the
  * reply streams live over the mux session/follow into the official UI. */
 const SCENARIO_WRITE = 'harmony.composer.live-write';
-const ENTRY_HTTPFETCH = 'scenario/harmony-httpfetch-streaming.js';
-const ENTRY_SESSION = 'scenario/harmony-session-live-read.js';
-const ENTRY_WRITE = 'scenario/harmony-composer-live-write.js';
+const ENTRY_HTTPFETCH = 'web-live/harmony-httpfetch-streaming.js';
+const ENTRY_SESSION = 'web-live/harmony-session-live-read.js';
+const ENTRY_WRITE = 'web-live/harmony-composer-live-write.js';
 /** The SCRIPTED model boundary of the session-live leg (the platform twin
  * of iOS CarrierRoutes.registerScriptedLlm): a real loopback HTTP + SSE
  * endpoint mirroring the vendored dsh-llm-mock-server's success stream

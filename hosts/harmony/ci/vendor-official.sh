@@ -19,7 +19,7 @@
 #                                            dir, so the rawfile copy carries
 #                                            a neutral name; bytes verbatim)
 #   officialweb/plugins/npm/@deepseek-ai/… ← the staged client bundles
-#   scenario/officialweb-web-live.js, upstream/…, vendor/npm/… ← the web-boot closure
+#   web-live/officialweb-web-live.js, upstream/…, vendor/npm/… ← the web-boot closure
 #     (byte-identical to the runtime/dsh canonicals — the m5 surprise
 #     ledger: drift in these copies is silent)
 #   + the W-SESS SPINE closure (harmony.session.live-read): the mobile profile
@@ -182,15 +182,15 @@ fi
 CLOSURE="gateway.js
 logger.js
 registry.js
-scenario/officialweb-web-live.js
-scenario/composer-web-live.js
-scenario/api-handler-respond.js
-scenario/scenario-verdict.js
+web-live/officialweb-web-live.js
+web-live/composer-web-live.js
+web-live/api-handler-respond.js
+web-live/scenario-verdict.js
 vendor/npm/turndown@7.2.4/lib/turndown.es.js
 $(cd runtime/dsh && find vendor/npm/@mixmark-io/domino@2.2.0/lib \
     vendor/npm/@joplin/turndown-plugin-gfm@1.0.67/lib \
     -type f | LC_ALL=C sort)
-scenario/write-surface-options.js
+web-live/write-surface-options.js
 upstream/web-boot.js
 upstream/web-shims.js
 upstream/shims/buffer.js
@@ -315,13 +315,13 @@ $(cd runtime/dsh && find vendor/npm/@deepseek-ai/dsh-goal@0.1.6-alpha.2 \
 # materialized vendor checkout (suffix filter .js/.mjs/.json, sorted, the
 # same rule as hosts/ios/Tools/gen_bundle_header.py collect_tree_files).
 SPINE_OURS="scenario/boot-verification.js
-scenario/harmony-session-live-read.js
-scenario/harmony-composer-live-write.js
+web-live/harmony-session-live-read.js
+web-live/harmony-composer-live-write.js
 scenario/harmony-capability-binding.js
-scenario/harmony-httpfetch-streaming.js
-scenario/api-handler-respond.js
-scenario/manager-legs-probe.js
-scenario/probe-respond-await.js
+web-live/harmony-httpfetch-streaming.js
+web-live/api-handler-respond.js
+web-live/manager-legs-probe.js
+web-live/probe-respond-await.js
 scenario/mic-plane.js
 scenario/device-plane.js
 scenario/gateway-bridge-smoke.js
@@ -774,6 +774,25 @@ for s in "$RAW"/scenario/*; do
     fi
     cmp -s "runtime/dsh/scenario/$s" "$RAW/scenario/$s" ||
         echo "dsh/scenario/$s" >> "$DRIFT"
+done
+# The web-live product boot producers' twin sweep (same discipline): every
+# rawfile web-live file byte-checks against runtime/dsh/web-live.
+for s in "$RAW"/web-live/*; do
+    s="${s##*/}"
+    if [ ! -f "runtime/dsh/web-live/$s" ]; then
+        continue  # a rawfile-only web-live entry has no runtime twin
+    fi
+    if [ "$MODE" != "check" ]; then
+        cmp -s "runtime/dsh/web-live/$s" "$RAW/web-live/$s" ||
+            cp "runtime/dsh/web-live/$s" "$RAW/web-live/$s"
+    fi
+    if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&
+       ! printf '%s\n' "$TRACKED" | grep -qxF "$RAW/web-live/$s"; then
+        echo skip >> "$SKIPS_FILE"
+        continue
+    fi
+    cmp -s "runtime/dsh/web-live/$s" "$RAW/web-live/$s" ||
+        echo "dsh/web-live/$s" >> "$DRIFT"
 done
 for rel in $CLOSURE; do
     if [ "$MODE" = "check" ] && [ -n "$TRACKED" ] &&

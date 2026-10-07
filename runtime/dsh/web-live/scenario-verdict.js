@@ -1,7 +1,7 @@
 // dsh:logging-exempt (verdict plumbing; the logger arrives injected — the
 // scenario mounts the real one)
 /**
- * scenario/scenario-verdict.js — the scenario's one-verdict fail gate
+ * web-live/scenario-verdict.js — the scenario's one-verdict fail gate
  * (split from composer-web-live.js at loop-x). #366 made `fail` first-only:
  * a completed-fail verdict is STICKY — js_complete keeps the reason in the
  * host's error slot (dsh_runtime_host.c) and every later bus crossing

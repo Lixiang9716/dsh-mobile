@@ -40,7 +40,7 @@ final class WebBootRuntimeDrive {
         bundleRoot: URL, plugins: [[String: Any]]?, config: [String: Any]? = nil,
         scenario: @escaping (UnsafeMutablePointer<Int>?) -> UnsafePointer<CChar>? =
             dsh_runtime_res_scenario_b1_web_live_js,
-        scenarioPath: String = "scenario/officialweb-web-live.js",
+        scenarioPath: String = "web-live/officialweb-web-live.js",
         gateway: Bool = false
     ) {
         thread.start()

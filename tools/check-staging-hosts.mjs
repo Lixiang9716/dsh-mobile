@@ -7,8 +7,8 @@
  *   harmony — Index.ets BUNDLE_FILES rows (primary, stale-judged against the
  *             committed rawfile/dsh tree) + ci/vendor-official.sh
  *             CLOSURE/SPINE_OURS (advisory);
- *   android — ci/stage-spine-closure.sh scenario hand list + whole-dir
- *             mirrors;
+ *   android — ci/stage-spine-closure.sh scenario/web-live hand lists +
+ *             whole-dir mirrors;
  *   ios     — Tools/gen_bundle_header.py RESOURCES hand rows + TREES
  *             whole-dir mirror roots (including the two comprehension rows).
  *
@@ -160,17 +160,27 @@ function harmonyClosureSurface() {
   };
 }
 
-/** stage-spine-closure.sh (android): scenario hand list + whole-dir mirrors. */
+/** stage-spine-closure.sh (android): scenario/web-live hand lists +
+ * whole-dir mirrors. */
 function androidSurface() {
   const file = join(REPO, 'hosts/android/ci/stage-spine-closure.sh');
   const src = readFileSync(file, 'utf8');
-  const loopAt = src.indexOf('cp "$DSH/scenario/$s"');
-  if (loopAt < 0) fail('scenario copy loop not found in stage-spine-closure.sh');
-  const head = src.lastIndexOf('for s in', loopAt);
-  if (head < 0) fail('for s in loop header not found in stage-spine-closure.sh');
-  const header = src.slice(head, loopAt).split('; do')[0];
-  const names = header.slice('for s in'.length).replace(/\\\n/g, ' ').split(/\s+/).filter(Boolean);
-  if (!names.length) fail('scenario staging list parsed to zero rows (android)');
+  // Each bundle dir carries its own stage loop; the loop is anchored at its
+  // `cp "$DSH/<dir>/$s"` line (the verify twin uses cmp, never cp — the
+  // anchor stays unique). web-live joined when the product boot producers
+  // left scenario/.
+  const rosterOf = (dir) => {
+    const loopAt = src.indexOf(`cp "$DSH/${dir}/$s"`);
+    if (loopAt < 0) fail(`${dir} copy loop not found in stage-spine-closure.sh`);
+    const head = src.lastIndexOf('for s in', loopAt);
+    if (head < 0) fail(`for s in loop header not found (${dir}) in stage-spine-closure.sh`);
+    const header = src.slice(head, loopAt).split('; do')[0];
+    const names = header.slice('for s in'.length).replace(/\\\n/g, ' ').split(/\s+/).filter(Boolean);
+    if (!names.length) fail(`${dir} staging list parsed to zero rows (android)`);
+    return names.map((s) => `${dir}/${s}`);
+  };
+  const scenarioRows = rosterOf('scenario');
+  const webLiveRows = rosterOf('web-live');
   const mirrors = [];
   const mirrorOf = (needle, rel) => {
     if (!src.includes(needle)) fail(`whole-dir mirror gone from stage-spine-closure.sh: ${needle}`);
@@ -179,7 +189,9 @@ function androidSurface() {
   mirrorOf('find "$DSH/upstream"', 'upstream/**');
   mirrorOf('find "$DSH/upstream/shims"', 'upstream/shims/**');
   mirrorOf('"$DSH"/system-plugins/*/', 'system-plugins/**');
-  return { file, label: 'ci/stage-spine-closure.sh', scenarioRows: names.map((s) => `scenario/${s}`), mirrors };
+  return {
+    file, label: 'ci/stage-spine-closure.sh', scenarioRows, webLiveRows, mirrors,
+  };
 }
 
 // --- gen_bundle_header.py (ios) block scanners -------------------------------
@@ -384,10 +396,12 @@ function listDirFiles(dir) {
 function harmonyHost(bf, closure) {
   return {
     label: 'harmony',
-    // Fixed boot entries + every scenario row the harmony staging names.
+    // Fixed boot entries + every scenario/web-live row the harmony staging
+    // names.
     roots: (surfaces) => [
       'upstream/boot.js', 'upstream/web-boot.js', 'scenario/upstream-suite-leg.js',
-      ...surfaces.primary.rows.filter((r) => r.startsWith('scenario/')),
+      ...surfaces.primary.rows.filter(
+        (r) => r.startsWith('scenario/') || r.startsWith('web-live/')),
     ],
     surfaces: {
       primary: {
@@ -418,15 +432,18 @@ function androidHost(android) {
     roots: (surfaces) => [
       'upstream/boot.js', 'upstream/web-boot.js', 'scenario/upstream-suite-leg.js',
       ...surfaces.primary.scenarioRows,
+      ...surfaces.primary.webLiveRows,
     ],
     surfaces: {
       primary: {
         label: android.label,
         scenarioRows: android.scenarioRows,
+        webLiveRows: android.webLiveRows,
         mirrors: android.mirrors,
         rowOrigin: android.file,
         covers: (rel, _rows, surface) =>
-          surface.scenarioRows.includes(rel) || mirrorCovers(rel, surface.mirrors),
+          surface.scenarioRows.includes(rel) || surface.webLiveRows.includes(rel) ||
+          mirrorCovers(rel, surface.mirrors),
       },
     },
   };
@@ -435,12 +452,14 @@ function androidHost(android) {
 function iosHost(ios) {
   return {
     label: 'ios',
-    // scenario/ rides the whole-dir tree, so EVERY on-disk scenario is an
-    // entry the ios embed stages; root the walk at them all.
+    // scenario/ and web-live/ ride whole-dir trees, so EVERY on-disk entry
+    // is one the ios embed stages; root the walk at them all.
     roots: (surfaces) => [
       'upstream/boot.js', 'upstream/web-boot.js', 'scenario/upstream-suite-leg.js',
       ...surfaces.primary.mirrorRoots
-        .filter((r) => r.root === 'DSH' && (r.rel === 'scenario' || r.rel.startsWith('scenario/')))
+        .filter((r) => r.root === 'DSH' &&
+          (r.rel === 'scenario' || r.rel.startsWith('scenario/') ||
+           r.rel === 'web-live' || r.rel.startsWith('web-live/')))
         .flatMap((r) => listDirFiles(join(DSH, r.rel)).map((f) => `${r.rel}/${f}`))
         .filter((f) => f.endsWith('.js')),
     ],
