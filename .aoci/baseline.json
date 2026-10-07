@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-07T00:06:49Z",
+  "updated_at": "2026-10-07T00:12:52Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "a1c1c04f70b336440a5526e2c83f4a5ac9ae22fcf2ad4d1f7a24c8a8c71098de",
-      "size": 451010,
-      "normalized_sha256": "a1c1c04f70b336440a5526e2c83f4a5ac9ae22fcf2ad4d1f7a24c8a8c71098de"
+      "sha256": "34b72cac8fb8c0044968d7b8dfe9b541b55353d7d0e3a1d0e34d653afefe0d4f",
+      "size": 453850,
+      "normalized_sha256": "34b72cac8fb8c0044968d7b8dfe9b541b55353d7d0e3a1d0e34d653afefe0d4f"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -5477,9 +5477,9 @@
     },
     "presentation/official-web/MANIFEST.sha256": {
       "role": "index",
-      "sha256": "6014f2af6e5b83e928d3d2cc1c10bd841d449cee2d62939bb7c80c0e9ccc9dc0",
+      "sha256": "5b1285b18e951db84e0315c0cfe9e3c5785568ee380e3f291171d1800ef9e225",
       "size": 9711,
-      "normalized_sha256": "6014f2af6e5b83e928d3d2cc1c10bd841d449cee2d62939bb7c80c0e9ccc9dc0"
+      "normalized_sha256": "5b1285b18e951db84e0315c0cfe9e3c5785568ee380e3f291171d1800ef9e225"
     },
     "presentation/official-web/PROVENANCE.md": {
       "role": "index",
@@ -5507,15 +5507,15 @@
     },
     "presentation/official-web/client-bundles/ROSTER.json": {
       "role": "index",
-      "sha256": "f559f00ee0d5f95e4a25ac639fbcf9b37849e95afc9ed60e4f4989aa5cd5f1e5",
-      "size": 38283,
-      "normalized_sha256": "f559f00ee0d5f95e4a25ac639fbcf9b37849e95afc9ed60e4f4989aa5cd5f1e5"
+      "sha256": "39ce13faa267e39181b71f7dc00548bd9a7ce9592629655fda1653dd3a74ffb4",
+      "size": 42807,
+      "normalized_sha256": "39ce13faa267e39181b71f7dc00548bd9a7ce9592629655fda1653dd3a74ffb4"
     },
     "presentation/official-web/client-bundles/build-client-bundles.sh": {
       "role": "index",
-      "sha256": "8ec88ca9097d12f57a9f1a96d2efb12c6cca11e298b57969cba45e892c16e450",
-      "size": 6773,
-      "normalized_sha256": "8ec88ca9097d12f57a9f1a96d2efb12c6cca11e298b57969cba45e892c16e450"
+      "sha256": "68aa95d0b259dfe29ef91fed948dffd0558b4234794ec202d91ce96245688b1c",
+      "size": 6967,
+      "normalized_sha256": "68aa95d0b259dfe29ef91fed948dffd0558b4234794ec202d91ce96245688b1c"
     },
     "presentation/official-web/client-bundles/roster.mjs": {
       "role": "index",
@@ -5525,9 +5525,9 @@
     },
     "presentation/official-web/client-bundles/verify-manifest.mjs": {
       "role": "index",
-      "sha256": "8f5a3d45119b671aa3fdb1c46265bf64f391365f2b5a7a67e44d52c3f810cf6f",
-      "size": 5788,
-      "normalized_sha256": "8f5a3d45119b671aa3fdb1c46265bf64f391365f2b5a7a67e44d52c3f810cf6f"
+      "sha256": "18877624c620779cafe0c762d9891f6d09de425f5e86a57258c9f0e281fff4bb",
+      "size": 6303,
+      "normalized_sha256": "18877624c620779cafe0c762d9891f6d09de425f5e86a57258c9f0e281fff4bb"
     },
     "presentation/web-client-mini/manifest.json": {
       "role": "index",
@@ -5939,9 +5939,9 @@
     },
     "runtime/spike/gateway.js": {
       "role": "index",
-      "sha256": "182ca0a0aa203eb67a2c7223ca1da8ec520b200edc53ae7d8069e1e14ca2d025",
-      "size": 19019,
-      "normalized_sha256": "182ca0a0aa203eb67a2c7223ca1da8ec520b200edc53ae7d8069e1e14ca2d025"
+      "sha256": "2e617668af143869107117a9a266ce809ed4eba8af4011eb0482d74d877403dd",
+      "size": 20627,
+      "normalized_sha256": "2e617668af143869107117a9a266ce809ed4eba8af4011eb0482d74d877403dd"
     },
     "runtime/spike/host/CMakeLists.txt": {
       "role": "index",
@@ -6154,9 +6154,9 @@
     },
     "runtime/spike/scenario/android-composer-live-write.js": {
       "role": "index",
-      "sha256": "b3a32469942186522e1da10c0f1565112e8c15a62da50e1e10728e4efbafc4fb",
-      "size": 13515,
-      "normalized_sha256": "b3a32469942186522e1da10c0f1565112e8c15a62da50e1e10728e4efbafc4fb"
+      "sha256": "4fdcf5c4b57c15aec37dc609db8735cbcc7e410261b563a616de022b59fdccbd",
+      "size": 13390,
+      "normalized_sha256": "4fdcf5c4b57c15aec37dc609db8735cbcc7e410261b563a616de022b59fdccbd"
     },
     "runtime/spike/scenario/android-officialweb-web-live.js": {
       "role": "index",
@@ -6175,6 +6175,12 @@
       "sha256": "fde8c0f7b64172768c9dd458d1072cf5ed243f81bf7335f53f68aeaebd54f997",
       "size": 21161,
       "normalized_sha256": "fde8c0f7b64172768c9dd458d1072cf5ed243f81bf7335f53f68aeaebd54f997"
+    },
+    "runtime/spike/scenario/api-handler-respond.js": {
+      "role": "index",
+      "sha256": "e0bf7ff14ab9b4fb1fae7ee918f9e0b0328447b3d2e1dca80a59f8f19c1ab8da",
+      "size": 4402,
+      "normalized_sha256": "e0bf7ff14ab9b4fb1fae7ee918f9e0b0328447b3d2e1dca80a59f8f19c1ab8da"
     },
     "runtime/spike/scenario/ble-plane.js": {
       "role": "index",
@@ -6208,9 +6214,9 @@
     },
     "runtime/spike/scenario/composer-web-live.js": {
       "role": "index",
-      "sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0",
-      "size": 23082,
-      "normalized_sha256": "b7577f95e357c28709408d85963a85d9d8d1695c6d1aeba1dc7919ce53c509a0"
+      "sha256": "8f08e4bf0db0f5b3c28760975800e68875f761a165bc9c4c60b73805d1daaf00",
+      "size": 23013,
+      "normalized_sha256": "8f08e4bf0db0f5b3c28760975800e68875f761a165bc9c4c60b73805d1daaf00"
     },
     "runtime/spike/scenario/device-plane.js": {
       "role": "index",
@@ -6238,9 +6244,9 @@
     },
     "runtime/spike/scenario/harmony-composer-live-write.js": {
       "role": "index",
-      "sha256": "ab1e2493e26d95f43567785ae60ff6d2671c34e1e9ee1b783e86126c720386cd",
-      "size": 9702,
-      "normalized_sha256": "ab1e2493e26d95f43567785ae60ff6d2671c34e1e9ee1b783e86126c720386cd"
+      "sha256": "6bc40c7a68cf488565dfb1d2ae36bbcbf4286889f7948be7ef4f778400bec39c",
+      "size": 9577,
+      "normalized_sha256": "6bc40c7a68cf488565dfb1d2ae36bbcbf4286889f7948be7ef4f778400bec39c"
     },
     "runtime/spike/scenario/harmony-httpfetch-streaming.js": {
       "role": "index",
@@ -6310,9 +6316,9 @@
     },
     "runtime/spike/scenario/mic-plane.js": {
       "role": "index",
-      "sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910",
-      "size": 8099,
-      "normalized_sha256": "37f054ab6a26a92718d8643e045f1685325b57aa3db2dc93054d0f8aae2d6910"
+      "sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34",
+      "size": 8531,
+      "normalized_sha256": "3c327c33fede5b082e7efc0e4c65a991fb0dfc5374643656ea1fbdf6a9ec3e34"
     },
     "runtime/spike/scenario/models-directory.js": {
       "role": "index",
@@ -6367,6 +6373,18 @@
       "sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad",
       "size": 3966,
       "normalized_sha256": "22836639badb17e01f70d09a1f6127095ee9b6235741ec53fefc3c88d39be9ad"
+    },
+    "runtime/spike/scenario/real-agent-loop.js": {
+      "role": "index",
+      "sha256": "af962de52fbb702a8c580d3272c96ff236dd9772374adde787601991eb178faf",
+      "size": 14206,
+      "normalized_sha256": "af962de52fbb702a8c580d3272c96ff236dd9772374adde787601991eb178faf"
+    },
+    "runtime/spike/scenario/real-create.js": {
+      "role": "index",
+      "sha256": "8359c26edcc2687bc6bf94529025813e1a947d43d4b48120f950ea9276339b90",
+      "size": 8966,
+      "normalized_sha256": "8359c26edcc2687bc6bf94529025813e1a947d43d4b48120f950ea9276339b90"
     },
     "runtime/spike/scenario/scenario-verdict.js": {
       "role": "index",
@@ -6518,6 +6536,12 @@
       "size": 3719,
       "normalized_sha256": "0918b2d8056163ca8ca8e58cd5c9a058cf6b252775f717e43661602089903ee2"
     },
+    "runtime/spike/system-plugins": {
+      "role": "index",
+      "sha256": "73bfc8d517a02d2cb810acb34698b1cf0a113d3e82092a54bacf1ea333cdd189",
+      "size": 20,
+      "normalized_sha256": "73bfc8d517a02d2cb810acb34698b1cf0a113d3e82092a54bacf1ea333cdd189"
+    },
     "runtime/spike/tar-mini.js": {
       "role": "index",
       "sha256": "5cf98da63f04904fe6122a9214f22a6c4e082e25514613ea0339b39d36815f4c",
@@ -6544,9 +6568,9 @@
     },
     "runtime/spike/upstream/boot.js": {
       "role": "index",
-      "sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1",
-      "size": 27138,
-      "normalized_sha256": "69a7460343800da074f6a1c377c1058b2ee1386f6bef52ab17d891cf55816da1"
+      "sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba",
+      "size": 27560,
+      "normalized_sha256": "9f16aa10bfd9a3a6610134870413773fa2628c2b705642ed159fcc29401e3dba"
     },
     "runtime/spike/upstream/interfaces/bare-map.json": {
       "role": "index",
