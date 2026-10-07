@@ -236,7 +236,7 @@ final class SessionServe {
             plugins: WebBootRuntimeDrive.webPluginsDelivery(),
             config: runtimeConfig(port: server.port, bundleRoot: bundleRoot),
             scenario: dsh_runtime_res_scenario_b4_web_live_js,
-            scenarioPath: "scenario/composer-web-live.js",
+            scenarioPath: "web-live/composer-web-live.js",
             gateway: true)
     }
 

@@ -1,12 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { makeApiHandlerRespond, isWireError } from 'scenario/api-handler-respond.js';
+import { makeApiHandlerRespond, isWireError } from 'web-live/api-handler-respond.js';
 
 // loop-w2: the malformed-but-valid-JSON session/prompt envelope (no args
 // wrapper) made makePromptSession throw its structured `gateway/bad-request`
 // (upstream/web-write.js:316) — and the drive legs treated EVERY handler
 // rejection as a drive-killing defect WITHOUT posting any api.respond. On a
 // resident seat the drive has long finished, the suppressed fail lands
-// nowhere (scenario/scenario-verdict.js), and the HTTP caller waited the
+// nowhere (web-live/scenario-verdict.js), and the HTTP caller waited the
 // full RESPOND_TIMEOUT_MS — 30.0s — for the carrier's `gateway/unimplemented`
 // timeout envelope (measured 2026-10-05: three malformed-envelope probes
 // hung 30.0s each; well-formed payloads answered in 21-33ms). The guard

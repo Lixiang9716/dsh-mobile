@@ -1,6 +1,6 @@
 // dsh:logging-exempt (adapter over vendored code; logging stays in the caller)
 /**
- * scenario/write-surface-options.js — the write-surface options assembly for
+ * web-live/write-surface-options.js — the write-surface options assembly for
  * composer-web-live (split at the file-size gate): the `write` options object
  * the resident runtime half composes, plus the workspace registry provider
  * that feeds the 插件 inventory's workspace tier.

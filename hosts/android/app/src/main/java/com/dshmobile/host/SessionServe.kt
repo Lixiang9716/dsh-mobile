@@ -13,7 +13,7 @@ import org.json.JSONObject
  * the `/plugins` delivery (`CarrierPlugins`), the `/api` + mux bridge
  * (`CarrierAPIBridge` + `SessionWriteSeam` folding the runtime's claims),
  * the scripted chat-completions endpoint (`MockLlmRoute`), and the runtime
- * half — the FULL upstream spine booted through scenario/composer-web-live.js,
+ * half — the FULL upstream spine booted through web-live/composer-web-live.js,
  * which claims the write surface, the settings describe and the mux streams
  * and then goes RESIDENT: the page's own composer drives real turns, nothing
  * here pre-plays them.
@@ -46,7 +46,7 @@ class SessionServe private constructor(
 
     companion object {
         private const val TAG = "SessionServe"
-        private const val ENTRY = "scenario/composer-web-live.js"
+        private const val ENTRY = "web-live/composer-web-live.js"
         const val CLIENT_ID = "dsh-web-official"
         const val NEXT_CLIENT_ID = "dsh-web-client-v2"
 

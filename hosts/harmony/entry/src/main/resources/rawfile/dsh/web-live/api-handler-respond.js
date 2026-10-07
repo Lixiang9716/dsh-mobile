@@ -1,6 +1,6 @@
 // dsh:logging-exempt (drive plumbing; the scenario logs the outcome)
 /**
- * scenario/api-handler-respond.js — the claimed-endpoint answer guard the
+ * web-live/api-handler-respond.js — the claimed-endpoint answer guard the
  * write drives share (split from composer-web-live.js at loop-w2). The
  * historical drive legs answered a handler RESOLUTION and treated every
  * handler REJECTION as a drive-killing defect WITHOUT posting any
@@ -8,7 +8,7 @@
  * session/prompt envelope's `gateway/bad-request` thrown by
  * makePromptSession's shape check, upstream/web-write.js:316) reached the
  * scenario fail() alone. On a resident seat the drive has long finished by
- * then, the suppressed fail lands nowhere (scenario/scenario-verdict.js),
+ * then, the suppressed fail lands nowhere (web-live/scenario-verdict.js),
  * and the HTTP caller waited the FULL RESPOND_TIMEOUT_MS (30s,
  * CarrierAPIBridge.kt:302) before the carrier's `gateway/unimplemented`
  * timeout envelope answered (measured 2026-10-05: three malformed-envelope
@@ -44,7 +44,7 @@ export const isWireError = (error) => error !== null && typeof error === 'object
 /**
  * Build the write drive's claimed-endpoint runner (`onHandler`).
  * @param post - the bus post fn (the api.respond frames toward the carrier).
- * @param fail - the scenario's fail gate (scenario/scenario-verdict.js) —
+ * @param fail - the scenario's fail gate (web-live/scenario-verdict.js) —
  *   called ONLY for an unstructured throw, never for a structured refusal.
  * @param errorOf - upstream/web-write.js's thrown-value → wire-triple map.
  * @returns (msg, outcome) => void — call with every `kind: 'handler'`

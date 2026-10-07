@@ -37,7 +37,7 @@ class OfficialWebSession private constructor(
 
     companion object {
         const val SCENARIO = "android.officialweb.mount"
-        const val ENTRY = "scenario/android-officialweb-web-live.js"
+        const val ENTRY = "web-live/android-officialweb-web-live.js"
         const val CLIENT_ID = "dsh-web-official"
         // Bound, not pacing: the drive's own stages carry their deadlines
         // (composition delivery ~50-110s on the emulator under load, page

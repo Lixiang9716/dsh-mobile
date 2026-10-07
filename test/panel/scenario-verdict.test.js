@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { makeFailGate } from 'scenario/scenario-verdict.js';
+import { makeFailGate } from 'web-live/scenario-verdict.js';
 
 // loop-x: #366 made the scenario's fail() first-only — the completed-fail
 // verdict is sticky (js_complete keeps it in the host's error slot) and the

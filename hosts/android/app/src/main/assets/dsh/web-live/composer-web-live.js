@@ -28,11 +28,11 @@ import { bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';
 import { WRITE_ENDPOINTS, WRITE_STREAMS, errorOf } from 'upstream/web-write.js';
 import { resolveLlmRoute as sharedResolveLlmRoute, bootRouteOf, registerBootRouteFactory } from 'upstream/llm-route.js';
-import { writeSurfaceOptions } from 'scenario/write-surface-options.js';
-import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
-import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
-import { makeFailGate } from 'scenario/scenario-verdict.js';
-import { makeApiHandlerRespond } from 'scenario/api-handler-respond.js';
+import { writeSurfaceOptions } from 'web-live/write-surface-options.js';
+import { probeManagerLegs as probeManagerLegsShared } from 'web-live/manager-legs-probe.js';
+import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
+import { makeFailGate } from 'web-live/scenario-verdict.js';
+import { makeApiHandlerRespond } from 'web-live/api-handler-respond.js';
 
 const SCENARIO = 'composer.live-write';
 const AGENT_ID = 'main';
@@ -63,7 +63,7 @@ const log = createLogger('b4.web');
 
 
 const emit = (event, fields = {}) => log.info('e2e', { scenario: SCENARIO, event, ...fields });
-/** One verdict per scenario (scenario/scenario-verdict.js, split at loop-x):
+/** One verdict per scenario (web-live/scenario-verdict.js, split at loop-x):
  * the completion is terminal, and the embedder re-reports a completed-fail
  * on every later bus crossing (dsh_runtime_m4.c m4_status reads the sticky
  * completed flag) — a second __dshComplete only multiplies the FAIL lines,
@@ -218,7 +218,7 @@ const installTurnEvidence = (ctx, route, cfg) => {
 /** The resident runtime half: claims + api.request + the follow streams all
  * answer from the spine, WITH the write surface composed. Evidence is
  * fail-loud: an UNSTRUCTURED claimed-endpoint failure is a defect and kills
- * the drive — but only after the shared guard (scenario/api-handler-respond.js,
+ * the drive — but only after the shared guard (web-live/api-handler-respond.js,
  * loop-w2) answers the caller in band, so a structured refusal (the
  * malformed-envelope probes' gateway/bad-request) is a fast in-band error,
  * never the 30s RESPOND_TIMEOUT black-hole. */
@@ -261,14 +261,14 @@ const SETTINGS_PROBES = [
   { rpcId: 'probe/agentPresets-list-1', endpoint: 'agentPresets/list' },
   { rpcId: 'probe/pluginInventory-list-1', endpoint: 'pluginInventory/list' },
   { rpcId: 'probe/pluginManager-listBundles-1', endpoint: 'pluginManager/listBundles' },
-  // The manager-legs probe (scenario/manager-legs-probe.js) awaits this one
+  // The manager-legs probe (web-live/manager-legs-probe.js) awaits this one
   // — a probe that is awaited but never dispatched waits for a respond no
   // handler will ever post (loop-q: the deadline named it on the first
   // honest re-drive).
   { rpcId: 'probe/pluginManager-listPlugins-1', endpoint: 'pluginManager/listPlugins' },
 ];
 
-/** The probe legs' shared response waiter (scenario/probe-respond-await.js,
+/** The probe legs' shared response waiter (web-live/probe-respond-await.js,
  * loop-q): each poll tick is a minimal gateway call whose settle queues on
  * the runtime looper right behind the settles being awaited — awaiting it
  * hands the looper its turn, so a claimed handler whose answer rides the
@@ -309,7 +309,7 @@ const probeSettingsRoster = async () => {
  * (split from probeSettingsSurfaces at the file-size gate). */
 
 /** The manager LIST-legs probe: the shared two-tier demand + record
- * (scenario/manager-legs-probe.js, #335 A1). */
+ * (web-live/manager-legs-probe.js, #335 A1). */
 const probeManagerLegs = () =>
   probeManagerLegsShared({ awaitRespond, emit });
 

@@ -31,8 +31,8 @@
  * runtime/dsh/artifacts/macos-cli-settings-surfaces/.
  */
 import { createLogger } from 'logger.js';
-import { probeManagerLegs as probeManagerLegsShared } from 'scenario/manager-legs-probe.js';
-import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
+import { probeManagerLegs as probeManagerLegsShared } from 'web-live/manager-legs-probe.js';
+import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
 import { fsScope, fsStat } from 'gateway.js';
 import { AGENT_PRESETS_BASE_URL, bootUpstream, spineInventory } from 'upstream/boot.js';
 import { createWebBootRuntime } from 'upstream/web-boot.js';

@@ -169,6 +169,8 @@ RESOURCES = [
     # SessionLiveRuntime, WebBootRuntimeDrive, CarrierRuntime, AppDelegate);
     # the whole-dir scenario tree row serves the loader's file view
     # (926c6a7 dropped this block while every read site stayed — restored).
+    # The four PRODUCT boot producers now live under web-live/ (suffixes keep
+    # their historical names — the Swift link sites are unchanged).
     ("scenario_js", DSH / "scenario" / "boot-verification.js"),
     ("scenario_m2_js", DSH / "scenario" / "gateway-binding.js"),
     ("scenario_device_plane_js", DSH / "scenario" / "device-plane.js"),
@@ -182,9 +184,9 @@ RESOURCES = [
     ("scenario_upstream_parity_js", DSH / "scenario" / "upstream-parity.js"),
     ("scenario_upstream_suite_js", DSH / "scenario" / "upstream-suite-leg.js"),
     ("scenario_agent_flow_js", DSH / "scenario" / "agent-flow.js"),
-    ("scenario_b1_web_live_js", DSH / "scenario" / "officialweb-web-live.js"), ("scenario_b3_web_live_js", DSH / "scenario" / "session-web-live.js"),
-    ("scenario_b4_web_live_js", DSH / "scenario" / "composer-web-live.js"),
-    ("scenario_manager_legs_probe_js", DSH / "scenario" / "manager-legs-probe.js"),
+    ("scenario_b1_web_live_js", DSH / "web-live" / "officialweb-web-live.js"), ("scenario_b3_web_live_js", DSH / "web-live" / "session-web-live.js"),
+    ("scenario_b4_web_live_js", DSH / "web-live" / "composer-web-live.js"),
+    ("scenario_manager_legs_probe_js", DSH / "web-live" / "manager-legs-probe.js"),
     # The dsh-root runtime files + upstream adapters Swift stages by name
     # (BundleStager / SessionServe / SessionRuntime) — the pre-refactor
     # RESOURCES rows, restored.
@@ -309,8 +311,9 @@ TREES = [
     # convention): a shim joins the embed by existing, not by list edit.
     ("upstream/shims", DSH / "upstream" / "shims"),
     # The scenarios ride the WHOLE DIRECTORY too (same rule as the shims).
-    ("scenario",
-     DSH / "scenario"),
+    ("scenario", DSH / "scenario"),
+    # The web-live PRODUCT boot producers ride their own whole-dir row.
+    ("web-live", DSH / "web-live"),
 ] + [
     # the pinned npm packages' package.json (the node-module shim serves the
     # upstream attribution reads: `require('../package.json')`) — the lib/

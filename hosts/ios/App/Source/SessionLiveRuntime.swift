@@ -299,7 +299,7 @@ final class SessionLiveRuntime {
                      "apiKey": CarrierServer.mockLlmKey,
                      "containerRoot": bundleRoot.path],
             scenario: dsh_runtime_res_scenario_b3_web_live_js,
-            scenarioPath: "scenario/session-web-live.js",
+            scenarioPath: "web-live/session-web-live.js",
             gateway: true)
     }
 

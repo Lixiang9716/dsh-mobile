@@ -3,7 +3,7 @@
  * workspace-registry.js — the WORKSPACE dsh.plugins/1 registry face shared
  * by the `plugin_manager` tool (system-plugins/dsh-plugin-manager-tools,
  * #346 item 3) and the 插件 inventory's workspace-tier provider
- * (scenario/write-surface-options.js). One home for where the file lives,
+ * (web-live/write-surface-options.js). One home for where the file lives,
  * how it is read, and how its rows mutate.
  *
  * WHERE THE FILE LIVES (#346): the workspace is the profile container
