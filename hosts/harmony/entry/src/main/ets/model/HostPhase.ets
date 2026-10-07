@@ -885,10 +885,16 @@ export class HostPhase {
       this.mic?.micStop(callId, args, this.auditedSettle(name, args));
     } else {
       // a name the C side forwarded but this table covers nowhere: the
-      // gateway refused it (denied verdict), the settlement says invalid
-      this.auditLine(name, args, '{"code":"invalid"}', false, 'denied');
+      // gateway refused it. Unreachable while the descriptor-parity gate
+      // holds the C forward list and this table in sync; the vocabulary is
+      // the Android core's unknown-row shape regardless (audit
+      // denied/denied, settlement code 'denied' — GatewayCore.kt's
+      // null-handler arm), so the audit stream never carries a
+      // verdict/outcome pair the other hosts do not emit.
+      this.auditLine(name, args, '{"code":"denied"}', false, 'denied');
       this.settleCall(callId,
-        '{"code":"invalid","primitive":"' + name + '","message":"not forwarded"}', false);
+        '{"code":"denied","primitive":"' + name + '","message":"not granted to '
+        + CALLER_ID + '"}', false);
     }
   }
 
@@ -926,11 +932,15 @@ export class HostPhase {
   /** One §6 audit record: {ts, primitive, caller, verdict, outcome} — never
    * payload contents (the mic rows keep the capability plane's
    * closed-vocabulary detail: format/rate/frameMs/tag on start, refused /
-   * duration + bytes on stop). The field shape matches the Android/iOS
-   * gateway cores byte for byte so the flat audit stream stays
-   * cross-platform identical. Emitted through the phase sink (ONE writer —
-   * a hilog direct write would break the single-writer capture rule);
-   * debug-only, like those cores. */
+   * duration + bytes on stop). The FIELD SET and the verdict/outcome
+   * vocabulary match the Android/iOS gateway cores; byte rendering does
+   * not — each host serializes its own JSON (field order is the platform
+   * dict's, ts precision follows the platform clock: microseconds on
+   * Android's Instant, milliseconds in toISOString here, seconds on iOS),
+   * so parity is a shared field set and vocabulary, never identical bytes.
+   * Emitted through the phase sink (ONE writer — a hilog direct write
+   * would break the single-writer capture rule); debug-only, like those
+   * cores. */
   private auditLine(name: string, args: string, payloadJson: string,
     ok: boolean, verdict: string): void {
     if (BuildFlavor.isRelease()) {
