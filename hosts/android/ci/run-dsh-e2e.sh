@@ -73,7 +73,7 @@ adb shell am force-stop com.dshmobile.host >/dev/null 2>&1 || true
 STREAM=/tmp/dsh-dsh-stream.txt
 # the completion tag rides its own tag (dsh.runtime.result) — stream both
 # (logcat tag specs are EXACT, -s dsh.runtime alone never sees it)
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
 cleanup() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
 trap cleanup EXIT INT TERM
 deadline=$(( $(date +%s) + 120 ))

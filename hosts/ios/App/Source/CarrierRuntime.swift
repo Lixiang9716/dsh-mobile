@@ -14,7 +14,7 @@ final class CarrierRuntime {
     static let entryModule = "scenario/carrier-loopback.js"
     static let watchdogSeconds = 30
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.rt.carrier")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.runtime.carrier")
     private let server = CarrierServer()
     private let sink = RuntimeLogSink()
     // Swift imports the never-defined C struct's pointer as OpaquePointer.

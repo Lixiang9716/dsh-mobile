@@ -41,7 +41,7 @@ struct GatewayError: Error {
 /// The caller's manifest (data-protocols.md §2), read from the staged bundle
 /// root. Fail-loud: a missing or malformed manifest aborts the session.
 struct GatewayManifest {
-    static let caller = "dsh.rt.scenario"
+    static let caller = "dsh.runtime.scenario"
     let id: String
     let required: [String]
 

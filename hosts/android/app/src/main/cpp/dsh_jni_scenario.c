@@ -26,7 +26,7 @@
 #include "dsh_wasm.h"
 
 #define DSH_LOG_TAG "dsh.rt"
-#define DSH_RESULT_TAG "dsh.rt.result"
+#define DSH_RESULT_TAG "dsh.runtime.result"
 #define DSH_ENGINE_LABEL "quickjs-ng 0.17.0"
 #define DSH_ERR_MAX 512
 

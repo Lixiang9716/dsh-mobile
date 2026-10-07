@@ -174,7 +174,7 @@ Layout:
   in these copies is silent otherwise, see the surprise ledger).
 
 Log capture: the C sink forwards each canonical `dsh.runtime.log:` line unmodified to
-hilog (domain `0xD5E0`, tag `dsh.dsh`, `%{public}s`) AND appends it to a capture file
+hilog (domain `0xD5E0`, tag `dsh.runtime`, `%{public}s`) AND appends it to a capture file
 under the app cache dir (`haps/entry/cache/dsh-dsh-capture.log`), pulled via
 `hdc file recv` as the truncation-proof second capture.
 
@@ -227,7 +227,7 @@ HDC="$CLT/sdk/default/openharmony/toolchains/hdc"
 "$HDC" shell uinput -T -m 400 1600 400 400 300
 "$HDC" shell hilog -r                      # clear, then launch
 "$HDC" shell aa start -b com.dshmobile.host -a EntryAbility
-"$HDC" shell hilog -x | grep dsh.dsh     # four `dsh.runtime.verdict:` lines expected
+"$HDC" shell hilog -x | grep dsh.runtime     # four `dsh.runtime.verdict:` lines expected
 "$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-dsh-capture.log .
 "$HDC" file recv /data/app/el2/100/base/com.dshmobile.host/haps/entry/cache/dsh-host-capture.log .
 "$HDC" shell snapshot_display -f /data/local/tmp/m5-screenshot.jpeg

@@ -298,7 +298,7 @@ for f in gateway.js logger.js registry.js workspace-registry.js ed25519.js marke
     cmp -s "$DSH/$f" "$ASSETS/$f" || cp "$DSH/$f" "$ASSETS/$f"
 done
 
-# The caller manifest (id dsh.dsh.scenario) is the gateway's permission
+# The caller manifest (id dsh.runtime.scenario) is the gateway's permission
 # record: a stale copy silently denies primitives the canonical manifest
 # grants, so it rides the same byte-identity sync as the runtime files.
 cmp -s "$DSH/manifest.json" "$ASSETS/manifest.json" || cp "$DSH/manifest.json" "$ASSETS/manifest.json"

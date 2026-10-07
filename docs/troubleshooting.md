@@ -174,7 +174,7 @@ the `CANARY` pin, the `canary_view()` helper, and the comment at `:86-91`
 naming the 2026-09-29 relapse (truncation was canary-pinned but the wait
 still grepped the raw stream). The device-plane runner instead abandons the
 live stream: force-stop, `logcat -c`, launch clean, then poll `logcat -d
--s dsh.dsh` snapshots — a dump is inherently this-run-only
+-s dsh.runtime` snapshots — a dump is inherently this-run-only
 (`run-device-plane.sh:70-95`). Either discipline works; mixing them
 (canary-pinned truncation, raw-stream waits) is the failure.
 

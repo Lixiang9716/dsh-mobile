@@ -117,7 +117,7 @@ embedder plus a typed JS shim (`gateway.js`).
   hub) must be imported under ONE canonical specifier, or the two
   specifiers yield two module instances with two listener sets.
 - `manifest.json` — the scenario bundle's plugin manifest
-  (`dsh.dsh.scenario`); the embedder reads it from
+  (`dsh.runtime.scenario`); the embedder reads it from
   `bundle_root/manifest.json` and enforces the declared capabilities.
 - `scenario/boot-verification.js` — the `boot.verification` E2E scenario: ESM
   package load, host Web-API shims, gateway negotiation. (The canned

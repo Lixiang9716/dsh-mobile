@@ -34,7 +34,7 @@ final class GatewaySession {
         self.bleRadio = bleRadio
     }
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.rt.gateway")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.runtime.gateway")
     private let server = CarrierServer()
     private let sink = RuntimeLogSink()
     private var core: GatewayCore?

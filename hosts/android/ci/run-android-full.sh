@@ -184,7 +184,7 @@ adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # the completion wait judge the CANARY view: `logcat -c` races the reader's
 # initial snapshot, and a stale pre-clear marker must not fire a screenshot,
 # a tap, or the wait.
-CANARY=$("$CAPTURE" start -f "$M4_STREAM" dsh.dsh dsh.runtime.result dsh.runtime.ui dsh.runtime.audit)
+CANARY=$("$CAPTURE" start -f "$M4_STREAM" dsh.runtime dsh.runtime.result dsh.runtime.ui dsh.runtime.audit)
 cview() { "$CAPTURE" view -f "$M4_STREAM" "$CANARY"; }
 cleanup() {
     "$CAPTURE" stop -f "$M4_STREAM" >/dev/null 2>&1 || true
@@ -274,7 +274,7 @@ wshot() { adb exec-out screencap -p > "$ART/screens/$1.png" 2>/dev/null || true;
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phase 2, via the shared canary-pinned script.
-WCANARY=$("$CAPTURE" start -f "$WEB_STREAM" dsh.dsh dsh.runtime.result)
+WCANARY=$("$CAPTURE" start -f "$WEB_STREAM" dsh.runtime dsh.runtime.result)
 wview() { "$CAPTURE" view -f "$WEB_STREAM" "$WCANARY"; }
 cleanup_web() {
     "$CAPTURE" stop -f "$WEB_STREAM" >/dev/null 2>&1 || true
@@ -388,7 +388,7 @@ sshots() { adb exec-out screencap -p > "$SART/screens/$1.png" 2>/dev/null || tru
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phase 3, via the shared canary-pinned script.
-SECANARY=$("$CAPTURE" start -f "$SESSION_STREAM" dsh.dsh dsh.runtime.result)
+SECANARY=$("$CAPTURE" start -f "$SESSION_STREAM" dsh.runtime dsh.runtime.result)
 sview() { "$CAPTURE" view -f "$SESSION_STREAM" "$SECANARY"; }
 cleanup_session() {
     "$CAPTURE" stop -f "$SESSION_STREAM" >/dev/null 2>&1 || true
@@ -471,7 +471,7 @@ wshots() { adb exec-out screencap -p > "$WART/screens/$1.png" 2>/dev/null || tru
 
 adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Same capture discipline as phases 3-4, via the shared canary-pinned script.
-WRCANARY=$("$CAPTURE" start -f "$WRITE_STREAM" dsh.dsh dsh.runtime.result)
+WRCANARY=$("$CAPTURE" start -f "$WRITE_STREAM" dsh.runtime dsh.runtime.result)
 wrview() { "$CAPTURE" view -f "$WRITE_STREAM" "$WRCANARY"; }
 cleanup_write() {
     "$CAPTURE" stop -f "$WRITE_STREAM" >/dev/null 2>&1 || true

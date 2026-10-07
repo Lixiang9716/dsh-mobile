@@ -18,7 +18,7 @@
 #       Clears the device buffer (`adb logcat -c`), truncates FILE, starts a
 #       line-buffered streamer `adb logcat -s <tag-filter...> dsh.canary`
 #       appending to FILE (the canary tag is added to the specs automatically
-#       — logcat tag specs are EXACT, so `-s dsh.dsh` alone never sees it),
+#       — logcat tag specs are EXACT, so `-s dsh.runtime` alone never sees it),
 #       emits a unique canary marker onto dsh.canary, and waits (bounded) for
 #       that marker to reach FILE — the proof the streamer is attached and
 #       everything ahead of the marker is pre-capture. Prints the canary id
@@ -64,7 +64,7 @@ canary_view() {
 cmd_start() { # <file> <tag-filter...>
     file=$1
     shift
-    [ "$#" -ge 1 ] || die "start: no tag filters given (the tags to stream, e.g. dsh.dsh dsh.runtime.result)"
+    [ "$#" -ge 1 ] || die "start: no tag filters given (the tags to stream, e.g. dsh.runtime dsh.runtime.result)"
     [ -d "$(dirname "$file")" ] || die "capture dir missing: $(dirname "$file")"
     : > "$file"
 

@@ -67,7 +67,7 @@ const REGISTER_DOC = 'docs/e2e-matrix.md';
  *  their renamed manifests — old stem in, new stem out. A verdict naming
  *  neither an old nor a new manifest still fails loud (rule 5). */
 const LEGACY_STEMS = new Map(Object.entries({
-  'm1-dsh-boot': 'boot-verification', 'm1-carrier-loopback': 'carrier-loopback',
+  'm1-spike-boot': 'boot-verification', 'm1-carrier-loopback': 'carrier-loopback',
   'm2-bridge-smoke': 'gateway-bridge-smoke', 'm2-gateway-binding': 'gateway-binding',
   'm2-gateway-audit': 'gateway-audit', 'm2-session': 'session-mock-llm',
   'm2-llm': 'llm-live-stream', 'm2-llm-device': 'llm-live-stream-device',
@@ -77,7 +77,7 @@ const LEGACY_STEMS = new Map(Object.entries({
   'm3-fetch-install': 'install-from-http', 'm3-fetch-carrier': 'install-carrier-evidence',
   'm3-ui-swap': 'ui-client-swap', 'm4-host-binding': 'android-capability-binding',
   'm5-host-binding': 'harmony-capability-binding', 'b1-official-web-mount': 'officialweb-mount',
-  'b3-session-live': 'session-live-read', 'b4-write-live': 'composer-live-write',
+  'b3-session-live': 'session-live-read', 'b4-write-live': 'composer-live-write', 'nextweb-mount': 'v2web-mount', 'whale-mount': 'compactweb-mount', 'android-nextweb-mount': 'android-v2web-mount', 'android-whale-mount': 'android-compactweb-mount', 'harmony-nextweb-mount': 'harmony-v2web-mount', 'harmony-whale-mount': 'harmony-compactweb-mount',
   'b-android-official-web-mount': 'android-officialweb-mount',
   'b-android-session-live': 'android-session-live-read', 'b-android-write-live': 'android-composer-live-write',
   'b-harmony-official-web-mount': 'harmony-officialweb-mount',

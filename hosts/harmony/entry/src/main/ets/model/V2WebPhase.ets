@@ -401,7 +401,7 @@ export class V2WebPhase {
       passed ? 'PASS' : 'FAIL', error);
     hostCarrierLine(2, 'dsh.runtime.verdict: ' + SCENARIO +
       (passed ? ' PASS | quickjs-ng 0.17.0' : ' FAIL | ' + error));
-    hostCarrierLine(2, 'dsh.rt.result: ALL ' + (passed ? 'PASS' : 'FAIL'));
+    hostCarrierLine(2, 'dsh.runtime.result: ALL ' + (passed ? 'PASS' : 'FAIL'));
   }
 
   private carrierLine(event: string, fields: Record<string, Object>): void {

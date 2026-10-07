@@ -144,7 +144,7 @@ streamer 持续写同一文件、就地重写孤儿化了 streamer 的 fd
 `CANARY` 钉子、`canary_view()` 助手，以及 `:86-91` 点名 2026-09-29 复发
 （截断已 canary 钉住、等待却仍在 grep 裸流）的注释。device-plane runner
 则干脆放弃实时流：force-stop、`logcat -c`、干净启动，然后轮询
-`logcat -d -s dsh.dsh` 快照 —— dump 天然只含本轮
+`logcat -d -s dsh.runtime` 快照 —— dump 天然只含本轮
 （`run-device-plane.sh:70-95`）。两种纪律都成立；混用（截断 canary 钉住、
 等待裁裸流）正是失败形状。
 

@@ -38,7 +38,7 @@ class SessionLiveSession private constructor(private val activity: Activity) {
         const val WATCHDOG_SECONDS = 270
 
         private const val TAG = "dsh.rt"
-        private const val RESULT_TAG = "dsh.rt.result"
+        private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
         private const val BOOT_SOURCE =
             "runtime (spine + vendored @deepseek-ai/dsh-client-modules)"

@@ -56,7 +56,7 @@
 > 两个后续 —— `onboarding/clear`（keychain 删除 + 热恢复 boot 路由；清除后
 > 第二回合由恢复的 mock 适配器应答，无需重启）与 models 设置页目录跟随
 > 实时路由（保存后 byok 行替换 boot 行）—— CLI 腿 `onboarding.flow`
-> 13/13，目录 `runtime/dsh/artifacts/macos-cli-onboarding/`；
+> 13/13，目录 `runtime/spike/artifacts/macos-cli-onboarding/`；
 > `models.directory` 6/6 重跑绿；api-coverage 探针重跑（37 个 coverage
 > 端点 —— `onboarding/clear` 加入声明集）。校验器对本树重跑：80 目录 /
 > 156 verdict，PASS（7 项已归属的已知缺口）。
@@ -78,14 +78,14 @@
 > ed25519 验签（零新增网关原语），目录由生成器从 `system-plugins/` 署名并
 > 经回环文件托管伺服，信任记录原样透传给零改动的安装器，§7.2 密钥轮换演练
 > 与 §7.1 篡改阶梯（四档，每档 `InstallRejected` + 审计 + 零暂存），目录
-> `runtime/dsh/artifacts/macos-cli-marketplace-install/`。校验器对本树
+> `runtime/spike/artifacts/macos-cli-marketplace-install/`。校验器对本树
 > （含新目录）重跑：75 目录 / 151 verdict，PASS。
 >
 > **时效性**：本矩阵反映 BYOK 引导变更（2026-09-30）：为没有现成 API key
 > 的内测用户提供首启凭证面板 —— CLI 腿 `onboarding.flow` 9/9（无凭证检测 →
 > 连接测试的成功与 401 两路，走真实 gateway httpFetch 传输 → keychain 存入
 > → 已配过再检测 → 重启路由解析 → 重绑定路由上的首回合），目录
-> `runtime/dsh/artifacts/macos-cli-onboarding/`；CLI 开发宿主自此实现冻结
+> `runtime/spike/artifacts/macos-cli-onboarding/`；CLI 开发宿主自此实现冻结
 > 的 keychain 原语（每 ref 一个 0600 文件 —— `gateway.bridge-smoke` 重钉为
 > roundtrip，7/7）；`llm.js` 的 SSE 排空不再在 [DONE] 折叠处遗留挂起的
 > `next()`（实测：该孤儿续体会令 CLI 引擎硬中止）。总量对本树重跑（71 个
@@ -101,7 +101,7 @@
 > 的加载映射），基线之外的薄尾巴是 node-sqlite 3/648、
 > openai-client/partial-json/slot-registry 各 5/648、string-decoder 7/648；
 > 新 CLI 腿 `shim.exposure-probe` 在真实引擎上压这五张脸（8/8，目录
-> `runtime/dsh/artifacts/macos-cli-shim-exposure-probe/`；先证伪——
+> `runtime/spike/artifacts/macos-cli-shim-exposure-probe/`；先证伪——
 > 打断 string-decoder 的尾字节持有即变红）。总量对本树重跑（73 目录 /
 > 149 verdict / 73 of 73 scenario id 绿覆盖 / 66 manifest），同时并入
 > 自上一条注记重跑之后落地的 BLE + 相机 + 麦克风 + parity 目录。
@@ -149,7 +149,7 @@
 >
 > **时效性**：本矩阵反映 models 页 e2e 变更（2026-09-25）：官方客户端的
 > models 设置页有了独立 CLI 证明 —— scenario `models.directory` 6/6，目录
-> `runtime/dsh/artifacts/macos-cli-models-directory/` —— 且总量对本树重跑
+> `runtime/spike/artifacts/macos-cli-models-directory/` —— 且总量对本树重跑
 > （44 个目录 / 92 条 verdict / 43 个 scenario id 全部有绿证 / 35 个
 > manifest）。下面的 `49fce4f` 注记是上一次的时效记录；其加入的行保留
 > 当时的展示名拼写，verdict id 现已细化。
@@ -232,7 +232,7 @@
 | `composer.live-write` | 46/46 | — | — | — |
 | `device.plane` | 16/16, 16/16 | 15/15, 15/15 | 13/13 | — |
 | `device.plane.audit` | 14/23, 14/23 | 13/22, 13/22 | — | — |
-| `m1.dsh.boot` | 9/9（漂移）, 7/7（漂移） | 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 7/7（漂移）, 7/7（漂移）, 7/7（漂移）, 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 9/9（漂移） |
+| `m1.spike.boot` | 9/9（漂移）, 7/7（漂移） | 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 7/7（漂移）, 7/7（漂移）, 7/7（漂移）, 9/9（漂移）, 7/7（漂移）, 7/7（漂移） | 9/9（漂移） |
 | `m1.carrier.loopback` | 7/7, 7/7 | — | — | — |
 | `m2.bridge.smoke` | — | 6/6, 6/6 | 6/6, 6/6, 6/6, 6/6, 6/6 | 6/6 |
 | `gateway.bridge-smoke` | — | 6/6 | 6/6 | — |
@@ -274,12 +274,12 @@
 | `open.design` | — | — | — | 15/15 |
 | `session.mock-llm` | 23/23, 23/23 | 23/23 | 23/23 | — |
 | `settings.surfaces.cli` | — | — | — | 12/12 |
-| `v2web.mount` | 24/24 | — | — | — |
-| `compactweb.mount` | 7/7 | — | — | — |
-| `android.compactweb.mount` | — | 7/7 | — | — |
-| `android.v2web.mount` | — | 24/24 | — | — |
-| `harmony.compactweb.mount` | — | — | 7/7 | — |
-| `harmony.v2web.mount` | — | — | 24/24 | — |
+| `nextweb.mount` | 24/24 | — | — | — |
+| `whale.mount` | 7/7 | — | — | — |
+| `android.whale.mount` | — | 7/7 | — | — |
+| `android.nextweb.mount` | — | 24/24 | — | — |
+| `harmony.whale.mount` | — | — | 7/7 | — |
+| `harmony.nextweb.mount` | — | — | 24/24 | — |
 | `upstream.parity` | 12/37（漂移） + 差分 25/25 | 13/13 + 25/25 | — | 12/37（漂移） + 25/25 |
 | `userland.shell` | — | — | — | 11/11 |
 | `lynx.mount` | — | — | — | 34/34, 34/34 |
@@ -321,12 +321,12 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/android/artifacts/upstream-parity` | Android | upstream.parity 13/13 + 与 Node 金标的差分 25/25 条记录一致（模拟器腿，设备内 MockLlmRoute） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/android-session-live` | Android | b-android.session.live 46/46 | ✓ | ✓ | ✓ | 4 |
 | `hosts/android/artifacts/android-write-live` | Android | b-android.write.live 45/45 | ✓ | ✓ | ✓ | 4 |
-| `hosts/android/artifacts/compact-mount` | Android | android.compactweb.mount 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/android/artifacts/v2web-mount` | Android | android.v2web.mount 24/24 | ✓ | ✓ | ✓ | 2 |
-| `hosts/android/artifacts/m1-dsh` | Android | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/whale-mount` | Android | android.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/nextweb-mount` | Android | android.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 2 |
+| `hosts/android/artifacts/m1-spike` | Android | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/m2-llm` | Android | m2.llm.carrier 7/7, m2.llm 14/171 | ✓ | ✓ | ✓ | 0 |
-| `hosts/android/artifacts/m4-complete` | Android | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
-| `hosts/android/artifacts/m4-host` | Android | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
+| `hosts/android/artifacts/m4-complete` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m2.gateway.audit 16/16, m4.host-binding 35/35 | ✓ | ✓ | ✓ | 5 |
+| `hosts/android/artifacts/m4-host` | Android | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 22/22（漂移） | ✓ | ✓ | ✓ | 1 |
 | `hosts/android/artifacts/ble-mock` | Android | ble.plane 16/16, ble.plane.audit 8/8（确定性 mock 电台的双设备 GATT 库——180f/2a19 read+notify、fe00/fe01 write——与真实电台共用同一套 gateway 强制、同意层与审计） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/ble-skip` | Android | ble.plane 8/8, ble.plane.audit 4/4（如实无电台姿态：模拟器的虚拟控制器带未授予的运行时权限） | ✓ | ✓ | ✓ | 0 |
 | `hosts/android/artifacts/camera-plane` | Android | camera.plane 8/8（虚拟相机真实拍摄），camera.plane.audit 5 钉/6 记（审计 manifest 已声明 `repeat`——合法） | ✓ | ✓ | ✓ | 0 |
@@ -337,27 +337,27 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/harmony/artifacts/d9-official-web` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
 | `hosts/harmony/artifacts/d9-session-live` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
 | `hosts/harmony/artifacts/d9-write-live` | HarmonyOS | 完整 8-scenario 套件，绿色（receipt 2026-10-05） | ✓ | ✓ | ✓ | 8 |
-| `hosts/harmony/artifacts/compact-mount` | HarmonyOS | harmony.compactweb.mount 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/v2web-mount` | HarmonyOS | harmony.v2web.mount 24/24 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/whale-mount` | HarmonyOS | harmony.whale.mount 7/7 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/nextweb-mount` | HarmonyOS | harmony.nextweb.mount 24/24 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/device-plane` | HarmonyOS | device.plane 13/13 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m1-dsh` | HarmonyOS | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20（漂移）, harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
+| `hosts/harmony/artifacts/m1-spike` | HarmonyOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/harmony/artifacts/m5-host` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 20/20（漂移）, harmony.capability-binding 27/27, boot.verification 8/8, gateway.bridge-smoke 6/6, session.mock-llm 23/23, harmony.officialweb.mount 17/17, harmony.session.live-read 43/43, harmony.composer.live-write 36/36, harmony.httpfetch-streaming 6/6 | ✓ | ✓ | ✓ | 11 |
 | `hosts/harmony/artifacts/m5-llm-live-stream` | HarmonyOS | llm.live-stream 14/130, llm.live-stream.carrier 7/7 —— 配额阻塞的 `m5-m2-llm` 目录于 2026-09-28 重跑转绿（提交 `64889c54`）；被服务的轮次已可宣称 | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/windows-t3-live-llm` | HarmonyOS | llm.live-stream 14/114 + carrier 7/7（receipt 2026-10-05，bigmodel 座，Windows 宿主） | ✓ | ✓ | ✓ | 1 |
 | `hosts/harmony/artifacts/windows-t4t5-real-agent` | HarmonyOS | real.agent.loop 21/21（receipt 2026-10-05，glm-5.3-flash 实况工具循环，Windows 宿主） | ✓ | ✓ | ✓ | 1 |
-| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.dsh.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
+| `hosts/harmony/artifacts/m5-primitives` | HarmonyOS | m1.spike.boot 7/7, m2.bridge.smoke 6/6, m2.session 23/23, m5.host-binding 27/27, b-harmony.httpfetch-v2 6/6, b-harmony.official-web-mount 17/17, b-harmony.session.live 43/43, b-harmony.write.live 33/33 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/b1-official-web` | iOS | b1.official-web.mount 14/14 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b3-session-live` | iOS | b3.session.live 46/46 | ✓ | ✓ | ✓ | 2 |
 | `hosts/ios/artifacts/b4-write-live` | iOS | b4.write.live 46/46 | ✓ | ✓ | ✗（缺口 1） | 3 |
 | `hosts/ios/artifacts/m1-carrier` | iOS | m1.carrier.loopback 7/7 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m1-dsh` | iOS | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 1 |
-| `hosts/ios/artifacts/m2-gateway` | iOS | m1.dsh.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
+| `hosts/ios/artifacts/m1-spike` | iOS | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 1 |
+| `hosts/ios/artifacts/m2-gateway` | iOS | m1.spike.boot 7/7, m1.carrier.loopback 7/7, m2.gateway.audit 16/16, m2.gateway.binding 19/19 | ✓ | ✓ | ✓ | 9 |
 | `hosts/ios/artifacts/m2-llm` | iOS | m2.llm.carrier 7/7, m2.llm 14/148 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m2-session` | iOS | m2.session 23/23, m2.webclient.mount 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-complete` | iOS | m3.fetch-carrier 11/11, m3.fetch-install 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/m3-pluginization` | iOS | m2.session 23/23, m3.ui-swap 7/7 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/upstream-parity` | iOS | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（模拟器腿；gateway httpFetch → 宿主机侧 mock） | ✓ | ✓ | ✓ | 2 |
-| `hosts/ios/artifacts/v2web-mount` | iOS | v2web.mount 24/24 | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/nextweb-mount` | iOS | nextweb.mount 24/24 | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/agent-flow` | iOS | agent.flow 17/17 | ✓ | ✓ | ✓ | 4 |
 | `hosts/ios/artifacts/composer-live-write` | iOS | composer.live-write 46/46 | ✓ | ✓ | ✓ | 3 |
 | `hosts/ios/artifacts/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 6 |
@@ -373,31 +373,31 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 | `hosts/ios/artifacts/mic-plane` | iOS | mic.plane 11/11, mic.plane.audit 6/6 —— 武装梯带真实 PCM 帧 | ✓ | ✓ | ✓ | 1 |
 | `hosts/ios/artifacts/simulator-matrix/device-plane` | iOS | device.plane 16/16, device.plane.audit 14/23 | ✓ | ✓ | ✓ | 5 |
 | `hosts/ios/artifacts/simulator-matrix/gateway-drive` | iOS | boot.verification 8/8, carrier.loopback 7/7, gateway.audit 16/16, gateway.binding 19/19 | ✓ | ✓ | ✓ | 7 |
-| `hosts/ios/artifacts/compact-mount` | iOS | compactweb.mount 7/7, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli` | macOS CLI | m1.dsh.boot 9/9 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19（scripted-SSE 分支） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-ish-shell` | macOS CLI | ish.shell 11/11 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-office` | macOS CLI | office 19/19 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19（回环缝：带半关闭的真实 TCP echo、一个经 /dev/tcp 拨接测试服务器的 /bin/bash 子进程、两条越界拒绝腿；审计门钉 listen=3 connect=3 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71（签名目录：纯 JS ed25519 验签、信任记录透传给零改动安装器、密钥轮换演练、四档篡改阶梯——每次拒绝零暂存） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25（21 案例畸形参数电池打裸网关缝——错型、缺字段、路径逃逸、未知 scope、超长值、必须不存在的原语名、畸形 args JSON——每次攻击都是结构化 §3 拒绝；电池后的良性往返证明进程存活；两起 socket 攻击以固定 reason 码审计） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19（8 个手工 wasm 模块打 jail——被调用的敌意导入、错签名 emit、越界 emit 指针、栈耗尽、缺导出、缺模块、路径逃逸、未授予 scope——外加 6 个越界 socket 拨号，逐条审计 host-not-loopback=4 / scope-not-loopback=2；诚实 echo 模块在电池前后各跑一次） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11（五档管线伪造全拒——能力抬升越过过期锚与重算信任、入口替换、id 换牌、旧包回退——零暂存、无 journal；阶梯之后诚实包照常安装；目录新鲜度重放档记录 HIGH 发现：过期但签名有效的目录会装进来，dsh-echo@0.9.0） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7（金丝雀走过钥匙串保存、重启路由解析、一次真实传输回合与 401 面——错误消息在运行时内断言无密钥；runner 在匹配器自检之后审计裸日志中的两个秘密值） | ✓ | ✓ | ✓ | 0 |
-| `runtime/dsh/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
+| `hosts/ios/artifacts/whale-mount` | iOS | whale.mount 7/7, session.mock-llm 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli` | macOS CLI | m1.spike.boot 9/9 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-bridge-smoke` | macOS CLI | m2.bridge.smoke 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m2-llm` | macOS CLI | m2.llm 19/19（scripted-SSE 分支） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m2-session` | macOS CLI | m2.session 23/23 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m3-install` | macOS CLI | m3.install 22/22 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-m3-complete` | macOS CLI | m3.complete 41/41 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-session` | macOS CLI | upstream.session 31/31 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-parity` | macOS CLI | upstream.parity 12/37（漂移） + 与已提交金标的差分 25/25 条记录一致（两腿各自独立的 mock 实例） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-models-directory` | macOS CLI | models.directory 6/6 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-onboarding` | macOS CLI | onboarding.flow 13/13 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-settings-surfaces` | macOS CLI | settings.surfaces.cli 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-tool-fs` | macOS CLI | tool.fs（探针，15 条记录） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-upstream-boot` | macOS CLI | upstream.web-boot 12/12 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-ish-shell` | macOS CLI | ish.shell 11/11 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-office` | macOS CLI | office 19/19 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-open-design` | macOS CLI | open.design 15/15 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-userland-shell` | macOS CLI | userland.shell 11/11 | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-socket-seam` | macOS CLI | socket.seam 19/19（回环缝：带半关闭的真实 TCP echo、一个经 /dev/tcp 拨接测试服务器的 /bin/bash 子进程、两条越界拒绝腿；审计门钉 listen=3 connect=3 accept=2 denied=2） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-marketplace-install` | macOS CLI | marketplace.install 71/71（签名目录：纯 JS ed25519 验签、信任记录透传给零改动安装器、密钥轮换演练、四档篡改阶梯——每次拒绝零暂存） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-gateway-fuzz` | macOS CLI | security.gateway-fuzz 25/25（21 案例畸形参数电池打裸网关缝——错型、缺字段、路径逃逸、未知 scope、超长值、必须不存在的原语名、畸形 args JSON——每次攻击都是结构化 §3 拒绝；电池后的良性往返证明进程存活；两起 socket 攻击以固定 reason 码审计） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-jail` | macOS CLI | security.jail 19/19（8 个手工 wasm 模块打 jail——被调用的敌意导入、错签名 emit、越界 emit 指针、栈耗尽、缺导出、缺模块、路径逃逸、未授予 scope——外加 6 个越界 socket 拨号，逐条审计 host-not-loopback=4 / scope-not-loopback=2；诚实 echo 模块在电池前后各跑一次） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-manifest-forgery` | macOS CLI | security.manifest-forgery 11/11（五档管线伪造全拒——能力抬升越过过期锚与重算信任、入口替换、id 换牌、旧包回退——零暂存、无 journal；阶梯之后诚实包照常安装；目录新鲜度重放档记录 HIGH 发现：过期但签名有效的目录会装进来，dsh-echo@0.9.0） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-security-byok-leak` | macOS CLI | security.byok-leak 7/7（金丝雀走过钥匙串保存、重启路由解析、一次真实传输回合与 401 面——错误消息在运行时内断言无密钥；runner 在匹配器自检之后审计裸日志中的两个秘密值） | ✓ | ✓ | ✓ | 0 |
+| `runtime/spike/artifacts/macos-cli-shim-exposure-probe` | macOS CLI | shim.exposure-probe 8/8（shim 曝光测绘的五条行为腿：被 orphan 的 dsh-session-persistence 错误类、node:sqlite `:memory:`、string-decoder 的分片 UTF-8 持有、partial-json + openai-client 的线上脸、slot-registry 的守卫） | ✓ | ✓ | ✓ | 0 |
 | `hosts/ios/artifacts/settings-screens` | iOS | ——（仅人看证据；机器断言在 `b4-write-live`） | ✓（app-stdout） | ✗（设计使然） | ✗（设计使然） | 2 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-lynx` | macOS CLI | lynx.mount 34/34（lynx 皮肤：bundle 的缝核心 + 工件 sha256 校验） | ✓ | ✓ | ✓ | 0 |
 | `presentation/lynx-client/artifacts/cli-lynx-mount-stub` | macOS CLI | lynx.mount 34/34（stub 皮肤：同一流程——即可替换性证明） | ✓ | ✓ | ✓ | 0 |
@@ -528,10 +528,10 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 
 - **缺口 2（Harmony `scenario.jsonl`）** —— 通过在本树上完整重跑
   `hosts/harmony/ci/run-host-e2e.sh` 闭合：四条 verdict 全部与已提交
-  manifest 一致（m1.dsh.boot 7/7、m2.bridge.smoke 6/6、m2.session 23/23、
+  manifest 一致（m1.spike.boot 7/7、m2.bridge.smoke 6/6、m2.session 23/23、
   m5.host-binding 20/20），且 runner 现在从本次运行自己的 capture 文件抽取
   `scenario.jsonl`（对 sink + binding capture 执行
-  `grep -h '^dsh.runtime.log:'`——与 Android runner 相同的抽取约定）。重跑
+  `grep -h '^dsh.spike.log:'`——与 Android runner 相同的抽取约定）。重跑
   依赖一处一行主机修复：#53 把 `dsh:util-crypto` 升到 0.1.6-alpha.2 时更新了
   加载路径、manifest 与 rawfile 副本，却漏了 `Index.ets` 的 `BUNDLE_FILES`，
   导致全新启动在记录任何 scenario 行之前就死于 `GetRawfileContent`。
@@ -539,9 +539,9 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
   JPEG；runner 现在用一行有记录的 `sips -s format png` 步骤对两张截图就地
   转换，重拍的两个文件均带真实 PNG magic。
 - **缺口 4（`m2.bridge.smoke` 无 macOS CLI 证据）** —— 通过在该 scenario
-  的规范主机上真实无头运行闭合：`runtime/dsh/artifacts/macos-cli-bridge-smoke/`
+  的规范主机上真实无头运行闭合：`runtime/spike/artifacts/macos-cli-bridge-smoke/`
   提交了 logs.txt + scenario.jsonl + `verdict.json`（6/6，一对一）+
-  receipt.json，来自 `./build/dsh-dsh-cli . scenario/m2-bridge-smoke.js`。
+  receipt.json，来自 `./build/dsh-spike-cli . scenario/m2-bridge-smoke.js`。
 
 ### 由 2026-09-21 receipt 收口闭合（fix/receipt-gaps）
 
@@ -551,13 +551,13 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
   `receipt.json` 按既有证据格式从其撰写。（首次冷 worktree 运行暴露了
   runner 的一个次序缺口——bundle 构建需要 vendored DSH 闭包，而 runner
   要到构建之后的 4b 步才暂存它；在运行 runner 前先执行
-  `runtime/dsh/vendor/ensure-dsh.sh` 即可绕过，已记 surprise。）
+  `runtime/spike/vendor/ensure-dsh.sh` 即可绕过，已记 surprise。）
 
 ### 由 2026-09-21 m2-gateway receipt 收口闭合（fix/m2-gateway-receipt）
 
 - **m2-gateway 的 receipt** —— 通过本分支上一次真实的 `run-ios.sh`
   重跑闭合（`e3bd333` 的全新 worktree）：四条 checker 与 manifest 一对一
-  复现（m1.dsh.boot 7/7、m1.carrier.loopback 7/7、m2.gateway.binding
+  复现（m1.spike.boot 7/7、m1.carrier.loopback 7/7、m2.gateway.binding
   19/19、m2.gateway.audit 16/16，expected == logged，退出码 0），证据从
   本次运行刷新，`receipt.json` 由 runner 新增的绿色路径步骤在运行内
   机器撰写（该步骤仅在四条 checker 全部通过后可达——receipt 永远不可能
@@ -577,9 +577,9 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
 
 ### 信息性说明，不算失败
 
-- **Manifest 版本漂移**（25 条 verdict）：`m1.dsh.boot` 在
-  `hosts/{ios,android,harmony}/artifacts/m1-dsh/` 与
-  `runtime/dsh/artifacts/macos-cli/` 捕获时为 9 事件，而现行 manifest 声明
+- **Manifest 版本漂移**（25 条 verdict）：`m1.spike.boot` 在
+  `hosts/{ios,android,harmony}/artifacts/m1-spike/` 与
+  `runtime/spike/artifacts/macos-cli/` 捕获时为 9 事件，而现行 manifest 声明
   7；`hosts/android/artifacts/m4-host/` 的 `m2.session` 捕获时 22 事件，现行
   23；`m5.host-binding` 在
   `hosts/harmony/artifacts/{d9-official-web,d9-session-live,d9-write-live,m5-host}/`
@@ -588,12 +588,12 @@ repeat 匹配，`logged` 是 capture 的记录条数而非匹配条数。
   `b-harmony.write.live` 33/33（d9-write-live、m5-primitives）、
   `upstream.parity` 12/37（iOS 模拟器、macOS CLI）、Android 的 `mic.plane`
   一对与相机 `5/6` 审计腿（各宿主如实姿态重钉）、`b4.write.live` 43/43
-  （wasm-shell-e2e）、以及 `m1.dsh.boot` 7/7 的重捕（m4-complete、
+  （wasm-shell-e2e）、以及 `m1.spike.boot` 7/7 的重捕（m4-complete、
   m4-host、m2-gateway、m5-host、m5-primitives、各 d9 目录）。verdict 是
   捕获时的记录；旧日志不保证能用增长后的 manifest 重新校验。检查器报告
   `drift: true`，但不因此失败。
 - **此前列为「进行中」的三个目录均已尘埃落定。**
-  `runtime/dsh/artifacts/macos-cli-m2-llm/` 随 #74 落地，现为绿色表行
+  `runtime/spike/artifacts/macos-cli-m2-llm/` 随 #74 落地，现为绿色表行
   （scripted-SSE CLI 分支，`m2.llm` 19/19）；M5 的收尾证据则以
   `hosts/harmony/artifacts/m5-primitives/`（#76，descriptor 9/0）与
   `hosts/harmony/artifacts/m5-m2-llm/`（#79，配额阻塞——缺口 8/9，现已

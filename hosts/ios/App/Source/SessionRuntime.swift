@@ -98,7 +98,7 @@ final class SessionRuntime {
 
     static let watchdogSeconds = 120
 
-    private let runtimeThread = RuntimeThread(name: "org.dsh.rt.session")
+    private let runtimeThread = RuntimeThread(name: "org.dsh.runtime.session")
     private let server = CarrierServer()
     private let sink = RuntimeLogSink()
     private var core: GatewayCore?

@@ -110,7 +110,7 @@ until adbsh shell am start -n "$PKG"/.MainActivity $EXTRAS >/dev/null 2>&1; do
 done
 rec_deadline=$(( $(date +%s) + 60 ))
 until adbsh logcat -d -s dsh.runtime 2>/dev/null | grep -q "dsh.runtime.log"; do
-    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.dsh records within 60s of am start"
+    [ "$(date +%s)" -ge "$rec_deadline" ] && die "no dsh.runtime records within 60s of am start"
     sleep 1
 done
 

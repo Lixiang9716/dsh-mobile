@@ -66,7 +66,7 @@ class BindingHost private constructor(
         const val EXTRA_NOTIFY_RESPONSE = "dsh.notify.response"
 
         private const val TAG = "dsh.rt"
-        private const val RESULT_TAG = "dsh.rt.result"
+        private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 
         /** RuntimeDescriptor pre-eval: the full table available, the

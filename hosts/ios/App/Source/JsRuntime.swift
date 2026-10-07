@@ -92,7 +92,7 @@ final class RuntimeLogSink {
 /// (ARCHITECTURE.md §6 thread rules).
 final class JsRuntime {
     static let entryModule = "scenario/boot-verification.js"
-    private let queue = DispatchQueue(label: "org.dsh.rt.runtime")
+    private let queue = DispatchQueue(label: "org.dsh.runtime.runtime")
 
     func run(completion: @escaping (JsOutcome) -> Void) {
         queue.async { [self] in

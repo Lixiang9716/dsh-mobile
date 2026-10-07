@@ -67,7 +67,7 @@ import { BuildFlavor } from './BuildFlavor';
 const TAG: string = 'dsh.app';
 /** The rt bundle's caller identity (the manifest.json id) — the audit
  * records' caller field. */
-const CALLER_ID: string = 'dsh.rt.scenario';
+const CALLER_ID: string = 'dsh.runtime.scenario';
 const PHASE_ID: number = 1;
 const SCENARIO: string = 'harmony.capability-binding';
 const ENTRY_BINDING: string = 'scenario/harmony-capability-binding.js';

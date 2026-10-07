@@ -88,7 +88,7 @@ for spec in $SPECS; do
     # reader's initial snapshot, so the wait and the truncation judge the
     # canary view only — a previous spec's completion tag must not satisfy
     # this spec's wait.
-    CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
+    CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
     cleanup_streamer() { "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true; }
     trap cleanup_streamer EXIT INT TERM
 

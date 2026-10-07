@@ -14,7 +14,7 @@ import Foundation
 /// Failures surface once through `onFailure` (drive-owned verdict); the
 /// drive never logs — the rt sink already carries the canonical lines.
 final class WebBootRuntimeDrive {
-    private let thread = RuntimeThread(name: "org.dsh.rt.webboot")
+    private let thread = RuntimeThread(name: "org.dsh.runtime.webboot")
     private let sink = RuntimeLogSink()
     private var host: OpaquePointer?
     /// The capability gateway the scenario's spine exercises (fs scope for

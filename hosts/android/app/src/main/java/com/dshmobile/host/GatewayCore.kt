@@ -18,7 +18,7 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
 
     companion object {
         /** The caller identity of the rt bundle (manifest.json id). */
-        const val CALLER = "dsh.rt.scenario"
+        const val CALLER = "dsh.runtime.scenario"
 
         /** The frozen primitive table (contract v1.4.0: nine + fs additions
          * + wasmRun + ishRun-unavailable-on-android + the timer seam; the
@@ -42,7 +42,7 @@ class GatewayCore private constructor(val manifest: GatewayManifest) {
         val PHASED_ROWS = listOf("cameraRecordStart", "cameraRecordStop")
         const val AUDIT_PREFIX = "dsh.gateway.audit: "
         private const val AUDIT_TAG = "dsh.runtime.audit"
-        private const val UI_TAG = "dsh.rt.ui"
+        private const val UI_TAG = "dsh.runtime.ui"
 
         /** Fails loud (rules.md rule 5): bundle_root/manifest.json must exist. */
         fun create(bundleRoot: java.io.File): GatewayCore {

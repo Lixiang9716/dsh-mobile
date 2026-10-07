@@ -29,7 +29,7 @@ class V2WebSession private constructor(private val activity: Activity) {
         const val WATCHDOG_SECONDS = 270
 
         private const val TAG = "dsh.rt"
-        private const val RESULT_TAG = "dsh.rt.result"
+        private const val RESULT_TAG = "dsh.runtime.result"
         private const val ENGINE_LABEL = "quickjs-ng 0.17.0"
 
         @Volatile private var instance: V2WebSession? = null

@@ -78,7 +78,7 @@ adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # Shared canary-pinned capture (logcat-capture.sh): `logcat -c` races the
 # reader's initial snapshot, so the wait and the truncation judge the canary
 # view only.
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
 cleanup() {
     "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true
 }

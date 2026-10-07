@@ -58,7 +58,7 @@ THREE scenarios in one launch, judged by the shared checker:
   call runs through the subprocess plugin and persists via dsh-fs under scope `app`
   (`smoke-fs/session-mock-llm/result.txt`, roundtripped).
 
-Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logcat `-s dsh.dsh`),
+Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logcat `-s dsh.runtime`),
 `scenario.jsonl` (canonical `dsh.runtime.log:` lines), `verdict-boot-verification.json` +
 `verdict-gateway-bridge-smoke.json` + `verdict-session-mock-llm.json` (checker PASS), `screenshot.png`
 (human evidence only — never a checker input), `receipt.json`.
@@ -85,7 +85,7 @@ Evidence (one run, final code state): `artifacts/m4-host/` — `logs.txt` (logca
   root), cmp-verified at authoring time; unpacked to `filesDir/dsh` at first run because the C
   host fopen()s real paths. The repo has no drift-check tool for these copies yet — provenance
   is this paragraph (and the receipt).
-- Capture: every canonical line goes UNMODIFIED to logcat (tag `dsh.dsh`) AND to
+- Capture: every canonical line goes UNMODIFIED to logcat (tag `dsh.runtime`) AND to
   `filesDir/dsh-capture-<scenario>.log` (pulled via `adb exec-out run-as com.dshmobile.host
   cat ...` — the truncation-proof cross-check); per-scenario verdicts land on tag
   `dsh.runtime.result`, terminated by the `ALL PASS` / `ALL FAIL` line.

@@ -2,7 +2,7 @@
 # run-upstream-suite.sh (HarmonyOS) — the upstream DSH test suite ON THE
 # HARMONY HOST: one transpiled spec per app launch, executed by the
 # quickjs-shaped harness in the on-device runtime; per-test verdicts stream
-# as dsh.dsh records and the summary verdict is read from the PULLED
+# as dsh.runtime records and the summary verdict is read from the PULLED
 # capture file (truncation-proof — the same discipline as
 # hosts/harmony/ci/run-host-e2e.sh and run-live-llm.sh: hilog is only the
 # completion signal, never the evidence).

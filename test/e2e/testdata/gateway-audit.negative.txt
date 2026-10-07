@@ -14,35 +14,35 @@ dsh.runtime.log: {"level":"info","module":"dsh.scenario","message":"e2e","data":
 dsh: driving gateway.binding
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"gateway.negotiated","version":"gateway@1"}]}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"descriptor.declared","available":33,"unavailable":2}]}
-dsh.gateway.audit: {"ts":1758381600.100,"primitive":"fsWrite","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381600.100,"primitive":"fsWrite","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"fs.write.ok","written":17,"path":"sandbox://notes.txt"}]}
-dsh.gateway.audit: {"ts":1758381600.200,"primitive":"fsRead","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381600.200,"primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"fs.read.ok","bytes":17,"matches":true}]}
-dsh.gateway.audit: {"ts":1758381600.300,"primitive":"fsRead","caller":"dsh.dsh.scenario","verdict":"denied","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381600.300,"primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"denied","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"fs.denied","code":"denied","path":"sandbox://../private/etc"}]}
-dsh.gateway.audit: {"ts":1758381600.400,"primitive":"httpFetch","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381600.400,"primitive":"httpFetch","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"http.status","status":200,"loopback":true}]}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"http.body","chunks":2,"totalBytes":64}]}
-dsh.gateway.audit: {"ts":1758381600.500,"primitive":"httpFetch","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"cancelled"}
+dsh.gateway.audit: {"ts":1758381600.500,"primitive":"httpFetch","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"cancelled"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"http.aborted","code":"cancelled"}]}
 dsh: ui-wait picker
-dsh.gateway.audit: {"ts":1758381601.000,"primitive":"presentPicker","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381601.000,"primitive":"presentPicker","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"picker.granted","mode":"file","path":"notes.txt","scopeOpaque":true}]}
-dsh.gateway.audit: {"ts":1758381601.100,"primitive":"fsScope","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381601.100,"primitive":"fsScope","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"fs.scope.persist","refOpaque":true}]}
-dsh.gateway.audit: {"ts":1758381601.200,"primitive":"fsScope","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381601.200,"primitive":"fsScope","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"fs.scope.resolve","scopeOpaque":true,"reads":true}]}
-dsh.gateway.audit: {"ts":1758381601.300,"primitive":"fsRead","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381601.300,"primitive":"fsRead","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh: ui-wait approval
-dsh.gateway.audit: {"ts":1758381602.000,"primitive":"presentApproval","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.000,"primitive":"presentApproval","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"approval.approved","approved":true,"remember":false}]}
-dsh.gateway.audit: {"ts":1758381602.100,"primitive":"keychainSet","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
-dsh.gateway.audit: {"ts":1758381602.200,"primitive":"keychainGet","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.100,"primitive":"keychainSet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.200,"primitive":"keychainGet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"keychain.roundtrip","set":true,"match":true}]}
-dsh.gateway.audit: {"ts":1758381602.300,"primitive":"keychainSet","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
-dsh.gateway.audit: {"ts":1758381602.400,"primitive":"keychainGet","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.300,"primitive":"keychainSet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381602.400,"primitive":"keychainGet","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"keychain.deleted","gone":true}]}
-dsh.gateway.audit: {"ts":1758381603.000,"primitive":"notify","caller":"dsh.dsh.scenario","verdict":"granted","outcome":"ok"}
+dsh.gateway.audit: {"ts":1758381603.000,"primitive":"notify","caller":"dsh.runtime.scenario","verdict":"granted","outcome":"ok"}
 dsh.runtime.log: {"level":"info","module":"m2.gateway","message":"e2e","data":[{"scenario":"gateway.binding","event":"notify.scheduled","idOpaque":true}]}
 dsh: ui-wait notification-permission
 dsh: ui-wait notification-banner

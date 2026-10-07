@@ -62,7 +62,7 @@ adb shell am force-stop $PKG >/dev/null 2>&1 || true
 # ("no parity/event records", seen 2026-09-24). logcat-capture.sh start
 # clears, attaches with the canary tag in the specs, and pins the capture
 # point with a canary line the streamer can only see once attached.
-CANARY=$("$CAPTURE" start -f "$STREAM" dsh.dsh dsh.runtime.result)
+CANARY=$("$CAPTURE" start -f "$STREAM" dsh.runtime dsh.runtime.result)
 cleanup() {
     "$CAPTURE" stop -f "$STREAM" >/dev/null 2>&1 || true
 }
