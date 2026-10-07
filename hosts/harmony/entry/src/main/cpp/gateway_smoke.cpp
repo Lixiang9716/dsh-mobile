@@ -62,7 +62,8 @@ const char *DSH_SMOKE_DESCRIPTOR =
 /* Binding descriptor: all nine contract primitives are served for real —
  * fsRead/fsWrite/fsScope (app scope) in C, httpFetch/keychainGet/Set/
  * presentPicker (and user-scope fs) forwarded to the ArkTS capability layer
- * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets),. The capability plane (v1.10.0) adds
+ * (HttpPrimitive.ets / KeychainPrimitives.ets / PickerPrimitives.ets), plus
+ * the timer seam (TimerPrimitive.ets). The capability plane (v1.10.0) adds
  * cameraCapture (CameraPrimitives.ets), the eight BLE rows
  * (BlePrimitives.ets), and the mic pair (MicPrimitives.ets). The
  * unavailable array is the honest-absence declaration (conformance §7 #1:

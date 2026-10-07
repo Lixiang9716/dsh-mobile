@@ -123,15 +123,16 @@ export const WHALE_WEB_DIR: string = '/webclient/dsh-web-client-compact/web';
 const ENTRY_STAGE: string = 'credential-stage.js';
 
 /** Binding RuntimeDescriptor: the full serving table (nine v0 primitives,
- * the six v1.5.0 device-plane rows, and the capability plane's mic pair —
- * v1.10.0 candidate) plus the honest-absence rows (conformance §7 #1:
- * absence is information for negotiation, never faked) — the phased camera
- * recording rows and the contract-known families this host serves nowhere
- * (the fs metadata rows, wasmRun, ishRun; smoke_known_absent answers them
- * exactly that way). Keep in sync with the C fallback in gateway_smoke.cpp. */
+ * the timer seam, the six v1.5.0 device-plane rows, and the capability
+ * plane's mic pair — v1.10.0 candidate) plus the honest-absence rows
+ * (conformance §7 #1: absence is information for negotiation, never
+ * faked) — the phased camera recording rows, the fs metadata families,
+ * wasmRun and ishRun this host serves nowhere. Keep in sync with the C
+ * fallback in gateway_smoke.cpp. */
 export const BINDING_DESCRIPTOR: string =
   '{"available":["fsRead","fsWrite","fsScope","httpFetch","notify",' +
   '"presentApproval","presentPicker","keychainGet","keychainSet",' +
+  '"timerSchedule","timerCancel",' +
   '"deviceInfo","haptic","clipboardRead","clipboardWrite","presentShare",' +
   '"keepAwake","cameraCapture","bleScanStart","bleScanStop","bleConnect",' +
   '"bleDisconnect","bleRead","bleWrite","bleSubscribe","bleUnsubscribe",' +
@@ -139,7 +140,7 @@ export const BINDING_DESCRIPTOR: string =
   '"unavailable":["cameraRecordStart","cameraRecordStop",' +
   '"fsStat","fsList","fsMkdir","fsRemove","fsRename",' +
   '"wasmRun","ishRun"]}';
-  '"unavailable":[]}';
+
 /** (title) => user decision — Index presents the custom approval dialog. */
 export type ApprovalPresenter = (title: string,
   resolve: (approved: boolean) => void) => void;
