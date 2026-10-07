@@ -230,6 +230,23 @@
       ]
     },
     {
+      "id": "descriptor-parity",
+      "command": [
+        "node",
+        "tools/check-descriptor-parity.mjs"
+      ],
+      "description": "harmony binding descriptor honest everywhere: ArkTS BINDING_DESCRIPTOR = C DSH_BINDING_DESCRIPTOR = the faces actually served/answered (forward list, onDispatch rows, smoke_known_absent; the timer-seam under-reporting class)",
+      "paths": [
+        "hosts/harmony/entry/src/main/ets/model/HostPhase.ets",
+        "hosts/harmony/entry/src/main/cpp/gateway_smoke.cpp",
+        "tools/check-descriptor-parity.mjs"
+      ],
+      "timeoutMs": 60000,
+      "needs": [
+        "self-test"
+      ]
+    },
+    {
       "id": "vendoring-repro",
       "command": [
         "sh",
