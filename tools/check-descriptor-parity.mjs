@@ -74,20 +74,18 @@ const parseDescriptor = (json, label, problems) => {
   }
 };
 
-const check = () => {
-  const problems = [];
-  const ets = read('hosts/harmony/entry/src/main/ets/model/HostPhase.ets');
-  const cpp = read('hosts/harmony/entry/src/main/cpp/gateway_smoke.cpp');
-
-  // 1. the two descriptors must be identical
+/** Faces 1: the two descriptors must be byte-identical JSON, well-formed,
+ * duplicate-free, and non-overlapping. Returns {etsDesc, cppDesc, etsJson,
+ * cppJson} or null after pushing problems. */
+const checkDescriptorsIdentical = (ets, cpp, problems) => {
   const etsJson = literalConcat(ets, 'export const BINDING_DESCRIPTOR');
   const cppJson = literalConcat(cpp, 'const char *DSH_BINDING_DESCRIPTOR');
   if (etsJson === null) problems.push('HostPhase.ets: BINDING_DESCRIPTOR anchor not found');
   if (cppJson === null) problems.push('gateway_smoke.cpp: DSH_BINDING_DESCRIPTOR anchor not found');
-  if (problems.length) return problems;
+  if (problems.length) return null;
   const etsDesc = parseDescriptor(etsJson, 'HostPhase.ets BINDING_DESCRIPTOR', problems);
   const cppDesc = parseDescriptor(cppJson, 'gateway_smoke.cpp DSH_BINDING_DESCRIPTOR', problems);
-  if (problems.length) return problems;
+  if (problems.length) return null;
   for (const key of ['available', 'unavailable']) {
     if (JSON.stringify(etsDesc[key]) !== JSON.stringify(cppDesc[key])) {
       problems.push(`descriptors differ on ${key}:\n      ArkTS: ${JSON.stringify(etsDesc[key])}\n      C:     ${JSON.stringify(cppDesc[key])}`);
@@ -99,8 +97,13 @@ const check = () => {
   }
   const overlap = etsDesc.available.filter((n) => etsDesc.unavailable.includes(n));
   if (overlap.length) problems.push(`rows both available and unavailable: ${overlap}`);
+  return { etsDesc, cppDesc, etsJson, cppJson };
+};
 
-  // 2. the C forward list (binding mode) must be declared available
+/** Face 2: the C binding-mode forward list ⊆ available; the phased rows
+ * (C-side smoke_reject unavailable) ⊆ declared unavailable. Returns the
+ * known-absent set both faces 3 and 3b consume. */
+const checkForwardAndPhased = (cpp, etsDesc, problems) => {
   const serveAt = cpp.indexOf('static void smoke_serve(');
   const serveBody = cpp.slice(serveAt, cpp.indexOf('\n}', serveAt));
   const bindingBlock = serveBody.slice(
@@ -133,8 +136,13 @@ const check = () => {
       problems.push(`"${name}" answers unavailable in C (phased) but is not declared unavailable`);
     }
   }
+  return { serveBody, phased };
+};
 
-  // 3. onDispatch's served names ⊆ available ∪ phased; absent families = known-absent
+/** Face 3: onDispatch served names ⊆ available; declared absent
+ * families = smoke_known_absent both directions; the absent check runs
+ * before the invalid fall-through. Returns the known-absent set. */
+const checkServedNames = (ets, cpp, serveBody, phased, etsDesc, problems) => {
   const dispatchAt = ets.indexOf('private onDispatch(');
   const dispatchBody = ets.slice(dispatchAt, ets.indexOf('\n  }', dispatchAt));
   const routed = new Set([...dispatchBody.matchAll(/name === '([a-zA-Z.]+)'/g)].map((m) => m[1]));
@@ -171,9 +179,14 @@ const check = () => {
   if (absentCall < 0 || absentCall > invalidFall) {
     problems.push('gateway_smoke.cpp: the known-absent check must run before the invalid fall-through');
   }
+  return knownAbsent;
+};
 
-  // 3b. the SMOKE face answers the same absent families `unavailable`, so
-  // its own descriptor must declare them too (a face's declaration covers
+/** Face 4: the smoke face declares what it answers unavailable; the
+ * descriptor fits host_start's fixed buffer; the credited modules exist. */
+const checkSmokeFaceAndBuffer = (cpp, etsJson, cppJson, knownAbsent, problems) => {
+  // the SMOKE face answers the same absent families `unavailable`, so its
+  // own descriptor must declare them too (a face's declaration covers
   // exactly what it answers — the review finding on the regression face)
   const smokeJson = literalConcat(cpp, 'const char *DSH_SMOKE_DESCRIPTOR');
   const smokeDesc = smokeJson === null
@@ -187,7 +200,7 @@ const check = () => {
     }
   }
 
-  // 3c. the descriptor must fit host_start's fixed buffer — phase_str_arg
+  // the descriptor must fit host_start's fixed buffer — phase_str_arg
   // rejects len >= sizeof (EINVAL "descriptor too long"), and the 28-row
   // descriptor sat at 511/512 (review finding: one added row from a dead
   // phase start). Parse the bound from the source so the gate trips before
@@ -204,7 +217,7 @@ const check = () => {
     problems.push(`DSH_BINDING_DESCRIPTOR is ${cppJson.length} bytes — at or over host_start's char descriptor[${cap}]`);
   }
 
-  // 4. the module the descriptor credits must exist on disk
+  // the module the descriptor credits must exist on disk
   for (const mod of ['TimerPrimitive', 'MicPrimitives', 'BlePrimitives', 'CameraPrimitives',
     'DevicePlanePrimitives', 'KeychainPrimitives', 'PickerPrimitives', 'HttpPrimitive']) {
     try {
@@ -213,6 +226,17 @@ const check = () => {
       problems.push(`hosts/harmony/entry/src/main/ets/model/${mod}.ets missing (the descriptor's serving face)`);
     }
   }
+};
+
+const check = () => {
+  const problems = [];
+  const ets = read('hosts/harmony/entry/src/main/ets/model/HostPhase.ets');
+  const cpp = read('hosts/harmony/entry/src/main/cpp/gateway_smoke.cpp');
+  const desc = checkDescriptorsIdentical(ets, cpp, problems);
+  if (desc === null) return problems;
+  const { serveBody, phased } = checkForwardAndPhased(cpp, desc.etsDesc, problems);
+  const knownAbsent = checkServedNames(ets, cpp, serveBody, phased, desc.etsDesc, problems);
+  checkSmokeFaceAndBuffer(cpp, desc.etsJson, desc.cppJson, knownAbsent, problems);
   return problems;
 };
 

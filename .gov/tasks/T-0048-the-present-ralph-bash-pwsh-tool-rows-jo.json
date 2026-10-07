@@ -2,7 +2,7 @@
   "title": "the present/ralph/bash/pwsh tool rows join the harmony closure \u2014 vendor-official.sh's BUNDLE_FILES list + the preset markers on-device",
   "created": "2026-09-24T12:05:03+00:00",
   "rules": {
-    "hash": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
+    "hash": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
     "files": {
       ".gov/rules.md": "7ca765cc6080350b0fec7b4a4a5f363ae42379861e3f987a2c64d27a0f7d72c9",
       "gates.json": "36ca7f08a104ffb51dba8eece8b13bcfce86e920da31de4af2bd2053e26c2fa2"
@@ -100,6 +100,13 @@
       "from": "bcbf14c0f3455e686c6ecd9a45cab281b0c0894d4930136b973d8927e3b64692",
       "to": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
       "reason": "plane advanced by the transport-tokens gate (gates.json) \u2014 brief unchanged"
+    },
+    {
+      "ts": "2026-10-07T15:30:13+00:00",
+      "by": "13957@DESKTOP-AOFQD6F",
+      "from": "0ed822f51a8838e5b84a27d4653a84bba73d7960ecda0dee754cb70525579a3c",
+      "to": "5bb9228ad09444a42e6701e4aa62c9bf03adbaace180f48df88660e58041241f",
+      "reason": "plane advanced (transport-tokens gate merged + this branch's rejection cases) \u2014 brief unchanged"
     }
   ]
 }
