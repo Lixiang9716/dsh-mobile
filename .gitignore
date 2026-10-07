@@ -306,3 +306,4 @@ hosts/android/app/src/main/assets/dsh/vendor/dsh/plugin-manager@*/
 # init drops a timestamped AGENTS.md backup beside the managed block.
 .zcode/config.json
 AGENTS.md.backup.*
+hosts/harmony/artifacts/upstream-suite/

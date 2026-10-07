@@ -24,12 +24,12 @@ const CPP_DIR = fileURLToPath(
 );
 const RUNTIME_KT = fileURLToPath(
   new URL(
-    '../../hosts/android/app/src/main/java/com/dshmobile/dsh/JsRuntime.kt',
+    '../../hosts/android/app/src/main/java/com/dshmobile/host/JsRuntime.kt',
     import.meta.url,
   ),
 );
 
-const JNI_PREFIX = 'Java_com_dshmobile_spike_JsRuntime_';
+const JNI_PREFIX = 'Java_com_dshmobile_host_JsRuntime_';
 
 /** The Kotlin `external fun` names on the runtime seam (JsRuntime.kt). */
 const kotlinExternals = () => {
@@ -54,7 +54,7 @@ describe('android-jni-surface: every Kotlin external binds to a C symbol', () =>
   it('each external fun in JsRuntime.kt has its JNI export under cpp/', () => {
     const exported = cExports();
     const missing = [...kotlinExternals()].filter((name) => !exported.has(name));
-    expect(missing, `externals with no Java_com_dshmobile_spike_JsRuntime_<name> symbol: ${missing.join(', ')}`).toEqual([]);
+    expect(missing, `externals with no Java_com_dshmobile_host_JsRuntime_<name> symbol: ${missing.join(', ')}`).toEqual([]);
   });
 
   it('each JsRuntime JNI export under cpp/ is declared by a Kotlin external', () => {
