@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created_at": "2026-10-04T08:33:26Z",
-  "updated_at": "2026-10-06T23:58:50Z",
+  "updated_at": "2026-10-07T00:06:49Z",
   "files": {
     ".gitattributes": {
       "role": "index",
@@ -191,9 +191,9 @@
     },
     "aoci.code.txt": {
       "role": "index",
-      "sha256": "f2819d9c130e462d952dff739958244ecb8397a66b9d5c63c8338de6c6f982d2",
-      "size": 446766,
-      "normalized_sha256": "f2819d9c130e462d952dff739958244ecb8397a66b9d5c63c8338de6c6f982d2"
+      "sha256": "a1c1c04f70b336440a5526e2c83f4a5ac9ae22fcf2ad4d1f7a24c8a8c71098de",
+      "size": 451010,
+      "normalized_sha256": "a1c1c04f70b336440a5526e2c83f4a5ac9ae22fcf2ad4d1f7a24c8a8c71098de"
     },
     "aoci.meta.txt": {
       "role": "index",
@@ -4073,9 +4073,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-paths.js": {
       "role": "index",
-      "sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0",
-      "size": 5505,
-      "normalized_sha256": "6454b032b45bb26ca248168dff7d59309c4046482ed79306c9864ae1e721c1f0"
+      "sha256": "017a00ecfb0f2a46a867001aaf0d09f577d5c352d526a938631da73f0a1cc99f",
+      "size": 5834,
+      "normalized_sha256": "017a00ecfb0f2a46a867001aaf0d09f577d5c352d526a938631da73f0a1cc99f"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-promises-fh.js": {
       "role": "index",
@@ -4109,9 +4109,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-stat.js": {
       "role": "index",
-      "sha256": "01d204c6ba3d5374144a139bd6b571e8a3c39153d2b7d71141fb0dc22d90c943",
-      "size": 11687,
-      "normalized_sha256": "01d204c6ba3d5374144a139bd6b571e8a3c39153d2b7d71141fb0dc22d90c943"
+      "sha256": "594d9a18e53474d1b1f36abde04f3efcf30b4db1f0ff115862bf33fc8e531410",
+      "size": 12879,
+      "normalized_sha256": "594d9a18e53474d1b1f36abde04f3efcf30b4db1f0ff115862bf33fc8e531410"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/fs-workspace-rename.js": {
       "role": "index",
@@ -4167,6 +4167,12 @@
       "size": 621,
       "normalized_sha256": "0620fbaf9f7075f44a5fad0e027c8e2029d813be7ceceb667de321b23342d71d"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-addon-system-landlock-run.js": {
+      "role": "index",
+      "sha256": "36293c7be2ad93a9196976a253832686d13177a98a1ad584ff2ec889b7f29708",
+      "size": 3021,
+      "normalized_sha256": "36293c7be2ad93a9196976a253832686d13177a98a1ad584ff2ec889b7f29708"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-child-process-exec.js": {
       "role": "index",
       "sha256": "f3ffb8f11cf948480344416ab983b58cec7ba639c4e771a8a76bf4772c641c31",
@@ -4184,6 +4190,12 @@
       "sha256": "3b8b9e6a61c638f1bcecaa983e95da45de4f45b36558d40a21558692389f5e1f",
       "size": 8265,
       "normalized_sha256": "3b8b9e6a61c638f1bcecaa983e95da45de4f45b36558d40a21558692389f5e1f"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-child-process.js": {
+      "role": "index",
+      "sha256": "b00921fca2480026735e697027a18c658bdf457227609d0dca19757d1260d721",
+      "size": 13323,
+      "normalized_sha256": "b00921fca2480026735e697027a18c658bdf457227609d0dca19757d1260d721"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-http-loopback-client.js": {
       "role": "index",
@@ -4232,6 +4244,12 @@
       "sha256": "65bcf056f63a87199260a4e48a4af523b9462952c805b5e64f78fa047eb273cb",
       "size": 15895,
       "normalized_sha256": "65bcf056f63a87199260a4e48a4af523b9462952c805b5e64f78fa047eb273cb"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-sqlite.js": {
+      "role": "index",
+      "sha256": "9efd110e9560f6c21b7d5d06dfd94fb12d370defbf76bae45c50a814763605ca",
+      "size": 3472,
+      "normalized_sha256": "9efd110e9560f6c21b7d5d06dfd94fb12d370defbf76bae45c50a814763605ca"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/node-stream-duplex.js": {
       "role": "index",
@@ -4311,11 +4329,23 @@
       "size": 24791,
       "normalized_sha256": "c1d3614104978c3308b16eef314e58e78bbd26f0858b3032487a8ae8d6826d01"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/openai-client.js": {
+      "role": "index",
+      "sha256": "b6b0e289134a0460c081669ff51bf07701d249bfe55f765ae4ba6376ef29d4c4",
+      "size": 6399,
+      "normalized_sha256": "b6b0e289134a0460c081669ff51bf07701d249bfe55f765ae4ba6376ef29d4c4"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/os.js": {
       "role": "index",
       "sha256": "a0b49c7f5e4652f0cc39d746ea5f4ad840a20870f4b0ec6c86e5f53e262bd51e",
       "size": 6109,
       "normalized_sha256": "a0b49c7f5e4652f0cc39d746ea5f4ad840a20870f4b0ec6c86e5f53e262bd51e"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/partial-json.js": {
+      "role": "index",
+      "sha256": "ec31a2c786de8f9dee7e4b1cce58e1da7408fc926c1379ff6a4426c53cce65bd",
+      "size": 3396,
+      "normalized_sha256": "ec31a2c786de8f9dee7e4b1cce58e1da7408fc926c1379ff6a4426c53cce65bd"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/path.js": {
       "role": "index",
@@ -4335,11 +4365,23 @@
       "size": 25686,
       "normalized_sha256": "0dcd1f5821dbc59a6d62fe2beb2420a9545a78d962ddec034792b293cda7d991"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/slot-registry.js": {
+      "role": "index",
+      "sha256": "48272e51b207db909ca9c904f66a5d8496823d51a9b5d3c41304a407bc646b0e",
+      "size": 15937,
+      "normalized_sha256": "48272e51b207db909ca9c904f66a5d8496823d51a9b5d3c41304a407bc646b0e"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/source-bootstrap-ipc.js": {
       "role": "index",
       "sha256": "d6ffd382ace3944427b9c763aa931f0ec48a7e22061c19a76238c0259fdc2da5",
       "size": 7480,
       "normalized_sha256": "d6ffd382ace3944427b9c763aa931f0ec48a7e22061c19a76238c0259fdc2da5"
+    },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/source-bootstrap-loader-smoke.js": {
+      "role": "index",
+      "sha256": "511d6a8252dd9fefd952493a481681fb6ad2fbb5658b9efbd08b0c65e1fffb85",
+      "size": 6285,
+      "normalized_sha256": "511d6a8252dd9fefd952493a481681fb6ad2fbb5658b9efbd08b0c65e1fffb85"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/source-bootstrap-tsx-stage.js": {
       "role": "index",
@@ -4353,6 +4395,12 @@
       "size": 7182,
       "normalized_sha256": "734afa4677a72185ac7e967959d456d704fd84c51104d5d69c0aa429da029f16"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/string-decoder.js": {
+      "role": "index",
+      "sha256": "c658efe05df683cfa8a1ef68c465387ee55618cdef7e370c7a885f69b223be63",
+      "size": 3525,
+      "normalized_sha256": "c658efe05df683cfa8a1ef68c465387ee55618cdef7e370c7a885f69b223be63"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/timers-promises.js": {
       "role": "index",
       "sha256": "a13f1ba2352dff330409f9d4287381fdf8313aa657051d5c2ffc975a97f96b9a",
@@ -4361,9 +4409,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/timers.js": {
       "role": "index",
-      "sha256": "fd95533fd818da5a2bf5b6a7eb640699e39120ce86f9b1c38a095176dd669845",
-      "size": 9333,
-      "normalized_sha256": "fd95533fd818da5a2bf5b6a7eb640699e39120ce86f9b1c38a095176dd669845"
+      "sha256": "8115e854e8f533150e861e7c6d25e79e9b4b6d39eeffb00fe55fc93d6034866d",
+      "size": 11131,
+      "normalized_sha256": "8115e854e8f533150e861e7c6d25e79e9b4b6d39eeffb00fe55fc93d6034866d"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/shims/undici.js": {
       "role": "index",
@@ -4467,6 +4515,12 @@
       "size": 5739,
       "normalized_sha256": "b717d727b11bedf34af72c29ad5815cdfee98b7bb98596d8e5468e325477d3a0"
     },
+    "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/tool-path-anchor.js": {
+      "role": "index",
+      "sha256": "9e579f24fa1d08eb3860968d5612d95e75709a2de6bad7d91494fe6a08aab70e",
+      "size": 3283,
+      "normalized_sha256": "9e579f24fa1d08eb3860968d5612d95e75709a2de6bad7d91494fe6a08aab70e"
+    },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/tool-present.js": {
       "role": "index",
       "sha256": "8af5c24d1952650890b2408599a71b8ee6d5a403fdd90e9cc5845f29d9544ba2",
@@ -4475,9 +4529,9 @@
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/turn-recovery.js": {
       "role": "index",
-      "sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07",
-      "size": 4980,
-      "normalized_sha256": "d0f6bfe4fe21199b70183e88eb6663f44a28b278941eb30a50ad1d01020ead07"
+      "sha256": "90becf160e63761708e263abf51e4a983d23e0ece80d19bfa261e2cd134e84c4",
+      "size": 5403,
+      "normalized_sha256": "90becf160e63761708e263abf51e4a983d23e0ece80d19bfa261e2cd134e84c4"
     },
     "hosts/harmony/entry/src/main/resources/rawfile/spike/upstream/turn-watchdog.js": {
       "role": "index",
@@ -5051,9 +5105,9 @@
     },
     "hosts/ios/Tools/gen_bundle_header.py": {
       "role": "index",
-      "sha256": "77ac4b6718fff3ede6f765e11efce1bd6db1e6057a50b1a35a04915dbf46d016",
-      "size": 27777,
-      "normalized_sha256": "77ac4b6718fff3ede6f765e11efce1bd6db1e6057a50b1a35a04915dbf46d016"
+      "sha256": "e839faaeca09f340b2f237d672e23c8a3a7e689ce80df1fc3cf2eb5f52be6ee0",
+      "size": 28357,
+      "normalized_sha256": "e839faaeca09f340b2f237d672e23c8a3a7e689ce80df1fc3cf2eb5f52be6ee0"
     },
     "hosts/ios/Tools/gen_bundle_trees.py": {
       "role": "index",
@@ -5084,6 +5138,12 @@
       "sha256": "1461dde80634ffa92b96f1d267f6f831fe758e90cfbd5b85915e8d5db7d743d7",
       "size": 16314,
       "normalized_sha256": "1461dde80634ffa92b96f1d267f6f831fe758e90cfbd5b85915e8d5db7d743d7"
+    },
+    "liang": {
+      "role": "index",
+      "sha256": "59eb5f6092dab8de92482635c31282624e21f85f02c62956015a459a359142d0",
+      "size": 12,
+      "normalized_sha256": "59eb5f6092dab8de92482635c31282624e21f85f02c62956015a459a359142d0"
     },
     "packages/release/bump-version.py": {
       "role": "index",
