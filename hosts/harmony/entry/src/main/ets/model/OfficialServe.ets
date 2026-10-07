@@ -75,14 +75,14 @@ const WHALE_HTML: string = '<!doctype html><title>蓝色鲸鱼</title>' +
   '</style><!--BLUE-V2-CANARY--><div id=w>🐋</div>';
 /** The canonical mount-entry scenario the web-boot runtime runs: it composes
  * the official boot wire and posts `web.boot` over the bus seam. */
-const ENTRY_MOUNT = 'scenario/officialweb-web-live.js';
+const ENTRY_MOUNT = 'web-live/officialweb-web-live.js';
 /** The INTERACTIVE mount entry (the user-facing seat): the FULL vendored DSH
  * spine boots — llm/session/agent/tools/system-prompt/settings/agent-loop
  * plus the commands registry and the skill plane — claims the write surface,
  * the settings describe and the mux streams, and goes RESIDENT: the page's
  * own composer admits real upstream agent-loop turns. Kotlin/Swift sibling:
  * hosts/android SessionServe.kt, hosts/ios SessionServe.swift. */
-const ENTRY_INTERACTIVE = 'scenario/composer-web-live.js';
+const ENTRY_INTERACTIVE = 'web-live/composer-web-live.js';
 /** The mount entry's scenario label (the C host logs its verdict under it). */
 const SCENARIO_MOUNT = 'harmony.officialweb.mount';
 /** The scripted model boundary of the INTERACTIVE seat (the same byte-for-

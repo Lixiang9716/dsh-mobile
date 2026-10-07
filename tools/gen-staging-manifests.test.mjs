@@ -66,12 +66,13 @@ describe('gen-staging-manifests green fixture: android and ios surfaces', () => 
     const r = fx.json('gen-staging-manifests.mjs');
     const a = androidOf(r.data);
     expect(a.twins).toEqual({
-      scenarioStageVsVerify: [], pkgStageVsVerify: [], pkgVerifyVsStage: [],
+      scenarioStageVsVerify: [], webLiveStageVsVerify: [],
+      pkgStageVsVerify: [], pkgVerifyVsStage: [],
       npmStageVsVerify: [], npmVerifyVsStage: [],
     });
     expect(a.pinsAbsent).toEqual([]);
     expect(a.graphRowsOutsideMirrors).toEqual([]);
-    expect(a.scenarioRoster).toEqual({ rows: 2, onDisk: 2, unstagedByPolicy: 0 });
+    expect(a.scenarioRoster).toEqual({ rows: 3, onDisk: 3, unstagedByPolicy: 0 });
   });
 
   it('the ios surfaces carry every graph row; trees resolve on disk', () => {
@@ -120,8 +121,8 @@ describe('gen-staging-manifests freeze-fatal: the android twins', () => {
     // not check it — the drift class the twins leg exists for
     const sh = join('hosts/android/ci/stage-spine-closure.sh');
     fx.write(sh, fx.read(sh).replace(
-      'for s in leg-a.js upstream-suite-leg.js; do test -f',
-      'for s in upstream-suite-leg.js; do test -f',
+      'for s in leg-a.js upstream-suite-leg.js; do cmp -s',
+      'for s in upstream-suite-leg.js; do cmp -s',
     ));
     const r = fx.run('gen-staging-manifests.mjs');
     expect(r.status).toBe(1);

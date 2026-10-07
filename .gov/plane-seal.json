@@ -16,7 +16,7 @@
       "sha256": "a28028afe5b46af009a15e9e31d7804fff74e8fef0ea4ad94fcecf3f4311096e"
     },
     ".gov/rejections/case-bundle-files.sh": {
-      "sha256": "806edd11e264da9b31615fc4bedadee75ab8b0b8328cc86fe8c055a614be2cc2"
+      "sha256": "fcc89ba400f249dcf5160be177c4655f3019bed11f75ed94d0179558843c3035"
     },
     ".gov/rejections/case-code-size.sh": {
       "sha256": "669cd2c142fc032ae6e341b0ffb4aebbe56fcd9883c1abfc9556b75c17c82216"
@@ -59,9 +59,9 @@
     }
   },
   "last_rebaseline": {
-    "ts": "2026-10-07T15:29:32+00:00",
+    "ts": "2026-10-07T16:40:41+00:00",
     "caller": "13957@DESKTOP-AOFQD6F",
     "unattended": true,
-    "reason": "rebase onto main (transport-tokens gate merged): re-seal with this branch's rejection cases"
+    "reason": "rebase onto main (#407 descriptor-parity merged): re-seal with this branch's rejection cases"
   }
 }

@@ -51,7 +51,7 @@ import { installedFromJournal } from 'upstream/web-write-marketplace.js';
 
 const log = createLogger('dsh.web.plugin-manager');
 
-/** The dsh.plugins/1 document (scenario/write-surface-options.js reads the
+/** The dsh.plugins/1 document (web-live/write-surface-options.js reads the
  * same file leniently for the LIST tier; the WRITE plane reads it strict —
  * a write into a roster this host cannot parse must never silently land).
  * DEFAULT spelling: the app-scope-root-relative `plugins/registry.json`.

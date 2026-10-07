@@ -317,7 +317,7 @@ class MainActivity : Activity() {
     /**
      * The user-facing boot: the official DSH Web Client over the FULL DSH
      * runtime — the SessionServe seat (the sibling of hosts/ios
-     * SessionServe.swift). The spine (scenario/composer-web-live.js) boots
+     * SessionServe.swift). The spine (web-live/composer-web-live.js) boots
      * the vendored DSH packages with the INTERACTIVE surfaces (the commands
      * registry + the skill plane), claims the write/settings surfaces and
      * the mux streams over the bus seam, and goes resident: the page's own

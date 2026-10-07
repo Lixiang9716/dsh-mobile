@@ -73,7 +73,7 @@ describe('check-staging on the green fixture (happy path)', () => {
     const r = fx.run('check-staging.mjs', ['--host', 'ios']);
     expect(r.status).toBe(0);
     expect(r.stdout).toContain('== host ios (warn) ==');
-    expect(r.stdout).toContain('surface Tools/gen_bundle_header.py RESOURCES+TREES');
+    expect(r.stdout).toContain('surface Tools/gen_bundle_header.py TREES + Tools/gen_bundle_resources.py RESOURCES');
     expect(r.stdout).toContain('clean');
     expect(r.stdout).toMatch(/^staging-check: ok · blocking hosts \(none\) · 0 warning\(s\)/m);
   });

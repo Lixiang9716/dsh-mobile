@@ -1,6 +1,6 @@
 #!/bin/sh
 # run-page-open.sh — the OFFICIAL seat's page-open pin (loop-t): a fresh boot
-# of the default seat (SessionServe, scenario/composer-web-live.js) must end
+# of the default seat (SessionServe, web-live/composer-web-live.js) must end
 # with the app's own WebView navigating to the carrier origin. The gate the
 # page open rides — SessionServe.kt maybeOpenOrigin — needs the bus line
 # `settings.probes.done` (the JS probes' completion post) plus the web.boot

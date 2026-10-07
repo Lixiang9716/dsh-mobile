@@ -77,9 +77,9 @@ export default defineConfig({
       { find: 'upstream/web-write-cordis.js', replacement: fileURLToPath(new URL('../../runtime/dsh/upstream/web-write-cordis.js', import.meta.url)) },
       { find: 'system-plugins/dsh-plugin-manager-tools/index.js', replacement: fileURLToPath(new URL('../../system-plugins/dsh-plugin-manager-tools/index.js', import.meta.url)) },
       { find: 'workspace-registry.js', replacement: fileURLToPath(new URL('../../runtime/dsh/workspace-registry.js', import.meta.url)) },
-      { find: 'scenario/probe-respond-await.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/probe-respond-await.js', import.meta.url)) },
-      { find: 'scenario/scenario-verdict.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/scenario-verdict.js', import.meta.url)) },
-      { find: 'scenario/api-handler-respond.js', replacement: fileURLToPath(new URL('../../runtime/dsh/scenario/api-handler-respond.js', import.meta.url)) },
+      { find: 'web-live/probe-respond-await.js', replacement: fileURLToPath(new URL('../../runtime/dsh/web-live/probe-respond-await.js', import.meta.url)) },
+      { find: 'web-live/scenario-verdict.js', replacement: fileURLToPath(new URL('../../runtime/dsh/web-live/scenario-verdict.js', import.meta.url)) },
+      { find: 'web-live/api-handler-respond.js', replacement: fileURLToPath(new URL('../../runtime/dsh/web-live/api-handler-respond.js', import.meta.url)) },
       // The fs-shim suite (loop-p): the dsh's bare 'upstream/…' specifiers
       // resolve through the quickjs loader on device; the regex prefix maps
       // the whole shim family — the node:fs imports inside stay REAL, a

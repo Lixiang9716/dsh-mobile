@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { makeProbeAwaiter } from 'scenario/probe-respond-await.js';
+import { makeProbeAwaiter } from 'web-live/probe-respond-await.js';
 import { makePluginInventoryHandler } from 'upstream/web-write-inventory.js';
 
 // loop-q: on the serving seats the settings probes' claimed handler for

@@ -95,7 +95,7 @@ records):
    primitive over `@ohos.net.http requestInStream` (streaming body, abort,
    refused); the proof scenario runs against the live carrier.
 3. **harmony.session.live-read** (W-HARMONY3) — the FULL upstream agent spine
-   boots in a fresh runtime (`harmony-session-live-read.js` → `upstream/boot.js`:
+   boots in a fresh runtime (`web-live/harmony-session-live-read.js` → `upstream/boot.js`:
    ctx.sessions / agents / agentLoop / tools / systemPrompt /
    sessionProjections / settings + the vendored dsh-llm `LlmRuntime` whose
    transport is the REAL gateway httpFetch against the carrier's SCRIPTED
@@ -111,7 +111,7 @@ records):
    (`dsh.runtime.verdict: harmony.session.live-read`).
 4. **harmony.composer.live-write** (W-HARMONY4) — the SESSION WRITE surface: a
    fresh runtime boots the spine and the web-boot producer composes WITH
-   the write surface (`harmony-composer-live-write.js` → `upstream/web-write.js`):
+   the write surface (`web-live/harmony-composer-live-write.js` → `upstream/web-write.js`):
    `session/create` + `session/prompt` (upstream commands.prompt
    admission: `{accepted:true}` without awaiting the turn),
    `settings/describe|update|mutate` (the real vendored provider, the

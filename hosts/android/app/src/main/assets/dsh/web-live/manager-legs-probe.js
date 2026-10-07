@@ -1,7 +1,7 @@
 // dsh:logging-exempt (probe helper over the write surface's wire answers;
 // the scenario's own logger owns the record stream)
 /**
- * scenario/manager-legs-probe.js — the pluginManager LIST-legs probe shared
+ * web-live/manager-legs-probe.js — the pluginManager LIST-legs probe shared
  * by the two settings-driving scenarios (composer-web-live,
  * settings-surfaces; split out at the file-size gate, #335 A1). It demands
  * the honest per-tier disposition over the wire:
